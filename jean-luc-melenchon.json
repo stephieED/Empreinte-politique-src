@@ -1,0 +1,378 @@
+{
+  "slug": "jean-luc-melenchon",
+  "chambre": "deputes",
+  "source": "https://2017-2022.nosdeputes.fr/jean-luc-melenchon",
+  "identite": {
+    "nom_complet": "Jean-Luc Mélenchon",
+    "groupe_sigle": "LFI",
+    "groupe_nom": {
+      "organisme": "La France Insoumise",
+      "fonction": "membre",
+      "debut_fonction": "2021-10-12"
+    },
+    "profession": "Professeur",
+    "date_naissance": "1951-08-19",
+    "num_circo": 4,
+    "nb_mandats": 0,
+    "url_an_ou_senat": "http://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150"
+  },
+  "mandats": [
+    {
+      "type": "ancien_mandat",
+      "label": "21/06/2017 /  / "
+    }
+  ],
+  "votes": [],
+  "synthese_activite": null,
+  "dossiers_legislatifs": [
+    {
+      "id": 9702,
+      "titre": "Abrogation de lois obsolètes",
+      "date_min": "2019-11-28",
+      "date_max": "2019-11-28",
+      "nb_interventions": 0,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/amelioration_droit_abrogation_lois_obsoletes.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/9702"
+    },
+    {
+      "id": 18209,
+      "titre": "Abrogation des régimes d'exception",
+      "date_min": "2022-01-13",
+      "date_max": "2022-01-13",
+      "nb_interventions": 11,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/abrogation_regimes_exception.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/18209"
+    },
+    {
+      "id": 12096,
+      "titre": "Accélération et simplification de l'action publique",
+      "date_min": "2020-09-28",
+      "date_max": "2020-10-28",
+      "nb_interventions": 1577,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/acceleration_simplification_action_publique.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/12096"
+    },
+    {
+      "id": 2072,
+      "titre": "Accès à l'eau",
+      "date_min": "2018-02-01",
+      "date_max": "2018-02-01",
+      "nb_interventions": 92,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/acces_eau_droit_inalienable.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/2072"
+    },
+    {
+      "id": 10413,
+      "titre": "Accès à la prestation de compensation du handicap",
+      "date_min": "2020-01-15",
+      "date_max": "2020-01-15",
+      "nb_interventions": 55,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/acces_prestation_compensation_handicap.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/10413"
+    },
+    {
+      "id": 15985,
+      "titre": "Accès au foncier agricole",
+      "date_min": "2021-05-25",
+      "date_max": "2021-12-13",
+      "nb_interventions": 374,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/urgence_foncier_agricole.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/15985"
+    },
+    {
+      "id": 13163,
+      "titre": "Accès au vaccin contre le covid-19",
+      "date_min": "2020-11-26",
+      "date_max": "2020-11-26",
+      "nb_interventions": 23,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/acces_vaccin_covid.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/13163"
+    },
+    {
+      "id": 15109,
+      "titre": "Accès aux œuvres culturelles à l'ère numérique",
+      "date_min": "2021-06-22",
+      "date_max": "2021-09-29",
+      "nb_interventions": 330,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/DLR5L15N42194.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/15109"
+    },
+    {
+      "id": 13970,
+      "titre": "Accès des experts forestiers aux données cadastrales",
+      "date_min": "2021-01-28",
+      "date_max": "2021-01-28",
+      "nb_interventions": 20,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/experts_forestiers.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/13970"
+    },
+    {
+      "id": 17281,
+      "titre": "Accès transparent au marché de l'assurance emprunteur",
+      "date_min": "2021-11-25",
+      "date_max": "2022-02-15",
+      "nb_interventions": 62,
+      "url_institution": "https://www.assemblee-nationale.fr/15/dossiers/marche_assurance.asp",
+      "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/17281"
+    }
+  ],
+  "interventions": [
+    {
+      "type": "Intervention",
+      "id": 539038,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/539038/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 118235,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/118235/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 297323,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/297323/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 193702,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193702/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 217721,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/217721/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 300859,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/300859/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 430915,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/430915/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 155703,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/155703/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 202872,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/202872/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 539092,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/539092/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 59120,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/59120/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 2175,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/2175/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 2781,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/2781/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 2859,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/2859/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 20092,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/20092/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 20920,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/20920/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 21038,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/21038/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 37395,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/37395/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 59095,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/59095/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 61558,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/61558/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 61559,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/61559/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 113152,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/113152/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 153536,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/153536/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 160945,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/160945/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 161215,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/161215/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 162970,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/162970/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 163957,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/163957/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 169590,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/169590/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 193279,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193279/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 218984,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/218984/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 259719,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/259719/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 266072,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/266072/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 276292,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/276292/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 301102,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/301102/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 339166,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/339166/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 373523,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/373523/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 406303,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/406303/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 413527,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/413527/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 428973,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/428973/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 429000,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/429000/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 468834,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/468834/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 478979,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/478979/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 511730,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/511730/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 525844,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/525844/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 541275,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/541275/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 548315,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/548315/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 338692,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/338692/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 21234,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/21234/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 59102,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/59102/json"
+    },
+    {
+      "type": "Intervention",
+      "id": 65780,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/65780/json"
+    }
+  ],
+  "meta": {
+    "genere_le": "2026-07-18T18:08:32+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "votes introuvables : l'endpoint de votes ne renvoie pas de données exploitables pour ce slug/chambre."
+    ]
+  }
+}
