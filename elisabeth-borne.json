@@ -1,25 +1,29 @@
 {
-  "slug": "jean-luc-melenchon",
+  "slug": "elisabeth-borne",
   "chambre": "deputes",
-  "source": "https://2017-2022.nosdeputes.fr/jean-luc-melenchon",
+  "source": "https://www.nosdeputes.fr/elisabeth-borne",
   "identite": {
-    "nom_complet": "Jean-Luc Mélenchon",
-    "groupe_sigle": "LFI",
+    "nom_complet": "Élisabeth Borne",
+    "groupe_sigle": "REN",
     "groupe_nom": {
-      "organisme": "La France Insoumise",
+      "organisme": "Renaissance",
       "fonction": "membre",
-      "debut_fonction": "2021-10-12"
+      "debut_fonction": "2024-02-11"
     },
-    "profession": "Professeur",
-    "date_naissance": "1951-08-19",
-    "num_circo": 4,
+    "profession": "Ingénieur et cadre technique d'entreprise",
+    "date_naissance": "1961-04-18",
+    "num_circo": 6,
     "nb_mandats": 0,
-    "url_an_ou_senat": "http://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150"
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161"
   },
   "mandats": [
     {
       "type": "ancien_mandat",
-      "label": "21/06/2017 /  / "
+      "label": "22/06/2022 / 22/07/2022 / nomination comme membre du gouvernement"
+    },
+    {
+      "type": "ancien_mandat",
+      "label": "10/02/2024 / 09/06/2024 / fin de législature"
     }
   ],
   "votes": [],
@@ -6809,196 +6813,14 @@
   "interventions": [
     {
       "type": "Intervention",
-      "id": 539038,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/539038/json",
-      "date": "2024-03-14",
-      "created_at": "2024-04-03 01:40:03",
-      "type_detail": "commission",
-      "source": "https://www.assemblee-nationale.fr/16/cr-cetnt/23-24/c2324020.asp#DNLF",
-      "texte": "<p>Bon. Jean-Luc Mélenchon a été mon premier invité politique ; à un moment, on me disait même que je n'invitais que La France insoumise dans mes émissions. Mais pourquoi ? Parce que ce parti créait l'événement. Mon émission est une émission d'actualité : quand Jean-Luc Mélenchon faisait des déclarations tous les jours et qu'elles étaient reprises partout, je voulais forcément l'inviter ! J'avais Jean-Luc Mélenchon, j'ai reçu souvent David Guiraud, Raquel Garrido, Alexis Corbière. Je n'ai jamais reçu M. Saintoul, mais je ne désespère pas qu'il vienne un jour !</p><p>On m'a souvent dit que je roulais pour La France insoumise, mais on m'a dit aussi que je roulais pour Macron, pour Marine Le Pen, pour Zemmour… Il est vrai qu'à un moment, j'ai très souvent invité Éric Zemmour – même s'il n'est venu que deux fois. Si je l'ai fait, c'est parce qu'il faisait l'événement tous les jours ! J'invitais celui qui faisait l'actualité.</p><p>Pour en revenir au pluralisme, la situation est très compliquée pour moi. J'espère qu'elle le sera moins à mesure qu'approchera la présidentielle, sans quoi j'aurai du mal à organiser des débats et à présenter à mes téléspectateurs les forces en présence.</p><p>Merci en tout cas de vos questions.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/2663#inter_e033708e8a16d01d4447a99e066bbd99",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Envie de participer Ã refondre NosDÃ©putÃ©s.fr pour l'avenir ? : Cliquez ici !",
-      "mots_cles": [
-        "clÃ©s",
-        "rÃ©union",
-        "TPMP",
-        "antenne",
-        "arcom",
-        "bollorÃ©",
-        "chaÃ®ne",
-        "direct"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 118235,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/118235/json",
-      "date": "2022-12-01",
-      "created_at": "2022-12-05 01:20:07",
+      "id": 66668,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/66668/json",
+      "date": "2022-10-24",
+      "created_at": "2022-11-04 21:20:12",
       "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230078.asp#2940289",
-      "texte": "<p>Les associations réclamaient 1 milliard d'euros pour lutter contre les violences sexistes et sexuelles. Mais comme Emmanuel Macron a refusé d'engager cette dépense durant son quinquennat précédent, elles demandent aujourd'hui 2 milliards à cause du retard pris ; nous les demandons avec elles. Cette somme est nécessaire pour assurer une meilleure formation des policiers et des magistrats sur le sujet et pour sortir de la situation actuelle où 80 % des plaintes pour violences conjugales sont classées sans suite. Elle est nécessaire pour accorder aux femmes victimes de violences un accompagnement judiciaire pour aller jusqu'au bout des procédures. Cette somme est aussi indispensable pour protéger les femmes et les enfants victimes de violences en leur accordant un hébergement d'urgence et un accès aux soins. Je rappelle que chaque année, 20 000 femmes ont besoin d'un hébergement d'urgence, et que, parmi elles, quatre sur dix n'y ont pas accès. Mais s'il faut investir les 2 milliards demandés par les associations, c'est aussi parce que cette somme est nécessaire pour transformer durablement la société en apprenant dès l'école le consentement et l'égalité.</p><p>Ces grandes mesures étaient celles que proposait Jean-Luc Mélenchon pendant l'élection présidentielle dans son plan pour mettre fin aux féminicides. Dans ce plan, d'ailleurs, Jean-Luc Mélenchon formulait une proposition proche de celle de M. Pradié.</p><p>Pour notre part, cependant, nous ne sommes pas favorables aux juridictions spécialisées. Celles-ci diminuent l'indépendance des magistrats et elles ne peuvent de toute façon pas être créées à moyens constants pour la justice. Une des propositions de Jean-Luc Mélenchon consistait donc à créer un pôle judiciaire de lutte contre les violences intrafamiliales au sein des juridictions.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/558#inter_d3382c999730710d5ccee2553697bbc0",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Expulsion des Ã©trangers en cas de menace grave pour l'ordre public",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "dÃ©cision",
-        "expulsion",
-        "faite",
-        "juge",
-        "juridiction",
-        "victime"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 297323,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/297323/json",
-      "date": "2023-06-08",
-      "created_at": "2023-06-12 03:50:59",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230261.asp#3146762",
-      "texte": "<p>haine de ce que Jean-Luc Mélenchon qualifie de « système » et dont il a toujours pourtant largement bénéficié ; haine contre Emmanuel Macron dont Jean-Luc Mélenchon, toujours lui, a régulièrement remis en cause la légitimité, pourtant acquise par les urnes – je vous rappelle que je n'ai pas voté pour lui au deuxième tour des présidentielles contrairement à Jean-Luc Mélenchon et la plupart de ses amis !</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/1489#inter_bb9644817931e13a6a5bd026d5b9434f",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Abrogation du recul de l'Ã¢ge de dÃ©part Ã la retraite",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "TTF",
-        "constitution",
-        "dÃ©mocratie",
-        "dÃ©rive",
-        "financier",
-        "peuple"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 155703,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/155703/json",
-      "date": "2023-01-18",
-      "created_at": "2023-01-25 03:05:26",
-      "type_detail": "commission",
-      "source": "https://www.assemblee-nationale.fr/16/cr-cafe/22-23/c2223020.asp",
-      "texte": "<p>Nous avons tous conscience que nos valeurs sont de plus en plus attaquées, que notre réputation se trouve de plus en plus mise en cause par certains peuples ou certains États et que la place de notre langue est contestée. Il s'agit d'une tendance lourde, non imputable à telle ou telle action gouvernementale. Nous devons nous poser cette question préoccupante : comment peut-on construire une politique de coopération dans une atmosphère de relatif déclin séculaire de la présence occidentale, européenne et française dans ces pays ?</p><p>Si vous en avez l'occasion, je vous conseille de lire le compte rendu de la séance publique du 22 février dernier portant sur une déclaration du Gouvernement relative à l'engagement de la France au Sahel, suivie d'un débat en application de l'article 50-1 de la Constitution. Nous avions entendu des interventions très remarquables, notamment celle de Jean-Louis Thiériot, membre de la commission de la défense nationale et des forces armées, qui avait expliqué les difficultés militaires rencontrées par notre pays dans cette région, et celle de Jean-Luc Mélenchon. Présent au banc des commissions, j'avais dit à Jean Castex, alors premier ministre, que monsieur Mélenchon avait été le meilleur orateur de la majorité ; il avait en effet pris de la hauteur par rapport aux événements et affirmé sa solidarité avec l'armée et l'État français tout en faisant part de son extrême inquiétude devant des dérives démagogiques comme celle du colonel Goïta.</p><p>La question que j'ai soulevée se pose indépendamment de toute appartenance partisane et représente un défi pour nous tous.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/697#inter_ce4740d8d61a0aa067463465c6e0814c",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Envie de participer Ã refondre NosDÃ©putÃ©s.fr pour l'avenir ? : Cliquez ici !",
-      "mots_cles": [
-        "clÃ©s",
-        "rÃ©union",
-        "APD",
-        "OIF",
-        "africain",
-        "afrique",
-        "francophone",
-        "francophonie"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 202872,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/202872/json",
-      "date": "2023-03-08",
-      "created_at": "2023-03-20 02:31:19",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230171.asp#3042032",
-      "texte": "<p>Jean-Luc Mélenchon – je m'adresse à M. Balanant, qui avait du mal à comprendre l'allusion.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/1002#inter_3e73989f0af116fa5f89671d397c3c1d",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "RÃ©gime juridique des actions de groupe",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "agir",
-        "champ",
-        "consommateur",
-        "judiciaire",
-        "juge",
-        "juridiction"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 539092,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/539092/json",
-      "date": "2024-03-14",
-      "created_at": "2024-04-03 01:40:04",
-      "type_detail": "commission",
-      "source": "https://www.assemblee-nationale.fr/16/cr-cetnt/23-24/c2324020.asp#DNLF",
-      "texte": "<p>Merci pour vos compliments, qui m'ont fait plaisir – c'étaient les premiers, ça fait du bien.</p><p>Les membres des partis Les Écologistes et La France insoumise (LFI) ne viennent pas dans l'émission, ce qui réduit le champ des possibles. Il est compliqué de respecter l'obligation de pluralisme. Nous invitons donc moins de personnalités politiques.</p><p>Vous savez, j'ai passé autant de bons moments avec Jordan Bardella qu'avec Jean-Luc Mélenchon – j'en ai même passé davantage avec le second qu'avec le premier ou avec Jean-Marie Le Pen. Ça ne veut pas dire que je disais aux spectateurs de voter pour Jean-Luc Mélenchon, ni que je leur conseille maintenant de voter pour Jordan Bardella. J'ai également passé de très bons moments avec Marlène Schiappa, membre de Renaissance. C'est le cas avec tous ceux qui viennent, notamment avec Ségolène Royal, que je rejoindrai dans un instant, et qui est plus à gauche que Jordan Bardella. Je reçois tout le monde, et j'essaie d'être toujours sympa ; à part Louis Boyard, j'ai toujours respecté les invités – ceux ici qui sont venus sur le plateau peuvent en témoigner.</p><p>L'Arcom a publié la répartition du temps de parole dans TPMP entre le 1er janvier et le 10 novembre 2022, quand tout le monde acceptait de venir dans l'émission. Reconquête arrive en cinquième position, avec deux heures vingt-six d'antenne ; Les Républicains sont quatrièmes avec deux heures trente-sept ; le Rassemblement national est troisième, avec trois heures quarante-neuf. En deuxième position, La France insoumise totalise quatre heures d'antenne. Renaissance est numéro un, avec cinq heures. Vous voyez que sur toute l'année 2022, le Rassemblement national n'est que troisième, derrière La France insoumise.</p><p>J'essaye de donner la parole à tout le monde. J'ai rencontré Jean-Marie Le Pen une seule fois. Cela ne veut pas dire que j'ai les mêmes idées que lui et que je suis d'accord avec lui sur beaucoup de sujets. Quand je suis avec Jean-Luc Mélenchon, cela ne veut pas dire que je suis d'accord avec lui sur beaucoup de sujets, même si je suis parfois d'accord avec lui sur certains sujets. Je suis d'accord avec un peu tout le monde, mais je ne suis pas d'accord avec plein de gens aussi. J'ai voté pour un candidat lors des dernières élections. J'étais d'accord avec lui sur certaines choses et en désaccord sur d'autres.</p><p>Cela a évolué, mais j'essaye de donner la parole à tout le monde et de montrer l'ensemble des visages de la politique en France.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/2663#inter_317ddd10a1e2cf2a1cc3f02831ce5cf2",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Envie de participer Ã refondre NosDÃ©putÃ©s.fr pour l'avenir ? : Cliquez ici !",
-      "mots_cles": [
-        "clÃ©s",
-        "rÃ©union",
-        "TPMP",
-        "antenne",
-        "arcom",
-        "bollorÃ©",
-        "chaÃ®ne",
-        "direct"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 59120,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/59120/json",
-      "date": "2022-10-17",
-      "created_at": "2022-10-19 01:01:39",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230023.asp#2872195",
-      "texte": "<p>Il se fonde sur l'article 70, alinéa 3.</p><p>Monsieur le ministre, je comprends que, quand vous êtes en difficulté, la seule solution qui vous reste, c'est de dire des contre-vérités sur ce qu'aurait dit Jean-Luc Mélenchon. Ce que vous avez dit sur Jean-Luc Mélenchon est faux.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/292#inter_0e398ebc5cd4cdf65267e7ca5acbfc4a",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Projet de loi de finances pour 2023",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "agricole",
-        "exonÃ©ration",
-        "foncier",
-        "jeux",
-        "monde",
-        "olympique"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 2175,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/2175/json",
-      "date": "2022-07-11",
-      "created_at": "2022-07-13 16:02:34",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221002.asp#2808118",
-      "texte": "<p>Je me souviens d'une époque récente, pendant l'entre-deux-tours, où certains d'entre vous parlaient opportunément de valeurs communes avec Jean-Luc Mélenchon.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/32#inter_70093a3812bda2a3a5c115d8e217ae58",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230030.asp#2880466",
+      "texte": "<p>Je vous le demande : pourquoi vouloir empêcher ces discussions ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/385#inter_afb721f6e59e7fa9d104b83f9cd2cb38",
       "classification": {
         "mode": "prise_de_parole",
         "reason": "marqueurs_de_prise_de_parole"
@@ -7007,9 +6829,9 @@
       "mots_cles": [
         "clÃ©s",
         "sÃ©ance",
-        "franÃ§ais",
-        "gouvernement",
-        "majoritÃ©",
+        "PLFSS",
+        "censure",
+        "choix",
         "motion",
         "censure",
         "national"
@@ -7017,138 +6839,14 @@
     },
     {
       "type": "Intervention",
-      "id": 59095,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/59095/json",
-      "date": "2022-10-17",
-      "created_at": "2022-10-19 01:01:39",
+      "id": 76171,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/76171/json",
+      "date": "2022-10-31",
+      "created_at": "2022-11-04 21:21:53",
       "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230023.asp#2872181",
-      "texte": "<p>Il y a quelques jours, je lisais sur Twitter un extrait d'une interview de Jean-Luc Mélenchon…</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/292#inter_c3c92f8d0e3676c532ee66faf7b879b0",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Projet de loi de finances pour 2023",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "agricole",
-        "exonÃ©ration",
-        "foncier",
-        "jeux",
-        "monde",
-        "olympique"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 153536,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/153536/json",
-      "date": "2023-01-18",
-      "created_at": "2023-01-25 03:04:57",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230121.asp#2987636",
-      "texte": "<p>Vous auriez dû écouter Jean-Luc Mélenchon depuis le début, car il a des réponses à la crise que nous traversons.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/734#inter_e5aa20081039cd079b2d5a38e2228f45",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Soutenir pleinement au pÃ©nal une personne investie d'un mandat Ã©lectif public victime d'agression",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "PME",
-        "agriculteur",
-        "commerciale",
-        "distributeur",
-        "distribution",
-        "egalim"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 266072,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/266072/json",
-      "date": "2023-05-16",
-      "created_at": "2023-05-22 02:24:29",
-      "type_detail": "question",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230234.asp#3113197",
-      "texte": "<p>…même si, décidément, vous n'acceptez pas que les Français aient choisi Emmanuel Macron plutôt que Jean-Luc Mélenchon. Et je vous confirme que nous continuerons de l'appliquer !</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/1341#inter_76200f93edd8e35258d18a9bacab6f73",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Questions au gouvernement",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "maire",
-        "rÃ©acteur"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 301102,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/301102/json",
-      "date": "2023-06-12",
-      "created_at": "2023-06-26 03:30:38",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230264.asp#3149411",
-      "texte": "<p>Je me disais bien que c'était trop intelligent pour être du Jean-Luc Mélenchon…</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/1558#inter_3783d6c2f36f0dbb6521cad1d2d29cec",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "DÃ©mission et remplacement d'un dÃ©putÃ©",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "constitution",
-        "dÃ©mocratie",
-        "motion",
-        "motion",
-        "censure",
-        "peuple"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 373523,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/373523/json",
-      "date": "2023-09-29",
-      "created_at": "2023-10-01 00:31:47",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023-extra2/20232012.asp#3232967",
-      "texte": "<p>J'entendais dire, en 2022, que le pays serait dévasté si nous arrivions au pouvoir ; et qu'avec Jean-Luc Mélenchon, la France deviendrait le Venezuela.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/1846#inter_d79435e76f1bde571b6eebe055495298",
-      "classification": {
-        "mode": "prise_de_parole",
-        "reason": "marqueurs_de_prise_de_parole"
-      },
-      "sujet": "Motion de censure",
-      "mots_cles": [
-        "clÃ©s",
-        "sÃ©ance",
-        "censure",
-        "dette",
-        "motion",
-        "censure"
-      ]
-    },
-    {
-      "type": "Intervention",
-      "id": 406303,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/406303/json",
-      "date": "2023-10-30",
-      "created_at": "2023-11-02 01:59:49",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2023-2024/20240030.asp#3267361",
-      "texte": "<p>Cela ne nous intéresse pas : ce serait une mascarade.</p><p>Soit ouvrir les portes de Matignon à Jean-Luc Mélenchon…</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/2072#inter_498e9be1d4d68cb2bf4534c79f0e290d",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230042.asp#2894506",
+      "texte": "<p>La liste est encore longue. Je pense aux mères seules,…</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/397#inter_af61edaea6ce4a655b6782bf69e5646b",
       "classification": {
         "mode": "prise_de_parole",
         "reason": "marqueurs_de_prise_de_parole"
@@ -7157,69 +6855,62 @@
       "mots_cles": [
         "clÃ©s",
         "sÃ©ance",
-        "PLFSS",
-        "campagne",
-        "campagne",
-        "vaccination",
+        "censure",
         "motion",
-        "motion"
+        "national",
+        "rÃ©novation"
       ]
     },
     {
       "type": "Intervention",
-      "id": 21234,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/21234/json",
-      "date": "2022-07-23",
-      "created_at": "2022-07-24 19:15:26",
+      "id": 84570,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/84570/json",
+      "date": "2022-11-04",
+      "created_at": "2022-11-06 14:18:36",
       "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221019.asp#2831003",
-      "texte": "<p>Nous avons fait des propositions pour l'enrayer, et je suis très étonné que vous ne les preniez pas en considération.</p><p>Jean-Luc Mélenchon avait fait une excellente proposition au Président de la République…</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/86#inter_0b3451f54b15823407f0b84c88510af0",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230046.asp#2899525",
+      "texte": "<p>Nos concitoyens nous demandent dialogue et débats constructifs.</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/409#inter_1267527fbb376626fabd62e009dbd380",
       "classification": {
         "mode": "prise_de_parole",
         "reason": "marqueurs_de_prise_de_parole"
       },
-      "sujet": "Projet de loi de finances rectificative pour 2022",
+      "sujet": "Censure avec exclusion temporaire d'un dÃ©putÃ©",
       "mots_cles": [
         "clÃ©s",
         "sÃ©ance",
-        "augmentation",
-        "carburant",
-        "certain",
-        "collectivitÃ©",
-        "finance",
-        "milliard"
+        "motion",
+        "motion",
+        "censure",
+        "opposition",
+        "outre-mer"
       ]
     },
     {
       "type": "Intervention",
-      "id": 59102,
-      "url": "https://www.nosdeputes.fr//api/document/Intervention/59102/json",
-      "date": "2022-10-17",
-      "created_at": "2022-10-19 01:01:39",
-      "type_detail": "loi",
-      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230023.asp#2872349",
-      "texte": "<p>Je suis désolé, mais je ne peux pas entendre les leçons de la part de groupes politiques qui se sont couchés derrière Jean-Luc Mélenchon en connaissance de sa position sur le conflit ukrainien.</p>",
-      "url_detail": "https://www.nosdeputes.fr/16/seance/292#inter_abc4eed51bb53aa91fb65c88716b46a5",
+      "id": 86217,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/86217/json",
+      "date": "2022-11-08",
+      "created_at": "2022-11-14 01:49:20",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230049.asp#2902550",
+      "texte": "<p>Nous sommes ici dans un hémicycle, pas dans un tribunal.</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/439#inter_8666757445cb4a5fe2a3a58493ea93b3",
       "classification": {
         "mode": "prise_de_parole",
         "reason": "marqueurs_de_prise_de_parole"
       },
-      "sujet": "Projet de loi de finances pour 2023",
+      "sujet": "Questions au gouvernement",
       "mots_cles": [
         "clÃ©s",
         "sÃ©ance",
-        "agricole",
-        "exonÃ©ration",
-        "foncier",
-        "jeux",
-        "monde",
-        "olympique"
+        "sociÃ©tÃ©",
+        "territoriale"
       ]
     }
   ],
   "meta": {
-    "genere_le": "2026-07-19T08:57:32+0000",
+    "genere_le": "2026-07-19T08:38:42+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "votes introuvables : l'endpoint de votes ne renvoie pas de données exploitables pour ce slug/chambre."

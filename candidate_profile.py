@@ -20,12 +20,14 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 
 import argparse
 import json
+import re
 import sys
 import time
 from typing import Any, Optional
 from xml.etree import ElementTree as ET
 
 import requests
+from bs4 import BeautifulSoup
 
 BASE_URLS = {
     "deputes": [
@@ -148,6 +150,33 @@ def fetch_dossiers(base_url: str, legislature: str) -> Optional[dict]:
     return _get_payload(url)
 
 
+def fetch_dossiers_for_legislatures(base_url: str, legislatures: list[str]) -> list[dict[str, Any]]:
+    """Récupère et fusionne les dossiers législatifs pour plusieurs législatures."""
+    dossiers: list[dict[str, Any]] = []
+    for legislature in legislatures:
+        payload = fetch_dossiers(base_url, legislature)
+        if not isinstance(payload, dict):
+            continue
+        sections = payload.get("sections") or []
+        for item in sections:
+            if not isinstance(item, dict):
+                continue
+            section = item.get("section") or item
+            if isinstance(section, dict):
+                dossiers.append({
+                    "legislature": legislature,
+                    "id": section.get("id"),
+                    "titre": section.get("titre"),
+                    "date_min": section.get("min_date"),
+                    "date_max": section.get("max_date"),
+                    "nb_interventions": section.get("nb_interventions"),
+                    "url_institution": section.get("url_institution"),
+                    "url_source": section.get("url_nosdeputes"),
+                })
+        time.sleep(0.2)
+    return dossiers
+
+
 def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None, limit: int = 5) -> Optional[dict]:
     """Récupère les résultats de recherche API pour un terme donné."""
     params = [f"format=json"]
@@ -224,8 +253,236 @@ def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
     return mandats
 
 
-def _extract_search_results(search_payload: Optional[dict]) -> list[dict[str, Any]]:
-    """Normalise les résultats de recherche API en une liste compacte."""
+def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[dict[str, Any]]:
+    """Récupère les détails d’une intervention via l’API de document."""
+    url = f"{base_url}/api/document/Intervention/{intervention_id}/json"
+    print(f"-> Détail intervention : {url}")
+    data = _get_payload(url)
+    if isinstance(data, dict):
+        intervention = data.get("intervention") or {}
+        if isinstance(intervention, dict):
+            return {
+                "id": intervention.get("id"),
+                "date": intervention.get("date"),
+                "created_at": intervention.get("created_at"),
+                "type": intervention.get("type"),
+                "source": intervention.get("source"),
+                "texte": intervention.get("intervention"),
+                "url": intervention.get("url_nosdeputes"),
+                "parlementaire_id": intervention.get("parlementaire_id"),
+                "personnalite_id": intervention.get("personnalite_id"),
+                "seance_id": intervention.get("seance_id"),
+            }
+    return None
+
+
+def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
+    """Enrichit une intervention à partir du contenu HTML de la page de séance, quand la page est accessible."""
+    if not detail:
+        return {"sujet": None, "mots_cles": []}
+
+    url_detail = detail.get("url") or detail.get("source")
+    if not url_detail:
+        return {"sujet": None, "mots_cles": []}
+
+    try:
+        resp = requests.get(url_detail, headers=HEADERS, timeout=20)
+        resp.raise_for_status()
+        html_text = resp.text
+    except requests.RequestException:
+        return {"sujet": detail.get("type"), "mots_cles": []}
+
+    soup = BeautifulSoup(html_text, "html.parser")
+
+    sujet = None
+    keywords: list[str] = []
+
+    summary_block = None
+    for node in soup.find_all(["div", "section", "aside"]):
+        if not node.get("class"):
+            continue
+        class_names = " ".join(node.get("class", [])).lower()
+        if "orga_dossier" in class_names or "sommaire" in class_names or "summary" in class_names:
+            summary_block = node
+            break
+
+    if summary_block is None:
+        summary_block = soup.find(["div", "section"], string=lambda value: value and "sommaire" in value.lower())
+
+    if summary_block is not None:
+        link_candidates = []
+        for link in summary_block.find_all("a"):
+            text = " ".join(link.get_text(" ", strip=True).split())
+            if not text:
+                continue
+            lowered = text.lower()
+            if any(skip in lowered for skip in ["voir le dossier", "retour au sommaire", "permalink", "commentaire", "source"]):
+                continue
+            if len(text) < 120:
+                link_candidates.append(text)
+        if link_candidates:
+            sujet = link_candidates[0]
+
+    if not sujet:
+        summary_candidates: list[str] = []
+
+        for node in soup.find_all(["h1", "h2", "h3", "p", "div", "li", "span"]):
+            text = " ".join(node.get_text(" ", strip=True).split())
+            if not text:
+                continue
+            lowered = text.lower()
+            if any(marker in lowered for marker in ["résumé de la réunion", "resume de la reunion", "résumé de la séance", "resume de la seance", "résumé de la seance", "résumé"]):
+                summary_candidates.append(text)
+                continue
+            if node.name in {"h2", "h3"} and len(text) < 180 and not re.search(r"(mots clés|mot-clé|source|permalien|commentaires)", lowered):
+                summary_candidates.append(text)
+
+        for candidate in summary_candidates:
+            cleaned = re.sub(r"^(?:résumé|resume)\s*(?:de la|de la séance|de la reunion|de la seance)?\s*[:\-]?\s*", "", candidate, flags=re.I)
+            cleaned = re.sub(r"^(?:réunion|seance|séance|session|table ronde|audition)\s*[:\-]?\s*", "", cleaned, flags=re.I)
+            cleaned = cleaned.strip(" :.-")
+            if cleaned and len(cleaned) < 220:
+                sujet = cleaned
+                break
+
+    if not sujet:
+        title = soup.title.get_text(" ", strip=True) if soup.title else None
+        if title:
+            title_parts = re.split(r"\s*-\s*", title, flags=re.I)
+            title_candidate = title_parts[0].strip() if title_parts else title
+            if title_candidate:
+                sujet = title_candidate
+
+    if not sujet:
+        sujet = detail.get("type")
+
+    tag_block = soup.find(class_="nuage_de_tags")
+    if tag_block:
+        text = " ".join(tag_block.get_text(" ", strip=True).split())
+        if text:
+            parts = [p.strip() for p in re.split(r"[\s,;]+", text) if p.strip()]
+            keywords = []
+            for p in parts:
+                cleaned = re.sub(r"^(?:mots\s+clés|mots\s+cles|mot-clé|mot-cle|mots clés|mots cles|clés|cles)\s*[:\-]?\s*", "", p, flags=re.I)
+                cleaned = cleaned.strip(" :.-")
+                if cleaned and cleaned.lower() not in {"les", "de", "cette", "réunion", "reunion", "mot", "mots", "clé", "cle"}:
+                    keywords.append(cleaned)
+
+    return {"sujet": sujet, "mots_cles": keywords[:8]}
+
+
+def _extract_speaker_identity_from_html(html_text: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """Extrait le nom et l'URL du profil de l'orateur depuis le HTML d'une intervention."""
+    if not html_text:
+        return None, None
+
+    try:
+        soup = BeautifulSoup(html_text, "html.parser")
+    except Exception:
+        return None, None
+
+    for container in soup.select("div.perso"):
+        text = " ".join(container.get_text(" ", strip=True).split())
+        if text and len(text) < 220:
+            for link in container.find_all("a"):
+                href = link.get("href")
+                if href:
+                    return text, href
+            return text, None
+
+    for container in soup.select("div.intervenant"):
+        text = " ".join(container.get_text(" ", strip=True).split())
+        if not text:
+            continue
+        if any(marker in text.lower() for marker in ["permalink", "debut de section", "voir tous les commentaires", "laisser un commentaire"]):
+            continue
+        if len(text) < 220 and "texte_intervention" not in text.lower():
+            for link in container.find_all("a"):
+                href = link.get("href")
+                if href:
+                    return text, href
+            return text, None
+
+    for link in soup.find_all("a"):
+        text = " ".join(link.get_text(" ", strip=True).split())
+        href = link.get("href")
+        if text and href and len(text) < 120 and not any(marker in text.lower() for marker in ["voir", "commentaire", "permalink", "debut", "section"]):
+            return text, href
+
+    return None, None
+
+
+def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_id: Optional[str]) -> dict[str, Any]:
+    """Classe une intervention en prise de parole ou simple mention de nom."""
+    text = str(item.get("texte") or "")
+    cleaned = " ".join(text.split())
+    structured_speaker = item.get("speaker_name") or item.get("speaker") or item.get("orateur")
+    speaker_url = item.get("speaker_url") or item.get("speaker_href")
+    if not structured_speaker and not speaker_url:
+        html_payload = item.get("html")
+        if html_payload:
+            structured_speaker, speaker_url = _extract_speaker_identity_from_html(str(html_payload))
+
+    classified = {
+        "mode": "mention",
+        "reason": "nom_mentionne_sans_indice_d_orateur",
+    }
+
+    parlementaire_id = item.get("parlementaire_id")
+    personnalite_id = item.get("personnalite_id")
+    if str(parlementaire_id) == str(candidate_id) or str(personnalite_id) == str(candidate_id):
+        classified = {
+            "mode": "prise_de_parole",
+            "reason": "identifiant_de_personne_correspondant",
+        }
+    else:
+        candidate_name_lower = candidate_name.lower()
+        lowered = cleaned.lower()
+
+        if structured_speaker or speaker_url:
+            speaker_lower = (structured_speaker or "").lower()
+            slug = candidate_name.lower().replace(" ", "-")
+            speaker_url_lower = (speaker_url or "").lower()
+
+            if slug and slug in speaker_url_lower:
+                classified = {
+                    "mode": "prise_de_parole",
+                    "reason": "url_orateur_correspondante",
+                }
+            elif candidate_name_lower in speaker_lower:
+                classified = {
+                    "mode": "prise_de_parole",
+                    "reason": "orateur_identifie_dans_html",
+                }
+            else:
+                classified = {
+                    "mode": "mention",
+                    "reason": "nom_mentionne_sans_orateur_identifie",
+                }
+        else:
+            if re.search(r"(?:^|\W)(?:je|j'|nous|moi|me|mon|ma|mes)(?:$|\W)", lowered):
+                explicit_first_person = re.search(r"(?:^|\W)(?:je|j'|nous|moi|me|mon|ma|mes)(?:$|\W)", lowered)
+                if explicit_first_person and len(cleaned.split()) >= 8:
+                    classified = {
+                        "mode": "prise_de_parole",
+                        "reason": "marqueurs_de_prise_de_parole",
+                    }
+                else:
+                    classified = {
+                        "mode": "mention",
+                        "reason": "marqueurs_de_prise_de_parole_trop_ambigu",
+                    }
+            elif candidate_name_lower in lowered:
+                classified = {
+                    "mode": "mention",
+                    "reason": "nom_mentionne_sans_identifiant_d_orateur",
+                }
+
+    return classified
+
+
+def _extract_search_results(base_url: str, search_payload: Optional[dict], candidate_name: str, candidate_id: Optional[str]) -> list[dict[str, Any]]:
+    """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail."""
     if not isinstance(search_payload, dict):
         return []
     results = search_payload.get("results") or []
@@ -233,11 +490,32 @@ def _extract_search_results(search_payload: Optional[dict]) -> list[dict[str, An
     for item in results:
         if not isinstance(item, dict):
             continue
-        cleaned.append({
-            "type": item.get("document_type"),
-            "id": item.get("document_id"),
-            "url": item.get("document_url"),
-        })
+        document_id = item.get("document_id")
+        detail = None
+        if document_id:
+            detail = fetch_intervention_details(base_url, str(document_id))
+        classification = _classify_intervention(detail or {}, candidate_name, candidate_id) if detail else {"mode": "mention", "reason": "detail_indisponible"}
+        if classification.get("mode") == "prise_de_parole":
+            seance_context = fetch_seance_context(detail) if detail else {"sujet": None, "mots_cles": []}
+            sujet = seance_context.get("sujet")
+            keywords = seance_context.get("mots_cles") or []
+            if not sujet:
+                sujet = detail.get("type") if detail else None
+            cleaned.append({
+                "type": item.get("document_type"),
+                "id": document_id,
+                "url": item.get("document_url"),
+                "date": detail.get("date") if detail else None,
+                "created_at": detail.get("created_at") if detail else None,
+                "type_detail": detail.get("type") if detail else None,
+                "source": detail.get("source") if detail else None,
+                "texte": detail.get("texte") if detail else None,
+                "url_detail": detail.get("url") if detail else None,
+                "classification": classification,
+                "sujet": sujet,
+                "mots_cles": keywords,
+            })
+        time.sleep(0.1)
     return cleaned
 
 
@@ -263,12 +541,12 @@ def build_profile(chambre: str, slug: str) -> dict:
         votes_raw = votes_result
 
     synthesis_payload = None
-    dossiers_payload = None
+    dossiers_payload = []
     interventions_payload = None
     try:
         synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
         time.sleep(0.3)
-        dossiers_payload = fetch_dossiers(base_urls[0], "15")
+        dossiers_payload = fetch_dossiers_for_legislatures(base_urls[0], ["15", "16"])
         time.sleep(0.3)
         interventions_payload = fetch_recherche(base_urls[0], slug.replace("-", " "), object_name="Intervention", limit=5)
     except Exception as exc:
@@ -352,26 +630,26 @@ def build_profile(chambre: str, slug: str) -> dict:
             "url_an_ou_senat": synthesis_payload.get("url_an") or synthesis_payload.get("url_nosdeputes"),
         }
 
-    if isinstance(dossiers_payload, dict):
-        sections = dossiers_payload.get("sections") or []
-        cleaned_dossiers = []
-        for item in sections:
-            if not isinstance(item, dict):
-                continue
-            section = item.get("section") or item
-            if isinstance(section, dict):
-                cleaned_dossiers.append({
-                    "id": section.get("id"),
-                    "titre": section.get("titre"),
-                    "date_min": section.get("min_date"),
-                    "date_max": section.get("max_date"),
-                    "nb_interventions": section.get("nb_interventions"),
-                    "url_institution": section.get("url_institution"),
-                    "url_source": section.get("url_nosdeputes"),
-                })
-        profile["dossiers_legislatifs"] = cleaned_dossiers[:10]
+    if dossiers_payload:
+        profile["dossiers_legislatifs"] = sorted(
+            dossiers_payload,
+            key=lambda item: (item.get("date_max") or "", item.get("titre") or ""),
+            reverse=True,
+        )
 
-    profile["interventions"] = _extract_search_results(interventions_payload)
+    candidate_name = profile["identite"].get("nom_complet") if profile.get("identite") else slug.replace("-", " ").title()
+    candidate_id = None
+    if isinstance(identity_raw, dict):
+        parlementaire = (
+            identity_raw.get("depute")
+            if isinstance(identity_raw, dict) and identity_raw.get("depute") is not None
+            else identity_raw.get("senateur")
+            if isinstance(identity_raw, dict) and identity_raw.get("senateur") is not None
+            else identity_raw
+        )
+        if isinstance(parlementaire, dict):
+            candidate_id = parlementaire.get("id")
+    profile["interventions"] = _extract_search_results(base_urls[0], interventions_payload, candidate_name, candidate_id)
 
     return profile
 

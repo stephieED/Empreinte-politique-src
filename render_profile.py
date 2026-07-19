@@ -41,12 +41,21 @@ def render_html(profile: dict[str, Any]) -> str:
     ) or "<li>Aucun vote renseigné.</li>"
 
     dossiers_html = "".join(
-        f"<li><strong>{html.escape(str(d.get('titre') or ''))}</strong> — {html.escape(str(d.get('date_min') or ''))} / {html.escape(str(d.get('date_max') or ''))}</li>"
+        f"<li><strong>{html.escape(str(d.get('titre') or ''))}</strong> — {html.escape(str(d.get('date_min') or ''))} / {html.escape(str(d.get('date_max') or ''))}"
+        + (f" <em>({html.escape(str(d.get('legislature') or ''))})</em>" if d.get("legislature") else "")
+        + "</li>"
         for d in dossiers
     ) or "<li>Aucun dossier législatif renseigné.</li>"
 
     interventions_html = "".join(
-        f"<li><strong>{html.escape(str(i.get('type') or ''))}</strong> — {html.escape(str(i.get('id') or ''))} — <a href='{html.escape(str(i.get('url') or ''))}'>{html.escape(str(i.get('url') or ''))}</a></li>"
+        f"<li><strong>{html.escape(str(i.get('type') or ''))}</strong> — {html.escape(str(i.get('date') or i.get('created_at') or ''))}"
+        + (f" — <em>{html.escape(str(i.get('type_detail') or ''))}</em>" if i.get("type_detail") else "")
+        + (f" — <span style='font-weight:bold;'>prise de parole</span>" if isinstance(i.get("classification"), dict) and i.get("classification", {}).get("mode") == "prise_de_parole" else "")
+        + (f" — Sujet: {html.escape(str(i.get('sujet') or ''))}" if i.get("sujet") else "")
+        + (f" — Mots-clés: {html.escape(', '.join(i.get('mots_cles') or []))}" if i.get("mots_cles") else "")
+        + (f" — {html.escape(str(i.get('texte') or '')[:180])}" if i.get("texte") else "")
+        + (f" — <a href='{html.escape(str(i.get('url_detail') or i.get('url') or ''))}'>{html.escape(str(i.get('url_detail') or i.get('url') or ''))}</a>" if i.get("url_detail") or i.get("url") else "")
+        + "</li>"
         for i in interventions
     ) or "<li>Aucune intervention renseignée.</li>"
 
