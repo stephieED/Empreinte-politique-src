@@ -23,7 +23,9 @@ import json
 import re
 import sys
 import time
+import unicodedata
 from typing import Any, Optional
+from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
 
 import requests
@@ -177,14 +179,70 @@ def fetch_dossiers_for_legislatures(base_url: str, legislatures: list[str]) -> l
     return dossiers
 
 
-def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None, limit: int = 5) -> Optional[dict]:
+def _normalize_search_query(text: str) -> str:
+    """Normalise une requête de recherche (minuscules, sans accents).
+
+    Le moteur de recherche de nosdeputes.fr/nossenateurs.fr renvoie parfois 0
+    résultat pour une requête multi-mots contenant une majuscule accentuée en
+    première position (ex. "Élisabeth Borne" -> 0 résultat), alors que la même
+    requête en minuscules et sans accents ("elisabeth borne") renvoie bien les
+    résultats attendus. On normalise donc systématiquement la requête envoyée
+    à l'API pour éviter ce comportement erratique.
+    """
+    decomposed = unicodedata.normalize("NFKD", text)
+    without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return without_accents.lower()
+
+
+def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None, page: int = 1) -> Optional[dict]:
     """Récupère les résultats de recherche API pour un terme donné."""
     params = [f"format=json"]
     if object_name:
         params.append(f"object_name={object_name}")
+    if page and page > 1:
+        params.append(f"page={page}")
     url = f"{base_url}/recherche/{query}?{'&'.join(params)}"
     print(f"-> Recherche API : {url}")
     return _get_payload(url)
+
+
+def _pick_best_search_base_url(base_urls: list[str], query: str, object_name: str = "Intervention") -> str:
+    """Choisit le domaine (législature courante ou archivée) où la recherche renvoie le plus de résultats.
+
+    Un parlementaire dont le mandat s'est terminé lors d'une législature précédente
+    (ex. Jean-Luc Mélenchon, mandat clos le 21/06/2022) n'a quasiment aucune
+    intervention sur le site de la législature courante : ses interventions réelles
+    sont archivées sur le sous-domaine de sa législature (ex. 2017-2022.nosdeputes.fr).
+    On sonde donc chaque domaine avec une requête légère (1 page) et on retient celui
+    qui a le plus de résultats totaux avant de lancer la recherche complète, coûteuse.
+    """
+    normalized_query = _normalize_search_query(query)
+    best_base_url = base_urls[0]
+    best_total = -1
+    for base_url in base_urls:
+        payload = fetch_recherche(base_url, normalized_query, object_name=object_name, page=1)
+        total = payload.get("last_result") if isinstance(payload, dict) else None
+        if isinstance(total, int) and total > best_total:
+            best_total = total
+            best_base_url = base_url
+        time.sleep(0.2)
+    return best_base_url
+
+
+def fetch_all_intervention_results(base_url: str, query: str, object_name: str = "Intervention", max_pages: int = 10) -> dict[str, Any]:
+    """Agrège les résultats de recherche sur plusieurs pages jusqu'à épuisement ou plafond."""
+    aggregated: list[dict[str, Any]] = []
+    normalized_query = _normalize_search_query(query)
+    for page in range(1, max_pages + 1):
+        payload = fetch_recherche(base_url, normalized_query, object_name=object_name, page=page)
+        if not isinstance(payload, dict):
+            break
+        results = payload.get("results") or []
+        if not results:
+            break
+        aggregated.extend(results)
+        time.sleep(0.2)
+    return {"results": aggregated}
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
@@ -261,6 +319,21 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
     if isinstance(data, dict):
         intervention = data.get("intervention") or {}
         if isinstance(intervention, dict):
+            speaker_name = None
+            speaker_url = None
+            url_nosdeputes = intervention.get("url_nosdeputes")
+            if url_nosdeputes:
+                try:
+                    page = requests.get(url_nosdeputes, headers=HEADERS, timeout=TIMEOUT)
+                    page.raise_for_status()
+                    # Le site ne déclare pas toujours son charset : sans cela, requests
+                    # utilise ISO-8859-1 par défaut et corrompt les caractères accentués.
+                    page.encoding = page.apparent_encoding or page.encoding
+                    anchor_id = urlsplit(url_nosdeputes).fragment or None
+                    speaker_name, speaker_url = _extract_speaker_identity_from_html(page.text, anchor_id=anchor_id)
+                except requests.RequestException:
+                    speaker_name, speaker_url = None, None
+
             return {
                 "id": intervention.get("id"),
                 "date": intervention.get("date"),
@@ -268,10 +341,12 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
                 "type": intervention.get("type"),
                 "source": intervention.get("source"),
                 "texte": intervention.get("intervention"),
-                "url": intervention.get("url_nosdeputes"),
+                "url": url_nosdeputes,
                 "parlementaire_id": intervention.get("parlementaire_id"),
                 "personnalite_id": intervention.get("personnalite_id"),
                 "seance_id": intervention.get("seance_id"),
+                "speaker_name": speaker_name,
+                "speaker_url": speaker_url,
             }
     return None
 
@@ -288,6 +363,9 @@ def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
     try:
         resp = requests.get(url_detail, headers=HEADERS, timeout=20)
         resp.raise_for_status()
+        # Même remarque que pour les pages d'intervention : forcer l'encodage détecté
+        # évite le mojibake sur les accents lorsque le serveur ne déclare pas de charset.
+        resp.encoding = resp.apparent_encoding or resp.encoding
         html_text = resp.text
     except requests.RequestException:
         return {"sujet": detail.get("type"), "mots_cles": []}
@@ -371,8 +449,15 @@ def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
     return {"sujet": sujet, "mots_cles": keywords[:8]}
 
 
-def _extract_speaker_identity_from_html(html_text: Optional[str]) -> tuple[Optional[str], Optional[str]]:
-    """Extrait le nom et l'URL du profil de l'orateur depuis le HTML d'une intervention."""
+def _extract_speaker_identity_from_html(html_text: Optional[str], anchor_id: Optional[str] = None) -> tuple[Optional[str], Optional[str]]:
+    """Extrait le nom et l'URL du profil de l'orateur depuis le HTML d'une intervention.
+
+    Une page de séance contient les interventions de tous les orateurs. Si un
+    identifiant d'ancre (ex. "inter_abc123", tiré du fragment #... de l'URL de
+    l'intervention) est fourni, on restreint la recherche du bloc div.perso au
+    conteneur de CETTE intervention précise, plutôt que de prendre le premier
+    div.perso de la page (souvent le/la président·e de séance).
+    """
     if not html_text:
         return None, None
 
@@ -381,7 +466,17 @@ def _extract_speaker_identity_from_html(html_text: Optional[str]) -> tuple[Optio
     except Exception:
         return None, None
 
-    for container in soup.select("div.perso"):
+    scope = soup
+    restrict_to_scope = False
+    if anchor_id:
+        anchor = soup.find(id=anchor_id) or soup.find(attrs={"name": anchor_id})
+        if anchor is not None:
+            classes = anchor.get("class") or []
+            container = anchor if "intervention" in classes else anchor.find_parent(class_="intervention")
+            scope = container or anchor
+            restrict_to_scope = True
+
+    for container in scope.select("div.perso"):
         text = " ".join(container.get_text(" ", strip=True).split())
         if text and len(text) < 220:
             for link in container.find_all("a"):
@@ -390,32 +485,17 @@ def _extract_speaker_identity_from_html(html_text: Optional[str]) -> tuple[Optio
                     return text, href
             return text, None
 
-    for container in soup.select("div.intervenant"):
-        text = " ".join(container.get_text(" ", strip=True).split())
-        if not text:
-            continue
-        if any(marker in text.lower() for marker in ["permalink", "debut de section", "voir tous les commentaires", "laisser un commentaire"]):
-            continue
-        if len(text) < 220 and "texte_intervention" not in text.lower():
-            for link in container.find_all("a"):
-                href = link.get("href")
-                if href:
-                    return text, href
-            return text, None
-
-    for link in soup.find_all("a"):
-        text = " ".join(link.get_text(" ", strip=True).split())
-        href = link.get("href")
-        if text and href and len(text) < 120 and not any(marker in text.lower() for marker in ["voir", "commentaire", "permalink", "debut", "section"]):
-            return text, href
+    if restrict_to_scope:
+        # On ne remonte pas à l'orateur d'une autre intervention de la page :
+        # mieux vaut ne rien renvoyer que d'attribuer la mauvaise identité.
+        return None, None
 
     return None, None
 
 
 def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_id: Optional[str]) -> dict[str, Any]:
-    """Classe une intervention en prise de parole ou simple mention de nom."""
-    text = str(item.get("texte") or "")
-    cleaned = " ".join(text.split())
+    """Classe une intervention en prise de parole uniquement via l'orateur du bloc div.perso."""
+    _ = candidate_id  # Conservé pour compatibilité de signature.
     structured_speaker = item.get("speaker_name") or item.get("speaker") or item.get("orateur")
     speaker_url = item.get("speaker_url") or item.get("speaker_href")
     if not structured_speaker and not speaker_url:
@@ -423,62 +503,33 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
         if html_payload:
             structured_speaker, speaker_url = _extract_speaker_identity_from_html(str(html_payload))
 
-    classified = {
-        "mode": "mention",
-        "reason": "nom_mentionne_sans_indice_d_orateur",
-    }
-
-    parlementaire_id = item.get("parlementaire_id")
-    personnalite_id = item.get("personnalite_id")
-    if str(parlementaire_id) == str(candidate_id) or str(personnalite_id) == str(candidate_id):
-        classified = {
-            "mode": "prise_de_parole",
-            "reason": "identifiant_de_personne_correspondant",
+    if not structured_speaker and not speaker_url:
+        return {
+            "mode": "mention",
+            "reason": "orateur_bloc_perso_introuvable",
         }
-    else:
-        candidate_name_lower = candidate_name.lower()
-        lowered = cleaned.lower()
 
-        if structured_speaker or speaker_url:
-            speaker_lower = (structured_speaker or "").lower()
-            slug = candidate_name.lower().replace(" ", "-")
-            speaker_url_lower = (speaker_url or "").lower()
+    candidate_name_lower = candidate_name.lower()
+    speaker_lower = (structured_speaker or "").lower()
+    speaker_url_lower = (speaker_url or "").lower()
+    slug = candidate_name_lower.replace(" ", "-")
 
-            if slug and slug in speaker_url_lower:
-                classified = {
-                    "mode": "prise_de_parole",
-                    "reason": "url_orateur_correspondante",
-                }
-            elif candidate_name_lower in speaker_lower:
-                classified = {
-                    "mode": "prise_de_parole",
-                    "reason": "orateur_identifie_dans_html",
-                }
-            else:
-                classified = {
-                    "mode": "mention",
-                    "reason": "nom_mentionne_sans_orateur_identifie",
-                }
-        else:
-            if re.search(r"(?:^|\W)(?:je|j'|nous|moi|me|mon|ma|mes)(?:$|\W)", lowered):
-                explicit_first_person = re.search(r"(?:^|\W)(?:je|j'|nous|moi|me|mon|ma|mes)(?:$|\W)", lowered)
-                if explicit_first_person and len(cleaned.split()) >= 8:
-                    classified = {
-                        "mode": "prise_de_parole",
-                        "reason": "marqueurs_de_prise_de_parole",
-                    }
-                else:
-                    classified = {
-                        "mode": "mention",
-                        "reason": "marqueurs_de_prise_de_parole_trop_ambigu",
-                    }
-            elif candidate_name_lower in lowered:
-                classified = {
-                    "mode": "mention",
-                    "reason": "nom_mentionne_sans_identifiant_d_orateur",
-                }
+    if slug and slug in speaker_url_lower:
+        return {
+            "mode": "prise_de_parole",
+            "reason": "orateur_bloc_perso_url_correspondante",
+        }
 
-    return classified
+    if structured_speaker and candidate_name_lower in speaker_lower:
+        return {
+            "mode": "prise_de_parole",
+            "reason": "orateur_bloc_perso_nom_correspondant",
+        }
+
+    return {
+        "mode": "mention",
+        "reason": "orateur_bloc_perso_non_correspondant",
+    }
 
 
 def _extract_search_results(base_url: str, search_payload: Optional[dict], candidate_name: str, candidate_id: Optional[str]) -> list[dict[str, Any]]:
@@ -519,7 +570,7 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
     return cleaned
 
 
-def build_profile(chambre: str, slug: str) -> dict:
+def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> dict:
     if chambre not in BASE_URLS:
         raise ValueError(f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)})")
 
@@ -540,17 +591,45 @@ def build_profile(chambre: str, slug: str) -> dict:
     else:
         votes_raw = votes_result
 
+    # Dérive un nom de recherche fiable à partir de l'identité, avant d'interroger le
+    # moteur de recherche : un slug transformé en espaces (ex. "jean luc melenchon")
+    # ne renvoie souvent aucun résultat, contrairement au nom complet.
+    parlementaire_for_search = None
+    if isinstance(identity_raw, dict):
+        parlementaire_for_search = (
+            identity_raw.get("depute")
+            if identity_raw.get("depute") is not None
+            else identity_raw.get("senateur")
+            if identity_raw.get("senateur") is not None
+            else identity_raw
+        )
+    search_candidate_name = (
+        parlementaire_for_search.get("nom")
+        if isinstance(parlementaire_for_search, dict) and parlementaire_for_search.get("nom")
+        else slug.replace("-", " ").title()
+    )
+
     synthesis_payload = None
     dossiers_payload = []
     interventions_payload = None
+    interventions_base_url = base_urls[0]
+    pre_profile_warnings: list[str] = []
     try:
         synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
         time.sleep(0.3)
         dossiers_payload = fetch_dossiers_for_legislatures(base_urls[0], ["15", "16"])
         time.sleep(0.3)
-        interventions_payload = fetch_recherche(base_urls[0], slug.replace("-", " "), object_name="Intervention", limit=5)
+        # Un parlementaire dont le mandat s'est terminé lors d'une législature
+        # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
+        # la législature courante : ses interventions réelles sont archivées sur le
+        # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
+        # pour trouver celui qui contient réellement ses interventions.
+        interventions_base_url = _pick_best_search_base_url(base_urls, search_candidate_name, object_name="Intervention")
+        interventions_payload = fetch_all_intervention_results(
+            interventions_base_url, search_candidate_name, object_name="Intervention", max_pages=intervention_max_pages
+        )
     except Exception as exc:
-        warnings.append(f"récupération supplémentaire impossible : {exc}")
+        pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
 
     profile: dict[str, Any] = {
         "slug": slug,
@@ -570,6 +649,7 @@ def build_profile(chambre: str, slug: str) -> dict:
     }
 
     warnings = profile["meta"]["warnings"]
+    warnings.extend(pre_profile_warnings)
 
     if _is_empty_payload(identity_raw):
         warnings.append("identité introuvable : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
@@ -649,7 +729,7 @@ def build_profile(chambre: str, slug: str) -> dict:
         )
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
-    profile["interventions"] = _extract_search_results(base_urls[0], interventions_payload, candidate_name, candidate_id)
+    profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
 
     return profile
 
@@ -667,9 +747,15 @@ def main():
         "--out",
         help="Chemin du fichier JSON de sortie (défaut: <slug>.json)",
     )
+    parser.add_argument(
+        "--max-pages",
+        type=int,
+        default=10,
+        help="Nombre max. de pages (50 résultats/page) de recherche d'interventions (défaut: 10)",
+    )
     args = parser.parse_args()
 
-    profile = build_profile(args.chambre, args.slug)
+    profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
     out_path = args.out or f"{args.slug}.json"
     with open(out_path, "w", encoding="utf-8") as f:

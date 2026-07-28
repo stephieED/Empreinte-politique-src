@@ -11,6 +11,8 @@ class DummyResponse:
     def __init__(self, text: str, status_code: int = 200):
         self.text = text
         self.status_code = status_code
+        self.encoding = "utf-8"
+        self.apparent_encoding = "utf-8"
 
     def raise_for_status(self):
         if self.status_code >= 400:
@@ -30,14 +32,22 @@ def test_build_profile_reports_empty_api_payloads():
     assert any("vote" in warning for warning in profile["meta"]["warnings"])
 
 
-def test_classify_intervention_distinguishes_speech_from_mention():
+def test_classify_intervention_requires_perso_speaker_match():
     speech = _classify_intervention(
-        {"texte": "Je souhaite répondre à la question.", "parlementaire_id": "62"},
+    {
+      "texte": "Je souhaite répondre à la question.",
+      "speaker_name": "Jean-Luc Mélenchon",
+      "speaker_url": "/jean-luc-melenchon",
+    },
         "Jean-Luc Mélenchon",
         "62",
     )
     mention = _classify_intervention(
-        {"texte": "Jean-Luc Mélenchon vous regarde !", "parlementaire_id": "123"},
+    {
+      "texte": "Jean-Luc Mélenchon vous regarde !",
+      "speaker_name": "Yaël Braun-Pivet, présidente",
+      "speaker_url": "/yael-braun-pivet",
+    },
         "Jean-Luc Mélenchon",
         "62",
     )
@@ -112,19 +122,6 @@ def test_classify_intervention_uses_speaker_name_from_html():
     assert classified["mode"] == "prise_de_parole"
 
 
-def test_classify_intervention_requires_perso_block_to_count_as_speech():
-    classified = _classify_intervention(
-        {
-            "texte": "Je souhaite intervenir sur ce sujet.",
-            "html": "<div class='intervenant'><div class='texte_intervention'><p>Je souhaite intervenir sur ce sujet.</p></div></div>",
-        },
-        "Jean-Luc Mélenchon",
-        "456",
-    )
-
-    assert classified["mode"] == "mention"
-
-
 def test_classify_intervention_does_not_treat_name_mentions_as_speech():
     classified = _classify_intervention(
         {"texte": "Jean-Luc Mélenchon avait fait une excellente proposition au Président de la République."},
@@ -133,3 +130,47 @@ def test_classify_intervention_does_not_treat_name_mentions_as_speech():
     )
 
     assert classified["mode"] == "mention"
+
+
+def test_extract_speaker_identity_uses_anchor_to_pick_correct_intervention():
+    html = """
+    <html>
+      <body>
+        <div class="intervention" id="inter_president">
+          <div class="intervenant">
+            <div class="perso"><a href="/yael-braun-pivet">Yaël Braun-Pivet, présidente</a></div>
+            <div class="texte_intervention"><p>La parole est à M. Jean-Luc Mélenchon.</p></div>
+          </div>
+        </div>
+        <div class="intervention" id="inter_melenchon">
+          <div class="intervenant">
+            <div class="perso"><a href="/jean-luc-melenchon">Jean-Luc Mélenchon</a></div>
+            <div class="texte_intervention"><p>Je vous remercie, madame la présidente.</p></div>
+          </div>
+        </div>
+      </body>
+    </html>
+    """
+
+    speaker_name, speaker_url = _extract_speaker_identity_from_html(html, anchor_id="inter_melenchon")
+    assert speaker_name == "Jean-Luc Mélenchon"
+    assert speaker_url == "/jean-luc-melenchon"
+
+    # Sans ancre, le premier div.perso de la page (la présidente) ne doit pas
+    # être confondu avec l'orateur de l'intervention ciblée.
+    speaker_name_no_anchor, _ = _extract_speaker_identity_from_html(html)
+    assert speaker_name_no_anchor == "Yaël Braun-Pivet, présidente"
+
+
+def test_extract_speaker_identity_from_perso_without_link():
+  html = """
+  <div class='intervenant'>
+    <div class='perso'>Élisabeth Borne, Première ministre</div>
+    <div class='texte_intervention'><p>Merci.</p></div>
+  </div>
+  """
+
+  speaker_name, speaker_url = _extract_speaker_identity_from_html(html)
+
+  assert speaker_name == "Élisabeth Borne, Première ministre"
+  assert speaker_url is None
