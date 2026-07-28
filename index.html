@@ -124,6 +124,7 @@
         </div>
         <div class="card">
           <h2>Votes</h2>
+          ${profile.votes_source ? `<p><em>Source : ${escapeHtml(profile.votes_source)}</em></p>` : ""}
           <ul>${renderVotes(profile.votes)}</ul>
         </div>
         <div class="card">

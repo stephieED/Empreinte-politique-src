@@ -19,11 +19,14 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 """
 
 import argparse
+import io
 import json
 import re
 import sys
 import time
 import unicodedata
+import zipfile
+from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
@@ -39,7 +42,10 @@ BASE_URLS = {
         "https://2007-2012.nosdeputes.fr",
     ],
     "senateurs": [
-        "https://www.nossenateurs.fr",
+        # www.nossenateurs.fr a definitivement ferme (le site affiche desormais
+        # un message "Le site NosSenateurs.fr est desormais arrete" et redirige
+        # vers son archive) : on utilise directement l'archive, qui reste servie.
+        "https://archive.nossenateurs.fr",
     ],
 }
 
@@ -48,6 +54,30 @@ HEADERS = {
 }
 
 TIMEOUT = 15
+
+# Donnees ouvertes officielles de l'Assemblee nationale (scrutins avec detail
+# nominatif des votes par depute). Utilisees en remplacement de l'endpoint
+# /votes de NosDeputes.fr, qui renvoie systematiquement une erreur HTTP 500
+# (verifie y compris sur l'exemple de leur propre documentation, sur tous les
+# domaines/legislatures disponibles).
+AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
+AN_SCRUTINS_ZIP_NAME = {
+    "17": "Scrutins.json.zip",
+    "16": "Scrutins.json.zip",
+    "15": "Scrutins_XV.json.zip",
+    "14": "Scrutins_XIV.json.zip",
+    # Pas de donnees ouvertes de scrutins disponibles pour la 13e legislature
+    # (2007-2012) sur data.assemblee-nationale.fr.
+}
+# Association du domaine NosDeputes.fr (celui ou l'identite du parlementaire a
+# ete trouvee) a la legislature Assemblee nationale correspondante.
+LEGISLATURE_BY_BASE_URL = {
+    "https://www.nosdeputes.fr": "16",
+    "https://2017-2022.nosdeputes.fr": "15",
+    "https://2012-2017.nosdeputes.fr": "14",
+    "https://2007-2012.nosdeputes.fr": "13",
+}
+SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -243,6 +273,143 @@ def fetch_all_intervention_results(base_url: str, query: str, object_name: str =
         aggregated.extend(results)
         time.sleep(0.2)
     return {"results": aggregated}
+
+
+def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
+    """Extrait l'identifiant officiel Assemblée nationale (ex: PA2150) depuis une URL de fiche."""
+    if not url_an_ou_senat:
+        return None
+    match = re.search(r"PA\d+", url_an_ou_senat)
+    return match.group(0) if match else None
+
+
+def _scrutins_json_dir(legislature: str) -> Path:
+    return SCRUTINS_CACHE_DIR / legislature / "json"
+
+
+def _ensure_scrutins_downloaded(legislature: str) -> Optional[Path]:
+    """Télécharge (avec cache local) l'archive open data des scrutins d'une législature."""
+    json_dir = _scrutins_json_dir(legislature)
+    if json_dir.is_dir() and any(json_dir.iterdir()):
+        return json_dir
+
+    zip_name = AN_SCRUTINS_ZIP_NAME.get(legislature)
+    if not zip_name:
+        return None
+
+    url = f"{AN_OPENDATA_BASE}/{legislature}/loi/scrutins/{zip_name}"
+    print(f"-> Téléchargement des scrutins officiels (Assemblée nationale) : {url}")
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=60)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        print(f"  [!] Échec du téléchargement des scrutins officiels : {exc}")
+        return None
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+            for member in zf.namelist():
+                if member.endswith(".json"):
+                    zf.extract(member, path=SCRUTINS_CACHE_DIR / legislature)
+    except zipfile.BadZipFile as exc:
+        print(f"  [!] Archive de scrutins invalide : {exc}")
+        return None
+
+    return json_dir if json_dir.is_dir() else None
+
+
+def _iter_votants(decompte_nominatif: dict, position: str, list_key: str):
+    """Parcourt la liste nominative des votants pour une position donnée (pour/contre/...)."""
+    block = decompte_nominatif.get(list_key)
+    if not isinstance(block, dict):
+        return
+    votants = block.get("votant")
+    if votants is None:
+        return
+    if isinstance(votants, dict):
+        votants = [votants]
+    for v in votants:
+        if isinstance(v, dict) and v.get("acteurRef"):
+            yield v["acteurRef"], position
+
+
+def _build_acteur_vote_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de votes."""
+    index_path = SCRUTINS_CACHE_DIR / legislature / "index_par_acteur.json"
+    if index_path.is_file():
+        try:
+            with open(index_path, encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass  # cache corrompu : on reconstruit
+
+    json_dir = _ensure_scrutins_downloaded(legislature)
+    if json_dir is None:
+        return {}
+
+    index: dict[str, list[dict[str, Any]]] = {}
+    fichiers = sorted(json_dir.glob("*.json"))
+    print(f"-> Indexation de {len(fichiers)} scrutins officiels (législature {legislature})...")
+    for path in fichiers:
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        scrutin = data.get("scrutin") or {}
+        organe = (scrutin.get("ventilationVotes") or {}).get("organe") or {}
+        groupes = (organe.get("groupes") or {}).get("groupe")
+        if groupes is None:
+            continue
+        if isinstance(groupes, dict):
+            groupes = [groupes]
+        meta = {
+            "numero": scrutin.get("numero"),
+            "date": scrutin.get("dateScrutin"),
+            "titre": scrutin.get("titre"),
+            "sort": (scrutin.get("sort") or {}).get("libelle"),
+        }
+        for groupe in groupes:
+            if not isinstance(groupe, dict):
+                continue
+            decompte = (groupe.get("vote") or {}).get("decompteNominatif") or {}
+            for acteur_ref, position in [
+                *_iter_votants(decompte, "pour", "pours"),
+                *_iter_votants(decompte, "contre", "contres"),
+                *_iter_votants(decompte, "abstention", "abstentions"),
+                *_iter_votants(decompte, "non_votant", "nonVotants"),
+            ]:
+                index.setdefault(acteur_ref, []).append({**meta, "position": position})
+
+    try:
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(index_path, "w", encoding="utf-8") as f:
+            json.dump(index, f, ensure_ascii=False)
+    except OSError:
+        pass
+
+    return index
+
+
+def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tuple[list[dict[str, Any]], Optional[str]]:
+    """Récupère les votes nominatifs officiels d'un député via l'open data de l'Assemblée nationale.
+
+    L'endpoint /votes de NosDéputés.fr est en panne (HTTP 500 systématique,
+    y compris sur l'exemple officiel de leur propre documentation, testé sur
+    tous les domaines et législatures disponibles). On utilise donc directement
+    les données ouvertes de data.assemblee-nationale.fr, qui contiennent le
+    détail nominatif (pour/contre/abstention/non-votant) de chaque scrutin,
+    identifié par l'acteurRef (ex: PA2150) du parlementaire.
+    """
+    legislature = LEGISLATURE_BY_BASE_URL.get(base_url)
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not legislature or not acteur_ref:
+        return [], None
+
+    index = _build_acteur_vote_index(legislature)
+    votes = index.get(acteur_ref, [])
+    votes_sorted = sorted(votes, key=lambda v: v.get("date") or "", reverse=True)
+    return votes_sorted, legislature
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
@@ -638,6 +805,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         "identite": None,
         "mandats": [],
         "votes": [],
+        "votes_source": None,
         "synthese_activite": None,
         "dossiers_legislatifs": [],
         "interventions": [],
@@ -680,8 +848,38 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             if _is_empty_payload(profile["mandats"]):
                 warnings.append("mandats introuvables : l'API ne renvoie pas de mandats pour ce profil.")
 
-    if _is_empty_payload(votes_raw):
-        warnings.append("votes introuvables : l'endpoint de votes ne renvoie pas de données exploitables pour ce slug/chambre.")
+    official_votes: list[dict[str, Any]] = []
+    if chambre == "deputes" and profile.get("identite"):
+        try:
+            official_votes, official_legislature = fetch_votes_officiels(
+                identity_base_url or base_urls[0], profile["identite"].get("url_an_ou_senat")
+            )
+        except Exception as exc:
+            warnings.append(f"votes officiels (Assemblée nationale) indisponibles : {exc}")
+            official_legislature = None
+    else:
+        official_legislature = None
+
+    if official_votes:
+        profile["votes"] = [
+            {
+                "date": v.get("date"),
+                "titre": v.get("titre"),
+                "position": v.get("position"),
+                "numero_scrutin": v.get("numero"),
+                "sort": v.get("sort"),
+            }
+            for v in official_votes
+        ]
+        profile["votes_source"] = (
+            f"open data Assemblée nationale (data.assemblee-nationale.fr, législature {official_legislature})"
+        )
+    elif _is_empty_payload(votes_raw):
+        warnings.append(
+            "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur "
+            "(fonctionnalité indisponible côté API), et aucune correspondance officielle "
+            "Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
+        )
     else:
         # On garde uniquement les champs utiles à un affichage type "CV"
         cleaned_votes = []

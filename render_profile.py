@@ -59,6 +59,12 @@ def render_html(profile: dict[str, Any]) -> str:
         for i in interventions
     ) or "<li>Aucune intervention renseignée.</li>"
 
+    votes_source_html = (
+        f"<p><em>Source : {html.escape(str(profile.get('votes_source')))}</em></p>"
+        if profile.get("votes_source")
+        else ""
+    )
+
     return f"""<!doctype html>
 <html lang=\"fr\">
 <head>
@@ -92,6 +98,7 @@ def render_html(profile: dict[str, Any]) -> str:
 
   <div class=\"card\">
     <h2>Votes</h2>
+    {votes_source_html}
     <ul>{votes_html}</ul>
   </div>
 
