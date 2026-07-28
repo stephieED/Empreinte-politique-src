@@ -428,54 +428,115 @@ def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Option
     return None, None
 
 
+def _groupe_label(groupe_field: Any) -> Optional[str]:
+    """Le champ « groupe » de l'API est un dict {organisme, fonction, debut_fonction},
+    pas une chaîne : on en extrait le nom du groupe politique."""
+    if isinstance(groupe_field, dict):
+        return groupe_field.get("organisme")
+    if isinstance(groupe_field, str):
+        return groupe_field
+    return None
+
+
+def _extract_responsabilite_entries(raw_list: Any, categorie: str) -> list[dict[str, Any]]:
+    """Normalise une liste de responsabilités (commissions, missions, groupes d'amitié...)
+    telle que fournie par les champs `responsabilites`, `historique_responsabilites`,
+    `groupes_parlementaires` ou `responsabilites_extra_parlementaires` de l'API."""
+    entries: list[dict[str, Any]] = []
+    for raw in raw_list or []:
+        if not isinstance(raw, dict):
+            continue
+        resp = raw.get("responsabilite") if isinstance(raw.get("responsabilite"), dict) else raw
+        organisme = resp.get("organisme")
+        if not organisme:
+            continue
+        fin = resp.get("fin_fonction")
+        entries.append({
+            "categorie": categorie,
+            "type": resp.get("fonction") or "membre",
+            "label": organisme,
+            "debut": resp.get("debut_fonction"),
+            "fin": fin,
+            "actif": not fin,
+        })
+    return entries
+
+
 def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
-    """Tente d'extraire des mandats lisibles à partir des champs fournis par l'API."""
+    """Extrait les responsabilités lisibles (commissions, missions, groupes d'amitié,
+    engagements extra-parlementaires) et le mandat électif de base, à partir des
+    champs réels renvoyés par l'API NosDéputés.fr / NosSénateurs.fr :
+    `responsabilites`, `historique_responsabilites`, `groupes_parlementaires`,
+    `responsabilites_extra_parlementaires`.
+
+    Chaque entrée a le format {categorie, type (la fonction : membre/président/
+    rapporteur/...), label (le nom de l'organisme), debut, fin, actif}.
+    """
     mandats: list[dict[str, Any]] = []
 
-    for raw in parlementaire.get("mandats", []) or []:
-        if isinstance(raw, dict):
-            mandats.append({
-                "type": raw.get("type") or "mandat",
-                "label": raw.get("label") or raw.get("nom") or raw.get("description"),
-                "debut": raw.get("debut") or raw.get("date_debut"),
-                "fin": raw.get("fin") or raw.get("date_fin"),
-            })
-        elif isinstance(raw, str):
-            mandats.append({"type": "mandat", "label": raw})
+    debut_mandat = parlementaire.get("mandat_debut")
+    fin_mandat = parlementaire.get("mandat_fin")
+    if debut_mandat or fin_mandat:
+        groupe_label = _groupe_label(parlementaire.get("groupe"))
+        mandats.append({
+            "categorie": "mandat_electif",
+            "type": "mandat",
+            "label": "Mandat parlementaire" + (f" ({groupe_label})" if groupe_label else ""),
+            "debut": debut_mandat,
+            "fin": fin_mandat,
+            "actif": not fin_mandat,
+        })
 
+    mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites"), "commission"))
+    mandats.extend(_extract_responsabilite_entries(parlementaire.get("historique_responsabilites"), "commission"))
+    mandats.extend(_extract_responsabilite_entries(parlementaire.get("groupes_parlementaires"), "groupe_amitie"))
+    mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites_extra_parlementaires"), "extra_parlementaire"))
+
+    # Filets de secours pour d'anciens formats d'API (champs génériques non
+    # observés dans les réponses actuelles, mais conservés par prudence).
     if not mandats:
-        for raw in parlementaire.get("anciens_mandats", []) or []:
+        for raw in parlementaire.get("mandats_generiques", []) or []:
             if isinstance(raw, dict):
                 mandats.append({
-                    "type": "ancien_mandat",
-                    "label": raw.get("mandat") or raw.get("label") or raw.get("description"),
+                    "categorie": "autre",
+                    "type": raw.get("type") or "mandat",
+                    "label": raw.get("label") or raw.get("nom") or raw.get("description"),
+                    "debut": raw.get("debut") or raw.get("date_debut"),
+                    "fin": raw.get("fin") or raw.get("date_fin"),
+                    "actif": not (raw.get("fin") or raw.get("date_fin")),
                 })
             elif isinstance(raw, str):
-                mandats.append({"type": "ancien_mandat", "label": raw})
-
-    if not mandats:
-        for raw in parlementaire.get("autres_mandats", []) or []:
-            if isinstance(raw, dict):
-                mandats.append({
-                    "type": "autre_mandat",
-                    "label": raw.get("mandat") or raw.get("label") or raw.get("description"),
-                })
-            elif isinstance(raw, str):
-                mandats.append({"type": "autre_mandat", "label": raw})
-
-    if not mandats:
-        debut = parlementaire.get("mandat_debut")
-        fin = parlementaire.get("mandat_fin")
-        if debut or fin:
-            mandats.append({
-                "type": "mandat_depute",
-                "label": "Mandat de député",
-                "debut": debut,
-                "fin": fin,
-                "groupe": parlementaire.get("groupe", {}).get("organisme") if isinstance(parlementaire.get("groupe"), dict) else None,
-            })
+                mandats.append({"categorie": "autre", "type": "mandat", "label": raw, "actif": True})
 
     return mandats
+
+
+# Seuil (en nombre de mots, champ `nb_mots` de l'API) en-deçà duquel une intervention
+# est considérée comme une réaction/interjection courte plutôt qu'une prise de parole
+# développée. Heuristique ajustable : les interjections observées ("Oh !", "Bravo !",
+# "Très bien !", "Mais non !") comptent 2 à 3 mots, tandis qu'une intervention
+# construite dépasse largement ce seuil.
+REACTION_COURTE_NB_MOTS_MAX = 15
+
+
+def _to_int(value: Any) -> Optional[int]:
+    """Convertit une valeur (souvent une chaîne renvoyée par l'API) en entier, sans lever."""
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _classify_intervention_format(nb_mots: Optional[int]) -> Optional[str]:
+    """Distingue une réaction courte (interjection/exclamation lancée depuis les bancs)
+    d'une prise de parole développée, à partir de la longueur de l'intervention.
+    Ne remplace pas `classification.mode` (qui identifie l'orateur) : les deux se
+    combinent pour répondre à « était-il à la tribune/au micro, ou a-t-il juste réagi ? »."""
+    if nb_mots is None:
+        return None
+    return "reaction_courte" if nb_mots <= REACTION_COURTE_NB_MOTS_MAX else "prise_de_parole_developpee"
 
 
 def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[dict[str, Any]]:
@@ -514,6 +575,13 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
                 "seance_id": intervention.get("seance_id"),
                 "speaker_name": speaker_name,
                 "speaker_url": speaker_url,
+                # `fonction` est le rôle institutionnel officiel occupé par l'orateur au
+                # moment précis de cette intervention (ex. "Première ministre", "Rapporteur",
+                # "Président de la commission des lois") : vide pour un simple député sans
+                # fonction particulière. `nb_mots` sert de proxy pour distinguer une réaction
+                # courte (interjection) d'une prise de parole développée.
+                "fonction": intervention.get("fonction") or None,
+                "nb_mots": _to_int(intervention.get("nb_mots")),
             }
     return None
 
@@ -719,6 +787,7 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
             keywords = seance_context.get("mots_cles") or []
             if not sujet:
                 sujet = detail.get("type") if detail else None
+            nb_mots = detail.get("nb_mots") if detail else None
             cleaned.append({
                 "type": item.get("document_type"),
                 "id": document_id,
@@ -732,6 +801,15 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
                 "classification": classification,
                 "sujet": sujet,
                 "mots_cles": keywords,
+                # Rôle institutionnel occupé au moment de l'intervention (ex. "Ministre
+                # de l'Intérieur", "Rapporteur") : vide si simple parlementaire sans
+                # fonction particulière à cet instant.
+                "fonction": detail.get("fonction") if detail else None,
+                "nb_mots": nb_mots,
+                # "reaction_courte" (interjection) vs "prise_de_parole_developpee",
+                # dérivé de nb_mots : permet de distinguer une réaction lancée depuis
+                # les bancs d'une véritable prise de parole à la tribune/au micro.
+                "format": _classify_intervention_format(nb_mots),
             })
         time.sleep(0.1)
     return cleaned
@@ -837,7 +915,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             profile["identite"] = {
                 "nom_complet": parlementaire.get("nom"),
                 "groupe_sigle": parlementaire.get("groupe_sigle"),
-                "groupe_nom": parlementaire.get("nom_groupe_politique") or parlementaire.get("groupe"),
+                "groupe_nom": parlementaire.get("nom_groupe_politique") or _groupe_label(parlementaire.get("groupe")),
                 "profession": parlementaire.get("profession"),
                 "date_naissance": parlementaire.get("date_naissance"),
                 "num_circo": parlementaire.get("num_circo") or parlementaire.get("num_deptt"),

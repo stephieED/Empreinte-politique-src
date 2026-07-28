@@ -46,13 +46,34 @@
       return html || "<li>Aucune information disponible.</li>";
     }
 
+    const CATEGORIE_LABELS = {
+      mandat_electif: "Mandat électif",
+      commission: "Commission / mission",
+      groupe_amitie: "Groupe d'amitié",
+      extra_parlementaire: "Engagement extra-parlementaire",
+      autre: "Autre",
+    };
+
+    const TYPE_DETAIL_LABELS = {
+      loi: "Débat sur un texte de loi",
+      question: "Question au gouvernement",
+    };
+
+    const FORMAT_LABELS = {
+      reaction_courte: "Réaction courte",
+      prise_de_parole_developpee: "Prise de parole développée",
+    };
+
     function renderMandats(mandats) {
       if (!mandats || !mandats.length) return "<li>Aucun mandat renseigné.</li>";
       return mandats
         .map((m) => {
-          let line = `<li><strong>${escapeHtml(m.type || "mandat")}</strong>: ${escapeHtml(m.label || "")}`;
-          if (m.debut) line += ` — de ${escapeHtml(m.debut)}`;
-          if (m.fin) line += ` à ${escapeHtml(m.fin)}`;
+          const categorieLabel = CATEGORIE_LABELS[m.categorie] || m.categorie || "";
+          let line = `<li><strong>${escapeHtml(m.type || "membre")}</strong> — ${escapeHtml(m.label || "")} <em>(${escapeHtml(categorieLabel)})</em>`;
+          if (m.debut || m.fin) {
+            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
+            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
+          }
           return line + "</li>";
         })
         .join("");
@@ -80,17 +101,21 @@
       if (!interventions || !interventions.length) return "<li>Aucune intervention renseignée.</li>";
       return interventions
         .map((i) => {
-          let line = `<li><strong>${escapeHtml(i.type || "")}</strong> — ${escapeHtml(i.date || i.created_at || "")}`;
-          if (i.type_detail) line += ` — <em>${escapeHtml(i.type_detail)}</em>`;
-          if (i.classification && i.classification.mode === "prise_de_parole") {
-            line += ` — <span style="font-weight:bold;">prise de parole</span>`;
+          const parts = [`<strong>${escapeHtml(i.date || i.created_at || "")}</strong>`];
+          if (i.type_detail) parts.push(`<em>${escapeHtml(TYPE_DETAIL_LABELS[i.type_detail] || i.type_detail)}</em>`);
+          if (i.fonction) parts.push(`<span style="color:#8a5a00;">en tant que ${escapeHtml(i.fonction)}</span>`);
+          if (i.format) {
+            const style = i.format === "prise_de_parole_developpee" ? "font-weight:bold;" : "font-style:italic;color:#666;";
+            parts.push(`<span style="${style}">${escapeHtml(FORMAT_LABELS[i.format] || i.format)}</span>`);
+          } else if (i.classification && i.classification.mode === "prise_de_parole") {
+            parts.push(`<span style="font-weight:bold;">prise de parole</span>`);
           }
-          if (i.sujet) line += ` — Sujet: ${escapeHtml(i.sujet)}`;
-          if (i.mots_cles && i.mots_cles.length) line += ` — Mots-clés: ${escapeHtml(i.mots_cles.join(", "))}`;
-          if (i.texte) line += ` — ${escapeHtml(String(i.texte).slice(0, 180))}`;
+          if (i.sujet) parts.push(`Sujet: ${escapeHtml(i.sujet)}`);
+          if (i.mots_cles && i.mots_cles.length) parts.push(`Mots-clés: ${escapeHtml(i.mots_cles.join(", "))}`);
+          if (i.texte) parts.push(escapeHtml(String(i.texte).slice(0, 180)));
           const url = i.url_detail || i.url;
-          if (url) line += ` — <a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>`;
-          return line + "</li>";
+          if (url) parts.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>`);
+          return "<li>" + parts.join(" — ") + "</li>";
         })
         .join("");
     }

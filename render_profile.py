@@ -11,6 +11,62 @@ def load_profile(path: str) -> dict[str, Any]:
         return json.load(f)
 
 
+CATEGORIE_LABELS = {
+    "mandat_electif": "Mandat électif",
+    "commission": "Commission / mission",
+    "groupe_amitie": "Groupe d'amitié",
+    "extra_parlementaire": "Engagement extra-parlementaire",
+    "autre": "Autre",
+}
+
+TYPE_DETAIL_LABELS = {
+    "loi": "Débat sur un texte de loi",
+    "question": "Question au gouvernement",
+}
+
+FORMAT_LABELS = {
+    "reaction_courte": "Réaction courte",
+    "prise_de_parole_developpee": "Prise de parole développée",
+}
+
+
+def _render_mandat(m: dict[str, Any]) -> str:
+    label = html.escape(str(m.get("label") or ""))
+    type_ = html.escape(str(m.get("type") or "membre"))
+    categorie_label = html.escape(str(CATEGORIE_LABELS.get(m.get("categorie"), m.get("categorie") or "")))
+    dates = ""
+    if m.get("debut") or m.get("fin"):
+        fin_label = html.escape(str(m.get("fin"))) if m.get("fin") else ("en cours" if m.get("actif") else "?")
+        dates = f" — {html.escape(str(m.get('debut') or '?'))} → {fin_label}"
+    return f"<li><strong>{type_}</strong> — {label} <em>({categorie_label})</em>{dates}</li>"
+
+
+def _render_intervention(i: dict[str, Any]) -> str:
+    parts = [f"<strong>{html.escape(str(i.get('date') or i.get('created_at') or ''))}</strong>"]
+    type_detail = i.get("type_detail")
+    if type_detail:
+        parts.append(f"<em>{html.escape(str(TYPE_DETAIL_LABELS.get(type_detail, type_detail)))}</em>")
+    fonction = i.get("fonction")
+    if fonction:
+        parts.append(f"<span style='color:#8a5a00;'>en tant que {html.escape(str(fonction))}</span>")
+    fmt = i.get("format")
+    if fmt:
+        style = "font-weight:bold;" if fmt == "prise_de_parole_developpee" else "font-style:italic;color:#666;"
+        parts.append(f"<span style='{style}'>{html.escape(str(FORMAT_LABELS.get(fmt, fmt)))}</span>")
+    elif isinstance(i.get("classification"), dict) and i.get("classification", {}).get("mode") == "prise_de_parole":
+        parts.append("<span style='font-weight:bold;'>prise de parole</span>")
+    if i.get("sujet"):
+        parts.append(f"Sujet: {html.escape(str(i.get('sujet')))}")
+    if i.get("mots_cles"):
+        parts.append(f"Mots-clés: {html.escape(', '.join(i.get('mots_cles')))}")
+    if i.get("texte"):
+        parts.append(html.escape(str(i.get("texte"))[:180]))
+    url = i.get("url_detail") or i.get("url")
+    if url:
+        parts.append(f"<a href='{html.escape(str(url))}'>{html.escape(str(url))}</a>")
+    return "<li>" + " — ".join(parts) + "</li>"
+
+
 def render_html(profile: dict[str, Any]) -> str:
     identite = profile.get("identite") or {}
     mandats = profile.get("mandats") or []
@@ -27,13 +83,7 @@ def render_html(profile: dict[str, Any]) -> str:
             if item.get(field)
         ) or "<li>Aucune information disponible.</li>"
 
-    mandats_html = "".join(
-        f"<li><strong>{html.escape(str(m.get('type', 'mandat')))}</strong>: {html.escape(str(m.get('label') or ''))}"
-        + (f" — de {html.escape(str(m.get('debut') or ''))}" if m.get("debut") else "")
-        + (f" à {html.escape(str(m.get('fin') or ''))}" if m.get("fin") else "")
-        + "</li>"
-        for m in mandats
-    ) or "<li>Aucun mandat renseigné.</li>"
+    mandats_html = "".join(_render_mandat(m) for m in mandats) or "<li>Aucun mandat renseigné.</li>"
 
     votes_html = "".join(
         f"<li><strong>{html.escape(str(v.get('date') or ''))}</strong> — {html.escape(str(v.get('titre') or ''))} ({html.escape(str(v.get('position') or ''))})</li>"
@@ -47,17 +97,7 @@ def render_html(profile: dict[str, Any]) -> str:
         for d in dossiers
     ) or "<li>Aucun dossier législatif renseigné.</li>"
 
-    interventions_html = "".join(
-        f"<li><strong>{html.escape(str(i.get('type') or ''))}</strong> — {html.escape(str(i.get('date') or i.get('created_at') or ''))}"
-        + (f" — <em>{html.escape(str(i.get('type_detail') or ''))}</em>" if i.get("type_detail") else "")
-        + (f" — <span style='font-weight:bold;'>prise de parole</span>" if isinstance(i.get("classification"), dict) and i.get("classification", {}).get("mode") == "prise_de_parole" else "")
-        + (f" — Sujet: {html.escape(str(i.get('sujet') or ''))}" if i.get("sujet") else "")
-        + (f" — Mots-clés: {html.escape(', '.join(i.get('mots_cles') or []))}" if i.get("mots_cles") else "")
-        + (f" — {html.escape(str(i.get('texte') or '')[:180])}" if i.get("texte") else "")
-        + (f" — <a href='{html.escape(str(i.get('url_detail') or i.get('url') or ''))}'>{html.escape(str(i.get('url_detail') or i.get('url') or ''))}</a>" if i.get("url_detail") or i.get("url") else "")
-        + "</li>"
-        for i in interventions
-    ) or "<li>Aucune intervention renseignée.</li>"
+    interventions_html = "".join(_render_intervention(i) for i in interventions) or "<li>Aucune intervention renseignée.</li>"
 
     votes_source_html = (
         f"<p><em>Source : {html.escape(str(profile.get('votes_source')))}</em></p>"

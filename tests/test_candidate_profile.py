@@ -4,7 +4,15 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from candidate_profile import _classify_intervention, build_profile, fetch_seance_context, _extract_speaker_identity_from_html
+from candidate_profile import (
+    _classify_intervention,
+    _classify_intervention_format,
+    _extract_mandats,
+    _groupe_label,
+    build_profile,
+    fetch_seance_context,
+    _extract_speaker_identity_from_html,
+)
 
 
 class DummyResponse:
@@ -174,3 +182,67 @@ def test_extract_speaker_identity_from_perso_without_link():
 
   assert speaker_name == "Élisabeth Borne, Première ministre"
   assert speaker_url is None
+
+
+def test_groupe_label_handles_dict_and_string_and_none():
+    assert _groupe_label({"organisme": "La France Insoumise", "fonction": "membre"}) == "La France Insoumise"
+    assert _groupe_label("La France Insoumise") == "La France Insoumise"
+    assert _groupe_label(None) is None
+
+
+def test_extract_mandats_reads_real_api_responsabilites_fields():
+    parlementaire = {
+        "mandat_debut": "2017-06-21",
+        "mandat_fin": None,
+        "groupe": {"organisme": "La France Insoumise", "fonction": "membre"},
+        "responsabilites": [
+            {
+                "responsabilite": {
+                    "organisme": "Commission des affaires étrangères",
+                    "fonction": "membre",
+                    "debut_fonction": "2022-01-14",
+                }
+            }
+        ],
+        "historique_responsabilites": [
+            {
+                "responsabilite": {
+                    "organisme": "La France Insoumise",
+                    "fonction": "président",
+                    "debut_fonction": "2017-06-28",
+                    "fin_fonction": "2021-10-12",
+                }
+            }
+        ],
+        "groupes_parlementaires": [],
+        "responsabilites_extra_parlementaires": [],
+    }
+
+    mandats = _extract_mandats(parlementaire)
+
+    mandat_electif = next(m for m in mandats if m["categorie"] == "mandat_electif")
+    assert "La France Insoumise" in mandat_electif["label"]
+    assert mandat_electif["actif"] is True
+
+    commission_actuelle = next(
+        m for m in mandats if m["categorie"] == "commission" and m["label"] == "Commission des affaires étrangères"
+    )
+    assert commission_actuelle["type"] == "membre"
+    assert commission_actuelle["actif"] is True
+
+    ancienne_presidence = next(
+        m for m in mandats if m["categorie"] == "commission" and m["label"] == "La France Insoumise"
+    )
+    assert ancienne_presidence["type"] == "président"
+    assert ancienne_presidence["actif"] is False
+    assert ancienne_presidence["fin"] == "2021-10-12"
+
+
+def test_extract_mandats_returns_empty_list_when_no_fields_present():
+    assert _extract_mandats({}) == []
+
+
+def test_classify_intervention_format_uses_word_count_threshold():
+    assert _classify_intervention_format(3) == "reaction_courte"
+    assert _classify_intervention_format(274) == "prise_de_parole_developpee"
+    assert _classify_intervention_format(None) is None
