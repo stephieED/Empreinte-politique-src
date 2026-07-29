@@ -14,12 +14,17 @@ dans le même profil sous la clé "mandat_europeen" (pour un candidat sans
 mandat français, ex. Jordan Bardella, un profil minimal est tout de même créé
 à partir de data/candidats.json + du mandat européen).
 
+Avec --pivot, un fichier supplémentaire data/profiles/<slug>.pivot.json
+est généré au format schéma pivot v1 (commun à toutes les sources). Le volet
+européen, s'il existe, est normalisé et intégré au pivot.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py
     python src/generate_all_profiles.py --only jean-luc-melenchon
     python src/generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
     python src/generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
     python src/generate_all_profiles.py --skip-ue          # ne pas interroger l'API du Parlement européen
+    python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
 """
 
 import argparse
@@ -32,6 +37,8 @@ from typing import Any, Optional
 
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
+from normalize_europarl import normalize_europarl
+from normalize_nosdeputes import normalize_nosdeputes
 from render_profile import render_html
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
@@ -78,6 +85,7 @@ def main() -> None:
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--skip-ue", action="store_true", help="Ne pas interroger l'Open Data Portal du Parlement européen (mandat européen)")
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON/HTML (défaut: {DEFAULT_PROFILES_DIR})")
+    parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
@@ -163,6 +171,25 @@ def main() -> None:
 
         html_path = out_dir / f"{effective_slug}.html"
         html_path.write_text(render_html(profile), encoding="utf-8")
+
+        # Optionnel : écriture du profil pivot v1 (--pivot)
+        if args.pivot:
+            parti = candidat.get("parti")
+            pivot_profile = normalize_nosdeputes(profile, parti=parti) if chambre else None
+            if mandat_ue is not None:
+                ue_pivot = normalize_europarl(mandat_ue, parti=parti)
+                if pivot_profile is None:
+                    pivot_profile = ue_pivot
+                else:
+                    # Fusionner les données UE dans le pivot principal :
+                    # ajouter la source EP et les mandats européens.
+                    pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
+                    pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
+            if pivot_profile is not None:
+                pivot_path = out_dir / f"{effective_slug}.pivot.json"
+                with open(pivot_path, "w", encoding="utf-8") as f:
+                    json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
+                print(f"  ✓ pivot → {pivot_path}")
 
         nb_interventions = len(profile.get("interventions") or [])
         nb_mandats_ue = len((mandat_ue or {}).get("mandats_europeens") or [])
