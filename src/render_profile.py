@@ -116,10 +116,12 @@ def render_html(profile: dict[str, Any]) -> str:
         mandats_ue_html = "".join(
             _render_mandat_ue(m) for m in (mandat_europeen.get("mandats_europeens") or [])
         ) or "<li>Aucun mandat renseigné.</li>"
+        url_source = mandat_europeen.get("url_source")
+        url_part = f" ({html.escape(str(url_source))})" if url_source else ""
         mandat_europeen_html = f"""
   <div class=\"card\">
     <h2>Mandat européen (Parlement européen)</h2>
-    <p><em>Source : Open Data Portal du Parlement européen ({html.escape(str(mandat_europeen.get('url_source') or ''))})</em></p>
+    <p><em>Source : Open Data Portal du Parlement européen{url_part}</em></p>
     <ul>{mandats_ue_html}</ul>
   </div>
 """
