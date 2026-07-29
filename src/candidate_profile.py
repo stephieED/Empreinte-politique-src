@@ -24,6 +24,7 @@ import io
 import json
 import re
 import sys
+import threading
 import time
 import unicodedata
 import zipfile
@@ -79,6 +80,21 @@ LEGISLATURE_BY_BASE_URL = {
     "https://2007-2012.nosdeputes.fr": "13",
 }
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
+
+# Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
+# appeler cette fonction simultanément pour des législatures différentes (pas de blocage
+# entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
+# double téléchargement de l'archive zip et une écriture concurrente du cache disque.
+_SCRUTINS_LOCKS: dict[str, threading.Lock] = {}
+_SCRUTINS_LOCKS_META = threading.Lock()
+
+
+def _get_scrutins_lock(legislature: str) -> threading.Lock:
+    """Retourne (ou crée) le verrou associé à une législature donnée."""
+    with _SCRUTINS_LOCKS_META:
+        if legislature not in _SCRUTINS_LOCKS:
+            _SCRUTINS_LOCKS[legislature] = threading.Lock()
+        return _SCRUTINS_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -335,61 +351,67 @@ def _iter_votants(decompte_nominatif: dict, position: str, list_key: str):
 
 
 def _build_acteur_vote_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Construit (et met en cache sur disque) un index acteurRef -> liste de votes."""
-    index_path = SCRUTINS_CACHE_DIR / legislature / "index_par_acteur.json"
-    if index_path.is_file():
-        try:
-            with open(index_path, encoding="utf-8") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            pass  # cache corrompu : on reconstruit
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de votes.
 
-    json_dir = _ensure_scrutins_downloaded(legislature)
-    if json_dir is None:
-        return {}
+    Thread-safe : un verrou par législature garantit qu'un seul thread à la fois
+    télécharge l'archive et écrit le cache disque pour une législature donnée.
+    Des législatures différentes sont traitées indépendamment sans blocage mutuel.
+    """
+    with _get_scrutins_lock(legislature):
+        index_path = SCRUTINS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
 
-    index: dict[str, list[dict[str, Any]]] = {}
-    fichiers = sorted(json_dir.glob("*.json"))
-    print(f"-> Indexation de {len(fichiers)} scrutins officiels (législature {legislature})...")
-    for path in fichiers:
-        try:
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            continue
-        scrutin = data.get("scrutin") or {}
-        organe = (scrutin.get("ventilationVotes") or {}).get("organe") or {}
-        groupes = (organe.get("groupes") or {}).get("groupe")
-        if groupes is None:
-            continue
-        if isinstance(groupes, dict):
-            groupes = [groupes]
-        meta = {
-            "numero": scrutin.get("numero"),
-            "date": scrutin.get("dateScrutin"),
-            "titre": scrutin.get("titre"),
-            "sort": (scrutin.get("sort") or {}).get("libelle"),
-        }
-        for groupe in groupes:
-            if not isinstance(groupe, dict):
+        json_dir = _ensure_scrutins_downloaded(legislature)
+        if json_dir is None:
+            return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        fichiers = sorted(json_dir.glob("*.json"))
+        print(f"-> Indexation de {len(fichiers)} scrutins officiels (législature {legislature})...")
+        for path in fichiers:
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, OSError):
                 continue
-            decompte = (groupe.get("vote") or {}).get("decompteNominatif") or {}
-            for acteur_ref, position in [
-                *_iter_votants(decompte, "pour", "pours"),
-                *_iter_votants(decompte, "contre", "contres"),
-                *_iter_votants(decompte, "abstention", "abstentions"),
-                *_iter_votants(decompte, "non_votant", "nonVotants"),
-            ]:
-                index.setdefault(acteur_ref, []).append({**meta, "position": position})
+            scrutin = data.get("scrutin") or {}
+            organe = (scrutin.get("ventilationVotes") or {}).get("organe") or {}
+            groupes = (organe.get("groupes") or {}).get("groupe")
+            if groupes is None:
+                continue
+            if isinstance(groupes, dict):
+                groupes = [groupes]
+            meta = {
+                "numero": scrutin.get("numero"),
+                "date": scrutin.get("dateScrutin"),
+                "titre": scrutin.get("titre"),
+                "sort": (scrutin.get("sort") or {}).get("libelle"),
+            }
+            for groupe in groupes:
+                if not isinstance(groupe, dict):
+                    continue
+                decompte = (groupe.get("vote") or {}).get("decompteNominatif") or {}
+                for acteur_ref, position in [
+                    *_iter_votants(decompte, "pour", "pours"),
+                    *_iter_votants(decompte, "contre", "contres"),
+                    *_iter_votants(decompte, "abstention", "abstentions"),
+                    *_iter_votants(decompte, "non_votant", "nonVotants"),
+                ]:
+                    index.setdefault(acteur_ref, []).append({**meta, "position": position})
 
-    try:
-        index_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(index_path, "w", encoding="utf-8") as f:
-            json.dump(index, f, ensure_ascii=False)
-    except OSError:
-        pass
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
 
-    return index
+        return index
 
 
 def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tuple[list[dict[str, Any]], Optional[str]]:
