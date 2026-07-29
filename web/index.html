@@ -4,22 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fiche candidat — Présidentielle 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f7f7f5;
-    --surface: #ffffff;
-    --text: #1f252d;
-    --muted: #5a6470;
-    --line: #d8dde5;
-    --deep: #2d3f58;
-    --accent: #415d80;
-    --accent-soft: #eaf0f7;
+    /* Palette éditoriale — justifiée par le sujet */
+    --bg: #F4EFE4;          /* Parchemin — fond de page, évoque les archives */
+    --surface: #FFFDF8;     /* Blanc chaud — panneaux de contenu */
+    --text: #1A2332;        /* Encre — texte principal, procès-verbal */
+    --muted: #7A6652;       /* Sépia — secondaire, labels, dates */
+    --line: #DDD5C5;        /* Lin chaud — bordures discrètes */
+    --deep: #1A2332;        /* = Encre (compatibilité interne) */
+    --accent: #7A6652;      /* = Sépia (liens discrets, neutralité) */
+    --accent-soft: #EDE8DC; /* Parchemin clair — état actif des filtres */
+    /* Couleurs sémantiques de vote — jamais décoratives */
+    --vert: #27744F;        /* Vert quorum — vote POUR / présence */
+    --rouge: #C0392B;       /* Rouge scrutin — vote CONTRE / absence */
   }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.45;
@@ -34,7 +41,7 @@
     margin-bottom: 0.8rem;
   }
 
-  h1, h2, h3 { margin: 0 0 0.55rem; color: var(--deep); line-height: 1.2; }
+  h1, h2, h3 { margin: 0 0 0.55rem; color: var(--deep); line-height: 1.2; font-family: 'Libre Baskerville', Georgia, serif; }
   h1 { font-size: 1.35rem; }
   h2 { font-size: 1.05rem; }
   h3 { font-size: 0.98rem; }
@@ -42,6 +49,13 @@
   .small { font-size: 0.88rem; color: var(--muted); }
   .muted { color: var(--muted); }
   .empty { color: var(--muted); font-style: italic; }
+  /* Références vérifiables : signal visuel "coordonnée de source primaire" */
+  .source-ref {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: -0.01em;
+  }
 
   .selector {
     display: grid;
@@ -52,7 +66,7 @@
     font: inherit;
     border-radius: 10px;
     border: 1px solid var(--line);
-    background: #fff;
+    background: var(--surface);
     color: var(--text);
     padding: 0.52rem 0.65rem;
   }
@@ -69,11 +83,12 @@
     border-radius: 50%;
     overflow: hidden;
     border: 1px solid var(--line);
-    background: linear-gradient(145deg, #f3f6fa, #dbe2ea);
+    background: linear-gradient(145deg, var(--accent-soft), var(--line));
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    font-family: 'Libre Baskerville', Georgia, serif;
     color: var(--deep);
   }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -84,7 +99,7 @@
     align-items: center;
     border: 1px solid var(--line);
     border-radius: 999px;
-    background: #fbfcfe;
+    background: var(--bg);
     padding: 0.13rem 0.56rem;
     font-size: 0.8rem;
     color: var(--deep);
@@ -92,17 +107,24 @@
 
   .summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.55rem;
-    margin-top: 0.25rem;
+    margin-top: 0.65rem;
   }
   .kpi {
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 0.65rem;
-    background: var(--surface);
+    background: var(--bg);
   }
-  .kpi-value { font-size: 1.45rem; font-weight: 700; line-height: 1; color: var(--deep); }
+  /* Valeur chiffrée en monospace : signal "donnée vérifiable, pas décorative" */
+  .kpi-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--deep);
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  }
   .kpi-label { font-size: 0.83rem; color: var(--muted); margin-top: 0.18rem; }
   .kpi a { display: inline-block; margin-top: 0.33rem; font-size: 0.82rem; color: var(--accent); text-decoration: none; }
 
@@ -114,13 +136,22 @@
     color: var(--muted);
   }
 
+  /* Répartition thématique — histogramme horizontal */
+  .theme-dist { margin-top: 0.85rem; }
+  .theme-dist-title { font-size: 0.84rem; color: var(--muted); margin: 0 0 0.45rem; }
+  .theme-dist-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.38rem; }
+  .theme-dist-label { width: 110px; flex-shrink: 0; font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .theme-dist-bar-wrap { flex: 1; background: var(--line); border-radius: 3px; height: 7px; overflow: hidden; }
+  .theme-dist-bar { height: 100%; background: var(--deep); border-radius: 3px; }
+  .theme-dist-count { width: 36px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+
   .sticky-nav {
     position: sticky;
     top: 0;
     z-index: 40;
     border: 1px solid var(--line);
     border-radius: 11px;
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 253, 248, 0.96);
     backdrop-filter: blur(4px);
     margin: 0.7rem 0;
     padding: 0.42rem;
@@ -139,7 +170,7 @@
     font-size: 0.82rem;
     white-space: nowrap;
     padding: 0.24rem 0.56rem;
-    background: #fff;
+    background: var(--surface);
   }
 
   .themes-row {
@@ -150,7 +181,7 @@
   }
   .theme-pill {
     border: 1px solid var(--line);
-    background: #fff;
+    background: var(--surface);
     border-radius: 999px;
     padding: 0.22rem 0.58rem;
     font-size: 0.83rem;
@@ -159,7 +190,7 @@
   }
   .theme-pill.active {
     background: var(--accent-soft);
-    border-color: #b9c8dc;
+    border-color: #C4B8A4;
     color: var(--deep);
     font-weight: 600;
   }
@@ -168,34 +199,54 @@
   .row-item {
     border: 1px solid var(--line);
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface);
     padding: 0.65rem;
   }
   .row-item p { margin: 0.18rem 0; }
 
+  /* Bande de scrutin — élément signature.
+     Barre verticale gauche de 4 px : la colonne de couleurs formée
+     en vue liste donne un bilan visuel immédiat sans lire les libellés. */
+  .vote-card { border-left-width: 4px; }
+  .vote-card--pour       { border-left-color: var(--vert); }
+  .vote-card--contre     { border-left-color: var(--rouge); }
+  .vote-card--abstention { border-left-color: var(--muted); border-left-style: dashed; }
+  .vote-card--absent     { border-left-color: var(--line); }
+
+  /* Badges de position — couleur réservée au sens, jamais décorative */
   .vote-badge {
     display: inline-block;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 0.12rem 0.45rem;
     font-size: 0.78rem;
     letter-spacing: 0.01em;
     margin-left: 0.3rem;
-    border: 1px solid #8ea0b5;
-    color: #243244;
-    background: #e9eff6;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--bg);
+  }
+  .vote-badge.pour {
+    background: #EAF5EE;
+    border-color: var(--vert);
+    color: var(--vert);
+    font-weight: 600;
   }
   .vote-badge.contre {
-    background: #fff;
-    border-width: 2px;
+    background: #FAEAEA;
+    border-color: var(--rouge);
+    color: var(--rouge);
+    font-weight: 600;
   }
   .vote-badge.abstention {
-    background: #fff;
-    border-style: dotted;
-    border-width: 2px;
+    background: var(--bg);
+    border-color: var(--muted);
+    border-style: dashed;
+    color: var(--muted);
   }
   .vote-badge.absent {
-    background: repeating-linear-gradient(135deg, #f1f4f8, #f1f4f8 5px, #ffffff 5px, #ffffff 10px);
-    border-width: 1px;
+    background: var(--bg);
+    border-color: var(--line);
+    color: var(--muted);
   }
 
   .votes-table-wrap { display: none; overflow-x: auto; }
@@ -207,7 +258,7 @@
     padding: 0.5rem 0.45rem;
     vertical-align: top;
   }
-  th { color: var(--deep); }
+  th { color: var(--deep); font-family: 'Libre Baskerville', Georgia, serif; }
 
   details.inline-help {
     display: inline-block;
@@ -217,7 +268,7 @@
   details.inline-help summary {
     list-style: none;
     cursor: pointer;
-    border: 1px solid #c4ceda;
+    border: 1px solid var(--line);
     border-radius: 999px;
     width: 18px;
     height: 18px;
@@ -237,6 +288,41 @@
     max-width: 320px;
   }
 
+  /* Sections repliables — hiérarchie de l'information :
+     vue agrégée d'abord, catalogue sur demande */
+  .section-collapsible > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.1rem 0;
+    user-select: none;
+    margin-bottom: 0;
+  }
+  .section-collapsible > summary::-webkit-details-marker { display: none; }
+  .section-collapsible > summary .section-title {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: 1.05rem;
+    color: var(--deep);
+    font-weight: 700;
+  }
+  .section-collapsible > summary .section-meta {
+    font-size: 0.84rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .section-collapsible > summary .section-arrow {
+    font-size: 0.72rem;
+    transition: transform 0.2s;
+    display: inline-block;
+    color: var(--muted);
+  }
+  .section-collapsible[open] > summary .section-arrow { transform: rotate(90deg); }
+  .section-collapsible > .section-body { margin-top: 0.75rem; }
+
   .absence-grid {
     display: grid;
     gap: 0.5rem;
@@ -246,7 +332,7 @@
     border: 1px dashed var(--line);
     border-radius: 10px;
     padding: 0.58rem;
-    background: #fafbfc;
+    background: var(--bg);
   }
   .absence-box ul { margin: 0.3rem 0 0; padding-left: 1rem; }
 
@@ -258,7 +344,7 @@
   }
   .ghost-btn {
     border: 1px solid var(--line);
-    background: #fff;
+    background: var(--surface);
     border-radius: 9px;
     padding: 0.28rem 0.58rem;
     font-size: 0.84rem;
@@ -270,9 +356,9 @@
     right: 12px;
     bottom: 12px;
     z-index: 60;
-    border: 1px solid #9eb2cb;
-    background: #eaf0f7;
-    color: #1f2f44;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
     border-radius: 999px;
     padding: 0.45rem 0.8rem;
     font-size: 0.84rem;
@@ -291,7 +377,7 @@
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 0.6rem;
-    background: #fff;
+    background: var(--surface);
   }
 
   a.link { color: var(--accent); text-decoration: none; }
@@ -307,6 +393,8 @@
     .votes-table-wrap { display: block; }
     .absence-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .compare-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .theme-dist-label { width: 140px; }
   }
 </style>
 </head>
@@ -521,6 +609,35 @@
       for (const item of (profile.dossiers_legislatifs || [])) themesSeen.add(item._theme);
       for (const item of (profile.interventions || [])) themesSeen.add(item._theme);
 
+      // Taux de participation aux votes (présences actives : pour + contre + abstention)
+      const activeVotes = (profile.votes || []).filter((v) => voteLabelAndClass(v.position).cls !== "absent").length;
+      const tauxPresence = nbVotes > 0 ? Math.round((activeVotes / nbVotes) * 100) : null;
+
+      // Répartition thématique des votes pour histogramme horizontal
+      const themeCountMap = {};
+      for (const v of (profile.votes || [])) {
+        themeCountMap[v._theme] = (themeCountMap[v._theme] || 0) + 1;
+      }
+      const sortedThemeDist = Object.entries(themeCountMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const maxThemeCount = sortedThemeDist[0]?.[1] || 1;
+
+      const themeDistHtml = sortedThemeDist.length ? `
+        <div class="theme-dist">
+          <p class="theme-dist-title">Répartition des votes par thème</p>
+          ${sortedThemeDist.map(([theme, count]) => `
+            <div class="theme-dist-row">
+              <span class="theme-dist-label">${escapeHtml(themeLabel(theme))}</span>
+              <div class="theme-dist-bar-wrap" title="${escapeHtml(themeLabel(theme))} — ${count} vote(s)">
+                <div class="theme-dist-bar" style="width:${Math.round((count / maxThemeCount) * 100)}%"></div>
+              </div>
+              <span class="theme-dist-count">${count}</span>
+            </div>
+          `).join("")}
+        </div>
+      ` : "";
+
       return `
         <section id="resume" class="panel">
           <div class="hero">
@@ -538,8 +655,12 @@
           <div class="summary-grid">
             <article class="kpi">
               <div class="kpi-value">${nbVotes}</div>
-              <div class="kpi-label">Votes retrouvés</div>
+              <div class="kpi-label">Votes recensés</div>
               <a href="#votes">Voir le détail</a>
+            </article>
+            <article class="kpi">
+              <div class="kpi-value">${tauxPresence !== null ? tauxPresence + "\u202f%" : "—"}</div>
+              <div class="kpi-label">Taux de participation aux votes</div>
             </article>
             <article class="kpi">
               <div class="kpi-value">${nbTextes}</div>
@@ -548,10 +669,12 @@
             </article>
             <article class="kpi">
               <div class="kpi-value">${themesSeen.size}</div>
-              <div class="kpi-label">Thèmes abordés / prises de parole</div>
+              <div class="kpi-label">Thèmes couverts</div>
               <a href="#interventions">Voir le détail</a>
             </article>
           </div>
+
+          ${themeDistHtml}
 
           <div class="trust-line">
             Données sourcées • Dernière mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
@@ -626,16 +749,16 @@
           ${items.map((v) => {
             const badge = voteLabelAndClass(v.position);
             return `
-              <article class="row-item">
+              <article class="row-item vote-card vote-card--${badge.cls}">
                 <p><strong>${escapeHtml(simplifyTitle(v.titre))}</strong></p>
-                <p class="small">${escapeHtml(formatIsoDate(v.date))} • ${escapeHtml(themeLabel(v._theme))}
+                <p class="small"><span class="source-ref">${escapeHtml(formatIsoDate(v.date))}</span> • ${escapeHtml(themeLabel(v._theme))}
                   <span class="vote-badge ${badge.cls}">${escapeHtml(badge.label)}</span>
                 </p>
                 <details>
                   <summary class="small">Voir le libellé officiel complet</summary>
                   <p class="small">${escapeHtml(v.titre || "Libellé non renseigné")}</p>
                 </details>
-                <p class="small">${escapeHtml(profile.votes_source || "Source de vote non précisée")}
+                <p class="small"><span class="source-ref">${escapeHtml(profile.votes_source || "Source de vote non précisée")}</span>
                   <details class="inline-help"><summary aria-label="Aide">?</summary><p>“Vote officiel” = résultat nominatif publié par l’institution parlementaire.</p></details>
                 </p>
               </article>
@@ -879,27 +1002,58 @@
           ${renderThemePills()}
         </section>
 
-        <section id="textes" class="panel">
-          <h2>Actions concrètes — Textes portés</h2>
-          ${renderTextes(profile)}
-        </section>
+        <details class="panel section-collapsible">
+          <summary>
+            <span class="section-title">Textes portés</span>
+            <span class="section-meta">
+              <span class="source-ref">${(profile.dossiers_legislatifs || []).length}</span>
+              <span class="section-arrow">▶</span>
+            </span>
+          </summary>
+          <div id="textes" class="section-body">
+            ${renderTextes(profile)}
+          </div>
+        </details>
 
-        <section id="votes" class="panel">
-          <h2>Votes enregistrés
-            <details class="inline-help"><summary aria-label="Aide">?</summary><p>La position de vote est affichée sans code couleur moral, avec des libellés lisibles et des trames neutres.</p></details>
-          </h2>
-          ${renderVotes(profile)}
-        </section>
+        <details class="panel section-collapsible">
+          <summary>
+            <span class="section-title">Votes enregistrés
+              <details class="inline-help"><summary aria-label="Aide">?</summary><p>La position de vote est affichée sans code couleur moral, avec des libellés lisibles et la source primaire.</p></details>
+            </span>
+            <span class="section-meta">
+              <span class="source-ref">${(profile.votes || []).length}</span>
+              <span class="section-arrow">▶</span>
+            </span>
+          </summary>
+          <div id="votes" class="section-body">
+            ${renderVotes(profile)}
+          </div>
+        </details>
 
-        <section id="absences" class="panel">
-          <h2>Absences et silences dans les données</h2>
-          ${renderAbsences(profile)}
-        </section>
+        <details class="panel section-collapsible">
+          <summary>
+            <span class="section-title">Absences et silences dans les données</span>
+            <span class="section-meta">
+              <span class="section-arrow">▶</span>
+            </span>
+          </summary>
+          <div id="absences" class="section-body">
+            ${renderAbsences(profile)}
+          </div>
+        </details>
 
-        <section id="interventions" class="panel">
-          <h2>Prises de position / interventions</h2>
-          ${renderInterventions(profile)}
-        </section>
+        <details class="panel section-collapsible">
+          <summary>
+            <span class="section-title">Prises de parole</span>
+            <span class="section-meta">
+              <span class="source-ref">${(profile.interventions || []).length}</span>
+              <span class="section-arrow">▶</span>
+            </span>
+          </summary>
+          <div id="interventions" class="section-body">
+            ${renderInterventions(profile)}
+          </div>
+        </details>
 
         ${renderCompareSection(profile)}
       `;
@@ -910,6 +1064,18 @@
     }
 
     function bindRenderedEvents() {
+      // Ouvre automatiquement la section repliée quand un lien interne la cible
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener("click", () => {
+          const id = a.getAttribute("href").slice(1);
+          const target = document.getElementById(id);
+          if (target) {
+            const det = target.closest("details");
+            if (det && !det.open) det.open = true;
+          }
+        });
+      });
+
       document.querySelectorAll(".theme-pill").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.selectedTheme = btn.dataset.theme;
