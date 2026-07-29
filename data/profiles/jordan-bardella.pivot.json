@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "id": "nosdeputes:jordan-bardella",
+  "nom": "Jordan Bardella",
+  "chambre": null,
+  "parti": "Rassemblement National (RN)",
+  "groupe": "Rassemblement National (RN)",
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
+      "synchro_le": "2026-07-29T08:51:48+0000"
+    }
+  ],
+  "mandats": [],
+  "votes": [],
+  "textes_portes": [],
+  "interventions": [],
+  "tags_thematiques": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-07-29T12:14:39+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
+      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+    ]
+  }
+}
