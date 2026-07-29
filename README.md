@@ -215,7 +215,7 @@ Le profil de groupe produit contient :
   participation et de cohérence du groupe (membres alignés / membres
   éligibles à la date du scrutin). Distingue absents, non-votants et excusés.
 - `tags_thematiques_agreges` : agrégation des `tags_thematiques` individuels,
-  triés par poids décroissant (`nb_membres_porteurs / effectif_actuel`).
+  triés par poids décroissant (`nb_membres_porteurs / len(membres)`).
 - `sources` et `meta` : traçabilité des profils agrégés, horodatage, licence.
 
 ## 6. Veille des candidats via Wikipédia / Wikidata
