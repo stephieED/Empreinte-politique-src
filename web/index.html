@@ -234,7 +234,7 @@
         const profile = await resp.json();
         renderProfile(profile);
       } catch (err) {
-        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python generate_all_profiles.py" pour générer son profil.</p>`;
+        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python src/generate_all_profiles.py" pour générer son profil.</p>`;
       }
     }
 
