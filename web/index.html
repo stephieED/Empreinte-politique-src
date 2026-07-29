@@ -659,7 +659,10 @@
               <a href="#votes">Voir le détail</a>
             </article>
             <article class="kpi">
-              <div class="kpi-value">${tauxPresence !== null ? tauxPresence + "\u202f%" : "—"}</div>
+              <div class="kpi-value"
+                   ${tauxPresence === null ? 'aria-label="Taux de participation non disponible"' : `aria-label="${tauxPresence} % de participation aux votes"`}>
+                ${tauxPresence !== null ? tauxPresence + "\u00a0%" : "N/D"}
+              </div>
               <div class="kpi-label">Taux de participation aux votes</div>
             </article>
             <article class="kpi">
