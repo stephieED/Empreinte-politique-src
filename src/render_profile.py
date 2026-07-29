@@ -52,6 +52,20 @@ def _render_mandat(m: dict[str, Any]) -> str:
     return f"<li><strong>{type_}</strong> — {label} <em>({categorie_label})</em>{dates}</li>"
 
 
+def _render_mandat_ue(m: dict[str, Any]) -> str:
+    """Rend un mandat/fonction européen (voir candidate_profile_ue.py) : organisation,
+    type (commission, délégation, groupe politique...), rôle et dates."""
+    organisation = html.escape(str(m.get("organisation_nom") or m.get("organisation_sigle") or ""))
+    type_label = html.escape(str(m.get("type_label") or ""))
+    role_label = html.escape(str(m.get("role_label") or ""))
+    dates = ""
+    if m.get("debut") or m.get("fin"):
+        fin_label = html.escape(str(m.get("fin"))) if m.get("fin") else ("en cours" if m.get("actif") else "?")
+        dates = f" — {html.escape(str(m.get('debut') or '?'))} → {fin_label}"
+    role_part = f"{role_label} — " if role_label and role_label != "Membre" else ""
+    return f"<li>{role_part}<strong>{organisation}</strong> <em>({type_label})</em>{dates}</li>"
+
+
 def _render_intervention(i: dict[str, Any]) -> str:
     parts = [f"<strong>{html.escape(str(i.get('date') or i.get('created_at') or ''))}</strong>"]
     type_detail = i.get("type_detail")
@@ -95,6 +109,20 @@ def render_html(profile: dict[str, Any]) -> str:
         ) or "<li>Aucune information disponible.</li>"
 
     mandats_html = "".join(_render_mandat(m) for m in mandats) or "<li>Aucun mandat renseigné.</li>"
+
+    mandat_europeen = profile.get("mandat_europeen")
+    mandat_europeen_html = ""
+    if mandat_europeen:
+        mandats_ue_html = "".join(
+            _render_mandat_ue(m) for m in (mandat_europeen.get("mandats_europeens") or [])
+        ) or "<li>Aucun mandat renseigné.</li>"
+        mandat_europeen_html = f"""
+  <div class=\"card\">
+    <h2>Mandat européen (Parlement européen)</h2>
+    <p><em>Source : Open Data Portal du Parlement européen ({html.escape(str(mandat_europeen.get('url_source') or ''))})</em></p>
+    <ul>{mandats_ue_html}</ul>
+  </div>
+"""
 
     votes_html = "".join(
         f"<li><strong>{html.escape(str(v.get('date') or ''))}</strong> — {html.escape(str(v.get('titre') or ''))} ({html.escape(str(v.get('position') or ''))})</li>"
@@ -146,7 +174,7 @@ def render_html(profile: dict[str, Any]) -> str:
     <h2>Mandats</h2>
     <ul>{mandats_html}</ul>
   </div>
-
+{mandat_europeen_html}
   <div class=\"card\">
     <h2>Votes</h2>
     {votes_source_html}

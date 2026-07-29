@@ -108,7 +108,7 @@ _LIST_KEYS = ("votes", "mandats", "textes_portes", "interventions", "tags_themat
 
 # Types de sources reconnus (extensible, liste non-exhaustive).
 KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
-    "nosdeputes", "nossenateurs", "parltrack", "wikidata", "assemblee_nationale",
+    "nosdeputes", "nossenateurs", "parltrack", "wikidata", "assemblee_nationale", "europarl",
 })
 
 # Valeurs de chambre reconnues.
