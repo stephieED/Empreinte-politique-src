@@ -93,6 +93,22 @@
         .join("");
     }
 
+    function renderMandatsUE(mandatsUe) {
+      if (!mandatsUe || !mandatsUe.length) return "<li>Aucun mandat renseigné.</li>";
+      return mandatsUe
+        .map((m) => {
+          const organisation = m.organisation_nom || m.organisation_sigle || "";
+          const rolePart = m.role_label && m.role_label !== "Membre" ? `${escapeHtml(m.role_label)} — ` : "";
+          let line = `<li>${rolePart}<strong>${escapeHtml(organisation)}</strong> <em>(${escapeHtml(m.type_label || "")})</em>`;
+          if (m.debut || m.fin) {
+            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
+            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
+          }
+          return line + "</li>";
+        })
+        .join("");
+    }
+
     function renderVotes(votes) {
       if (!votes || !votes.length) return "<li>Aucun vote renseigné.</li>";
       return votes
@@ -161,6 +177,12 @@
           <h2>Mandats</h2>
           <ul>${renderMandats(profile.mandats)}</ul>
         </div>
+        ${profile.mandat_europeen ? `
+        <div class="card">
+          <h2>Mandat européen (Parlement européen)</h2>
+          <p><em>Source : Open Data Portal du Parlement européen${profile.mandat_europeen.url_source ? ` (${escapeHtml(profile.mandat_europeen.url_source)})` : ""}</em></p>
+          <ul>${renderMandatsUE(profile.mandat_europeen.mandats_europeens)}</ul>
+        </div>` : ""}
         <div class="card">
           <h2>Votes</h2>
           ${profile.votes_source ? `<p><em>Source : ${escapeHtml(profile.votes_source)}</em></p>` : ""}
@@ -203,6 +225,11 @@
       }
 
       const candidat = candidats.find((c) => c.slug === slug);
+      if (!candidat) {
+        document.getElementById("candidat-meta").innerHTML = "";
+        container.innerHTML = `<p class="empty">Candidat introuvable (slug: ${escapeHtml(slug)}).</p>`;
+        return;
+      }
       renderMeta(candidat);
 
       container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
@@ -212,7 +239,7 @@
         const profile = await resp.json();
         renderProfile(profile);
       } catch (err) {
-        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python generate_all_profiles.py" pour générer son profil.</p>`;
+        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python src/generate_all_profiles.py" pour générer son profil.</p>`;
       }
     }
 

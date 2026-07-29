@@ -6,8 +6,10 @@ l'élection présidentielle française de 2027, à partir des données ouvertes
 de [NosDéputés.fr / NosSénateurs.fr](https://github.com/regardscitoyens)
 (Regards Citoyens, licence ODbL), de l'
 [open data de l'Assemblée nationale](https://data.assemblee-nationale.fr/)
-pour le détail des votes, des données [Parltrack](https://parltrack.org)
-pour les députés européens, et de Wikipédia/Wikidata pour la veille des
+pour le détail des votes, des données [Parltrack](https://parltrack.org) +
+[Open Data Portal du Parlement européen](https://data.europarl.europa.eu/)
+(licence CC BY 4.0) pour le volet mandat européen des candidats ayant été
+eurodéputé⋅e⋅s, et de Wikipédia/Wikidata pour la veille des
 candidatures.
 
 **Principe directeur** : chaque fait affiché doit pouvoir remonter jusqu'à
@@ -20,6 +22,7 @@ précise). Le projet ne porte aucun jugement de valeur.
 CV_CandidatFR/
 ├── src/                               # Scripts Python
 │   ├── candidate_profile.py           # Collecte le profil brut d'UN parlementaire FR (AN/Sénat)
+│   ├── candidate_profile_ue.py        # Construit le volet "mandat européen" d'UN candidat
 │   ├── generate_all_profiles.py       # Batch : profils de TOUS les candidats de candidats.json
 │   ├── render_profile.py              # Convertit un profil JSON en page HTML statique
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
@@ -38,11 +41,16 @@ CV_CandidatFR/
 │   ├── test_candidate_profile.py
 │   ├── test_schema_pivot.py
 │   └── test_normalize_nosdeputes.py
+│   └── test_candidate_profile_ue.py
 └── README.md
 ```
 
 - `.cache/` (créé automatiquement, ignoré par git) : cache local des archives
-  de votes AN et des dumps Parltrack, pour éviter de re-télécharger à chaque exécution.
+  de votes AN et des dumps Parltrack, pour éviter de re-télécharger à chaque exécution, 
+  de votes officielles téléchargées depuis data.assemblee-nationale.fr, ainsi
+  que de la liste des eurodéputé⋅e⋅s et des organisations du Parlement
+  européen (`.cache/europarl/`), pour éviter de re-télécharger ces données
+  volumineuses et quasi-statiques à chaque exécution.
 
 ## Installation
 
@@ -77,20 +85,59 @@ python src/render_profile.py data/profiles/jean-luc-melenchon.json
 # écrit data/profiles/jean-luc-melenchon.html par défaut (--out pour changer)
 ```
 
-## 2. Générer les profils de tous les candidats (batch)
+## 2. Ajouter le volet "mandat européen" d'un candidat
+
+Certains candidats ont été eurodéputé⋅e⋅s (ex. Jordan Bardella, Marine Le
+Pen, Jean-Luc Mélenchon). Ce volet est récupéré séparément, via l'Open Data
+Portal officiel du Parlement européen, et peut être consulté seul :
 
 ```bash
-python src/generate_all_profiles.py                          # tous les candidats avec un slug
+python src/candidate_profile_ue.py "Jordan Bardella"
+# affiche le JSON sur stdout ; ajouter --out chemin.json pour l'écrire dans un fichier
+```
+
+La recherche se fait par égalité exacte du nom complet (normalisé : accents,
+casse et ordre des mots ignorés) parmi la liste complète des eurodéputé⋅e⋅s
+ayant représenté un pays (`--country`, défaut `FR`). Un candidat non trouvé
+n'est pas une erreur : cela signifie simplement qu'il n'a jamais été membre
+du Parlement européen. En pratique, ce script est surtout utile en isolation
+pour déboguer : `generate_all_profiles.py` (section suivante) l'appelle déjà
+automatiquement pour chaque candidat et fusionne le résultat dans le profil.
+
+### Cette API est-elle légale à utiliser ?
+
+Oui. L'API `https://data.europarl.europa.eu/api/v2/` est publiée par le
+Parlement européen lui-même sous licence **CC BY 4.0** (Creative Commons
+Attribution 4.0 International — réutilisation libre, y compris commerciale,
+à condition de créditer la source), comme indiqué explicitement dans le champ
+`info.license` de sa spécification OpenAPI publique. Deux règles techniques
+sont à respecter (déjà implémentées dans `candidate_profile_ue.py`) :
+
+- envoyer un en-tête `User-Agent` identifiant le projet réutilisateur ;
+- rester sous la limite de **500 requêtes / 5 minutes**.
+
+## 3. Générer les profils de tous les candidats (batch)
+
+```bash
+python src/generate_all_profiles.py                          # tous les candidats
 python src/generate_all_profiles.py --only jean-luc-melenchon # un seul candidat
 python src/generate_all_profiles.py --max-pages 5             # recherche plus légère/rapide
 python src/generate_all_profiles.py --skip-existing           # ne relance pas ce qui est déjà généré
 python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json
+python src/generate_all_profiles.py --skip-ue                 # ne pas interroger l'API du Parlement européen
 ```
 
-Ce script lit `data/candidats.json`, ignore proprement les candidats sans
-`slug` (non référencés sur NosDéputés/NosSénateurs), essaie automatiquement
-`deputes` puis `senateurs`, et écrit `data/profiles/<slug>.json` +
-`data/profiles/<slug>.html` pour chaque candidat traité.
+Ce script lit `data/candidats.json` et, pour chaque candidat :
+
+1. essaie de construire son profil français (`deputes` puis `senateurs`) via
+   son `slug` NosDéputés/NosSénateurs, s'il en a un ;
+2. recherche systématiquement (sauf `--skip-ue`) un mandat européen par nom
+   via `candidate_profile_ue.py`, et le fusionne dans le profil sous la clé
+   `mandat_europeen` ;
+3. écrit `data/profiles/<slug>.json` + `data/profiles/<slug>.html` dès que
+   l'une des deux sources (française ou européenne) a produit un résultat —
+   un candidat sans mandat français connu mais eurodéputé (ex. Jordan
+   Bardella) obtient ainsi tout de même un profil minimal.
 
 Avec `--pivot`, un fichier `data/profiles/<slug>.pivot.json` est également
 généré au format schéma pivot v1 (voir section « Schéma pivot »).
@@ -159,6 +206,14 @@ Chaque `data/profiles/<slug>.json` contient :
   l'orateur à ce moment-là (ex. « Première ministre »), et un `format` dérivé
   du nombre de mots (`reaction_courte` pour une interjection/exclamation vs
   `prise_de_parole_developpee` pour une intervention construite).
+- `mandat_europeen` (uniquement si le candidat a été eurodéputé⋅e) :
+  identité au Parlement européen (`identifiant_pe`, `nom_complet`, `photo`) et
+  `mandats_europeens`, la liste triée (plus récent en premier) de tous les
+  mandats/fonctions occupés — mandat de député européen par législature,
+  commissions permanentes/spéciales, délégations interparlementaires, groupes
+  politiques européens et partis nationaux affiliés, groupes de travail,
+  organes de direction — chacun avec son rôle (`role_label`, ex. « Membre »,
+  « Président(e) »), ses dates de début/fin et un indicateur `actif`.
 - `meta.warnings` : liste des sources indisponibles ou incomplètes pour ce
   profil (à titre de transparence, jamais masqué).
 - `meta.synchro_sources` : horodatage ISO-8601 de la dernière synchro réussie
@@ -269,3 +324,26 @@ par une table de correspondance explicite (`tags_thematiques[]` bruts →
 thème normalisé), versionnée dans ce dépôt. Toute modification du découpage
 sera tracée dans le changelog.
 
+## Limites connues
+
+- Les votes ne sont récupérés via l'open data officiel que pour les
+  **députés** (législatures 14 à 16) ; les sénateurs n'ont pas encore
+  d'équivalent officiel intégré, et la législature 17 (en cours) n'est pas
+  encore couverte.
+- Les interventions sont retrouvées par recherche plein texte du nom du
+  candidat : un candidat très peu cité ou avec un nom ambigu peut avoir une
+  couverture partielle.
+- La documentation de l'API dans `docs/nosdeputes_doc/` est fournie par
+  Regards Citoyens à titre de référence ; certains endpoints qu'elle décrit
+  (ex. le détail des votes par scrutin) sont aujourd'hui hors service côté
+  NosDéputés.fr/NosSénateurs.fr.
+- Le mandat européen (`candidate_profile_ue.py`) ne couvre que les mandats,
+  commissions, délégations et groupes politiques (via `hasMembership` de
+  l'API MEPs) : il n'inclut pas encore les votes en plénière ni les rapports
+  déposés au Parlement européen, bien que l'API expose des endpoints
+  (`/meetings/{id}/vote-results`, `/documents`) qui permettraient de les
+  ajouter dans une prochaine itération.
+- La recherche d'un mandat européen se fait par égalité exacte du nom
+  normalisé : un candidat dont le nom sur `data/candidats.json` diffère
+  significativement de son libellé officiel au Parlement européen (ex. nom
+  d'usage vs nom légal) ne serait pas trouvé.

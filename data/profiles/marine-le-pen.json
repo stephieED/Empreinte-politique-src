@@ -10736,10 +10736,1825 @@
       "url_source": "https://2017-2022.nosdeputes.fr/15/dossier/55"
     }
   ],
-  "interventions": [],
+  "interventions": [
+    {
+      "type": "Intervention",
+      "id": 249506,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/249506/json",
+      "date": "2023-05-02",
+      "created_at": "2023-05-08 03:30:38",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230218.asp#3096256",
+      "texte": "<p>Les Mahorais ont manifesté pour les soutenir !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1247#inter_1ed5ff7bfaea42319593950395aa5017",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Souhaits de bienvenue à trois députés réélus",
+      "mots_cles": [
+        "séance",
+        "LPM",
+        "armée",
+        "militaire",
+        "programmation",
+        "militaire"
+      ],
+      "fonction": null,
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 86145,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/86145/json",
+      "date": "2022-11-08",
+      "created_at": "2022-11-14 01:49:20",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230049.asp#2902456",
+      "texte": "<p>Ce n'est pas vrai !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/439#inter_e0fde3c8e22e00c971a1fc805ec3afcd",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "société",
+        "territoriale"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 265639,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/265639/json",
+      "date": "2023-05-16",
+      "created_at": "2023-05-22 02:24:25",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230234.asp#3113833",
+      "texte": "<p>Vous devriez avoir honte !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1341#inter_130789ef6a2d314370c11bea4fd17de1",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "maire",
+        "réacteur"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 301886,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/301886/json",
+      "date": "2023-06-13",
+      "created_at": "2023-06-26 03:30:54",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230267.asp#3151743",
+      "texte": "<p>« Aller vers » ? Vous avez oublié le style inclusif !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1561#inter_bb248f49b8a1c562f952c9876fdd311e",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "agriculture",
+        "mercosur"
+      ],
+      "fonction": null,
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 337882,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/337882/json",
+      "date": "2023-07-11",
+      "created_at": "2023-07-24 04:00:43",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023-extra/20231012.asp#3195280",
+      "texte": "<p>Pas tous !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1725#inter_74484a3a973ee5e2d3942b7c18704ecc",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "magistrat"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 396329,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/396329/json",
+      "date": "2023-10-18",
+      "created_at": "2023-10-23 02:21:22",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2023-2024/20240023.asp#3259542",
+      "texte": "<p>Le problème, c'est Renaissance !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/2017#inter_d1218740cc11d47b16174d45dd168df8",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Débat sur la dette",
+      "mots_cles": [
+        "séance",
+        "PIB",
+        "dette",
+        "déficit",
+        "endettement",
+        "obligations"
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 422657,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/422657/json",
+      "date": "2023-11-07",
+      "created_at": "2023-11-12 23:29:20",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2023-2024/20240044.asp#3282835",
+      "texte": "<p>Pas un mot sur les otages !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/2135#inter_46e9cea83b74624503714bc9fac8e68c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Tempêtes ciaran et domingos",
+      "mots_cles": [
+        "séance",
+        "LPM",
+        "combattant",
+        "militaire",
+        "nation"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 488204,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/488204/json",
+      "date": "2024-01-30",
+      "created_at": "2024-02-01 00:10:41",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2023-2024/20240109.asp#3357454",
+      "texte": "<p>Les choses ne vont pas changer !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/2430#inter_2ac625d43f1f755c9267d87d7d8686ca",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Dépôt d'une motion de censure",
+      "mots_cles": [
+        "séance",
+        "IVG"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 509734,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/509734/json",
+      "date": "2024-03-05",
+      "created_at": "2024-03-08 02:34:45",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2023-2024/20240135.asp#3385702",
+      "texte": "<p>Libérez les otages !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/2546#inter_ebc42b7f2de6b3b8bb75a6b18277ffde",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ariane",
+        "internationale",
+        "satellite",
+        "spatial",
+        "spatiale",
+        "spatiaux",
+        "stratégique"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 7812,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/7812/json",
+      "date": "2022-07-19",
+      "created_at": "2022-07-20 17:59:11",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221009.asp#2816883",
+      "texte": "<p>À cause de vous !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/63#inter_3881f08f6ffc4e2998a2cf5a6e921b92",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ailleurs",
+        "condition",
+        "cotisations",
+        "sociales",
+        "dispositif",
+        "mesures",
+        "partage"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 7837,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/7837/json",
+      "date": "2022-07-19",
+      "created_at": "2022-07-20 17:59:11",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221009.asp#2816906",
+      "texte": "<p>Ça suffit avec ça !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/63#inter_9a129d22f21a953b92ee0fb29770511b",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ailleurs",
+        "condition",
+        "cotisations",
+        "sociales",
+        "dispositif",
+        "mesures",
+        "partage"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 8000,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/8000/json",
+      "date": "2022-07-19",
+      "created_at": "2022-07-20 17:59:12",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221009.asp#2816957",
+      "texte": "<p>Voilà !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/63#inter_c0bd67fb5e8e9f0a66a48f1697cd8f5d",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ailleurs",
+        "condition",
+        "cotisations",
+        "sociales",
+        "dispositif",
+        "mesures",
+        "partage"
+      ],
+      "fonction": null,
+      "nb_mots": 2,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 8267,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/8267/json",
+      "date": "2022-07-19",
+      "created_at": "2022-07-20 17:59:14",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2021-2022-extra/20221009.asp#2817042",
+      "texte": "<p>Eh oui !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/63#inter_6e9fe8321578b16665e93269232598d7",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ailleurs",
+        "condition",
+        "cotisations",
+        "sociales",
+        "dispositif",
+        "mesures",
+        "partage"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 34486,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/34486/json",
+      "date": "2022-10-04",
+      "created_at": "2022-10-10 02:52:41",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230003.asp#2848462",
+      "texte": "<p>Zéro !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/231#inter_31746d1e1be0057d3f6e64a6f042fa54",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Accueil de dessinateurs au sein de l'assemblée nationale",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "chômeur",
+        "négociation",
+        "partenaires",
+        "sociaux",
+        "règle",
+        "réforme"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 35401,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/35401/json",
+      "date": "2022-10-04",
+      "created_at": "2022-10-10 02:52:47",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230004.asp#2849649",
+      "texte": "<p>Après !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/232#inter_d6075237650be48ebcb383fbb9861dba",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Fonctionnement du marché du travail",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "chômeur",
+        "concertation",
+        "dit",
+        "partenaires",
+        "sociaux",
+        "quelque"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 44834,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/44834/json",
+      "date": "2022-10-11",
+      "created_at": "2022-10-17 03:48:20",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230012.asp#2858307",
+      "texte": "<p>Ce n'est pas vrai !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/279#inter_f294e59db1aeec53453f0f3f3042ad61",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "réforme",
+        "économie"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 44990,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/44990/json",
+      "date": "2022-10-11",
+      "created_at": "2022-10-17 03:48:21",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230012.asp#2858506",
+      "texte": "<p>Rappel au règlement !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/279#inter_450a350264111969b76c24e74f7d3600",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "réforme",
+        "économie"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 45125,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/45125/json",
+      "date": "2022-10-11",
+      "created_at": "2022-10-17 03:48:22",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230012.asp#2858763",
+      "texte": "<p>Et « communautariste » ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/279#inter_8f7659f0c5dd90b33ec64d880817e27e",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "réforme",
+        "économie"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 65239,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/65239/json",
+      "date": "2022-10-24",
+      "created_at": "2022-11-04 21:20:02",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230029.asp#2879064",
+      "texte": "<p>…ils ont exprimé une soif de renouveau démocratique.</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/384#inter_1a0de11624bd36bf8af11ed94872b68f",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Dépôt d'une motion de censure",
+      "mots_cles": [
+        "séance",
+        "censure",
+        "motion",
+        "censure",
+        "motions",
+        "censure",
+        "opposition",
+        "république"
+      ],
+      "fonction": null,
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 65817,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/65817/json",
+      "date": "2022-10-24",
+      "created_at": "2022-11-04 21:20:06",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230029.asp#2879977",
+      "texte": "<p>Cent cinquante milliards d'euros de déficit !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/384#inter_9259403132b8e062e1e178d3f0d50b77",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Dépôt d'une motion de censure",
+      "mots_cles": [
+        "séance",
+        "censure",
+        "motion",
+        "censure",
+        "motions",
+        "censure",
+        "opposition",
+        "république"
+      ],
+      "fonction": null,
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 75955,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/75955/json",
+      "date": "2022-10-31",
+      "created_at": "2022-11-04 21:21:52",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230042.asp#2894744",
+      "texte": "<p>Ce n'est pas vrai !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/397#inter_a460bbf318218cf6e5019d7d59f2c880",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Motions de censure",
+      "mots_cles": [
+        "séance",
+        "censure",
+        "motion",
+        "national",
+        "rénovation"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 76253,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/76253/json",
+      "date": "2022-10-31",
+      "created_at": "2022-11-04 21:21:54",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230042.asp#2894554",
+      "texte": "<p>Oh, Michel Rocard !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/397#inter_0adf871f30b89c850de9a3235e46c7ae",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Motions de censure",
+      "mots_cles": [
+        "séance",
+        "censure",
+        "motion",
+        "national",
+        "rénovation"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 84449,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/84449/json",
+      "date": "2022-11-04",
+      "created_at": "2022-11-06 14:18:35",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230046.asp#2899195",
+      "texte": "<p>Exactement !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/409#inter_b6a443f0a2576b9a76ae87269964ef6b",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Censure avec exclusion temporaire d'un député",
+      "mots_cles": [
+        "séance",
+        "motion",
+        "motion",
+        "censure",
+        "opposition",
+        "outre-mer"
+      ],
+      "fonction": null,
+      "nb_mots": 2,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 125186,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/125186/json",
+      "date": "2022-12-06",
+      "created_at": "2022-12-12 00:59:41",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230085.asp#2946042",
+      "texte": "<p>À quelles conditions ? Combien ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/602#inter_1cfaf2f84840a5c955fd5cd9dba85770",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "asile",
+        "immigration",
+        "intégration",
+        "séjour",
+        "électricité",
+        "étranger"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 125189,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/125189/json",
+      "date": "2022-12-06",
+      "created_at": "2022-12-12 00:59:41",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230085.asp#2946044",
+      "texte": "<p>Combien ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/602#inter_177b87064336359a15b1100dc2861776",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "asile",
+        "immigration",
+        "intégration",
+        "séjour",
+        "électricité",
+        "étranger"
+      ],
+      "fonction": null,
+      "nb_mots": 2,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 150570,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/150570/json",
+      "date": "2023-01-12",
+      "created_at": "2023-01-25 03:04:20",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230115.asp#2981635",
+      "texte": "<p>Bravo !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/728#inter_3497a2e1b049d4bf2ca450c085def9cd",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Revivifier la représentation politique",
+      "mots_cles": [
+        "séance",
+        "démocratie",
+        "institution",
+        "mode",
+        "mode",
+        "scrutin",
+        "parti",
+        "proportionnel"
+      ],
+      "fonction": null,
+      "nb_mots": 2,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 158740,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/158740/json",
+      "date": "2023-01-24",
+      "created_at": "2023-01-30 00:35:44",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230125.asp#2992070",
+      "texte": "<p>C'est pas gagné !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/770#inter_491223494eca4c35fd223082f0c0a4cf",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "directive",
+        "ordonnance"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 158742,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/158742/json",
+      "date": "2023-01-24",
+      "created_at": "2023-01-30 00:35:44",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230125.asp#2992072",
+      "texte": "<p>Stop ! Stop !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/770#inter_543de7446cd60ff0cbdc5fddff1f6198",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "directive",
+        "ordonnance"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 158776,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/158776/json",
+      "date": "2023-01-24",
+      "created_at": "2023-01-30 00:35:44",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230125.asp#2992100",
+      "texte": "<p>Il ne répond pas à une seule question !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/770#inter_a3b4ffa26c219e3d478c20b899e634f6",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "assurance",
+        "directive",
+        "ordonnance"
+      ],
+      "fonction": null,
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 164671,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/164671/json",
+      "date": "2023-02-07",
+      "created_at": "2023-02-13 03:13:00",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230134.asp#3001289",
+      "texte": "<p>C'est de la faute de Darmanin !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/852#inter_7879199ed9c6fdcf5d36c0762befd4f4",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Hommage aux victimes du séisme en turquie et en syrie",
+      "mots_cles": [
+        "séance",
+        "liminaire",
+        "spéciaux"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193198,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193198/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:40",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3027824",
+      "texte": "<p>J'en doute.</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_ac4d67fad0a59fa5ccd1e9d48b18e618",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193458,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193458/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:42",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3028242",
+      "texte": "<p>On n'a rien compris !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_2ae82785dfad8cc46695fdea0842b145",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193489,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193489/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:42",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3028269",
+      "texte": "<p>C'est censé être bien ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_49375709c77359a337af35422de1bcbd",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193495,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193495/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:42",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3028273",
+      "texte": "<p>Il faudrait dire merci ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_763783ad5f70eb574ba3100197b8e150",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193750,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193750/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:44",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3027854",
+      "texte": "<p>Comme vous !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_e7bcce820db6770a4d60b13deb43f538",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193752,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193752/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:44",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3027856",
+      "texte": "<p>Ah oui, pardon !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_d3ffb5181964a7716828377fd654c256",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193808,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193808/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:44",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3027898",
+      "texte": "<p>Je suis encore là, merci ! En pleine forme !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_fed79f5625c998a70a13a6d8983d3efb",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 193859,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/193859/json",
+      "date": "2023-02-17",
+      "created_at": "2023-03-02 00:42:45",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230155.asp#3028018",
+      "texte": "<p>Là, on était majoritaires !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/898#inter_edbd90f0df7dc36e47bdd693136cc978",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "NUPES",
+        "cotisation",
+        "hémicycle",
+        "motion",
+        "motion",
+        "censure",
+        "rassemblement"
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 205685,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/205685/json",
+      "date": "2023-03-14",
+      "created_at": "2023-03-20 02:31:55",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230175.asp#3045979",
+      "texte": "<p>Pas des oppositions, de LR !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1006#inter_fdb41409544b211417e495b4a95bd71b",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "banque",
+        "réacteur"
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 217565,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/217565/json",
+      "date": "2023-03-20",
+      "created_at": "2023-03-27 02:56:14",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230182.asp#3054872",
+      "texte": "<p>N'importe quoi !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1052#inter_6abb8517864666406195255f143c53a5",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Libération d'olivier dubois",
+      "mots_cles": [
+        "séance",
+        "démocratie",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "peuple"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 218013,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/218013/json",
+      "date": "2023-03-20",
+      "created_at": "2023-03-27 02:56:16",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230182.asp#3054930",
+      "texte": "<p>Ben voyons !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1052#inter_ca48bc6d02097c7cb69a908d6d5090ce",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Libération d'olivier dubois",
+      "mots_cles": [
+        "séance",
+        "démocratie",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "peuple"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 218242,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/218242/json",
+      "date": "2023-03-20",
+      "created_at": "2023-03-27 02:56:17",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230182.asp#3055480",
+      "texte": "<p>Ah, on retrouve la techno…</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1052#inter_852e8bdc3081816984574076dd7d53b6",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Libération d'olivier dubois",
+      "mots_cles": [
+        "séance",
+        "démocratie",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "peuple"
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 218350,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/218350/json",
+      "date": "2023-03-20",
+      "created_at": "2023-03-27 02:56:18",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230182.asp#3055498",
+      "texte": "<p>C'est vous qui créez la crise !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1052#inter_e29afcdbb598f0754e7622fbf5fa249c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Libération d'olivier dubois",
+      "mots_cles": [
+        "séance",
+        "démocratie",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "peuple"
+      ],
+      "fonction": null,
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 219259,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/219259/json",
+      "date": "2023-03-21",
+      "created_at": "2023-03-27 02:56:26",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230184.asp#3056680",
+      "texte": "<p>Une démission !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1054#inter_bfbed0b8f8687b716dacb9dce8cdc4b3",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "centre",
+        "handicap",
+        "jeux",
+        "olympique",
+        "olympiques",
+        "et",
+        "paralympiques"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 219410,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/219410/json",
+      "date": "2023-03-21",
+      "created_at": "2023-03-27 02:56:26",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230184.asp#3056853",
+      "texte": "<p>Écœurant !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1054#inter_567e85d5bbcc029261a338a847b850c3",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "centre",
+        "handicap",
+        "jeux",
+        "olympique",
+        "olympiques",
+        "et",
+        "paralympiques"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 219415,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/219415/json",
+      "date": "2023-03-21",
+      "created_at": "2023-03-27 02:56:26",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230184.asp#3056860",
+      "texte": "<p>Bien sûr !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1054#inter_43b8d817a2475b06b5617323b795800d",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "centre",
+        "handicap",
+        "jeux",
+        "olympique",
+        "olympiques",
+        "et",
+        "paralympiques"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 235377,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/235377/json",
+      "date": "2023-04-04",
+      "created_at": "2023-04-11 02:26:17",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230202.asp#3078446",
+      "texte": "<p>Vous reprenez la même fiche !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1140#inter_e503d9ad0773cef6949744d33d2287d5",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Souhaits de bienvenue à une délégation étrangère",
+      "mots_cles": [
+        "séance",
+        "critère",
+        "enseignement",
+        "logement",
+        "orientation",
+        "parcoursup",
+        "plateforme",
+        "supérieur"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 235385,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/235385/json",
+      "date": "2023-04-04",
+      "created_at": "2023-04-11 02:26:17",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230202.asp#3078454",
+      "texte": "<p>C'est nul !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1140#inter_2d078bd439f9611b0824d2aa22cf63c2",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Souhaits de bienvenue à une délégation étrangère",
+      "mots_cles": [
+        "séance",
+        "critère",
+        "enseignement",
+        "logement",
+        "orientation",
+        "parcoursup",
+        "plateforme",
+        "supérieur"
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 276616,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/276616/json",
+      "date": "2023-05-23",
+      "created_at": "2023-05-31 01:46:38",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230241.asp#3120992",
+      "texte": "<p>Vous lisez une fiche Wikipédia ?</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1391#inter_940be65afc7387686202ea16e72bafff",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Hommage aux agents du service public tués dans l'exercice de leur mission",
+      "mots_cles": [
+        "séance",
+        "dissuasion",
+        "militaire"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 291796,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/291796/json",
+      "date": "2023-06-06",
+      "created_at": "2023-06-08 01:53:30",
+      "type_detail": "question",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230258.asp#3141597",
+      "texte": "<p>Il était temps.</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/1461#inter_94d5e35423ecb079e226c4f96681d4a0",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Souhaits de bienvenue à une députée nouvellement élue",
+      "mots_cles": [
+        "séance",
+        "branche",
+        "déficit",
+        "logement"
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    }
+  ],
   "meta": {
-    "genere_le": "2026-07-28T18:39:51+0000",
+    "genere_le": "2026-07-29T08:52:19+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
+  },
+  "mandat_europeen": {
+    "identifiant_pe": "28210",
+    "nom_complet": "Marine LE PEN",
+    "date_naissance": "1968-08-05",
+    "lieu_naissance": "Neuilly sur Seine",
+    "photo": "https://www.europarl.europa.eu/mepphoto/28210.jpg",
+    "url_source": "https://www.europarl.europa.eu/meps/fr/28210",
+    "mandats_europeens": [
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "INTA",
+        "organisation_nom": "Commission du commerce international",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2017-01-19",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "LIBE",
+        "organisation_nom": "Commission des libertés civiles, de la justice et des affaires intérieures",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2017-01-19",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "D-US",
+        "organisation_nom": "Délégation pour les relations avec les États-Unis",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2015-07-27",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "LIBE",
+        "organisation_nom": "Commission des libertés civiles, de la justice et des affaires intérieures",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2015-06-25",
+        "fin": "2017-01-18",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "ENF",
+        "organisation_nom": "Groupe Europe des Nations et des Libertés",
+        "role": "CHAIR_CO",
+        "role_label": "Coprésident(e)",
+        "debut": "2015-06-16",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "GOVERNING_BODY",
+        "type_label": "Organe de direction du Parlement européen",
+        "organisation_sigle": "BCPR",
+        "organisation_nom": "Conférence des présidents",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2015-06-16",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "ENF",
+        "organisation_nom": "Groupe Europe des Nations et des Libertés",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2015-06-15",
+        "fin": "2015-06-15",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "D-US",
+        "organisation_nom": "Délégation pour les relations avec les États-Unis",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2014-09-10",
+        "fin": "2015-06-14",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "DMER",
+        "organisation_nom": "Délégation pour les relations avec le Mercosur",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-14",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY_ASSEMBLY",
+        "type_label": "Délégation à une assemblée parlementaire",
+        "organisation_sigle": "DLAT",
+        "organisation_nom": "Délégation à l'Assemblée parlementaire euro-latino-américaine",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-14",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "NATIONAL_POLITICAL_GROUP",
+        "type_label": "Parti national (au sein du groupe européen)",
+        "organisation_sigle": "FN",
+        "organisation_nom": "Front national",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-01",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "LIBE",
+        "organisation_nom": "Commission des libertés civiles, de la justice et des affaires intérieures",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2014-07-01",
+        "fin": "2015-06-14",
+        "actif": false
+      },
+      {
+        "type": "AUTRE",
+        "type_label": "Autre",
+        "organisation_sigle": "8e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER_PARLIAMENT",
+        "role_label": "Membre du Parlement européen",
+        "debut": "2014-07-01",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "INTA",
+        "organisation_nom": "Commission du commerce international",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-01",
+        "fin": "2017-01-18",
+        "actif": false
+      },
+      {
+        "type": "EU_INSTITUTION",
+        "type_label": "Mandat de député européen",
+        "organisation_sigle": "8e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-01",
+        "fin": "2017-06-18",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "NI",
+        "organisation_nom": "Non-inscrits",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2014-07-01",
+        "fin": "2015-06-14",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "EMPL",
+        "organisation_nom": "Commission de l'emploi et des affaires sociales",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2012-01-19",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "INTA",
+        "organisation_nom": "Commission du commerce international",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2012-01-19",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "D-CA",
+        "organisation_nom": "Délégation pour les relations avec le Canada",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2009-09-16",
+        "fin": "2010-11-14",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY_ASSEMBLY",
+        "type_label": "Délégation à une assemblée parlementaire",
+        "organisation_sigle": "DACP",
+        "organisation_nom": "Délégation à l'Assemblée parlementaire paritaire ACP-UE",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-09-16",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "EMPL",
+        "organisation_nom": "Commission de l'emploi et des affaires sociales",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-16",
+        "fin": "2012-01-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "INTA",
+        "organisation_nom": "Commission du commerce international",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2009-07-16",
+        "fin": "2012-01-18",
+        "actif": false
+      },
+      {
+        "type": "EU_INSTITUTION",
+        "type_label": "Mandat de député européen",
+        "organisation_sigle": "7e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "NI",
+        "organisation_nom": "Non-inscrits",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "AUTRE",
+        "type_label": "Autre",
+        "organisation_sigle": "7e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER_PARLIAMENT",
+        "role_label": "Membre du Parlement européen",
+        "debut": "2009-07-14",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "NATIONAL_POLITICAL_GROUP",
+        "type_label": "Parti national (au sein du groupe européen)",
+        "organisation_sigle": "FN",
+        "organisation_nom": "Front national",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2014-06-30",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "NI",
+        "organisation_nom": "Non-inscrits",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2007-11-14",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "DANZ",
+        "organisation_nom": "Délégation pour les relations avec l'Australie et la Nouvelle-Zélande",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2007-03-15",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "D-IL",
+        "organisation_nom": "Délégation pour les relations avec Israël",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2007-03-14",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "IMCO",
+        "organisation_nom": "Commission du marché intérieur et de la protection des consommateurs",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2007-01-31",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "LIBE",
+        "organisation_nom": "Commission des libertés civiles, de la justice et des affaires intérieures",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2007-01-31",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "ITS",
+        "organisation_nom": "Groupe Identité, Tradition, Souveraineté",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2007-01-15",
+        "fin": "2007-11-13",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "CULT",
+        "organisation_nom": "Commission de la culture et de l'éducation",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2007-01-15",
+        "fin": "2007-01-30",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "D-IL",
+        "organisation_nom": "Délégation pour les relations avec Israël",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2004-09-15",
+        "fin": "2007-03-13",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "CULT",
+        "organisation_nom": "Commission de la culture et de l'éducation",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2004-07-21",
+        "fin": "2007-01-14",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "IMCO",
+        "organisation_nom": "Commission du marché intérieur et de la protection des consommateurs",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2004-07-21",
+        "fin": "2007-01-14",
+        "actif": false
+      },
+      {
+        "type": "NATIONAL_POLITICAL_GROUP",
+        "type_label": "Parti national (au sein du groupe européen)",
+        "organisation_sigle": "FN",
+        "organisation_nom": "Front national",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2004-07-20",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "EU_INSTITUTION",
+        "type_label": "Mandat de député européen",
+        "organisation_sigle": "6e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2004-07-20",
+        "fin": "2009-07-13",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "NI",
+        "organisation_nom": "Non-inscrits",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2004-07-20",
+        "fin": "2007-01-14",
+        "actif": false
+      },
+      {
+        "type": "AUTRE",
+        "type_label": "Autre",
+        "organisation_sigle": "6e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER_PARLIAMENT",
+        "role_label": "Membre du Parlement européen",
+        "debut": "2004-07-20",
+        "fin": "2009-07-13",
+        "actif": false
+      }
+    ],
+    "meta": {
+      "genere_le": "2026-07-29T08:54:22+0000",
+      "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+      "source_api": "https://data.europarl.europa.eu/api/v2"
+    }
   }
 }
