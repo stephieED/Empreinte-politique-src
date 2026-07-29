@@ -1733,12 +1733,12 @@
     {
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/edouard-philippe",
-      "synchro_le": "2026-07-28T18:14:07+0000"
+      "synchro_le": "2026-07-29T13:21:13+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:15:06+0000",
+    "genere_le": "2026-07-29T13:58:45+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:edouard-philippe"

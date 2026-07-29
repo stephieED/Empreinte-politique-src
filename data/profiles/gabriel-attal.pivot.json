@@ -9,12 +9,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-07-28T18:31:01+0000"
+      "synchro_le": "2026-07-29T13:20:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-28T18:31:01+0000"
+      "synchro_le": "2026-07-29T13:20:34+0000"
     }
   ],
   "mandats": [
@@ -9030,10 +9030,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:14:39+0000",
+    "genere_le": "2026-07-29T13:20:34+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-    "warnings": [
-      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
-    ]
+    "warnings": []
   }
 }

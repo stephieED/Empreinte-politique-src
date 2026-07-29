@@ -1052,17 +1052,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-07-28T18:31:01+0000"
+      "synchro_le": "2026-07-29T13:20:33+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-28T18:31:01+0000"
+      "synchro_le": "2026-07-29T13:20:34+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:15:06+0000",
+    "genere_le": "2026-07-29T13:58:45+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:gabriel-attal"

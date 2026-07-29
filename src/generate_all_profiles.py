@@ -14,6 +14,16 @@ dans le même profil sous la clé "mandat_europeen" (pour un candidat sans
 mandat français, ex. Jordan Bardella, un profil minimal est tout de même créé
 à partir de data/candidats.json + du mandat européen).
 
+Fusion additive (comportement par défaut) : si un fichier <slug>.json (ou
+<slug>.pivot.json) existe déjà, les nouvelles données collectées sont
+fusionnées avec celles déjà présentes plutôt que de les écraser — chaque
+liste (votes, mandats, dossiers législatifs, interventions...) est fusionnée
+par clé d'unicité : les entrées déjà connues sont conservées telles quelles,
+seules les entrées réellement nouvelles sont ajoutées. Cela évite que des
+données varient ou disparaissent d'une régénération à l'autre à cause d'un
+aléa transitoire des API publiques (pagination, requête ponctuelle en échec...).
+Utiliser --no-merge pour revenir à un écrasement complet. Voir merge_profile.py.
+
 Avec --pivot, un fichier supplémentaire data/profiles/<slug>.pivot.json
 est généré au format schéma pivot v1 (commun à toutes les sources). Le volet
 européen, s'il existe, est normalisé et intégré au pivot.
@@ -48,6 +58,7 @@ from typing import Any, Optional
 
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
+from merge_profile import merge_pivot_profile, merge_raw_profile
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
 from render_profile import render_html
@@ -186,6 +197,14 @@ def process_candidat(
     if mandat_ue is not None:
         profile["mandat_europeen"] = mandat_ue
 
+    if not args.no_merge and json_path.exists():
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                existing_profile = json.load(f)
+            profile = merge_raw_profile(existing_profile, profile)
+        except (json.JSONDecodeError, OSError) as exc:
+            _tprint(f"  [!] Fusion impossible avec le profil existant ({json_path}), écrasement : {exc}")
+
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
 
@@ -207,13 +226,20 @@ def process_candidat(
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
         if pivot_profile is not None:
             pivot_path = out_dir / f"{effective_slug}.pivot.json"
+            if not args.no_merge and pivot_path.exists():
+                try:
+                    with open(pivot_path, encoding="utf-8") as f:
+                        existing_pivot = json.load(f)
+                    pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+                except (json.JSONDecodeError, OSError) as exc:
+                    _tprint(f"  [!] Fusion impossible avec le pivot existant ({pivot_path}), écrasement : {exc}")
             with open(pivot_path, "w", encoding="utf-8") as f:
                 json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
             _tprint(f"  ✓ pivot → {pivot_path}")
 
     nb_interventions = len(profile.get("interventions") or [])
-    nb_mandats_ue = len((mandat_ue or {}).get("mandats_europeens") or [])
-    extra = f", {nb_mandats_ue} mandats UE" if mandat_ue else ""
+    nb_mandats_ue = len((profile.get("mandat_europeen") or {}).get("mandats_europeens") or [])
+    extra = f", {nb_mandats_ue} mandats UE" if mandat_ue or profile.get("mandat_europeen") else ""
     _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} + {html_path} ({nb_interventions} interventions{extra})")
 
     time.sleep(0.5)  # on reste courtois avec l'API publique entre deux candidats
@@ -237,6 +263,10 @@ def main() -> None:
     parser.add_argument("--skip-ue", action="store_true", help="Ne pas interroger l'Open Data Portal du Parlement européen (mandat européen)")
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON/HTML (défaut: {DEFAULT_PROFILES_DIR})")
     parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
+    parser.add_argument("--no-merge", action="store_true",
+                        help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
+                             "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
+                             "qui évite de perdre des votes/interventions/mandats déjà collectés en cas d'aléa des API).")
     parser.add_argument("--workers", type=int, default=4, metavar="N",
                         help="Nombre de candidats traités en parallèle (niveau 2 ; défaut: 4). "
                              "Réduire si les API publiques commencent à renvoyer des erreurs 429.")

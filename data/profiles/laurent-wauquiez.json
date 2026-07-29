@@ -6833,8 +6833,12 @@
   ],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-07-28T18:38:39+0000",
+    "genere_le": "2026-07-29T13:23:16+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": "2026-07-29T13:23:16+0000",
+      "assemblee_nationale": null
+    },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
     ]

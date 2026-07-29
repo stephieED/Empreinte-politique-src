@@ -9,7 +9,7 @@
     {
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/edouard-philippe",
-      "synchro_le": "2026-07-28T18:14:07+0000"
+      "synchro_le": "2026-07-29T13:21:13+0000"
     }
   ],
   "mandats": [
@@ -14223,11 +14223,10 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:14:39+0000",
+    "genere_le": "2026-07-29T13:35:59+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
-      "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature.",
-      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+      "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
     ]
   }
 }
