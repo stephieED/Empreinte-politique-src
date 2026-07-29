@@ -1,0 +1,266 @@
+<!doctype html>
+<!--
+  index.html — page dynamique "CV politiques".
+
+  Page statique unique (aucun framework, aucune étape de build) : l'utilisateur
+  choisit un candidat dans une liste déroulante (peuplée depuis
+  data/candidats.json), puis le profil correspondant est chargé depuis
+  data/profiles/<slug>.json et affiché ci-dessous via du JavaScript vanilla.
+
+  IMPORTANT : doit être servi via un serveur HTTP (ex. `python -m http.server`
+  depuis la racine du dépôt), pas ouvert directement en double-cliquant sur le
+  fichier (file://) — sinon les appels fetch() vers data/*.json échouent à
+  cause des restrictions CORS des navigateurs sur le protocole file://.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV politiques — Présidentielle 2027</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; max-width: 900px; }
+  h1, h2 { color: #1f4e79; }
+  .card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+  ul { padding-left: 1.2rem; }
+  .selector { margin-bottom: 1.5rem; }
+  select { font-size: 1rem; padding: 0.3rem; }
+  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; background: #eef3fa; color: #1f4e79; font-size: 0.85rem; margin-left: 0.4rem; }
+  .warning { color: #8a6d3b; background: #fcf8e3; border: 1px solid #faebcc; padding: 0.6rem; border-radius: 6px; }
+  .empty { color: #666; font-style: italic; }
+  #profile-container:empty::before { content: "Choisissez un candidat ci-dessus pour afficher son CV."; color: #666; font-style: italic; }
+</style>
+</head>
+<body>
+  <h1>CV politiques — Candidats déclarés/pressentis 2027</h1>
+
+  <div class="selector">
+    <label for="candidat-select">Choisir un candidat :</label>
+    <select id="candidat-select"><option value="">— Sélectionner —</option></select>
+  </div>
+
+  <div id="candidat-meta"></div>
+  <div id="profile-container"></div>
+
+  <script>
+    // index.html vit dans web/, les données JSON vivent dans data/ (voir README).
+    const CANDIDATS_URL = "../data/candidats.json";
+
+    function escapeHtml(str) {
+      return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[c]);
+    }
+
+    function bulletList(items, field) {
+      if (!items || !items.length) return "<li>Aucune information disponible.</li>";
+      const html = items
+        .filter((item) => item[field])
+        .map((item) => `<li>${escapeHtml(item[field])}</li>`)
+        .join("");
+      return html || "<li>Aucune information disponible.</li>";
+    }
+
+    const CATEGORIE_LABELS = {
+      mandat_electif: "Mandat électif",
+      commission: "Commission / mission",
+      groupe_amitie: "Groupe d'amitié",
+      extra_parlementaire: "Engagement extra-parlementaire",
+      autre: "Autre",
+    };
+
+    const TYPE_DETAIL_LABELS = {
+      loi: "Débat sur un texte de loi",
+      question: "Question au gouvernement",
+    };
+
+    const FORMAT_LABELS = {
+      reaction_courte: "Réaction courte",
+      prise_de_parole_developpee: "Prise de parole développée",
+    };
+
+    function renderMandats(mandats) {
+      if (!mandats || !mandats.length) return "<li>Aucun mandat renseigné.</li>";
+      return mandats
+        .map((m) => {
+          const categorieLabel = CATEGORIE_LABELS[m.categorie] || m.categorie || "";
+          let line = `<li><strong>${escapeHtml(m.type || "membre")}</strong> — ${escapeHtml(m.label || "")} <em>(${escapeHtml(categorieLabel)})</em>`;
+          if (m.debut || m.fin) {
+            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
+            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
+          }
+          return line + "</li>";
+        })
+        .join("");
+    }
+
+    function renderMandatsUE(mandatsUe) {
+      if (!mandatsUe || !mandatsUe.length) return "<li>Aucun mandat renseigné.</li>";
+      return mandatsUe
+        .map((m) => {
+          const organisation = m.organisation_nom || m.organisation_sigle || "";
+          const rolePart = m.role_label && m.role_label !== "Membre" ? `${escapeHtml(m.role_label)} — ` : "";
+          let line = `<li>${rolePart}<strong>${escapeHtml(organisation)}</strong> <em>(${escapeHtml(m.type_label || "")})</em>`;
+          if (m.debut || m.fin) {
+            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
+            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
+          }
+          return line + "</li>";
+        })
+        .join("");
+    }
+
+    function renderVotes(votes) {
+      if (!votes || !votes.length) return "<li>Aucun vote renseigné.</li>";
+      return votes
+        .map((v) => `<li><strong>${escapeHtml(v.date || "")}</strong> — ${escapeHtml(v.titre || "")} (${escapeHtml(v.position || "")})</li>`)
+        .join("");
+    }
+
+    function renderDossiers(dossiers) {
+      if (!dossiers || !dossiers.length) return "<li>Aucun dossier législatif renseigné.</li>";
+      return dossiers
+        .map((d) => {
+          let line = `<li><strong>${escapeHtml(d.titre || "")}</strong> — ${escapeHtml(d.date_min || "")} / ${escapeHtml(d.date_max || "")}`;
+          if (d.legislature) line += ` <em>(${escapeHtml(d.legislature)})</em>`;
+          return line + "</li>";
+        })
+        .join("");
+    }
+
+    function renderInterventions(interventions) {
+      if (!interventions || !interventions.length) return "<li>Aucune intervention renseignée.</li>";
+      return interventions
+        .map((i) => {
+          const parts = [`<strong>${escapeHtml(i.date || i.created_at || "")}</strong>`];
+          if (i.type_detail) parts.push(`<em>${escapeHtml(TYPE_DETAIL_LABELS[i.type_detail] || i.type_detail)}</em>`);
+          if (i.fonction) parts.push(`<span style="color:#8a5a00;">en tant que ${escapeHtml(i.fonction)}</span>`);
+          if (i.format) {
+            const style = i.format === "prise_de_parole_developpee" ? "font-weight:bold;" : "font-style:italic;color:#666;";
+            parts.push(`<span style="${style}">${escapeHtml(FORMAT_LABELS[i.format] || i.format)}</span>`);
+          } else if (i.classification && i.classification.mode === "prise_de_parole") {
+            parts.push(`<span style="font-weight:bold;">prise de parole</span>`);
+          }
+          if (i.sujet) parts.push(`Sujet: ${escapeHtml(i.sujet)}`);
+          if (i.mots_cles && i.mots_cles.length) parts.push(`Mots-clés: ${escapeHtml(i.mots_cles.join(", "))}`);
+          if (i.texte) parts.push(escapeHtml(String(i.texte).slice(0, 180)));
+          const url = i.url_detail || i.url;
+          if (url) parts.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>`);
+          return "<li>" + parts.join(" — ") + "</li>";
+        })
+        .join("");
+    }
+
+    function renderProfile(profile) {
+      const identite = profile.identite || {};
+      const nomComplet = identite.nom_complet || profile.slug || "";
+
+      document.title = `CV politique - ${nomComplet}`;
+
+      const warnings = (profile.meta && profile.meta.warnings) || [];
+      const warningsHtml = warnings.length
+        ? `<div class="warning"><strong>Avertissements :</strong><ul>${warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}</ul></div>`
+        : "";
+
+      document.getElementById("profile-container").innerHTML = `
+        <p><strong>Chambre :</strong> ${escapeHtml(profile.chambre || "")}</p>
+        ${warningsHtml}
+        <div class="card">
+          <h2>Identité</h2>
+          <ul>
+            <li><strong>Nom :</strong> ${escapeHtml(identite.nom_complet || "")}</li>
+            <li><strong>Groupe :</strong> ${escapeHtml(identite.groupe_nom || identite.groupe_sigle || "")}</li>
+            <li><strong>Profession :</strong> ${escapeHtml(identite.profession || "")}</li>
+            <li><strong>Circonscription :</strong> ${escapeHtml(identite.num_circo || "")}</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Mandats</h2>
+          <ul>${renderMandats(profile.mandats)}</ul>
+        </div>
+        ${profile.mandat_europeen ? `
+        <div class="card">
+          <h2>Mandat européen (Parlement européen)</h2>
+          <p><em>Source : Open Data Portal du Parlement européen${profile.mandat_europeen.url_source ? ` (${escapeHtml(profile.mandat_europeen.url_source)})` : ""}</em></p>
+          <ul>${renderMandatsUE(profile.mandat_europeen.mandats_europeens)}</ul>
+        </div>` : ""}
+        <div class="card">
+          <h2>Votes</h2>
+          ${profile.votes_source ? `<p><em>Source : ${escapeHtml(profile.votes_source)}</em></p>` : ""}
+          <ul>${renderVotes(profile.votes)}</ul>
+        </div>
+        <div class="card">
+          <h2>Dossiers législatifs</h2>
+          <ul>${renderDossiers(profile.dossiers_legislatifs)}</ul>
+        </div>
+        <div class="card">
+          <h2>Interventions</h2>
+          <ul>${renderInterventions(profile.interventions)}</ul>
+        </div>
+      `;
+    }
+
+    function renderMeta(candidat) {
+      document.getElementById("candidat-meta").innerHTML = `
+        <div class="card">
+          <h2>${escapeHtml(candidat.nom)}</h2>
+          <p>
+            ${escapeHtml(candidat.parti || "")}
+            <span class="badge">${escapeHtml(candidat.famille_politique || "")}</span>
+            <span class="badge">${escapeHtml(candidat.statut || "")}</span>
+          </p>
+          ${candidat.notes ? `<p>${escapeHtml(candidat.notes)}</p>` : ""}
+        </div>
+      `;
+    }
+
+    async function onCandidatChange(candidats) {
+      const select = document.getElementById("candidat-select");
+      const container = document.getElementById("profile-container");
+      const slug = select.value;
+
+      if (!slug) {
+        document.getElementById("candidat-meta").innerHTML = "";
+        container.innerHTML = "";
+        return;
+      }
+
+      const candidat = candidats.find((c) => c.slug === slug);
+      if (!candidat) {
+        document.getElementById("candidat-meta").innerHTML = "";
+        container.innerHTML = `<p class="empty">Candidat introuvable (slug: ${escapeHtml(slug)}).</p>`;
+        return;
+      }
+      renderMeta(candidat);
+
+      container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
+      try {
+        const resp = await fetch(`../data/profiles/${slug}.json`, { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const profile = await resp.json();
+        renderProfile(profile);
+      } catch (err) {
+        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python src/generate_all_profiles.py" pour générer son profil.</p>`;
+      }
+    }
+
+    async function init() {
+      const resp = await fetch(CANDIDATS_URL);
+      const data = await resp.json();
+      const candidats = data.candidats || [];
+
+      const select = document.getElementById("candidat-select");
+      for (const c of candidats) {
+        const option = document.createElement("option");
+        option.value = c.slug || "";
+        option.textContent = c.slug ? c.nom : `${c.nom} (pas de données parlementaires)`;
+        if (!c.slug) option.disabled = true;
+        select.appendChild(option);
+      }
+
+      select.addEventListener("change", () => onCandidatChange(candidats));
+    }
+
+    init();
+  </script>
+</body>
+</html>
