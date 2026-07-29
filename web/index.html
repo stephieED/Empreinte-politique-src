@@ -225,6 +225,11 @@
       }
 
       const candidat = candidats.find((c) => c.slug === slug);
+      if (!candidat) {
+        document.getElementById("candidat-meta").innerHTML = "";
+        container.innerHTML = `<p class="empty">Candidat introuvable (slug: ${escapeHtml(slug)}).</p>`;
+        return;
+      }
       renderMeta(candidat);
 
       container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
