@@ -2,34 +2,34 @@
   "schema_version": "1",
   "type_document": "profil_groupe",
   "groupe_id": "rassemblement-national-rn",
-  "groupe_sigle": "Rassemblement Nation",
+  "groupe_sigle": "Rassemblement National (RN)",
   "groupe_nom": "Rassemblement National (RN)",
   "chambre": null,
   "legislature": null,
   "periode": {
-    "debut": "2022-06-22",
-    "fin": "2024-06-09",
-    "actif": false
+    "debut": "2004-07-20",
+    "fin": null,
+    "actif": true
   },
   "historique_noms": [],
   "membres": [
     {
       "membre_id": "nosdeputes:marine-le-pen",
       "nom": "Marine Le Pen",
-      "debut_dans_groupe": "2022-06-22",
+      "debut_dans_groupe": "2004-07-20",
       "fin_dans_groupe": "2024-06-09",
       "actif": false
     },
     {
-      "membre_id": "nosdeputes:jordan-bardella",
-      "nom": "Jordan Bardella",
-      "debut_dans_groupe": null,
+      "membre_id": "europarl:131580",
+      "nom": "Jordan BARDELLA",
+      "debut_dans_groupe": "2019-07-02",
       "fin_dans_groupe": null,
-      "actif": false
+      "actif": true
     }
   ],
   "effectif": {
-    "actuel": 0,
+    "actuel": 1,
     "min_historique": null,
     "max_historique": null
   },
@@ -10545,26 +10545,31 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marine-le-pen",
-      "synchro_le": "2026-07-29T08:52:19+0000"
+      "synchro_le": "2026-07-29T13:23:15+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-29T08:52:19+0000"
+      "synchro_le": "2026-07-29T13:23:16+0000"
     },
     {
-      "type": "nosdeputes",
-      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "synchro_le": "2026-07-29T08:51:48+0000"
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/28210",
+      "synchro_le": "2026-07-29T13:23:05+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/131580",
+      "synchro_le": "2026-07-29T13:23:18+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:15:06+0000",
+    "genere_le": "2026-07-29T13:58:45+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:marine-le-pen",
-      "nosdeputes:jordan-bardella"
+      "europarl:131580"
     ],
     "seuil_quorum": 0.5,
     "warnings": []

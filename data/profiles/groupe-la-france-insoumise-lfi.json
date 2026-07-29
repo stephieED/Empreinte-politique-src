@@ -2,12 +2,12 @@
   "schema_version": "1",
   "type_document": "profil_groupe",
   "groupe_id": "la-france-insoumise-lfi",
-  "groupe_sigle": "La France Insoumise ",
+  "groupe_sigle": "La France Insoumise (LFI)",
   "groupe_nom": "La France Insoumise (LFI)",
   "chambre": null,
   "legislature": null,
   "periode": {
-    "debut": "2017-06-21",
+    "debut": "2009-07-14",
     "fin": "2022-06-21",
     "actif": false
   },
@@ -16,7 +16,7 @@
     {
       "membre_id": "nosdeputes:jean-luc-melenchon",
       "nom": "Jean-Luc Mélenchon",
-      "debut_dans_groupe": "2017-06-21",
+      "debut_dans_groupe": "2009-07-14",
       "fin_dans_groupe": "2022-06-21",
       "actif": false
     }
@@ -19012,17 +19012,22 @@
     {
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/jean-luc-melenchon",
-      "synchro_le": "2026-07-29T08:57:27+0000"
+      "synchro_le": "2026-07-29T13:53:25+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-29T08:57:27+0000"
+      "synchro_le": "2026-07-29T13:53:27+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/96742",
+      "synchro_le": "2026-07-29T13:20:27+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:15:06+0000",
+    "genere_le": "2026-07-29T13:58:45+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:jean-luc-melenchon"

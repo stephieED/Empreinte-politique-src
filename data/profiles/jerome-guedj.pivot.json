@@ -9,12 +9,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jerome-guedj",
-      "synchro_le": "2026-07-28T18:06:36+0000"
+      "synchro_le": "2026-07-29T13:20:35+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-28T18:06:36+0000"
+      "synchro_le": "2026-07-29T13:20:36+0000"
     }
   ],
   "mandats": [
@@ -16761,10 +16761,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T12:14:39+0000",
+    "genere_le": "2026-07-29T13:23:03+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-    "warnings": [
-      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
-    ]
+    "warnings": []
   }
 }
