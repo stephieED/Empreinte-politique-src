@@ -55,6 +55,9 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
         "position": v.get("position") or "",
         "numero_scrutin": str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None,
         "sort": v.get("sort"),
+        # groupe_au_moment_du_vote : null par défaut ; enrichissable en post-traitement
+        # (NosDéputés/AN open data ne fournit pas l'historique de groupe par scrutin).
+        "groupe_au_moment_du_vote": v.get("groupe_au_moment_du_vote"),
         # url_source présent uniquement dans les votes fallback nosdeputes
         "source_url": v.get("url_source"),
     }

@@ -44,8 +44,15 @@ Format d'un profil pivot v1 :
             "date": "2024-06-12",
             "texte": "Projet de loi ...",    # titre du scrutin
             "position": "pour",              # "pour" | "contre" | "abstention" | "non_votant"
+                                             # | "absent" | "excuse"
+                                             # "absent" : aucune trace de vote (implicite ou explicite)
+                                             # "excuse" : absence justifiée/notifiée à la source
             "numero_scrutin": "1234",
             "sort": "adopté",                # résultat du scrutin : "adopté" | "rejeté" | ...
+            "groupe_au_moment_du_vote": null,# groupe parlementaire au moment du scrutin ;
+                                             # null si non renseigné (champ enrichissable en
+                                             # post-traitement, utile pour les élus ayant changé
+                                             # de groupe en cours de mandat)
             "source_url": null               # URL de la source primaire du scrutin
         }
     ],
@@ -115,7 +122,11 @@ KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
 KNOWN_CHAMBRES: frozenset[str] = frozenset({"AN", "Senat", "PE", "mairie"})
 
 # Positions de vote reconnues.
-KNOWN_POSITIONS: frozenset[str] = frozenset({"pour", "contre", "abstention", "non_votant"})
+KNOWN_POSITIONS: frozenset[str] = frozenset({
+    "pour", "contre", "abstention", "non_votant",
+    "absent",   # aucune trace de vote (absence implicite ou explicite)
+    "excuse",   # absence justifiée / notifiée à la source primaire
+})
 
 # Catégories de mandats reconnues.
 KNOWN_CATEGORIES: frozenset[str] = frozenset({

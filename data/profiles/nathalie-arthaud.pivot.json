@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "id": "nosdeputes:nathalie-arthaud",
+  "nom": "Nathalie Arthaud",
+  "chambre": null,
+  "parti": "Lutte Ouvrière (LO)",
+  "groupe": "Lutte Ouvrière (LO)",
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://election-presidentielle-francaise-2027.fr/les-candidats-declares-pour-lelection-de-2027/",
+      "synchro_le": "2026-07-29T12:14:51"
+    }
+  ],
+  "mandats": [],
+  "votes": [],
+  "textes_portes": [],
+  "interventions": [],
+  "tags_thematiques": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-07-29T12:14:57+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
+      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+    ]
+  }
+}
