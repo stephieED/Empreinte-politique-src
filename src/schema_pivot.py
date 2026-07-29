@@ -149,7 +149,7 @@ def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
         "tags_thematiques": [],
         "meta": {
             "schema_version": SCHEMA_VERSION,
-            "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "",
             "warnings": [],
         },

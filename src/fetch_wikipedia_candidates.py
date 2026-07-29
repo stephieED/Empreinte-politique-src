@@ -58,8 +58,10 @@ def _fetch_wikipedia_html(article: str) -> Optional[str]:
     url = f"{WIKIPEDIA_REST_BASE}/page/html/{quote(article)}"
     try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
-        resp.raise_for_status()
+        # Forcer l'encodage détecté avant d'accéder à resp.text, pour éviter
+        # le mojibake sur les accents quand le serveur ne déclare pas de charset.
         resp.encoding = resp.apparent_encoding or "utf-8"
+        resp.raise_for_status()
         return resp.text
     except requests.RequestException as exc:
         print(f"  [!] Wikipedia HTML inaccessible : {exc}", file=sys.stderr)

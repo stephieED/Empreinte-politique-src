@@ -115,12 +115,12 @@ def ensure_votes_dump(force_download: bool = False) -> Optional[Path]:
 
 
 def get_cache_date(dump_path: Path) -> Optional[str]:
-    """Retourne la date de modification du dump en cache (lisible)."""
+    """Retourne la date de modification du dump en cache au format ISO-8601."""
     if not dump_path.is_file():
         return None
     import datetime
     mtime = dump_path.stat().st_mtime
-    return datetime.datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.fromtimestamp(mtime).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 # ---------------------------------------------------------------------------
@@ -315,13 +315,24 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
     ep_id = mep_raw.get("UserID")
     name_block = mep_raw.get("Name") or {}
     nom = name_block.get("full") or name_block.get("sur") or f"MEP #{ep_id}"
-    # Normalise la casse : "DUPONT Jean" → "Jean Dupont" (Parltrack met le nom de famille en majuscules)
+    # Parltrack format: "NOM Prénom" (surname uppercased, given name mixed-case).
+    # Detect all-uppercase leading words and reorder to "Prénom NOM".
+    # Handles multi-word surnames like "VAN DEN BERG Jean".
     nom_parts = nom.split()
-    if nom_parts and nom_parts[0].isupper() and len(nom_parts) > 1:
-        # Format "NOM Prénom" → "Prénom NOM"
-        surname = nom_parts[0].capitalize()
-        given = " ".join(nom_parts[1:])
-        nom = f"{given} {surname}"
+    if len(nom_parts) >= 2:
+        # Find the split point: last consecutive uppercase word
+        uppercase_count = 0
+        for part in nom_parts:
+            if part.isupper() and len(part) > 1:
+                uppercase_count += 1
+            else:
+                break
+        if uppercase_count > 0 and uppercase_count < len(nom_parts):
+            surname_parts = nom_parts[:uppercase_count]
+            given_parts = nom_parts[uppercase_count:]
+            surname = " ".join(p.capitalize() for p in surname_parts)
+            given = " ".join(given_parts)
+            nom = f"{given} {surname}"
 
     profil: dict[str, Any] = make_empty_profil(f"parltrack:{ep_id}", nom)
     profil["chambre"] = "PE"

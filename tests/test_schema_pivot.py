@@ -48,7 +48,8 @@ def test_make_empty_profil_default_nulls():
 def test_make_empty_profil_genere_le_looks_like_iso():
     p = make_empty_profil("test:x", "X")
     ts = p["meta"]["genere_le"]
-    assert "T" in ts or "-" in ts, f"genere_le ne ressemble pas à un ISO-8601 : {ts!r}"
+    # time.strftime('%Y-%m-%dT%H:%M:%S') always produces both 'T' and '-'
+    assert "T" in ts and "-" in ts, f"genere_le ne ressemble pas à un ISO-8601 : {ts!r}"
 
 
 def test_make_empty_profil_warnings_empty():
