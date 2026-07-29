@@ -78,7 +78,7 @@ Format d'un profil de groupe v1 :
         {
             "tag": "budget",
             "nb_membres_porteurs": 14,  # nombre de membres ayant ce tag
-            "poids_relatif": 0.218      # nb_membres_porteurs / effectif_actuel
+            "poids_relatif": 0.218      # nb_membres_porteurs / len(membres)
         }
     ],
 
