@@ -50,6 +50,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from schema_groupe import SCHEMA_GROUPE_VERSION, make_empty_profil_groupe, validate_profil_groupe
+from normalize_nosdeputes import normalize_nosdeputes
 
 
 # ---------------------------------------------------------------------------
@@ -421,7 +422,6 @@ def load_profil_from_file(path: Path) -> dict[str, Any]:
 
     # Format brut NosDéputés (champ "slug" présent, pas de "schema_version")
     if "slug" in data:
-        from normalize_nosdeputes import normalize_nosdeputes  # import local pour éviter les dépendances circulaires
         return normalize_nosdeputes(data)
 
     raise ValueError(
