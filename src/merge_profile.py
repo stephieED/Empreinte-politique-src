@@ -111,12 +111,25 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
 
     merged = dict(new)
 
+    # Préserver aussi la traçabilité de synchro si la nouvelle collecte a échoué
+    # (sinon `synchro_sources.*` peut redevenir None alors que les données sont restaurées depuis l'ancien profil).
+    if isinstance(merged.get("meta"), dict) and isinstance(old.get("meta"), dict):
+        old_synchro = old["meta"].get("synchro_sources")
+        new_synchro = merged["meta"].get("synchro_sources")
+        if isinstance(old_synchro, dict):
+            if not isinstance(new_synchro, dict):
+                merged["meta"]["synchro_sources"] = dict(old_synchro)
+            else:
+                merged["meta"]["synchro_sources"] = {
+                    k: _prefer_non_empty(new_synchro.get(k), old_synchro.get(k))
+                    for k in set(old_synchro) | set(new_synchro)
+                }
+
     merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
     merged["synthese_activite"] = _prefer_non_empty(new.get("synthese_activite"), old.get("synthese_activite"))
-
     merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key)
     merged["votes"] = sorted(
         merge_lists_by_key(old.get("votes"), new.get("votes"), _vote_key),
