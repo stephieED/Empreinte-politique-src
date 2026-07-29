@@ -151,8 +151,7 @@ def process_candidat(
         mandat_ue = future_ue.result()
 
     if profile is None and mandat_ue is None:
-        return {"nom": nom, "slug": slug, "statut": "introuvable"}
-
+        return {"nom": nom, "slug": effective_slug, "statut": "introuvable"}
     if profile is None:
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
