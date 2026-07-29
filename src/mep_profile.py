@@ -238,7 +238,16 @@ def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[s
     L'index est mis en cache sur disque pour éviter de reconstruire à chaque appel.
     """
     index_path = PARLTRACK_CACHE_DIR / "index_votes_par_mep.json"
-    if index_path.is_file():
+
+    dump_path = ensure_votes_dump(force_download)
+    if dump_path is None:
+        return {}
+
+    if (
+        not force_download
+        and index_path.is_file()
+        and index_path.stat().st_mtime >= dump_path.stat().st_mtime
+    ):
         try:
             with open(index_path, encoding="utf-8") as f:
                 raw = json.load(f)
@@ -246,10 +255,6 @@ def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[s
             return {int(k): v for k, v in raw.items()}
         except (json.JSONDecodeError, OSError, ValueError):
             pass  # cache corrompu : on reconstruit
-
-    dump_path = ensure_votes_dump(force_download)
-    if dump_path is None:
-        return {}
 
     index: dict[int, list[dict[str, Any]]] = {}
     print("→ Indexation des votes Parltrack (opération longue à la première exécution)…")
