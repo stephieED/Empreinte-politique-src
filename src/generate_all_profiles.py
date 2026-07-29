@@ -10,11 +10,15 @@ sont simplement signalés, sans erreur.
 Les fichiers générés sont écrits dans data/profiles/<slug>.json et
 data/profiles/<slug>.html.
 
+Avec --pivot, un fichier supplémentaire data/profiles/<slug>.pivot.json
+est généré au format schéma pivot v1 (commun à toutes les sources).
+
 Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py
     python src/generate_all_profiles.py --only jean-luc-melenchon
     python src/generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
     python src/generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
+    python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
 """
 
 import argparse
@@ -24,6 +28,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from candidate_profile import build_profile
+from normalize_nosdeputes import normalize_nosdeputes
 from render_profile import render_html
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
@@ -60,6 +65,7 @@ def main() -> None:
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON/HTML (défaut: {DEFAULT_PROFILES_DIR})")
+    parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
@@ -100,6 +106,15 @@ def main() -> None:
 
         html_path = out_dir / f"{slug}.html"
         html_path.write_text(render_html(profile), encoding="utf-8")
+
+        # Optionnel : écriture du profil pivot v1 (--pivot)
+        if args.pivot:
+            parti = candidat.get("parti")
+            pivot_profile = normalize_nosdeputes(profile, parti=parti)
+            pivot_path = out_dir / f"{slug}.pivot.json"
+            with open(pivot_path, "w", encoding="utf-8") as f:
+                json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
+            print(f"  ✓ pivot → {pivot_path}")
 
         nb_interventions = len(profile.get("interventions") or [])
         print(f"  ✓ {chambre} — {json_path} + {html_path} ({nb_interventions} interventions)")

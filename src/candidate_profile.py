@@ -915,6 +915,12 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+            # Traçabilité de fraîcheur : horodatage ISO-8601 de la dernière synchro
+            # réussie pour chaque source (None = source non contactée ou indisponible).
+            "synchro_sources": {
+                "nosdeputes": None,
+                "assemblee_nationale": None,
+            },
             "warnings": [],
         },
     }
@@ -926,6 +932,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     if _is_empty_payload(identity_raw):
         warnings.append("identité introuvable : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
     else:
+        profile["meta"]["synchro_sources"]["nosdeputes"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         # La clé racine varie selon l'endpoint ("depute" ou "senateur")
         parlementaire = (
             identity_raw.get("depute")
@@ -982,6 +989,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         profile["votes_source"] = (
             f"open data Assemblée nationale (data.assemblee-nationale.fr, législature {official_legislature})"
         )
+        profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     elif _is_empty_payload(votes_raw):
         warnings.append(
             "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur "
