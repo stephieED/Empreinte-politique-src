@@ -1,0 +1,101 @@
+{
+  "slug": "bruno-retailleau",
+  "chambre": "senateurs",
+  "source": "https://archive.nossenateurs.fr/bruno-retailleau",
+  "identite": {
+    "nom_complet": "Bruno Retailleau",
+    "groupe_sigle": "LR",
+    "groupe_nom": "Les Républicains",
+    "profession": null,
+    "date_naissance": "1960-11-20",
+    "num_circo": "non disponible",
+    "nb_mandats": 2,
+    "url_an_ou_senat": null
+  },
+  "mandats": [
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire (Les Républicains)",
+      "debut": "2004-09-26",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission de la culture, de l'éducation et de la communication",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études Agriculture et alimentation",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "président",
+      "label": "Groupe Chrétiens d'Orient",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "président",
+      "label": "Groupe d'information internationale sur le Haut-Karabagh",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études Statut, rôle et place des Français établis hors de France",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Collège consultatif de la commission du fonds pour le développement de la vie associative",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Commission départementale de la coopération intercommunale",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    }
+  ],
+  "votes": [],
+  "votes_source": null,
+  "synthese_activite": null,
+  "dossiers_legislatifs": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-07-28T18:37:28+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
+    ]
+  }
+}

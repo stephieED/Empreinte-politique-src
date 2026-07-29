@@ -5,11 +5,7 @@
   "identite": {
     "nom_complet": "Jean-Luc Mélenchon",
     "groupe_sigle": "LFI",
-    "groupe_nom": {
-      "organisme": "La France Insoumise",
-      "fonction": "membre",
-      "debut_fonction": "2021-10-12"
-    },
+    "groupe_nom": "La France Insoumise",
     "profession": "Professeur",
     "date_naissance": "1951-08-19",
     "num_circo": 4,
@@ -18,8 +14,244 @@
   },
   "mandats": [
     {
-      "type": "ancien_mandat",
-      "label": "21/06/2017 /  / "
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire (La France Insoumise)",
+      "debut": "2017-06-21",
+      "fin": "2022-06-21",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "co-rapporteur",
+      "label": "Mission d'information sur les mers et océans : quelle stratégie pour la france",
+      "debut": "2017-11-29",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2022-01-14",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires économiques",
+      "debut": "2022-01-12",
+      "fin": "2022-01-13",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2021-05-07",
+      "fin": "2022-01-11",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "président",
+      "label": "La France Insoumise",
+      "debut": "2017-06-28",
+      "fin": "2021-10-12",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "debut": "2021-05-06",
+      "fin": "2021-05-06",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2021-04-15",
+      "fin": "2021-05-05",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "debut": "2021-04-14",
+      "fin": "2021-04-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2021-04-01",
+      "fin": "2021-04-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "debut": "2021-03-31",
+      "fin": "2021-04-01",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2020-03-05",
+      "fin": "2021-03-31",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "président de groupe",
+      "label": "Mission d'information sur l'impact, la gestion et les conséquences dans toutes ses dimensions de l'épidémie de coronavirus-covid 19 en france",
+      "debut": "2020-03-31",
+      "fin": "2020-12-02",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires économiques",
+      "debut": "2020-03-03",
+      "fin": "2020-03-05",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2020-02-14",
+      "fin": "2020-03-02",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires économiques",
+      "debut": "2020-02-12",
+      "fin": "2020-02-13",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2019-02-26",
+      "fin": "2020-02-11",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires sociales",
+      "debut": "2019-01-30",
+      "fin": "2019-02-25",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2017-06-29",
+      "fin": "2019-01-29",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "secrétaire",
+      "label": "Mission d'information sur l'avenir institutionnel de la nouvelle-calédonie",
+      "debut": "2017-10-04",
+      "fin": "2017-10-10",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Mission d'information sur l'avenir institutionnel de la nouvelle-calédonie",
+      "debut": "2017-09-21",
+      "fin": "2017-10-04",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Députés Non Inscrits",
+      "debut": "2017-06-21",
+      "fin": "2017-06-28",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-sénégal",
+      "debut": "2017-10-19",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-chine",
+      "debut": "2017-10-25",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-vietnam",
+      "debut": "2017-11-09",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-mexique",
+      "debut": "2017-11-17",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "co-président",
+      "label": "Groupe d'études arctique, antarctique et terres australes et antarctiques françaises – droit des grands fonds",
+      "debut": "2018-02-02",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-ethiopie",
+      "debut": "2018-12-07",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Section française de l'assemblée parlementaire de la francophonie a.p.f",
+      "debut": "2017-10-28",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre titulaire",
+      "label": "Commission départementale de coopération intercommunale",
+      "debut": "2020-01-21",
+      "fin": null,
+      "actif": true
     }
   ],
   "votes": [
@@ -13945,7 +14177,10 @@
         "fonctionnaire",
         "majorité",
         "pouvoir"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -13971,7 +14206,10 @@
         "fonctionnaire",
         "majorité",
         "pouvoir"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -13997,7 +14235,10 @@
         "fonctionnaire",
         "majorité",
         "pouvoir"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14023,7 +14264,10 @@
         "fonctionnaire",
         "majorité",
         "pouvoir"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14049,7 +14293,10 @@
         "fonctionnaire",
         "majorité",
         "pouvoir"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14075,7 +14322,10 @@
         "confiance",
         "français",
         "majorité"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14101,7 +14351,10 @@
         "confiance",
         "français",
         "majorité"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14127,7 +14380,10 @@
         "international",
         "maritime",
         "organisation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14153,7 +14409,10 @@
         "international",
         "maritime",
         "organisation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14179,7 +14438,10 @@
         "international",
         "maritime",
         "organisation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14205,7 +14467,10 @@
         "objectif",
         "permis",
         "recherche"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14231,7 +14496,10 @@
         "déficit",
         "famille",
         "financement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14257,7 +14525,10 @@
         "effort",
         "médias",
         "patrimoine"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14283,7 +14554,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14309,7 +14583,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14335,7 +14612,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14361,7 +14641,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14387,7 +14670,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14413,7 +14699,10 @@
         "dotation",
         "département",
         "péréquation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14439,7 +14728,10 @@
         "retraite",
         "sanction",
         "source"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14461,7 +14753,10 @@
         "exonération",
         "forêt",
         "indemnité"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14483,7 +14778,10 @@
         "exonération",
         "forêt",
         "indemnité"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14506,7 +14804,10 @@
         "source",
         "sénat",
         "énergie"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14531,7 +14832,10 @@
         "fonctionnaire",
         "simplification",
         "usager"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14555,7 +14859,10 @@
         "règlement",
         "traitement",
         "évaluation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14579,7 +14886,10 @@
         "règlement",
         "traitement",
         "évaluation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14605,7 +14915,10 @@
         "représentant",
         "seuil",
         "élection"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14631,7 +14944,10 @@
         "représentant",
         "seuil",
         "élection"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14657,7 +14973,10 @@
         "ligne",
         "mobile",
         "numérique"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14683,7 +15002,10 @@
         "ligne",
         "mobile",
         "numérique"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14709,7 +15031,10 @@
         "ligne",
         "mobile",
         "numérique"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14733,7 +15058,10 @@
         "ligne",
         "mobilité",
         "orientation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14757,7 +15085,10 @@
         "ligne",
         "mobilité",
         "orientation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14783,7 +15114,10 @@
         "programme",
         "stabilité",
         "prélèvement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14809,7 +15143,10 @@
         "programme",
         "stabilité",
         "prélèvement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14835,7 +15172,10 @@
         "programme",
         "stabilité",
         "prélèvement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14861,7 +15201,10 @@
         "représentant",
         "seuil",
         "élection"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14887,7 +15230,10 @@
         "généraux",
         "l'alimentation",
         "paysan"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14913,7 +15259,10 @@
         "généraux",
         "l'alimentation",
         "paysan"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14939,7 +15288,10 @@
         "logement",
         "occupation",
         "propriétaire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14965,7 +15317,10 @@
         "logement",
         "logements",
         "sociaux"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -14991,7 +15346,10 @@
         "logement",
         "logements",
         "sociaux"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15017,7 +15375,10 @@
         "orientation",
         "ouverture",
         "train"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15043,7 +15404,10 @@
         "orientation",
         "ouverture",
         "train"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15069,7 +15433,10 @@
         "orientation",
         "ouverture",
         "train"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15095,7 +15462,10 @@
         "motion",
         "censure",
         "motions"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15117,7 +15487,10 @@
         "ESUS",
         "agrément",
         "solidaire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15143,7 +15516,10 @@
         "source",
         "taxe",
         "taxe"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15169,7 +15545,10 @@
         "justiciable",
         "médiation",
         "obligatoire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15195,7 +15574,10 @@
         "exonération",
         "intermédiaires",
         "main-d"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15221,7 +15603,10 @@
         "exonération",
         "intermédiaires",
         "main-d"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15247,7 +15632,10 @@
         "exonération",
         "intermédiaires",
         "main-d"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15273,7 +15661,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15299,7 +15690,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15325,7 +15719,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15351,7 +15748,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15377,7 +15777,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15403,7 +15806,10 @@
         "motion",
         "censure",
         "peuple"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15426,7 +15832,10 @@
         "justiciable",
         "motion",
         "tribunaux"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15449,7 +15858,10 @@
         "justiciable",
         "motion",
         "tribunaux"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15466,7 +15878,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15483,7 +15898,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15506,7 +15924,10 @@
         "cohésion",
         "ingénierie",
         "métropole"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15527,7 +15948,10 @@
         "séance",
         "aéroport",
         "privatisation"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15552,7 +15976,10 @@
         "stabilité",
         "stabilité",
         "trajectoire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15577,7 +16004,10 @@
         "stabilité",
         "stabilité",
         "trajectoire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15602,7 +16032,10 @@
         "stabilité",
         "stabilité",
         "trajectoire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15624,7 +16057,10 @@
         "ANCT",
         "biodiversité",
         "cohésion"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15647,7 +16083,10 @@
         "distribution",
         "grossesse",
         "interruption"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15668,7 +16107,10 @@
         "séance",
         "culturelle",
         "patrimoine"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15691,7 +16133,10 @@
         "banque",
         "bâle",
         "militaire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15714,7 +16159,10 @@
         "banque",
         "bâle",
         "militaire"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15734,7 +16182,10 @@
       "mots_cles": [
         "séance",
         "plastique"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15754,7 +16205,10 @@
       "mots_cles": [
         "séance",
         "plastique"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15778,7 +16232,10 @@
         "mer",
         "port",
         "pêche"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15799,7 +16256,10 @@
         "séance",
         "nomination",
         "urbanisme"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15820,7 +16280,10 @@
         "séance",
         "nomination",
         "urbanisme"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15841,7 +16304,10 @@
         "séance",
         "nomination",
         "urbanisme"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15862,7 +16328,10 @@
         "séance",
         "nomination",
         "urbanisme"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15884,7 +16353,10 @@
         "avocat",
         "profession",
         "universel"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15906,7 +16378,10 @@
         "avocat",
         "profession",
         "universel"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15928,7 +16403,10 @@
         "avocat",
         "profession",
         "universel"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15945,7 +16423,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15962,7 +16443,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15979,7 +16463,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -15996,7 +16483,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16013,7 +16503,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16030,7 +16523,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Dépôt de motions de censure",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16051,7 +16547,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16072,7 +16571,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16093,7 +16595,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16114,7 +16619,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16135,7 +16643,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16156,7 +16667,10 @@
         "séance",
         "motion",
         "censure"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16179,7 +16693,10 @@
         "masque",
         "soignant",
         "test"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16202,7 +16719,10 @@
         "masque",
         "soignant",
         "test"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16225,7 +16745,10 @@
         "masque",
         "soignant",
         "test"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16246,7 +16769,10 @@
         "séance",
         "masque",
         "souveraineté"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16266,7 +16792,10 @@
       "mots_cles": [
         "séance",
         "épidémie"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16283,7 +16812,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16300,7 +16832,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16317,7 +16852,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16334,7 +16872,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16360,7 +16901,10 @@
         "menace",
         "relance",
         "renseignement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16386,7 +16930,10 @@
         "menace",
         "relance",
         "renseignement"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16407,7 +16954,10 @@
         "séance",
         "propriétaire",
         "soignant"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16429,7 +16979,10 @@
         "PLFR",
         "confinement",
         "relance"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16450,7 +17003,10 @@
         "séance",
         "CNSA",
         "branche"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16471,7 +17027,10 @@
         "séance",
         "CNSA",
         "branche"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16494,7 +17053,10 @@
         "parquet",
         "procureur",
         "pénale"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16515,7 +17077,10 @@
         "séance",
         "relance",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16532,7 +17097,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16557,7 +17125,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16582,7 +17153,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16607,7 +17181,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16632,7 +17209,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16657,7 +17237,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16682,7 +17265,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16707,7 +17293,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16732,7 +17321,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16757,7 +17349,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16782,7 +17377,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16807,7 +17405,10 @@
         "relance",
         "royaume-uni",
         "vaccin"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16828,7 +17429,10 @@
         "séance",
         "détention",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16848,7 +17452,10 @@
       "mots_cles": [
         "séance",
         "commande"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16868,7 +17475,10 @@
       "mots_cles": [
         "séance",
         "commande"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16888,7 +17498,10 @@
       "mots_cles": [
         "séance",
         "commande"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16908,7 +17521,10 @@
       "mots_cles": [
         "séance",
         "commande"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16928,7 +17544,10 @@
       "mots_cles": [
         "séance",
         "commande"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16954,7 +17573,10 @@
         "soignant",
         "ultramarin",
         "vaccination"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -16980,7 +17602,10 @@
         "soignant",
         "ultramarin",
         "vaccination"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17000,7 +17625,10 @@
       "mots_cles": [
         "séance",
         "pauvreté"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17020,7 +17648,10 @@
       "mots_cles": [
         "séance",
         "pauvreté"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17042,7 +17673,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17064,7 +17698,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17086,7 +17723,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17108,7 +17748,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17130,7 +17773,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 5,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17152,7 +17798,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17174,7 +17823,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17196,7 +17848,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17218,7 +17873,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17240,7 +17898,10 @@
         "audience",
         "criminelle",
         "détenu"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17257,7 +17918,10 @@
         "reason": "orateur_bloc_perso_nom_correspondant"
       },
       "sujet": "Questions au gouvernement",
-      "mots_cles": []
+      "mots_cles": [],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17280,7 +17944,10 @@
         "renseignement",
         "terrorisme",
         "terroriste"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17303,7 +17970,10 @@
         "renseignement",
         "terrorisme",
         "terroriste"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17326,7 +17996,10 @@
         "renseignement",
         "terrorisme",
         "terroriste"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17349,7 +18022,10 @@
         "renseignement",
         "terrorisme",
         "terroriste"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 6,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17371,7 +18047,10 @@
         "embryon",
         "gamète",
         "ovocyte"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 3,
+      "format": "reaction_courte"
     },
     {
       "type": "Intervention",
@@ -17393,11 +18072,14 @@
         "embryon",
         "gamète",
         "ovocyte"
-      ]
+      ],
+      "fonction": null,
+      "nb_mots": 4,
+      "format": "reaction_courte"
     }
   ],
   "meta": {
-    "genere_le": "2026-07-28T16:50:28+0000",
+    "genere_le": "2026-07-28T18:01:37+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }
