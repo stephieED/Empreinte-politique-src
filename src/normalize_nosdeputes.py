@@ -130,8 +130,10 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
 
     # Timestamp de synchro depuis le méta du profil brut (ou maintenant si absent)
     meta_raw = raw_profile.get("meta") or {}
-    synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S")
-
+    synchro_sources = meta_raw.get("synchro_sources") or {}
+    synchro_le = synchro_sources.get("nosdeputes")
+    if synchro_le is None and "nosdeputes" not in synchro_sources:
+        synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     # --- Profil pivot de base ---
     profil: dict[str, Any] = make_empty_profil(f"{source_type}:{slug}", nom)
     profil["chambre"] = chambre
