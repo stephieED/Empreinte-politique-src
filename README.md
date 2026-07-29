@@ -24,24 +24,30 @@ CV_CandidatFR/
 │   ├── candidate_profile.py           # Collecte le profil brut d'UN parlementaire FR (AN/Sénat)
 │   ├── candidate_profile_ue.py        # Construit le volet "mandat européen" d'UN candidat
 │   ├── generate_all_profiles.py       # Batch : profils de TOUS les candidats de candidats.json
+│   ├── group_profile.py               # Agrège des profils individuels en profil de groupe politique
 │   ├── render_profile.py              # Convertit un profil JSON en page HTML statique
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
+│   ├── schema_groupe.py               # Schéma pivot v1 du profil de groupe (contrat de structure)
 │   ├── normalize_nosdeputes.py        # Adaptateur NosDéputés/NosSénateurs → schéma pivot
+│   ├── normalize_europarl.py          # Adaptateur Open Data Portal Parlement européen → schéma pivot
 │   ├── mep_profile.py                 # Collecte et normalise les profils PE (Parltrack)
 │   └── fetch_wikipedia_candidates.py  # Veille candidats via Wikipédia/Wikidata
 ├── data/
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
 │   └── profiles/                      # Profils générés : <slug>.json, <slug>.html,
-│                                      # et optionnellement <slug>.pivot.json
+│                                      # <slug>.pivot.json (optionnel), groupe-<SIGLE>-<leg>.json
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
 │   └── nosdeputes_doc/                # Documentation de l'API NosDéputés/NosSénateurs (référence)
 ├── tests/
 │   ├── test_candidate_profile.py
-│   ├── test_schema_pivot.py
-│   └── test_normalize_nosdeputes.py
-│   └── test_candidate_profile_ue.py
+│   ├── test_candidate_profile_ue.py
+│   ├── test_group_profile.py
+│   ├── test_normalize_europarl.py
+│   ├── test_normalize_nosdeputes.py
+│   ├── test_schema_groupe.py
+│   └── test_schema_pivot.py
 └── README.md
 ```
 
@@ -119,12 +125,14 @@ sont à respecter (déjà implémentées dans `candidate_profile_ue.py`) :
 ## 3. Générer les profils de tous les candidats (batch)
 
 ```bash
-python src/generate_all_profiles.py                          # tous les candidats
+python src/generate_all_profiles.py                           # tous les candidats
 python src/generate_all_profiles.py --only jean-luc-melenchon # un seul candidat
 python src/generate_all_profiles.py --max-pages 5             # recherche plus légère/rapide
 python src/generate_all_profiles.py --skip-existing           # ne relance pas ce qui est déjà généré
 python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json
 python src/generate_all_profiles.py --skip-ue                 # ne pas interroger l'API du Parlement européen
+python src/generate_all_profiles.py --workers 8               # augmenter le parallélisme (défaut: 4)
+python src/generate_all_profiles.py --out-dir /tmp/profiles   # dossier de sortie alternatif
 ```
 
 Ce script lit `data/candidats.json` et, pour chaque candidat :
@@ -142,7 +150,25 @@ Ce script lit `data/candidats.json` et, pour chaque candidat :
 Avec `--pivot`, un fichier `data/profiles/<slug>.pivot.json` est également
 généré au format schéma pivot v1 (voir section « Schéma pivot »).
 
-## 3. Générer le profil d'un député européen (Parltrack)
+### Parallélisation à deux niveaux
+
+Le script exploite deux niveaux de parallélisme pour réduire le temps de
+génération :
+
+- **Niveau 1** (intra-candidat) : pour chaque candidat, les appels vers
+  NosDéputés.fr et vers l'Open Data Portal du Parlement européen sont
+  lancés simultanément dans deux threads dédiés (deux API distinctes, aucun
+  état partagé entre elles).
+- **Niveau 2** (inter-candidats) : plusieurs candidats sont traités en
+  parallèle grâce à un pool de threads dont la taille est contrôlée par
+  `--workers` (défaut : 4). Les caches disque partagés sont protégés par des
+  verrous définis respectivement dans `candidate_profile.py` et
+  `candidate_profile_ue.py`.
+
+Réduire `--workers` (ex. `--workers 2`) si les API publiques commencent à
+renvoyer des erreurs 429 (trop de requêtes).
+
+## 4. Générer le profil d'un député européen (Parltrack)
 
 ```bash
 python src/mep_profile.py --name "Manon Aubry"
@@ -156,7 +182,43 @@ mis en cache sous `.cache/parltrack/`). **Vérifier la fraîcheur du dump avant
 usage** : `--show-cache-date` affiche l'âge du cache ; la date officielle est
 visible sur https://parltrack.org/dumps.
 
-## 4. Veille des candidats via Wikipédia / Wikidata
+## 5. Générer le profil d'un groupe politique
+
+`group_profile.py` agrège plusieurs profils individuels (format brut
+NosDéputés ou pivot v1) en un **profil de groupe** conforme au schéma de
+groupe v1 (`schema_groupe.py`). Il ne fait aucun appel réseau : il calcule
+uniquement à partir des données déjà présentes dans les profils individuels.
+
+```bash
+python src/group_profile.py \
+    --groupe-id "AN:SOC" \
+    --groupe-sigle SOC \
+    --groupe-nom "Socialistes et apparentés" \
+    --chambre AN \
+    --legislature 16 \
+    data/profiles/jerome-guedj.json \
+    data/profiles/boris-vallaud.json \
+    --out data/profiles/groupe-SOC-16.json
+```
+
+Les profils en entrée peuvent être indifféremment au format brut NosDéputés
+(produit par `candidate_profile.py`) ou au format pivot v1 (produit par
+`generate_all_profiles.py --pivot`) : le script détecte et normalise
+automatiquement.
+
+Le profil de groupe produit contient :
+
+- `membres` : liste des membres avec leurs dates d'entrée/sortie dans le
+  groupe (dérivées des mandats électifs des profils individuels).
+- `effectif` : nombre de membres actifs au moment du calcul.
+- `cohesion_votes` : par scrutin, position majoritaire + taux de
+  participation et de cohérence du groupe (membres alignés / membres
+  éligibles à la date du scrutin). Distingue absents, non-votants et excusés.
+- `tags_thematiques_agreges` : agrégation des `tags_thematiques` individuels,
+  triés par poids décroissant (`nb_membres_porteurs / len(membres)`).
+- `sources` et `meta` : traçabilité des profils agrégés, horodatage, licence.
+
+## 6. Veille des candidats via Wikipédia / Wikidata
 
 ```bash
 python src/fetch_wikipedia_candidates.py         # toutes les sources
@@ -169,7 +231,7 @@ python src/fetch_wikipedia_candidates.py --json  # sortie machine-readable
 un diff lisible (nouveaux candidats détectés, candidats locaux absents en ligne)
 pour validation manuelle avant intégration.
 
-## 5. Consulter les profils dans le navigateur
+## 7. Consulter les profils dans le navigateur
 
 Servir le dépôt via un serveur HTTP local (nécessaire : `index.html` charge
 les JSON via `fetch()`, ce qui échoue en ouvrant le fichier directement avec

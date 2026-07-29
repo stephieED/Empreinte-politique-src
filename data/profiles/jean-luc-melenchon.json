@@ -15581,8 +15581,12 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-07-29T08:57:27+0000",
+    "genere_le": "2026-07-29T13:53:25+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": "2026-07-29T13:53:25+0000",
+      "assemblee_nationale": "2026-07-29T13:53:27+0000"
+    },
     "warnings": []
   },
   "mandat_europeen": {
@@ -15848,7 +15852,7 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-07-29T08:59:40+0000",
+      "genere_le": "2026-07-29T13:20:27+0000",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }

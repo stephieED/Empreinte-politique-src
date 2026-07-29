@@ -1,0 +1,61 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_groupe",
+  "groupe_id": "les-republicains-lr",
+  "groupe_sigle": "Les Républicains (LR)",
+  "groupe_nom": "Les Républicains (LR)",
+  "chambre": null,
+  "legislature": null,
+  "periode": {
+    "debut": "2004-09-26",
+    "fin": null,
+    "actif": true
+  },
+  "historique_noms": [],
+  "membres": [
+    {
+      "membre_id": "nossenateurs:bruno-retailleau",
+      "nom": "Bruno Retailleau",
+      "debut_dans_groupe": "2004-09-26",
+      "fin_dans_groupe": null,
+      "actif": true
+    },
+    {
+      "membre_id": "nosdeputes:laurent-wauquiez",
+      "nom": "Laurent Wauquiez",
+      "debut_dans_groupe": "2012-06-20",
+      "fin_dans_groupe": "2017-06-20",
+      "actif": false
+    }
+  ],
+  "effectif": {
+    "actuel": 1,
+    "min_historique": null,
+    "max_historique": null
+  },
+  "cohesion_votes": [],
+  "tags_thematiques_agreges": [],
+  "sources": [
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-07-29T13:20:58+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://2012-2017.nosdeputes.fr/laurent-wauquiez",
+      "synchro_le": "2026-07-29T13:23:16+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-07-29T13:37:30+0000",
+    "licence_donnees": "",
+    "profils_sources": [
+      "nossenateurs:bruno-retailleau",
+      "nosdeputes:laurent-wauquiez"
+    ],
+    "seuil_quorum": 0.5,
+    "warnings": []
+  }
+}

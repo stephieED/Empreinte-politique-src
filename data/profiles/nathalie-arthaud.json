@@ -1,0 +1,28 @@
+{
+  "slug": "nathalie-arthaud",
+  "chambre": null,
+  "source": "https://election-presidentielle-francaise-2027.fr/les-candidats-declares-pour-lelection-de-2027/",
+  "identite": {
+    "nom_complet": "Nathalie Arthaud",
+    "groupe_sigle": null,
+    "groupe_nom": "Lutte Ouvrière (LO)",
+    "profession": null,
+    "date_naissance": null,
+    "num_circo": null,
+    "nb_mandats": null,
+    "url_an_ou_senat": null
+  },
+  "mandats": [],
+  "votes": [],
+  "votes_source": null,
+  "synthese_activite": null,
+  "dossiers_legislatifs": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-07-29T12:14:51",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
+    ]
+  }
+}

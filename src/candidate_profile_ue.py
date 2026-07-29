@@ -32,6 +32,7 @@ Docs API (spécification OpenAPI complète) : https://data.europarl.europa.eu/ap
 import argparse
 import json
 import re
+import threading
 import time
 import unicodedata
 from pathlib import Path
@@ -50,6 +51,12 @@ HEADERS = {
 
 TIMEOUT = 20
 CACHE_DIR = Path(".cache") / "europarl"
+
+# Verrou global pour les accès au cache disque des organisations (lecture + écriture).
+# En mode parallèle, chaque thread charge une copie indépendante du cache en entrée,
+# travaille localement, puis fusionne-et-sauvegarde sous ce verrou de façon à ne pas
+# écraser les nouvelles entrées ajoutées par un thread concurrent entre-temps.
+_ORG_CACHE_LOCK = threading.Lock()
 
 # Libellés FR lisibles pour les classifications d'organisation rencontrées dans
 # `hasMembership[].membershipClassification` (valeurs brutes = URI de type
@@ -284,9 +291,18 @@ def build_profile_ue(nom: str, country: str = "FR", use_cache: bool = True) -> O
     mep_id = mep_entry.get("identifier")
     detail = fetch_mep_detail(mep_id) or mep_entry
 
-    org_cache = _load_org_cache()
+    # Chargement du cache organisations sous verrou (copie locale pour ne pas
+    # bloquer les autres threads pendant les appels réseau de résolution).
+    with _ORG_CACHE_LOCK:
+        org_cache = dict(_load_org_cache())
     mandats = _extract_mandats_europeens(detail, org_cache)
-    _save_org_cache(org_cache)
+    # Sauvegarde avec fusion : on recharge le cache courant sous verrou et on y
+    # ajoute uniquement les nouvelles entrées (évite d'écraser le travail d'un
+    # thread concurrent qui aurait ajouté des entrées entre-temps).
+    with _ORG_CACHE_LOCK:
+        current = _load_org_cache()
+        current.update(org_cache)
+        _save_org_cache(current)
 
     return {
         "identifiant_pe": mep_id,
