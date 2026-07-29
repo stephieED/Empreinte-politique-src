@@ -4,16 +4,17 @@ candidate_profile.py
 
 Construit un profil JSON structuré ("CV politique") d'un parlementaire
 à partir des données ouvertes de NosDéputés.fr / NosSénateurs.fr
-(Regards Citoyens - licence ODbL / CC-BY-SA).
+(Regards Citoyens - licence ODbL / CC-BY-SA), complétées par les votes
+officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
 
-Usage :
-    python candidate_profile.py jean-luc-melenchon --chambre deputes
-    python candidate_profile.py bruno-retailleau --chambre senateurs
-    python candidate_profile.py jean-luc-melenchon --chambre deputes --out melenchon.json
+Usage (depuis la racine du dépôt) :
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes
+    python src/candidate_profile.py bruno-retailleau --chambre senateurs
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out data/profiles/jean-luc-melenchon.json
 
 Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
-contente d'agréger les faits bruts (mandats, votes, indicateurs
-d'activité) tels que fournis par l'API, avec des liens vers les sources.
+contente d'agréger les faits bruts (mandats, responsabilités, votes,
+interventions) tels que fournis par les API, avec des liens vers les sources.
 
 Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.md
 """
@@ -816,11 +817,32 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
 
 
 def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> dict:
+    """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
+    votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
+    sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
+
+    Aucune source indisponible ne fait échouer l'appel : chaque section manquante reste
+    simplement vide, avec un message explicatif ajouté à `profile["meta"]["warnings"]`.
+
+    Args:
+        chambre: "deputes" ou "senateurs".
+        slug: identifiant NosDéputés.fr / NosSénateurs.fr du parlementaire
+            (ex. "jean-luc-melenchon").
+        intervention_max_pages: nombre max. de pages de résultats de recherche
+            d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
+            nécessitant une requête de détail supplémentaire : réduire ce nombre accélère
+            fortement la génération d'un profil, au prix d'une couverture moins complète).
+
+    Returns:
+        Le dict de profil, sérialisable en JSON tel quel.
+    """
     if chambre not in BASE_URLS:
         raise ValueError(f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)})")
 
     base_urls = BASE_URLS[chambre]
 
+    # --- 1. Identité brute + votes bruts (fallback nosdeputes.fr, souvent indisponible
+    # côté votes : cf. fetch_votes_officiels plus bas pour la source qui fonctionne). ---
     identity_result = fetch_identity(base_urls, slug)
     if isinstance(identity_result, tuple):
         identity_raw, identity_base_url = identity_result
@@ -836,9 +858,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     else:
         votes_raw = votes_result
 
-    # Dérive un nom de recherche fiable à partir de l'identité, avant d'interroger le
-    # moteur de recherche : un slug transformé en espaces (ex. "jean luc melenchon")
-    # ne renvoie souvent aucun résultat, contrairement au nom complet.
+    # --- 2. Nom de recherche fiable, dérivé de l'identité, pour l'API de recherche
+    # d'interventions : un slug transformé en espaces (ex. "jean luc melenchon")
+    # ne renvoie souvent aucun résultat, contrairement au nom complet. ---
     parlementaire_for_search = None
     if isinstance(identity_raw, dict):
         parlementaire_for_search = (
@@ -854,6 +876,8 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         else slug.replace("-", " ").title()
     )
 
+    # --- 3. Synthèse d'activité, dossiers législatifs, et recherche des interventions
+    # (sur le meilleur domaine/législature disponible). ---
     synthesis_payload = None
     dossiers_payload = []
     interventions_payload = None
@@ -876,6 +900,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     except Exception as exc:
         pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
 
+    # --- 4. Structure de base du profil, valeurs par défaut si une source manque. ---
     profile: dict[str, Any] = {
         "slug": slug,
         "chambre": chambre,
@@ -897,6 +922,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     warnings = profile["meta"]["warnings"]
     warnings.extend(pre_profile_warnings)
 
+    # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes d'amitié...). ---
     if _is_empty_payload(identity_raw):
         warnings.append("identité introuvable : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
     else:
@@ -926,6 +952,10 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             if _is_empty_payload(profile["mandats"]):
                 warnings.append("mandats introuvables : l'API ne renvoie pas de mandats pour ce profil.")
 
+    # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
+    # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr
+    # (souvent en erreur côté serveur, cf. fetch_votes) que s'il n'y a pas de
+    # correspondance officielle. ---
     official_votes: list[dict[str, Any]] = []
     if chambre == "deputes" and profile.get("identite"):
         try:
@@ -978,6 +1008,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             warnings.append("votes introuvables : aucune information de scrutin n'a été extraite de la réponse API.")
 
     if not _is_empty_payload(synthesis_payload):
+        # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---
         profile["synthese_activite"] = {
             "nom": synthesis_payload.get("nom"),
             "groupe_sigle": synthesis_payload.get("groupe_sigle"),
@@ -987,6 +1018,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         }
 
     if dossiers_payload:
+        # --- 8. Dossiers législatifs, triés du plus récent au plus ancien. ---
         profile["dossiers_legislatifs"] = sorted(
             dossiers_payload,
             key=lambda item: (item.get("date_max") or "", item.get("titre") or ""),
@@ -996,6 +1028,8 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     candidate_name = profile["identite"].get("nom_complet") if profile.get("identite") else slug.replace("-", " ").title()
     candidate_id = None
     if isinstance(identity_raw, dict):
+        # --- 9. Interventions : classification prise de parole/mention, format
+        # (réaction courte / prise de parole développée), fonction occupée, etc. ---
         parlementaire = (
             identity_raw.get("depute")
             if isinstance(identity_raw, dict) and identity_raw.get("depute") is not None
@@ -1021,7 +1055,7 @@ def main():
     )
     parser.add_argument(
         "--out",
-        help="Chemin du fichier JSON de sortie (défaut: <slug>.json)",
+        help="Chemin du fichier JSON de sortie (défaut: data/profiles/<slug>.json)",
     )
     parser.add_argument(
         "--max-pages",
@@ -1033,7 +1067,8 @@ def main():
 
     profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
-    out_path = args.out or f"{args.slug}.json"
+    out_path = Path(args.out) if args.out else Path("data/profiles") / f"{args.slug}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
 

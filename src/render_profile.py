@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""
+render_profile.py
+
+Convertit un profil JSON généré par candidate_profile.py en une page HTML
+lisible (fiche "CV politique"). Utilisé directement en CLI, ou importé par
+generate_all_profiles.py pour générer les pages de tous les candidats d'un coup.
+
+Usage :
+    python src/render_profile.py data/profiles/jean-luc-melenchon.json
+    python src/render_profile.py data/profiles/jean-luc-melenchon.json --out data/profiles/jean-luc-melenchon.html
+"""
 import argparse
 import html
 import json
@@ -159,12 +170,13 @@ def render_html(profile: dict[str, Any]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Génère une page HTML à partir d’un profil JSON")
     parser.add_argument("profile_json", help="Chemin vers le fichier JSON généré par candidate_profile.py")
-    parser.add_argument("--out", default="profile.html", help="Chemin du fichier HTML de sortie")
+    parser.add_argument("--out", help="Chemin du fichier HTML de sortie (défaut : même chemin que profile_json, avec l'extension .html)")
     args = parser.parse_args()
 
     profile = load_profile(args.profile_json)
     html_output = render_html(profile)
-    out_path = Path(args.out)
+    out_path = Path(args.out) if args.out else Path(args.profile_json).with_suffix(".html")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html_output, encoding="utf-8")
     print(f"HTML écrit dans {out_path}")
 

@@ -1,4 +1,17 @@
 <!doctype html>
+<!--
+  index.html — page dynamique "CV politiques".
+
+  Page statique unique (aucun framework, aucune étape de build) : l'utilisateur
+  choisit un candidat dans une liste déroulante (peuplée depuis
+  data/candidats.json), puis le profil correspondant est chargé depuis
+  data/profiles/<slug>.json et affiché ci-dessous via du JavaScript vanilla.
+
+  IMPORTANT : doit être servi via un serveur HTTP (ex. `python -m http.server`
+  depuis la racine du dépôt), pas ouvert directement en double-cliquant sur le
+  fichier (file://) — sinon les appels fetch() vers data/*.json échouent à
+  cause des restrictions CORS des navigateurs sur le protocole file://.
+-->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -29,7 +42,8 @@
   <div id="profile-container"></div>
 
   <script>
-    const CANDIDATS_URL = "candidats.json";
+    // index.html vit dans web/, les données JSON vivent dans data/ (voir README).
+    const CANDIDATS_URL = "../data/candidats.json";
 
     function escapeHtml(str) {
       return String(str ?? "").replace(/[&<>"']/g, (c) => ({
@@ -193,7 +207,7 @@
 
       container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
       try {
-        const resp = await fetch(`${slug}.json`, { cache: "no-store" });
+        const resp = await fetch(`../data/profiles/${slug}.json`, { cache: "no-store" });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const profile = await resp.json();
         renderProfile(profile);

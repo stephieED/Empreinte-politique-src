@@ -3,14 +3,18 @@
 generate_all_profiles.py
 
 Récupère les données et génère le CV (JSON + HTML) de chaque candidat de
-candidats.json qui possède un "slug" (identifiant NosDéputés.fr / NosSénateurs.fr).
-Les candidats sans slug (non référencés dans ces bases) sont simplement signalés.
+data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
+NosSénateurs.fr). Les candidats sans slug (non référencés dans ces bases)
+sont simplement signalés, sans erreur.
 
-Usage :
-    python generate_all_profiles.py
-    python generate_all_profiles.py --only jean-luc-melenchon
-    python generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
-    python generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
+Les fichiers générés sont écrits dans data/profiles/<slug>.json et
+data/profiles/<slug>.html.
+
+Usage (depuis la racine du dépôt) :
+    python src/generate_all_profiles.py
+    python src/generate_all_profiles.py --only jean-luc-melenchon
+    python src/generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
+    python src/generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
 """
 
 import argparse
@@ -22,10 +26,15 @@ from typing import Any, Optional
 from candidate_profile import build_profile
 from render_profile import render_html
 
+# Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
+DEFAULT_CANDIDATS_PATH = "data/candidats.json"
+DEFAULT_PROFILES_DIR = Path("data/profiles")
+
 CHAMBRES = ["deputes", "senateurs"]
 
 
 def load_candidats(path: str) -> list[dict[str, Any]]:
+    """Charge la liste des candidats depuis le fichier JSON source (clé "candidats")."""
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("candidats", [])
@@ -46,11 +55,15 @@ def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict]
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--candidats", default="candidats.json", help="Fichier JSON listant les candidats (défaut: candidats.json)")
+    parser.add_argument("--candidats", default=DEFAULT_CANDIDATS_PATH, help=f"Fichier JSON listant les candidats (défaut: {DEFAULT_CANDIDATS_PATH})")
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
+    parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON/HTML (défaut: {DEFAULT_PROFILES_DIR})")
     args = parser.parse_args()
+
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     candidats = load_candidats(args.candidats)
     if args.only:
@@ -69,7 +82,7 @@ def main() -> None:
             resultats.append({"nom": nom, "slug": None, "statut": "sans_slug"})
             continue
 
-        json_path = Path(f"{slug}.json")
+        json_path = out_dir / f"{slug}.json"
         if args.skip_existing and json_path.exists():
             print(f"— {nom} ({slug}) : profil déjà présent, ignoré (--skip-existing).")
             resultats.append({"nom": nom, "slug": slug, "statut": "deja_present"})
@@ -85,7 +98,7 @@ def main() -> None:
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(profile, f, ensure_ascii=False, indent=2)
 
-        html_path = Path(f"{slug}.html")
+        html_path = out_dir / f"{slug}.html"
         html_path.write_text(render_html(profile), encoding="utf-8")
 
         nb_interventions = len(profile.get("interventions") or [])

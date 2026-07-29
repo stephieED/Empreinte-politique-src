@@ -2,7 +2,8 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Les modules testés vivent dans src/, à côté du dossier tests/.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from candidate_profile import (
     _classify_intervention,
