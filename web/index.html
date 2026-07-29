@@ -1,263 +1,1054 @@
 <!doctype html>
-<!--
-  index.html — page dynamique "CV politiques".
-
-  Page statique unique (aucun framework, aucune étape de build) : l'utilisateur
-  choisit un candidat dans une liste déroulante (peuplée depuis
-  data/candidats.json), puis le profil correspondant est chargé depuis
-  data/profiles/<slug>.json et affiché ci-dessous via du JavaScript vanilla.
-
-  IMPORTANT : doit être servi via un serveur HTTP (ex. `python -m http.server`
-  depuis la racine du dépôt), pas ouvert directement en double-cliquant sur le
-  fichier (file://) — sinon les appels fetch() vers data/*.json échouent à
-  cause des restrictions CORS des navigateurs sur le protocole file://.
--->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CV politiques — Présidentielle 2027</title>
+<title>Fiche candidat — Présidentielle 2027</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; max-width: 900px; }
-  h1, h2 { color: #1f4e79; }
-  .card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
-  ul { padding-left: 1.2rem; }
-  .selector { margin-bottom: 1.5rem; }
-  select { font-size: 1rem; padding: 0.3rem; }
-  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; background: #eef3fa; color: #1f4e79; font-size: 0.85rem; margin-left: 0.4rem; }
-  .warning { color: #8a6d3b; background: #fcf8e3; border: 1px solid #faebcc; padding: 0.6rem; border-radius: 6px; }
-  .empty { color: #666; font-style: italic; }
-  #profile-container:empty::before { content: "Choisissez un candidat ci-dessus pour afficher son CV."; color: #666; font-style: italic; }
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --text: #1f252d;
+    --muted: #5a6470;
+    --line: #d8dde5;
+    --deep: #2d3f58;
+    --accent: #415d80;
+    --accent-soft: #eaf0f7;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .page { max-width: 1040px; margin: 0 auto; padding: 1rem 0.9rem 5rem; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+
+  h1, h2, h3 { margin: 0 0 0.55rem; color: var(--deep); line-height: 1.2; }
+  h1 { font-size: 1.35rem; }
+  h2 { font-size: 1.05rem; }
+  h3 { font-size: 0.98rem; }
+  p { margin: 0.35rem 0; }
+  .small { font-size: 0.88rem; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .empty { color: var(--muted); font-style: italic; }
+
+  .selector {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+  }
+  select, button {
+    font: inherit;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    padding: 0.52rem 0.65rem;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 0.7rem;
+    align-items: center;
+  }
+  .avatar {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: linear-gradient(145deg, #f3f6fa, #dbe2ea);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--deep);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fbfcfe;
+    padding: 0.13rem 0.56rem;
+    font-size: 0.8rem;
+    color: var(--deep);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.25rem;
+  }
+  .kpi {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.65rem;
+    background: var(--surface);
+  }
+  .kpi-value { font-size: 1.45rem; font-weight: 700; line-height: 1; color: var(--deep); }
+  .kpi-label { font-size: 0.83rem; color: var(--muted); margin-top: 0.18rem; }
+  .kpi a { display: inline-block; margin-top: 0.33rem; font-size: 0.82rem; color: var(--accent); text-decoration: none; }
+
+  .trust-line {
+    margin-top: 0.5rem;
+    border-top: 1px dashed var(--line);
+    padding-top: 0.48rem;
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(4px);
+    margin: 0.7rem 0;
+    padding: 0.42rem;
+  }
+  .sticky-nav-list {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .sticky-nav-list a {
+    text-decoration: none;
+    color: var(--deep);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    padding: 0.24rem 0.56rem;
+    background: #fff;
+  }
+
+  .themes-row {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+  .theme-pill {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 999px;
+    padding: 0.22rem 0.58rem;
+    font-size: 0.83rem;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .theme-pill.active {
+    background: var(--accent-soft);
+    border-color: #b9c8dc;
+    color: var(--deep);
+    font-weight: 600;
+  }
+
+  .rows { display: grid; gap: 0.55rem; }
+  .row-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.65rem;
+  }
+  .row-item p { margin: 0.18rem 0; }
+
+  .vote-badge {
+    display: inline-block;
+    border-radius: 8px;
+    padding: 0.12rem 0.45rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+    margin-left: 0.3rem;
+    border: 1px solid #8ea0b5;
+    color: #243244;
+    background: #e9eff6;
+  }
+  .vote-badge.contre {
+    background: #fff;
+    border-width: 2px;
+  }
+  .vote-badge.abstention {
+    background: #fff;
+    border-style: dotted;
+    border-width: 2px;
+  }
+  .vote-badge.absent {
+    background: repeating-linear-gradient(135deg, #f1f4f8, #f1f4f8 5px, #ffffff 5px, #ffffff 10px);
+    border-width: 1px;
+  }
+
+  .votes-table-wrap { display: none; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td {
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-size: 0.84rem;
+    padding: 0.5rem 0.45rem;
+    vertical-align: top;
+  }
+  th { color: var(--deep); }
+
+  details.inline-help {
+    display: inline-block;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+  }
+  details.inline-help summary {
+    list-style: none;
+    cursor: pointer;
+    border: 1px solid #c4ceda;
+    border-radius: 999px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    color: var(--deep);
+    user-select: none;
+  }
+  details.inline-help summary::-webkit-details-marker { display: none; }
+  details.inline-help p {
+    margin-top: 0.45rem;
+    margin-bottom: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    max-width: 320px;
+  }
+
+  .absence-grid {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: 1fr;
+  }
+  .absence-box {
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 0.58rem;
+    background: #fafbfc;
+  }
+  .absence-box ul { margin: 0.3rem 0 0; padding-left: 1rem; }
+
+  .inter-controls {
+    display: flex;
+    gap: 0.45rem;
+    margin-bottom: 0.45rem;
+    flex-wrap: wrap;
+  }
+  .ghost-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 9px;
+    padding: 0.28rem 0.58rem;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .compare-toggle {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 60;
+    border: 1px solid #9eb2cb;
+    background: #eaf0f7;
+    color: #1f2f44;
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .compare-panel { display: none; }
+  .compare-panel.open { display: block; }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.52rem;
+    margin-top: 0.5rem;
+  }
+  .compare-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.6rem;
+    background: #fff;
+  }
+
+  a.link { color: var(--accent); text-decoration: none; }
+  a.link:hover { text-decoration: underline; }
+
+  @media (min-width: 760px) {
+    .page { padding: 1.15rem 1.15rem 4rem; }
+    h1 { font-size: 1.6rem; }
+    .panel { padding: 1rem; }
+    .hero { grid-template-columns: 76px 1fr; }
+    .avatar { width: 76px; height: 76px; }
+    .votes-cards { display: none; }
+    .votes-table-wrap { display: block; }
+    .absence-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .compare-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 </style>
 </head>
 <body>
-  <h1>CV politiques — Candidats déclarés/pressentis 2027</h1>
+  <main class="page">
+    <section class="panel">
+      <h1>Fiches factuelles des candidats</h1>
+      <p class="small">Comprendre vite : ce qu’un candidat a voté, porté et défendu dans les données publiques.</p>
+      <div class="selector">
+        <label for="candidat-select">Choisir un candidat</label>
+        <select id="candidat-select"><option value="">— Sélectionner —</option></select>
+      </div>
+    </section>
 
-  <div class="selector">
-    <label for="candidat-select">Choisir un candidat :</label>
-    <select id="candidat-select"><option value="">— Sélectionner —</option></select>
-  </div>
+    <div id="candidat-root"></div>
+  </main>
 
-  <div id="candidat-meta"></div>
-  <div id="profile-container"></div>
+  <button id="compare-toggle" class="compare-toggle" style="display:none;">Comparer ce candidat</button>
 
   <script>
-    // index.html vit dans web/, les données JSON vivent dans data/ (voir README).
     const CANDIDATS_URL = "../data/candidats.json";
+    const PROFILE_URL = (slug) => `../data/profiles/${slug}.json`;
+    const THEME_OPTIONS = [
+      { key: "all", label: "Tous les thèmes" },
+      { key: "sante", label: "Santé" },
+      { key: "environnement", label: "Environnement" },
+      { key: "economie", label: "Économie" },
+      { key: "education", label: "Éducation" },
+      { key: "securite", label: "Sécurité" },
+      { key: "institutions", label: "Institutions" },
+      { key: "europe_international", label: "Europe / International" },
+      { key: "social", label: "Social" },
+    ];
+
+    const THEME_RULES = {
+      sante: ["santé", "hopital", "hôpital", "malad", "soin", "medec", "médec", "cancer"],
+      environnement: ["climat", "environ", "biodivers", "energie", "énergie", "carbone", "pollution", "écologi"],
+      economie: ["budget", "fiscal", "impôt", "impot", "entreprise", "travail", "emploi", "financ"],
+      education: ["éduc", "ecole", "école", "universit", "apprentiss", "scolair"],
+      securite: ["sécurit", "police", "défense", "defense", "terror", "justice pénale", "violence"],
+      institutions: ["constitution", "assemblée", "assemblee", "sénat", "senat", "scrutin", "loi organique", "collectivités"],
+      europe_international: ["europe", "union européenne", "ue", "international", "onu", "otan", "étrang", "maghreb", "afrique"],
+      social: ["retraite", "logement", "social", "pauvret", "solidarit", "sécurité sociale", "égalité", "salaire"],
+    };
+    const DEFAULT_THEME = "institutions";
+    const MAX_COMPARE_CANDIDATES = 2;
+    const TITLE_TRUNCATE_LENGTH = 120;
+    // On garde 3 caractères de marge pour ajouter des points de suspension sans allonger visuellement la ligne.
+    const TITLE_TRUNCATE_SLICE = TITLE_TRUNCATE_LENGTH - 3;
+    const INTERVENTION_TEXT_PREVIEW_LENGTH = 200;
+    const NON_VOTING_PATTERN = /non[ _-]?vot/;
+    const DEFENDED_THRESHOLD = 600;
+    const CARRIED_THRESHOLD = 250;
+    const REPORTED_THRESHOLD = 80;
+
+    const state = {
+      candidats: [],
+      currentSlug: "",
+      currentMeta: null,
+      currentProfile: null,
+      selectedTheme: "all",
+      votesSort: "recent",
+      interventionsMode: "all",
+      interventionsVisible: 6,
+      compareOpen: false,
+      compareTheme: "sante",
+      compareSlugs: ["", ""],
+      compareProfiles: {},
+      availableCompareCandidates: [],
+    };
+
+    function setDocumentTitle(label) {
+      document.title = label ? `Fiche candidat — ${label}` : "Fiches factuelles des candidats";
+    }
 
     function escapeHtml(str) {
       return String(str ?? "").replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
       })[c]);
     }
 
-    function bulletList(items, field) {
-      if (!items || !items.length) return "<li>Aucune information disponible.</li>";
-      const html = items
-        .filter((item) => item[field])
-        .map((item) => `<li>${escapeHtml(item[field])}</li>`)
-        .join("");
-      return html || "<li>Aucune information disponible.</li>";
+    function toDateMs(value) {
+      if (!value) return 0;
+      const t = Date.parse(value);
+      return Number.isNaN(t) ? 0 : t;
     }
 
-    const CATEGORIE_LABELS = {
-      mandat_electif: "Mandat électif",
-      commission: "Commission / mission",
-      groupe_amitie: "Groupe d'amitié",
-      extra_parlementaire: "Engagement extra-parlementaire",
-      autre: "Autre",
-    };
+    function formatIsoDate(value) {
+      if (!value) return "non renseignée";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString("fr-FR");
+    }
 
-    const TYPE_DETAIL_LABELS = {
-      loi: "Débat sur un texte de loi",
-      question: "Question au gouvernement",
-    };
-
-    const FORMAT_LABELS = {
-      reaction_courte: "Réaction courte",
-      prise_de_parole_developpee: "Prise de parole développée",
-    };
-
-    function renderMandats(mandats) {
-      if (!mandats || !mandats.length) return "<li>Aucun mandat renseigné.</li>";
-      return mandats
-        .map((m) => {
-          const categorieLabel = CATEGORIE_LABELS[m.categorie] || m.categorie || "";
-          let line = `<li><strong>${escapeHtml(m.type || "membre")}</strong> — ${escapeHtml(m.label || "")} <em>(${escapeHtml(categorieLabel)})</em>`;
-          if (m.debut || m.fin) {
-            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
-            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
-          }
-          return line + "</li>";
-        })
+    function shortName(name) {
+      if (!name) return "?";
+      return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
         .join("");
     }
 
-    function renderMandatsUE(mandatsUe) {
-      if (!mandatsUe || !mandatsUe.length) return "<li>Aucun mandat renseigné.</li>";
-      return mandatsUe
-        .map((m) => {
-          const organisation = m.organisation_nom || m.organisation_sigle || "";
-          const rolePart = m.role_label && m.role_label !== "Membre" ? `${escapeHtml(m.role_label)} — ` : "";
-          let line = `<li>${rolePart}<strong>${escapeHtml(organisation)}</strong> <em>(${escapeHtml(m.type_label || "")})</em>`;
-          if (m.debut || m.fin) {
-            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
-            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
-          }
-          return line + "</li>";
-        })
-        .join("");
+    function simplifyTitle(text) {
+      const raw = String(text || "").trim();
+      if (!raw) return "Intitulé non renseigné";
+      const cleaned = raw.replace(/^(la|le|les)\s+/i, "");
+      return cleaned.length > TITLE_TRUNCATE_LENGTH ? `${cleaned.slice(0, TITLE_TRUNCATE_SLICE).trim()}…` : cleaned;
     }
 
-    function renderVotes(votes) {
-      if (!votes || !votes.length) return "<li>Aucun vote renseigné.</li>";
-      return votes
-        .map((v) => `<li><strong>${escapeHtml(v.date || "")}</strong> — ${escapeHtml(v.titre || "")} (${escapeHtml(v.position || "")})</li>`)
-        .join("");
+    function normalizedText(...parts) {
+      return parts
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
     }
 
-    function renderDossiers(dossiers) {
-      if (!dossiers || !dossiers.length) return "<li>Aucun dossier législatif renseigné.</li>";
-      return dossiers
-        .map((d) => {
-          let line = `<li><strong>${escapeHtml(d.titre || "")}</strong> — ${escapeHtml(d.date_min || "")} / ${escapeHtml(d.date_max || "")}`;
-          if (d.legislature) line += ` <em>(${escapeHtml(d.legislature)})</em>`;
-          return line + "</li>";
-        })
-        .join("");
+    function detectThemeFromText(text) {
+      const t = String(text || "").toLowerCase();
+      for (const [theme, needles] of Object.entries(THEME_RULES)) {
+        if (needles.some((needle) => t.includes(needle))) return theme;
+      }
+      return DEFAULT_THEME;
     }
 
-    function renderInterventions(interventions) {
-      if (!interventions || !interventions.length) return "<li>Aucune intervention renseignée.</li>";
-      return interventions
-        .map((i) => {
-          const parts = [`<strong>${escapeHtml(i.date || i.created_at || "")}</strong>`];
-          if (i.type_detail) parts.push(`<em>${escapeHtml(TYPE_DETAIL_LABELS[i.type_detail] || i.type_detail)}</em>`);
-          if (i.fonction) parts.push(`<span style="color:#8a5a00;">en tant que ${escapeHtml(i.fonction)}</span>`);
-          if (i.format) {
-            const style = i.format === "prise_de_parole_developpee" ? "font-weight:bold;" : "font-style:italic;color:#666;";
-            parts.push(`<span style="${style}">${escapeHtml(FORMAT_LABELS[i.format] || i.format)}</span>`);
-          } else if (i.classification && i.classification.mode === "prise_de_parole") {
-            parts.push(`<span style="font-weight:bold;">prise de parole</span>`);
-          }
-          if (i.sujet) parts.push(`Sujet: ${escapeHtml(i.sujet)}`);
-          if (i.mots_cles && i.mots_cles.length) parts.push(`Mots-clés: ${escapeHtml(i.mots_cles.join(", "))}`);
-          if (i.texte) parts.push(escapeHtml(String(i.texte).slice(0, 180)));
-          const url = i.url_detail || i.url;
-          if (url) parts.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>`);
-          return "<li>" + parts.join(" — ") + "</li>";
-        })
-        .join("");
+    function themeLabel(themeKey) {
+      return THEME_OPTIONS.find((t) => t.key === themeKey)?.label || "Institutions";
     }
 
-    function renderProfile(profile) {
-      const identite = profile.identite || {};
-      const nomComplet = identite.nom_complet || profile.slug || "";
+    function voteLabelAndClass(position) {
+      const p = String(position || "").toLowerCase();
+      if (p.includes("pour")) return { label: "Pour", cls: "pour" };
+      if (p.includes("contre")) return { label: "Contre", cls: "contre" };
+      if (p.includes("abst")) return { label: "Abstention", cls: "abstention" };
+      if (NON_VOTING_PATTERN.test(p) || p.includes("absent")) {
+        return { label: "Absent / non votant", cls: "absent" };
+      }
+      return { label: "Position non précisée", cls: "absent" };
+    }
 
-      document.title = `CV politique - ${nomComplet}`;
+    function withTheme(profile) {
+      const votes = (profile.votes || []).map((v) => ({
+        ...v,
+        _theme: detectThemeFromText(normalizedText(v.titre, v.position)),
+      }));
+      const dossiers = (profile.dossiers_legislatifs || []).map((d) => ({
+        ...d,
+        _theme: detectThemeFromText(normalizedText(d.titre)),
+      }));
+      const interventions = (profile.interventions || []).map((i) => ({
+        ...i,
+        _theme: detectThemeFromText(normalizedText(i.sujet, i.texte, ...(i.mots_cles || []))),
+      }));
+      return { ...profile, votes, dossiers_legislatifs: dossiers, interventions };
+    }
 
-      const warnings = (profile.meta && profile.meta.warnings) || [];
-      const warningsHtml = warnings.length
-        ? `<div class="warning"><strong>Avertissements :</strong><ul>${warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}</ul></div>`
-        : "";
+    function inTheme(item, selectedTheme) {
+      return selectedTheme === "all" ? true : item._theme === selectedTheme;
+    }
 
-      document.getElementById("profile-container").innerHTML = `
-        <p><strong>Chambre :</strong> ${escapeHtml(profile.chambre || "")}</p>
-        ${warningsHtml}
-        <div class="card">
-          <h2>Identité</h2>
-          <ul>
-            <li><strong>Nom :</strong> ${escapeHtml(identite.nom_complet || "")}</li>
-            <li><strong>Groupe :</strong> ${escapeHtml(identite.groupe_nom || identite.groupe_sigle || "")}</li>
-            <li><strong>Profession :</strong> ${escapeHtml(identite.profession || "")}</li>
-            <li><strong>Circonscription :</strong> ${escapeHtml(identite.num_circo || "")}</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Mandats</h2>
-          <ul>${renderMandats(profile.mandats)}</ul>
-        </div>
-        ${profile.mandat_europeen ? `
-        <div class="card">
-          <h2>Mandat européen (Parlement européen)</h2>
-          <p><em>Source : Open Data Portal du Parlement européen${profile.mandat_europeen.url_source ? ` (${escapeHtml(profile.mandat_europeen.url_source)})` : ""}</em></p>
-          <ul>${renderMandatsUE(profile.mandat_europeen.mandats_europeens)}</ul>
-        </div>` : ""}
-        <div class="card">
-          <h2>Votes</h2>
-          ${profile.votes_source ? `<p><em>Source : ${escapeHtml(profile.votes_source)}</em></p>` : ""}
-          <ul>${renderVotes(profile.votes)}</ul>
-        </div>
-        <div class="card">
-          <h2>Dossiers législatifs</h2>
-          <ul>${renderDossiers(profile.dossiers_legislatifs)}</ul>
-        </div>
-        <div class="card">
-          <h2>Interventions</h2>
-          <ul>${renderInterventions(profile.interventions)}</ul>
+    function roleFromDossier(dossier) {
+      const n = Number(dossier.nb_interventions || 0);
+      // Seuils UX internes (observés sur les profils existants) :
+      // >=600 interventions => implication très forte ; >=250 => forte ; >=80 => moyenne ; sinon faible.
+      if (n >= DEFENDED_THRESHOLD) return "a défendu";
+      if (n >= CARRIED_THRESHOLD) return "a porté";
+      if (n >= REPORTED_THRESHOLD) return "a rapporté";
+      return "a cosigné";
+    }
+
+    function sourceLinkHtml(url, label = "Source officielle") {
+      if (!url) return `<span class="small">${escapeHtml(label)} indisponible</span>`;
+      return `<a class="link" href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+    }
+
+    function compareFactsForTheme(profile, theme) {
+      const votes = (profile.votes || []).filter((v) => v._theme === theme);
+      const textes = (profile.dossiers_legislatifs || []).filter((d) => d._theme === theme);
+      const interventions = (profile.interventions || []).filter((i) => i._theme === theme);
+      const absents = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
+      return { votes, textes, interventions, absents };
+    }
+
+    function renderThemePills() {
+      return `
+        <div class="themes-row" aria-label="Filtre des thèmes">
+          ${THEME_OPTIONS.map((t) => `
+            <button type="button" class="theme-pill ${state.selectedTheme === t.key ? "active" : ""}" data-theme="${t.key}">
+              ${escapeHtml(t.label)}
+            </button>
+          `).join("")}
         </div>
       `;
     }
 
-    function renderMeta(candidat) {
-      document.getElementById("candidat-meta").innerHTML = `
-        <div class="card">
-          <h2>${escapeHtml(candidat.nom)}</h2>
-          <p>
-            ${escapeHtml(candidat.parti || "")}
-            <span class="badge">${escapeHtml(candidat.famille_politique || "")}</span>
-            <span class="badge">${escapeHtml(candidat.statut || "")}</span>
+    function renderHeader(meta, profile) {
+      const nom = profile?.identite?.nom_complet || meta?.nom || profile?.slug || "Candidat";
+      const parti = meta?.parti || profile?.identite?.groupe_nom || profile?.identite?.groupe_sigle || "Affiliation non renseignée";
+      const statut = meta?.statut || "statut non renseigné";
+      const photo = profile?.mandat_europeen?.photo || "";
+      const updatedAt = profile?.meta?.genere_le || null;
+
+      const nbVotes = (profile.votes || []).length;
+      const nbTextes = (profile.dossiers_legislatifs || []).length;
+      const themesSeen = new Set();
+      for (const item of (profile.votes || [])) themesSeen.add(item._theme);
+      for (const item of (profile.dossiers_legislatifs || [])) themesSeen.add(item._theme);
+      for (const item of (profile.interventions || [])) themesSeen.add(item._theme);
+
+      return `
+        <section id="resume" class="panel">
+          <div class="hero">
+            <div class="avatar">${photo ? `<img src="${escapeHtml(photo)}" alt="Photo de ${escapeHtml(nom)}">` : escapeHtml(shortName(nom))}</div>
+            <div>
+              <h2>${escapeHtml(nom)}</h2>
+              <div class="tags">
+                <span class="tag">${escapeHtml(parti)}</span>
+                <span class="tag">${escapeHtml(statut)}</span>
+              </div>
+              <p class="small">Cette fiche présente les votes, textes portés et prises de parole de ce candidat à partir de sources officielles.</p>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="kpi">
+              <div class="kpi-value">${nbVotes}</div>
+              <div class="kpi-label">Votes retrouvés</div>
+              <a href="#votes">Voir le détail</a>
+            </article>
+            <article class="kpi">
+              <div class="kpi-value">${nbTextes}</div>
+              <div class="kpi-label">Textes portés / rapportés</div>
+              <a href="#textes">Voir le détail</a>
+            </article>
+            <article class="kpi">
+              <div class="kpi-value">${themesSeen.size}</div>
+              <div class="kpi-label">Thèmes abordés / prises de parole</div>
+              <a href="#interventions">Voir le détail</a>
+            </article>
+          </div>
+
+          <div class="trust-line">
+            Données sourcées • Dernière mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
+            <a class="link" href="../README.md" target="_blank" rel="noopener">Voir la méthode</a>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderStickyNav() {
+      return `
+        <nav class="sticky-nav" aria-label="Navigation de section">
+          <div class="sticky-nav-list">
+            <a href="#resume">Résumé</a>
+            <a href="#textes">Textes</a>
+            <a href="#votes">Votes</a>
+            <a href="#absences">Absences / silences</a>
+            <a href="#interventions">Prises de position</a>
+            <a href="#compare">Comparer</a>
+          </div>
+        </nav>
+      `;
+    }
+
+    function renderTextes(profile) {
+      const items = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      if (!items.length) {
+        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte porté retrouvé dans les données disponibles." : "Aucun texte porté retrouvé sur ce thème."}</p>`;
+      }
+      const sorted = [...items].sort((a, b) => Number(b.nb_interventions || 0) - Number(a.nb_interventions || 0));
+      return `<div class="rows">${sorted.map((d) => `
+        <article class="row-item">
+          <p><strong>${escapeHtml(simplifyTitle(d.titre))}</strong></p>
+          <p class="small">${escapeHtml(roleFromDossier(d))} • ${escapeHtml(themeLabel(d._theme))} • ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</p>
+          <p class="small">Rôle dérivé du niveau d'activité observé sur ce texte.
+            <details class="inline-help"><summary aria-label="Aide">?</summary><p>“Texte porté” = texte où la personne apparaît activement dans les données, selon le nombre d'interventions enregistrées.</p></details>
           </p>
-          ${candidat.notes ? `<p>${escapeHtml(candidat.notes)}</p>` : ""}
+          <p>${sourceLinkHtml(d.url_institution || d.url_source)}</p>
+        </article>
+      `).join("")}</div>`;
+    }
+
+    function applyVoteSort(votes) {
+      const arr = votes.map((v) => ({ ...v, _shortTitleKey: simplifyTitle(v.titre).toLowerCase() }));
+      if (state.votesSort === "recent") {
+        arr.sort((a, b) => toDateMs(b.date) - toDateMs(a.date));
+      } else if (state.votesSort === "theme") {
+        arr.sort((a, b) => themeLabel(a._theme).localeCompare(themeLabel(b._theme), "fr"));
+      } else if (state.votesSort === "cited") {
+        const freq = new Map();
+        for (const v of arr) {
+          const key = v._shortTitleKey;
+          freq.set(key, (freq.get(key) || 0) + 1);
+        }
+        arr.sort((a, b) => {
+          const da = freq.get(a._shortTitleKey) || 0;
+          const db = freq.get(b._shortTitleKey) || 0;
+          return db - da || toDateMs(b.date) - toDateMs(a.date);
+        });
+      }
+      return arr;
+    }
+
+    function renderVotes(profile) {
+      const items = applyVoteSort((profile.votes || []).filter((v) => inTheme(v, state.selectedTheme)));
+      if (!items.length) {
+        return `<p class="empty">${state.selectedTheme === "all" ? "Aucune donnée de vote trouvée dans cette fiche." : "Aucune donnée de vote trouvée sur ce thème."}</p>`;
+      }
+
+      const cards = `
+        <div class="votes-cards rows">
+          ${items.map((v) => {
+            const badge = voteLabelAndClass(v.position);
+            return `
+              <article class="row-item">
+                <p><strong>${escapeHtml(simplifyTitle(v.titre))}</strong></p>
+                <p class="small">${escapeHtml(formatIsoDate(v.date))} • ${escapeHtml(themeLabel(v._theme))}
+                  <span class="vote-badge ${badge.cls}">${escapeHtml(badge.label)}</span>
+                </p>
+                <details>
+                  <summary class="small">Voir le libellé officiel complet</summary>
+                  <p class="small">${escapeHtml(v.titre || "Libellé non renseigné")}</p>
+                </details>
+                <p class="small">${escapeHtml(profile.votes_source || "Source de vote non précisée")}
+                  <details class="inline-help"><summary aria-label="Aide">?</summary><p>“Vote officiel” = résultat nominatif publié par l’institution parlementaire.</p></details>
+                </p>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      const rows = items.map((v) => {
+        const badge = voteLabelAndClass(v.position);
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(simplifyTitle(v.titre))}</strong>
+              <details><summary class="small">Libellé officiel complet</summary><div class="small">${escapeHtml(v.titre || "")}</div></details>
+            </td>
+            <td>${escapeHtml(themeLabel(v._theme))}</td>
+            <td>${escapeHtml(formatIsoDate(v.date))}</td>
+            <td><span class="vote-badge ${badge.cls}">${escapeHtml(badge.label)}</span></td>
+            <td class="small">${escapeHtml(profile.votes_source || "Source de vote non précisée")}</td>
+          </tr>
+        `;
+      }).join("");
+
+      return `
+        <div class="inter-controls">
+          <label for="votes-sort" class="small">Trier :</label>
+          <select id="votes-sort">
+            <option value="recent" ${state.votesSort === "recent" ? "selected" : ""}>plus récent</option>
+            <option value="cited" ${state.votesSort === "cited" ? "selected" : ""}>plus fréquent (dans la liste)</option>
+            <option value="theme" ${state.votesSort === "theme" ? "selected" : ""}>thème</option>
+          </select>
+        </div>
+        ${cards}
+        <div class="votes-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sujet</th>
+                <th>Thème</th>
+                <th>Date</th>
+                <th>Position</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
         </div>
       `;
     }
 
-    async function onCandidatChange(candidats) {
-      const select = document.getElementById("candidat-select");
-      const container = document.getElementById("profile-container");
-      const slug = select.value;
+    function renderAbsences(profile) {
+      const votes = (profile.votes || []).filter((v) => inTheme(v, state.selectedTheme));
+      const textes = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      const inters = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme));
 
-      if (!slug) {
-        document.getElementById("candidat-meta").innerHTML = "";
-        container.innerHTML = "";
-        return;
+      const absVotes = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
+      const themeUniverse = THEME_OPTIONS.filter((t) => t.key !== "all").map((t) => t.key);
+
+      let noTextThemes = [];
+      let noInterThemes = [];
+      if (state.selectedTheme === "all") {
+        const textThemes = new Set((profile.dossiers_legislatifs || []).map((d) => d._theme));
+        const interThemes = new Set((profile.interventions || []).map((i) => i._theme));
+        noTextThemes = themeUniverse.filter((t) => !textThemes.has(t));
+        noInterThemes = themeUniverse.filter((t) => !interThemes.has(t));
       }
 
-      const candidat = candidats.find((c) => c.slug === slug);
-      if (!candidat) {
-        document.getElementById("candidat-meta").innerHTML = "";
-        container.innerHTML = `<p class="empty">Candidat introuvable (slug: ${escapeHtml(slug)}).</p>`;
-        return;
-      }
-      renderMeta(candidat);
+      return `
+        <div class="absence-grid">
+          <div class="absence-box">
+            <strong>Textes non retrouvés</strong>
+            ${state.selectedTheme === "all"
+              ? (noTextThemes.length
+                ? `<ul>${noTextThemes.map((t) => `<li>${escapeHtml(themeLabel(t))}</li>`).join("")}</ul>`
+                : `<p class="small">Au moins un texte est retrouvé dans chaque thème de la grille actuelle.</p>`)
+              : (textes.length
+                ? `<p class="small">Des textes sont retrouvés sur ce thème.</p>`
+                : `<p class="small">Aucun texte porté retrouvé sur ce thème.</p>`)}
+          </div>
 
-      container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
+          <div class="absence-box">
+            <strong>Prises de parole non retrouvées</strong>
+            ${state.selectedTheme === "all"
+              ? (noInterThemes.length
+                ? `<ul>${noInterThemes.map((t) => `<li>${escapeHtml(themeLabel(t))}</li>`).join("")}</ul>`
+                : `<p class="small">Au moins une prise de parole est retrouvée dans chaque thème de la grille actuelle.</p>`)
+              : (inters.length
+                ? `<p class="small">Des prises de parole sont retrouvées sur ce thème.</p>`
+                : `<p class="small">Aucune prise de parole retrouvée sur ce thème dans les données actuellement disponibles.</p>`)}
+          </div>
+
+          <div class="absence-box">
+            <strong>Votes sans participation</strong>
+            ${votes.length
+              ? (absVotes.length
+                ? `<p class="small">${absVotes.length} vote(s) indiquent “n’a pas pris part au vote” / non votant sur le périmètre affiché.</p>`
+                : `<p class="small">Aucun vote affiché n’indique une absence de participation.</p>`)
+              : `<p class="small">Aucune donnée de vote trouvée.</p>`}
+            <details class="inline-help"><summary aria-label="Aide">?</summary><p>“N’a pas pris part au vote” décrit une absence de participation à ce scrutin, pas une prise de position.</p></details>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderInterventions(profile) {
+      let items = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme));
+      if (state.interventionsMode === "short") {
+        items = items.filter((i) => i.format === "reaction_courte");
+      } else if (state.interventionsMode === "long") {
+        items = items.filter((i) => i.format === "prise_de_parole_developpee");
+      }
+
+      if (!items.length) {
+        return `<p class="empty">${state.selectedTheme === "all" ? "Aucune prise de parole trouvée." : "Aucune prise de parole retrouvée sur ce thème dans les données actuellement disponibles."}</p>`;
+      }
+
+      const sorted = [...items].sort((a, b) => toDateMs(b.date || b.created_at) - toDateMs(a.date || a.created_at));
+      const visible = sorted.slice(0, state.interventionsVisible);
+
+      return `
+        <div class="inter-controls">
+          <button type="button" class="ghost-btn" data-inter-mode="all">Toutes</button>
+          <button type="button" class="ghost-btn" data-inter-mode="short">Courtes réactions</button>
+          <button type="button" class="ghost-btn" data-inter-mode="long">Prises de parole développées</button>
+        </div>
+
+        <div class="rows">
+          ${visible.map((i) => `
+            <article class="row-item">
+              <p><strong>${escapeHtml(i.sujet || "Prise de parole")}</strong></p>
+              <p class="small">${escapeHtml(formatIsoDate(i.date || i.created_at))} • ${escapeHtml(themeLabel(i._theme))} ${i.fonction ? `• en tant que ${escapeHtml(i.fonction)}` : ""}</p>
+              ${i.texte ? `<p>${escapeHtml(String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH))}${String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}</p>` : `<p class="small">Extrait non disponible.</p>`}
+              <p>${sourceLinkHtml(i.url_detail || i.url)}</p>
+            </article>
+          `).join("")}
+        </div>
+
+        ${sorted.length > visible.length ? `<p><button type="button" id="see-more-interventions" class="ghost-btn">Voir plus d’extraits</button></p>` : ""}
+      `;
+    }
+
+    async function loadProfile(slug) {
+      if (!slug) return null;
+      const resp = await fetch(PROFILE_URL(slug), { cache: "no-store" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return withTheme(await resp.json());
+    }
+
+    async function ensureCompareProfile(slug) {
+      if (!slug) return null;
+      if (state.compareProfiles[slug]) return state.compareProfiles[slug];
       try {
-        const resp = await fetch(`../data/profiles/${slug}.json`, { cache: "no-store" });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const profile = await resp.json();
-        renderProfile(profile);
+        state.compareProfiles[slug] = await loadProfile(slug);
+      } catch {
+        state.compareProfiles[slug] = null;
+      }
+      return state.compareProfiles[slug];
+    }
+
+    function renderCompareSection(profile) {
+      const baseTheme = state.selectedTheme === "all" ? state.compareTheme : state.selectedTheme;
+      const availableCandidates = state.availableCompareCandidates;
+
+      const activeProfiles = [{ slug: state.currentSlug, profile, meta: state.currentMeta }];
+      for (const slug of state.compareSlugs.filter(Boolean)) {
+        const p = state.compareProfiles[slug];
+        const m = state.candidats.find((c) => c.slug === slug);
+        if (p && m) activeProfiles.push({ slug, profile: p, meta: m });
+      }
+
+      return `
+        <section id="compare" class="panel compare-panel ${state.compareOpen ? "open" : ""}">
+          <h2>Comparer</h2>
+          <p class="small">Comparez sur un seul thème pour garder une lecture claire (2 autres candidats max).</p>
+
+          <div class="inter-controls">
+            <label for="compare-theme" class="small">Thème de comparaison</label>
+            <select id="compare-theme">
+              ${THEME_OPTIONS.filter((t) => t.key !== "all").map((t) => `<option value="${t.key}" ${baseTheme === t.key ? "selected" : ""}>${escapeHtml(t.label)}</option>`).join("")}
+            </select>
+          </div>
+
+          <div class="inter-controls">
+            <label class="small" for="compare-1">Candidat 2</label>
+            <select id="compare-1">
+              <option value="">— Aucun —</option>
+              ${availableCandidates.map((c) => `<option value="${escapeHtml(c.slug)}" ${state.compareSlugs[0] === c.slug ? "selected" : ""}>${escapeHtml(c.nom)}</option>`).join("")}
+            </select>
+
+            <label class="small" for="compare-2">Candidat 3</label>
+            <select id="compare-2">
+              <option value="">— Aucun —</option>
+              ${availableCandidates.map((c) => `<option value="${escapeHtml(c.slug)}" ${state.compareSlugs[1] === c.slug ? "selected" : ""}>${escapeHtml(c.nom)}</option>`).join("")}
+            </select>
+          </div>
+
+          <div class="compare-grid">
+            ${activeProfiles.map(({ profile: p, meta: m }) => {
+              const facts = compareFactsForTheme(p, baseTheme);
+              const sampleVotes = facts.votes.slice(0, 3).map((v) => {
+                const vb = voteLabelAndClass(v.position);
+                return `<li>${escapeHtml(simplifyTitle(v.titre))} — <span class="vote-badge ${vb.cls}">${escapeHtml(vb.label)}</span></li>`;
+              }).join("");
+              return `
+                <article class="compare-card">
+                  <h3>${escapeHtml(p.identite?.nom_complet || m?.nom || p.slug)}</h3>
+                  <p class="small">${escapeHtml(themeLabel(baseTheme))}</p>
+                  <ul class="small" style="padding-left:1rem; margin:0.35rem 0;">
+                    <li>${facts.votes.length} vote(s) retrouvés</li>
+                    <li>${facts.textes.length} texte(s) porté(s)/rapporté(s)</li>
+                    <li>${facts.interventions.length} prise(s) de parole</li>
+                    <li>${facts.absents.length} vote(s) sans participation</li>
+                  </ul>
+                  ${sampleVotes ? `<details><summary class="small">3 votes clés</summary><ul class="small" style="padding-left:1rem;">${sampleVotes}</ul></details>` : `<p class="small">Aucun vote clé trouvé sur ce thème.</p>`}
+                </article>
+              `;
+            }).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPage() {
+      const root = document.getElementById("candidat-root");
+      const profile = state.currentProfile;
+      const meta = state.currentMeta;
+
+      if (!profile || !meta) {
+        root.innerHTML = "";
+        document.getElementById("compare-toggle").style.display = "none";
+        return;
+      }
+
+      root.innerHTML = `
+        ${renderHeader(meta, profile)}
+        ${renderStickyNav()}
+
+        <section class="panel">
+          <h2>Filtrer par thème</h2>
+          ${renderThemePills()}
+        </section>
+
+        <section id="textes" class="panel">
+          <h2>Actions concrètes — Textes portés</h2>
+          ${renderTextes(profile)}
+        </section>
+
+        <section id="votes" class="panel">
+          <h2>Votes enregistrés
+            <details class="inline-help"><summary aria-label="Aide">?</summary><p>La position de vote est affichée sans code couleur moral, avec des libellés lisibles et des trames neutres.</p></details>
+          </h2>
+          ${renderVotes(profile)}
+        </section>
+
+        <section id="absences" class="panel">
+          <h2>Absences et silences dans les données</h2>
+          ${renderAbsences(profile)}
+        </section>
+
+        <section id="interventions" class="panel">
+          <h2>Prises de position / interventions</h2>
+          ${renderInterventions(profile)}
+        </section>
+
+        ${renderCompareSection(profile)}
+      `;
+
+      setDocumentTitle(profile.identite?.nom_complet || meta.nom);
+      document.getElementById("compare-toggle").style.display = "inline-flex";
+      bindRenderedEvents();
+    }
+
+    function bindRenderedEvents() {
+      document.querySelectorAll(".theme-pill").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.selectedTheme = btn.dataset.theme;
+          if (state.selectedTheme !== "all") state.compareTheme = state.selectedTheme;
+          renderPage();
+        });
+      });
+
+      const sort = document.getElementById("votes-sort");
+      if (sort) {
+        sort.addEventListener("change", () => {
+          state.votesSort = sort.value;
+          renderPage();
+        });
+      }
+
+      document.querySelectorAll("[data-inter-mode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.interventionsMode = btn.dataset.interMode;
+          state.interventionsVisible = 6;
+          renderPage();
+        });
+      });
+
+      const moreBtn = document.getElementById("see-more-interventions");
+      if (moreBtn) {
+        moreBtn.addEventListener("click", () => {
+          state.interventionsVisible += 6;
+          renderPage();
+          const interventionsSection = document.getElementById("interventions");
+          if (interventionsSection) interventionsSection.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
+      }
+
+      const compareTheme = document.getElementById("compare-theme");
+      if (compareTheme) {
+        compareTheme.addEventListener("change", async () => {
+          state.compareTheme = compareTheme.value;
+          await refreshCompareProfiles();
+          renderPage();
+          document.getElementById("compare")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+
+      const compare1 = document.getElementById("compare-1");
+      const compare2 = document.getElementById("compare-2");
+      if (compare1) {
+        compare1.addEventListener("change", async () => {
+          state.compareSlugs[0] = compare1.value;
+          await refreshCompareProfiles();
+          renderPage();
+        });
+      }
+      if (compare2) {
+        compare2.addEventListener("change", async () => {
+          state.compareSlugs[1] = compare2.value;
+          await refreshCompareProfiles();
+          renderPage();
+        });
+      }
+    }
+
+    async function refreshCompareProfiles() {
+      // Dédoublonnage utile si la même personne est choisie dans les 2 listes de comparaison.
+      const slugs = [...new Set(state.compareSlugs.filter(Boolean))].slice(0, MAX_COMPARE_CANDIDATES);
+      state.compareSlugs = [slugs[0] || "", slugs[1] || ""];
+      await Promise.all(slugs.map((slug) => ensureCompareProfile(slug)));
+    }
+
+    async function onCandidatChange() {
+      const slug = document.getElementById("candidat-select").value;
+      state.currentSlug = slug;
+      state.currentMeta = state.candidats.find((c) => c.slug === slug) || null;
+      state.currentProfile = null;
+      state.selectedTheme = "all";
+      state.votesSort = "recent";
+      state.interventionsMode = "all";
+      state.interventionsVisible = 6;
+      state.compareOpen = false;
+      state.compareSlugs = ["", ""];
+      state.compareProfiles = {};
+
+      const root = document.getElementById("candidat-root");
+      if (!slug || !state.currentMeta) {
+        root.innerHTML = "";
+        document.getElementById("compare-toggle").style.display = "none";
+        setDocumentTitle("");
+        return;
+      }
+      state.availableCompareCandidates = state.candidats.filter((c) => c.slug && c.slug !== slug);
+
+      root.innerHTML = `<section class="panel"><p class="empty" role="status" aria-live="polite">Chargement de la fiche de ${escapeHtml(state.currentMeta.nom)}…</p></section>`;
+      try {
+        state.currentProfile = await loadProfile(slug);
+        renderPage();
       } catch (err) {
-        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python src/generate_all_profiles.py" pour générer son profil.</p>`;
+        root.innerHTML = `
+          <section class="panel">
+            <p class="empty">Données non disponibles pour ce candidat (${escapeHtml(err.message)}).</p>
+            <p class="small">Aucune donnée trouvée pour le moment. Cette fiche sera affichée dès que les données seront disponibles.</p>
+          </section>
+        `;
+        setDocumentTitle(state.currentMeta?.nom || "");
       }
     }
 
     async function init() {
-      const resp = await fetch(CANDIDATS_URL);
-      const data = await resp.json();
-      const candidats = data.candidats || [];
-
       const select = document.getElementById("candidat-select");
-      for (const c of candidats) {
-        const option = document.createElement("option");
-        option.value = c.slug || "";
-        option.textContent = c.slug ? c.nom : `${c.nom} (pas de données parlementaires)`;
-        if (!c.slug) option.disabled = true;
-        select.appendChild(option);
+      const compareToggle = document.getElementById("compare-toggle");
+
+      try {
+        const resp = await fetch(CANDIDATS_URL, { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        state.candidats = data.candidats || [];
+
+        for (const c of state.candidats) {
+          const option = document.createElement("option");
+          option.value = c.slug || "";
+          option.textContent = c.slug ? c.nom : `${c.nom} (pas de données parlementaires)`;
+          option.disabled = !c.slug;
+          select.appendChild(option);
+        }
+      } catch (err) {
+        document.getElementById("candidat-root").innerHTML = `
+          <section class="panel"><p class="empty">Impossible de charger la liste des candidats (${escapeHtml(err.message)}).</p></section>
+        `;
+        return;
       }
 
-      select.addEventListener("change", () => onCandidatChange(candidats));
+      select.addEventListener("change", onCandidatChange);
+      compareToggle.addEventListener("click", async () => {
+        state.compareOpen = !state.compareOpen;
+        await refreshCompareProfiles();
+        renderPage();
+        if (state.compareOpen) {
+          document.getElementById("compare")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
     }
 
     init();
