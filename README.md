@@ -244,7 +244,9 @@ python -m http.server 8000
 Puis ouvrir <http://localhost:8000/web/> dans un navigateur. Cette page sert
 de laboratoire visuel et donne accès aux variantes conservées :
 
-- `web/v1/`, `web/v2/` et `web/v3/` : les trois premiers designs ;
+- `web/v1/`, `web/v2/` et `web/v3/` : les trois premiers designs. La V3,
+  « Empreinte politique — En clair », propose des vues par candidat et par
+  parti ;
 - `web/atlas-augmente/` : l'Atlas alimenté par les profils réels ;
 - `web/scene-cinetique/` et `web/interface-essentielle/` : les études ayant
   servi au résumé express intégré à la V3 et à l'Atlas ;
@@ -253,6 +255,11 @@ de laboratoire visuel et donne accès aux variantes conservées :
 
 Les trois premiers designs chargent les profils dynamiquement depuis
 `data/profiles/<slug>.json`.
+
+La vue « Partis » de la V3 charge les agrégats `data/profiles/groupe-*.json`.
+Ces fiches décrivent uniquement les profils candidats présents dans chaque
+agrégat : la couverture affichée ne représente pas l'ensemble des membres ou
+élus du parti.
 
 Chaque `data/profiles/<slug>.html` généré par `render_profile.py` est aussi
 une page HTML autonome consultable directement.

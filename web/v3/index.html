@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CONTRECHAMP — Politique en clair</title>
+<title>Empreinte politique — En clair</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -728,6 +728,18 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
+  .deconstructed .mode-switch { display: flex; border-right: 2px solid var(--line); }
+  .deconstructed .mode-switch button {
+    padding: 0 0.7rem;
+    border: 0;
+    border-right: 1px solid var(--line);
+    background: transparent;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+  }
+  .deconstructed .mode-switch button:last-child { border-right: 0; }
+  .deconstructed .mode-switch button.active { color: var(--bg); background: var(--text); }
 
   /* Index typographique des candidats, sans avatar ni carte. */
   .deconstructed .avatar-carousel { gap: 0; padding: 0; border: 0; overflow-x: auto; }
@@ -798,6 +810,61 @@
   .deconstructed .home-candidate strong { display: block; font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 3vw, 1.6rem); }
   .deconstructed .home-candidate small { font-family: 'IBM Plex Mono', monospace; }
   .deconstructed .home-note { grid-column: 1 / -1; padding: 0.75rem 1rem; background: var(--accent); color: white; }
+  .deconstructed .party-home-note { background: var(--pink); color: var(--text); }
+  .deconstructed .party-profile { min-height: 70vh; }
+  .deconstructed .party-hero {
+    min-height: 42vh;
+    display: grid;
+    align-content: end;
+    padding: clamp(1rem, 5vw, 4rem);
+    border-bottom: 2px solid var(--line);
+    color: var(--bg);
+    background: var(--text);
+  }
+  .deconstructed .party-hero h2 {
+    max-width: 11ch;
+    margin: 0;
+    color: var(--bg);
+    font-size: clamp(3rem, 10vw, 8rem);
+    line-height: 0.82;
+    text-transform: uppercase;
+  }
+  .deconstructed .party-coverage {
+    padding: 0.9rem 1rem;
+    border-bottom: 2px solid var(--line);
+    background: var(--pink);
+    font: 600 0.7rem/1.55 'IBM Plex Mono', monospace;
+  }
+  .deconstructed .party-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-bottom: 2px solid var(--line);
+  }
+  .deconstructed .party-kpi { min-height: 175px; padding: 1rem; border-right: 2px solid var(--line); }
+  .deconstructed .party-kpi:nth-child(2) { background: var(--accent-soft); }
+  .deconstructed .party-kpi:nth-child(3) { background: var(--acid); }
+  .deconstructed .party-kpi:nth-child(4) { background: var(--pink); border-right: 0; }
+  .deconstructed .party-kpi b { display: block; font: 400 clamp(2.4rem, 6vw, 5rem)/0.9 'Archivo Black', sans-serif; }
+  .deconstructed .party-kpi span { font: 600 0.65rem/1.45 'IBM Plex Mono', monospace; text-transform: uppercase; }
+  .deconstructed .party-section { padding: clamp(1rem, 5vw, 4rem); border-bottom: 2px solid var(--line); }
+  .deconstructed .party-section h2 { max-width: 12ch; font-size: clamp(2.5rem, 7vw, 6rem); line-height: 0.88; }
+  .deconstructed .party-vote-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+  .deconstructed .party-vote { min-height: 180px; padding: 0.8rem; background: var(--bg); }
+  .deconstructed .party-vote b { display: block; margin: 0.5rem 0; font-size: 1rem; }
+  .deconstructed .party-vote small { font-family: 'IBM Plex Mono', monospace; }
+  .deconstructed .party-vote-position { display: inline-block; padding: 0.25rem 0.4rem; color: white; background: var(--text); text-transform: uppercase; }
+  .deconstructed .party-tags { display: flex; flex-wrap: wrap; gap: 0; }
+  .deconstructed .party-tag { padding: calc(0.45rem + var(--weight) * 0.25rem) 0.7rem; border: 1px solid var(--line); margin: 0 -1px -1px 0; background: var(--acid); }
+  .deconstructed .party-tag b { font-size: calc(0.7rem + var(--weight) * 0.3rem); }
+  .deconstructed .party-tag small { display: block; font: 0.55rem 'IBM Plex Mono', monospace; }
+  .deconstructed .party-members { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); }
+  .deconstructed .party-member { padding: 0.8rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .deconstructed .party-sources { margin-top: 1rem; font: 0.62rem/1.6 'IBM Plex Mono', monospace; }
+  @media (max-width: 760px) {
+    .deconstructed .party-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .deconstructed .party-vote-grid,
+    .deconstructed .party-members { grid-template-columns: 1fr; }
+  }
   .deconstructed #resume { padding: 0; }
   .deconstructed .hero {
     display: grid;
@@ -1160,12 +1227,15 @@
     <section class="masthead">
       <div>
         <p class="section-kicker">Présidentielle 2027 / données publiques</p>
-        <h1><button type="button" id="home-link" class="brand-home" aria-label="Retour à l'accueil">Contre<br>champ</button></h1>
+        <h1><button type="button" id="home-link" class="brand-home" aria-label="Retour à l'accueil">Empreinte<br>politique</button></h1>
       </div>
-      <div class="edition-mark">POLITIQUE EN CLAIR</div>
+      <div class="edition-mark">EN CLAIR</div>
     </section>
-    <nav class="candidate-dock" aria-label="Index des candidats">
-      <p class="candidate-dock-label">Candidats</p>
+    <nav class="candidate-dock" aria-label="Choisir une vue et un profil">
+      <div class="mode-switch" role="group" aria-label="Type de profil">
+        <button type="button" class="active" data-profile-mode="candidates" aria-pressed="true">Candidats</button>
+        <button type="button" data-profile-mode="parties" aria-pressed="false">Partis</button>
+      </div>
       <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
     </nav>
 
@@ -1175,6 +1245,19 @@
   <script>
     const CANDIDATS_URL = "../../data/candidats.json";
     const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
+    const GROUP_PROFILES = [
+      { id: "la-france-insoumise-lfi", label: "La France Insoumise (LFI)" },
+      { id: "les-ecologistes", label: "Les Écologistes" },
+      { id: "horizons", label: "Horizons" },
+      { id: "les-republicains-lr", label: "Les Républicains (LR)" },
+      { id: "lutte-ouvriere-lo", label: "Lutte Ouvrière (LO)" },
+      { id: "nous-france", label: "Nous France" },
+      { id: "nouvelle-energie", label: "Nouvelle Énergie" },
+      { id: "parti-socialiste-ps", label: "Parti Socialiste (PS)" },
+      { id: "rassemblement-national-rn", label: "Rassemblement National (RN)" },
+      { id: "renaissance", label: "Renaissance" },
+    ];
+    const GROUP_PROFILE_URL = (id) => `../../data/profiles/groupe-${id}.json`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },
@@ -1244,10 +1327,13 @@
       expandedTextThemes: new Set(),
       expandedVoteThemes: new Set(),
       expressIndex: 0,
+      profileMode: "candidates",
+      currentGroupId: "",
+      currentGroupProfile: null,
     };
 
     function setDocumentTitle(label) {
-      document.title = label ? `CONTRECHAMP — ${label}` : "CONTRECHAMP — Politique en clair";
+      document.title = label ? `Empreinte politique — ${label}` : "Empreinte politique — En clair";
     }
 
     function escapeHtml(str) {
@@ -1916,6 +2002,10 @@
     }
 
     function renderHome() {
+      if (state.profileMode === "parties") {
+        renderGroupHome();
+        return;
+      }
       const root = document.getElementById("candidat-root");
       const available = state.candidats.filter((candidate) => candidate.slug);
       state.currentSlug = "";
@@ -1925,7 +2015,7 @@
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
-            <p class="section-kicker">Politique en clair / Présidentielle 2027</p>
+            <p class="section-kicker">En clair / Présidentielle 2027</p>
             <h2>Choisir, puis regarder les traces.</h2>
             <p><strong>Les traces parlementaires des candidats.</strong> Une lecture visuelle des mandats, textes, votes et prises de parole issus des données publiques. Aucun candidat n’est mis en avant par défaut.</p>
           </div>
@@ -1944,6 +2034,106 @@
         button.addEventListener("click", () => selectCandidate(button.dataset.homeSlug));
       });
       setDocumentTitle("");
+    }
+
+    function renderGroupHome() {
+      const root = document.getElementById("candidat-root");
+      state.currentGroupId = "";
+      state.currentGroupProfile = null;
+      updateActiveAvatarChip();
+      root.innerHTML = `
+        <section class="home-stage">
+          <div class="home-manifesto">
+            <p class="section-kicker">En clair / vue par parti</p>
+            <h2>Regarder les lignes collectives.</h2>
+            <p><strong>Une vue agrégée des profils disponibles.</strong> Participation, cohésion des votes et thèmes documentaires sont calculés uniquement à partir des candidats couverts.</p>
+          </div>
+          <div class="home-candidates">
+            ${GROUP_PROFILES.map((group) => `
+              <button type="button" class="home-candidate" data-home-group="${escapeHtml(group.id)}">
+                <strong>${escapeHtml(group.label)}</strong>
+                <small>Ouvrir l'empreinte collective ↗</small>
+              </button>
+            `).join("")}
+          </div>
+          <div class="home-note party-home-note">Ces vues ne représentent pas tous les membres d'un parti : le nombre de profils effectivement agrégés est indiqué sur chaque fiche.</div>
+        </section>
+      `;
+      root.querySelectorAll("[data-home-group]").forEach((button) => {
+        button.addEventListener("click", () => selectGroup(button.dataset.homeGroup));
+      });
+      setDocumentTitle("");
+    }
+
+    function average(values) {
+      const valid = values
+        .filter((value) => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)))
+        .map(Number);
+      return valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null;
+    }
+
+    function formatPercentage(value) {
+      return !Number.isFinite(value) ? "N/D" : `${Math.round(value * 100)} %`;
+    }
+
+    function renderGroupPage() {
+      const root = document.getElementById("candidat-root");
+      const group = state.currentGroupProfile;
+      if (!group) return;
+      const votes = group.cohesion_votes || [];
+      const coveredProfiles = group.meta?.profils_sources?.length || 0;
+      const members = group.membres || [];
+      const participation = average(votes.map((vote) => vote.taux_participation));
+      const coherence = average(votes.map((vote) => vote.taux_coherence_hors_absents));
+      const quorumVotes = votes.filter((vote) => vote.quorum_atteint);
+      const recentVotes = [...votes].sort((a, b) => toDateMs(b.date) - toDateMs(a.date)).slice(0, 18);
+      const tags = (group.tags_thematiques_agreges || [])
+        .filter((tag) => tag.tag && tag.tag !== "couverture")
+        .sort((a, b) => Number(b.nb_membres_porteurs || 0) - Number(a.nb_membres_porteurs || 0) || Number(b.poids_relatif || 0) - Number(a.poids_relatif || 0))
+        .slice(0, 30);
+      const maxTagMembers = Math.max(...tags.map((tag) => Number(tag.nb_membres_porteurs || 0)), 1);
+      const warnings = group.meta?.warnings || [];
+      root.innerHTML = `
+        <article class="party-profile">
+          <header class="party-hero">
+            <p class="section-kicker">Empreinte collective / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
+            <h2>${escapeHtml(group.groupe_nom || group.groupe_sigle)}</h2>
+          </header>
+          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} profil(s) source(s), ${members.length} membre(s) référencé(s). Cette fiche décrit seulement cet échantillon documentaire et non le parti dans son ensemble.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
+          <section class="party-kpis" aria-label="Indicateurs du parti">
+            <div class="party-kpi"><b>${coveredProfiles}</b><span>Profils couverts</span></div>
+            <div class="party-kpi"><b>${votes.length}</b><span>Scrutins rapprochés</span></div>
+            <div class="party-kpi"><b>${formatPercentage(participation)}</b><span>Participation moyenne sur les scrutins couverts</span></div>
+            <div class="party-kpi"><b>${formatPercentage(coherence)}</b><span>Cohésion moyenne parmi les votants</span></div>
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">${quorumVotes.length} scrutin(s) avec quorum documentaire sur ${votes.length}</p>
+            <h2>Votes collectifs</h2>
+            ${recentVotes.length ? `<div class="party-vote-grid">${recentVotes.map((vote) => `
+              <article class="party-vote">
+                <small>${escapeHtml(formatIsoDate(vote.date))} · participation ${formatPercentage(Number(vote.taux_participation))}</small>
+                <b>${escapeHtml(simplifyTitle(vote.texte))}</b>
+                <small class="party-vote-position">Majorité : ${escapeHtml(vote.position_majoritaire || "non déterminée")}</small>
+                <small>Cohésion des votants : ${formatPercentage(Number(vote.taux_coherence_hors_absents))}</small>
+              </article>
+            `).join("")}</div>` : `<p class="empty">Aucun scrutin collectif calculable avec les profils disponibles.</p>`}
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Mots-clés partagés entre les profils sources</p>
+            <h2>Empreinte thématique</h2>
+            ${tags.length ? `<div class="party-tags">${tags.map((tag) => `
+              <span class="party-tag" style="--weight:${Number(tag.nb_membres_porteurs || 0) / maxTagMembers}"><b>${escapeHtml(tag.tag)}</b><small>${tag.nb_membres_porteurs} profil(s) porteur(s)</small></span>
+            `).join("")}</div>` : `<p class="empty">Aucun thème agrégé disponible.</p>`}
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Périmètre de l'agrégation</p>
+            <h2>Profils couverts</h2>
+            <div class="party-members">${members.map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.debut_dans_groupe ? escapeHtml(formatIsoDate(member.debut_dans_groupe)) : "début non renseigné"} → ${member.fin_dans_groupe ? escapeHtml(formatIsoDate(member.fin_dans_groupe)) : (member.actif ? "aujourd'hui" : "fin non renseignée")}</small></div>`).join("")}</div>
+            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="../../README.md" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
+          </section>
+        </article>
+      `;
+      setDocumentTitle(group.groupe_nom || group.groupe_sigle);
     }
 
     function renderPage() {
@@ -2246,10 +2436,57 @@
 
     function updateActiveAvatarChip() {
       document.querySelectorAll("#candidat-carousel .avatar-chip").forEach((chip) => {
-        const isActive = chip.dataset.slug === state.currentSlug;
+        const isActive = state.profileMode === "parties"
+          ? chip.dataset.groupId === state.currentGroupId
+          : chip.dataset.slug === state.currentSlug;
         chip.classList.toggle("active", isActive);
         chip.setAttribute("aria-selected", String(isActive));
       });
+    }
+
+    function renderProfileRail() {
+      const carousel = document.getElementById("candidat-carousel");
+      if (state.profileMode === "parties") {
+        carousel.setAttribute("aria-label", "Choisir un parti");
+        carousel.innerHTML = GROUP_PROFILES.map((group) => `
+          <button type="button" class="avatar-chip" data-group-id="${escapeHtml(group.id)}" role="tab" aria-selected="false" title="${escapeHtml(group.label)}">
+            <span class="avatar-chip-circle">${escapeHtml(shortName(group.label))}</span>
+            <span class="avatar-chip-name">${escapeHtml(group.label)}</span>
+          </button>
+        `).join("");
+        carousel.querySelectorAll("[data-group-id]").forEach((chip) => {
+          chip.addEventListener("click", () => selectGroup(chip.dataset.groupId));
+        });
+      } else {
+        carousel.setAttribute("aria-label", "Choisir un candidat");
+        carousel.innerHTML = state.candidats.map((candidate) => `
+          <button type="button" class="avatar-chip" data-slug="${escapeHtml(candidate.slug || "")}" role="tab" aria-selected="false" ${candidate.slug ? "" : "disabled"} title="${candidate.slug ? escapeHtml(candidate.nom) : `${escapeHtml(candidate.nom)} (pas de données parlementaires)`}">
+            <span class="avatar-chip-circle">${escapeHtml(shortName(candidate.nom))}</span>
+            <span class="avatar-chip-name">${escapeHtml(candidateLastName(candidate.nom))}</span>
+          </button>
+        `).join("");
+        carousel.querySelectorAll(".avatar-chip[data-slug]:not(:disabled)").forEach((chip) => {
+          chip.addEventListener("click", () => selectCandidate(chip.dataset.slug));
+        });
+      }
+      updateActiveAvatarChip();
+    }
+
+    function setProfileMode(mode) {
+      if (!['candidates', 'parties'].includes(mode) || state.profileMode === mode) return;
+      state.profileMode = mode;
+      state.currentSlug = "";
+      state.currentMeta = null;
+      state.currentProfile = null;
+      state.currentGroupId = "";
+      state.currentGroupProfile = null;
+      document.querySelectorAll("[data-profile-mode]").forEach((button) => {
+        const active = button.dataset.profileMode === mode;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      renderProfileRail();
+      renderHome();
     }
 
     async function selectCandidate(slug) {
@@ -2292,32 +2529,47 @@
       }
     }
 
+    async function selectGroup(groupId) {
+      state.currentGroupId = groupId;
+      state.currentGroupProfile = null;
+      updateActiveAvatarChip();
+      const root = document.getElementById("candidat-root");
+      const groupMeta = GROUP_PROFILES.find((group) => group.id === groupId);
+      if (!groupMeta) {
+        renderGroupHome();
+        return;
+      }
+      root.innerHTML = `<section class="panel"><p class="empty" role="status" aria-live="polite">Chargement de l'empreinte de ${escapeHtml(groupMeta.label)}…</p></section>`;
+      try {
+        const response = await fetch(GROUP_PROFILE_URL(groupId), { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const profile = await response.json();
+        if (profile.type_document !== "profil_groupe") throw new Error("schéma de groupe inattendu");
+        state.currentGroupProfile = profile;
+        renderGroupPage();
+      } catch (error) {
+        root.innerHTML = `<section class="panel"><p class="empty">Données de parti indisponibles (${escapeHtml(error.message)}).</p></section>`;
+        setDocumentTitle(groupMeta.label);
+      }
+    }
+
     function candidateLastName(nom) {
       const parts = String(nom || "").split(/\s+/).filter(Boolean);
       return parts.length ? parts[parts.length - 1] : "?";
     }
 
     async function init() {
-      const carousel = document.getElementById("candidat-carousel");
       document.getElementById("home-link").addEventListener("click", renderHome);
+      document.querySelectorAll("[data-profile-mode]").forEach((button) => {
+        button.addEventListener("click", () => setProfileMode(button.dataset.profileMode));
+      });
 
       try {
         const resp = await fetch(CANDIDATS_URL, { cache: "no-store" });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
         state.candidats = data.candidats || [];
-
-        carousel.innerHTML = state.candidats.map((c) => `
-          <button type="button" class="avatar-chip" data-slug="${escapeHtml(c.slug || "")}" role="tab" aria-selected="false" ${c.slug ? "" : "disabled"} title="${c.slug ? escapeHtml(c.nom) : `${escapeHtml(c.nom)} (pas de données parlementaires)`}">
-            <span class="avatar-chip-circle">${escapeHtml(shortName(c.nom))}</span>
-            <span class="avatar-chip-name">${escapeHtml(candidateLastName(c.nom))}</span>
-          </button>
-        `).join("");
-
-        carousel.querySelectorAll(".avatar-chip[data-slug]:not(:disabled)").forEach((chip) => {
-          chip.addEventListener("click", () => selectCandidate(chip.dataset.slug));
-        });
-
+        renderProfileRail();
         renderHome();
       } catch (err) {
         document.getElementById("candidat-root").innerHTML = `
