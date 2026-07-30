@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hors Cadre — Index présidentiel 2027</title>
+<title>CONTRECHAMP — Politique en clair</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     /* Palette éditoriale — justifiée par le sujet */
@@ -647,7 +647,7 @@
     .cockpit .panel-dot small { font-size: 0.62rem; }
   }
 
-  /* Variante C — HORS CADRE. Chaque famille de données a sa propre forme. */
+  /* Variante C — CONTRECHAMP. Chaque famille de données a sa propre forme. */
   .deconstructed {
     --bg: #F2F0E7;
     --surface: #F2F0E7;
@@ -1086,16 +1086,213 @@
     .deconstructed .home-manifesto { grid-column: 1 / 4; }
     .deconstructed .home-candidates { grid-column: 4 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
+
+  /* V4 — Revue civique : même profondeur de données, tonalité plus calme. */
+  .panorama {
+    --bg: #F5F3ED;
+    --surface: #FCFBF7;
+    --text: #263730;
+    --deep: #193A56;
+    --muted: #6B7771;
+    --line: #AEBBB4;
+    --accent: #285F87;
+    --accent-soft: #DDE9F0;
+    --vert: #39775C;
+    --rouge: #B85F50;
+    --acid: #DCE8DF;
+    --pink: #F0DCD4;
+    font-family: 'Manrope', sans-serif;
+    background: #E9EEE9;
+  }
+  .panorama .page {
+    max-width: 1440px;
+    margin: 0 auto;
+    background: var(--bg);
+    box-shadow: 0 0 0 1px rgba(38, 55, 48, 0.08);
+  }
+  .panorama h1,
+  .panorama h2,
+  .panorama h3 { font-family: 'Fraunces', Georgia, serif; text-transform: none; }
+  .panorama .masthead {
+    min-height: 310px;
+    align-items: center;
+    padding: clamp(1.25rem, 5vw, 4.5rem);
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(135deg, #E5EEF2 0 67%, #DCE8DF 67% 100%);
+  }
+  .panorama .masthead h1 {
+    max-width: none;
+    font-size: clamp(3.2rem, 10vw, 7.4rem);
+    line-height: 0.88;
+    color: var(--deep);
+  }
+  .panorama .brand-home { color: var(--deep); }
+  .panorama .brand-home:hover { color: var(--accent); }
+  .panorama .edition-mark {
+    writing-mode: horizontal-tb;
+    align-self: end;
+    padding: 0.4rem 0;
+    border-top: 1px solid var(--deep);
+    color: var(--deep);
+  }
+  .panorama .candidate-dock {
+    border-width: 0 0 1px;
+    border-color: var(--line);
+    background: rgba(252, 251, 247, 0.97);
+    backdrop-filter: blur(12px);
+  }
+  .panorama .candidate-dock-label,
+  .panorama .avatar-chip { border-color: var(--line); border-width: 0 1px 0 0; }
+  .panorama .avatar-chip.active { background: var(--accent); color: white; }
+  .panorama .avatar-chip.active .avatar-chip-name { color: white; }
+  .panorama .avatar-chip:disabled { color: var(--muted); opacity: 0.55; }
+
+  .panorama .home-stage { border-color: var(--line); }
+  .panorama .home-manifesto {
+    background: #DCE8DF;
+    color: var(--text);
+  }
+  .panorama .home-manifesto h2 {
+    color: var(--deep);
+    font-size: clamp(2.8rem, 8vw, 6.2rem);
+    line-height: 0.95;
+    text-transform: none;
+  }
+  .panorama .home-candidate {
+    border-color: var(--line);
+    background: var(--surface);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .panorama .home-candidate:hover,
+  .panorama .home-candidate:focus-visible { background: var(--accent-soft); color: var(--deep); }
+  .panorama .home-candidate strong { font-family: 'Fraunces', Georgia, serif; }
+  .panorama .home-note { background: var(--accent); }
+
+  .panorama .hero {
+    min-height: 36vh;
+    border-color: var(--line);
+    background: #E5EEF2;
+    color: var(--text);
+  }
+  .panorama .hero h2 {
+    max-width: 12ch;
+    color: var(--deep);
+    font-size: clamp(3rem, 9vw, 7rem);
+    line-height: 0.9;
+    text-transform: none;
+  }
+  .panorama .tag { border-color: var(--line); color: var(--text); background: rgba(252, 251, 247, 0.62); }
+
+  .panorama .summary-grid {
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-color: var(--line);
+    background: #E9EEE9;
+  }
+  .panorama .kpi-flip { border: 0; background: transparent !important; }
+  .panorama .kpi-face {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: 0 5px 18px rgba(38, 55, 48, 0.06);
+  }
+  .panorama .kpi-flip:nth-child(2) .kpi-face--front { background: #F0E4DE; }
+  .panorama .kpi-flip:nth-child(3) .kpi-face--front { background: #DDE9F0; }
+  .panorama .kpi-flip:nth-child(4) .kpi-face--front { background: #DCE8DF; }
+  .panorama .kpi-face--back { background: var(--deep); color: white; }
+  .panorama .kpi-face--back .kpi-back-text { color: white; }
+  .panorama .kpi-face--back .kpi-back-link { color: #C9DFEA; }
+  .panorama .kpi-value { color: var(--deep); letter-spacing: 0; }
+  .panorama .trust-line { background: var(--deep); }
+
+  .panorama .theme-dock {
+    border-width: 0 0 1px;
+    border-color: var(--line);
+    background: rgba(245, 243, 237, 0.96);
+  }
+  .panorama .theme-pill,
+  .panorama .ghost-btn {
+    border-color: var(--line);
+    border-radius: 999px;
+    margin: 0 0.3rem 0 0;
+    background: var(--surface);
+  }
+  .panorama .theme-pill.active,
+  .panorama .ghost-btn.active-choice { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .panorama .panel-indicator { border-color: var(--line); background: var(--surface); }
+  .panorama .panel-dot { border-color: var(--line); color: var(--muted); }
+  .panorama .panel-dot.active { background: var(--accent); color: white; }
+  .panorama .swipe-panel > .panel { max-width: 1240px; margin: 0 auto; }
+  .panorama .swipe-panel h2 {
+    max-width: 14ch;
+    color: var(--deep);
+    font-size: clamp(2.2rem, 6vw, 4.7rem);
+    line-height: 0.98;
+  }
+
+  .panorama .orbit { justify-content: flex-start; align-content: center; }
+  .panorama .orbit-node {
+    transform: none;
+    border: 1px solid var(--line);
+    border-radius: 6px !important;
+    background: var(--surface);
+    box-shadow: 0 3px 12px rgba(38, 55, 48, 0.05);
+  }
+  .panorama .orbit-node.is-notable { border: 1px solid #C77B68; background: #F0DCD4; }
+  .panorama .orbit-node:hover,
+  .panorama .orbit-node:focus-visible,
+  .panorama .orbit-node.expanded { transform: translateY(-3px); border-color: var(--accent); }
+  .panorama .orbit-legend { border: 1px solid #C77B68; border-radius: 5px; background: #F0DCD4; }
+
+  .panorama .text-shelf-head::after,
+  .panorama .vote-shelf-head::after { height: 1px; background: var(--line); }
+  .panorama .text-shelf-head strong,
+  .panorama .vote-shelf-head strong,
+  .panorama .text-leaf-title { font-family: 'Fraunces', Georgia, serif; color: var(--deep); }
+  .panorama .text-leaf {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: 0 4px 14px rgba(38, 55, 48, 0.05);
+  }
+  .panorama .text-leaf:nth-child(3n + 2) { background: #E5EEF2; }
+  .panorama .text-leaf:nth-child(3n) { background: #E7EEE8; }
+  .panorama .text-shelf-more,
+  .panorama .vote-shelf-more { border-color: var(--accent); color: var(--accent); }
+
+  .panorama .vote-token { border-width: 1px; background: var(--surface); }
+  .panorama .vote-token:hover,
+  .panorama .vote-token:focus-visible { box-shadow: 0 4px 12px rgba(38, 55, 48, 0.12); }
+
+  .panorama .void-map { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .panorama .void-signal { border-color: var(--line); }
+  .panorama .void-signal:nth-child(2) { background: #F0E4DE; }
+  .panorama .void-signal:nth-child(3) { background: #DDE9F0; }
+  .panorama .void-number { font-family: 'Fraunces', Georgia, serif; color: var(--deep); }
+
+  .panorama .speech-tape { border-color: var(--line); }
+  .panorama .speech-fragment { border-color: var(--line); background: var(--surface); }
+  .panorama .speech-fragment:nth-child(even) { background: #E7EEE8; }
+  .panorama .speech-quote { font-family: 'Fraunces', Georgia, serif; color: var(--deep); font-weight: 600; }
+  .panorama .versus-stage { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .panorama .versus-person { border-color: var(--line); background: var(--surface); }
+  .panorama .versus-name { font-family: 'Fraunces', Georgia, serif; color: var(--deep); }
+
+  @media (max-width: 819px) {
+    .panorama .masthead { min-height: 250px; }
+    .panorama .edition-mark { max-width: 18ch; }
+  }
 </style>
 </head>
-<body class="deconstructed">
+<body class="deconstructed panorama">
   <main class="page">
     <section class="masthead">
       <div>
         <p class="section-kicker">Présidentielle 2027 / données publiques</p>
-        <h1><button type="button" id="home-link" class="brand-home" aria-label="Retour à l'accueil">Hors<br>Cadre</button></h1>
+        <h1><button type="button" id="home-link" class="brand-home" aria-label="Retour à l'accueil">Contre<br>champ</button></h1>
       </div>
-      <div class="edition-mark">INDEX DES TRACES PARLEMENTAIRES</div>
+      <div class="edition-mark">POLITIQUE EN CLAIR</div>
     </section>
     <nav class="candidate-dock" aria-label="Index des candidats">
       <p class="candidate-dock-label">Candidats</p>
@@ -1106,8 +1303,8 @@
   </main>
 
   <script>
-    const CANDIDATS_URL = "../data/candidats.json";
-    const PROFILE_URL = (slug) => `../data/profiles/${slug}.json`;
+    const CANDIDATS_URL = "../../data/candidats.json";
+    const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },
@@ -1179,7 +1376,7 @@
     };
 
     function setDocumentTitle(label) {
-      document.title = label ? `Hors Cadre — ${label}` : "Hors Cadre — Index présidentiel 2027";
+      document.title = label ? `CONTRECHAMP — ${label}` : "CONTRECHAMP — Politique en clair";
     }
 
     function escapeHtml(str) {
@@ -1601,7 +1798,7 @@
 
           <div class="trust-line">
             Données sourcées • Mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
-            <a class="link" href="../README.md" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="../../README.md" target="_blank" rel="noopener">Voir la méthode</a>
           </div>
         </section>
       `;
@@ -1856,9 +2053,9 @@
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
-            <p class="section-kicker">Index présidentiel 2027</p>
+            <p class="section-kicker">Politique en clair / Présidentielle 2027</p>
             <h2>Choisir, puis regarder les traces.</h2>
-            <p>Une lecture visuelle des mandats, textes, votes et prises de parole issus des données publiques. Aucun candidat n’est mis en avant par défaut.</p>
+            <p><strong>Les traces parlementaires des candidats.</strong> Une lecture visuelle des mandats, textes, votes et prises de parole issus des données publiques. Aucun candidat n’est mis en avant par défaut.</p>
           </div>
           <div class="home-candidates">
             ${available.map((candidate) => `

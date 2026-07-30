@@ -241,9 +241,18 @@ les JSON via `fetch()`, ce qui échoue en ouvrant le fichier directement avec
 python -m http.server 8000
 ```
 
-Puis ouvrir <http://localhost:8000/web/> dans un navigateur : un menu
-déroulant permet de choisir un candidat et affiche son profil, chargé
-dynamiquement depuis `data/profiles/<slug>.json`.
+Puis ouvrir <http://localhost:8000/web/> dans un navigateur. Cette page sert
+de laboratoire visuel et donne accès aux variantes conservées :
+
+- `web/v1/`, `web/v2/` et `web/v3/` : les trois premiers designs ;
+- `web/atlas-augmente/` : l'Atlas alimenté par les profils réels ;
+- `web/scene-cinetique/` et `web/interface-essentielle/` : les études ayant
+  servi au résumé express intégré à la V3 et à l'Atlas ;
+- `web/matiere-politique/`, `web/revue-civique/` et `web/moodboard/` : les
+  études intermédiaires.
+
+Les trois premiers designs chargent les profils dynamiquement depuis
+`data/profiles/<slug>.json`.
 
 Chaque `data/profiles/<slug>.html` généré par `render_profile.py` est aussi
 une page HTML autonome consultable directement.

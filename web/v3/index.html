@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Le Bulletin — Présidentielle 2027</title>
+<title>CONTRECHAMP — Politique en clair</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     /* Palette éditoriale — justifiée par le sujet */
@@ -646,26 +646,535 @@
     .cockpit .panel-dot { min-width: 76px; }
     .cockpit .panel-dot small { font-size: 0.62rem; }
   }
+
+  /* Variante C — CONTRECHAMP. Chaque famille de données a sa propre forme. */
+  .deconstructed {
+    --bg: #F2F0E7;
+    --surface: #F2F0E7;
+    --text: #11110F;
+    --deep: #11110F;
+    --muted: #5E5C55;
+    --line: #11110F;
+    --accent: #006FEE;
+    --accent-soft: #B9DEFF;
+    --vert: #007A45;
+    --rouge: #E53420;
+    --acid: #DFFF00;
+    --pink: #FF70A6;
+    --candidate-dock-height: 52px;
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+  }
+  .deconstructed .page { max-width: none; padding: 0 0 7rem; }
+  .deconstructed h1,
+  .deconstructed h2,
+  .deconstructed h3 { font-family: 'Archivo Black', sans-serif; letter-spacing: 0; }
+  .deconstructed .panel { border: 0; border-radius: 0; background: transparent; margin: 0; box-shadow: none; }
+  .deconstructed .masthead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0;
+    align-items: end;
+    padding: 1rem;
+    border-bottom: 2px solid var(--line);
+    background: var(--acid);
+  }
+  .deconstructed .masthead h1 {
+    font-size: clamp(3rem, 13vw, 9rem);
+    line-height: 0.78;
+    max-width: 8ch;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .deconstructed .brand-home {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    text-align: left;
+    text-transform: inherit;
+    cursor: pointer;
+  }
+  .deconstructed .brand-home:hover { color: var(--accent); }
+  .deconstructed .edition-mark {
+    align-self: start;
+    writing-mode: vertical-rl;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+  }
+  .deconstructed .candidate-dock {
+    position: sticky;
+    top: 0;
+    z-index: 85;
+    height: var(--candidate-dock-height);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: stretch;
+    border-top: 2px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    background: var(--acid);
+  }
+  .deconstructed .candidate-dock-label {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0 0.7rem;
+    border-right: 2px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Index typographique des candidats, sans avatar ni carte. */
+  .deconstructed .avatar-carousel { gap: 0; padding: 0; border: 0; overflow-x: auto; }
+  .deconstructed .avatar-chip {
+    width: auto;
+    min-width: max-content;
+    display: block;
+    height: 100%;
+    padding: 0.45rem 0.8rem;
+    border: 0;
+    border-right: 2px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+  }
+  .deconstructed .avatar-chip-circle { display: none; }
+  .deconstructed .avatar-chip-name {
+    max-width: none;
+    overflow: visible;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  .deconstructed .avatar-chip.active { color: white; background: var(--text); }
+  .deconstructed .avatar-chip.active .avatar-chip-name { color: white; }
+  .deconstructed .avatar-chip:disabled { text-decoration: line-through; }
+
+  .deconstructed #candidat-root { position: relative; }
+  .deconstructed .home-stage {
+    min-height: 66vh;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    border-bottom: 2px solid var(--line);
+  }
+  .deconstructed .home-manifesto {
+    grid-column: 1 / -1;
+    padding: clamp(1rem, 6vw, 5rem);
+    background: var(--text);
+    color: var(--bg);
+  }
+  .deconstructed .home-manifesto h2 {
+    max-width: 10ch;
+    color: var(--bg);
+    font-size: clamp(2.8rem, 10vw, 7.5rem);
+    line-height: 0.86;
+    text-transform: uppercase;
+  }
+  .deconstructed .home-manifesto p { max-width: 52ch; }
+  .deconstructed .home-candidates {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .deconstructed .home-candidate {
+    min-height: 120px;
+    padding: 0.8rem;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+  .deconstructed .home-candidate:hover,
+  .deconstructed .home-candidate:focus-visible { background: var(--acid); }
+  .deconstructed .home-candidate strong { display: block; font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 3vw, 1.6rem); }
+  .deconstructed .home-candidate small { font-family: 'IBM Plex Mono', monospace; }
+  .deconstructed .home-note { grid-column: 1 / -1; padding: 0.75rem 1rem; background: var(--accent); color: white; }
+  .deconstructed #resume { padding: 0; }
+  .deconstructed .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 42vh;
+    padding: clamp(1rem, 5vw, 4rem);
+    border-bottom: 2px solid var(--line);
+    background: var(--text);
+    color: var(--bg);
+    align-content: end;
+  }
+  .deconstructed .avatar { display: none; }
+  .deconstructed .hero h2 {
+    color: var(--bg);
+    font-size: clamp(3rem, 12vw, 9rem);
+    line-height: 0.82;
+    max-width: 9ch;
+    text-transform: uppercase;
+  }
+  .deconstructed .tag { border-radius: 0; border-color: var(--bg); background: transparent; color: var(--bg); }
+
+  /* Les KPI sont des annotations asymétriques, pas quatre cartes homogènes. */
+  .deconstructed .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    margin: 0;
+    border-bottom: 2px solid var(--line);
+  }
+  .deconstructed .kpi-flip { grid-column: span 3; perspective: none; border-right: 2px solid var(--line); }
+  .deconstructed .kpi-flip:nth-child(3n) { background: var(--accent-soft); }
+  .deconstructed .kpi-flip:nth-child(2) { background: var(--pink); }
+  .deconstructed .kpi-flip:nth-child(4) { grid-column: span 4; }
+  .deconstructed .kpi-flip-inner { min-height: 170px; transform-style: flat; transition: none; }
+  .deconstructed .kpi-face { border: 0; border-radius: 0; background: transparent; padding: 1rem; backface-visibility: visible; }
+  .deconstructed .kpi-face--front { justify-content: space-between; }
+  .deconstructed .kpi-face--back {
+    transform: none;
+    opacity: 0;
+    background: var(--text);
+    color: var(--bg);
+    pointer-events: none;
+  }
+  .deconstructed .kpi-face--back .kpi-back-text { color: var(--bg); }
+  .deconstructed .kpi-face--back .kpi-back-link { color: var(--acid); }
+  .deconstructed .kpi-flip.flipped .kpi-flip-inner,
+  .deconstructed .kpi-flip:focus-visible .kpi-flip-inner { transform: none; }
+  .deconstructed .kpi-flip.flipped .kpi-face--front { opacity: 0; }
+  .deconstructed .kpi-flip.flipped .kpi-face--back { opacity: 1; pointer-events: auto; }
+  @media (hover: hover) {
+    .deconstructed .kpi-flip:hover .kpi-flip-inner { transform: none; }
+    .deconstructed .kpi-flip:hover .kpi-face--front { opacity: 0; }
+    .deconstructed .kpi-flip:hover .kpi-face--back { opacity: 1; pointer-events: auto; }
+  }
+  .deconstructed .kpi-icon { color: currentColor; }
+  .deconstructed .kpi-value { font-size: clamp(2rem, 7vw, 5rem); letter-spacing: -0.04em; }
+  .deconstructed .kpi-label { color: currentColor; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+  .deconstructed .theme-dist { display: none; }
+  .deconstructed .trust-line { border: 0; padding: 0.8rem 1rem; margin: 0; background: var(--accent); color: white; }
+  .deconstructed .trust-line a { color: white; }
+
+  .deconstructed .theme-dock {
+    position: sticky;
+    top: var(--candidate-dock-height);
+    z-index: 75;
+    padding: 0.55rem 1rem;
+    border-top: 2px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    background: rgba(242, 240, 231, 0.96);
+    backdrop-filter: blur(10px);
+  }
+  .deconstructed .theme-dock .section-kicker { margin: 0 0 0.3rem; }
+  .deconstructed .themes-row { gap: 0; padding: 0; }
+  .deconstructed .theme-pill,
+  .deconstructed .ghost-btn {
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    margin: 0 -1px -1px 0;
+  }
+  .deconstructed .theme-pill.active,
+  .deconstructed .ghost-btn.active-choice { background: var(--text); color: var(--bg); }
+
+  /* Rail spatial: les sections sont des coordonnées, pas des onglets. */
+  .deconstructed .panel-indicator {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--line);
+    background: var(--bg);
+  }
+  .deconstructed .panel-dot {
+    width: 100%;
+    height: 64px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .deconstructed .panel-dot small { font-size: 0.55rem; text-transform: uppercase; }
+  .deconstructed .panel-dot.active { background: var(--acid); color: var(--text); }
+  .deconstructed .swipe-deck { display: block; overflow: visible; border-radius: 0; }
+  .deconstructed .swipe-panel { display: none; min-width: 0; padding: 0; }
+  .deconstructed .swipe-panel.active { display: block; }
+  .deconstructed .swipe-panel > .panel { min-height: 66vh; padding: clamp(1rem, 4vw, 3rem); }
+  .deconstructed .swipe-panel h2 { font-size: clamp(2rem, 7vw, 5rem); max-width: 10ch; line-height: 0.9; }
+  .deconstructed .swipe-hint { display: none; }
+
+  /* Formes spécifiques des données détaillées. */
+  .deconstructed .orbit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.4rem, 2vw, 1.4rem);
+    min-height: 50vh;
+    padding: 2rem 0;
+  }
+  .deconstructed .orbit-node {
+    position: relative;
+    max-width: 230px;
+    padding: 0.65rem;
+    border: 2px solid var(--line);
+    background: var(--bg);
+    transform: rotate(var(--tilt));
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.18s ease;
+  }
+  .deconstructed .orbit-node:nth-child(3n) { border-radius: 50%; padding: 1.2rem; text-align: center; }
+  .deconstructed .orbit-node.is-notable { background: var(--acid); border-width: 3px; }
+  .deconstructed .orbit-node small { display: block; font-family: 'IBM Plex Mono', monospace; }
+  .deconstructed .orbit-node:hover,
+  .deconstructed .orbit-node:focus-visible,
+  .deconstructed .orbit-node.expanded { transform: rotate(0) scale(1.04); z-index: 2; }
+  .deconstructed .orbit-detail {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.2s ease, opacity 0.2s ease;
+  }
+  .deconstructed .orbit-detail > span { overflow: hidden; }
+  .deconstructed .orbit-node:hover .orbit-detail,
+  .deconstructed .orbit-node:focus-visible .orbit-detail,
+  .deconstructed .orbit-node.expanded .orbit-detail { grid-template-rows: 1fr; opacity: 1; margin-top: 0.45rem; }
+  .deconstructed .orbit-legend { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; padding: 0.5rem; border: 2px solid var(--line); background: var(--acid); }
+
+  .deconstructed .text-atlas { display: grid; gap: 2rem; }
+  .deconstructed .text-shelf { min-width: 0; }
+  .deconstructed .text-shelf-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    margin-bottom: 0.65rem;
+  }
+  .deconstructed .text-shelf-head::after { content: ""; height: 2px; background: var(--line); }
+  .deconstructed .text-shelf-head strong { font-family: 'Archivo Black', sans-serif; font-size: 1.05rem; }
+  .deconstructed .text-shelf-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; }
+  .deconstructed .text-shelf-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(250px, 34vw);
+    gap: 0.65rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    padding: 0 0 0.55rem;
+  }
+  .deconstructed .text-leaf {
+    min-height: 190px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem;
+    border: 2px solid var(--line);
+    background: var(--bg);
+  }
+  .deconstructed .text-leaf:nth-child(3n + 2) { background: var(--accent-soft); }
+  .deconstructed .text-leaf:nth-child(3n) { background: var(--pink); }
+  .deconstructed .text-leaf-title { font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 2.2vw, 1.45rem); line-height: 1.08; }
+  .deconstructed .text-leaf-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; }
+  .deconstructed .text-shelf-more {
+    border: 0;
+    border-bottom: 2px solid var(--line);
+    background: transparent;
+    padding: 0.2rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+  }
+  .deconstructed .text-shelf-more:hover { color: var(--accent); }
+
+  .deconstructed .vote-atlas { display: grid; gap: 2.2rem; margin-top: 1rem; }
+  .deconstructed .vote-shelf { min-width: 0; }
+  .deconstructed .vote-shelf-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    margin-bottom: 0.45rem;
+  }
+  .deconstructed .vote-shelf-head::after { content: ""; height: 2px; background: var(--line); }
+  .deconstructed .vote-shelf-head strong { font-family: 'Archivo Black', sans-serif; font-size: 1.05rem; }
+  .deconstructed .vote-shelf-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; }
+  .deconstructed .vote-cloud { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-top: 0.4rem; }
+  .deconstructed .vote-token {
+    --vote-color: var(--muted);
+    max-width: min(300px, 86vw);
+    padding: calc(0.45rem + var(--weight) * 0.08rem);
+    border: 2px solid var(--vote-color);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    font-size: calc(0.7rem + var(--weight) * 0.03rem);
+    text-decoration: none;
+  }
+  .deconstructed .vote-token.pour { --vote-color: var(--vert); }
+  .deconstructed .vote-token.contre { --vote-color: var(--rouge); }
+  .deconstructed .vote-token.abstention { --vote-color: var(--muted); border-style: dashed; }
+  .deconstructed .vote-token.absent { --vote-color: #A7A39A; opacity: 0.7; }
+  .deconstructed .vote-token:hover,
+  .deconstructed .vote-token:focus-visible { background: var(--vote-color); color: white; }
+  .deconstructed .vote-token em { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; font-style: normal; }
+  .deconstructed .vote-token .source-mark { display: inline-block; margin-left: 0.25rem; font-weight: 600; }
+  .deconstructed .vote-shelf-more {
+    margin-top: 0.65rem;
+    border: 0;
+    border-bottom: 2px solid var(--line);
+    background: transparent;
+    padding: 0.2rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+  }
+  .deconstructed .vote-shelf-more:hover { color: var(--accent); }
+
+  .deconstructed .void-map { display: grid; grid-template-columns: 1fr; border: 2px solid var(--line); }
+  .deconstructed .void-signal { min-height: 170px; padding: 1rem; border-bottom: 2px solid var(--line); display: flex; flex-direction: column; justify-content: space-between; }
+  .deconstructed .void-signal:last-child { border: 0; }
+  .deconstructed .void-number { font-family: 'Archivo Black', sans-serif; font-size: clamp(3rem, 14vw, 8rem); line-height: 0.8; }
+  .deconstructed .void-signal:nth-child(2) { background: var(--pink); }
+  .deconstructed .void-signal:nth-child(3) { background: var(--accent-soft); }
+
+  .deconstructed .speech-tape { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 38vw); gap: 0; overflow-x: auto; border-top: 2px solid var(--line); border-bottom: 2px solid var(--line); }
+  .deconstructed .speech-fragment { min-height: 350px; padding: 1rem; border-right: 2px solid var(--line); display: flex; flex-direction: column; justify-content: space-between; }
+  .deconstructed .speech-fragment:nth-child(even) { background: var(--acid); }
+  .deconstructed .speech-quote { font-family: 'Archivo Black', sans-serif; font-size: clamp(1.05rem, 2.5vw, 1.65rem); }
+
+  .deconstructed .versus-stage { display: grid; gap: 0; border: 2px solid var(--line); }
+  .deconstructed .versus-person { padding: 1rem; border-bottom: 2px solid var(--line); }
+  .deconstructed .versus-person:last-child { border: 0; }
+  .deconstructed .versus-name { font-family: 'Archivo Black', sans-serif; font-size: clamp(1.4rem, 5vw, 3.5rem); }
+  .deconstructed .versus-metrics { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 1rem; }
+  .deconstructed .versus-metric { border-top: 1px solid var(--line); padding: 0.5rem 0.2rem; }
+  .deconstructed .versus-metric b { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 1.35rem; }
+
+  @media (min-width: 820px) {
+    .deconstructed .page { padding: 0 0 0 84px; }
+    .deconstructed .panel-indicator { top: 0; bottom: 0; right: auto; width: 84px; grid-template-columns: 1fr; grid-template-rows: repeat(6, 1fr); border: 0; border-right: 2px solid var(--line); }
+    .deconstructed .panel-dot { height: auto; border: 0; border-bottom: 1px solid var(--line); }
+    .deconstructed .summary-grid { grid-template-columns: repeat(12, 1fr); }
+    .deconstructed .kpi-flip { grid-column: span 3; }
+    .deconstructed .kpi-flip:nth-child(2) { grid-column: span 2; }
+    .deconstructed .kpi-flip:nth-child(3) { grid-column: span 4; }
+    .deconstructed .kpi-flip:nth-child(4) { grid-column: span 3; }
+    .deconstructed .void-map { grid-template-columns: repeat(3, 1fr); }
+    .deconstructed .void-signal { border: 0; border-right: 2px solid var(--line); }
+    .deconstructed .versus-stage { grid-template-columns: repeat(3, 1fr); }
+    .deconstructed .versus-person { border: 0; border-right: 2px solid var(--line); }
+    .deconstructed .home-manifesto { grid-column: 1 / 4; }
+    .deconstructed .home-candidates { grid-column: 4 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .express-launch {
+    margin-top: 1rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid currentColor;
+    color: var(--bg);
+    background: var(--text);
+    font: 600 0.68rem 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+  }
+  .express-summary {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    display: none;
+    color: var(--text);
+    background: var(--pink);
+  }
+  .express-summary.open { display: block; }
+  .express-summary-close {
+    position: absolute;
+    z-index: 3;
+    top: 1rem;
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid var(--text);
+    border-radius: 50%;
+    background: var(--bg);
+    font-size: 1.3rem;
+  }
+  .express-summary-scene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 5vw;
+    padding: clamp(2rem, 7vw, 7rem);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(2rem);
+    transition: opacity 0.35s ease, transform 0.4s ease;
+  }
+  .express-summary-scene.active { opacity: 1; pointer-events: auto; transform: none; }
+  .express-summary-scene:nth-child(2) { background: var(--acid); }
+  .express-summary-scene:nth-child(3) { color: var(--bg); background: var(--text); }
+  .express-summary-scene:nth-child(4) { background: var(--pink); }
+  .express-summary-question {
+    margin: 0;
+    font: 400 clamp(2.8rem, 7vw, 7rem)/0.88 'Archivo Black', sans-serif;
+  }
+  .express-summary-answer { text-align: right; }
+  .express-summary-answer b { display: block; font: 400 clamp(5rem, 14vw, 14rem)/0.7 'Archivo Black', sans-serif; }
+  .express-summary-answer span { font: 500 0.68rem/1.5 'IBM Plex Mono', monospace; }
+  .express-summary-nav { position: absolute; z-index: 3; right: 1rem; bottom: 1rem; display: flex; gap: 0.4rem; }
+  .express-summary-nav button { width: 3rem; height: 3rem; border: 2px solid var(--text); border-radius: 50%; background: var(--bg); }
+  .express-summary-progress { position: absolute; z-index: 3; left: 1rem; bottom: 1rem; width: min(45vw, 440px); height: 3px; background: rgba(17, 17, 15, 0.25); }
+  .express-summary-progress i { display: block; width: 25%; height: 100%; background: currentColor; transition: width 0.3s ease; }
+  body.express-open { overflow: hidden; }
+  @media (max-width: 700px) {
+    .express-summary-scene { grid-template-columns: 1fr; align-content: center; }
+    .express-summary-answer { text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .express-summary-scene { transition: none; }
+  }
 </style>
 </head>
-<body class="cockpit">
+<body class="deconstructed">
   <main class="page">
-    <section class="panel masthead">
+    <section class="masthead">
       <div>
-        <p class="section-kicker">Présidentielle 2027 · données publiques</p>
-        <h1>Le Bulletin</h1>
+        <p class="section-kicker">Présidentielle 2027 / données publiques</p>
+        <h1><button type="button" id="home-link" class="brand-home" aria-label="Retour à l'accueil">Contre<br>champ</button></h1>
       </div>
-      <div class="edition-mark">ÉDITION<br>FACTUELLE</div>
-      <p class="section-kicker">Ouvrir un dossier</p>
-      <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+      <div class="edition-mark">POLITIQUE EN CLAIR</div>
     </section>
+    <nav class="candidate-dock" aria-label="Index des candidats">
+      <p class="candidate-dock-label">Candidats</p>
+      <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+    </nav>
 
     <div id="candidat-root"></div>
   </main>
 
   <script>
-    const CANDIDATS_URL = "../data/candidats.json";
-    const PROFILE_URL = (slug) => `../data/profiles/${slug}.json`;
+    const CANDIDATS_URL = "../../data/candidats.json";
+    const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },
@@ -702,12 +1211,12 @@
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
     const PANEL_META = {
-      mandats: { label: "Mandats", icon: "🏛️" },
-      textes: { label: "Textes", icon: "📄" },
-      votes: { label: "Votes", icon: "🗳️" },
-      absences: { label: "Silences", icon: "🌫️" },
-      interventions: { label: "Paroles", icon: "💬" },
-      compare: { label: "Comparer", icon: "⚖️" },
+      mandats: { label: "Mandats", icon: "◌" },
+      textes: { label: "Textes", icon: "▤" },
+      votes: { label: "Votes", icon: "●" },
+      absences: { label: "Silences", icon: "□" },
+      interventions: { label: "Paroles", icon: "“" },
+      compare: { label: "Comparer", icon: "±" },
     };
 
     // Pictogrammes des cartes KPI (SVG inline, sans dépendance externe)
@@ -724,7 +1233,6 @@
       currentMeta: null,
       currentProfile: null,
       selectedTheme: "all",
-      votesSort: "recent",
       interventionsMode: "all",
       interventionsVisible: 6,
       compareTheme: "sante",
@@ -733,10 +1241,13 @@
       availableCompareCandidates: [],
       activePanelIndex: 0,
       flippedKpis: new Set(),
+      expandedTextThemes: new Set(),
+      expandedVoteThemes: new Set(),
+      expressIndex: 0,
     };
 
     function setDocumentTitle(label) {
-      document.title = label ? `Le Bulletin — ${label}` : "Le Bulletin — Présidentielle 2027";
+      document.title = label ? `CONTRECHAMP — ${label}` : "CONTRECHAMP — Politique en clair";
     }
 
     function escapeHtml(str) {
@@ -878,6 +1389,10 @@
       return { distinctCount: items.length, notableCount: notable.length };
     }
 
+    function isNotableResponsibility(responsibility) {
+      return ROLE_PRIORITY.some((keyword) => (responsibility.type || "").toLowerCase().includes(keyword));
+    }
+
     // KPI 3 — Profil de vote synthétique : une répartition, jamais un score isolé.
     // Restreint aux votes portant sur "l'ensemble" du texte (pas les amendements/articles isolés,
     // où un "contre" reflète souvent un désaccord technique ponctuel plutôt qu'une opposition de
@@ -937,13 +1452,20 @@
     function renderResponsabilites(profile) {
       const items = dedupeResponsibilities(profile);
       if (!items.length) {
-        return `<p class="empty">Aucune responsabilité institutionnelle (commission, mission, engagement) retrouvée dans les données disponibles.</p>`;
+        return `<p class="empty">Aucune responsabilité institutionnelle retrouvée.</p>`;
       }
-      return `<div class="rows">${items.map((r) => `
-        <article class="row-item">
-          <p><strong>${escapeHtml(r.label)}</strong></p>
-          <p class="small">${escapeHtml(r.type || "membre")} • ${escapeHtml(CATEGORIE_LABELS_FR[r.categorie] || r.categorie)} • depuis le ${escapeHtml(formatIsoDate(r.debut))}${r.fin ? ` → ${escapeHtml(formatIsoDate(r.fin))}` : (r.actif ? " → en cours" : "")}</p>
-        </article>
+      return `
+        <p class="orbit-legend">Jaune = présidence, vice-présidence ou rapport identifié · survoler / toucher pour détailler</p>
+        <div class="orbit" aria-label="Constellation des responsabilités">${items.map((r, index) => `
+        <button type="button" class="orbit-node ${isNotableResponsibility(r) ? "is-notable" : ""}" style="--tilt:${((index % 7) - 3) * 1.8}deg" aria-expanded="false">
+          <strong>${escapeHtml(r.label)}</strong>
+          <small>${escapeHtml(formatIsoDate(r.debut))} → ${r.fin ? escapeHtml(formatIsoDate(r.fin)) : (r.actif ? "aujourd’hui" : "fin non renseignée")}</small>
+          <span class="orbit-detail"><span>
+            <small>${escapeHtml(r.type || "membre")}</small>
+            <small>${escapeHtml(CATEGORIE_LABELS_FR[r.categorie] || r.categorie)}</small>
+            ${isNotableResponsibility(r) ? `<small>Rôle signalé comme responsabilité notable.</small>` : `<small>Participation comme membre.</small>`}
+          </span></span>
+        </button>
       `).join("")}</div>`;
     }
 
@@ -980,6 +1502,21 @@
     function sourceLinkHtml(url, label = "Source officielle") {
       if (!url) return `<span class="small">${escapeHtml(label)} indisponible</span>`;
       return `<a class="link" href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+    }
+
+    function voteSourceUrl(profile, vote) {
+      const directUrl = vote.url_source || vote.url || vote.source;
+      if (/^https?:\/\//i.test(directUrl || "")) return { url: directUrl, direct: true };
+      const legislature = String(profile.votes_source || "").match(/l[ée]gislature\s*(\d+)/i)?.[1]
+        || (profile.dossiers_legislatifs || []).find((item) => item.legislature)?.legislature;
+      if (vote.numero_scrutin && legislature) {
+        return {
+          url: `https://www.assemblee-nationale.fr/dyn/${encodeURIComponent(legislature)}/scrutins/${encodeURIComponent(vote.numero_scrutin)}`,
+          direct: true,
+        };
+      }
+      const fallback = profile.synthese_activite?.url_an_ou_senat || profile.source;
+      return /^https?:\/\//i.test(fallback || "") ? { url: fallback, direct: false } : null;
     }
 
     function compareFactsForTheme(profile, theme) {
@@ -1054,6 +1591,7 @@
                 <span class="tag">${escapeHtml(parti)}</span>
                 <span class="tag">${escapeHtml(statut)}</span>
               </div>
+              <button type="button" class="express-launch">Résumé express ▶</button>
             </div>
           </div>
 
@@ -1132,7 +1670,7 @@
 
           <div class="trust-line">
             Données sourcées • Mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
-            <a class="link" href="../README.md" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="../../README.md" target="_blank" rel="noopener">Voir la méthode</a>
           </div>
         </section>
       `;
@@ -1143,105 +1681,104 @@
       if (!items.length) {
         return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte porté retrouvé dans les données disponibles." : "Aucun texte porté retrouvé sur ce thème."}</p>`;
       }
-      const sorted = [...items].sort((a, b) => Number(b.nb_interventions || 0) - Number(a.nb_interventions || 0));
-      return `<div class="rows">${sorted.map((d) => `
-        <article class="row-item">
-          <p><strong>${escapeHtml(simplifyTitle(d.titre))}</strong></p>
-          <p class="small">${escapeHtml(roleFromDossier(d))} • ${escapeHtml(themeLabel(d._theme))} • ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</p>
-          <p class="small">Rôle dérivé du niveau d'activité observé sur ce texte.
-            <details class="inline-help"><summary aria-label="Aide">?</summary><p>“Texte porté” = texte où la personne apparaît activement dans les données, selon le nombre d'interventions enregistrées.</p></details>
-          </p>
-          <p>${sourceLinkHtml(d.url_institution || d.url_source)}</p>
-        </article>
-      `).join("")}</div>`;
+      const sorted = [...items].sort((a, b) => {
+        const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
+        return dateDiff || simplifyTitle(a.titre).localeCompare(simplifyTitle(b.titre), "fr");
+      });
+      const byTheme = new Map();
+      for (const item of sorted) {
+        if (!byTheme.has(item._theme)) byTheme.set(item._theme, []);
+        byTheme.get(item._theme).push(item);
+      }
+      const shelves = [...byTheme.entries()].sort((a, b) => {
+        const countDiff = b[1].length - a[1].length;
+        if (countDiff) return countDiff;
+        const newestDiff = toDateMs(b[1][0]?.date_max || b[1][0]?.date_min) - toDateMs(a[1][0]?.date_max || a[1][0]?.date_min);
+        return newestDiff || themeLabel(a[0]).localeCompare(themeLabel(b[0]), "fr");
+      });
+
+      return `<div class="text-atlas">${shelves.map(([theme, themeItems]) => {
+        const expanded = state.expandedTextThemes.has(theme);
+        const visible = expanded ? themeItems : themeItems.slice(0, 6);
+        return `
+          <section class="text-shelf" aria-labelledby="text-theme-${escapeHtml(theme)}">
+            <div class="text-shelf-head">
+              <strong id="text-theme-${escapeHtml(theme)}">${escapeHtml(themeLabel(theme))}</strong>
+              <span></span>
+              <span class="text-shelf-count">${themeItems.length} texte(s)</span>
+            </div>
+            <div class="text-shelf-track">
+              ${visible.map((d) => `
+                <article class="text-leaf">
+                  <div class="text-leaf-title">${escapeHtml(simplifyTitle(d.titre))}</div>
+                  <div>
+                    <div class="text-leaf-meta">${escapeHtml(roleFromDossier(d))} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+                    ${sourceLinkHtml(d.url_institution || d.url_source, "↗ source")}
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+            ${themeItems.length > 6 ? `<button type="button" class="text-shelf-more" data-expand-text-theme="${escapeHtml(theme)}">${expanded ? "Réduire" : `Voir les ${themeItems.length} textes`} ${escapeHtml(themeLabel(theme))}</button>` : ""}
+          </section>
+        `;
+      }).join("")}</div>`;
     }
 
-    function applyVoteSort(votes) {
-      const arr = votes.map((v) => ({ ...v, _shortTitleKey: simplifyTitle(v.titre).toLowerCase() }));
-      if (state.votesSort === "recent") {
-        arr.sort((a, b) => toDateMs(b.date) - toDateMs(a.date));
-      } else if (state.votesSort === "theme") {
-        arr.sort((a, b) => themeLabel(a._theme).localeCompare(themeLabel(b._theme), "fr"));
-      } else if (state.votesSort === "cited") {
-        const freq = new Map();
-        for (const v of arr) {
-          const key = v._shortTitleKey;
-          freq.set(key, (freq.get(key) || 0) + 1);
-        }
-        arr.sort((a, b) => {
-          const da = freq.get(a._shortTitleKey) || 0;
-          const db = freq.get(b._shortTitleKey) || 0;
-          return db - da || toDateMs(b.date) - toDateMs(a.date);
-        });
-      }
-      return arr;
+    function sortVotesByDate(votes) {
+      return [...votes].sort((a, b) => {
+        const dateDiff = toDateMs(b.date) - toDateMs(a.date);
+        return dateDiff || simplifyTitle(a.titre).localeCompare(simplifyTitle(b.titre), "fr");
+      });
     }
 
     function renderVotes(profile) {
-      const items = applyVoteSort((profile.votes || []).filter((v) => inTheme(v, state.selectedTheme)));
+      const items = (profile.votes || []).filter((v) => inTheme(v, state.selectedTheme));
       if (!items.length) {
         return `<p class="empty">${state.selectedTheme === "all" ? "Aucune donnée de vote trouvée dans cette fiche." : "Aucune donnée de vote trouvée sur ce thème."}</p>`;
       }
 
-      const cards = `
-        <div class="votes-cards rows">
-          ${items.map((v) => {
-            const badge = voteLabelAndClass(v.position);
-            return `
-              <article class="row-item vote-card vote-card--${badge.cls}">
-                <p><strong>${escapeHtml(simplifyTitle(v.titre))}</strong></p>
-                <p class="small"><span class="source-ref">${escapeHtml(formatIsoDate(v.date))}</span> • ${escapeHtml(themeLabel(v._theme))}
-                  <span class="vote-badge ${badge.cls}">${escapeHtml(badge.label)}</span>
-                </p>
-                <details>
-                  <summary class="small">Voir le libellé officiel complet</summary>
-                  <p class="small">${escapeHtml(v.titre || "Libellé non renseigné")}</p>
-                </details>
-                <p class="small"><span class="source-ref">${escapeHtml(profile.votes_source || "Source de vote non précisée")}</span>
-                  <details class="inline-help"><summary aria-label="Aide">?</summary><p>“Vote officiel” = résultat nominatif publié par l’institution parlementaire.</p></details>
-                </p>
-              </article>
-            `;
-          }).join("")}
-        </div>
-      `;
-
-      const rows = items.map((v) => {
-        const badge = voteLabelAndClass(v.position);
-        return `
-          <tr>
-            <td>
-              <strong>${escapeHtml(simplifyTitle(v.titre))}</strong>
-              <details><summary class="small">Libellé officiel complet</summary><div class="small">${escapeHtml(v.titre || "")}</div></details>
-            </td>
-            <td>${escapeHtml(themeLabel(v._theme))}</td>
-            <td>${escapeHtml(formatIsoDate(v.date))}</td>
-            <td><span class="vote-badge ${badge.cls}">${escapeHtml(badge.label)}</span></td>
-            <td class="small">${escapeHtml(profile.votes_source || "Source de vote non précisée")}</td>
-          </tr>
-        `;
-      }).join("");
+      const byTheme = new Map();
+      for (const vote of items) {
+        if (!byTheme.has(vote._theme)) byTheme.set(vote._theme, []);
+        byTheme.get(vote._theme).push(vote);
+      }
+      const shelves = [...byTheme.entries()]
+        .map(([theme, votes]) => [theme, sortVotesByDate(votes)])
+        .sort((a, b) => {
+          const countDiff = b[1].length - a[1].length;
+          return countDiff || themeLabel(a[0]).localeCompare(themeLabel(b[0]), "fr");
+        });
 
       return `
-        <div class="inter-controls">
-          <button type="button" class="ghost-btn ${state.votesSort === "recent" ? "active-choice" : ""}" data-votes-sort="recent">Récent</button>
-          <button type="button" class="ghost-btn ${state.votesSort === "cited" ? "active-choice" : ""}" data-votes-sort="cited">Fréquent</button>
-          <button type="button" class="ghost-btn ${state.votesSort === "theme" ? "active-choice" : ""}" data-votes-sort="theme">Thème</button>
-        </div>
-        ${cards}
-        <div class="votes-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Sujet</th>
-                <th>Thème</th>
-                <th>Date</th>
-                <th>Position</th>
-                <th>Source</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
+        <p class="source-ref">Dans chaque thème : du vote le plus récent au plus ancien.</p>
+        <div class="vote-atlas">
+          ${shelves.map(([theme, themeVotes]) => {
+            const expanded = state.expandedVoteThemes.has(theme);
+            const visible = expanded ? themeVotes : themeVotes.slice(0, 18);
+            return `
+              <section class="vote-shelf" aria-labelledby="vote-theme-${escapeHtml(theme)}">
+                <div class="vote-shelf-head">
+                  <strong id="vote-theme-${escapeHtml(theme)}">${escapeHtml(themeLabel(theme))}</strong>
+                  <span></span>
+                  <span class="vote-shelf-count">${themeVotes.length} vote(s)</span>
+                </div>
+                <div class="vote-cloud">
+                  ${visible.map((v, index) => {
+                    const badge = voteLabelAndClass(v.position);
+                    const weight = 1 + (index % 5);
+                    const source = voteSourceUrl(profile, v);
+                    const tagName = source ? "a" : "span";
+                    const sourceAttrs = source ? `href="${escapeHtml(source.url)}" target="_blank" rel="noopener"` : "";
+                    return `<${tagName} class="vote-token ${badge.cls}" style="--weight:${weight}" title="${escapeHtml(v.titre || "")}" ${sourceAttrs}>
+                      ${escapeHtml(simplifyTitle(v.titre))}
+                      <em>${escapeHtml(badge.label)} / ${escapeHtml(formatIsoDate(v.date))}${source ? `<span class="source-mark">↗ ${source.direct ? "scrutin" : "profil source"}</span>` : ""}</em>
+                    </${tagName}>`;
+                  }).join("")}
+                </div>
+                ${themeVotes.length > 18 ? `<button type="button" class="vote-shelf-more" data-expand-vote-theme="${escapeHtml(theme)}">${expanded ? "Réduire" : `Voir les ${themeVotes.length} votes`} ${escapeHtml(themeLabel(theme))}</button>` : ""}
+              </section>
+            `;
+          }).join("")}
         </div>
       `;
     }
@@ -1263,41 +1800,13 @@
         noInterThemes = themeUniverse.filter((t) => !interThemes.has(t));
       }
 
-      return `
-        <div class="absence-grid">
-          <div class="absence-box">
-            <strong>Textes non retrouvés</strong>
-            ${state.selectedTheme === "all"
-              ? (noTextThemes.length
-                ? `<ul>${noTextThemes.map((t) => `<li>${escapeHtml(themeLabel(t))}</li>`).join("")}</ul>`
-                : `<p class="small">Au moins un texte est retrouvé dans chaque thème de la grille actuelle.</p>`)
-              : (textes.length
-                ? `<p class="small">Des textes sont retrouvés sur ce thème.</p>`
-                : `<p class="small">Aucun texte porté retrouvé sur ce thème.</p>`)}
-          </div>
-
-          <div class="absence-box">
-            <strong>Prises de parole non retrouvées</strong>
-            ${state.selectedTheme === "all"
-              ? (noInterThemes.length
-                ? `<ul>${noInterThemes.map((t) => `<li>${escapeHtml(themeLabel(t))}</li>`).join("")}</ul>`
-                : `<p class="small">Au moins une prise de parole est retrouvée dans chaque thème de la grille actuelle.</p>`)
-              : (inters.length
-                ? `<p class="small">Des prises de parole sont retrouvées sur ce thème.</p>`
-                : `<p class="small">Aucune prise de parole retrouvée sur ce thème dans les données actuellement disponibles.</p>`)}
-          </div>
-
-          <div class="absence-box">
-            <strong>Votes sans participation</strong>
-            ${votes.length
-              ? (absVotes.length
-                ? `<p class="small">${absVotes.length} vote(s) indiquent “n’a pas pris part au vote” / non votant sur le périmètre affiché.</p>`
-                : `<p class="small">Aucun vote affiché n’indique une absence de participation.</p>`)
-              : `<p class="small">Aucune donnée de vote trouvée.</p>`}
-            <details class="inline-help"><summary aria-label="Aide">?</summary><p>“N’a pas pris part au vote” décrit une absence de participation à ce scrutin, pas une prise de position.</p></details>
-          </div>
-        </div>
-      `;
+      const missingTextCount = state.selectedTheme === "all" ? noTextThemes.length : (textes.length ? 0 : 1);
+      const missingInterCount = state.selectedTheme === "all" ? noInterThemes.length : (inters.length ? 0 : 1);
+      return `<div class="void-map">
+        <div class="void-signal"><span class="void-number">${missingTextCount}</span><strong>thème(s) sans texte retrouvé</strong><small>${noTextThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
+        <div class="void-signal"><span class="void-number">${missingInterCount}</span><strong>thème(s) sans parole retrouvée</strong><small>${noInterThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
+        <div class="void-signal"><span class="void-number">${absVotes.length}</span><strong>vote(s) sans participation</strong><small>absence à un scrutin ≠ absence d'activité</small></div>
+      </div>`;
     }
 
     function renderInterventions(profile) {
@@ -1322,13 +1831,12 @@
           <button type="button" class="ghost-btn ${state.interventionsMode === "long" ? "active-choice" : ""}" data-inter-mode="long">Prises de parole longues</button>
         </div>
 
-        <div class="rows">
+        <div class="speech-tape">
           ${visible.map((i) => `
-            <article class="row-item">
-              <p><strong>${escapeHtml(i.sujet || "Prise de parole")}</strong></p>
-              <p class="small">${escapeHtml(formatIsoDate(i.date || i.created_at))} • ${escapeHtml(themeLabel(i._theme))} ${i.fonction ? `• en tant que ${escapeHtml(i.fonction)}` : ""}</p>
-              ${i.texte ? `<p>${escapeHtml(String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH))}${String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}</p>` : `<p class="small">Extrait non disponible.</p>`}
-              <p>${sourceLinkHtml(i.url_detail || i.url)}</p>
+            <article class="speech-fragment">
+              <div class="editorial-meta">${escapeHtml(formatIsoDate(i.date || i.created_at))} / ${escapeHtml(themeLabel(i._theme))}</div>
+              <p class="speech-quote">“${escapeHtml(i.texte ? String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH) : (i.sujet || "Extrait non disponible"))}${i.texte && String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}”</p>
+              <div>${sourceLinkHtml(i.url_detail || i.url, "↗ archive")}</div>
             </article>
           `).join("")}
         </div>
@@ -1386,30 +1894,56 @@
             `).join("")}
           </div>
 
-          <div class="compare-grid">
+          <div class="versus-stage">
             ${activeProfiles.map(({ profile: p, meta: m }) => {
               const facts = compareFactsForTheme(p, baseTheme);
-              const sampleVotes = facts.votes.slice(0, 3).map((v) => {
-                const vb = voteLabelAndClass(v.position);
-                return `<li>${escapeHtml(simplifyTitle(v.titre))} — <span class="vote-badge ${vb.cls}">${escapeHtml(vb.label)}</span></li>`;
-              }).join("");
               return `
-                <article class="compare-card">
-                  <h3>${escapeHtml(p.identite?.nom_complet || m?.nom || p.slug)}</h3>
-                  <p class="small">${escapeHtml(themeLabel(baseTheme))}</p>
-                  <ul class="small" style="padding-left:1rem; margin:0.35rem 0;">
-                    <li>${facts.votes.length} vote(s) retrouvés</li>
-                    <li>${facts.textes.length} texte(s) porté(s)/rapporté(s)</li>
-                    <li>${facts.interventions.length} prise(s) de parole</li>
-                    <li>${facts.absents.length} vote(s) sans participation</li>
-                  </ul>
-                  ${sampleVotes ? `<details><summary class="small">3 votes clés</summary><ul class="small" style="padding-left:1rem;">${sampleVotes}</ul></details>` : `<p class="small">Aucun vote clé trouvé sur ce thème.</p>`}
+                <article class="versus-person">
+                  <div class="versus-name">${escapeHtml(p.identite?.nom_complet || m?.nom || p.slug)}</div>
+                  <div class="editorial-meta">${escapeHtml(themeLabel(baseTheme))}</div>
+                  <div class="versus-metrics">
+                    <div class="versus-metric"><b>${facts.votes.length}</b><small>votes</small></div>
+                    <div class="versus-metric"><b>${facts.textes.length}</b><small>textes</small></div>
+                    <div class="versus-metric"><b>${facts.interventions.length}</b><small>paroles</small></div>
+                    <div class="versus-metric"><b>${facts.absents.length}</b><small>sans part.</small></div>
+                  </div>
                 </article>
               `;
             }).join("")}
           </div>
         </section>
       `;
+    }
+
+    function renderHome() {
+      const root = document.getElementById("candidat-root");
+      const available = state.candidats.filter((candidate) => candidate.slug);
+      state.currentSlug = "";
+      state.currentMeta = null;
+      state.currentProfile = null;
+      updateActiveAvatarChip();
+      root.innerHTML = `
+        <section class="home-stage">
+          <div class="home-manifesto">
+            <p class="section-kicker">Politique en clair / Présidentielle 2027</p>
+            <h2>Choisir, puis regarder les traces.</h2>
+            <p><strong>Les traces parlementaires des candidats.</strong> Une lecture visuelle des mandats, textes, votes et prises de parole issus des données publiques. Aucun candidat n’est mis en avant par défaut.</p>
+          </div>
+          <div class="home-candidates">
+            ${available.map((candidate) => `
+              <button type="button" class="home-candidate" data-home-slug="${escapeHtml(candidate.slug)}">
+                <strong>${escapeHtml(candidate.nom)}</strong>
+                <small>${escapeHtml(candidate.parti || "Affiliation non renseignée")} ↗</small>
+              </button>
+            `).join("")}
+          </div>
+          <div class="home-note">Les noms barrés dans l’index supérieur ne disposent pas encore de données parlementaires exploitables.</div>
+        </section>
+      `;
+      root.querySelectorAll("[data-home-slug]").forEach((button) => {
+        button.addEventListener("click", () => selectCandidate(button.dataset.homeSlug));
+      });
+      setDocumentTitle("");
     }
 
     function renderPage() {
@@ -1425,7 +1959,7 @@
       root.innerHTML = `
         ${renderHeader(meta, profile)}
 
-        <section class="panel">
+        <section class="theme-dock">
           <p class="section-kicker">Filtrer par thème</p>
           ${renderThemePills()}
         </section>
@@ -1434,35 +1968,35 @@
         <div class="swipe-deck" id="swipe-deck">
           <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
             <section class="panel">
-              <h2>${PANEL_META.mandats.icon} Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
+              <h2>Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
               <div id="mandats">${renderResponsabilites(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
             <section class="panel">
-              <h2>${PANEL_META.textes.icon} Textes portés <span class="source-ref">(${(profile.dossiers_legislatifs || []).length})</span></h2>
+              <h2>Textes portés <span class="source-ref">(${(profile.dossiers_legislatifs || []).length})</span></h2>
               <div id="textes">${renderTextes(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 2 ? "active" : ""}">
             <section class="panel">
-              <h2>${PANEL_META.votes.icon} Votes enregistrés <span class="source-ref">(${(profile.votes || []).length})</span></h2>
+              <h2>Votes enregistrés <span class="source-ref">(${(profile.votes || []).length})</span></h2>
               <div id="votes">${renderVotes(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
             <section class="panel">
-              <h2>${PANEL_META.absences.icon} Absences et silences</h2>
+              <h2>Absences et silences</h2>
               <div id="absences">${renderAbsences(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 4 ? "active" : ""}">
             <section class="panel">
-              <h2>${PANEL_META.interventions.icon} Prises de parole <span class="source-ref">(${(profile.interventions || []).length})</span></h2>
+              <h2>Prises de parole <span class="source-ref">(${(profile.interventions || []).length})</span></h2>
               <div id="interventions">${renderInterventions(profile)}</div>
             </section>
           </div>
@@ -1470,10 +2004,95 @@
           <div class="swipe-panel ${state.activePanelIndex === 5 ? "active" : ""}">${renderCompareSection(profile)}</div>
         </div>
         <p class="swipe-hint">← Glissez ou touchez les icônes pour changer de section →</p>
+        ${renderExpressSummary(profile)}
       `;
 
       setDocumentTitle(profile.identite?.nom_complet || meta.nom);
       bindRenderedEvents();
+    }
+
+    function expressSummaryData(profile) {
+      const tenure = computeMandateTenure(profile);
+      const responsibilities = computeResponsibilitiesSummary(profile);
+      const voteProfile = computeFinalTextVoteProfile(profile);
+      const pourPct = voteProfile.totalTextes
+        ? Math.round((voteProfile.counts.pour / voteProfile.totalTextes) * 100)
+        : null;
+      const themeCounts = new Map();
+      for (const item of [...(profile.votes || []), ...(profile.dossiers_legislatifs || []), ...(profile.interventions || [])]) {
+        themeCounts.set(item._theme, (themeCounts.get(item._theme) || 0) + 1);
+      }
+      const dominant = [...themeCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+      return [
+        {
+          question: "Depuis combien de temps exerce-t-il un mandat parlementaire ?",
+          value: tenure ? `${tenure.annees} ans` : "N/D",
+          note: "Durée du mandat, pas mesure de l'implication.",
+        },
+        {
+          question: "Quelles responsabilités institutionnelles a-t-il occupées ?",
+          value: String(responsibilities.distinctCount),
+          note: "Responsabilités distinctes, hors réaffectations administratives.",
+        },
+        {
+          question: "Comment vote-t-il sur les textes entiers ?",
+          value: pourPct === null ? "N/D" : `${pourPct} %`,
+          note: voteProfile.totalTextes ? `${voteProfile.totalTextes} textes à leur lecture la plus avancée.` : "Aucun vote final retrouvé.",
+        },
+        {
+          question: "Quel thème apparaît le plus souvent dans ses traces ?",
+          value: dominant ? themeLabel(dominant[0]) : "N/D",
+          note: dominant ? `${dominant[1]} traces classées. Une fréquence documentaire, pas une priorité déclarée.` : "Thème non déterminé.",
+        },
+      ];
+    }
+
+    function renderExpressSummary(profile) {
+      return `
+        <div class="express-summary" role="dialog" aria-modal="true" aria-label="Résumé express" aria-hidden="true">
+          <button type="button" class="express-summary-close" aria-label="Fermer">×</button>
+          <div class="express-summary-scenes">
+            ${expressSummaryData(profile).map((item, index) => `
+              <section class="express-summary-scene ${index === state.expressIndex ? "active" : ""}">
+                <h2 class="express-summary-question">${escapeHtml(item.question)}</h2>
+                <div class="express-summary-answer"><b>${escapeHtml(item.value)}</b><span>${escapeHtml(item.note)}</span></div>
+              </section>
+            `).join("")}
+          </div>
+          <div class="express-summary-progress"><i style="width:${(state.expressIndex + 1) * 25}%"></i></div>
+          <nav class="express-summary-nav" aria-label="Navigation du résumé">
+            <button type="button" data-express-dir="-1" aria-label="Précédent">←</button>
+            <button type="button" data-express-dir="1" aria-label="Suivant">→</button>
+          </nav>
+        </div>
+      `;
+    }
+
+    function setExpressScene(index) {
+      state.expressIndex = (index + 4) % 4;
+      document.querySelectorAll(".express-summary-scene").forEach((scene, sceneIndex) => {
+        scene.classList.toggle("active", sceneIndex === state.expressIndex);
+      });
+      const progress = document.querySelector(".express-summary-progress i");
+      if (progress) progress.style.width = `${(state.expressIndex + 1) * 25}%`;
+    }
+
+    function openExpressSummary() {
+      state.expressIndex = 0;
+      setExpressScene(0);
+      const summary = document.querySelector(".express-summary");
+      summary?.classList.add("open");
+      summary?.setAttribute("aria-hidden", "false");
+      document.body.classList.add("express-open");
+      document.querySelector(".express-summary-close")?.focus();
+    }
+
+    function closeExpressSummary() {
+      const summary = document.querySelector(".express-summary");
+      summary?.classList.remove("open");
+      summary?.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("express-open");
+      document.querySelector(".express-launch")?.focus();
     }
 
     function renderPanelIndicator() {
@@ -1513,6 +2132,37 @@
     }
 
     function bindRenderedEvents() {
+      document.querySelector(".express-launch")?.addEventListener("click", openExpressSummary);
+      document.querySelector(".express-summary-close")?.addEventListener("click", closeExpressSummary);
+      document.querySelectorAll("[data-express-dir]").forEach((button) => {
+        button.addEventListener("click", () => setExpressScene(state.expressIndex + Number(button.dataset.expressDir)));
+      });
+
+      document.querySelectorAll("[data-expand-vote-theme]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const theme = button.dataset.expandVoteTheme;
+          if (state.expandedVoteThemes.has(theme)) state.expandedVoteThemes.delete(theme);
+          else state.expandedVoteThemes.add(theme);
+          renderPage();
+        });
+      });
+
+      document.querySelectorAll("[data-expand-text-theme]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const theme = button.dataset.expandTextTheme;
+          if (state.expandedTextThemes.has(theme)) state.expandedTextThemes.delete(theme);
+          else state.expandedTextThemes.add(theme);
+          renderPage();
+        });
+      });
+
+      document.querySelectorAll(".orbit-node").forEach((node) => {
+        node.addEventListener("click", () => {
+          const expanded = node.classList.toggle("expanded");
+          node.setAttribute("aria-expanded", String(expanded));
+        });
+      });
+
       document.querySelectorAll("[data-theme]").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.selectedTheme = btn.dataset.theme;
@@ -1524,13 +2174,6 @@
       document.querySelectorAll("[data-compare-theme]").forEach((btn) => {
         btn.addEventListener("click", () => {
           state.compareTheme = btn.dataset.compareTheme;
-          renderPage();
-        });
-      });
-
-      document.querySelectorAll("[data-votes-sort]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          state.votesSort = btn.dataset.votesSort;
           renderPage();
         });
       });
@@ -1614,13 +2257,15 @@
       state.currentMeta = state.candidats.find((c) => c.slug === slug) || null;
       state.currentProfile = null;
       state.selectedTheme = "all";
-      state.votesSort = "recent";
       state.interventionsMode = "all";
       state.interventionsVisible = 6;
       state.compareSlugs = ["", ""];
       state.compareProfiles = {};
       state.activePanelIndex = 0;
       state.flippedKpis = new Set();
+      state.expandedTextThemes = new Set();
+      state.expandedVoteThemes = new Set();
+      state.expressIndex = 0;
 
       updateActiveAvatarChip();
 
@@ -1654,6 +2299,7 @@
 
     async function init() {
       const carousel = document.getElementById("candidat-carousel");
+      document.getElementById("home-link").addEventListener("click", renderHome);
 
       try {
         const resp = await fetch(CANDIDATS_URL, { cache: "no-store" });
@@ -1672,8 +2318,7 @@
           chip.addEventListener("click", () => selectCandidate(chip.dataset.slug));
         });
 
-        const firstAvailable = state.candidats.find((candidate) => candidate.slug);
-        if (firstAvailable) await selectCandidate(firstAvailable.slug);
+        renderHome();
       } catch (err) {
         document.getElementById("candidat-root").innerHTML = `
           <section class="panel"><p class="empty">Impossible de charger la liste des candidats (${escapeHtml(err.message)}).</p></section>
@@ -1684,6 +2329,12 @@
     }
 
     init();
+    document.addEventListener("keydown", (event) => {
+      if (!document.querySelector(".express-summary.open")) return;
+      if (event.key === "Escape") closeExpressSummary();
+      if (event.key === "ArrowRight") setExpressScene(state.expressIndex + 1);
+      if (event.key === "ArrowLeft") setExpressScene(state.expressIndex - 1);
+    });
   </script>
 </body>
 </html>
