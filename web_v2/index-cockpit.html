@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fiche candidat — Présidentielle 2027</title>
+<title>Le Bulletin — Présidentielle 2027</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
 <style>
   :root {
     /* Palette éditoriale — justifiée par le sujet */
@@ -465,13 +465,198 @@
     .summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .theme-dist-label { width: 140px; }
   }
+
+  /* Variante B — "Le Bulletin" : cockpit civique, dense et tactile. */
+  .cockpit {
+    --bg: #F0F2ED;
+    --surface: #FAFBF7;
+    --text: #17211D;
+    --deep: #17211D;
+    --muted: #65716B;
+    --line: #C9D0C9;
+    --accent: #006B64;
+    --accent-soft: #D8EBE6;
+    --signal: #E8593C;
+    --sun: #E6B447;
+    font-family: 'Manrope', sans-serif;
+    background-color: var(--bg);
+    background-image: linear-gradient(rgba(23, 33, 29, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(23, 33, 29, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .cockpit h1,
+  .cockpit h2,
+  .cockpit h3 { font-family: 'Newsreader', serif; }
+  .cockpit .page { max-width: 1180px; padding-bottom: 6.5rem; }
+  .cockpit .panel { border-radius: 8px; box-shadow: 0 4px 18px rgba(23, 33, 29, 0.045); }
+  .cockpit .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.7rem;
+    align-items: end;
+    border-top: 5px solid var(--deep);
+  }
+  .cockpit .masthead h1 { font-size: clamp(1.8rem, 5vw, 3rem); margin: 0; }
+  .cockpit .masthead > .section-kicker,
+  .cockpit .masthead > .avatar-carousel { grid-column: 1 / -1; }
+  .cockpit .edition-mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    text-align: right;
+    color: var(--muted);
+  }
+
+  /* Les candidats deviennent des tickets horizontaux, pas des stories. */
+  .cockpit .avatar-carousel { gap: 0.5rem; padding: 0.45rem 0 0.15rem; }
+  .cockpit .avatar-chip {
+    width: 132px;
+    min-height: 56px;
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    grid-template-rows: 1fr;
+    gap: 0.5rem;
+    text-align: left;
+    align-items: center;
+    padding: 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+  }
+  .cockpit .avatar-chip-circle {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+  }
+  .cockpit .avatar-chip-name {
+    max-width: 78px;
+    font-size: 0.76rem;
+    color: var(--text);
+  }
+  .cockpit .avatar-chip.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: inset 4px 0 0 var(--accent);
+  }
+  .cockpit .avatar-chip.active .avatar-chip-circle { transform: none; border-color: var(--accent); }
+  .cockpit .avatar-chip--mini { width: 110px; min-height: 48px; }
+
+  .cockpit #resume { position: relative; overflow: hidden; }
+  .cockpit #resume::before {
+    content: "DOSSIER";
+    position: absolute;
+    top: 0.7rem;
+    right: 0.8rem;
+    color: var(--signal);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.64rem;
+    font-weight: 600;
+    border: 1px solid currentColor;
+    padding: 0.14rem 0.35rem;
+  }
+  .cockpit .hero { grid-template-columns: 54px 1fr; }
+  .cockpit .avatar { width: 54px; height: 54px; border-radius: 6px; background: var(--accent-soft); }
+
+  /* KPI bento avec révélation plane; aucune rotation 3D. */
+  .cockpit .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cockpit .kpi-flip { perspective: none; }
+  .cockpit .kpi-flip-inner { min-height: 142px; transform-style: flat; transition: none; }
+  .cockpit .kpi-face {
+    border-radius: 7px;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    background: var(--surface);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .cockpit .kpi-face--front { border-top: 4px solid var(--accent); }
+  .cockpit .kpi-flip:nth-child(2) .kpi-face--front { border-top-color: var(--sun); }
+  .cockpit .kpi-flip:nth-child(3) .kpi-face--front { border-top-color: var(--signal); }
+  .cockpit .kpi-flip:nth-child(4) .kpi-face--front { border-top-color: var(--deep); }
+  .cockpit .kpi-face--back {
+    transform: translateY(8px);
+    opacity: 0;
+    pointer-events: none;
+    justify-content: center;
+    background: var(--deep);
+    color: var(--surface);
+  }
+  .cockpit .kpi-face--back .kpi-back-text { color: var(--surface); }
+  .cockpit .kpi-face--back .kpi-back-link { color: #9FE0D5; }
+  .cockpit .kpi-flip.flipped .kpi-flip-inner,
+  .cockpit .kpi-flip:focus-visible .kpi-flip-inner { transform: none; }
+  .cockpit .kpi-flip.flipped .kpi-face--front { opacity: 0; transform: translateY(-8px); }
+  .cockpit .kpi-flip.flipped .kpi-face--back { opacity: 1; transform: none; pointer-events: auto; }
+  @media (hover: hover) {
+    .cockpit .kpi-flip:hover .kpi-flip-inner { transform: none; }
+    .cockpit .kpi-flip:hover .kpi-face--front { opacity: 0; transform: translateY(-8px); }
+    .cockpit .kpi-flip:hover .kpi-face--back { opacity: 1; transform: none; pointer-events: auto; }
+  }
+  .cockpit .kpi-icon { color: var(--accent); }
+  .cockpit .kpi-value { font-size: clamp(1.35rem, 5vw, 2.3rem); }
+
+  /* Barre d'onglets fixe, comportement familier des apps mobiles. */
+  .cockpit .panel-indicator {
+    position: fixed;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: 0.55rem;
+    z-index: 80;
+    margin: 0 auto;
+    max-width: 680px;
+    min-height: 58px;
+    justify-content: space-around;
+    gap: 0;
+    padding: 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(250, 251, 247, 0.96);
+    box-shadow: 0 10px 32px rgba(23, 33, 29, 0.16);
+    backdrop-filter: blur(12px);
+  }
+  .cockpit .panel-dot {
+    width: auto;
+    min-width: 44px;
+    height: 44px;
+    flex-direction: column;
+    gap: 0.1rem;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    font-size: 0.74rem;
+  }
+  .cockpit .panel-dot small { font-size: 0.54rem; line-height: 1; }
+  .cockpit .panel-dot.active { color: var(--surface); background: var(--accent); }
+  .cockpit .swipe-deck { display: block; overflow: visible; border-radius: 0; }
+  .cockpit .swipe-panel { display: none; min-width: 0; padding: 0; animation: panel-in 0.26s ease both; }
+  .cockpit .swipe-panel.active { display: block; }
+  .cockpit .swipe-hint { display: none; }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .cockpit .row-item,
+  .cockpit .absence-box,
+  .cockpit .compare-card { border-radius: 6px; }
+
+  @media (min-width: 760px) {
+    .cockpit .page { padding-bottom: 5rem; }
+    .cockpit .summary-grid { grid-template-columns: 1.1fr 0.9fr 1.1fr 0.9fr; }
+    .cockpit .panel-indicator { bottom: 1rem; }
+    .cockpit .panel-dot { min-width: 76px; }
+    .cockpit .panel-dot small { font-size: 0.62rem; }
+  }
 </style>
 </head>
-<body>
+<body class="cockpit">
   <main class="page">
-    <section class="panel">
-      <h1>Fiches factuelles des candidats</h1>
-      <p class="section-kicker">Choisir un candidat</p>
+    <section class="panel masthead">
+      <div>
+        <p class="section-kicker">Présidentielle 2027 · données publiques</p>
+        <h1>Le Bulletin</h1>
+      </div>
+      <div class="edition-mark">ÉDITION<br>FACTUELLE</div>
+      <p class="section-kicker">Ouvrir un dossier</p>
       <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
     </section>
 
@@ -551,7 +736,7 @@
     };
 
     function setDocumentTitle(label) {
-      document.title = label ? `Fiche candidat — ${label}` : "Fiches factuelles des candidats";
+      document.title = label ? `Le Bulletin — ${label}` : "Le Bulletin — Présidentielle 2027";
     }
 
     function escapeHtml(str) {
@@ -1247,42 +1432,42 @@
 
         ${renderPanelIndicator()}
         <div class="swipe-deck" id="swipe-deck">
-          <div class="swipe-panel">
+          <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
             <section class="panel">
               <h2>${PANEL_META.mandats.icon} Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
               <div id="mandats">${renderResponsabilites(profile)}</div>
             </section>
           </div>
 
-          <div class="swipe-panel">
+          <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
             <section class="panel">
               <h2>${PANEL_META.textes.icon} Textes portés <span class="source-ref">(${(profile.dossiers_legislatifs || []).length})</span></h2>
               <div id="textes">${renderTextes(profile)}</div>
             </section>
           </div>
 
-          <div class="swipe-panel">
+          <div class="swipe-panel ${state.activePanelIndex === 2 ? "active" : ""}">
             <section class="panel">
               <h2>${PANEL_META.votes.icon} Votes enregistrés <span class="source-ref">(${(profile.votes || []).length})</span></h2>
               <div id="votes">${renderVotes(profile)}</div>
             </section>
           </div>
 
-          <div class="swipe-panel">
+          <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
             <section class="panel">
               <h2>${PANEL_META.absences.icon} Absences et silences</h2>
               <div id="absences">${renderAbsences(profile)}</div>
             </section>
           </div>
 
-          <div class="swipe-panel">
+          <div class="swipe-panel ${state.activePanelIndex === 4 ? "active" : ""}">
             <section class="panel">
               <h2>${PANEL_META.interventions.icon} Prises de parole <span class="source-ref">(${(profile.interventions || []).length})</span></h2>
               <div id="interventions">${renderInterventions(profile)}</div>
             </section>
           </div>
 
-          <div class="swipe-panel">${renderCompareSection(profile)}</div>
+          <div class="swipe-panel ${state.activePanelIndex === 5 ? "active" : ""}">${renderCompareSection(profile)}</div>
         </div>
         <p class="swipe-hint">← Glissez ou touchez les icônes pour changer de section →</p>
       `;
@@ -1295,7 +1480,10 @@
       return `
         <div class="panel-indicator" role="tablist" aria-label="Sections du dossier">
           ${PANEL_ORDER.map((id, i) => `
-            <button type="button" class="panel-dot ${state.activePanelIndex === i ? "active" : ""}" data-panel-index="${i}" title="${escapeHtml(PANEL_META[id].label)}" aria-label="${escapeHtml(PANEL_META[id].label)}">${PANEL_META[id].icon}</button>
+            <button type="button" class="panel-dot ${state.activePanelIndex === i ? "active" : ""}" data-panel-index="${i}" title="${escapeHtml(PANEL_META[id].label)}" aria-label="${escapeHtml(PANEL_META[id].label)}">
+              <span aria-hidden="true">${PANEL_META[id].icon}</span>
+              <small>${escapeHtml(PANEL_META[id].label)}</small>
+            </button>
           `).join("")}
         </div>
       `;
@@ -1314,10 +1502,10 @@
       document.querySelectorAll(".panel-dot").forEach((dot, i) => {
         dot.classList.toggle("active", i === index);
       });
-      if (scroll) {
-        const deck = document.getElementById("swipe-deck");
-        if (deck) deck.scrollTo({ left: index * deck.clientWidth, behavior: "smooth" });
-      }
+      document.querySelectorAll(".swipe-panel").forEach((panel, i) => {
+        panel.classList.toggle("active", i === index);
+      });
+      if (scroll) document.getElementById("swipe-deck")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function scrollToPanel(id) {
@@ -1398,19 +1586,7 @@
         });
       });
 
-      // Carrousel de panneaux glissants : conserve la position active après un re-rendu
-      const deck = document.getElementById("swipe-deck");
-      if (deck) {
-        deck.scrollLeft = state.activePanelIndex * deck.clientWidth;
-        let scrollRaf = null;
-        deck.addEventListener("scroll", () => {
-          if (scrollRaf) cancelAnimationFrame(scrollRaf);
-          scrollRaf = requestAnimationFrame(() => {
-            const index = Math.round(deck.scrollLeft / Math.max(deck.clientWidth, 1));
-            setActivePanel(index);
-          });
-        });
-      }
+      // Barre d'onglets : un seul panneau visible, sans défilement horizontal forcé.
       document.querySelectorAll(".panel-dot").forEach((dot) => {
         dot.addEventListener("click", () => {
           setActivePanel(Number(dot.dataset.panelIndex), { scroll: true });
@@ -1495,6 +1671,9 @@
         carousel.querySelectorAll(".avatar-chip[data-slug]:not(:disabled)").forEach((chip) => {
           chip.addEventListener("click", () => selectCandidate(chip.dataset.slug));
         });
+
+        const firstAvailable = state.candidats.find((candidate) => candidate.slug);
+        if (firstAvailable) await selectCandidate(firstAvailable.slug);
       } catch (err) {
         document.getElementById("candidat-root").innerHTML = `
           <section class="panel"><p class="empty">Impossible de charger la liste des candidats (${escapeHtml(err.message)}).</p></section>
@@ -1502,10 +1681,6 @@
         return;
       }
 
-      window.addEventListener("resize", () => {
-        const deck = document.getElementById("swipe-deck");
-        if (deck) deck.scrollLeft = state.activePanelIndex * deck.clientWidth;
-      });
     }
 
     init();
