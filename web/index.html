@@ -1,266 +1,54 @@
 <!doctype html>
-<!--
-  index.html — page dynamique "CV politiques".
-
-  Page statique unique (aucun framework, aucune étape de build) : l'utilisateur
-  choisit un candidat dans une liste déroulante (peuplée depuis
-  data/candidats.json), puis le profil correspondant est chargé depuis
-  data/profiles/<slug>.json et affiché ci-dessous via du JavaScript vanilla.
-
-  IMPORTANT : doit être servi via un serveur HTTP (ex. `python -m http.server`
-  depuis la racine du dépôt), pas ouvert directement en double-cliquant sur le
-  fichier (file://) — sinon les appels fetch() vers data/*.json échouent à
-  cause des restrictions CORS des navigateurs sur le protocole file://.
--->
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CV politiques — Présidentielle 2027</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; max-width: 900px; }
-  h1, h2 { color: #1f4e79; }
-  .card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
-  ul { padding-left: 1.2rem; }
-  .selector { margin-bottom: 1.5rem; }
-  select { font-size: 1rem; padding: 0.3rem; }
-  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; background: #eef3fa; color: #1f4e79; font-size: 0.85rem; margin-left: 0.4rem; }
-  .warning { color: #8a6d3b; background: #fcf8e3; border: 1px solid #faebcc; padding: 0.6rem; border-radius: 6px; }
-  .empty { color: #666; font-style: italic; }
-  #profile-container:empty::before { content: "Choisissez un candidat ci-dessus pour afficher son CV."; color: #666; font-style: italic; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CONTRECHAMP — Laboratoire visuel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=DM+Mono:wght@400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root { --ink:#16201c; --paper:#f3f4f0; --line:#c7cdc8; --blue:#315cfa; --mint:#bdffd9; }
+    body { margin:0; color:var(--ink); background:var(--paper); font-family:"Instrument Sans",sans-serif; }
+    header { min-height:52vh; display:flex; flex-direction:column; justify-content:space-between; padding:clamp(1.2rem,4vw,4rem); border-bottom:1px solid var(--line); background:linear-gradient(135deg,#e8ece8 0 58%,var(--mint) 58%); }
+    .eyebrow,.label { font:0.68rem "DM Mono",monospace; text-transform:uppercase; }
+    h1 { max-width:10ch; margin:4rem 0 0; font:700 clamp(3.2rem,10vw,9rem)/.82 "Bricolage Grotesque",sans-serif; letter-spacing:0; }
+    header p { max-width:48ch; margin:2rem 0 0 auto; font-size:clamp(1rem,1.8vw,1.3rem); }
+    section { padding:clamp(1.2rem,4vw,4rem); border-bottom:1px solid var(--line); }
+    section > h2 { margin:0 0 1.5rem; font:600 clamp(1.8rem,4vw,3.4rem) "Bricolage Grotesque",sans-serif; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); }
+    .grid.explore { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    a { color:inherit; text-decoration:none; }
+    .card { position:relative; min-height:300px; display:flex; flex-direction:column; justify-content:space-between; padding:1.2rem; overflow:hidden; background:#fafbf8; transition:transform .2s ease,background .2s ease; }
+    .card:hover,.card:focus-visible { z-index:2; transform:translateY(-5px); background:white; outline:2px solid var(--ink); }
+    .card strong { position:relative; z-index:2; max-width:8ch; font:700 clamp(1.8rem,3.5vw,3.5rem)/.9 "Bricolage Grotesque",sans-serif; }
+    .card small { position:relative; z-index:2; max-width:36ch; font-size:.78rem; }
+    .card::after { content:"↗"; position:absolute; right:1rem; top:1rem; font-size:1.5rem; }
+    .v1 { background:#f5bb35; }.v2 { color:white;background:#1b416a; }.v3 { background:#dfff00; }
+    .atlas { color:#173c56;background:repeating-linear-gradient(0deg,#e5f0ed 0 31px,#8cb0a6 32px); }
+    .kinetic { background:#ef503d; }.matter { color:white;background:radial-gradient(circle at 70% 35%,#ef7258 0 17%,transparent 18%),radial-gradient(circle at 55% 55%,#63a7ff 0 25%,transparent 26%),#175d56; }
+    .quiet { background:#f1efe7; }.quiet strong { font-weight:500; }
+    .secondary { display:flex; flex-wrap:wrap; gap:.7rem; }
+    .secondary a { padding:.7rem 1rem; border:1px solid var(--line); border-radius:999px; background:white; }
+    footer { display:flex; justify-content:space-between; gap:1rem; padding:1.2rem; font:0.62rem "DM Mono",monospace; }
+    @media(max-width:760px){.grid,.grid.explore{grid-template-columns:1fr}.card{min-height:240px}header{min-height:65vh}}
+  </style>
 </head>
 <body>
-  <h1>CV politiques — Candidats déclarés/pressentis 2027</h1>
-
-  <div class="selector">
-    <label for="candidat-select">Choisir un candidat :</label>
-    <select id="candidat-select"><option value="">— Sélectionner —</option></select>
-  </div>
-
-  <div id="candidat-meta"></div>
-  <div id="profile-container"></div>
-
-  <script>
-    // index.html vit dans web/, les données JSON vivent dans data/ (voir README).
-    const CANDIDATS_URL = "../data/candidats.json";
-
-    function escapeHtml(str) {
-      return String(str ?? "").replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-      })[c]);
-    }
-
-    function bulletList(items, field) {
-      if (!items || !items.length) return "<li>Aucune information disponible.</li>";
-      const html = items
-        .filter((item) => item[field])
-        .map((item) => `<li>${escapeHtml(item[field])}</li>`)
-        .join("");
-      return html || "<li>Aucune information disponible.</li>";
-    }
-
-    const CATEGORIE_LABELS = {
-      mandat_electif: "Mandat électif",
-      commission: "Commission / mission",
-      groupe_amitie: "Groupe d'amitié",
-      extra_parlementaire: "Engagement extra-parlementaire",
-      autre: "Autre",
-    };
-
-    const TYPE_DETAIL_LABELS = {
-      loi: "Débat sur un texte de loi",
-      question: "Question au gouvernement",
-    };
-
-    const FORMAT_LABELS = {
-      reaction_courte: "Réaction courte",
-      prise_de_parole_developpee: "Prise de parole développée",
-    };
-
-    function renderMandats(mandats) {
-      if (!mandats || !mandats.length) return "<li>Aucun mandat renseigné.</li>";
-      return mandats
-        .map((m) => {
-          const categorieLabel = CATEGORIE_LABELS[m.categorie] || m.categorie || "";
-          let line = `<li><strong>${escapeHtml(m.type || "membre")}</strong> — ${escapeHtml(m.label || "")} <em>(${escapeHtml(categorieLabel)})</em>`;
-          if (m.debut || m.fin) {
-            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
-            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
-          }
-          return line + "</li>";
-        })
-        .join("");
-    }
-
-    function renderMandatsUE(mandatsUe) {
-      if (!mandatsUe || !mandatsUe.length) return "<li>Aucun mandat renseigné.</li>";
-      return mandatsUe
-        .map((m) => {
-          const organisation = m.organisation_nom || m.organisation_sigle || "";
-          const rolePart = m.role_label && m.role_label !== "Membre" ? `${escapeHtml(m.role_label)} — ` : "";
-          let line = `<li>${rolePart}<strong>${escapeHtml(organisation)}</strong> <em>(${escapeHtml(m.type_label || "")})</em>`;
-          if (m.debut || m.fin) {
-            const finLabel = m.fin ? escapeHtml(m.fin) : m.actif ? "en cours" : "?";
-            line += ` — ${escapeHtml(m.debut || "?")} → ${finLabel}`;
-          }
-          return line + "</li>";
-        })
-        .join("");
-    }
-
-    function renderVotes(votes) {
-      if (!votes || !votes.length) return "<li>Aucun vote renseigné.</li>";
-      return votes
-        .map((v) => `<li><strong>${escapeHtml(v.date || "")}</strong> — ${escapeHtml(v.titre || "")} (${escapeHtml(v.position || "")})</li>`)
-        .join("");
-    }
-
-    function renderDossiers(dossiers) {
-      if (!dossiers || !dossiers.length) return "<li>Aucun dossier législatif renseigné.</li>";
-      return dossiers
-        .map((d) => {
-          let line = `<li><strong>${escapeHtml(d.titre || "")}</strong> — ${escapeHtml(d.date_min || "")} / ${escapeHtml(d.date_max || "")}`;
-          if (d.legislature) line += ` <em>(${escapeHtml(d.legislature)})</em>`;
-          return line + "</li>";
-        })
-        .join("");
-    }
-
-    function renderInterventions(interventions) {
-      if (!interventions || !interventions.length) return "<li>Aucune intervention renseignée.</li>";
-      return interventions
-        .map((i) => {
-          const parts = [`<strong>${escapeHtml(i.date || i.created_at || "")}</strong>`];
-          if (i.type_detail) parts.push(`<em>${escapeHtml(TYPE_DETAIL_LABELS[i.type_detail] || i.type_detail)}</em>`);
-          if (i.fonction) parts.push(`<span style="color:#8a5a00;">en tant que ${escapeHtml(i.fonction)}</span>`);
-          if (i.format) {
-            const style = i.format === "prise_de_parole_developpee" ? "font-weight:bold;" : "font-style:italic;color:#666;";
-            parts.push(`<span style="${style}">${escapeHtml(FORMAT_LABELS[i.format] || i.format)}</span>`);
-          } else if (i.classification && i.classification.mode === "prise_de_parole") {
-            parts.push(`<span style="font-weight:bold;">prise de parole</span>`);
-          }
-          if (i.sujet) parts.push(`Sujet: ${escapeHtml(i.sujet)}`);
-          if (i.mots_cles && i.mots_cles.length) parts.push(`Mots-clés: ${escapeHtml(i.mots_cles.join(", "))}`);
-          if (i.texte) parts.push(escapeHtml(String(i.texte).slice(0, 180)));
-          const url = i.url_detail || i.url;
-          if (url) parts.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>`);
-          return "<li>" + parts.join(" — ") + "</li>";
-        })
-        .join("");
-    }
-
-    function renderProfile(profile) {
-      const identite = profile.identite || {};
-      const nomComplet = identite.nom_complet || profile.slug || "";
-
-      document.title = `CV politique - ${nomComplet}`;
-
-      const warnings = (profile.meta && profile.meta.warnings) || [];
-      const warningsHtml = warnings.length
-        ? `<div class="warning"><strong>Avertissements :</strong><ul>${warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}</ul></div>`
-        : "";
-
-      document.getElementById("profile-container").innerHTML = `
-        <p><strong>Chambre :</strong> ${escapeHtml(profile.chambre || "")}</p>
-        ${warningsHtml}
-        <div class="card">
-          <h2>Identité</h2>
-          <ul>
-            <li><strong>Nom :</strong> ${escapeHtml(identite.nom_complet || "")}</li>
-            <li><strong>Groupe :</strong> ${escapeHtml(identite.groupe_nom || identite.groupe_sigle || "")}</li>
-            <li><strong>Profession :</strong> ${escapeHtml(identite.profession || "")}</li>
-            <li><strong>Circonscription :</strong> ${escapeHtml(identite.num_circo || "")}</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Mandats</h2>
-          <ul>${renderMandats(profile.mandats)}</ul>
-        </div>
-        ${profile.mandat_europeen ? `
-        <div class="card">
-          <h2>Mandat européen (Parlement européen)</h2>
-          <p><em>Source : Open Data Portal du Parlement européen${profile.mandat_europeen.url_source ? ` (${escapeHtml(profile.mandat_europeen.url_source)})` : ""}</em></p>
-          <ul>${renderMandatsUE(profile.mandat_europeen.mandats_europeens)}</ul>
-        </div>` : ""}
-        <div class="card">
-          <h2>Votes</h2>
-          ${profile.votes_source ? `<p><em>Source : ${escapeHtml(profile.votes_source)}</em></p>` : ""}
-          <ul>${renderVotes(profile.votes)}</ul>
-        </div>
-        <div class="card">
-          <h2>Dossiers législatifs</h2>
-          <ul>${renderDossiers(profile.dossiers_legislatifs)}</ul>
-        </div>
-        <div class="card">
-          <h2>Interventions</h2>
-          <ul>${renderInterventions(profile.interventions)}</ul>
-        </div>
-      `;
-    }
-
-    function renderMeta(candidat) {
-      document.getElementById("candidat-meta").innerHTML = `
-        <div class="card">
-          <h2>${escapeHtml(candidat.nom)}</h2>
-          <p>
-            ${escapeHtml(candidat.parti || "")}
-            <span class="badge">${escapeHtml(candidat.famille_politique || "")}</span>
-            <span class="badge">${escapeHtml(candidat.statut || "")}</span>
-          </p>
-          ${candidat.notes ? `<p>${escapeHtml(candidat.notes)}</p>` : ""}
-        </div>
-      `;
-    }
-
-    async function onCandidatChange(candidats) {
-      const select = document.getElementById("candidat-select");
-      const container = document.getElementById("profile-container");
-      const slug = select.value;
-
-      if (!slug) {
-        document.getElementById("candidat-meta").innerHTML = "";
-        container.innerHTML = "";
-        return;
-      }
-
-      const candidat = candidats.find((c) => c.slug === slug);
-      if (!candidat) {
-        document.getElementById("candidat-meta").innerHTML = "";
-        container.innerHTML = `<p class="empty">Candidat introuvable (slug: ${escapeHtml(slug)}).</p>`;
-        return;
-      }
-      renderMeta(candidat);
-
-      container.innerHTML = `<p class="empty">Chargement du CV de ${escapeHtml(candidat.nom)}…</p>`;
-      try {
-        const resp = await fetch(`../data/profiles/${slug}.json`, { cache: "no-store" });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const profile = await resp.json();
-        renderProfile(profile);
-      } catch (err) {
-        container.innerHTML = `<p class="empty">Données non disponibles pour ce candidat pour le moment (${escapeHtml(err.message)}). Lancez "python src/generate_all_profiles.py" pour générer son profil.</p>`;
-      }
-    }
-
-    async function init() {
-      const resp = await fetch(CANDIDATS_URL);
-      const data = await resp.json();
-      const candidats = data.candidats || [];
-
-      const select = document.getElementById("candidat-select");
-      for (const c of candidats) {
-        const option = document.createElement("option");
-        option.value = c.slug || "";
-        option.textContent = c.slug ? c.nom : `${c.nom} (pas de données parlementaires)`;
-        if (!c.slug) option.disabled = true;
-        select.appendChild(option);
-      }
-
-      select.addEventListener("change", () => onCandidatChange(candidats));
-    }
-
-    init();
-  </script>
+  <header><span class="eyebrow">CONTRECHAMP / Laboratoire visuel</span><h1>Identités en chantier.</h1><p>Une entrée unique pour conserver les versions historiques et explorer quatre nouveaux langages visuels autour des mêmes traces parlementaires.</p></header>
+  <main>
+    <section><span class="label">Archives conservées</span><h2>Les trois premiers designs</h2><div class="grid">
+      <a class="card v1" href="v1/"><strong>V1 Stories</strong><small>Carrousel de candidats, cartes KPI et panneaux horizontaux.</small></a>
+      <a class="card v2" href="v2/"><strong>V2 Le Bulletin</strong><small>Cockpit civique mobile, tickets et navigation fixe.</small></a>
+      <a class="card v3" href="v3/"><strong>V3 Empreinte politique</strong><small>Version refined : vues candidats et partis, atlas éditorial et résumé express.</small></a>
+    </div></section>
+    <section><span class="label">Nouvelle identité</span><h2>L’Atlas implémenté</h2><div class="grid explore">
+      <a class="card atlas" href="atlas-augmente/"><strong>Atlas augmenté</strong><small>Un territoire politique alimenté par les profils réels, du panorama jusqu’à la preuve.</small></a>
+      <a class="card matter" href="matiere-politique/"><strong>Matière politique</strong><small>Une empreinte générative construite par les volumes d’activité.</small></a>
+    </div></section>
+    <section><span class="label">Études absorbées</span><h2>Le résumé dynamique</h2><div class="secondary"><a href="scene-cinetique/">Étude cinétique</a><a href="interface-essentielle/">Étude essentielle</a><a href="revue-civique/">Revue civique</a><a href="moodboard/">Moodboard initial</a></div></section>
+  </main>
+  <footer><span>CONTRECHAMP — Politique en clair</span><span>30.07.2026</span></footer>
 </body>
 </html>
