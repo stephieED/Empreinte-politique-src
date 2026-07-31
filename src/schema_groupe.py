@@ -82,6 +82,17 @@ Format d'un profil de groupe v1 :
         }
     ],
 
+    "amendements_agreges": {            # comparateur du taux d'adoption individuel :
+                                         # agrégation groupe/chambre des amendements[]
+                                         # des profils individuels membres
+        "nb_amendements": 120,
+        "nb_adoptes": 18,
+        "nb_rejetes": 74,
+        "nb_irrecevables": 12,
+        "nb_retires_ou_tombes": 16,
+        "taux_adoption": 0.15           # nb_adoptes / nb_amendements ; null si nb_amendements == 0
+    },
+
     "sources": [                        # traçabilité des sources individuelles agrégées
         {
             "type": "nosdeputes",
@@ -110,6 +121,14 @@ Cas limites gérés :
 - Scrutin sans quorum : quorum_atteint: false, cohésion toujours calculée.
 - tags_thematiques vides : le calcul utilise les mots-clés des interventions
   individuelles en fallback (loggé dans meta.warnings).
+- amendements_agreges.taux_adoption est null si aucun amendement n'est
+  recensé sur les profils membres (nb_amendements == 0).
+
+Hors périmètre de ce schéma (volontairement) :
+- Le ratio individuel de cohérence/participation rapporté à la moyenne du
+  groupe est une donnée de contrôle interne (voir
+  group_profile.compute_ecarts_cohesion_internes) : il n'est PAS exposé dans
+  ce document public tant qu'il n'a pas été validé comme sortie publique.
 
 Usage :
     from schema_groupe import SCHEMA_GROUPE_VERSION, make_empty_profil_groupe, validate_profil_groupe
@@ -138,6 +157,7 @@ REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "effectif",
     "cohesion_votes",
     "tags_thematiques_agreges",
+    "amendements_agreges",
     "sources",
     "meta",
 })
@@ -203,6 +223,14 @@ def make_empty_profil_groupe(
         },
         "cohesion_votes": [],
         "tags_thematiques_agreges": [],
+        "amendements_agreges": {
+            "nb_amendements": 0,
+            "nb_adoptes": 0,
+            "nb_rejetes": 0,
+            "nb_irrecevables": 0,
+            "nb_retires_ou_tombes": 0,
+            "taux_adoption": None,
+        },
         "sources": [],
         "meta": {
             "schema_version": SCHEMA_GROUPE_VERSION,
@@ -265,6 +293,10 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     periode = profil.get("periode")
     if not isinstance(periode, dict):
         errors.append("'periode' doit être un dict.")
+
+    amendements_agreges = profil.get("amendements_agreges")
+    if amendements_agreges is not None and not isinstance(amendements_agreges, dict):
+        errors.append("'amendements_agreges' doit être un dict.")
 
     meta = profil.get("meta")
     if not isinstance(meta, dict):

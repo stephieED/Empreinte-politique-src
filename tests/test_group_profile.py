@@ -10,6 +10,8 @@ from group_profile import (
     _build_vote_index,
     _compute_cohesion_votes,
     _aggregate_tags_thematiques,
+    _aggregate_amendements,
+    compute_ecarts_cohesion_internes,
     build_groupe_profile,
     _is_pivot_v1,
 )
@@ -28,6 +30,7 @@ def _pivot(
     votes: list = None,
     tags: list = None,
     interventions: list = None,
+    amendements: list = None,
 ) -> dict:
     """Construit un profil pivot v1 minimal pour les tests."""
     return {
@@ -53,6 +56,7 @@ def _pivot(
         "votes": votes if votes is not None else [],
         "textes_portes": [],
         "interventions": interventions if interventions is not None else [],
+        "amendements": amendements if amendements is not None else [],
         "tags_thematiques": tags if tags is not None else [],
         "meta": {
             "schema_version": "1",
@@ -578,3 +582,100 @@ def test_build_groupe_profile_profils_vide():
     assert g["membres"] == []
     assert g["cohesion_votes"] == []
     assert g["effectif"]["actuel"] == 0
+
+
+# ---------------------------------------------------------------------------
+# _aggregate_amendements
+# ---------------------------------------------------------------------------
+
+def _amendement(sort: str, deposant: str = "depute") -> dict:
+    return {
+        "texte_vise": "PLF 2025",
+        "sort": sort,
+        "base_juridique_irrecevabilite": "art. 40" if sort == "irrecevable" else None,
+        "premier_signataire": "nosdeputes:jean-dupont",
+        "co_signataires": [],
+        "type_deposant": deposant,
+        "date": "2024-10-15",
+        "numero": "CL42",
+        "source_url": None,
+    }
+
+
+def test_aggregate_amendements_compte_par_statut():
+    p1 = _pivot("nosdeputes:alice", amendements=[
+        _amendement("adopté"), _amendement("rejeté"), _amendement("irrecevable"),
+    ])
+    p2 = _pivot("nosdeputes:bob", amendements=[_amendement("retiré")])
+    agg = _aggregate_amendements([p1, p2])
+    assert agg["nb_amendements"] == 4
+    assert agg["nb_adoptes"] == 1
+    assert agg["nb_rejetes"] == 1
+    assert agg["nb_irrecevables"] == 1
+    assert agg["nb_retires_ou_tombes"] == 1
+
+
+def test_aggregate_amendements_taux_adoption():
+    p1 = _pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])
+    agg = _aggregate_amendements([p1])
+    assert agg["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_sans_accent_est_reconnu():
+    """'adopte' (sans accent) doit être reconnu comme 'adopté'."""
+    p1 = _pivot(amendements=[_amendement("adopte")])
+    agg = _aggregate_amendements([p1])
+    assert agg["nb_adoptes"] == 1
+
+
+def test_aggregate_amendements_taux_none_si_aucun():
+    agg = _aggregate_amendements([_pivot(amendements=[])])
+    assert agg["nb_amendements"] == 0
+    assert agg["taux_adoption"] is None
+
+
+def test_build_groupe_profile_inclut_amendements_agreges():
+    profils = [_pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert g["amendements_agreges"]["nb_amendements"] == 2
+    assert g["amendements_agreges"]["taux_adoption"] == 0.5
+    assert validate_profil_groupe(g) == []
+
+
+# ---------------------------------------------------------------------------
+# compute_ecarts_cohesion_internes (contrôle interne, hors schéma public)
+# ---------------------------------------------------------------------------
+
+def test_ecarts_cohesion_internes_membre_aligne_ecart_nul():
+    p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
+    p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "pour")])
+    cohesion = _compute_cohesion_votes([p1, p2])
+    ecarts = compute_ecarts_cohesion_internes([p1, p2], cohesion)
+    for e in ecarts:
+        assert e["taux_participation_individuel"] == 1.0
+        assert e["taux_coherence_individuel"] == 1.0
+        assert e["ecart_participation_vs_groupe"] == 0.0
+        assert e["ecart_coherence_vs_groupe"] == 0.0
+
+
+def test_ecarts_cohesion_internes_membre_moins_coherent():
+    p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
+    p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "contre")])
+    p3 = _pivot("nosdeputes:charlie", votes=[_vote("42", "pour")])
+    cohesion = _compute_cohesion_votes([p1, p2, p3])
+    ecarts = compute_ecarts_cohesion_internes([p1, p2, p3], cohesion)
+    bob = next(e for e in ecarts if e["membre_id"] == "nosdeputes:bob")
+    assert bob["taux_coherence_individuel"] == 0.0
+    assert bob["ecart_coherence_vs_groupe"] < 0
+
+
+def test_ecarts_cohesion_internes_vide_si_pas_de_cohesion():
+    assert compute_ecarts_cohesion_internes([_pivot()], []) == []
+
+
+def test_ecarts_cohesion_internes_absent_du_profil_groupe_public():
+    """Champ de contrôle interne : ne doit jamais apparaître dans le profil public."""
+    profils = [_pivot("nosdeputes:alice", votes=[_vote("42", "pour")])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert "ecarts_cohesion_internes" not in g
+    assert "compute_ecarts_cohesion_internes" not in str(g)

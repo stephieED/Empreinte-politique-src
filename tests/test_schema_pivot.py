@@ -10,6 +10,14 @@ from schema_pivot import (
     KNOWN_CHAMBRES,
     KNOWN_POSITIONS,
     KNOWN_CATEGORIES,
+    KNOWN_POSITIONS_HEMICYCLE,
+    KNOWN_MODES_DECLENCHEMENT,
+    KNOWN_TYPES_RAPPORT,
+    KNOWN_STADES_PROCEDURAUX,
+    KNOWN_TYPES_SCRUTIN,
+    KNOWN_TYPES_VOTE,
+    KNOWN_TYPES_DEPOSANT,
+    KNOWN_BASES_IRRECEVABILITE,
     make_empty_profil,
     validate_profil,
 )
@@ -33,7 +41,10 @@ def test_make_empty_profil_id_and_nom():
 
 def test_make_empty_profil_default_lists():
     p = make_empty_profil("test:x", "X")
-    for key in ("sources", "mandats", "votes", "textes_portes", "interventions", "tags_thematiques"):
+    for key in (
+        "sources", "mandats", "votes", "textes_portes", "interventions",
+        "amendements", "tags_thematiques",
+    ):
         assert isinstance(p[key], list), f"'{key}' doit être une liste vide par défaut"
         assert p[key] == []
 
@@ -179,6 +190,85 @@ def test_validate_non_dict_input():
 
 
 # ---------------------------------------------------------------------------
+# validate_profil — amendements[]
+# ---------------------------------------------------------------------------
+
+def test_validate_amendements_not_a_list():
+    p = _valid_profil()
+    p["amendements"] = "should be a list"
+    errors = validate_profil(p)
+    assert any("amendements" in e for e in errors)
+
+
+def test_validate_amendements_valid_list_no_error():
+    p = _valid_profil()
+    p["amendements"] = [
+        {
+            "texte_vise": "PLF 2025",
+            "sort": "irrecevable",
+            "base_juridique_irrecevabilite": "art. 40",
+            "premier_signataire": "nosdeputes:test",
+            "co_signataires": [],
+            "type_deposant": "depute",
+            "date": "2024-10-15",
+            "numero": "CL42",
+            "source_url": None,
+        }
+    ]
+    assert validate_profil(p) == []
+
+
+# ---------------------------------------------------------------------------
+# validate_profil — mandats[].position_dans_hemicycle (champ éditorial sensible)
+# ---------------------------------------------------------------------------
+
+def test_validate_position_hemicycle_sans_source_url_est_une_erreur():
+    p = _valid_profil()
+    p["mandats"] = [{
+        "label": "Mandat parlementaire",
+        "categorie": "mandat_electif",
+        "fonction": "membre",
+        "debut": "2022-01-01",
+        "fin": None,
+        "actif": True,
+        "source_url": None,
+        "position_dans_hemicycle": "majorite",
+    }]
+    errors = validate_profil(p)
+    assert any("position_dans_hemicycle" in e for e in errors)
+
+
+def test_validate_position_hemicycle_avec_source_url_est_valide():
+    p = _valid_profil()
+    p["mandats"] = [{
+        "label": "Mandat parlementaire",
+        "categorie": "mandat_electif",
+        "fonction": "membre",
+        "debut": "2022-01-01",
+        "fin": None,
+        "actif": True,
+        "source_url": "https://www.assemblee-nationale.fr/...",
+        "position_dans_hemicycle": "opposition",
+    }]
+    assert validate_profil(p) == []
+
+
+def test_validate_position_hemicycle_none_ne_requiert_pas_de_source():
+    p = _valid_profil()
+    p["mandats"] = [{
+        "label": "Mandat parlementaire",
+        "categorie": "mandat_electif",
+        "fonction": "membre",
+        "debut": "2022-01-01",
+        "fin": None,
+        "actif": True,
+        "source_url": None,
+        "position_dans_hemicycle": None,
+    }]
+    assert validate_profil(p) == []
+
+
+# ---------------------------------------------------------------------------
 # Constantes exposées
 # ---------------------------------------------------------------------------
 
@@ -200,3 +290,40 @@ def test_known_categories_contains_expected_values():
     assert "mandat_electif" in KNOWN_CATEGORIES
     assert "commission" in KNOWN_CATEGORIES
     assert "groupe_amitie" in KNOWN_CATEGORIES
+
+
+def test_known_positions_hemicycle_contains_expected_values():
+    assert KNOWN_POSITIONS_HEMICYCLE == {"majorite", "opposition"}
+
+
+def test_known_modes_declenchement_contains_expected_values():
+    assert KNOWN_MODES_DECLENCHEMENT == {"droit_tirage", "demande_votee"}
+
+
+def test_known_types_rapport_contains_expected_values():
+    assert "rapporteur_fond" in KNOWN_TYPES_RAPPORT
+    assert "rapporteur_avis" in KNOWN_TYPES_RAPPORT
+    assert "rapporteur_special_budget" in KNOWN_TYPES_RAPPORT
+    assert "mission_information" in KNOWN_TYPES_RAPPORT
+
+
+def test_known_stades_proceduraux_contains_expected_values():
+    assert "depose" in KNOWN_STADES_PROCEDURAUX
+    assert "adopte" in KNOWN_STADES_PROCEDURAUX
+    assert "promulgue" in KNOWN_STADES_PROCEDURAUX
+
+
+def test_known_types_scrutin_contains_expected_values():
+    assert KNOWN_TYPES_SCRUTIN == {"public_ordinaire", "solennel"}
+
+
+def test_known_types_vote_contains_expected_values():
+    assert KNOWN_TYPES_VOTE == {"vote_texte", "motion_censure"}
+
+
+def test_known_types_deposant_contains_expected_values():
+    assert KNOWN_TYPES_DEPOSANT == {"gouvernement", "commission_rapporteur", "depute"}
+
+
+def test_known_bases_irrecevabilite_contains_expected_values():
+    assert KNOWN_BASES_IRRECEVABILITE == {"art. 40", "art. 45"}

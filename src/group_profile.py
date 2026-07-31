@@ -13,6 +13,11 @@ Calculs produits :
   2. Thèmes dominants : agrégation des tags_thematiques de tous les membres.
   3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
      électifs des profils individuels).
+  4. Amendements agrégés (amendements_agreges) : taux d'adoption groupe/chambre,
+     utilisé comme comparateur du taux d'adoption individuel.
+  5. Écarts de cohésion/participation individuels (compute_ecarts_cohesion_internes) :
+     donnée de CONTRÔLE INTERNE uniquement, volontairement absente du schéma de
+     groupe public — accessible via --rapport-interne, jamais via --out.
 
 Cas limites gérés :
   - Élu qui change de groupe en cours de mandat : seuls les membres dont la
@@ -45,6 +50,7 @@ import argparse
 import json
 import sys
 import time
+import unicodedata
 from datetime import date
 from pathlib import Path
 from typing import Any, Optional
@@ -384,6 +390,165 @@ def _aggregate_tags_thematiques(
 
 
 # ---------------------------------------------------------------------------
+# Agrégation des amendements (comparateur du taux d'adoption individuel)
+# ---------------------------------------------------------------------------
+
+def _normalize_sort_amendement(sort: Any) -> str:
+    """Normalise un statut d'amendement en minuscules sans accent, pour comparaison.
+
+    Les sources primaires peuvent fournir des libellés accentués ("adopté")
+    ou non ("adopte") ; cette normalisation évite de dupliquer les catégories.
+    """
+    if not isinstance(sort, str):
+        return ""
+    s = unicodedata.normalize("NFKD", sort.strip().lower())
+    return "".join(c for c in s if not unicodedata.combining(c))
+
+
+_SORTS_ADOPTES = frozenset({"adopte"})
+_SORTS_IRRECEVABLES = frozenset({"irrecevable"})
+_SORTS_REJETES = frozenset({"rejete"})
+_SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non soutenu"})
+
+
+def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Agrège les amendements de tous les profils membres pour servir de comparateur.
+
+    Sert de base au taux d'adoption individuel : ce taux groupe/chambre permet
+    de situer le taux d'un membre par rapport à son groupe, sans jugement de
+    valeur sur le contenu des amendements.
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+
+    Returns:
+        Dict conforme à la structure ``amendements_agreges`` du schéma de groupe.
+    """
+    nb_amendements = 0
+    nb_adoptes = 0
+    nb_rejetes = 0
+    nb_irrecevables = 0
+    nb_retires_ou_tombes = 0
+
+    for profil in profils:
+        for a in (profil.get("amendements") or []):
+            nb_amendements += 1
+            sort_norm = _normalize_sort_amendement(a.get("sort"))
+            if sort_norm in _SORTS_ADOPTES:
+                nb_adoptes += 1
+            elif sort_norm in _SORTS_IRRECEVABLES:
+                nb_irrecevables += 1
+            elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
+                nb_retires_ou_tombes += 1
+            elif sort_norm in _SORTS_REJETES:
+                nb_rejetes += 1
+
+    taux_adoption = round(nb_adoptes / nb_amendements, 4) if nb_amendements else None
+
+    return {
+        "nb_amendements": nb_amendements,
+        "nb_adoptes": nb_adoptes,
+        "nb_rejetes": nb_rejetes,
+        "nb_irrecevables": nb_irrecevables,
+        "nb_retires_ou_tombes": nb_retires_ou_tombes,
+        "taux_adoption": taux_adoption,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Contrôle interne : écart de cohésion/participation individuel vs groupe
+#
+# Donnée de contrôle interne uniquement — volontairement absente du schéma
+# de groupe public (schema_groupe.py). Ne pas inclure le résultat de
+# `compute_ecarts_cohesion_internes` dans un profil de groupe publié tant que
+# ce comparateur n'a pas été validé comme sortie publique.
+# ---------------------------------------------------------------------------
+
+def compute_ecarts_cohesion_internes(
+    profils: list[dict[str, Any]],
+    cohesion_votes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Calcule, pour chaque membre, son écart de participation/cohérence vs le groupe.
+
+    Le ratio individuel est calculé sur exactement les mêmes scrutins que ceux
+    couverts par ``cohesion_votes`` (donc sur les mêmes membres éligibles par
+    scrutin), puis comparé à la moyenne du groupe sur ces mêmes scrutins.
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+        cohesion_votes: sortie de ``_compute_cohesion_votes`` pour ce même groupe.
+
+    Returns:
+        Liste de dicts {membre_id, nom, nb_scrutins_eligibles,
+        taux_participation_individuel, taux_coherence_individuel,
+        ecart_participation_vs_groupe, ecart_coherence_vs_groupe}.
+        Destinée à un usage de contrôle interne, pas à publication.
+    """
+    if not cohesion_votes:
+        return []
+
+    # Moyennes du groupe sur les mêmes scrutins (celles déjà calculées par scrutin).
+    participations = [c["taux_participation"] for c in cohesion_votes if c.get("taux_participation") is not None]
+    coherences = [c["taux_coherence"] for c in cohesion_votes if c.get("taux_coherence") is not None]
+    moyenne_participation_groupe = sum(participations) / len(participations) if participations else None
+    moyenne_coherence_groupe = sum(coherences) / len(coherences) if coherences else None
+
+    coh_by_scrutin = {c["numero_scrutin"]: c for c in cohesion_votes}
+
+    resultats: list[dict[str, Any]] = []
+    for profil in profils:
+        mandats = profil.get("mandats") or []
+        v_index = _build_vote_index(profil)
+
+        n_eligible = 0
+        n_present = 0
+        n_alignes = 0
+
+        for num_str, c in coh_by_scrutin.items():
+            if not _member_eligible_at(mandats, c.get("date")):
+                continue
+            n_eligible += 1
+
+            vote = v_index.get(num_str)
+            if vote is None:
+                continue
+            pos = vote.get("position")
+            if pos in ("pour", "contre", "abstention"):
+                n_present += 1
+            if pos is not None and pos == c.get("position_majoritaire"):
+                n_alignes += 1
+
+        taux_participation_individuel = n_present / n_eligible if n_eligible else None
+        taux_coherence_individuel = n_alignes / n_eligible if n_eligible else None
+
+        resultats.append({
+            "membre_id": profil.get("id") or "",
+            "nom": profil.get("nom") or "",
+            "nb_scrutins_eligibles": n_eligible,
+            "taux_participation_individuel": (
+                round(taux_participation_individuel, 4)
+                if taux_participation_individuel is not None else None
+            ),
+            "taux_coherence_individuel": (
+                round(taux_coherence_individuel, 4)
+                if taux_coherence_individuel is not None else None
+            ),
+            "ecart_participation_vs_groupe": (
+                round(taux_participation_individuel - moyenne_participation_groupe, 4)
+                if taux_participation_individuel is not None and moyenne_participation_groupe is not None
+                else None
+            ),
+            "ecart_coherence_vs_groupe": (
+                round(taux_coherence_individuel - moyenne_coherence_groupe, 4)
+                if taux_coherence_individuel is not None and moyenne_coherence_groupe is not None
+                else None
+            ),
+        })
+
+    return resultats
+
+
+# ---------------------------------------------------------------------------
 # Chargement et détection de format
 # ---------------------------------------------------------------------------
 
@@ -513,6 +678,9 @@ def build_groupe_profile(
                 seen_sources.add(key)
                 sources.append(s)
 
+    # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
+    amendements_agreges = _aggregate_amendements(profils)
+
     # --- Assemblage ---
     profil_groupe = make_empty_profil_groupe(
         groupe_id=groupe_id,
@@ -531,6 +699,7 @@ def build_groupe_profile(
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
     profil_groupe["tags_thematiques_agreges"] = tags_agreges
+    profil_groupe["amendements_agreges"] = amendements_agreges
     profil_groupe["sources"] = sources
 
     profil_groupe["meta"]["licence_donnees"] = licence_donnees
@@ -595,6 +764,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Valide le profil de groupe produit et affiche les erreurs éventuelles.",
     )
+    parser.add_argument(
+        "--rapport-interne",
+        default=None,
+        metavar="FICHIER",
+        help=(
+            "Écrit dans FICHIER un rapport interne (écarts de cohésion/participation "
+            "individuels vs moyenne du groupe). Donnée de contrôle interne : jamais "
+            "incluse dans le profil de groupe public écrit via --out."
+        ),
+    )
     return parser
 
 
@@ -637,6 +816,15 @@ def main(argv: Optional[list[str]] = None) -> int:
                 print(f"      - {e}", file=sys.stderr)
         else:
             print("  ✓ Profil de groupe valide selon le schéma.", file=sys.stderr)
+
+    if args.rapport_interne:
+        rapport = compute_ecarts_cohesion_internes(profils, profil_groupe["cohesion_votes"])
+        rapport_path = Path(args.rapport_interne)
+        rapport_path.parent.mkdir(parents=True, exist_ok=True)
+        rapport_path.write_text(
+            json.dumps(rapport, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"  ✓ Rapport interne (non public) écrit : {rapport_path}", file=sys.stderr)
 
     output_json = json.dumps(profil_groupe, ensure_ascii=False, indent=2)
 
