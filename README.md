@@ -1,4 +1,4 @@
-# CV_CandidatFR
+# EMPREINTE POLITIQUE
 
 Génère des « CV politiques » structurés (mandats, responsabilités, votes,
 dossiers législatifs, interventions en séance) pour les candidats à
