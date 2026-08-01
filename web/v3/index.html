@@ -661,7 +661,9 @@
     --rouge: #E53420;
     --acid: #DFFF00;
     --pink: #FF70A6;
-    --candidate-dock-height: 52px;
+    --mode-switch-height: 48px;
+    --profile-rail-height: 48px;
+    --candidate-dock-height: var(--mode-switch-height);
     font-family: 'Space Grotesk', sans-serif;
     background: var(--bg);
   }
@@ -680,11 +682,12 @@
     background: var(--acid);
   }
   .deconstructed .masthead h1 {
-    font-size: clamp(3rem, 13vw, 9rem);
-    line-height: 0.78;
-    max-width: 8ch;
+    font-size: clamp(2.4rem, 8vw, 6.4rem);
+    line-height: 0.8;
+    max-width: 7.3ch;
     margin: 0;
     text-transform: uppercase;
+    letter-spacing: -0.04em;
   }
   .deconstructed .brand-home {
     appearance: none;
@@ -709,14 +712,13 @@
     position: sticky;
     top: 0;
     z-index: 85;
-    height: var(--candidate-dock-height);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
     border-top: 2px solid var(--line);
     border-bottom: 2px solid var(--line);
     background: var(--acid);
   }
+  .deconstructed.profile-selected { --candidate-dock-height: calc(var(--mode-switch-height) + var(--profile-rail-height)); }
   .deconstructed .candidate-dock-label {
     display: flex;
     align-items: center;
@@ -728,9 +730,10 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .deconstructed .mode-switch { display: flex; border-right: 2px solid var(--line); }
+  .deconstructed .mode-switch { display: flex; min-height: var(--mode-switch-height); border-right: 2px solid var(--line); }
   .deconstructed .mode-switch button {
-    padding: 0 0.7rem;
+    min-height: var(--mode-switch-height);
+    padding: 0 1rem;
     border: 0;
     border-right: 1px solid var(--line);
     background: transparent;
@@ -742,7 +745,36 @@
   .deconstructed .mode-switch button.active { color: var(--bg); background: var(--text); }
 
   /* Index typographique des candidats, sans avatar ni carte. */
-  .deconstructed .avatar-carousel { gap: 0; padding: 0; border: 0; overflow-x: auto; }
+  .deconstructed .candidate-dock .rail-shell {
+    display: flex;
+    align-items: stretch;
+    height: var(--profile-rail-height);
+    border-top: 1px solid var(--line);
+  }
+  .deconstructed .candidate-dock .avatar-carousel {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .deconstructed .candidate-dock .avatar-carousel::-webkit-scrollbar { display: none; }
+  .deconstructed .candidate-dock .avatar-carousel[hidden] { display: none; }
+  .deconstructed .candidate-dock .rail-scroll-btn {
+    flex: 0 0 auto;
+    width: var(--profile-rail-height);
+    border: 0;
+    border-left: 1px solid var(--line);
+    background: var(--acid);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .deconstructed .candidate-dock .rail-scroll-btn[hidden] { display: none; }
   .deconstructed .avatar-chip {
     width: auto;
     min-width: max-content;
@@ -754,6 +786,7 @@
     border-radius: 0;
     background: transparent;
     text-align: left;
+    box-sizing: border-box;
   }
   .deconstructed .avatar-chip-circle { display: none; }
   .deconstructed .avatar-chip-name {
@@ -782,13 +815,20 @@
     color: var(--bg);
   }
   .deconstructed .home-manifesto h2 {
-    max-width: 10ch;
+    max-width: 9.5ch;
     color: var(--bg);
-    font-size: clamp(2.8rem, 10vw, 7.5rem);
-    line-height: 0.86;
+    font-size: clamp(1.8rem, 4.2vw, 3rem);
+    line-height: 0.92;
     text-transform: uppercase;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.6rem;
   }
-  .deconstructed .home-manifesto p { max-width: 52ch; }
+  .deconstructed .home-manifesto p {
+    max-width: 52ch;
+    margin: 0;
+    font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+    line-height: 1.45;
+  }
   .deconstructed .home-candidates {
     grid-column: 1 / -1;
     display: grid;
@@ -822,12 +862,13 @@
     background: var(--text);
   }
   .deconstructed .party-hero h2 {
-    max-width: 11ch;
+    max-width: 10ch;
     margin: 0;
     color: var(--bg);
-    font-size: clamp(3rem, 10vw, 8rem);
-    line-height: 0.82;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 0.9;
     text-transform: uppercase;
+    letter-spacing: -0.03em;
   }
   .deconstructed .party-coverage {
     padding: 0.9rem 1rem;
@@ -925,6 +966,14 @@
   .deconstructed .theme-dist { display: none; }
   .deconstructed .trust-line { border: 0; padding: 0.8rem 1rem; margin: 0; background: var(--accent); color: white; }
   .deconstructed .trust-line a { color: white; }
+  .deconstructed .site-footer {
+    padding: 0.9rem 1rem;
+    border-top: 2px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+  .deconstructed .site-footer a { color: var(--text); }
 
   .deconstructed .theme-dock {
     position: sticky;
@@ -1236,10 +1285,16 @@
         <button type="button" class="active" data-profile-mode="candidates" aria-pressed="true">Candidats</button>
         <button type="button" data-profile-mode="parties" aria-pressed="false">Partis</button>
       </div>
-      <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+      <div class="rail-shell">
+        <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+        <button type="button" class="rail-scroll-btn" id="rail-scroll-btn" aria-label="Faire défiler le rail" hidden>→</button>
+      </div>
     </nav>
 
     <div id="candidat-root"></div>
+    <footer class="site-footer">
+      <a href="mentions-legales.html" target="_blank" rel="noopener">Mentions légales</a>
+    </footer>
   </main>
 
   <script>
@@ -1780,6 +1835,7 @@
           <div class="trust-line">
             Données sourcées • Mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
             <a class="link" href="methodologie.html" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="mentions-legales.html" target="_blank" rel="noopener">Mentions légales</a>
           </div>
         </section>
       `;
@@ -2070,6 +2126,7 @@
       state.currentMeta = null;
       state.currentProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
@@ -2085,7 +2142,6 @@
               </button>
             `).join("")}
           </div>
-          <div class="home-note">Les noms barrés dans l’index supérieur ne disposent pas encore de données parlementaires exploitables.</div>
         </section>
       `;
       root.querySelectorAll("[data-home-slug]").forEach((button) => {
@@ -2099,6 +2155,7 @@
       state.currentGroupId = "";
       state.currentGroupProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
@@ -2496,6 +2553,8 @@
     }
 
     function updateActiveAvatarChip() {
+      const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
       document.querySelectorAll("#candidat-carousel .avatar-chip").forEach((chip) => {
         const isActive = state.profileMode === "parties"
           ? chip.dataset.groupId === state.currentGroupId
@@ -2505,8 +2564,32 @@
       });
     }
 
+    function updateProfileRailVisibility() {
+      const carousel = document.getElementById("candidat-carousel");
+      const dock = document.querySelector(".candidate-dock");
+      const button = document.getElementById("rail-scroll-btn");
+      const hasSelection = state.profileMode === "parties"
+        ? Boolean(state.currentGroupId)
+        : Boolean(state.currentSlug);
+      carousel.hidden = !hasSelection;
+      button.hidden = !hasSelection;
+      dock.classList.toggle("has-profile-rail", hasSelection);
+      document.body.classList.toggle("profile-selected", hasSelection);
+      if (!hasSelection) return;
+      const needsScroll = carousel.scrollWidth > carousel.clientWidth + 1;
+      button.hidden = !needsScroll;
+    }
+
+    function scrollProfileRail() {
+      const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
+      const step = Math.max(160, carousel.clientWidth * 0.8);
+      carousel.scrollBy({ left: step, behavior: "smooth" });
+    }
+
     function renderProfileRail() {
       const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
       if (state.profileMode === "parties") {
         carousel.setAttribute("aria-label", "Choisir un parti");
         carousel.innerHTML = GROUP_PROFILES.map((group) => `
@@ -2531,6 +2614,7 @@
         });
       }
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
     }
 
     function setProfileMode(mode) {
@@ -2566,6 +2650,7 @@
       state.expressIndex = 0;
 
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
 
       const root = document.getElementById("candidat-root");
       if (!slug || !state.currentMeta) {
@@ -2594,6 +2679,7 @@
       state.currentGroupId = groupId;
       state.currentGroupProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       const root = document.getElementById("candidat-root");
       const groupMeta = GROUP_PROFILES.find((group) => group.id === groupId);
       if (!groupMeta) {
@@ -2624,6 +2710,8 @@
       document.querySelectorAll("[data-profile-mode]").forEach((button) => {
         button.addEventListener("click", () => setProfileMode(button.dataset.profileMode));
       });
+      document.getElementById("rail-scroll-btn").addEventListener("click", scrollProfileRail);
+      window.addEventListener("resize", updateProfileRailVisibility);
 
       try {
         const resp = await fetch(CANDIDATS_URL, { cache: "no-store" });
