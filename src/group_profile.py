@@ -41,7 +41,7 @@ Usage (depuis la racine du dépôt) :
         --legislature 16 \\
         data/profiles/jerome-guedj.json \\
         data/profiles/boris-vallaud.json \\
-        --out data/profiles/groupe-SOC-16.json
+        --out data/groupes/groupe-SOC-16.json
 
     Les profils en entrée peuvent être au format brut NosDéputés (candidate_profile.py)
     ou au format pivot v1 (normalize_nosdeputes.py). Le script détecte automatiquement
@@ -59,7 +59,7 @@ Mode --from-roster (composition réelle du groupe, via group_roster.py) :
         --from-roster --roster-chambre deputes \\
         --groupe-id "AN:LR" --groupe-sigle LR --groupe-nom "Les Républicains" \\
         --chambre AN --legislature 16 \\
-        --out data/profiles/groupe-AN-LR-16.json
+        --out data/groupes/groupe-AN-LR-16.json
 
     NB : distinct de parti_profile.py, qui agrège les candidats présidentiels
     déclarés partageant un même label de parti (data/candidats.json) — un
@@ -909,6 +909,24 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if couverture_roster is not None:
         profil_groupe["meta"]["couverture_roster"] = couverture_roster
+        if args.roster_chambre == "deputes":
+            profil_groupe["meta"]["warnings"].append(
+                "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
+                "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
+                "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
+                "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
+                "dissolution, pas nécessairement la composition actuelle de "
+                "l'Assemblée nationale."
+            )
+        elif args.roster_chambre == "senateurs":
+            profil_groupe["meta"]["warnings"].append(
+                "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, "
+                "site arrêté par Regards Citoyens (plus de mise à jour, pas de champ "
+                "mandat_fin exploitable). Ce profil reflète donc la dernière donnée "
+                "disponible avant l'arrêt du site, pas nécessairement la composition "
+                "actuelle du Sénat (ex. incompatibilités liées à une fonction "
+                "ministérielle non détectables automatiquement)."
+            )
 
     if args.validate:
         errors = validate_profil_groupe(profil_groupe)

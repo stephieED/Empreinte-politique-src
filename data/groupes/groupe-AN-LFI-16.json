@@ -1,0 +1,80 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_groupe",
+  "groupe_id": "AN:LFI",
+  "groupe_sigle": "LFI",
+  "groupe_nom": "La France insoumise - NUPES",
+  "chambre": "AN",
+  "legislature": "16",
+  "periode": {
+    "debut": null,
+    "fin": null,
+    "actif": false
+  },
+  "historique_noms": [],
+  "membres": [],
+  "effectif": {
+    "actuel": 0,
+    "min_historique": null,
+    "max_historique": null
+  },
+  "cohesion_votes": [],
+  "tags_thematiques_agreges": [],
+  "amendements_agreges": {
+    "nb_amendements": 0,
+    "nb_adoptes": 0,
+    "nb_rejetes": 0,
+    "nb_irrecevables": 0,
+    "nb_retires_ou_tombes": 0,
+    "taux_adoption": null,
+    "par_type_deposant": {
+      "commission_rapporteur": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "depute": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "gouvernement": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "inconnu": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      }
+    }
+  },
+  "sources": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-01T11:18:04+0000",
+    "licence_donnees": "",
+    "profils_sources": [],
+    "seuil_quorum": 0.5,
+    "warnings": [
+      "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e législature, 2022-2024, 100% des mandats y figurent comme terminés). Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la dissolution, pas nécessairement la composition actuelle de l'Assemblée nationale."
+    ],
+    "couverture_roster": {
+      "roster_total": 76,
+      "profils_disponibles": 0
+    }
+  }
+}

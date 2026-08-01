@@ -1,0 +1,92 @@
+name: Génération des données
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# Nécessaire pour que le job puisse pousser la mise à jour des données.
+permissions:
+  contents: write
+
+# Évite deux exécutions qui écriraient/committeraient en même temps.
+concurrency:
+  group: generate-data
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340   # bien au-delà de 59 min, limite standard des runners
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # .cache/ (dumps Parltrack, listes MEP Europarl) est gitignoré : on le
+      # persiste via le cache Actions pour réduire le volume de requêtes vers
+      # les API publiques d'un run à l'autre. Clé renouvelée chaque semaine.
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: public-data-cache-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-
+
+      - name: Générer les profils individuels (extraction + pivot)
+        run: python3 src/generate_all_profiles.py --pivot --resume
+
+      - name: Générer les profils de parti
+        run: |
+          python3 src/parti_profile.py \
+            --candidats data/candidats.json \
+            --profiles-dir data/profiles \
+            --out-dir data/profiles
+
+      # Liste validée manuellement (voir README §6) : groupes parlementaires
+      # réels couvrant les candidats actuellement identifiés dans
+      # candidats.json. Les données sources (NosDéputés.fr) reflètent la
+      # dernière composition connue avant la dissolution du 9 juin 2024
+      # (16e législature) — voir l'avertissement meta.warnings de chaque
+      # profil de groupe généré.
+      - name: Générer les profils de groupe parlementaire réel
+        run: |
+          mkdir -p data/groupes
+          while IFS='|' read -r roster_chambre groupe_id groupe_sigle groupe_nom chambre legislature fichier; do
+            [ -z "$roster_chambre" ] && continue
+            args=(--from-roster --roster-chambre "$roster_chambre" \
+              --groupe-id "$groupe_id" --groupe-sigle "$groupe_sigle" \
+              --groupe-nom "$groupe_nom" --chambre "$chambre" \
+              --validate --out "data/groupes/$fichier")
+            [ -n "$legislature" ] && args+=(--legislature "$legislature")
+            python3 src/group_profile.py "${args[@]}"
+          done <<'GROUPES'
+          deputes|AN:REN|REN|Renaissance|AN|16|groupe-AN-REN-16.json
+          deputes|AN:SOC|SOC|Socialistes et apparentés|AN|16|groupe-AN-SOC-16.json
+          deputes|AN:RN|RN|Rassemblement National|AN|16|groupe-AN-RN-16.json
+          deputes|AN:LFI|LFI|La France insoumise - NUPES|AN|16|groupe-AN-LFI-16.json
+          deputes|AN:LR|LR|Les Républicains|AN|16|groupe-AN-LR-16.json
+          senateurs|Senat:LR|LR|Les Républicains|Senat||groupe-Senat-LR.json
+          senateurs|Senat:SER|SER|Socialiste, Écologiste et Républicain|Senat||groupe-Senat-SER.json
+          GROUPES
+
+      - name: Committer et pousser les données mises à jour
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/profiles data/groupes
+          if git diff --cached --quiet; then
+            echo "Aucun changement de données à committer."
+          else
+            git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
+            git push
+          fi

@@ -34,9 +34,10 @@ CV_CandidatFR/
 │   └── fetch_wikipedia_candidates.py  # Veille candidats via Wikipédia/Wikidata
 ├── data/
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
-│   └── profiles/                      # Profils générés : <slug>.json, <slug>.html,
-│                                      # <slug>.pivot.json (optionnel), parti-<slug>.json,
-│                                      # groupe-<SIGLE>-<leg>.json
+│   ├── profiles/                      # Profils générés : <slug>.json, <slug>.html,
+│   │                                  # <slug>.pivot.json (optionnel), parti-<slug>.json
+│   └── groupes/                       # Profils de groupe parlementaire réel :
+│                                      # groupe-<SIGLE>-<leg>.json (produits par group_profile.py)
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
@@ -216,7 +217,7 @@ python src/group_profile.py \
     --legislature 16 \
     data/profiles/jerome-guedj.json \
     data/profiles/boris-vallaud.json \
-    --out data/profiles/groupe-SOC-16.json
+    --out data/groupes/groupe-SOC-16.json
 ```
 
 Les profils en entrée peuvent être indifféremment au format brut NosDéputés
@@ -299,10 +300,12 @@ d'amendements en comptes bruts, ratios de groupe avec numérateur et
 dénominateur, distinction 49.3/censure et univers des votes sur textes
 entiers (tous les scrutins publics, ordinaires et solennels).
 
-La vue « Partis » de la V3 charge les agrégats `data/profiles/groupe-*.json`.
-Ces fiches décrivent uniquement les profils candidats présents dans chaque
-agrégat : la couverture affichée ne représente pas l'ensemble des membres ou
-élus du parti.
+La vue « Partis » de la V3 charge les agrégats `data/profiles/parti-*.json`
+(profils de parti/liste de candidats, voir §5). Ces fiches décrivent
+uniquement les profils candidats présents dans chaque agrégat : la
+couverture affichée ne représente pas l'ensemble des membres ou élus du
+parti. Les profils de groupe parlementaire réel (`data/groupes/groupe-*.json`,
+voir §6) ne sont pas encore consommés par une vue web.
 
 Chaque `data/profiles/<slug>.html` généré par `render_profile.py` est aussi
 une page HTML autonome consultable directement.

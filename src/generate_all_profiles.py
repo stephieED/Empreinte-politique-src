@@ -44,6 +44,7 @@ Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py --skip-ue          # ne pas interroger l'API du Parlement européen
     python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
     python src/generate_all_profiles.py --workers 4        # nb de candidats traités en parallèle (défaut: 4)
+    python src/generate_all_profiles.py --resume            # reprendre depuis le dernier point de sauvegarde après une interruption
 """
 
 import argparse
@@ -66,17 +67,45 @@ from render_profile import render_html
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
 DEFAULT_CANDIDATS_PATH = "data/candidats.json"
 DEFAULT_PROFILES_DIR = Path("data/profiles")
+DEFAULT_CHECKPOINT_PATH = "data/profiles/.generation_checkpoint.json"
 
 CHAMBRES = ["deputes", "senateurs"]
 
 # Verrou global pour sérialiser les print() et éviter un affichage interleaved.
 _PRINT_LOCK = threading.Lock()
+# Verrou global pour sérialiser l'écriture du fichier de point de sauvegarde.
+_CHECKPOINT_LOCK = threading.Lock()
 
 
 def _tprint(*args: Any, **kwargs: Any) -> None:
-    """Equivalent thread-safe de print()."""
+    """Equivalent thread-safe de print())."""
     with _PRINT_LOCK:
         print(*args, **kwargs)
+
+
+def _load_checkpoint(path: Path) -> dict[str, Any]:
+    """Charge le point de sauvegarde existant, ou renvoie un état vide s'il est absent/corrompu."""
+    if not path.exists():
+        return {"resultats": []}
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {"resultats": []}
+
+
+def _save_checkpoint(path: Path, resultats: list[dict[str, Any]]) -> None:
+    """Écrit le point de sauvegarde de façon atomique (fichier temporaire puis remplacement),
+    pour ne jamais laisser un fichier tronqué si le process est interrompu pendant l'écriture."""
+    with _CHECKPOINT_LOCK:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = path.with_suffix(path.suffix + ".tmp")
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {"resultats": resultats, "derniere_maj": time.strftime("%Y-%m-%dT%H:%M:%S%z")},
+                f, ensure_ascii=False, indent=2,
+            )
+        tmp_path.replace(path)
 
 
 def load_candidats(path: str) -> list[dict[str, Any]]:
@@ -270,6 +299,14 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=4, metavar="N",
                         help="Nombre de candidats traités en parallèle (niveau 2 ; défaut: 4). "
                              "Réduire si les API publiques commencent à renvoyer des erreurs 429.")
+    parser.add_argument("--checkpoint-file", default=DEFAULT_CHECKPOINT_PATH,
+                        help=f"Fichier de point de sauvegarde de la progression, mis à jour après chaque "
+                             f"candidat traité (défaut: {DEFAULT_CHECKPOINT_PATH}).")
+    parser.add_argument("--resume", action="store_true",
+                        help="Reprendre depuis le dernier point de sauvegarde : ignore les candidats déjà "
+                             "marqués 'ok' ou 'deja_present' lors d'une exécution précédente interrompue.")
+    parser.add_argument("--no-checkpoint", action="store_true",
+                        help="Désactiver l'écriture du point de sauvegarde intermédiaire.")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
@@ -282,23 +319,38 @@ def main() -> None:
             print(f"Aucun candidat avec le slug '{args.only}' dans {args.candidats}.")
             return
 
+    checkpoint_path = Path(args.checkpoint_file)
+    checkpoint = _load_checkpoint(checkpoint_path) if not args.no_checkpoint else {"resultats": []}
+    resultats: list[dict[str, Any]] = list(checkpoint.get("resultats") or []) if args.resume else []
+
+    if args.resume:
+        deja_traites = {r["slug"] for r in resultats if r.get("statut") in ("ok", "deja_present")}
+        if deja_traites:
+            avant = len(candidats)
+            candidats = [c for c in candidats if (c.get("slug") or _slugify(c.get("nom") or "")) not in deja_traites]
+            print(f"Reprise depuis {checkpoint_path} : {avant - len(candidats)} candidat(s) déjà traité(s) ignoré(s).")
+
     # --- Niveau 2 : pool de threads inter-candidats ---
-    resultats: list[dict[str, Any]] = []
+    total = len(candidats)
     nb_workers = min(args.workers, len(candidats)) if candidats else 1
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
             pool.submit(process_candidat, candidat, args, out_dir): candidat
             for candidat in candidats
         }
-        for future in as_completed(futures):
+        for i, future in enumerate(as_completed(futures), start=1):
             try:
-                resultats.append(future.result())
+                resultat = future.result()
             except Exception as exc:
                 candidat = futures[future]
                 nom = candidat.get("nom", "?")
                 slug = candidat.get("slug") or _slugify(nom)
                 print(f"  [!] Erreur inattendue pour {nom} ({slug}) : {exc}")
-                resultats.append({"nom": nom, "slug": slug, "statut": "erreur"})
+                resultat = {"nom": nom, "slug": slug, "statut": "erreur"}
+            resultats.append(resultat)
+            if not args.no_checkpoint:
+                _save_checkpoint(checkpoint_path, resultats)
+            _tprint(f"  [point de sauvegarde {i}/{total}] {resultat.get('nom')} : {resultat.get('statut')}")
 
     print("\n=== Résumé ===")
     for r in sorted(resultats, key=lambda x: x.get("nom") or ""):
