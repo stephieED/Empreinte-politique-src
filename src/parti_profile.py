@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-parti_profile.py — Construit un profil de parti à partir de data/candidats.json.
+parti_profile.py — Construit un profil de parti à partir de raw_data/candidats.json.
 
 Contrairement à group_profile.py (groupe parlementaire réel : cohésion de
 vote, amendements agrégés), ce module agrège uniquement des candidats
@@ -10,12 +10,12 @@ appel réseau : les pivots individuels doivent déjà exister sur disque.
 
 Usage (depuis la racine du dépôt) :
     python src/parti_profile.py \\
-        --candidats data/candidats.json \\
-        --profiles-dir data/profiles \\
-        --out-dir data/profiles
+        --candidats raw_data/candidats.json \\
+        --profiles-dir pivot_data/profiles \\
+        --out-dir pivot_data/partis
 
-    Génère un fichier data/profiles/parti-<slug>.json par parti présent dans
-    data/candidats.json.
+    Génère un fichier pivot_data/partis/parti-<slug>.json par parti présent dans
+    raw_data/candidats.json.
 """
 
 import argparse
@@ -50,8 +50,8 @@ def build_parti_profile(
     """Construit un profil de parti à partir des candidats d'un même label `parti`.
 
     Args:
-        parti_nom: libellé de parti tel qu'il apparaît dans data/candidats.json.
-        candidats: sous-liste de data/candidats.json partageant ce `parti`.
+        parti_nom: libellé de parti tel qu'il apparaît dans raw_data/candidats.json.
+        candidats: sous-liste de raw_data/candidats.json partageant ce `parti`.
         profiles_dir: dossier contenant les pivots individuels (*.pivot.json).
         licence_donnees: texte de licence à inscrire dans meta.
 
@@ -116,7 +116,7 @@ def build_parti_profile(
 
 
 def _group_candidats_by_parti(candidats: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    """Regroupe les candidats de data/candidats.json par leur champ `parti`."""
+    """Regroupe les candidats de raw_data/candidats.json par leur champ `parti`."""
     by_parti: dict[str, list[dict[str, Any]]] = {}
     for candidat in candidats:
         parti = candidat.get("parti")
@@ -128,25 +128,25 @@ def _group_candidats_by_parti(candidats: list[dict[str, Any]]) -> dict[str, list
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Construit un profil de parti par label `parti` de data/candidats.json.",
+        description="Construit un profil de parti par label `parti` de raw_data/candidats.json.",
     )
     parser.add_argument(
         "--candidats",
-        default="data/candidats.json",
+        default="raw_data/candidats.json",
         metavar="FICHIER",
-        help="Fichier data/candidats.json (défaut : data/candidats.json).",
+        help="Fichier raw_data/candidats.json (défaut : raw_data/candidats.json).",
     )
     parser.add_argument(
         "--profiles-dir",
-        default="data/profiles",
+        default="pivot_data/profiles",
         metavar="DOSSIER",
-        help="Dossier contenant les pivots individuels *.pivot.json (défaut : data/profiles).",
+        help="Dossier contenant les pivots individuels *.pivot.json (défaut : pivot_data/profiles).",
     )
     parser.add_argument(
         "--out-dir",
-        default="data/profiles",
+        default="pivot_data/partis",
         metavar="DOSSIER",
-        help="Dossier de sortie des fichiers parti-<slug>.json (défaut : data/profiles).",
+        help="Dossier de sortie des fichiers parti-<slug>.json (défaut : pivot_data/partis).",
     )
     parser.add_argument(
         "--licence",

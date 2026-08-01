@@ -2,7 +2,7 @@
 """
 group_roster.py — Récupère la composition réelle d'un groupe parlementaire.
 
-Contrairement à data/candidats.json (liste éditoriale des candidats déclarés
+Contrairement à raw_data/candidats.json (liste éditoriale des candidats déclarés
 à l'élection présidentielle, voir parti_profile.py), ce module interroge les
 données ouvertes NosDéputés.fr / NosSénateurs.fr pour obtenir la VRAIE liste
 des membres d'un groupe parlementaire (ex. tou·te·s les député·es LR d'une

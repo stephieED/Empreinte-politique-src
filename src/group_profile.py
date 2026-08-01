@@ -39,9 +39,9 @@ Usage (depuis la racine du dépôt) :
         --groupe-nom "Socialistes et apparentés" \\
         --chambre AN \\
         --legislature 16 \\
-        data/profiles/jerome-guedj.json \\
-        data/profiles/boris-vallaud.json \\
-        --out data/groupes/groupe-SOC-16.json
+        pivot_data/profiles/jerome-guedj.pivot.json \\
+        pivot_data/profiles/boris-vallaud.pivot.json \\
+        --out pivot_data/groupes/groupe-SOC-16.json
 
     Les profils en entrée peuvent être au format brut NosDéputés (candidate_profile.py)
     ou au format pivot v1 (normalize_nosdeputes.py). Le script détecte automatiquement
@@ -50,7 +50,7 @@ Usage (depuis la racine du dépôt) :
 Mode --from-roster (composition réelle du groupe, via group_roster.py) :
     Récupère la vraie liste des membres du groupe parlementaire auprès de
     NosDéputés.fr/NosSénateurs.fr (voir group_roster.py) puis charge le pivot
-    local de chaque membre trouvé dans --profiles-dir (data/profiles/<slug>.pivot.json).
+    local de chaque membre trouvé dans --profiles-dir (pivot_data/profiles/<slug>.pivot.json).
     Les membres du roster sans pivot local sont ignorés et signalés dans
     meta.warnings ; la couverture réelle (roster_total / profils_disponibles)
     est inscrite dans meta.couverture_roster, jamais confondue avec effectif.actuel.
@@ -59,10 +59,10 @@ Mode --from-roster (composition réelle du groupe, via group_roster.py) :
         --from-roster --roster-chambre deputes \\
         --groupe-id "AN:LR" --groupe-sigle LR --groupe-nom "Les Républicains" \\
         --chambre AN --legislature 16 \\
-        --out data/groupes/groupe-AN-LR-16.json
+        --out pivot_data/groupes/groupe-AN-LR-16.json
 
     NB : distinct de parti_profile.py, qui agrège les candidats présidentiels
-    déclarés partageant un même label de parti (data/candidats.json) — un
+    déclarés partageant un même label de parti (raw_data/candidats.json) — un
     échantillon éditorial, pas un groupe parlementaire.
 """
 
@@ -801,9 +801,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--profiles-dir",
-        default="data/profiles",
+        default="pivot_data/profiles",
         metavar="DOSSIER",
-        help="Avec --from-roster : dossier des pivots *.pivot.json (défaut : data/profiles).",
+        help="Avec --from-roster : dossier des pivots *.pivot.json (défaut : pivot_data/profiles).",
     )
     parser.add_argument(
         "--merge-existing",

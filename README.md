@@ -26,20 +26,22 @@ CV_CandidatFR/
 │   ├── generate_all_profiles.py       # Batch : profils de TOUS les candidats de candidats.json
 │   ├── group_profile.py               # Agrège des profils individuels en profil de groupe politique
 │   ├── group_roster.py                # Récupère la composition réelle d'un groupe (NosDéputés/NosSénateurs)
-│   ├── generate_group_profiles.py     # Batch : tous les groupes de data/groupes_reels.json (1 fetch/chambre)
+│   ├── generate_group_profiles.py     # Batch : tous les groupes de raw_data/groupes_reels.json (1 fetch/chambre)
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
 │   ├── schema_groupe.py               # Schéma pivot v1 du profil de groupe (contrat de structure)
 │   ├── normalize_nosdeputes.py        # Adaptateur NosDéputés/NosSénateurs → schéma pivot
 │   ├── normalize_europarl.py          # Adaptateur Open Data Portal Parlement européen → schéma pivot
 │   ├── mep_profile.py                 # Collecte et normalise les profils PE (Parltrack)
 │   └── fetch_wikipedia_candidates.py  # Veille candidats via Wikipédia/Wikidata
-├── data/
+├── raw_data/                          # Entrées déclaratives + sorties brutes (non normalisées)
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
 │   ├── groupes_reels.json             # Liste validée des groupes réels à générer (voir §6)
-│   ├── profiles/                      # Profils générés : <slug>.json,
-│   │                                  # <slug>.pivot.json (optionnel), parti-<slug>.json
-│   └── groupes/                       # Profils de groupe parlementaire réel :
-│                                      # groupe-<SIGLE>-<leg>.json (produits par generate_group_profiles.py)
+│   └── profiles/                      # Profils bruts par candidat : <slug>.json (candidate_profile.py)
+├── pivot_data/                        # Tout ce qui est au format schéma pivot ou dérivé
+│   ├── profiles/                      # <slug>.pivot.json par candidat (schéma pivot v1)
+│   ├── partis/                        # parti-<slug>.json : agrégats éditoriaux de parti (parti_profile.py)
+│   └── groupes/                       # groupe-<SIGLE>-<leg>.json : profils de groupe parlementaire réel
+│                                      # (produits par generate_group_profiles.py)
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
@@ -82,7 +84,7 @@ python src/candidate_profile.py jean-luc-melenchon --chambre deputes
 python src/candidate_profile.py bruno-retailleau --chambre senateurs
 ```
 
-Écrit par défaut dans `data/profiles/<slug>.json`. Options utiles :
+Écrit par défaut dans `raw_data/profiles/<slug>.json`. Options utiles :
 
 | Option | Effet |
 |---|---|
@@ -128,25 +130,26 @@ python src/generate_all_profiles.py                           # tous les candida
 python src/generate_all_profiles.py --only jean-luc-melenchon # un seul candidat
 python src/generate_all_profiles.py --max-pages 5             # recherche plus légère/rapide
 python src/generate_all_profiles.py --skip-existing           # ne relance pas ce qui est déjà généré
-python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json
+python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json (dans pivot_data/profiles)
 python src/generate_all_profiles.py --skip-ue                 # ne pas interroger l'API du Parlement européen
 python src/generate_all_profiles.py --workers 8               # augmenter le parallélisme (défaut: 4)
-python src/generate_all_profiles.py --out-dir /tmp/profiles   # dossier de sortie alternatif
+python src/generate_all_profiles.py --out-dir /tmp/profiles   # dossier de sortie alternatif (profils bruts)
+python src/generate_all_profiles.py --pivot-dir /tmp/pivots   # dossier de sortie alternatif (profils pivot)
 ```
 
-Ce script lit `data/candidats.json` et, pour chaque candidat :
+Ce script lit `raw_data/candidats.json` et, pour chaque candidat :
 
 1. essaie de construire son profil français (`deputes` puis `senateurs`) via
    son `slug` NosDéputés/NosSénateurs, s'il en a un ;
 2. recherche systématiquement (sauf `--skip-ue`) un mandat européen par nom
    via `candidate_profile_ue.py`, et le fusionne dans le profil sous la clé
    `mandat_europeen` ;
-3. écrit `data/profiles/<slug>.json` dès que l'une des deux sources
+3. écrit `raw_data/profiles/<slug>.json` dès que l'une des deux sources
    (française ou européenne) a produit un résultat — un candidat sans mandat
    français connu mais eurodéputé (ex. Jordan Bardella) obtient ainsi tout de
    même un profil minimal.
 
-Avec `--pivot`, un fichier `data/profiles/<slug>.pivot.json` est également
+Avec `--pivot`, un fichier `pivot_data/profiles/<slug>.pivot.json` est également
 généré au format schéma pivot v1 (voir section « Schéma pivot »).
 
 ### Parallélisation à deux niveaux
@@ -184,16 +187,16 @@ visible sur https://parltrack.org/dumps.
 ## 5. Générer le profil d'un parti / liste de candidats
 
 `parti_profile.py` construit un **profil de parti** à partir des labels de
-parti déclarés dans `data/candidats.json` et des pivots individuels disponibles
+parti déclarés dans `raw_data/candidats.json` et des pivots individuels disponibles
 sur disque. Ce profil est un objet éditorial : il agrège des candidats
 déclarés par label de parti, mais ne prétend pas représenter un groupe
 parlementaire réel ni sa cohésion de vote.
 
 ```bash
 python src/parti_profile.py \
-    --candidats data/candidats.json \
-    --profiles-dir data/profiles \
-    --out-dir data/profiles
+    --candidats raw_data/candidats.json \
+    --profiles-dir pivot_data/profiles \
+    --out-dir pivot_data/partis
 ```
 
 ## 6. Générer le profil d'un groupe politique
@@ -212,9 +215,9 @@ python src/group_profile.py \
     --groupe-nom "Socialistes et apparentés" \
     --chambre AN \
     --legislature 16 \
-    data/profiles/jerome-guedj.json \
-    data/profiles/boris-vallaud.json \
-    --out data/groupes/groupe-SOC-16.json
+    pivot_data/profiles/jerome-guedj.pivot.json \
+    pivot_data/profiles/boris-vallaud.pivot.json \
+    --out pivot_data/groupes/groupe-SOC-16.json
 ```
 
 Les profils en entrée peuvent être indifféremment au format brut NosDéputés
@@ -241,16 +244,16 @@ que NosDéputés.fr/NosSénateurs.fr n'exposent qu'un seul point d'accès « lis
 complète de la chambre » (pas d'endpoint par groupe).
 
 `generate_group_profiles.py` évite cette redondance : il lit la liste des
-groupes à générer depuis un fichier de config JSON (`data/groupes_reels.json`,
+groupes à générer depuis un fichier de config JSON (`raw_data/groupes_reels.json`,
 liste validée manuellement — voir plus haut) et ne récupère le roster complet
 qu'**une seule fois par (chambre, législature)** distincte, réutilisé ensuite
 pour filtrer localement chaque sigle de groupe.
 
 ```bash
 python src/generate_group_profiles.py \
-    --config data/groupes_reels.json \
-    --profiles-dir data/profiles \
-    --out-dir data/groupes \
+    --config raw_data/groupes_reels.json \
+    --profiles-dir pivot_data/profiles \
+    --out-dir pivot_data/groupes \
     --validate
 ```
 
@@ -321,8 +324,8 @@ de laboratoire visuel et donne accès aux variantes conservées :
   études intermédiaires.
 
 Les trois premiers designs chargent les profils dynamiquement depuis
-`data/profiles/<slug>.json`. La V3 complète le profil brut avec
-`data/profiles/<slug>.pivot.json` pour les faits sensibles : rôle et stade
+`raw_data/profiles/<slug>.json`. La V3 complète le profil brut avec
+`pivot_data/profiles/<slug>.pivot.json` pour les faits sensibles : rôle et stade
 des textes portés, amendements, type de scrutin, 49.3, motions de censure,
 position sourcée dans l'hémicycle et incompatibilités ministérielles. Un
 pivot absent ou incomplet n'est jamais remplacé par une inférence.
@@ -333,16 +336,16 @@ d'amendements en comptes bruts, ratios de groupe avec numérateur et
 dénominateur, distinction 49.3/censure et univers des votes sur textes
 entiers (tous les scrutins publics, ordinaires et solennels).
 
-La vue « Partis » de la V3 charge les agrégats `data/profiles/parti-*.json`
+La vue « Partis » de la V3 charge les agrégats `pivot_data/partis/parti-*.json`
 (profils de parti/liste de candidats, voir §5). Ces fiches décrivent
 uniquement les profils candidats présents dans chaque agrégat : la
 couverture affichée ne représente pas l'ensemble des membres ou élus du
-parti. Les profils de groupe parlementaire réel (`data/groupes/groupe-*.json`,
+parti. Les profils de groupe parlementaire réel (`pivot_data/groupes/groupe-*.json`,
 voir §6) ne sont pas encore consommés par une vue web.
 
 ## Contenu d'un profil (format brut NosDéputés)
 
-Chaque `data/profiles/<slug>.json` contient :
+Chaque `raw_data/profiles/<slug>.json` contient :
 
 - `identite` : nom, groupe politique, profession, circonscription...
 - `mandats` : mandat électif de base + responsabilités réelles (commissions,
@@ -531,6 +534,6 @@ sera tracée dans le changelog.
   (`/meetings/{id}/vote-results`, `/documents`) qui permettraient de les
   ajouter dans une prochaine itération.
 - La recherche d'un mandat européen se fait par égalité exacte du nom
-  normalisé : un candidat dont le nom sur `data/candidats.json` diffère
+  normalisé : un candidat dont le nom sur `raw_data/candidats.json` diffère
   significativement de son libellé officiel au Parlement européen (ex. nom
   d'usage vs nom légal) ne serait pas trouvé.

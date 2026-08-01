@@ -1306,9 +1306,9 @@
   </main>
 
   <script>
-    const CANDIDATS_URL = "../../data/candidats.json";
-    const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
-    const PIVOT_PROFILE_URL = (slug) => `../../data/profiles/${slug}.pivot.json`;
+    const CANDIDATS_URL = "../../raw_data/candidats.json";
+    const PROFILE_URL = (slug) => `../../raw_data/profiles/${slug}.json`;
+    const PIVOT_PROFILE_URL = (slug) => `../../pivot_data/profiles/${slug}.pivot.json`;
     const GROUP_PROFILES = [
       { id: "la-france-insoumise-lfi", label: "La France Insoumise (LFI)" },
       { id: "les-ecologistes", label: "Les Écologistes" },
@@ -1321,7 +1321,7 @@
       { id: "rassemblement-national-rn", label: "Rassemblement National (RN)" },
       { id: "renaissance", label: "Renaissance" },
     ];
-    const GROUP_PROFILE_URL = (id) => `../../data/profiles/parti-${id}.json`;
+    const GROUP_PROFILE_URL = (id) => `../../pivot_data/partis/parti-${id}.json`;
     const REAL_GROUP_PROFILES = [
       { id: "AN-REN-16", label: "Renaissance", chambre: "Assemblée nationale", fichier: "groupe-AN-REN-16.json" },
       { id: "AN-SOC-16", label: "Socialistes et apparentés", chambre: "Assemblée nationale", fichier: "groupe-AN-SOC-16.json" },
@@ -1331,7 +1331,7 @@
       { id: "Senat-LR", label: "Les Républicains", chambre: "Sénat", fichier: "groupe-Senat-LR.json" },
       { id: "Senat-SER", label: "Socialiste, Écologiste et Républicain", chambre: "Sénat", fichier: "groupe-Senat-SER.json" },
     ];
-    const REAL_GROUP_PROFILE_URL = (fichier) => `../../data/groupes/${fichier}`;
+    const REAL_GROUP_PROFILE_URL = (fichier) => `../../pivot_data/groupes/${fichier}`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },

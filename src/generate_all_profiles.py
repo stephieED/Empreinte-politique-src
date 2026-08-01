@@ -3,28 +3,29 @@
 generate_all_profiles.py
 
 Récupère les données et génère le CV (JSON) de chaque candidat de
-data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
+raw_data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
 NosSénateurs.fr) et/ou un mandat de député européen (recherché par nom via
 candidate_profile_ue.py, cf. Open Data Portal du Parlement européen). Les
 candidats sans aucune de ces deux sources sont simplement signalés, sans erreur.
 
-Les fichiers générés sont écrits dans data/profiles/<slug>.json. Le volet
-européen, quand il existe, est fusionné dans le même profil sous la clé
-"mandat_europeen" (pour un candidat sans mandat français, ex. Jordan
-Bardella, un profil minimal est tout de même créé à partir de
-data/candidats.json + du mandat européen).
+Les fichiers générés sont écrits dans raw_data/profiles/<slug>.json (profil
+brut). Le volet européen, quand il existe, est fusionné dans le même profil
+sous la clé "mandat_europeen" (pour un candidat sans mandat français, ex.
+Jordan Bardella, un profil minimal est tout de même créé à partir de
+raw_data/candidats.json + du mandat européen).
 
-Fusion additive (comportement par défaut) : si un fichier <slug>.json (ou
-<slug>.pivot.json) existe déjà, les nouvelles données collectées sont
-fusionnées avec celles déjà présentes plutôt que de les écraser — chaque
-liste (votes, mandats, dossiers législatifs, interventions...) est fusionnée
-par clé d'unicité : les entrées déjà connues sont conservées telles quelles,
-seules les entrées réellement nouvelles sont ajoutées. Cela évite que des
-données varient ou disparaissent d'une régénération à l'autre à cause d'un
-aléa transitoire des API publiques (pagination, requête ponctuelle en échec...).
-Utiliser --no-merge pour revenir à un écrasement complet. Voir merge_profile.py.
+Fusion additive (comportement par défaut) : si un fichier <slug>.json (dans
+raw_data/profiles/) ou <slug>.pivot.json (dans pivot_data/profiles/) existe
+déjà, les nouvelles données collectées sont fusionnées avec celles déjà
+présentes plutôt que de les écraser — chaque liste (votes, mandats, dossiers
+législatifs, interventions...) est fusionnée par clé d'unicité : les entrées
+déjà connues sont conservées telles quelles, seules les entrées réellement
+nouvelles sont ajoutées. Cela évite que des données varient ou disparaissent
+d'une régénération à l'autre à cause d'un aléa transitoire des API publiques
+(pagination, requête ponctuelle en échec...). Utiliser --no-merge pour
+revenir à un écrasement complet. Voir merge_profile.py.
 
-Avec --pivot, un fichier supplémentaire data/profiles/<slug>.pivot.json
+Avec --pivot, un fichier supplémentaire pivot_data/profiles/<slug>.pivot.json
 est généré au format schéma pivot v1 (commun à toutes les sources). Le volet
 européen, s'il existe, est normalisé et intégré au pivot.
 
@@ -63,9 +64,10 @@ from normalize_nosdeputes import normalize_nosdeputes
 from text_utils import slugify
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
-DEFAULT_CANDIDATS_PATH = "data/candidats.json"
-DEFAULT_PROFILES_DIR = Path("data/profiles")
-DEFAULT_CHECKPOINT_PATH = "data/profiles/.generation_checkpoint.json"
+DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
+DEFAULT_PROFILES_DIR = Path("raw_data/profiles")
+DEFAULT_PIVOT_DIR = Path("pivot_data/profiles")
+DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 
 CHAMBRES = ["deputes", "senateurs"]
 
@@ -167,6 +169,7 @@ def process_candidat(
     candidat: dict[str, Any],
     args: argparse.Namespace,
     out_dir: Path,
+    pivot_dir: Path,
 ) -> dict[str, Any]:
     """Traite un candidat : collecte les données FR et UE en parallèle (niveau 1),
     écrit les fichiers JSON/HTML (et pivot si demandé), et renvoie un dict de résultat.
@@ -221,7 +224,7 @@ def process_candidat(
     if profile is None:
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
-        # data/candidats.json plutôt que de ne rien produire.
+        # raw_data/candidats.json plutôt que de ne rien produire.
         profile = build_minimal_profile(nom, effective_slug, candidat)
 
     if mandat_ue is not None:
@@ -252,7 +255,7 @@ def process_candidat(
                 pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
         if pivot_profile is not None:
-            pivot_path = out_dir / f"{effective_slug}.pivot.json"
+            pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
             if not args.no_merge and pivot_path.exists():
                 try:
                     with open(pivot_path, encoding="utf-8") as f:
@@ -267,7 +270,7 @@ def process_candidat(
     nb_interventions = len(profile.get("interventions") or [])
     nb_mandats_ue = len((profile.get("mandat_europeen") or {}).get("mandats_europeens") or [])
     extra = f", {nb_mandats_ue} mandats UE" if mandat_ue or profile.get("mandat_europeen") else ""
-    _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} + {html_path} ({nb_interventions} interventions{extra})")
+    _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} ({nb_interventions} interventions{extra})")
 
     time.sleep(0.5)  # on reste courtois avec l'API publique entre deux candidats
 
@@ -288,8 +291,9 @@ def main() -> None:
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--skip-ue", action="store_true", help="Ne pas interroger l'Open Data Portal du Parlement européen (mandat européen)")
-    parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON/HTML (défaut: {DEFAULT_PROFILES_DIR})")
+    parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
     parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
+    parser.add_argument("--pivot-dir", default=str(DEFAULT_PIVOT_DIR), help=f"Dossier de sortie des profils pivot (défaut: {DEFAULT_PIVOT_DIR})")
     parser.add_argument("--no-merge", action="store_true",
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
@@ -309,6 +313,9 @@ def main() -> None:
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    pivot_dir = Path(args.pivot_dir)
+    if args.pivot:
+        pivot_dir.mkdir(parents=True, exist_ok=True)
 
     candidats = load_candidats(args.candidats)
     if args.only:
@@ -333,7 +340,7 @@ def main() -> None:
     nb_workers = min(args.workers, len(candidats)) if candidats else 1
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
-            pool.submit(process_candidat, candidat, args, out_dir): candidat
+            pool.submit(process_candidat, candidat, args, out_dir, pivot_dir): candidat
             for candidat in candidats
         }
         for i, future in enumerate(as_completed(futures), start=1):

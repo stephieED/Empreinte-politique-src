@@ -46,7 +46,7 @@ WIKIPEDIA_API_BASE = "https://fr.wikipedia.org/w/api.php"
 WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 
 # Chemin par défaut vers le fichier local des candidats
-DEFAULT_CANDIDATS_PATH = "data/candidats.json"
+DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
 
 
 # ---------------------------------------------------------------------------

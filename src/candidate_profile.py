@@ -10,7 +10,7 @@ officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
 Usage (depuis la racine du dépôt) :
     python src/candidate_profile.py jean-luc-melenchon --chambre deputes
     python src/candidate_profile.py bruno-retailleau --chambre senateurs
-    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out data/profiles/jean-luc-melenchon.json
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out raw_data/profiles/jean-luc-melenchon.json
 
 Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
 contente d'agréger les faits bruts (mandats, responsabilités, votes,
@@ -1161,7 +1161,7 @@ def main():
     )
     parser.add_argument(
         "--out",
-        help="Chemin du fichier JSON de sortie (défaut: data/profiles/<slug>.json)",
+        help="Chemin du fichier JSON de sortie (défaut: raw_data/profiles/<slug>.json)",
     )
     parser.add_argument(
         "--max-pages",
@@ -1173,7 +1173,7 @@ def main():
 
     profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
-    out_path = Path(args.out) if args.out else Path("data/profiles") / f"{args.slug}.json"
+    out_path = Path(args.out) if args.out else Path("raw_data/profiles") / f"{args.slug}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)

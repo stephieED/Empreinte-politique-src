@@ -48,11 +48,11 @@ jobs:
       - name: Générer les profils de parti
         run: |
           python3 src/parti_profile.py \
-            --candidats data/candidats.json \
-            --profiles-dir data/profiles \
-            --out-dir data/profiles
+            --candidats raw_data/candidats.json \
+            --profiles-dir pivot_data/profiles \
+            --out-dir pivot_data/partis
 
-      # Liste validée manuellement dans data/groupes_reels.json (voir README §6) :
+      # Liste validée manuellement dans raw_data/groupes_reels.json (voir README §6) :
       # groupes parlementaires réels couvrant les candidats actuellement
       # identifiés dans candidats.json. Les données sources (NosDéputés.fr)
       # reflètent la dernière composition connue avant la dissolution du
@@ -68,7 +68,7 @@ jobs:
           #     roster/profils disponibles au moment du run.
 
           # MERGE_FLAG=(--merge-existing)
-          # (2) Agrégation avec l'existant : si un fichier data/groupes/*.json
+          # (2) Agrégation avec l'existant : si un fichier pivot_data/groupes/*.json
           #     existe déjà, les membres qui y figuraient mais sont absents du
           #     roster récupéré cette fois-ci (ex. échec partiel de l'API
           #     live) sont réintégrés, avec un avertissement dans meta.warnings.
@@ -76,16 +76,16 @@ jobs:
           # Un seul fetch réseau par (chambre, législature) distincte, réutilisé
           # pour tous les groupes qui la partagent (voir generate_group_profiles.py).
           python3 src/generate_group_profiles.py \
-            --config data/groupes_reels.json \
-            --profiles-dir data/profiles \
-            --out-dir data/groupes \
+            --config raw_data/groupes_reels.json \
+            --profiles-dir pivot_data/profiles \
+            --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
       - name: Committer et pousser les données mises à jour
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/profiles data/groupes
+          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
           else

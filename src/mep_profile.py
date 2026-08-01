@@ -20,7 +20,7 @@ vérification (--show-cache-date).
 Usage (depuis la racine du dépôt) :
     python src/mep_profile.py --name "Manon Aubry"
     python src/mep_profile.py --ep-id 197451
-    python src/mep_profile.py --name "Manon Aubry" --out data/profiles/manon-aubry.pivot.json
+    python src/mep_profile.py --name "Manon Aubry" --out pivot_data/profiles/manon-aubry.pivot.json
     python src/mep_profile.py --list              # liste les MEPs FR dans le dump
     python src/mep_profile.py --show-cache-date   # affiche la date du dump en cache
 """

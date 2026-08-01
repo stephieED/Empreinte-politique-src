@@ -4,7 +4,7 @@ schema_parti.py — Schéma pivot du profil de parti / liste de candidats v1.
 
 Distinct du profil de groupe parlementaire (schema_groupe.py) : un « parti »
 au sens de ce schéma désigne le regroupement éditorial des candidats déclarés
-à une élection partageant un même label de parti (data/candidats.json), PAS
+à une élection partageant un même label de parti (raw_data/candidats.json), PAS
 un groupe parlementaire réel (effectif officiel, cohésion de vote, amendements
 déposés au nom du groupe).
 
@@ -38,7 +38,7 @@ Format d'un profil de parti v1 :
         {
             "candidat_id": "nosdeputes:bruno-retailleau",  # id pivot ; null si aucun pivot dispo
             "nom": "Bruno Retailleau",
-            "statut": "declare",              # cf. data/candidats.json._meta.statuts_possibles
+            "statut": "declare",              # cf. raw_data/candidats.json._meta.statuts_possibles
             "famille_politique": "droite",
             "a_un_profil_pivot": true          # false si aucun mandat FR/UE connu (candidat non référencé)
         }

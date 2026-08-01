@@ -52,7 +52,7 @@ coverage.xml
 cover/
 
 # Point de sauvegarde intermédiaire de generate_all_profiles.py (progression, pas une donnée publiée)
-data/profiles/.generation_checkpoint.json
+raw_data/profiles/.generation_checkpoint.json
 
 # Translations
 *.mo

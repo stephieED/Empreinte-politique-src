@@ -13,13 +13,13 @@ une fois par (chambre, législature) distincte puis filtre localement par sigle
 pour chaque groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle).
 
 La liste des groupes à générer est lue depuis un fichier de config JSON (par
-défaut data/groupes_reels.json), validée manuellement (voir README §6).
+défaut raw_data/groupes_reels.json), validée manuellement (voir README §6).
 
 Usage (depuis la racine du dépôt) :
     python src/generate_group_profiles.py \\
-        --config data/groupes_reels.json \\
-        --profiles-dir data/profiles \\
-        --out-dir data/groupes \\
+        --config raw_data/groupes_reels.json \\
+        --profiles-dir pivot_data/profiles \\
+        --out-dir pivot_data/groupes \\
         --validate
 """
 
@@ -105,21 +105,21 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "--config",
-        default="data/groupes_reels.json",
+        default="raw_data/groupes_reels.json",
         metavar="FICHIER",
-        help="Fichier JSON listant les groupes à générer (défaut : data/groupes_reels.json).",
+        help="Fichier JSON listant les groupes à générer (défaut : raw_data/groupes_reels.json).",
     )
     parser.add_argument(
         "--profiles-dir",
-        default="data/profiles",
+        default="pivot_data/profiles",
         metavar="DOSSIER",
-        help="Dossier des profils pivot individuels (défaut : data/profiles).",
+        help="Dossier des profils pivot individuels (défaut : pivot_data/profiles).",
     )
     parser.add_argument(
         "--out-dir",
-        default="data/groupes",
+        default="pivot_data/groupes",
         metavar="DOSSIER",
-        help="Dossier de sortie des profils de groupe (défaut : data/groupes).",
+        help="Dossier de sortie des profils de groupe (défaut : pivot_data/groupes).",
     )
     parser.add_argument(
         "--merge-existing",
