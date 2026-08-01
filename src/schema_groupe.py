@@ -125,12 +125,13 @@ Format d'un profil de groupe v1 :
             "nosdeputes:boris-vallaud"
         ],
         "seuil_quorum": 0.5,            # seuil de participation retenu pour quorum_atteint
-        "warnings": []        # "couverture_roster" (optionnel, présent seulement si le groupe a été
+        "warnings": [],
+        # "couverture_roster" (optionnel, présent seulement si le groupe a été
         # construit via group_profile.py --from-roster) : {"roster_total": 62,
         # "profils_disponibles": 12} — nombre réel de membres du groupe (via
         # group_roster.py) vs. nombre de profils pivot locaux effectivement
         # chargés. Ne JAMAIS confondre avec effectif.actuel (qui ne décrit que
-        # les membres présents dans `profils`, pas le groupe réel).    }
+        # les membres présents dans `profils`, pas le groupe réel).
 }
 
 Cas limites gérés :
