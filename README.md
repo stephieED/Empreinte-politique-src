@@ -27,7 +27,6 @@ CV_CandidatFR/
 │   ├── group_profile.py               # Agrège des profils individuels en profil de groupe politique
 │   ├── group_roster.py                # Récupère la composition réelle d'un groupe (NosDéputés/NosSénateurs)
 │   ├── generate_group_profiles.py     # Batch : tous les groupes de data/groupes_reels.json (1 fetch/chambre)
-│   ├── render_profile.py              # Convertit un profil JSON en page HTML statique
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
 │   ├── schema_groupe.py               # Schéma pivot v1 du profil de groupe (contrat de structure)
 │   ├── normalize_nosdeputes.py        # Adaptateur NosDéputés/NosSénateurs → schéma pivot
@@ -37,7 +36,7 @@ CV_CandidatFR/
 ├── data/
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
 │   ├── groupes_reels.json             # Liste validée des groupes réels à générer (voir §6)
-│   ├── profiles/                      # Profils générés : <slug>.json, <slug>.html,
+│   ├── profiles/                      # Profils générés : <slug>.json,
 │   │                                  # <slug>.pivot.json (optionnel), parti-<slug>.json
 │   └── groupes/                       # Profils de groupe parlementaire réel :
 │                                      # groupe-<SIGLE>-<leg>.json (produits par generate_group_profiles.py)
@@ -91,13 +90,6 @@ python src/candidate_profile.py bruno-retailleau --chambre senateurs
 | `--out chemin.json` | Change le fichier de sortie |
 | `--max-pages N` | Limite la pagination de la recherche d'interventions (défaut : 10 pages de 50 résultats). Réduire accélère fortement la génération, au prix d'une couverture moins complète. |
 
-Puis générer la page HTML correspondante :
-
-```bash
-python src/render_profile.py data/profiles/jean-luc-melenchon.json
-# écrit data/profiles/jean-luc-melenchon.html par défaut (--out pour changer)
-```
-
 ## 2. Ajouter le volet "mandat européen" d'un candidat
 
 Certains candidats ont été eurodéputé⋅e⋅s (ex. Jordan Bardella, Marine Le
@@ -149,10 +141,10 @@ Ce script lit `data/candidats.json` et, pour chaque candidat :
 2. recherche systématiquement (sauf `--skip-ue`) un mandat européen par nom
    via `candidate_profile_ue.py`, et le fusionne dans le profil sous la clé
    `mandat_europeen` ;
-3. écrit `data/profiles/<slug>.json` + `data/profiles/<slug>.html` dès que
-   l'une des deux sources (française ou européenne) a produit un résultat —
-   un candidat sans mandat français connu mais eurodéputé (ex. Jordan
-   Bardella) obtient ainsi tout de même un profil minimal.
+3. écrit `data/profiles/<slug>.json` dès que l'une des deux sources
+   (française ou européenne) a produit un résultat — un candidat sans mandat
+   français connu mais eurodéputé (ex. Jordan Bardella) obtient ainsi tout de
+   même un profil minimal.
 
 Avec `--pivot`, un fichier `data/profiles/<slug>.pivot.json` est également
 généré au format schéma pivot v1 (voir section « Schéma pivot »).
@@ -347,9 +339,6 @@ uniquement les profils candidats présents dans chaque agrégat : la
 couverture affichée ne représente pas l'ensemble des membres ou élus du
 parti. Les profils de groupe parlementaire réel (`data/groupes/groupe-*.json`,
 voir §6) ne sont pas encore consommés par une vue web.
-
-Chaque `data/profiles/<slug>.html` généré par `render_profile.py` est aussi
-une page HTML autonome consultable directement.
 
 ## Contenu d'un profil (format brut NosDéputés)
 

@@ -2,17 +2,17 @@
 """
 generate_all_profiles.py
 
-Récupère les données et génère le CV (JSON + HTML) de chaque candidat de
+Récupère les données et génère le CV (JSON) de chaque candidat de
 data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
 NosSénateurs.fr) et/ou un mandat de député européen (recherché par nom via
 candidate_profile_ue.py, cf. Open Data Portal du Parlement européen). Les
 candidats sans aucune de ces deux sources sont simplement signalés, sans erreur.
 
-Les fichiers générés sont écrits dans data/profiles/<slug>.json et
-data/profiles/<slug>.html. Le volet européen, quand il existe, est fusionné
-dans le même profil sous la clé "mandat_europeen" (pour un candidat sans
-mandat français, ex. Jordan Bardella, un profil minimal est tout de même créé
-à partir de data/candidats.json + du mandat européen).
+Les fichiers générés sont écrits dans data/profiles/<slug>.json. Le volet
+européen, quand il existe, est fusionné dans le même profil sous la clé
+"mandat_europeen" (pour un candidat sans mandat français, ex. Jordan
+Bardella, un profil minimal est tout de même créé à partir de
+data/candidats.json + du mandat européen).
 
 Fusion additive (comportement par défaut) : si un fichier <slug>.json (ou
 <slug>.pivot.json) existe déjà, les nouvelles données collectées sont
@@ -60,7 +60,6 @@ from candidate_profile_ue import build_profile_ue
 from merge_profile import merge_pivot_profile, merge_raw_profile
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
-from render_profile import render_html
 from text_utils import slugify
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
@@ -238,9 +237,6 @@ def process_candidat(
 
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
-
-    html_path = out_dir / f"{effective_slug}.html"
-    html_path.write_text(render_html(profile), encoding="utf-8")
 
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
