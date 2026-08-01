@@ -1,0 +1,94 @@
+name: Génération des données
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# Nécessaire pour que le job puisse pousser la mise à jour des données.
+permissions:
+  contents: write
+
+# Évite deux exécutions qui écriraient/committeraient en même temps.
+concurrency:
+  group: generate-data
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340   # bien au-delà de 59 min, limite standard des runners
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # .cache/ (dumps Parltrack, listes MEP Europarl) est gitignoré : on le
+      # persiste via le cache Actions pour réduire le volume de requêtes vers
+      # les API publiques d'un run à l'autre. Clé renouvelée chaque semaine.
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: public-data-cache-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-
+
+      - name: Générer les profils individuels (extraction + pivot)
+        run: python3 src/generate_all_profiles.py --pivot
+
+      - name: Générer les profils de parti
+        run: |
+          python3 src/parti_profile.py \
+            --candidats raw_data/candidats.json \
+            --profiles-dir pivot_data/profiles \
+            --out-dir pivot_data/partis
+
+      # Liste validée manuellement dans raw_data/groupes_reels.json (voir README §6) :
+      # groupes parlementaires réels couvrant les candidats actuellement
+      # identifiés dans candidats.json. Les données sources (NosDéputés.fr)
+      # reflètent la dernière composition connue avant la dissolution du
+      # 9 juin 2024 (16e législature) — voir l'avertissement meta.warnings de
+      # chaque profil de groupe généré.
+      - name: Générer les profils de groupe parlementaire réel
+        run: |
+          # Choisir UN des deux modes ci-dessous en (dé)commentant la ligne
+          # MERGE_FLAG correspondante :
+          MERGE_FLAG=()  # par défaut, recréation complète
+          # (1) Recréation complète à chaque exécution (comportement actif par
+          #     défaut) : --out écrase entièrement le fichier existant avec le
+          #     roster/profils disponibles au moment du run.
+
+          # MERGE_FLAG=(--merge-existing)
+          # (2) Agrégation avec l'existant : si un fichier pivot_data/groupes/*.json
+          #     existe déjà, les membres qui y figuraient mais sont absents du
+          #     roster récupéré cette fois-ci (ex. échec partiel de l'API
+          #     live) sont réintégrés, avec un avertissement dans meta.warnings.
+
+          # Un seul fetch réseau par (chambre, législature) distincte, réutilisé
+          # pour tous les groupes qui la partagent (voir generate_group_profiles.py).
+          python3 src/generate_group_profiles.py \
+            --config raw_data/groupes_reels.json \
+            --profiles-dir pivot_data/profiles \
+            --out-dir pivot_data/groupes \
+            --validate "${MERGE_FLAG[@]}"
+
+      - name: Committer et pousser les données mises à jour
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes
+          if git diff --cached --quiet; then
+            echo "Aucun changement de données à committer."
+          else
+            git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
+            git push
+          fi

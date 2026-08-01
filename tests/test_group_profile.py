@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -9,9 +10,12 @@ from group_profile import (
     _derive_membre_entry,
     _build_vote_index,
     _compute_cohesion_votes,
-    _aggregate_tags_thematiques,
+    aggregate_tags_thematiques,
+    _aggregate_amendements,
+    compute_ecarts_cohesion_internes,
     build_groupe_profile,
     _is_pivot_v1,
+    main as group_profile_main,
 )
 from schema_groupe import validate_profil_groupe
 
@@ -28,6 +32,7 @@ def _pivot(
     votes: list = None,
     tags: list = None,
     interventions: list = None,
+    amendements: list = None,
 ) -> dict:
     """Construit un profil pivot v1 minimal pour les tests."""
     return {
@@ -53,6 +58,7 @@ def _pivot(
         "votes": votes if votes is not None else [],
         "textes_portes": [],
         "interventions": interventions if interventions is not None else [],
+        "amendements": amendements if amendements is not None else [],
         "tags_thematiques": tags if tags is not None else [],
         "meta": {
             "schema_version": "1",
@@ -373,13 +379,13 @@ def test_cohesion_taux_coherence_hors_absents():
 
 
 # ---------------------------------------------------------------------------
-# _aggregate_tags_thematiques
+# aggregate_tags_thematiques
 # ---------------------------------------------------------------------------
 
 def test_tags_agrege_compte_membres():
     p1 = _pivot(tags=["budget", "fiscalité"])
     p2 = _pivot(tags=["budget", "santé"])
-    tags, _ = _aggregate_tags_thematiques([p1, p2])
+    tags, _ = aggregate_tags_thematiques([p1, p2])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 2
     assert budget_entry["poids_relatif"] == 1.0
@@ -388,7 +394,7 @@ def test_tags_agrege_compte_membres():
 def test_tags_agrege_deduplication_par_membre():
     """Un tag répété dans le profil d'un membre ne compte qu'une fois."""
     p1 = _pivot(tags=["budget", "budget", "budget"])
-    tags, _ = _aggregate_tags_thematiques([p1])
+    tags, _ = aggregate_tags_thematiques([p1])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 1
 
@@ -397,7 +403,7 @@ def test_tags_trie_par_nombre_membres_desc():
     p1 = _pivot(tags=["budget", "santé", "défense"])
     p2 = _pivot(tags=["budget", "santé"])
     p3 = _pivot(tags=["budget"])
-    tags, _ = _aggregate_tags_thematiques([p1, p2, p3])
+    tags, _ = aggregate_tags_thematiques([p1, p2, p3])
     counts = [t["nb_membres_porteurs"] for t in tags]
     assert counts == sorted(counts, reverse=True)
 
@@ -406,7 +412,7 @@ def test_tags_fallback_sur_mots_cles_interventions():
     """Si tags_thematiques est vide, on utilise les mots-clés des interventions."""
     interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
     p1 = _pivot(tags=[], interventions=interventions)
-    tags, source = _aggregate_tags_thematiques([p1])
+    tags, source = aggregate_tags_thematiques([p1])
     tag_names = {t["tag"] for t in tags}
     assert "immigration" in tag_names
     assert source == "mots_cles_interventions"
@@ -414,20 +420,20 @@ def test_tags_fallback_sur_mots_cles_interventions():
 
 def test_tags_source_tags_thematiques():
     p1 = _pivot(tags=["budget"])
-    _, source = _aggregate_tags_thematiques([p1])
+    _, source = aggregate_tags_thematiques([p1])
     assert source == "tags_thematiques"
 
 
 def test_tags_source_mixed():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}])
-    _, source = _aggregate_tags_thematiques([p1, p2])
+    _, source = aggregate_tags_thematiques([p1, p2])
     assert source == "mixed"
 
 
 def test_tags_vide_si_aucun_tag():
     p1 = _pivot(tags=[], interventions=[])
-    tags, source = _aggregate_tags_thematiques([p1])
+    tags, source = aggregate_tags_thematiques([p1])
     assert tags == []
     assert source is None
 
@@ -435,7 +441,7 @@ def test_tags_vide_si_aucun_tag():
 def test_tags_poids_relatif():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[])
-    tags, _ = _aggregate_tags_thematiques([p1, p2])
+    tags, _ = aggregate_tags_thematiques([p1, p2])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["poids_relatif"] == 0.5  # 1 membre sur 2
 
@@ -578,3 +584,280 @@ def test_build_groupe_profile_profils_vide():
     assert g["membres"] == []
     assert g["cohesion_votes"] == []
     assert g["effectif"]["actuel"] == 0
+
+
+# ---------------------------------------------------------------------------
+# _aggregate_amendements
+# ---------------------------------------------------------------------------
+
+def _amendement(sort: str, deposant: str = "depute") -> dict:
+    return {
+        "texte_vise": "PLF 2025",
+        "sort": sort,
+        "base_juridique_irrecevabilite": "art. 40" if sort == "irrecevable" else None,
+        "premier_signataire": "nosdeputes:jean-dupont",
+        "co_signataires": [],
+        "type_deposant": deposant,
+        "date": "2024-10-15",
+        "numero": "CL42",
+        "source_url": None,
+    }
+
+
+def test_aggregate_amendements_compte_par_statut():
+    p1 = _pivot("nosdeputes:alice", amendements=[
+        _amendement("adopté"), _amendement("rejeté"), _amendement("irrecevable"),
+    ])
+    p2 = _pivot("nosdeputes:bob", amendements=[_amendement("retiré")])
+    agg = _aggregate_amendements([p1, p2])
+    assert agg["nb_amendements"] == 4
+    assert agg["nb_adoptes"] == 1
+    assert agg["nb_rejetes"] == 1
+    assert agg["nb_irrecevables"] == 1
+    assert agg["nb_retires_ou_tombes"] == 1
+
+
+def test_aggregate_amendements_taux_adoption():
+    p1 = _pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])
+    agg = _aggregate_amendements([p1])
+    assert agg["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_sans_accent_est_reconnu():
+    """'adopte' (sans accent) doit être reconnu comme 'adopté'."""
+    p1 = _pivot(amendements=[_amendement("adopte")])
+    agg = _aggregate_amendements([p1])
+    assert agg["nb_adoptes"] == 1
+
+
+def test_aggregate_amendements_taux_none_si_aucun():
+    agg = _aggregate_amendements([_pivot(amendements=[])])
+    assert agg["nb_amendements"] == 0
+    assert agg["taux_adoption"] is None
+
+
+def test_build_groupe_profile_inclut_amendements_agreges():
+    profils = [_pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert g["amendements_agreges"]["nb_amendements"] == 2
+    assert g["amendements_agreges"]["taux_adoption"] == 0.5
+    assert validate_profil_groupe(g) == []
+
+
+def test_aggregate_amendements_par_type_deposant_depute():
+    p1 = _pivot(amendements=[
+        _amendement("adopté", deposant="depute"), _amendement("rejeté", deposant="depute"),
+    ])
+    agg = _aggregate_amendements([p1])
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 2
+    assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
+    """Les amendements gouvernement/rapporteur (quasi tous adoptés) ne doivent pas
+    gonfler le sous-total 'depute', utilisé comme comparateur d'un⋅e élu⋅e."""
+    p1 = _pivot(amendements=[
+        _amendement("rejeté", deposant="depute"),
+        _amendement("adopté", deposant="gouvernement"),
+        _amendement("adopté", deposant="commission_rapporteur"),
+    ])
+    agg = _aggregate_amendements([p1])
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.0
+    assert agg["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["commission_rapporteur"]["nb_amendements"] == 1
+    # Le total, lui, mélange bien tout (c'est pour ça qu'il ne doit pas servir
+    # de comparateur direct).
+    assert agg["nb_amendements"] == 3
+    assert agg["taux_adoption"] == round(2 / 3, 4)
+
+
+def test_aggregate_amendements_type_deposant_absent_est_inconnu():
+    a = _amendement("adopté")
+    del a["type_deposant"]
+    agg = _aggregate_amendements([_pivot(amendements=[a])])
+    assert agg["par_type_deposant"]["inconnu"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 0
+
+
+def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
+    profils = [_pivot(amendements=[
+        _amendement("adopté", deposant="depute"), _amendement("adopté", deposant="gouvernement"),
+    ])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert g["amendements_agreges"]["par_type_deposant"]["depute"]["nb_amendements"] == 1
+    assert g["amendements_agreges"]["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
+    assert validate_profil_groupe(g) == []
+
+
+# ---------------------------------------------------------------------------
+# compute_ecarts_cohesion_internes (contrôle interne, hors schéma public)
+# ---------------------------------------------------------------------------
+
+def test_ecarts_cohesion_internes_membre_aligne_ecart_nul():
+    p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
+    p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "pour")])
+    cohesion = _compute_cohesion_votes([p1, p2])
+    ecarts = compute_ecarts_cohesion_internes([p1, p2], cohesion)
+    for e in ecarts:
+        assert e["taux_participation_individuel"] == 1.0
+        assert e["taux_coherence_individuel"] == 1.0
+        assert e["ecart_participation_vs_groupe"] == 0.0
+        assert e["ecart_coherence_vs_groupe"] == 0.0
+
+
+def test_ecarts_cohesion_internes_membre_moins_coherent():
+    p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
+    p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "contre")])
+    p3 = _pivot("nosdeputes:charlie", votes=[_vote("42", "pour")])
+    cohesion = _compute_cohesion_votes([p1, p2, p3])
+    ecarts = compute_ecarts_cohesion_internes([p1, p2, p3], cohesion)
+    bob = next(e for e in ecarts if e["membre_id"] == "nosdeputes:bob")
+    assert bob["taux_coherence_individuel"] == 0.0
+    assert bob["ecart_coherence_vs_groupe"] < 0
+
+
+def test_ecarts_cohesion_internes_vide_si_pas_de_cohesion():
+    assert compute_ecarts_cohesion_internes([_pivot()], []) == []
+
+
+def test_ecarts_cohesion_internes_absent_du_profil_groupe_public():
+    """Champ de contrôle interne : ne doit jamais apparaître dans le profil public."""
+    profils = [_pivot("nosdeputes:alice", votes=[_vote("42", "pour")])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert "ecarts_cohesion_internes" not in g
+    assert "compute_ecarts_cohesion_internes" not in str(g)
+
+
+# ---------------------------------------------------------------------------
+# CLI --from-roster (composition réelle du groupe via group_roster.py)
+# ---------------------------------------------------------------------------
+
+def test_main_from_roster_builds_group_and_reports_couverture(tmp_path, monkeypatch):
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    # "bob" fait partie du roster mais n'a aucun pivot local dans tmp_path.
+
+    def fake_fetch_group_roster(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        assert chambre == "deputes"
+        assert groupe_sigle == "LR"
+        assert legislature == "16"
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster)
+
+    out_path = tmp_path / "out.json"
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+
+    assert rc == 0
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    assert profil_groupe["meta"]["couverture_roster"] == {"roster_total": 2, "profils_disponibles": 1}
+    assert len(profil_groupe["membres"]) == 1
+    assert validate_profil_groupe(profil_groupe) == []
+
+
+def test_main_from_roster_missing_roster_chambre_returns_error(capsys):
+    rc = group_profile_main([
+        "--from-roster",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+    ])
+    assert rc == 1
+    assert "--roster-chambre" in capsys.readouterr().err
+
+
+def test_main_from_roster_merge_existing_recupere_membre_absent_du_roster(tmp_path, monkeypatch):
+    """--merge-existing : un membre présent dans --out lors d'une exécution précédente
+    mais absent du roster récupéré cette fois-ci (échec partiel de récupération) doit
+    être réintégré, avec un avertissement explicite dans meta.warnings."""
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
+
+    def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    out_path = tmp_path / "out.json"
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_complet)
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+    assert rc == 0
+    assert len(json.loads(out_path.read_text(encoding="utf-8"))["membres"]) == 2
+
+    # Exécution suivante : le roster live ne renvoie plus que "bob" (échec partiel simulé).
+    def fake_fetch_group_roster_partiel(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_partiel)
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+        "--merge-existing",
+    ])
+    assert rc == 0
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    membres_ids = {m["membre_id"] for m in profil_groupe["membres"]}
+    assert "nosdeputes:alice" in membres_ids
+    assert "nosdeputes:bob" in membres_ids
+    assert any("fusion_avec_existant" in w and "alice" in w for w in profil_groupe["meta"]["warnings"])
+
+
+def test_main_from_roster_sans_merge_existing_perd_membre_absent_du_roster(tmp_path, monkeypatch):
+    """Sans --merge-existing (comportement par défaut), --out écrase entièrement :
+    un membre absent du roster récupéré cette fois-ci disparaît du fichier de sortie."""
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
+
+    def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    out_path = tmp_path / "out.json"
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_complet)
+    group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+
+    def fake_fetch_group_roster_partiel(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_partiel)
+    group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    membres_ids = {m["membre_id"] for m in profil_groupe["membres"]}
+    assert membres_ids == {"nosdeputes:bob"}
+
+

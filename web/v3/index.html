@@ -246,6 +246,9 @@
   .vote-profile-seg--absent { background: var(--line); }
   .vote-profile-legend { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--muted); }
   .vote-profile-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.28rem; vertical-align: middle; }
+  .vote-profile-legend .dot--pour { background: var(--vert); }
+  .vote-profile-legend .dot--contre { background: var(--rouge); }
+  .vote-profile-legend .dot--abstention { background: var(--muted); }
 
   /* Panneaux glissants (swipe) — remplace la navigation par ancres empilées */
   .panel-indicator {
@@ -661,7 +664,9 @@
     --rouge: #E53420;
     --acid: #DFFF00;
     --pink: #FF70A6;
-    --candidate-dock-height: 52px;
+    --mode-switch-height: 48px;
+    --profile-rail-height: 48px;
+    --candidate-dock-height: var(--mode-switch-height);
     font-family: 'Space Grotesk', sans-serif;
     background: var(--bg);
   }
@@ -680,11 +685,12 @@
     background: var(--acid);
   }
   .deconstructed .masthead h1 {
-    font-size: clamp(3rem, 13vw, 9rem);
-    line-height: 0.78;
-    max-width: 8ch;
+    font-size: clamp(2.4rem, 8vw, 6.4rem);
+    line-height: 0.8;
+    max-width: 7.3ch;
     margin: 0;
     text-transform: uppercase;
+    letter-spacing: -0.04em;
   }
   .deconstructed .brand-home {
     appearance: none;
@@ -709,14 +715,13 @@
     position: sticky;
     top: 0;
     z-index: 85;
-    height: var(--candidate-dock-height);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
     border-top: 2px solid var(--line);
     border-bottom: 2px solid var(--line);
     background: var(--acid);
   }
+  .deconstructed.profile-selected { --candidate-dock-height: calc(var(--mode-switch-height) + var(--profile-rail-height)); }
   .deconstructed .candidate-dock-label {
     display: flex;
     align-items: center;
@@ -728,9 +733,10 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .deconstructed .mode-switch { display: flex; border-right: 2px solid var(--line); }
+  .deconstructed .mode-switch { display: flex; min-height: var(--mode-switch-height); border-right: 2px solid var(--line); }
   .deconstructed .mode-switch button {
-    padding: 0 0.7rem;
+    min-height: var(--mode-switch-height);
+    padding: 0 1rem;
     border: 0;
     border-right: 1px solid var(--line);
     background: transparent;
@@ -742,7 +748,36 @@
   .deconstructed .mode-switch button.active { color: var(--bg); background: var(--text); }
 
   /* Index typographique des candidats, sans avatar ni carte. */
-  .deconstructed .avatar-carousel { gap: 0; padding: 0; border: 0; overflow-x: auto; }
+  .deconstructed .candidate-dock .rail-shell {
+    display: flex;
+    align-items: stretch;
+    height: var(--profile-rail-height);
+    border-top: 1px solid var(--line);
+  }
+  .deconstructed .candidate-dock .avatar-carousel {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .deconstructed .candidate-dock .avatar-carousel::-webkit-scrollbar { display: none; }
+  .deconstructed .candidate-dock .avatar-carousel[hidden] { display: none; }
+  .deconstructed .candidate-dock .rail-scroll-btn {
+    flex: 0 0 auto;
+    width: var(--profile-rail-height);
+    border: 0;
+    border-left: 1px solid var(--line);
+    background: var(--acid);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .deconstructed .candidate-dock .rail-scroll-btn[hidden] { display: none; }
   .deconstructed .avatar-chip {
     width: auto;
     min-width: max-content;
@@ -754,6 +789,7 @@
     border-radius: 0;
     background: transparent;
     text-align: left;
+    box-sizing: border-box;
   }
   .deconstructed .avatar-chip-circle { display: none; }
   .deconstructed .avatar-chip-name {
@@ -782,13 +818,20 @@
     color: var(--bg);
   }
   .deconstructed .home-manifesto h2 {
-    max-width: 10ch;
+    max-width: 9.5ch;
     color: var(--bg);
-    font-size: clamp(2.8rem, 10vw, 7.5rem);
-    line-height: 0.86;
+    font-size: clamp(1.8rem, 4.2vw, 3rem);
+    line-height: 0.92;
     text-transform: uppercase;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.6rem;
   }
-  .deconstructed .home-manifesto p { max-width: 52ch; }
+  .deconstructed .home-manifesto p {
+    max-width: 52ch;
+    margin: 0;
+    font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+    line-height: 1.45;
+  }
   .deconstructed .home-candidates {
     grid-column: 1 / -1;
     display: grid;
@@ -822,12 +865,13 @@
     background: var(--text);
   }
   .deconstructed .party-hero h2 {
-    max-width: 11ch;
+    max-width: 10ch;
     margin: 0;
     color: var(--bg);
-    font-size: clamp(3rem, 10vw, 8rem);
-    line-height: 0.82;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 0.9;
     text-transform: uppercase;
+    letter-spacing: -0.03em;
   }
   .deconstructed .party-coverage {
     padding: 0.9rem 1rem;
@@ -853,6 +897,10 @@
   .deconstructed .party-vote b { display: block; margin: 0.5rem 0; font-size: 1rem; }
   .deconstructed .party-vote small { font-family: 'IBM Plex Mono', monospace; }
   .deconstructed .party-vote-position { display: inline-block; padding: 0.25rem 0.4rem; color: white; background: var(--text); text-transform: uppercase; }
+  .deconstructed .party-vote-position--pour { background: var(--vert); }
+  .deconstructed .party-vote-position--contre { background: var(--rouge); }
+  .deconstructed .party-vote-position--abstention,
+  .deconstructed .party-vote-position--absent { background: var(--muted); }
   .deconstructed .party-tags { display: flex; flex-wrap: wrap; gap: 0; }
   .deconstructed .party-tag { padding: calc(0.45rem + var(--weight) * 0.25rem) 0.7rem; border: 1px solid var(--line); margin: 0 -1px -1px 0; background: var(--acid); }
   .deconstructed .party-tag b { font-size: calc(0.7rem + var(--weight) * 0.3rem); }
@@ -925,6 +973,14 @@
   .deconstructed .theme-dist { display: none; }
   .deconstructed .trust-line { border: 0; padding: 0.8rem 1rem; margin: 0; background: var(--accent); color: white; }
   .deconstructed .trust-line a { color: white; }
+  .deconstructed .site-footer {
+    padding: 0.9rem 1rem;
+    border-top: 2px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+  .deconstructed .site-footer a { color: var(--text); }
 
   .deconstructed .theme-dock {
     position: sticky;
@@ -1235,16 +1291,24 @@
       <div class="mode-switch" role="group" aria-label="Type de profil">
         <button type="button" class="active" data-profile-mode="candidates" aria-pressed="true">Candidats</button>
         <button type="button" data-profile-mode="parties" aria-pressed="false">Partis</button>
+        <button type="button" data-profile-mode="groups" aria-pressed="false">Groupes réels</button>
       </div>
-      <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+      <div class="rail-shell">
+        <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
+        <button type="button" class="rail-scroll-btn" id="rail-scroll-btn" aria-label="Faire défiler le rail" hidden>→</button>
+      </div>
     </nav>
 
     <div id="candidat-root"></div>
+    <footer class="site-footer">
+      <a href="mentions-legales.html" target="_blank" rel="noopener">Mentions légales</a>
+    </footer>
   </main>
 
   <script>
-    const CANDIDATS_URL = "../../data/candidats.json";
-    const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
+    const CANDIDATS_URL = "../../raw_data/candidats.json";
+    const PROFILE_URL = (slug) => `../../raw_data/profiles/${slug}.json`;
+    const PIVOT_PROFILE_URL = (slug) => `../../pivot_data/profiles/${slug}.pivot.json`;
     const GROUP_PROFILES = [
       { id: "la-france-insoumise-lfi", label: "La France Insoumise (LFI)" },
       { id: "les-ecologistes", label: "Les Écologistes" },
@@ -1257,7 +1321,17 @@
       { id: "rassemblement-national-rn", label: "Rassemblement National (RN)" },
       { id: "renaissance", label: "Renaissance" },
     ];
-    const GROUP_PROFILE_URL = (id) => `../../data/profiles/groupe-${id}.json`;
+    const GROUP_PROFILE_URL = (id) => `../../pivot_data/partis/parti-${id}.json`;
+    const REAL_GROUP_PROFILES = [
+      { id: "AN-REN-16", label: "Renaissance", chambre: "Assemblée nationale", fichier: "groupe-AN-REN-16.json" },
+      { id: "AN-SOC-16", label: "Socialistes et apparentés", chambre: "Assemblée nationale", fichier: "groupe-AN-SOC-16.json" },
+      { id: "AN-RN-16", label: "Rassemblement National", chambre: "Assemblée nationale", fichier: "groupe-AN-RN-16.json" },
+      { id: "AN-LFI-16", label: "La France insoumise - NUPES", chambre: "Assemblée nationale", fichier: "groupe-AN-LFI-16.json" },
+      { id: "AN-LR-16", label: "Les Républicains", chambre: "Assemblée nationale", fichier: "groupe-AN-LR-16.json" },
+      { id: "Senat-LR", label: "Les Républicains", chambre: "Sénat", fichier: "groupe-Senat-LR.json" },
+      { id: "Senat-SER", label: "Socialiste, Écologiste et Républicain", chambre: "Sénat", fichier: "groupe-Senat-SER.json" },
+    ];
+    const REAL_GROUP_PROFILE_URL = (fichier) => `../../pivot_data/groupes/${fichier}`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },
@@ -1287,9 +1361,19 @@
     const TITLE_TRUNCATE_SLICE = TITLE_TRUNCATE_LENGTH - 3;
     const INTERVENTION_TEXT_PREVIEW_LENGTH = 200;
     const NON_VOTING_PATTERN = /non[ _-]?vot/;
-    const DEFENDED_THRESHOLD = 600;
-    const CARRIED_THRESHOLD = 250;
-    const REPORTED_THRESHOLD = 80;
+    const DEBATED_TEXT_STAGES = new Set(["examine_commission", "inscrit_ordre_jour", "discute_seance", "adopte", "promulgue"]);
+    const TEXT_ROLE_LABELS = { auteur: "auteur", rapporteur: "rapporteur", "co-rapporteur": "co-rapporteur" };
+    const TEXT_STAGE_LABELS = {
+      examine_commission: "examiné en commission",
+      inscrit_ordre_jour: "inscrit à l’ordre du jour",
+      discute_seance: "discuté en séance",
+      adopte: "adopté",
+      promulgue: "promulgué",
+    };
+    const AMENDMENT_OUTCOMES = [
+      ["adopté", "Adoptés"], ["rejeté", "Rejetés"], ["retiré", "Retirés"],
+      ["tombé", "Tombés"], ["irrecevable", "Irrecevables"], ["non_soutenu", "Non soutenus"],
+    ];
 
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
@@ -1297,7 +1381,7 @@
       mandats: { label: "Mandats", icon: "◌" },
       textes: { label: "Textes", icon: "▤" },
       votes: { label: "Votes", icon: "●" },
-      absences: { label: "Silences", icon: "□" },
+      absences: { label: "Données", icon: "□" },
       interventions: { label: "Paroles", icon: "“" },
       compare: { label: "Comparer", icon: "±" },
     };
@@ -1330,6 +1414,9 @@
       profileMode: "candidates",
       currentGroupId: "",
       currentGroupProfile: null,
+      currentRealGroupId: "",
+      currentRealGroupProfile: null,
+      realGroupCohesionVisible: 20,
     };
 
     function setDocumentTitle(label) {
@@ -1466,28 +1553,45 @@
           fin: e.actif ? null : (e.fins.length ? new Date(Math.max(...e.fins)).toISOString().slice(0, 10) : null),
           actif: e.actif,
         }))
-        .sort((a, b) => (b.debut || "").localeCompare(a.debut || ""));
+        .sort((a, b) => {
+          const notableDiff = Number(isNotableResponsibility(b)) - Number(isNotableResponsibility(a));
+          return notableDiff || (b.debut || "").localeCompare(a.debut || "");
+        });
     }
 
     function computeResponsibilitiesSummary(profile) {
       const items = dedupeResponsibilities(profile);
-      const notable = items.filter((r) => ROLE_PRIORITY.some((kw) => r.type.toLowerCase().includes(kw)));
-      return { distinctCount: items.length, notableCount: notable.length };
+      return { distinctCount: items.length };
     }
 
     function isNotableResponsibility(responsibility) {
       return ROLE_PRIORITY.some((keyword) => (responsibility.type || "").toLowerCase().includes(keyword));
     }
 
+    function sourcedHemicyclePosition(profile) {
+      const mandate = (profile.pivot_mandats || []).find((item) => item.position_dans_hemicycle && item.source_url);
+      return mandate?.position_dans_hemicycle || null;
+    }
+
+    function renderMinisterialIncompatibilities(profile) {
+      const periods = (profile.pivot_mandats || [])
+        .map((mandate) => mandate.suspendu_pour_fonction_gouvernementale)
+        .filter(Boolean);
+      if (!periods.length) return "";
+      return `<div class="party-coverage">INCOMPATIBILITÉ MINISTÉRIELLE : ${periods.map((period) => (
+        `mandat suspendu du ${escapeHtml(formatIsoDate(period.debut))} au ${escapeHtml(formatIsoDate(period.fin))}${period.suppleant_id ? ` · suppléant : ${escapeHtml(period.suppleant_id)}` : ""}`
+      )).join(" · ")}. Cette période n’est pas interprétée comme une absence parlementaire.</div>`;
+    }
+
     // KPI 3 — Profil de vote synthétique : une répartition, jamais un score isolé.
-    // Restreint aux votes portant sur "l'ensemble" du texte (pas les amendements/articles isolés,
+    // Univers retenu : tous les scrutins publics, ordinaires ou solennels, portant sur
+    // "l'ensemble" du texte (pas les amendements/articles isolés,
     // où un "contre" reflète souvent un désaccord technique ponctuel plutôt qu'une opposition de
     // principe), et dédupliqué sur la lecture la plus avancée quand un même texte a été voté à
     // plusieurs stades (première lecture, nouvelle lecture, CMP, lecture définitive...).
     // Limite qui subsiste : un vote sur l'ensemble agrège quand même des motivations plurielles,
     // et le regroupement des lectures d'un même texte repose sur une similarité de titre (fragile
-    // si le libellé change entre chambres). Les absences restent un segment à part (absence de
-    // donnée ≠ absence d'activité réelle).
+    // si le libellé change entre chambres). Une donnée manquante reste distincte d'une position.
     const ENSEMBLE_VOTE_PATTERN = /^l[’']ensemble\s+(?:du|de la)\s+(.*?)\s*(?:\(([^)]*)\))?\.?$/i;
     const READING_STAGE_RANK = {
       "lecture définitive": 4,
@@ -1515,6 +1619,7 @@
       const groups = new Map();
       let totalLectures = 0;
       for (const v of votes) {
+        if (v.type_vote === "motion_censure" || v.sort === "adopte_sans_vote_49_3") continue;
         const parsed = parseEnsembleVote(v.titre);
         if (!parsed) continue;
         totalLectures += 1;
@@ -1532,7 +1637,8 @@
         const cls = voteLabelAndClass(vote.position).cls;
         counts[cls] = (counts[cls] || 0) + 1;
       }
-      return { totalTextes: groups.size, totalLectures, counts };
+      const totalPositions = counts.pour + counts.contre + counts.abstention;
+      return { totalTextes: groups.size, totalPositions, totalLectures, counts };
     }
 
     function renderResponsabilites(profile) {
@@ -1560,7 +1666,7 @@
         ...v,
         _theme: detectThemeFromText(normalizedText(v.titre, v.position)),
       }));
-      const dossiers = (profile.dossiers_legislatifs || []).map((d) => ({
+      const textesPortes = (profile.textes_portes || []).map((d) => ({
         ...d,
         _theme: detectThemeFromText(normalizedText(d.titre)),
       }));
@@ -1568,21 +1674,17 @@
         ...i,
         _theme: detectThemeFromText(normalizedText(i.sujet, i.texte, ...(i.mots_cles || []))),
       }));
-      return { ...profile, votes, dossiers_legislatifs: dossiers, interventions };
+      return { ...profile, votes, textes_portes: textesPortes, interventions };
     }
 
     function inTheme(item, selectedTheme) {
       return selectedTheme === "all" ? true : item._theme === selectedTheme;
     }
 
-    function roleFromDossier(dossier) {
-      const n = Number(dossier.nb_interventions || 0);
-      // Seuils UX internes (observés sur les profils existants) :
-      // >=600 interventions => implication très forte ; >=250 => forte ; >=80 => moyenne ; sinon faible.
-      if (n >= DEFENDED_THRESHOLD) return "a défendu";
-      if (n >= CARRIED_THRESHOLD) return "a porté";
-      if (n >= REPORTED_THRESHOLD) return "a rapporté";
-      return "a cosigné";
+    function publicCarriedTexts(profile) {
+      return (profile.textes_portes || []).filter((texte) => (
+        TEXT_ROLE_LABELS[texte.role] && DEBATED_TEXT_STAGES.has(texte.stade_procedural)
+      ));
     }
 
     function sourceLinkHtml(url, label = "Source officielle") {
@@ -1594,7 +1696,7 @@
       const directUrl = vote.url_source || vote.url || vote.source;
       if (/^https?:\/\//i.test(directUrl || "")) return { url: directUrl, direct: true };
       const legislature = String(profile.votes_source || "").match(/l[ée]gislature\s*(\d+)/i)?.[1]
-        || (profile.dossiers_legislatifs || []).find((item) => item.legislature)?.legislature;
+        || (profile.textes_portes || []).find((item) => item.legislature)?.legislature;
       if (vote.numero_scrutin && legislature) {
         return {
           url: `https://www.assemblee-nationale.fr/dyn/${encodeURIComponent(legislature)}/scrutins/${encodeURIComponent(vote.numero_scrutin)}`,
@@ -1607,10 +1709,9 @@
 
     function compareFactsForTheme(profile, theme) {
       const votes = (profile.votes || []).filter((v) => v._theme === theme);
-      const textes = (profile.dossiers_legislatifs || []).filter((d) => d._theme === theme);
+      const textes = publicCarriedTexts(profile).filter((d) => d._theme === theme);
       const interventions = (profile.interventions || []).filter((i) => i._theme === theme);
-      const absents = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
-      return { votes, textes, interventions, absents };
+      return { votes, textes, interventions };
     }
 
     function renderThemePills() {
@@ -1640,7 +1741,7 @@
 
       // KPI 3 — Profil de vote synthétique, restreint aux votes sur l'ensemble du texte (dernière lecture connue)
       const voteProfile = computeFinalTextVoteProfile(profile);
-      const voteProfilePct = (key) => (voteProfile.totalTextes > 0 ? Math.round((voteProfile.counts[key] / voteProfile.totalTextes) * 100) : 0);
+      const voteProfilePct = (key) => (voteProfile.totalPositions > 0 ? Math.round((voteProfile.counts[key] / voteProfile.totalPositions) * 100) : 0);
 
       // Répartition thématique des votes pour histogramme horizontal (sert aussi de base au KPI 4)
       const themeCountMap = {};
@@ -1703,7 +1804,7 @@
                   <div class="kpi-label">Responsabilités occupées</div>
                 </div>
                 <div class="kpi-face kpi-face--back">
-                  <p class="kpi-back-text">${responsibilities.notableCount ? `dont ${responsibilities.notableCount} en tant que président(e)/rapporteur(e).` : "Aucune présidence/rapport identifié."} Commissions et engagements distincts, hors réaffectations internes.</p>
+                  <p class="kpi-back-text">Commissions et engagements distincts, hors réaffectations internes. Les fonctions ordonnent le détail, mais ne produisent aucun total public de « responsabilités notables ».</p>
                   <button type="button" class="kpi-back-link" data-goto-panel="mandats">Voir le détail →</button>
                 </div>
               </div>
@@ -1713,24 +1814,22 @@
               <div class="kpi-flip-inner">
                 <div class="kpi-face kpi-face--front">
                   <div class="kpi-icon">${KPI_ICONS.vote}</div>
-                  <div class="kpi-value">${voteProfile.totalTextes > 0 ? `${voteProfilePct("pour")}\u00a0%` : "N/D"}</div>
+                  <div class="kpi-value">${voteProfile.totalPositions > 0 ? `${voteProfilePct("pour")}\u00a0%` : "N/D"}</div>
                   <div class="kpi-label">Profil de vote — part de "pour"</div>
                 </div>
                 <div class="kpi-face kpi-face--back">
-                  ${voteProfile.totalTextes > 0 ? `
-                    <div class="vote-profile-bar" role="img" aria-label="Répartition : ${voteProfilePct("pour")}% pour, ${voteProfilePct("contre")}% contre, ${voteProfilePct("abstention")}% abstention, ${voteProfilePct("absent")}% sans trace">
+                  ${voteProfile.totalPositions > 0 ? `
+                    <div class="vote-profile-bar" role="img" aria-label="Répartition des positions documentées : ${voteProfilePct("pour")}% pour, ${voteProfilePct("contre")}% contre, ${voteProfilePct("abstention")}% abstention">
                       <div class="vote-profile-seg--pour" style="width:${voteProfilePct("pour")}%"></div>
                       <div class="vote-profile-seg--contre" style="width:${voteProfilePct("contre")}%"></div>
                       <div class="vote-profile-seg--abstention" style="width:${voteProfilePct("abstention")}%"></div>
-                      <div class="vote-profile-seg--absent" style="width:${voteProfilePct("absent")}%"></div>
                     </div>
                     <div class="vote-profile-legend">
-                      <span><span class="dot" style="background:var(--vert)"></span>Pour ${voteProfilePct("pour")}%</span>
-                      <span><span class="dot" style="background:var(--rouge)"></span>Contre ${voteProfilePct("contre")}%</span>
-                      <span><span class="dot" style="background:var(--muted)"></span>Abst. ${voteProfilePct("abstention")}%</span>
-                      <span><span class="dot" style="background:var(--line)"></span>Sans trace ${voteProfilePct("absent")}%</span>
+                      <span><span class="dot dot--pour"></span>Pour ${voteProfilePct("pour")}%</span>
+                      <span><span class="dot dot--contre"></span>Contre ${voteProfilePct("contre")}%</span>
+                      <span><span class="dot dot--abstention"></span>Abst. ${voteProfilePct("abstention")}%</span>
                     </div>
-                    <p class="kpi-back-text">${voteProfile.totalTextes} texte(s) sur leur vote final (${voteProfile.totalLectures} lecture(s) recensée(s)). Pas un score de performance.</p>
+                    <p class="kpi-back-text">${voteProfile.totalPositions} position(s) documentée(s) sur des textes entiers, à leur lecture la plus avancée. Scrutins publics ordinaires et solennels; motions de censure et 49.3 sans vote exclus. Pas un score de performance.</p>
                   ` : `<p class="kpi-back-text">Aucun vote sur l'ensemble d'un texte retrouvé dans les données disponibles.</p>`}
                   <button type="button" class="kpi-back-link" data-goto-panel="votes">Voir le détail →</button>
                 </div>
@@ -1756,16 +1855,17 @@
 
           <div class="trust-line">
             Données sourcées • Mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
-            <a class="link" href="../../README.md" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="methodologie.html" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="mentions-legales.html" target="_blank" rel="noopener">Mentions légales</a>
           </div>
         </section>
       `;
     }
 
     function renderTextes(profile) {
-      const items = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      const items = publicCarriedTexts(profile).filter((d) => inTheme(d, state.selectedTheme));
       if (!items.length) {
-        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte porté retrouvé dans les données disponibles." : "Aucun texte porté retrouvé sur ce thème."}</p>`;
+        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte avec rôle factuel et débat avéré retrouvé." : "Aucun texte répondant aux critères sur ce thème."} Un simple dépôt ou un rôle inconnu n’est pas publié ici.</p>`;
       }
       const sorted = [...items].sort((a, b) => {
         const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
@@ -1783,7 +1883,7 @@
         return newestDiff || themeLabel(a[0]).localeCompare(themeLabel(b[0]), "fr");
       });
 
-      return `<div class="text-atlas">${shelves.map(([theme, themeItems]) => {
+      return `<p class="source-ref">Sont retenus les textes dont le rôle est sourcé et qui ont au moins été examinés en commission.</p><div class="text-atlas">${shelves.map(([theme, themeItems]) => {
         const expanded = state.expandedTextThemes.has(theme);
         const visible = expanded ? themeItems : themeItems.slice(0, 6);
         return `
@@ -1798,8 +1898,8 @@
                 <article class="text-leaf">
                   <div class="text-leaf-title">${escapeHtml(simplifyTitle(d.titre))}</div>
                   <div>
-                    <div class="text-leaf-meta">${escapeHtml(roleFromDossier(d))} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
-                    ${sourceLinkHtml(d.url_institution || d.url_source, "↗ source")}
+                    <div class="text-leaf-meta">${escapeHtml(TEXT_ROLE_LABELS[d.role])} / ${escapeHtml(TEXT_STAGE_LABELS[d.stade_procedural])} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+                    ${sourceLinkHtml(d.source_url, "↗ source")}
                   </div>
                 </article>
               `).join("")}
@@ -1808,6 +1908,21 @@
           </section>
         `;
       }).join("")}</div>`;
+    }
+
+    function renderAmendements(profile) {
+      const amendements = profile.amendements || [];
+      if (!amendements.length) return `<p class="empty">Aucun amendement structuré disponible.</p>`;
+      const counts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([outcome]) => [outcome, 0]));
+      for (const amendement of amendements) {
+        if (Object.hasOwn(counts, amendement.sort)) counts[amendement.sort] += 1;
+      }
+      return `
+        <p class="source-ref">Comptes bruts par issue sur ${amendements.length} amendement(s) documenté(s). Aucun taux isolé : l’issue dépend aussi de la procédure et du texte.</p>
+        <div class="void-map">${AMENDMENT_OUTCOMES.map(([outcome, label]) => `
+          <div class="void-signal"><span class="void-number">${counts[outcome]}</span><strong>${escapeHtml(label)}</strong></div>
+        `).join("")}</div>
+      `;
     }
 
     function sortVotesByDate(votes) {
@@ -1823,8 +1938,11 @@
         return `<p class="empty">${state.selectedTheme === "all" ? "Aucune donnée de vote trouvée dans cette fiche." : "Aucune donnée de vote trouvée sur ce thème."}</p>`;
       }
 
+      const motions = items.filter((vote) => vote.type_vote === "motion_censure");
+      const fortyNineThree = items.filter((vote) => vote.sort === "adopte_sans_vote_49_3");
+      const ordinaryVotes = items.filter((vote) => vote.type_vote !== "motion_censure" && vote.sort !== "adopte_sans_vote_49_3");
       const byTheme = new Map();
-      for (const vote of items) {
+      for (const vote of ordinaryVotes) {
         if (!byTheme.has(vote._theme)) byTheme.set(vote._theme, []);
         byTheme.get(vote._theme).push(vote);
       }
@@ -1836,6 +1954,11 @@
         });
 
       return `
+        ${fortyNineThree.length ? `<div class="party-coverage"><strong>49.3, sans vote sur le texte</strong><br>${fortyNineThree.map((vote) => `${escapeHtml(simplifyTitle(vote.titre))} · ${escapeHtml(formatIsoDate(vote.date))}`).join("<br>")}</div>` : ""}
+        ${motions.length ? `<div class="party-coverage"><strong>Motions de censure, scrutins séparés</strong><br>${motions.map((vote) => {
+          const badge = voteLabelAndClass(vote.position);
+          return `${escapeHtml(simplifyTitle(vote.titre))} · ${escapeHtml(badge.label)} · ${escapeHtml(formatIsoDate(vote.date))}${vote.texte_lie_id ? ` · texte lié ${escapeHtml(vote.texte_lie_id)}` : ""}`;
+        }).join("<br>")}</div>` : ""}
         <p class="source-ref">Dans chaque thème : du vote le plus récent au plus ancien.</p>
         <div class="vote-atlas">
           ${shelves.map(([theme, themeVotes]) => {
@@ -1870,17 +1993,15 @@
     }
 
     function renderAbsences(profile) {
-      const votes = (profile.votes || []).filter((v) => inTheme(v, state.selectedTheme));
-      const textes = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      const textes = publicCarriedTexts(profile).filter((d) => inTheme(d, state.selectedTheme));
       const inters = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme));
 
-      const absVotes = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
       const themeUniverse = THEME_OPTIONS.filter((t) => t.key !== "all").map((t) => t.key);
 
       let noTextThemes = [];
       let noInterThemes = [];
       if (state.selectedTheme === "all") {
-        const textThemes = new Set((profile.dossiers_legislatifs || []).map((d) => d._theme));
+        const textThemes = new Set(publicCarriedTexts(profile).map((d) => d._theme));
         const interThemes = new Set((profile.interventions || []).map((i) => i._theme));
         noTextThemes = themeUniverse.filter((t) => !textThemes.has(t));
         noInterThemes = themeUniverse.filter((t) => !interThemes.has(t));
@@ -1891,7 +2012,6 @@
       return `<div class="void-map">
         <div class="void-signal"><span class="void-number">${missingTextCount}</span><strong>thème(s) sans texte retrouvé</strong><small>${noTextThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
         <div class="void-signal"><span class="void-number">${missingInterCount}</span><strong>thème(s) sans parole retrouvée</strong><small>${noInterThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
-        <div class="void-signal"><span class="void-number">${absVotes.length}</span><strong>vote(s) sans participation</strong><small>absence à un scrutin ≠ absence d'activité</small></div>
       </div>`;
     }
 
@@ -1933,9 +2053,25 @@
 
     async function loadProfile(slug) {
       if (!slug) return null;
-      const resp = await fetch(PROFILE_URL(slug), { cache: "no-store" });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return withTheme(await resp.json());
+      const [rawResponse, pivotResponse] = await Promise.all([
+        fetch(PROFILE_URL(slug), { cache: "no-store" }),
+        fetch(PIVOT_PROFILE_URL(slug), { cache: "no-store" }).catch(() => null),
+      ]);
+      if (!rawResponse.ok) throw new Error(`HTTP ${rawResponse.status}`);
+      const raw = await rawResponse.json();
+      const pivot = pivotResponse?.ok ? await pivotResponse.json() : null;
+      const pivotVotes = new Map((pivot?.votes || []).map((vote) => [String(vote.numero_scrutin || ""), vote]));
+      const votes = (raw.votes || []).map((vote) => {
+        const fact = pivotVotes.get(String(vote.numero_scrutin || ""));
+        return fact ? { ...vote, type_scrutin: fact.type_scrutin, type_vote: fact.type_vote, texte_lie_id: fact.texte_lie_id, sort: fact.sort ?? vote.sort } : vote;
+      });
+      return withTheme({
+        ...raw,
+        votes,
+        textes_portes: pivot?.textes_portes || [],
+        amendements: pivot?.amendements || [],
+        pivot_mandats: pivot?.mandats || [],
+      });
     }
 
     async function ensureCompareProfile(slug) {
@@ -1991,7 +2127,6 @@
                     <div class="versus-metric"><b>${facts.votes.length}</b><small>votes</small></div>
                     <div class="versus-metric"><b>${facts.textes.length}</b><small>textes</small></div>
                     <div class="versus-metric"><b>${facts.interventions.length}</b><small>paroles</small></div>
-                    <div class="versus-metric"><b>${facts.absents.length}</b><small>sans part.</small></div>
                   </div>
                 </article>
               `;
@@ -2006,12 +2141,17 @@
         renderGroupHome();
         return;
       }
+      if (state.profileMode === "groups") {
+        renderRealGroupHome();
+        return;
+      }
       const root = document.getElementById("candidat-root");
       const available = state.candidats.filter((candidate) => candidate.slug);
       state.currentSlug = "";
       state.currentMeta = null;
       state.currentProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
@@ -2027,7 +2167,6 @@
               </button>
             `).join("")}
           </div>
-          <div class="home-note">Les noms barrés dans l’index supérieur ne disposent pas encore de données parlementaires exploitables.</div>
         </section>
       `;
       root.querySelectorAll("[data-home-slug]").forEach((button) => {
@@ -2041,12 +2180,13 @@
       state.currentGroupId = "";
       state.currentGroupProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
             <p class="section-kicker">En clair / vue par parti</p>
             <h2>Regarder les lignes collectives.</h2>
-            <p><strong>Une vue agrégée des profils disponibles.</strong> Participation, cohésion des votes et thèmes documentaires sont calculés uniquement à partir des candidats couverts.</p>
+            <p><strong>Une vue agrégée des candidats déclarés par parti.</strong> Cette page ne prétend pas représenter un groupe parlementaire réel : elle montre seulement l'échantillon éditorial disponible pour chaque parti.</p>
           </div>
           <div class="home-candidates">
             ${GROUP_PROFILES.map((group) => `
@@ -2056,11 +2196,41 @@
               </button>
             `).join("")}
           </div>
-          <div class="home-note party-home-note">Ces vues ne représentent pas tous les membres d'un parti : le nombre de profils effectivement agrégés est indiqué sur chaque fiche.</div>
+          <div class="home-note party-home-note">Ces vues ne représentent pas les groupes parlementaires réels : elles agrègent les candidats déclarés avec un profil pivot disponible. Le périmètre de couverture est indiqué sur chaque fiche.</div>
         </section>
       `;
       root.querySelectorAll("[data-home-group]").forEach((button) => {
         button.addEventListener("click", () => selectGroup(button.dataset.homeGroup));
+      });
+      setDocumentTitle("");
+    }
+
+    function renderRealGroupHome() {
+      const root = document.getElementById("candidat-root");
+      state.currentRealGroupId = "";
+      state.currentRealGroupProfile = null;
+      updateActiveAvatarChip();
+      updateProfileRailVisibility();
+      root.innerHTML = `
+        <section class="home-stage">
+          <div class="home-manifesto">
+            <p class="section-kicker">En clair / groupes parlementaires réels</p>
+            <h2>Voir la composition réelle des groupes.</h2>
+            <p><strong>Les groupes parlementaires effectivement constitués</strong> à l'Assemblée nationale et au Sénat, avec leur cohésion de vote, leurs amendements et leur effectif déclaré. La couverture individuelle (profils pivot disponibles localement) reste partielle par rapport à l'effectif réel du groupe — le détail est indiqué sur chaque fiche.</p>
+          </div>
+          <div class="home-candidates">
+            ${REAL_GROUP_PROFILES.map((group) => `
+              <button type="button" class="home-candidate" data-home-real-group="${escapeHtml(group.id)}">
+                <strong>${escapeHtml(group.label)}</strong>
+                <small>${escapeHtml(group.chambre)} ↗</small>
+              </button>
+            `).join("")}
+          </div>
+          <div class="home-note party-home-note">Ces fiches décrivent des groupes parlementaires réels (composition, cohésion de vote, amendements). La liste des membres avec profil détaillé reste limitée aux profils pivot disponibles localement : le taux de couverture est affiché sur chaque fiche, ainsi que les avertissements de fraîcheur des données.</div>
+        </section>
+      `;
+      root.querySelectorAll("[data-home-real-group]").forEach((button) => {
+        button.addEventListener("click", () => selectRealGroup(button.dataset.homeRealGroup));
       });
       setDocumentTitle("");
     }
@@ -2080,46 +2250,38 @@
       const root = document.getElementById("candidat-root");
       const group = state.currentGroupProfile;
       if (!group) return;
-      const votes = group.cohesion_votes || [];
-      const coveredProfiles = group.meta?.profils_sources?.length || 0;
-      const members = group.membres || [];
-      const participation = average(votes.map((vote) => vote.taux_participation));
-      const coherence = average(votes.map((vote) => vote.taux_coherence_hors_absents));
-      const quorumVotes = votes.filter((vote) => vote.quorum_atteint);
-      const recentVotes = [...votes].sort((a, b) => toDateMs(b.date) - toDateMs(a.date)).slice(0, 18);
+      const coveredProfiles = typeof group.meta?.nb_candidats_avec_pivot === "number"
+        ? group.meta.nb_candidats_avec_pivot
+        : (group.meta?.profils_sources?.length || 0);
+      const declaredProfiles = group.meta?.nb_candidats_declares || 0;
+      const members = group.candidats || [];
       const tags = (group.tags_thematiques_agreges || [])
         .filter((tag) => tag.tag && tag.tag !== "couverture")
         .sort((a, b) => Number(b.nb_membres_porteurs || 0) - Number(a.nb_membres_porteurs || 0) || Number(b.poids_relatif || 0) - Number(a.poids_relatif || 0))
         .slice(0, 30);
       const maxTagMembers = Math.max(...tags.map((tag) => Number(tag.nb_membres_porteurs || 0)), 1);
       const warnings = group.meta?.warnings || [];
+      const title = group.parti_nom || group.groupe_nom || group.groupe_sigle || "Profil collectif";
+      const subtitle = group.parti_nom ? "Empreinte de parti" : "Empreinte collective";
       root.innerHTML = `
         <article class="party-profile">
           <header class="party-hero">
-            <p class="section-kicker">Empreinte collective / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
-            <h2>${escapeHtml(group.groupe_nom || group.groupe_sigle)}</h2>
+            <p class="section-kicker">${subtitle} / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
+            <h2>${escapeHtml(title)}</h2>
           </header>
-          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} profil(s) source(s), ${members.length} membre(s) référencé(s). Cette fiche décrit seulement cet échantillon documentaire et non le parti dans son ensemble.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
+          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} candidat(s) avec profil pivot sur ${declaredProfiles} déclaré(s). Cette fiche décrit un échantillon éditorial de parti, pas un groupe parlementaire réel.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
           <section class="party-kpis" aria-label="Indicateurs du parti">
-            <div class="party-kpi"><b>${coveredProfiles}</b><span>Profils couverts</span></div>
-            <div class="party-kpi"><b>${votes.length}</b><span>Scrutins rapprochés</span></div>
-            <div class="party-kpi"><b>${formatPercentage(participation)}</b><span>Participation moyenne sur les scrutins couverts</span></div>
-            <div class="party-kpi"><b>${formatPercentage(coherence)}</b><span>Cohésion moyenne parmi les votants</span></div>
+            <div class="party-kpi"><b>${coveredProfiles}</b><span>Candidats avec pivot</span></div>
+            <div class="party-kpi"><b>${declaredProfiles}</b><span>Candidats déclarés</span></div>
+            <div class="party-kpi"><b>${tags.length}</b><span>Thèmes documentés</span></div>
           </section>
           <section class="party-section">
-            <p class="section-kicker">${quorumVotes.length} scrutin(s) avec quorum documentaire sur ${votes.length}</p>
-            <h2>Votes collectifs</h2>
-            ${recentVotes.length ? `<div class="party-vote-grid">${recentVotes.map((vote) => `
-              <article class="party-vote">
-                <small>${escapeHtml(formatIsoDate(vote.date))} · participation ${formatPercentage(Number(vote.taux_participation))}</small>
-                <b>${escapeHtml(simplifyTitle(vote.texte))}</b>
-                <small class="party-vote-position">Majorité : ${escapeHtml(vote.position_majoritaire || "non déterminée")}</small>
-                <small>Cohésion des votants : ${formatPercentage(Number(vote.taux_coherence_hors_absents))}</small>
-              </article>
-            `).join("")}</div>` : `<p class="empty">Aucun scrutin collectif calculable avec les profils disponibles.</p>`}
+            <p class="section-kicker">Échantillon documentaire disponible</p>
+            <h2>Éléments de comparaison</h2>
+            <p class="empty">Ce profil de parti ne publie ni cohésion de vote ni effectif de groupe parlementaire. Il se limite à l'échantillon éditorial disponible pour les candidats déclarés.</p>
           </section>
           <section class="party-section">
-            <p class="section-kicker">Mots-clés partagés entre les profils sources</p>
+            <p class="section-kicker">Mots-clés partagés entre les candidats couverts</p>
             <h2>Empreinte thématique</h2>
             ${tags.length ? `<div class="party-tags">${tags.map((tag) => `
               <span class="party-tag" style="--weight:${Number(tag.nb_membres_porteurs || 0) / maxTagMembers}"><b>${escapeHtml(tag.tag)}</b><small>${tag.nb_membres_porteurs} profil(s) porteur(s)</small></span>
@@ -2127,13 +2289,107 @@
           </section>
           <section class="party-section">
             <p class="section-kicker">Périmètre de l'agrégation</p>
-            <h2>Profils couverts</h2>
-            <div class="party-members">${members.map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.debut_dans_groupe ? escapeHtml(formatIsoDate(member.debut_dans_groupe)) : "début non renseigné"} → ${member.fin_dans_groupe ? escapeHtml(formatIsoDate(member.fin_dans_groupe)) : (member.actif ? "aujourd'hui" : "fin non renseignée")}</small></div>`).join("")}</div>
-            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="../../README.md" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
+            <h2>Candidats couverts</h2>
+            <div class="party-members">${(group.candidats || []).map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.a_un_profil_pivot ? "Profil pivot disponible" : "Aucun profil pivot disponible"}</small></div>`).join("")}</div>
+            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="methodologie.html" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
           </section>
         </article>
       `;
-      setDocumentTitle(group.groupe_nom || group.groupe_sigle);
+      setDocumentTitle(title);
+    }
+
+    function renderRealGroupPage() {
+      const root = document.getElementById("candidat-root");
+      const group = state.currentRealGroupProfile;
+      if (!group) return;
+      const title = group.groupe_nom || group.groupe_sigle || "Groupe parlementaire";
+      const periode = group.periode || {};
+      const periodeLabel = periode.debut
+        ? `${formatIsoDate(periode.debut)} → ${periode.fin ? formatIsoDate(periode.fin) : "aujourd'hui"}${periode.actif ? "" : " (groupe dissous)"}`
+        : "période non renseignée";
+      const coverage = group.meta?.couverture_roster || {};
+      const rosterTotal = Number.isFinite(coverage.roster_total) ? coverage.roster_total : null;
+      const profilsDisponibles = Number.isFinite(coverage.profils_disponibles) ? coverage.profils_disponibles : (group.membres || []).length;
+      const warnings = group.meta?.warnings || [];
+      const members = group.membres || [];
+      const tags = (group.tags_thematiques_agreges || [])
+        .filter((tag) => tag.tag)
+        .sort((a, b) => Number(b.nb_membres_porteurs || 0) - Number(a.nb_membres_porteurs || 0) || Number(b.poids_relatif || 0) - Number(a.poids_relatif || 0))
+        .slice(0, 30);
+      const maxTagMembers = Math.max(...tags.map((tag) => Number(tag.nb_membres_porteurs || 0)), 1);
+      const cohesionVotes = (group.cohesion_votes || [])
+        .slice()
+        .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+      const visibleCount = Math.min(state.realGroupCohesionVisible, cohesionVotes.length);
+      const visibleVotes = cohesionVotes.slice(0, visibleCount);
+      const amendements = group.amendements_agreges || {};
+      const amendementsDepute = amendements.par_type_deposant?.depute || {};
+
+      root.innerHTML = `
+        <article class="party-profile">
+          <header class="party-hero">
+            <p class="section-kicker">Groupe parlementaire réel / ${escapeHtml(group.chambre || "")}${group.legislature ? ` · législature ${escapeHtml(String(group.legislature))}` : ""} · ${escapeHtml(periodeLabel)}</p>
+            <h2>${escapeHtml(title)}${group.groupe_sigle && group.groupe_sigle !== title ? ` (${escapeHtml(group.groupe_sigle)})` : ""}</h2>
+          </header>
+          <div class="party-coverage">
+            PÉRIMÈTRE : ${profilsDisponibles} profil(s) pivot disponible(s) localement${rosterTotal !== null ? ` sur ${rosterTotal} membre(s) réel(s) du groupe` : ""}. Les thèmes et la liste de membres ci-dessous ne couvrent que ces profils ; la cohésion de vote et les amendements portent sur l'ensemble du groupe tel que déclaré par les sources.
+            ${warnings.length ? `<br>Avertissement : ${warnings.map((w) => escapeHtml(w)).join(" ")}` : ""}
+          </div>
+          <section class="party-kpis" aria-label="Indicateurs du groupe">
+            <div class="party-kpi"><b>${group.effectif?.actuel ?? "N/D"}</b><span>Effectif actuel déclaré</span></div>
+            <div class="party-kpi"><b>${rosterTotal ?? "N/D"}</b><span>Membres réels du roster</span></div>
+            <div class="party-kpi"><b>${cohesionVotes.length}</b><span>Scrutins de cohésion couverts</span></div>
+            <div class="party-kpi"><b>${amendementsDepute.nb_amendements ?? 0}</b><span>Amendements déposés par des député(e)s</span></div>
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Cohésion de vote du groupe</p>
+            <h2>Scrutins</h2>
+            ${cohesionVotes.length ? `
+              <div class="party-vote-grid">
+                ${visibleVotes.map((vote) => {
+                  const { label, cls } = voteLabelAndClass(vote.position_majoritaire);
+                  return `
+                    <div class="party-vote">
+                      <span class="party-vote-position party-vote-position--${cls}">${escapeHtml(label)}</span>
+                      <b>${escapeHtml(simplifyTitle(vote.texte))}</b>
+                      <small>${formatIsoDate(vote.date)} · cohérence ${formatPercentage(Number(vote.taux_coherence))} · participation ${formatPercentage(Number(vote.taux_participation))}${vote.quorum_atteint === false ? " · quorum non atteint" : ""}</small>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+              ${cohesionVotes.length > visibleCount ? `<p class="small"><button type="button" data-expand-cohesion>Voir plus de scrutins (${cohesionVotes.length - visibleCount} restants)</button></p>` : ""}
+            ` : `<p class="empty">Aucun scrutin de cohésion disponible pour ce groupe.</p>`}
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Amendements déposés au nom du groupe</p>
+            <h2>Activité législative</h2>
+            <p>${amendementsDepute.nb_amendements ?? 0} amendement(s) déposé(s) par des député(e)s du groupe, ${amendementsDepute.nb_adoptes ?? 0} adopté(s) (taux d'adoption ${formatPercentage(Number(amendementsDepute.taux_adoption))}).</p>
+            <p class="small">Total tous déposants confondus (gouvernement, commissions, inconnu...) : ${amendements.nb_amendements ?? 0} amendement(s). Ne pas comparer directement ce total aux chiffres par député : les catégories de déposants ne sont pas homogènes.</p>
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Mots-clés partagés entre les membres couverts</p>
+            <h2>Empreinte thématique</h2>
+            ${tags.length ? `<div class="party-tags">${tags.map((tag) => `
+              <span class="party-tag" style="--weight:${Number(tag.nb_membres_porteurs || 0) / maxTagMembers}"><b>${escapeHtml(tag.tag)}</b><small>${tag.nb_membres_porteurs} profil(s) porteur(s)</small></span>
+            `).join("")}</div>` : `<p class="empty">Aucun thème agrégé disponible.</p>`}
+          </section>
+          <section class="party-section">
+            <p class="section-kicker">Profils individuels disponibles</p>
+            <h2>Membres couverts</h2>
+            ${members.length ? `<div class="party-members">${members.map((member) => `
+              <div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.actif ? "Membre actif" : `Membre du ${formatIsoDate(member.debut_dans_groupe)} au ${formatIsoDate(member.fin_dans_groupe)}`}</small></div>
+            `).join("")}</div>` : `<p class="empty">Aucun profil pivot local disponible pour ce groupe.</p>`}
+            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="methodologie.html" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
+          </section>
+        </article>
+      `;
+      root.querySelectorAll("[data-expand-cohesion]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.realGroupCohesionVisible += 20;
+          renderRealGroupPage();
+        });
+      });
+      setDocumentTitle(title);
     }
 
     function renderPage() {
@@ -2145,6 +2401,16 @@
         root.innerHTML = "";
         return;
       }
+
+      const hemicyclePosition = sourcedHemicyclePosition(profile);
+      const textsBlock = `<h2>Textes portés <span class="source-ref">(${publicCarriedTexts(profile).length})</span></h2><div id="textes">${renderTextes(profile)}</div>`;
+      const amendmentsBlock = `<h2>Amendements</h2><div id="amendements">${renderAmendements(profile)}</div>`;
+      const legislativeBlocks = hemicyclePosition === "opposition"
+        ? `${amendmentsBlock}${textsBlock}`
+        : `${textsBlock}${amendmentsBlock}`;
+      const categoryOrderRule = hemicyclePosition
+        ? `Ordre éditorial : ${hemicyclePosition === "opposition" ? "amendements puis textes" : "textes puis amendements"}, d’après la position sourcée dans l’hémicycle. Les deux catégories restent affichées.`
+        : "Ordre éditorial neutre : textes puis amendements. Aucune position sourcée dans l’hémicycle n’est utilisée.";
 
       root.innerHTML = `
         ${renderHeader(meta, profile)}
@@ -2159,14 +2425,15 @@
           <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
             <section class="panel">
               <h2>Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
+              ${renderMinisterialIncompatibilities(profile)}
               <div id="mandats">${renderResponsabilites(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
             <section class="panel">
-              <h2>Textes portés <span class="source-ref">(${(profile.dossiers_legislatifs || []).length})</span></h2>
-              <div id="textes">${renderTextes(profile)}</div>
+              <p class="source-ref">${escapeHtml(categoryOrderRule)}</p>
+              ${legislativeBlocks}
             </section>
           </div>
 
@@ -2179,7 +2446,7 @@
 
           <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
             <section class="panel">
-              <h2>Absences et silences</h2>
+              <h2>Angles morts documentaires</h2>
               <div id="absences">${renderAbsences(profile)}</div>
             </section>
           </div>
@@ -2205,11 +2472,11 @@
       const tenure = computeMandateTenure(profile);
       const responsibilities = computeResponsibilitiesSummary(profile);
       const voteProfile = computeFinalTextVoteProfile(profile);
-      const pourPct = voteProfile.totalTextes
-        ? Math.round((voteProfile.counts.pour / voteProfile.totalTextes) * 100)
+      const pourPct = voteProfile.totalPositions
+        ? Math.round((voteProfile.counts.pour / voteProfile.totalPositions) * 100)
         : null;
       const themeCounts = new Map();
-      for (const item of [...(profile.votes || []), ...(profile.dossiers_legislatifs || []), ...(profile.interventions || [])]) {
+      for (const item of [...(profile.votes || []), ...publicCarriedTexts(profile), ...(profile.interventions || [])]) {
         themeCounts.set(item._theme, (themeCounts.get(item._theme) || 0) + 1);
       }
       const dominant = [...themeCounts.entries()].sort((a, b) => b[1] - a[1])[0];
@@ -2227,7 +2494,7 @@
         {
           question: "Comment vote-t-il sur les textes entiers ?",
           value: pourPct === null ? "N/D" : `${pourPct} %`,
-          note: voteProfile.totalTextes ? `${voteProfile.totalTextes} textes à leur lecture la plus avancée.` : "Aucun vote final retrouvé.",
+          note: voteProfile.totalPositions ? `${voteProfile.totalPositions} positions documentées, scrutins publics ordinaires et solennels.` : "Aucune position finale retrouvée.",
         },
         {
           question: "Quel thème apparaît le plus souvent dans ses traces ?",
@@ -2435,17 +2702,45 @@
     }
 
     function updateActiveAvatarChip() {
+      const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
       document.querySelectorAll("#candidat-carousel .avatar-chip").forEach((chip) => {
-        const isActive = state.profileMode === "parties"
-          ? chip.dataset.groupId === state.currentGroupId
-          : chip.dataset.slug === state.currentSlug;
+        let isActive;
+        if (state.profileMode === "parties") isActive = chip.dataset.groupId === state.currentGroupId;
+        else if (state.profileMode === "groups") isActive = chip.dataset.realGroupId === state.currentRealGroupId;
+        else isActive = chip.dataset.slug === state.currentSlug;
         chip.classList.toggle("active", isActive);
         chip.setAttribute("aria-selected", String(isActive));
       });
     }
 
+    function updateProfileRailVisibility() {
+      const carousel = document.getElementById("candidat-carousel");
+      const dock = document.querySelector(".candidate-dock");
+      const button = document.getElementById("rail-scroll-btn");
+      let hasSelection;
+      if (state.profileMode === "parties") hasSelection = Boolean(state.currentGroupId);
+      else if (state.profileMode === "groups") hasSelection = Boolean(state.currentRealGroupId);
+      else hasSelection = Boolean(state.currentSlug);
+      carousel.hidden = !hasSelection;
+      button.hidden = !hasSelection;
+      dock.classList.toggle("has-profile-rail", hasSelection);
+      document.body.classList.toggle("profile-selected", hasSelection);
+      if (!hasSelection) return;
+      const needsScroll = carousel.scrollWidth > carousel.clientWidth + 1;
+      button.hidden = !needsScroll;
+    }
+
+    function scrollProfileRail() {
+      const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
+      const step = Math.max(160, carousel.clientWidth * 0.8);
+      carousel.scrollBy({ left: step, behavior: "smooth" });
+    }
+
     function renderProfileRail() {
       const carousel = document.getElementById("candidat-carousel");
+      if (!carousel) return;
       if (state.profileMode === "parties") {
         carousel.setAttribute("aria-label", "Choisir un parti");
         carousel.innerHTML = GROUP_PROFILES.map((group) => `
@@ -2456,6 +2751,17 @@
         `).join("");
         carousel.querySelectorAll("[data-group-id]").forEach((chip) => {
           chip.addEventListener("click", () => selectGroup(chip.dataset.groupId));
+        });
+      } else if (state.profileMode === "groups") {
+        carousel.setAttribute("aria-label", "Choisir un groupe parlementaire");
+        carousel.innerHTML = REAL_GROUP_PROFILES.map((group) => `
+          <button type="button" class="avatar-chip" data-real-group-id="${escapeHtml(group.id)}" role="tab" aria-selected="false" title="${escapeHtml(group.label)} (${escapeHtml(group.chambre)})">
+            <span class="avatar-chip-circle">${escapeHtml(shortName(group.label))}</span>
+            <span class="avatar-chip-name">${escapeHtml(group.label)}</span>
+          </button>
+        `).join("");
+        carousel.querySelectorAll("[data-real-group-id]").forEach((chip) => {
+          chip.addEventListener("click", () => selectRealGroup(chip.dataset.realGroupId));
         });
       } else {
         carousel.setAttribute("aria-label", "Choisir un candidat");
@@ -2470,16 +2776,19 @@
         });
       }
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
     }
 
     function setProfileMode(mode) {
-      if (!['candidates', 'parties'].includes(mode) || state.profileMode === mode) return;
+      if (!['candidates', 'parties', 'groups'].includes(mode) || state.profileMode === mode) return;
       state.profileMode = mode;
       state.currentSlug = "";
       state.currentMeta = null;
       state.currentProfile = null;
       state.currentGroupId = "";
       state.currentGroupProfile = null;
+      state.currentRealGroupId = "";
+      state.currentRealGroupProfile = null;
       document.querySelectorAll("[data-profile-mode]").forEach((button) => {
         const active = button.dataset.profileMode === mode;
         button.classList.toggle("active", active);
@@ -2505,6 +2814,7 @@
       state.expressIndex = 0;
 
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
 
       const root = document.getElementById("candidat-root");
       if (!slug || !state.currentMeta) {
@@ -2533,6 +2843,7 @@
       state.currentGroupId = groupId;
       state.currentGroupProfile = null;
       updateActiveAvatarChip();
+      updateProfileRailVisibility();
       const root = document.getElementById("candidat-root");
       const groupMeta = GROUP_PROFILES.find((group) => group.id === groupId);
       if (!groupMeta) {
@@ -2544,11 +2855,37 @@
         const response = await fetch(GROUP_PROFILE_URL(groupId), { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const profile = await response.json();
-        if (profile.type_document !== "profil_groupe") throw new Error("schéma de groupe inattendu");
+        if (!(["profil_groupe", "profil_parti"].includes(profile.type_document))) throw new Error("schéma de profil inattendu");
         state.currentGroupProfile = profile;
         renderGroupPage();
       } catch (error) {
         root.innerHTML = `<section class="panel"><p class="empty">Données de parti indisponibles (${escapeHtml(error.message)}).</p></section>`;
+        setDocumentTitle(groupMeta.label);
+      }
+    }
+
+    async function selectRealGroup(groupId) {
+      state.currentRealGroupId = groupId;
+      state.currentRealGroupProfile = null;
+      state.realGroupCohesionVisible = 20;
+      updateActiveAvatarChip();
+      updateProfileRailVisibility();
+      const root = document.getElementById("candidat-root");
+      const groupMeta = REAL_GROUP_PROFILES.find((group) => group.id === groupId);
+      if (!groupMeta) {
+        renderRealGroupHome();
+        return;
+      }
+      root.innerHTML = `<section class="panel"><p class="empty" role="status" aria-live="polite">Chargement du groupe ${escapeHtml(groupMeta.label)}…</p></section>`;
+      try {
+        const response = await fetch(REAL_GROUP_PROFILE_URL(groupMeta.fichier), { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const profile = await response.json();
+        if (profile.type_document !== "profil_groupe") throw new Error("schéma de profil inattendu");
+        state.currentRealGroupProfile = profile;
+        renderRealGroupPage();
+      } catch (error) {
+        root.innerHTML = `<section class="panel"><p class="empty">Données de groupe indisponibles (${escapeHtml(error.message)}).</p></section>`;
         setDocumentTitle(groupMeta.label);
       }
     }
@@ -2563,6 +2900,8 @@
       document.querySelectorAll("[data-profile-mode]").forEach((button) => {
         button.addEventListener("click", () => setProfileMode(button.dataset.profileMode));
       });
+      document.getElementById("rail-scroll-btn").addEventListener("click", scrollProfileRail);
+      window.addEventListener("resize", updateProfileRailVisibility);
 
       try {
         const resp = await fetch(CANDIDATS_URL, { cache: "no-store" });

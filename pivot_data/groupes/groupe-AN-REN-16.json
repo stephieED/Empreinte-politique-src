@@ -1,0 +1,2232 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_groupe",
+  "groupe_id": "AN:REN",
+  "groupe_sigle": "REN",
+  "groupe_nom": "Renaissance",
+  "chambre": "AN",
+  "legislature": "16",
+  "periode": {
+    "debut": "2022-06-22",
+    "fin": "2022-07-22",
+    "actif": false
+  },
+  "historique_noms": [],
+  "membres": [
+    {
+      "membre_id": "nosdeputes:gabriel-attal",
+      "nom": "Gabriel Attal",
+      "debut_dans_groupe": "2022-06-22",
+      "fin_dans_groupe": "2022-07-22",
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    }
+  ],
+  "effectif": {
+    "actuel": 0,
+    "min_historique": null,
+    "max_historique": null
+  },
+  "cohesion_votes": [
+    {
+      "numero_scrutin": "3966",
+      "date": "2024-05-28",
+      "texte": "l'ensemble du projet de loi d'orientation pour la souveraineté alimentaire et agricole et le renouvellement des générations en agriculture (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3725",
+      "date": "2024-05-14",
+      "texte": "l'ensemble du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3699",
+      "date": "2024-04-29",
+      "texte": "la proposition de résolution portant sur la reconnaissance et la condamnation des persécutions des Assyro-Chaldéens de 1915 comme génocide (art. 34-1 de la Constitution).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3661",
+      "date": "2024-04-09",
+      "texte": "la motion de rejet préalable, déposée par M. André Chassaigne, du projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (texte de la commission paritaire).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3662",
+      "date": "2024-04-09",
+      "texte": "l'ensemble du projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (texte de la commission paritaire).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3663",
+      "date": "2024-04-09",
+      "texte": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (texte de la commission paritaire).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3567",
+      "date": "2024-03-26",
+      "texte": "la motion de rejet préalable, déposée par Mme Mathilde panot, de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3557",
+      "date": "2024-03-20",
+      "texte": "le sous-amendement n° 86 de M. Latombe à l'amendement n° 55 de Mme Morel à l'article 4 A du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (nouvelle lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3558",
+      "date": "2024-03-20",
+      "texte": "l'amendement n° 55 de Mme Morel à l'article 4 A du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (nouvelle lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3560",
+      "date": "2024-03-20",
+      "texte": "l'amendement de suppression n° 14 de M. Breton et les amendements identiques suivants à l'article 4 du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (nouvelle lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3561",
+      "date": "2024-03-20",
+      "texte": "l'article 4 du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (nouvelle lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3546",
+      "date": "2024-03-19",
+      "texte": "l'ensemble du projet de loi relatif à l'organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3547",
+      "date": "2024-03-19",
+      "texte": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3524",
+      "date": "2024-03-18",
+      "texte": "l'amendement n° 1 de M. Le Gayic et les amendements identiques suivants de suppression de l'article premier du projet de loi organique portant report du renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3525",
+      "date": "2024-03-18",
+      "texte": "l'amendement n° 6 de M. Delaporte à l'article premier du projet de loi organique portant report du renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3526",
+      "date": "2024-03-18",
+      "texte": "l'article premier du projet de loi organique portant report du renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3527",
+      "date": "2024-03-18",
+      "texte": "l'ensemble du projet de loi organique portant report du renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3461",
+      "date": "2024-03-12",
+      "texte": "la déclaration du Gouvernement relative au débat sur l'accord de sécurité franco-ukrainien et la situation en Ukraine (application de l'article 50-1 de la Constitution).",
+      "sort": "l'Assemblée nationale a adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3459",
+      "date": "2024-03-11",
+      "texte": "la motion de rejet préalable, déposée par M. Bertrand Pancher, du projet de loi relatif à l'organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (1ère lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3375",
+      "date": "2024-02-29",
+      "texte": "l'amendement n° 14 de Mme Levavasseur à l'article premier de la proposition de loi visant à reconnaître la responsabilité de l'État et à indemniser les victimes du chlordécone (première lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "3376",
+      "date": "2024-02-29",
+      "texte": "l'amendement n° 18 de Mme Levavasseur à l'article premier de la proposition de loi visant à reconnaître la responsabilité de l'État et à indemniser les victimes du chlordécone (première lecture).",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "contre",
+      "pour": 0,
+      "contre": 1,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
+    {
+      "numero_scrutin": "1",
+      "date": "2022-07-11",
+      "texte": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mme Mathilde Panot, MM. Boris Vallaud et Julien Bayou, Mme Cyrielle Chatelain, M. André Chassaigne et 145 de leurs collègues.",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 2,
+      "position_majoritaire": null,
+      "pour": 0,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 2,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": null,
+      "taux_coherence_hors_absents": null,
+      "quorum_atteint": true
+    }
+  ],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "certain",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "choix",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "civile",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "contribution",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "cotisation",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "démocratie",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "détention",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "enseignant",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "jeune",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "jeux",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "journaliste",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "juge",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "liberté",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "logement",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "loyer",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "médecin",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "olympique",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "orientation",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "outre-mer",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "policier",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "séance",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "sénat",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "accompagnement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "accueil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "accès",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "aesh",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agricole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agriculteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agriculture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "aidant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "algorithme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "alimentaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "alimentation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "allocataires",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "amendement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ans",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "appel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "armée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "article",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "assistante",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "associatif",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "association",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "associative",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "assurance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "attribution",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "audience",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "auteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "avocat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "avortement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "bailleur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "banque",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "bloctel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "branche",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "budgétaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "burn-out",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "bénévolat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "bénévole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cades",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cancer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "candidat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "carburant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "casino",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cedh",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "censure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "centre",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cese",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ceta",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "chômage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "chômeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cice",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cinéma",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cir",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "civil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "civique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "classe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "climatique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cmg",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cohésion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "collection",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "collectivité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "commerciale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "commune",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "comore",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "concurrence",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "confiance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "confinement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "congé",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "conjugale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "conseil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "constitution",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "contenu",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "convention",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "couverture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "covid-19",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "crime",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "criminelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "crise",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "critique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "crèche",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "création",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culturel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culturelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "césure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "d'expression",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "degré",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "demandeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dette",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "deuil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "diplomatie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "diplôme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "directive",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dirigeant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dispositif",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "disposition",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "distributeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "distribution",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "diversité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dossier",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "du",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "débit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "décès",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "démarchage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dépense",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "déploiement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dépôt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "détenu",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "eau",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ehpad",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "emploi",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "encadrement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enfance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enfant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enquête",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enseignement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "erasmus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "esat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "et",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "europe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "européen",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "exploitant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "exploitation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "expression",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "expulsion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "extrême",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "famille",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "famine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fausse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fausses",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fdva",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fermeture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "filière",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "finance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "financière",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fiscaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fonds",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "formation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "français",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "française",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "garde",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gaz",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gendarmerie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gens",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ght",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gouvernement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gratuité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "grossesse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "guerre",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "génocide",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "handicap",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "holodomor",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hospitalier",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "humain",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hémicycle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hôpital",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "immigration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "index",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "indépendant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "influence",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "information",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "informations",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "inscription",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "interdiction",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "internet",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "intérêt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "iran",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "iranien",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "iranienne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ivg",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "jeunesse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "jop",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "juridiction",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "liste",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lits",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "locataire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lpm",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lycée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "macron",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "magistrat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mahorais",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "maire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "majorité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "maladie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mali",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "marché",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "marin",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "maternelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "menace",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mesures",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "migratoire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "militaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ministre",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "minière",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "module",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "motion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "motions",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mécénat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "média",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "national",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nouvelle-calédonie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nucléaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nupes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "négociation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "océan",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "olympiques",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ondam",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "opposition",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ouverture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "paradis",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "paralympiques",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parcours",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parent",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parentale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parlement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parlementaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "partenaires",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "passe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "patrimoine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pendant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "personne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "peuple",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "phase",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pilote",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "plainte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "plan",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "plfss",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "politique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "poutine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pouvoir",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "praticien",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pratiquer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "première",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prix",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "proche",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "produit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "professeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "professionnel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "professionnelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programmation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "propriétaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "protocole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "préfecture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prélèvement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "président",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prévention",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prêt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "psychique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ptz",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pénale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pôle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "quelque",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rassemblement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ratp",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "reconnaissance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "relance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "renouvelable",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "renseignement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "responsabilité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "restitution",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "retraite",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rsa",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "russe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "russie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "règle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réacteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réanimation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réforme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "référendum",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "régime",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rénovation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "république",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réseaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réserve",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rétention",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réussite",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sages-femmes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sanction",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "scolaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "senior",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "silt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "snu",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sociaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "société",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "soignant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "soin",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "soir",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "source",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sport",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sportif",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sportive",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "supérieur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "syndrome",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sélection",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "taxe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "territoriale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "tourisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "touristique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "traité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "travailleur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ukraine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "universitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "université",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vaccinal",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vaccination",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vacciner",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vacciné",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vaccinée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vague",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violence",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "virus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "véhicule",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "zone",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "âge",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "économie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "énergie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "établissement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "étudiant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "île",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    }
+  ],
+  "amendements_agreges": {
+    "nb_amendements": 0,
+    "nb_adoptes": 0,
+    "nb_rejetes": 0,
+    "nb_irrecevables": 0,
+    "nb_retires_ou_tombes": 0,
+    "taux_adoption": null,
+    "par_type_deposant": {
+      "commission_rapporteur": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "depute": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "gouvernement": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "inconnu": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      }
+    }
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gabriel-attal",
+      "synchro_le": "2026-07-29T13:20:33+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-07-29T13:20:34+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
+      "synchro_le": "2026-07-28T17:02:46+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-01T11:18:02+0000",
+    "licence_donnees": "",
+    "profils_sources": [
+      "nosdeputes:gabriel-attal",
+      "nosdeputes:elisabeth-borne"
+    ],
+    "seuil_quorum": 0.5,
+    "warnings": [
+      "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e législature, 2022-2024, 100% des mandats y figurent comme terminés). Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la dissolution, pas nécessairement la composition actuelle de l'Assemblée nationale."
+    ],
+    "couverture_roster": {
+      "roster_total": 193,
+      "profils_disponibles": 2
+    }
+  }
+}

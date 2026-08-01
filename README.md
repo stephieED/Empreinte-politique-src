@@ -1,4 +1,4 @@
-# CV_CandidatFR
+# EMPREINTE POLITIQUE
 
 Génère des « CV politiques » structurés (mandats, responsabilités, votes,
 dossiers législatifs, interventions en séance) pour les candidats à
@@ -25,17 +25,23 @@ CV_CandidatFR/
 │   ├── candidate_profile_ue.py        # Construit le volet "mandat européen" d'UN candidat
 │   ├── generate_all_profiles.py       # Batch : profils de TOUS les candidats de candidats.json
 │   ├── group_profile.py               # Agrège des profils individuels en profil de groupe politique
-│   ├── render_profile.py              # Convertit un profil JSON en page HTML statique
+│   ├── group_roster.py                # Récupère la composition réelle d'un groupe (NosDéputés/NosSénateurs)
+│   ├── generate_group_profiles.py     # Batch : tous les groupes de raw_data/groupes_reels.json (1 fetch/chambre)
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
 │   ├── schema_groupe.py               # Schéma pivot v1 du profil de groupe (contrat de structure)
 │   ├── normalize_nosdeputes.py        # Adaptateur NosDéputés/NosSénateurs → schéma pivot
 │   ├── normalize_europarl.py          # Adaptateur Open Data Portal Parlement européen → schéma pivot
 │   ├── mep_profile.py                 # Collecte et normalise les profils PE (Parltrack)
 │   └── fetch_wikipedia_candidates.py  # Veille candidats via Wikipédia/Wikidata
-├── data/
+├── raw_data/                          # Entrées déclaratives + sorties brutes (non normalisées)
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
-│   └── profiles/                      # Profils générés : <slug>.json, <slug>.html,
-│                                      # <slug>.pivot.json (optionnel), groupe-<SIGLE>-<leg>.json
+│   ├── groupes_reels.json             # Liste validée des groupes réels à générer (voir §6)
+│   └── profiles/                      # Profils bruts par candidat : <slug>.json (candidate_profile.py)
+├── pivot_data/                        # Tout ce qui est au format schéma pivot ou dérivé
+│   ├── profiles/                      # <slug>.pivot.json par candidat (schéma pivot v1)
+│   ├── partis/                        # parti-<slug>.json : agrégats éditoriaux de parti (parti_profile.py)
+│   └── groupes/                       # groupe-<SIGLE>-<leg>.json : profils de groupe parlementaire réel
+│                                      # (produits par generate_group_profiles.py)
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
@@ -44,6 +50,8 @@ CV_CandidatFR/
 │   ├── test_candidate_profile.py
 │   ├── test_candidate_profile_ue.py
 │   ├── test_group_profile.py
+│   ├── test_group_roster.py
+│   ├── test_generate_group_profiles.py
 │   ├── test_normalize_europarl.py
 │   ├── test_normalize_nosdeputes.py
 │   ├── test_schema_groupe.py
@@ -76,20 +84,13 @@ python src/candidate_profile.py jean-luc-melenchon --chambre deputes
 python src/candidate_profile.py bruno-retailleau --chambre senateurs
 ```
 
-Écrit par défaut dans `data/profiles/<slug>.json`. Options utiles :
+Écrit par défaut dans `raw_data/profiles/<slug>.json`. Options utiles :
 
 | Option | Effet |
 |---|---|
 | `--chambre {deputes,senateurs}` | Chambre du parlementaire (défaut : `deputes`) |
 | `--out chemin.json` | Change le fichier de sortie |
 | `--max-pages N` | Limite la pagination de la recherche d'interventions (défaut : 10 pages de 50 résultats). Réduire accélère fortement la génération, au prix d'une couverture moins complète. |
-
-Puis générer la page HTML correspondante :
-
-```bash
-python src/render_profile.py data/profiles/jean-luc-melenchon.json
-# écrit data/profiles/jean-luc-melenchon.html par défaut (--out pour changer)
-```
 
 ## 2. Ajouter le volet "mandat européen" d'un candidat
 
@@ -129,25 +130,26 @@ python src/generate_all_profiles.py                           # tous les candida
 python src/generate_all_profiles.py --only jean-luc-melenchon # un seul candidat
 python src/generate_all_profiles.py --max-pages 5             # recherche plus légère/rapide
 python src/generate_all_profiles.py --skip-existing           # ne relance pas ce qui est déjà généré
-python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json
+python src/generate_all_profiles.py --pivot                   # aussi écrire <slug>.pivot.json (dans pivot_data/profiles)
 python src/generate_all_profiles.py --skip-ue                 # ne pas interroger l'API du Parlement européen
 python src/generate_all_profiles.py --workers 8               # augmenter le parallélisme (défaut: 4)
-python src/generate_all_profiles.py --out-dir /tmp/profiles   # dossier de sortie alternatif
+python src/generate_all_profiles.py --out-dir /tmp/profiles   # dossier de sortie alternatif (profils bruts)
+python src/generate_all_profiles.py --pivot-dir /tmp/pivots   # dossier de sortie alternatif (profils pivot)
 ```
 
-Ce script lit `data/candidats.json` et, pour chaque candidat :
+Ce script lit `raw_data/candidats.json` et, pour chaque candidat :
 
 1. essaie de construire son profil français (`deputes` puis `senateurs`) via
    son `slug` NosDéputés/NosSénateurs, s'il en a un ;
 2. recherche systématiquement (sauf `--skip-ue`) un mandat européen par nom
    via `candidate_profile_ue.py`, et le fusionne dans le profil sous la clé
    `mandat_europeen` ;
-3. écrit `data/profiles/<slug>.json` + `data/profiles/<slug>.html` dès que
-   l'une des deux sources (française ou européenne) a produit un résultat —
-   un candidat sans mandat français connu mais eurodéputé (ex. Jordan
-   Bardella) obtient ainsi tout de même un profil minimal.
+3. écrit `raw_data/profiles/<slug>.json` dès que l'une des deux sources
+   (française ou européenne) a produit un résultat — un candidat sans mandat
+   français connu mais eurodéputé (ex. Jordan Bardella) obtient ainsi tout de
+   même un profil minimal.
 
-Avec `--pivot`, un fichier `data/profiles/<slug>.pivot.json` est également
+Avec `--pivot`, un fichier `pivot_data/profiles/<slug>.pivot.json` est également
 généré au format schéma pivot v1 (voir section « Schéma pivot »).
 
 ### Parallélisation à deux niveaux
@@ -182,12 +184,29 @@ mis en cache sous `.cache/parltrack/`). **Vérifier la fraîcheur du dump avant
 usage** : `--show-cache-date` affiche l'âge du cache ; la date officielle est
 visible sur https://parltrack.org/dumps.
 
-## 5. Générer le profil d'un groupe politique
+## 5. Générer le profil d'un parti / liste de candidats
+
+`parti_profile.py` construit un **profil de parti** à partir des labels de
+parti déclarés dans `raw_data/candidats.json` et des pivots individuels disponibles
+sur disque. Ce profil est un objet éditorial : il agrège des candidats
+déclarés par label de parti, mais ne prétend pas représenter un groupe
+parlementaire réel ni sa cohésion de vote.
+
+```bash
+python src/parti_profile.py \
+    --candidats raw_data/candidats.json \
+    --profiles-dir pivot_data/profiles \
+    --out-dir pivot_data/partis
+```
+
+## 6. Générer le profil d'un groupe politique
 
 `group_profile.py` agrège plusieurs profils individuels (format brut
-NosDéputés ou pivot v1) en un **profil de groupe** conforme au schéma de
-groupe v1 (`schema_groupe.py`). Il ne fait aucun appel réseau : il calcule
-uniquement à partir des données déjà présentes dans les profils individuels.
+NosDéputés ou pivot v1) en un **profil de groupe parlementaire** conforme au
+schéma de groupe v1 (`schema_groupe.py`). Contrairement à un profil de parti,
+il représente une composition parlementaire réelle, avec des membres, une
+période et des métriques de cohésion et d'amendements lorsqu'elles sont
+couvrent par les données disponibles.
 
 ```bash
 python src/group_profile.py \
@@ -196,15 +215,51 @@ python src/group_profile.py \
     --groupe-nom "Socialistes et apparentés" \
     --chambre AN \
     --legislature 16 \
-    data/profiles/jerome-guedj.json \
-    data/profiles/boris-vallaud.json \
-    --out data/profiles/groupe-SOC-16.json
+    pivot_data/profiles/jerome-guedj.pivot.json \
+    pivot_data/profiles/boris-vallaud.pivot.json \
+    --out pivot_data/groupes/groupe-SOC-16.json
 ```
 
 Les profils en entrée peuvent être indifféremment au format brut NosDéputés
 (produit par `candidate_profile.py`) ou au format pivot v1 (produit par
 `generate_all_profiles.py --pivot`) : le script détecte et normalise
 automatiquement.
+
+Avec `--from-roster` (composition réelle récupérée en direct auprès de
+NosDéputés.fr/NosSénateurs.fr, voir `group_roster.py`), `--out FICHIER`
+**écrase entièrement** le fichier existant à chaque exécution par défaut.
+L'option `--merge-existing` réintègre les membres qui figuraient dans
+`FICHIER` lors d'une exécution précédente mais sont absents du roster
+récupéré cette fois-ci (protège contre un échec partiel de l'API live) ;
+un avertissement `fusion_avec_existant` est alors ajouté à `meta.warnings`.
+Voir les deux commandes proposées (l'une commentée) dans
+`.github/workflows/generate-data.yml`.
+
+### Générer plusieurs groupes réels en un seul run
+
+`group_profile.py --from-roster` fait un appel réseau par exécution : générer
+les 7 groupes réels validés (5 AN + 2 Sénat) en 7 invocations séparées
+refetch donc 5 fois le même roster AN et 2 fois le même roster Sénat, alors
+que NosDéputés.fr/NosSénateurs.fr n'exposent qu'un seul point d'accès « liste
+complète de la chambre » (pas d'endpoint par groupe).
+
+`generate_group_profiles.py` évite cette redondance : il lit la liste des
+groupes à générer depuis un fichier de config JSON (`raw_data/groupes_reels.json`,
+liste validée manuellement — voir plus haut) et ne récupère le roster complet
+qu'**une seule fois par (chambre, législature)** distincte, réutilisé ensuite
+pour filtrer localement chaque sigle de groupe.
+
+```bash
+python src/generate_group_profiles.py \
+    --config raw_data/groupes_reels.json \
+    --profiles-dir pivot_data/profiles \
+    --out-dir pivot_data/groupes \
+    --validate
+```
+
+`--merge-existing` s'applique alors à tous les groupes de la config (même
+sémantique qu'avec `group_profile.py`). C'est ce script, et non plus la
+boucle bash historique, qu'appelle `.github/workflows/generate-data.yml`.
 
 Le profil de groupe produit contient :
 
@@ -216,7 +271,22 @@ Le profil de groupe produit contient :
   éligibles à la date du scrutin). Distingue absents, non-votants et excusés.
 - `tags_thematiques_agreges` : agrégation des `tags_thematiques` individuels,
   triés par poids décroissant (`nb_membres_porteurs / len(membres)`).
+- `amendements_agreges` : comptes bruts (adoptés/rejetés/irrecevables/
+  retirés ou tombés) et taux d'adoption, agrégés sur les `amendements[]` des
+  profils membres. Le total mélange tous les types de déposants — **ne pas**
+  l'utiliser comme comparateur direct du taux d'un⋅e élu⋅e, car les
+  amendements gouvernementaux/rapporteur sont adoptés quasi systématiquement
+  par construction. `par_type_deposant["depute"]` isole les amendements
+  déposés à titre individuel, seule catégorie comparable à un⋅e élu⋅e ;
+  `par_type_deposant["inconnu"]` regroupe les amendements sans
+  `type_deposant` renseigné (jamais rattachés à "depute" par défaut).
 - `sources` et `meta` : traçabilité des profils agrégés, horodatage, licence.
+
+L'option `--rapport-interne FICHIER` écrit séparément un rapport de
+**contrôle interne** (écarts de cohésion/participation individuels par
+rapport à la moyenne du groupe) : cette donnée n'est volontairement pas
+intégrée au profil de groupe public tant qu'elle n'a pas été validée comme
+sortie destinée aux lecteurs.
 
 ## 6. Veille des candidats via Wikipédia / Wikidata
 
@@ -254,19 +324,28 @@ de laboratoire visuel et donne accès aux variantes conservées :
   études intermédiaires.
 
 Les trois premiers designs chargent les profils dynamiquement depuis
-`data/profiles/<slug>.json`.
+`raw_data/profiles/<slug>.json`. La V3 complète le profil brut avec
+`pivot_data/profiles/<slug>.pivot.json` pour les faits sensibles : rôle et stade
+des textes portés, amendements, type de scrutin, 49.3, motions de censure,
+position sourcée dans l'hémicycle et incompatibilités ministérielles. Un
+pivot absent ou incomplet n'est jamais remplacé par une inférence.
 
-La vue « Partis » de la V3 charge les agrégats `data/profiles/groupe-*.json`.
-Ces fiches décrivent uniquement les profils candidats présents dans chaque
-agrégat : la couverture affichée ne représente pas l'ensemble des membres ou
-élus du parti.
+La page publique `web/v3/methodologie.html` documente les règles éditoriales
+de la V3 : aucun taux individuel de présence ou d'absence, issues
+d'amendements en comptes bruts, ratios de groupe avec numérateur et
+dénominateur, distinction 49.3/censure et univers des votes sur textes
+entiers (tous les scrutins publics, ordinaires et solennels).
 
-Chaque `data/profiles/<slug>.html` généré par `render_profile.py` est aussi
-une page HTML autonome consultable directement.
+La vue « Partis » de la V3 charge les agrégats `pivot_data/partis/parti-*.json`
+(profils de parti/liste de candidats, voir §5). Ces fiches décrivent
+uniquement les profils candidats présents dans chaque agrégat : la
+couverture affichée ne représente pas l'ensemble des membres ou élus du
+parti. Les profils de groupe parlementaire réel (`pivot_data/groupes/groupe-*.json`,
+voir §6) ne sont pas encore consommés par une vue web.
 
 ## Contenu d'un profil (format brut NosDéputés)
 
-Chaque `data/profiles/<slug>.json` contient :
+Chaque `raw_data/profiles/<slug>.json` contient :
 
 - `identite` : nom, groupe politique, profession, circonscription...
 - `mandats` : mandat électif de base + responsabilités réelles (commissions,
@@ -322,6 +401,7 @@ converti par `normalize_nosdeputes.py`. Le format pivot contient :
   "mandats":       [ ... ],
   "votes":         [ ... ],
   "textes_portes": [ ... ],
+  "amendements":   [ ... ],
   "interventions": [ ... ],
   "tags_thematiques": ["budget", "fiscalité"],
   "meta": { "schema_version": "1", "genere_le": "...", "licence_donnees": "...", "warnings": [] }
@@ -331,6 +411,38 @@ converti par `normalize_nosdeputes.py`. Le format pivot contient :
 Chaque adaptateur source (`normalize_nosdeputes`, `normalize_parltrack` dans
 `mep_profile.py`) traduit les données brutes vers ce schéma commun sans
 logique d'affichage.
+
+### Champs institutionnels sensibles (schéma pivot v1)
+
+- `mandats[].position_dans_hemicycle` (`"majorite" | "opposition"`) est le
+  champ éditorial le plus sensible du schéma : `validate_profil()` refuse ce
+  champ sans `mandats[].source_url` pointant vers une source primaire
+  vérifiable (déclaration officielle du groupe, liste du socle de soutien au
+  gouvernement, JO). Attaché au mandat plutôt qu'à la personne, car ce statut
+  peut changer d'une législature à l'autre.
+- `mandats[].suspendu_pour_fonction_gouvernementale` signale une période
+  d'incompatibilité ministérielle (art. 23 de la Constitution), pour ne
+  jamais confondre un mandat suspendu avec un désengagement.
+- `votes[].type_vote` (`"vote_texte" | "motion_censure"`) et
+  `votes[].texte_lie_id` : une motion de censure liée à un engagement de
+  responsabilité (art. 49.3, `sort = "adopte_sans_vote_49_3"`) est toujours
+  un scrutin séparé, jamais fusionnée avec une position sur le texte visé.
+- `amendements[].sort == "irrecevable"` exige
+  `base_juridique_irrecevabilite` (`"art. 40" | "art. 45"`) : l'irrecevabilité
+  est un rejet de procédure, distinct d'un rejet sur le fond.
+- `amendements[].type_deposant` (`"gouvernement" | "commission_rapporteur" |
+  "depute"`) et `co_signataires[]` permettent de ne pas mélanger des
+  amendements de nature institutionnelle très différente (voir
+  `amendements_agreges.par_type_deposant` côté profil de groupe).
+- `textes_portes[].type_rapport` utilise une nomenclature officielle
+  (`rapporteur_fond`, `rapporteur_avis`, `rapporteur_special_budget`,
+  `mission_information`) et `.stade_procedural` distingue un texte déposé
+  d'un texte réellement débattu — descriptifs uniquement, jamais une
+  catégorie de valorisation éditoriale.
+
+Collecte encore à implémenter : `candidate_profile.py`/`normalize_nosdeputes.py`
+ne peuplent pas encore ces champs depuis les sources primaires ; ils sont
+aujourd'hui définis au niveau du schéma et de sa validation uniquement.
 
 ## Taxonomie des sources
 
@@ -422,6 +534,6 @@ sera tracée dans le changelog.
   (`/meetings/{id}/vote-results`, `/documents`) qui permettraient de les
   ajouter dans une prochaine itération.
 - La recherche d'un mandat européen se fait par égalité exacte du nom
-  normalisé : un candidat dont le nom sur `data/candidats.json` diffère
+  normalisé : un candidat dont le nom sur `raw_data/candidats.json` diffère
   significativement de son libellé officiel au Parlement européen (ex. nom
   d'usage vs nom légal) ne serait pas trouvé.

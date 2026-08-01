@@ -24,7 +24,7 @@ une erreur : il n'a simplement jamais été membre du Parlement européen.
 
 Usage (depuis la racine du dépôt) :
     python src/candidate_profile_ue.py "Jordan Bardella"
-    python src/candidate_profile_ue.py "Jordan Bardella" --out data/profiles/jordan-bardella.ue.json
+    python src/candidate_profile_ue.py "Jordan Bardella" --out raw_data/profiles/jordan-bardella.ue.json
 
 Docs API (spécification OpenAPI complète) : https://data.europarl.europa.eu/api/v2/
 """
@@ -101,7 +101,7 @@ def _prettify_uri(value: Optional[str]) -> Optional[str]:
 def _normalize_name(name: str) -> str:
     """Normalise un nom de personne pour comparaison insensible aux accents,
     à la casse, à la ponctuation et à l'ordre des mots (le libellé de l'API
-    est "PRÉNOM NOM", alors que data/candidats.json utilise "Prénom Nom")."""
+    est "PRÉNOM NOM", alors que raw_data/candidats.json utilise "Prénom Nom")."""
     decomposed = unicodedata.normalize("NFKD", name)
     ascii_only = "".join(c for c in decomposed if not unicodedata.combining(c))
     tokens = re.findall(r"[A-Za-z0-9]+", ascii_only.upper())
@@ -272,7 +272,7 @@ def build_profile_ue(nom: str, country: str = "FR", use_cache: bool = True) -> O
     """Construit le volet "mandat européen" du CV politique d'un candidat.
 
     Args:
-        nom: nom complet du candidat tel qu'il apparaît dans data/candidats.json
+        nom: nom complet du candidat tel qu'il apparaît dans raw_data/candidats.json.
             (ex. "Jordan Bardella"). La correspondance se fait par égalité
             exacte du nom normalisé (accents/casse/ordre des mots ignorés).
         country: code pays (ISO 3166-1 alpha-2) parmi lequel chercher le

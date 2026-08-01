@@ -50,7 +50,7 @@ def normalize_europarl(
 
     Args:
         ue_profile: sortie de `candidate_profile_ue.build_profile_ue()`.
-        parti: parti politique issu de data/candidats.json (optionnel).
+        parti: parti politique issu de raw_data/candidats.json (optionnel).
 
     Returns:
         Profil pivot v1 dict (chambre: "PE").

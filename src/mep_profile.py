@@ -20,12 +20,13 @@ vérification (--show-cache-date).
 Usage (depuis la racine du dépôt) :
     python src/mep_profile.py --name "Manon Aubry"
     python src/mep_profile.py --ep-id 197451
-    python src/mep_profile.py --name "Manon Aubry" --out data/profiles/manon-aubry.pivot.json
+    python src/mep_profile.py --name "Manon Aubry" --out pivot_data/profiles/manon-aubry.pivot.json
     python src/mep_profile.py --list              # liste les MEPs FR dans le dump
     python src/mep_profile.py --show-cache-date   # affiche la date du dump en cache
 """
 
 import argparse
+import datetime
 import io
 import json
 import lzma
@@ -118,7 +119,6 @@ def get_cache_date(dump_path: Path) -> Optional[str]:
     """Retourne la date de modification du dump en cache au format ISO-8601."""
     if not dump_path.is_file():
         return None
-    import datetime
     mtime = dump_path.stat().st_mtime
     return datetime.datetime.fromtimestamp(mtime).strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -371,7 +371,9 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
         fin = g.get("end")
         mandats.append({
             "label": g.get("Organization") or g.get("groupid") or "",
-            "categorie": "mandat_electif",
+            # Cohérent avec normalize_europarl._CATEGORIE_MAP : l'appartenance à un
+            # groupe politique n'est pas elle-même un mandat électif.
+            "categorie": "autre",
             "fonction": "membre",
             "debut": g.get("start"),
             "fin": fin if fin and fin != "9999-12-31" else None,

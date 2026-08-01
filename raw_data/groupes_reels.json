@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
+    "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré."
+  }
+  "groupes": [
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:REN",
+      "groupe_sigle": "REN",
+      "groupe_nom": "Renaissance",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-REN-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:SOC",
+      "groupe_sigle": "SOC",
+      "groupe_nom": "Socialistes et apparentés",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-SOC-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:RN",
+      "groupe_sigle": "RN",
+      "groupe_nom": "Rassemblement National",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-RN-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LFI",
+      "groupe_sigle": "LFI",
+      "groupe_nom": "La France insoumise - NUPES",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-LFI-16.json"
+    },
+    {
+      "roster_chambre": "deputes",
+      "groupe_id": "AN:LR",
+      "groupe_sigle": "LR",
+      "groupe_nom": "Les Républicains",
+      "chambre": "AN",
+      "legislature": "16",
+      "fichier": "groupe-AN-LR-16.json"
+    },
+    {
+      "roster_chambre": "senateurs",
+      "groupe_id": "Senat:LR",
+      "groupe_sigle": "LR",
+      "groupe_nom": "Les Républicains",
+      "chambre": "Senat",
+      "legislature": null,
+      "fichier": "groupe-Senat-LR.json"
+    },
+    {
+      "roster_chambre": "senateurs",
+      "groupe_id": "Senat:SER",
+      "groupe_sigle": "SER",
+      "groupe_nom": "Socialiste, Écologiste et Républicain",
+      "chambre": "Senat",
+      "legislature": null,
+      "fichier": "groupe-Senat-SER.json"
+    }
+  ]
+}

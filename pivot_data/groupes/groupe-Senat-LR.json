@@ -1,0 +1,96 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_groupe",
+  "groupe_id": "Senat:LR",
+  "groupe_sigle": "LR",
+  "groupe_nom": "Les Républicains",
+  "chambre": "Senat",
+  "legislature": null,
+  "periode": {
+    "debut": "2004-09-26",
+    "fin": null,
+    "actif": true
+  },
+  "historique_noms": [],
+  "membres": [
+    {
+      "membre_id": "nossenateurs:bruno-retailleau",
+      "nom": "Bruno Retailleau",
+      "debut_dans_groupe": "2004-09-26",
+      "fin_dans_groupe": null,
+      "actif": true
+    }
+  ],
+  "effectif": {
+    "actuel": 1,
+    "min_historique": null,
+    "max_historique": null
+  },
+  "cohesion_votes": [],
+  "tags_thematiques_agreges": [],
+  "amendements_agreges": {
+    "nb_amendements": 0,
+    "nb_adoptes": 0,
+    "nb_rejetes": 0,
+    "nb_irrecevables": 0,
+    "nb_retires_ou_tombes": 0,
+    "taux_adoption": null,
+    "par_type_deposant": {
+      "commission_rapporteur": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "depute": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "gouvernement": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      },
+      "inconnu": {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
+      }
+    }
+  },
+  "sources": [
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-07-29T13:20:58+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-01T11:18:39+0000",
+    "licence_donnees": "",
+    "profils_sources": [
+      "nossenateurs:bruno-retailleau"
+    ],
+    "seuil_quorum": 0.5,
+    "warnings": [
+      "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, site arrêté par Regards Citoyens (plus de mise à jour, pas de champ mandat_fin exploitable). Ce profil reflète donc la dernière donnée disponible avant l'arrêt du site, pas nécessairement la composition actuelle du Sénat (ex. incompatibilités liées à une fonction ministérielle non détectables automatiquement)."
+    ],
+    "couverture_roster": {
+      "roster_total": 235,
+      "profils_disponibles": 1
+    }
+  }
+}

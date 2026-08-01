@@ -10,7 +10,7 @@ officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
 Usage (depuis la racine du dépôt) :
     python src/candidate_profile.py jean-luc-melenchon --chambre deputes
     python src/candidate_profile.py bruno-retailleau --chambre senateurs
-    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out data/profiles/jean-luc-melenchon.json
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out raw_data/profiles/jean-luc-melenchon.json
 
 Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
 contente d'agréger les faits bruts (mandats, responsabilités, votes,
@@ -20,6 +20,7 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 """
 
 import argparse
+import concurrent.futures
 import io
 import json
 import re
@@ -88,6 +89,15 @@ SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 _SCRUTINS_LOCKS: dict[str, threading.Lock] = {}
 _SCRUTINS_LOCKS_META = threading.Lock()
 
+# Préfixes des messages d'avertissement (warnings) ajoutés à profile["meta"]["warnings"].
+# Exposés en constantes (plutôt qu'en texte libre dupliqué) pour que merge_profile.py
+# puisse détecter de façon fiable les warnings devenus obsolètes après fusion
+# (cf. _prune_stale_warnings), sans risquer de désynchronisation si le libellé
+# complet du message venait à changer ici.
+WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
+WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
+WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
+
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
     """Retourne (ou crée) le verrou associé à une législature donnée."""
@@ -106,6 +116,21 @@ def _is_empty_payload(value: Any) -> bool:
     if isinstance(value, str):
         return value.strip() == ""
     return False
+
+
+def _extract_parlementaire(identity_raw: Any) -> Optional[dict]:
+    """Extrait le dict "parlementaire" d'une réponse d'identité NosDéputés/NosSénateurs.
+
+    La clé racine varie selon l'endpoint ("depute" ou "senateur") ; à défaut,
+    on retombe sur le payload lui-même (déjà à plat sur certains endpoints).
+    """
+    if not isinstance(identity_raw, dict):
+        return None
+    if identity_raw.get("depute") is not None:
+        return identity_raw.get("depute")
+    if identity_raw.get("senateur") is not None:
+        return identity_raw.get("senateur")
+    return identity_raw
 
 
 def _xml_to_data(xml_text: str) -> Optional[Any]:
@@ -179,16 +204,23 @@ def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
     url = f"{base_url}/synthese/data/json"
     print(f"-> Synthèse d'activité : {url}")
     data = _get_payload(url)
-    if isinstance(data, dict):
-        deputes = data.get("deputes") or []
-        for item in deputes:
-            if isinstance(item, dict):
-                depute = item.get("depute") or item
-                if isinstance(depute, dict):
-                    if depute.get("slug") == slug:
-                        return depute
-                    if depute.get("nom") and slug.replace("-", " ") in depute.get("nom", "").lower():
-                        return depute
+    if not isinstance(data, dict):
+        return None
+    deputes = [item.get("depute") or item for item in (data.get("deputes") or []) if isinstance(item, dict)]
+    deputes = [d for d in deputes if isinstance(d, dict)]
+
+    for depute in deputes:
+        if depute.get("slug") == slug:
+            return depute
+
+    # Repli si le slug ne correspond à aucune entrée : comparaison stricte (pas de
+    # sous-chaîne, qui matcherait faussement un homonyme partiel, ex. slug "guedj"
+    # dans le nom d'un autre député contenant "Guedjbaba") sur le nom désaccentué.
+    normalized_slug_name = _normalize_search_query(slug.replace("-", " "))
+    for depute in deputes:
+        nom = depute.get("nom")
+        if nom and _normalize_search_query(nom) == normalized_slug_name:
+            return depute
     return None
 
 
@@ -253,29 +285,6 @@ def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None
     return _get_payload(url)
 
 
-def _pick_best_search_base_url(base_urls: list[str], query: str, object_name: str = "Intervention") -> str:
-    """Choisit le domaine (législature courante ou archivée) où la recherche renvoie le plus de résultats.
-
-    Un parlementaire dont le mandat s'est terminé lors d'une législature précédente
-    (ex. Jean-Luc Mélenchon, mandat clos le 21/06/2022) n'a quasiment aucune
-    intervention sur le site de la législature courante : ses interventions réelles
-    sont archivées sur le sous-domaine de sa législature (ex. 2017-2022.nosdeputes.fr).
-    On sonde donc chaque domaine avec une requête légère (1 page) et on retient celui
-    qui a le plus de résultats totaux avant de lancer la recherche complète, coûteuse.
-    """
-    normalized_query = _normalize_search_query(query)
-    best_base_url = base_urls[0]
-    best_total = -1
-    for base_url in base_urls:
-        payload = fetch_recherche(base_url, normalized_query, object_name=object_name, page=1)
-        total = payload.get("last_result") if isinstance(payload, dict) else None
-        if isinstance(total, int) and total > best_total:
-            best_total = total
-            best_base_url = base_url
-        time.sleep(0.2)
-    return best_base_url
-
-
 def fetch_all_intervention_results(base_url: str, query: str, object_name: str = "Intervention", max_pages: int = 10) -> dict[str, Any]:
     """Agrège les résultats de recherche sur plusieurs pages jusqu'à épuisement ou plafond."""
     aggregated: list[dict[str, Any]] = []
@@ -290,6 +299,55 @@ def fetch_all_intervention_results(base_url: str, query: str, object_name: str =
         aggregated.extend(results)
         time.sleep(0.2)
     return {"results": aggregated}
+
+
+def fetch_all_intervention_results_from_domains(
+    base_urls: list[str],
+    query: str,
+    object_name: str = "Intervention",
+    max_pages: int = 10,
+) -> dict[str, Any]:
+    """Interroge tous les domaines en parallèle, fusionne les résultats et supprime les doublons."""
+    if not base_urls:
+        return {"results": []}
+
+    normalized_query = _normalize_search_query(query)
+
+    def _fetch_one(base_url: str) -> list[dict[str, Any]]:
+        payload = fetch_all_intervention_results(base_url, normalized_query, object_name=object_name, max_pages=max_pages)
+        results = payload.get("results") or []
+        enriched: list[dict[str, Any]] = []
+        for item in results:
+            if not isinstance(item, dict):
+                continue
+            enriched_item = dict(item)
+            enriched_item["_search_base_url"] = base_url
+            enriched_item["_search_query"] = normalized_query
+            enriched_item["_search_object_name"] = object_name
+            enriched.append(enriched_item)
+        return enriched
+
+    # Recherche parallèle sur chaque domaine : plusieurs requêtes de recherche
+    # distinctes, puis fusion des réponses et déduplication par document_id.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(base_urls))) as executor:
+        domain_results = list(executor.map(_fetch_one, base_urls))
+
+    merged_results: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for results in domain_results:
+        for item in results:
+            if not isinstance(item, dict):
+                continue
+            document_id = item.get("document_id")
+            if not document_id:
+                continue
+            key = str(document_id)
+            if key in seen_ids:
+                continue
+            seen_ids.add(key)
+            merged_results.append(item)
+
+    return {"results": merged_results}
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
@@ -770,7 +828,10 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
     candidate_name_lower = candidate_name.lower()
     speaker_lower = (structured_speaker or "").lower()
     speaker_url_lower = (speaker_url or "").lower()
-    slug = candidate_name_lower.replace(" ", "-")
+    # Les URLs nosdeputes.fr sont toujours sans accent (ex. "elisabeth-borne"),
+    # contrairement au nom candidat brut : on désaccentue avant de construire le
+    # slug pour ne pas rater la correspondance (cf. _normalize_search_query).
+    slug = _normalize_search_query(candidate_name).replace(" ", "-")
 
     if slug and slug in speaker_url_lower:
         return {
@@ -790,52 +851,73 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
     }
 
 
+def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: str, candidate_id: Optional[str]) -> Optional[dict[str, Any]]:
+    """Traite un résultat de recherche unique (détail + contexte de séance) et le nettoie.
+
+    Retourne None si le résultat n'est pas une prise de parole (mention simple).
+    Extrait de `_extract_search_results` pour être exécuté en parallèle par résultat.
+    """
+    document_id = item.get("document_id")
+    search_base_url = item.get("_search_base_url") or base_url
+    detail = None
+    if document_id:
+        detail = fetch_intervention_details(search_base_url, str(document_id))
+    classification = _classify_intervention(detail or {}, candidate_name, candidate_id) if detail else {"mode": "mention", "reason": "detail_indisponible"}
+    cleaned = None
+    if classification.get("mode") == "prise_de_parole":
+        seance_context = fetch_seance_context(detail) if detail else {"sujet": None, "mots_cles": []}
+        sujet = seance_context.get("sujet")
+        keywords = seance_context.get("mots_cles") or []
+        if not sujet:
+            sujet = detail.get("type") if detail else None
+        nb_mots = detail.get("nb_mots") if detail else None
+        cleaned = {
+            "type": item.get("document_type"),
+            "id": document_id,
+            "url": item.get("document_url"),
+            "date": detail.get("date") if detail else None,
+            "created_at": detail.get("created_at") if detail else None,
+            "type_detail": detail.get("type") if detail else None,
+            "source": detail.get("source") if detail else None,
+            "texte": detail.get("texte") if detail else None,
+            "url_detail": detail.get("url") if detail else None,
+            "classification": classification,
+            "sujet": sujet,
+            "mots_cles": keywords,
+            # Rôle institutionnel occupé au moment de l'intervention (ex. "Ministre
+            # de l'Intérieur", "Rapporteur") : vide si simple parlementaire sans
+            # fonction particulière à cet instant.
+            "fonction": detail.get("fonction") if detail else None,
+            "nb_mots": nb_mots,
+            # "reaction_courte" (interjection) vs "prise_de_parole_developpee",
+            # dérivé de nb_mots : permet de distinguer une réaction lancée depuis
+            # les bancs d'une véritable prise de parole à la tribune/au micro.
+            "format": _classify_intervention_format(nb_mots),
+        }
+    time.sleep(0.1)
+    return cleaned
+
+
 def _extract_search_results(base_url: str, search_payload: Optional[dict], candidate_name: str, candidate_id: Optional[str]) -> list[dict[str, Any]]:
-    """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail."""
+    """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail.
+
+    Les requêtes de détail/contexte sont indépendantes d'un résultat à l'autre : on les
+    parallélise avec un pool limité (comme `fetch_all_intervention_results_from_domains`)
+    pour éviter des temps de génération proportionnels au nombre de résultats bruts
+    (jusqu'à ~500 avec max_pages=10), tout en restant raisonnablement courtois avec l'API.
+    """
     if not isinstance(search_payload, dict):
         return []
-    results = search_payload.get("results") or []
-    cleaned: list[dict[str, Any]] = []
-    for item in results:
-        if not isinstance(item, dict):
-            continue
-        document_id = item.get("document_id")
-        detail = None
-        if document_id:
-            detail = fetch_intervention_details(base_url, str(document_id))
-        classification = _classify_intervention(detail or {}, candidate_name, candidate_id) if detail else {"mode": "mention", "reason": "detail_indisponible"}
-        if classification.get("mode") == "prise_de_parole":
-            seance_context = fetch_seance_context(detail) if detail else {"sujet": None, "mots_cles": []}
-            sujet = seance_context.get("sujet")
-            keywords = seance_context.get("mots_cles") or []
-            if not sujet:
-                sujet = detail.get("type") if detail else None
-            nb_mots = detail.get("nb_mots") if detail else None
-            cleaned.append({
-                "type": item.get("document_type"),
-                "id": document_id,
-                "url": item.get("document_url"),
-                "date": detail.get("date") if detail else None,
-                "created_at": detail.get("created_at") if detail else None,
-                "type_detail": detail.get("type") if detail else None,
-                "source": detail.get("source") if detail else None,
-                "texte": detail.get("texte") if detail else None,
-                "url_detail": detail.get("url") if detail else None,
-                "classification": classification,
-                "sujet": sujet,
-                "mots_cles": keywords,
-                # Rôle institutionnel occupé au moment de l'intervention (ex. "Ministre
-                # de l'Intérieur", "Rapporteur") : vide si simple parlementaire sans
-                # fonction particulière à cet instant.
-                "fonction": detail.get("fonction") if detail else None,
-                "nb_mots": nb_mots,
-                # "reaction_courte" (interjection) vs "prise_de_parole_developpee",
-                # dérivé de nb_mots : permet de distinguer une réaction lancée depuis
-                # les bancs d'une véritable prise de parole à la tribune/au micro.
-                "format": _classify_intervention_format(nb_mots),
-            })
-        time.sleep(0.1)
-    return cleaned
+    results = [item for item in (search_payload.get("results") or []) if isinstance(item, dict)]
+    if not results:
+        return []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        processed = list(executor.map(
+            lambda item: _process_search_result(item, base_url, candidate_name, candidate_id),
+            results,
+        ))
+    return [item for item in processed if item is not None]
+
 
 
 def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> dict:
@@ -885,13 +967,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     # ne renvoie souvent aucun résultat, contrairement au nom complet. ---
     parlementaire_for_search = None
     if isinstance(identity_raw, dict):
-        parlementaire_for_search = (
-            identity_raw.get("depute")
-            if identity_raw.get("depute") is not None
-            else identity_raw.get("senateur")
-            if identity_raw.get("senateur") is not None
-            else identity_raw
-        )
+        parlementaire_for_search = _extract_parlementaire(identity_raw)
     search_candidate_name = (
         parlementaire_for_search.get("nom")
         if isinstance(parlementaire_for_search, dict) and parlementaire_for_search.get("nom")
@@ -908,17 +984,30 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     try:
         synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
         time.sleep(0.3)
-        dossiers_payload = fetch_dossiers_for_legislatures(base_urls[0], ["15", "16"])
+        # Les dossiers doivent être demandés sur le domaine où l'identité a
+        # réellement été trouvée (donc sa législature) : utiliser systématiquement
+        # base_urls[0] (législature courante) renvoie une liste vide pour un
+        # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
+        dossiers_base_url = identity_base_url or base_urls[0]
+        dossiers_legislatures = (
+            [LEGISLATURE_BY_BASE_URL[dossiers_base_url]]
+            if dossiers_base_url in LEGISLATURE_BY_BASE_URL
+            else ["15", "16"]
+        )
+        dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, dossiers_legislatures)
         time.sleep(0.3)
         # Un parlementaire dont le mandat s'est terminé lors d'une législature
         # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
         # la législature courante : ses interventions réelles sont archivées sur le
         # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
         # pour trouver celui qui contient réellement ses interventions.
-        interventions_base_url = _pick_best_search_base_url(base_urls, search_candidate_name, object_name="Intervention")
-        interventions_payload = fetch_all_intervention_results(
-            interventions_base_url, search_candidate_name, object_name="Intervention", max_pages=intervention_max_pages
+        interventions_payload = fetch_all_intervention_results_from_domains(
+            base_urls,
+            search_candidate_name,
+            object_name="Intervention",
+            max_pages=intervention_max_pages,
         )
+        interventions_base_url = base_urls[0]
     except Exception as exc:
         pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
 
@@ -952,20 +1041,13 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
 
     # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes d'amitié...). ---
     if _is_empty_payload(identity_raw):
-        warnings.append("identité introuvable : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
+        warnings.append(f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
     else:
         profile["meta"]["synchro_sources"]["nosdeputes"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        # La clé racine varie selon l'endpoint ("depute" ou "senateur")
-        parlementaire = (
-            identity_raw.get("depute")
-            if isinstance(identity_raw, dict) and identity_raw.get("depute") is not None
-            else identity_raw.get("senateur")
-            if isinstance(identity_raw, dict) and identity_raw.get("senateur") is not None
-            else identity_raw
-        )
+        parlementaire = _extract_parlementaire(identity_raw)
 
         if not isinstance(parlementaire, dict) or _is_empty_payload(parlementaire):
-            warnings.append("identité introuvable : la réponse API ne contient pas de données de parlementaire exploitables.")
+            warnings.append(f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : la réponse API ne contient pas de données de parlementaire exploitables.")
         else:
             profile["identite"] = {
                 "nom_complet": parlementaire.get("nom"),
@@ -979,7 +1061,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             }
             profile["mandats"] = _extract_mandats(parlementaire)
             if _is_empty_payload(profile["mandats"]):
-                warnings.append("mandats introuvables : l'API ne renvoie pas de mandats pour ce profil.")
+                warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
     # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr
@@ -1014,7 +1096,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     elif _is_empty_payload(votes_raw):
         warnings.append(
-            "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur "
+            f"{WARNING_PREFIX_VOTES_INTROUVABLES} : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur "
             "(fonctionnalité indisponible côté API), et aucune correspondance officielle "
             "Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
         )
@@ -1035,7 +1117,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             })
         profile["votes"] = cleaned_votes
         if _is_empty_payload(profile["votes"]):
-            warnings.append("votes introuvables : aucune information de scrutin n'a été extraite de la réponse API.")
+            warnings.append(f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune information de scrutin n'a été extraite de la réponse API.")
 
     if not _is_empty_payload(synthesis_payload):
         # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---
@@ -1060,13 +1142,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     if isinstance(identity_raw, dict):
         # --- 9. Interventions : classification prise de parole/mention, format
         # (réaction courte / prise de parole développée), fonction occupée, etc. ---
-        parlementaire = (
-            identity_raw.get("depute")
-            if isinstance(identity_raw, dict) and identity_raw.get("depute") is not None
-            else identity_raw.get("senateur")
-            if isinstance(identity_raw, dict) and identity_raw.get("senateur") is not None
-            else identity_raw
-        )
+        parlementaire = _extract_parlementaire(identity_raw)
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
     profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
@@ -1085,7 +1161,7 @@ def main():
     )
     parser.add_argument(
         "--out",
-        help="Chemin du fichier JSON de sortie (défaut: data/profiles/<slug>.json)",
+        help="Chemin du fichier JSON de sortie (défaut: raw_data/profiles/<slug>.json)",
     )
     parser.add_argument(
         "--max-pages",
@@ -1097,7 +1173,7 @@ def main():
 
     profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
-    out_path = Path(args.out) if args.out else Path("data/profiles") / f"{args.slug}.json"
+    out_path = Path(args.out) if args.out else Path("raw_data/profiles") / f"{args.slug}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)

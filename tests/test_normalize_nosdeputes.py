@@ -255,6 +255,19 @@ def test_pivot_vote_numero_scrutin_converti_en_str():
             assert isinstance(v["numero_scrutin"], str)
 
 
+def test_pivot_vote_preserve_type_et_lien_49_3():
+    raw = _raw_depute()
+    raw["votes"][0].update({
+        "type_scrutin": "solennel",
+        "type_vote": "motion_censure",
+        "texte_lie_id": "texte-49-3-1",
+    })
+    vote = normalize_nosdeputes(raw)["votes"][0]
+    assert vote["type_scrutin"] == "solennel"
+    assert vote["type_vote"] == "motion_censure"
+    assert vote["texte_lie_id"] == "texte-49-3-1"
+
+
 # ---------------------------------------------------------------------------
 # Textes portés (depuis dossiers_legislatifs)
 # ---------------------------------------------------------------------------
@@ -268,10 +281,22 @@ def test_pivot_texte_porte_champs():
     pivot = normalize_nosdeputes(_raw_depute())
     t = pivot["textes_portes"][0]
     assert t["titre"] == "Projet de loi de finances 2024"
-    assert t["role"] == "rapporteur"
+    assert t["role"] is None
     assert t["legislature"] == "17"
     assert t["date_min"] == "2023-09-01"
     assert t["date_max"] == "2023-12-20"
+
+
+def test_pivot_texte_porte_preserve_role_et_stade_factuels():
+    raw = _raw_depute()
+    raw["dossiers_legislatifs"][0].update({
+        "role": "auteur",
+        "type_rapport": None,
+        "stade_procedural": "discute_seance",
+    })
+    texte = normalize_nosdeputes(raw)["textes_portes"][0]
+    assert texte["role"] == "auteur"
+    assert texte["stade_procedural"] == "discute_seance"
 
 
 def test_pivot_texte_porte_source_url_prefere_url_source():
