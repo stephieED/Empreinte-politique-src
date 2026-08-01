@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from group_roster import fetch_group_roster, _base_url_for
+from group_roster import fetch_group_roster, fetch_full_roster, filter_roster_by_sigle, _base_url_for
 
 
 def _mock_response(payload):
@@ -98,3 +98,63 @@ def test_fetch_group_roster_senateurs_uses_archive_url():
 
     called_url = session.get.call_args[0][0]
     assert called_url == "https://archive.nossenateurs.fr/senateurs/json"
+
+
+# ---------------------------------------------------------------------------
+# fetch_full_roster / filter_roster_by_sigle (fetch partagé entre plusieurs
+# sigles d'une même chambre/législature — voir generate_group_profiles.py)
+# ---------------------------------------------------------------------------
+
+def test_fetch_full_roster_returns_unwrapped_members_unfiltered():
+    session = MagicMock()
+    session.get.return_value = _mock_response(_deputes_payload())
+
+    raw_members = fetch_full_roster("deputes", legislature="16", session=session)
+
+    assert len(raw_members) == 3
+    assert {m["slug"] for m in raw_members} == {"alice", "bob", "carla"}
+    # Déballé de l'enveloppe {"depute": {...}}, pas de filtrage par sigle.
+    assert {m["groupe_sigle"] for m in raw_members} == {"LR", "SOC"}
+
+
+def test_fetch_full_roster_calls_session_get_once():
+    session = MagicMock()
+    session.get.return_value = _mock_response(_deputes_payload())
+
+    fetch_full_roster("deputes", legislature="16", session=session)
+
+    assert session.get.call_count == 1
+
+
+def test_filter_roster_by_sigle_matches_fetch_group_roster():
+    """fetch_full_roster + filter_roster_by_sigle doit produire exactement le
+    même résultat qu'un fetch_group_roster direct (garantie de non-régression
+    du refactor fetch-once-per-chambre)."""
+    session = MagicMock()
+    session.get.return_value = _mock_response(_deputes_payload())
+    direct = fetch_group_roster("deputes", "LR", legislature="16", session=session)
+
+    raw_members = fetch_full_roster("deputes", legislature="16", session=session)
+    via_filter = filter_roster_by_sigle(raw_members, "deputes", "LR")
+
+    assert via_filter == direct
+
+
+def test_filter_roster_by_sigle_empty_when_no_match():
+    raw_members = [m.get("depute") for m in _deputes_payload()["deputes"]]
+    assert filter_roster_by_sigle(raw_members, "deputes", "GDR") == []
+
+
+def test_fetch_full_roster_one_call_shared_across_multiple_sigles():
+    """Le scénario cible de l'optimisation : un seul appel réseau pour
+    construire plusieurs groupes de la même chambre/législature."""
+    session = MagicMock()
+    session.get.return_value = _mock_response(_deputes_payload())
+
+    raw_members = fetch_full_roster("deputes", legislature="16", session=session)
+    lr = filter_roster_by_sigle(raw_members, "deputes", "LR")
+    soc = filter_roster_by_sigle(raw_members, "deputes", "SOC")
+
+    assert session.get.call_count == 1
+    assert {m["slug"] for m in lr} == {"alice", "carla"}
+    assert {m["slug"] for m in soc} == {"bob"}

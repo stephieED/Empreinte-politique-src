@@ -25,6 +25,8 @@ CV_CandidatFR/
 │   ├── candidate_profile_ue.py        # Construit le volet "mandat européen" d'UN candidat
 │   ├── generate_all_profiles.py       # Batch : profils de TOUS les candidats de candidats.json
 │   ├── group_profile.py               # Agrège des profils individuels en profil de groupe politique
+│   ├── group_roster.py                # Récupère la composition réelle d'un groupe (NosDéputés/NosSénateurs)
+│   ├── generate_group_profiles.py     # Batch : tous les groupes de data/groupes_reels.json (1 fetch/chambre)
 │   ├── render_profile.py              # Convertit un profil JSON en page HTML statique
 │   ├── schema_pivot.py                # Schéma pivot v1 — format commun à toutes les sources
 │   ├── schema_groupe.py               # Schéma pivot v1 du profil de groupe (contrat de structure)
@@ -34,10 +36,11 @@ CV_CandidatFR/
 │   └── fetch_wikipedia_candidates.py  # Veille candidats via Wikipédia/Wikidata
 ├── data/
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
+│   ├── groupes_reels.json             # Liste validée des groupes réels à générer (voir §6)
 │   ├── profiles/                      # Profils générés : <slug>.json, <slug>.html,
 │   │                                  # <slug>.pivot.json (optionnel), parti-<slug>.json
 │   └── groupes/                       # Profils de groupe parlementaire réel :
-│                                      # groupe-<SIGLE>-<leg>.json (produits par group_profile.py)
+│                                      # groupe-<SIGLE>-<leg>.json (produits par generate_group_profiles.py)
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
@@ -46,6 +49,8 @@ CV_CandidatFR/
 │   ├── test_candidate_profile.py
 │   ├── test_candidate_profile_ue.py
 │   ├── test_group_profile.py
+│   ├── test_group_roster.py
+│   ├── test_generate_group_profiles.py
 │   ├── test_normalize_europarl.py
 │   ├── test_normalize_nosdeputes.py
 │   ├── test_schema_groupe.py
@@ -224,6 +229,42 @@ Les profils en entrée peuvent être indifféremment au format brut NosDéputés
 (produit par `candidate_profile.py`) ou au format pivot v1 (produit par
 `generate_all_profiles.py --pivot`) : le script détecte et normalise
 automatiquement.
+
+Avec `--from-roster` (composition réelle récupérée en direct auprès de
+NosDéputés.fr/NosSénateurs.fr, voir `group_roster.py`), `--out FICHIER`
+**écrase entièrement** le fichier existant à chaque exécution par défaut.
+L'option `--merge-existing` réintègre les membres qui figuraient dans
+`FICHIER` lors d'une exécution précédente mais sont absents du roster
+récupéré cette fois-ci (protège contre un échec partiel de l'API live) ;
+un avertissement `fusion_avec_existant` est alors ajouté à `meta.warnings`.
+Voir les deux commandes proposées (l'une commentée) dans
+`.github/workflows/generate-data.yml`.
+
+### Générer plusieurs groupes réels en un seul run
+
+`group_profile.py --from-roster` fait un appel réseau par exécution : générer
+les 7 groupes réels validés (5 AN + 2 Sénat) en 7 invocations séparées
+refetch donc 5 fois le même roster AN et 2 fois le même roster Sénat, alors
+que NosDéputés.fr/NosSénateurs.fr n'exposent qu'un seul point d'accès « liste
+complète de la chambre » (pas d'endpoint par groupe).
+
+`generate_group_profiles.py` évite cette redondance : il lit la liste des
+groupes à générer depuis un fichier de config JSON (`data/groupes_reels.json`,
+liste validée manuellement — voir plus haut) et ne récupère le roster complet
+qu'**une seule fois par (chambre, législature)** distincte, réutilisé ensuite
+pour filtrer localement chaque sigle de groupe.
+
+```bash
+python src/generate_group_profiles.py \
+    --config data/groupes_reels.json \
+    --profiles-dir data/profiles \
+    --out-dir data/groupes \
+    --validate
+```
+
+`--merge-existing` s'applique alors à tous les groupes de la config (même
+sémantique qu'avec `group_profile.py`). C'est ce script, et non plus la
+boucle bash historique, qu'appelle `.github/workflows/generate-data.yml`.
 
 Le profil de groupe produit contient :
 

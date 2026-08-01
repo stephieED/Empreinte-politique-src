@@ -52,32 +52,34 @@ jobs:
             --profiles-dir data/profiles \
             --out-dir data/profiles
 
-      # Liste validée manuellement (voir README §6) : groupes parlementaires
-      # réels couvrant les candidats actuellement identifiés dans
-      # candidats.json. Les données sources (NosDéputés.fr) reflètent la
-      # dernière composition connue avant la dissolution du 9 juin 2024
-      # (16e législature) — voir l'avertissement meta.warnings de chaque
-      # profil de groupe généré.
+      # Liste validée manuellement dans data/groupes_reels.json (voir README §6) :
+      # groupes parlementaires réels couvrant les candidats actuellement
+      # identifiés dans candidats.json. Les données sources (NosDéputés.fr)
+      # reflètent la dernière composition connue avant la dissolution du
+      # 9 juin 2024 (16e législature) — voir l'avertissement meta.warnings de
+      # chaque profil de groupe généré.
       - name: Générer les profils de groupe parlementaire réel
         run: |
-          mkdir -p data/groupes
-          while IFS='|' read -r roster_chambre groupe_id groupe_sigle groupe_nom chambre legislature fichier; do
-            [ -z "$roster_chambre" ] && continue
-            args=(--from-roster --roster-chambre "$roster_chambre" \
-              --groupe-id "$groupe_id" --groupe-sigle "$groupe_sigle" \
-              --groupe-nom "$groupe_nom" --chambre "$chambre" \
-              --validate --out "data/groupes/$fichier")
-            [ -n "$legislature" ] && args+=(--legislature "$legislature")
-            python3 src/group_profile.py "${args[@]}"
-          done <<'GROUPES'
-          deputes|AN:REN|REN|Renaissance|AN|16|groupe-AN-REN-16.json
-          deputes|AN:SOC|SOC|Socialistes et apparentés|AN|16|groupe-AN-SOC-16.json
-          deputes|AN:RN|RN|Rassemblement National|AN|16|groupe-AN-RN-16.json
-          deputes|AN:LFI|LFI|La France insoumise - NUPES|AN|16|groupe-AN-LFI-16.json
-          deputes|AN:LR|LR|Les Républicains|AN|16|groupe-AN-LR-16.json
-          senateurs|Senat:LR|LR|Les Républicains|Senat||groupe-Senat-LR.json
-          senateurs|Senat:SER|SER|Socialiste, Écologiste et Républicain|Senat||groupe-Senat-SER.json
-          GROUPES
+          # Choisir UN des deux modes ci-dessous en (dé)commentant la ligne
+          # MERGE_FLAG correspondante :
+          MERGE_FLAG=()  # par défaut, recréation complète
+          # (1) Recréation complète à chaque exécution (comportement actif par
+          #     défaut) : --out écrase entièrement le fichier existant avec le
+          #     roster/profils disponibles au moment du run.
+
+          # MERGE_FLAG=(--merge-existing)
+          # (2) Agrégation avec l'existant : si un fichier data/groupes/*.json
+          #     existe déjà, les membres qui y figuraient mais sont absents du
+          #     roster récupéré cette fois-ci (ex. échec partiel de l'API
+          #     live) sont réintégrés, avec un avertissement dans meta.warnings.
+
+          # Un seul fetch réseau par (chambre, législature) distincte, réutilisé
+          # pour tous les groupes qui la partagent (voir generate_group_profiles.py).
+          python3 src/generate_group_profiles.py \
+            --config data/groupes_reels.json \
+            --profiles-dir data/profiles \
+            --out-dir data/groupes \
+            --validate "${MERGE_FLAG[@]}"
 
       - name: Committer et pousser les données mises à jour
         run: |

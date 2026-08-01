@@ -83,6 +83,65 @@ def _member_matches_legislature(member: dict[str, Any], legislature_debut: Optio
     return fin is None or str(fin) >= legislature_debut
 
 
+def fetch_full_roster(
+    chambre: str,
+    legislature: Optional[str] = None,
+    session: Optional[requests.Session] = None,
+) -> list[dict[str, Any]]:
+    """Récupère en UN seul appel réseau la liste complète (tous groupes confondus)
+    des député·e·s/sénateur·rice·s d'une chambre/législature.
+
+    À réutiliser pour construire plusieurs profils de groupe de la même
+    chambre/législature sans refaire le même appel réseau à chaque sigle
+    (voir generate_group_profiles.py) : filtrer ensuite le résultat avec
+    `filter_roster_by_sigle`.
+
+    Returns:
+        Liste des membres bruts (déjà déballés de l'enveloppe {"depute": {...}}
+        / {"senateur": {...}}), sans filtrage par groupe.
+
+    Raises:
+        ValueError: chambre ou législature inconnue.
+        requests.RequestException: échec réseau (non intercepté, remonté tel quel).
+    """
+    base_url = _base_url_for(chambre, legislature)
+    url = f"{base_url}/{_LIST_ENDPOINT[chambre]}/json"
+
+    http = session or requests
+    response = http.get(url, headers=HEADERS, timeout=TIMEOUT)
+    response.raise_for_status()
+    payload = response.json()
+
+    raw_entries = payload.get(chambre) or []
+    return [entry.get("depute") or entry.get("senateur") or entry for entry in raw_entries]
+
+
+def filter_roster_by_sigle(
+    raw_members: list[dict[str, Any]],
+    chambre: str,
+    groupe_sigle: str,
+    senat_periode_debut: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    """Filtre une liste de membres bruts (issue de `fetch_full_roster`) par sigle de groupe."""
+    roster: list[dict[str, Any]] = []
+    for member in raw_members:
+        if member.get("groupe_sigle") != groupe_sigle:
+            continue
+        if chambre == "senateurs" and not _member_matches_legislature(member, senat_periode_debut):
+            continue
+
+        mandat_fin = member.get("mandat_fin")
+        roster.append({
+            "slug": member.get("slug"),
+            "nom": member.get("nom"),
+            "groupe_sigle": member.get("groupe_sigle"),
+            "mandat_debut": member.get("mandat_debut"),
+            "mandat_fin": mandat_fin,
+            "actif": not mandat_fin,
+        })
+    return roster
+
+
 def fetch_group_roster(
     chambre: str,
     groupe_sigle: str,
@@ -113,38 +172,13 @@ def fetch_group_roster(
     Raises:
         ValueError: chambre ou législature inconnue.
         requests.RequestException: échec réseau (non intercepté, remonté tel quel).
+
+    Note : pour construire plusieurs groupes de la même chambre/législature,
+    préférer `fetch_full_roster` + `filter_roster_by_sigle` pour éviter de
+    refaire le même appel réseau à chaque sigle.
     """
-    base_url = _base_url_for(chambre, legislature)
-    url = f"{base_url}/{_LIST_ENDPOINT[chambre]}/json"
-
-    http = session or requests
-    response = http.get(url, headers=HEADERS, timeout=TIMEOUT)
-    response.raise_for_status()
-    payload = response.json()
-
-    raw_members = payload.get(chambre) or []
-    roster: list[dict[str, Any]] = []
-
-    for entry in raw_members:
-        # Les payloads NosDéputés/NosSénateurs enveloppent chaque entrée sous
-        # une clé singulière ({"depute": {...}} / {"senateur": {...}}).
-        member = entry.get("depute") or entry.get("senateur") or entry
-        if member.get("groupe_sigle") != groupe_sigle:
-            continue
-        if chambre == "senateurs" and not _member_matches_legislature(member, senat_periode_debut):
-            continue
-
-        mandat_fin = member.get("mandat_fin")
-        roster.append({
-            "slug": member.get("slug"),
-            "nom": member.get("nom"),
-            "groupe_sigle": member.get("groupe_sigle"),
-            "mandat_debut": member.get("mandat_debut"),
-            "mandat_fin": mandat_fin,
-            "actif": not mandat_fin,
-        })
-
-    return roster
+    raw_members = fetch_full_roster(chambre, legislature=legislature, session=session)
+    return filter_roster_by_sigle(raw_members, chambre, groupe_sigle, senat_periode_debut=senat_periode_debut)
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:

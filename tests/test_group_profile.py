@@ -772,3 +772,92 @@ def test_main_from_roster_missing_roster_chambre_returns_error(capsys):
     assert rc == 1
     assert "--roster-chambre" in capsys.readouterr().err
 
+
+def test_main_from_roster_merge_existing_recupere_membre_absent_du_roster(tmp_path, monkeypatch):
+    """--merge-existing : un membre présent dans --out lors d'une exécution précédente
+    mais absent du roster récupéré cette fois-ci (échec partiel de récupération) doit
+    être réintégré, avec un avertissement explicite dans meta.warnings."""
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
+
+    def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    out_path = tmp_path / "out.json"
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_complet)
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+    assert rc == 0
+    assert len(json.loads(out_path.read_text(encoding="utf-8"))["membres"]) == 2
+
+    # Exécution suivante : le roster live ne renvoie plus que "bob" (échec partiel simulé).
+    def fake_fetch_group_roster_partiel(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_partiel)
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+        "--merge-existing",
+    ])
+    assert rc == 0
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    membres_ids = {m["membre_id"] for m in profil_groupe["membres"]}
+    assert "nosdeputes:alice" in membres_ids
+    assert "nosdeputes:bob" in membres_ids
+    assert any("fusion_avec_existant" in w and "alice" in w for w in profil_groupe["meta"]["warnings"])
+
+
+def test_main_from_roster_sans_merge_existing_perd_membre_absent_du_roster(tmp_path, monkeypatch):
+    """Sans --merge-existing (comportement par défaut), --out écrase entièrement :
+    un membre absent du roster récupéré cette fois-ci disparaît du fichier de sortie."""
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
+
+    def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    out_path = tmp_path / "out.json"
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_complet)
+    group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+
+    def fake_fetch_group_roster_partiel(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        return [
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster_partiel)
+    group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    membres_ids = {m["membre_id"] for m in profil_groupe["membres"]}
+    assert membres_ids == {"nosdeputes:bob"}
+
+

@@ -785,6 +785,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         metavar="DOSSIER",
         help="Avec --from-roster : dossier des pivots *.pivot.json (défaut : data/profiles).",
     )
+    parser.add_argument(
+        "--merge-existing",
+        action="store_true",
+        help=(
+            "Avec --from-roster --out FICHIER : si FICHIER existe déjà, réintègre les "
+            "membres qui y figuraient mais sont absents du roster récupéré cette "
+            "exécution (protège contre un échec partiel de récupération du roster live). "
+            "Sans cette option, --out écrase entièrement le fichier existant à chaque exécution."
+        ),
+    )
     parser.add_argument("--groupe-id", required=True, help="Ex. AN:SOC")
     parser.add_argument("--groupe-sigle", required=True, help="Ex. SOC")
     parser.add_argument("--groupe-nom", required=True, help="Ex. 'Socialistes et apparentés'")
@@ -832,12 +842,161 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def generate_groupe_profile_from_roster(
+    *,
+    roster: list[dict[str, Any]],
+    groupe_id: str,
+    groupe_sigle: str,
+    groupe_nom: str,
+    chambre: Optional[str],
+    legislature: Optional[str],
+    roster_chambre: str,
+    profiles_dir: Path,
+    out_path: Optional[Path] = None,
+    merge_existing: bool = False,
+    seuil_quorum: float = 0.5,
+    licence_donnees: str = "",
+    validate: bool = False,
+    rapport_interne_path: Optional[Path] = None,
+) -> dict[str, Any]:
+    """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
+    roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
+    `filter_roster_by_sigle` pour partager un même fetch réseau entre plusieurs
+    sigles d'une même chambre/législature — voir generate_group_profiles.py).
+
+    Factorise la logique partagée entre le CLI `--from-roster` de `main()` et
+    `generate_group_profiles.py`.
+    """
+    print(f"→ {len(roster)} membre(s) réel(s) trouvé(s) pour {groupe_sigle!r}.", file=sys.stderr)
+
+    # --merge-existing : réintègre les membres du fichier --out précédent
+    # absents du roster récupéré cette exécution (protège contre un échec
+    # partiel de récupération du roster live). Sans cette option, --out
+    # écrase entièrement le fichier existant à chaque exécution.
+    recovered_slugs: list[str] = []
+    if merge_existing and out_path and out_path.exists():
+        try:
+            old_profil = json.loads(out_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(f"  [!] --merge-existing : lecture de {out_path} impossible ({exc}), ignoré.", file=sys.stderr)
+            old_profil = None
+        if old_profil:
+            roster_slugs = {m.get("slug") for m in roster if m.get("slug")}
+            old_slugs = {
+                membre_id.split(":", 1)[1] if ":" in membre_id else membre_id
+                for membre_id in (m.get("membre_id") for m in old_profil.get("membres", []))
+                if membre_id
+            }
+            recovered_slugs = sorted(old_slugs - roster_slugs)
+            if recovered_slugs:
+                print(
+                    f"  [i] --merge-existing : {len(recovered_slugs)} membre(s) de {out_path} "
+                    f"absent(s) du roster récupéré cette exécution, réintégré(s) : "
+                    f"{', '.join(recovered_slugs)}",
+                    file=sys.stderr,
+                )
+
+    profils: list[dict[str, Any]] = []
+    missing_slugs: list[str] = []
+    for member in roster:
+        slug = member.get("slug")
+        pivot_path = profiles_dir / f"{slug}.pivot.json" if slug else None
+        if pivot_path is None or not pivot_path.exists():
+            missing_slugs.append(slug or member.get("nom") or "?")
+            continue
+        try:
+            profils.append(load_profil_from_file(pivot_path))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"  [!] {exc}", file=sys.stderr)
+            missing_slugs.append(slug)
+
+    for slug in recovered_slugs:
+        pivot_path = profiles_dir / f"{slug}.pivot.json"
+        if not pivot_path.exists():
+            continue
+        try:
+            profils.append(load_profil_from_file(pivot_path))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"  [!] {exc}", file=sys.stderr)
+
+    couverture_roster = {"roster_total": len(roster), "profils_disponibles": len(profils)}
+    if missing_slugs:
+        print(
+            f"  [!] {len(missing_slugs)} membre(s) du roster sans profil pivot local "
+            f"dans {profiles_dir} : {', '.join(missing_slugs)}",
+            file=sys.stderr,
+        )
+
+    print(f"→ {len(profils)} profil(s) chargé(s). Calcul en cours…", file=sys.stderr)
+
+    profil_groupe = build_groupe_profile(
+        groupe_id=groupe_id,
+        groupe_sigle=groupe_sigle,
+        groupe_nom=groupe_nom,
+        chambre=chambre,
+        legislature=legislature,
+        profils=profils,
+        seuil_quorum=seuil_quorum,
+        licence_donnees=licence_donnees,
+    )
+
+    profil_groupe["meta"]["couverture_roster"] = couverture_roster
+    if recovered_slugs:
+        profil_groupe["meta"]["warnings"].append(
+            f"fusion_avec_existant : {len(recovered_slugs)} membre(s) présent(s) dans "
+            f"{out_path} avant cette exécution mais absent(s) du roster récupéré cette "
+            f"fois-ci ont été réintégré(s) (probable échec partiel de récupération du "
+            f"roster live, ou départ réel du groupe non distinguable automatiquement ici) : "
+            f"{', '.join(recovered_slugs)}. meta.couverture_roster.roster_total ne reflète "
+            f"que le roster récupéré cette exécution, pas ces membres réintégrés."
+        )
+    if roster_chambre == "deputes":
+        profil_groupe["meta"]["warnings"].append(
+            "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
+            "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
+            "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
+            "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
+            "dissolution, pas nécessairement la composition actuelle de "
+            "l'Assemblée nationale."
+        )
+    elif roster_chambre == "senateurs":
+        profil_groupe["meta"]["warnings"].append(
+            "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, "
+            "site arrêté par Regards Citoyens (plus de mise à jour, pas de champ "
+            "mandat_fin exploitable). Ce profil reflète donc la dernière donnée "
+            "disponible avant l'arrêt du site, pas nécessairement la composition "
+            "actuelle du Sénat (ex. incompatibilités liées à une fonction "
+            "ministérielle non détectables automatiquement)."
+        )
+
+    if validate:
+        errors = validate_profil_groupe(profil_groupe)
+        if errors:
+            print(f"  [!] {len(errors)} erreur(s) de validation :", file=sys.stderr)
+            for e in errors:
+                print(f"      - {e}", file=sys.stderr)
+        else:
+            print("  ✓ Profil de groupe valide selon le schéma.", file=sys.stderr)
+
+    if rapport_interne_path:
+        rapport = compute_ecarts_cohesion_internes(profils, profil_groupe["cohesion_votes"])
+        rapport_interne_path.parent.mkdir(parents=True, exist_ok=True)
+        rapport_interne_path.write_text(
+            json.dumps(rapport, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"  ✓ Rapport interne (non public) écrit : {rapport_interne_path}", file=sys.stderr)
+
+    if out_path:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(profil_groupe, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"  ✓ Profil de groupe écrit : {out_path}", file=sys.stderr)
+
+    return profil_groupe
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
-
-    couverture_roster: Optional[dict[str, int]] = None
-    profils: list[dict[str, Any]] = []
 
     if args.from_roster:
         if not args.roster_chambre:
@@ -858,38 +1017,36 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"[!] Récupération du roster impossible : {exc}", file=sys.stderr)
             return 1
 
-        print(f"→ {len(roster)} membre(s) réel(s) trouvé(s) pour {args.groupe_sigle!r}.", file=sys.stderr)
+        out_path = Path(args.out) if args.out else None
+        profil_groupe = generate_groupe_profile_from_roster(
+            roster=roster,
+            groupe_id=args.groupe_id,
+            groupe_sigle=args.groupe_sigle,
+            groupe_nom=args.groupe_nom,
+            chambre=args.chambre,
+            legislature=args.legislature,
+            roster_chambre=args.roster_chambre,
+            profiles_dir=Path(args.profiles_dir),
+            out_path=out_path,
+            merge_existing=args.merge_existing,
+            seuil_quorum=args.seuil_quorum,
+            licence_donnees=args.licence,
+            validate=args.validate,
+            rapport_interne_path=Path(args.rapport_interne) if args.rapport_interne else None,
+        )
+        if not out_path:
+            print(json.dumps(profil_groupe, ensure_ascii=False, indent=2))
+        return 0
 
-        profiles_dir = Path(args.profiles_dir)
-        missing_slugs: list[str] = []
-        for member in roster:
-            slug = member.get("slug")
-            pivot_path = profiles_dir / f"{slug}.pivot.json" if slug else None
-            if pivot_path is None or not pivot_path.exists():
-                missing_slugs.append(slug or member.get("nom") or "?")
-                continue
-            try:
-                profils.append(load_profil_from_file(pivot_path))
-            except (FileNotFoundError, ValueError) as exc:
-                print(f"  [!] {exc}", file=sys.stderr)
-                missing_slugs.append(slug)
-
-        couverture_roster = {"roster_total": len(roster), "profils_disponibles": len(profils)}
-        if missing_slugs:
-            print(
-                f"  [!] {len(missing_slugs)} membre(s) du roster sans profil pivot local "
-                f"dans {profiles_dir} : {', '.join(missing_slugs)}",
-                file=sys.stderr,
-            )
-    else:
-        for path_str in args.profils:
-            path = Path(path_str)
-            print(f"→ Chargement : {path}", file=sys.stderr)
-            try:
-                profils.append(load_profil_from_file(path))
-            except (FileNotFoundError, ValueError) as exc:
-                print(f"  [!] {exc}", file=sys.stderr)
-                return 1
+    profils: list[dict[str, Any]] = []
+    for path_str in args.profils:
+        path = Path(path_str)
+        print(f"→ Chargement : {path}", file=sys.stderr)
+        try:
+            profils.append(load_profil_from_file(path))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"  [!] {exc}", file=sys.stderr)
+            return 1
 
     print(
         f"→ {len(profils)} profil(s) chargé(s). Calcul en cours…",
@@ -906,27 +1063,6 @@ def main(argv: Optional[list[str]] = None) -> int:
         seuil_quorum=args.seuil_quorum,
         licence_donnees=args.licence,
     )
-
-    if couverture_roster is not None:
-        profil_groupe["meta"]["couverture_roster"] = couverture_roster
-        if args.roster_chambre == "deputes":
-            profil_groupe["meta"]["warnings"].append(
-                "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
-                "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
-                "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
-                "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
-                "dissolution, pas nécessairement la composition actuelle de "
-                "l'Assemblée nationale."
-            )
-        elif args.roster_chambre == "senateurs":
-            profil_groupe["meta"]["warnings"].append(
-                "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, "
-                "site arrêté par Regards Citoyens (plus de mise à jour, pas de champ "
-                "mandat_fin exploitable). Ce profil reflète donc la dernière donnée "
-                "disponible avant l'arrêt du site, pas nécessairement la composition "
-                "actuelle du Sénat (ex. incompatibilités liées à une fonction "
-                "ministérielle non détectables automatiquement)."
-            )
 
     if args.validate:
         errors = validate_profil_groupe(profil_groupe)
