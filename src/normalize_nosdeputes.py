@@ -55,6 +55,9 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
         "position": v.get("position") or "",
         "numero_scrutin": str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None,
         "sort": v.get("sort"),
+        "type_scrutin": v.get("type_scrutin"),
+        "type_vote": v.get("type_vote") or "vote_texte",
+        "texte_lie_id": v.get("texte_lie_id"),
         # groupe_au_moment_du_vote : null par défaut ; enrichissable en post-traitement
         # (NosDéputés/AN open data ne fournit pas l'historique de groupe par scrutin).
         "groupe_au_moment_du_vote": v.get("groupe_au_moment_du_vote"),
@@ -73,20 +76,25 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
         "debut": m.get("debut"),
         "fin": m.get("fin"),
         "actif": bool(m.get("actif")),
-        "source_url": None,
+        "source_url": m.get("source_url"),
+        "position_dans_hemicycle": m.get("position_dans_hemicycle"),
+        "mode_declenchement": m.get("mode_declenchement"),
+        "suspendu_pour_fonction_gouvernementale": m.get("suspendu_pour_fonction_gouvernementale"),
     }
 
 
 def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     """Normalise un dossier législatif brut vers le format pivot `textes_portes`.
 
-    Note : NosDéputés ne distingue pas explicitement auteur et rapporteur dans
-    les dossiers ; on utilise "rapporteur" par défaut (rôle le plus fréquent pour
-    les dossiers associés à un parlementaire via l'API).
+    NosDéputés ne distingue pas systématiquement auteur et rapporteur dans les
+    dossiers. Le rôle reste donc nul quand la source ne le fournit pas : aucune
+    inférence n'est faite à partir du volume d'interventions.
     """
     return {
         "titre": d.get("titre") or "",
-        "role": "rapporteur",
+        "role": d.get("role"),
+        "type_rapport": d.get("type_rapport"),
+        "stade_procedural": d.get("stade_procedural"),
         "date_min": d.get("date_min"),
         "date_max": d.get("date_max"),
         "legislature": d.get("legislature"),

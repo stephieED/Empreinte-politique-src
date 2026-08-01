@@ -20,6 +20,7 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 """
 
 import argparse
+import concurrent.futures
 import io
 import json
 import re
@@ -290,6 +291,55 @@ def fetch_all_intervention_results(base_url: str, query: str, object_name: str =
         aggregated.extend(results)
         time.sleep(0.2)
     return {"results": aggregated}
+
+
+def fetch_all_intervention_results_from_domains(
+    base_urls: list[str],
+    query: str,
+    object_name: str = "Intervention",
+    max_pages: int = 10,
+) -> dict[str, Any]:
+    """Interroge tous les domaines en parallèle, fusionne les résultats et supprime les doublons."""
+    if not base_urls:
+        return {"results": []}
+
+    normalized_query = _normalize_search_query(query)
+
+    def _fetch_one(base_url: str) -> list[dict[str, Any]]:
+        payload = fetch_all_intervention_results(base_url, normalized_query, object_name=object_name, max_pages=max_pages)
+        results = payload.get("results") or []
+        enriched: list[dict[str, Any]] = []
+        for item in results:
+            if not isinstance(item, dict):
+                continue
+            enriched_item = dict(item)
+            enriched_item["_search_base_url"] = base_url
+            enriched_item["_search_query"] = normalized_query
+            enriched_item["_search_object_name"] = object_name
+            enriched.append(enriched_item)
+        return enriched
+
+    # Recherche parallèle sur chaque domaine : plusieurs requêtes de recherche
+    # distinctes, puis fusion des réponses et déduplication par document_id.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(base_urls))) as executor:
+        domain_results = list(executor.map(_fetch_one, base_urls))
+
+    merged_results: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for results in domain_results:
+        for item in results:
+            if not isinstance(item, dict):
+                continue
+            document_id = item.get("document_id")
+            if not document_id:
+                continue
+            key = str(document_id)
+            if key in seen_ids:
+                continue
+            seen_ids.add(key)
+            merged_results.append(item)
+
+    return {"results": merged_results}
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
@@ -800,9 +850,10 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
         if not isinstance(item, dict):
             continue
         document_id = item.get("document_id")
+        search_base_url = item.get("_search_base_url") or base_url
         detail = None
         if document_id:
-            detail = fetch_intervention_details(base_url, str(document_id))
+            detail = fetch_intervention_details(search_base_url, str(document_id))
         classification = _classify_intervention(detail or {}, candidate_name, candidate_id) if detail else {"mode": "mention", "reason": "detail_indisponible"}
         if classification.get("mode") == "prise_de_parole":
             seance_context = fetch_seance_context(detail) if detail else {"sujet": None, "mots_cles": []}
@@ -915,10 +966,13 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         # la législature courante : ses interventions réelles sont archivées sur le
         # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
         # pour trouver celui qui contient réellement ses interventions.
-        interventions_base_url = _pick_best_search_base_url(base_urls, search_candidate_name, object_name="Intervention")
-        interventions_payload = fetch_all_intervention_results(
-            interventions_base_url, search_candidate_name, object_name="Intervention", max_pages=intervention_max_pages
+        interventions_payload = fetch_all_intervention_results_from_domains(
+            base_urls,
+            search_candidate_name,
+            object_name="Intervention",
+            max_pages=intervention_max_pages,
         )
+        interventions_base_url = base_urls[0]
     except Exception as exc:
         pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
 

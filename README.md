@@ -35,7 +35,8 @@ CV_CandidatFR/
 ├── data/
 │   ├── candidats.json                 # Liste des candidats (nom, slug, parti, statut, sources)
 │   └── profiles/                      # Profils générés : <slug>.json, <slug>.html,
-│                                      # <slug>.pivot.json (optionnel), groupe-<SIGLE>-<leg>.json
+│                                      # <slug>.pivot.json (optionnel), parti-<slug>.json,
+│                                      # groupe-<SIGLE>-<leg>.json
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
@@ -182,12 +183,29 @@ mis en cache sous `.cache/parltrack/`). **Vérifier la fraîcheur du dump avant
 usage** : `--show-cache-date` affiche l'âge du cache ; la date officielle est
 visible sur https://parltrack.org/dumps.
 
-## 5. Générer le profil d'un groupe politique
+## 5. Générer le profil d'un parti / liste de candidats
+
+`parti_profile.py` construit un **profil de parti** à partir des labels de
+parti déclarés dans `data/candidats.json` et des pivots individuels disponibles
+sur disque. Ce profil est un objet éditorial : il agrège des candidats
+déclarés par label de parti, mais ne prétend pas représenter un groupe
+parlementaire réel ni sa cohésion de vote.
+
+```bash
+python src/parti_profile.py \
+    --candidats data/candidats.json \
+    --profiles-dir data/profiles \
+    --out-dir data/profiles
+```
+
+## 6. Générer le profil d'un groupe politique
 
 `group_profile.py` agrège plusieurs profils individuels (format brut
-NosDéputés ou pivot v1) en un **profil de groupe** conforme au schéma de
-groupe v1 (`schema_groupe.py`). Il ne fait aucun appel réseau : il calcule
-uniquement à partir des données déjà présentes dans les profils individuels.
+NosDéputés ou pivot v1) en un **profil de groupe parlementaire** conforme au
+schéma de groupe v1 (`schema_groupe.py`). Contrairement à un profil de parti,
+il représente une composition parlementaire réelle, avec des membres, une
+période et des métriques de cohésion et d'amendements lorsqu'elles sont
+couvrent par les données disponibles.
 
 ```bash
 python src/group_profile.py \
@@ -216,7 +234,22 @@ Le profil de groupe produit contient :
   éligibles à la date du scrutin). Distingue absents, non-votants et excusés.
 - `tags_thematiques_agreges` : agrégation des `tags_thematiques` individuels,
   triés par poids décroissant (`nb_membres_porteurs / len(membres)`).
+- `amendements_agreges` : comptes bruts (adoptés/rejetés/irrecevables/
+  retirés ou tombés) et taux d'adoption, agrégés sur les `amendements[]` des
+  profils membres. Le total mélange tous les types de déposants — **ne pas**
+  l'utiliser comme comparateur direct du taux d'un⋅e élu⋅e, car les
+  amendements gouvernementaux/rapporteur sont adoptés quasi systématiquement
+  par construction. `par_type_deposant["depute"]` isole les amendements
+  déposés à titre individuel, seule catégorie comparable à un⋅e élu⋅e ;
+  `par_type_deposant["inconnu"]` regroupe les amendements sans
+  `type_deposant` renseigné (jamais rattachés à "depute" par défaut).
 - `sources` et `meta` : traçabilité des profils agrégés, horodatage, licence.
+
+L'option `--rapport-interne FICHIER` écrit séparément un rapport de
+**contrôle interne** (écarts de cohésion/participation individuels par
+rapport à la moyenne du groupe) : cette donnée n'est volontairement pas
+intégrée au profil de groupe public tant qu'elle n'a pas été validée comme
+sortie destinée aux lecteurs.
 
 ## 6. Veille des candidats via Wikipédia / Wikidata
 
@@ -254,7 +287,17 @@ de laboratoire visuel et donne accès aux variantes conservées :
   études intermédiaires.
 
 Les trois premiers designs chargent les profils dynamiquement depuis
-`data/profiles/<slug>.json`.
+`data/profiles/<slug>.json`. La V3 complète le profil brut avec
+`data/profiles/<slug>.pivot.json` pour les faits sensibles : rôle et stade
+des textes portés, amendements, type de scrutin, 49.3, motions de censure,
+position sourcée dans l'hémicycle et incompatibilités ministérielles. Un
+pivot absent ou incomplet n'est jamais remplacé par une inférence.
+
+La page publique `web/v3/methodologie.html` documente les règles éditoriales
+de la V3 : aucun taux individuel de présence ou d'absence, issues
+d'amendements en comptes bruts, ratios de groupe avec numérateur et
+dénominateur, distinction 49.3/censure et univers des votes sur textes
+entiers (tous les scrutins publics, ordinaires et solennels).
 
 La vue « Partis » de la V3 charge les agrégats `data/profiles/groupe-*.json`.
 Ces fiches décrivent uniquement les profils candidats présents dans chaque
@@ -322,6 +365,7 @@ converti par `normalize_nosdeputes.py`. Le format pivot contient :
   "mandats":       [ ... ],
   "votes":         [ ... ],
   "textes_portes": [ ... ],
+  "amendements":   [ ... ],
   "interventions": [ ... ],
   "tags_thematiques": ["budget", "fiscalité"],
   "meta": { "schema_version": "1", "genere_le": "...", "licence_donnees": "...", "warnings": [] }
@@ -331,6 +375,38 @@ converti par `normalize_nosdeputes.py`. Le format pivot contient :
 Chaque adaptateur source (`normalize_nosdeputes`, `normalize_parltrack` dans
 `mep_profile.py`) traduit les données brutes vers ce schéma commun sans
 logique d'affichage.
+
+### Champs institutionnels sensibles (schéma pivot v1)
+
+- `mandats[].position_dans_hemicycle` (`"majorite" | "opposition"`) est le
+  champ éditorial le plus sensible du schéma : `validate_profil()` refuse ce
+  champ sans `mandats[].source_url` pointant vers une source primaire
+  vérifiable (déclaration officielle du groupe, liste du socle de soutien au
+  gouvernement, JO). Attaché au mandat plutôt qu'à la personne, car ce statut
+  peut changer d'une législature à l'autre.
+- `mandats[].suspendu_pour_fonction_gouvernementale` signale une période
+  d'incompatibilité ministérielle (art. 23 de la Constitution), pour ne
+  jamais confondre un mandat suspendu avec un désengagement.
+- `votes[].type_vote` (`"vote_texte" | "motion_censure"`) et
+  `votes[].texte_lie_id` : une motion de censure liée à un engagement de
+  responsabilité (art. 49.3, `sort = "adopte_sans_vote_49_3"`) est toujours
+  un scrutin séparé, jamais fusionnée avec une position sur le texte visé.
+- `amendements[].sort == "irrecevable"` exige
+  `base_juridique_irrecevabilite` (`"art. 40" | "art. 45"`) : l'irrecevabilité
+  est un rejet de procédure, distinct d'un rejet sur le fond.
+- `amendements[].type_deposant` (`"gouvernement" | "commission_rapporteur" |
+  "depute"`) et `co_signataires[]` permettent de ne pas mélanger des
+  amendements de nature institutionnelle très différente (voir
+  `amendements_agreges.par_type_deposant` côté profil de groupe).
+- `textes_portes[].type_rapport` utilise une nomenclature officielle
+  (`rapporteur_fond`, `rapporteur_avis`, `rapporteur_special_budget`,
+  `mission_information`) et `.stade_procedural` distingue un texte déposé
+  d'un texte réellement débattu — descriptifs uniquement, jamais une
+  catégorie de valorisation éditoriale.
+
+Collecte encore à implémenter : `candidate_profile.py`/`normalize_nosdeputes.py`
+ne peuplent pas encore ces champs depuis les sources primaires ; ils sont
+aujourd'hui définis au niveau du schéma et de sa validation uniquement.
 
 ## Taxonomie des sources
 

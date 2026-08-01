@@ -14,7 +14,9 @@ Calculs produits :
   3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
      électifs des profils individuels).
   4. Amendements agrégés (amendements_agreges) : taux d'adoption groupe/chambre,
-     utilisé comme comparateur du taux d'adoption individuel.
+     ventilé par type de déposant (par_type_deposant) — le total tous déposants
+     confondus ne doit jamais servir de comparateur direct, seul le sous-total
+     "depute" est de même nature que les amendements d'un⋅e élu⋅e.
   5. Écarts de cohésion/participation individuels (compute_ecarts_cohesion_internes) :
      donnée de CONTRÔLE INTERNE uniquement, volontairement absente du schéma de
      groupe public — accessible via --rapport-interne, jamais via --out.
@@ -44,6 +46,24 @@ Usage (depuis la racine du dépôt) :
     Les profils en entrée peuvent être au format brut NosDéputés (candidate_profile.py)
     ou au format pivot v1 (normalize_nosdeputes.py). Le script détecte automatiquement
     le format et normalise si nécessaire.
+
+Mode --from-roster (composition réelle du groupe, via group_roster.py) :
+    Récupère la vraie liste des membres du groupe parlementaire auprès de
+    NosDéputés.fr/NosSénateurs.fr (voir group_roster.py) puis charge le pivot
+    local de chaque membre trouvé dans --profiles-dir (data/profiles/<slug>.pivot.json).
+    Les membres du roster sans pivot local sont ignorés et signalés dans
+    meta.warnings ; la couverture réelle (roster_total / profils_disponibles)
+    est inscrite dans meta.couverture_roster, jamais confondue avec effectif.actuel.
+
+    python src/group_profile.py \\
+        --from-roster --roster-chambre deputes \\
+        --groupe-id "AN:LR" --groupe-sigle LR --groupe-nom "Les Républicains" \\
+        --chambre AN --legislature 16 \\
+        --out data/profiles/groupe-AN-LR-16.json
+
+    NB : distinct de parti_profile.py, qui agrège les candidats présidentiels
+    déclarés partageant un même label de parti (data/candidats.json) — un
+    échantillon éditorial, pas un groupe parlementaire.
 """
 
 import argparse
@@ -55,7 +75,13 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
-from schema_groupe import SCHEMA_GROUPE_VERSION, make_empty_profil_groupe, validate_profil_groupe
+from schema_groupe import (
+    SCHEMA_GROUPE_VERSION,
+    AMENDEMENTS_TYPES_DEPOSANT,
+    make_empty_profil_groupe,
+    make_empty_amendements_stats,
+    validate_profil_groupe,
+)
 from normalize_nosdeputes import normalize_nosdeputes
 
 
@@ -414,45 +440,48 @@ _SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non sou
 def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Agrège les amendements de tous les profils membres pour servir de comparateur.
 
-    Sert de base au taux d'adoption individuel : ce taux groupe/chambre permet
-    de situer le taux d'un membre par rapport à son groupe, sans jugement de
-    valeur sur le contenu des amendements.
+    Le total (tous types de déposants confondus) sert de vue d'ensemble mais ne
+    doit PAS être utilisé comme comparateur direct du taux d'adoption d'un⋅e
+    élu⋅e : les amendements gouvernementaux ou du rapporteur sont adoptés quasi
+    systématiquement par construction (ils portent le texte), ce qui gonflerait
+    artificiellement la référence. Comparer un⋅e élu⋅e à
+    ``par_type_deposant["depute"]``, seule catégorie de même nature que les
+    amendements qu'un⋅e député⋅e dépose en son nom propre.
 
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
 
     Returns:
-        Dict conforme à la structure ``amendements_agreges`` du schéma de groupe.
+        Dict conforme à la structure ``amendements_agreges`` du schéma de groupe,
+        avec sa clé ``par_type_deposant`` (voir schema_groupe.AMENDEMENTS_TYPES_DEPOSANT).
     """
-    nb_amendements = 0
-    nb_adoptes = 0
-    nb_rejetes = 0
-    nb_irrecevables = 0
-    nb_retires_ou_tombes = 0
+    total = make_empty_amendements_stats()
+    par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
 
     for profil in profils:
         for a in (profil.get("amendements") or []):
-            nb_amendements += 1
             sort_norm = _normalize_sort_amendement(a.get("sort"))
-            if sort_norm in _SORTS_ADOPTES:
-                nb_adoptes += 1
-            elif sort_norm in _SORTS_IRRECEVABLES:
-                nb_irrecevables += 1
-            elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
-                nb_retires_ou_tombes += 1
-            elif sort_norm in _SORTS_REJETES:
-                nb_rejetes += 1
+            type_deposant = a.get("type_deposant")
+            bucket = par_type[type_deposant] if type_deposant in par_type else par_type["inconnu"]
+            for stats in (total, bucket):
+                stats["nb_amendements"] += 1
+                if sort_norm in _SORTS_ADOPTES:
+                    stats["nb_adoptes"] += 1
+                elif sort_norm in _SORTS_IRRECEVABLES:
+                    stats["nb_irrecevables"] += 1
+                elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
+                    stats["nb_retires_ou_tombes"] += 1
+                elif sort_norm in _SORTS_REJETES:
+                    stats["nb_rejetes"] += 1
 
-    taux_adoption = round(nb_adoptes / nb_amendements, 4) if nb_amendements else None
+    for stats in (total, *par_type.values()):
+        stats["taux_adoption"] = (
+            round(stats["nb_adoptes"] / stats["nb_amendements"], 4)
+            if stats["nb_amendements"] else None
+        )
 
-    return {
-        "nb_amendements": nb_amendements,
-        "nb_adoptes": nb_adoptes,
-        "nb_rejetes": nb_rejetes,
-        "nb_irrecevables": nb_irrecevables,
-        "nb_retires_ou_tombes": nb_retires_ou_tombes,
-        "taux_adoption": taux_adoption,
-    }
+    total["par_type_deposant"] = par_type
+    return total
 
 
 # ---------------------------------------------------------------------------
@@ -726,9 +755,35 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "profils",
-        nargs="+",
+        nargs="*",
         metavar="PROFIL.json",
-        help="Fichiers JSON des profils individuels des membres du groupe.",
+        help="Fichiers JSON des profils individuels des membres du groupe (ignoré avec --from-roster).",
+    )
+    parser.add_argument(
+        "--from-roster",
+        action="store_true",
+        help=(
+            "Récupère la composition réelle du groupe via group_roster.py "
+            "(NosDéputés.fr/NosSénateurs.fr) au lieu des fichiers PROFIL.json."
+        ),
+    )
+    parser.add_argument(
+        "--roster-chambre",
+        choices=["deputes", "senateurs"],
+        default=None,
+        help="Requis avec --from-roster : chambre interrogée pour la composition du groupe.",
+    )
+    parser.add_argument(
+        "--roster-senat-periode-debut",
+        default=None,
+        metavar="YYYY-MM-DD",
+        help="Avec --from-roster --roster-chambre senateurs : filtre les membres par date (voir group_roster.py).",
+    )
+    parser.add_argument(
+        "--profiles-dir",
+        default="data/profiles",
+        metavar="DOSSIER",
+        help="Avec --from-roster : dossier des pivots *.pivot.json (défaut : data/profiles).",
     )
     parser.add_argument("--groupe-id", required=True, help="Ex. AN:SOC")
     parser.add_argument("--groupe-sigle", required=True, help="Ex. SOC")
@@ -781,16 +836,60 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
 
-    # Chargement des profils
+    couverture_roster: Optional[dict[str, int]] = None
     profils: list[dict[str, Any]] = []
-    for path_str in args.profils:
-        path = Path(path_str)
-        print(f"→ Chargement : {path}", file=sys.stderr)
-        try:
-            profils.append(load_profil_from_file(path))
-        except (FileNotFoundError, ValueError) as exc:
-            print(f"  [!] {exc}", file=sys.stderr)
+
+    if args.from_roster:
+        if not args.roster_chambre:
+            print("[!] --from-roster requiert --roster-chambre (deputes|senateurs).", file=sys.stderr)
             return 1
+        from group_roster import fetch_group_roster  # import tardif : requests non requis hors ce mode
+        import requests
+
+        legislature = args.legislature if args.roster_chambre == "deputes" else None
+        try:
+            roster = fetch_group_roster(
+                chambre=args.roster_chambre,
+                groupe_sigle=args.groupe_sigle,
+                legislature=legislature,
+                senat_periode_debut=args.roster_senat_periode_debut,
+            )
+        except (ValueError, requests.RequestException) as exc:
+            print(f"[!] Récupération du roster impossible : {exc}", file=sys.stderr)
+            return 1
+
+        print(f"→ {len(roster)} membre(s) réel(s) trouvé(s) pour {args.groupe_sigle!r}.", file=sys.stderr)
+
+        profiles_dir = Path(args.profiles_dir)
+        missing_slugs: list[str] = []
+        for member in roster:
+            slug = member.get("slug")
+            pivot_path = profiles_dir / f"{slug}.pivot.json" if slug else None
+            if pivot_path is None or not pivot_path.exists():
+                missing_slugs.append(slug or member.get("nom") or "?")
+                continue
+            try:
+                profils.append(load_profil_from_file(pivot_path))
+            except (FileNotFoundError, ValueError) as exc:
+                print(f"  [!] {exc}", file=sys.stderr)
+                missing_slugs.append(slug)
+
+        couverture_roster = {"roster_total": len(roster), "profils_disponibles": len(profils)}
+        if missing_slugs:
+            print(
+                f"  [!] {len(missing_slugs)} membre(s) du roster sans profil pivot local "
+                f"dans {profiles_dir} : {', '.join(missing_slugs)}",
+                file=sys.stderr,
+            )
+    else:
+        for path_str in args.profils:
+            path = Path(path_str)
+            print(f"→ Chargement : {path}", file=sys.stderr)
+            try:
+                profils.append(load_profil_from_file(path))
+            except (FileNotFoundError, ValueError) as exc:
+                print(f"  [!] {exc}", file=sys.stderr)
+                return 1
 
     print(
         f"→ {len(profils)} profil(s) chargé(s). Calcul en cours…",
@@ -807,6 +906,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         seuil_quorum=args.seuil_quorum,
         licence_donnees=args.licence,
     )
+
+    if couverture_roster is not None:
+        profil_groupe["meta"]["couverture_roster"] = couverture_roster
 
     if args.validate:
         errors = validate_profil_groupe(profil_groupe)

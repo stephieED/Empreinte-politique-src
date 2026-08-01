@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from group_profile import (
     compute_ecarts_cohesion_internes,
     build_groupe_profile,
     _is_pivot_v1,
+    main as group_profile_main,
 )
 from schema_groupe import validate_profil_groupe
 
@@ -642,6 +644,52 @@ def test_build_groupe_profile_inclut_amendements_agreges():
     assert validate_profil_groupe(g) == []
 
 
+def test_aggregate_amendements_par_type_deposant_depute():
+    p1 = _pivot(amendements=[
+        _amendement("adopté", deposant="depute"), _amendement("rejeté", deposant="depute"),
+    ])
+    agg = _aggregate_amendements([p1])
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 2
+    assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
+    """Les amendements gouvernement/rapporteur (quasi tous adoptés) ne doivent pas
+    gonfler le sous-total 'depute', utilisé comme comparateur d'un⋅e élu⋅e."""
+    p1 = _pivot(amendements=[
+        _amendement("rejeté", deposant="depute"),
+        _amendement("adopté", deposant="gouvernement"),
+        _amendement("adopté", deposant="commission_rapporteur"),
+    ])
+    agg = _aggregate_amendements([p1])
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.0
+    assert agg["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["commission_rapporteur"]["nb_amendements"] == 1
+    # Le total, lui, mélange bien tout (c'est pour ça qu'il ne doit pas servir
+    # de comparateur direct).
+    assert agg["nb_amendements"] == 3
+    assert agg["taux_adoption"] == round(2 / 3, 4)
+
+
+def test_aggregate_amendements_type_deposant_absent_est_inconnu():
+    a = _amendement("adopté")
+    del a["type_deposant"]
+    agg = _aggregate_amendements([_pivot(amendements=[a])])
+    assert agg["par_type_deposant"]["inconnu"]["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 0
+
+
+def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
+    profils = [_pivot(amendements=[
+        _amendement("adopté", deposant="depute"), _amendement("adopté", deposant="gouvernement"),
+    ])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    assert g["amendements_agreges"]["par_type_deposant"]["depute"]["nb_amendements"] == 1
+    assert g["amendements_agreges"]["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
+    assert validate_profil_groupe(g) == []
+
+
 # ---------------------------------------------------------------------------
 # compute_ecarts_cohesion_internes (contrôle interne, hors schéma public)
 # ---------------------------------------------------------------------------
@@ -679,3 +727,48 @@ def test_ecarts_cohesion_internes_absent_du_profil_groupe_public():
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
     assert "ecarts_cohesion_internes" not in g
     assert "compute_ecarts_cohesion_internes" not in str(g)
+
+
+# ---------------------------------------------------------------------------
+# CLI --from-roster (composition réelle du groupe via group_roster.py)
+# ---------------------------------------------------------------------------
+
+def test_main_from_roster_builds_group_and_reports_couverture(tmp_path, monkeypatch):
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    # "bob" fait partie du roster mais n'a aucun pivot local dans tmp_path.
+
+    def fake_fetch_group_roster(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
+        assert chambre == "deputes"
+        assert groupe_sigle == "LR"
+        assert legislature == "16"
+        return [
+            {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+            {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
+        ]
+
+    monkeypatch.setattr("group_roster.fetch_group_roster", fake_fetch_group_roster)
+
+    out_path = tmp_path / "out.json"
+    rc = group_profile_main([
+        "--from-roster", "--roster-chambre", "deputes",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+        "--chambre", "AN", "--legislature", "16",
+        "--profiles-dir", str(tmp_path),
+        "--out", str(out_path),
+    ])
+
+    assert rc == 0
+    profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
+    assert profil_groupe["meta"]["couverture_roster"] == {"roster_total": 2, "profils_disponibles": 1}
+    assert len(profil_groupe["membres"]) == 1
+    assert validate_profil_groupe(profil_groupe) == []
+
+
+def test_main_from_roster_missing_roster_chambre_returns_error(capsys):
+    rc = group_profile_main([
+        "--from-roster",
+        "--groupe-id", "AN:LR", "--groupe-sigle", "LR", "--groupe-nom", "Les Républicains",
+    ])
+    assert rc == 1
+    assert "--roster-chambre" in capsys.readouterr().err
+

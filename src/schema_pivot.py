@@ -201,6 +201,10 @@ KNOWN_STADES_PROCEDURAUX: frozenset[str] = frozenset({
     "adopte", "promulgue",
 })
 
+# Rôle factuel de l'élu sur le texte. ``None`` signifie que la source ne
+# permet pas de distinguer auteur, rapporteur et co-rapporteur.
+KNOWN_ROLES_TEXTE: frozenset[str] = frozenset({"auteur", "rapporteur", "co-rapporteur"})
+
 # Type de scrutin, métadonnée du vote indépendante de son résultat.
 KNOWN_TYPES_SCRUTIN: frozenset[str] = frozenset({"public_ordinaire", "solennel"})
 
@@ -256,9 +260,11 @@ def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
 def validate_profil(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma pivot v1.
 
-    Validation structurelle de premier niveau : présence des clés obligatoires,
-    types, valeur de schema_version. Ne valide pas le contenu fin de chaque
-    vote ou mandat (sauf pour les clés de liste).
+    Validation structurelle de premier niveau (clés obligatoires, types,
+    schema_version) plus les invariants de contenu des champs sensibles :
+    position_dans_hemicycle/source_url, mode_declenchement, type_scrutin,
+    type_vote/texte_lie_id (motion_censure), type_rapport, stade_procedural,
+    type_deposant, et sort/base_juridique_irrecevabilite des amendements.
 
     Args:
         profil: dict à valider.
@@ -309,6 +315,91 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                 errors.append(
                     f"mandats[{i}].position_dans_hemicycle est renseigné sans "
                     "source_url : ce champ requiert une source primaire vérifiable."
+                )
+            mode_declenchement = m.get("mode_declenchement")
+            if mode_declenchement is not None and mode_declenchement not in KNOWN_MODES_DECLENCHEMENT:
+                errors.append(
+                    f"mandats[{i}].mode_declenchement non reconnu : {mode_declenchement!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_MODES_DECLENCHEMENT)}."
+                )
+
+    # type_vote == "motion_censure" doit toujours être lié à son texte 49.3 via
+    # texte_lie_id : une motion de censure n'est jamais fusionnée avec le vote
+    # sur le texte concerné (voir docstring du module).
+    votes = profil.get("votes")
+    if isinstance(votes, list):
+        for i, v in enumerate(votes):
+            if not isinstance(v, dict):
+                continue
+            type_scrutin = v.get("type_scrutin")
+            if type_scrutin is not None and type_scrutin not in KNOWN_TYPES_SCRUTIN:
+                errors.append(
+                    f"votes[{i}].type_scrutin non reconnu : {type_scrutin!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_TYPES_SCRUTIN)}."
+                )
+            type_vote = v.get("type_vote")
+            if type_vote is not None and type_vote not in KNOWN_TYPES_VOTE:
+                errors.append(
+                    f"votes[{i}].type_vote non reconnu : {type_vote!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_TYPES_VOTE)}."
+                )
+            if type_vote == "motion_censure" and not v.get("texte_lie_id"):
+                errors.append(
+                    f"votes[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
+                    "(le texte 49.3 concerné doit être identifié, jamais fusionné "
+                    "avec le vote sur le texte)."
+                )
+
+    # role / type_rapport / stade_procedural : nomenclature factuelle, jamais une
+    # catégorie éditoriale de valorisation.
+    textes_portes = profil.get("textes_portes")
+    if isinstance(textes_portes, list):
+        for i, t in enumerate(textes_portes):
+            if not isinstance(t, dict):
+                continue
+            role = t.get("role")
+            if role is not None and role not in KNOWN_ROLES_TEXTE:
+                errors.append(
+                    f"textes_portes[{i}].role non reconnu : {role!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_ROLES_TEXTE)}."
+                )
+            type_rapport = t.get("type_rapport")
+            if type_rapport is not None and type_rapport not in KNOWN_TYPES_RAPPORT:
+                errors.append(
+                    f"textes_portes[{i}].type_rapport non reconnu : {type_rapport!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_TYPES_RAPPORT)}."
+                )
+            stade_procedural = t.get("stade_procedural")
+            if stade_procedural is not None and stade_procedural not in KNOWN_STADES_PROCEDURAUX:
+                errors.append(
+                    f"textes_portes[{i}].stade_procedural non reconnu : {stade_procedural!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_STADES_PROCEDURAUX)}."
+                )
+
+    # base_juridique_irrecevabilite est obligatoire dès que sort == "irrecevable" :
+    # l'irrecevabilité est un statut distinct d'un simple rejet sur le fond.
+    amendements = profil.get("amendements")
+    if isinstance(amendements, list):
+        for i, a in enumerate(amendements):
+            if not isinstance(a, dict):
+                continue
+            type_deposant = a.get("type_deposant")
+            if type_deposant is not None and type_deposant not in KNOWN_TYPES_DEPOSANT:
+                errors.append(
+                    f"amendements[{i}].type_deposant non reconnu : {type_deposant!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_TYPES_DEPOSANT)}."
+                )
+            base_juridique = a.get("base_juridique_irrecevabilite")
+            if a.get("sort") == "irrecevable" and not base_juridique:
+                errors.append(
+                    f"amendements[{i}] : sort='irrecevable' sans "
+                    "'base_juridique_irrecevabilite' (l'irrecevabilité est un statut "
+                    "distinct d'un simple rejet)."
+                )
+            if base_juridique is not None and base_juridique not in KNOWN_BASES_IRRECEVABILITE:
+                errors.append(
+                    f"amendements[{i}].base_juridique_irrecevabilite non reconnue : "
+                    f"{base_juridique!r}. Valeurs connues : {sorted(KNOWN_BASES_IRRECEVABILITE)}."
                 )
 
     meta = profil.get("meta")

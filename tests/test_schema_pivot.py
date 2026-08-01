@@ -269,6 +269,161 @@ def test_validate_position_hemicycle_none_ne_requiert_pas_de_source():
 
 
 # ---------------------------------------------------------------------------
+# validate_profil — mandats[].mode_declenchement
+# ---------------------------------------------------------------------------
+
+def test_validate_mode_declenchement_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["mandats"] = [{"categorie": "commission_enquete", "mode_declenchement": "vote_a_main_levee"}]
+    errors = validate_profil(p)
+    assert any("mode_declenchement" in e for e in errors)
+
+
+def test_validate_mode_declenchement_connu_est_valide():
+    p = _valid_profil()
+    for mode in KNOWN_MODES_DECLENCHEMENT:
+        p["mandats"] = [{"categorie": "commission_enquete", "mode_declenchement": mode}]
+        assert validate_profil(p) == []
+
+
+# ---------------------------------------------------------------------------
+# validate_profil — votes[].type_scrutin / type_vote / texte_lie_id
+# ---------------------------------------------------------------------------
+
+def test_validate_type_scrutin_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_scrutin": "secret"}]
+    errors = validate_profil(p)
+    assert any("type_scrutin" in e for e in errors)
+
+
+def test_validate_type_scrutin_connu_est_valide():
+    p = _valid_profil()
+    for type_scrutin in KNOWN_TYPES_SCRUTIN:
+        p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_scrutin": type_scrutin}]
+        assert validate_profil(p) == []
+
+
+def test_validate_type_vote_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "vote_secret"}]
+    errors = validate_profil(p)
+    assert any("type_vote" in e for e in errors)
+
+
+def test_validate_motion_censure_sans_texte_lie_id_est_une_erreur():
+    p = _valid_profil()
+    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "motion_censure"}]
+    errors = validate_profil(p)
+    assert any("texte_lie_id" in e for e in errors)
+
+
+def test_validate_motion_censure_avec_texte_lie_id_est_valide():
+    p = _valid_profil()
+    p["votes"] = [{
+        "numero_scrutin": "1", "position": "pour",
+        "type_vote": "motion_censure", "texte_lie_id": "49-3-texte-42",
+    }]
+    assert validate_profil(p) == []
+
+
+def test_validate_vote_texte_sans_texte_lie_id_est_valide():
+    p = _valid_profil()
+    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "vote_texte"}]
+    assert validate_profil(p) == []
+
+
+# ---------------------------------------------------------------------------
+# validate_profil — textes_portes[].type_rapport / stade_procedural
+# ---------------------------------------------------------------------------
+
+def test_validate_type_rapport_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["textes_portes"] = [{"titre": "PPL x", "type_rapport": "rapporteur_vip"}]
+    errors = validate_profil(p)
+    assert any("type_rapport" in e for e in errors)
+
+
+def test_validate_type_rapport_connu_est_valide():
+    p = _valid_profil()
+    for type_rapport in KNOWN_TYPES_RAPPORT:
+        p["textes_portes"] = [{"titre": "PPL x", "type_rapport": type_rapport}]
+        assert validate_profil(p) == []
+
+
+def test_validate_stade_procedural_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["textes_portes"] = [{"titre": "PPL x", "stade_procedural": "vote_final"}]
+    errors = validate_profil(p)
+    assert any("stade_procedural" in e for e in errors)
+
+
+def test_validate_stade_procedural_connu_est_valide():
+    p = _valid_profil()
+    for stade in KNOWN_STADES_PROCEDURAUX:
+        p["textes_portes"] = [{"titre": "PPL x", "stade_procedural": stade}]
+        assert validate_profil(p) == []
+
+
+def test_validate_role_texte_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["textes_portes"] = [{"titre": "PPL x", "role": "porteur"}]
+    errors = validate_profil(p)
+    assert any("role non reconnu" in e for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# validate_profil — amendements[].type_deposant / sort / base_juridique_irrecevabilite
+# ---------------------------------------------------------------------------
+
+def test_validate_type_deposant_inconnu_est_une_erreur():
+    p = _valid_profil()
+    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": "senateur"}]
+    errors = validate_profil(p)
+    assert any("type_deposant" in e for e in errors)
+
+
+def test_validate_type_deposant_connu_est_valide():
+    p = _valid_profil()
+    for type_deposant in KNOWN_TYPES_DEPOSANT:
+        p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": type_deposant}]
+        assert validate_profil(p) == []
+
+
+def test_validate_irrecevable_sans_base_juridique_est_une_erreur():
+    p = _valid_profil()
+    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "irrecevable"}]
+    errors = validate_profil(p)
+    assert any("base_juridique_irrecevabilite" in e for e in errors)
+
+
+def test_validate_irrecevable_avec_base_juridique_inconnue_est_une_erreur():
+    p = _valid_profil()
+    p["amendements"] = [{
+        "texte_vise": "PLF 2025", "sort": "irrecevable",
+        "base_juridique_irrecevabilite": "art. 41",
+    }]
+    errors = validate_profil(p)
+    assert any("base_juridique_irrecevabilite" in e for e in errors)
+
+
+def test_validate_irrecevable_avec_base_juridique_connue_est_valide():
+    p = _valid_profil()
+    for base in KNOWN_BASES_IRRECEVABILITE:
+        p["amendements"] = [{
+            "texte_vise": "PLF 2025", "sort": "irrecevable",
+            "base_juridique_irrecevabilite": base,
+        }]
+        assert validate_profil(p) == []
+
+
+def test_validate_sort_non_irrecevable_ne_requiert_pas_de_base_juridique():
+    p = _valid_profil()
+    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté"}]
+    assert validate_profil(p) == []
+
+
+# ---------------------------------------------------------------------------
 # Constantes exposées
 # ---------------------------------------------------------------------------
 

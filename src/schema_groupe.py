@@ -82,15 +82,30 @@ Format d'un profil de groupe v1 :
         }
     ],
 
-    "amendements_agreges": {            # comparateur du taux d'adoption individuel :
-                                         # agrégation groupe/chambre des amendements[]
-                                         # des profils individuels membres
+    "amendements_agreges": {            # tous types de déposants confondus — NE JAMAIS
+                                         # comparer directement au taux d'un⋅e élu⋅e (voir
+                                         # par_type_deposant ci-dessous)
         "nb_amendements": 120,
         "nb_adoptes": 18,
         "nb_rejetes": 74,
         "nb_irrecevables": 12,
         "nb_retires_ou_tombes": 16,
-        "taux_adoption": 0.15           # nb_adoptes / nb_amendements ; null si nb_amendements == 0
+        "taux_adoption": 0.15,          # nb_adoptes / nb_amendements ; null si nb_amendements == 0
+        "par_type_deposant": {          # comparateur valide du taux d'adoption individuel :
+                                         # les amendements gouvernement/rapporteur sont adoptés
+                                         # quasi systématiquement par construction — comparer un⋅e
+                                         # élu⋅e à par_type_deposant["depute"], jamais au total
+            "depute": { "nb_amendements": 98, "nb_adoptes": 6, "nb_rejetes": 70,
+                        "nb_irrecevables": 12, "nb_retires_ou_tombes": 10, "taux_adoption": 0.0612 },
+            "gouvernement": { "nb_amendements": 15, "nb_adoptes": 9, "nb_rejetes": 3,
+                              "nb_irrecevables": 0, "nb_retires_ou_tombes": 3, "taux_adoption": 0.6 },
+            "commission_rapporteur": { "nb_amendements": 7, "nb_adoptes": 3, "nb_rejetes": 1,
+                                       "nb_irrecevables": 0, "nb_retires_ou_tombes": 3, "taux_adoption": 0.4286 },
+            "inconnu": { "nb_amendements": 0, "nb_adoptes": 0, "nb_rejetes": 0,
+                        "nb_irrecevables": 0, "nb_retires_ou_tombes": 0, "taux_adoption": null }
+            # "inconnu" : amendements sans type_deposant renseigné — jamais rattachés par
+            # défaut à "depute", pour ne pas masquer une donnée manquante
+        }
     },
 
     "sources": [                        # traçabilité des sources individuelles agrégées
@@ -110,8 +125,12 @@ Format d'un profil de groupe v1 :
             "nosdeputes:boris-vallaud"
         ],
         "seuil_quorum": 0.5,            # seuil de participation retenu pour quorum_atteint
-        "warnings": []
-    }
+        "warnings": []        # "couverture_roster" (optionnel, présent seulement si le groupe a été
+        # construit via group_profile.py --from-roster) : {"roster_total": 62,
+        # "profils_disponibles": 12} — nombre réel de membres du groupe (via
+        # group_roster.py) vs. nombre de profils pivot locaux effectivement
+        # chargés. Ne JAMAIS confondre avec effectif.actuel (qui ne décrit que
+        # les membres présents dans `profils`, pas le groupe réel).    }
 }
 
 Cas limites gérés :
@@ -123,6 +142,9 @@ Cas limites gérés :
   individuelles en fallback (loggé dans meta.warnings).
 - amendements_agreges.taux_adoption est null si aucun amendement n'est
   recensé sur les profils membres (nb_amendements == 0).
+- amendements_agreges.par_type_deposant : un amendement sans type_deposant
+  renseigné est classé sous "inconnu", jamais sous "depute" par défaut (une
+  donnée manquante ne doit jamais se travestir en fait positif).
 
 Hors périmètre de ce schéma (volontairement) :
 - Le ratio individuel de cohérence/participation rapporté à la moyenne du
@@ -137,7 +159,7 @@ Usage :
 import time
 from typing import Any
 
-from schema_pivot import KNOWN_CHAMBRES
+from schema_pivot import KNOWN_CHAMBRES, KNOWN_TYPES_DEPOSANT
 
 # Version du schéma de groupe ; indépendante de SCHEMA_VERSION du pivot individuel.
 SCHEMA_GROUPE_VERSION = "1"
@@ -179,6 +201,23 @@ _LIST_KEYS: tuple[str, ...] = (
     "tags_thematiques_agreges",
     "sources",
 )
+
+# Ventilation de amendements_agreges par type de déposant. "inconnu" couvre les
+# amendements sans type_deposant renseigné : ils ne doivent jamais être classés
+# par défaut sous "depute", ce qui masquerait une donnée manquante.
+AMENDEMENTS_TYPES_DEPOSANT: tuple[str, ...] = (*sorted(KNOWN_TYPES_DEPOSANT), "inconnu")
+
+
+def make_empty_amendements_stats() -> dict[str, Any]:
+    """Structure vide d'un bloc de statistiques d'amendements (total ou ventilation)."""
+    return {
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": None,
+    }
 
 
 def make_empty_profil_groupe(
@@ -224,12 +263,10 @@ def make_empty_profil_groupe(
         "cohesion_votes": [],
         "tags_thematiques_agreges": [],
         "amendements_agreges": {
-            "nb_amendements": 0,
-            "nb_adoptes": 0,
-            "nb_rejetes": 0,
-            "nb_irrecevables": 0,
-            "nb_retires_ou_tombes": 0,
-            "taux_adoption": None,
+            **make_empty_amendements_stats(),
+            "par_type_deposant": {
+                t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT
+            },
         },
         "sources": [],
         "meta": {
@@ -297,6 +334,10 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     amendements_agreges = profil.get("amendements_agreges")
     if amendements_agreges is not None and not isinstance(amendements_agreges, dict):
         errors.append("'amendements_agreges' doit être un dict.")
+    elif isinstance(amendements_agreges, dict):
+        par_type = amendements_agreges.get("par_type_deposant")
+        if par_type is not None and not isinstance(par_type, dict):
+            errors.append("'amendements_agreges.par_type_deposant' doit être un dict.")
 
     meta = profil.get("meta")
     if not isinstance(meta, dict):
@@ -314,5 +355,8 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
             errors.append("'meta.warnings' doit être une liste.")
         if not isinstance(meta.get("profils_sources"), list):
             errors.append("'meta.profils_sources' doit être une liste.")
+        couverture_roster = meta.get("couverture_roster")
+        if couverture_roster is not None and not isinstance(couverture_roster, dict):
+            errors.append("'meta.couverture_roster' doit être un dict.")
 
     return errors

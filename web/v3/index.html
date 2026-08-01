@@ -1245,6 +1245,7 @@
   <script>
     const CANDIDATS_URL = "../../data/candidats.json";
     const PROFILE_URL = (slug) => `../../data/profiles/${slug}.json`;
+    const PIVOT_PROFILE_URL = (slug) => `../../data/profiles/${slug}.pivot.json`;
     const GROUP_PROFILES = [
       { id: "la-france-insoumise-lfi", label: "La France Insoumise (LFI)" },
       { id: "les-ecologistes", label: "Les Écologistes" },
@@ -1257,7 +1258,7 @@
       { id: "rassemblement-national-rn", label: "Rassemblement National (RN)" },
       { id: "renaissance", label: "Renaissance" },
     ];
-    const GROUP_PROFILE_URL = (id) => `../../data/profiles/groupe-${id}.json`;
+    const GROUP_PROFILE_URL = (id) => `../../data/profiles/parti-${id}.json`;
     const THEME_OPTIONS = [
       { key: "all", label: "Tous les thèmes" },
       { key: "sante", label: "Santé", icon: "🩺" },
@@ -1287,9 +1288,19 @@
     const TITLE_TRUNCATE_SLICE = TITLE_TRUNCATE_LENGTH - 3;
     const INTERVENTION_TEXT_PREVIEW_LENGTH = 200;
     const NON_VOTING_PATTERN = /non[ _-]?vot/;
-    const DEFENDED_THRESHOLD = 600;
-    const CARRIED_THRESHOLD = 250;
-    const REPORTED_THRESHOLD = 80;
+    const DEBATED_TEXT_STAGES = new Set(["examine_commission", "inscrit_ordre_jour", "discute_seance", "adopte", "promulgue"]);
+    const TEXT_ROLE_LABELS = { auteur: "auteur", rapporteur: "rapporteur", "co-rapporteur": "co-rapporteur" };
+    const TEXT_STAGE_LABELS = {
+      examine_commission: "examiné en commission",
+      inscrit_ordre_jour: "inscrit à l’ordre du jour",
+      discute_seance: "discuté en séance",
+      adopte: "adopté",
+      promulgue: "promulgué",
+    };
+    const AMENDMENT_OUTCOMES = [
+      ["adopté", "Adoptés"], ["rejeté", "Rejetés"], ["retiré", "Retirés"],
+      ["tombé", "Tombés"], ["irrecevable", "Irrecevables"], ["non_soutenu", "Non soutenus"],
+    ];
 
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
@@ -1297,7 +1308,7 @@
       mandats: { label: "Mandats", icon: "◌" },
       textes: { label: "Textes", icon: "▤" },
       votes: { label: "Votes", icon: "●" },
-      absences: { label: "Silences", icon: "□" },
+      absences: { label: "Données", icon: "□" },
       interventions: { label: "Paroles", icon: "“" },
       compare: { label: "Comparer", icon: "±" },
     };
@@ -1466,28 +1477,45 @@
           fin: e.actif ? null : (e.fins.length ? new Date(Math.max(...e.fins)).toISOString().slice(0, 10) : null),
           actif: e.actif,
         }))
-        .sort((a, b) => (b.debut || "").localeCompare(a.debut || ""));
+        .sort((a, b) => {
+          const notableDiff = Number(isNotableResponsibility(b)) - Number(isNotableResponsibility(a));
+          return notableDiff || (b.debut || "").localeCompare(a.debut || "");
+        });
     }
 
     function computeResponsibilitiesSummary(profile) {
       const items = dedupeResponsibilities(profile);
-      const notable = items.filter((r) => ROLE_PRIORITY.some((kw) => r.type.toLowerCase().includes(kw)));
-      return { distinctCount: items.length, notableCount: notable.length };
+      return { distinctCount: items.length };
     }
 
     function isNotableResponsibility(responsibility) {
       return ROLE_PRIORITY.some((keyword) => (responsibility.type || "").toLowerCase().includes(keyword));
     }
 
+    function sourcedHemicyclePosition(profile) {
+      const mandate = (profile.pivot_mandats || []).find((item) => item.position_dans_hemicycle && item.source_url);
+      return mandate?.position_dans_hemicycle || null;
+    }
+
+    function renderMinisterialIncompatibilities(profile) {
+      const periods = (profile.pivot_mandats || [])
+        .map((mandate) => mandate.suspendu_pour_fonction_gouvernementale)
+        .filter(Boolean);
+      if (!periods.length) return "";
+      return `<div class="party-coverage">INCOMPATIBILITÉ MINISTÉRIELLE : ${periods.map((period) => (
+        `mandat suspendu du ${escapeHtml(formatIsoDate(period.debut))} au ${escapeHtml(formatIsoDate(period.fin))}${period.suppleant_id ? ` · suppléant : ${escapeHtml(period.suppleant_id)}` : ""}`
+      )).join(" · ")}. Cette période n’est pas interprétée comme une absence parlementaire.</div>`;
+    }
+
     // KPI 3 — Profil de vote synthétique : une répartition, jamais un score isolé.
-    // Restreint aux votes portant sur "l'ensemble" du texte (pas les amendements/articles isolés,
+    // Univers retenu : tous les scrutins publics, ordinaires ou solennels, portant sur
+    // "l'ensemble" du texte (pas les amendements/articles isolés,
     // où un "contre" reflète souvent un désaccord technique ponctuel plutôt qu'une opposition de
     // principe), et dédupliqué sur la lecture la plus avancée quand un même texte a été voté à
     // plusieurs stades (première lecture, nouvelle lecture, CMP, lecture définitive...).
     // Limite qui subsiste : un vote sur l'ensemble agrège quand même des motivations plurielles,
     // et le regroupement des lectures d'un même texte repose sur une similarité de titre (fragile
-    // si le libellé change entre chambres). Les absences restent un segment à part (absence de
-    // donnée ≠ absence d'activité réelle).
+    // si le libellé change entre chambres). Une donnée manquante reste distincte d'une position.
     const ENSEMBLE_VOTE_PATTERN = /^l[’']ensemble\s+(?:du|de la)\s+(.*?)\s*(?:\(([^)]*)\))?\.?$/i;
     const READING_STAGE_RANK = {
       "lecture définitive": 4,
@@ -1515,6 +1543,7 @@
       const groups = new Map();
       let totalLectures = 0;
       for (const v of votes) {
+        if (v.type_vote === "motion_censure" || v.sort === "adopte_sans_vote_49_3") continue;
         const parsed = parseEnsembleVote(v.titre);
         if (!parsed) continue;
         totalLectures += 1;
@@ -1532,7 +1561,8 @@
         const cls = voteLabelAndClass(vote.position).cls;
         counts[cls] = (counts[cls] || 0) + 1;
       }
-      return { totalTextes: groups.size, totalLectures, counts };
+      const totalPositions = counts.pour + counts.contre + counts.abstention;
+      return { totalTextes: groups.size, totalPositions, totalLectures, counts };
     }
 
     function renderResponsabilites(profile) {
@@ -1560,7 +1590,7 @@
         ...v,
         _theme: detectThemeFromText(normalizedText(v.titre, v.position)),
       }));
-      const dossiers = (profile.dossiers_legislatifs || []).map((d) => ({
+      const textesPortes = (profile.textes_portes || []).map((d) => ({
         ...d,
         _theme: detectThemeFromText(normalizedText(d.titre)),
       }));
@@ -1568,21 +1598,17 @@
         ...i,
         _theme: detectThemeFromText(normalizedText(i.sujet, i.texte, ...(i.mots_cles || []))),
       }));
-      return { ...profile, votes, dossiers_legislatifs: dossiers, interventions };
+      return { ...profile, votes, textes_portes: textesPortes, interventions };
     }
 
     function inTheme(item, selectedTheme) {
       return selectedTheme === "all" ? true : item._theme === selectedTheme;
     }
 
-    function roleFromDossier(dossier) {
-      const n = Number(dossier.nb_interventions || 0);
-      // Seuils UX internes (observés sur les profils existants) :
-      // >=600 interventions => implication très forte ; >=250 => forte ; >=80 => moyenne ; sinon faible.
-      if (n >= DEFENDED_THRESHOLD) return "a défendu";
-      if (n >= CARRIED_THRESHOLD) return "a porté";
-      if (n >= REPORTED_THRESHOLD) return "a rapporté";
-      return "a cosigné";
+    function publicCarriedTexts(profile) {
+      return (profile.textes_portes || []).filter((texte) => (
+        TEXT_ROLE_LABELS[texte.role] && DEBATED_TEXT_STAGES.has(texte.stade_procedural)
+      ));
     }
 
     function sourceLinkHtml(url, label = "Source officielle") {
@@ -1594,7 +1620,7 @@
       const directUrl = vote.url_source || vote.url || vote.source;
       if (/^https?:\/\//i.test(directUrl || "")) return { url: directUrl, direct: true };
       const legislature = String(profile.votes_source || "").match(/l[ée]gislature\s*(\d+)/i)?.[1]
-        || (profile.dossiers_legislatifs || []).find((item) => item.legislature)?.legislature;
+        || (profile.textes_portes || []).find((item) => item.legislature)?.legislature;
       if (vote.numero_scrutin && legislature) {
         return {
           url: `https://www.assemblee-nationale.fr/dyn/${encodeURIComponent(legislature)}/scrutins/${encodeURIComponent(vote.numero_scrutin)}`,
@@ -1607,10 +1633,9 @@
 
     function compareFactsForTheme(profile, theme) {
       const votes = (profile.votes || []).filter((v) => v._theme === theme);
-      const textes = (profile.dossiers_legislatifs || []).filter((d) => d._theme === theme);
+      const textes = publicCarriedTexts(profile).filter((d) => d._theme === theme);
       const interventions = (profile.interventions || []).filter((i) => i._theme === theme);
-      const absents = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
-      return { votes, textes, interventions, absents };
+      return { votes, textes, interventions };
     }
 
     function renderThemePills() {
@@ -1640,7 +1665,7 @@
 
       // KPI 3 — Profil de vote synthétique, restreint aux votes sur l'ensemble du texte (dernière lecture connue)
       const voteProfile = computeFinalTextVoteProfile(profile);
-      const voteProfilePct = (key) => (voteProfile.totalTextes > 0 ? Math.round((voteProfile.counts[key] / voteProfile.totalTextes) * 100) : 0);
+      const voteProfilePct = (key) => (voteProfile.totalPositions > 0 ? Math.round((voteProfile.counts[key] / voteProfile.totalPositions) * 100) : 0);
 
       // Répartition thématique des votes pour histogramme horizontal (sert aussi de base au KPI 4)
       const themeCountMap = {};
@@ -1703,7 +1728,7 @@
                   <div class="kpi-label">Responsabilités occupées</div>
                 </div>
                 <div class="kpi-face kpi-face--back">
-                  <p class="kpi-back-text">${responsibilities.notableCount ? `dont ${responsibilities.notableCount} en tant que président(e)/rapporteur(e).` : "Aucune présidence/rapport identifié."} Commissions et engagements distincts, hors réaffectations internes.</p>
+                  <p class="kpi-back-text">Commissions et engagements distincts, hors réaffectations internes. Les fonctions ordonnent le détail, mais ne produisent aucun total public de « responsabilités notables ».</p>
                   <button type="button" class="kpi-back-link" data-goto-panel="mandats">Voir le détail →</button>
                 </div>
               </div>
@@ -1713,24 +1738,22 @@
               <div class="kpi-flip-inner">
                 <div class="kpi-face kpi-face--front">
                   <div class="kpi-icon">${KPI_ICONS.vote}</div>
-                  <div class="kpi-value">${voteProfile.totalTextes > 0 ? `${voteProfilePct("pour")}\u00a0%` : "N/D"}</div>
+                  <div class="kpi-value">${voteProfile.totalPositions > 0 ? `${voteProfilePct("pour")}\u00a0%` : "N/D"}</div>
                   <div class="kpi-label">Profil de vote — part de "pour"</div>
                 </div>
                 <div class="kpi-face kpi-face--back">
-                  ${voteProfile.totalTextes > 0 ? `
-                    <div class="vote-profile-bar" role="img" aria-label="Répartition : ${voteProfilePct("pour")}% pour, ${voteProfilePct("contre")}% contre, ${voteProfilePct("abstention")}% abstention, ${voteProfilePct("absent")}% sans trace">
+                  ${voteProfile.totalPositions > 0 ? `
+                    <div class="vote-profile-bar" role="img" aria-label="Répartition des positions documentées : ${voteProfilePct("pour")}% pour, ${voteProfilePct("contre")}% contre, ${voteProfilePct("abstention")}% abstention">
                       <div class="vote-profile-seg--pour" style="width:${voteProfilePct("pour")}%"></div>
                       <div class="vote-profile-seg--contre" style="width:${voteProfilePct("contre")}%"></div>
                       <div class="vote-profile-seg--abstention" style="width:${voteProfilePct("abstention")}%"></div>
-                      <div class="vote-profile-seg--absent" style="width:${voteProfilePct("absent")}%"></div>
                     </div>
                     <div class="vote-profile-legend">
                       <span><span class="dot" style="background:var(--vert)"></span>Pour ${voteProfilePct("pour")}%</span>
                       <span><span class="dot" style="background:var(--rouge)"></span>Contre ${voteProfilePct("contre")}%</span>
                       <span><span class="dot" style="background:var(--muted)"></span>Abst. ${voteProfilePct("abstention")}%</span>
-                      <span><span class="dot" style="background:var(--line)"></span>Sans trace ${voteProfilePct("absent")}%</span>
                     </div>
-                    <p class="kpi-back-text">${voteProfile.totalTextes} texte(s) sur leur vote final (${voteProfile.totalLectures} lecture(s) recensée(s)). Pas un score de performance.</p>
+                    <p class="kpi-back-text">${voteProfile.totalPositions} position(s) documentée(s) sur des textes entiers, à leur lecture la plus avancée. Scrutins publics ordinaires et solennels; motions de censure et 49.3 sans vote exclus. Pas un score de performance.</p>
                   ` : `<p class="kpi-back-text">Aucun vote sur l'ensemble d'un texte retrouvé dans les données disponibles.</p>`}
                   <button type="button" class="kpi-back-link" data-goto-panel="votes">Voir le détail →</button>
                 </div>
@@ -1756,16 +1779,16 @@
 
           <div class="trust-line">
             Données sourcées • Mise à jour le ${escapeHtml(formatIsoDate(updatedAt))} •
-            <a class="link" href="../../README.md" target="_blank" rel="noopener">Voir la méthode</a>
+            <a class="link" href="methodologie.html" target="_blank" rel="noopener">Voir la méthode</a>
           </div>
         </section>
       `;
     }
 
     function renderTextes(profile) {
-      const items = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      const items = publicCarriedTexts(profile).filter((d) => inTheme(d, state.selectedTheme));
       if (!items.length) {
-        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte porté retrouvé dans les données disponibles." : "Aucun texte porté retrouvé sur ce thème."}</p>`;
+        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte avec rôle factuel et débat avéré retrouvé." : "Aucun texte répondant aux critères sur ce thème."} Un simple dépôt ou un rôle inconnu n’est pas publié ici.</p>`;
       }
       const sorted = [...items].sort((a, b) => {
         const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
@@ -1783,7 +1806,7 @@
         return newestDiff || themeLabel(a[0]).localeCompare(themeLabel(b[0]), "fr");
       });
 
-      return `<div class="text-atlas">${shelves.map(([theme, themeItems]) => {
+      return `<p class="source-ref">Sont retenus les textes dont le rôle est sourcé et qui ont au moins été examinés en commission.</p><div class="text-atlas">${shelves.map(([theme, themeItems]) => {
         const expanded = state.expandedTextThemes.has(theme);
         const visible = expanded ? themeItems : themeItems.slice(0, 6);
         return `
@@ -1798,8 +1821,8 @@
                 <article class="text-leaf">
                   <div class="text-leaf-title">${escapeHtml(simplifyTitle(d.titre))}</div>
                   <div>
-                    <div class="text-leaf-meta">${escapeHtml(roleFromDossier(d))} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
-                    ${sourceLinkHtml(d.url_institution || d.url_source, "↗ source")}
+                    <div class="text-leaf-meta">${escapeHtml(TEXT_ROLE_LABELS[d.role])} / ${escapeHtml(TEXT_STAGE_LABELS[d.stade_procedural])} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+                    ${sourceLinkHtml(d.source_url, "↗ source")}
                   </div>
                 </article>
               `).join("")}
@@ -1808,6 +1831,21 @@
           </section>
         `;
       }).join("")}</div>`;
+    }
+
+    function renderAmendements(profile) {
+      const amendements = profile.amendements || [];
+      if (!amendements.length) return `<p class="empty">Aucun amendement structuré disponible.</p>`;
+      const counts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([outcome]) => [outcome, 0]));
+      for (const amendement of amendements) {
+        if (Object.hasOwn(counts, amendement.sort)) counts[amendement.sort] += 1;
+      }
+      return `
+        <p class="source-ref">Comptes bruts par issue sur ${amendements.length} amendement(s) documenté(s). Aucun taux isolé : l’issue dépend aussi de la procédure et du texte.</p>
+        <div class="void-map">${AMENDMENT_OUTCOMES.map(([outcome, label]) => `
+          <div class="void-signal"><span class="void-number">${counts[outcome]}</span><strong>${escapeHtml(label)}</strong></div>
+        `).join("")}</div>
+      `;
     }
 
     function sortVotesByDate(votes) {
@@ -1823,8 +1861,11 @@
         return `<p class="empty">${state.selectedTheme === "all" ? "Aucune donnée de vote trouvée dans cette fiche." : "Aucune donnée de vote trouvée sur ce thème."}</p>`;
       }
 
+      const motions = items.filter((vote) => vote.type_vote === "motion_censure");
+      const fortyNineThree = items.filter((vote) => vote.sort === "adopte_sans_vote_49_3");
+      const ordinaryVotes = items.filter((vote) => vote.type_vote !== "motion_censure" && vote.sort !== "adopte_sans_vote_49_3");
       const byTheme = new Map();
-      for (const vote of items) {
+      for (const vote of ordinaryVotes) {
         if (!byTheme.has(vote._theme)) byTheme.set(vote._theme, []);
         byTheme.get(vote._theme).push(vote);
       }
@@ -1836,6 +1877,11 @@
         });
 
       return `
+        ${fortyNineThree.length ? `<div class="party-coverage"><strong>49.3, sans vote sur le texte</strong><br>${fortyNineThree.map((vote) => `${escapeHtml(simplifyTitle(vote.titre))} · ${escapeHtml(formatIsoDate(vote.date))}`).join("<br>")}</div>` : ""}
+        ${motions.length ? `<div class="party-coverage"><strong>Motions de censure, scrutins séparés</strong><br>${motions.map((vote) => {
+          const badge = voteLabelAndClass(vote.position);
+          return `${escapeHtml(simplifyTitle(vote.titre))} · ${escapeHtml(badge.label)} · ${escapeHtml(formatIsoDate(vote.date))}${vote.texte_lie_id ? ` · texte lié ${escapeHtml(vote.texte_lie_id)}` : ""}`;
+        }).join("<br>")}</div>` : ""}
         <p class="source-ref">Dans chaque thème : du vote le plus récent au plus ancien.</p>
         <div class="vote-atlas">
           ${shelves.map(([theme, themeVotes]) => {
@@ -1870,17 +1916,15 @@
     }
 
     function renderAbsences(profile) {
-      const votes = (profile.votes || []).filter((v) => inTheme(v, state.selectedTheme));
-      const textes = (profile.dossiers_legislatifs || []).filter((d) => inTheme(d, state.selectedTheme));
+      const textes = publicCarriedTexts(profile).filter((d) => inTheme(d, state.selectedTheme));
       const inters = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme));
 
-      const absVotes = votes.filter((v) => voteLabelAndClass(v.position).cls === "absent");
       const themeUniverse = THEME_OPTIONS.filter((t) => t.key !== "all").map((t) => t.key);
 
       let noTextThemes = [];
       let noInterThemes = [];
       if (state.selectedTheme === "all") {
-        const textThemes = new Set((profile.dossiers_legislatifs || []).map((d) => d._theme));
+        const textThemes = new Set(publicCarriedTexts(profile).map((d) => d._theme));
         const interThemes = new Set((profile.interventions || []).map((i) => i._theme));
         noTextThemes = themeUniverse.filter((t) => !textThemes.has(t));
         noInterThemes = themeUniverse.filter((t) => !interThemes.has(t));
@@ -1891,7 +1935,6 @@
       return `<div class="void-map">
         <div class="void-signal"><span class="void-number">${missingTextCount}</span><strong>thème(s) sans texte retrouvé</strong><small>${noTextThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
         <div class="void-signal"><span class="void-number">${missingInterCount}</span><strong>thème(s) sans parole retrouvée</strong><small>${noInterThemes.map(themeLabel).join(" / ") || "aucun vide détecté"}</small></div>
-        <div class="void-signal"><span class="void-number">${absVotes.length}</span><strong>vote(s) sans participation</strong><small>absence à un scrutin ≠ absence d'activité</small></div>
       </div>`;
     }
 
@@ -1933,9 +1976,25 @@
 
     async function loadProfile(slug) {
       if (!slug) return null;
-      const resp = await fetch(PROFILE_URL(slug), { cache: "no-store" });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return withTheme(await resp.json());
+      const [rawResponse, pivotResponse] = await Promise.all([
+        fetch(PROFILE_URL(slug), { cache: "no-store" }),
+        fetch(PIVOT_PROFILE_URL(slug), { cache: "no-store" }).catch(() => null),
+      ]);
+      if (!rawResponse.ok) throw new Error(`HTTP ${rawResponse.status}`);
+      const raw = await rawResponse.json();
+      const pivot = pivotResponse?.ok ? await pivotResponse.json() : null;
+      const pivotVotes = new Map((pivot?.votes || []).map((vote) => [String(vote.numero_scrutin || ""), vote]));
+      const votes = (raw.votes || []).map((vote) => {
+        const fact = pivotVotes.get(String(vote.numero_scrutin || ""));
+        return fact ? { ...vote, type_scrutin: fact.type_scrutin, type_vote: fact.type_vote, texte_lie_id: fact.texte_lie_id, sort: fact.sort ?? vote.sort } : vote;
+      });
+      return withTheme({
+        ...raw,
+        votes,
+        textes_portes: pivot?.textes_portes || [],
+        amendements: pivot?.amendements || [],
+        pivot_mandats: pivot?.mandats || [],
+      });
     }
 
     async function ensureCompareProfile(slug) {
@@ -1991,7 +2050,6 @@
                     <div class="versus-metric"><b>${facts.votes.length}</b><small>votes</small></div>
                     <div class="versus-metric"><b>${facts.textes.length}</b><small>textes</small></div>
                     <div class="versus-metric"><b>${facts.interventions.length}</b><small>paroles</small></div>
-                    <div class="versus-metric"><b>${facts.absents.length}</b><small>sans part.</small></div>
                   </div>
                 </article>
               `;
@@ -2046,7 +2104,7 @@
           <div class="home-manifesto">
             <p class="section-kicker">En clair / vue par parti</p>
             <h2>Regarder les lignes collectives.</h2>
-            <p><strong>Une vue agrégée des profils disponibles.</strong> Participation, cohésion des votes et thèmes documentaires sont calculés uniquement à partir des candidats couverts.</p>
+            <p><strong>Une vue agrégée des candidats déclarés par parti.</strong> Cette page ne prétend pas représenter un groupe parlementaire réel : elle montre seulement l'échantillon éditorial disponible pour chaque parti.</p>
           </div>
           <div class="home-candidates">
             ${GROUP_PROFILES.map((group) => `
@@ -2056,7 +2114,7 @@
               </button>
             `).join("")}
           </div>
-          <div class="home-note party-home-note">Ces vues ne représentent pas tous les membres d'un parti : le nombre de profils effectivement agrégés est indiqué sur chaque fiche.</div>
+          <div class="home-note party-home-note">Ces vues ne représentent pas les groupes parlementaires réels : elles agrègent les candidats déclarés avec un profil pivot disponible. Le périmètre de couverture est indiqué sur chaque fiche.</div>
         </section>
       `;
       root.querySelectorAll("[data-home-group]").forEach((button) => {
@@ -2080,46 +2138,38 @@
       const root = document.getElementById("candidat-root");
       const group = state.currentGroupProfile;
       if (!group) return;
-      const votes = group.cohesion_votes || [];
-      const coveredProfiles = group.meta?.profils_sources?.length || 0;
-      const members = group.membres || [];
-      const participation = average(votes.map((vote) => vote.taux_participation));
-      const coherence = average(votes.map((vote) => vote.taux_coherence_hors_absents));
-      const quorumVotes = votes.filter((vote) => vote.quorum_atteint);
-      const recentVotes = [...votes].sort((a, b) => toDateMs(b.date) - toDateMs(a.date)).slice(0, 18);
+      const coveredProfiles = typeof group.meta?.nb_candidats_avec_pivot === "number"
+        ? group.meta.nb_candidats_avec_pivot
+        : (group.meta?.profils_sources?.length || 0);
+      const declaredProfiles = group.meta?.nb_candidats_declares || 0;
+      const members = group.candidats || [];
       const tags = (group.tags_thematiques_agreges || [])
         .filter((tag) => tag.tag && tag.tag !== "couverture")
         .sort((a, b) => Number(b.nb_membres_porteurs || 0) - Number(a.nb_membres_porteurs || 0) || Number(b.poids_relatif || 0) - Number(a.poids_relatif || 0))
         .slice(0, 30);
       const maxTagMembers = Math.max(...tags.map((tag) => Number(tag.nb_membres_porteurs || 0)), 1);
       const warnings = group.meta?.warnings || [];
+      const title = group.parti_nom || group.groupe_nom || group.groupe_sigle || "Profil collectif";
+      const subtitle = group.parti_nom ? "Empreinte de parti" : "Empreinte collective";
       root.innerHTML = `
         <article class="party-profile">
           <header class="party-hero">
-            <p class="section-kicker">Empreinte collective / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
-            <h2>${escapeHtml(group.groupe_nom || group.groupe_sigle)}</h2>
+            <p class="section-kicker">${subtitle} / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
+            <h2>${escapeHtml(title)}</h2>
           </header>
-          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} profil(s) source(s), ${members.length} membre(s) référencé(s). Cette fiche décrit seulement cet échantillon documentaire et non le parti dans son ensemble.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
+          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} candidat(s) avec profil pivot sur ${declaredProfiles} déclaré(s). Cette fiche décrit un échantillon éditorial de parti, pas un groupe parlementaire réel.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
           <section class="party-kpis" aria-label="Indicateurs du parti">
-            <div class="party-kpi"><b>${coveredProfiles}</b><span>Profils couverts</span></div>
-            <div class="party-kpi"><b>${votes.length}</b><span>Scrutins rapprochés</span></div>
-            <div class="party-kpi"><b>${formatPercentage(participation)}</b><span>Participation moyenne sur les scrutins couverts</span></div>
-            <div class="party-kpi"><b>${formatPercentage(coherence)}</b><span>Cohésion moyenne parmi les votants</span></div>
+            <div class="party-kpi"><b>${coveredProfiles}</b><span>Candidats avec pivot</span></div>
+            <div class="party-kpi"><b>${declaredProfiles}</b><span>Candidats déclarés</span></div>
+            <div class="party-kpi"><b>${tags.length}</b><span>Thèmes documentés</span></div>
           </section>
           <section class="party-section">
-            <p class="section-kicker">${quorumVotes.length} scrutin(s) avec quorum documentaire sur ${votes.length}</p>
-            <h2>Votes collectifs</h2>
-            ${recentVotes.length ? `<div class="party-vote-grid">${recentVotes.map((vote) => `
-              <article class="party-vote">
-                <small>${escapeHtml(formatIsoDate(vote.date))} · participation ${formatPercentage(Number(vote.taux_participation))}</small>
-                <b>${escapeHtml(simplifyTitle(vote.texte))}</b>
-                <small class="party-vote-position">Majorité : ${escapeHtml(vote.position_majoritaire || "non déterminée")}</small>
-                <small>Cohésion des votants : ${formatPercentage(Number(vote.taux_coherence_hors_absents))}</small>
-              </article>
-            `).join("")}</div>` : `<p class="empty">Aucun scrutin collectif calculable avec les profils disponibles.</p>`}
+            <p class="section-kicker">Échantillon documentaire disponible</p>
+            <h2>Éléments de comparaison</h2>
+            <p class="empty">Ce profil de parti ne publie ni cohésion de vote ni effectif de groupe parlementaire. Il se limite à l'échantillon éditorial disponible pour les candidats déclarés.</p>
           </section>
           <section class="party-section">
-            <p class="section-kicker">Mots-clés partagés entre les profils sources</p>
+            <p class="section-kicker">Mots-clés partagés entre les candidats couverts</p>
             <h2>Empreinte thématique</h2>
             ${tags.length ? `<div class="party-tags">${tags.map((tag) => `
               <span class="party-tag" style="--weight:${Number(tag.nb_membres_porteurs || 0) / maxTagMembers}"><b>${escapeHtml(tag.tag)}</b><small>${tag.nb_membres_porteurs} profil(s) porteur(s)</small></span>
@@ -2127,13 +2177,13 @@
           </section>
           <section class="party-section">
             <p class="section-kicker">Périmètre de l'agrégation</p>
-            <h2>Profils couverts</h2>
-            <div class="party-members">${members.map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.debut_dans_groupe ? escapeHtml(formatIsoDate(member.debut_dans_groupe)) : "début non renseigné"} → ${member.fin_dans_groupe ? escapeHtml(formatIsoDate(member.fin_dans_groupe)) : (member.actif ? "aujourd'hui" : "fin non renseignée")}</small></div>`).join("")}</div>
-            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="../../README.md" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
+            <h2>Candidats couverts</h2>
+            <div class="party-members">${(group.candidats || []).map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.a_un_profil_pivot ? "Profil pivot disponible" : "Aucun profil pivot disponible"}</small></div>`).join("")}</div>
+            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="methodologie.html" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
           </section>
         </article>
       `;
-      setDocumentTitle(group.groupe_nom || group.groupe_sigle);
+      setDocumentTitle(title);
     }
 
     function renderPage() {
@@ -2145,6 +2195,16 @@
         root.innerHTML = "";
         return;
       }
+
+      const hemicyclePosition = sourcedHemicyclePosition(profile);
+      const textsBlock = `<h2>Textes portés <span class="source-ref">(${publicCarriedTexts(profile).length})</span></h2><div id="textes">${renderTextes(profile)}</div>`;
+      const amendmentsBlock = `<h2>Amendements</h2><div id="amendements">${renderAmendements(profile)}</div>`;
+      const legislativeBlocks = hemicyclePosition === "opposition"
+        ? `${amendmentsBlock}${textsBlock}`
+        : `${textsBlock}${amendmentsBlock}`;
+      const categoryOrderRule = hemicyclePosition
+        ? `Ordre éditorial : ${hemicyclePosition === "opposition" ? "amendements puis textes" : "textes puis amendements"}, d’après la position sourcée dans l’hémicycle. Les deux catégories restent affichées.`
+        : "Ordre éditorial neutre : textes puis amendements. Aucune position sourcée dans l’hémicycle n’est utilisée.";
 
       root.innerHTML = `
         ${renderHeader(meta, profile)}
@@ -2159,14 +2219,15 @@
           <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
             <section class="panel">
               <h2>Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
+              ${renderMinisterialIncompatibilities(profile)}
               <div id="mandats">${renderResponsabilites(profile)}</div>
             </section>
           </div>
 
           <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
             <section class="panel">
-              <h2>Textes portés <span class="source-ref">(${(profile.dossiers_legislatifs || []).length})</span></h2>
-              <div id="textes">${renderTextes(profile)}</div>
+              <p class="source-ref">${escapeHtml(categoryOrderRule)}</p>
+              ${legislativeBlocks}
             </section>
           </div>
 
@@ -2179,7 +2240,7 @@
 
           <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
             <section class="panel">
-              <h2>Absences et silences</h2>
+              <h2>Angles morts documentaires</h2>
               <div id="absences">${renderAbsences(profile)}</div>
             </section>
           </div>
@@ -2205,11 +2266,11 @@
       const tenure = computeMandateTenure(profile);
       const responsibilities = computeResponsibilitiesSummary(profile);
       const voteProfile = computeFinalTextVoteProfile(profile);
-      const pourPct = voteProfile.totalTextes
-        ? Math.round((voteProfile.counts.pour / voteProfile.totalTextes) * 100)
+      const pourPct = voteProfile.totalPositions
+        ? Math.round((voteProfile.counts.pour / voteProfile.totalPositions) * 100)
         : null;
       const themeCounts = new Map();
-      for (const item of [...(profile.votes || []), ...(profile.dossiers_legislatifs || []), ...(profile.interventions || [])]) {
+      for (const item of [...(profile.votes || []), ...publicCarriedTexts(profile), ...(profile.interventions || [])]) {
         themeCounts.set(item._theme, (themeCounts.get(item._theme) || 0) + 1);
       }
       const dominant = [...themeCounts.entries()].sort((a, b) => b[1] - a[1])[0];
@@ -2227,7 +2288,7 @@
         {
           question: "Comment vote-t-il sur les textes entiers ?",
           value: pourPct === null ? "N/D" : `${pourPct} %`,
-          note: voteProfile.totalTextes ? `${voteProfile.totalTextes} textes à leur lecture la plus avancée.` : "Aucun vote final retrouvé.",
+          note: voteProfile.totalPositions ? `${voteProfile.totalPositions} positions documentées, scrutins publics ordinaires et solennels.` : "Aucune position finale retrouvée.",
         },
         {
           question: "Quel thème apparaît le plus souvent dans ses traces ?",
@@ -2544,7 +2605,7 @@
         const response = await fetch(GROUP_PROFILE_URL(groupId), { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const profile = await response.json();
-        if (profile.type_document !== "profil_groupe") throw new Error("schéma de groupe inattendu");
+        if (!(["profil_groupe", "profil_parti"].includes(profile.type_document))) throw new Error("schéma de profil inattendu");
         state.currentGroupProfile = profile;
         renderGroupPage();
       } catch (error) {

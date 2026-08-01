@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from schema_groupe import (
     SCHEMA_GROUPE_VERSION,
+    AMENDEMENTS_TYPES_DEPOSANT,
     make_empty_profil_groupe,
     validate_profil_groupe,
 )
@@ -44,13 +45,17 @@ def test_make_empty_default_lists():
 
 def test_make_empty_amendements_agreges_defaults():
     g = make_empty_profil_groupe("AN:SOC", "SOC", "Socialistes", "AN", "16")
-    assert g["amendements_agreges"] == {
+    empty_stats = {
         "nb_amendements": 0,
         "nb_adoptes": 0,
         "nb_rejetes": 0,
         "nb_irrecevables": 0,
         "nb_retires_ou_tombes": 0,
         "taux_adoption": None,
+    }
+    assert g["amendements_agreges"] == {
+        **empty_stats,
+        "par_type_deposant": {t: dict(empty_stats) for t in AMENDEMENTS_TYPES_DEPOSANT},
     }
 
 
@@ -207,6 +212,39 @@ def test_validate_amendements_agreges_none_is_valid():
     g = _valid_groupe()
     g["amendements_agreges"] = None
     assert validate_profil_groupe(g) == []
+
+
+def test_validate_amendements_agreges_par_type_deposant_not_a_dict():
+    g = _valid_groupe()
+    g["amendements_agreges"]["par_type_deposant"] = "string"
+    errors = validate_profil_groupe(g)
+    assert any("par_type_deposant" in e for e in errors)
+
+
+def test_known_amendements_types_deposant_contains_inconnu():
+    assert "depute" in AMENDEMENTS_TYPES_DEPOSANT
+    assert "gouvernement" in AMENDEMENTS_TYPES_DEPOSANT
+    assert "commission_rapporteur" in AMENDEMENTS_TYPES_DEPOSANT
+    assert "inconnu" in AMENDEMENTS_TYPES_DEPOSANT
+
+
+def test_validate_couverture_roster_absent_is_valid():
+    g = _valid_groupe()
+    assert "couverture_roster" not in g["meta"]
+    assert validate_profil_groupe(g) == []
+
+
+def test_validate_couverture_roster_dict_is_valid():
+    g = _valid_groupe()
+    g["meta"]["couverture_roster"] = {"roster_total": 62, "profils_disponibles": 12}
+    assert validate_profil_groupe(g) == []
+
+
+def test_validate_couverture_roster_not_a_dict():
+    g = _valid_groupe()
+    g["meta"]["couverture_roster"] = "12/62"
+    errors = validate_profil_groupe(g)
+    assert any("couverture_roster" in e for e in errors)
 
 
 def test_validate_periode_not_a_dict():

@@ -11,6 +11,7 @@ from candidate_profile import (
     _extract_mandats,
     _groupe_label,
     build_profile,
+    fetch_all_intervention_results_from_domains,
     fetch_seance_context,
     _extract_speaker_identity_from_html,
 )
@@ -241,6 +242,26 @@ def test_extract_mandats_reads_real_api_responsabilites_fields():
 
 def test_extract_mandats_returns_empty_list_when_no_fields_present():
     assert _extract_mandats({}) == []
+
+
+def test_fetch_all_intervention_results_from_domains_merges_and_deduplicates():
+    with patch(
+        "candidate_profile.fetch_all_intervention_results",
+        side_effect=[
+            {"results": [{"document_id": "1", "document_url": "https://a.fr/1"}]},
+            {"results": [{"document_id": "1", "document_url": "https://a.fr/1"}, {"document_id": "2", "document_url": "https://a.fr/2"}]},
+        ],
+    ) as mocked_fetch:
+        merged = fetch_all_intervention_results_from_domains(
+            ["https://a.test", "https://b.test"],
+            "Jean-Luc Mélenchon",
+            max_pages=3,
+        )
+
+    assert mocked_fetch.call_count == 2
+    assert [item["document_id"] for item in merged["results"]] == ["1", "2"]
+    assert merged["results"][0]["_search_base_url"] == "https://a.test"
+    assert merged["results"][1]["_search_base_url"] == "https://b.test"
 
 
 def test_classify_intervention_format_uses_word_count_threshold():

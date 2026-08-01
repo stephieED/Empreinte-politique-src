@@ -1,32 +1,17 @@
 {
   "schema_version": "1",
-  "type_document": "profil_groupe",
-  "groupe_id": "horizons",
-  "groupe_sigle": "Horizons",
-  "groupe_nom": "Horizons",
-  "chambre": null,
-  "legislature": null,
-  "periode": {
-    "debut": "2012-06-20",
-    "fin": "2017-06-15",
-    "actif": false
-  },
-  "historique_noms": [],
-  "membres": [
+  "type_document": "profil_parti",
+  "parti_id": "horizons",
+  "parti_nom": "Horizons",
+  "candidats": [
     {
-      "membre_id": "nosdeputes:edouard-philippe",
-      "nom": "Edouard Philippe",
-      "debut_dans_groupe": "2012-06-20",
-      "fin_dans_groupe": "2017-06-15",
-      "actif": false
+      "candidat_id": "nosdeputes:edouard-philippe",
+      "nom": "Édouard Philippe",
+      "statut": "declare",
+      "famille_politique": "centre-droit",
+      "a_un_profil_pivot": true
     }
   ],
-  "effectif": {
-    "actuel": 0,
-    "min_historique": null,
-    "max_historique": null
-  },
-  "cohesion_votes": [],
   "tags_thematiques_agreges": [
     {
       "tag": "accès",
@@ -1738,12 +1723,10 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T13:58:45+0000",
+    "genere_le": "2026-08-01T08:35:54+0000",
     "licence_donnees": "",
-    "profils_sources": [
-      "nosdeputes:edouard-philippe"
-    ],
-    "seuil_quorum": 0.5,
+    "nb_candidats_declares": 1,
+    "nb_candidats_avec_pivot": 1,
     "warnings": []
   }
 }
