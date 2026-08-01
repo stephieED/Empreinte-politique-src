@@ -485,27 +485,27 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marine-le-pen",
-      "synchro_le": "2026-07-29T13:23:15+0000"
+      "synchro_le": "2026-08-01T16:52:00+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-07-29T13:23:16+0000"
+      "synchro_le": "2026-08-01T16:54:21+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-07-29T13:23:05+0000"
+      "synchro_le": "2026-08-01T16:52:16+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/131580",
-      "synchro_le": "2026-07-29T13:23:18+0000"
+      "synchro_le": "2026-08-01T16:54:36+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-01T08:35:54+0000",
+    "genere_le": "2026-08-01T17:01:20+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,

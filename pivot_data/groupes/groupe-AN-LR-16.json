@@ -65,11 +65,13 @@
   "sources": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-01T08:39:59+0000",
+    "genere_le": "2026-08-01T17:01:21+0000",
     "licence_donnees": "",
     "profils_sources": [],
     "seuil_quorum": 0.5,
-    "warnings": [],
+    "warnings": [
+      "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e législature, 2022-2024, 100% des mandats y figurent comme terminés). Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la dissolution, pas nécessairement la composition actuelle de l'Assemblée nationale."
+    ],
     "couverture_roster": {
       "roster_total": 62,
       "profils_disponibles": 0

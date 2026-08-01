@@ -9,7 +9,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/131580",
-      "synchro_le": "2026-07-29T13:23:18+0000"
+      "synchro_le": "2026-08-01T16:54:36+0000"
     }
   ],
   "mandats": [
@@ -215,10 +215,11 @@
   "votes": [],
   "textes_portes": [],
   "interventions": [],
+  "amendements": [],
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-07-29T13:23:18+0000",
+    "genere_le": "2026-08-01T16:54:36+0000",
     "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
