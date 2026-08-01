@@ -43,7 +43,7 @@ jobs:
             public-data-cache-
 
       - name: Générer les profils individuels (extraction + pivot)
-        run: python3 src/generate_all_profiles.py --pivot --resume
+        run: python3 src/generate_all_profiles.py --pivot
 
       - name: Générer les profils de parti
         run: |
