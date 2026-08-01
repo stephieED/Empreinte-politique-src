@@ -246,6 +246,9 @@
   .vote-profile-seg--absent { background: var(--line); }
   .vote-profile-legend { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.4rem; font-size: 0.78rem; color: var(--muted); }
   .vote-profile-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.28rem; vertical-align: middle; }
+  .vote-profile-legend .dot--pour { background: var(--vert); }
+  .vote-profile-legend .dot--contre { background: var(--rouge); }
+  .vote-profile-legend .dot--abstention { background: var(--muted); }
 
   /* Panneaux glissants (swipe) — remplace la navigation par ancres empilées */
   .panel-indicator {
@@ -894,6 +897,10 @@
   .deconstructed .party-vote b { display: block; margin: 0.5rem 0; font-size: 1rem; }
   .deconstructed .party-vote small { font-family: 'IBM Plex Mono', monospace; }
   .deconstructed .party-vote-position { display: inline-block; padding: 0.25rem 0.4rem; color: white; background: var(--text); text-transform: uppercase; }
+  .deconstructed .party-vote-position--pour { background: var(--vert); }
+  .deconstructed .party-vote-position--contre { background: var(--rouge); }
+  .deconstructed .party-vote-position--abstention,
+  .deconstructed .party-vote-position--absent { background: var(--muted); }
   .deconstructed .party-tags { display: flex; flex-wrap: wrap; gap: 0; }
   .deconstructed .party-tag { padding: calc(0.45rem + var(--weight) * 0.25rem) 0.7rem; border: 1px solid var(--line); margin: 0 -1px -1px 0; background: var(--acid); }
   .deconstructed .party-tag b { font-size: calc(0.7rem + var(--weight) * 0.3rem); }
@@ -1818,9 +1825,9 @@
                       <div class="vote-profile-seg--abstention" style="width:${voteProfilePct("abstention")}%"></div>
                     </div>
                     <div class="vote-profile-legend">
-                      <span><span class="dot" style="background:var(--vert)"></span>Pour ${voteProfilePct("pour")}%</span>
-                      <span><span class="dot" style="background:var(--rouge)"></span>Contre ${voteProfilePct("contre")}%</span>
-                      <span><span class="dot" style="background:var(--muted)"></span>Abst. ${voteProfilePct("abstention")}%</span>
+                      <span><span class="dot dot--pour"></span>Pour ${voteProfilePct("pour")}%</span>
+                      <span><span class="dot dot--contre"></span>Contre ${voteProfilePct("contre")}%</span>
+                      <span><span class="dot dot--abstention"></span>Abst. ${voteProfilePct("abstention")}%</span>
                     </div>
                     <p class="kpi-back-text">${voteProfile.totalPositions} position(s) documentée(s) sur des textes entiers, à leur lecture la plus avancée. Scrutins publics ordinaires et solennels; motions de censure et 49.3 sans vote exclus. Pas un score de performance.</p>
                   ` : `<p class="kpi-back-text">Aucun vote sur l'ensemble d'un texte retrouvé dans les données disponibles.</p>`}
@@ -2291,13 +2298,6 @@
       setDocumentTitle(title);
     }
 
-    const VOTE_POSITION_COLOR_VAR = {
-      pour: "--vert",
-      contre: "--rouge",
-      abstention: "--muted",
-      absent: "--muted",
-    };
-
     function renderRealGroupPage() {
       const root = document.getElementById("candidat-root");
       const group = state.currentRealGroupProfile;
@@ -2348,10 +2348,9 @@
               <div class="party-vote-grid">
                 ${visibleVotes.map((vote) => {
                   const { label, cls } = voteLabelAndClass(vote.position_majoritaire);
-                  const colorVar = VOTE_POSITION_COLOR_VAR[cls] || "--muted";
                   return `
                     <div class="party-vote">
-                      <span class="party-vote-position" style="background:var(${colorVar})">${escapeHtml(label)}</span>
+                      <span class="party-vote-position party-vote-position--${cls}">${escapeHtml(label)}</span>
                       <b>${escapeHtml(simplifyTitle(vote.texte))}</b>
                       <small>${formatIsoDate(vote.date)} · cohérence ${formatPercentage(Number(vote.taux_coherence))} · participation ${formatPercentage(Number(vote.taux_participation))}${vote.quorum_atteint === false ? " · quorum non atteint" : ""}</small>
                     </div>

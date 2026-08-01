@@ -10,7 +10,7 @@ from group_profile import (
     _derive_membre_entry,
     _build_vote_index,
     _compute_cohesion_votes,
-    _aggregate_tags_thematiques,
+    aggregate_tags_thematiques,
     _aggregate_amendements,
     compute_ecarts_cohesion_internes,
     build_groupe_profile,
@@ -379,13 +379,13 @@ def test_cohesion_taux_coherence_hors_absents():
 
 
 # ---------------------------------------------------------------------------
-# _aggregate_tags_thematiques
+# aggregate_tags_thematiques
 # ---------------------------------------------------------------------------
 
 def test_tags_agrege_compte_membres():
     p1 = _pivot(tags=["budget", "fiscalité"])
     p2 = _pivot(tags=["budget", "santé"])
-    tags, _ = _aggregate_tags_thematiques([p1, p2])
+    tags, _ = aggregate_tags_thematiques([p1, p2])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 2
     assert budget_entry["poids_relatif"] == 1.0
@@ -394,7 +394,7 @@ def test_tags_agrege_compte_membres():
 def test_tags_agrege_deduplication_par_membre():
     """Un tag répété dans le profil d'un membre ne compte qu'une fois."""
     p1 = _pivot(tags=["budget", "budget", "budget"])
-    tags, _ = _aggregate_tags_thematiques([p1])
+    tags, _ = aggregate_tags_thematiques([p1])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 1
 
@@ -403,7 +403,7 @@ def test_tags_trie_par_nombre_membres_desc():
     p1 = _pivot(tags=["budget", "santé", "défense"])
     p2 = _pivot(tags=["budget", "santé"])
     p3 = _pivot(tags=["budget"])
-    tags, _ = _aggregate_tags_thematiques([p1, p2, p3])
+    tags, _ = aggregate_tags_thematiques([p1, p2, p3])
     counts = [t["nb_membres_porteurs"] for t in tags]
     assert counts == sorted(counts, reverse=True)
 
@@ -412,7 +412,7 @@ def test_tags_fallback_sur_mots_cles_interventions():
     """Si tags_thematiques est vide, on utilise les mots-clés des interventions."""
     interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
     p1 = _pivot(tags=[], interventions=interventions)
-    tags, source = _aggregate_tags_thematiques([p1])
+    tags, source = aggregate_tags_thematiques([p1])
     tag_names = {t["tag"] for t in tags}
     assert "immigration" in tag_names
     assert source == "mots_cles_interventions"
@@ -420,20 +420,20 @@ def test_tags_fallback_sur_mots_cles_interventions():
 
 def test_tags_source_tags_thematiques():
     p1 = _pivot(tags=["budget"])
-    _, source = _aggregate_tags_thematiques([p1])
+    _, source = aggregate_tags_thematiques([p1])
     assert source == "tags_thematiques"
 
 
 def test_tags_source_mixed():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}])
-    _, source = _aggregate_tags_thematiques([p1, p2])
+    _, source = aggregate_tags_thematiques([p1, p2])
     assert source == "mixed"
 
 
 def test_tags_vide_si_aucun_tag():
     p1 = _pivot(tags=[], interventions=[])
-    tags, source = _aggregate_tags_thematiques([p1])
+    tags, source = aggregate_tags_thematiques([p1])
     assert tags == []
     assert source is None
 
@@ -441,7 +441,7 @@ def test_tags_vide_si_aucun_tag():
 def test_tags_poids_relatif():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[])
-    tags, _ = _aggregate_tags_thematiques([p1, p2])
+    tags, _ = aggregate_tags_thematiques([p1, p2])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["poids_relatif"] == 0.5  # 1 membre sur 2
 

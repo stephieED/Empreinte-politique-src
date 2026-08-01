@@ -103,6 +103,33 @@ def _parse_date(s: Any) -> Optional[date]:
 # Eligibilité d'un membre à un scrutin
 # ---------------------------------------------------------------------------
 
+def _member_eligibility_intervals(mandats: list[dict[str, Any]]) -> Optional[list[tuple[Optional[date], Optional[date]]]]:
+    """Pré-analyse les mandats électifs d'un membre en intervalles (début, fin).
+
+    Évite de refiltrer ``mandats`` et de reparser les dates de mandat à chaque
+    scrutin dans ``_compute_cohesion_votes`` (le même membre est testé pour des
+    milliers de scrutins). Retourne None si aucun mandat électif n'est renseigné
+    (éligibilité par défaut, cf. ``_member_eligible_at``).
+    """
+    electif = [m for m in mandats if m.get("categorie") == "mandat_electif"]
+    if not electif:
+        return None
+    return [(_parse_date(m.get("debut")), _parse_date(m.get("fin"))) for m in electif]
+
+
+def _is_eligible_at(intervals: Optional[list[tuple[Optional[date], Optional[date]]]], d: Optional[date]) -> bool:
+    """Vérifie l'éligibilité à partir d'une date et d'intervalles déjà parsés."""
+    if d is None or intervals is None:
+        return True  # date/mandats inconnus → on ne peut pas exclure
+    for debut, fin in intervals:
+        if debut is not None and d < debut:
+            continue
+        if fin is not None and d > fin:
+            continue
+        return True  # le membre était en mandat à cette date
+    return False
+
+
 def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str]) -> bool:
     """Détermine si un membre était en mandat (éligible à voter) à la date du scrutin.
 
@@ -117,24 +144,7 @@ def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str])
     Returns:
         True si le membre est éligible pour ce scrutin.
     """
-    d = _parse_date(vote_date)
-    if d is None:
-        return True  # date inconnue → on ne peut pas exclure
-
-    electif = [m for m in mandats if m.get("categorie") == "mandat_electif"]
-    if not electif:
-        return True  # pas d'info de mandat → on ne peut pas exclure
-
-    for m in electif:
-        debut = _parse_date(m.get("debut"))
-        fin = _parse_date(m.get("fin"))
-        if debut is not None and d < debut:
-            continue
-        if fin is not None and d > fin:
-            continue
-        return True  # le membre était en mandat à cette date
-
-    return False
+    return _is_eligible_at(_member_eligibility_intervals(mandats), _parse_date(vote_date))
 
 
 # ---------------------------------------------------------------------------
@@ -258,8 +268,12 @@ def _compute_cohesion_votes(
     if not scrutins:
         return []
 
-    # --- 2. Index de votes par membre ---
+    # --- 2. Index de votes par membre + intervalles d'éligibilité pré-analysés ---
+    # Précalculés une seule fois (au lieu de reparser les dates de mandat à chaque
+    # scrutin) : un groupe de N membres et M scrutins ferait sinon O(M x N) reparsing
+    # de dates au lieu de O(N) ici + une comparaison de dates déjà parsées par scrutin.
     vote_indexes = [_build_vote_index(p) for p in profils]
+    eligibility_intervals = [_member_eligibility_intervals(p.get("mandats") or []) for p in profils]
 
     # --- 3. Calcul par scrutin ---
     _EXPRESSED = ("pour", "contre", "abstention")
@@ -267,6 +281,7 @@ def _compute_cohesion_votes(
     cohesion: list[dict[str, Any]] = []
     for num_str, meta in scrutins.items():
         vote_date = meta["date"]
+        parsed_vote_date = _parse_date(vote_date)
 
         compteurs: dict[str, int] = {
             "pour": 0, "contre": 0, "abstention": 0,
@@ -274,9 +289,8 @@ def _compute_cohesion_votes(
         }
         n_eligible = 0
 
-        for profil, v_index in zip(profils, vote_indexes):
-            mandats = profil.get("mandats") or []
-            if not _member_eligible_at(mandats, vote_date):
+        for v_index, intervals in zip(vote_indexes, eligibility_intervals):
+            if not _is_eligible_at(intervals, parsed_vote_date):
                 continue
             n_eligible += 1
 
@@ -290,7 +304,13 @@ def _compute_cohesion_votes(
         if n_eligible == 0:
             continue
 
-        # Position majoritaire sur les votes exprimés (pour/contre/abstention)
+        # Position majoritaire sur les votes exprimés (pour/contre/abstention).
+        # Note : en cas d'égalité stricte entre deux positions (ex. 10 pour /
+        # 10 contre), max() retourne conventionnellement la première position
+        # de _EXPRESSED à égalité de score, soit l'ordre "pour" > "contre" >
+        # "abstention". Ce choix arbitraire mais déterministe est documenté ici
+        # plutôt que de renvoyer None sur égalité, ce qui casserait la lecture
+        # simple du taux de cohérence pour ces scrutins (rares en pratique).
         votes_exprimes = sum(compteurs[p] for p in _EXPRESSED)
         if votes_exprimes == 0:
             position_majoritaire = None
@@ -347,7 +367,7 @@ def _compute_cohesion_votes(
 # Agrégation des tags thématiques
 # ---------------------------------------------------------------------------
 
-def _aggregate_tags_thematiques(
+def aggregate_tags_thematiques(
     profils: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], Optional[str]]:
     """Agrège les tags thématiques de tous les profils membres.
@@ -684,7 +704,7 @@ def build_groupe_profile(
     cohesion_votes = _compute_cohesion_votes(profils, seuil_quorum=seuil_quorum)
 
     # --- Tags thématiques ---
-    tags_agreges, tag_source = _aggregate_tags_thematiques(profils)
+    tags_agreges, tag_source = aggregate_tags_thematiques(profils)
     if tag_source == "mots_cles_interventions":
         warnings.append(
             "tags_thematiques_agreges : source=mots_cles_interventions "

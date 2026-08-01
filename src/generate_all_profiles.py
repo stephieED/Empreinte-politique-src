@@ -49,10 +49,8 @@ Usage (depuis la racine du dépôt) :
 
 import argparse
 import json
-import re
 import threading
 import time
-import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Optional
@@ -63,6 +61,7 @@ from merge_profile import merge_pivot_profile, merge_raw_profile
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
 from render_profile import render_html
+from text_utils import slugify
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
 DEFAULT_CANDIDATS_PATH = "data/candidats.json"
@@ -115,13 +114,8 @@ def load_candidats(path: str) -> list[dict[str, Any]]:
     return data.get("candidats", [])
 
 
-def _slugify(nom: str) -> str:
-    """Dérive un slug ("jordan-bardella") à partir du nom complet d'un candidat
-    n'ayant pas de slug NosDéputés.fr/NosSénateurs.fr, pour pouvoir tout de même
-    nommer son fichier de profil."""
-    decomposed = unicodedata.normalize("NFKD", nom)
-    ascii_only = "".join(c for c in decomposed if not unicodedata.combining(c))
-    return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", ascii_only.lower())).strip("-")
+# Alias local : voir text_utils.slugify (mutualisé avec parti_profile._slugify).
+_slugify = slugify
 
 
 def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict], Optional[str]]:
@@ -135,6 +129,39 @@ def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict]
         if profile.get("identite"):
             return profile, chambre
     return None, None
+
+
+def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any]) -> dict[str, Any]:
+    """Construit un profil minimal (structure identique à build_profile(), mais sans
+    aucun appel réseau) pour un candidat sans mandat français connu — ex. Jordan
+    Bardella, référencé uniquement via son mandat européen."""
+    return {
+        "slug": effective_slug,
+        "chambre": None,
+        "source": candidat.get("source"),
+        "identite": {
+            "nom_complet": nom,
+            "groupe_sigle": None,
+            "groupe_nom": candidat.get("parti"),
+            "profession": None,
+            "date_naissance": None,
+            "num_circo": None,
+            "nb_mandats": None,
+            "url_an_ou_senat": None,
+        },
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "interventions": [],
+        "meta": {
+            "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+            "warnings": ["aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"],
+        },
+    }
+
 
 
 def process_candidat(
@@ -196,32 +223,7 @@ def process_candidat(
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
         # data/candidats.json plutôt que de ne rien produire.
-        profile = {
-            "slug": effective_slug,
-            "chambre": None,
-            "source": candidat.get("source"),
-            "identite": {
-                "nom_complet": nom,
-                "groupe_sigle": None,
-                "groupe_nom": candidat.get("parti"),
-                "profession": None,
-                "date_naissance": None,
-                "num_circo": None,
-                "nb_mandats": None,
-                "url_an_ou_senat": None,
-            },
-            "mandats": [],
-            "votes": [],
-            "votes_source": None,
-            "synthese_activite": None,
-            "dossiers_legislatifs": [],
-            "interventions": [],
-            "meta": {
-                "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-                "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-                "warnings": ["aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"],
-            },
-        }
+        profile = build_minimal_profile(nom, effective_slug, candidat)
 
     if mandat_ue is not None:
         profile["mandat_europeen"] = mandat_ue

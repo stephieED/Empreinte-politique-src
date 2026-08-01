@@ -20,21 +20,13 @@ Usage (depuis la racine du dépôt) :
 
 import argparse
 import json
-import re
 import sys
-import unicodedata
 from pathlib import Path
 from typing import Any, Optional
 
-from group_profile import _aggregate_tags_thematiques
+from group_profile import aggregate_tags_thematiques
 from schema_parti import SCHEMA_PARTI_VERSION, make_empty_profil_parti, validate_profil_parti
-
-
-def _slugify(text: str) -> str:
-    """Dérive un identifiant slug ("les-republicains-lr") à partir d'un libellé."""
-    decomposed = unicodedata.normalize("NFKD", text)
-    ascii_only = "".join(c for c in decomposed if not unicodedata.combining(c))
-    return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", ascii_only.lower())).strip("-")
+from text_utils import slugify as _slugify
 
 
 def _load_pivot(profiles_dir: Path, slug: str) -> Optional[dict[str, Any]]:
@@ -101,7 +93,7 @@ def build_parti_profile(
             "a_un_profil_pivot": pivot is not None,
         })
 
-    tags_agreges, tag_source = _aggregate_tags_thematiques(pivots)
+    tags_agreges, tag_source = aggregate_tags_thematiques(pivots)
     profil["tags_thematiques_agreges"] = tags_agreges
     if tag_source == "mots_cles_interventions":
         warnings.append(

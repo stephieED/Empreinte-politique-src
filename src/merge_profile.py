@@ -25,6 +25,12 @@ Usage :
 
 from typing import Any, Callable, Optional
 
+from candidate_profile import (
+    WARNING_PREFIX_IDENTITE_INTROUVABLE,
+    WARNING_PREFIX_MANDATS_INTROUVABLES,
+    WARNING_PREFIX_VOTES_INTROUVABLES,
+)
+
 Key = Any
 
 
@@ -92,11 +98,11 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
         return
     filtered = []
     for w in meta["warnings"]:
-        if w.startswith("votes introuvables") and profile.get("votes"):
+        if w.startswith(WARNING_PREFIX_VOTES_INTROUVABLES) and profile.get("votes"):
             continue
-        if w.startswith("identité introuvable") and profile.get("identite"):
+        if w.startswith(WARNING_PREFIX_IDENTITE_INTROUVABLE) and profile.get("identite"):
             continue
-        if w.startswith("mandats introuvables") and profile.get("mandats"):
+        if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and profile.get("mandats"):
             continue
         filtered.append(w)
     meta["warnings"] = filtered
@@ -232,9 +238,9 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
         for w in merged["meta"]["warnings"]:
-            if w.startswith("votes introuvables") and merged.get("votes"):
+            if w.startswith(WARNING_PREFIX_VOTES_INTROUVABLES) and merged.get("votes"):
                 continue
-            if w.startswith("mandats introuvables") and merged.get("mandats"):
+            if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and merged.get("mandats"):
                 continue
             filtered.append(w)
         merged["meta"]["warnings"] = filtered

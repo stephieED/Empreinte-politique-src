@@ -73,13 +73,13 @@ def _render_intervention(i: dict[str, Any]) -> str:
         parts.append(f"<em>{html.escape(str(TYPE_DETAIL_LABELS.get(type_detail, type_detail)))}</em>")
     fonction = i.get("fonction")
     if fonction:
-        parts.append(f"<span style='color:#8a5a00;'>en tant que {html.escape(str(fonction))}</span>")
+        parts.append(f"<span class='fonction'>en tant que {html.escape(str(fonction))}</span>")
     fmt = i.get("format")
     if fmt:
-        style = "font-weight:bold;" if fmt == "prise_de_parole_developpee" else "font-style:italic;color:#666;"
-        parts.append(f"<span style='{style}'>{html.escape(str(FORMAT_LABELS.get(fmt, fmt)))}</span>")
+        css_class = "format-developpee" if fmt == "prise_de_parole_developpee" else "format-courte"
+        parts.append(f"<span class='{css_class}'>{html.escape(str(FORMAT_LABELS.get(fmt, fmt)))}</span>")
     elif isinstance(i.get("classification"), dict) and i.get("classification", {}).get("mode") == "prise_de_parole":
-        parts.append("<span style='font-weight:bold;'>prise de parole</span>")
+        parts.append("<span class='format-developpee'>prise de parole</span>")
     if i.get("sujet"):
         parts.append(f"Sujet: {html.escape(str(i.get('sujet')))}")
     if i.get("mots_cles"):
@@ -156,6 +156,9 @@ def render_html(profile: dict[str, Any]) -> str:
     h1, h2 {{ color: #1f4e79; }}
     .card {{ border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }}
     ul {{ padding-left: 1.2rem; }}
+    .fonction {{ color: #8a5a00; }}
+    .format-developpee {{ font-weight: bold; }}
+    .format-courte {{ font-style: italic; color: #666; }}
   </style>
 </head>
 <body>
