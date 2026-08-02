@@ -131,7 +131,13 @@ Format d'un profil pivot v1 :
             "fonction": "Rapporteur",        # rôle institutionnel au moment de l'intervention
             "format": "prise_de_parole_developpee",  # ou "reaction_courte"
             "mots_cles": ["budget", "fiscalité"],
-            "source_url": "https://..."
+            "source_url": "https://...",
+            # Champs supplémentaires présents uniquement si type_detail == "question"
+            # (questions parlementaires officielles, source open data AN) :
+            "sous_type": "QE",               # "QE" (écrite) | "QG" (au gouvernement) | "QOSD" (orale sans débat)
+            "ministere": "Ministère...",     # ministère interrogé (texte libre)
+            "reponse": "...",                # texte de la réponse, si disponible (null sinon)
+            "date_reponse": "2023-04-20",    # date JO de la réponse (null si pas encore répondu)
         }
     ],
     "tags_thematiques": ["budget", "fiscalité"],  # bruts, avant harmonisation Phase 4

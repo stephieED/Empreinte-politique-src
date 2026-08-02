@@ -1,3 +1,4 @@
+
 # AGENTS.md — Notes de fond du projet
 
 Ce fichier documente **pourquoi** le projet est construit ainsi, pas
@@ -306,20 +307,19 @@ Séquence de travail en cours, autorisée étape par étape par l'utilisateur.
 les sections concernées dès qu'elle est implémentée et validée, pas seulement
 planifiée.
 
+### Fait (récemment)
+
+- **Questions (QE/QG/QOSD)** : intégration des 3 jeux de données open data
+  AN dans `interventions[].type_detail == "question"`. Implémenté dans
+  `candidate_profile.py` (`fetch_questions_officielles`,
+  `_build_acteur_questions_index`, `_parse_question_entry`) ; mapping pivot
+  dans `normalize_nosdeputes.py` ; fusion dans `merge_profile.py`.
+  Champs supplémentaires : `sous_type` (QE/QG/QOSD), `ministere`, `reponse`,
+  `date_reponse`. Voir `docs/an_opendata.md` pour la documentation du schéma.
+
 ### En cours
 
-- **Questions (QE/QG/QOSD)** : intégrer les 3 jeux de données open data AN
-  "questions écrites", "questions au gouvernement" et "questions orales sans
-  débat" (mêmes URLs par législature que scrutins/amendements, voir
-  `docs/an_opendata.md`). Les 3 partagent EXACTEMENT le même schéma
-  (`question.@xsi:type` distingue `QuestionEcrite_Type` /
-  `QuestionGouvernement_Type` / `QuestionOrale_Type`) : un seul parseur
-  générique suffit pour les 3. Objectif : alimenter
-  `interventions[].type_detail == "question"` depuis une source officielle
-  structurée (`auteur.identite.acteurRef` direct, texte intégral
-  question/réponse, ministère interrogé, date JO) plutôt que par scraping
-  NosDéputés comme aujourd'hui — un gain net de fiabilité, pas une simple
-  redite d'une donnée déjà correcte.
+_(aucune entrée en cours)_
 
 ### Prévu ensuite
 

@@ -30,6 +30,7 @@ from candidate_profile import (
     WARNING_PREFIX_MANDATS_INTROUVABLES,
     WARNING_PREFIX_VOTES_INTROUVABLES,
     WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+    WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
 )
 
 Key = Any
@@ -110,6 +111,11 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
         if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and profile.get("mandats"):
             continue
         if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and profile.get("amendements"):
+            continue
+        if (
+            w.startswith(WARNING_PREFIX_QUESTIONS_INDISPONIBLES)
+            and any(i.get("type_detail") == "question" for i in profile.get("interventions", []))
+        ):
             continue
         filtered.append(w)
     meta["warnings"] = filtered

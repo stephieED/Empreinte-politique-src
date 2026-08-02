@@ -461,7 +461,7 @@ aujourd'hui définis au niveau du schéma et de sa validation uniquement.
 | NosDéputés.fr | API JSON/XML | Figée sur la 16e législature (2022-06-22 → dissolution du 2024-06-09) : les 618 fiches ont toutes un `mandat_fin` renseigné. Aucun domaine équivalent trouvé pour la 17e législature en cours — voir « Limites de couverture ». | ODbL | AN |
 | Archives NosDéputés.fr | API JSON/XML | Figées (législatures closes) | ODbL | AN |
 | NosSénateurs.fr (archive) | API JSON/XML | Figée | ODbL | Sénat |
-| data.assemblee-nationale.fr | Dumps ZIP | Quotidien | Licence ouverte AN | AN (votes nominatifs) |
+| data.assemblee-nationale.fr | Dumps ZIP | Quotidien | Licence ouverte AN | AN (votes nominatifs, amendements, textes portés, questions parlementaires) |
 | Parltrack | Dumps LZMA | Hebdomadaire (environ) | CC0/ODbL | PE |
 | Wikipédia FR | API MediaWiki REST | Immédiat | CC BY-SA 4.0 | Veille candidatures |
 | Wikidata | SPARQL | Immédiat | CC0 | Veille candidatures |

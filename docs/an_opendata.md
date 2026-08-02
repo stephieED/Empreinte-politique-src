@@ -202,12 +202,22 @@ seul `question.@xsi:type` diffère : `QuestionEcrite_Type` /
   texte intégral de la question et, si disponible, de la réponse, avec la
   date de publication au Journal officiel.
 - Pertinence : `schema_pivot.py` anticipe déjà `interventions[].type_detail:
-  "question"`, mais ce champ n'est aujourd'hui alimenté par aucune source
-  officielle structurée (uniquement, le cas échéant, par du scraping
-  NosDéputés) — ces 3 jeux de données seraient une amélioration nette
-  (acteurRef direct, texte intégral, ministère, date JO) plutôt qu'une
-  simple redite. Un seul parseur générique suffirait pour les 3.
-- **Pas encore implémenté dans le code** (recherche seulement).
+  "question"`. Ces 3 jeux de données alimentent maintenant `interventions[]`
+  via `fetch_questions_officielles()` dans `candidate_profile.py` (acteurRef
+  direct, texte intégral, ministère, date JO, réponse si disponible). Les
+  questions sont exposées dans le pivot avec les champs supplémentaires
+  `sous_type` (QE/QG/QOSD), `ministere`, `reponse` et `date_reponse` —
+  documentés dans `schema_pivot.py` et `normalize_nosdeputes.py`.
+- **Implémenté** : `candidate_profile._parse_question_entry`,
+  `_build_acteur_questions_index`, `fetch_questions_officielles` ;
+  intégration dans `build_profile()` (section 9bis) ; mapping pivot dans
+  `normalize_nosdeputes._normalize_intervention` ; fusion dans
+  `merge_profile.merge_raw_profile` via `merge_lists_by_key` (clé : `id` +
+  `url_detail`).
+- **Couverture** : législatures 16 et 17 confirmées sur AN open data ; 14 et
+  15 incluses dans `AN_QUESTIONS_PATH` (noms de fichiers inférés depuis la
+  convention `_XIV`/`_XV` des autres jeux — échoueront silencieusement si
+  absents côté AN).
 
 ## Agenda / réunions (commissions) — priorité basse
 

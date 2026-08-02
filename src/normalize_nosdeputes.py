@@ -104,7 +104,7 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
 
 def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
     """Normalise une intervention brute vers le format pivot."""
-    return {
+    result: dict[str, Any] = {
         "date": _first(i.get("date"), i.get("created_at")),
         "type_detail": i.get("type_detail"),
         "sujet": i.get("sujet"),
@@ -114,6 +114,13 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "mots_cles": list(i.get("mots_cles") or []),
         "source_url": _first(i.get("url_detail"), i.get("url")),
     }
+    # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").
+    if i.get("type_detail") == "question":
+        result["sous_type"] = i.get("sous_type")      # "QE" | "QG" | "QOSD"
+        result["ministere"] = i.get("ministere")       # ministère interrogé
+        result["reponse"] = i.get("reponse")           # texte de la réponse (si disponible)
+        result["date_reponse"] = i.get("date_reponse") # date JO de la réponse
+    return result
 
 
 def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:

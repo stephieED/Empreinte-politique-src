@@ -479,3 +479,65 @@ def test_pivot_identite_reste_none_si_aucun_champ_renseigne():
     }
     pivot = normalize_nosdeputes(raw)
     assert pivot["identite"] is None
+
+
+def test_normalize_intervention_question_includes_extra_fields():
+    """Les interventions de type "question" doivent inclure sous_type, ministere,
+    reponse et date_reponse dans le pivot ; ces champs sont absents pour les
+    autres types d'interventions."""
+    raw = _raw_depute()
+    raw["interventions"] = [
+        {
+            "date": "2025-01-15",
+            "type_detail": "question",
+            "sous_type": "QE",
+            "sujet": "Budget 2025",
+            "texte": "Monsieur le ministre...",
+            "reponse": "La réponse est...",
+            "date_reponse": "2025-03-10",
+            "ministere": "Ministère de l'Économie",
+            "groupe_sigle": "LFI",
+            "fonction": None,
+            "format": "prise_de_parole_developpee",
+            "mots_cles": [],
+            "url": "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm",
+            "url_detail": "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm",
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+
+    assert len(pivot["interventions"]) == 1
+    i = pivot["interventions"][0]
+    assert i["type_detail"] == "question"
+    assert i["sous_type"] == "QE"
+    assert i["ministere"] == "Ministère de l'Économie"
+    assert i["reponse"] == "La réponse est..."
+    assert i["date_reponse"] == "2025-03-10"
+    assert i["source_url"] == "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm"
+
+
+def test_normalize_intervention_non_question_has_no_extra_fields():
+    """Pour les interventions qui ne sont pas des questions, les champs
+    supplémentaires (sous_type, ministere, reponse, date_reponse) ne doivent
+    pas être présents dans le pivot."""
+    raw = _raw_depute()
+    raw["interventions"] = [
+        {
+            "date": "2023-03-15",
+            "type_detail": "loi",
+            "sujet": "PLF 2024",
+            "texte": "Je prends la parole...",
+            "fonction": "Rapporteur",
+            "format": "prise_de_parole_developpee",
+            "mots_cles": ["budget"],
+            "url_detail": "https://...",
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+
+    assert len(pivot["interventions"]) == 1
+    i = pivot["interventions"][0]
+    assert "sous_type" not in i
+    assert "ministere" not in i
+    assert "reponse" not in i
+    assert "date_reponse" not in i

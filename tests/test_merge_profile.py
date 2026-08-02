@@ -308,3 +308,71 @@ def test_merge_pivot_profile_amendements_nouvelle_valeur_gagne_sur_collision():
     assert len(merged["amendements"]) == 2
     as1 = next(a for a in merged["amendements"] if a["numero"] == "AS1")
     assert as1["sort"] == "adopté"
+
+
+def test_prune_stale_warnings_removes_questions_warning_when_questions_present():
+    """Le warning "questions indisponibles" doit être retiré après fusion si des
+    questions (type_detail == "question") sont présentes dans les interventions."""
+    from merge_profile import merge_raw_profile
+
+    old = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [
+            {"id": "question_QANR5L17QE1", "type_detail": "question", "url": "https://..."},
+        ],
+        "meta": {"warnings": [], "synchro_sources": {}},
+    }
+    new = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [],
+        "meta": {
+            "warnings": ["questions indisponibles : erreur réseau"],
+            "synchro_sources": {"nosdeputes": None, "assemblee_nationale": None, "assemblee_nationale_questions": None},
+        },
+    }
+    merged = merge_raw_profile(old, new)
+    assert not any("questions indisponibles" in w for w in merged["meta"]["warnings"])
+
+
+def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
+    """Le warning "questions indisponibles" doit être conservé si aucune question
+    n'est présente dans les interventions après fusion."""
+    from merge_profile import merge_raw_profile
+
+    old = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [], "votes": [], "votes_source": None, "synthese_activite": None,
+        "dossiers_legislatifs": [], "amendements": [], "interventions": [],
+        "meta": {"warnings": [], "synchro_sources": {}},
+    }
+    new = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [], "votes": [], "votes_source": None, "synthese_activite": None,
+        "dossiers_legislatifs": [], "amendements": [], "interventions": [],
+        "meta": {
+            "warnings": ["questions indisponibles : erreur réseau"],
+            "synchro_sources": {"nosdeputes": None, "assemblee_nationale": None, "assemblee_nationale_questions": None},
+        },
+    }
+    merged = merge_raw_profile(old, new)
+    assert any("questions indisponibles" in w for w in merged["meta"]["warnings"])
