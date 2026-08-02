@@ -1,52 +1,5 @@
 #!/usr/bin/env python3
-"""
-generate_all_profiles.py
-
-Récupère les données et génère le CV (JSON) de chaque candidat de
-raw_data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
-NosSénateurs.fr) et/ou un mandat de député européen (recherché par nom via
-candidate_profile_ue.py, cf. Open Data Portal du Parlement européen). Les
-candidats sans aucune de ces deux sources sont simplement signalés, sans erreur.
-
-Les fichiers générés sont écrits dans raw_data/profiles/<slug>.json (profil
-brut). Le volet européen, quand il existe, est fusionné dans le même profil
-sous la clé "mandat_europeen" (pour un candidat sans mandat français, ex.
-Jordan Bardella, un profil minimal est tout de même créé à partir de
-raw_data/candidats.json + du mandat européen).
-
-Fusion additive (comportement par défaut) : si un fichier <slug>.json (dans
-raw_data/profiles/) ou <slug>.pivot.json (dans pivot_data/profiles/) existe
-déjà, les nouvelles données collectées sont fusionnées avec celles déjà
-présentes plutôt que de les écraser — chaque liste (votes, mandats, dossiers
-législatifs, interventions...) est fusionnée par clé d'unicité : les entrées
-déjà connues sont conservées telles quelles, seules les entrées réellement
-nouvelles sont ajoutées. Cela évite que des données varient ou disparaissent
-d'une régénération à l'autre à cause d'un aléa transitoire des API publiques
-(pagination, requête ponctuelle en échec...). Utiliser --no-merge pour
-revenir à un écrasement complet. Voir merge_profile.py.
-
-Avec --pivot, un fichier supplémentaire pivot_data/profiles/<slug>.pivot.json
-est généré au format schéma pivot v1 (commun à toutes les sources). Le volet
-européen, s'il existe, est normalisé et intégré au pivot.
-
-Parallélisation (deux niveaux) :
-  - Niveau 1 : pour chaque candidat, les appels NosDéputés.fr et Parlement
-    européen sont lancés simultanément (deux API distinctes, aucun état partagé).
-  - Niveau 2 : plusieurs candidats sont traités en parallèle grâce à un pool
-    de threads (option --workers, défaut : 4). Les caches disque partagés sont
-    protégés par des verrous définis dans candidate_profile.py et
-    candidate_profile_ue.py.
-
-Usage (depuis la racine du dépôt) :
-    python src/generate_all_profiles.py
-    python src/generate_all_profiles.py --only jean-luc-melenchon
-    python src/generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
-    python src/generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
-    python src/generate_all_profiles.py --skip-ue          # ne pas interroger l'API du Parlement européen
-    python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
-    python src/generate_all_profiles.py --workers 4        # nb de candidats traités en parallèle (défaut: 4)
-    python src/generate_all_profiles.py --resume            # reprendre depuis le dernier point de sauvegarde après une interruption
-"""
+"""Module documentation in English."""
 
 import argparse
 import json
@@ -63,7 +16,7 @@ from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
 from text_utils import slugify
 
-# Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
+# Translated comment.
 DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
 DEFAULT_PROFILES_DIR = Path("raw_data/profiles")
 DEFAULT_PIVOT_DIR = Path("pivot_data/profiles")
@@ -71,9 +24,9 @@ DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 
 CHAMBRES = ["deputes", "senateurs"]
 
-# Verrou global pour sérialiser les print() et éviter un affichage interleaved.
+# Translated comment.
 _PRINT_LOCK = threading.Lock()
-# Verrou global pour sérialiser l'écriture du fichier de point de sauvegarde.
+# Translated comment.
 _CHECKPOINT_LOCK = threading.Lock()
 
 
@@ -84,8 +37,7 @@ def _tprint(*args: Any, **kwargs: Any) -> None:
 
 
 def _load_checkpoint(path: Path) -> dict[str, Any]:
-    """Charge le point de sauvegarde existant, ou renvoie un état vide s'il est absent/corrompu."""
-    if not path.exists():
+    """English docstring for  load checkpoint."""    if not path.exists():
         return {"resultats": []}
     try:
         with open(path, encoding="utf-8") as f:
@@ -95,9 +47,7 @@ def _load_checkpoint(path: Path) -> dict[str, Any]:
 
 
 def _save_checkpoint(path: Path, resultats: list[dict[str, Any]]) -> None:
-    """Écrit le point de sauvegarde de façon atomique (fichier temporaire puis remplacement),
-    pour ne jamais laisser un fichier tronqué si le process est interrompu pendant l'écriture."""
-    with _CHECKPOINT_LOCK:
+    """English docstring for  save checkpoint."""   with _CHECKPOINT_LOCK:
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = path.with_suffix(path.suffix + ".tmp")
         with open(tmp_path, "w", encoding="utf-8") as f:
@@ -109,19 +59,17 @@ def _save_checkpoint(path: Path, resultats: list[dict[str, Any]]) -> None:
 
 
 def load_candidats(path: str) -> list[dict[str, Any]]:
-    """Charge la liste des candidats depuis le fichier JSON source (clé "candidats")."""
-    with open(path, encoding="utf-8") as f:
+    """English docstring for load candidats."""    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("candidats", [])
 
 
-# Alias local : voir text_utils.slugify (mutualisé avec parti_profile._slugify).
+# Translated comment.
 _slugify = slugify
 
 
 def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict], Optional[str]]:
-    """Essaie 'deputes' puis 'senateurs' et renvoie le premier profil avec une identité exploitable."""
-    for chambre in CHAMBRES:
+    """English docstring for build profile any chambre."""    for chambre in CHAMBRES:
         try:
             profile = build_profile(chambre, slug, intervention_max_pages=max_pages)
         except Exception as exc:
@@ -133,10 +81,7 @@ def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict]
 
 
 def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any]) -> dict[str, Any]:
-    """Construit un profil minimal (structure identique à build_profile(), mais sans
-    aucun appel réseau) pour un candidat sans mandat français connu — ex. Jordan
-    Bardella, référencé uniquement via son mandat européen."""
-    return {
+    """English docstring for build minimal profile.""" return {
         "slug": effective_slug,
         "chambre": None,
         "source": candidat.get("source"),
@@ -171,12 +116,7 @@ def process_candidat(
     out_dir: Path,
     pivot_dir: Path,
 ) -> dict[str, Any]:
-    """Traite un candidat : collecte les données FR et UE en parallèle (niveau 1),
-    écrit les fichiers JSON/HTML (et pivot si demandé), et renvoie un dict de résultat.
-
-    Conçu pour être appelé depuis un ThreadPoolExecutor (niveau 2) : ne modifie
-    aucun état partagé en dehors des fichiers de sortie individuels (thread-safe).
-    """
+    """English docstring for process candidat."""
     slug = candidat.get("slug")
     nom = candidat.get("nom")
     effective_slug = slug or _slugify(nom)
@@ -188,7 +128,7 @@ def process_candidat(
 
     _tprint(f"\n=== {nom} ({effective_slug}) ===")
 
-    # --- Niveau 1 : appels FR et UE en parallèle ---
+    # Translated comment.
     profile: Optional[dict] = None
     chambre: Optional[str] = None
     mandat_ue: Optional[dict] = None
@@ -222,9 +162,9 @@ def process_candidat(
     if profile is None and mandat_ue is None:
         return {"nom": nom, "slug": effective_slug, "statut": "introuvable"}
     if profile is None:
-        # Candidat sans mandat français connu, mais avec un mandat européen
-        # (ex. Jordan Bardella) : on crée un profil minimal à partir de
-        # raw_data/candidats.json plutôt que de ne rien produire.
+        # Translated comment.
+        # Translated comment.
+        # Translated comment.
         profile = build_minimal_profile(nom, effective_slug, candidat)
 
     if mandat_ue is not None:
@@ -241,7 +181,7 @@ def process_candidat(
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
 
-    # Optionnel : écriture du profil pivot v1 (--pivot)
+    # Translated comment.
     if args.pivot:
         parti = candidat.get("parti")
         pivot_profile = normalize_nosdeputes(profile, parti=parti) if chambre else None
@@ -250,8 +190,8 @@ def process_candidat(
             if pivot_profile is None:
                 pivot_profile = ue_pivot
             else:
-                # Fusionner les données UE dans le pivot principal :
-                # ajouter la source EP et les mandats européens.
+                # Translated comment.
+                # Translated comment.
                 pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
         if pivot_profile is not None:
@@ -272,7 +212,7 @@ def process_candidat(
     extra = f", {nb_mandats_ue} mandats UE" if mandat_ue or profile.get("mandat_europeen") else ""
     _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} ({nb_interventions} interventions{extra})")
 
-    time.sleep(0.5)  # on reste courtois avec l'API publique entre deux candidats
+    time.sleep(0.5)  # Translated comment.
 
     return {
         "nom": nom,

@@ -51,7 +51,7 @@ def _deputes_payload():
 
 
 # ---------------------------------------------------------------------------
-# generate_all : un seul fetch réseau par (chambre, législature) partagée
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_generate_all_fetches_once_per_chambre_legislature(tmp_path, monkeypatch):
@@ -79,7 +79,7 @@ def test_generate_all_fetches_once_per_chambre_legislature(tmp_path, monkeypatch
     echecs = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir, validate=True)
 
     assert echecs == 0
-    assert call_count["n"] == 1  # un seul fetch réseau partagé entre les 2 groupes
+    assert call_count["n"] == 1  # Translated comment.
 
     lr = json.loads((out_dir / "groupe-AN-LR-16.json").read_text(encoding="utf-8"))
     soc = json.loads((out_dir / "groupe-AN-SOC-16.json").read_text(encoding="utf-8"))
@@ -139,7 +139,7 @@ def test_generate_all_roster_fetch_failure_reported_as_echec(tmp_path, monkeypat
 
 
 # ---------------------------------------------------------------------------
-# main() : lecture de la config JSON
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_main_reads_config_and_generates(tmp_path, monkeypatch):

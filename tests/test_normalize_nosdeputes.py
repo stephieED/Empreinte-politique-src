@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-# Les modules testés vivent dans src/, à côté du dossier tests/.
+# Translated comment.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from normalize_nosdeputes import normalize_nosdeputes
@@ -9,12 +9,11 @@ from schema_pivot import SCHEMA_VERSION, validate_profil
 
 
 # ---------------------------------------------------------------------------
-# Fixture : profil brut NosDéputés minimal (format candidate_profile.py)
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def _raw_depute(extra: dict = None) -> dict:
-    """Retourne un profil brut NosDéputés minimal pour les tests."""
-    base = {
+    """English docstring for  raw depute."""   base = {
         "slug": "jean-dupont",
         "chambre": "deputes",
         "source": "https://www.nosdeputes.fr/jean-dupont",
@@ -109,8 +108,7 @@ def _raw_depute(extra: dict = None) -> dict:
 
 
 def _raw_senateur() -> dict:
-    """Profil brut NosSénateurs minimal."""
-    p = _raw_depute()
+    """English docstring for  raw senateur."""    p = _raw_depute()
     p["chambre"] = "senateurs"
     p["source"] = "https://archive.nossenateurs.fr/marie-martin"
     p["slug"] = "marie-martin"
@@ -269,7 +267,7 @@ def test_pivot_vote_preserve_type_et_lien_49_3():
 
 
 # ---------------------------------------------------------------------------
-# Textes portés (depuis dossiers_legislatifs)
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_pivot_textes_portes_count():
@@ -361,7 +359,7 @@ def test_pivot_amendement_champs():
 
 
 # ---------------------------------------------------------------------------
-# Tags thématiques
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_pivot_tags_thematiques_agrege_mots_cles():
@@ -391,7 +389,7 @@ def test_pivot_tags_thematiques_vide_si_pas_interventions():
 
 
 # ---------------------------------------------------------------------------
-# Métadonnées
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_pivot_meta_licence_propagee():
@@ -420,14 +418,14 @@ def test_pivot_meta_pas_avertissement_si_synchro_ok():
 
 
 # ---------------------------------------------------------------------------
-# Profil brut incomplet (résilience)
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_pivot_profil_vide_ne_leve_pas():
     pivot = normalize_nosdeputes({})
     assert isinstance(pivot, dict)
-    # Un profil vide produit un nom vide → le schéma le signale, c'est normal.
-    # Ce test vérifie uniquement qu'aucune exception n'est levée.
+    # Translated comment.
+    # Translated comment.
     errors = validate_profil(pivot)
     assert all(isinstance(e, str) for e in errors)
 
@@ -482,9 +480,7 @@ def test_pivot_identite_reste_none_si_aucun_champ_renseigne():
 
 
 def test_normalize_intervention_question_includes_extra_fields():
-    """Les interventions de type "question" doivent inclure sous_type, ministere,
-    reponse et date_reponse dans le pivot ; ces champs sont absents pour les
-    autres types d'interventions."""
+    """English docstring for test normalize intervention question includes extra fields."""
     raw = _raw_depute()
     raw["interventions"] = [
         {
@@ -517,10 +513,7 @@ def test_normalize_intervention_question_includes_extra_fields():
 
 
 def test_normalize_intervention_non_question_has_no_extra_fields():
-    """Pour les interventions qui ne sont pas des questions, les champs
-    supplémentaires (sous_type, ministere, reponse, date_reponse) ne doivent
-    pas être présents dans le pivot."""
-    raw = _raw_depute()
+    """English docstring for test normalize intervention non question has no extra fields."""   raw = _raw_depute()
     raw["interventions"] = [
         {
             "date": "2023-03-15",

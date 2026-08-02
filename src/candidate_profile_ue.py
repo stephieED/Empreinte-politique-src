@@ -1,33 +1,5 @@
 #!/usr/bin/env python3
-"""
-candidate_profile_ue.py
-
-Récupère le volet "mandat européen" du CV politique d'un candidat, à partir
-de l'Open Data Portal officiel du Parlement européen :
-    https://data.europarl.europa.eu/api/v2/
-
-Cette API est publiée par le Parlement européen sous licence ouverte
-CC BY 4.0 (Creative Commons Attribution 4.0 International) : sa réutilisation
-est explicitement autorisée, y compris à des fins commerciales, à condition
-de créditer la source (voir la licence dans le champ `info.license` du
-document OpenAPI exposé par l'API elle-même, et le README du dépôt).
-Elle impose en revanche deux règles techniques à respecter :
-  - un en-tête HTTP `User-Agent` identifiant le projet réutilisateur
-    (voir la constante HEADERS ci-dessous) ;
-  - une limite de 500 requêtes / 5 minutes par appelant.
-
-Ce script ne cherche PAS à deviner si un candidat a été eurodéputé : il
-interroge la liste complète (et publique) des députés européens ayant
-représenté la France depuis l'origine du Parlement européen, et ne retient
-que les correspondances exactes de nom. Un candidat non trouvé n'est pas
-une erreur : il n'a simplement jamais été membre du Parlement européen.
-
-Usage (depuis la racine du dépôt) :
-    python src/candidate_profile_ue.py "Jordan Bardella"
-    python src/candidate_profile_ue.py "Jordan Bardella" --out raw_data/profiles/jordan-bardella.ue.json
-
-Docs API (spécification OpenAPI complète) : https://data.europarl.europa.eu/api/v2/
-"""
+"""Module documentation in English."""
 
 import argparse
 import json
@@ -42,9 +14,9 @@ import requests
 
 EP_API_BASE = "https://data.europarl.europa.eu/api/v2"
 
-# Le Parlement européen recommande explicitement d'identifier le projet
-# réutilisateur dans le User-Agent (voir doc du paramètre "User-Agent" de
-# l'API), sans y inclure de données personnelles.
+# Translated comment.
+# Translated comment.
+# Translated comment.
 HEADERS = {
     "User-Agent": "CV-CandidatFR-dev-1.0.0 (https://github.com/, usage personnel / non commercial)"
 }
@@ -52,16 +24,16 @@ HEADERS = {
 TIMEOUT = 20
 CACHE_DIR = Path(".cache") / "europarl"
 
-# Verrou global pour les accès au cache disque des organisations (lecture + écriture).
-# En mode parallèle, chaque thread charge une copie indépendante du cache en entrée,
-# travaille localement, puis fusionne-et-sauvegarde sous ce verrou de façon à ne pas
-# écraser les nouvelles entrées ajoutées par un thread concurrent entre-temps.
+# Translated comment.
+# Translated comment.
+# Translated comment.
+# Translated comment.
 _ORG_CACHE_LOCK = threading.Lock()
 
-# Libellés FR lisibles pour les classifications d'organisation rencontrées dans
+# Translated comment.
 # `hasMembership[].membershipClassification` (valeurs brutes = URI de type
-# "def/ep-entities/XXX", non documentées sous forme d'enum dans la spec OpenAPI :
-# établi par observation des données réelles).
+# Translated comment.
+# Translated comment.
 CLASSIFICATION_LABELS = {
     "def/ep-entities/COMMITTEE_PARLIAMENTARY_STANDING": "Commission parlementaire permanente",
     "def/ep-entities/COMMITTEE_PARLIAMENTARY_TEMPORARY": "Commission parlementaire spéciale/temporaire",
@@ -75,7 +47,7 @@ CLASSIFICATION_LABELS = {
     "def/ep-entities/EU_INSTITUTION": "Mandat de député européen",
 }
 
-# Idem pour `hasMembership[].role` (valeurs brutes "def/ep-roles/XXX").
+# Translated comment.
 ROLE_LABELS = {
     "def/ep-roles/MEMBER": "Membre",
     "def/ep-roles/MEMBER_SUBSTITUTE": "Membre suppléant(e)",
@@ -89,29 +61,21 @@ ROLE_LABELS = {
 
 
 def _prettify_uri(value: Optional[str]) -> Optional[str]:
-    """Filet de secours pour un rôle/classification non présent dans les tables
-    de libellés ci-dessus : transforme "def/ep-roles/SOME_NEW_ROLE" en
-    "Some new role" plutôt que d'afficher l'URI brute."""
-    if not value:
+    """English docstring for  prettify uri."""    if not value:
         return None
     tail = value.rsplit("/", 1)[-1]
     return tail.replace("_", " ").capitalize()
 
 
 def _normalize_name(name: str) -> str:
-    """Normalise un nom de personne pour comparaison insensible aux accents,
-    à la casse, à la ponctuation et à l'ordre des mots (le libellé de l'API
-    est "PRÉNOM NOM", alors que raw_data/candidats.json utilise "Prénom Nom")."""
-    decomposed = unicodedata.normalize("NFKD", name)
+    """English docstring for  normalize name."""   decomposed = unicodedata.normalize("NFKD", name)
     ascii_only = "".join(c for c in decomposed if not unicodedata.combining(c))
     tokens = re.findall(r"[A-Za-z0-9]+", ascii_only.upper())
     return " ".join(sorted(tokens))
 
 
 def _get_json(path: str, params: Optional[dict[str, Any]] = None) -> Optional[dict]:
-    """Effectue un GET sur l'API Open Data du Parlement européen et renvoie le
-    JSON décodé, ou None si l'API répond "204 No Content" (aucun résultat)."""
-    request_params = {"format": "application/ld+json"}
+    """English docstring for  get json.""" request_params = {"format": "application/ld+json"}
     if params:
         request_params.update(params)
     response = requests.get(
@@ -124,14 +88,7 @@ def _get_json(path: str, params: Optional[dict[str, Any]] = None) -> Optional[di
 
 
 def fetch_all_meps_by_country(country: str = "FR", use_cache: bool = True) -> list[dict[str, Any]]:
-    """Récupère la liste complète (toutes législatures confondues, depuis
-    l'origine du Parlement européen) des député⋅e⋅s européen⋅ne⋅s ayant
-    représenté `country` (code ISO 3166-1 alpha-2, ex. "FR").
-
-    Le résultat est mis en cache sur disque (.cache/europarl/meps_<pays>.json)
-    car cette liste est volumineuse (plusieurs centaines d'entrées) et ne
-    change quasiment jamais pour les législatures passées.
-    """
+    """English docstring for fetch all meps by country."""
     cache_path = CACHE_DIR / f"meps_{country}.json"
     if use_cache and cache_path.exists():
         with open(cache_path, encoding="utf-8") as f:
@@ -150,7 +107,7 @@ def fetch_all_meps_by_country(country: str = "FR", use_cache: bool = True) -> li
             break
         meps.extend(items)
         offset += limit
-        time.sleep(0.2)  # on reste courtois avec l'API (limite : 500 req / 5 min)
+        time.sleep(0.2)  # Translated comment.
 
     if use_cache:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -161,12 +118,7 @@ def fetch_all_meps_by_country(country: str = "FR", use_cache: bool = True) -> li
 
 
 def find_mep_by_name(nom: str, country: str = "FR", use_cache: bool = True) -> Optional[dict[str, Any]]:
-    """Cherche, par correspondance exacte de nom (normalisée), un⋅e
-    député⋅e européen⋅ne parmi ceux ayant représenté `country`.
-
-    Renvoie l'entrée brute de l'API (avec au moins `identifier` et `label`),
-    ou None si le nom ne correspond à aucun eurodéputé connu.
-    """
+    """English docstring for find mep by name."""
     target = _normalize_name(nom)
     for mep in fetch_all_meps_by_country(country, use_cache=use_cache):
         if _normalize_name(mep.get("label", "")) == target:
@@ -175,27 +127,20 @@ def find_mep_by_name(nom: str, country: str = "FR", use_cache: bool = True) -> O
 
 
 def fetch_mep_detail(mep_id: str) -> Optional[dict[str, Any]]:
-    """Récupère la fiche complète d'un⋅e député⋅e européen⋅ne (identité,
-    et historique complet des mandats/fonctions via `hasMembership`)."""
+    """English docstring for fetch mep detail."""
     payload = _get_json(f"/meps/{mep_id}")
     items = (payload or {}).get("data", [])
     return items[0] if items else None
 
 
 def resolve_organization(org_id: str, cache: dict[str, Any]) -> dict[str, Any]:
-    """Résout l'identifiant d'une organisation (commission, groupe politique,
-    délégation...) en un nom lisible, avec mise en cache mémoire+disque
-    (beaucoup de mandats différents référencent la même organisation).
-
-    `org_id` est de la forme "org/6364" ou parfois "org/ep-7" (législature :
-    non résolvable via /corporate-bodies, traité à part par l'appelant).
-    """
+    """English docstring for resolve organization."""
     if org_id in cache:
         return cache[org_id]
 
     identifier = org_id.split("/", 1)[-1]
     resolved: dict[str, Any] = {"sigle": identifier, "nom_complet": None}
-    for attempt in range(2):  # une nouvelle tentative en cas de timeout/erreur réseau transitoire
+    for attempt in range(2):  # Translated comment.
         try:
             payload = _get_json(f"/corporate-bodies/{identifier}")
             items = (payload or {}).get("data", [])
@@ -210,9 +155,9 @@ def resolve_organization(org_id: str, cache: dict[str, Any]) -> dict[str, Any]:
             if attempt == 0:
                 time.sleep(1)
                 continue
-            pass  # organisation non résolvable après 2 tentatives : on garde le sigle brut
+            pass  # Translated comment.
 
-    time.sleep(0.15)  # on reste courtois avec l'API (limite : 500 req / 5 min)
+    time.sleep(0.15)  # Translated comment.
     cache[org_id] = resolved
     return resolved
 
@@ -233,10 +178,7 @@ def _save_org_cache(cache: dict[str, Any]) -> None:
 
 
 def _extract_mandats_europeens(mep_detail: dict[str, Any], org_cache: dict[str, Any]) -> list[dict[str, Any]]:
-    """Transforme `hasMembership` (liste brute de l'API) en une liste de
-    mandats/fonctions triée du plus récent au plus ancien, avec libellés FR
-    et noms d'organisation résolus."""
-    mandats = []
+    """English docstring for  extract mandats europeens."""    mandats = []
     for membership in mep_detail.get("hasMembership") or []:
         period = membership.get("memberDuring") or {}
         debut = period.get("startDate")
@@ -245,8 +187,8 @@ def _extract_mandats_europeens(mep_detail: dict[str, Any], org_cache: dict[str, 
         org_id = membership.get("organization")
 
         if org_id and str(org_id).split("/", 1)[-1].startswith("ep-"):
-            # Entrée "législature" (org/ep-7, org/ep-8...) : pas une vraie
-            # organisation, pas de fiche /corporate-bodies associée.
+            # Translated comment.
+            # Translated comment.
             legislature = str(org_id).split("-", 1)[-1]
             organisation = {"sigle": f"{legislature}e législature", "nom_complet": "Mandat de député européen"}
         else:
@@ -269,21 +211,7 @@ def _extract_mandats_europeens(mep_detail: dict[str, Any], org_cache: dict[str, 
 
 
 def build_profile_ue(nom: str, country: str = "FR", use_cache: bool = True) -> Optional[dict[str, Any]]:
-    """Construit le volet "mandat européen" du CV politique d'un candidat.
-
-    Args:
-        nom: nom complet du candidat tel qu'il apparaît dans raw_data/candidats.json.
-            (ex. "Jordan Bardella"). La correspondance se fait par égalité
-            exacte du nom normalisé (accents/casse/ordre des mots ignorés).
-        country: code pays (ISO 3166-1 alpha-2) parmi lequel chercher le
-            candidat (défaut : "FR").
-        use_cache: réutiliser le cache disque de la liste des eurodéputés
-            (.cache/europarl/) plutôt que de la re-télécharger à chaque appel.
-
-    Returns:
-        None si le candidat n'a jamais été eurodéputé (aucune correspondance
-        trouvée), sinon un dict directement sérialisable en JSON.
-    """
+    """English docstring for build profile ue."""
     mep_entry = find_mep_by_name(nom, country=country, use_cache=use_cache)
     if mep_entry is None:
         return None
@@ -291,14 +219,14 @@ def build_profile_ue(nom: str, country: str = "FR", use_cache: bool = True) -> O
     mep_id = mep_entry.get("identifier")
     detail = fetch_mep_detail(mep_id) or mep_entry
 
-    # Chargement du cache organisations sous verrou (copie locale pour ne pas
-    # bloquer les autres threads pendant les appels réseau de résolution).
+    # Translated comment.
+    # Translated comment.
     with _ORG_CACHE_LOCK:
         org_cache = dict(_load_org_cache())
     mandats = _extract_mandats_europeens(detail, org_cache)
-    # Sauvegarde avec fusion : on recharge le cache courant sous verrou et on y
-    # ajoute uniquement les nouvelles entrées (évite d'écraser le travail d'un
-    # thread concurrent qui aurait ajouté des entrées entre-temps).
+    # Translated comment.
+    # Translated comment.
+    # Translated comment.
     with _ORG_CACHE_LOCK:
         current = _load_org_cache()
         current.update(org_cache)

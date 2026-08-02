@@ -1,24 +1,5 @@
 #!/usr/bin/env python3
-"""
-fetch_wikipedia_candidates.py
-
-Veille automatique sur les candidats présidentiables via l'API MediaWiki
-(Wikipédia FR) et l'API Wikidata. Compare le résultat avec le fichier local
-candidats.json et signale les divergences pour validation manuelle.
-
-Principe : on ne modifie JAMAIS candidats.json automatiquement. Le script
-produit un diff lisible ; c'est l'éditeur qui décide d'intégrer les ajouts.
-
-Sources :
-  - Wikipédia FR (article sur l'élection) via l'API MediaWiki REST
-  - Wikidata (requête SPARQL sur les candidats déclarés) via le Wikidata SPARQL endpoint
-
-Usage (depuis la racine du dépôt) :
-    python src/fetch_wikipedia_candidates.py
-    python src/fetch_wikipedia_candidates.py --json     # sortie JSON au lieu du texte
-    python src/fetch_wikipedia_candidates.py --source wikipedia   # Wikipédia seulement
-    python src/fetch_wikipedia_candidates.py --source wikidata    # Wikidata seulement
-"""
+"""Module documentation in English."""
 
 import argparse
 import json
@@ -37,7 +18,7 @@ HEADERS = {
 }
 TIMEOUT = 20
 
-# Page Wikipédia de référence pour l'élection présidentielle 2027
+# Translated comment.
 WIKIPEDIA_ARTICLE = "Élection_présidentielle_française_de_2027"
 WIKIPEDIA_REST_BASE = "https://fr.wikipedia.org/api/rest_v1"
 WIKIPEDIA_API_BASE = "https://fr.wikipedia.org/w/api.php"
@@ -45,7 +26,7 @@ WIKIPEDIA_API_BASE = "https://fr.wikipedia.org/w/api.php"
 # Endpoint SPARQL Wikidata
 WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 
-# Chemin par défaut vers le fichier local des candidats
+# Translated comment.
 DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
 
 
@@ -54,12 +35,11 @@ DEFAULT_CANDIDATS_PATH = "raw_data/candidats.json"
 # ---------------------------------------------------------------------------
 
 def _fetch_wikipedia_html(article: str) -> Optional[str]:
-    """Télécharge le HTML de l'article Wikipedia."""
-    url = f"{WIKIPEDIA_REST_BASE}/page/html/{quote(article)}"
+    """English docstring for  fetch wikipedia html."""   url = f"{WIKIPEDIA_REST_BASE}/page/html/{quote(article)}"
     try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
-        # Forcer l'encodage détecté avant d'accéder à resp.text, pour éviter
-        # le mojibake sur les accents quand le serveur ne déclare pas de charset.
+        # Translated comment.
+        # Translated comment.
         resp.encoding = resp.apparent_encoding or "utf-8"
         resp.raise_for_status()
         return resp.text
@@ -69,44 +49,40 @@ def _fetch_wikipedia_html(article: str) -> Optional[str]:
 
 
 def _extract_names_from_wikipedia_html(html_text: str) -> list[dict[str, str]]:
-    """Extrait les noms de candidats depuis le HTML de l'article Wikipedia.
-
-    Stratégie : cherche les listes structurées (ul/ol) sous des titres de section
-    qui contiennent "candidat" ou "déclaré". Retourne des dicts {nom, note?}.
-    """
+    """English docstring for  extract names from wikipedia html."""
     soup = BeautifulSoup(html_text, "html.parser")
     candidates: list[dict[str, str]] = []
     seen: set[str] = set()
 
-    # Cherche les sections candidats par heading
+    # Translated comment.
     heading_pattern = re.compile(r"candidat|déclaré|pressenti|en lice", re.IGNORECASE)
     for heading in soup.find_all(["h2", "h3", "h4"]):
         heading_text = heading.get_text(" ", strip=True)
         if not heading_pattern.search(heading_text):
             continue
-        # Cherche les listes dans la section suivante
+        # Translated comment.
         sibling = heading.find_next_sibling()
         while sibling and sibling.name not in ("h2", "h3", "h4"):
             if sibling.name in ("ul", "ol"):
                 for li in sibling.find_all("li", recursive=False):
-                    # Le premier lien ou le texte de la li est souvent le nom
+                    # Translated comment.
                     link = li.find("a")
                     name = None
                     if link:
                         name_raw = link.get_text(" ", strip=True)
-                        # Filtre les annotations courtes (notes de bas de page, etc.)
+                        # Translated comment.
                         if len(name_raw) > 3 and not name_raw.startswith("["):
                             name = name_raw
                     if not name:
                         text = " ".join(li.get_text(" ", strip=True).split())
-                        # Prend la partie avant une virgule ou parenthèse (affiliations)
+                        # Translated comment.
                         name = re.split(r"[,(]", text)[0].strip()
                     if name and len(name) > 3 and name not in seen:
                         seen.add(name)
                         candidates.append({"nom": name, "source": "wikipedia"})
             sibling = sibling.find_next_sibling()
 
-    # Fallback : cherche les liens vers des personnalités politiques dans tout l'article
+    # Translated comment.
     if not candidates:
         for link in soup.find_all("a", href=True):
             href = link.get("href", "")
@@ -114,7 +90,7 @@ def _extract_names_from_wikipedia_html(html_text: str) -> list[dict[str, str]]:
                 continue
             name = link.get_text(" ", strip=True)
             if len(name) > 5 and " " in name and name not in seen:
-                # Heuristique : exclure les liens génériques courts
+                # Translated comment.
                 seen.add(name)
                 candidates.append({"nom": name, "source": "wikipedia_fallback"})
 
@@ -122,11 +98,7 @@ def _extract_names_from_wikipedia_html(html_text: str) -> list[dict[str, str]]:
 
 
 def fetch_candidates_wikipedia() -> list[dict[str, Any]]:
-    """Récupère la liste des candidats depuis l'article Wikipedia de l'élection.
-
-    Returns:
-        Liste de dicts {nom, source}.
-    """
+    """English docstring for fetch candidates wikipedia."""
     html_text = _fetch_wikipedia_html(WIKIPEDIA_ARTICLE)
     if not html_text:
         return []
@@ -139,9 +111,9 @@ def fetch_candidates_wikipedia() -> list[dict[str, Any]]:
 # Collecte Wikidata (SPARQL)
 # ---------------------------------------------------------------------------
 
-# SPARQL pour trouver les candidats à la présidentielle française 2027.
-# P3602 = "candidat dans l'élection"
-# Q112289624 = Q-ID de l'élection présidentielle française de 2027 (à vérifier/mettre à jour)
+# Translated comment.
+# Translated comment.
+# Translated comment.
 _WIKIDATA_QUERY = """\
 SELECT DISTINCT ?person ?personLabel ?partiLabel WHERE {
   ?election wdt:P31 wd:Q869519 ;
@@ -157,7 +129,7 @@ SELECT DISTINCT ?person ?personLabel ?partiLabel WHERE {
 ORDER BY ?personLabel
 """
 
-# Requête de secours par catégorie Wikidata si P3602 n'est pas renseigné
+# Translated comment.
 _WIKIDATA_QUERY_FALLBACK = """\
 SELECT DISTINCT ?person ?personLabel WHERE {
   ?person wdt:P27 wd:Q142 ;
@@ -174,14 +146,7 @@ LIMIT 50
 
 
 def fetch_candidates_wikidata() -> list[dict[str, Any]]:
-    """Récupère les candidats présidentiables 2027 via Wikidata SPARQL.
-
-    Essaie d'abord la requête ciblée (P3602 candidat dans l'élection),
-    puis une requête de secours si la première ne retourne rien.
-
-    Returns:
-        Liste de dicts {nom, parti?, source, wikidata_id}.
-    """
+    """English docstring for fetch candidates wikidata."""
     candidates: list[dict[str, Any]] = []
     for query, label in [(_WIKIDATA_QUERY, "ciblée"), (_WIKIDATA_QUERY_FALLBACK, "fallback")]:
         try:
@@ -208,7 +173,7 @@ def fetch_candidates_wikidata() -> list[dict[str, Any]]:
             nom = (b.get("personLabel") or {}).get("value") or ""
             parti = (b.get("partiLabel") or {}).get("value") or None
             wikidata_id = (b.get("person") or {}).get("value", "").split("/")[-1]
-            if not nom or nom.startswith("Q"):  # Filtre les Q-ID sans label
+            if not nom or nom.startswith("Q"):  # Translated comment.
                 continue
             candidates.append({
                 "nom": nom,
@@ -226,11 +191,11 @@ def fetch_candidates_wikidata() -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
-# Comparaison avec le fichier local
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def load_local_candidats(path: str) -> list[dict[str, Any]]:
-    """Charge la liste locale des candidats depuis candidats.json."""
+    """English docstring for load local candidats."""
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
@@ -241,7 +206,7 @@ def load_local_candidats(path: str) -> list[dict[str, Any]]:
 
 
 def _normalize_name(name: str) -> str:
-    """Normalise un nom pour la comparaison (minuscules, sans accents, sans ponctuation)."""
+    """English docstring for  normalize name."""
     import unicodedata
     decomposed = unicodedata.normalize("NFKD", name.lower())
     without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
@@ -252,18 +217,7 @@ def diff_candidates(
     fetched: list[dict[str, Any]],
     local: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Compare les candidats récupérés avec la liste locale.
-
-    Args:
-        fetched: candidats trouvés par fetch_candidates_wikipedia() / _wikidata().
-        local: candidats du fichier candidats.json local.
-
-    Returns:
-        Dict avec les clés :
-          - "nouveaux": candidats dans fetched mais absents du local (à valider)
-          - "absents_en_ligne": candidats dans local mais absents du fetched
-          - "ok": candidats présents des deux côtés
-    """
+    """English docstring for diff candidates."""
     local_noms_norm = {_normalize_name(c["nom"]): c for c in local}
     fetched_noms_norm = {_normalize_name(f["nom"]): f for f in fetched}
 

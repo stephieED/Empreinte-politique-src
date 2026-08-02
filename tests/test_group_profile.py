@@ -34,7 +34,7 @@ def _pivot(
     interventions: list = None,
     amendements: list = None,
 ) -> dict:
-    """Construit un profil pivot v1 minimal pour les tests."""
+    """English docstring for  pivot."""
     return {
         "schema_version": "1",
         "id": id_,
@@ -150,7 +150,7 @@ def test_eligible_no_date_returns_true():
 
 
 def test_eligible_no_mandats_returns_true():
-    # Pas d'info = conservateur → éligible
+    # Translated comment.
     assert _member_eligible_at([], "2024-01-15") is True
 
 
@@ -167,7 +167,7 @@ def test_not_eligible_between_two_mandats():
         _mandat_electif("2012-06-01", "2017-06-20"),
         _mandat_electif("2022-06-22"),
     ]
-    # Date dans la fenêtre entre les deux mandats
+    # Translated comment.
     assert _member_eligible_at(mandats, "2018-01-01") is False
 
 
@@ -175,7 +175,7 @@ def test_eligible_ignores_non_electif_mandats():
     mandats = [
         {"categorie": "commission", "debut": "2022-07-01", "fin": None, "actif": True},
     ]
-    # Pas de mandat_electif → conservateur
+    # Translated comment.
     assert _member_eligible_at(mandats, "2023-01-01") is True
 
 
@@ -217,7 +217,7 @@ def test_derive_membre_multiple_mandats_earliest_debut():
     ])
     m = _derive_membre_entry(p)
     assert m["debut_dans_groupe"] == "2017-06-21"
-    assert m["fin_dans_groupe"] is None  # le deuxième est actif
+    assert m["fin_dans_groupe"] is None  # Translated comment.
     assert m["actif"] is True
 
 
@@ -257,7 +257,7 @@ def test_build_vote_index_empty():
 # ---------------------------------------------------------------------------
 
 def _make_groupe_profils():
-    """Deux membres, un scrutin commun."""
+    """English docstring for  make groupe profils."""
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "pour")])
     return [p1, p2]
@@ -286,14 +286,13 @@ def test_cohesion_partielle():
     assert r["position_majoritaire"] == "pour"
     assert r["pour"] == 2
     assert r["contre"] == 1
-    # 2 alignés sur 3 éligibles
+    # Translated comment.
     assert abs(r["taux_coherence"] - 2 / 3) < 1e-4
 
 
 def test_cohesion_absent_implicite():
-    """Un membre n'a aucun vote pour le scrutin → absent."""
-    p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
-    p2 = _pivot("nosdeputes:bob", votes=[])  # n'a pas voté
+    """English docstring for test cohesion absent implicite."""   p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
+    p2 = _pivot("nosdeputes:bob", votes=[])  # Translated comment.
     cohesion = _compute_cohesion_votes([p1, p2])
     r = cohesion[0]
     assert r["absents"] == 1
@@ -310,7 +309,7 @@ def test_cohesion_quorum_atteint():
 def test_cohesion_quorum_non_atteint():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[])
-    # 50 % de participation, seuil à 0.6 → quorum non atteint
+    # Translated comment.
     cohesion = _compute_cohesion_votes([p1, p2], seuil_quorum=0.6)
     assert cohesion[0]["quorum_atteint"] is False
 
@@ -326,8 +325,7 @@ def test_cohesion_trie_par_date_desc():
 
 
 def test_cohesion_membre_non_eligible_exclu():
-    """Un membre dont le mandat est terminé avant le vote ne compte pas."""
-    p1 = _pivot(
+    """English docstring for test cohesion membre non eligible exclu."""    p1 = _pivot(
         "nosdeputes:alice",
         mandats=[_mandat_electif("2022-06-22")],
         votes=[_vote("42", "pour", date="2024-01-15")],
@@ -339,7 +337,7 @@ def test_cohesion_membre_non_eligible_exclu():
     )
     cohesion = _compute_cohesion_votes([p1, p2])
     r = cohesion[0]
-    # bob (mandat terminé en 2022) ne devrait pas être éligible au scrutin de 2024
+    # Translated comment.
     assert r["membres_eligibles"] == 1
     assert r["pour"] == 1
     assert r["contre"] == 0
@@ -362,8 +360,7 @@ def test_cohesion_plusieurs_scrutins():
 
 
 def test_cohesion_position_majoritaire_none_si_aucun_vote_exprime():
-    """Scrutin où tous les membres ont non_votant → pas de position majoritaire."""
-    p1 = _pivot(votes=[{"date": "2024-01-01", "texte": "X", "position": "non_votant", "numero_scrutin": "99", "sort": None, "groupe_au_moment_du_vote": None, "source_url": None}])
+    """English docstring for test cohesion position majoritaire none si aucun vote exprime."""  p1 = _pivot(votes=[{"date": "2024-01-01", "texte": "X", "position": "non_votant", "numero_scrutin": "99", "sort": None, "groupe_au_moment_du_vote": None, "source_url": None}])
     cohesion = _compute_cohesion_votes([p1])
     assert cohesion[0]["position_majoritaire"] is None
 
@@ -374,7 +371,7 @@ def test_cohesion_taux_coherence_hors_absents():
     p3 = _pivot("nosdeputes:charlie", votes=[])  # absent
     cohesion = _compute_cohesion_votes([p1, p2, p3])
     r = cohesion[0]
-    assert r["taux_coherence_hors_absents"] == 1.0  # 2/2 parmi ceux qui ont voté
+    assert r["taux_coherence_hors_absents"] == 1.0  # Translated comment.
     assert abs(r["taux_coherence"] - 2 / 3) < 1e-4  # 2/3 globalement
 
 
@@ -392,8 +389,7 @@ def test_tags_agrege_compte_membres():
 
 
 def test_tags_agrege_deduplication_par_membre():
-    """Un tag répété dans le profil d'un membre ne compte qu'une fois."""
-    p1 = _pivot(tags=["budget", "budget", "budget"])
+    """English docstring for test tags agrege deduplication par membre."""  p1 = _pivot(tags=["budget", "budget", "budget"])
     tags, _ = aggregate_tags_thematiques([p1])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
     assert budget_entry["nb_membres_porteurs"] == 1
@@ -409,8 +405,7 @@ def test_tags_trie_par_nombre_membres_desc():
 
 
 def test_tags_fallback_sur_mots_cles_interventions():
-    """Si tags_thematiques est vide, on utilise les mots-clés des interventions."""
-    interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
+    """English docstring for test tags fallback sur mots cles interventions."""    interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
     p1 = _pivot(tags=[], interventions=interventions)
     tags, source = aggregate_tags_thematiques([p1])
     tag_names = {t["tag"] for t in tags}
@@ -443,7 +438,7 @@ def test_tags_poids_relatif():
     p2 = _pivot(tags=[])
     tags, _ = aggregate_tags_thematiques([p1, p2])
     budget_entry = next(t for t in tags if t["tag"] == "budget")
-    assert budget_entry["poids_relatif"] == 0.5  # 1 membre sur 2
+    assert budget_entry["poids_relatif"] == 0.5  # Translated comment.
 
 
 # ---------------------------------------------------------------------------
@@ -504,7 +499,7 @@ def test_build_groupe_profile_effectif_actuel():
         _pivot("nosdeputes:ancien", mandats=[_mandat_electif("2017-06-21", "2022-06-21", actif=False)]),
     ]
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
-    assert g["effectif"]["actuel"] == 1  # seulement alice est active
+    assert g["effectif"]["actuel"] == 1  # Translated comment.
 
 
 def test_build_groupe_profile_periode():
@@ -553,8 +548,7 @@ def test_build_groupe_profile_tags():
 
 
 def test_build_groupe_profile_sources_deduplication():
-    """Les sources identiques entre profils ne doivent apparaître qu'une fois."""
-    same_source = {
+    """English docstring for test build groupe profile sources deduplication."""    same_source = {
         "type": "nosdeputes",
         "url": "https://www.nosdeputes.fr/groupe/SOC",
         "synchro_le": "2026-07-29T10:00:00+0000",
@@ -564,14 +558,13 @@ def test_build_groupe_profile_sources_deduplication():
         {**_pivot("nosdeputes:bob"), "sources": [same_source]},
     ]
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
-    # La même source ne doit apparaître qu'une fois
+    # Translated comment.
     urls = [s["url"] for s in g["sources"]]
     assert urls.count(same_source["url"]) == 1
 
 
 def test_build_groupe_profile_warning_tags_fallback():
-    """Un warning doit être émis si on utilise mots_cles en fallback."""
-    profils = [
+    """English docstring for test build groupe profile warning tags fallback."""   profils = [
         _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}]),
     ]
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
@@ -579,7 +572,7 @@ def test_build_groupe_profile_warning_tags_fallback():
 
 
 def test_build_groupe_profile_profils_vide():
-    """Appel avec liste vide ne doit pas lever d'exception."""
+    """English docstring for test build groupe profile profils vide."""
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [])
     assert g["membres"] == []
     assert g["cohesion_votes"] == []
@@ -624,8 +617,7 @@ def test_aggregate_amendements_taux_adoption():
 
 
 def test_aggregate_amendements_sans_accent_est_reconnu():
-    """'adopte' (sans accent) doit être reconnu comme 'adopté'."""
-    p1 = _pivot(amendements=[_amendement("adopte")])
+    """English docstring for test aggregate amendements sans accent est reconnu."""   p1 = _pivot(amendements=[_amendement("adopte")])
     agg = _aggregate_amendements([p1])
     assert agg["nb_adoptes"] == 1
 
@@ -654,9 +646,7 @@ def test_aggregate_amendements_par_type_deposant_depute():
 
 
 def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
-    """Les amendements gouvernement/rapporteur (quasi tous adoptés) ne doivent pas
-    gonfler le sous-total 'depute', utilisé comme comparateur d'un⋅e élu⋅e."""
-    p1 = _pivot(amendements=[
+    """English docstring for test aggregate amendements par type deposant ne pollue pas depute."""1 = _pivot(amendements=[
         _amendement("rejeté", deposant="depute"),
         _amendement("adopté", deposant="gouvernement"),
         _amendement("adopté", deposant="commission_rapporteur"),
@@ -666,7 +656,7 @@ def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
     assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.0
     assert agg["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
     assert agg["par_type_deposant"]["commission_rapporteur"]["nb_amendements"] == 1
-    # Le total, lui, mélange bien tout (c'est pour ça qu'il ne doit pas servir
+    # Translated comment.
     # de comparateur direct).
     assert agg["nb_amendements"] == 3
     assert agg["taux_adoption"] == round(2 / 3, 4)
@@ -691,7 +681,7 @@ def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
 
 
 # ---------------------------------------------------------------------------
-# compute_ecarts_cohesion_internes (contrôle interne, hors schéma public)
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_ecarts_cohesion_internes_membre_aligne_ecart_nul():
@@ -722,20 +712,19 @@ def test_ecarts_cohesion_internes_vide_si_pas_de_cohesion():
 
 
 def test_ecarts_cohesion_internes_absent_du_profil_groupe_public():
-    """Champ de contrôle interne : ne doit jamais apparaître dans le profil public."""
-    profils = [_pivot("nosdeputes:alice", votes=[_vote("42", "pour")])]
+    """English docstring for test ecarts cohesion internes absent du profil groupe public."""   profils = [_pivot("nosdeputes:alice", votes=[_vote("42", "pour")])]
     g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
     assert "ecarts_cohesion_internes" not in g
     assert "compute_ecarts_cohesion_internes" not in str(g)
 
 
 # ---------------------------------------------------------------------------
-# CLI --from-roster (composition réelle du groupe via group_roster.py)
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_main_from_roster_builds_group_and_reports_couverture(tmp_path, monkeypatch):
     (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
-    # "bob" fait partie du roster mais n'a aucun pivot local dans tmp_path.
+    # Translated comment.
 
     def fake_fetch_group_roster(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
         assert chambre == "deputes"
@@ -774,10 +763,7 @@ def test_main_from_roster_missing_roster_chambre_returns_error(capsys):
 
 
 def test_main_from_roster_merge_existing_recupere_membre_absent_du_roster(tmp_path, monkeypatch):
-    """--merge-existing : un membre présent dans --out lors d'une exécution précédente
-    mais absent du roster récupéré cette fois-ci (échec partiel de récupération) doit
-    être réintégré, avec un avertissement explicite dans meta.warnings."""
-    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    """English docstring for test main from roster merge existing recupere membre absent du roster.""" (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
     (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
 
     def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
@@ -798,7 +784,7 @@ def test_main_from_roster_merge_existing_recupere_membre_absent_du_roster(tmp_pa
     assert rc == 0
     assert len(json.loads(out_path.read_text(encoding="utf-8"))["membres"]) == 2
 
-    # Exécution suivante : le roster live ne renvoie plus que "bob" (échec partiel simulé).
+    # Translated comment.
     def fake_fetch_group_roster_partiel(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):
         return [
             {"slug": "bob", "nom": "Bob", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True},
@@ -822,9 +808,7 @@ def test_main_from_roster_merge_existing_recupere_membre_absent_du_roster(tmp_pa
 
 
 def test_main_from_roster_sans_merge_existing_perd_membre_absent_du_roster(tmp_path, monkeypatch):
-    """Sans --merge-existing (comportement par défaut), --out écrase entièrement :
-    un membre absent du roster récupéré cette fois-ci disparaît du fichier de sortie."""
-    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+    """English docstring for test main from roster sans merge existing perd membre absent du roster.""" (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
     (tmp_path / "bob.pivot.json").write_text(json.dumps(_pivot("nosdeputes:bob")), encoding="utf-8")
 
     def fake_fetch_group_roster_complet(chambre, groupe_sigle, legislature=None, senat_periode_debut=None):

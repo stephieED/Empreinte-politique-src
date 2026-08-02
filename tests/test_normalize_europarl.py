@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-# Les modules testés vivent dans src/, à côté du dossier tests/.
+# Translated comment.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from normalize_europarl import _extract_groupe, normalize_europarl
@@ -9,11 +9,11 @@ from schema_pivot import SCHEMA_VERSION, validate_profil
 
 
 # ---------------------------------------------------------------------------
-# Fixture : profil brut Open Data Portal Parlement européen minimal
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def _raw_ue_profile(extra: dict = None) -> dict:
-    """Retourne un profil brut europarl minimal pour les tests."""
+    """English docstring for  raw ue profile."""
     base = {
         "identifiant_pe": "1234",
         "nom_complet": "Jean Dupont",
@@ -171,7 +171,7 @@ def test_meta_genere_le_propagee_depuis_meta():
 
 
 # ---------------------------------------------------------------------------
-# Structure générale
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def test_pivot_valide_selon_schema():

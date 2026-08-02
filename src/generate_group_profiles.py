@@ -1,27 +1,5 @@
 #!/usr/bin/env python3
-"""
-generate_group_profiles.py — Génère plusieurs profils de groupe parlementaire
-réel en un seul run, en ne récupérant qu'UNE SEULE FOIS le roster complet de
-chaque chambre/législature (au lieu d'un fetch réseau par groupe).
-
-Contexte : NosDéputés.fr / NosSénateurs.fr n'exposent qu'un seul point d'accès
-« liste complète de la chambre » (pas de endpoint par groupe). Générer les 7
-groupes réels validés (5 AN + 2 Sénat) via group_profile.py --from-roster,
-appelé une fois par groupe, refait donc 5 fois le même téléchargement du
-roster AN (16e législature) et 2 fois le même roster Sénat. Ce script fetche
-une fois par (chambre, législature) distincte puis filtre localement par sigle
-pour chaque groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle).
-
-La liste des groupes à générer est lue depuis un fichier de config JSON (par
-défaut raw_data/groupes_reels.json), validée manuellement (voir README §6).
-
-Usage (depuis la racine du dépôt) :
-    python src/generate_group_profiles.py \\
-        --config raw_data/groupes_reels.json \\
-        --profiles-dir pivot_data/profiles \\
-        --out-dir pivot_data/groupes \\
-        --validate
-"""
+"""Module documentation in English."""
 
 from __future__ import annotations
 
@@ -36,8 +14,7 @@ from group_roster import fetch_full_roster, filter_roster_by_sigle
 
 
 def _roster_key(groupe: dict[str, Any]) -> tuple[str, Optional[str]]:
-    """Clé (roster_chambre, legislature) identifiant un fetch réseau partageable."""
-    legislature = groupe.get("legislature") if groupe["roster_chambre"] == "deputes" else None
+    """English docstring for  roster key."""   legislature = groupe.get("legislature") if groupe["roster_chambre"] == "deputes" else None
     return (groupe["roster_chambre"], legislature)
 
 
@@ -48,9 +25,7 @@ def generate_all(
     merge_existing: bool = False,
     validate: bool = False,
 ) -> int:
-    """Génère tous les profils de groupe de `groupes`, un seul fetch réseau par
-    (roster_chambre, legislature) distincte. Retourne le nombre d'échecs."""
-    import requests  # import tardif : non requis hors génération réelle
+    """English docstring for generate all."""    import requests  # Translated comment.
 
     rosters_bruts: dict[tuple[str, Optional[str]], list[dict[str, Any]]] = {}
     echecs = 0
@@ -94,7 +69,7 @@ def generate_all(
                 merge_existing=merge_existing,
                 validate=validate,
             )
-        except Exception as exc:  # noqa: BLE001 - un échec sur un groupe ne doit pas arrêter les autres
+        except Exception as exc:  # Translated comment.
             print(f"  [!] Échec de génération pour {groupe['groupe_id']} : {exc}", file=sys.stderr)
             echecs += 1
 

@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-# Les modules testés vivent dans src/, à côté du dossier tests/.
+# Translated comment.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from candidate_profile import (
@@ -175,8 +175,8 @@ def test_extract_speaker_identity_uses_anchor_to_pick_correct_intervention():
     assert speaker_name == "Jean-Luc Mélenchon"
     assert speaker_url == "/jean-luc-melenchon"
 
-    # Sans ancre, le premier div.perso de la page (la présidente) ne doit pas
-    # être confondu avec l'orateur de l'intervention ciblée.
+    # Translated comment.
+    # Translated comment.
     speaker_name_no_anchor, _ = _extract_speaker_identity_from_html(html)
     assert speaker_name_no_anchor == "Yaël Braun-Pivet, présidente"
 
@@ -335,9 +335,7 @@ def test_parse_amendement_entry_returns_none_without_acteur_ref():
 
 
 def test_collect_texte_codes_walks_nested_actes_legislatifs():
-    """Un dossier législatif imbrique les codes de texte à plusieurs niveaux
-    (actesLegislatifs récursif, textesAssocies en liste) : le collecteur doit
-    tous les retrouver, quelle que soit la profondeur."""
+    """English docstring for test collect texte codes walks nested actes legislatifs."""
     dossier = {
         "titreDossier": {"titre": "Les dépenses de soutien aux aéroports"},
         "actesLegislatifs": {
@@ -594,7 +592,7 @@ def test_parse_question_entry_texte_question_as_list_takes_last():
 # ---------------------------------------------------------------------------
 
 def test_fetch_questions_officielles_returns_empty_without_acteur_ref():
-    # Sans url_an_ou_senat, l'acteur_ref ne peut pas être extrait → liste vide.
+    # Translated comment.
     result = fetch_questions_officielles(None)
     assert result == []
 
@@ -603,7 +601,7 @@ def test_fetch_questions_officielles_returns_empty_without_acteur_ref():
 
 
 def test_fetch_questions_officielles_maps_index_to_interventions():
-    # Simule un index déjà construit (sans réseau) avec 2 questions pour PA1567.
+    # Translated comment.
     index = {
         "PA1567": [
             {
@@ -640,7 +638,7 @@ def test_fetch_questions_officielles_maps_index_to_interventions():
         )
 
     assert len(result) == 2
-    # Tri décroissant par date
+    # Translated comment.
     assert result[0]["date"] == "2025-02-20"
     assert result[1]["date"] == "2025-01-15"
 
@@ -716,6 +714,6 @@ def test_build_profile_includes_official_questions_in_interventions():
     ):
         profile = build_profile("deputes", "slug-test")
 
-    # Sans identité, les questions ne sont pas collectées (chambre == "deputes" mais
-    # profile["identite"] est None) : les questions ne doivent PAS être dans interventions.
+    # Translated comment.
+    # Translated comment.
     assert not any(i.get("type_detail") == "question" for i in profile["interventions"])

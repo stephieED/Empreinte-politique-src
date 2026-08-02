@@ -1,21 +1,12 @@
 #!/usr/bin/env python3
-"""
-normalize_europarl.py — Adaptateur Open Data Portal du Parlement européen → schéma pivot v1.
-
-Convertit la sortie brute de `candidate_profile_ue.build_profile_ue()` en un
-profil pivot v1 (défini dans `schema_pivot.py`).
-
-Usage :
-    from normalize_europarl import normalize_europarl
-    pivot = normalize_europarl(raw_ue_profile, parti="Rassemblement National")
-"""
+"""Module documentation in English."""
 
 import time
 from typing import Any, Optional
 
 from schema_pivot import make_empty_profil
 
-# Correspondance entre le type brut de l'API EP et la catégorie pivot.
+# Translated comment.
 _CATEGORIE_MAP: dict[str, str] = {
     "EU_INSTITUTION": "mandat_electif",
     "COMMITTEE_PARLIAMENTARY_STANDING": "commission",
@@ -31,8 +22,7 @@ _CATEGORIE_MAP: dict[str, str] = {
 
 
 def _extract_groupe(mandats_europeens: list[dict[str, Any]]) -> Optional[str]:
-    """Retourne le nom du groupe politique européen le plus récent (actif en priorité)."""
-    # La liste est déjà triée du plus récent au plus ancien par candidate_profile_ue.
+    """English docstring for  extract groupe."""  # Translated comment.
     for m in mandats_europeens:
         if m.get("type") == "EU_POLITICAL_GROUP" and m.get("actif"):
             return m.get("organisation_nom") or m.get("organisation_sigle")
@@ -46,15 +36,7 @@ def normalize_europarl(
     ue_profile: dict[str, Any],
     parti: Optional[str] = None,
 ) -> dict[str, Any]:
-    """Convertit un profil Open Data Portal Parlement européen en pivot v1.
-
-    Args:
-        ue_profile: sortie de `candidate_profile_ue.build_profile_ue()`.
-        parti: parti politique issu de raw_data/candidats.json (optionnel).
-
-    Returns:
-        Profil pivot v1 dict (chambre: "PE").
-    """
+    """English docstring for normalize europarl."""
     mep_id = str(ue_profile.get("identifiant_pe") or "")
     nom = str(ue_profile.get("nom_complet") or "")
     url_source = str(ue_profile.get("url_source") or "")

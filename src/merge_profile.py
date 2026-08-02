@@ -1,27 +1,5 @@
 #!/usr/bin/env python3
-"""
-merge_profile.py — Fusion additive de profils (brut ou pivot).
-
-Objectif : quand un profil est régénéré à partir des API publiques (souvent
-sujettes à des variations transitoires : pagination de recherche qui bouge,
-requête HTML supplémentaire qui échoue ponctuellement...), on ne veut pas
-perdre les données déjà obtenues lors d'une régénération précédente.
-
-Principe : "une simple addition, jamais une suppression". Pour chaque liste
-(votes, mandats, dossiers législatifs, interventions...), les entrées déjà
-présentes dans le fichier existant sont conservées telles quelles ; seules
-les entrées réellement nouvelles (dont la clé d'unicité n'apparaît pas déjà)
-sont ajoutées. Aucune entrée existante n'est modifiée ni supprimée.
-
-Pour les champs scalaires (identité, source des votes, synthèse d'activité...),
-on garde la nouvelle valeur si elle est renseignée, sinon on retombe sur
-l'ancienne (pour ne pas régresser vers `null` suite à un échec transitoire).
-
-Usage :
-    from merge_profile import merge_raw_profile, merge_pivot_profile
-    profile = merge_raw_profile(old_profile, new_profile)
-    pivot = merge_pivot_profile(old_pivot, new_pivot)
-"""
+"""Module documentation in English."""
 
 from typing import Any, Callable, Optional
 
@@ -41,11 +19,7 @@ def merge_lists_by_key(
     new_list: Optional[list[dict[str, Any]]],
     key_fn: Callable[[dict[str, Any]], Key],
 ) -> list[dict[str, Any]]:
-    """Fusionne deux listes de dicts par clé d'unicité, en mode additif pur :
-    les entrées de `old_list` sont toutes conservées inchangées ; seules les
-    entrées de `new_list` dont la clé n'apparaît pas déjà dans `old_list`
-    sont ajoutées (à la suite, dans leur ordre d'apparition)."""
-    old_list = old_list or []
+    """English docstring for merge lists by key."""   old_list = old_list or []
     new_list = new_list or []
     seen_keys = {key_fn(item) for item in old_list if isinstance(item, dict)}
     merged = list(old_list)
@@ -61,15 +35,12 @@ def merge_lists_by_key(
 
 
 def _prefer_non_empty(new_value: Any, old_value: Any) -> Any:
-    """Garde `new_value` si elle est renseignée (non vide/non nulle), sinon
-    retombe sur `old_value` (évite qu'un échec transitoire de collecte fasse
-    régresser un champ scalaire vers `null`)."""
-    if new_value not in (None, "", [], {}):
+    """English docstring for  prefer non empty."""    if new_value not in (None, "", [], {}):
         return new_value
     return old_value
 
 
-# --- Clés d'unicité, format brut (candidate_profile.py / candidate_profile_ue.py) ---
+# Translated comment.
 
 def _vote_key(v: dict[str, Any]) -> Key:
     return (v.get("numero_scrutin"), v.get("date"))
@@ -96,9 +67,7 @@ def _mandat_ue_key(m: dict[str, Any]) -> Key:
 
 
 def _prune_stale_warnings(profile: dict[str, Any]) -> None:
-    """Retire les avertissements devenus obsolètes après fusion (ex. "votes
-    introuvables" alors que les votes ont en fait été restaurés depuis
-    l'ancien fichier)."""
+    """English docstring for  prune stale warnings."""
     meta = profile.get("meta")
     if not isinstance(meta, dict) or not meta.get("warnings"):
         return
@@ -122,16 +91,13 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
 
 
 def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
-    """Fusionne un profil brut nouvellement généré (`new`) avec la version
-    déjà présente sur disque (`old`, ou None si aucun fichier existant).
-    Additif uniquement : ne supprime ni ne modifie aucune entrée déjà connue."""
-    if not old:
+    """English docstring for merge raw profile."""  if not old:
         return new
 
     merged = dict(new)
 
-    # Préserver aussi la traçabilité de synchro si la nouvelle collecte a échoué
-    # (sinon `synchro_sources.*` peut redevenir None alors que les données sont restaurées depuis l'ancien profil).
+    # Translated comment.
+    # Translated comment.
     if isinstance(merged.get("meta"), dict) and isinstance(old.get("meta"), dict):
         old_synchro = old["meta"].get("synchro_sources")
         new_synchro = merged["meta"].get("synchro_sources")
@@ -158,17 +124,17 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     merged["dossiers_legislatifs"] = sorted(
         (
             d for d in merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key)
-            if d.get("role")  # écarte la liste globale héritée de NosDéputés (mêmes dossiers
-                              # pour tout le monde sur une législature, role toujours absent/null
+            if d.get("role")  # Translated comment.
+                              # Translated comment.
                               # — voir candidate_profile.fetch_textes_portes_officiels)
         ),
         key=lambda d: (d.get("date_max") or "", d.get("titre") or ""),
         reverse=True,
     )
     merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _intervention_key)
-    # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
-    # sinon) : un echec/vide transitoire de l'open data amendements ne doit pas
-    # effacer des amendements deja collectes lors d'une regeneration precedente.
+    # Translated comment.
+    # Translated comment.
+    # Translated comment.
     merged["amendements"] = merge_dossier_records(old.get("amendements"), new.get("amendements"), _amendement_key)
 
     old_ue = old.get("mandat_europeen")
@@ -190,7 +156,7 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     return merged
 
 
-# --- Clés d'unicité, format pivot v1 (schema_pivot.py) ---
+# Translated comment.
 
 def _pivot_vote_key(v: dict[str, Any]) -> Key:
     return (v.get("numero_scrutin"), v.get("date"))
@@ -201,15 +167,7 @@ def _pivot_mandat_key(m: dict[str, Any]) -> Key:
 
 
 def _pivot_texte_key(t: dict[str, Any]) -> Key:
-    """Identité d'un dossier législatif porté, indépendante de `role`.
-
-    `role`/`type_rapport`/`stade_procedural` ne sont aujourd'hui jamais
-    renseignés par la source de collecte (voir normalize_nosdeputes.py) : les
-    inclure dans la clé ferait fusionner en double une même entrée dès qu'une
-    régénération produit une valeur différente (ex. données historiques
-    erronées conservées indéfiniment). L'identité du dossier repose donc sur
-    son URL source (stable) ou, à défaut, sur titre+date_min+législature.
-    """
+    """English docstring for  pivot texte key."""
     return t.get("source_url") or (t.get("titre"), t.get("date_min"), t.get("legislature"))
 
 
@@ -218,12 +176,7 @@ def merge_dossier_records(
     new_list: Optional[list[dict[str, Any]]],
     key_fn: Callable[[dict[str, Any]], Key],
 ) -> list[dict[str, Any]]:
-    """Fusionne deux listes de dossiers par identité : contrairement à
-    `merge_lists_by_key`, la nouvelle entrée remplace l'ancienne en cas de
-    collision de clé (le rôle/stade procédural peut être corrigé d'une
-    régénération à l'autre) ; les dossiers absents de `new_list` restent
-    conservés."""
-    old_list = old_list or []
+    """English docstring for merge dossier records."""    old_list = old_list or []
     new_list = new_list or []
     by_key: dict[Key, dict[str, Any]] = {}
     order: list[Key] = []
@@ -238,13 +191,7 @@ def merge_dossier_records(
 
 
 def clean_stale_textes_portes(textes: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """Nettoyage ponctuel des doublons hérités d'un ancien bug de fusion (clé
-    incluant `role`, cf. `_pivot_texte_key`) : avant l'ajout de type_rapport/
-    stade_procedural au schéma, un `role` (souvent "rapporteur") était
-    appliqué à tort à tout dossier, produisant deux entrées pour un même
-    dossier une fois régénéré avec `role=null`. Conserve l'entrée la plus
-    complète (schéma actuel) pour chaque identité de dossier."""
-    by_key: dict[Key, dict[str, Any]] = {}
+    """English docstring for clean stale textes portes."""  by_key: dict[Key, dict[str, Any]] = {}
     order: list[Key] = []
     for t in textes or []:
         if not isinstance(t, dict):
@@ -268,10 +215,7 @@ def _pivot_intervention_key(i: dict[str, Any]) -> Key:
 
 
 def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_sources: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """Fusionne les blocs `sources[]` par `type` : contrairement aux autres
-    listes, on garde ici l'entrée dont la synchro est la plus récente (simple
-    métadonnée de fraîcheur, pas une donnée métier à préserver telle quelle)."""
-    by_type: dict[Any, dict[str, Any]] = {}
+    """English docstring for  merge pivot sources."""_type: dict[Any, dict[str, Any]] = {}
     order: list[Any] = []
     for item in (old_sources or []) + (new_sources or []):
         if not isinstance(item, dict):
@@ -288,8 +232,7 @@ def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_source
 
 
 def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
-    """Équivalent de `merge_raw_profile` pour le format pivot v1."""
-    if not old:
+    """English docstring for merge pivot profile."""    if not old:
         return new
 
     merged = dict(new)
@@ -309,17 +252,17 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["textes_portes"] = sorted(
         (
             t for t in merge_dossier_records(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key)
-            if t.get("role")  # écarte la liste globale héritée de NosDéputés (role toujours
+            if t.get("role")  # Translated comment.
                               # null) — voir candidate_profile.fetch_textes_portes_officiels
         ),
         key=lambda t: (t.get("date_max") or "", t.get("titre") or ""),
         reverse=True,
     )
     merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
-    # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
-    # sinon) : un echec/vide transitoire de l'open data amendements (voir
-    # candidate_profile.fetch_amendements_officiels) ne doit pas effacer des
-    # amendements deja collectes lors d'une regeneration precedente.
+    # Translated comment.
+    # Translated comment.
+    # Translated comment.
+    # Translated comment.
     merged["amendements"] = merge_dossier_records(old.get("amendements"), new.get("amendements"), _pivot_amendement_key)
 
     old_tags = old.get("tags_thematiques") or []

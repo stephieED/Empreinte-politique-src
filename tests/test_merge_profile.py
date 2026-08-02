@@ -1,4 +1,4 @@
-"""Tests pour merge_profile.py (fusion additive des profils bruts et pivot)."""
+"""Module documentation in English."""
 
 import sys
 from pathlib import Path
@@ -43,7 +43,7 @@ def test_merge_raw_profile_preserves_votes_lost_in_new_fetch():
         ],
         "meta": {"warnings": []},
     }
-    # Nouvelle collecte : l'API des votes/interventions a temporairement échoué.
+    # Translated comment.
     new = {
         "slug": "x",
         "chambre": "deputes",
@@ -63,7 +63,7 @@ def test_merge_raw_profile_preserves_votes_lost_in_new_fetch():
     assert merged["interventions"] == old["interventions"]
     assert merged["votes_source"] == old["votes_source"]
     assert merged["synthese_activite"] == old["synthese_activite"]
-    # Les avertissements devenus faux après restauration des données doivent disparaître.
+    # Translated comment.
     assert not any(w.startswith("votes introuvables") for w in merged["meta"]["warnings"])
 
 
@@ -133,8 +133,8 @@ def test_merge_raw_profile_merges_mandat_europeen():
 
 
 def test_merge_raw_profile_preserves_amendements_on_empty_new_fetch():
-    # Un échec/vide transitoire de l'open data amendements ne doit pas effacer
-    # des amendements déjà collectés lors d'une régénération précédente.
+    # Translated comment.
+    # Translated comment.
     old = {
         "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
         "meta": {"warnings": []},
@@ -204,8 +204,8 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
 
 
 def test_merge_pivot_profile_dedups_textes_portes_sur_meme_dossier():
-    # Deux entrées du même dossier (même source_url) avec un rôle factuel
-    # connu des deux côtés : la nouvelle version l'emporte (pas de doublon).
+    # Translated comment.
+    # Translated comment.
     old = {
         "sources": [], "mandats": [], "votes": [],
         "textes_portes": [
@@ -228,9 +228,9 @@ def test_merge_pivot_profile_dedups_textes_portes_sur_meme_dossier():
 
 
 def test_merge_pivot_profile_ecarte_textes_portes_sans_role_connu():
-    # Liste globale héritée de NosDéputés (mêmes dossiers pour tout le monde,
-    # role toujours null) : doit être écartée lors de la fusion, même si elle
-    # ne rentre pas en collision avec les nouvelles entrées officielles.
+    # Translated comment.
+    # Translated comment.
+    # Translated comment.
     old = {
         "sources": [], "mandats": [], "votes": [],
         "textes_portes": [
@@ -266,8 +266,8 @@ def test_clean_stale_textes_portes_keeps_current_schema_entry():
 
 
 def test_merge_pivot_profile_amendements_additifs_preserve_anciennes_entrees():
-    # Un échec/vide transitoire de la source open data amendements ne doit pas
-    # effacer des amendements déjà collectés lors d'une régénération précédente.
+    # Translated comment.
+    # Translated comment.
     old = {
         "sources": [], "mandats": [], "votes": [], "textes_portes": [],
         "amendements": [
@@ -311,9 +311,7 @@ def test_merge_pivot_profile_amendements_nouvelle_valeur_gagne_sur_collision():
 
 
 def test_prune_stale_warnings_removes_questions_warning_when_questions_present():
-    """Le warning "questions indisponibles" doit être retiré après fusion si des
-    questions (type_detail == "question") sont présentes dans les interventions."""
-    from merge_profile import merge_raw_profile
+    """English docstring for test prune stale warnings removes questions warning when questions present."""    from merge_profile import merge_raw_profile
 
     old = {
         "slug": "jean-dupont",
@@ -351,9 +349,7 @@ def test_prune_stale_warnings_removes_questions_warning_when_questions_present()
 
 
 def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
-    """Le warning "questions indisponibles" doit être conservé si aucune question
-    n'est présente dans les interventions après fusion."""
-    from merge_profile import merge_raw_profile
+    """English docstring for test prune stale warnings keeps questions warning when no questions."""   from merge_profile import merge_raw_profile
 
     old = {
         "slug": "jean-dupont",

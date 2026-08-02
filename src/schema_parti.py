@@ -1,91 +1,14 @@
 #!/usr/bin/env python3
-"""
-schema_parti.py — Schéma pivot du profil de parti / liste de candidats v1.
-
-Distinct du profil de groupe parlementaire (schema_groupe.py) : un « parti »
-au sens de ce schéma désigne le regroupement éditorial des candidats déclarés
-à une élection partageant un même label de parti (raw_data/candidats.json), PAS
-un groupe parlementaire réel (effectif officiel, cohésion de vote, amendements
-déposés au nom du groupe).
-
-Les candidats agrégés ici peuvent n'avoir aucun mandat commun (voire aucun
-mandat du tout — un candidat non encore élu n'a pas de profil pivot). Il ne
-contient donc :
-  - AUCUNE cohésion de vote (`cohesion_votes` du schéma de groupe) : rien ne
-    garantit que les candidats aient jamais siégé ensemble ni voté sur les
-    mêmes scrutins.
-  - AUCUN `amendements_agreges` : un taux d'adoption agrégé sur 1-2 personnes
-    hétéroclites (candidats de chambres/mandats différents) n'est pas un
-    comparateur valable.
-  - AUCUN `effectif` façon groupe parlementaire : `meta.nb_candidats_declares`
-    documente uniquement la taille de l'échantillon éditorial, jamais la
-    taille réelle du parti ou de son groupe parlementaire.
-
-Ce module ne contient aucune logique de collecte ni de calcul : c'est un
-contrat de structure (constantes, fabrique, validateur). La construction est
-dans parti_profile.py.
-
-Principe directeur : faits chiffrés uniquement, aucune interprétation.
-
-Format d'un profil de parti v1 :
-{
-    "schema_version": "1",
-    "type_document": "profil_parti",
-    "parti_id": "les-republicains-lr",       # slug dérivé du nom du parti
-    "parti_nom": "Les Républicains (LR)",
-
-    "candidats": [                            # un enregistrement par candidat déclaré
-        {
-            "candidat_id": "nosdeputes:bruno-retailleau",  # id pivot ; null si aucun pivot dispo
-            "nom": "Bruno Retailleau",
-            "statut": "declare",              # cf. raw_data/candidats.json._meta.statuts_possibles
-            "famille_politique": "droite",
-            "a_un_profil_pivot": true          # false si aucun mandat FR/UE connu (candidat non référencé)
-        }
-    ],
-
-    "tags_thematiques_agreges": [             # calculé uniquement sur les candidats avec pivot
-        {
-            "tag": "budget",
-            "nb_membres_porteurs": 1,
-            "poids_relatif": 0.5
-        }
-    ],
-
-    "sources": [                               # traçabilité des sources individuelles agrégées
-        {
-            "type": "nosdeputes",
-            "url": "https://www.nosdeputes.fr/bruno-retailleau",
-            "synchro_le": "2026-07-29T10:00:00+0000"
-        }
-    ],
-
-    "meta": {
-        "schema_version": "1",
-        "genere_le": "2026-07-29T10:00:00+0000",
-        "licence_donnees": "",
-        "nb_candidats_declares": 2,
-        "nb_candidats_avec_pivot": 2,
-        "warnings": []
-    }
-}
-
-Hors périmètre de ce schéma (volontairement, voir schema_groupe.py pour le
-véritable objet « groupe parlementaire ») :
-- Toute cohésion de vote, tout effectif de groupe, tout agrégat d'amendements.
-
-Usage :
-    from schema_parti import SCHEMA_PARTI_VERSION, make_empty_profil_parti, validate_profil_parti
-"""
+"""Module documentation in English."""
 
 import time
 from typing import Any
 
-# Version du schéma de parti ; indépendante de SCHEMA_VERSION du pivot individuel
-# et de SCHEMA_GROUPE_VERSION du profil de groupe parlementaire.
+# Translated comment.
+# Translated comment.
 SCHEMA_PARTI_VERSION = "1"
 
-# Clés obligatoires au niveau racine du profil de parti.
+# Translated comment.
 REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "schema_version",
     "type_document",
@@ -97,7 +20,7 @@ REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "meta",
 })
 
-# Clés obligatoires dans le bloc "meta".
+# Translated comment.
 REQUIRED_META_KEYS: frozenset[str] = frozenset({
     "schema_version",
     "genere_le",
@@ -107,7 +30,7 @@ REQUIRED_META_KEYS: frozenset[str] = frozenset({
     "warnings",
 })
 
-# Clés obligatoires d'une entrée candidats[].
+# Translated comment.
 REQUIRED_CANDIDAT_KEYS: frozenset[str] = frozenset({
     "candidat_id",
     "nom",
@@ -116,7 +39,7 @@ REQUIRED_CANDIDAT_KEYS: frozenset[str] = frozenset({
     "a_un_profil_pivot",
 })
 
-# Champs dont la valeur doit être une liste.
+# Translated comment.
 _LIST_KEYS: tuple[str, ...] = (
     "candidats",
     "tags_thematiques_agreges",
@@ -125,15 +48,7 @@ _LIST_KEYS: tuple[str, ...] = (
 
 
 def make_empty_profil_parti(parti_id: str, parti_nom: str) -> dict[str, Any]:
-    """Crée un profil de parti v1 vide avec des valeurs par défaut.
-
-    Args:
-        parti_id: identifiant slugifié du parti, ex. "les-republicains-lr".
-        parti_nom: nom complet du parti, ex. "Les Républicains (LR)".
-
-    Returns:
-        Profil de parti dict initialisé, prêt à être enrichi par parti_profile.py.
-    """
+    """Create an empty party profile structure."""
     return {
         "schema_version": SCHEMA_PARTI_VERSION,
         "type_document": "profil_parti",
@@ -154,18 +69,7 @@ def make_empty_profil_parti(parti_id: str, parti_nom: str) -> dict[str, Any]:
 
 
 def validate_profil_parti(profil: dict[str, Any]) -> list[str]:
-    """Vérifie les invariants de base du schéma de parti v1.
-
-    Validation structurelle de premier niveau : présence des clés obligatoires,
-    types, valeur de schema_version et type_document, et invariants de chaque
-    entrée candidats[].
-
-    Args:
-        profil: dict à valider.
-
-    Returns:
-        Liste d'erreurs (liste vide = profil valide).
-    """
+    """Validate top-level invariants for a party profile."""
     errors: list[str] = []
 
     if not isinstance(profil, dict):

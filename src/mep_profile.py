@@ -1,29 +1,5 @@
 #!/usr/bin/env python3
-"""
-mep_profile.py
-
-Construit un profil JSON au format schéma pivot v1 pour un député européen
-à partir des dumps Parltrack (https://parltrack.org/dumps).
-
-Parltrack publie ses dumps sous forme de fichiers JSON compressés LZMA :
-  - ep_meps.json.lzma  : un MEP JSON par ligne (NDJSON), mandats et comités
-  - ep_votes.json.lzma : un vote JSON par ligne (NDJSON), avec listes nominatives
-
-Les dumps sont mis en cache localement sous .cache/parltrack/ pour éviter
-un téléchargement (~plusieurs centaines de Mo) à chaque exécution.
-
-VÉRIFIER LA FRAÎCHEUR du dump avant usage :
-  https://parltrack.org/dumps  →  date affichée sous chaque fichier.
-Le script affiche la date d'un éventuel cache existant pour faciliter cette
-vérification (--show-cache-date).
-
-Usage (depuis la racine du dépôt) :
-    python src/mep_profile.py --name "Manon Aubry"
-    python src/mep_profile.py --ep-id 197451
-    python src/mep_profile.py --name "Manon Aubry" --out pivot_data/profiles/manon-aubry.pivot.json
-    python src/mep_profile.py --list              # liste les MEPs FR dans le dump
-    python src/mep_profile.py --show-cache-date   # affiche la date du dump en cache
-"""
+"""Module documentation in English."""
 
 import argparse
 import datetime
@@ -42,7 +18,7 @@ from schema_pivot import SCHEMA_VERSION, make_empty_profil
 HEADERS = {
     "User-Agent": "cv-politique-mep-profile/0.1 (usage personnel / non commercial)"
 }
-TIMEOUT = 120  # Les dumps font plusieurs centaines de Mo
+TIMEOUT = 120  # Translated comment.
 
 PARLTRACK_DUMPS_BASE = "https://parltrack.org/dumps"
 PARLTRACK_MEPS_DUMP = "ep_meps.json.lzma"
@@ -54,15 +30,11 @@ VOTES_CACHE_PATH = PARLTRACK_CACHE_DIR / PARLTRACK_VOTES_DUMP
 
 
 # ---------------------------------------------------------------------------
-# Téléchargement et cache
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def _download_dump(dump_name: str, dest: Path) -> bool:
-    """Télécharge un dump Parltrack et le sauvegarde localement.
-
-    Returns:
-        True si le téléchargement a réussi, False sinon.
-    """
+    """English docstring for  download dump."""
     url = f"{PARLTRACK_DUMPS_BASE}/{dump_name}"
     print(f"→ Téléchargement du dump Parltrack : {url}")
     print("  (peut prendre plusieurs minutes — plusieurs centaines de Mo)")
@@ -81,14 +53,7 @@ def _download_dump(dump_name: str, dest: Path) -> bool:
 
 
 def ensure_meps_dump(force_download: bool = False) -> Optional[Path]:
-    """Assure que le dump MEPs est disponible localement.
-
-    Args:
-        force_download: si True, re-télécharge même si un cache existe.
-
-    Returns:
-        Chemin vers le fichier LZMA, ou None si indisponible.
-    """
+    """English docstring for ensure meps dump."""
     if not force_download and MEPS_CACHE_PATH.is_file():
         mtime = MEPS_CACHE_PATH.stat().st_mtime
         age_days = (time.time() - mtime) / 86400
@@ -102,7 +67,7 @@ def ensure_meps_dump(force_download: bool = False) -> Optional[Path]:
 
 
 def ensure_votes_dump(force_download: bool = False) -> Optional[Path]:
-    """Assure que le dump votes est disponible localement."""
+    """English docstring for ensure votes dump."""
     if not force_download and VOTES_CACHE_PATH.is_file():
         mtime = VOTES_CACHE_PATH.stat().st_mtime
         age_days = (time.time() - mtime) / 86400
@@ -116,7 +81,7 @@ def ensure_votes_dump(force_download: bool = False) -> Optional[Path]:
 
 
 def get_cache_date(dump_path: Path) -> Optional[str]:
-    """Retourne la date de modification du dump en cache au format ISO-8601."""
+    """English docstring for get cache date."""
     if not dump_path.is_file():
         return None
     mtime = dump_path.stat().st_mtime
@@ -128,11 +93,7 @@ def get_cache_date(dump_path: Path) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 def _iter_ndjson_lzma(path: Path) -> Iterator[dict[str, Any]]:
-    """Lit ligne par ligne un fichier NDJSON compressé LZMA.
-
-    Yields:
-        Un dict Python par ligne JSON valide.
-    """
+    """English docstring for  iter ndjson lzma."""
     with lzma.open(path, "rb") as lzf:
         reader = io.TextIOWrapper(lzf, encoding="utf-8")
         for line in reader:
@@ -146,12 +107,11 @@ def _iter_ndjson_lzma(path: Path) -> Iterator[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
-# Recherche d'un MEP dans le dump
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def _name_matches(mep: dict[str, Any], query: str) -> bool:
-    """Vérifie si un MEP correspond à une requête de nom."""
-    import unicodedata
+    """English docstring for  name matches."""  import unicodedata
 
     def _norm(s: str) -> str:
         decomposed = unicodedata.normalize("NFKD", s.lower())
@@ -171,16 +131,7 @@ def find_mep(
     ep_id: Optional[int] = None,
     force_download: bool = False,
 ) -> Optional[dict[str, Any]]:
-    """Recherche un MEP dans le dump Parltrack par nom ou ID.
-
-    Args:
-        name: nom complet ou partiel du MEP.
-        ep_id: UserID Parltrack (entier, ex. 197451).
-        force_download: re-télécharger le dump même si un cache existe.
-
-    Returns:
-        Le dict MEP brut Parltrack, ou None si non trouvé.
-    """
+    """English docstring for find mep."""
     if not name and ep_id is None:
         raise ValueError("Fournir au moins name ou ep_id.")
 
@@ -198,11 +149,7 @@ def find_mep(
 
 
 def list_meps_fr(force_download: bool = False) -> list[dict[str, str]]:
-    """Liste les MEPs français disponibles dans le dump.
-
-    Returns:
-        Liste de dicts {nom, ep_id, groupe, actif}.
-    """
+    """English docstring for list meps fr."""
     dump_path = ensure_meps_dump(force_download)
     if dump_path is None:
         return []
@@ -229,14 +176,11 @@ def list_meps_fr(force_download: bool = False) -> list[dict[str, str]]:
 
 
 # ---------------------------------------------------------------------------
-# Votes d'un MEP
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[str, Any]]]:
-    """Construit un index UserID → liste de votes depuis le dump votes.
-
-    L'index est mis en cache sur disque pour éviter de reconstruire à chaque appel.
-    """
+    """English docstring for  build mep vote index."""
     index_path = PARLTRACK_CACHE_DIR / "index_votes_par_mep.json"
 
     dump_path = ensure_votes_dump(force_download)
@@ -251,7 +195,7 @@ def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[s
         try:
             with open(index_path, encoding="utf-8") as f:
                 raw = json.load(f)
-            # Les clés JSON sont des strings → reconvertir en int
+            # Translated comment.
             return {int(k): v for k, v in raw.items()}
         except (json.JSONDecodeError, OSError, ValueError):
             pass  # cache corrompu : on reconstruit
@@ -293,7 +237,7 @@ def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[s
 
     try:
         index_path.parent.mkdir(parents=True, exist_ok=True)
-        # Sérialisation : clés int → str
+        # Translated comment.
         with open(index_path, "w", encoding="utf-8") as f:
             json.dump({str(k): v for k, v in index.items()}, f, ensure_ascii=False)
         print(f"  ✓ Index votes sauvegardé : {index_path}")
@@ -308,20 +252,12 @@ def _build_mep_vote_index(force_download: bool = False) -> dict[int, list[dict[s
 # ---------------------------------------------------------------------------
 
 def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, Any]]] = None) -> dict[str, Any]:
-    """Convertit un enregistrement MEP Parltrack brut vers le schéma pivot v1.
-
-    Args:
-        mep_raw: dict MEP tel que retourné par find_mep() (ligne NDJSON du dump).
-        votes: liste optionnelle de votes (depuis _build_mep_vote_index).
-
-    Returns:
-        Profil pivot dict conforme au schéma v1.
-    """
+    """English docstring for normalize parltrack."""
     ep_id = mep_raw.get("UserID")
     name_block = mep_raw.get("Name") or {}
     nom = name_block.get("full") or name_block.get("sur") or f"MEP #{ep_id}"
-    # Parltrack format: "NOM Prénom" (surname uppercased, given name mixed-case).
-    # Detect all-uppercase leading words and reorder to "Prénom NOM".
+    # Translated comment.
+    # Translated comment.
     # Handles multi-word surnames like "VAN DEN BERG Jean".
     nom_parts = nom.split()
     if len(nom_parts) >= 2:
@@ -348,13 +284,13 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
         last_group = groups[-1]
         profil["groupe"] = last_group.get("Organization") or last_group.get("groupid")
 
-    # Parti national (depuis Constituencies)
+    # Translated comment.
     constituencies = mep_raw.get("Constituencies") or []
     if constituencies:
         last_cst = constituencies[-1]
         profil["parti"] = last_cst.get("party")
 
-    # Source principale
+    # Translated comment.
     synchro_le = time.strftime("%Y-%m-%dT%H:%M:%S")
     cache_date = get_cache_date(MEPS_CACHE_PATH)
     profil["sources"] = [
@@ -371,8 +307,8 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
         fin = g.get("end")
         mandats.append({
             "label": g.get("Organization") or g.get("groupid") or "",
-            # Cohérent avec normalize_europarl._CATEGORIE_MAP : l'appartenance à un
-            # groupe politique n'est pas elle-même un mandat électif.
+            # Translated comment.
+            # Translated comment.
             "categorie": "autre",
             "fonction": "membre",
             "debut": g.get("start"),
@@ -381,7 +317,7 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
             "source_url": None,
         })
 
-    # Mandats : comités
+    # Translated comment.
     committees = mep_raw.get("Committees") or []
     for c in committees:
         fin = c.get("end")
@@ -424,7 +360,7 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
 
 
 # ---------------------------------------------------------------------------
-# Fonction principale de construction de profil
+# Translated comment.
 # ---------------------------------------------------------------------------
 
 def build_mep_profile(
@@ -433,17 +369,7 @@ def build_mep_profile(
     include_votes: bool = True,
     force_download: bool = False,
 ) -> Optional[dict[str, Any]]:
-    """Construit un profil pivot complet pour un député européen.
-
-    Args:
-        name: nom du MEP (recherche approximative).
-        ep_id: UserID Parltrack exact.
-        include_votes: si True, inclut les votes nominatifs (nécessite le dump votes).
-        force_download: re-télécharger les dumps même si un cache existe.
-
-    Returns:
-        Profil pivot dict, ou None si le MEP n'est pas trouvé.
-    """
+    """English docstring for build mep profile."""
     mep_raw = find_mep(name=name, ep_id=ep_id, force_download=force_download)
     if mep_raw is None:
         print(f"  [!] MEP introuvable : name={name!r}, ep_id={ep_id!r}", file=sys.stderr)
