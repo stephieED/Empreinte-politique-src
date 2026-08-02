@@ -641,18 +641,23 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
             return {}
 
         print(f"-> Téléchargement des amendements officiels (Assemblée nationale) : {url}")
+        zip_path = AMENDEMENTS_CACHE_DIR / legislature / "amendements.zip"
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=120)
-            resp.raise_for_status()
-        except requests.RequestException as exc:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
             print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
         try:
-            with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+            with zipfile.ZipFile(zip_path) as zf:
                 noms = [n for n in zf.namelist() if n.endswith(".json")]
-                print(f"-> Indexation de {len(noms)} amendements officiels (législature {legislature})...")
                 for nom in noms:
                     try:
                         with zf.open(nom) as f:
