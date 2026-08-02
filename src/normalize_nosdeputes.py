@@ -116,6 +116,26 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
+    """Normalise un amendement officiel (Assemblée nationale) vers le format pivot.
+
+    `candidate_profile.fetch_amendements_officiels` ne collecte que les
+    amendements dont l'élu est l'auteur principal (pas simple cosignataire) :
+    `premier_signataire` correspond donc toujours à l'élu du profil courant.
+    """
+    return {
+        "texte_vise": a.get("texte_vise"),
+        "sort": a.get("sort"),
+        "base_juridique_irrecevabilite": a.get("base_juridique_irrecevabilite"),
+        "premier_signataire": own_id,
+        "co_signataires": list(a.get("co_signataires") or []),
+        "type_deposant": a.get("type_deposant"),
+        "date": a.get("date"),
+        "numero": a.get("numero"),
+        "source_url": a.get("source_url"),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Fonction principale
 # ---------------------------------------------------------------------------
@@ -175,6 +195,7 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     profil["votes"] = [_normalize_vote(v) for v in (raw_profile.get("votes") or [])]
     profil["textes_portes"] = [_normalize_texte_porte(d) for d in (raw_profile.get("dossiers_legislatifs") or [])]
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
+    profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
 
     # --- Tags thématiques bruts : agrégation des mots-clés des interventions ---
     # Pas d'harmonisation thématique à ce stade (Phase 4 à venir).

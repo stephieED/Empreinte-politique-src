@@ -179,7 +179,66 @@ def _pivot_mandat_key(m: dict[str, Any]) -> Key:
 
 
 def _pivot_texte_key(t: dict[str, Any]) -> Key:
-    return (t.get("titre"), t.get("role"), t.get("date_min"), t.get("legislature"))
+    """Identité d'un dossier législatif porté, indépendante de `role`.
+
+    `role`/`type_rapport`/`stade_procedural` ne sont aujourd'hui jamais
+    renseignés par la source de collecte (voir normalize_nosdeputes.py) : les
+    inclure dans la clé ferait fusionner en double une même entrée dès qu'une
+    régénération produit une valeur différente (ex. données historiques
+    erronées conservées indéfiniment). L'identité du dossier repose donc sur
+    son URL source (stable) ou, à défaut, sur titre+date_min+législature.
+    """
+    return t.get("source_url") or (t.get("titre"), t.get("date_min"), t.get("legislature"))
+
+
+def merge_dossier_records(
+    old_list: Optional[list[dict[str, Any]]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Fusionne deux listes de dossiers par identité : contrairement à
+    `merge_lists_by_key`, la nouvelle entrée remplace l'ancienne en cas de
+    collision de clé (le rôle/stade procédural peut être corrigé d'une
+    régénération à l'autre) ; les dossiers absents de `new_list` restent
+    conservés."""
+    old_list = old_list or []
+    new_list = new_list or []
+    by_key: dict[Key, dict[str, Any]] = {}
+    order: list[Key] = []
+    for item in old_list + new_list:
+        if not isinstance(item, dict):
+            continue
+        k = key_fn(item)
+        if k not in by_key:
+            order.append(k)
+        by_key[k] = item
+    return [by_key[k] for k in order]
+
+
+def clean_stale_textes_portes(textes: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Nettoyage ponctuel des doublons hérités d'un ancien bug de fusion (clé
+    incluant `role`, cf. `_pivot_texte_key`) : avant l'ajout de type_rapport/
+    stade_procedural au schéma, un `role` (souvent "rapporteur") était
+    appliqué à tort à tout dossier, produisant deux entrées pour un même
+    dossier une fois régénéré avec `role=null`. Conserve l'entrée la plus
+    complète (schéma actuel) pour chaque identité de dossier."""
+    by_key: dict[Key, dict[str, Any]] = {}
+    order: list[Key] = []
+    for t in textes or []:
+        if not isinstance(t, dict):
+            continue
+        k = _pivot_texte_key(t)
+        is_current_schema = "type_rapport" in t and "stade_procedural" in t
+        if k not in by_key:
+            order.append(k)
+            by_key[k] = t
+        elif is_current_schema and not ("type_rapport" in by_key[k] and "stade_procedural" in by_key[k]):
+            by_key[k] = t
+    return [by_key[k] for k in order]
+
+
+def _pivot_amendement_key(a: dict[str, Any]) -> Key:
+    return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
 
 def _pivot_intervention_key(i: dict[str, Any]) -> Key:
@@ -225,11 +284,16 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         reverse=True,
     )
     merged["textes_portes"] = sorted(
-        merge_lists_by_key(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key),
+        merge_dossier_records(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key),
         key=lambda t: (t.get("date_max") or "", t.get("titre") or ""),
         reverse=True,
     )
     merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
+    # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
+    # sinon) : un echec/vide transitoire de l'open data amendements (voir
+    # candidate_profile.fetch_amendements_officiels) ne doit pas effacer des
+    # amendements deja collectes lors d'une regeneration precedente.
+    merged["amendements"] = merge_dossier_records(old.get("amendements"), new.get("amendements"), _pivot_amendement_key)
 
     old_tags = old.get("tags_thematiques") or []
     new_tags = new.get("tags_thematiques") or []

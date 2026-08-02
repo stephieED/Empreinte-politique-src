@@ -45,7 +45,8 @@ CV_CandidatFR/
 ├── web/
 │   └── index.html                     # Page web dynamique (sélecteur de candidat)
 ├── docs/
-│   └── nosdeputes_doc/                # Documentation de l'API NosDéputés/NosSénateurs (référence)
+│   ├── nosdeputes_doc/                # Documentation de l'API NosDéputés/NosSénateurs (référence)
+│   └── an_opendata.md                 # Repères sur l'OpenData AN (scrutins, amendements)
 ├── tests/
 │   ├── test_candidate_profile.py
 │   ├── test_candidate_profile_ue.py
@@ -65,6 +66,15 @@ CV_CandidatFR/
   que de la liste des eurodéputé⋅e⋅s et des organisations du Parlement
   européen (`.cache/europarl/`), pour éviter de re-télécharger ces données
   volumineuses et quasi-statiques à chaque exécution.
+
+## Schémas et transformations
+
+La documentation dédiée aux schémas d'entrée API, au schéma des données
+transformées, et au pipeline de transformation est disponible ici :
+
+- `docs/schema_donnees_transformations.md`
+- `docs/an_opendata.md` : repères sur l'OpenData de l'Assemblée nationale
+  (URLs des jeux de données scrutins/amendements par législature, champs clés)
 
 ## Installation
 
