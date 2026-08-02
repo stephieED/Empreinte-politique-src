@@ -1257,6 +1257,7 @@
   .express-summary-scene:nth-child(2) { background: var(--acid); }
   .express-summary-scene:nth-child(3) { color: var(--bg); background: var(--text); }
   .express-summary-scene:nth-child(4) { background: var(--pink); }
+  .express-summary-scene:nth-child(5) { background: var(--accent-soft); }
   .express-summary-question {
     margin: 0;
     font: 400 clamp(2.8rem, 7vw, 7rem)/0.88 'Archivo Black', sans-serif;
@@ -1275,6 +1276,60 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .express-summary-scene { transition: none; }
+  }
+
+  /* Carte question parlementaire */
+  .question-fragment {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface);
+  }
+  .question-fragment-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+  }
+  .question-type-badge {
+    font: 600 0.72rem/1 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.15rem 0.38rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .question-ministere {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .question-texte {
+    font-size: 0.9rem;
+    margin: 0 0 0.35rem;
+    line-height: 1.45;
+  }
+  .question-reponse-toggle {
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    list-style: none;
+    margin-bottom: 0.25rem;
+  }
+  .question-reponse-toggle::-webkit-details-marker { display: none; }
+  .question-reponse-toggle::before { content: "▸ "; }
+  details[open] .question-reponse-toggle::before { content: "▾ "; }
+  .question-reponse-body {
+    font-size: 0.84rem;
+    color: var(--muted);
+    border-left: 2px solid var(--line);
+    padding-left: 0.6rem;
+    margin: 0.3rem 0 0.3rem 0.1rem;
+    line-height: 1.45;
   }
 </style>
 </head>
@@ -2015,16 +2070,51 @@
       </div>`;
     }
 
+    const QUESTION_TYPE_LABELS = { QE: "Question écrite", QG: "Question au Gouvernement", QOSD: "Question orale sans débat" };
+
+    function renderQuestionCard(i) {
+      const typeLabel = QUESTION_TYPE_LABELS[i.sous_type] || i.sous_type || "Question";
+      const textePreview = i.texte ? String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH) : (i.sujet || "Extrait non disponible");
+      const texteEllipsis = i.texte && String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : "";
+      const reponseHtml = i.reponse
+        ? `<details><summary class="question-reponse-toggle">Réponse${i.date_reponse ? ` (${escapeHtml(formatIsoDate(i.date_reponse))})` : ""}</summary><p class="question-reponse-body">${escapeHtml(String(i.reponse).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH))}${String(i.reponse).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}</p></details>`
+        : `<p class="small">Aucune réponse disponible dans les données sources.</p>`;
+      return `
+        <article class="question-fragment">
+          <div class="question-fragment-head">
+            <span class="question-type-badge">${escapeHtml(typeLabel)}</span>
+            <span class="small">${escapeHtml(formatIsoDate(i.date || i.created_at))}</span>
+            ${i.ministere ? `<span class="question-ministere">${escapeHtml(i.ministere)}</span>` : ""}
+          </div>
+          <p class="question-texte">${escapeHtml(textePreview)}${texteEllipsis}</p>
+          ${reponseHtml}
+          <div>${sourceLinkHtml(i.url_detail || i.url, "↗ source officielle")}</div>
+        </article>
+      `;
+    }
+
     function renderInterventions(profile) {
       let items = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme));
       if (state.interventionsMode === "short") {
         items = items.filter((i) => i.format === "reaction_courte");
       } else if (state.interventionsMode === "long") {
         items = items.filter((i) => i.format === "prise_de_parole_developpee");
+      } else if (state.interventionsMode === "questions") {
+        items = items.filter((i) => i.type_detail === "question");
       }
 
+      const questionCount = (profile.interventions || []).filter((i) => inTheme(i, state.selectedTheme) && i.type_detail === "question").length;
+
       if (!items.length) {
-        return `<p class="empty">${state.selectedTheme === "all" ? "Aucune prise de parole trouvée." : "Aucune prise de parole retrouvée sur ce thème dans les données actuellement disponibles."}</p>`;
+        return `
+          <div class="inter-controls">
+            <button type="button" class="ghost-btn ${state.interventionsMode === "all" ? "active-choice" : ""}" data-inter-mode="all">Toutes</button>
+            <button type="button" class="ghost-btn ${state.interventionsMode === "short" ? "active-choice" : ""}" data-inter-mode="short">Réactions courtes</button>
+            <button type="button" class="ghost-btn ${state.interventionsMode === "long" ? "active-choice" : ""}" data-inter-mode="long">Prises de parole longues</button>
+            <button type="button" class="ghost-btn ${state.interventionsMode === "questions" ? "active-choice" : ""}" data-inter-mode="questions">Questions parlementaires${questionCount ? ` (${questionCount})` : ""}</button>
+          </div>
+          <p class="empty">${state.selectedTheme === "all" ? "Aucune prise de parole trouvée." : "Aucune prise de parole retrouvée sur ce thème dans les données actuellement disponibles."}</p>
+        `;
       }
 
       const sorted = [...items].sort((a, b) => toDateMs(b.date || b.created_at) - toDateMs(a.date || a.created_at));
@@ -2035,19 +2125,22 @@
           <button type="button" class="ghost-btn ${state.interventionsMode === "all" ? "active-choice" : ""}" data-inter-mode="all">Toutes</button>
           <button type="button" class="ghost-btn ${state.interventionsMode === "short" ? "active-choice" : ""}" data-inter-mode="short">Réactions courtes</button>
           <button type="button" class="ghost-btn ${state.interventionsMode === "long" ? "active-choice" : ""}" data-inter-mode="long">Prises de parole longues</button>
+          <button type="button" class="ghost-btn ${state.interventionsMode === "questions" ? "active-choice" : ""}" data-inter-mode="questions">Questions parlementaires${questionCount ? ` (${questionCount})` : ""}</button>
         </div>
 
-        <div class="speech-tape">
+        ${state.interventionsMode === "questions"
+          ? `<div>${visible.map(renderQuestionCard).join("")}</div>`
+          : `<div class="speech-tape">
           ${visible.map((i) => `
             <article class="speech-fragment">
               <div class="editorial-meta">${escapeHtml(formatIsoDate(i.date || i.created_at))} / ${escapeHtml(themeLabel(i._theme))}</div>
-              <p class="speech-quote">“${escapeHtml(i.texte ? String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH) : (i.sujet || "Extrait non disponible"))}${i.texte && String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}”</p>
+              <p class="speech-quote">"${escapeHtml(i.texte ? String(i.texte).slice(0, INTERVENTION_TEXT_PREVIEW_LENGTH) : (i.sujet || "Extrait non disponible"))}${i.texte && String(i.texte).length > INTERVENTION_TEXT_PREVIEW_LENGTH ? "…" : ""}"</p>
               <div>${sourceLinkHtml(i.url_detail || i.url, "↗ archive")}</div>
             </article>
           `).join("")}
-        </div>
+        </div>`}
 
-        ${sorted.length > visible.length ? `<p><button type="button" id="see-more-interventions" class="ghost-btn">Voir plus d’extraits</button></p>` : ""}
+        ${sorted.length > visible.length ? `<p><button type="button" id="see-more-interventions" class="ghost-btn">Voir plus d'extraits</button></p>` : ""}
       `;
     }
 
@@ -2127,6 +2220,7 @@
                     <div class="versus-metric"><b>${facts.votes.length}</b><small>votes</small></div>
                     <div class="versus-metric"><b>${facts.textes.length}</b><small>textes</small></div>
                     <div class="versus-metric"><b>${facts.interventions.length}</b><small>paroles</small></div>
+                    <div class="versus-metric"><b>${facts.interventions.filter((i) => i.type_detail === "question").length}</b><small>questions</small></div>
                   </div>
                 </article>
               `;
@@ -2501,6 +2595,11 @@
           value: dominant ? themeLabel(dominant[0]) : "N/D",
           note: dominant ? `${dominant[1]} traces classées. Une fréquence documentaire, pas une priorité déclarée.` : "Thème non déterminé.",
         },
+        {
+          question: "Combien de questions parlementaires a-t-il posées ?",
+          value: String((profile.interventions || []).filter((i) => i.type_detail === "question").length),
+          note: "Questions écrites, orales ou au Gouvernement — données AN open data. Une question posée, pas une question résolue.",
+        },
       ];
     }
 
@@ -2516,7 +2615,7 @@
               </section>
             `).join("")}
           </div>
-          <div class="express-summary-progress"><i style="width:${(state.expressIndex + 1) * 25}%"></i></div>
+          <div class="express-summary-progress"><i style="width:${(state.expressIndex + 1) * 20}%"></i></div>
           <nav class="express-summary-nav" aria-label="Navigation du résumé">
             <button type="button" data-express-dir="-1" aria-label="Précédent">←</button>
             <button type="button" data-express-dir="1" aria-label="Suivant">→</button>
@@ -2526,12 +2625,12 @@
     }
 
     function setExpressScene(index) {
-      state.expressIndex = (index + 4) % 4;
+      state.expressIndex = (index + 5) % 5;
       document.querySelectorAll(".express-summary-scene").forEach((scene, sceneIndex) => {
         scene.classList.toggle("active", sceneIndex === state.expressIndex);
       });
       const progress = document.querySelector(".express-summary-progress i");
-      if (progress) progress.style.width = `${(state.expressIndex + 1) * 25}%`;
+      if (progress) progress.style.width = `${(state.expressIndex + 1) * 20}%`;
     }
 
     function openExpressSummary() {
