@@ -8,8 +8,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from candidate_profile import (
     _classify_intervention,
     _classify_intervention_format,
+    _derive_amendement_sort,
     _extract_mandats,
     _groupe_label,
+    _parse_amendement_entry,
     build_profile,
     fetch_all_intervention_results_from_domains,
     fetch_seance_context,
@@ -268,3 +270,58 @@ def test_classify_intervention_format_uses_word_count_threshold():
     assert _classify_intervention_format(3) == "reaction_courte"
     assert _classify_intervention_format(274) == "prise_de_parole_developpee"
     assert _classify_intervention_format(None) is None
+
+
+def test_derive_amendement_sort_maps_discute_states():
+    assert _derive_amendement_sort("Discuté", "Adopté") == ("adopté", None)
+    assert _derive_amendement_sort("Discuté", "Rejeté") == ("rejeté", None)
+    assert _derive_amendement_sort("Discuté", "Tombé") == ("tombé", None)
+    assert _derive_amendement_sort("Discuté", "Non soutenu") == ("non_soutenu", None)
+    assert _derive_amendement_sort("Retiré", "Retiré avant publication") == ("retiré", None)
+
+
+def test_derive_amendement_sort_maps_irrecevabilite_by_base_juridique():
+    assert _derive_amendement_sort("Irrecevable 40", "Charge") == ("irrecevable", "art. 40")
+    assert _derive_amendement_sort("Irrecevable", "Cavalier (45)") == ("irrecevable", "art. 45")
+
+
+def test_derive_amendement_sort_unknown_or_pending_returns_none():
+    assert _derive_amendement_sort("En traitement", None) == (None, None)
+    assert _derive_amendement_sort("A discuter", None) == (None, None)
+
+
+def test_parse_amendement_entry_only_keeps_primary_author():
+    raw = {
+        "amendement": {
+            "identification": {"numeroLong": "AS1"},
+            "texteLegislatifRef": "PIONANR5L17B0904",
+            "signataires": {
+                "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+                "cosignataires": {"acteurRef": ["PA842001", "PA793182"]},
+            },
+            "cycleDeVie": {
+                "dateDepot": "2025-02-17",
+                "etatDesTraitements": {
+                    "etat": {"libelle": "Discuté"},
+                    "sousEtat": {"libelle": "Adopté"},
+                },
+            },
+        }
+    }
+
+    result = _parse_amendement_entry(raw)
+
+    assert result is not None
+    acteur_ref, record = result
+    assert acteur_ref == "PA1567"
+    assert record["numero"] == "AS1"
+    assert record["texte_vise"] == "PIONANR5L17B0904"
+    assert record["type_deposant"] == "depute"
+    assert record["date"] == "2025-02-17"
+    assert record["sort"] == "adopté"
+    assert record["co_signataires"] == ["an:PA842001", "an:PA793182"]
+
+
+def test_parse_amendement_entry_returns_none_without_acteur_ref():
+    raw = {"amendement": {"signataires": {"auteur": {}}}}
+    assert _parse_amendement_entry(raw) is None

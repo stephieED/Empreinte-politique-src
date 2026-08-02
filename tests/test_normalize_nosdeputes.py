@@ -327,6 +327,40 @@ def test_pivot_intervention_champs():
 
 
 # ---------------------------------------------------------------------------
+# Amendements
+# ---------------------------------------------------------------------------
+
+def test_pivot_amendements_vides_si_absent():
+    pivot = normalize_nosdeputes(_raw_depute())
+    assert pivot["amendements"] == []
+
+
+def test_pivot_amendement_champs():
+    raw = _raw_depute()
+    raw["amendements"] = [
+        {
+            "texte_vise": "PIONANR5L17B0904",
+            "sort": "adopté",
+            "base_juridique_irrecevabilite": None,
+            "co_signataires": ["an:PA842001"],
+            "type_deposant": "depute",
+            "date": "2025-02-17",
+            "numero": "AS1",
+            "source_url": None,
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+    assert len(pivot["amendements"]) == 1
+    a = pivot["amendements"][0]
+    assert a["texte_vise"] == "PIONANR5L17B0904"
+    assert a["sort"] == "adopté"
+    assert a["premier_signataire"] == pivot["id"]
+    assert a["co_signataires"] == ["an:PA842001"]
+    assert a["type_deposant"] == "depute"
+    assert a["numero"] == "AS1"
+
+
+# ---------------------------------------------------------------------------
 # Tags thématiques
 # ---------------------------------------------------------------------------
 

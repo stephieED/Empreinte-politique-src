@@ -82,12 +82,29 @@ LEGISLATURE_BY_BASE_URL = {
 }
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 
+# Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
+# sous-repertoire differe selon la legislature : "amendements_div_legis" pour
+# les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
+# 15e (fichier unique nomme par numero romain). Verifie manuellement (HTTP 200)
+# pour chaque entree ci-dessous ; pas de jeu de donnees equivalent trouve pour
+# les legislatures 13/14.
+AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
+    "17": ("amendements_div_legis", "Amendements.json.zip"),
+    "16": ("amendements_div_legis", "Amendements.json.zip"),
+    "15": ("amendements_legis", "Amendements_XV.json.zip"),
+}
+AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
+
 # Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
 # appeler cette fonction simultanément pour des législatures différentes (pas de blocage
 # entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
 # double téléchargement de l'archive zip et une écriture concurrente du cache disque.
 _SCRUTINS_LOCKS: dict[str, threading.Lock] = {}
 _SCRUTINS_LOCKS_META = threading.Lock()
+
+# Même principe que _SCRUTINS_LOCKS, pour l'index des amendements officiels.
+_AMENDEMENTS_LOCKS: dict[str, threading.Lock] = {}
+_AMENDEMENTS_LOCKS_META = threading.Lock()
 
 # Préfixes des messages d'avertissement (warnings) ajoutés à profile["meta"]["warnings"].
 # Exposés en constantes (plutôt qu'en texte libre dupliqué) pour que merge_profile.py
@@ -97,6 +114,7 @@ _SCRUTINS_LOCKS_META = threading.Lock()
 WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
+WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -105,6 +123,14 @@ def _get_scrutins_lock(legislature: str) -> threading.Lock:
         if legislature not in _SCRUTINS_LOCKS:
             _SCRUTINS_LOCKS[legislature] = threading.Lock()
         return _SCRUTINS_LOCKS[legislature]
+
+
+def _get_amendements_lock(legislature: str) -> threading.Lock:
+    """Retourne (ou crée) le verrou associé à une législature donnée (amendements)."""
+    with _AMENDEMENTS_LOCKS_META:
+        if legislature not in _AMENDEMENTS_LOCKS:
+            _AMENDEMENTS_LOCKS[legislature] = threading.Lock()
+        return _AMENDEMENTS_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -491,6 +517,193 @@ def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tupl
     votes = index.get(acteur_ref, [])
     votes_sorted = sorted(votes, key=lambda v: v.get("date") or "", reverse=True)
     return votes_sorted, legislature
+
+
+# Type d'auteur (open data amendements) -> type_deposant du schema pivot.
+_AMENDEMENT_TYPE_AUTEUR_MAP: dict[str, str] = {
+    "Député": "depute",
+    "Gouvernement": "gouvernement",
+    "Rapporteur": "commission_rapporteur",
+    "Commission": "commission_rapporteur",
+}
+
+# (etat.libelle, sousEtat.libelle) -> sort du schema pivot. Determine
+# empiriquement sur ~3000 amendements de la 17e legislature : "En traitement"
+# et "A discuter" (sousEtat souvent absent) signifient que le sort n'est pas
+# encore connu, et sont volontairement absents de cette table (sort reste
+# None). Les etats "Irrecevable"/"Irrecevable 40" sont traites a part (voir
+# _derive_amendement_sort) car leurs sousEtat ne sont pas des sorts mais des
+# motifs d'irrecevabilite.
+_AMENDEMENT_SORT_MAP: dict[tuple[Optional[str], Optional[str]], str] = {
+    ("Discuté", "Rejeté"): "rejeté",
+    ("Discuté", "Adopté"): "adopté",
+    ("Discuté", "Tombé"): "tombé",
+    ("Discuté", "Non soutenu"): "non_soutenu",
+    ("Discuté", "Retiré"): "retiré",
+    ("Retiré", "Retiré après publication"): "retiré",
+    ("Retiré", "Retiré avant publication"): "retiré",
+}
+
+
+def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """Déduit (sort, base_juridique_irrecevabilite) depuis les libellés d'état officiels.
+
+    L'open data amendements distingue "Irrecevable 40" (irrecevabilité
+    financière, art. 40) d'"Irrecevable" tout court (les nombreux autres motifs
+    observés — cavalier art. 45, sous-amendement art. 98, hors délais, etc. —
+    ne correspondent pas tous littéralement à l'art. 45, mais le schéma pivot
+    ne distingue que "art. 40" | "art. 45" : "art. 45" est donc utilisé comme
+    catégorie par défaut pour tout motif d'irrecevabilité non financier).
+    """
+    if etat_libelle in ("Irrecevable", "Irrecevable 40"):
+        base = "art. 40" if etat_libelle == "Irrecevable 40" else "art. 45"
+        return "irrecevable", base
+    return _AMENDEMENT_SORT_MAP.get((etat_libelle, sousetat_libelle)), None
+
+
+def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
+    """Extrait (acteurRef, enregistrement pivot partiel) d'un amendement brut.
+
+    Ne retient que les amendements dont l'élu est l'auteur principal
+    (`signataires.auteur`), pas simple cosignataire : c'est la seule lecture
+    non ambiguë d'« amendement déposé par l'élu » (voir schema_pivot.py).
+    """
+    amendement = data.get("amendement") if isinstance(data, dict) else None
+    if not isinstance(amendement, dict):
+        return None
+
+    signataires = amendement.get("signataires") or {}
+    auteur = signataires.get("auteur") or {}
+    acteur_ref = auteur.get("acteurRef")
+    if not isinstance(acteur_ref, str) or not acteur_ref:
+        return None
+
+    cosignataires_bloc = signataires.get("cosignataires") or {}
+    cosign_refs = cosignataires_bloc.get("acteurRef")
+    if isinstance(cosign_refs, str):
+        cosign_refs = [cosign_refs]
+    elif not isinstance(cosign_refs, list):
+        cosign_refs = []
+
+    cycle_de_vie = amendement.get("cycleDeVie") or {}
+    etat = cycle_de_vie.get("etatDesTraitements") or {}
+    etat_libelle = (etat.get("etat") or {}).get("libelle") if isinstance(etat.get("etat"), dict) else None
+    sousetat_libelle = (etat.get("sousEtat") or {}).get("libelle") if isinstance(etat.get("sousEtat"), dict) else None
+    sort, base_juridique = _derive_amendement_sort(etat_libelle, sousetat_libelle)
+
+    record = {
+        # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
+        # titre lisible : aucun jeu de donnees open data ne permet aujourd'hui de
+        # le resoudre vers l'intitule du texte sans travail de rapprochement
+        # supplementaire (hors perimetre de cette collecte).
+        "texte_vise": amendement.get("texteLegislatifRef"),
+        "sort": sort,
+        "base_juridique_irrecevabilite": base_juridique,
+        # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
+        # des identifiants pivot ("nosdeputes:slug") — la resolution vers un
+        # candidat suivi par ce projet n'est pas faite ici.
+        "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
+        "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
+        "date": cycle_de_vie.get("dateDepot"),
+        "numero": (amendement.get("identification") or {}).get("numeroLong"),
+        "source_url": None,
+    }
+    return acteur_ref, record
+
+
+def _amendements_zip_url(legislature: str) -> Optional[str]:
+    entry = AN_AMENDEMENTS_PATH.get(legislature)
+    if not entry:
+        return None
+    path_segment, zip_name = entry
+    return f"{AN_OPENDATA_BASE}/{legislature}/loi/{path_segment}/{zip_name}"
+
+
+def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
+
+    Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
+    l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
+    un depuis le zip) : seul l'index final (acteurRef -> amendements) est mis en
+    cache, pour éviter d'écrire des dizaines de milliers de petits fichiers.
+    Thread-safe (verrou par législature), même principe que pour les scrutins.
+    """
+    with _get_amendements_lock(legislature):
+        index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        url = _amendements_zip_url(legislature)
+        if not url:
+            return {}
+
+        print(f"-> Téléchargement des amendements officiels (Assemblée nationale) : {url}")
+        zip_path = AMENDEMENTS_CACHE_DIR / legislature / "amendements.zip"
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
+            return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    parsed = _parse_amendement_entry(data)
+                    if parsed is None:
+                        continue
+                    acteur_ref, record = parsed
+                    index.setdefault(acteur_ref, []).append(record)
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive d'amendements invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+    """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
+
+    Agrège sur toutes les législatures pour lesquelles l'Assemblée nationale
+    publie ces données en open data (voir AN_AMENDEMENTS_PATH), pas seulement
+    celle de la source d'identité : un même élu peut avoir déposé des
+    amendements sous plusieurs législatures successives.
+    """
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return []
+
+    amendements: list[dict[str, Any]] = []
+    for legislature in AN_AMENDEMENTS_PATH:
+        index = _build_acteur_amendement_index(legislature)
+        for record in index.get(acteur_ref, []):
+            amendements.append({**record, "legislature": legislature})
+
+    amendements.sort(key=lambda a: a.get("date") or "", reverse=True)
+    return amendements
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
@@ -1022,6 +1235,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         "votes_source": None,
         "synthese_activite": None,
         "dossiers_legislatifs": [],
+        "amendements": [],
         "interventions": [],
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -1118,6 +1332,14 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         profile["votes"] = cleaned_votes
         if _is_empty_payload(profile["votes"]):
             warnings.append(f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune information de scrutin n'a été extraite de la réponse API.")
+
+    # --- 6bis. Amendements officiels (Assemblée nationale, auteur principal uniquement,
+    # toutes législatures disponibles — voir fetch_amendements_officiels). ---
+    if chambre == "deputes" and profile.get("identite"):
+        try:
+            profile["amendements"] = fetch_amendements_officiels(profile["identite"].get("url_an_ou_senat"))
+        except Exception as exc:
+            warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
     if not _is_empty_payload(synthesis_payload):
         # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---

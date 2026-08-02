@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from merge_profile import merge_lists_by_key, merge_pivot_profile, merge_raw_profile
+from merge_profile import clean_stale_textes_portes, merge_lists_by_key, merge_pivot_profile, merge_raw_profile
 
 
 def test_merge_lists_by_key_keeps_old_and_adds_new_only():
@@ -110,6 +110,47 @@ def test_merge_raw_profile_merges_mandat_europeen():
     assert keys == {"AFET", "ENVI"}
 
 
+def test_merge_raw_profile_preserves_amendements_on_empty_new_fetch():
+    # Un échec/vide transitoire de l'open data amendements ne doit pas effacer
+    # des amendements déjà collectés lors d'une régénération précédente.
+    old = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [{"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None}],
+    }
+    new = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [],
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert merged["amendements"] == old["amendements"]
+
+
+def test_merge_raw_profile_amendements_new_value_wins_on_collision():
+    old = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [{"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None, "sort": "Adopté"}],
+    }
+    new = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [
+            {"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None, "sort": "Rejeté"},
+            {"numero": "AS2", "texte_vise": "PRJL01", "date": "2024-01-11", "source_url": None, "sort": "Adopté"},
+        ],
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert len(merged["amendements"]) == 2
+    as1 = next(a for a in merged["amendements"] if a["numero"] == "AS1")
+    assert as1["sort"] == "Rejeté"
+
+
 def test_merge_pivot_profile_preserves_data_and_dedups_sources():
     old = {
         "sources": [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-01-01T00:00:00"}],
@@ -138,3 +179,86 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
     assert merged["sources"] == [{"type": "nosdeputes", "url": "u2", "synchro_le": "2026-02-01T00:00:00"}]
     assert merged["tags_thematiques"] == ["budget", "fiscalité"]
     assert not any(w.startswith("votes introuvables") for w in merged["meta"]["warnings"])
+
+
+def test_merge_pivot_profile_dedups_textes_portes_regardless_of_role():
+    # Un dossier régénéré avec role=None (source actuelle) ne doit pas
+    # dupliquer une entrée déjà présente avec un rôle différent (donnée
+    # héritée/erronée) pour le même dossier : la nouvelle version l'emporte.
+    old = {
+        "sources": [], "mandats": [], "votes": [],
+        "textes_portes": [
+            {"titre": "Texte X", "role": "rapporteur", "date_min": "2024-01-01", "date_max": "2024-02-01", "legislature": "16", "source_url": "https://a.fr/1"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [],
+        "textes_portes": [
+            {"titre": "Texte X", "role": None, "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "date_max": "2024-02-01", "legislature": "16", "source_url": "https://a.fr/1"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    assert len(merged["textes_portes"]) == 1
+    assert merged["textes_portes"][0]["role"] is None
+
+
+def test_clean_stale_textes_portes_keeps_current_schema_entry():
+    textes = [
+        {"titre": "Texte Y", "role": "rapporteur", "date_min": "2024-01-01", "legislature": "16", "source_url": "https://a.fr/2"},
+        {"titre": "Texte Y", "role": None, "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "legislature": "16", "source_url": "https://a.fr/2"},
+    ]
+
+    cleaned = clean_stale_textes_portes(textes)
+
+    assert len(cleaned) == 1
+    assert cleaned[0]["role"] is None
+    assert "type_rapport" in cleaned[0]
+
+
+def test_merge_pivot_profile_amendements_additifs_preserve_anciennes_entrees():
+    # Un échec/vide transitoire de la source open data amendements ne doit pas
+    # effacer des amendements déjà collectés lors d'une régénération précédente.
+    old = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [
+            {"numero": "AS1", "texte_vise": "T1", "date": "2025-01-01", "sort": "adopté", "type_deposant": "depute"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    assert merged["amendements"] == old["amendements"]
+
+
+def test_merge_pivot_profile_amendements_nouvelle_valeur_gagne_sur_collision():
+    old = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [
+            {"numero": "AS1", "texte_vise": "T1", "date": "2025-01-01", "sort": "en attente", "type_deposant": "depute"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [
+            {"numero": "AS1", "texte_vise": "T1", "date": "2025-01-01", "sort": "adopté", "type_deposant": "depute"},
+            {"numero": "AS2", "texte_vise": "T2", "date": "2025-02-01", "sort": "rejeté", "type_deposant": "depute"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    assert len(merged["amendements"]) == 2
+    as1 = next(a for a in merged["amendements"] if a["numero"] == "AS1")
+    assert as1["sort"] == "adopté"
