@@ -114,6 +114,7 @@ _AMENDEMENTS_LOCKS_META = threading.Lock()
 WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
+WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -1338,7 +1339,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         try:
             profile["amendements"] = fetch_amendements_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:
-            warnings.append(f"amendements officiels (Assemblée nationale) indisponibles : {exc}")
+            warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
     if not _is_empty_payload(synthesis_payload):
         # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---

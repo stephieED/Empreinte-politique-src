@@ -29,6 +29,7 @@ from candidate_profile import (
     WARNING_PREFIX_IDENTITE_INTROUVABLE,
     WARNING_PREFIX_MANDATS_INTROUVABLES,
     WARNING_PREFIX_VOTES_INTROUVABLES,
+    WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
 )
 
 Key = Any
@@ -107,6 +108,8 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
         if w.startswith(WARNING_PREFIX_IDENTITE_INTROUVABLE) and profile.get("identite"):
             continue
         if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and profile.get("mandats"):
+            continue
+        if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and profile.get("amendements"):
             continue
         filtered.append(w)
     meta["warnings"] = filtered
@@ -313,6 +316,8 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if w.startswith(WARNING_PREFIX_VOTES_INTROUVABLES) and merged.get("votes"):
                 continue
             if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and merged.get("mandats"):
+                continue
+            if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and merged.get("amendements"):
                 continue
             filtered.append(w)
         merged["meta"]["warnings"] = filtered
