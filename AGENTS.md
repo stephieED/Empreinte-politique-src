@@ -323,6 +323,20 @@ _(aucune entrée en cours)_
 
 ### Prévu ensuite
 
+- **UI/UX web/v3 — Questions parlementaires** : mettre à jour `web/v3/index.html`
+  pour exploiter les champs questions maintenant présents dans `interventions[]`
+  (`type_detail == "question"`, `sous_type`, `ministere`, `reponse`,
+  `date_reponse`). Trois points d'intervention :
+  1. Filtre "Questions parlementaires" (4e bouton dans le panneau Paroles,
+     `data-inter-mode="questions"`, filtre sur `type_detail == "question"`).
+  2. Carte enrichie dédiée : étiquette QE/QG/QOSD, ministère interrogé, texte,
+     réponse dépliable (avec `date_reponse`) si disponible, lien source AN.
+     Les entrées sans `type_detail == "question"` gardent la carte
+     `speech-fragment` actuelle.
+  3. Compteur questions dans les métriques rapides (express-summary +
+     renderCompare), toujours présenté avec contexte source — jamais comme
+     un score de performance (règle éditoriale n°1).
+
 - **Représentants d'intérêts** : recherche seule (pas nécessairement une
   implémentation) sur le registre des relations élu⋅e↔lobbyiste. Probablement
   hors du périmètre `data.assemblee-nationale.fr` : l'enregistrement des
