@@ -95,6 +95,13 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 
+# Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
+# multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
+# uniquement pour resoudre le code source d'un texte (texteLegislatifRef d'un
+# amendement, ex. "PIONANR5L17B0904") vers son titre lisible (titreDossier.titre).
+AN_DOSSIERS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
+DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
+
 # Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
 # appeler cette fonction simultanément pour des législatures différentes (pas de blocage
 # entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
@@ -105,6 +112,10 @@ _SCRUTINS_LOCKS_META = threading.Lock()
 # Même principe que _SCRUTINS_LOCKS, pour l'index des amendements officiels.
 _AMENDEMENTS_LOCKS: dict[str, threading.Lock] = {}
 _AMENDEMENTS_LOCKS_META = threading.Lock()
+
+# Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
+# pas de decoupage par legislature).
+_DOSSIERS_TITRE_LOCK = threading.Lock()
 
 # Préfixes des messages d'avertissement (warnings) ajoutés à profile["meta"]["warnings"].
 # Exposés en constantes (plutôt qu'en texte libre dupliqué) pour que merge_profile.py
@@ -593,9 +604,8 @@ def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
 
     record = {
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
-        # titre lisible : aucun jeu de donnees open data ne permet aujourd'hui de
-        # le resoudre vers l'intitule du texte sans travail de rapprochement
-        # supplementaire (hors perimetre de cette collecte).
+        # titre lisible : resolu en titre humain a posteriori si possible, voir
+        # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
         "texte_vise": amendement.get("texteLegislatifRef"),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
@@ -684,6 +694,85 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
         return index
 
 
+def _collect_texte_codes(node: Any, codes: set[str]) -> None:
+    """Parcourt récursivement un dossier législatif brut et collecte tous les
+    codes de texte référencés (clés `texteAssocie`/`refTexteAssocie`), à
+    n'importe quel niveau de l'arbre `actesLegislatifs` (récursif, profondeur
+    variable selon le dossier)."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in ("texteAssocie", "refTexteAssocie") and isinstance(value, str):
+                codes.add(value)
+            else:
+                _collect_texte_codes(value, codes)
+    elif isinstance(node, list):
+        for item in node:
+            _collect_texte_codes(item, codes)
+
+
+def _build_texte_titre_index() -> dict[str, str]:
+    """Construit (et met en cache sur disque) un index code de texte -> titre
+    lisible du dossier, à partir du jeu de données bulk des dossiers
+    législatifs (un seul fichier, déjà multi-législatures). Utilisé pour
+    résoudre `texte_vise` des amendements (sinon un simple code source, ex.
+    "PIONANR5L17B0904"). Non-fatal en cas d'échec (retourne {})."""
+    with _DOSSIERS_TITRE_LOCK:
+        index_path = DOSSIERS_CACHE_DIR / "index_texte_titre.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
+        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
+            return {}
+
+        index: dict[str, str] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/dossierParlementaire/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
+                    if not isinstance(dossier, dict):
+                        continue
+                    titre = (dossier.get("titreDossier") or {}).get("titre")
+                    if not titre:
+                        continue
+                    codes: set[str] = set()
+                    _collect_texte_codes(dossier, codes)
+                    for code in codes:
+                        index[code] = titre
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive des dossiers législatifs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
 def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
 
@@ -701,6 +790,14 @@ def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str
         index = _build_acteur_amendement_index(legislature)
         for record in index.get(acteur_ref, []):
             amendements.append({**record, "legislature": legislature})
+
+    if amendements:
+        titre_index = _build_texte_titre_index()
+        if titre_index:
+            for record in amendements:
+                titre = titre_index.get(record.get("texte_vise"))
+                if titre:
+                    record["texte_vise"] = titre
 
     amendements.sort(key=lambda a: a.get("date") or "", reverse=True)
     return amendements

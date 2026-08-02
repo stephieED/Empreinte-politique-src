@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from candidate_profile import (
     _classify_intervention,
     _classify_intervention_format,
+    _collect_texte_codes,
     _derive_amendement_sort,
     _extract_mandats,
     _groupe_label,
@@ -325,3 +326,34 @@ def test_parse_amendement_entry_only_keeps_primary_author():
 def test_parse_amendement_entry_returns_none_without_acteur_ref():
     raw = {"amendement": {"signataires": {"auteur": {}}}}
     assert _parse_amendement_entry(raw) is None
+
+
+def test_collect_texte_codes_walks_nested_actes_legislatifs():
+    """Un dossier législatif imbrique les codes de texte à plusieurs niveaux
+    (actesLegislatifs récursif, textesAssocies en liste) : le collecteur doit
+    tous les retrouver, quelle que soit la profondeur."""
+    dossier = {
+        "titreDossier": {"titre": "Les dépenses de soutien aux aéroports"},
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "texteAssocie": "RINFANR5L17B1659",
+                "actesLegislatifs": {
+                    "acteLegislatif": {"texteAssocie": "PIONANR5L17B0904"}
+                },
+                "textesAssocies": {
+                    "texteAssocie": [{"refTexteAssocie": "BTAANR5L17B0905"}]
+                },
+            }
+        },
+    }
+
+    codes: set[str] = set()
+    _collect_texte_codes(dossier, codes)
+
+    assert codes == {"RINFANR5L17B1659", "PIONANR5L17B0904", "BTAANR5L17B0905"}
+
+
+def test_collect_texte_codes_empty_for_dossier_without_actes():
+    codes: set[str] = set()
+    _collect_texte_codes({"titreDossier": {"titre": "Sans acte"}}, codes)
+    assert codes == set()

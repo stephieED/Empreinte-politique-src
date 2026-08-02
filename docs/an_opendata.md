@@ -96,3 +96,67 @@ réellement consommé par `candidate_profile.py` (celui-ci a été déterminé p
   référence en plus les art. 45/98/37/38/42 via `sousEtat`), ce qui justifie
   la simplification actuelle du schéma pivot (`art. 40` / `art. 45` uniquement
   — voir `schema_pivot.KNOWN_BASES_IRRECEVABILITE`).
+
+## Acteurs / mandats / organes (identité + mandats officiels)
+
+`.../17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip`
+(~4,9 Mo, mise à jour quotidienne). Schéma **retro-documenté par
+échantillonnage exhaustif du zip réel** (le Schemas.zip de 2016 ne décrit que
+l'ancien export XML monolithique par législature, alors que le zip actuel
+contient un fichier JSON par entité) :
+
+- 3 types d'entités mélangées dans le même zip, sous des préfixes distincts :
+  `json/acteur/PA{id}.json` (577 fichiers = déjà-élus actuels), `json/organe/PO{id}.json`
+  (7126 fichiers — référentiel de TOUS les organes historiques : commissions,
+  groupes, circonscriptions, ministères... nécessaires pour résoudre les
+  `organeRef` en libellés lisibles), `json/deport/DPTR5L{leg}PA{id}D{n}.json`
+  (37 fichiers — déclarations officielles de déport/conflit d'intérêt, avec
+  `portee`/`lecture`/`instance`/`cible`/`explication` : une source de
+  transparence qu'on n'exploite pas du tout aujourd'hui).
+- `acteur.uri_hatvp` : lien vers la déclaration HATVP (Haute Autorité pour la
+  Transparence de la Vie Publique) du parlementaire — champ absent de notre
+  schéma pivot actuel.
+- `acteur.mandats.mandat[].typeOrgane` (24 valeurs observées) : `GP` (groupe
+  parlementaire), `COMPER` (commission permanente), `PARPOL` (parti),
+  `MISINFO`/`MISINFOCOM`/`MISINFOPRE` (missions d'information), `DELEG`,
+  `BUREAU`, `CMP`, `GOUVERNEMENT`, `MINISTERE`, etc. Chaque mandat a
+  `dateDebut`/`dateFin`/`organeRef` — historique précis, à rapprocher des
+  entrées `organe` du même zip pour le libellé.
+- `acteur.mandats.mandat[].infosQualite.codeQualite`/`libQualite` : texte
+  libre (pas un enum stable), ex. "Membre", "Président", "Secrétaire"...
+
+## Dossiers législatifs (bulk, multi-législatures dans UN seul fichier)
+
+`.../17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip` (~10 Mo, mise
+à jour quotidienne). Schéma retro-documenté de la même façon (échantillonnage
+exhaustif, 3029 dossiers analysés) :
+
+- `dossierParlementaire.legislature` couvre en réalité `{8, 11, 12, 13, 14,
+  15, 16, 17}` dans ce seul fichier — bien plus large que les législatures
+  couvertes par NosDéputés (13 à 17) ou par nos jeux scrutins/amendements
+  (13/14/15/16/17 séparés par fichier).
+- `titreDossier.titre` : titre humain complet (ex. "Les dépenses de soutien
+  aux aéroports") — résout la limitation documentée dans la section
+  amendements ci-dessus (`texte_vise` ne contenait qu'un code source brut).
+- `procedureParlementaire.{code,libelle}` : enum fermé de 19 valeurs (Projet
+  de loi ordinaire, Proposition de loi ordinaire, PLF, PLFSS, Résolution...).
+- `initiateur.acteurs.acteur[].{acteurRef,mandatRef}` : liste des député⋅e⋅s
+  à l'origine d'une proposition de loi (co-auteurs inclus) — permet de
+  retrouver tous les textes déposés par un⋅e élu⋅e directement, sans
+  dépendre du scraping NosDéputés.
+- `actesLegislatifs` est un arbre récursif (`acteLegislatif.actesLegislatifs.acteLegislatif...`,
+  jusqu'à 5 niveaux observés) représentant le déroulé complet de la
+  procédure. À chaque niveau, `rapporteurs.rapporteur[].{acteurRef,
+  typeRapporteur}` donne l'assignation OFFICIELLE des rapporteur⋅e⋅s
+  (`typeRapporteur` ∈ {rapporteur, rapporteur général, rapporteur pour avis,
+  rapporteur spécial}) — c'est une source structurée qui pourrait remplacer
+  l'attribution de `role`/`type_rapport` actuellement absente/scrapée côté
+  NosDéputés (voir le bug de doublons `textes_portes` corrigé plus haut dans
+  ce projet). `texteAssocie`/`textesAssocies` référence le(s) texte(s) associé
+  à chaque acte, dans le même format que `texteLegislatifRef` des amendements.
+- **Pas encore implémenté dans le code** (recherche seulement, voir mémoire
+  agent `an-opendata-other-datasets.md`) : décision à prendre séparément sur
+  si/comment remplacer la source actuelle de `textes_portes` (changement
+  d'architecture non trivial vu la logique de fusion/dédoublonnage déjà en
+  place), par opposition à un usage plus ciblé (ex. résoudre les titres des
+  amendements, ajouter `uri_hatvp`).
