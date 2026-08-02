@@ -150,7 +150,12 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         reverse=True,
     )
     merged["dossiers_legislatifs"] = sorted(
-        merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key),
+        (
+            d for d in merge_lists_by_key(old.get("dossiers_legislatifs"), new.get("dossiers_legislatifs"), _dossier_key)
+            if d.get("role")  # écarte la liste globale héritée de NosDéputés (mêmes dossiers
+                              # pour tout le monde sur une législature, role toujours absent/null
+                              # — voir candidate_profile.fetch_textes_portes_officiels)
+        ),
         key=lambda d: (d.get("date_max") or "", d.get("titre") or ""),
         reverse=True,
     )
@@ -286,6 +291,7 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["parti"] = _prefer_non_empty(new.get("parti"), old.get("parti"))
     merged["groupe"] = _prefer_non_empty(new.get("groupe"), old.get("groupe"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
+    merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
 
     merged["sources"] = _merge_pivot_sources(old.get("sources"), new.get("sources"))
     merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key)
@@ -295,7 +301,11 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         reverse=True,
     )
     merged["textes_portes"] = sorted(
-        merge_dossier_records(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key),
+        (
+            t for t in merge_dossier_records(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key)
+            if t.get("role")  # écarte la liste globale héritée de NosDéputés (role toujours
+                              # null) — voir candidate_profile.fetch_textes_portes_officiels
+        ),
         key=lambda t: (t.get("date_max") or "", t.get("titre") or ""),
         reverse=True,
     )

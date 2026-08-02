@@ -8,11 +8,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from candidate_profile import (
     _classify_intervention,
     _classify_intervention_format,
+    _collect_acteur_roles,
+    _collect_initiateurs,
     _collect_texte_codes,
     _derive_amendement_sort,
     _extract_mandats,
+    _format_lieu_naissance,
     _groupe_label,
     _parse_amendement_entry,
+    _stade_from_code_acte,
     build_profile,
     fetch_all_intervention_results_from_domains,
     fetch_seance_context,
@@ -357,3 +361,119 @@ def test_collect_texte_codes_empty_for_dossier_without_actes():
     codes: set[str] = set()
     _collect_texte_codes({"titreDossier": {"titre": "Sans acte"}}, codes)
     assert codes == set()
+
+
+def test_format_lieu_naissance_france_avec_departement():
+    assert _format_lieu_naissance("Nantes", "Loire-Atlantique", "France") == "Nantes (Loire-Atlantique)"
+
+
+def test_format_lieu_naissance_etranger_prefere_le_pays():
+    assert _format_lieu_naissance("Alger", None, "Algérie") == "Alger (Algérie)"
+
+
+def test_format_lieu_naissance_ville_seule():
+    assert _format_lieu_naissance("Nantes", None, None) == "Nantes"
+
+
+def test_format_lieu_naissance_tout_absent():
+    assert _format_lieu_naissance(None, None, None) is None
+
+
+def test_stade_from_code_acte_depot():
+    assert _stade_from_code_acte("AN1-DEPOT", None) == "depose"
+
+
+def test_stade_from_code_acte_commission():
+    assert _stade_from_code_acte("AN1-COM-FOND-RAPPORT", None) == "examine_commission"
+
+
+def test_stade_from_code_acte_debats_seance():
+    assert _stade_from_code_acte("AN1-DEBATS-SEANCE", None) == "discute_seance"
+
+
+def test_stade_from_code_acte_decision_adoptee():
+    assert _stade_from_code_acte("AN1-DEBATS-DEC", "adopté") == "adopte"
+
+
+def test_stade_from_code_acte_decision_rejetee_reste_discute_seance():
+    assert _stade_from_code_acte("AN1-DEBATS-DEC", "rejetée") == "discute_seance"
+
+
+def test_stade_from_code_acte_promulgation():
+    assert _stade_from_code_acte("PROM-PUB", None) == "promulgue"
+
+
+def test_stade_from_code_acte_code_inconnu():
+    assert _stade_from_code_acte("CODE-INCONNU", None) is None
+
+
+def test_collect_initiateurs_acteur_unique():
+    acteur_roles: dict = {}
+    dossier = {"initiateur": {"acteurs": {"acteur": {"acteurRef": "PA1"}}}}
+    _collect_initiateurs(dossier, acteur_roles)
+    assert acteur_roles == {"PA1": ("auteur", None)}
+
+
+def test_collect_initiateurs_liste_acteurs():
+    acteur_roles: dict = {}
+    dossier = {"initiateur": {"acteurs": {"acteur": [{"acteurRef": "PA1"}, {"acteurRef": "PA2"}]}}}
+    _collect_initiateurs(dossier, acteur_roles)
+    assert acteur_roles == {"PA1": ("auteur", None), "PA2": ("auteur", None)}
+
+
+def test_collect_acteur_roles_rapporteur_unique_et_dates():
+    dossier = {
+        "legislature": "17",
+        "initiateur": None,
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "codeActe": "AN1-COM-FOND-NOMIN",
+                "dateActe": "2024-01-10T00:00:00.000+01:00",
+                "rapporteurs": {"rapporteur": {"acteurRef": "PA1", "typeRapporteur": "rapporteur"}},
+            }
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {"PA1": ("rapporteur", "rapporteur_fond")}
+    assert stade == "examine_commission"
+    assert date_min == date_max == "2024-01-10"
+
+
+def test_collect_acteur_roles_co_rapporteurs():
+    dossier = {
+        "legislature": "17",
+        "initiateur": None,
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "codeActe": "AN1-COM-FOND-NOMIN",
+                "dateActe": "2024-01-10T00:00:00.000+01:00",
+                "rapporteurs": {"rapporteur": [
+                    {"acteurRef": "PA1", "typeRapporteur": "rapporteur pour avis"},
+                    {"acteurRef": "PA2", "typeRapporteur": "rapporteur pour avis"},
+                ]},
+            }
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {
+        "PA1": ("co-rapporteur", "rapporteur_avis"),
+        "PA2": ("co-rapporteur", "rapporteur_avis"),
+    }
+
+
+def test_collect_acteur_roles_stade_le_plus_avance_retenu():
+    dossier = {
+        "legislature": "17",
+        "initiateur": {"acteurs": {"acteur": {"acteurRef": "PA1"}}},
+        "actesLegislatifs": {
+            "acteLegislatif": [
+                {"codeActe": "AN1-DEPOT", "dateActe": "2024-01-01T00:00:00.000+01:00"},
+                {"codeActe": "PROM-PUB", "dateActe": "2024-06-01T00:00:00.000+02:00"},
+            ]
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {"PA1": ("auteur", None)}
+    assert stade == "promulgue"
+    assert date_min == "2024-01-01"
+    assert date_max == "2024-06-01"

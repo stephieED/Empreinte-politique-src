@@ -190,6 +190,19 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
         })
     profil["sources"] = sources
 
+    # --- Identité (profession/naissance/HATVP) : uniquement si au moins un champ
+    # est renseigné, sinon on laisse `identite` à None (valeur par défaut). ---
+    identite_champs = {
+        "profession": identite.get("profession"),
+        "date_naissance": identite.get("date_naissance"),
+        "lieu_naissance": identite.get("lieu_naissance"),
+        "num_circo": identite.get("num_circo"),
+        "uri_hatvp": identite.get("uri_hatvp"),
+        "source_url": identite.get("url_an_ou_senat") or source_url,
+    }
+    if any(v for k, v in identite_champs.items() if k != "source_url"):
+        profil["identite"] = identite_champs
+
     # --- Sections principales ---
     profil["mandats"] = [_normalize_mandat(m) for m in (raw_profile.get("mandats") or [])]
     profil["votes"] = [_normalize_vote(v) for v in (raw_profile.get("votes") or [])]

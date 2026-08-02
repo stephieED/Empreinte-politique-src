@@ -154,9 +154,82 @@ exhaustif, 3029 dossiers analysés) :
   NosDéputés (voir le bug de doublons `textes_portes` corrigé plus haut dans
   ce projet). `texteAssocie`/`textesAssocies` référence le(s) texte(s) associé
   à chaque acte, dans le même format que `texteLegislatifRef` des amendements.
-- **Pas encore implémenté dans le code** (recherche seulement, voir mémoire
-  agent `an-opendata-other-datasets.md`) : décision à prendre séparément sur
-  si/comment remplacer la source actuelle de `textes_portes` (changement
-  d'architecture non trivial vu la logique de fusion/dédoublonnage déjà en
-  place), par opposition à un usage plus ciblé (ex. résoudre les titres des
-  amendements, ajouter `uri_hatvp`).
+- **Implémenté** : `candidate_profile.fetch_textes_portes_officiels` /
+  `_build_acteur_textes_portes_index` construisent un index acteurRef -> liste
+  de dossiers où l'élu a un rôle factuel connu (`auteur` via `initiateur`,
+  `rapporteur`/`co-rapporteur` via `rapporteurs`, `type_rapport` mappé depuis
+  `typeRapporteur`), avec un `stade_procedural` déduit des `codeActe`
+  (`*-DEPOT`→depose, `*-COM*`→examine_commission, `*-DEBATS*`→discute_seance,
+  `*-DEBATS-DEC` + `statutConclusion.libelle`="adopté"→adopte, `PROM*`→promulgue)
+  et une URL source réelle et vérifiée (`https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titreChemin}`).
+  Remplace entièrement, pour les député⋅e⋅s, l'ancienne liste NosDéputés
+  (confirmé non spécifique à l'élu : mêmes 678 dossiers identiques renvoyés
+  pour tout le monde sur la législature 17, `role` toujours null — voir
+  `raw_data/profiles/jean-luc-melenchon.json` vs `gabriel-attal.json`).
+  Migration des anciennes données : `merge_profile.py` écarte désormais toute
+  entrée `dossiers_legislatifs`/`textes_portes` sans `role` factuel connu lors
+  d'une fusion avec un ancien fichier (voir mémoire agent
+  `an-opendata-other-datasets.md`).
+
+## Questions (écrites, orales sans débat, au gouvernement)
+
+Contrairement aux acteurs/dossiers (bulk multi-législatures), ces 3 jeux de
+données suivent le même découpage par législature que scrutins/amendements
+(URL `.../{legislature}/questions/{dossier}/{fichier}.json.zip`, confirmé
+existant aussi pour la 16e législature) :
+
+| Type | Dossier | Fichier | Taille approx. (17e) |
+|---|---|---|---|
+| Écrites (QE) | `questions_ecrites` | `Questions_ecrites.json.zip` | ~45 Mo |
+| Au gouvernement (QG) | `questions_gouvernement` | `Questions_gouvernement.json.zip` | ~5,2 Mo |
+| Orales sans débat (QOSD) | `questions_orales_sans_debat` | `Questions_orales_sans_debat.json.zip` | ~3,1 Mo |
+
+Schéma retro-documenté par échantillonnage direct (pas d'inférence exhaustive
+comme pour acteurs/dossiers, mais les 3 partagent un schéma quasi-identique,
+seul `question.@xsi:type` diffère : `QuestionEcrite_Type` /
+`QuestionGouvernement_Type` / `QuestionOrale_Type`) :
+
+- `question.auteur.identite.acteurRef` : identifiant direct de l'élu
+  auteur — pas de scraping/matching nécessaire.
+- `question.auteur.groupe.{organeRef,abrege,developpe}` : groupe
+  parlementaire au moment du dépôt (utile pour `groupe_au_moment_du_vote`-like
+  enrichissement, cf. schema_pivot.py).
+- `question.minInt.developpe` : ministère interrogé (texte libre).
+- `question.indexationAN.analyses.analyse` : résumé/sujet court de la
+  question (texte libre, utilisable comme titre affiché).
+- `question.textesQuestion.texteQuestion.{texte,infoJO.dateJO}` et, pour
+  QG/QOSD notamment, `question.textesReponse.texteReponse.{texte,infoJO.dateJO}` :
+  texte intégral de la question et, si disponible, de la réponse, avec la
+  date de publication au Journal officiel.
+- Pertinence : `schema_pivot.py` anticipe déjà `interventions[].type_detail:
+  "question"`, mais ce champ n'est aujourd'hui alimenté par aucune source
+  officielle structurée (uniquement, le cas échéant, par du scraping
+  NosDéputés) — ces 3 jeux de données seraient une amélioration nette
+  (acteurRef direct, texte intégral, ministère, date JO) plutôt qu'une
+  simple redite. Un seul parseur générique suffirait pour les 3.
+- **Pas encore implémenté dans le code** (recherche seulement).
+
+## Agenda / réunions (commissions) — priorité basse
+
+`.../17/vp/reunions/Agenda.json.zip` (~7,8 Mo, un seul sous-dossier
+`json/reunion/`). Décrit les réunions de commission/séance (lieu, ordre du
+jour, `organeReuniRef`, `dossiersLegislatifsRefs`,
+`participants.participantsInternes`/`personnesAuditionnees` — souvent `null`
+dans les échantillons observés). Organisé par réunion/organe, pas par
+acteurRef direct : plus complexe à exploiter pour enrichir un profil
+individuel, utile surtout pour dater précisément l'examen d'un texte en
+commission. Pas une priorité immédiate. Pas implémenté.
+
+## Organismes extra-parlementaires (CSV) — priorité basse
+
+`.../17/amo/oep_csv_opendata/liste_organismes_extra_parlementaires_excel.csv`
+(~1 Mo, format CSV séparateur `;`, encodage probable ISO-8859-1/latin-1 —
+caractères mal décodés observés dans un aperçu brut UTF-8, ex. « r?union »).
+Colonnes : `Nom` (organisme), `Regime juridique`, `Site internet`, `Nombre de
+reunions annuelles`, `Depute` (**nom en texte libre, PAS d'acteurRef**),
+`Role`, `Nomination` (date). Correspond exactement à la catégorie
+`extra_parlementaire` déjà prévue dans `schema_pivot.KNOWN_CATEGORIES`, mais
+l'absence d'identifiant stable (matching par nom uniquement) est un vrai
+risque de faux positifs (homonymes) si implémenté sans précaution
+supplémentaire. Pas implémenté.
+

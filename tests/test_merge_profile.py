@@ -92,6 +92,28 @@ def test_merge_raw_profile_adds_new_entries_without_dropping_old_ones():
     assert len(merged["interventions"]) == 2
 
 
+def test_merge_raw_profile_ecarte_dossiers_legislatifs_sans_role_connu():
+    old = {
+        "votes": [], "interventions": [], "mandats": [],
+        "dossiers_legislatifs": [
+            {"legislature": "16", "id": "2020-XYZ", "titre": "Dossier hérité (liste globale)", "date_max": "2020-02-01"},
+        ],
+        "meta": {"warnings": []},
+    }
+    new = {
+        "votes": [], "interventions": [], "mandats": [],
+        "dossiers_legislatifs": [
+            {"legislature": "17", "id": "DLR5L17N1", "titre": "Dossier officiel", "role": "auteur", "type_rapport": None, "stade_procedural": "depose", "date_max": "2024-02-01"},
+        ],
+        "meta": {"warnings": []},
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert len(merged["dossiers_legislatifs"]) == 1
+    assert merged["dossiers_legislatifs"][0]["titre"] == "Dossier officiel"
+
+
 def test_merge_raw_profile_merges_mandat_europeen():
     old = {
         "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
@@ -181,10 +203,9 @@ def test_merge_pivot_profile_preserves_data_and_dedups_sources():
     assert not any(w.startswith("votes introuvables") for w in merged["meta"]["warnings"])
 
 
-def test_merge_pivot_profile_dedups_textes_portes_regardless_of_role():
-    # Un dossier régénéré avec role=None (source actuelle) ne doit pas
-    # dupliquer une entrée déjà présente avec un rôle différent (donnée
-    # héritée/erronée) pour le même dossier : la nouvelle version l'emporte.
+def test_merge_pivot_profile_dedups_textes_portes_sur_meme_dossier():
+    # Deux entrées du même dossier (même source_url) avec un rôle factuel
+    # connu des deux côtés : la nouvelle version l'emporte (pas de doublon).
     old = {
         "sources": [], "mandats": [], "votes": [],
         "textes_portes": [
@@ -195,7 +216,7 @@ def test_merge_pivot_profile_dedups_textes_portes_regardless_of_role():
     new = {
         "sources": [], "mandats": [], "votes": [],
         "textes_portes": [
-            {"titre": "Texte X", "role": None, "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "date_max": "2024-02-01", "legislature": "16", "source_url": "https://a.fr/1"},
+            {"titre": "Texte X", "role": "co-rapporteur", "type_rapport": "rapporteur_avis", "stade_procedural": "adopte", "date_min": "2024-01-01", "date_max": "2024-02-01", "legislature": "16", "source_url": "https://a.fr/1"},
         ],
         "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
     }
@@ -203,7 +224,32 @@ def test_merge_pivot_profile_dedups_textes_portes_regardless_of_role():
     merged = merge_pivot_profile(old, new)
 
     assert len(merged["textes_portes"]) == 1
-    assert merged["textes_portes"][0]["role"] is None
+    assert merged["textes_portes"][0]["role"] == "co-rapporteur"
+
+
+def test_merge_pivot_profile_ecarte_textes_portes_sans_role_connu():
+    # Liste globale héritée de NosDéputés (mêmes dossiers pour tout le monde,
+    # role toujours null) : doit être écartée lors de la fusion, même si elle
+    # ne rentre pas en collision avec les nouvelles entrées officielles.
+    old = {
+        "sources": [], "mandats": [], "votes": [],
+        "textes_portes": [
+            {"titre": "Texte hérité (liste globale)", "role": None, "date_min": "2020-01-01", "date_max": "2020-02-01", "legislature": "16", "source_url": "https://www.nosdeputes.fr/16/dossier/texte-herite"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [],
+        "textes_portes": [
+            {"titre": "Texte officiel", "role": "auteur", "type_rapport": None, "stade_procedural": "depose", "date_min": "2024-01-01", "date_max": "2024-02-01", "legislature": "17", "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/texte-officiel"},
+        ],
+        "interventions": [], "tags_thematiques": [], "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    assert len(merged["textes_portes"]) == 1
+    assert merged["textes_portes"][0]["titre"] == "Texte officiel"
 
 
 def test_clean_stale_textes_portes_keeps_current_schema_entry():

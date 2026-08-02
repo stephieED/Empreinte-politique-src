@@ -450,3 +450,32 @@ def test_pivot_votes_vides_si_absent():
     raw["votes"] = []
     pivot = normalize_nosdeputes(raw)
     assert pivot["votes"] == []
+
+
+def test_pivot_identite_reprend_profession_et_naissance():
+    raw = _raw_depute()
+    pivot = normalize_nosdeputes(raw)
+    assert pivot["identite"]["profession"] == "Avocat"
+    assert pivot["identite"]["date_naissance"] == "1970-01-01"
+    assert pivot["identite"]["num_circo"] == 3
+    assert pivot["identite"]["source_url"] == "https://www.assemblee-nationale.fr/dyn/deputes/PA123456"
+
+
+def test_pivot_identite_inclut_enrichissement_an():
+    raw = _raw_depute()
+    raw["identite"]["lieu_naissance"] = "Nantes (Loire-Atlantique)"
+    raw["identite"]["uri_hatvp"] = "https://www.hatvp.fr/pages_nominatives/x"
+    pivot = normalize_nosdeputes(raw)
+    assert pivot["identite"]["lieu_naissance"] == "Nantes (Loire-Atlantique)"
+    assert pivot["identite"]["uri_hatvp"] == "https://www.hatvp.fr/pages_nominatives/x"
+
+
+def test_pivot_identite_reste_none_si_aucun_champ_renseigne():
+    raw = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont", "groupe_nom": "Renaissance"},
+        "meta": {},
+    }
+    pivot = normalize_nosdeputes(raw)
+    assert pivot["identite"] is None

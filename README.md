@@ -458,7 +458,7 @@ aujourd'hui définis au niveau du schéma et de sa validation uniquement.
 
 | Source | Type | Cadence de mise à jour | Licence | Chambre(s) |
 |---|---|---|---|---|
-| NosDéputés.fr | API JSON/XML | Quasi temps réel (législature courante) | ODbL | AN |
+| NosDéputés.fr | API JSON/XML | Figée sur la 16e législature (2022-06-22 → dissolution du 2024-06-09) : les 618 fiches ont toutes un `mandat_fin` renseigné. Aucun domaine équivalent trouvé pour la 17e législature en cours — voir « Limites de couverture ». | ODbL | AN |
 | Archives NosDéputés.fr | API JSON/XML | Figées (législatures closes) | ODbL | AN |
 | NosSénateurs.fr (archive) | API JSON/XML | Figée | ODbL | Sénat |
 | data.assemblee-nationale.fr | Dumps ZIP | Quotidien | Licence ouverte AN | AN (votes nominatifs) |
@@ -480,6 +480,12 @@ pytest -q
   disponibilité des dumps sur data.assemblee-nationale.fr.
 - **Votes Sénat** : pas d'équivalent officiel open data intégré ; section
   `votes` souvent vide pour les sénateurs.
+- **Fraîcheur `groupe`/`identite.groupe_sigle`** : dérivés de NosDéputés.fr,
+  qui reste figé sur la composition d'avant la dissolution du 2024-06-09
+  (16e législature). Ces champs ne reflètent donc pas la composition réelle
+  actuelle des groupes de la 17e législature — ne jamais les présenter comme
+  « à jour » sans ce caveat (voir `AGENTS.md` §2 pour le détail de la
+  vérification).
 - **Interventions** : retrouvées par recherche plein texte du nom du candidat.
   Un candidat peu cité ou avec un nom ambigu peut avoir une couverture partielle.
 - **Maires** : aucun module dédié (pas de source structurée généralisable).
