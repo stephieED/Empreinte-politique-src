@@ -85,6 +85,10 @@ def _intervention_key(i: dict[str, Any]) -> Key:
     return (i.get("id"), i.get("url") or i.get("url_detail"))
 
 
+def _amendement_key(a: dict[str, Any]) -> Key:
+    return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
+
+
 def _mandat_ue_key(m: dict[str, Any]) -> Key:
     return (m.get("type"), m.get("organisation_sigle"), m.get("role"), m.get("debut"))
 
@@ -148,6 +152,10 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         reverse=True,
     )
     merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _intervention_key)
+    # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
+    # sinon) : un echec/vide transitoire de l'open data amendements ne doit pas
+    # effacer des amendements deja collectes lors d'une regeneration precedente.
+    merged["amendements"] = merge_dossier_records(old.get("amendements"), new.get("amendements"), _amendement_key)
 
     old_ue = old.get("mandat_europeen")
     new_ue = new.get("mandat_europeen")

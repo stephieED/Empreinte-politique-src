@@ -110,6 +110,47 @@ def test_merge_raw_profile_merges_mandat_europeen():
     assert keys == {"AFET", "ENVI"}
 
 
+def test_merge_raw_profile_preserves_amendements_on_empty_new_fetch():
+    # Un échec/vide transitoire de l'open data amendements ne doit pas effacer
+    # des amendements déjà collectés lors d'une régénération précédente.
+    old = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [{"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None}],
+    }
+    new = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [],
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert merged["amendements"] == old["amendements"]
+
+
+def test_merge_raw_profile_amendements_new_value_wins_on_collision():
+    old = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [{"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None, "sort": "Adopté"}],
+    }
+    new = {
+        "votes": [], "interventions": [], "mandats": [], "dossiers_legislatifs": [],
+        "meta": {"warnings": []},
+        "amendements": [
+            {"numero": "AS1", "texte_vise": "PRJL01", "date": "2024-01-10", "source_url": None, "sort": "Rejeté"},
+            {"numero": "AS2", "texte_vise": "PRJL01", "date": "2024-01-11", "source_url": None, "sort": "Adopté"},
+        ],
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert len(merged["amendements"]) == 2
+    as1 = next(a for a in merged["amendements"] if a["numero"] == "AS1")
+    assert as1["sort"] == "Rejeté"
+
+
 def test_merge_pivot_profile_preserves_data_and_dedups_sources():
     old = {
         "sources": [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-01-01T00:00:00"}],
