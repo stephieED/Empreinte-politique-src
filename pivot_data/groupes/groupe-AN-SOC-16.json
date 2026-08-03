@@ -14682,147 +14682,7 @@
   ],
   "tags_thematiques_agreges": [
     {
-      "tag": "accord",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "accueil",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "accès",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "africain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "africaine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "afrique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "agirc-arrco",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "aide",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "ailleurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "algérie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "algérien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "alimentaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "allocataire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "allocation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "allégement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "année",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "anticipées",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "antisémite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "antisémitisme",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "argile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "armée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "arménie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "arménien",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "arrêt",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ars",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ase",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "asn",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "assistant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "assistante",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -14832,107 +14692,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "augmentation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "augmenter",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "autonomie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "autorisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "auxiliaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "avocat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "avortement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "azerbaïdjan",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "banque",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "branche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "budget",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "budgétaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "bus",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "but",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "bénéficiaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cadre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "caisse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "campagne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "capillaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "carte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "catastrophe",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -14942,27 +14702,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "centrale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "centre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "certain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "chargé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cheveux",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -14982,117 +14722,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "chômage",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "chômeur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "civil",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "civile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "climatique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "clãđs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cmg",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cnsa",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "collection",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "collectivités",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "compromis",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "concurrence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "condition",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "conférence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "conscience",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "consommateur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "constitution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "constitutionnel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "constitutionnelle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "continent",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "contrat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "contre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "contribution",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15102,42 +14732,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "coopération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "copropriété",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "corps",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "corrida",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cotisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "cotisations",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "coupe",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "cour",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15147,47 +14742,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "crous",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "crèche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "crédit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "cse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "d'accompagnement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "d'impôt",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dans",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "demandeur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "demandeurs",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15202,117 +14757,12 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "directive",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "directives",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "discrimination",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "dispositif",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
     {
-      "tag": "disposition",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dissuasion",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "domicile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dossier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dotation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "droit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "droite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "du",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "déchet",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "décision",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "déconjugalisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "déficit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dématérialisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "démocratie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "département",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "dépense",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dérive",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "dérives",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "détention",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15327,97 +14777,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "enfance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "enfant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "enquête",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "enseignant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "erreurs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "esat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "espérance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "euthanasie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "exonération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "expert",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "expertise",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "exploitation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "expulsion",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "expérimentation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "extrême",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "faite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "familiale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "famille",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "filière",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15427,72 +14787,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "financement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "financer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fiscale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fiscalité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fonctionnement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "forfait",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "formation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fortune",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "foyer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "français",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "fraude",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "garantir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "garde",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "gendarmerie",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15502,97 +14797,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "grâce",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "guerre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "générale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "habitat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "haine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "handicap",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "heure",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "hospitalier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "humain",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "hébergement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "hôpital",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ifi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "important",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "indemnisation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "index",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "indépendance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "inflation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "infraction",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ingérence",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15607,122 +14812,12 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "interdiction",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "investissement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "irsn",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "isf",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "isolement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "israël",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ivg",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "jeux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "journaliste",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "judiciaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "juge",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
     {
-      "tag": "juridiction",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "justice",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "la",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "langue",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "langues",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "le",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "liberté",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "liminaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "lit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "locale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "locales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "locataire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "location",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15737,62 +14832,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "lpm",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "macron",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "magistrat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "maison",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "maisons",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "majorité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "maladie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "maltraitance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "manifestation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "marin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "maternelle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "mentale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15807,67 +14847,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "meublé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "militaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "milliard",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "million",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "millions",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "mineur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ministre",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "minière",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "miviludes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "mobilité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "modèle",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "monde",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "montant",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15882,62 +14862,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "mourir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "multiple",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médecin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médecine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "média",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médiateur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médiation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médicale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "médicament",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "national",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "nationale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "naturelle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -15947,87 +14872,12 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "nucléaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "numerus",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "négociation",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
     {
-      "tag": "obligation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "océan",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "olympique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "omi",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ondam",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "opposition",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "opérateur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ordonnance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "outre-mer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ouverture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "palliatif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "palliatifs",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "papier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "par",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16042,77 +14892,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "partenaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "partenaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "partenariat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "participation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "patient",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "patrimoine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "personne",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "personnel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "personnes",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "perte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "peuple",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "pfas",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "place",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "plainte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "plein",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16122,57 +14902,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "policier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "politique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "pollution",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "pouvoir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "pratique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "première",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "presse",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "proche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "produit",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "professionnel",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "professionnelle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16192,77 +14922,12 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "précarité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "préfecture",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "président",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "prévention",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "psychiatrie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "psychiatrique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "publication",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "publique",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
     {
-      "tag": "pénale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "quatrième",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "rapport",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ratp",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rep",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "repas",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "restitution",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16277,57 +14942,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "riche",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "route",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "routier",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rsa",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rtt",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rurale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ruralité",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ruraux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "règlement",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "réacteur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "récupération",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16337,27 +14952,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "régionale",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "régionales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rémunération",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "rénovation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "républicains",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16367,82 +14962,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "réseau",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "rétablir",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sanction",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sanitaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "santé",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "satisfait",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "scientifique",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "scolaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sectaire",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sectaires",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "senior",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sera",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "service",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "situation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "social",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sociale",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16452,77 +14972,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "sociaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "soignant",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "soin",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "soins",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "spéciaux",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "substance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "supprimer",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sãđance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "séance",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sénat",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "sûreté",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "tabac",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "tarif",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "tarification",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16532,87 +14982,7 @@
       "poids_relatif": 1.0
     },
     {
-      "tag": "territoriales",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "textile",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "travailleur",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "trouble",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "téléconsultation",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "ukraine",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "vaccination",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "verte",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "victime",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "violence",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "visite",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "à",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "âge",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "âgée",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "âgées",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
       "tag": "économie",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "électricité",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -16630,41 +15000,31 @@
       "tag": "établissement",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
-    },
-    {
-      "tag": "étrangère",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
-    },
-    {
-      "tag": "île-de-france",
-      "nb_membres_porteurs": 1,
-      "poids_relatif": 1.0
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 437,
-    "nb_adoptes": 87,
-    "nb_rejetes": 132,
-    "nb_irrecevables": 47,
-    "nb_retires_ou_tombes": 131,
-    "taux_adoption": 0.1991,
+    "nb_amendements": 0,
+    "nb_adoptes": 0,
+    "nb_rejetes": 0,
+    "nb_irrecevables": 0,
+    "nb_retires_ou_tombes": 0,
+    "taux_adoption": null,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 4,
-        "nb_adoptes": 3,
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
         "nb_rejetes": 0,
         "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 1,
-        "taux_adoption": 0.75
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
       },
       "depute": {
-        "nb_amendements": 433,
-        "nb_adoptes": 84,
-        "nb_rejetes": 132,
-        "nb_irrecevables": 47,
-        "nb_retires_ou_tombes": 130,
-        "taux_adoption": 0.194
+        "nb_amendements": 0,
+        "nb_adoptes": 0,
+        "nb_rejetes": 0,
+        "nb_irrecevables": 0,
+        "nb_retires_ou_tombes": 0,
+        "taux_adoption": null
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -16688,17 +15048,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jerome-guedj",
-      "synchro_le": "2026-08-03T07:46:38+0000"
+      "synchro_le": "2026-08-03T08:50:44+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T07:46:49+0000"
+      "synchro_le": "2026-08-03T08:50:52+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T07:56:31+0000",
+    "genere_le": "2026-08-03T08:56:20+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:jerome-guedj"

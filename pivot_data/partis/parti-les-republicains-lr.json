@@ -24,17 +24,17 @@
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-03T07:54:32+0000"
+      "synchro_le": "2026-08-03T08:56:10+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": "2026-08-03T07:53:14+0000"
+      "synchro_le": "2026-08-03T08:53:53+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T07:56:29+0000",
+    "genere_le": "2026-08-03T08:56:19+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,
