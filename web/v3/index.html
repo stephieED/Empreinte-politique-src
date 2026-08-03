@@ -25,7 +25,7 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
   body {
     font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
     background: var(--bg);
@@ -1021,10 +1021,11 @@
     flex-direction: column;
     justify-content: space-between;
   }
+  .deconstructed .party-kpi { min-height: 175px; min-width: 0; padding: 1rem; border-right: 2px solid var(--line); overflow: hidden; }
   .deconstructed .party-kpi:nth-child(2) { background: var(--accent-soft); }
   .deconstructed .party-kpi:nth-child(3) { background: var(--acid); }
   .deconstructed .party-kpi:nth-child(4) { background: var(--pink); border-right: 0; }
-  .deconstructed .party-kpi b { display: block; font: 400 clamp(2.4rem, 6vw, 5rem)/0.9 'Archivo Black', sans-serif; }
+  .deconstructed .party-kpi b { display: block; font: 400 clamp(2.4rem, 6vw, 5rem)/0.9 'Archivo Black', sans-serif; word-break: break-word; }
   .deconstructed .party-kpi span { font: 600 0.65rem/1.45 'IBM Plex Mono', monospace; text-transform: uppercase; }
   .deconstructed .party-section { padding: var(--panel-section-padding-fluid); border-bottom: var(--border-width) solid var(--line); }
   .deconstructed .party-section h2 { max-width: 12ch; font-size: var(--section-title-size-fluid); line-height: 0.88; }
@@ -1210,14 +1211,12 @@
     padding: 0.25rem;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 0.15rem;
   }
-  .deconstructed .panel-dot svg {
-    width: 1.05rem;
-    height: 1.05rem;
-    margin: 0 auto 0.18rem;
-  }
-  .deconstructed .panel-dot small { font-size: 0.55rem; text-transform: uppercase; }
+  .deconstructed .panel-dot svg { width: 20px; height: 20px; margin: 0 auto 0.18rem;}
+  .deconstructed .panel-dot small { font-size: 0.55rem; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
   .deconstructed .panel-dot.active { background: var(--acid); color: var(--text); }
   .deconstructed .swipe-deck {
     display: block;
@@ -1414,6 +1413,43 @@
     .deconstructed .home-candidates { grid-column: 4 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
+  /* Responsive — 375px : aucune carte, texte ou bouton ne déborde du viewport */
+  @media (max-width: 480px) {
+    .deconstructed .versus-metrics { grid-template-columns: repeat(2, 1fr); }
+    .deconstructed .kpi-value { font-size: clamp(1.6rem, 6vw, 5rem); }
+    .deconstructed .panel-dot small { font-size: 0.5rem; }
+  }
+
+  /* Légende des couleurs — composant explicatif positionné en tête de section résumé */
+  .deconstructed .color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 2px solid var(--line);
+    font: 600 0.6rem/1.5 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+  }
+  .deconstructed .color-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+  .deconstructed .color-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .deconstructed .color-swatch--acid { background: var(--acid); }
+  .deconstructed .color-swatch--pink { background: var(--pink); }
+  .deconstructed .color-swatch--soft { background: var(--accent-soft); }
+  .deconstructed .color-swatch--vert { background: var(--vert); }
+  .deconstructed .color-swatch--rouge { background: var(--rouge); }
+  .deconstructed .color-swatch--muted { background: var(--muted); }
+
   .express-launch {
     margin-top: var(--space-16);
     padding: 0.7rem 0.9rem;
@@ -1584,6 +1620,7 @@
 
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
+    const PANEL_ICON_ATTRS = 'viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
     const PANEL_META = {
       mandats: { label: "Mandats", icon: UI_ICONS.briefcase },
       textes: { label: "Textes", icon: UI_ICONS.fileText },
@@ -2181,6 +2218,15 @@
               </div>
             </div>
           </div>
+
+          <aside class="color-legend" aria-label="Légende des couleurs utilisées">
+            <span class="color-legend-item"><span class="color-swatch color-swatch--acid"></span>Jaune — accent actif</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--pink"></span>Rose — signal éditorial</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--soft"></span>Bleu — repère secondaire</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--vert"></span>Vert — vote pour</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--rouge"></span>Rouge — vote contre</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--muted"></span>Gris — abstention</span>
+          </aside>
 
           ${themeDistHtml}
 
