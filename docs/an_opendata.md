@@ -1,98 +1,160 @@
-# OpenData de l'Assemblée nationale (scrutins, amendements)
+# National Assembly Open Data (votes, amendments)
 
-Ce projet télécharge deux jeux de données volumineux directement depuis le
-catalogue OpenData officiel de l'Assemblée nationale
-(<http://data.assemblee-nationale.fr>) : les scrutins (votes nominatifs) et
-les amendements. Cette page réunit les repères utiles pour maintenir/étendre
-ce code (`src/candidate_profile.py`) sans avoir à re-explorer le catalogue.
+This project downloads two large datasets directly from the official National
+Assembly Open Data catalog (<http://data.assemblee-nationale.fr>): votes
+(roll-call records) and amendments. This page gathers practical references to
+maintain/extend this code (`src/candidate_profile.py`) without re-exploring the
+catalog every time.
 
-## Schéma général des URLs
+## General URL pattern
 
 ```
-https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/loi/{dossier}/{fichier}.zip
+https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/loi/{dataset}/{file}.zip
 ```
 
-- `{legislature}` : `13` à `17` (17 = législature en cours).
-- `{dossier}` : varie selon le jeu de données ET la législature (voir tableaux
-  ci-dessous) — ne pas supposer qu'il est stable dans le temps.
-- Les pages de catalogue (`travaux-parlementaires/...`) sont rendues en JS et
-  n'exposent pas les liens `.zip` via un simple fetch HTML. Les sous-pages
-  "tous les X" (ex. `travaux-parlementaires/amendements/tous-les-amendements`,
-  ou `archives-16e/amendements/tous-les-amendements` pour les législatures
-  archivées) intègrent en revanche ces liens directement dans le HTML statique
-  — c'est la méthode utilisée pour retrouver les URLs ci-dessous.
+- `{legislature}`: `13` to `17` (`17` is current).
+- `{dataset}`: varies by data family and legislature (see tables below) - do
+  not assume temporal stability.
+- Catalog pages rendered in JS do not expose `.zip` links via naive HTML fetch.
+  The "all X" subpages (for example amendments pages) include links in static
+  HTML and are used as the reliable discovery path.
 
-## Scrutins (votes nominatifs)
+## Votes (roll-call records)
 
-| Législature | Dossier | Fichier |
+| Legislature | Dataset | File |
 |---|---|---|
 | 17, 16 | `scrutins` | `Scrutins.json.zip` |
 | 15 | `scrutins` | `Scrutins_XV.json.zip` |
 | 14 | `scrutins` | `Scrutins_XIV.json.zip` |
-| 13 | — | pas de jeu de données équivalent disponible |
+| 13 | - | no equivalent dataset available |
 
-Voir `AN_SCRUTINS_ZIP_NAME` / `fetch_votes_officiels` dans
-[../src/candidate_profile.py](../src/candidate_profile.py).
+See `AN_SCRUTINS_ZIP_NAME` / `fetch_votes_officiels` in
+`src/candidate_profile.py`.
 
-## Amendements
+## Amendments
 
-| Législature | Dossier | Fichier | Taille approx. |
+| Legislature | Dataset | File | Approx. size |
 |---|---|---|---|
-| 17 (en cours, mise à jour quotidienne) | `amendements_div_legis` | `Amendements.json.zip` | ~283 Mo |
-| 16 (archivée) | `amendements_div_legis` | `Amendements.json.zip` | ~363 Mo |
-| 15 (archivée) | `amendements_legis` | `Amendements_XV.json.zip` | ~618 Mo (le champ `size` du catalogue data.gouv.fr indique 48 Mo, ce qui est visiblement obsolète — se fier à la taille réelle du téléchargement) |
-| 14, 13 | — | pas de jeu de données équivalent (toutes les combinaisons de dossiers testées renvoient 404) |
+| 17 (ongoing, daily updates) | `amendements_div_legis` | `Amendements.json.zip` | ~283 MB |
+| 16 (archived) | `amendements_div_legis` | `Amendements.json.zip` | ~363 MB |
+| 15 (archived) | `amendements_legis` | `Amendements_XV.json.zip` | ~618 MB |
+| 14, 13 | - | no equivalent dataset (tested paths return 404) |
 
-Le zip contient un fichier JSON par amendement (~123k fichiers pour la 17e
-législature), sous `json/{dossier}/{texte}/AMANR5L{legislature}...json`. Voir
-`AN_AMENDEMENTS_PATH` / `fetch_amendements_officiels` dans
-[../src/candidate_profile.py](../src/candidate_profile.py) — l'index par
-acteur est construit en itérant le zip en mémoire (sans extraction sur disque,
-vu le nombre de fichiers).
+The ZIP contains one JSON per amendment (~123k files for legislature 17),
+under `json/{dataset}/{text}/AMANR5L{legislature}...json`.
+See `AN_AMENDEMENTS_PATH` / `fetch_amendements_officiels` in
+`src/candidate_profile.py`.
 
-### Champs clés du JSON (constatés empiriquement sur la 17e législature)
+### Key JSON fields (empirical observations on legislature 17)
 
-- `amendement.signataires.auteur.acteurRef` (`PAxxxxx`) : à rapprocher de
-  `identite.url_an_ou_senat` dans nos profils bruts (qui contient déjà cet
-  identifiant, ex. `.../fiche/OMC_PA1567`) via `_extract_acteur_ref()`.
-- `.signataires.auteur.typeAuteur` : `Député` / `Gouvernement` / `Rapporteur`
-  (`Commission` vu aussi occasionnellement dans l'échantillon).
-- `.cycleDeVie.etatDesTraitements.etat.libelle` et `.sousEtat.libelle` :
-  couple non trivial — `etat` porte la catégorie principale (discuté,
-  irrecevable, irrecevable art. 40, retiré...) et `sousEtat` porte le
-  sort/motif précis. Voir `_derive_amendement_sort()` et
-  `_AMENDEMENT_SORT_MAP` dans `candidate_profile.py` pour le mapping complet,
-  dérivé d'un échantillonnage de la distribution jointe (etat, sousEtat) sur
-  ~3000 amendements.
-- `.texteLegislatifRef` : code source brut du texte visé (pas un titre
-  lisible) — stocké tel quel dans `texte_vise`, résoudre un vrai titre
-  nécessiterait un jeu de données dossiers/textes séparé (non fait).
-- `.representations.representation.contenu.documentURI` : ne résout vers
-  aucune URL publique fonctionnelle testée (3 domaines essayés) — `source_url`
-  reste `None` pour tous les amendements.
+- `amendement.signataires.auteur.acteurRef` (`PAxxxxx`): linked against
+  `identite.url_an_ou_senat` in raw profiles (which already contains the AN ID)
+  via `_extract_acteur_ref()`.
+- `.signataires.auteur.typeAuteur`: `Depute`, `Gouvernement`, `Rapporteur`
+  (`Commission` seen occasionally).
+- `.cycleDeVie.etatDesTraitements.etat.libelle` and `.sousEtat.libelle`:
+  non-trivial pair used by `_derive_amendement_sort()` and
+  `_AMENDEMENT_SORT_MAP` in `candidate_profile.py`.
+- `.texteLegislatifRef`: raw target code, not a human title.
+- `.representations.representation.contenu.documentURI`: currently does not
+  resolve to a stable public URL in tested cases.
 
-## Archive « Schémas et documentation des données législatives »
+## Archive: "Schemas and legislative data documentation"
 
 <http://data.assemblee-nationale.fr/static/openData/repository/SCHEMAS/Schemas.zip>
-(MD5 `67a8dd5b74dea0cc688003b3400c879e`, daté 2016-11-25) contient une
-documentation Sphinx (HTML) décrivant le modèle de données législatif de
-l'Assemblée (concepts, XSD commentés, glossaire). Utile pour le contexte
-général, mais **daté** : le XSD des amendements qu'elle contient (schéma
-v0.9.8) utilise encore l'ancien format à plat (`etat`/`sortEnSeance`) et ne
-mentionne ni `cycleDeVie`/`etatDesTraitements`/`sousEtat` ni `documentURI`,
-qui sont apparus dans le JSON actuellement exposé. À prendre comme repère
-conceptuel complémentaire, pas comme source de vérité sur le format JSON
-réellement consommé par `candidate_profile.py` (celui-ci a été déterminé par
-échantillonnage direct des données réelles).
+(MD5 `67a8dd5b74dea0cc688003b3400c879e`, dated 2016-11-25) contains Sphinx
+HTML documentation for the Assembly data model. Useful context, but **outdated**
+for current JSON payloads.
 
-Éléments utiles malgré tout, car ils confirment/complètent notre mapping :
+Still useful confirmations:
 
-- Enum historique de `typeAuteur` : `Gouvernement`, `Rapporteur`, `Depute`
-  (cohérent avec `_AMENDEMENT_TYPE_AUTEUR_MAP`).
-- Enum historique de `sortEnSeance` : `Adopté`, `Rejeté`, `Non soutenu`,
-  `Tombé`, `Irrecevable Art 40C`, `Irrecevable Art 41c`, `Irrecevable Art 44c`,
-  `Retiré` — confirme que l'irrecevabilité est structurellement liée à un
-  article constitutionnel précis (40/41/44 historiquement ; le JSON actuel
-  référence en plus les art. 45/98/37/38/42 via `sousEtat`), ce qui justifie
-  la simplification actuelle du schéma pivot (`art. 40` / `art. 45` uniquement
-  — voir `schema_pivot.KNOWN_BASES_IRRECEVABILITE`).
+- Historical `typeAuteur` values match `_AMENDEMENT_TYPE_AUTEUR_MAP`.
+- Historical `sortEnSeance` values confirm procedural constitutional
+  inadmissibility distinctions.
+
+## Actors / mandates / bodies (official identity + mandates)
+
+`.../17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip`
+(~4.9 MB, daily updates).
+
+Empirically documented structure:
+
+- Mixed entity types in one ZIP:
+  - `json/acteur/PA{id}.json`
+  - `json/organe/PO{id}.json`
+  - `json/deport/DPTR5L{leg}PA{id}D{n}.json`
+- `acteur.uri_hatvp`: link to HATVP declaration (not yet in current pivot schema).
+- `acteur.mandats.mandat[].typeOrgane`: wide set of observed types (`GP`,
+  `COMPER`, `PARPOL`, `MISINFO*`, `DELEG`, `BUREAU`, `CMP`, `GOUVERNEMENT`,
+  `MINISTERE`, ...).
+- `acteur.mandats.mandat[].infosQualite.codeQualite/libQualite`: free-text labels.
+
+## Legislative files (bulk, multi-legislature in one file)
+
+`.../17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip` (~10 MB,
+daily updates).
+
+Empirical findings:
+
+- `dossierParlementaire.legislature` spans `{8, 11, 12, 13, 14, 15, 16, 17}`
+  in a single file.
+- `titreDossier.titre`: full human-readable title.
+- `procedureParlementaire.{code,libelle}`: closed set of observed values.
+- `initiateur.acteurs.acteur[]`: actor-level bill initiators.
+- `actesLegislatifs` is a recursive tree, including official reporters and
+  procedural milestones.
+
+Implemented path:
+
+- `candidate_profile.fetch_textes_portes_officiels` /
+  `_build_acteur_textes_portes_index` build `acteurRef -> dossiers` with known
+  factual roles (`auteur`, `rapporteur`, `co-rapporteur`) and inferred
+  procedural stage.
+- This replaces legacy Nos* dossier lists for deputies.
+- `merge_profile.py` drops `dossiers_legislatifs`/`textes_portes` entries that
+  have no factual `role` during migration/merge.
+
+## Parliamentary questions (written/oral/government)
+
+Unlike actors/files, these datasets use per-legislature paths:
+`.../{legislature}/questions/{dataset}/{file}.json.zip`
+
+| Type | Dataset | File | Approx. size (17th) |
+|---|---|---|---|
+| Written (QE) | `questions_ecrites` | `Questions_ecrites.json.zip` | ~45 MB |
+| Government (QG) | `questions_gouvernement` | `Questions_gouvernement.json.zip` | ~5.2 MB |
+| Oral without debate (QOSD) | `questions_orales_sans_debat` | `Questions_orales_sans_debat.json.zip` | ~3.1 MB |
+
+Useful fields:
+
+- `question.auteur.identite.acteurRef`: direct elected-official ID.
+- `question.auteur.groupe.*`: group at question date.
+- `question.minInt.developpe`: queried ministry.
+- `question.indexationAN.analyses.analyse`: short subject summary.
+- `question.textesQuestion...` and `question.textesReponse...`: full texts and
+  publication dates.
+
+Implemented in code:
+
+- `candidate_profile._parse_question_entry`
+- `_build_acteur_questions_index`
+- `fetch_questions_officielles`
+- Integration in `build_profile()` and normalization in
+  `normalize_nosdeputes._normalize_intervention`
+- Merge in `merge_profile.merge_raw_profile`
+
+## Agenda / meetings (committees) - low priority
+
+`.../17/vp/reunions/Agenda.json.zip` (~7.8 MB).
+
+Describes committee/plenary meetings (location, agenda, refs), but data is
+organized by meeting/body rather than directly by `acteurRef`. Useful for
+procedural chronology, not yet implemented.
+
+## Extra-parliamentary bodies (CSV) - low priority
+
+`.../17/amo/oep_csv_opendata/liste_organismes_extra_parlementaires_excel.csv`
+(~1 MB, `;` separator, likely Latin-1 encoding).
+
+Contains free-text member names rather than stable actor IDs, making reliable
+matching risky (homonyms). Not implemented.

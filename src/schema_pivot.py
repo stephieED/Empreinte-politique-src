@@ -18,6 +18,17 @@ Format d'un profil pivot v1 :
     "chambre": "AN",                         # "AN" | "Senat" | "PE" | "mairie" | null
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
+    "identite": {                            # bloc biographique, tout est nullable/optionnel
+        "profession": "Avocat",              # activité professionnelle déclarée (nosdeputes)
+        "date_naissance": "1951-08-19",       # ISO-8601, date seule (nosdeputes ou AN)
+        "lieu_naissance": null,              # ville + département/pays, texte libre ; fourni
+                                             # uniquement par le référentiel AN (acteurs), pas nosdeputes
+        "num_circo": "13",                    # numéro de circonscription tel que fourni par la
+                                             # source ; absent pour un sénateur ou un mandat sans circonscription
+        "uri_hatvp": null,                   # lien vers la déclaration HATVP (Haute Autorité pour
+                                             # la Transparence de la Vie Publique), source AN (acteurs)
+        "source_url": null                   # URL de la fiche source utilisée pour ce bloc
+    },
     "sources": [                             # traçabilité de chaque source utilisée
         {
             "type": "nosdeputes",            # "nosdeputes" | "nossenateurs" |
@@ -85,7 +96,7 @@ Format d'un profil pivot v1 :
             "type_rapport": null,            # nomenclature officielle, descriptive uniquement :
                                              # "rapporteur_fond" | "rapporteur_avis" |
                                              # "rapporteur_special_budget" | "mission_information"
-                                             # | null
+                                             # | "rapporteur_general" | null
             "stade_procedural": null,        # "depose" | "examine_commission" |
                                              # "inscrit_ordre_jour" | "discute_seance" |
                                              # "adopte" | "promulgue" | null
@@ -120,7 +131,13 @@ Format d'un profil pivot v1 :
             "fonction": "Rapporteur",        # rôle institutionnel au moment de l'intervention
             "format": "prise_de_parole_developpee",  # ou "reaction_courte"
             "mots_cles": ["budget", "fiscalité"],
-            "source_url": "https://..."
+            "source_url": "https://...",
+            # Champs supplémentaires présents uniquement si type_detail == "question"
+            # (questions parlementaires officielles, source open data AN) :
+            "sous_type": "QE",               # "QE" (écrite) | "QG" (au gouvernement) | "QOSD" (orale sans débat)
+            "ministere": "Ministère...",     # ministère interrogé (texte libre)
+            "reponse": "...",                # texte de la réponse, si disponible (null sinon)
+            "date_reponse": "2023-04-20",    # date JO de la réponse (null si pas encore répondu)
         }
     ],
     "tags_thematiques": ["budget", "fiscalité"],  # bruts, avant harmonisation Phase 4
@@ -193,6 +210,7 @@ KNOWN_MODES_DECLENCHEMENT: frozenset[str] = frozenset({"droit_tirage", "demande_
 # de valorisation éditoriale).
 KNOWN_TYPES_RAPPORT: frozenset[str] = frozenset({
     "rapporteur_fond", "rapporteur_avis", "rapporteur_special_budget", "mission_information",
+    "rapporteur_general",
 })
 
 # Stade procédural d'un texte, pour identifier ce qui a été réellement débattu.
@@ -241,6 +259,7 @@ def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
         "chambre": None,
         "parti": None,
         "groupe": None,
+        "identite": None,
         "sources": [],
         "mandats": [],
         "votes": [],
@@ -298,6 +317,10 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
         errors.append(
             f"'chambre' non reconnue : {chambre!r}. Valeurs connues : {sorted(KNOWN_CHAMBRES)}."
         )
+
+    identite = profil.get("identite")
+    if identite is not None and not isinstance(identite, dict):
+        errors.append(f"'identite' doit être un dict ou null, reçu : {type(identite).__name__}.")
 
     for key in _LIST_KEYS:
         val = profil.get(key)

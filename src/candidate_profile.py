@@ -95,6 +95,51 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 
+# Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
+# multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
+# uniquement pour resoudre le code source d'un texte (texteLegislatifRef d'un
+# amendement, ex. "PIONANR5L17B0904") vers son titre lisible (titreDossier.titre).
+AN_DOSSIERS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
+DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
+
+# Acteurs (deputes actifs) + mandats + organes (Assemblee nationale) : un seul
+# fichier bulk, mais limite aux deputes ACTIFS de la legislature en cours (577
+# constates sur la 17e, contre 7126 organes historiques et 37 deports dans le
+# meme zip, non exploites ici). Utilise pour enrichir schema_pivot.identite
+# (profession/date_naissance/lieu_naissance/uri_hatvp) au-dela de ce que fournit
+# nosdeputes.fr : aucune couverture pour les elus dont le mandat est termine.
+AN_ACTEURS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
+ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
+
+# Questions parlementaires (écrites, au gouvernement, orales sans débat).
+# Même pattern d'URL que scrutins/amendements. Un seul parseur générique suffit
+# pour les 3 types (seul @xsi:type diffère). URLs confirmées pour les 16e et 17e
+# législatures ; les noms pour 14/15 suivent la convention _XIV/_XV des autres jeux
+# (inférés — échoueront silencieusement si le fichier n'existe pas côté AN).
+AN_QUESTIONS_PATH: dict[str, dict[str, tuple[str, str]]] = {
+    "17": {
+        "QE":   ("questions_ecrites",           "Questions_ecrites.json.zip"),
+        "QG":   ("questions_gouvernement",      "Questions_gouvernement.json.zip"),
+        "QOSD": ("questions_orales_sans_debat", "Questions_orales_sans_debat.json.zip"),
+    },
+    "16": {
+        "QE":   ("questions_ecrites",           "Questions_ecrites.json.zip"),
+        "QG":   ("questions_gouvernement",      "Questions_gouvernement.json.zip"),
+        "QOSD": ("questions_orales_sans_debat", "Questions_orales_sans_debat.json.zip"),
+    },
+    "15": {
+        "QE":   ("questions_ecrites",           "Questions_ecrites_XV.json.zip"),
+        "QG":   ("questions_gouvernement",      "Questions_gouvernement_XV.json.zip"),
+        "QOSD": ("questions_orales_sans_debat", "Questions_orales_sans_debat_XV.json.zip"),
+    },
+    "14": {
+        "QE":   ("questions_ecrites",           "Questions_ecrites_XIV.json.zip"),
+        "QG":   ("questions_gouvernement",      "Questions_gouvernement_XIV.json.zip"),
+        "QOSD": ("questions_orales_sans_debat", "Questions_orales_sans_debat_XIV.json.zip"),
+    },
+}
+QUESTIONS_CACHE_DIR = Path(".cache") / "questions_an"
+
 # Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
 # appeler cette fonction simultanément pour des législatures différentes (pas de blocage
 # entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
@@ -106,6 +151,31 @@ _SCRUTINS_LOCKS_META = threading.Lock()
 _AMENDEMENTS_LOCKS: dict[str, threading.Lock] = {}
 _AMENDEMENTS_LOCKS_META = threading.Lock()
 
+# Même principe que _SCRUTINS_LOCKS, pour l'index des questions officielles.
+_QUESTIONS_LOCKS: dict[str, threading.Lock] = {}
+_QUESTIONS_LOCKS_META = threading.Lock()
+
+# Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
+# pas de decoupage par legislature).
+_DOSSIERS_TITRE_LOCK = threading.Lock()
+
+# Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
+# decoupage par legislature).
+_ACTEURS_IDENTITE_LOCK = threading.Lock()
+
+# Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
+# depuis le même fichier bulk que l'index titre (dossiers legislatifs).
+_DOSSIERS_TEXTES_PORTES_LOCK = threading.Lock()
+
+# Nomenclature officielle des types de rapport (typeRapporteur, dossiers
+# legislatifs Assemblee nationale) -> nomenclature du schema pivot.
+TYPE_RAPPORTEUR_MAP = {
+    "rapporteur": "rapporteur_fond",
+    "rapporteur pour avis": "rapporteur_avis",
+    "rapporteur spécial": "rapporteur_special_budget",
+    "rapporteur général": "rapporteur_general",
+}
+
 # Préfixes des messages d'avertissement (warnings) ajoutés à profile["meta"]["warnings"].
 # Exposés en constantes (plutôt qu'en texte libre dupliqué) pour que merge_profile.py
 # puisse détecter de façon fiable les warnings devenus obsolètes après fusion
@@ -115,6 +185,7 @@ WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
+WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -131,6 +202,14 @@ def _get_amendements_lock(legislature: str) -> threading.Lock:
         if legislature not in _AMENDEMENTS_LOCKS:
             _AMENDEMENTS_LOCKS[legislature] = threading.Lock()
         return _AMENDEMENTS_LOCKS[legislature]
+
+
+def _get_questions_lock(legislature: str) -> threading.Lock:
+    """Retourne (ou crée) le verrou associé à une législature donnée (questions)."""
+    with _QUESTIONS_LOCKS_META:
+        if legislature not in _QUESTIONS_LOCKS:
+            _QUESTIONS_LOCKS[legislature] = threading.Lock()
+        return _QUESTIONS_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -593,9 +672,8 @@ def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
 
     record = {
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
-        # titre lisible : aucun jeu de donnees open data ne permet aujourd'hui de
-        # le resoudre vers l'intitule du texte sans travail de rapprochement
-        # supplementaire (hors perimetre de cette collecte).
+        # titre lisible : resolu en titre humain a posteriori si possible, voir
+        # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
         "texte_vise": amendement.get("texteLegislatifRef"),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
@@ -684,6 +762,395 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
         return index
 
 
+def _collect_texte_codes(node: Any, codes: set[str]) -> None:
+    """Parcourt récursivement un dossier législatif brut et collecte tous les
+    codes de texte référencés (clés `texteAssocie`/`refTexteAssocie`), à
+    n'importe quel niveau de l'arbre `actesLegislatifs` (récursif, profondeur
+    variable selon le dossier)."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in ("texteAssocie", "refTexteAssocie") and isinstance(value, str):
+                codes.add(value)
+            else:
+                _collect_texte_codes(value, codes)
+    elif isinstance(node, list):
+        for item in node:
+            _collect_texte_codes(item, codes)
+
+
+def _build_texte_titre_index() -> dict[str, str]:
+    """Construit (et met en cache sur disque) un index code de texte -> titre
+    lisible du dossier, à partir du jeu de données bulk des dossiers
+    législatifs (un seul fichier, déjà multi-législatures). Utilisé pour
+    résoudre `texte_vise` des amendements (sinon un simple code source, ex.
+    "PIONANR5L17B0904"). Non-fatal en cas d'échec (retourne {})."""
+    with _DOSSIERS_TITRE_LOCK:
+        index_path = DOSSIERS_CACHE_DIR / "index_texte_titre.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
+        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
+            return {}
+
+        index: dict[str, str] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/dossierParlementaire/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
+                    if not isinstance(dossier, dict):
+                        continue
+                    titre = (dossier.get("titreDossier") or {}).get("titre")
+                    if not titre:
+                        continue
+                    codes: set[str] = set()
+                    _collect_texte_codes(dossier, codes)
+                    for code in codes:
+                        index[code] = titre
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive des dossiers législatifs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+# Stades procéduraux, du moins au plus avancé : sert à déterminer le stade le
+# plus avancé réellement atteint par un dossier (un seul stade par dossier,
+# pas par acte).
+_STADE_RANKS = {
+    "depose": 1,
+    "examine_commission": 2,
+    "discute_seance": 3,
+    "adopte": 4,
+    "promulgue": 5,
+}
+
+
+def _stade_from_code_acte(code_acte: Optional[str], statut_libelle: Optional[str]) -> Optional[str]:
+    """Déduit un stade procédural (nomenclature du schéma pivot) à partir du
+    code d'acte officiel (`codeActe`) d'un dossier législatif. Volontairement
+    conservateur : ne retient que des signaux non ambigus (voir
+    docs/an_opendata.md, section dossiers législatifs)."""
+    if not code_acte:
+        return None
+    if "PROM" in code_acte:
+        return "promulgue"
+    if code_acte.endswith("-DEBATS-DEC"):
+        if statut_libelle and statut_libelle.strip().lower().startswith("adopt"):
+            return "adopte"
+        return "discute_seance"
+    if "DEBATS" in code_acte:
+        return "discute_seance"
+    if "COM" in code_acte:
+        return "examine_commission"
+    if "DEPOT" in code_acte:
+        return "depose"
+    return None
+
+
+def _collect_initiateurs(dossier: dict, acteur_roles: dict[str, tuple[str, Optional[str]]]) -> None:
+    """Ajoute à `acteur_roles` chaque acteur cité comme initiateur (auteur) du
+    dossier (`initiateur.acteurs.acteur`, dict unique ou liste selon les cas)."""
+    initiateur = dossier.get("initiateur")
+    if not isinstance(initiateur, dict):
+        return
+    acteurs = (initiateur.get("acteurs") or {}).get("acteur")
+    items = acteurs if isinstance(acteurs, list) else [acteurs]
+    for item in items:
+        if isinstance(item, dict):
+            acteur_ref = item.get("acteurRef")
+            if isinstance(acteur_ref, str) and acteur_ref:
+                acteur_roles.setdefault(acteur_ref, ("auteur", None))
+
+
+def _collect_dossier_facts(
+    node: Any,
+    acteur_roles: dict[str, tuple[str, Optional[str]]],
+    dates: list[str],
+    stades: list[str],
+) -> None:
+    """Parcourt récursivement l'arbre `actesLegislatifs` d'un dossier et
+    collecte : le rôle factuel de chaque rapporteur (`rapporteurs`, plusieurs
+    rapporteurs sur un même acte -> "co-rapporteur"), les dates d'acte
+    (`dateActe`) et les stades procéduraux atteints (`codeActe`/`statutConclusion`)."""
+    if isinstance(node, dict):
+        date_acte = node.get("dateActe")
+        if isinstance(date_acte, str) and date_acte:
+            dates.append(date_acte[:10])
+
+        code_acte = node.get("codeActe")
+        if isinstance(code_acte, str):
+            statut = node.get("statutConclusion")
+            statut_libelle = statut.get("libelle") if isinstance(statut, dict) else None
+            stade = _stade_from_code_acte(code_acte, statut_libelle)
+            if stade:
+                stades.append(stade)
+
+        rapporteurs = node.get("rapporteurs")
+        if isinstance(rapporteurs, dict):
+            entries = rapporteurs.get("rapporteur")
+            items = [it for it in (entries if isinstance(entries, list) else [entries]) if isinstance(it, dict)]
+            role = "co-rapporteur" if len(items) > 1 else "rapporteur"
+            for item in items:
+                acteur_ref = item.get("acteurRef")
+                if isinstance(acteur_ref, str) and acteur_ref:
+                    type_rapport = TYPE_RAPPORTEUR_MAP.get((item.get("typeRapporteur") or "").strip().lower())
+                    acteur_roles.setdefault(acteur_ref, (role, type_rapport))
+
+        for key, value in node.items():
+            if key != "rapporteurs":
+                _collect_dossier_facts(value, acteur_roles, dates, stades)
+    elif isinstance(node, list):
+        for item in node:
+            _collect_dossier_facts(item, acteur_roles, dates, stades)
+
+
+def _collect_acteur_roles(dossier: dict) -> tuple[dict[str, tuple[str, Optional[str]]], Optional[str], Optional[str], Optional[str]]:
+    """Combine initiateurs et rapporteurs d'un dossier en un seul mapping
+    acteurRef -> (role, type_rapport), et calcule le stade procédural le plus
+    avancé et les dates min/max de l'ensemble du dossier."""
+    acteur_roles: dict[str, tuple[str, Optional[str]]] = {}
+    _collect_initiateurs(dossier, acteur_roles)
+    dates: list[str] = []
+    stades: list[str] = []
+    _collect_dossier_facts(dossier.get("actesLegislatifs"), acteur_roles, dates, stades)
+    date_min = min(dates) if dates else None
+    date_max = max(dates) if dates else None
+    stade = max(stades, key=lambda s: _STADE_RANKS[s]) if stades else None
+    return acteur_roles, stade, date_min, date_max
+
+
+def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de
+    dossiers législatifs où l'acteur a un rôle factuel connu (auteur,
+    rapporteur ou co-rapporteur), à partir du jeu de données bulk des dossiers
+    législatifs (même archive que `_build_texte_titre_index`).
+
+    Contrairement à la liste NosDéputés (voir `fetch_dossiers_for_legislatures`),
+    qui renvoie l'intégralité des dossiers d'une législature identiquement pour
+    tous les élus (role toujours null, voir docs/an_opendata.md), cet index est
+    réellement propre à chaque acteur. Non-fatal en cas d'échec (retourne {})."""
+    with _DOSSIERS_TEXTES_PORTES_LOCK:
+        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
+        if not zip_path.is_file():
+            print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
+            try:
+                zip_path.parent.mkdir(parents=True, exist_ok=True)
+                with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                    resp.raise_for_status()
+                    with open(zip_path, "wb") as out:
+                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                            if chunk:
+                                out.write(chunk)
+            except (requests.RequestException, OSError) as exc:
+                print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
+                return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/dossierParlementaire/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
+                    if not isinstance(dossier, dict):
+                        continue
+                    titre_dossier = dossier.get("titreDossier") or {}
+                    titre = titre_dossier.get("titre")
+                    titre_chemin = titre_dossier.get("titreChemin")
+                    if not titre:
+                        continue
+                    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+                    if not acteur_roles:
+                        continue
+                    legislature = dossier.get("legislature")
+                    source_url = (
+                        f"https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titre_chemin}"
+                        if legislature and titre_chemin else None
+                    )
+                    for acteur_ref, (role, type_rapport) in acteur_roles.items():
+                        index.setdefault(acteur_ref, []).append({
+                            "id": dossier.get("uid"),
+                            "titre": titre,
+                            "role": role,
+                            "type_rapport": type_rapport,
+                            "stade_procedural": stade,
+                            "date_min": date_min,
+                            "date_max": date_max,
+                            "legislature": legislature,
+                            "source_url": source_url,
+                        })
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive des dossiers législatifs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+    """Récupère les dossiers législatifs où l'élu a un rôle factuel connu
+    (auteur, rapporteur ou co-rapporteur), depuis le jeu de données officiel
+    des dossiers législatifs (Assemblée nationale). Remplace la liste NosDéputés
+    (voir `fetch_dossiers_for_legislatures`), qui n'est pas propre à l'élu."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return []
+    index = _build_acteur_textes_portes_index()
+    entries = index.get(acteur_ref, [])
+    return sorted(entries, key=lambda t: (t.get("date_max") or "", t.get("titre") or ""), reverse=True)
+
+
+def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pays: Optional[str]) -> Optional[str]:
+    """Formate ville/département/pays de naissance en un texte lisible.
+
+    Le département n'est pertinent que pour une naissance en France : pour un
+    pays étranger, on l'omet au profit du pays (ex. "Alger (Algérie)" plutôt
+    que d'ignorer l'information géographique disponible).
+    """
+    if pays and pays != "France":
+        complement = pays
+    else:
+        complement = departement
+    if ville and complement:
+        return f"{ville} ({complement})"
+    return ville or complement or None
+
+
+def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> champs
+    d'identité (profession, date/lieu de naissance, lien HATVP), à partir du
+    jeu de données des acteurs actifs de l'Assemblée nationale.
+
+    Limitation connue : ce jeu de données ne couvre QUE les député⋅e⋅s actifs
+    de la législature en cours (~577 sur la 17e) — aucune entrée pour un élu
+    dont le mandat est terminé. Non-fatal en cas d'échec (retourne {})."""
+    with _ACTEURS_IDENTITE_LOCK:
+        index_path = ACTEURS_CACHE_DIR / "index_identite.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        print(f"-> Téléchargement des acteurs actifs (Assemblée nationale) : {AN_ACTEURS_ZIP_URL}")
+        zip_path = ACTEURS_CACHE_DIR / "acteurs.zip"
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_ACTEURS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement des acteurs actifs : {exc}")
+            return {}
+
+        index: dict[str, dict[str, Any]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/acteur/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    acteur = data.get("acteur") if isinstance(data, dict) else None
+                    if not isinstance(acteur, dict):
+                        continue
+                    uid = acteur.get("uid")
+                    acteur_ref = uid.get("#text") if isinstance(uid, dict) else uid
+                    if not isinstance(acteur_ref, str) or not acteur_ref:
+                        continue
+
+                    etat_civil = acteur.get("etatCivil") or {}
+                    info_naissance = etat_civil.get("infoNaissance") or {}
+                    profession = (acteur.get("profession") or {}).get("libelleCourant")
+
+                    index[acteur_ref] = {
+                        "profession": profession,
+                        "date_naissance": info_naissance.get("dateNais"),
+                        "lieu_naissance": _format_lieu_naissance(
+                            info_naissance.get("villeNais"),
+                            info_naissance.get("depNais"),
+                            info_naissance.get("paysNais"),
+                        ),
+                        "uri_hatvp": acteur.get("uri_hatvp"),
+                    }
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive des acteurs actifs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[str, Any]]:
+    """Récupère les champs d'identité officiels (Assemblée nationale) pour un
+    député, si son acteurRef fait partie des député⋅e⋅s actifs référencés
+    (voir _build_acteur_identite_index). Retourne None si non trouvé/non
+    applicable (ex. sénateur, ancien député)."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return None
+    index = _build_acteur_identite_index()
+    return index.get(acteur_ref)
+
+
 def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
 
@@ -702,8 +1169,199 @@ def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str
         for record in index.get(acteur_ref, []):
             amendements.append({**record, "legislature": legislature})
 
+    if amendements:
+        titre_index = _build_texte_titre_index()
+        if titre_index:
+            for record in amendements:
+                titre = titre_index.get(record.get("texte_vise"))
+                if titre:
+                    record["texte_vise"] = titre
+
     amendements.sort(key=lambda a: a.get("date") or "", reverse=True)
     return amendements
+
+
+def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dict[str, Any]]]:
+    """Parse une entrée de question AN (QE/QG/QOSD) et retourne (acteur_ref, record) ou None.
+
+    `data` est un dict issu du JSON d'une question (contenant une clé "question").
+    `sous_type` est "QE", "QG" ou "QOSD" (dérivé du dossier/fichier de provenance).
+    """
+    question = data.get("question")
+    if not isinstance(question, dict):
+        return None
+
+    auteur = question.get("auteur") or {}
+    identite_auteur = auteur.get("identite") or {}
+    acteur_ref = identite_auteur.get("acteurRef")
+    if not acteur_ref:
+        return None
+
+    uid = question.get("uid")
+
+    # Sujet court (indexation AN — peut être une chaîne ou une liste de chaînes).
+    indexation = question.get("indexationAN") or {}
+    analyses = indexation.get("analyses") or {}
+    analyse = analyses.get("analyse")
+    if isinstance(analyse, list):
+        analyse = " ; ".join(str(a) for a in analyse if a)
+    elif not isinstance(analyse, str):
+        analyse = None
+
+    # Texte de la question + date JO (texteQuestion peut être un dict ou une liste de dicts).
+    textes_question = question.get("textesQuestion") or {}
+    texte_q_block = textes_question.get("texteQuestion")
+    if isinstance(texte_q_block, list):
+        texte_q_block = texte_q_block[-1] if texte_q_block else {}
+    if not isinstance(texte_q_block, dict):
+        texte_q_block = {}
+    texte_question = texte_q_block.get("texte") if isinstance(texte_q_block.get("texte"), str) else None
+    info_jo_q = texte_q_block.get("infoJO") or {}
+    date_question = info_jo_q.get("dateJO") if isinstance(info_jo_q.get("dateJO"), str) else None
+
+    # Texte de la réponse + date JO (optionnel, absent si la question n'a pas encore reçu de réponse).
+    textes_reponse = question.get("textesReponse") or {}
+    texte_r_block = textes_reponse.get("texteReponse")
+    if isinstance(texte_r_block, list):
+        texte_r_block = texte_r_block[-1] if texte_r_block else None
+    reponse: Optional[str] = None
+    date_reponse: Optional[str] = None
+    if isinstance(texte_r_block, dict):
+        reponse = texte_r_block.get("texte") if isinstance(texte_r_block.get("texte"), str) else None
+        info_jo_r = texte_r_block.get("infoJO") or {}
+        date_reponse = info_jo_r.get("dateJO") if isinstance(info_jo_r.get("dateJO"), str) else None
+
+    # Ministère interrogé.
+    min_int = question.get("minInt") or {}
+    ministere = min_int.get("developpe") if isinstance(min_int.get("developpe"), str) else None
+
+    # Groupe parlementaire au moment du dépôt.
+    groupe = auteur.get("groupe") or {}
+    groupe_sigle = groupe.get("abrege") if isinstance(groupe.get("abrege"), str) else None
+
+    return acteur_ref, {
+        "uid": uid,
+        "sous_type": sous_type,
+        "sujet": analyse,
+        "texte": texte_question,
+        "reponse": reponse,
+        "ministere": ministere,
+        "date": date_question,
+        "date_reponse": date_reponse,
+        "groupe_sigle": groupe_sigle,
+    }
+
+
+def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de questions.
+
+    Agrège les 3 types (QE/QG/QOSD) en un seul index par législature. Les ZIPs
+    ne sont jamais extraits sur disque : seul l'index final est mis en cache.
+    Thread-safe (verrou par législature), même principe que pour les amendements.
+    """
+    with _get_questions_lock(legislature):
+        index_path = QUESTIONS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        question_types = AN_QUESTIONS_PATH.get(legislature)
+        if not question_types:
+            return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+
+        for sous_type, (dossier, fichier) in question_types.items():
+            url = f"{AN_OPENDATA_BASE}/{legislature}/questions/{dossier}/{fichier}"
+            print(f"-> Téléchargement des questions {sous_type} (Assemblée nationale, législature {legislature}) : {url}")
+            zip_path = QUESTIONS_CACHE_DIR / legislature / f"{sous_type.lower()}.zip"
+            try:
+                zip_path.parent.mkdir(parents=True, exist_ok=True)
+                with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                    resp.raise_for_status()
+                    with open(zip_path, "wb") as out:
+                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                            if chunk:
+                                out.write(chunk)
+            except (requests.RequestException, OSError) as exc:
+                print(f"  [!] Questions {sous_type} législature {legislature} indisponibles : {exc}")
+                continue
+
+            try:
+                with zipfile.ZipFile(zip_path) as zf:
+                    noms = [n for n in zf.namelist() if n.endswith(".json")]
+                    for nom in noms:
+                        try:
+                            with zf.open(nom) as f:
+                                data = json.load(f)
+                        except (json.JSONDecodeError, KeyError):
+                            continue
+                        parsed = _parse_question_entry(data, sous_type)
+                        if parsed is None:
+                            continue
+                        acteur_ref, record = parsed
+                        index.setdefault(acteur_ref, []).append(record)
+            except zipfile.BadZipFile as exc:
+                print(f"  [!] Archive de questions {sous_type} législature {legislature} invalide : {exc}")
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+    """Récupère les questions parlementaires officielles (QE/QG/QOSD) d'un député.
+
+    Source : open data Assemblée nationale (data.assemblee-nationale.fr). Agrège
+    sur toutes les législatures pour lesquelles ces données sont disponibles (voir
+    AN_QUESTIONS_PATH). Retourne une liste d'entrées au format brut interventions[],
+    prêtes à être fusionnées dans profile["interventions"] avec type_detail="question".
+
+    Chaque entrée inclut les champs supplémentaires sous_type (QE/QG/QOSD),
+    ministere (ministère interrogé) et reponse (texte de la réponse si disponible).
+    """
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return []
+
+    questions: list[dict[str, Any]] = []
+    for legislature in AN_QUESTIONS_PATH:
+        index = _build_acteur_questions_index(legislature)
+        for record in index.get(acteur_ref, []):
+            uid = record.get("uid") or ""
+            source_url = (
+                f"https://questions.assemblee-nationale.fr/q{legislature}/{uid}.htm"
+                if uid else None
+            )
+            questions.append({
+                "id": f"question_{uid}" if uid else None,
+                "date": record.get("date"),
+                "type_detail": "question",
+                "sous_type": record.get("sous_type"),
+                "sujet": record.get("sujet"),
+                "texte": record.get("texte"),
+                "reponse": record.get("reponse"),
+                "date_reponse": record.get("date_reponse"),
+                "ministere": record.get("ministere"),
+                "groupe_sigle": record.get("groupe_sigle"),
+                "fonction": None,
+                "format": "prise_de_parole_developpee",
+                "mots_cles": [],
+                "url": source_url,
+                "url_detail": source_url,
+                "legislature": legislature,
+            })
+
+    questions.sort(key=lambda q: q.get("date") or "", reverse=True)
+    return questions
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
@@ -1245,6 +1903,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             "synchro_sources": {
                 "nosdeputes": None,
                 "assemblee_nationale": None,
+                "assemblee_nationale_questions": None,
             },
             "warnings": [],
         },
@@ -1269,13 +1928,30 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
                 "groupe_nom": parlementaire.get("nom_groupe_politique") or _groupe_label(parlementaire.get("groupe")),
                 "profession": parlementaire.get("profession"),
                 "date_naissance": parlementaire.get("date_naissance"),
+                "lieu_naissance": None,
                 "num_circo": parlementaire.get("num_circo") or parlementaire.get("num_deptt"),
                 "nb_mandats": parlementaire.get("nb_mandats"),
+                "uri_hatvp": None,
                 "url_an_ou_senat": parlementaire.get("url_an") or parlementaire.get("url_nosdeputes"),
             }
             profile["mandats"] = _extract_mandats(parlementaire)
             if _is_empty_payload(profile["mandats"]):
                 warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
+
+            # --- 5bis. Enrichissement identité (Assemblée nationale, référentiel des
+            # député⋅e⋅s actifs uniquement — voir fetch_identite_officielle). Ne
+            # remplace jamais une valeur nosdeputes déjà renseignée (source secondaire). ---
+            if chambre == "deputes":
+                try:
+                    identite_an = fetch_identite_officielle(profile["identite"].get("url_an_ou_senat"))
+                except Exception as exc:
+                    warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
+                    identite_an = None
+                if identite_an:
+                    profile["identite"]["profession"] = profile["identite"]["profession"] or identite_an.get("profession")
+                    profile["identite"]["date_naissance"] = profile["identite"]["date_naissance"] or identite_an.get("date_naissance")
+                    profile["identite"]["lieu_naissance"] = identite_an.get("lieu_naissance")
+                    profile["identite"]["uri_hatvp"] = identite_an.get("uri_hatvp")
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
     # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr
@@ -1359,6 +2035,16 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             reverse=True,
         )
 
+    # --- 8bis. Textes portés officiels (Assemblée nationale, rôle factuel
+    # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
+    # Remplace la liste NosDéputés ci-dessus, qui n'est pas propre à l'élu (mêmes
+    # dossiers pour tout le monde sur une législature donnée, role toujours null). ---
+    if chambre == "deputes" and profile.get("identite"):
+        try:
+            profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
+        except Exception as exc:
+            warnings.append(f"textes portés officiels (Assemblée nationale) indisponibles : {exc}")
+
     candidate_name = profile["identite"].get("nom_complet") if profile.get("identite") else slug.replace("-", " ").title()
     candidate_id = None
     if isinstance(identity_raw, dict):
@@ -1368,6 +2054,18 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
     profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+
+    # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
+    # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
+    # NosDéputés déjà collectées (type_detail="question", source AN structurée). ---
+    if chambre == "deputes" and profile.get("identite"):
+        try:
+            official_questions = fetch_questions_officielles(profile["identite"].get("url_an_ou_senat"))
+            if official_questions:
+                profile["interventions"].extend(official_questions)
+                profile["meta"]["synchro_sources"]["assemblee_nationale_questions"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        except Exception as exc:
+            warnings.append(f"{WARNING_PREFIX_QUESTIONS_INDISPONIBLES} : {exc}")
 
     return profile
 

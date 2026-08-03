@@ -2,7 +2,7 @@
   "_meta": {
     "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
     "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré."
-  }
+  },
   "groupes": [
     {
       "roster_chambre": "deputes",

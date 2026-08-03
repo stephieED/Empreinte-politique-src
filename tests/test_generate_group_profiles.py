@@ -180,3 +180,10 @@ def test_main_empty_groupes_returns_error(tmp_path):
     config_path.write_text(json.dumps({"groupes": []}), encoding="utf-8")
     rc = generate_group_profiles_main(["--config", str(config_path)])
     assert rc == 1
+
+
+def test_repository_groupes_reels_json_is_valid():
+    config_path = Path(__file__).resolve().parents[1] / "raw_data" / "groupes_reels.json"
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    assert isinstance(payload.get("groupes"), list)
+    assert payload["groupes"]

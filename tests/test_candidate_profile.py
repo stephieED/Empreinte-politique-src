@@ -8,12 +8,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from candidate_profile import (
     _classify_intervention,
     _classify_intervention_format,
+    _collect_acteur_roles,
+    _collect_initiateurs,
+    _collect_texte_codes,
     _derive_amendement_sort,
     _extract_mandats,
+    _format_lieu_naissance,
     _groupe_label,
     _parse_amendement_entry,
+    _parse_question_entry,
+    _stade_from_code_acte,
     build_profile,
     fetch_all_intervention_results_from_domains,
+    fetch_questions_officielles,
     fetch_seance_context,
     _extract_speaker_identity_from_html,
 )
@@ -325,3 +332,390 @@ def test_parse_amendement_entry_only_keeps_primary_author():
 def test_parse_amendement_entry_returns_none_without_acteur_ref():
     raw = {"amendement": {"signataires": {"auteur": {}}}}
     assert _parse_amendement_entry(raw) is None
+
+
+def test_collect_texte_codes_walks_nested_actes_legislatifs():
+    """Un dossier législatif imbrique les codes de texte à plusieurs niveaux
+    (actesLegislatifs récursif, textesAssocies en liste) : le collecteur doit
+    tous les retrouver, quelle que soit la profondeur."""
+    dossier = {
+        "titreDossier": {"titre": "Les dépenses de soutien aux aéroports"},
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "texteAssocie": "RINFANR5L17B1659",
+                "actesLegislatifs": {
+                    "acteLegislatif": {"texteAssocie": "PIONANR5L17B0904"}
+                },
+                "textesAssocies": {
+                    "texteAssocie": [{"refTexteAssocie": "BTAANR5L17B0905"}]
+                },
+            }
+        },
+    }
+
+    codes: set[str] = set()
+    _collect_texte_codes(dossier, codes)
+
+    assert codes == {"RINFANR5L17B1659", "PIONANR5L17B0904", "BTAANR5L17B0905"}
+
+
+def test_collect_texte_codes_empty_for_dossier_without_actes():
+    codes: set[str] = set()
+    _collect_texte_codes({"titreDossier": {"titre": "Sans acte"}}, codes)
+    assert codes == set()
+
+
+def test_format_lieu_naissance_france_avec_departement():
+    assert _format_lieu_naissance("Nantes", "Loire-Atlantique", "France") == "Nantes (Loire-Atlantique)"
+
+
+def test_format_lieu_naissance_etranger_prefere_le_pays():
+    assert _format_lieu_naissance("Alger", None, "Algérie") == "Alger (Algérie)"
+
+
+def test_format_lieu_naissance_ville_seule():
+    assert _format_lieu_naissance("Nantes", None, None) == "Nantes"
+
+
+def test_format_lieu_naissance_tout_absent():
+    assert _format_lieu_naissance(None, None, None) is None
+
+
+def test_stade_from_code_acte_depot():
+    assert _stade_from_code_acte("AN1-DEPOT", None) == "depose"
+
+
+def test_stade_from_code_acte_commission():
+    assert _stade_from_code_acte("AN1-COM-FOND-RAPPORT", None) == "examine_commission"
+
+
+def test_stade_from_code_acte_debats_seance():
+    assert _stade_from_code_acte("AN1-DEBATS-SEANCE", None) == "discute_seance"
+
+
+def test_stade_from_code_acte_decision_adoptee():
+    assert _stade_from_code_acte("AN1-DEBATS-DEC", "adopté") == "adopte"
+
+
+def test_stade_from_code_acte_decision_rejetee_reste_discute_seance():
+    assert _stade_from_code_acte("AN1-DEBATS-DEC", "rejetée") == "discute_seance"
+
+
+def test_stade_from_code_acte_promulgation():
+    assert _stade_from_code_acte("PROM-PUB", None) == "promulgue"
+
+
+def test_stade_from_code_acte_code_inconnu():
+    assert _stade_from_code_acte("CODE-INCONNU", None) is None
+
+
+def test_collect_initiateurs_acteur_unique():
+    acteur_roles: dict = {}
+    dossier = {"initiateur": {"acteurs": {"acteur": {"acteurRef": "PA1"}}}}
+    _collect_initiateurs(dossier, acteur_roles)
+    assert acteur_roles == {"PA1": ("auteur", None)}
+
+
+def test_collect_initiateurs_liste_acteurs():
+    acteur_roles: dict = {}
+    dossier = {"initiateur": {"acteurs": {"acteur": [{"acteurRef": "PA1"}, {"acteurRef": "PA2"}]}}}
+    _collect_initiateurs(dossier, acteur_roles)
+    assert acteur_roles == {"PA1": ("auteur", None), "PA2": ("auteur", None)}
+
+
+def test_collect_acteur_roles_rapporteur_unique_et_dates():
+    dossier = {
+        "legislature": "17",
+        "initiateur": None,
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "codeActe": "AN1-COM-FOND-NOMIN",
+                "dateActe": "2024-01-10T00:00:00.000+01:00",
+                "rapporteurs": {"rapporteur": {"acteurRef": "PA1", "typeRapporteur": "rapporteur"}},
+            }
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {"PA1": ("rapporteur", "rapporteur_fond")}
+    assert stade == "examine_commission"
+    assert date_min == date_max == "2024-01-10"
+
+
+def test_collect_acteur_roles_co_rapporteurs():
+    dossier = {
+        "legislature": "17",
+        "initiateur": None,
+        "actesLegislatifs": {
+            "acteLegislatif": {
+                "codeActe": "AN1-COM-FOND-NOMIN",
+                "dateActe": "2024-01-10T00:00:00.000+01:00",
+                "rapporteurs": {"rapporteur": [
+                    {"acteurRef": "PA1", "typeRapporteur": "rapporteur pour avis"},
+                    {"acteurRef": "PA2", "typeRapporteur": "rapporteur pour avis"},
+                ]},
+            }
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {
+        "PA1": ("co-rapporteur", "rapporteur_avis"),
+        "PA2": ("co-rapporteur", "rapporteur_avis"),
+    }
+
+
+def test_collect_acteur_roles_stade_le_plus_avance_retenu():
+    dossier = {
+        "legislature": "17",
+        "initiateur": {"acteurs": {"acteur": {"acteurRef": "PA1"}}},
+        "actesLegislatifs": {
+            "acteLegislatif": [
+                {"codeActe": "AN1-DEPOT", "dateActe": "2024-01-01T00:00:00.000+01:00"},
+                {"codeActe": "PROM-PUB", "dateActe": "2024-06-01T00:00:00.000+02:00"},
+            ]
+        },
+    }
+    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+    assert acteur_roles == {"PA1": ("auteur", None)}
+    assert stade == "promulgue"
+    assert date_min == "2024-01-01"
+    assert date_max == "2024-06-01"
+
+
+# ---------------------------------------------------------------------------
+# _parse_question_entry
+# ---------------------------------------------------------------------------
+
+def _make_question_data(
+    xsi_type="QuestionEcrite_Type",
+    acteur_ref="PA1567",
+    uid="QANR5L17QE12345",
+    analyse="Budget 2025",
+    texte="Monsieur le ministre, ...",
+    date_jo="2025-01-15",
+    reponse_texte=None,
+    date_reponse=None,
+    ministere="Ministère de l'Économie",
+    groupe_sigle="LFI-NUPES",
+):
+    data: dict = {
+        "question": {
+            "@xsi:type": xsi_type,
+            "uid": uid,
+            "auteur": {
+                "identite": {"acteurRef": acteur_ref},
+                "groupe": {"abrege": groupe_sigle, "developpe": "La France Insoumise"},
+            },
+            "minInt": {"developpe": ministere},
+            "indexationAN": {"analyses": {"analyse": analyse}},
+            "textesQuestion": {
+                "texteQuestion": {"texte": texte, "infoJO": {"dateJO": date_jo}}
+            },
+        }
+    }
+    if reponse_texte is not None:
+        data["question"]["textesReponse"] = {
+            "texteReponse": {"texte": reponse_texte, "infoJO": {"dateJO": date_reponse}}
+        }
+    return data
+
+
+def test_parse_question_entry_basic_qe():
+    data = _make_question_data()
+    result = _parse_question_entry(data, "QE")
+    assert result is not None
+    acteur_ref, record = result
+    assert acteur_ref == "PA1567"
+    assert record["uid"] == "QANR5L17QE12345"
+    assert record["sous_type"] == "QE"
+    assert record["sujet"] == "Budget 2025"
+    assert record["texte"] == "Monsieur le ministre, ..."
+    assert record["date"] == "2025-01-15"
+    assert record["reponse"] is None
+    assert record["date_reponse"] is None
+    assert record["ministere"] == "Ministère de l'Économie"
+    assert record["groupe_sigle"] == "LFI-NUPES"
+
+
+def test_parse_question_entry_with_response():
+    data = _make_question_data(
+        reponse_texte="La réponse est ...",
+        date_reponse="2025-03-10",
+    )
+    result = _parse_question_entry(data, "QG")
+    assert result is not None
+    _, record = result
+    assert record["sous_type"] == "QG"
+    assert record["reponse"] == "La réponse est ..."
+    assert record["date_reponse"] == "2025-03-10"
+
+
+def test_parse_question_entry_returns_none_without_acteur_ref():
+    data = {"question": {"uid": "QANR5L17QE99999", "auteur": {"identite": {}}}}
+    assert _parse_question_entry(data, "QE") is None
+
+
+def test_parse_question_entry_returns_none_without_question_key():
+    assert _parse_question_entry({}, "QE") is None
+    assert _parse_question_entry({"autre": {}}, "QE") is None
+
+
+def test_parse_question_entry_analyse_as_list():
+    data = _make_question_data(analyse=["Thème A", "Thème B"])
+    result = _parse_question_entry(data, "QOSD")
+    assert result is not None
+    _, record = result
+    assert record["sujet"] == "Thème A ; Thème B"
+
+
+def test_parse_question_entry_texte_question_as_list_takes_last():
+    data = {
+        "question": {
+            "uid": "QANR5L17QE1",
+            "auteur": {"identite": {"acteurRef": "PA1"}, "groupe": {}},
+            "minInt": {},
+            "indexationAN": {"analyses": {"analyse": "Sujet"}},
+            "textesQuestion": {
+                "texteQuestion": [
+                    {"texte": "Version initiale", "infoJO": {"dateJO": "2025-01-01"}},
+                    {"texte": "Version révisée", "infoJO": {"dateJO": "2025-02-01"}},
+                ]
+            },
+        }
+    }
+    result = _parse_question_entry(data, "QE")
+    assert result is not None
+    _, record = result
+    assert record["texte"] == "Version révisée"
+    assert record["date"] == "2025-02-01"
+
+
+# ---------------------------------------------------------------------------
+# fetch_questions_officielles
+# ---------------------------------------------------------------------------
+
+def test_fetch_questions_officielles_returns_empty_without_acteur_ref():
+    # Sans url_an_ou_senat, l'acteur_ref ne peut pas être extrait → liste vide.
+    result = fetch_questions_officielles(None)
+    assert result == []
+
+    result = fetch_questions_officielles("https://www.nosdeputes.fr/jean-dupont")
+    assert result == []
+
+
+def test_fetch_questions_officielles_maps_index_to_interventions():
+    # Simule un index déjà construit (sans réseau) avec 2 questions pour PA1567.
+    index = {
+        "PA1567": [
+            {
+                "uid": "QANR5L17QE1",
+                "sous_type": "QE",
+                "sujet": "Budget 2025",
+                "texte": "Question sur le budget.",
+                "reponse": None,
+                "ministere": "Min. des Finances",
+                "date": "2025-01-15",
+                "date_reponse": None,
+                "groupe_sigle": "LFI",
+            },
+            {
+                "uid": "QANR5L17QG2",
+                "sous_type": "QG",
+                "sujet": "Santé",
+                "texte": "Question au gouvernement sur la santé.",
+                "reponse": "Réponse du gouvernement.",
+                "ministere": "Min. de la Santé",
+                "date": "2025-02-20",
+                "date_reponse": "2025-03-10",
+                "groupe_sigle": "LFI",
+            },
+        ]
+    }
+
+    def fake_build_index(legislature):
+        return index if legislature == "17" else {}
+
+    with patch("candidate_profile._build_acteur_questions_index", side_effect=fake_build_index):
+        result = fetch_questions_officielles(
+            "https://www.assemblee-nationale.fr/dyn/deputes/PA1567"
+        )
+
+    assert len(result) == 2
+    # Tri décroissant par date
+    assert result[0]["date"] == "2025-02-20"
+    assert result[1]["date"] == "2025-01-15"
+
+    q0 = result[0]
+    assert q0["type_detail"] == "question"
+    assert q0["sous_type"] == "QG"
+    assert q0["sujet"] == "Santé"
+    assert q0["reponse"] == "Réponse du gouvernement."
+    assert q0["ministere"] == "Min. de la Santé"
+    assert q0["date_reponse"] == "2025-03-10"
+    assert q0["format"] == "prise_de_parole_developpee"
+    assert q0["id"] == "question_QANR5L17QG2"
+    assert "q17/QANR5L17QG2.htm" in (q0["url"] or "")
+    assert q0["legislature"] == "17"
+
+    q1 = result[1]
+    assert q1["reponse"] is None
+    assert q1["date_reponse"] is None
+
+
+def test_fetch_questions_officielles_aggregates_multiple_legislatures():
+    index_16 = {"PA1567": [{"uid": "QANR5L16QE1", "sous_type": "QE", "sujet": "S16",
+                             "texte": "T", "reponse": None, "ministere": None,
+                             "date": "2023-05-01", "date_reponse": None, "groupe_sigle": None}]}
+    index_17 = {"PA1567": [{"uid": "QANR5L17QE1", "sous_type": "QE", "sujet": "S17",
+                             "texte": "T", "reponse": None, "ministere": None,
+                             "date": "2025-01-01", "date_reponse": None, "groupe_sigle": None}]}
+
+    def fake_build_index(legislature):
+        return index_17 if legislature == "17" else index_16 if legislature == "16" else {}
+
+    with patch("candidate_profile._build_acteur_questions_index", side_effect=fake_build_index):
+        result = fetch_questions_officielles(
+            "https://www.assemblee-nationale.fr/dyn/deputes/PA1567"
+        )
+
+    assert len(result) == 2
+    subjects = {r["sujet"] for r in result}
+    assert subjects == {"S16", "S17"}
+
+
+# ---------------------------------------------------------------------------
+# build_profile integrates official questions into interventions
+# ---------------------------------------------------------------------------
+
+def test_build_profile_includes_official_questions_in_interventions():
+    fake_questions = [
+        {
+            "id": "question_QANR5L17QE1",
+            "date": "2025-01-15",
+            "type_detail": "question",
+            "sous_type": "QE",
+            "sujet": "Budget",
+            "texte": "Texte Q",
+            "reponse": None,
+            "date_reponse": None,
+            "ministere": "Min. Finances",
+            "groupe_sigle": "LFI",
+            "fonction": None,
+            "format": "prise_de_parole_developpee",
+            "mots_cles": [],
+            "url": "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm",
+            "url_detail": "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm",
+            "legislature": "17",
+        }
+    ]
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
+    ):
+        profile = build_profile("deputes", "slug-test")
+
+    # Sans identité, les questions ne sont pas collectées (chambre == "deputes" mais
+    # profile["identite"] est None) : les questions ne doivent PAS être dans interventions.
+    assert not any(i.get("type_detail") == "question" for i in profile["interventions"])
