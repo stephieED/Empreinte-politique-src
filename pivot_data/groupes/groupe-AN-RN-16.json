@@ -10535,12 +10535,12 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 0,
-    "nb_adoptes": 0,
-    "nb_rejetes": 0,
-    "nb_irrecevables": 0,
-    "nb_retires_ou_tombes": 0,
-    "taux_adoption": null,
+    "nb_amendements": 589,
+    "nb_adoptes": 2,
+    "nb_rejetes": 201,
+    "nb_irrecevables": 51,
+    "nb_retires_ou_tombes": 249,
+    "taux_adoption": 0.0034,
     "par_type_deposant": {
       "commission_rapporteur": {
         "nb_amendements": 0,
@@ -10551,12 +10551,12 @@
         "taux_adoption": null
       },
       "depute": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
-        "nb_rejetes": 0,
-        "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "nb_amendements": 589,
+        "nb_adoptes": 2,
+        "nb_rejetes": 201,
+        "nb_irrecevables": 51,
+        "nb_retires_ou_tombes": 249,
+        "taux_adoption": 0.0034
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -10580,22 +10580,22 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marine-le-pen",
-      "synchro_le": "2026-08-01T16:52:00+0000"
+      "synchro_le": "2026-08-03T07:53:06+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-01T16:54:21+0000"
+      "synchro_le": "2026-08-03T07:53:07+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-01T16:52:16+0000"
+      "synchro_le": "2026-08-03T07:52:49+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-01T17:01:21+0000",
+    "genere_le": "2026-08-03T07:56:31+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:marine-le-pen"

@@ -8,8 +8,10 @@
     "groupe_nom": "Les Républicains",
     "profession": null,
     "date_naissance": "1960-11-20",
+    "lieu_naissance": null,
     "num_circo": "non disponible",
     "nb_mandats": 2,
+    "uri_hatvp": null,
     "url_an_ou_senat": null
   },
   "mandats": [
@@ -90,13 +92,15 @@
   "votes_source": null,
   "synthese_activite": null,
   "dossiers_legislatifs": [],
+  "amendements": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-01T16:51:09+0000",
+    "genere_le": "2026-08-03T07:54:32+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "assemblee_nationale": null,
-      "nosdeputes": "2026-08-01T16:51:09+0000"
+      "assemblee_nationale_questions": null,
+      "nosdeputes": "2026-08-03T07:54:32+0000",
+      "assemblee_nationale": null
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
