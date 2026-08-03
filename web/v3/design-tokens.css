@@ -1,0 +1,86 @@
+/* Tokens figés pour web/v3 — générés depuis la variante active `.deconstructed`.
+   Référence source : web/v3/index.html.
+   Usages sémantiques à rappeler dans toute légende UI affichant ce code couleur :
+   acid = navigation / accent éditorial ; ink = texte / règles ; offwhite = fond ;
+   pink = avertissement / couverture ; blue = repère de lien / contraste de section. */
+
+:root {
+  /* Palette principale du projet actuel (v3 / deconstructed) */
+  --color-offwhite: #F2F0E7;
+  --color-ink: #11110F;
+  --color-muted: #5E5C55;
+  --color-blue: #006FEE;
+  --color-blue-soft: #B9DEFF;
+  --color-acid: #DFFF00;
+  --color-pink: #FF70A6;
+  --color-vote-pour: #007A45;
+  --color-vote-contre: #E53420;
+
+  /* Alias d'usage */
+  --bg: var(--color-offwhite);
+  --surface: var(--color-offwhite);
+  --text: var(--color-ink);
+  --deep: var(--color-ink);
+  --muted: var(--color-muted);
+  --line: var(--color-ink);
+  --accent: var(--color-blue);
+  --accent-soft: var(--color-blue-soft);
+  --vert: var(--color-vote-pour);
+  --rouge: var(--color-vote-contre);
+
+  /* Typographies du projet actuel */
+  --font-family-ui: 'Space Grotesk', sans-serif;
+  --font-family-display: 'Archivo Black', sans-serif;
+  --font-family-mono: 'IBM Plex Mono', monospace;
+
+  /* Échelle typographique figée */
+  --font-size-12: 12px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-20: 20px;
+  --font-size-24: 24px;
+  --font-size-32: 32px;
+  --font-size-48: 48px;
+  --font-size-64: 64px;
+
+  /* Grille 8px */
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-64: 64px;
+
+  /* Bordures / coins */
+  --border-width: 2px;
+  --border-width-thin: 1px;
+  --radius-none: 0px;
+
+  /* Layout / navigation */
+  --mode-switch-height: 48px;
+  --profile-rail-height: 48px;
+  --candidate-dock-height: var(--mode-switch-height);
+  --page-padding-inline: var(--space-16);
+  --page-padding-block-start: 0px;
+  --page-padding-block-end: 56px;
+
+  /* Hauteurs minimales homogènes par type */
+  --card-min-height-candidate: 120px;
+  --card-min-height-summary: 170px;
+  --card-min-height-group-kpi: 175px;
+  --card-min-height-group-vote: 180px;
+  --card-min-height-home-stage: 66vh;
+  --card-min-height-group-hero: 42vh;
+
+  /* Troncature / previews actuellement utilisés dans le projet */
+  --text-title-max-chars: 120;
+  --text-title-truncate-slice: 117;
+  --text-intervention-preview-max-chars: 200;
+
+  /* Rythmes observés dans v3 */
+  --avatar-chip-padding-y: 8px;
+  --avatar-chip-padding-x: 16px;
+  --panel-section-padding-fluid: clamp(16px, 5vw, 64px);
+  --hero-title-size-fluid: clamp(48px, 12vw, 144px);
+  --section-title-size-fluid: clamp(40px, 7vw, 96px);
+}
