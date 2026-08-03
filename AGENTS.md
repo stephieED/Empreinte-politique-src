@@ -55,6 +55,9 @@ pivot_data/profiles/<slug>.pivot.json  <- pivot schema (schema_pivot.py)
         |
         |- group_profile.py   -> pivot_data/groupes/  (schema_groupe.py)
         `- parti_profile.py   -> pivot_data/partis/   (schema_parti.py)
+                |
+                v
+        check_quality_gate.py  (pre-commit gate — see below)
 ```
 
 - `raw_data/` = source-near, not harmonized across chambers.
@@ -74,6 +77,20 @@ collected data.
   (never regress to `null`).
 - Full rationale + exception history:
   `docs/technical_decisions.md#fusion`.
+
+**CI/CD workflow (`.github/workflows/generate-data.yml`)**: two modes
+controlled by the `fresh_run` boolean input.
+- `fresh_run=true` — full purge, no cache restore, `--no-merge`, groups
+  recreated from scratch, quality gate threshold=0 (zero tolerance).
+- `fresh_run=false` — no purge, cache restored, additive merge, groups with
+  `--merge-existing`, threshold=`inputs.threshold` (default 3).
+Commit/push only happens if `check_quality_gate.py` exits 0.
+See `docs/technical_decisions.md#ci-cd` for full rationale.
+
+**Quality gate (`src/check_quality_gate.py`)**: runs before every automated
+commit. Hard fail (exit 1, blocks commit) on: IncompleteRead count > threshold,
+missing/invalid/schema-failing groupe file. Soft warnings (commit allowed) on:
+low intervention counts, low groupe coverage, network signals.
 
 ## 4. Pivot schema v1 (`src/schema_pivot.py`)
 
@@ -152,7 +169,9 @@ Full details: `docs/technical_decisions.md#licences`.
 
 - `README.md`: commands, structure, coverage limits, roadmap.
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`: structure contracts.
+- `src/check_quality_gate.py`: pre-commit quality gate (4 sections: IncompleteRead,
+  coverage, low interventions, groupe validation). Hard vs soft fail logic.
 - `docs/an_opendata.md`: actual AN open-data JSON schemas.
 - `docs/hatvp_opendata.md`: conclusions on lobby-register linking (HATVP) - out of short-term scope, with rationale.
-- `docs/technical_decisions.md`: full history and rationale (see anchors above: `#positionnement`, `#fusion`, `#cas-limites`, `#licences`).
+- `docs/technical_decisions.md`: full history and rationale (see anchors above: `#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`).
 - `ROADMAP.md`: next steps (current, not read automatically by agent unless requested).

@@ -182,6 +182,71 @@ a transient issue could make real data disappear from one run to the next.
 
 ---
 
+<a id="ci-cd"></a>
+## CI/CD workflow design — two modes and quality gate
+
+### Why two modes rather than a single pipeline?
+
+The daily/weekly pipeline runs on public APIs that are subject to transient
+failures (pagination gaps, occasional timeouts, `IncompleteRead` on large
+responses). A full re-fetch on each run with immediate overwrite would
+turn every transient failure into a data regression. The **incremental mode**
+(`fresh_run=false`, the default) preserves existing data via additive merge
+(`merge_profile.py`) and restores the Actions cache (Parltrack dumps, EP
+datasets) to reduce redundant network calls. The **fresh mode**
+(`fresh_run=true`) exists for audits or after a known bad state: it purges
+everything, disables the cache, forces full re-fetch, and applies zero
+tolerance on quality signals.
+
+### Why a pre-commit quality gate rather than post-commit monitoring?
+
+Committing degraded data forces a remediation commit later, which pollutes
+the git history and may briefly expose incorrect data to the web interface.
+Blocking the commit is the correct control point: the data generation is
+a single atomic job, and the gate has access to the full output before
+anything is persisted.
+
+### Hard fail vs soft fail for the quality gate
+
+**Hard fail** (exit 1, commit blocked, unconditional in both modes):
+- An expected groupe file is missing, contains invalid JSON, or fails
+  `validate_profil_groupe()`. These indicate a pipeline logic failure, not
+  a transient network issue — the output is structurally wrong.
+- `IncompleteRead` count exceeds the configured threshold. In `fresh_run=true`
+  the threshold is forced to 0: a cold run that could not fetch data cleanly
+  should not be committed as the new reference.
+
+**Soft fail** (warning, commit still allowed in incremental mode):
+- Low `profils_disponibles` in a groupe: expected for our tracked-candidate
+  subset (1 out of ~200 real members is normal), but worth flagging if it
+  drops to 0.
+- `IncompleteRead` within tolerance: incremental merge preserves prior data,
+  so committing a run with a few API hiccups is acceptable.
+- Low intervention count: not a pipeline error — some candidates simply have
+  fewer parliamentary interventions (e.g. list-party MEPs, recent entrants).
+
+**`fraicheur_donnees` warnings are deliberately excluded** from soft fail
+signals: they are always present on AN/Sénat data (frozen on 16th legislature
+since the June 2024 dissolution) and carry no actionable information about the
+current run quality.
+
+### Quality gate report structure (`src/check_quality_gate.py`)
+
+Four sections, written to both stdout and `$GITHUB_STEP_SUMMARY`:
+1. `IncompleteRead` — count, threshold comparison, breakdown by endpoint and
+   candidate slug.
+2. Candidate coverage — generated profiles vs `raw_data/candidats.json`
+   (slug-keyed); lists missing slugs and non-generatable candidates (no slug).
+3. Low interventions — candidates below threshold (default 10) with chamber
+   and API warning flag.
+4. Groupe validation — per-group status: hard errors (missing/invalid/schema),
+   soft warnings (coverage, network signals, empty cohesion data).
+
+GHA annotations (`::warning::` / `::error::`) are emitted for each failure to
+surface them inline in the Actions log.
+
+---
+
 <a id="licences"></a>
 ## Sources and licenses - full details
 
