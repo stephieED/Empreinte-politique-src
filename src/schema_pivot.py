@@ -42,18 +42,21 @@ Format d'un profil pivot v1 :
         {
             "label": "Commission des affaires étrangères",
             "categorie": "commission",       # "mandat_electif" | "commission" |
-                                             # "groupe_amitie" | "extra_parlementaire" | "autre"
+                                             # "groupe_amitie" | "groupe_politique" |
+                                             # "extra_parlementaire" | "autre"
             "fonction": "membre",            # ex. "membre", "président", "rapporteur"
             "debut": "2022-01-01",
             "fin": null,
             "actif": true,
             "source_url": null,              # URL de la fiche source, si disponible
-            "position_dans_hemicycle": null, # "majorite" | "opposition" | null ; champ éditorial
-                                             # le plus sensible du schéma. Ne JAMAIS renseigner
-                                             # sans une source primaire vérifiable (déclaration
-                                             # officielle du groupe, liste du socle de soutien au
-                                             # gouvernement, JO) — voir source_url ci-dessus, qui
-                                             # devient obligatoire dès que ce champ est renseigné.
+            "position_dans_hemicycle": null, # "majorite" | "opposition" | "minoritaire" | null ;
+                                             # champ éditorial le plus sensible du schéma. Ne JAMAIS
+                                             # renseigner sans une source primaire vérifiable
+                                             # (déclaration officielle du groupe, liste du socle de
+                                             # soutien au gouvernement, JO, ou positionPolitique du
+                                             # référentiel officiel des organes de l'Assemblée
+                                             # nationale) — voir source_url ci-dessus, qui devient
+                                             # obligatoire dès que ce champ est renseigné.
             "mode_declenchement": null,      # commissions d'enquête uniquement :
                                              # "droit_tirage" | "demande_votee" | null
             "suspendu_pour_fonction_gouvernementale": null
@@ -193,15 +196,21 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
     "excuse",   # absence justifiée / notifiée à la source primaire
 })
 
-# Catégories de mandats reconnues.
+# Catégories de mandats reconnues. "groupe_politique" désigne une période
+# d'appartenance à un groupe politique (distincte du mandat électif global),
+# utilisée pour dater les changements de groupe et les rattacher à une
+# position dans l'hémicycle (voir position_dans_hemicycle ci-dessous).
 KNOWN_CATEGORIES: frozenset[str] = frozenset({
-    "mandat_electif", "commission", "groupe_amitie", "extra_parlementaire", "autre",
+    "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
+    "extra_parlementaire", "autre",
 })
 
-# Position dans l'hémicycle (majorité/opposition). Champ éditorial sensible :
-# ne doit jamais être renseigné sans mandats[].source_url pointant vers une
-# source primaire vérifiable (voir validate_profil).
-KNOWN_POSITIONS_HEMICYCLE: frozenset[str] = frozenset({"majorite", "opposition"})
+# Position dans l'hémicycle (majorité/opposition/minoritaire). Champ éditorial
+# sensible : ne doit jamais être renseigné sans mandats[].source_url pointant
+# vers une source primaire vérifiable (voir validate_profil). "minoritaire"
+# correspond à la qualification officielle "Minoritaire" de l'Assemblée
+# nationale (groupe ni majoritaire ni d'opposition formelle).
+KNOWN_POSITIONS_HEMICYCLE: frozenset[str] = frozenset({"majorite", "opposition", "minoritaire"})
 
 # Mode de déclenchement d'une commission d'enquête.
 KNOWN_MODES_DECLENCHEMENT: frozenset[str] = frozenset({"droit_tirage", "demande_votee"})

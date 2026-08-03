@@ -183,7 +183,8 @@ python src/parti_profile.py \
 ```
 
 These are editorial aggregates of declared candidates, not real parliamentary
-cohesion profiles.
+cohesion profiles. `pivot_data/partis/` is still generated for internal use
+but is not displayed as a top-level tab in `web/v3/`.
 
 ## 6. Generate parliamentary group profiles
 
@@ -295,7 +296,8 @@ python -m http.server 8000
 
 Then open <http://localhost:8000/web/>.
 
-- `web/v1/`, `web/v2/`, `web/v3/`: first design generations
+- `web/v1/`, `web/v2/`: older design generations
+- `web/v3/`: editorial reference — **Candidats** · **Groupes** (real parliamentary groups); excluded texts accessible via toggle
 - `web/atlas-augmente/`: atlas powered by real profiles
 - `web/scene-cinetique/`, `web/interface-essentielle/`: studies reused in V3
 - `web/matiere-politique/`, `web/revue-civique/`, `web/moodboard/`: intermediate studies

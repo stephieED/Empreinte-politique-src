@@ -100,6 +100,73 @@
     font-size: 0.72rem;
     color: var(--muted);
   }
+  .legislative-context {
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--accent);
+    background: var(--bg);
+    padding: 0.7rem;
+    margin-bottom: 0.8rem;
+  }
+  .legislative-context-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .legislative-context-status {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-weight: 700;
+  }
+  .legislative-reading-controls {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+  .legislative-reading-controls button {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    padding: 0.3rem 0.55rem;
+    cursor: pointer;
+  }
+  .legislative-reading-controls button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+  .legislative-block {
+    border-top: 1px solid var(--line);
+    padding-top: 0.75rem;
+    margin-top: 0.8rem;
+  }
+  .legislative-block.is-primary {
+    border-top: 4px solid var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 42%, transparent);
+    padding: 0.8rem;
+  }
+  .legislative-block-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+  }
+  .legislative-block-head h2 { margin-bottom: 0; }
+  .legislative-block-badges {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .legislative-badge {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 0.18rem 0.38rem;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 0.68rem;
+  }
 
   .section-kicker {
     font-size: 0.72rem;
@@ -1440,6 +1507,7 @@
       expandedTextThemes: new Set(),
       expandedVoteThemes: new Set(),
       showUnpublishedTextes: false,
+      legislativeReadingMode: "auto",
       expressIndex: 0,
       profileMode: "candidates",
       currentRealGroupId: "",
@@ -1599,6 +1667,121 @@
     function sourcedHemicyclePosition(profile) {
       const mandate = (profile.pivot_mandats || []).find((item) => item.position_dans_hemicycle && item.source_url);
       return mandate?.position_dans_hemicycle || null;
+    }
+
+    function hemicyclePeriods(profile) {
+      return (profile.pivot_mandats || [])
+        .filter((item) => item.position_dans_hemicycle && item.source_url)
+        .map((item) => ({
+          position: item.position_dans_hemicycle,
+          debutMs: toDateMs(item.debut),
+          finMs: item.actif || !item.fin ? Number.POSITIVE_INFINITY : toDateMs(item.fin),
+        }))
+        .filter((period) => Number.isFinite(period.debutMs));
+    }
+
+    function classifyDateInHemicycle(dateIso, periods) {
+      if (!dateIso || !periods.length) return "indetermine";
+      const dateMs = toDateMs(dateIso);
+      if (!Number.isFinite(dateMs)) return "indetermine";
+      const matching = periods
+        .filter((period) => dateMs >= period.debutMs && dateMs <= period.finMs)
+        .map((period) => period.position);
+      const hasMajorite = matching.includes("majorite");
+      const hasOpposition = matching.includes("opposition");
+      if (hasMajorite && hasOpposition) return "mixte";
+      if (hasMajorite) return "majorite";
+      if (hasOpposition) return "opposition";
+      return "indetermine";
+    }
+
+    function classifyTexteInHemicycle(texte, periods) {
+      if (!periods.length) return "indetermine";
+      const anchors = [texte.date_max, texte.date_min].filter(Boolean);
+      if (!anchors.length) return "indetermine";
+      const labels = anchors.map((dateIso) => classifyDateInHemicycle(dateIso, periods));
+      const hasMajorite = labels.includes("majorite");
+      const hasOpposition = labels.includes("opposition");
+      if (hasMajorite && hasOpposition) return "mixte";
+      if (hasMajorite) return "majorite";
+      if (hasOpposition) return "opposition";
+      return labels[0] || "indetermine";
+    }
+
+    function splitLegislativeFactsByHemicycle(profile) {
+      const periods = hemicyclePeriods(profile);
+      const textesBuckets = {
+        majorite: [], opposition: [], mixte: [], indetermine: [],
+      };
+      const amendementsBuckets = {
+        majorite: [], opposition: [], mixte: [], indetermine: [],
+      };
+      for (const texte of (profile.textes_portes || [])) {
+        const bucket = classifyTexteInHemicycle(texte, periods);
+        textesBuckets[bucket]?.push(texte);
+      }
+      for (const amendement of (profile.amendements || [])) {
+        const bucket = classifyDateInHemicycle(amendement.date, periods);
+        amendementsBuckets[bucket]?.push(amendement);
+      }
+      return { periods, textesBuckets, amendementsBuckets };
+    }
+
+    function effectiveLegislativeReading(profile) {
+      if (state.legislativeReadingMode !== "auto") return state.legislativeReadingMode;
+      return sourcedHemicyclePosition(profile) || "neutral";
+    }
+
+    function renderLegislativeContext(profile) {
+      const sourcedPosition = sourcedHemicyclePosition(profile);
+      const reading = effectiveLegislativeReading(profile);
+      const split = splitLegislativeFactsByHemicycle(profile);
+      const statusLabel = sourcedPosition === "majorite"
+        ? "Groupe majoritaire"
+        : sourcedPosition === "opposition"
+          ? "Groupe d’opposition"
+          : "Position dans l’hémicycle non sourcée";
+      const readingLabel = reading === "majorite"
+        ? "Les textes portés sont présentés en premier; les amendements complètent la lecture."
+        : reading === "opposition"
+          ? "Les amendements sont présentés en premier; les textes portés complètent la lecture."
+          : "Ordre neutre: textes portés puis amendements, sans hiérarchie politique inférée.";
+      return `
+        <div class="legislative-context">
+          <div class="legislative-context-head">
+            <span class="legislative-context-status">${escapeHtml(statusLabel)}</span>
+            <span class="source-ref">${sourcedPosition ? "Position sourcée dans le mandat" : "Aucune position utilisée en mode Auto"}</span>
+          </div>
+          <p class="small">${escapeHtml(readingLabel)} L’ordre facilite la lecture; il ne mesure ni l’influence ni la performance.</p>
+          ${split.periods.length ? `<p class="source-ref">Ventilation temporelle disponible: ${split.periods.length} période(s) sourcée(s) de position dans l’hémicycle.</p>` : `<p class="source-ref">Ventilation majorité/opposition indisponible: aucune période sourcée avec dates dans les mandats de cette fiche.</p>`}
+          <div class="legislative-reading-controls" role="group" aria-label="Angle de lecture de l’activité législative">
+            ${[
+              ["auto", "Auto"],
+              ["majorite", "Lecture majorité"],
+              ["opposition", "Lecture opposition"],
+            ].map(([mode, label]) => `<button type="button" data-legislative-reading="${mode}" aria-pressed="${state.legislativeReadingMode === mode}">${escapeHtml(label)}</button>`).join("")}
+          </div>
+          ${state.legislativeReadingMode !== "auto" ? `<p class="source-ref">Angle manuel: la position factuelle affichée ci-dessus reste inchangée.</p>` : ""}
+        </div>
+      `;
+    }
+
+    function filterTextesByReadingScope(profile, scope) {
+      const themedTextes = (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme));
+      if (scope === "all") return themedTextes;
+      const split = splitLegislativeFactsByHemicycle(profile);
+      if (!split.periods.length) return [];
+      const allowed = new Set([...split.textesBuckets[scope], ...split.textesBuckets.mixte]);
+      return themedTextes.filter((item) => allowed.has(item));
+    }
+
+    function filterAmendementsByReadingScope(profile, scope) {
+      const amendements = profile.amendements || [];
+      if (scope === "all") return amendements;
+      const split = splitLegislativeFactsByHemicycle(profile);
+      if (!split.periods.length) return [];
+      const allowed = new Set([...split.amendementsBuckets[scope], ...split.amendementsBuckets.mixte]);
+      return amendements.filter((item) => allowed.has(item));
     }
 
     function renderMinisterialIncompatibilities(profile) {
@@ -1899,11 +2082,15 @@
       `;
     }
 
-    function renderTextes(profile) {
-      const themedTextes = (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme));
+    function renderTextes(profile, scope = "all") {
+      const themedTextes = filterTextesByReadingScope(profile, scope);
       const items = themedTextes.filter((d) => isPublicCarriedText(d));
       const excludedItems = themedTextes.filter((d) => !isPublicCarriedText(d));
+      const noSplitData = scope !== "all" && !hemicyclePeriods(profile).length;
       if (!items.length) {
+        if (noSplitData) {
+          return `<p class="empty">Impossible de distinguer les textes entre majorité et opposition pour cette fiche: aucune période sourcée de position dans l’hémicycle n’est disponible.</p>`;
+        }
         if (!excludedItems.length) {
           return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte avec rôle factuel et débat avéré retrouvé." : "Aucun texte répondant aux critères sur ce thème."} Un simple dépôt ou un rôle inconnu n’est pas publié ici.</p>`;
         }
@@ -1985,8 +2172,12 @@
       ` : ""}`;
     }
 
-    function renderAmendements(profile) {
-      const amendements = profile.amendements || [];
+    function renderAmendements(profile, scope = "all") {
+      const amendements = filterAmendementsByReadingScope(profile, scope);
+      const noSplitData = scope !== "all" && !hemicyclePeriods(profile).length;
+      if (noSplitData) {
+        return `<p class="empty">Impossible de distinguer les amendements entre majorité et opposition pour cette fiche: aucune période sourcée de position dans l’hémicycle n’est disponible.</p>`;
+      }
       if (!amendements.length) return `<p class="empty">Aucun amendement structuré disponible.</p>`;
       const counts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([outcome]) => [outcome, 0]));
       for (const amendement of amendements) {
@@ -2391,15 +2582,33 @@
         return;
       }
 
-      const hemicyclePosition = sourcedHemicyclePosition(profile);
-      const textsBlock = `<h2>Textes portés <span class="source-ref">(${publicCarriedTexts(profile).length})</span></h2><div id="textes">${renderTextes(profile)}</div>`;
-      const amendmentsBlock = `<h2>Amendements</h2><div id="amendements">${renderAmendements(profile)}</div>`;
-      const legislativeBlocks = hemicyclePosition === "opposition"
+      const readingPosition = effectiveLegislativeReading(profile);
+      const readingScope = state.legislativeReadingMode === "auto" ? "all" : state.legislativeReadingMode;
+      const scopedTextes = filterTextesByReadingScope(profile, readingScope);
+      const publicTextsCount = scopedTextes.filter((d) => isPublicCarriedText(d)).length;
+      const excludedTextsCount = Math.max(0, scopedTextes.length - publicTextsCount);
+      const amendmentsCount = filterAmendementsByReadingScope(profile, readingScope).length;
+      const textsPrimary = readingPosition === "majorite";
+      const amendmentsPrimary = readingPosition === "opposition";
+      const textsBlock = `
+        <section class="legislative-block ${textsPrimary ? "is-primary" : ""}">
+          <div class="legislative-block-head">
+            <div><p class="section-kicker">${textsPrimary ? "Signal principal dans cet angle" : "Signal complémentaire"}</p><h2>Textes portés</h2></div>
+            <div class="legislative-block-badges"><span class="legislative-badge">${publicTextsCount} publiable(s)</span>${excludedTextsCount ? `<span class="legislative-badge">${excludedTextsCount} hors critères</span>` : ""}</div>
+          </div>
+          <div id="textes">${renderTextes(profile, readingScope)}</div>
+        </section>`;
+      const amendmentsBlock = `
+        <section class="legislative-block ${amendmentsPrimary ? "is-primary" : ""}">
+          <div class="legislative-block-head">
+            <div><p class="section-kicker">${amendmentsPrimary ? "Signal principal dans cet angle" : "Signal complémentaire"}</p><h2>Amendements</h2></div>
+            <div class="legislative-block-badges"><span class="legislative-badge">${amendmentsCount} documenté(s)</span><span class="legislative-badge">comptes bruts</span></div>
+          </div>
+          <div id="amendements">${renderAmendements(profile, readingScope)}</div>
+        </section>`;
+      const legislativeBlocks = readingPosition === "opposition"
         ? `${amendmentsBlock}${textsBlock}`
         : `${textsBlock}${amendmentsBlock}`;
-      const categoryOrderRule = hemicyclePosition
-        ? `Ordre éditorial : ${hemicyclePosition === "opposition" ? "amendements puis textes" : "textes puis amendements"}, d’après la position sourcée dans l’hémicycle. Les deux catégories restent affichées.`
-        : "Ordre éditorial neutre : textes puis amendements. Aucune position sourcée dans l’hémicycle n’est utilisée.";
 
       root.innerHTML = `
         ${renderHeader(meta, profile)}
@@ -2421,7 +2630,7 @@
 
           <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
             <section class="panel">
-              <p class="source-ref">${escapeHtml(categoryOrderRule)}</p>
+              ${renderLegislativeContext(profile)}
               ${legislativeBlocks}
             </section>
           </div>
@@ -2605,6 +2814,13 @@
       document.querySelector("[data-toggle-unpublished-textes]")?.addEventListener("click", () => {
         state.showUnpublishedTextes = !state.showUnpublishedTextes;
         renderPage();
+      });
+
+      document.querySelectorAll("[data-legislative-reading]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.legislativeReadingMode = button.dataset.legislativeReading;
+          renderPage();
+        });
       });
 
       document.querySelectorAll(".orbit-node").forEach((node) => {
@@ -2791,6 +3007,7 @@
       state.expandedTextThemes = new Set();
       state.expandedVoteThemes = new Set();
       state.showUnpublishedTextes = false;
+      state.legislativeReadingMode = "auto";
       state.expressIndex = 0;
 
       updateActiveAvatarChip();
