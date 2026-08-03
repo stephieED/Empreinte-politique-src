@@ -1853,22 +1853,22 @@
     {
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/jean-luc-melenchon",
-      "synchro_le": "2026-08-03T10:05:34+0000"
+      "synchro_le": "2026-08-03T15:56:28+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T10:05:49+0000"
+      "synchro_le": "2026-08-03T15:56:37+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-03T10:06:18+0000"
+      "synchro_le": "2026-08-03T15:56:12+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:13:34+0000",
+    "genere_le": "2026-08-03T17:26:20+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

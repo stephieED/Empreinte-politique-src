@@ -1985,17 +1985,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jerome-guedj",
-      "synchro_le": "2026-08-03T10:05:32+0000"
+      "synchro_le": "2026-08-03T15:56:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T10:05:45+0000"
+      "synchro_le": "2026-08-03T15:56:37+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:13:34+0000",
+    "genere_le": "2026-08-03T17:26:20+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 1,

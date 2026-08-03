@@ -17,7 +17,7 @@
     {
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": "2026-08-03T11:01:36+0000"
+      "synchro_le": "2026-08-03T16:50:16+0000"
     }
   ],
   "mandats": [
@@ -66,6 +66,66 @@
       "actif": true,
       "source_url": null,
       "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (UMP)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2007-06-27",
+      "fin": "2007-07-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (Les Républicains)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2015-06-02",
+      "fin": "2017-06-20",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (UMP)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2012-06-26",
+      "fin": "2012-11-27",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (UMP)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2013-01-16",
+      "fin": "2015-06-01",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (Rassemblement-UMP)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2012-11-27",
+      "fin": "2013-01-15",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
       "mode_declenchement": null,
       "suspendu_pour_fonction_gouvernementale": null
     }
@@ -18163,7 +18223,7 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:04:13+0000",
+    "genere_le": "2026-08-03T16:53:37+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."

@@ -78,6 +78,36 @@
       "debut": null,
       "fin": null,
       "actif": true
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (UMP)",
+      "debut": "2012-06-26",
+      "fin": "2015-06-01",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (UMP)",
+      "debut": "2012-04-04",
+      "fin": "2012-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (Les Républicains)",
+      "debut": "2015-06-02",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
     }
   ],
   "votes": [],
@@ -13452,12 +13482,12 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-03T10:06:20+0000",
+    "genere_le": "2026-08-03T15:56:29+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-03T10:06:20+0000",
       "assemblee_nationale": null,
-      "assemblee_nationale_questions": null
+      "assemblee_nationale_questions": null,
+      "nosdeputes": "2026-08-03T15:56:29+0000"
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."

@@ -1718,12 +1718,12 @@
     {
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/edouard-philippe",
-      "synchro_le": "2026-08-03T10:06:20+0000"
+      "synchro_le": "2026-08-03T15:56:29+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:13:34+0000",
+    "genere_le": "2026-08-03T17:26:20+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

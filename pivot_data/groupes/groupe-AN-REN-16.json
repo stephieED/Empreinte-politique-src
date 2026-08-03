@@ -2639,28 +2639,28 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 5,
-    "nb_adoptes": 2,
+    "nb_amendements": 49,
+    "nb_adoptes": 43,
     "nb_rejetes": 1,
     "nb_irrecevables": 2,
-    "nb_retires_ou_tombes": 0,
-    "taux_adoption": 0.4,
+    "nb_retires_ou_tombes": 3,
+    "taux_adoption": 0.8776,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
+        "nb_amendements": 2,
+        "nb_adoptes": 2,
         "nb_rejetes": 0,
         "nb_irrecevables": 0,
         "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "taux_adoption": 1.0
       },
       "depute": {
-        "nb_amendements": 5,
-        "nb_adoptes": 2,
+        "nb_amendements": 47,
+        "nb_adoptes": 41,
         "nb_rejetes": 1,
         "nb_irrecevables": 2,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": 0.4
+        "nb_retires_ou_tombes": 3,
+        "taux_adoption": 0.8723
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -2684,17 +2684,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-08-03T10:06:29+0000"
+      "synchro_le": "2026-08-03T15:56:27+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T10:06:31+0000"
+      "synchro_le": "2026-08-03T15:56:39+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:13:36+0000",
+    "genere_le": "2026-08-03T17:26:21+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:gabriel-attal"
