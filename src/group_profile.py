@@ -1,5 +1,70 @@
 #!/usr/bin/env python3
-"""Module documentation in English."""
+"""
+group_profile.py — Agrégation de profils individuels en profil de groupe politique.
+
+Ce module calcule, à partir d'une liste de profils pivot v1 (schéma_pivot.py),
+un profil de groupe conforme au schéma_groupe.py. Il ne fait aucun appel réseau :
+il agrège uniquement les données déjà présentes dans les profils individuels.
+
+Calculs produits :
+  1. Cohésion de vote : par scrutin, position majoritaire du groupe + taux
+     d'alignement. « Absent » (aucune trace de vote) est distingué de
+     « non_votant » et « excusé ».
+  2. Thèmes dominants : agrégation des tags_thematiques de tous les membres.
+  3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
+     électifs des profils individuels).
+  4. Amendements agrégés (amendements_agreges) : taux d'adoption groupe/chambre,
+     ventilé par type de déposant (par_type_deposant) — le total tous déposants
+     confondus ne doit jamais servir de comparateur direct, seul le sous-total
+     "depute" est de même nature que les amendements d'un⋅e élu⋅e.
+  5. Écarts de cohésion/participation individuels (compute_ecarts_cohesion_internes) :
+     donnée de CONTRÔLE INTERNE uniquement, volontairement absente du schéma de
+     groupe public — accessible via --rapport-interne, jamais via --out.
+
+Cas limites gérés :
+  - Élu qui change de groupe en cours de mandat : seuls les membres dont la
+    période de mandat électif inclut la date du scrutin sont comptés comme
+    éligibles. Les mandats multiples (sur plusieurs législatures) sont tous
+    examinés.
+  - Groupe dissous/renommé : le groupe_id et groupe_nom sont des paramètres
+    explicites ; le champ historique_noms est laissé à renseigner manuellement.
+  - Scrutin sans quorum : quorum_atteint = False, cohésion toujours calculée.
+  - tags_thematiques vides sur les profils individuels : fallback automatique
+    sur les mots-clés des interventions (loggé dans meta.warnings).
+
+Usage (depuis la racine du dépôt) :
+    python src/group_profile.py \\
+        --groupe-id "AN:SOC" \\
+        --groupe-sigle SOC \\
+        --groupe-nom "Socialistes et apparentés" \\
+        --chambre AN \\
+        --legislature 16 \\
+        pivot_data/profiles/jerome-guedj.pivot.json \\
+        pivot_data/profiles/boris-vallaud.pivot.json \\
+        --out pivot_data/groupes/groupe-SOC-16.json
+
+    Les profils en entrée peuvent être au format brut NosDéputés (candidate_profile.py)
+    ou au format pivot v1 (normalize_nosdeputes.py). Le script détecte automatiquement
+    le format et normalise si nécessaire.
+
+Mode --from-roster (composition réelle du groupe, via group_roster.py) :
+    Récupère la vraie liste des membres du groupe parlementaire auprès de
+    NosDéputés.fr/NosSénateurs.fr (voir group_roster.py) puis charge le pivot
+    local de chaque membre trouvé dans --profiles-dir (pivot_data/profiles/<slug>.pivot.json).
+    Les membres du roster sans pivot local sont ignorés et signalés dans
+    meta.warnings ; la couverture réelle (roster_total / profils_disponibles)
+    est inscrite dans meta.couverture_roster, jamais confondue avec effectif.actuel.
+
+    python src/group_profile.py \\
+        --from-roster --roster-chambre deputes \\
+        --groupe-id "AN:LR" --groupe-sigle LR --groupe-nom "Les Républicains" \\
+        --chambre AN --legislature 16 \\
+        --out pivot_data/groupes/groupe-AN-LR-16.json
+
+    NB : distinct de parti_profile.py, qui agrège les candidats présidentiels
+    déclarés partageant un même label de parti (raw_data/candidats.json) — un
+    échantillon éditorial, pas un groupe parlementaire.
+"""
 
 import argparse
 import json
@@ -25,7 +90,8 @@ from normalize_nosdeputes import normalize_nosdeputes
 # ---------------------------------------------------------------------------
 
 def _parse_date(s: Any) -> Optional[date]:
-    """English docstring for  parse date."""   if not s or not isinstance(s, str):
+    """Parse une chaîne ISO-8601 (YYYY-MM-DD ou sous-préfixe) en date, sans lever."""
+    if not s or not isinstance(s, str):
         return None
     try:
         return date.fromisoformat(s[:10])
@@ -34,11 +100,17 @@ def _parse_date(s: Any) -> Optional[date]:
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Eligibilité d'un membre à un scrutin
 # ---------------------------------------------------------------------------
 
 def _member_eligibility_intervals(mandats: list[dict[str, Any]]) -> Optional[list[tuple[Optional[date], Optional[date]]]]:
-    """English docstring for  member eligibility intervals."""
+    """Pré-analyse les mandats électifs d'un membre en intervalles (début, fin).
+
+    Évite de refiltrer ``mandats`` et de reparser les dates de mandat à chaque
+    scrutin dans ``_compute_cohesion_votes`` (le même membre est testé pour des
+    milliers de scrutins). Retourne None si aucun mandat électif n'est renseigné
+    (éligibilité par défaut, cf. ``_member_eligible_at``).
+    """
     electif = [m for m in mandats if m.get("categorie") == "mandat_electif"]
     if not electif:
         return None
@@ -46,28 +118,53 @@ def _member_eligibility_intervals(mandats: list[dict[str, Any]]) -> Optional[lis
 
 
 def _is_eligible_at(intervals: Optional[list[tuple[Optional[date], Optional[date]]]], d: Optional[date]) -> bool:
-    """English docstring for  is eligible at.""" d is None or intervals is None:
-        return True  # Translated comment.
+    """Vérifie l'éligibilité à partir d'une date et d'intervalles déjà parsés."""
+    if d is None or intervals is None:
+        return True  # date/mandats inconnus → on ne peut pas exclure
     for debut, fin in intervals:
         if debut is not None and d < debut:
             continue
         if fin is not None and d > fin:
             continue
-        return True  # Translated comment.
+        return True  # le membre était en mandat à cette date
     return False
 
 
 def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str]) -> bool:
-    """English docstring for  member eligible at."""
+    """Détermine si un membre était en mandat (éligible à voter) à la date du scrutin.
+
+    Un membre est éligible si au moins un de ses mandats électifs est actif à
+    ``vote_date``. Si la date est absente ou non parseable, le membre est
+    considéré éligible par défaut (approche conservatrice).
+
+    Args:
+        mandats: liste des mandats du profil pivot (champ ``mandats[]``).
+        vote_date: date du scrutin au format "YYYY-MM-DD", ou None.
+
+    Returns:
+        True si le membre est éligible pour ce scrutin.
+    """
     return _is_eligible_at(_member_eligibility_intervals(mandats), _parse_date(vote_date))
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Construction de l'entrée membre
 # ---------------------------------------------------------------------------
 
 def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
-    """English docstring for  derive membre entry."""
+    """Dérive une entrée ``membres[]`` du profil de groupe à partir d'un profil pivot.
+
+    La date de début dans le groupe correspond au début du premier mandat électif ;
+    la fin correspond à la fin du dernier mandat électif terminé (None si toujours
+    actif). Cette approximation est correcte pour les cas sans changement de groupe
+    en cours de mandat.
+
+    Args:
+        profil: profil pivot v1.
+
+    Returns:
+        Dict conformant à la structure membres[] du schéma de groupe.
+    """
     electif = [
         m for m in (profil.get("mandats") or [])
         if m.get("categorie") == "mandat_electif"
@@ -86,7 +183,7 @@ def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
         if parsed_debuts:
             debut = str(min(parsed_debuts))
 
-        # Translated comment.
+        # La fin est None si au moins un mandat est toujours actif.
         if any(actifs) or any(f is None for f in fins):
             fin = None
         else:
@@ -109,7 +206,12 @@ def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _build_vote_index(profil: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """English docstring for  build vote index."""
+    """Construit un index {numero_scrutin → vote_dict} pour un profil individuel.
+
+    Permet une recherche O(1) par numéro de scrutin lors du calcul de cohésion.
+    Les numéros de scrutin sont normalisés en chaînes pour garantir une comparaison
+    homogène.
+    """
     index: dict[str, dict[str, Any]] = {}
     for v in (profil.get("votes") or []):
         num = v.get("numero_scrutin")
@@ -119,16 +221,36 @@ def _build_vote_index(profil: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Calcul de cohésion
 # ---------------------------------------------------------------------------
 
 def _compute_cohesion_votes(
     profils: list[dict[str, Any]],
     seuil_quorum: float = 0.5,
 ) -> list[dict[str, Any]]:
-    """English docstring for  compute cohesion votes."""
-    # Translated comment.
-    # Translated comment.
+    """Calcule la cohésion de vote pour chaque scrutin couvert par les membres.
+
+    Algorithme :
+      1. Collecte tous les scrutins distincts (par numero_scrutin) rencontrés
+         dans les profils membres.
+      2. Pour chaque scrutin, détermine les membres éligibles (en mandat à la
+         date du scrutin).
+      3. Comptabilise les positions : pour / contre / abstention / non_votant /
+         excusé / absent (implicite = pas de vote trouvé pour ce scrutin).
+      4. Calcule la position majoritaire sur les votes exprimés, les taux de
+         participation et de cohérence.
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+        seuil_quorum: seuil de taux_participation au-delà duquel quorum_atteint
+                      est True (défaut : 0.5).
+
+    Returns:
+        Liste de dicts conformes à la structure cohesion_votes[], triée par date
+        décroissante.
+    """
+    # --- 1. Collecte de tous les scrutins ---
+    # Clé : numero_scrutin (str) → méta du scrutin
     scrutins: dict[str, dict[str, Any]] = {}
     for profil in profils:
         for v in (profil.get("votes") or []):
@@ -146,10 +268,10 @@ def _compute_cohesion_votes(
     if not scrutins:
         return []
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --- 2. Index de votes par membre + intervalles d'éligibilité pré-analysés ---
+    # Précalculés une seule fois (au lieu de reparser les dates de mandat à chaque
+    # scrutin) : un groupe de N membres et M scrutins ferait sinon O(M x N) reparsing
+    # de dates au lieu de O(N) ici + une comparaison de dates déjà parsées par scrutin.
     vote_indexes = [_build_vote_index(p) for p in profils]
     eligibility_intervals = [_member_eligibility_intervals(p.get("mandats") or []) for p in profils]
 
@@ -182,24 +304,24 @@ def _compute_cohesion_votes(
         if n_eligible == 0:
             continue
 
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
+        # Position majoritaire sur les votes exprimés (pour/contre/abstention).
+        # Note : en cas d'égalité stricte entre deux positions (ex. 10 pour /
+        # 10 contre), max() retourne conventionnellement la première position
+        # de _EXPRESSED à égalité de score, soit l'ordre "pour" > "contre" >
+        # "abstention". Ce choix arbitraire mais déterministe est documenté ici
+        # plutôt que de renvoyer None sur égalité, ce qui casserait la lecture
+        # simple du taux de cohérence pour ces scrutins (rares en pratique).
         votes_exprimes = sum(compteurs[p] for p in _EXPRESSED)
         if votes_exprimes == 0:
             position_majoritaire = None
         else:
             position_majoritaire = max(_EXPRESSED, key=lambda p: compteurs[p])
 
-        # Translated comment.
+        # Taux de participation (éligibles ayant une trace de vote)
         n_absent = compteurs["absent"] + compteurs["excuse"]
         taux_participation = (n_eligible - n_absent) / n_eligible
 
-        # Translated comment.
+        # Taux de cohérence
         if position_majoritaire is not None:
             alignes = compteurs[position_majoritaire]
             taux_coherence: Optional[float] = alignes / n_eligible
@@ -236,19 +358,32 @@ def _compute_cohesion_votes(
             "quorum_atteint": taux_participation >= seuil_quorum,
         })
 
-    # Translated comment.
+    # Tri par date décroissante (scrutins récents en premier)
     cohesion.sort(key=lambda x: x["date"] or "", reverse=True)
     return cohesion
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Agrégation des tags thématiques
 # ---------------------------------------------------------------------------
 
 def aggregate_tags_thematiques(
     profils: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], Optional[str]]:
-    """English docstring for aggregate tags thematiques."""
+    """Agrège les tags thématiques de tous les profils membres.
+
+    Stratégie : utilise ``tags_thematiques`` de chaque profil individuel.
+    Si un profil a ``tags_thematiques`` vide, ses ``interventions[].mots_cles``
+    sont utilisés en fallback (les deux sources peuvent coexister dans le même
+    appel si les profils sont hétérogènes).
+
+    Args:
+        profils: liste de profils pivot v1.
+
+    Returns:
+        Tuple (liste triée par nb_membres_porteurs desc, tag_source).
+        ``tag_source`` vaut "tags_thematiques", "mots_cles_interventions" ou "mixed".
+    """
     n = len(profils)
     if n == 0:
         return [], None
@@ -261,7 +396,7 @@ def aggregate_tags_thematiques(
         if tags:
             sources_used.add("tags_thematiques")
         else:
-            # Translated comment.
+            # Fallback : mots-clés bruts des interventions
             kw_set: set[str] = set()
             for interv in (profil.get("interventions") or []):
                 for kw in (interv.get("mots_cles") or []):
@@ -272,7 +407,7 @@ def aggregate_tags_thematiques(
             if tags:
                 sources_used.add("mots_cles_interventions")
 
-        # Translated comment.
+        # Un tag compte une seule fois par membre (même s'il est répété)
         for tag in set(tags):
             if tag:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
@@ -301,11 +436,15 @@ def aggregate_tags_thematiques(
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Agrégation des amendements (comparateur du taux d'adoption individuel)
 # ---------------------------------------------------------------------------
 
 def _normalize_sort_amendement(sort: Any) -> str:
-    """English docstring for  normalize sort amendement."""
+    """Normalise un statut d'amendement en minuscules sans accent, pour comparaison.
+
+    Les sources primaires peuvent fournir des libellés accentués ("adopté")
+    ou non ("adopte") ; cette normalisation évite de dupliquer les catégories.
+    """
     if not isinstance(sort, str):
         return ""
     s = unicodedata.normalize("NFKD", sort.strip().lower())
@@ -319,7 +458,23 @@ _SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non sou
 
 
 def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """English docstring for  aggregate amendements."""
+    """Agrège les amendements de tous les profils membres pour servir de comparateur.
+
+    Le total (tous types de déposants confondus) sert de vue d'ensemble mais ne
+    doit PAS être utilisé comme comparateur direct du taux d'adoption d'un⋅e
+    élu⋅e : les amendements gouvernementaux ou du rapporteur sont adoptés quasi
+    systématiquement par construction (ils portent le texte), ce qui gonflerait
+    artificiellement la référence. Comparer un⋅e élu⋅e à
+    ``par_type_deposant["depute"]``, seule catégorie de même nature que les
+    amendements qu'un⋅e député⋅e dépose en son nom propre.
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+
+    Returns:
+        Dict conforme à la structure ``amendements_agreges`` du schéma de groupe,
+        avec sa clé ``par_type_deposant`` (voir schema_groupe.AMENDEMENTS_TYPES_DEPOSANT).
+    """
     total = make_empty_amendements_stats()
     par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
 
@@ -350,23 +505,38 @@ def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Contrôle interne : écart de cohésion/participation individuel vs groupe
 #
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Donnée de contrôle interne uniquement — volontairement absente du schéma
+# de groupe public (schema_groupe.py). Ne pas inclure le résultat de
+# `compute_ecarts_cohesion_internes` dans un profil de groupe publié tant que
+# ce comparateur n'a pas été validé comme sortie publique.
 # ---------------------------------------------------------------------------
 
 def compute_ecarts_cohesion_internes(
     profils: list[dict[str, Any]],
     cohesion_votes: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    """English docstring for compute ecarts cohesion internes."""
+    """Calcule, pour chaque membre, son écart de participation/cohérence vs le groupe.
+
+    Le ratio individuel est calculé sur exactement les mêmes scrutins que ceux
+    couverts par ``cohesion_votes`` (donc sur les mêmes membres éligibles par
+    scrutin), puis comparé à la moyenne du groupe sur ces mêmes scrutins.
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+        cohesion_votes: sortie de ``_compute_cohesion_votes`` pour ce même groupe.
+
+    Returns:
+        Liste de dicts {membre_id, nom, nb_scrutins_eligibles,
+        taux_participation_individuel, taux_coherence_individuel,
+        ecart_participation_vs_groupe, ecart_coherence_vs_groupe}.
+        Destinée à un usage de contrôle interne, pas à publication.
+    """
     if not cohesion_votes:
         return []
 
-    # Translated comment.
+    # Moyennes du groupe sur les mêmes scrutins (celles déjà calculées par scrutin).
     participations = [c["taux_participation"] for c in cohesion_votes if c.get("taux_participation") is not None]
     coherences = [c["taux_coherence"] for c in cohesion_votes if c.get("taux_coherence") is not None]
     moyenne_participation_groupe = sum(participations) / len(participations) if participations else None
@@ -428,15 +598,30 @@ def compute_ecarts_cohesion_internes(
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Chargement et détection de format
 # ---------------------------------------------------------------------------
 
 def _is_pivot_v1(profil: dict[str, Any]) -> bool:
-    """English docstring for  is pivot v1."""  return "schema_version" in profil and "id" in profil
+    """Retourne True si le profil est déjà au format pivot v1 (schema_version présent)."""
+    return "schema_version" in profil and "id" in profil
 
 
 def load_profil_from_file(path: Path) -> dict[str, Any]:
-    """English docstring for load profil from file."""
+    """Charge un profil depuis un fichier JSON et le normalise en pivot v1 si nécessaire.
+
+    Les profils au format brut NosDéputés (produits par candidate_profile.py) sont
+    convertis automatiquement via normalize_nosdeputes.
+
+    Args:
+        path: chemin vers le fichier JSON.
+
+    Returns:
+        Profil pivot v1 (dict).
+
+    Raises:
+        FileNotFoundError: si le fichier n'existe pas.
+        ValueError: si le fichier n'est pas un JSON valide ou si le format est inconnu.
+    """
     with open(path, encoding="utf-8") as f:
         try:
             data = json.load(f)
@@ -449,7 +634,7 @@ def load_profil_from_file(path: Path) -> dict[str, Any]:
     if _is_pivot_v1(data):
         return data
 
-    # Translated comment.
+    # Format brut NosDéputés (champ "slug" présent, pas de "schema_version")
     if "slug" in data:
         return normalize_nosdeputes(data)
 
@@ -460,7 +645,7 @@ def load_profil_from_file(path: Path) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Fonction principale d'agrégation
 # ---------------------------------------------------------------------------
 
 def build_groupe_profile(
@@ -473,7 +658,21 @@ def build_groupe_profile(
     seuil_quorum: float = 0.5,
     licence_donnees: str = "",
 ) -> dict[str, Any]:
-    """English docstring for build groupe profile."""
+    """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
+
+    Args:
+        groupe_id: identifiant du groupe, ex. "AN:SOC".
+        groupe_sigle: sigle court, ex. "SOC".
+        groupe_nom: nom complet, ex. "Socialistes et apparentés".
+        chambre: "AN" | "Senat" | "PE" | "mairie" | None.
+        legislature: ex. "16" | None.
+        profils: liste de profils pivot v1 des membres du groupe.
+        seuil_quorum: seuil de taux de participation pour quorum_atteint (défaut : 0.5).
+        licence_donnees: texte de licence à inscrire dans meta.
+
+    Returns:
+        Profil de groupe dict conforme au schéma de groupe v1.
+    """
     warnings: list[str] = []
 
     # --- Membres ---
@@ -483,17 +682,17 @@ def build_groupe_profile(
     n_actif = sum(1 for m in membres if m["actif"])
     effectif: dict[str, Any] = {
         "actuel": n_actif,
-        "min_historique": None,  # Translated comment.
+        "min_historique": None,  # non calculé (nécessiterait une analyse de timeline)
         "max_historique": None,
     }
 
-    # Translated comment.
+    # --- Période du groupe ---
     all_debuts = [_parse_date(m["debut_dans_groupe"]) for m in membres]
     all_fins = [_parse_date(m["fin_dans_groupe"]) for m in membres]
     parsed_debuts = [d for d in all_debuts if d is not None]
 
     periode_debut = str(min(parsed_debuts)) if parsed_debuts else None
-    # Translated comment.
+    # Le groupe est actif si au moins un membre est actif (fin_dans_groupe = None)
     groupe_actif = any(m["actif"] for m in membres)
     if groupe_actif:
         periode_fin = None
@@ -501,10 +700,10 @@ def build_groupe_profile(
         parsed_fins = [f for f in all_fins if f is not None]
         periode_fin = str(max(parsed_fins)) if parsed_fins else None
 
-    # Translated comment.
+    # --- Cohésion de vote ---
     cohesion_votes = _compute_cohesion_votes(profils, seuil_quorum=seuil_quorum)
 
-    # Translated comment.
+    # --- Tags thématiques ---
     tags_agreges, tag_source = aggregate_tags_thematiques(profils)
     if tag_source == "mots_cles_interventions":
         warnings.append(
@@ -518,7 +717,7 @@ def build_groupe_profile(
             "tags_thematiques, d'autres utilisent mots_cles_interventions)."
         )
 
-    # Translated comment.
+    # --- Sources uniques (dédoublonnées par type + url) ---
     seen_sources: set[tuple[str, str]] = set()
     sources: list[dict[str, Any]] = []
     for p in profils:
@@ -528,7 +727,7 @@ def build_groupe_profile(
                 seen_sources.add(key)
                 sources.append(s)
 
-    # Translated comment.
+    # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
     amendements_agreges = _aggregate_amendements(profils)
 
     # --- Assemblage ---
@@ -680,13 +879,20 @@ def generate_groupe_profile_from_roster(
     validate: bool = False,
     rapport_interne_path: Optional[Path] = None,
 ) -> dict[str, Any]:
-    """English docstring for generate groupe profile from roster."""
+    """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
+    roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
+    `filter_roster_by_sigle` pour partager un même fetch réseau entre plusieurs
+    sigles d'une même chambre/législature — voir generate_group_profiles.py).
+
+    Factorise la logique partagée entre le CLI `--from-roster` de `main()` et
+    `generate_group_profiles.py`.
+    """
     print(f"→ {len(roster)} membre(s) réel(s) trouvé(s) pour {groupe_sigle!r}.", file=sys.stderr)
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --merge-existing : réintègre les membres du fichier --out précédent
+    # absents du roster récupéré cette exécution (protège contre un échec
+    # partiel de récupération du roster live). Sans cette option, --out
+    # écrase entièrement le fichier existant à chaque exécution.
     recovered_slugs: list[str] = []
     if merge_existing and out_path and out_path.exists():
         try:

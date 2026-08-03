@@ -1,18 +1,34 @@
 #!/usr/bin/env python3
-"""Module documentation in English."""
+"""
+normalize_nosdeputes.py — Adaptateur NosDéputés/NosSénateurs → schéma pivot v1.
+
+Convertit un profil JSON produit par candidate_profile.py (format brut
+NosDéputés.fr / NosSénateurs.fr) vers le schéma pivot commun défini dans
+schema_pivot.py.
+
+Ce module est volontairement découplé de la collecte : il ne fait aucun
+appel réseau et ne connaît pas le mécanisme de téléchargement.
+
+Usage :
+    from normalize_nosdeputes import normalize_nosdeputes
+    pivot = normalize_nosdeputes(raw_profile)
+
+    # Enrichissement optionnel depuis candidats.json :
+    pivot["parti"] = "La France Insoumise"
+"""
 
 import time
 from typing import Any, Optional
 
 from schema_pivot import SCHEMA_VERSION, make_empty_profil
 
-# Translated comment.
+# Correspondance chambre (clé du profil brut) → valeur normalisée du pivot.
 _CHAMBRE_MAP: dict[str, str] = {
     "deputes": "AN",
     "senateurs": "Senat",
 }
 
-# Translated comment.
+# Type de source selon la chambre.
 _SOURCE_TYPE_MAP: dict[str, str] = {
     "deputes": "nosdeputes",
     "senateurs": "nossenateurs",
@@ -20,18 +36,20 @@ _SOURCE_TYPE_MAP: dict[str, str] = {
 
 
 def _first(*values: Any) -> Any:
-    """English docstring for  first."""    for v in values:
+    """Retourne la première valeur non-None parmi les arguments."""
+    for v in values:
         if v is not None:
             return v
     return None
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Normaliseurs de sections individuelles
 # ---------------------------------------------------------------------------
 
 def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
-    """English docstring for  normalize vote."""   return {
+    """Normalise un vote brut NosDéputés/AN vers le format pivot."""
+    return {
         "date": v.get("date"),
         "texte": v.get("titre") or "",
         "position": v.get("position") or "",
@@ -40,19 +58,20 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
         "type_scrutin": v.get("type_scrutin"),
         "type_vote": v.get("type_vote") or "vote_texte",
         "texte_lie_id": v.get("texte_lie_id"),
-        # Translated comment.
-        # Translated comment.
+        # groupe_au_moment_du_vote : null par défaut ; enrichissable en post-traitement
+        # (NosDéputés/AN open data ne fournit pas l'historique de groupe par scrutin).
         "groupe_au_moment_du_vote": v.get("groupe_au_moment_du_vote"),
-        # Translated comment.
+        # url_source présent uniquement dans les votes fallback nosdeputes
         "source_url": v.get("url_source"),
     }
 
 
 def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
-    """English docstring for  normalize mandat."""    return {
+    """Normalise un mandat/responsabilité brut vers le format pivot."""
+    return {
         "label": m.get("label") or "",
         "categorie": m.get("categorie") or "autre",
-        # Translated comment.
+        # Dans le format brut, la fonction s'appelle "type" (héritage de l'API)
         "fonction": m.get("type") or "membre",
         "debut": m.get("debut"),
         "fin": m.get("fin"),
@@ -65,7 +84,12 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
-    """English docstring for  normalize texte porte."""
+    """Normalise un dossier législatif brut vers le format pivot `textes_portes`.
+
+    NosDéputés ne distingue pas systématiquement auteur et rapporteur dans les
+    dossiers. Le rôle reste donc nul quand la source ne le fournit pas : aucune
+    inférence n'est faite à partir du volume d'interventions.
+    """
     return {
         "titre": d.get("titre") or "",
         "role": d.get("role"),
@@ -79,7 +103,7 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
-    """English docstring for  normalize intervention."""
+    """Normalise une intervention brute vers le format pivot."""
     result: dict[str, Any] = {
         "date": _first(i.get("date"), i.get("created_at")),
         "type_detail": i.get("type_detail"),
@@ -90,17 +114,22 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "mots_cles": list(i.get("mots_cles") or []),
         "source_url": _first(i.get("url_detail"), i.get("url")),
     }
-    # Translated comment.
+    # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").
     if i.get("type_detail") == "question":
         result["sous_type"] = i.get("sous_type")      # "QE" | "QG" | "QOSD"
-        result["ministere"] = i.get("ministere")       # Translated comment.
-        result["reponse"] = i.get("reponse")           # Translated comment.
-        result["date_reponse"] = i.get("date_reponse") # Translated comment.
+        result["ministere"] = i.get("ministere")       # ministère interrogé
+        result["reponse"] = i.get("reponse")           # texte de la réponse (si disponible)
+        result["date_reponse"] = i.get("date_reponse") # date JO de la réponse
     return result
 
 
 def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
-    """English docstring for  normalize amendement."""
+    """Normalise un amendement officiel (Assemblée nationale) vers le format pivot.
+
+    `candidate_profile.fetch_amendements_officiels` ne collecte que les
+    amendements dont l'élu est l'auteur principal (pas simple cosignataire) :
+    `premier_signataire` correspond donc toujours à l'élu du profil courant.
+    """
     return {
         "texte_vise": a.get("texte_vise"),
         "sort": a.get("sort"),
@@ -119,7 +148,16 @@ def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = None) -> dict[str, Any]:
-    """English docstring for normalize nosdeputes."""
+    """Convertit un profil brut NosDéputés/NosSénateurs vers le schéma pivot v1.
+
+    Args:
+        raw_profile: dict produit par candidate_profile.build_profile().
+        parti: parti politique de l'élu (optionnel ; peut être passé depuis
+               candidats.json car non fourni par l'API NosDéputés).
+
+    Returns:
+        Profil pivot dict conforme au schéma v1.
+    """
     slug = raw_profile.get("slug") or ""
     chambre_raw = raw_profile.get("chambre") or ""
     chambre = _CHAMBRE_MAP.get(chambre_raw, chambre_raw or None)
@@ -128,13 +166,13 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     identite = raw_profile.get("identite") or {}
     nom = identite.get("nom_complet") or slug.replace("-", " ").title()
 
-    # Translated comment.
+    # Timestamp de synchro depuis le méta du profil brut (ou maintenant si absent)
     meta_raw = raw_profile.get("meta") or {}
     synchro_sources = meta_raw.get("synchro_sources") or {}
     synchro_le = synchro_sources.get("nosdeputes")
     if "nosdeputes" not in synchro_sources:
         synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    # Translated comment.
+    # --- Profil pivot de base ---
     profil: dict[str, Any] = make_empty_profil(f"{source_type}:{slug}", nom)
     profil["chambre"] = chambre
     profil["parti"] = parti
@@ -159,8 +197,8 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
         })
     profil["sources"] = sources
 
-    # Translated comment.
-    # Translated comment.
+    # --- Identité (profession/naissance/HATVP) : uniquement si au moins un champ
+    # est renseigné, sinon on laisse `identite` à None (valeur par défaut). ---
     identite_champs = {
         "profession": identite.get("profession"),
         "date_naissance": identite.get("date_naissance"),
@@ -179,8 +217,8 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
     profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
 
-    # Translated comment.
-    # Translated comment.
+    # --- Tags thématiques bruts : agrégation des mots-clés des interventions ---
+    # Pas d'harmonisation thématique à ce stade (Phase 4 à venir).
     tags: set[str] = set()
     for i in (raw_profile.get("interventions") or []):
         for kw in (i.get("mots_cles") or []):
@@ -189,11 +227,11 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
                 tags.add(cleaned)
     profil["tags_thematiques"] = sorted(tags)
 
-    # Translated comment.
+    # --- Métadonnées ---
     profil["meta"]["licence_donnees"] = meta_raw.get("licence_donnees") or ""
     profil["meta"]["warnings"] = list(meta_raw.get("warnings") or [])
 
-    # Translated comment.
+    # Propagation des avertissements de synchro depuis le profil brut
     synchro_sources = meta_raw.get("synchro_sources") or {}
     if synchro_sources.get("nosdeputes") is None:
         profil["meta"]["warnings"].append(

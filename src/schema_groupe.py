@@ -1,15 +1,171 @@
 #!/usr/bin/env python3
-"""Module documentation in English."""
+"""
+schema_groupe.py — Schéma pivot du profil de groupe politique v1.
+
+Ce module définit le contrat de structure du « profil de groupe », document
+agrégé calculé à partir de plusieurs profils individuels (schéma pivot v1)
+partageant le même groupe parlementaire.
+
+Il ne contient aucune logique de collecte ni de calcul : c'est un contrat de
+structure (constantes, fabrique, validateur). La logique d'agrégation est dans
+group_profile.py.
+
+Principe directeur : faits chiffrés uniquement, aucune interprétation.
+
+Format d'un profil de groupe v1 :
+{
+    "schema_version": "1",
+    "type_document": "profil_groupe",
+    "groupe_id": "AN:SOC",              # "<chambre>:<sigle>" — même convention que le pivot individuel
+    "groupe_sigle": "SOC",
+    "groupe_nom": "Socialistes et apparentés",
+    "chambre": "AN",                    # "AN" | "Senat" | "PE" | "mairie" | null
+    "legislature": "16",
+
+    "periode": {
+        "debut": "2022-06-22",          # début du groupe dans cette législature
+        "fin": null,
+        "actif": true
+    },
+
+    "historique_noms": [                # renommages du groupe entre législatures
+        {
+            "sigle": "SOC",
+            "nom": "Socialistes et apparentés",
+            "debut": "2022-06-22",
+            "fin": null
+        }
+    ],
+
+    "membres": [                        # un enregistrement par membre (et par période si changement)
+        {
+            "membre_id": "nosdeputes:jerome-guedj",  # id pivot individuel
+            "nom": "Jérôme Guedj",
+            "debut_dans_groupe": "2022-06-22",       # début de l'appartenance à CE groupe
+            "fin_dans_groupe": null,                 # null = toujours membre
+            "actif": true
+        }
+    ],
+
+    "effectif": {
+        "actuel": 64,                   # nombre de membres actifs au moment du calcul
+        "min_historique": null,         # min. sur la période (null si non calculé)
+        "max_historique": null          # max. sur la période (null si non calculé)
+    },
+
+    "cohesion_votes": [                 # une entrée par scrutin sur lequel ≥1 membre a voté
+        {
+            "numero_scrutin": "4084",
+            "date": "2024-06-07",
+            "texte": "Projet de loi …",
+            "sort": "rejeté",
+            "membres_eligibles": 64,    # membres en mandat à la date du scrutin
+            "position_majoritaire": "contre",
+            "pour": 42,
+            "contre": 12,
+            "abstention": 3,
+            "non_votant": 2,
+            "absents": 5,               # membres éligibles sans trace de vote
+            "excuses": 0,               # absences notifiées/justifiées
+            "taux_participation": 0.921,
+            "taux_coherence": 0.656,    # alignés / membres_eligibles
+            "taux_coherence_hors_absents": 0.847,  # alignés / (éligibles − absents − excusés)
+            "quorum_atteint": true      # taux_participation ≥ seuil_quorum configuré
+        }
+    ],
+
+    "tags_thematiques_agreges": [       # agrégation des tags individuels, triés par poids desc
+        {
+            "tag": "budget",
+            "nb_membres_porteurs": 14,  # nombre de membres ayant ce tag
+            "poids_relatif": 0.218      # nb_membres_porteurs / len(membres)
+        }
+    ],
+
+    "amendements_agreges": {            # tous types de déposants confondus — NE JAMAIS
+                                         # comparer directement au taux d'un⋅e élu⋅e (voir
+                                         # par_type_deposant ci-dessous)
+        "nb_amendements": 120,
+        "nb_adoptes": 18,
+        "nb_rejetes": 74,
+        "nb_irrecevables": 12,
+        "nb_retires_ou_tombes": 16,
+        "taux_adoption": 0.15,          # nb_adoptes / nb_amendements ; null si nb_amendements == 0
+        "par_type_deposant": {          # comparateur valide du taux d'adoption individuel :
+                                         # les amendements gouvernement/rapporteur sont adoptés
+                                         # quasi systématiquement par construction — comparer un⋅e
+                                         # élu⋅e à par_type_deposant["depute"], jamais au total
+            "depute": { "nb_amendements": 98, "nb_adoptes": 6, "nb_rejetes": 70,
+                        "nb_irrecevables": 12, "nb_retires_ou_tombes": 10, "taux_adoption": 0.0612 },
+            "gouvernement": { "nb_amendements": 15, "nb_adoptes": 9, "nb_rejetes": 3,
+                              "nb_irrecevables": 0, "nb_retires_ou_tombes": 3, "taux_adoption": 0.6 },
+            "commission_rapporteur": { "nb_amendements": 7, "nb_adoptes": 3, "nb_rejetes": 1,
+                                       "nb_irrecevables": 0, "nb_retires_ou_tombes": 3, "taux_adoption": 0.4286 },
+            "inconnu": { "nb_amendements": 0, "nb_adoptes": 0, "nb_rejetes": 0,
+                        "nb_irrecevables": 0, "nb_retires_ou_tombes": 0, "taux_adoption": null }
+            # "inconnu" : amendements sans type_deposant renseigné — jamais rattachés par
+            # défaut à "depute", pour ne pas masquer une donnée manquante
+        }
+    },
+
+    "sources": [                        # traçabilité des sources individuelles agrégées
+        {
+            "type": "nosdeputes",
+            "url": "https://www.nosdeputes.fr/groupe/SOC",
+            "synchro_le": "2026-07-29T10:00:00+0000"
+        }
+    ],
+
+    "meta": {
+        "schema_version": "1",
+        "genere_le": "2026-07-29T10:00:00+0000",
+        "licence_donnees": "ODbL …",
+        "profils_sources": [            # ids pivot des profils individuels agrégés
+            "nosdeputes:jerome-guedj",
+            "nosdeputes:boris-vallaud"
+        ],
+        "seuil_quorum": 0.5,            # seuil de participation retenu pour quorum_atteint
+        "warnings": [],
+        # "couverture_roster" (optionnel, présent seulement si le groupe a été
+        # construit via group_profile.py --from-roster) : {"roster_total": 62,
+        # "profils_disponibles": 12} — nombre réel de membres du groupe (via
+        # group_roster.py) vs. nombre de profils pivot locaux effectivement
+        # chargés. Ne JAMAIS confondre avec effectif.actuel (qui ne décrit que
+        # les membres présents dans `profils`, pas le groupe réel).
+}
+
+Cas limites gérés :
+- Élu qui change de groupe : membres[].fin_dans_groupe non null ; la cohésion
+  n'utilise que les membres eligibles à la date de chaque scrutin.
+- Groupe dissous/renommé : historique_noms[] + periode.fin non null.
+- Scrutin sans quorum : quorum_atteint: false, cohésion toujours calculée.
+- tags_thematiques vides : le calcul utilise les mots-clés des interventions
+  individuelles en fallback (loggé dans meta.warnings).
+- amendements_agreges.taux_adoption est null si aucun amendement n'est
+  recensé sur les profils membres (nb_amendements == 0).
+- amendements_agreges.par_type_deposant : un amendement sans type_deposant
+  renseigné est classé sous "inconnu", jamais sous "depute" par défaut (une
+  donnée manquante ne doit jamais se travestir en fait positif).
+
+Hors périmètre de ce schéma (volontairement) :
+- Le ratio individuel de cohérence/participation rapporté à la moyenne du
+  groupe est une donnée de contrôle interne (voir
+  group_profile.compute_ecarts_cohesion_internes) : il n'est PAS exposé dans
+  ce document public tant qu'il n'a pas été validé comme sortie publique.
+
+Usage :
+    from schema_groupe import SCHEMA_GROUPE_VERSION, make_empty_profil_groupe, validate_profil_groupe
+"""
 
 import time
 from typing import Any
 
 from schema_pivot import KNOWN_CHAMBRES, KNOWN_TYPES_DEPOSANT
 
-# Translated comment.
+# Version du schéma de groupe ; indépendante de SCHEMA_VERSION du pivot individuel.
 SCHEMA_GROUPE_VERSION = "1"
 
-# Translated comment.
+# Clés obligatoires au niveau racine du profil de groupe.
 REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "schema_version",
     "type_document",
@@ -29,7 +185,7 @@ REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "meta",
 })
 
-# Translated comment.
+# Clés obligatoires dans le bloc "meta".
 REQUIRED_META_KEYS: frozenset[str] = frozenset({
     "schema_version",
     "genere_le",
@@ -38,7 +194,7 @@ REQUIRED_META_KEYS: frozenset[str] = frozenset({
     "warnings",
 })
 
-# Translated comment.
+# Champs dont la valeur doit être une liste.
 _LIST_KEYS: tuple[str, ...] = (
     "historique_noms",
     "membres",
@@ -47,14 +203,14 @@ _LIST_KEYS: tuple[str, ...] = (
     "sources",
 )
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Ventilation de amendements_agreges par type de déposant. "inconnu" couvre les
+# amendements sans type_deposant renseigné : ils ne doivent jamais être classés
+# par défaut sous "depute", ce qui masquerait une donnée manquante.
 AMENDEMENTS_TYPES_DEPOSANT: tuple[str, ...] = (*sorted(KNOWN_TYPES_DEPOSANT), "inconnu")
 
 
 def make_empty_amendements_stats() -> dict[str, Any]:
-    """English docstring for make empty amendements stats."""
+    """Structure vide d'un bloc de statistiques d'amendements (total ou ventilation)."""
     return {
         "nb_amendements": 0,
         "nb_adoptes": 0,
@@ -72,7 +228,19 @@ def make_empty_profil_groupe(
     chambre: str | None,
     legislature: str | None,
 ) -> dict[str, Any]:
-    """Create an empty group profile structure."""
+    """Crée un profil de groupe v1 vide avec des valeurs par défaut.
+
+    Args:
+        groupe_id: identifiant unique de la forme "<chambre>:<sigle>",
+                   ex. "AN:SOC", "PE:S&D".
+        groupe_sigle: sigle court du groupe (ex. "SOC", "LFI", "RN").
+        groupe_nom: nom complet du groupe.
+        chambre: "AN" | "Senat" | "PE" | "mairie" | None.
+        legislature: numéro de législature (ex. "16") ou None.
+
+    Returns:
+        Profil de groupe dict initialisé, prêt à être enrichi par group_profile.py.
+    """
     return {
         "schema_version": SCHEMA_GROUPE_VERSION,
         "type_document": "profil_groupe",
@@ -114,7 +282,18 @@ def make_empty_profil_groupe(
 
 
 def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
-    """Validate top-level invariants for a group profile."""
+    """Vérifie les invariants de base du schéma de groupe v1.
+
+    Validation structurelle de premier niveau : présence des clés obligatoires,
+    types, valeur de schema_version et type_document. Ne valide pas le contenu
+    de chaque entrée cohesion_votes ou membre.
+
+    Args:
+        profil: dict à valider.
+
+    Returns:
+        Liste d'erreurs (liste vide = profil valide).
+    """
     errors: list[str] = []
 
     if not isinstance(profil, dict):

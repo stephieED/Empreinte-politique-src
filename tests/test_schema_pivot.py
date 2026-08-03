@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-# Translated comment.
+# Les modules testés vivent dans src/, à côté du dossier tests/.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import time
@@ -69,11 +69,11 @@ def test_make_empty_profil_warnings_empty():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# validate_profil — profil valide
 # ---------------------------------------------------------------------------
 
 def _valid_profil() -> dict:
-    """Build a minimal valid pivot profile for tests."""
+    """Construit un profil pivot minimal valide pour les tests."""
     p = make_empty_profil("nosdeputes:test", "Test Personne")
     p["chambre"] = "AN"
     p["meta"]["licence_donnees"] = "ODbL"
@@ -103,7 +103,7 @@ def test_validate_valid_profil_chambre_none():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# validate_profil — erreurs détectées
 # ---------------------------------------------------------------------------
 
 def test_validate_missing_top_level_key():
@@ -219,7 +219,7 @@ def test_validate_amendements_valid_list_no_error():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# validate_profil — mandats[].position_dans_hemicycle (champ éditorial sensible)
 # ---------------------------------------------------------------------------
 
 def test_validate_position_hemicycle_sans_source_url_est_une_erreur():
@@ -424,7 +424,7 @@ def test_validate_sort_non_irrecevable_ne_requiert_pas_de_base_juridique():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# Constantes exposées
 # ---------------------------------------------------------------------------
 
 def test_known_chambres_contains_expected_values():

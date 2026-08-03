@@ -101,8 +101,8 @@ def test_fetch_group_roster_senateurs_uses_archive_url():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
-# Translated comment.
+# fetch_full_roster / filter_roster_by_sigle (fetch partagé entre plusieurs
+# sigles d'une même chambre/législature — voir generate_group_profiles.py)
 # ---------------------------------------------------------------------------
 
 def test_fetch_full_roster_returns_unwrapped_members_unfiltered():
@@ -113,7 +113,7 @@ def test_fetch_full_roster_returns_unwrapped_members_unfiltered():
 
     assert len(raw_members) == 3
     assert {m["slug"] for m in raw_members} == {"alice", "bob", "carla"}
-    # Translated comment.
+    # Déballé de l'enveloppe {"depute": {...}}, pas de filtrage par sigle.
     assert {m["groupe_sigle"] for m in raw_members} == {"LR", "SOC"}
 
 
@@ -127,7 +127,9 @@ def test_fetch_full_roster_calls_session_get_once():
 
 
 def test_filter_roster_by_sigle_matches_fetch_group_roster():
-    """English docstring for test filter roster by sigle matches fetch group roster."""
+    """fetch_full_roster + filter_roster_by_sigle doit produire exactement le
+    même résultat qu'un fetch_group_roster direct (garantie de non-régression
+    du refactor fetch-once-per-chambre)."""
     session = MagicMock()
     session.get.return_value = _mock_response(_deputes_payload())
     direct = fetch_group_roster("deputes", "LR", legislature="16", session=session)
@@ -144,7 +146,9 @@ def test_filter_roster_by_sigle_empty_when_no_match():
 
 
 def test_fetch_full_roster_one_call_shared_across_multiple_sigles():
-    """English docstring for test fetch full roster one call shared across multiple sigles."""   session = MagicMock()
+    """Le scénario cible de l'optimisation : un seul appel réseau pour
+    construire plusieurs groupes de la même chambre/législature."""
+    session = MagicMock()
     session.get.return_value = _mock_response(_deputes_payload())
 
     raw_members = fetch_full_roster("deputes", legislature="16", session=session)

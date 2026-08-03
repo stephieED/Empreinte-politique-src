@@ -101,11 +101,11 @@ def test_make_empty_chambre_none():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# validate_profil_groupe — profil valide
 # ---------------------------------------------------------------------------
 
 def _valid_groupe() -> dict:
-    """English docstring for  valid groupe."""
+    """Groupe minimal valide pour les tests."""
     g = make_empty_profil_groupe("AN:SOC", "SOC", "Socialistes et apparentés", "AN", "16")
     g["meta"]["licence_donnees"] = "ODbL"
     return g
@@ -136,7 +136,7 @@ def test_validate_valid_groupe_chambre_none():
 
 
 # ---------------------------------------------------------------------------
-# Translated comment.
+# validate_profil_groupe — erreurs détectées
 # ---------------------------------------------------------------------------
 
 def test_validate_non_dict_input():

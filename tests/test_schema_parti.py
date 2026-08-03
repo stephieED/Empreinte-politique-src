@@ -105,7 +105,7 @@ def test_validate_profil_parti_meta_not_a_dict():
 
 
 def test_no_cohesion_or_amendements_fields_in_schema():
-    """English docstring for test no cohesion or amendements fields in schema."""
+    """Le schéma de parti ne doit jamais exposer de champs de groupe parlementaire."""
     p = make_empty_profil_parti("lo", "Lutte Ouvrière (LO)")
     assert "cohesion_votes" not in p
     assert "amendements_agreges" not in p

@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-# Translated comment.
+# Les modules testés vivent dans src/, à côté du dossier tests/.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from candidate_profile_ue import (
@@ -70,7 +70,7 @@ def test_extract_mandats_europeens_resout_organisation_et_trie_par_date():
     mandats = _extract_mandats_europeens(mep_detail, org_cache)
 
     assert len(mandats) == 3
-    # Translated comment.
+    # Trié du plus récent au plus ancien.
     assert mandats[0]["debut"] == "2024-07-16"
     assert mandats[-1]["debut"] == "2019-07-02"
     assert mandats[-1]["fin"] == "2024-07-15"

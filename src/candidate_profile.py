@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
-"""Module documentation in English."""
+"""
+candidate_profile.py
+
+Construit un profil JSON structuré ("CV politique") d'un parlementaire
+à partir des données ouvertes de NosDéputés.fr / NosSénateurs.fr
+(Regards Citoyens - licence ODbL / CC-BY-SA), complétées par les votes
+officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
+
+Usage (depuis la racine du dépôt) :
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes
+    python src/candidate_profile.py bruno-retailleau --chambre senateurs
+    python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out raw_data/profiles/jean-luc-melenchon.json
+
+Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
+contente d'agréger les faits bruts (mandats, responsabilités, votes,
+interventions) tels que fournis par les API, avec des liens vers les sources.
+
+Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.md
+"""
 
 import argparse
 import concurrent.futures
@@ -27,8 +45,8 @@ BASE_URLS = {
         "https://2007-2012.nosdeputes.fr",
     ],
     "senateurs": [
-        # Translated comment.
-        # Translated comment.
+        # www.nossenateurs.fr a definitivement ferme (le site affiche desormais
+        # un message "Le site NosSenateurs.fr est desormais arrete" et redirige
         # vers son archive) : on utilise directement l'archive, qui reste servie.
         "https://archive.nossenateurs.fr",
     ],
@@ -40,10 +58,10 @@ HEADERS = {
 
 TIMEOUT = 15
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Donnees ouvertes officielles de l'Assemblee nationale (scrutins avec detail
+# nominatif des votes par depute). Utilisees en remplacement de l'endpoint
+# /votes de NosDeputes.fr, qui renvoie systematiquement une erreur HTTP 500
+# (verifie y compris sur l'exemple de leur propre documentation, sur tous les
 # domaines/legislatures disponibles).
 AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
 AN_SCRUTINS_ZIP_NAME = {
@@ -51,11 +69,11 @@ AN_SCRUTINS_ZIP_NAME = {
     "16": "Scrutins.json.zip",
     "15": "Scrutins_XV.json.zip",
     "14": "Scrutins_XIV.json.zip",
-    # Translated comment.
-    # Translated comment.
+    # Pas de donnees ouvertes de scrutins disponibles pour la 13e legislature
+    # (2007-2012) sur data.assemblee-nationale.fr.
 }
 # Association du domaine NosDeputes.fr (celui ou l'identite du parlementaire a
-# Translated comment.
+# ete trouvee) a la legislature Assemblee nationale correspondante.
 LEGISLATURE_BY_BASE_URL = {
     "https://www.nosdeputes.fr": "16",
     "https://2017-2022.nosdeputes.fr": "15",
@@ -64,12 +82,12 @@ LEGISLATURE_BY_BASE_URL = {
 }
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
+# sous-repertoire differe selon la legislature : "amendements_div_legis" pour
+# les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
 # 15e (fichier unique nomme par numero romain). Verifie manuellement (HTTP 200)
-# Translated comment.
-# Translated comment.
+# pour chaque entree ci-dessous ; pas de jeu de donnees equivalent trouve pour
+# les legislatures 13/14.
 AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "17": ("amendements_div_legis", "Amendements.json.zip"),
     "16": ("amendements_div_legis", "Amendements.json.zip"),
@@ -77,27 +95,27 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 
-# Translated comment.
+# Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
 # multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
-# Translated comment.
+# uniquement pour resoudre le code source d'un texte (texteLegislatifRef d'un
 # amendement, ex. "PIONANR5L17B0904") vers son titre lisible (titreDossier.titre).
 AN_DOSSIERS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
 DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Acteurs (deputes actifs) + mandats + organes (Assemblee nationale) : un seul
+# fichier bulk, mais limite aux deputes ACTIFS de la legislature en cours (577
+# constates sur la 17e, contre 7126 organes historiques et 37 deports dans le
+# meme zip, non exploites ici). Utilise pour enrichir schema_pivot.identite
 # (profession/date_naissance/lieu_naissance/uri_hatvp) au-dela de ce que fournit
-# Translated comment.
+# nosdeputes.fr : aucune couverture pour les elus dont le mandat est termine.
 AN_ACTEURS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
 ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Questions parlementaires (écrites, au gouvernement, orales sans débat).
+# Même pattern d'URL que scrutins/amendements. Un seul parseur générique suffit
+# pour les 3 types (seul @xsi:type diffère). URLs confirmées pour les 16e et 17e
+# législatures ; les noms pour 14/15 suivent la convention _XIV/_XV des autres jeux
+# (inférés — échoueront silencieusement si le fichier n'existe pas côté AN).
 AN_QUESTIONS_PATH: dict[str, dict[str, tuple[str, str]]] = {
     "17": {
         "QE":   ("questions_ecrites",           "Questions_ecrites.json.zip"),
@@ -122,34 +140,34 @@ AN_QUESTIONS_PATH: dict[str, dict[str, tuple[str, str]]] = {
 }
 QUESTIONS_CACHE_DIR = Path(".cache") / "questions_an"
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
+# appeler cette fonction simultanément pour des législatures différentes (pas de blocage
+# entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
+# double téléchargement de l'archive zip et une écriture concurrente du cache disque.
 _SCRUTINS_LOCKS: dict[str, threading.Lock] = {}
 _SCRUTINS_LOCKS_META = threading.Lock()
 
-# Translated comment.
+# Même principe que _SCRUTINS_LOCKS, pour l'index des amendements officiels.
 _AMENDEMENTS_LOCKS: dict[str, threading.Lock] = {}
 _AMENDEMENTS_LOCKS_META = threading.Lock()
 
-# Translated comment.
+# Même principe que _SCRUTINS_LOCKS, pour l'index des questions officielles.
 _QUESTIONS_LOCKS: dict[str, threading.Lock] = {}
 _QUESTIONS_LOCKS_META = threading.Lock()
 
-# Translated comment.
-# Translated comment.
+# Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
+# pas de decoupage par legislature).
 _DOSSIERS_TITRE_LOCK = threading.Lock()
 
-# Translated comment.
+# Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
 # decoupage par legislature).
 _ACTEURS_IDENTITE_LOCK = threading.Lock()
 
-# Translated comment.
-# Translated comment.
+# Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
+# depuis le même fichier bulk que l'index titre (dossiers legislatifs).
 _DOSSIERS_TEXTES_PORTES_LOCK = threading.Lock()
 
-# Translated comment.
+# Nomenclature officielle des types de rapport (typeRapporteur, dossiers
 # legislatifs Assemblee nationale) -> nomenclature du schema pivot.
 TYPE_RAPPORTEUR_MAP = {
     "rapporteur": "rapporteur_fond",
@@ -158,11 +176,11 @@ TYPE_RAPPORTEUR_MAP = {
     "rapporteur général": "rapporteur_general",
 }
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Préfixes des messages d'avertissement (warnings) ajoutés à profile["meta"]["warnings"].
+# Exposés en constantes (plutôt qu'en texte libre dupliqué) pour que merge_profile.py
+# puisse détecter de façon fiable les warnings devenus obsolètes après fusion
+# (cf. _prune_stale_warnings), sans risquer de désynchronisation si le libellé
+# complet du message venait à changer ici.
 WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
@@ -171,28 +189,32 @@ WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
-    """English docstring for  get scrutins lock."""with _SCRUTINS_LOCKS_META:
+    """Retourne (ou crée) le verrou associé à une législature donnée."""
+    with _SCRUTINS_LOCKS_META:
         if legislature not in _SCRUTINS_LOCKS:
             _SCRUTINS_LOCKS[legislature] = threading.Lock()
         return _SCRUTINS_LOCKS[legislature]
 
 
 def _get_amendements_lock(legislature: str) -> threading.Lock:
-    """English docstring for  get amendements lock."""with _AMENDEMENTS_LOCKS_META:
+    """Retourne (ou crée) le verrou associé à une législature donnée (amendements)."""
+    with _AMENDEMENTS_LOCKS_META:
         if legislature not in _AMENDEMENTS_LOCKS:
             _AMENDEMENTS_LOCKS[legislature] = threading.Lock()
         return _AMENDEMENTS_LOCKS[legislature]
 
 
 def _get_questions_lock(legislature: str) -> threading.Lock:
-    """English docstring for  get questions lock."""with _QUESTIONS_LOCKS_META:
+    """Retourne (ou crée) le verrou associé à une législature donnée (questions)."""
+    with _QUESTIONS_LOCKS_META:
         if legislature not in _QUESTIONS_LOCKS:
             _QUESTIONS_LOCKS[legislature] = threading.Lock()
         return _QUESTIONS_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
-    """English docstring for  is empty payload."""   if value is None:
+    """Vérifie si une valeur de réponse API est vide ou absente."""
+    if value is None:
         return True
     if isinstance(value, (dict, list, tuple, set)):
         return len(value) == 0
@@ -202,7 +224,11 @@ def _is_empty_payload(value: Any) -> bool:
 
 
 def _extract_parlementaire(identity_raw: Any) -> Optional[dict]:
-    """English docstring for  extract parlementaire."""
+    """Extrait le dict "parlementaire" d'une réponse d'identité NosDéputés/NosSénateurs.
+
+    La clé racine varie selon l'endpoint ("depute" ou "senateur") ; à défaut,
+    on retombe sur le payload lui-même (déjà à plat sur certains endpoints).
+    """
     if not isinstance(identity_raw, dict):
         return None
     if identity_raw.get("depute") is not None:
@@ -213,7 +239,7 @@ def _extract_parlementaire(identity_raw: Any) -> Optional[dict]:
 
 
 def _xml_to_data(xml_text: str) -> Optional[Any]:
-    """English docstring for  xml to data."""
+    """Convertit un XML simple en structure Python de base."""
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:
@@ -238,7 +264,8 @@ def _xml_to_data(xml_text: str) -> Optional[Any]:
 
 
 def _get_payload(url: str) -> Optional[Any]:
-    """English docstring for  get payload."""    try:
+    """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None en cas d'échec."""
+    try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
         resp.raise_for_status()
         content_type = resp.headers.get("content-type", "")
@@ -260,7 +287,8 @@ def _get_payload(url: str) -> Optional[Any]:
 
 
 def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Optional[str]]:
-    """English docstring for  try urls."""    for base_url in urls:
+    """Essaie plusieurs URLs jusqu'à trouver un payload exploitable."""
+    for base_url in urls:
         for suffix in ["/json", "/xml"]:
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> {label} : {url}")
@@ -277,7 +305,8 @@ def fetch_identity(base_urls: list[str], slug: str) -> tuple[Optional[Any], Opti
 
 
 def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
-    """English docstring for fetch activity synthesis."""rl = f"{base_url}/synthese/data/json"
+    """Récupère la synthèse d'activité globale via l'API NosDéputés."""
+    url = f"{base_url}/synthese/data/json"
     print(f"-> Synthèse d'activité : {url}")
     data = _get_payload(url)
     if not isinstance(data, dict):
@@ -289,9 +318,9 @@ def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
         if depute.get("slug") == slug:
             return depute
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # Repli si le slug ne correspond à aucune entrée : comparaison stricte (pas de
+    # sous-chaîne, qui matcherait faussement un homonyme partiel, ex. slug "guedj"
+    # dans le nom d'un autre député contenant "Guedjbaba") sur le nom désaccentué.
     normalized_slug_name = _normalize_search_query(slug.replace("-", " "))
     for depute in deputes:
         nom = depute.get("nom")
@@ -301,13 +330,15 @@ def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
 
 
 def fetch_dossiers(base_url: str, legislature: str) -> Optional[dict]:
-    """English docstring for fetch dossiers.""" url = f"{base_url}/{legislature}/dossiers/nom/json"
+    """Récupère la liste des dossiers législatifs d'une législature."""
+    url = f"{base_url}/{legislature}/dossiers/nom/json"
     print(f"-> Dossiers législatifs : {url}")
     return _get_payload(url)
 
 
 def fetch_dossiers_for_legislatures(base_url: str, legislatures: list[str]) -> list[dict[str, Any]]:
-    """English docstring for fetch dossiers for legislatures.""" dossiers: list[dict[str, Any]] = []
+    """Récupère et fusionne les dossiers législatifs pour plusieurs législatures."""
+    dossiers: list[dict[str, Any]] = []
     for legislature in legislatures:
         payload = fetch_dossiers(base_url, legislature)
         if not isinstance(payload, dict):
@@ -333,14 +364,23 @@ def fetch_dossiers_for_legislatures(base_url: str, legislatures: list[str]) -> l
 
 
 def _normalize_search_query(text: str) -> str:
-    """English docstring for  normalize search query."""
+    """Normalise une requête de recherche (minuscules, sans accents).
+
+    Le moteur de recherche de nosdeputes.fr/nossenateurs.fr renvoie parfois 0
+    résultat pour une requête multi-mots contenant une majuscule accentuée en
+    première position (ex. "Élisabeth Borne" -> 0 résultat), alors que la même
+    requête en minuscules et sans accents ("elisabeth borne") renvoie bien les
+    résultats attendus. On normalise donc systématiquement la requête envoyée
+    à l'API pour éviter ce comportement erratique.
+    """
     decomposed = unicodedata.normalize("NFKD", text)
     without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
     return without_accents.lower()
 
 
 def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None, page: int = 1) -> Optional[dict]:
-    """English docstring for fetch recherche.""" params = [f"format=json"]
+    """Récupère les résultats de recherche API pour un terme donné."""
+    params = [f"format=json"]
     if object_name:
         params.append(f"object_name={object_name}")
     if page and page > 1:
@@ -351,7 +391,8 @@ def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None
 
 
 def fetch_all_intervention_results(base_url: str, query: str, object_name: str = "Intervention", max_pages: int = 10) -> dict[str, Any]:
-    """English docstring for fetch all intervention results.""" aggregated: list[dict[str, Any]] = []
+    """Agrège les résultats de recherche sur plusieurs pages jusqu'à épuisement ou plafond."""
+    aggregated: list[dict[str, Any]] = []
     normalized_query = _normalize_search_query(query)
     for page in range(1, max_pages + 1):
         payload = fetch_recherche(base_url, normalized_query, object_name=object_name, page=page)
@@ -371,7 +412,8 @@ def fetch_all_intervention_results_from_domains(
     object_name: str = "Intervention",
     max_pages: int = 10,
 ) -> dict[str, Any]:
-    """English docstring for fetch all intervention results from domains."""   if not base_urls:
+    """Interroge tous les domaines en parallèle, fusionne les résultats et supprime les doublons."""
+    if not base_urls:
         return {"results": []}
 
     normalized_query = _normalize_search_query(query)
@@ -390,8 +432,8 @@ def fetch_all_intervention_results_from_domains(
             enriched.append(enriched_item)
         return enriched
 
-    # Translated comment.
-    # Translated comment.
+    # Recherche parallèle sur chaque domaine : plusieurs requêtes de recherche
+    # distinctes, puis fusion des réponses et déduplication par document_id.
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(base_urls))) as executor:
         domain_results = list(executor.map(_fetch_one, base_urls))
 
@@ -414,7 +456,8 @@ def fetch_all_intervention_results_from_domains(
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
-    """English docstring for  extract acteur ref."""    if not url_an_ou_senat:
+    """Extrait l'identifiant officiel Assemblée nationale (ex: PA2150) depuis une URL de fiche."""
+    if not url_an_ou_senat:
         return None
     match = re.search(r"PA\d+", url_an_ou_senat)
     return match.group(0) if match else None
@@ -425,7 +468,8 @@ def _scrutins_json_dir(legislature: str) -> Path:
 
 
 def _ensure_scrutins_downloaded(legislature: str) -> Optional[Path]:
-    """English docstring for  ensure scrutins downloaded."""  json_dir = _scrutins_json_dir(legislature)
+    """Télécharge (avec cache local) l'archive open data des scrutins d'une législature."""
+    json_dir = _scrutins_json_dir(legislature)
     if json_dir.is_dir() and any(json_dir.iterdir()):
         return json_dir
 
@@ -455,7 +499,8 @@ def _ensure_scrutins_downloaded(legislature: str) -> Optional[Path]:
 
 
 def _iter_votants(decompte_nominatif: dict, position: str, list_key: str):
-    """English docstring for  iter votants."""    block = decompte_nominatif.get(list_key)
+    """Parcourt la liste nominative des votants pour une position donnée (pour/contre/...)."""
+    block = decompte_nominatif.get(list_key)
     if not isinstance(block, dict):
         return
     votants = block.get("votant")
@@ -469,7 +514,12 @@ def _iter_votants(decompte_nominatif: dict, position: str, list_key: str):
 
 
 def _build_acteur_vote_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """English docstring for  build acteur vote index."""
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de votes.
+
+    Thread-safe : un verrou par législature garantit qu'un seul thread à la fois
+    télécharge l'archive et écrit le cache disque pour une législature donnée.
+    Des législatures différentes sont traitées indépendamment sans blocage mutuel.
+    """
     with _get_scrutins_lock(legislature):
         index_path = SCRUTINS_CACHE_DIR / legislature / "index_par_acteur.json"
         if index_path.is_file():
@@ -528,7 +578,15 @@ def _build_acteur_vote_index(legislature: str) -> dict[str, list[dict[str, Any]]
 
 
 def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tuple[list[dict[str, Any]], Optional[str]]:
-    """English docstring for fetch votes officiels."""
+    """Récupère les votes nominatifs officiels d'un député via l'open data de l'Assemblée nationale.
+
+    L'endpoint /votes de NosDéputés.fr est en panne (HTTP 500 systématique,
+    y compris sur l'exemple officiel de leur propre documentation, testé sur
+    tous les domaines et législatures disponibles). On utilise donc directement
+    les données ouvertes de data.assemblee-nationale.fr, qui contiennent le
+    détail nominatif (pour/contre/abstention/non-votant) de chaque scrutin,
+    identifié par l'acteurRef (ex: PA2150) du parlementaire.
+    """
     legislature = LEGISLATURE_BY_BASE_URL.get(base_url)
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not legislature or not acteur_ref:
@@ -549,11 +607,11 @@ _AMENDEMENT_TYPE_AUTEUR_MAP: dict[str, str] = {
 }
 
 # (etat.libelle, sousEtat.libelle) -> sort du schema pivot. Determine
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# empiriquement sur ~3000 amendements de la 17e legislature : "En traitement"
+# et "A discuter" (sousEtat souvent absent) signifient que le sort n'est pas
+# encore connu, et sont volontairement absents de cette table (sort reste
+# None). Les etats "Irrecevable"/"Irrecevable 40" sont traites a part (voir
+# _derive_amendement_sort) car leurs sousEtat ne sont pas des sorts mais des
 # motifs d'irrecevabilite.
 _AMENDEMENT_SORT_MAP: dict[tuple[Optional[str], Optional[str]], str] = {
     ("Discuté", "Rejeté"): "rejeté",
@@ -567,7 +625,15 @@ _AMENDEMENT_SORT_MAP: dict[tuple[Optional[str], Optional[str]], str] = {
 
 
 def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optional[str]) -> tuple[Optional[str], Optional[str]]:
-    """English docstring for  derive amendement sort."""
+    """Déduit (sort, base_juridique_irrecevabilite) depuis les libellés d'état officiels.
+
+    L'open data amendements distingue "Irrecevable 40" (irrecevabilité
+    financière, art. 40) d'"Irrecevable" tout court (les nombreux autres motifs
+    observés — cavalier art. 45, sous-amendement art. 98, hors délais, etc. —
+    ne correspondent pas tous littéralement à l'art. 45, mais le schéma pivot
+    ne distingue que "art. 40" | "art. 45" : "art. 45" est donc utilisé comme
+    catégorie par défaut pour tout motif d'irrecevabilité non financier).
+    """
     if etat_libelle in ("Irrecevable", "Irrecevable 40"):
         base = "art. 40" if etat_libelle == "Irrecevable 40" else "art. 45"
         return "irrecevable", base
@@ -575,7 +641,12 @@ def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optio
 
 
 def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
-    """English docstring for  parse amendement entry."""
+    """Extrait (acteurRef, enregistrement pivot partiel) d'un amendement brut.
+
+    Ne retient que les amendements dont l'élu est l'auteur principal
+    (`signataires.auteur`), pas simple cosignataire : c'est la seule lecture
+    non ambiguë d'« amendement déposé par l'élu » (voir schema_pivot.py).
+    """
     amendement = data.get("amendement") if isinstance(data, dict) else None
     if not isinstance(amendement, dict):
         return None
@@ -600,15 +671,15 @@ def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
     sort, base_juridique = _derive_amendement_sort(etat_libelle, sousetat_libelle)
 
     record = {
-        # Translated comment.
+        # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
         # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
         "texte_vise": amendement.get("texteLegislatifRef"),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
+        # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
+        # des identifiants pivot ("nosdeputes:slug") — la resolution vers un
+        # candidat suivi par ce projet n'est pas faite ici.
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
         "date": cycle_de_vie.get("dateDepot"),
@@ -627,7 +698,14 @@ def _amendements_zip_url(legislature: str) -> Optional[str]:
 
 
 def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """English docstring for  build acteur amendement index."""
+    """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
+
+    Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
+    l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
+    un depuis le zip) : seul l'index final (acteurRef -> amendements) est mis en
+    cache, pour éviter d'écrire des dizaines de milliers de petits fichiers.
+    Thread-safe (verrou par législature), même principe que pour les scrutins.
+    """
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
         if index_path.is_file():
@@ -685,7 +763,10 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
 
 
 def _collect_texte_codes(node: Any, codes: set[str]) -> None:
-    """English docstring for  collect texte codes."""
+    """Parcourt récursivement un dossier législatif brut et collecte tous les
+    codes de texte référencés (clés `texteAssocie`/`refTexteAssocie`), à
+    n'importe quel niveau de l'arbre `actesLegislatifs` (récursif, profondeur
+    variable selon le dossier)."""
     if isinstance(node, dict):
         for key, value in node.items():
             if key in ("texteAssocie", "refTexteAssocie") and isinstance(value, str):
@@ -698,7 +779,12 @@ def _collect_texte_codes(node: Any, codes: set[str]) -> None:
 
 
 def _build_texte_titre_index() -> dict[str, str]:
-    """English docstring for  build texte titre index."""    with _DOSSIERS_TITRE_LOCK:
+    """Construit (et met en cache sur disque) un index code de texte -> titre
+    lisible du dossier, à partir du jeu de données bulk des dossiers
+    législatifs (un seul fichier, déjà multi-législatures). Utilisé pour
+    résoudre `texte_vise` des amendements (sinon un simple code source, ex.
+    "PIONANR5L17B0904"). Non-fatal en cas d'échec (retourne {})."""
+    with _DOSSIERS_TITRE_LOCK:
         index_path = DOSSIERS_CACHE_DIR / "index_texte_titre.json"
         if index_path.is_file():
             try:
@@ -755,9 +841,9 @@ def _build_texte_titre_index() -> dict[str, str]:
         return index
 
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Stades procéduraux, du moins au plus avancé : sert à déterminer le stade le
+# plus avancé réellement atteint par un dossier (un seul stade par dossier,
+# pas par acte).
 _STADE_RANKS = {
     "depose": 1,
     "examine_commission": 2,
@@ -768,7 +854,11 @@ _STADE_RANKS = {
 
 
 def _stade_from_code_acte(code_acte: Optional[str], statut_libelle: Optional[str]) -> Optional[str]:
-    """English docstring for  stade from code acte."""    if not code_acte:
+    """Déduit un stade procédural (nomenclature du schéma pivot) à partir du
+    code d'acte officiel (`codeActe`) d'un dossier législatif. Volontairement
+    conservateur : ne retient que des signaux non ambigus (voir
+    docs/an_opendata.md, section dossiers législatifs)."""
+    if not code_acte:
         return None
     if "PROM" in code_acte:
         return "promulgue"
@@ -786,7 +876,8 @@ def _stade_from_code_acte(code_acte: Optional[str], statut_libelle: Optional[str
 
 
 def _collect_initiateurs(dossier: dict, acteur_roles: dict[str, tuple[str, Optional[str]]]) -> None:
-    """English docstring for  collect initiateurs."""
+    """Ajoute à `acteur_roles` chaque acteur cité comme initiateur (auteur) du
+    dossier (`initiateur.acteurs.acteur`, dict unique ou liste selon les cas)."""
     initiateur = dossier.get("initiateur")
     if not isinstance(initiateur, dict):
         return
@@ -805,7 +896,11 @@ def _collect_dossier_facts(
     dates: list[str],
     stades: list[str],
 ) -> None:
-    """English docstring for  collect dossier facts."""    if isinstance(node, dict):
+    """Parcourt récursivement l'arbre `actesLegislatifs` d'un dossier et
+    collecte : le rôle factuel de chaque rapporteur (`rapporteurs`, plusieurs
+    rapporteurs sur un même acte -> "co-rapporteur"), les dates d'acte
+    (`dateActe`) et les stades procéduraux atteints (`codeActe`/`statutConclusion`)."""
+    if isinstance(node, dict):
         date_acte = node.get("dateActe")
         if isinstance(date_acte, str) and date_acte:
             dates.append(date_acte[:10])
@@ -838,7 +933,10 @@ def _collect_dossier_facts(
 
 
 def _collect_acteur_roles(dossier: dict) -> tuple[dict[str, tuple[str, Optional[str]]], Optional[str], Optional[str], Optional[str]]:
-    """English docstring for  collect acteur roles."""    acteur_roles: dict[str, tuple[str, Optional[str]]] = {}
+    """Combine initiateurs et rapporteurs d'un dossier en un seul mapping
+    acteurRef -> (role, type_rapport), et calcule le stade procédural le plus
+    avancé et les dates min/max de l'ensemble du dossier."""
+    acteur_roles: dict[str, tuple[str, Optional[str]]] = {}
     _collect_initiateurs(dossier, acteur_roles)
     dates: list[str] = []
     stades: list[str] = []
@@ -850,7 +948,16 @@ def _collect_acteur_roles(dossier: dict) -> tuple[dict[str, tuple[str, Optional[
 
 
 def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
-    """English docstring for  build acteur textes portes index."""  with _DOSSIERS_TEXTES_PORTES_LOCK:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de
+    dossiers législatifs où l'acteur a un rôle factuel connu (auteur,
+    rapporteur ou co-rapporteur), à partir du jeu de données bulk des dossiers
+    législatifs (même archive que `_build_texte_titre_index`).
+
+    Contrairement à la liste NosDéputés (voir `fetch_dossiers_for_legislatures`),
+    qui renvoie l'intégralité des dossiers d'une législature identiquement pour
+    tous les élus (role toujours null, voir docs/an_opendata.md), cet index est
+    réellement propre à chaque acteur. Non-fatal en cas d'échec (retourne {})."""
+    with _DOSSIERS_TEXTES_PORTES_LOCK:
         index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes.json"
         if index_path.is_file():
             try:
@@ -927,7 +1034,11 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
 
 
 def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
-    """English docstring for fetch textes portes officiels."""   acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    """Récupère les dossiers législatifs où l'élu a un rôle factuel connu
+    (auteur, rapporteur ou co-rapporteur), depuis le jeu de données officiel
+    des dossiers législatifs (Assemblée nationale). Remplace la liste NosDéputés
+    (voir `fetch_dossiers_for_legislatures`), qui n'est pas propre à l'élu."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
     index = _build_acteur_textes_portes_index()
@@ -936,7 +1047,12 @@ def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[s
 
 
 def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pays: Optional[str]) -> Optional[str]:
-    """English docstring for  format lieu naissance."""
+    """Formate ville/département/pays de naissance en un texte lisible.
+
+    Le département n'est pertinent que pour une naissance en France : pour un
+    pays étranger, on l'omet au profit du pays (ex. "Alger (Algérie)" plutôt
+    que d'ignorer l'information géographique disponible).
+    """
     if pays and pays != "France":
         complement = pays
     else:
@@ -947,7 +1063,14 @@ def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pay
 
 
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
-    """English docstring for  build acteur identite index."""   with _ACTEURS_IDENTITE_LOCK:
+    """Construit (et met en cache sur disque) un index acteurRef -> champs
+    d'identité (profession, date/lieu de naissance, lien HATVP), à partir du
+    jeu de données des acteurs actifs de l'Assemblée nationale.
+
+    Limitation connue : ce jeu de données ne couvre QUE les député⋅e⋅s actifs
+    de la législature en cours (~577 sur la 17e) — aucune entrée pour un élu
+    dont le mandat est terminé. Non-fatal en cas d'échec (retourne {})."""
+    with _ACTEURS_IDENTITE_LOCK:
         index_path = ACTEURS_CACHE_DIR / "index_identite.json"
         if index_path.is_file():
             try:
@@ -1017,7 +1140,11 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
 
 
 def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[str, Any]]:
-    """English docstring for fetch identite officielle."""  acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    """Récupère les champs d'identité officiels (Assemblée nationale) pour un
+    député, si son acteurRef fait partie des député⋅e⋅s actifs référencés
+    (voir _build_acteur_identite_index). Retourne None si non trouvé/non
+    applicable (ex. sénateur, ancien député)."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return None
     index = _build_acteur_identite_index()
@@ -1025,7 +1152,13 @@ def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[s
 
 
 def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
-    """English docstring for fetch amendements officiels."""
+    """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
+
+    Agrège sur toutes les législatures pour lesquelles l'Assemblée nationale
+    publie ces données en open data (voir AN_AMENDEMENTS_PATH), pas seulement
+    celle de la source d'identité : un même élu peut avoir déposé des
+    amendements sous plusieurs législatures successives.
+    """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
@@ -1049,7 +1182,11 @@ def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str
 
 
 def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dict[str, Any]]]:
-    """English docstring for  parse question entry."""
+    """Parse une entrée de question AN (QE/QG/QOSD) et retourne (acteur_ref, record) ou None.
+
+    `data` est un dict issu du JSON d'une question (contenant une clé "question").
+    `sous_type` est "QE", "QG" ou "QOSD" (dérivé du dossier/fichier de provenance).
+    """
     question = data.get("question")
     if not isinstance(question, dict):
         return None
@@ -1062,7 +1199,7 @@ def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dic
 
     uid = question.get("uid")
 
-    # Translated comment.
+    # Sujet court (indexation AN — peut être une chaîne ou une liste de chaînes).
     indexation = question.get("indexationAN") or {}
     analyses = indexation.get("analyses") or {}
     analyse = analyses.get("analyse")
@@ -1071,7 +1208,7 @@ def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dic
     elif not isinstance(analyse, str):
         analyse = None
 
-    # Translated comment.
+    # Texte de la question + date JO (texteQuestion peut être un dict ou une liste de dicts).
     textes_question = question.get("textesQuestion") or {}
     texte_q_block = textes_question.get("texteQuestion")
     if isinstance(texte_q_block, list):
@@ -1082,7 +1219,7 @@ def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dic
     info_jo_q = texte_q_block.get("infoJO") or {}
     date_question = info_jo_q.get("dateJO") if isinstance(info_jo_q.get("dateJO"), str) else None
 
-    # Translated comment.
+    # Texte de la réponse + date JO (optionnel, absent si la question n'a pas encore reçu de réponse).
     textes_reponse = question.get("textesReponse") or {}
     texte_r_block = textes_reponse.get("texteReponse")
     if isinstance(texte_r_block, list):
@@ -1094,11 +1231,11 @@ def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dic
         info_jo_r = texte_r_block.get("infoJO") or {}
         date_reponse = info_jo_r.get("dateJO") if isinstance(info_jo_r.get("dateJO"), str) else None
 
-    # Translated comment.
+    # Ministère interrogé.
     min_int = question.get("minInt") or {}
     ministere = min_int.get("developpe") if isinstance(min_int.get("developpe"), str) else None
 
-    # Translated comment.
+    # Groupe parlementaire au moment du dépôt.
     groupe = auteur.get("groupe") or {}
     groupe_sigle = groupe.get("abrege") if isinstance(groupe.get("abrege"), str) else None
 
@@ -1116,7 +1253,12 @@ def _parse_question_entry(data: dict, sous_type: str) -> Optional[tuple[str, dic
 
 
 def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """English docstring for  build acteur questions index."""
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de questions.
+
+    Agrège les 3 types (QE/QG/QOSD) en un seul index par législature. Les ZIPs
+    ne sont jamais extraits sur disque : seul l'index final est mis en cache.
+    Thread-safe (verrou par législature), même principe que pour les amendements.
+    """
     with _get_questions_lock(legislature):
         index_path = QUESTIONS_CACHE_DIR / legislature / "index_par_acteur.json"
         if index_path.is_file():
@@ -1176,7 +1318,16 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
 
 
 def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
-    """English docstring for fetch questions officielles."""
+    """Récupère les questions parlementaires officielles (QE/QG/QOSD) d'un député.
+
+    Source : open data Assemblée nationale (data.assemblee-nationale.fr). Agrège
+    sur toutes les législatures pour lesquelles ces données sont disponibles (voir
+    AN_QUESTIONS_PATH). Retourne une liste d'entrées au format brut interventions[],
+    prêtes à être fusionnées dans profile["interventions"] avec type_detail="question".
+
+    Chaque entrée inclut les champs supplémentaires sous_type (QE/QG/QOSD),
+    ministere (ministère interrogé) et reponse (texte de la réponse si disponible).
+    """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
@@ -1214,7 +1365,8 @@ def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
-    """English docstring for fetch votes."""    for base_url in base_urls:
+    """Liste des scrutins auxquels le parlementaire a participé, avec sa position."""
+    for base_url in base_urls:
         for suffix in ["/votes/json", "/votes/xml"]:
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> Récupération des votes : {url}")
@@ -1229,7 +1381,9 @@ def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Option
 
 
 def _groupe_label(groupe_field: Any) -> Optional[str]:
-    """English docstring for  groupe label."""    if isinstance(groupe_field, dict):
+    """Le champ « groupe » de l'API est un dict {organisme, fonction, debut_fonction},
+    pas une chaîne : on en extrait le nom du groupe politique."""
+    if isinstance(groupe_field, dict):
         return groupe_field.get("organisme")
     if isinstance(groupe_field, str):
         return groupe_field
@@ -1237,7 +1391,9 @@ def _groupe_label(groupe_field: Any) -> Optional[str]:
 
 
 def _extract_responsabilite_entries(raw_list: Any, categorie: str) -> list[dict[str, Any]]:
-    """English docstring for  extract responsabilite entries."""
+    """Normalise une liste de responsabilités (commissions, missions, groupes d'amitié...)
+    telle que fournie par les champs `responsabilites`, `historique_responsabilites`,
+    `groupes_parlementaires` ou `responsabilites_extra_parlementaires` de l'API."""
     entries: list[dict[str, Any]] = []
     for raw in raw_list or []:
         if not isinstance(raw, dict):
@@ -1259,7 +1415,15 @@ def _extract_responsabilite_entries(raw_list: Any, categorie: str) -> list[dict[
 
 
 def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
-    """English docstring for  extract mandats."""
+    """Extrait les responsabilités lisibles (commissions, missions, groupes d'amitié,
+    engagements extra-parlementaires) et le mandat électif de base, à partir des
+    champs réels renvoyés par l'API NosDéputés.fr / NosSénateurs.fr :
+    `responsabilites`, `historique_responsabilites`, `groupes_parlementaires`,
+    `responsabilites_extra_parlementaires`.
+
+    Chaque entrée a le format {categorie, type (la fonction : membre/président/
+    rapporteur/...), label (le nom de l'organisme), debut, fin, actif}.
+    """
     mandats: list[dict[str, Any]] = []
 
     debut_mandat = parlementaire.get("mandat_debut")
@@ -1280,8 +1444,8 @@ def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
     mandats.extend(_extract_responsabilite_entries(parlementaire.get("groupes_parlementaires"), "groupe_amitie"))
     mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites_extra_parlementaires"), "extra_parlementaire"))
 
-    # Translated comment.
-    # Translated comment.
+    # Filets de secours pour d'anciens formats d'API (champs génériques non
+    # observés dans les réponses actuelles, mais conservés par prudence).
     if not mandats:
         for raw in parlementaire.get("mandats_generiques", []) or []:
             if isinstance(raw, dict):
@@ -1299,16 +1463,17 @@ def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
     return mandats
 
 
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
-# Translated comment.
+# Seuil (en nombre de mots, champ `nb_mots` de l'API) en-deçà duquel une intervention
+# est considérée comme une réaction/interjection courte plutôt qu'une prise de parole
+# développée. Heuristique ajustable : les interjections observées ("Oh !", "Bravo !",
+# "Très bien !", "Mais non !") comptent 2 à 3 mots, tandis qu'une intervention
+# construite dépasse largement ce seuil.
 REACTION_COURTE_NB_MOTS_MAX = 15
 
 
 def _to_int(value: Any) -> Optional[int]:
-    """English docstring for  to int."""   if value is None:
+    """Convertit une valeur (souvent une chaîne renvoyée par l'API) en entier, sans lever."""
+    if value is None:
         return None
     try:
         return int(value)
@@ -1317,13 +1482,18 @@ def _to_int(value: Any) -> Optional[int]:
 
 
 def _classify_intervention_format(nb_mots: Optional[int]) -> Optional[str]:
-    """English docstring for  classify intervention format.""" nb_mots is None:
+    """Distingue une réaction courte (interjection/exclamation lancée depuis les bancs)
+    d'une prise de parole développée, à partir de la longueur de l'intervention.
+    Ne remplace pas `classification.mode` (qui identifie l'orateur) : les deux se
+    combinent pour répondre à « était-il à la tribune/au micro, ou a-t-il juste réagi ? »."""
+    if nb_mots is None:
         return None
     return "reaction_courte" if nb_mots <= REACTION_COURTE_NB_MOTS_MAX else "prise_de_parole_developpee"
 
 
 def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[dict[str, Any]]:
-    """English docstring for fetch intervention details."""l = f"{base_url}/api/document/Intervention/{intervention_id}/json"
+    """Récupère les détails d’une intervention via l’API de document."""
+    url = f"{base_url}/api/document/Intervention/{intervention_id}/json"
     print(f"-> Détail intervention : {url}")
     data = _get_payload(url)
     if isinstance(data, dict):
@@ -1336,8 +1506,8 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
                 try:
                     page = requests.get(url_nosdeputes, headers=HEADERS, timeout=TIMEOUT)
                     page.raise_for_status()
-                    # Translated comment.
-                    # Translated comment.
+                    # Le site ne déclare pas toujours son charset : sans cela, requests
+                    # utilise ISO-8859-1 par défaut et corrompt les caractères accentués.
                     page.encoding = page.apparent_encoding or page.encoding
                     anchor_id = urlsplit(url_nosdeputes).fragment or None
                     speaker_name, speaker_url = _extract_speaker_identity_from_html(page.text, anchor_id=anchor_id)
@@ -1357,11 +1527,11 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
                 "seance_id": intervention.get("seance_id"),
                 "speaker_name": speaker_name,
                 "speaker_url": speaker_url,
-                # Translated comment.
-                # Translated comment.
-                # Translated comment.
-                # Translated comment.
-                # Translated comment.
+                # `fonction` est le rôle institutionnel officiel occupé par l'orateur au
+                # moment précis de cette intervention (ex. "Première ministre", "Rapporteur",
+                # "Président de la commission des lois") : vide pour un simple député sans
+                # fonction particulière. `nb_mots` sert de proxy pour distinguer une réaction
+                # courte (interjection) d'une prise de parole développée.
                 "fonction": intervention.get("fonction") or None,
                 "nb_mots": _to_int(intervention.get("nb_mots")),
             }
@@ -1369,7 +1539,8 @@ def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[
 
 
 def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
-    """English docstring for fetch seance context."""   if not detail:
+    """Enrichit une intervention à partir du contenu HTML de la page de séance, quand la page est accessible."""
+    if not detail:
         return {"sujet": None, "mots_cles": []}
 
     url_detail = detail.get("url") or detail.get("source")
@@ -1379,8 +1550,8 @@ def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
     try:
         resp = requests.get(url_detail, headers=HEADERS, timeout=20)
         resp.raise_for_status()
-        # Translated comment.
-        # Translated comment.
+        # Même remarque que pour les pages d'intervention : forcer l'encodage détecté
+        # évite le mojibake sur les accents lorsque le serveur ne déclare pas de charset.
         resp.encoding = resp.apparent_encoding or resp.encoding
         html_text = resp.text
     except requests.RequestException:
@@ -1466,7 +1637,14 @@ def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _extract_speaker_identity_from_html(html_text: Optional[str], anchor_id: Optional[str] = None) -> tuple[Optional[str], Optional[str]]:
-    """English docstring for  extract speaker identity from html."""
+    """Extrait le nom et l'URL du profil de l'orateur depuis le HTML d'une intervention.
+
+    Une page de séance contient les interventions de tous les orateurs. Si un
+    identifiant d'ancre (ex. "inter_abc123", tiré du fragment #... de l'URL de
+    l'intervention) est fourni, on restreint la recherche du bloc div.perso au
+    conteneur de CETTE intervention précise, plutôt que de prendre le premier
+    div.perso de la page (souvent le/la président·e de séance).
+    """
     if not html_text:
         return None, None
 
@@ -1495,16 +1673,16 @@ def _extract_speaker_identity_from_html(html_text: Optional[str], anchor_id: Opt
             return text, None
 
     if restrict_to_scope:
-        # Translated comment.
-        # Translated comment.
+        # On ne remonte pas à l'orateur d'une autre intervention de la page :
+        # mieux vaut ne rien renvoyer que d'attribuer la mauvaise identité.
         return None, None
 
     return None, None
 
 
 def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_id: Optional[str]) -> dict[str, Any]:
-    """English docstring for  classify intervention."""
-    _ = candidate_id  # Translated comment.
+    """Classe une intervention en prise de parole uniquement via l'orateur du bloc div.perso."""
+    _ = candidate_id  # Conservé pour compatibilité de signature.
     structured_speaker = item.get("speaker_name") or item.get("speaker") or item.get("orateur")
     speaker_url = item.get("speaker_url") or item.get("speaker_href")
     if not structured_speaker and not speaker_url:
@@ -1521,9 +1699,9 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
     candidate_name_lower = candidate_name.lower()
     speaker_lower = (structured_speaker or "").lower()
     speaker_url_lower = (speaker_url or "").lower()
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # Les URLs nosdeputes.fr sont toujours sans accent (ex. "elisabeth-borne"),
+    # contrairement au nom candidat brut : on désaccentue avant de construire le
+    # slug pour ne pas rater la correspondance (cf. _normalize_search_query).
     slug = _normalize_search_query(candidate_name).replace(" ", "-")
 
     if slug and slug in speaker_url_lower:
@@ -1545,7 +1723,11 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
 
 
 def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: str, candidate_id: Optional[str]) -> Optional[dict[str, Any]]:
-    """English docstring for  process search result."""
+    """Traite un résultat de recherche unique (détail + contexte de séance) et le nettoie.
+
+    Retourne None si le résultat n'est pas une prise de parole (mention simple).
+    Extrait de `_extract_search_results` pour être exécuté en parallèle par résultat.
+    """
     document_id = item.get("document_id")
     search_base_url = item.get("_search_base_url") or base_url
     detail = None
@@ -1573,14 +1755,14 @@ def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: 
             "classification": classification,
             "sujet": sujet,
             "mots_cles": keywords,
-            # Translated comment.
-            # Translated comment.
-            # Translated comment.
+            # Rôle institutionnel occupé au moment de l'intervention (ex. "Ministre
+            # de l'Intérieur", "Rapporteur") : vide si simple parlementaire sans
+            # fonction particulière à cet instant.
             "fonction": detail.get("fonction") if detail else None,
             "nb_mots": nb_mots,
             # "reaction_courte" (interjection) vs "prise_de_parole_developpee",
-            # Translated comment.
-            # Translated comment.
+            # dérivé de nb_mots : permet de distinguer une réaction lancée depuis
+            # les bancs d'une véritable prise de parole à la tribune/au micro.
             "format": _classify_intervention_format(nb_mots),
         }
     time.sleep(0.1)
@@ -1588,7 +1770,13 @@ def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: 
 
 
 def _extract_search_results(base_url: str, search_payload: Optional[dict], candidate_name: str, candidate_id: Optional[str]) -> list[dict[str, Any]]:
-    """English docstring for  extract search results."""
+    """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail.
+
+    Les requêtes de détail/contexte sont indépendantes d'un résultat à l'autre : on les
+    parallélise avec un pool limité (comme `fetch_all_intervention_results_from_domains`)
+    pour éviter des temps de génération proportionnels au nombre de résultats bruts
+    (jusqu'à ~500 avec max_pages=10), tout en restant raisonnablement courtois avec l'API.
+    """
     if not isinstance(search_payload, dict):
         return []
     results = [item for item in (search_payload.get("results") or []) if isinstance(item, dict)]
@@ -1604,14 +1792,32 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
 
 
 def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> dict:
-    """English docstring for build profile."""
+    """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
+    votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
+    sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
+
+    Aucune source indisponible ne fait échouer l'appel : chaque section manquante reste
+    simplement vide, avec un message explicatif ajouté à `profile["meta"]["warnings"]`.
+
+    Args:
+        chambre: "deputes" ou "senateurs".
+        slug: identifiant NosDéputés.fr / NosSénateurs.fr du parlementaire
+            (ex. "jean-luc-melenchon").
+        intervention_max_pages: nombre max. de pages de résultats de recherche
+            d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
+            nécessitant une requête de détail supplémentaire : réduire ce nombre accélère
+            fortement la génération d'un profil, au prix d'une couverture moins complète).
+
+    Returns:
+        Le dict de profil, sérialisable en JSON tel quel.
+    """
     if chambre not in BASE_URLS:
         raise ValueError(f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)})")
 
     base_urls = BASE_URLS[chambre]
 
-    # Translated comment.
-    # Translated comment.
+    # --- 1. Identité brute + votes bruts (fallback nosdeputes.fr, souvent indisponible
+    # côté votes : cf. fetch_votes_officiels plus bas pour la source qui fonctionne). ---
     identity_result = fetch_identity(base_urls, slug)
     if isinstance(identity_result, tuple):
         identity_raw, identity_base_url = identity_result
@@ -1619,7 +1825,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         identity_raw = identity_result
         identity_base_url = None
 
-    time.sleep(0.5)  # Translated comment.
+    time.sleep(0.5)  # on reste courtois avec l'API publique
 
     votes_result = fetch_votes(base_urls, slug)
     if isinstance(votes_result, tuple):
@@ -1627,9 +1833,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     else:
         votes_raw = votes_result
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --- 2. Nom de recherche fiable, dérivé de l'identité, pour l'API de recherche
+    # d'interventions : un slug transformé en espaces (ex. "jean luc melenchon")
+    # ne renvoie souvent aucun résultat, contrairement au nom complet. ---
     parlementaire_for_search = None
     if isinstance(identity_raw, dict):
         parlementaire_for_search = _extract_parlementaire(identity_raw)
@@ -1639,8 +1845,8 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         else slug.replace("-", " ").title()
     )
 
-    # Translated comment.
-    # Translated comment.
+    # --- 3. Synthèse d'activité, dossiers législatifs, et recherche des interventions
+    # (sur le meilleur domaine/législature disponible). ---
     synthesis_payload = None
     dossiers_payload = []
     interventions_payload = None
@@ -1649,10 +1855,10 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     try:
         synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
         time.sleep(0.3)
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
+        # Les dossiers doivent être demandés sur le domaine où l'identité a
+        # réellement été trouvée (donc sa législature) : utiliser systématiquement
+        # base_urls[0] (législature courante) renvoie une liste vide pour un
+        # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
         dossiers_base_url = identity_base_url or base_urls[0]
         dossiers_legislatures = (
             [LEGISLATURE_BY_BASE_URL[dossiers_base_url]]
@@ -1661,11 +1867,11 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         )
         dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, dossiers_legislatures)
         time.sleep(0.3)
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
-        # Translated comment.
+        # Un parlementaire dont le mandat s'est terminé lors d'une législature
+        # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
+        # la législature courante : ses interventions réelles sont archivées sur le
+        # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
+        # pour trouver celui qui contient réellement ses interventions.
         interventions_payload = fetch_all_intervention_results_from_domains(
             base_urls,
             search_candidate_name,
@@ -1676,7 +1882,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     except Exception as exc:
         pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
 
-    # Translated comment.
+    # --- 4. Structure de base du profil, valeurs par défaut si une source manque. ---
     profile: dict[str, Any] = {
         "slug": slug,
         "chambre": chambre,
@@ -1692,8 +1898,8 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-            # Translated comment.
-            # Translated comment.
+            # Traçabilité de fraîcheur : horodatage ISO-8601 de la dernière synchro
+            # réussie pour chaque source (None = source non contactée ou indisponible).
             "synchro_sources": {
                 "nosdeputes": None,
                 "assemblee_nationale": None,
@@ -1706,7 +1912,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     warnings = profile["meta"]["warnings"]
     warnings.extend(pre_profile_warnings)
 
-    # Translated comment.
+    # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes d'amitié...). ---
     if _is_empty_payload(identity_raw):
         warnings.append(f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
     else:
@@ -1732,9 +1938,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             if _is_empty_payload(profile["mandats"]):
                 warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
 
-            # Translated comment.
-            # Translated comment.
-            # Translated comment.
+            # --- 5bis. Enrichissement identité (Assemblée nationale, référentiel des
+            # député⋅e⋅s actifs uniquement — voir fetch_identite_officielle). Ne
+            # remplace jamais une valeur nosdeputes déjà renseignée (source secondaire). ---
             if chambre == "deputes":
                 try:
                     identite_an = fetch_identite_officielle(profile["identite"].get("url_an_ou_senat"))
@@ -1747,9 +1953,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
                     profile["identite"]["lieu_naissance"] = identite_an.get("lieu_naissance")
                     profile["identite"]["uri_hatvp"] = identite_an.get("uri_hatvp")
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
+    # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr
+    # (souvent en erreur côté serveur, cf. fetch_votes) que s'il n'y a pas de
     # correspondance officielle. ---
     official_votes: list[dict[str, Any]] = []
     if chambre == "deputes" and profile.get("identite"):
@@ -1785,13 +1991,13 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             "Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
         )
     else:
-        # Translated comment.
+        # On garde uniquement les champs utiles à un affichage type "CV"
         cleaned_votes = []
         votes_payload = votes_raw.get("votes", votes_raw) if isinstance(votes_raw, dict) else votes_raw
         for v in votes_payload:
             if not isinstance(v, dict):
                 continue
-            scrutin = v.get("vote", v)  # Translated comment.
+            scrutin = v.get("vote", v)  # certaines réponses imbriquent sous "vote"
             cleaned_votes.append({
                 "date": scrutin.get("date"),
                 "titre": scrutin.get("titre") or scrutin.get("title"),
@@ -1803,8 +2009,8 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         if _is_empty_payload(profile["votes"]):
             warnings.append(f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune information de scrutin n'a été extraite de la réponse API.")
 
-    # Translated comment.
-    # Translated comment.
+    # --- 6bis. Amendements officiels (Assemblée nationale, auteur principal uniquement,
+    # toutes législatures disponibles — voir fetch_amendements_officiels). ---
     if chambre == "deputes" and profile.get("identite"):
         try:
             profile["amendements"] = fetch_amendements_officiels(profile["identite"].get("url_an_ou_senat"))
@@ -1812,7 +2018,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
     if not _is_empty_payload(synthesis_payload):
-        # Translated comment.
+        # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---
         profile["synthese_activite"] = {
             "nom": synthesis_payload.get("nom"),
             "groupe_sigle": synthesis_payload.get("groupe_sigle"),
@@ -1822,17 +2028,17 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
         }
 
     if dossiers_payload:
-        # Translated comment.
+        # --- 8. Dossiers législatifs, triés du plus récent au plus ancien. ---
         profile["dossiers_legislatifs"] = sorted(
             dossiers_payload,
             key=lambda item: (item.get("date_max") or "", item.get("titre") or ""),
             reverse=True,
         )
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --- 8bis. Textes portés officiels (Assemblée nationale, rôle factuel
+    # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
+    # Remplace la liste NosDéputés ci-dessus, qui n'est pas propre à l'élu (mêmes
+    # dossiers pour tout le monde sur une législature donnée, role toujours null). ---
     if chambre == "deputes" and profile.get("identite"):
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
@@ -1843,15 +2049,15 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     candidate_id = None
     if isinstance(identity_raw, dict):
         # --- 9. Interventions : classification prise de parole/mention, format
-        # Translated comment.
+        # (réaction courte / prise de parole développée), fonction occupée, etc. ---
         parlementaire = _extract_parlementaire(identity_raw)
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
     profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
 
-    # Translated comment.
-    # Translated comment.
-    # Translated comment.
+    # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
+    # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
+    # NosDéputés déjà collectées (type_detail="question", source AN structurée). ---
     if chambre == "deputes" and profile.get("identite"):
         try:
             official_questions = fetch_questions_officielles(profile["identite"].get("url_an_ou_senat"))

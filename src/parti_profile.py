@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
-"""Module documentation in English."""
+"""
+parti_profile.py — Construit un profil de parti à partir de raw_data/candidats.json.
+
+Contrairement à group_profile.py (groupe parlementaire réel : cohésion de
+vote, amendements agrégés), ce module agrège uniquement des candidats
+partageant un label de parti déclaratif (élection présidentielle), sans
+prétendre représenter un groupe parlementaire ni son effectif réel. Aucun
+appel réseau : les pivots individuels doivent déjà exister sur disque.
+
+Usage (depuis la racine du dépôt) :
+    python src/parti_profile.py \\
+        --candidats raw_data/candidats.json \\
+        --profiles-dir pivot_data/profiles \\
+        --out-dir pivot_data/partis
+
+    Génère un fichier pivot_data/partis/parti-<slug>.json par parti présent dans
+    raw_data/candidats.json.
+"""
 
 import argparse
 import json
@@ -13,7 +30,7 @@ from text_utils import slugify as _slugify
 
 
 def _load_pivot(profiles_dir: Path, slug: str) -> Optional[dict[str, Any]]:
-    """English docstring for  load pivot."""
+    """Charge le pivot v1 d'un candidat s'il existe, sinon None (sans lever)."""
     pivot_path = profiles_dir / f"{slug}.pivot.json"
     if not pivot_path.exists():
         return None
@@ -30,7 +47,17 @@ def build_parti_profile(
     profiles_dir: Path,
     licence_donnees: str = "",
 ) -> dict[str, Any]:
-    """English docstring for build parti profile."""
+    """Construit un profil de parti à partir des candidats d'un même label `parti`.
+
+    Args:
+        parti_nom: libellé de parti tel qu'il apparaît dans raw_data/candidats.json.
+        candidats: sous-liste de raw_data/candidats.json partageant ce `parti`.
+        profiles_dir: dossier contenant les pivots individuels (*.pivot.json).
+        licence_donnees: texte de licence à inscrire dans meta.
+
+    Returns:
+        Profil de parti dict conforme au schéma de parti v1.
+    """
     parti_id = _slugify(parti_nom)
     profil = make_empty_profil_parti(parti_id, parti_nom)
 
@@ -89,7 +116,7 @@ def build_parti_profile(
 
 
 def _group_candidats_by_parti(candidats: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    """English docstring for  group candidats by parti."""
+    """Regroupe les candidats de raw_data/candidats.json par leur champ `parti`."""
     by_parti: dict[str, list[dict[str, Any]]] = {}
     for candidat in candidats:
         parti = candidat.get("parti")
