@@ -19,32 +19,1278 @@
       "a_un_profil_pivot": true
     }
   ],
-  "tags_thematiques_agreges": [],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "accueillant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "acte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agent",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agriculture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agrément",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ailleurs",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "allié",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "amendement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "apprenti",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ariane",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "arme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "armée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "asile",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "assurance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "aujourd",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "automobile",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "avocat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "banque",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "branche",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "budgétaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "carbone",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cathédrale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cee",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "censure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "centre",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "certain",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "certificat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "champ",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "chaîne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "chômeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "combattant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "composante",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "comptes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "concertation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "conclusion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "condition",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "conjugales",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "conseil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "constitutionnel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "contre",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "contribuable",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "contrôle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "convergence",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cotisation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "cotisations",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "critère",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "croissance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "csa",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "culturelle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "d'euros",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "detr",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dette",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dgf",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "diffusion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "directive",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dispositif",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "disposition",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dissuasion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "don",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dotation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "drapeau",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "droit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dsil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "déficit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "délit",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "démocratie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "démocratique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "département",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dépense",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "détention",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "développement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "egalim",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "employeur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "emprisonnement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "endettement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enquêteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "enseignement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "environnement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "erreur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "esus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "et",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "exploitation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "expression",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "expérimentation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "faible",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "faire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "familial",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "familiaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fausse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fermeture",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ferroviaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "finance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fonctionnaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fpic",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "français",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "frontière",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gaz",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gendarme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gendarmerie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "haine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "handicap",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hydrocarbures",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hémicycle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "image",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "immigration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "informer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "infraction",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "infrastructure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "infrastructures",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "institution",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "instruction",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "internationale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "intégration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "intégrité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "intérêt",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ivg",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "jeux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "journaliste",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "justice",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "l'erreur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "laïcité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "liberté",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "licenciement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lieu",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ligne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "liminaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "liste",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "listes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "logement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lpm",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lutte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "macron",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "magistrat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mahorais",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "maire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "matière",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mercosur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mesures",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "miel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "militaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "milliard",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "milliards",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mineur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mobilité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mode",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "motion",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "motions",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "média",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "méthode",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "métier",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "national",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "neutralité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nomination",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "notamment",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "notre-dame",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nucléaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "nupes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "négociation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "objectif",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "obligations",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "olympique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "olympiques",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "opposition",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ordonnance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "orientation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "outre-mer",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "paralympiques",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parcoursup",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "partage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "partenaires",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "parti",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "patrimoine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "personne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "peuple",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pib",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "plateforme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "police",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "policier",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "policiers",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programmation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "proportionnel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "provisoire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prélèvement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "président",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "présomption",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "publicité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pénale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "péréquation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "quelque",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rassemblement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "religieuse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rendement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "renseignement",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "représentant",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "restauration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "règle",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réacteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réforme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rénovation",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "république",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "satellite",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "scrutin",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "serment",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "seuil",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "simplification",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sociales",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sociaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "société",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "solidaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "souveraineté",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "spatial",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "spatiale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "spatiaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sport",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "spéciaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "stabilité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "stratégique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "subvention",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "supérieur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "symbole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "séance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "séjour",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "taxe",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "territoriale",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "terrorisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "test",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "transnationales",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "union",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "urbanisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "usager",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vaccin",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vaccination",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "vacciner",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "virus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "à",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "écologie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "économie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "élection",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "électricité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "émission",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "énergétique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "épidémie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "étiquetage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "étranger",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    }
+  ],
   "sources": [
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marine-le-pen",
-      "synchro_le": "2026-08-03T08:53:50+0000"
+      "synchro_le": "2026-08-03T11:01:27+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T08:53:51+0000"
+      "synchro_le": "2026-08-03T11:01:28+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-03T08:54:33+0000"
+      "synchro_le": "2026-08-03T11:02:04+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/131580",
-      "synchro_le": "2026-08-03T08:53:53+0000"
+      "synchro_le": "2026-08-03T11:03:12+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T08:56:19+0000",
+    "genere_le": "2026-08-03T11:13:34+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,
