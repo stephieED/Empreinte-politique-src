@@ -24,7 +24,7 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
   body {
     font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
     background: var(--bg);
@@ -382,6 +382,7 @@
     padding: 0;
     font-size: 0.95rem;
   }
+  .panel-dot svg { display: block; width: 20px; height: 20px; flex-shrink: 0; }
   .panel-dot.active { background: var(--accent-soft); border-color: var(--accent); color: var(--deep); }
   .swipe-deck {
     display: flex;
@@ -949,6 +950,7 @@
   }
   .deconstructed .home-candidate {
     min-height: 120px;
+    min-width: 0;
     padding: 0.8rem;
     border: 0;
     border-right: 1px solid var(--line);
@@ -957,10 +959,11 @@
     color: var(--text);
     text-align: left;
     cursor: pointer;
+    overflow: hidden;
   }
   .deconstructed .home-candidate:hover,
   .deconstructed .home-candidate:focus-visible { background: var(--acid); }
-  .deconstructed .home-candidate strong { display: block; font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 3vw, 1.6rem); }
+  .deconstructed .home-candidate strong { display: block; font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 3vw, 1.6rem); word-break: break-word; }
   .deconstructed .home-candidate small { font-family: 'IBM Plex Mono', monospace; }
   .deconstructed .home-note { grid-column: 1 / -1; padding: 0.75rem 1rem; background: var(--accent); color: white; }
   .deconstructed .party-home-note { background: var(--pink); color: var(--text); }
@@ -994,11 +997,11 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     border-bottom: 2px solid var(--line);
   }
-  .deconstructed .party-kpi { min-height: 175px; padding: 1rem; border-right: 2px solid var(--line); }
+  .deconstructed .party-kpi { min-height: 175px; min-width: 0; padding: 1rem; border-right: 2px solid var(--line); overflow: hidden; }
   .deconstructed .party-kpi:nth-child(2) { background: var(--accent-soft); }
   .deconstructed .party-kpi:nth-child(3) { background: var(--acid); }
   .deconstructed .party-kpi:nth-child(4) { background: var(--pink); border-right: 0; }
-  .deconstructed .party-kpi b { display: block; font: 400 clamp(2.4rem, 6vw, 5rem)/0.9 'Archivo Black', sans-serif; }
+  .deconstructed .party-kpi b { display: block; font: 400 clamp(2.4rem, 6vw, 5rem)/0.9 'Archivo Black', sans-serif; word-break: break-word; }
   .deconstructed .party-kpi span { font: 600 0.65rem/1.45 'IBM Plex Mono', monospace; text-transform: uppercase; }
   .deconstructed .party-section { padding: clamp(1rem, 5vw, 4rem); border-bottom: 2px solid var(--line); }
   .deconstructed .party-section h2 { max-width: 12ch; font-size: clamp(2.5rem, 7vw, 6rem); line-height: 0.88; }
@@ -1057,7 +1060,7 @@
   .deconstructed .kpi-flip:nth-child(2) { background: var(--pink); }
   .deconstructed .kpi-flip:nth-child(4) { grid-column: span 4; }
   .deconstructed .kpi-flip-inner { min-height: 170px; transform-style: flat; transition: none; }
-  .deconstructed .kpi-face { border: 0; border-radius: 0; background: transparent; padding: 1rem; backface-visibility: visible; }
+  .deconstructed .kpi-face { border: 0; border-radius: 0; background: transparent; padding: 1rem; backface-visibility: visible; overflow: hidden; }
   .deconstructed .kpi-face--front { justify-content: space-between; }
   .deconstructed .kpi-face--back {
     transform: none;
@@ -1078,7 +1081,7 @@
     .deconstructed .kpi-flip:hover .kpi-face--back { opacity: 1; pointer-events: auto; }
   }
   .deconstructed .kpi-icon { color: currentColor; }
-  .deconstructed .kpi-value { font-size: clamp(2rem, 7vw, 5rem); letter-spacing: -0.04em; }
+  .deconstructed .kpi-value { font-size: clamp(2rem, 7vw, 5rem); letter-spacing: -0.04em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
   .deconstructed .kpi-label { color: currentColor; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
   .deconstructed .theme-dist { display: none; }
   .deconstructed .trust-line { border: 0; padding: 0.8rem 1rem; margin: 0; background: var(--accent); color: white; }
@@ -1139,9 +1142,12 @@
     padding: 0.25rem;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 0.15rem;
   }
-  .deconstructed .panel-dot small { font-size: 0.55rem; text-transform: uppercase; }
+  .deconstructed .panel-dot svg { width: 20px; height: 20px; }
+  .deconstructed .panel-dot small { font-size: 0.55rem; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
   .deconstructed .panel-dot.active { background: var(--acid); color: var(--text); }
   .deconstructed .swipe-deck { display: block; overflow: visible; border-radius: 0; }
   .deconstructed .swipe-panel { display: none; min-width: 0; padding: 0; }
@@ -1226,7 +1232,7 @@
   }
   .deconstructed .text-leaf:nth-child(3n + 2) { background: var(--accent-soft); }
   .deconstructed .text-leaf:nth-child(3n) { background: var(--pink); }
-  .deconstructed .text-leaf-title { font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 2.2vw, 1.45rem); line-height: 1.08; }
+  .deconstructed .text-leaf-title { font-family: 'Archivo Black', sans-serif; font-size: clamp(1rem, 2.2vw, 1.45rem); line-height: 1.08; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
   .deconstructed .text-leaf-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; }
   .deconstructed .text-shelf-more {
     border: 0;
@@ -1319,6 +1325,43 @@
     .deconstructed .home-manifesto { grid-column: 1 / 4; }
     .deconstructed .home-candidates { grid-column: 4 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
+
+  /* Responsive — 375px : aucune carte, texte ou bouton ne déborde du viewport */
+  @media (max-width: 480px) {
+    .deconstructed .versus-metrics { grid-template-columns: repeat(2, 1fr); }
+    .deconstructed .kpi-value { font-size: clamp(1.6rem, 6vw, 5rem); }
+    .deconstructed .panel-dot small { font-size: 0.5rem; }
+  }
+
+  /* Légende des couleurs — composant explicatif positionné en tête de section résumé */
+  .deconstructed .color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 2px solid var(--line);
+    font: 600 0.6rem/1.5 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+  }
+  .deconstructed .color-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+  .deconstructed .color-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .deconstructed .color-swatch--acid { background: var(--acid); }
+  .deconstructed .color-swatch--pink { background: var(--pink); }
+  .deconstructed .color-swatch--soft { background: var(--accent-soft); }
+  .deconstructed .color-swatch--vert { background: var(--vert); }
+  .deconstructed .color-swatch--rouge { background: var(--rouge); }
+  .deconstructed .color-swatch--muted { background: var(--muted); }
 
   .express-launch {
     margin-top: 1rem;
@@ -1473,13 +1516,14 @@
 
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
+    const PANEL_ICON_ATTRS = 'viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
     const PANEL_META = {
-      mandats: { label: "Mandats", icon: "◌" },
-      textes: { label: "Textes", icon: "▤" },
-      votes: { label: "Votes", icon: "●" },
-      absences: { label: "Données", icon: "□" },
-      interventions: { label: "Paroles", icon: "“" },
-      compare: { label: "Comparer", icon: "±" },
+      mandats:      { label: "Mandats",  icon: `<svg ${PANEL_ICON_ATTRS}><circle cx="10" cy="7" r="3"/><path d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>` },
+      textes:       { label: "Textes",   icon: `<svg ${PANEL_ICON_ATTRS}><path d="M5 3h7l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M12 3v5h5"/><path d="M7 10h6M7 13h6M7 16h3"/></svg>` },
+      votes:        { label: "Votes",    icon: `<svg ${PANEL_ICON_ATTRS}><path d="M3 10l5 5 9-8"/></svg>` },
+      absences:     { label: "Données",  icon: `<svg ${PANEL_ICON_ATTRS}><path d="M2 17h16"/><rect x="3" y="11" width="3" height="6"/><rect x="8.5" y="6" width="3" height="11"/><rect x="14" y="3" width="3" height="14"/></svg>` },
+      interventions:{ label: "Paroles",  icon: `<svg ${PANEL_ICON_ATTRS}><path d="M4 3h12a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-5 4v-4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>` },
+      compare:      { label: "Comparer", icon: `<svg ${PANEL_ICON_ATTRS}><path d="M10 3v14M3 7h6M3 10h6M3 13h6M11 7h6M11 10h6M11 13h6"/></svg>` },
     };
 
     // Pictogrammes des cartes KPI (SVG inline, sans dépendance externe)
@@ -2070,6 +2114,15 @@
               </div>
             </div>
           </div>
+
+          <aside class="color-legend" aria-label="Légende des couleurs utilisées">
+            <span class="color-legend-item"><span class="color-swatch color-swatch--acid"></span>Jaune — accent actif</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--pink"></span>Rose — signal éditorial</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--soft"></span>Bleu — repère secondaire</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--vert"></span>Vert — vote pour</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--rouge"></span>Rouge — vote contre</span>
+            <span class="color-legend-item"><span class="color-swatch color-swatch--muted"></span>Gris — abstention</span>
+          </aside>
 
           ${themeDistHtml}
 
