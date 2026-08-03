@@ -17,12 +17,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jerome-guedj",
-      "synchro_le": "2026-08-03T10:05:32+0000"
+      "synchro_le": "2026-08-03T15:56:26+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-03T10:05:45+0000"
+      "synchro_le": "2026-08-03T15:56:37+0000"
     }
   ],
   "mandats": [
@@ -443,6 +443,42 @@
       "actif": true,
       "source_url": null,
       "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (SOC)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2022-06-29",
+      "fin": "2023-10-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (SOC)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2023-10-19",
+      "fin": "2024-06-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe politique (SRC)",
+      "categorie": "groupe_politique",
+      "fonction": "membre",
+      "debut": "2012-07-24",
+      "fin": "2014-05-02",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite",
       "mode_declenchement": null,
       "suspendu_pour_fonction_gouvernementale": null
     }
@@ -22259,6 +22295,44 @@
       "ministere": "Ministère auprès de la Première ministre, chargé du renouveau démocratique, porte-parole du Gouvernement",
       "reponse": "</p><p align=\"CENTER\"> BILAN DES « CENT JOURS » <a name=PG3></a> </p><br><strong>Mme la présidente. </strong>La parole est à M. Jérôme Guedj.<br><br><strong>M. Jérôme Guedj. </strong>Madame la Première ministre, à en croire les journaux et certains de vos ministres, c’est peut-être la dernière fois que vous vous pliez à l'exercice des questions au Gouvernement. <i>(« Oh ! » sur les sur les bancs du groupe RE.) </i>À vrai dire, les Français s’en fichent.<br><br><strong>M. Laurent Croizier.</strong> Quelle indécence !<br><br><strong>M. Rémy Rebeyrotte.</strong> M. Guedj, toujours élégant…<br><br><strong>M. Jérôme Guedj. </strong>Ce n’est pas le casting qui compte, mais le récit et les actes. Nous les cherchons, en vain.<br><br>Après la désastreuse adoption au forceps de la contre-réforme des retraites, vous avez bricolé les « cent jours » avec le président Macron. Nous y voilà, et pour quels résultats ? Vous vouliez gagner du temps pour vous-mêmes, vous en avez fait perdre au pays et aux Français. <i>(Applaudissements sur les bancs du groupe SOC.) </i>Alors vous dites « on a délivré », reprenant la novlangue managériale de vos chers cabinets de conseil, mais vous avez délivré quoi au juste qui « change la vie des gens » – pour reprendre vos propres mots ?<br><br><strong>M. Benjamin Lucas.</strong> Eh oui !<br><br><strong>M. Jérôme Guedj. </strong>Vous promettiez aux Français cent jours d’apaisement, vous les avez plongés un peu plus dans l’épuisement. Épuisement face à l’inflation et à la crise du pouvoir d’achat.<br><br><strong>M. Benjamin Lucas.</strong> Bien sûr !<br><br><strong>M. Jérôme Guedj. </strong>Épuisement social, évidemment, après la réforme des retraites. Épuisement face à la crise des services publics, qu'il s'agisse de la police ou de l’hôpital, où vous refusez à chaque fois de questionner les moyens, les méthodes d'intervention et l'organisation, alors même que la mort de Nahel ou la fermeture des urgences vous imposaient de le faire. <i>(Applaudissements sur les bancs du groupe SOC et sur quelques bancs du groupe Écolo-NUPES.)</i> Épuisement bien sûr aussi de nos ressources, de notre biodiversité, de notre qualité de vie face à l’inaction climatique. <br><br>Comme si cela ne suffisait pas, vous avez ajouté un épuisement démocratique, avec toujours plus de verticalité et la promesse enterrée de légiférer autrement, refusant nos propositions transpartisanes, comme celle de Guillaume Garot sur les déserts médicaux, celle de Philippe Brun sur EDF ou la mienne sur le grand âge. À la place, toujours plus de 49.3 ! Épuisement républicain enfin avec votre obsession de délivrer des brevets et de rabougrir l’arc républicain.<br><br><strong>M. Sébastien Chenu.</strong> Qui est responsable ?<br><br><strong>M. Jérôme Guedj. </strong>J'en viens à la seule question qui vaille : madame la Première ministre, pour vous et plus encore pour les Français, y a-t il une vie heureuse après les cent jours ? <i>(Applaudissements sur les bancs du groupe SOC et sur quelques bancs des groupes Écolo-NUPES et GDR-NUPES.)</i><br><br><strong>Mme la présidente. </strong>La parole est à M. le ministre délégué chargé du renouveau démocratique, porte-parole du Gouvernement.<br><br><strong>M. Pierre Cordier.</strong> Les socialistes parlent aux socialistes !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué chargé du renouveau démocratique, porte-parole du Gouvernement. </i>Cher Jérôme, <i>(« Ah ! » sur les bancs du groupe LR et sourires)</i>…<br><br><strong>Mme Raquel Garrido.</strong> Ne vous vantez pas d'être une girouette !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué . </i>…il me revient aujourd'hui d'avoir de la mémoire pour nous deux et de me souvenir des temps malheureux où nous étions assis sur les mêmes bancs,…<br><br><strong>M. Philippe Gosselin.</strong> Quelle déclaration !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué. </i>…guettant mois après mois cette courbe du chômage qui n'en finissait pas de ne pas s'inverser. <i>(Exclamations sur quelques bancs du groupe LFI-NUPES.)</i><br><br><strong>M. Patrick Hetzel.</strong> Socialiste un jour, socialiste toujours !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué . </i>Au bout des cent jours ? Le plein emploi ! Quels progrès pour les Français, demandez-vous ? Plus de mobilité professionnelle, plus de pouvoir d'achat, de meilleurs emplois - le bon emploi qui va avec le plein emploi. <i>(Exclamations sur les bancs du groupe SOC.) </i><br><br>J'ai de la mémoire pour nous deux, monsieur Guedj. Nous étions sur les mêmes bancs quand nous votions des budgets de 2 ou 3 milliards d'euros pour la rénovation thermique. La Première ministre vient d'annoncer 7 milliards supplémentaires pour ce secteur, qui s'ajoutent aux 25 milliards déjà engagés dans le cadre de la planification écologique. <i>(Applaudissements sur les bancs du groupe RE.)</i><br><br><strong>M. Sébastien Chenu.</strong> Sans résultat !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué . </i>Mais vous avez de la mémoire…<br><br><strong>M. Sylvain Maillard.</strong> Une mémoire sélective !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué . </i>…et vous savez bien que<i> </i>vous et moi aurions salué une telle annonce, parce qu'elle va dans le bon sens. Que vous est-il arrivé pour ne pas pouvoir le reconnaître ? La NUPESisation vous a-t-elle rendu aveugle aux progrès obtenus pour les Français ? (Applaudissements sur les bancs du groupe RE.) Je me pose vraiment la question. (Vives exclamations sur les bancs des groupes LFI-NUPES et SOC.) <br><br>Vous parlez de l'hôpital, mais nous avons siégé dans la même commission et nous savons tous deux que le budget annuel qui lui était accordé alors était de 18 milliards inférieur à celui dont il bénéficie aujourd'hui grâce à Emmanuel Macron. Reconnaissez les progrès qui ont eu lieu ! <i>(M. Jérôme Guedj s'exclame.)</i><br><br>Vous étiez également favorable au dédoublement des classes et à l'extension des horaires de cours.<br><br><strong>Mme Marine Le Pen.</strong> On va vous laisser !<br><br><strong>M. Olivier Véran,</strong><i> ministre délégué . </i>Je me souviens des discussions que nous avions à ce sujet. Que vous est-il arrivé ? Ouvrez les yeux et rejoignez la majorité ! <i>(Exclamations et sourires sur divers bancs.)</i> Il n'est jamais trop tard. Nous portons des progrès pour les Français et vous auriez tout intérêt à le reconnaître. Ce qu'il y a à voir sur votre gauche ne fait pas envie aux Français. Je suis sûr que vous n'avez pas oublié qui vous êtes ! (Applaudissements sur les bancs du groupe RE et sur plusieurs bancs du groupe Dem.) <br> <p>",
       "date_reponse": "2023-07-12"
+    },
+    {
+      "date": "2022-11-21",
+      "type_detail": "loi",
+      "sujet": "Projet de loi de financement de la sécurité sociale pour 2023",
+      "texte": "<p>Mais il ne répond pas !</p>",
+      "fonction": null,
+      "format": "reaction_courte",
+      "mots_cles": [
+        "séance",
+        "EHPAD",
+        "ONDAM",
+        "PLFSS",
+        "retraite",
+        "soin",
+        "sénat",
+        "établissement"
+      ],
+      "source_url": "https://www.nosdeputes.fr/16/seance/520#inter_9bd0f8c4af7978c68300c6e5eccfa3f6"
+    },
+    {
+      "date": "2022-11-21",
+      "type_detail": "loi",
+      "sujet": "Projet de loi de financement de la sécurité sociale pour 2023",
+      "texte": "<p>Mais ils sont identiques ! Vous ne savez pas lire !</p>",
+      "fonction": null,
+      "format": "reaction_courte",
+      "mots_cles": [
+        "séance",
+        "EHPAD",
+        "ONDAM",
+        "PLFSS",
+        "retraite",
+        "soin",
+        "sénat",
+        "établissement"
+      ],
+      "source_url": "https://www.nosdeputes.fr/16/seance/520#inter_60e350f012edd289a01285c09ecbc801"
     }
   ],
   "amendements": [
@@ -47888,7 +47962,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T11:01:06+0000",
+    "genere_le": "2026-08-03T16:41:51+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

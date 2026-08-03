@@ -294,6 +294,36 @@
       "debut": "2023-02-21",
       "fin": null,
       "actif": true
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (SOC)",
+      "debut": "2022-06-29",
+      "fin": "2023-10-18",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (SOC)",
+      "debut": "2023-10-19",
+      "fin": "2024-06-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (SRC)",
+      "debut": "2012-07-24",
+      "fin": "2014-05-02",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
     }
   ],
   "votes": [
@@ -48612,15 +48642,73 @@
       "url": "https://questions.assemblee-nationale.fr/q16/QANR5L16QG1064.htm",
       "url_detail": "https://questions.assemblee-nationale.fr/q16/QANR5L16QG1064.htm",
       "legislature": "16"
+    },
+    {
+      "type": "Intervention",
+      "id": 103951,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/103951/json",
+      "date": "2022-11-21",
+      "created_at": "2022-11-30 03:07:19",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230063.asp#2922086",
+      "texte": "<p>Mais il ne répond pas !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/520#inter_9bd0f8c4af7978c68300c6e5eccfa3f6",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "EHPAD",
+        "ONDAM",
+        "PLFSS",
+        "retraite",
+        "soin",
+        "sénat",
+        "établissement"
+      ],
+      "fonction": null,
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 103963,
+      "url": "https://www.nosdeputes.fr//api/document/Intervention/103963/json",
+      "date": "2022-11-21",
+      "created_at": "2022-11-30 03:07:19",
+      "type_detail": "loi",
+      "source": "https://www.assemblee-nationale.fr/16/cri/2022-2023/20230063.asp#2922109",
+      "texte": "<p>Mais ils sont identiques ! Vous ne savez pas lire !</p>",
+      "url_detail": "https://www.nosdeputes.fr/16/seance/520#inter_60e350f012edd289a01285c09ecbc801",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_url_correspondante"
+      },
+      "sujet": "Projet de loi de financement de la sécurité sociale pour 2023",
+      "mots_cles": [
+        "séance",
+        "EHPAD",
+        "ONDAM",
+        "PLFSS",
+        "retraite",
+        "soin",
+        "sénat",
+        "établissement"
+      ],
+      "fonction": null,
+      "nb_mots": 10,
+      "format": "reaction_courte"
     }
   ],
   "meta": {
-    "genere_le": "2026-08-03T10:05:32+0000",
+    "genere_le": "2026-08-03T15:56:26+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-03T10:05:32+0000",
-      "assemblee_nationale": "2026-08-03T10:05:45+0000",
-      "assemblee_nationale_questions": "2026-08-03T11:01:05+0000"
+      "assemblee_nationale": "2026-08-03T15:56:37+0000",
+      "assemblee_nationale_questions": "2026-08-03T16:41:41+0000",
+      "nosdeputes": "2026-08-03T15:56:26+0000"
     },
     "warnings": []
   }
