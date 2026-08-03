@@ -57,6 +57,49 @@
     color: var(--muted);
     letter-spacing: -0.01em;
   }
+  .text-fallback-note {
+    margin-top: 0.7rem;
+  }
+  .text-unpublished-bar {
+    margin-top: 1rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--line);
+  }
+  .text-unpublished-toggle {
+    background: none;
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .text-unpublished-toggle:hover { border-color: var(--text); color: var(--text); }
+  .text-unpublished-reason { font-size: 0.72rem; opacity: 0.7; }
+  .text-fallback-grid {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.45rem;
+  }
+  .text-fallback-item {
+    border: 1px dashed var(--line);
+    background: var(--accent-soft);
+    padding: 0.6rem;
+    border-radius: 8px;
+  }
+  .text-fallback-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .text-fallback-reason {
+    display: inline-block;
+    margin-right: 0.35rem;
+    margin-bottom: 0.25rem;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
 
   .section-kicker {
     font-size: 0.72rem;
@@ -1290,8 +1333,7 @@
     <nav class="candidate-dock" aria-label="Choisir une vue et un profil">
       <div class="mode-switch" role="group" aria-label="Type de profil">
         <button type="button" class="active" data-profile-mode="candidates" aria-pressed="true">Candidats</button>
-        <button type="button" data-profile-mode="parties" aria-pressed="false">Partis</button>
-        <button type="button" data-profile-mode="groups" aria-pressed="false">Groupes réels</button>
+        <button type="button" data-profile-mode="groups" aria-pressed="false">Groupes</button>
       </div>
       <div class="rail-shell">
         <div id="candidat-carousel" class="avatar-carousel" role="tablist" aria-label="Choisir un candidat"></div>
@@ -1309,19 +1351,6 @@
     const CANDIDATS_URL = "../../raw_data/candidats.json";
     const PROFILE_URL = (slug) => `../../raw_data/profiles/${slug}.json`;
     const PIVOT_PROFILE_URL = (slug) => `../../pivot_data/profiles/${slug}.pivot.json`;
-    const GROUP_PROFILES = [
-      { id: "la-france-insoumise-lfi", label: "La France Insoumise (LFI)" },
-      { id: "les-ecologistes", label: "Les Écologistes" },
-      { id: "horizons", label: "Horizons" },
-      { id: "les-republicains-lr", label: "Les Républicains (LR)" },
-      { id: "lutte-ouvriere-lo", label: "Lutte Ouvrière (LO)" },
-      { id: "nous-france", label: "Nous France" },
-      { id: "nouvelle-energie", label: "Nouvelle Énergie" },
-      { id: "parti-socialiste-ps", label: "Parti Socialiste (PS)" },
-      { id: "rassemblement-national-rn", label: "Rassemblement National (RN)" },
-      { id: "renaissance", label: "Renaissance" },
-    ];
-    const GROUP_PROFILE_URL = (id) => `../../pivot_data/partis/parti-${id}.json`;
     const REAL_GROUP_PROFILES = [
       { id: "AN-REN-16", label: "Renaissance", chambre: "Assemblée nationale", fichier: "groupe-AN-REN-16.json" },
       { id: "AN-SOC-16", label: "Socialistes et apparentés", chambre: "Assemblée nationale", fichier: "groupe-AN-SOC-16.json" },
@@ -1410,10 +1439,9 @@
       flippedKpis: new Set(),
       expandedTextThemes: new Set(),
       expandedVoteThemes: new Set(),
+      showUnpublishedTextes: false,
       expressIndex: 0,
       profileMode: "candidates",
-      currentGroupId: "",
-      currentGroupProfile: null,
       currentRealGroupId: "",
       currentRealGroupProfile: null,
       realGroupCohesionVisible: 20,
@@ -1681,10 +1709,19 @@
       return selectedTheme === "all" ? true : item._theme === selectedTheme;
     }
 
+    function isPublicCarriedText(texte) {
+      return Boolean(TEXT_ROLE_LABELS[texte.role] && DEBATED_TEXT_STAGES.has(texte.stade_procedural));
+    }
+
     function publicCarriedTexts(profile) {
-      return (profile.textes_portes || []).filter((texte) => (
-        TEXT_ROLE_LABELS[texte.role] && DEBATED_TEXT_STAGES.has(texte.stade_procedural)
-      ));
+      return (profile.textes_portes || []).filter((texte) => isPublicCarriedText(texte));
+    }
+
+    function textExclusionReasons(texte) {
+      const reasons = [];
+      if (!TEXT_ROLE_LABELS[texte.role]) reasons.push("role factuel non renseigne");
+      if (!DEBATED_TEXT_STAGES.has(texte.stade_procedural)) reasons.push("stade non retenu pour publication");
+      return reasons.length ? reasons : ["hors criteres publics"];
     }
 
     function sourceLinkHtml(url, label = "Source officielle") {
@@ -1863,9 +1900,33 @@
     }
 
     function renderTextes(profile) {
-      const items = publicCarriedTexts(profile).filter((d) => inTheme(d, state.selectedTheme));
+      const themedTextes = (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme));
+      const items = themedTextes.filter((d) => isPublicCarriedText(d));
+      const excludedItems = themedTextes.filter((d) => !isPublicCarriedText(d));
       if (!items.length) {
-        return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte avec rôle factuel et débat avéré retrouvé." : "Aucun texte répondant aux critères sur ce thème."} Un simple dépôt ou un rôle inconnu n’est pas publié ici.</p>`;
+        if (!excludedItems.length) {
+          return `<p class="empty">${state.selectedTheme === "all" ? "Aucun texte avec rôle factuel et débat avéré retrouvé." : "Aucun texte répondant aux critères sur ce thème."} Un simple dépôt ou un rôle inconnu n’est pas publié ici.</p>`;
+        }
+
+        const sortedExcluded = [...excludedItems].sort((a, b) => {
+          const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
+          return dateDiff || simplifyTitle(a.titre).localeCompare(simplifyTitle(b.titre), "fr");
+        });
+        return `
+          <p class="source-ref">Aucun texte publiable avec les criteres actuels. ${sortedExcluded.length} texte(s) existent dans la source mais sont exclus de la publication.</p>
+          <div class="text-fallback-grid">
+            ${sortedExcluded.map((d) => `
+              <article class="text-fallback-item">
+                <div class="text-fallback-title">${escapeHtml(simplifyTitle(d.titre) || "Titre non renseigne")}</div>
+                <div class="small">${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+                <div>
+                  ${textExclusionReasons(d).map((reason) => `<span class="text-fallback-reason">${escapeHtml(reason)}</span>`).join("")}
+                </div>
+                ${sourceLinkHtml(d.source_url, "↗ source")}
+              </article>
+            `).join("")}
+          </div>
+        `;
       }
       const sorted = [...items].sort((a, b) => {
         const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
@@ -1907,7 +1968,21 @@
             ${themeItems.length > 6 ? `<button type="button" class="text-shelf-more" data-expand-text-theme="${escapeHtml(theme)}">${expanded ? "Réduire" : `Voir les ${themeItems.length} textes`} ${escapeHtml(themeLabel(theme))}</button>` : ""}
           </section>
         `;
-      }).join("")}</div>`;
+      }).join("")}</div>${excludedItems.length ? `
+        <div class="text-unpublished-bar">
+          <button type="button" class="text-unpublished-toggle" data-toggle-unpublished-textes aria-expanded="${state.showUnpublishedTextes}">
+            ${state.showUnpublishedTextes ? "Masquer" : `Voir les ${excludedItems.length} texte(s) non publiés`} <span class="text-unpublished-reason">(rôle factuel absent ou stade non retenu)</span>
+          </button>
+        </div>
+        ${state.showUnpublishedTextes ? `<div class="text-fallback-grid">${[...excludedItems].sort((a, b) => toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min) || simplifyTitle(a.titre).localeCompare(simplifyTitle(b.titre), "fr")).map((d) => `
+          <article class="text-fallback-item">
+            <div class="text-fallback-title">${escapeHtml(simplifyTitle(d.titre) || "Titre non renseigné")}</div>
+            <div class="small">${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+            <div>${textExclusionReasons(d).map((reason) => `<span class="text-fallback-reason">${escapeHtml(reason)}</span>`).join("")}</div>
+            ${sourceLinkHtml(d.source_url, "↗ source")}
+          </article>
+        `).join("")}</div>` : ""}
+      ` : ""}`;
     }
 
     function renderAmendements(profile) {
@@ -2137,10 +2212,6 @@
     }
 
     function renderHome() {
-      if (state.profileMode === "parties") {
-        renderGroupHome();
-        return;
-      }
       if (state.profileMode === "groups") {
         renderRealGroupHome();
         return;
@@ -2175,36 +2246,6 @@
       setDocumentTitle("");
     }
 
-    function renderGroupHome() {
-      const root = document.getElementById("candidat-root");
-      state.currentGroupId = "";
-      state.currentGroupProfile = null;
-      updateActiveAvatarChip();
-      updateProfileRailVisibility();
-      root.innerHTML = `
-        <section class="home-stage">
-          <div class="home-manifesto">
-            <p class="section-kicker">En clair / vue par parti</p>
-            <h2>Regarder les lignes collectives.</h2>
-            <p><strong>Une vue agrégée des candidats déclarés par parti.</strong> Cette page ne prétend pas représenter un groupe parlementaire réel : elle montre seulement l'échantillon éditorial disponible pour chaque parti.</p>
-          </div>
-          <div class="home-candidates">
-            ${GROUP_PROFILES.map((group) => `
-              <button type="button" class="home-candidate" data-home-group="${escapeHtml(group.id)}">
-                <strong>${escapeHtml(group.label)}</strong>
-                <small>Ouvrir l'empreinte collective ↗</small>
-              </button>
-            `).join("")}
-          </div>
-          <div class="home-note party-home-note">Ces vues ne représentent pas les groupes parlementaires réels : elles agrègent les candidats déclarés avec un profil pivot disponible. Le périmètre de couverture est indiqué sur chaque fiche.</div>
-        </section>
-      `;
-      root.querySelectorAll("[data-home-group]").forEach((button) => {
-        button.addEventListener("click", () => selectGroup(button.dataset.homeGroup));
-      });
-      setDocumentTitle("");
-    }
-
     function renderRealGroupHome() {
       const root = document.getElementById("candidat-root");
       state.currentRealGroupId = "";
@@ -2214,7 +2255,7 @@
       root.innerHTML = `
         <section class="home-stage">
           <div class="home-manifesto">
-            <p class="section-kicker">En clair / groupes parlementaires réels</p>
+            <p class="section-kicker">En clair / groupes parlementaires</p>
             <h2>Voir la composition réelle des groupes.</h2>
             <p><strong>Les groupes parlementaires effectivement constitués</strong> à l'Assemblée nationale et au Sénat, avec leur cohésion de vote, leurs amendements et leur effectif déclaré. La couverture individuelle (profils pivot disponibles localement) reste partielle par rapport à l'effectif réel du groupe — le détail est indiqué sur chaque fiche.</p>
           </div>
@@ -2244,58 +2285,6 @@
 
     function formatPercentage(value) {
       return !Number.isFinite(value) ? "N/D" : `${Math.round(value * 100)} %`;
-    }
-
-    function renderGroupPage() {
-      const root = document.getElementById("candidat-root");
-      const group = state.currentGroupProfile;
-      if (!group) return;
-      const coveredProfiles = typeof group.meta?.nb_candidats_avec_pivot === "number"
-        ? group.meta.nb_candidats_avec_pivot
-        : (group.meta?.profils_sources?.length || 0);
-      const declaredProfiles = group.meta?.nb_candidats_declares || 0;
-      const members = group.candidats || [];
-      const tags = (group.tags_thematiques_agreges || [])
-        .filter((tag) => tag.tag && tag.tag !== "couverture")
-        .sort((a, b) => Number(b.nb_membres_porteurs || 0) - Number(a.nb_membres_porteurs || 0) || Number(b.poids_relatif || 0) - Number(a.poids_relatif || 0))
-        .slice(0, 30);
-      const maxTagMembers = Math.max(...tags.map((tag) => Number(tag.nb_membres_porteurs || 0)), 1);
-      const warnings = group.meta?.warnings || [];
-      const title = group.parti_nom || group.groupe_nom || group.groupe_sigle || "Profil collectif";
-      const subtitle = group.parti_nom ? "Empreinte de parti" : "Empreinte collective";
-      root.innerHTML = `
-        <article class="party-profile">
-          <header class="party-hero">
-            <p class="section-kicker">${subtitle} / ${escapeHtml(group.periode?.debut ? `${formatIsoDate(group.periode.debut)} → ${group.periode.fin ? formatIsoDate(group.periode.fin) : "aujourd'hui"}` : "période non renseignée")}</p>
-            <h2>${escapeHtml(title)}</h2>
-          </header>
-          <div class="party-coverage">PÉRIMÈTRE : ${coveredProfiles} candidat(s) avec profil pivot sur ${declaredProfiles} déclaré(s). Cette fiche décrit un échantillon éditorial de parti, pas un groupe parlementaire réel.${warnings.length ? ` Avertissement : ${escapeHtml(warnings.join(" "))}` : ""}</div>
-          <section class="party-kpis" aria-label="Indicateurs du parti">
-            <div class="party-kpi"><b>${coveredProfiles}</b><span>Candidats avec pivot</span></div>
-            <div class="party-kpi"><b>${declaredProfiles}</b><span>Candidats déclarés</span></div>
-            <div class="party-kpi"><b>${tags.length}</b><span>Thèmes documentés</span></div>
-          </section>
-          <section class="party-section">
-            <p class="section-kicker">Échantillon documentaire disponible</p>
-            <h2>Éléments de comparaison</h2>
-            <p class="empty">Ce profil de parti ne publie ni cohésion de vote ni effectif de groupe parlementaire. Il se limite à l'échantillon éditorial disponible pour les candidats déclarés.</p>
-          </section>
-          <section class="party-section">
-            <p class="section-kicker">Mots-clés partagés entre les candidats couverts</p>
-            <h2>Empreinte thématique</h2>
-            ${tags.length ? `<div class="party-tags">${tags.map((tag) => `
-              <span class="party-tag" style="--weight:${Number(tag.nb_membres_porteurs || 0) / maxTagMembers}"><b>${escapeHtml(tag.tag)}</b><small>${tag.nb_membres_porteurs} profil(s) porteur(s)</small></span>
-            `).join("")}</div>` : `<p class="empty">Aucun thème agrégé disponible.</p>`}
-          </section>
-          <section class="party-section">
-            <p class="section-kicker">Périmètre de l'agrégation</p>
-            <h2>Candidats couverts</h2>
-            <div class="party-members">${(group.candidats || []).map((member) => `<div class="party-member"><strong>${escapeHtml(member.nom)}</strong><br><small>${member.a_un_profil_pivot ? "Profil pivot disponible" : "Aucun profil pivot disponible"}</small></div>`).join("")}</div>
-            <div class="party-sources">Généré le ${escapeHtml(formatIsoDate(group.meta?.genere_le))} · ${group.sources?.length || 0} source(s) déclarée(s) · <a href="methodologie.html" target="_blank" rel="noopener">Voir la méthode ↗</a></div>
-          </section>
-        </article>
-      `;
-      setDocumentTitle(title);
     }
 
     function renderRealGroupPage() {
@@ -2328,7 +2317,7 @@
       root.innerHTML = `
         <article class="party-profile">
           <header class="party-hero">
-            <p class="section-kicker">Groupe parlementaire réel / ${escapeHtml(group.chambre || "")}${group.legislature ? ` · législature ${escapeHtml(String(group.legislature))}` : ""} · ${escapeHtml(periodeLabel)}</p>
+            <p class="section-kicker">Groupe parlementaire / ${escapeHtml(group.chambre || "")}${group.legislature ? ` · législature ${escapeHtml(String(group.legislature))}` : ""} · ${escapeHtml(periodeLabel)}</p>
             <h2>${escapeHtml(title)}${group.groupe_sigle && group.groupe_sigle !== title ? ` (${escapeHtml(group.groupe_sigle)})` : ""}</h2>
           </header>
           <div class="party-coverage">
@@ -2613,6 +2602,11 @@
         });
       });
 
+      document.querySelector("[data-toggle-unpublished-textes]")?.addEventListener("click", () => {
+        state.showUnpublishedTextes = !state.showUnpublishedTextes;
+        renderPage();
+      });
+
       document.querySelectorAll(".orbit-node").forEach((node) => {
         node.addEventListener("click", () => {
           const expanded = node.classList.toggle("expanded");
@@ -2706,8 +2700,7 @@
       if (!carousel) return;
       document.querySelectorAll("#candidat-carousel .avatar-chip").forEach((chip) => {
         let isActive;
-        if (state.profileMode === "parties") isActive = chip.dataset.groupId === state.currentGroupId;
-        else if (state.profileMode === "groups") isActive = chip.dataset.realGroupId === state.currentRealGroupId;
+        if (state.profileMode === "groups") isActive = chip.dataset.realGroupId === state.currentRealGroupId;
         else isActive = chip.dataset.slug === state.currentSlug;
         chip.classList.toggle("active", isActive);
         chip.setAttribute("aria-selected", String(isActive));
@@ -2719,8 +2712,7 @@
       const dock = document.querySelector(".candidate-dock");
       const button = document.getElementById("rail-scroll-btn");
       let hasSelection;
-      if (state.profileMode === "parties") hasSelection = Boolean(state.currentGroupId);
-      else if (state.profileMode === "groups") hasSelection = Boolean(state.currentRealGroupId);
+      if (state.profileMode === "groups") hasSelection = Boolean(state.currentRealGroupId);
       else hasSelection = Boolean(state.currentSlug);
       carousel.hidden = !hasSelection;
       button.hidden = !hasSelection;
@@ -2741,18 +2733,7 @@
     function renderProfileRail() {
       const carousel = document.getElementById("candidat-carousel");
       if (!carousel) return;
-      if (state.profileMode === "parties") {
-        carousel.setAttribute("aria-label", "Choisir un parti");
-        carousel.innerHTML = GROUP_PROFILES.map((group) => `
-          <button type="button" class="avatar-chip" data-group-id="${escapeHtml(group.id)}" role="tab" aria-selected="false" title="${escapeHtml(group.label)}">
-            <span class="avatar-chip-circle">${escapeHtml(shortName(group.label))}</span>
-            <span class="avatar-chip-name">${escapeHtml(group.label)}</span>
-          </button>
-        `).join("");
-        carousel.querySelectorAll("[data-group-id]").forEach((chip) => {
-          chip.addEventListener("click", () => selectGroup(chip.dataset.groupId));
-        });
-      } else if (state.profileMode === "groups") {
+      if (state.profileMode === "groups") {
         carousel.setAttribute("aria-label", "Choisir un groupe parlementaire");
         carousel.innerHTML = REAL_GROUP_PROFILES.map((group) => `
           <button type="button" class="avatar-chip" data-real-group-id="${escapeHtml(group.id)}" role="tab" aria-selected="false" title="${escapeHtml(group.label)} (${escapeHtml(group.chambre)})">
@@ -2780,13 +2761,11 @@
     }
 
     function setProfileMode(mode) {
-      if (!['candidates', 'parties', 'groups'].includes(mode) || state.profileMode === mode) return;
+      if (!['candidates', 'groups'].includes(mode) || state.profileMode === mode) return;
       state.profileMode = mode;
       state.currentSlug = "";
       state.currentMeta = null;
       state.currentProfile = null;
-      state.currentGroupId = "";
-      state.currentGroupProfile = null;
       state.currentRealGroupId = "";
       state.currentRealGroupProfile = null;
       document.querySelectorAll("[data-profile-mode]").forEach((button) => {
@@ -2811,6 +2790,7 @@
       state.flippedKpis = new Set();
       state.expandedTextThemes = new Set();
       state.expandedVoteThemes = new Set();
+      state.showUnpublishedTextes = false;
       state.expressIndex = 0;
 
       updateActiveAvatarChip();
@@ -2836,31 +2816,6 @@
           </section>
         `;
         setDocumentTitle(state.currentMeta?.nom || "");
-      }
-    }
-
-    async function selectGroup(groupId) {
-      state.currentGroupId = groupId;
-      state.currentGroupProfile = null;
-      updateActiveAvatarChip();
-      updateProfileRailVisibility();
-      const root = document.getElementById("candidat-root");
-      const groupMeta = GROUP_PROFILES.find((group) => group.id === groupId);
-      if (!groupMeta) {
-        renderGroupHome();
-        return;
-      }
-      root.innerHTML = `<section class="panel"><p class="empty" role="status" aria-live="polite">Chargement de l'empreinte de ${escapeHtml(groupMeta.label)}…</p></section>`;
-      try {
-        const response = await fetch(GROUP_PROFILE_URL(groupId), { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const profile = await response.json();
-        if (!(["profil_groupe", "profil_parti"].includes(profile.type_document))) throw new Error("schéma de profil inattendu");
-        state.currentGroupProfile = profile;
-        renderGroupPage();
-      } catch (error) {
-        root.innerHTML = `<section class="panel"><p class="empty">Données de parti indisponibles (${escapeHtml(error.message)}).</p></section>`;
-        setDocumentTitle(groupMeta.label);
       }
     }
 
