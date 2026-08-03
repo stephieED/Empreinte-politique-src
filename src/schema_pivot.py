@@ -381,6 +381,18 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                     "(le texte 49.3 concerné doit être identifié, jamais fusionné "
                     "avec le vote sur le texte)."
                 )
+            sort = v.get("sort")
+            if sort == "adopte_sans_vote_49_3" and v.get("position") is not None:
+                errors.append(
+                    f"votes[{i}] : sort='adopte_sans_vote_49_3' ne peut avoir de position "
+                    "(49.3 = absence de vote, jamais une position — AGENTS.md règle 4)."
+                )
+            position = v.get("position")
+            if position is not None and position not in KNOWN_POSITIONS:
+                errors.append(
+                    f"votes[{i}].position non reconnue : {position!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_POSITIONS)}."
+                )
 
     # role / type_rapport / stade_procedural : nomenclature factuelle, jamais une
     # catégorie éditoriale de valorisation.
