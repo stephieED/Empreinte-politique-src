@@ -6,9 +6,18 @@ on:
   workflow_dispatch:
     inputs:
       fresh_run:
-        description: 'Démarrage à froid — ignore et supprime le cache .cache/'
+        description: >
+          Démarrage à froid — purge complète des sorties et du cache,
+          génération sans fusion, quality gate à tolérance zéro.
+          false = mode incrémental résilient (fusion additive, cache restauré, seuil souple).
         type: boolean
         default: false
+      threshold:
+        description: >
+          Seuil IncompleteRead (soft fail). Ignoré si fresh_run=true
+          (seuil forcé à 0). Défaut : 3.
+        type: number
+        default: 3
 
 # Nécessaire pour que le job puisse pousser la mise à jour des données.
 permissions:
@@ -33,11 +42,12 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Nettoyage des données et du cache avant régénération
+      # fresh_run=true  → purge complète (sorties + .cache) avant régénération à zéro.
+      # fresh_run=false → les sorties existantes sont conservées pour la fusion additive.
+      - name: Nettoyage complet des données et du cache (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
         run: |
-          if [[ "${{ inputs.fresh_run }}" == "true" ]]; then
-            rm -rf .cache
-          fi
+          rm -rf .cache
           find raw_data/profiles   -name "*.json"       -delete
           find pivot_data/profiles -name "*.pivot.json" -delete
           find pivot_data/partis   -name "*.json"       -delete
@@ -47,9 +57,9 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      # .cache/ (dumps Parltrack, listes MEP Europarl) est gitignoré : on le
-      # persiste via le cache Actions pour réduire le volume de requêtes vers
-      # les API publiques d'un run à l'autre. Clé renouvelée chaque semaine.
+      # fresh_run=true  → pas de restore (on repart de zéro, y compris pour .cache/).
+      # fresh_run=false → restore autorisé ; réduit les requêtes vers les API publiques.
+      # Clé renouvelée chaque semaine.
       - uses: actions/cache@v4
         if: ${{ !inputs.fresh_run }}
         with:
@@ -58,8 +68,16 @@ jobs:
           restore-keys: |
             public-data-cache-
 
+      # fresh_run=true  → --no-merge : écrasement complet, données entièrement re-fetchées.
+      # fresh_run=false → fusion additive (défaut) : les entrées existantes sont préservées,
+      #                   seules les nouvelles données sont ajoutées. Résilient aux aléas réseau.
       - name: Générer les profils individuels (extraction + pivot)
-        run: python3 src/generate_all_profiles.py --pivot --no-merge --no-checkpoint
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          python3 src/generate_all_profiles.py --pivot "${MERGE_FLAG[@]}"
 
       - name: Générer les profils de parti
         run: |
@@ -68,34 +86,45 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/partis
 
-      # Liste validée manuellement dans raw_data/groupes_reels.json (voir README §6) :
-      # groupes parlementaires réels couvrant les candidats actuellement
-      # identifiés dans candidats.json. Les données sources (NosDéputés.fr)
-      # reflètent la dernière composition connue avant la dissolution du
-      # 9 juin 2024 (16e législature) — voir l'avertissement meta.warnings de
-      # chaque profil de groupe généré.
+      # fresh_run=true  → recréation complète à chaque exécution (comportement strict,
+      #                   le fichier existant est entièrement remplacé par les données du run).
+      # fresh_run=false → --merge-existing : les membres du fichier précédent absents du
+      #                   roster récupéré cette fois-ci (ex. échec partiel de l'API live)
+      #                   sont réintégrés avec un avertissement dans meta.warnings. Évite
+      #                   les trous temporaires dus aux aléas réseau.
+      # Un seul fetch réseau par (chambre, législature) distincte (voir generate_group_profiles.py).
       - name: Générer les profils de groupe parlementaire réel
+        env:
+          FRESH: ${{ inputs.fresh_run }}
         run: |
-          # Choisir UN des deux modes ci-dessous en (dé)commentant la ligne
-          # MERGE_FLAG correspondante :
-          MERGE_FLAG=()  # par défaut, recréation complète
-          # (1) Recréation complète à chaque exécution (comportement actif par
-          #     défaut) : --out écrase entièrement le fichier existant avec le
-          #     roster/profils disponibles au moment du run.
-
-          # MERGE_FLAG=(--merge-existing)
-          # (2) Agrégation avec l'existant : si un fichier pivot_data/groupes/*.json
-          #     existe déjà, les membres qui y figuraient mais sont absents du
-          #     roster récupéré cette fois-ci (ex. échec partiel de l'API
-          #     live) sont réintégrés, avec un avertissement dans meta.warnings.
-
-          # Un seul fetch réseau par (chambre, législature) distincte, réutilisé
-          # pour tous les groupes qui la partagent (voir generate_group_profiles.py).
+          MERGE_FLAG=()
+          [[ "$FRESH" != "true" ]] && MERGE_FLAG=(--merge-existing)
           python3 src/generate_group_profiles.py \
             --config raw_data/groupes_reels.json \
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
+
+      # fresh_run=true  → tolérance zéro (threshold=0) : le moindre IncompleteRead bloque
+      #                   le commit. Structure groupe cassée = échec dur dans les deux cas.
+      # fresh_run=false → seuil souple (inputs.threshold, défaut 3) : les aléas réseau
+      #                   transitoires ne bloquent pas le commit incrémental.
+      - name: Quality gate — résumé et contrôle qualité
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+          THRESHOLD: ${{ inputs.threshold != '' && inputs.threshold || 3 }}
+        run: |
+          [[ "$FRESH" == "true" ]] && GATE_THRESHOLD=0 || GATE_THRESHOLD="$THRESHOLD"
+          python3 src/check_quality_gate.py \
+            --profiles-dir      pivot_data/profiles \
+            --groupes-dir       pivot_data/groupes \
+            --partis-dir        pivot_data/partis \
+            --raw-dir           raw_data/profiles \
+            --candidats         raw_data/candidats.json \
+            --groupes-config    raw_data/groupes_reels.json \
+            --threshold         "$GATE_THRESHOLD" \
+            --low-interventions 10 \
+            --groupe-min-members 1
 
       - name: Committer et pousser les données mises à jour
         run: |

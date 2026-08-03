@@ -11,6 +11,21 @@ This file is not automatically re-read by coding agents on every session
 
 ## Done (recent)
 
+- **CI/CD workflow — two-mode generation + quality gate**:
+  `.github/workflows/generate-data.yml` reworked with two `workflow_dispatch`
+  inputs (`fresh_run`, `threshold`).
+  `fresh_run=true` triggers a full purge, no cache restore, `--no-merge`
+  on individual profiles, groupe recreation from scratch, and a zero-tolerance
+  quality gate.
+  `fresh_run=false` (default, scheduled) preserves existing data via additive
+  merge, restores the Actions cache, uses `--merge-existing` for groups, and
+  applies a configurable IncompleteRead threshold (default 3).
+  New script `src/check_quality_gate.py`: pre-commit gate producing a 4-section
+  report (IncompleteRead count + endpoints, candidate coverage, low intervention
+  signals, groupe hard/soft validation). Hard fail (exit 1) on broken structure;
+  soft warnings on degraded quality. Output written to console and to
+  `$GITHUB_STEP_SUMMARY` (Markdown tables in the GHA job summary tab).
+
 - **UI/UX web/v3 — Parliamentary questions**: updated in `web/v3/index.html`.
   (1) "Parliamentary questions" filter (`data-inter-mode="questions"`) added
   as the 4th button in the Speeches panel. (2) Dedicated `question-fragment`

@@ -26,6 +26,7 @@ CV_CandidatFR/
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
 |  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
+|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- normalize_nosdeputes.py        # NosDeputes/NosSenateurs -> pivot adapter
@@ -233,7 +234,58 @@ python src/fetch_wikipedia_candidates.py --json
 This script never modifies `candidats.json` automatically; it outputs a review
 summary for manual validation.
 
-## 8. Open the web UI locally
+## 8. CI/CD automated generation workflow
+
+The workflow `.github/workflows/generate-data.yml` runs the full pipeline
+on GitHub Actions and is triggered manually (`workflow_dispatch`).
+
+### Inputs
+
+| Input | Type | Default | Effect |
+|---|---|---|---|
+| `fresh_run` | boolean | `false` | See modes below |
+| `threshold` | number | `3` | Max tolerated `IncompleteRead` errors before hard fail (ignored if `fresh_run=true`) |
+
+### Two operating modes
+
+| Step | `fresh_run=true` | `fresh_run=false` |
+|---|---|---|
+| **Cleanup** | Full purge of outputs + `.cache/` | Skipped (existing data preserved) |
+| **Actions cache** | Not restored | Restored (reduces API calls) |
+| **Individual profiles** | `--no-merge` (full overwrite) | Additive merge (resilient to transient failures) |
+| **Group profiles** | Full recreation | `--merge-existing` (avoids temporary gaps) |
+| **Quality gate threshold** | `0` (zero tolerance) | `inputs.threshold` (default 3) |
+
+### Quality gate (`src/check_quality_gate.py`)
+
+Runs before every commit. Produces a 4-section report to the job log and
+to the GitHub Actions job summary tab (Markdown tables):
+
+1. **IncompleteRead errors** — counts occurrences of `IncompleteRead` in
+   `meta.warnings[]` of all generated JSON files; hard fail if count exceeds
+   threshold.
+2. **Candidates generated vs expected** — compares `raw_data/candidats.json`
+   (slugs) against actual `pivot_data/profiles/*.pivot.json` files; lists
+   missing profiles and candidates without a slug.
+3. **Low intervention count** — flags candidates with fewer than 10
+   interventions (configurable via `--low-interventions`).
+4. **Group structure validation** — hard fail on missing file, invalid JSON,
+   or schema errors (`validate_profil_groupe()`); soft warning on low
+   coverage (`profils_disponibles < --groupe-min-members`) or network
+   signals. The `fraicheur_donnees` warning (expected on all frozen
+   AN/Sénat data) is silently ignored.
+
+The commit step is only reached if the gate exits with code 0.
+
+To run the gate locally:
+
+```bash
+python src/check_quality_gate.py
+python src/check_quality_gate.py --threshold 0          # zero tolerance
+python src/check_quality_gate.py --low-interventions 5  # stricter signal
+```
+
+## 9. Open the web UI locally
 
 Serve with a local HTTP server (needed because `fetch()` cannot read `file://`):
 

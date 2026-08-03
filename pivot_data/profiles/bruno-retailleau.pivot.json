@@ -17,7 +17,7 @@
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-03T07:54:32+0000"
+      "synchro_le": "2026-08-03T08:56:10+0000"
     }
   ],
   "mandats": [
@@ -28,7 +28,10 @@
       "debut": "2004-09-26",
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Commission de la culture, de l'éducation et de la communication",
@@ -37,7 +40,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Groupe d'études Agriculture et alimentation",
@@ -46,7 +52,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Groupe Chrétiens d'Orient",
@@ -55,7 +64,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Groupe d'information internationale sur le Haut-Karabagh",
@@ -64,7 +76,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Groupe d'études Statut, rôle et place des Français établis hors de France",
@@ -73,7 +88,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux",
@@ -82,7 +100,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Collège consultatif de la commission du fonds pour le développement de la vie associative",
@@ -91,7 +112,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     },
     {
       "label": "Commission départementale de la coopération intercommunale",
@@ -100,7 +124,10 @@
       "debut": null,
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     }
   ],
   "votes": [],
@@ -110,7 +137,7 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T07:54:45+0000",
+    "genere_le": "2026-08-03T08:56:18+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
