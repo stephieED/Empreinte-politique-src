@@ -445,10 +445,11 @@ def test_known_categories_contains_expected_values():
     assert "mandat_electif" in KNOWN_CATEGORIES
     assert "commission" in KNOWN_CATEGORIES
     assert "groupe_amitie" in KNOWN_CATEGORIES
+    assert "groupe_politique" in KNOWN_CATEGORIES
 
 
 def test_known_positions_hemicycle_contains_expected_values():
-    assert KNOWN_POSITIONS_HEMICYCLE == {"majorite", "opposition"}
+    assert KNOWN_POSITIONS_HEMICYCLE == {"majorite", "opposition", "minoritaire"}
 
 
 def test_known_modes_declenchement_contains_expected_values():

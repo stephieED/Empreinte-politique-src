@@ -111,6 +111,22 @@ DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
 AN_ACTEURS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
 ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
 
+# Acteurs/mandats/organes historique complet (Assemblee nationale) : contrairement
+# a AN_ACTEURS_ZIP_URL (limite aux deputes actifs de la legislature en cours), ce
+# fichier couvre TOUTES les legislatures depuis la XIe. Utilise uniquement pour
+# reconstituer l'historique dat\u00e9 d'appartenance a un groupe politique
+# (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
+# organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
+# Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois la
+# legislature terminee (toujours null sur la 17e, en cours, y compris pour les
+# groupes du socle commun) - cette source ne couvre donc que les legislatures
+# achevees (jusqu'a la 16e comprise).
+AN_ACTEURS_HISTORIQUE_ZIP_URL = (
+    f"{AN_OPENDATA_BASE}/17/amo/tous_acteurs_mandats_organes_xi_legislature/"
+    "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+)
+ACTEURS_HISTORIQUE_CACHE_DIR = Path(".cache") / "acteurs_historique_an"
+
 # Questions parlementaires (écrites, au gouvernement, orales sans débat).
 # Même pattern d'URL que scrutins/amendements. Un seul parseur générique suffit
 # pour les 3 types (seul @xsi:type diffère). URLs confirmées pour les 16e et 17e
@@ -162,6 +178,10 @@ _DOSSIERS_TITRE_LOCK = threading.Lock()
 # Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
 # decoupage par legislature).
 _ACTEURS_IDENTITE_LOCK = threading.Lock()
+
+# Un seul verrou pour l'index des positions dans l'hemicycle (construit depuis
+# le fichier bulk historique des acteurs/mandats/organes).
+_ACTEURS_HEMICYCLE_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
 # depuis le même fichier bulk que l'index titre (dossiers legislatifs).
@@ -1151,6 +1171,144 @@ def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[s
     return index.get(acteur_ref)
 
 
+# Correspondance organe.positionPolitique (référentiel officiel Assemblée
+# nationale) -> valeur du schéma pivot.
+_POSITION_POLITIQUE_MAP: dict[str, str] = {
+    "Majoritaire": "majorite",
+    "Minoritaire": "minoritaire",
+    "Opposition": "opposition",
+}
+
+
+def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, Any]]:
+    """Construit un index organeRef -> {groupe_sigle, position} à partir des
+    organes de type "GP" (groupe politique) du zip acteurs historique. Ne
+    conserve que les organes dont positionPolitique est qualifié par l'AN
+    (jamais le cas pour la législature en cours, voir AN_ACTEURS_HISTORIQUE_ZIP_URL)."""
+    index: dict[str, dict[str, Any]] = {}
+    noms = [n for n in zf.namelist() if n.startswith("json/organe/") and n.endswith(".json")]
+    for nom in noms:
+        try:
+            with zf.open(nom) as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, KeyError):
+            continue
+        organe = data.get("organe") if isinstance(data, dict) else None
+        if not isinstance(organe, dict) or organe.get("codeType") != "GP":
+            continue
+        position = _POSITION_POLITIQUE_MAP.get(organe.get("positionPolitique"))
+        if position is None:
+            continue
+        organe_ref = organe.get("uid")
+        if not isinstance(organe_ref, str) or not organe_ref:
+            continue
+        index[organe_ref] = {
+            "groupe_sigle": organe.get("libelleAbrege"),
+            "position": position,
+        }
+    return index
+
+
+def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de
+    périodes datées d'appartenance à un groupe politique qualifié majorité/
+    opposition/minoritaire par le référentiel officiel de l'Assemblée nationale.
+
+    Limitation connue : ne couvre que les législatures achevées (positionPolitique
+    n'est jamais renseigné par l'AN pour la législature en cours, voir
+    AN_ACTEURS_HISTORIQUE_ZIP_URL). Non-fatal en cas d'échec (retourne {})."""
+    with _ACTEURS_HEMICYCLE_LOCK:
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_positions_hemicycle.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
+        zip_path = ACTEURS_HISTORIQUE_CACHE_DIR / "acteurs_historique.zip"
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
+            return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                organe_positions = _build_organe_positions_index(zf)
+                if not organe_positions:
+                    return {}
+
+                noms = [n for n in zf.namelist() if n.startswith("json/acteur/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    acteur = data.get("acteur") if isinstance(data, dict) else None
+                    if not isinstance(acteur, dict):
+                        continue
+                    uid = acteur.get("uid")
+                    acteur_ref = uid.get("#text") if isinstance(uid, dict) else uid
+                    if not isinstance(acteur_ref, str) or not acteur_ref:
+                        continue
+
+                    mandats = (acteur.get("mandats") or {}).get("mandat")
+                    if isinstance(mandats, dict):
+                        mandats = [mandats]
+                    if not isinstance(mandats, list):
+                        continue
+
+                    for mandat in mandats:
+                        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "GP":
+                            continue
+                        organe_ref = (mandat.get("organes") or {}).get("organeRef")
+                        organe = organe_positions.get(organe_ref)
+                        if not organe:
+                            continue
+                        index.setdefault(acteur_ref, []).append({
+                            "legislature": mandat.get("legislature"),
+                            "groupe_sigle": organe["groupe_sigle"],
+                            "position": organe["position"],
+                            "debut": mandat.get("dateDebut"),
+                            "fin": mandat.get("dateFin"),
+                        })
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+    """Récupère les périodes d'appartenance à un groupe politique qualifiées
+    majorité/opposition/minoritaire par le référentiel officiel de l'Assemblée
+    nationale (voir _build_acteur_positions_hemicycle_index). Ne couvre que les
+    législatures achevées : retourne [] si aucune période qualifiée n'existe
+    (législature en cours, sénateur, ou acteur absent du référentiel)."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return []
+    index = _build_acteur_positions_hemicycle_index()
+    return index.get(acteur_ref, [])
+
+
 def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
 
@@ -1952,6 +2110,30 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
                     profile["identite"]["date_naissance"] = profile["identite"]["date_naissance"] or identite_an.get("date_naissance")
                     profile["identite"]["lieu_naissance"] = identite_an.get("lieu_naissance")
                     profile["identite"]["uri_hatvp"] = identite_an.get("uri_hatvp")
+
+            # --- 5ter. Positions dans l'hémicycle (Assemblée nationale, référentiel
+            # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
+            # couvre que les législatures achevées (positionPolitique jamais qualifié
+            # par l'AN pour la législature en cours) : ajoute une entrée de mandat
+            # "groupe_politique" par période qualifiée, jamais sans source_url. ---
+            if chambre == "deputes":
+                try:
+                    positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
+                except Exception as exc:
+                    warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
+                    positions_hemicycle = []
+                for periode in positions_hemicycle:
+                    sigle = periode.get("groupe_sigle")
+                    profile["mandats"].append({
+                        "categorie": "groupe_politique",
+                        "type": "membre",
+                        "label": f"Groupe politique ({sigle})" if sigle else "Groupe politique",
+                        "debut": periode.get("debut"),
+                        "fin": periode.get("fin"),
+                        "actif": not periode.get("fin"),
+                        "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
+                        "position_dans_hemicycle": periode.get("position"),
+                    })
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
     # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr

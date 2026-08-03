@@ -18238,12 +18238,12 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-03T08:53:53+0000",
+    "genere_le": "2026-08-03T11:01:36+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-03T08:53:53+0000",
+      "nosdeputes": "2026-08-03T11:01:36+0000",
       "assemblee_nationale": null,
-      "assemblee_nationale_questions": "2026-08-03T08:54:47+0000"
+      "assemblee_nationale_questions": "2026-08-03T11:04:12+0000"
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."

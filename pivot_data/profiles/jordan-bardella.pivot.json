@@ -10,7 +10,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/131580",
-      "synchro_le": "2026-08-03T08:53:53+0000"
+      "synchro_le": "2026-08-03T11:03:12+0000"
     }
   ],
   "mandats": [
@@ -220,7 +220,7 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-03T08:53:53+0000",
+    "genere_le": "2026-08-03T11:03:12+0000",
     "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }

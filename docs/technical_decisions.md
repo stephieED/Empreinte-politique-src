@@ -269,6 +269,38 @@ not under a more restrictive license.
 
 ---
 
+<a id="web-v3-ui"></a>
+## web/v3 UI design decisions
+
+### "Partis" tab removed (2026-08)
+
+The "Partis" tab displayed editorial aggregates of declared candidates grouped
+by party label (`pivot_data/partis/`). These were confusing next to real
+parliamentary group data: a party aggregate over 1–3 declared candidates has no
+statistical significance for vote cohesion or text volume. The tab was removed
+from `web/v3` navigation; `parti_profile.py` and `pivot_data/partis/` are still
+generated (useful for internal diagnostics and future use) but no longer
+surfaced by the reference UI.
+
+### "Groupes réels" → "Groupes" (2026-08)
+
+The qualifier "réels" existed to contrast with the "Partis" tab (editorial
+aggregates). Once that tab was removed, the distinction became unnecessary;
+"Groupes" is cleaner and avoids implying the data could be "fake" elsewhere.
+
+### Unpublished texts: explicit fallback toggle (2026-08)
+
+`textes_portes[]` items below the `examine_commission` threshold (wrong stage or
+unknown role) were silently excluded from the public view. They are now
+accessible via an explicit "Voir les N texte(s) non publiés" button (collapsed
+by default). Editorial rules are unchanged: these items are not published by
+default. The toggle is a **transparency feature** — it lets users verify the
+exclusion criteria rather than wondering why a known text is absent. Per-item
+exclusion reasons (`role factuel absent`, `stade non retenu`) are shown in the
+expanded view.
+
+---
+
 ## Internal references
 
 - `AGENTS.md`: condensed version intended for AI agents (rules, schema,
