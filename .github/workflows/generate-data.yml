@@ -4,6 +4,11 @@ on:
   #schedule:
   #  - cron: '0 6 * * *'
   workflow_dispatch:
+    inputs:
+      fresh_run:
+        description: 'Démarrage à froid — ignore et supprime le cache .cache/'
+        type: boolean
+        default: false
 
 # Nécessaire pour que le job puisse pousser la mise à jour des données.
 permissions:
@@ -28,6 +33,16 @@ jobs:
 
       - run: pip install -r requirements.txt
 
+      - name: Nettoyage des données et du cache avant régénération
+        run: |
+          if [[ "${{ inputs.fresh_run }}" == "true" ]]; then
+            rm -rf .cache
+          fi
+          find raw_data/profiles   -name "*.json"       -delete
+          find pivot_data/profiles -name "*.pivot.json" -delete
+          find pivot_data/partis   -name "*.json"       -delete
+          find pivot_data/groupes  -name "*.json"       -delete
+
       - name: Semaine ISO courante (clé de cache)
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
@@ -36,6 +51,7 @@ jobs:
       # persiste via le cache Actions pour réduire le volume de requêtes vers
       # les API publiques d'un run à l'autre. Clé renouvelée chaque semaine.
       - uses: actions/cache@v4
+        if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
           key: public-data-cache-${{ steps.week.outputs.week }}
@@ -43,7 +59,7 @@ jobs:
             public-data-cache-
 
       - name: Générer les profils individuels (extraction + pivot)
-        run: python3 src/generate_all_profiles.py --pivot
+        run: python3 src/generate_all_profiles.py --pivot --no-merge --no-checkpoint
 
       - name: Générer les profils de parti
         run: |
