@@ -1273,7 +1273,7 @@
   }
   .deconstructed .mandate-card {
     min-width: 0;
-    padding: var(--space-16);
+    padding: var(--space-8) var(--space-12);
     border: var(--border-width) solid var(--line);
     border-radius: 0;
     background: var(--bg);
@@ -1282,17 +1282,27 @@
   .deconstructed .mandate-card.is-current { background: var(--acid); }
   .deconstructed .mandate-function {
     display: block;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-4);
     font-family: var(--font-family-display);
-    font-size: clamp(1rem, 2.4vw, 1.5rem);
-    line-height: 1.05;
+    font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+    line-height: 1.1;
   }
   .deconstructed .mandate-detail { font-family: var(--font-family-ui); }
+  .deconstructed .mandate-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-8);
+    margin-top: var(--space-4);
+  }
   .deconstructed .mandate-meta {
-    display: block;
-    margin-top: var(--space-8);
     font: 500 0.66rem var(--font-family-mono);
     text-transform: uppercase;
+  }
+  .deconstructed .mandate-role {
+    font: 500 0.72rem var(--font-family-ui);
+    color: var(--fg-muted, var(--fg));
+    opacity: 0.72;
   }
   .deconstructed .mandate-sources { margin-top: var(--space-8); }
   .deconstructed .mandate-sources a {
@@ -2141,9 +2151,11 @@
         return `<article class="mandate-timeline-item">
           <div class="mandate-period">${escapeHtml(period)}</div>
           <div class="mandate-card ${mandate.categorie === "mandat_electif" ? "" : "is-dashed"} ${mandate.actif ? "is-current" : ""}">
-            <strong class="mandate-function">${escapeHtml(mandate.fonction || "Fonction non renseignée")}</strong>
-            <div class="mandate-detail">${escapeHtml(mandate.label || "Mandat non précisé")}</div>
-            <small class="mandate-meta">${escapeHtml(CATEGORIE_LABELS_FR[mandate.categorie] || mandate.categorie || "Catégorie non renseignée")}</small>
+            <strong class="mandate-function">${escapeHtml(mandate.label || "Mandat non précisé")}</strong>
+            <div class="mandate-row">
+              <span class="mandate-role">${escapeHtml(mandate.fonction || "Fonction non renseignée")}</span>
+              <small class="mandate-meta">${escapeHtml(CATEGORIE_LABELS_FR[mandate.categorie] || mandate.categorie || "Catégorie non renseignée")}</small>
+            </div>
             ${mandate.sourceUrls.length ? `<div class="mandate-sources">${mandate.sourceUrls.map((url, index) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Source${mandate.sourceUrls.length > 1 ? ` ${index + 1}` : ""}</a>`).join(" · ")}</div>` : ""}
           </div>
         </article>`;
