@@ -126,15 +126,22 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
 def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
     """Normalise un amendement officiel (Assemblée nationale) vers le format pivot.
 
-    `candidate_profile.fetch_amendements_officiels` ne collecte que les
-    amendements dont l'élu est l'auteur principal (pas simple cosignataire) :
-    `premier_signataire` correspond donc toujours à l'élu du profil courant.
+    Le flux brut peut contenir deux cas : l'élu auteur principal ou simple
+    cosignataire (champ `role_signataire`).
     """
+    role_signataire = a.get("role_signataire")
+    premier_signataire = a.get("premier_signataire")
+    # Compatibilité ascendante : pour les données historiques sans role explicite,
+    # on conserve le comportement ancien (premier_signataire = élu du profil).
+    if role_signataire != "cosignataire":
+        premier_signataire = own_id
+
     return {
         "texte_vise": a.get("texte_vise"),
         "sort": a.get("sort"),
         "base_juridique_irrecevabilite": a.get("base_juridique_irrecevabilite"),
-        "premier_signataire": own_id,
+        "role_signataire": role_signataire,
+        "premier_signataire": premier_signataire,
         "co_signataires": list(a.get("co_signataires") or []),
         "type_deposant": a.get("type_deposant"),
         "date": a.get("date"),

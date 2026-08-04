@@ -49,14 +49,17 @@ Format d'un profil pivot v1 :
             "fin": null,
             "actif": true,
             "source_url": null,              # URL de la fiche source, si disponible
-            "position_dans_hemicycle": null, # "majorite" | "opposition" | "minoritaire" | null ;
-                                             # champ éditorial le plus sensible du schéma. Ne JAMAIS
-                                             # renseigner sans une source primaire vérifiable
-                                             # (déclaration officielle du groupe, liste du socle de
-                                             # soutien au gouvernement, JO, ou positionPolitique du
-                                             # référentiel officiel des organes de l'Assemblée
-                                             # nationale) — voir source_url ci-dessus, qui devient
-                                             # obligatoire dès que ce champ est renseigné.
+            "position_dans_hemicycle": null, # "majorite" | "opposition" | "minoritaire" |
+                                             # "gouvernement" | null ; champ éditorial le plus
+                                             # sensible du schéma. Ne JAMAIS renseigner sans une
+                                             # source primaire vérifiable (déclaration officielle
+                                             # du groupe, liste du socle de soutien au gouvernement,
+                                             # JO, ou positionPolitique/codeType du référentiel
+                                             # officiel des organes de l'Assemblée nationale) — voir
+                                             # source_url ci-dessus, qui devient obligatoire dès que
+                                             # ce champ est renseigné. "gouvernement" n'est utilisé
+                                             # que sur un mandat de categorie
+                                             # "fonction_gouvernementale" (voir KNOWN_CATEGORIES).
             "mode_declenchement": null,      # commissions d'enquête uniquement :
                                              # "droit_tirage" | "demande_votee" | null
             "suspendu_pour_fonction_gouvernementale": null
@@ -109,7 +112,7 @@ Format d'un profil pivot v1 :
             "source_url": null
         }
     ],
-    "amendements": [                         # amendements déposés par l'élu
+    "amendements": [                         # amendements liés à l'élu (auteur principal ou cosignataire)
         {
             "texte_vise": "Projet de loi de finances 2025",
             "sort": "irrecevable",           # "adopté" | "rejeté" | "retiré" | "tombé" |
@@ -117,6 +120,8 @@ Format d'un profil pivot v1 :
                                              # de "rejeté" — voir base_juridique_irrecevabilite)
             "base_juridique_irrecevabilite": "art. 40",  # "art. 40" | "art. 45" | null ;
                                              # renseigné uniquement si sort == "irrecevable"
+            "role_signataire": "auteur_principal",  # rôle de l'élu sur l'amendement :
+                                             # "auteur_principal" | "cosignataire"
             "premier_signataire": "nosdeputes:jean-dupont",
             "co_signataires": [],            # liste d'identifiants pivot des co-signataires
             "type_deposant": "depute",       # "gouvernement" | "commission_rapporteur" | "depute"
@@ -200,17 +205,30 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 # d'appartenance à un groupe politique (distincte du mandat électif global),
 # utilisée pour dater les changements de groupe et les rattacher à une
 # position dans l'hémicycle (voir position_dans_hemicycle ci-dessous).
+# "fonction_gouvernementale" désigne une période d'appartenance à un
+# gouvernement (ministre, secrétaire d'État...), datée par le référentiel
+# officiel des organes de l'Assemblée nationale (organe.codeType ==
+# "GOUVERNEMENT") ; distincte de mandats[].suspendu_pour_fonction_gouvernementale,
+# qui documente la suspension corrélative du mandat électif, pas la fonction
+# gouvernementale elle-même.
 KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
-    "extra_parlementaire", "autre",
+    "extra_parlementaire", "fonction_gouvernementale", "autre",
 })
 
-# Position dans l'hémicycle (majorité/opposition/minoritaire). Champ éditorial
-# sensible : ne doit jamais être renseigné sans mandats[].source_url pointant
-# vers une source primaire vérifiable (voir validate_profil). "minoritaire"
-# correspond à la qualification officielle "Minoritaire" de l'Assemblée
-# nationale (groupe ni majoritaire ni d'opposition formelle).
-KNOWN_POSITIONS_HEMICYCLE: frozenset[str] = frozenset({"majorite", "opposition", "minoritaire"})
+# Position dans l'hémicycle (majorité/opposition/minoritaire/gouvernement).
+# Champ éditorial sensible : ne doit jamais être renseigné sans
+# mandats[].source_url pointant vers une source primaire vérifiable (voir
+# validate_profil). "minoritaire" correspond à la qualification officielle
+# "Minoritaire" de l'Assemblée nationale (groupe ni majoritaire ni
+# d'opposition formelle). "gouvernement" qualifie une période d'appartenance
+# à un gouvernement (l'élu n'est alors ni majorité ni opposition au sens
+# parlementaire du terme, mais membre de l'exécutif) : cette valeur n'est
+# jamais déduite depuis un mandat de catégorie autre que
+# "fonction_gouvernementale".
+KNOWN_POSITIONS_HEMICYCLE: frozenset[str] = frozenset({
+    "majorite", "opposition", "minoritaire", "gouvernement",
+})
 
 # Mode de déclenchement d'une commission d'enquête.
 KNOWN_MODES_DECLENCHEMENT: frozenset[str] = frozenset({"droit_tirage", "demande_votee"})
@@ -243,6 +261,11 @@ KNOWN_TYPES_VOTE: frozenset[str] = frozenset({"vote_texte", "motion_censure"})
 # Type de déposant d'un amendement.
 KNOWN_TYPES_DEPOSANT: frozenset[str] = frozenset({
     "gouvernement", "commission_rapporteur", "depute",
+})
+
+# Rôle de signature de l'élu sur un amendement.
+KNOWN_ROLES_SIGNATAIRE_AMENDEMENT: frozenset[str] = frozenset({
+    "auteur_principal", "cosignataire",
 })
 
 # Base juridique d'irrecevabilité d'un amendement (art. 40 : recevabilité
@@ -427,6 +450,12 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
         for i, a in enumerate(amendements):
             if not isinstance(a, dict):
                 continue
+            role_signataire = a.get("role_signataire")
+            if role_signataire is not None and role_signataire not in KNOWN_ROLES_SIGNATAIRE_AMENDEMENT:
+                errors.append(
+                    f"amendements[{i}].role_signataire non reconnu : {role_signataire!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_ROLES_SIGNATAIRE_AMENDEMENT)}."
+                )
             type_deposant = a.get("type_deposant")
             if type_deposant is not None and type_deposant not in KNOWN_TYPES_DEPOSANT:
                 errors.append(

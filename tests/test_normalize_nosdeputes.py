@@ -360,6 +360,28 @@ def test_pivot_amendement_champs():
     assert a["numero"] == "AS1"
 
 
+def test_pivot_amendement_cosignataire_preserve_premier_signataire():
+    raw = _raw_depute()
+    raw["amendements"] = [
+        {
+            "texte_vise": "PIONANR5L17B0904",
+            "sort": "adopté",
+            "base_juridique_irrecevabilite": None,
+            "role_signataire": "cosignataire",
+            "premier_signataire": "an:PA111111",
+            "co_signataires": ["an:PA842001"],
+            "type_deposant": "depute",
+            "date": "2025-02-17",
+            "numero": "AS1",
+            "source_url": None,
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+    a = pivot["amendements"][0]
+    assert a["role_signataire"] == "cosignataire"
+    assert a["premier_signataire"] == "an:PA111111"
+
+
 # ---------------------------------------------------------------------------
 # Tags thématiques
 # ---------------------------------------------------------------------------

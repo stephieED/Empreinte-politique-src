@@ -297,7 +297,7 @@ def test_derive_amendement_sort_unknown_or_pending_returns_none():
     assert _derive_amendement_sort("A discuter", None) == (None, None)
 
 
-def test_parse_amendement_entry_only_keeps_primary_author():
+def test_parse_amendement_entry_keeps_primary_author_and_cosignataires():
     raw = {
         "amendement": {
             "identification": {"numeroLong": "AS1"},
@@ -319,14 +319,23 @@ def test_parse_amendement_entry_only_keeps_primary_author():
     result = _parse_amendement_entry(raw)
 
     assert result is not None
-    acteur_ref, record = result
-    assert acteur_ref == "PA1567"
-    assert record["numero"] == "AS1"
-    assert record["texte_vise"] == "PIONANR5L17B0904"
-    assert record["type_deposant"] == "depute"
-    assert record["date"] == "2025-02-17"
-    assert record["sort"] == "adopté"
-    assert record["co_signataires"] == ["an:PA842001", "an:PA793182"]
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+
+    assert set(by_acteur.keys()) == {"PA1567", "PA842001", "PA793182"}
+
+    auteur = by_acteur["PA1567"]
+    assert auteur["role_signataire"] == "auteur_principal"
+    assert auteur["premier_signataire"] == "an:PA1567"
+    assert auteur["numero"] == "AS1"
+    assert auteur["texte_vise"] == "PIONANR5L17B0904"
+    assert auteur["type_deposant"] == "depute"
+    assert auteur["date"] == "2025-02-17"
+    assert auteur["sort"] == "adopté"
+    assert auteur["co_signataires"] == ["an:PA842001", "an:PA793182"]
+
+    cosign = by_acteur["PA842001"]
+    assert cosign["role_signataire"] == "cosignataire"
+    assert cosign["premier_signataire"] == "an:PA1567"
 
 
 def test_parse_amendement_entry_returns_none_without_acteur_ref():

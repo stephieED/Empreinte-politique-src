@@ -660,12 +660,12 @@ def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optio
     return _AMENDEMENT_SORT_MAP.get((etat_libelle, sousetat_libelle)), None
 
 
-def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
-    """Extrait (acteurRef, enregistrement pivot partiel) d'un amendement brut.
+def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
+    """Extrait les enregistrements indexés par acteurRef d'un amendement brut.
 
-    Ne retient que les amendements dont l'élu est l'auteur principal
-    (`signataires.auteur`), pas simple cosignataire : c'est la seule lecture
-    non ambiguë d'« amendement déposé par l'élu » (voir schema_pivot.py).
+    Construit une entrée pour l'auteur principal et une entrée par cosignataire,
+    avec un champ `role_signataire` permettant de distinguer les deux cas dans
+    les usages avals.
     """
     amendement = data.get("amendement") if isinstance(data, dict) else None
     if not isinstance(amendement, dict):
@@ -690,7 +690,7 @@ def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
     sousetat_libelle = (etat.get("sousEtat") or {}).get("libelle") if isinstance(etat.get("sousEtat"), dict) else None
     sort, base_juridique = _derive_amendement_sort(etat_libelle, sousetat_libelle)
 
-    record = {
+    record_base = {
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
         # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
@@ -700,13 +700,24 @@ def _parse_amendement_entry(data: Any) -> Optional[tuple[str, dict[str, Any]]]:
         # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
         # des identifiants pivot ("nosdeputes:slug") — la resolution vers un
         # candidat suivi par ce projet n'est pas faite ici.
+        "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
         "date": cycle_de_vie.get("dateDepot"),
         "numero": (amendement.get("identification") or {}).get("numeroLong"),
         "source_url": None,
     }
-    return acteur_ref, record
+
+    out: list[tuple[str, dict[str, Any]]] = [
+        (acteur_ref, {**record_base, "role_signataire": "auteur_principal"})
+    ]
+
+    for cosign_ref in cosign_refs:
+        if not isinstance(cosign_ref, str) or not cosign_ref or cosign_ref == acteur_ref:
+            continue
+        out.append((cosign_ref, {**record_base, "role_signataire": "cosignataire"}))
+
+    return out
 
 
 def _amendements_zip_url(legislature: str) -> Optional[str]:
@@ -763,11 +774,11 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                             data = json.load(f)
                     except (json.JSONDecodeError, KeyError):
                         continue
-                    parsed = _parse_amendement_entry(data)
-                    if parsed is None:
+                    parsed_entries = _parse_amendement_entry(data)
+                    if parsed_entries is None:
                         continue
-                    acteur_ref, record = parsed
-                    index.setdefault(acteur_ref, []).append(record)
+                    for acteur_ref, record in parsed_entries:
+                        index.setdefault(acteur_ref, []).append(record)
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
             return {}
@@ -1182,9 +1193,19 @@ _POSITION_POLITIQUE_MAP: dict[str, str] = {
 
 def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, Any]]:
     """Construit un index organeRef -> {groupe_sigle, position} à partir des
-    organes de type "GP" (groupe politique) du zip acteurs historique. Ne
-    conserve que les organes dont positionPolitique est qualifié par l'AN
-    (jamais le cas pour la législature en cours, voir AN_ACTEURS_HISTORIQUE_ZIP_URL)."""
+    organes de type "GP" (groupe politique) et "GOUVERNEMENT" (fonction
+    ministérielle) du zip acteurs historique.
+
+    Pour un organe "GP", ne conserve que ceux dont positionPolitique est
+    qualifié par l'AN (jamais le cas pour la législature en cours, voir
+    AN_ACTEURS_HISTORIQUE_ZIP_URL). Pour un organe "GOUVERNEMENT" (ex. libellé
+    "BORNE", "CASTEX"), la position est toujours "gouvernement" : l'AN ne
+    qualifie pas ces organes par positionPolitique, mais leur codeType suffit
+    à identifier sans ambiguïté une période d'appartenance à l'exécutif
+    (voir KNOWN_POSITIONS_HEMICYCLE, schema_pivot.py). Note : le référentiel
+    AN ne distingue pas le portefeuille ministériel précis (ex. "Ministre de
+    l'Intérieur") au sein d'un même gouvernement, seulement le gouvernement
+    d'appartenance (libelleAbrege)."""
     index: dict[str, dict[str, Any]] = {}
     noms = [n for n in zf.namelist() if n.startswith("json/organe/") and n.endswith(".json")]
     for nom in noms:
@@ -1194,10 +1215,16 @@ def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, An
         except (json.JSONDecodeError, KeyError):
             continue
         organe = data.get("organe") if isinstance(data, dict) else None
-        if not isinstance(organe, dict) or organe.get("codeType") != "GP":
+        if not isinstance(organe, dict):
             continue
-        position = _POSITION_POLITIQUE_MAP.get(organe.get("positionPolitique"))
-        if position is None:
+        code_type = organe.get("codeType")
+        if code_type == "GOUVERNEMENT":
+            position = "gouvernement"
+        elif code_type == "GP":
+            position = _POSITION_POLITIQUE_MAP.get(organe.get("positionPolitique"))
+            if position is None:
+                continue
+        else:
             continue
         organe_ref = organe.get("uid")
         if not isinstance(organe_ref, str) or not organe_ref:
@@ -1212,11 +1239,16 @@ def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, An
 def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste de
     périodes datées d'appartenance à un groupe politique qualifié majorité/
-    opposition/minoritaire par le référentiel officiel de l'Assemblée nationale.
+    opposition/minoritaire par le référentiel officiel de l'Assemblée nationale,
+    ainsi que les périodes d'appartenance à un gouvernement (fonction
+    ministérielle, position "gouvernement").
 
-    Limitation connue : ne couvre que les législatures achevées (positionPolitique
-    n'est jamais renseigné par l'AN pour la législature en cours, voir
-    AN_ACTEURS_HISTORIQUE_ZIP_URL). Non-fatal en cas d'échec (retourne {})."""
+    Limitation connue : la qualification majorité/opposition/minoritaire ne
+    couvre que les législatures achevées (positionPolitique n'est jamais
+    renseigné par l'AN pour la législature en cours, voir
+    AN_ACTEURS_HISTORIQUE_ZIP_URL) ; les périodes gouvernementales n'ont pas
+    cette limitation (codeType == "GOUVERNEMENT" est toujours renseigné).
+    Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_HEMICYCLE_LOCK:
         index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_positions_hemicycle.json"
         if index_path.is_file():
@@ -1269,7 +1301,7 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
                         continue
 
                     for mandat in mandats:
-                        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "GP":
+                        if not isinstance(mandat, dict) or mandat.get("typeOrgane") not in ("GP", "GOUVERNEMENT"):
                             continue
                         organe_ref = (mandat.get("organes") or {}).get("organeRef")
                         organe = organe_positions.get(organe_ref)
@@ -1298,10 +1330,13 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
 
 def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les périodes d'appartenance à un groupe politique qualifiées
-    majorité/opposition/minoritaire par le référentiel officiel de l'Assemblée
-    nationale (voir _build_acteur_positions_hemicycle_index). Ne couvre que les
-    législatures achevées : retourne [] si aucune période qualifiée n'existe
-    (législature en cours, sénateur, ou acteur absent du référentiel)."""
+    majorité/opposition/minoritaire, ainsi que les périodes d'appartenance à
+    un gouvernement (position "gouvernement"), par le référentiel officiel de
+    l'Assemblée nationale (voir _build_acteur_positions_hemicycle_index). La
+    qualification majorité/opposition/minoritaire ne couvre que les législatures
+    achevées : retourne [] si aucune période qualifiée n'existe (législature en
+    cours sans fonction gouvernementale, sénateur, ou acteur absent du
+    référentiel)."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
@@ -2114,8 +2149,11 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             # --- 5ter. Positions dans l'hémicycle (Assemblée nationale, référentiel
             # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
             # couvre que les législatures achevées (positionPolitique jamais qualifié
-            # par l'AN pour la législature en cours) : ajoute une entrée de mandat
-            # "groupe_politique" par période qualifiée, jamais sans source_url. ---
+            # par l'AN pour la législature en cours) pour majorité/opposition/
+            # minoritaire : ajoute une entrée de mandat "groupe_politique" par période
+            # qualifiée, jamais sans source_url. Ajoute également une entrée de mandat
+            # "fonction_gouvernementale" par période d'appartenance à un gouvernement
+            # (position "gouvernement"), non limitée aux législatures achevées. ---
             if chambre == "deputes":
                 try:
                     positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
@@ -2124,15 +2162,22 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
                     positions_hemicycle = []
                 for periode in positions_hemicycle:
                     sigle = periode.get("groupe_sigle")
+                    position = periode.get("position")
+                    if position == "gouvernement":
+                        categorie = "fonction_gouvernementale"
+                        label = f"Gouvernement ({sigle})" if sigle else "Gouvernement"
+                    else:
+                        categorie = "groupe_politique"
+                        label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
                     profile["mandats"].append({
-                        "categorie": "groupe_politique",
+                        "categorie": categorie,
                         "type": "membre",
-                        "label": f"Groupe politique ({sigle})" if sigle else "Groupe politique",
+                        "label": label,
                         "debut": periode.get("debut"),
                         "fin": periode.get("fin"),
                         "actif": not periode.get("fin"),
                         "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
-                        "position_dans_hemicycle": periode.get("position"),
+                        "position_dans_hemicycle": position,
                     })
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale

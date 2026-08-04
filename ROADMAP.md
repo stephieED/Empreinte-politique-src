@@ -15,8 +15,45 @@
   the 16th legislature (pre-dissolution 2024). A new adapter against
   `data.assemblee-nationale.fr` actors/organs datasets is needed for real-time
   group composition.
+- **Ministerial function granularity**: `mandats[].categorie ==
+  "fonction_gouvernementale"` (position `"gouvernement"`) is sourced from the
+  AN `acteurs_historique` bulk dataset (`organe.codeType == "GOUVERNEMENT"`),
+  which only identifies *which* government (e.g. "BORNE", "CASTEX") an elected
+  official belonged to and the dates — it does not carry the specific
+  portfolio title (e.g. "Ministre de l'Intérieur"). No open-data source for
+  the precise portfolio has been identified yet.
+- **Senate votes/amendements/textes portés**: explored `data.senat.fr`'s open
+  data catalog (2026). Findings: no structured roll-call vote dataset exists
+  at all (unlike AN's `Scrutins.json.zip`) ; `ameli.zip` (amendments) is a raw
+  717 MB SQL dump (`ameli.sql`), not per-senator JSON/CSV, impractical to
+  download/parse on every run ; `dossiers-legislatifs.csv` has no
+  author/sponsor field, so per-senator sponsored texts would require scraping
+  individual `dossier-legislatif` HTML pages (fragile, out of pattern with the
+  rest of this project's official-JSON-based sources). A full Senate pipeline
+  equivalent to the AN one is therefore not currently feasible without a
+  fragile HTML-scraping approach.
 - **Senate votes**: no official structured vote source integrated yet (equivalent
   of AN open data for senators).
+- **European Parliament textes portés/amendements**: explored the EP Open Data
+  Portal API v2 (2026). `normalize_europarl.py` currently only populates
+  `mandats[]` for `chambre: "PE"` profiles; `textes_portes`, `amendements` and
+  `votes` stay empty. Findings: `/plenary-documents` (reports) and
+  `/documents?work_type=AMENDMENT_LIST` exist, but neither exposes a
+  structured author/rapporteur field referencing a `person/<id>` MEP URI — the
+  rapporteur name only appears as free text inside multilingual titles (e.g.
+  English `"... - Rapporteur: Borys Budka"`). No server-side filter works
+  (`creator=person/<id>` and text-search params like `q=`/`search=`/`text=`/
+  `title=` are all silently ignored, returning the same unfiltered results).
+  The `/plenary-documents` corpus alone is ~10-15k documents with no per-item
+  title in the list response, so identifying a given MEP's reports requires
+  fetching every document's detail individually — at the API's 500 req/5min
+  rate limit, a full scan takes 1h30+ per regeneration run. Amendment-list
+  documents are further compiled per-report batches (not per-amendment,
+  per-signatory records), so even textual matching would only attribute a
+  whole batch to the report's rapporteur, not individual amendments to their
+  actual authors. A clean, AN-style structured pipeline is therefore not
+  currently feasible; on hold pending either a future EP API improvement or a
+  scoped brute-force approach if ever justified.
 - **Mayors**: no dedicated collection module or source.
 - **Intervention completeness**: full-text name search can be partial for
   ambiguous names.
@@ -30,7 +67,10 @@ rather than silently dropping low-confidence items.
 
 ## Next features
 
-- Senate-specific adapter for vote and sponsored-text data.
+- Senate-specific adapter for vote and sponsored-text data — **on hold**, see
+  Data coverage gaps above (no viable structured source found as of 2026).
+- European Parliament textes_portes/amendements adapter — **on hold**, see
+  Data coverage gaps above (no author/rapporteur linkage or filter in EP API).
 - Fix `minoritaire` JS classification (see Known issues).
 - Evaluate surfacing `pivot_data/partis/` aggregates in a comparison panel
   (non-navigation context) rather than as a top-level tab.

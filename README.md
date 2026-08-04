@@ -71,6 +71,9 @@ See:
   and pipeline (including additive merge logic in `merge_profile.py`).
 - `docs/an_opendata.md` - practical AN Open Data references (dataset URLs,
   key fields).
+- `docs/ue_donnees_sources_investigation_2026-08.md` - UE data-source
+   investigation report (ParlTrack/Europarl/HowTheyVote) and agent-ready
+   implementation instructions for the ParlTrack dumps approach.
 - `docs/technical_decisions.md` - full rationale and edge-case history.
 - `AGENTS.md` - condensed non-negotiable rules for agents.
 
