@@ -138,6 +138,9 @@
   .textes-kpi-grid.has-nondistinct {
     grid-template-columns: 1fr 1fr;
   }
+  .textes-kpi-grid.has-gouvernement {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
   .textes-kpi-nondistinct {
     grid-column: 1 / -1;
   }
@@ -174,6 +177,13 @@
     color: var(--muted);
     margin-bottom: 0.5rem;
   }
+  .textes-kpi-bar-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0.45rem 0 0.2rem;
+  }
   .textes-kpi-empty {
     font-size: 0.72rem;
     color: var(--muted);
@@ -205,6 +215,11 @@
     outline: 2px solid var(--text);
     outline-offset: 1px;
   }
+  .theme-segment {
+    height: 100%;
+    min-width: 0;
+    transition: flex 0.2s;
+  }
   .outcome-legend {
     display: flex;
     flex-wrap: wrap;
@@ -231,16 +246,6 @@
     height: 8px;
     border-radius: 1px;
     flex-shrink: 0;
-  }
-  .textes-kpi-theme-group { margin-bottom: 1rem; }
-  .textes-kpi-theme-label {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 0.2rem;
   }
   .legislative-block {
     border-top: 1px solid var(--line);
@@ -1797,6 +1802,24 @@
       ["adopté", "Adoptés"], ["rejeté", "Rejetés"], ["retiré", "Retirés"],
       ["tombé", "Tombés"], ["irrecevable", "Irrecevables"], ["non_soutenu", "Non soutenus"],
     ];
+    const TEXT_STAGE_COLORS = {
+      examine_commission: "#B0C4DE",
+      inscrit_ordre_jour: "#6A9EC7",
+      discute_seance:     "#2E86C1",
+      adopte:             "#1E8449",
+      promulgue:          "#145A32",
+    };
+    const TEXT_STAGES_ORDER = ["examine_commission", "inscrit_ordre_jour", "discute_seance", "adopte", "promulgue"];
+    const THEME_COLORS = {
+      sante: "#0077B6",
+      environnement: "#2D6A4F",
+      economie: "#D4A017",
+      education: "#4895EF",
+      securite: "#9B2226",
+      institutions: "#6C757D",
+      europe_international: "#003566",
+      social: "#7B2D8B",
+    };
 
     // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
     const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
@@ -1837,7 +1860,7 @@
       showUnpublishedTextes: false,
       textesScopeFilter: "all",
       amendementsOutcomeFilter: "all",
-      textesKpiView: "total",
+      textesKpiView: "par_statut",
       mandateView: "timeline",
       mandateFilter: "all",
       expressIndex: 0,
@@ -2028,6 +2051,10 @@
       const matching = periods
         .filter((period) => dateMs >= period.debutMs && dateMs <= period.finMs)
         .map((period) => period.position);
+      // Une période gouvernementale prime : un ministre n'est, au sens
+      // parlementaire, ni majorité ni opposition pendant sa fonction (mandat
+      // électif généralement suspendu, voir suspendu_pour_fonction_gouvernementale).
+      if (matching.includes("gouvernement")) return "gouvernement";
       const hasMajorite = matching.includes("majorite");
       const hasOpposition = matching.includes("opposition");
       if (hasMajorite && hasOpposition) return "mixte";
@@ -2041,6 +2068,7 @@
       const anchors = [texte.date_max, texte.date_min].filter(Boolean);
       if (!anchors.length) return "indetermine";
       const labels = anchors.map((dateIso) => classifyDateInHemicycle(dateIso, periods));
+      if (labels.includes("gouvernement")) return "gouvernement";
       const hasMajorite = labels.includes("majorite");
       const hasOpposition = labels.includes("opposition");
       if (hasMajorite && hasOpposition) return "mixte";
@@ -2052,10 +2080,10 @@
     function splitLegislativeFactsByHemicycle(profile) {
       const periods = hemicyclePeriods(profile);
       const textesBuckets = {
-        majorite: [], opposition: [], mixte: [], indetermine: [],
+        majorite: [], opposition: [], gouvernement: [], mixte: [], indetermine: [],
       };
       const amendementsBuckets = {
-        majorite: [], opposition: [], mixte: [], indetermine: [],
+        majorite: [], opposition: [], gouvernement: [], mixte: [], indetermine: [],
       };
       for (const texte of (profile.textes_portes || [])) {
         const bucket = classifyTexteInHemicycle(texte, periods);
@@ -2125,6 +2153,66 @@
       }).join("")}</div>`;
     }
 
+    function renderThemeBar(amendements, scope) {
+      const total = amendements.length;
+      if (total === 0) return `<div class="outcome-bar"></div>`;
+      const themeCounts = {};
+      for (const a of amendements) {
+        const t = a._theme || DEFAULT_THEME;
+        themeCounts[t] = (themeCounts[t] || 0) + 1;
+      }
+      const segments = Object.entries(themeCounts).map(([theme, n]) => {
+        const pct = (n / total * 100).toFixed(2);
+        const color = THEME_COLORS[theme] || "var(--muted)";
+        return `<div class="theme-segment" data-theme="${escapeHtml(theme)}" data-scope="${escapeHtml(scope)}" style="flex:${pct};background:${color}" title="${escapeHtml(themeLabel(theme))}: ${n}/${total}"></div>`;
+      }).join("");
+      return `<div class="outcome-bar">${segments}</div>`;
+    }
+
+    function renderThemeLegend(amendements, scope) {
+      const themeCounts = {};
+      for (const a of amendements) {
+        const t = a._theme || DEFAULT_THEME;
+        themeCounts[t] = (themeCounts[t] || 0) + 1;
+      }
+      const items = Object.entries(themeCounts).map(([theme, n]) => {
+        const color = THEME_COLORS[theme] || "var(--muted)";
+        return `<span class="outcome-legend-item"><span class="outcome-legend-swatch" style="background:${color}"></span>${n} ${escapeHtml(themeLabel(theme))}</span>`;
+      }).join("");
+      return `<div class="outcome-legend">${items}</div>`;
+    }
+
+    function renderStageBar(publicTextes) {
+      const total = publicTextes.length;
+      if (total === 0) return `<div class="outcome-bar"></div>`;
+      const counts = {};
+      for (const d of publicTextes) {
+        const s = d.stade_procedural || "examine_commission";
+        counts[s] = (counts[s] || 0) + 1;
+      }
+      const segments = TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
+        const n = counts[stage];
+        const pct = (n / total * 100).toFixed(2);
+        const color = TEXT_STAGE_COLORS[stage] || "var(--muted)";
+        return `<div class="theme-segment" data-stage="${escapeHtml(stage)}" style="flex:${pct};background:${color}" title="${escapeHtml(TEXT_STAGE_LABELS[stage] || stage)}: ${n}/${total}"></div>`;
+      }).join("");
+      return `<div class="outcome-bar">${segments}</div>`;
+    }
+
+    function renderStageLegend(publicTextes) {
+      const counts = {};
+      for (const d of publicTextes) {
+        const s = d.stade_procedural || "examine_commission";
+        counts[s] = (counts[s] || 0) + 1;
+      }
+      const items = TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
+        const n = counts[stage];
+        const color = TEXT_STAGE_COLORS[stage] || "var(--muted)";
+        return `<span class="outcome-legend-item"><span class="outcome-legend-swatch" style="background:${color}"></span>${n} ${escapeHtml(TEXT_STAGE_LABELS[stage] || stage)}</span>`;
+      }).join("");
+      return `<div class="outcome-legend">${items}</div>`;
+    }
+
     function renderKpiColumn(profile, scope, label, noPeriods) {
       const isActive = state.textesScopeFilter === scope && state.amendementsOutcomeFilter === "all";
       if (noPeriods && scope !== "all") {
@@ -2135,18 +2223,31 @@
       }
       const { publicTextes, amendements, counts } = buildKpiColumnData(profile, scope);
       const total = amendements.length;
+      const byTheme = state.textesKpiView === "par_theme";
+      const textesBarBlock = publicTextes.length
+        ? `<div class="textes-kpi-bar-label">Textes portés</div>
+           ${byTheme ? renderThemeBar(publicTextes, scope) : renderStageBar(publicTextes)}
+           ${byTheme ? renderThemeLegend(publicTextes, scope) : renderStageLegend(publicTextes)}`
+        : "";
+      const amendsBar = byTheme ? renderThemeBar(amendements, scope) : renderOutcomeBar(counts, total, scope);
+      const amendsLegend = total
+        ? (byTheme ? renderThemeLegend(amendements, scope) : renderOutcomeLegend(counts, total, scope))
+        : `<div class="textes-kpi-empty">Aucun amendement</div>`;
       return `<div class="textes-kpi-col${isActive ? " is-active" : ""}" data-textes-scope="${escapeHtml(scope)}" role="button" tabindex="0" aria-label="Filtrer: ${escapeHtml(label)}" aria-pressed="${isActive}">
         <div class="textes-kpi-col-label">${escapeHtml(label)}</div>
         <div class="textes-kpi-col-count">${publicTextes.length}</div>
         <div class="textes-kpi-col-sublabel">texte(s) porté(s)</div>
-        ${renderOutcomeBar(counts, total, scope)}
-        ${total ? renderOutcomeLegend(counts, total, scope) : `<div class="textes-kpi-empty">Aucun amendement</div>`}
+        ${textesBarBlock}
+        <div class="textes-kpi-bar-label">Amendements</div>
+        ${amendsBar}
+        ${amendsLegend}
       </div>`;
     }
 
     function renderTextesKpi(profile) {
       const split = splitLegislativeFactsByHemicycle(profile);
       const noPeriods = split.periods.length === 0;
+      const hasGouvernement = split.periods.some((p) => p.position === "gouvernement");
 
       const nonDistingueTextes = [
         ...(split.textesBuckets.mixte || []),
@@ -2163,110 +2264,44 @@
         ? `<button type="button" class="textes-kpi-reset" data-reset-textes-filters>Réinitialiser les filtres</button>`
         : "";
 
-      if (state.textesKpiView === "total") {
-        const ndCounts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
-        for (const a of nonDistingueAmends) { if (Object.hasOwn(ndCounts, a.sort)) ndCounts[a.sort] += 1; }
-        const ndIsActive = state.textesScopeFilter === "non_distingue" && state.amendementsOutcomeFilter === "all";
-        const nonDistingueBlock = hasNonDistingue
-          ? `<div class="textes-kpi-nondistinct">
-              <div class="textes-kpi-col${ndIsActive ? " is-active" : ""}" data-textes-scope="non_distingue" role="button" tabindex="0" aria-label="Filtrer: Non distingué" aria-pressed="${ndIsActive}" style="cursor:pointer">
-                <div class="textes-kpi-col-label">Non distingué <span style="font-weight:400">(mixte + non sourcé)</span></div>
-                <div class="textes-kpi-col-count">${nonDistingueTextes.length}</div>
-                <div class="textes-kpi-col-sublabel">texte(s) porté(s)</div>
-                ${renderOutcomeBar(ndCounts, nonDistingueAmends.length, "non_distingue")}
-                ${nonDistingueAmends.length ? renderOutcomeLegend(ndCounts, nonDistingueAmends.length, "non_distingue") : `<div class="textes-kpi-empty">Aucun amendement</div>`}
-              </div>
-            </div>`
-          : "";
-        return `
-          <div class="textes-kpi-controls" role="group" aria-label="Vue des KPI textes">
-            <button type="button" data-textes-kpi-view="total" aria-pressed="${state.textesKpiView === "total"}">Total</button>
-            <button type="button" data-textes-kpi-view="par_theme" aria-pressed="${state.textesKpiView === "par_theme"}">Par thème</button>
-            ${resetBtn}
-          </div>
-          <div class="textes-kpi-grid${hasNonDistingue ? " has-nondistinct" : ""}">
-            ${renderKpiColumn(profile, "majorite", "Majorité", noPeriods)}
-            ${renderKpiColumn(profile, "opposition", "Opposition", noPeriods)}
-            ${nonDistingueBlock}
-          </div>
-        `;
-      }
-
-      // Par thème mode
-      const themes = state.selectedTheme !== "all"
-        ? [state.selectedTheme]
-        : [...new Set([
-            ...(profile.textes_portes || []).map((d) => d._theme),
-            ...(profile.amendements || []).map((a) => a._theme),
-          ])].filter(Boolean);
-
-      if (!themes.length) {
-        return `
-          <div class="textes-kpi-controls" role="group" aria-label="Vue des KPI textes">
-            <button type="button" data-textes-kpi-view="total" aria-pressed="false">Total</button>
-            <button type="button" data-textes-kpi-view="par_theme" aria-pressed="true">Par thème</button>
-            ${resetBtn}
-          </div>
-          <p class="empty">Aucun thème détecté.</p>
-        `;
-      }
-
-      const themeBlocks = themes.map((theme) => {
-        // temporarily filter by theme for counts
-        const savedTheme = state.selectedTheme;
-        // We build inline using theme filter on items
-        const maj = buildKpiColumnDataForTheme(profile, "majorite", theme);
-        const opp = buildKpiColumnDataForTheme(profile, "opposition", theme);
-
-        const majIsActive = state.textesScopeFilter === "majorite" && state.amendementsOutcomeFilter === "all";
-        const oppIsActive = state.textesScopeFilter === "opposition" && state.amendementsOutcomeFilter === "all";
-
-        const renderColForTheme = (data, scope, label) => {
-          const isActive = state.textesScopeFilter === scope && state.amendementsOutcomeFilter === "all";
-          if (noPeriods) {
-            return `<div class="textes-kpi-col${isActive ? " is-active" : ""}" data-textes-scope="${escapeHtml(scope)}" role="button" tabindex="0" aria-label="Filtrer: ${escapeHtml(label)}" aria-pressed="${isActive}">
-              <div class="textes-kpi-col-label">${escapeHtml(label)}</div>
-              <div class="textes-kpi-empty">Position non sourcée</div>
-            </div>`;
-          }
-          const total = data.amendements.length;
-          return `<div class="textes-kpi-col${isActive ? " is-active" : ""}" data-textes-scope="${escapeHtml(scope)}" role="button" tabindex="0" aria-label="Filtrer: ${escapeHtml(label)}" aria-pressed="${isActive}">
-            <div class="textes-kpi-col-label">${escapeHtml(label)}</div>
-            <div class="textes-kpi-col-count">${data.publicTextes.length}</div>
-            <div class="textes-kpi-col-sublabel">texte(s) porté(s)</div>
-            ${renderOutcomeBar(data.counts, total, scope)}
-            ${total ? renderOutcomeLegend(data.counts, total, scope) : `<div class="textes-kpi-empty">Aucun amendement</div>`}
-          </div>`;
-        };
-
-        return `<div class="textes-kpi-theme-group">
-          <div class="textes-kpi-theme-label">${escapeHtml(themeLabel(theme))}</div>
-          <div class="textes-kpi-grid">
-            ${renderColForTheme(maj, "majorite", "Majorité")}
-            ${renderColForTheme(opp, "opposition", "Opposition")}
-          </div>
-        </div>`;
-      }).join("");
+      const byTheme = state.textesKpiView === "par_theme";
+      const ndCounts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
+      for (const a of nonDistingueAmends) { if (Object.hasOwn(ndCounts, a.sort)) ndCounts[a.sort] += 1; }
+      const ndIsActive = state.textesScopeFilter === "non_distingue" && state.amendementsOutcomeFilter === "all";
+      const ndTextesBarBlock = nonDistingueTextes.length
+        ? `<div class="textes-kpi-bar-label">Textes portés</div>
+           ${byTheme ? renderThemeBar(nonDistingueTextes, "non_distingue") : renderStageBar(nonDistingueTextes)}
+           ${byTheme ? renderThemeLegend(nonDistingueTextes, "non_distingue") : renderStageLegend(nonDistingueTextes)}`
+        : "";
+      const nonDistingueBlock = hasNonDistingue
+        ? `<div class="textes-kpi-nondistinct">
+            <div class="textes-kpi-col${ndIsActive ? " is-active" : ""}" data-textes-scope="non_distingue" role="button" tabindex="0" aria-label="Filtrer: Non distingué" aria-pressed="${ndIsActive}" style="cursor:pointer">
+              <div class="textes-kpi-col-label">Non distingué <span style="font-weight:400">(mixte + non sourcé)</span></div>
+              <div class="textes-kpi-col-count">${nonDistingueTextes.length}</div>
+              <div class="textes-kpi-col-sublabel">texte(s) porté(s)</div>
+              ${ndTextesBarBlock}
+              <div class="textes-kpi-bar-label">Amendements</div>
+              ${byTheme ? renderThemeBar(nonDistingueAmends, "non_distingue") : renderOutcomeBar(ndCounts, nonDistingueAmends.length, "non_distingue")}
+              ${nonDistingueAmends.length
+                ? (byTheme ? renderThemeLegend(nonDistingueAmends, "non_distingue") : renderOutcomeLegend(ndCounts, nonDistingueAmends.length, "non_distingue"))
+                : `<div class="textes-kpi-empty">Aucun amendement</div>`}
+            </div>
+          </div>`
+        : "";
 
       return `
-        <div class="textes-kpi-controls" role="group" aria-label="Vue des KPI textes">
-          <button type="button" data-textes-kpi-view="total" aria-pressed="false">Total</button>
-          <button type="button" data-textes-kpi-view="par_theme" aria-pressed="true">Par thème</button>
+        <div class="textes-kpi-controls" role="group" aria-label="Coloration des barres">
+          <button type="button" data-textes-kpi-view="par_statut" aria-pressed="${state.textesKpiView === "par_statut"}">Par statut</button>
+          <button type="button" data-textes-kpi-view="par_theme" aria-pressed="${state.textesKpiView === "par_theme"}">Par thème</button>
           ${resetBtn}
         </div>
-        ${themeBlocks}
+        <div class="textes-kpi-grid${hasNonDistingue ? " has-nondistinct" : ""}${hasGouvernement ? " has-gouvernement" : ""}">
+          ${renderKpiColumn(profile, "majorite", "Majorité", noPeriods)}
+          ${renderKpiColumn(profile, "opposition", "Opposition", noPeriods)}
+          ${hasGouvernement ? renderKpiColumn(profile, "gouvernement", "Gouvernement", noPeriods) : ""}
+          ${nonDistingueBlock}
+        </div>
       `;
-    }
-
-    function buildKpiColumnDataForTheme(profile, scope, theme) {
-      const split = splitLegislativeFactsByHemicycle(profile);
-      const textesBucket = split.textesBuckets[scope] || [];
-      const amendsBucket = split.amendementsBuckets[scope] || [];
-      const publicTextes = textesBucket.filter((d) => d._theme === theme && isPublicCarriedText(d));
-      const amendements = amendsBucket.filter((a) => a._theme === theme);
-      const counts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
-      for (const a of amendements) { if (Object.hasOwn(counts, a.sort)) counts[a.sort] += 1; }
-      return { publicTextes, amendements, counts };
     }
 
     function renderMinisterialIncompatibilities(profile) {
@@ -3675,7 +3710,7 @@
       state.showUnpublishedTextes = false;
       state.textesScopeFilter = "all";
       state.amendementsOutcomeFilter = "all";
-      state.textesKpiView = "total";
+      state.textesKpiView = "par_statut";
       state.mandateView = "timeline";
       state.mandateFilter = "all";
       state.expressIndex = 0;

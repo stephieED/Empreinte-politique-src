@@ -17,6 +17,7 @@ from schema_pivot import (
     KNOWN_TYPES_SCRUTIN,
     KNOWN_TYPES_VOTE,
     KNOWN_TYPES_DEPOSANT,
+    KNOWN_ROLES_SIGNATAIRE_AMENDEMENT,
     KNOWN_BASES_IRRECEVABILITE,
     make_empty_profil,
     validate_profil,
@@ -207,6 +208,7 @@ def test_validate_amendements_valid_list_no_error():
             "texte_vise": "PLF 2025",
             "sort": "irrecevable",
             "base_juridique_irrecevabilite": "art. 40",
+            "role_signataire": "auteur_principal",
             "premier_signataire": "nosdeputes:test",
             "co_signataires": [],
             "type_deposant": "depute",
@@ -216,6 +218,26 @@ def test_validate_amendements_valid_list_no_error():
         }
     ]
     assert validate_profil(p) == []
+
+
+def test_validate_amendement_role_signataire_inconnu():
+    p = _valid_profil()
+    p["amendements"] = [
+        {
+            "texte_vise": "PLF 2025",
+            "sort": "adopté",
+            "base_juridique_irrecevabilite": None,
+            "role_signataire": "inconnu",
+            "premier_signataire": "nosdeputes:test",
+            "co_signataires": [],
+            "type_deposant": "depute",
+            "date": "2024-10-15",
+            "numero": "CL42",
+            "source_url": None,
+        }
+    ]
+    errors = validate_profil(p)
+    assert any("role_signataire" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------
@@ -446,10 +468,11 @@ def test_known_categories_contains_expected_values():
     assert "commission" in KNOWN_CATEGORIES
     assert "groupe_amitie" in KNOWN_CATEGORIES
     assert "groupe_politique" in KNOWN_CATEGORIES
+    assert "fonction_gouvernementale" in KNOWN_CATEGORIES
 
 
 def test_known_positions_hemicycle_contains_expected_values():
-    assert KNOWN_POSITIONS_HEMICYCLE == {"majorite", "opposition", "minoritaire"}
+    assert KNOWN_POSITIONS_HEMICYCLE == {"majorite", "opposition", "minoritaire", "gouvernement"}
 
 
 def test_known_modes_declenchement_contains_expected_values():
