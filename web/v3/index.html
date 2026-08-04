@@ -2187,7 +2187,7 @@
       if (total === 0) return `<div class="outcome-bar"></div>`;
       const counts = {};
       for (const d of publicTextes) {
-        const s = d.stade_procedural || "examine_commission";
+        const s = TEXT_STAGES_ORDER.includes(d.stade_procedural) ? d.stade_procedural : "examine_commission";
         counts[s] = (counts[s] || 0) + 1;
       }
       const segments = TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
@@ -2202,7 +2202,7 @@
     function renderStageLegend(publicTextes) {
       const counts = {};
       for (const d of publicTextes) {
-        const s = d.stade_procedural || "examine_commission";
+        const s = TEXT_STAGES_ORDER.includes(d.stade_procedural) ? d.stade_procedural : "examine_commission";
         counts[s] = (counts[s] || 0) + 1;
       }
       const items = TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
