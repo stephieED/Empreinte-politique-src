@@ -55,12 +55,12 @@ def normalize_europarl(
     Returns:
         Profil pivot v1 dict (chambre: "PE").
     """
-    mep_id = str(ue_profile.get("identifiant_pe") or "")
-    nom = str(ue_profile.get("nom_complet") or "")
-    url_source = str(ue_profile.get("url_source") or "")
+    mep_id = str(ue_profile["identifiant_pe"]) if ue_profile.get("identifiant_pe") is not None else ""
+    nom = ue_profile.get("nom_complet") or None
+    url_source = ue_profile.get("url_source") or None
     meta_ue = ue_profile.get("meta") or {}
     synchro_le = meta_ue.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    licence = meta_ue.get("licence_donnees") or ""
+    licence = meta_ue.get("licence_donnees") or None
 
     profil = make_empty_profil(id_=f"europarl:{mep_id}", nom=nom)
     profil["chambre"] = "PE"

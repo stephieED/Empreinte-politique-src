@@ -51,8 +51,8 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
     """Normalise un vote brut NosDéputés/AN vers le format pivot."""
     return {
         "date": v.get("date"),
-        "texte": v.get("titre") or "",
-        "position": v.get("position") or "",
+        "texte": v.get("titre") or None,
+        "position": v.get("position") or None,
         "numero_scrutin": str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None,
         "sort": v.get("sort"),
         "type_scrutin": v.get("type_scrutin"),
@@ -69,8 +69,8 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
 def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
     """Normalise un mandat/responsabilité brut vers le format pivot."""
     return {
-        "label": m.get("label") or "",
-        "categorie": m.get("categorie") or "autre",
+        "label": m.get("label") or None,
+        "categorie": m.get("categorie") or None,
         # Dans le format brut, la fonction s'appelle "type" (héritage de l'API)
         "fonction": m.get("type") or "membre",
         "debut": m.get("debut"),
@@ -91,7 +91,7 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     inférence n'est faite à partir du volume d'interventions.
     """
     return {
-        "titre": d.get("titre") or "",
+        "titre": d.get("titre") or None,
         "role": d.get("role"),
         "type_rapport": d.get("type_rapport"),
         "stade_procedural": d.get("stade_procedural"),
