@@ -3134,19 +3134,19 @@
           const expanded = node.classList.toggle("expanded");
           node.setAttribute("aria-expanded", String(expanded));
         });
+      });
 
-        document.querySelectorAll("[data-mandate-view]").forEach((button) => {
-          button.addEventListener("click", () => {
-            state.mandateView = button.dataset.mandateView;
-            renderPage();
-          });
+      document.querySelectorAll("[data-mandate-view]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.mandateView = button.dataset.mandateView;
+          renderPage();
         });
+      });
 
-        document.querySelectorAll("[data-mandate-filter]").forEach((button) => {
-          button.addEventListener("click", () => {
-            state.mandateFilter = button.dataset.mandateFilter;
-            renderPage();
-          });
+      document.querySelectorAll("[data-mandate-filter]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.mandateFilter = button.dataset.mandateFilter;
+          renderPage();
         });
       });
 
