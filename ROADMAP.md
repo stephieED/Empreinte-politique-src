@@ -34,6 +34,26 @@
   fragile HTML-scraping approach.
 - **Senate votes**: no official structured vote source integrated yet (equivalent
   of AN open data for senators).
+- **European Parliament textes portés/amendements**: explored the EP Open Data
+  Portal API v2 (2026). `normalize_europarl.py` currently only populates
+  `mandats[]` for `chambre: "PE"` profiles; `textes_portes`, `amendements` and
+  `votes` stay empty. Findings: `/plenary-documents` (reports) and
+  `/documents?work_type=AMENDMENT_LIST` exist, but neither exposes a
+  structured author/rapporteur field referencing a `person/<id>` MEP URI — the
+  rapporteur name only appears as free text inside multilingual titles (e.g.
+  English `"... - Rapporteur: Borys Budka"`). No server-side filter works
+  (`creator=person/<id>` and text-search params like `q=`/`search=`/`text=`/
+  `title=` are all silently ignored, returning the same unfiltered results).
+  The `/plenary-documents` corpus alone is ~10-15k documents with no per-item
+  title in the list response, so identifying a given MEP's reports requires
+  fetching every document's detail individually — at the API's 500 req/5min
+  rate limit, a full scan takes 1h30+ per regeneration run. Amendment-list
+  documents are further compiled per-report batches (not per-amendment,
+  per-signatory records), so even textual matching would only attribute a
+  whole batch to the report's rapporteur, not individual amendments to their
+  actual authors. A clean, AN-style structured pipeline is therefore not
+  currently feasible; on hold pending either a future EP API improvement or a
+  scoped brute-force approach if ever justified.
 - **Mayors**: no dedicated collection module or source.
 - **Intervention completeness**: full-text name search can be partial for
   ambiguous names.
@@ -49,6 +69,8 @@ rather than silently dropping low-confidence items.
 
 - Senate-specific adapter for vote and sponsored-text data — **on hold**, see
   Data coverage gaps above (no viable structured source found as of 2026).
+- European Parliament textes_portes/amendements adapter — **on hold**, see
+  Data coverage gaps above (no author/rapporteur linkage or filter in EP API).
 - Fix `minoritaire` JS classification (see Known issues).
 - Evaluate surfacing `pivot_data/partis/` aggregates in a comparison panel
   (non-navigation context) rather than as a top-level tab.
