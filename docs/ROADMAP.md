@@ -11,6 +11,13 @@ This file is not automatically re-read by coding agents on every session
 
 ## Done (recent)
 
+- **UE data sources investigation (ParlTrack / Europarl / HowTheyVote)**:
+  factual report documented in
+  `docs/ue_donnees_sources_investigation_2026-08.md`, including tested access
+  modes, freshness/licensing checks, 3-candidate success sample, comparative
+  feasibility verdict, and an agent-ready implementation brief for the
+  ParlTrack dumps approach.
+
 - **CI/CD workflow — two-mode generation + quality gate**:
   `.github/workflows/generate-data.yml` reworked with two `workflow_dispatch`
   inputs (`fresh_run`, `threshold`).
