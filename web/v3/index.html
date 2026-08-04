@@ -1236,6 +1236,69 @@
   .deconstructed .swipe-hint { display: none; }
 
   /* Formes spécifiques des données détaillées. */
+  .deconstructed .mandate-view-controls,
+  .deconstructed .mandate-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: var(--space-16) 0;
+  }
+  .deconstructed .mandate-view-controls button,
+  .deconstructed .mandate-filters button {
+    padding: 0.55rem 0.75rem;
+    border: var(--border-width) solid var(--line);
+    border-radius: 0;
+    margin: 0 -2px -2px 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 600 0.68rem var(--font-family-mono);
+    cursor: pointer;
+  }
+  .deconstructed .mandate-view-controls button.active,
+  .deconstructed .mandate-filters button.active {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .deconstructed .mandate-timeline { display: grid; gap: var(--space-16); }
+  .deconstructed .mandate-timeline-item {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: var(--space-16);
+    align-items: start;
+  }
+  .deconstructed .mandate-period {
+    padding-top: 0.75rem;
+    font: 600 0.72rem/1.45 var(--font-family-mono);
+    overflow-wrap: anywhere;
+  }
+  .deconstructed .mandate-card {
+    min-width: 0;
+    padding: var(--space-16);
+    border: var(--border-width) solid var(--line);
+    border-radius: 0;
+    background: var(--bg);
+  }
+  .deconstructed .mandate-card.is-dashed { border-style: dashed; }
+  .deconstructed .mandate-card.is-current { background: var(--acid); }
+  .deconstructed .mandate-function {
+    display: block;
+    margin-bottom: var(--space-8);
+    font-family: var(--font-family-display);
+    font-size: clamp(1rem, 2.4vw, 1.5rem);
+    line-height: 1.05;
+  }
+  .deconstructed .mandate-detail { font-family: var(--font-family-ui); }
+  .deconstructed .mandate-meta {
+    display: block;
+    margin-top: var(--space-8);
+    font: 500 0.66rem var(--font-family-mono);
+    text-transform: uppercase;
+  }
+  .deconstructed .mandate-sources { margin-top: var(--space-8); }
+  .deconstructed .mandate-sources a {
+    color: var(--accent);
+    font: 600 0.68rem var(--font-family-mono);
+  }
   .deconstructed .orbit {
     display: flex;
     flex-wrap: wrap;
@@ -1418,6 +1481,8 @@
     .deconstructed .versus-metrics { grid-template-columns: repeat(2, 1fr); }
     .deconstructed .kpi-value { font-size: clamp(1.6rem, 6vw, 5rem); }
     .deconstructed .panel-dot small { font-size: 0.5rem; }
+    .deconstructed .mandate-timeline-item { grid-template-columns: 56px minmax(0, 1fr); gap: var(--space-8); }
+    .deconstructed .mandate-period { font-size: 0.58rem; }
   }
 
   /* Légende des couleurs — composant explicatif positionné en tête de section résumé */
@@ -1656,6 +1721,8 @@
       expandedVoteThemes: new Set(),
       showUnpublishedTextes: false,
       legislativeReadingMode: "auto",
+      mandateView: "timeline",
+      mandateFilter: "all",
       expressIndex: 0,
       profileMode: "candidates",
       currentRealGroupId: "",
@@ -1746,9 +1813,18 @@
       "vice-président", "vice-présidente", "rapporteur", "co-rapporteur", "rapporteure",
     ];
     const CATEGORIE_LABELS_FR = {
+      mandat_electif: "Mandat électif",
       commission: "Commission / mission",
       extra_parlementaire: "Engagement extra-parlementaire",
       groupe_amitie: "Groupe d'amitié",
+      groupe_politique: "Groupe politique",
+      autre: "Autre responsabilité",
+    };
+    const MANDATE_FILTERS = {
+      all: () => true,
+      elective: (mandate) => mandate.categorie === "mandat_electif",
+      responsibilities: (mandate) => !["mandat_electif", "groupe_politique", "groupe_amitie"].includes(mandate.categorie),
+      groups: (mandate) => ["groupe_politique", "groupe_amitie"].includes(mandate.categorie),
     };
 
     // KPI 1 — Ancienneté et statut du mandat : ne mesure pas l'implication, seulement la durée.
@@ -2018,6 +2094,75 @@
           </span></span>
         </button>
       `).join("")}</div>`;
+    }
+
+    function buildMandateTimeline(profile) {
+      const dayMs = 24 * 60 * 60 * 1000;
+      const dated = [];
+      const undated = [];
+      for (const mandate of (profile.pivot_mandats || [])) {
+        const item = {
+          ...mandate,
+          sourceUrls: /^https?:\/\//.test(mandate.source_url || "") ? [mandate.source_url] : [],
+        };
+        (mandate.debut ? dated : undated).push(item);
+      }
+      dated.sort((a, b) => a.debut.localeCompare(b.debut) || String(a.fin || "").localeCompare(String(b.fin || "")));
+
+      const merged = [];
+      for (const mandate of dated) {
+        const previous = merged.at(-1);
+        const sameRole = previous
+          && previous.label === mandate.label
+          && previous.categorie === mandate.categorie
+          && previous.fonction === mandate.fonction;
+        const gap = sameRole && previous.fin ? toDateMs(mandate.debut) - toDateMs(previous.fin) : Number.POSITIVE_INFINITY;
+        if (sameRole && gap >= 0 && gap <= dayMs) {
+          previous.fin = mandate.fin;
+          previous.actif = mandate.actif;
+          previous.sourceUrls = [...new Set([...previous.sourceUrls, ...mandate.sourceUrls])];
+        } else {
+          merged.push(mandate);
+        }
+      }
+      return merged
+        .sort((a, b) => b.debut.localeCompare(a.debut) || String(b.fin || "").localeCompare(String(a.fin || "")))
+        .concat(undated);
+    }
+
+    function renderMandateTimeline(profile) {
+      const filter = MANDATE_FILTERS[state.mandateFilter] || MANDATE_FILTERS.all;
+      const items = buildMandateTimeline(profile).filter(filter);
+      if (!items.length) return `<p class="empty">Aucun mandat documenté pour ce filtre.</p>`;
+      return `<div class="mandate-timeline">${items.map((mandate) => {
+        const period = mandate.debut
+          ? `${formatIsoDate(mandate.debut)} → ${mandate.actif ? "aujourd’hui" : (mandate.fin ? formatIsoDate(mandate.fin) : "fin non renseignée")}`
+          : "date non renseignée";
+        return `<article class="mandate-timeline-item">
+          <div class="mandate-period">${escapeHtml(period)}</div>
+          <div class="mandate-card ${mandate.categorie === "mandat_electif" ? "" : "is-dashed"} ${mandate.actif ? "is-current" : ""}">
+            <strong class="mandate-function">${escapeHtml(mandate.fonction || "Fonction non renseignée")}</strong>
+            <div class="mandate-detail">${escapeHtml(mandate.label || "Mandat non précisé")}</div>
+            <small class="mandate-meta">${escapeHtml(CATEGORIE_LABELS_FR[mandate.categorie] || mandate.categorie || "Catégorie non renseignée")}</small>
+            ${mandate.sourceUrls.length ? `<div class="mandate-sources">${mandate.sourceUrls.map((url, index) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Source${mandate.sourceUrls.length > 1 ? ` ${index + 1}` : ""}</a>`).join(" · ")}</div>` : ""}
+          </div>
+        </article>`;
+      }).join("")}</div>`;
+    }
+
+    function renderMandates(profile) {
+      const viewControls = `<div class="mandate-view-controls" role="group" aria-label="Vue des mandats">
+        ${[["timeline", "Chronologie"], ["responsibilities", "Responsabilités"]].map(([value, label]) => (
+          `<button type="button" class="${state.mandateView === value ? "active" : ""}" data-mandate-view="${value}" aria-pressed="${state.mandateView === value}">${label}</button>`
+        )).join("")}
+      </div>`;
+      if (state.mandateView === "responsibilities") return `${viewControls}${renderResponsabilites(profile)}`;
+      const filters = `<div class="mandate-filters" role="group" aria-label="Filtrer les mandats">
+        ${[["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]].map(([value, label]) => (
+          `<button type="button" class="${state.mandateFilter === value ? "active" : ""}" data-mandate-filter="${value}" aria-pressed="${state.mandateFilter === value}">${label}</button>`
+        )).join("")}
+      </div>`;
+      return `${viewControls}${filters}${renderMandateTimeline(profile)}`;
     }
 
     function withTheme(profile) {
@@ -2782,9 +2927,9 @@
         <div class="swipe-deck" id="swipe-deck">
           <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
             <section class="panel">
-              <h2>Responsabilités & mandats <span class="source-ref">(${dedupeResponsibilities(profile).length})</span></h2>
+              <h2>Mandats documentés <span class="source-ref">(${(profile.pivot_mandats || []).length})</span></h2>
               ${renderMinisterialIncompatibilities(profile)}
-              <div id="mandats">${renderResponsabilites(profile)}</div>
+              <div id="mandats">${renderMandates(profile)}</div>
             </section>
           </div>
 
@@ -2989,6 +3134,20 @@
           const expanded = node.classList.toggle("expanded");
           node.setAttribute("aria-expanded", String(expanded));
         });
+
+        document.querySelectorAll("[data-mandate-view]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.mandateView = button.dataset.mandateView;
+            renderPage();
+          });
+        });
+
+        document.querySelectorAll("[data-mandate-filter]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.mandateFilter = button.dataset.mandateFilter;
+            renderPage();
+          });
+        });
       });
 
       document.querySelectorAll("[data-theme]").forEach((btn) => {
@@ -3179,6 +3338,8 @@
       state.expandedVoteThemes = new Set();
       state.showUnpublishedTextes = false;
       state.legislativeReadingMode = "auto";
+      state.mandateView = "timeline";
+      state.mandateFilter = "all";
       state.expressIndex = 0;
 
       updateActiveAvatarChip();
