@@ -728,3 +728,128 @@ def test_build_profile_includes_official_questions_in_interventions():
     # Sans identité, les questions ne sont pas collectées (chambre == "deputes" mais
     # profile["identite"] est None) : les questions ne doivent PAS être dans interventions.
     assert not any(i.get("type_detail") == "question" for i in profile["interventions"])
+
+
+# ---------------------------------------------------------------------------
+# Tests pour la logique de court-circuit sur échecs déterministes (_TERMINAL_FAILURE)
+# ---------------------------------------------------------------------------
+
+import requests as _requests
+
+
+def test_get_payload_returns_terminal_failure_on_4xx():
+    """Un HTTP 404 renvoie _TERMINAL_FAILURE (pas None)."""
+    from candidate_profile import _get_payload, _TERMINAL_FAILURE
+
+    class Resp404:
+        status_code = 404
+        headers = {"content-type": "text/html"}
+        text = "Not Found"
+
+        def raise_for_status(self):
+            raise _requests.HTTPError("404", response=self)
+
+    with patch("candidate_profile.requests.get", return_value=Resp404()):
+        result = _get_payload("https://example.test/missing/json")
+
+    assert result is _TERMINAL_FAILURE
+
+
+def test_get_payload_returns_none_on_5xx():
+    """Un HTTP 500 renvoie None (échec transitoire, pas terminal)."""
+    from candidate_profile import _get_payload, _TERMINAL_FAILURE
+
+    class Resp500:
+        status_code = 500
+        headers = {"content-type": "text/html"}
+        text = "Server Error"
+
+        def raise_for_status(self):
+            raise _requests.HTTPError("500", response=self)
+
+    with patch("candidate_profile.requests.get", return_value=Resp500()):
+        result = _get_payload("https://example.test/error/json")
+
+    assert result is None
+    assert result is not _TERMINAL_FAILURE
+
+
+def test_get_payload_returns_terminal_failure_on_unsupported_format():
+    """Un format de réponse non pris en charge renvoie _TERMINAL_FAILURE."""
+    from candidate_profile import _get_payload, _TERMINAL_FAILURE
+
+    class RespUnknown:
+        status_code = 200
+        headers = {"content-type": "text/plain"}
+        text = "hello world"
+
+        def raise_for_status(self):
+            pass
+
+    with patch("candidate_profile.requests.get", return_value=RespUnknown()):
+        result = _get_payload("https://example.test/resource")
+
+    assert result is _TERMINAL_FAILURE
+
+
+def test_get_payload_returns_terminal_failure_on_malformed_json():
+    """Une réponse JSON malformée (Content-Type JSON mais corps invalide) renvoie _TERMINAL_FAILURE."""
+    from candidate_profile import _get_payload, _TERMINAL_FAILURE
+
+    class RespBadJson:
+        status_code = 200
+        headers = {"content-type": "application/json"}
+        text = "{not valid json"
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            raise ValueError("Expecting property name")
+
+    with patch("candidate_profile.requests.get", return_value=RespBadJson()):
+        result = _get_payload("https://example.test/bad/json")
+
+    assert result is _TERMINAL_FAILURE
+
+
+def test_try_urls_skips_xml_after_json_terminal_failure():
+    """Si /json renvoie _TERMINAL_FAILURE, /xml ne doit pas être essayé pour ce base_url."""
+    from candidate_profile import _try_urls, _TERMINAL_FAILURE
+
+    calls: list[str] = []
+
+    def fake_get_payload(url: str):
+        calls.append(url)
+        return _TERMINAL_FAILURE
+
+    with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
+        result, base = _try_urls(["https://base1.test", "https://base2.test"], "label", "slug")
+
+    # Ni /xml pour base1, ni essai de base2 : _TERMINAL_FAILURE doit court-circuiter
+    # l'essai de l'autre format MAIS les autres bases URL restent éligibles.
+    json_calls = [u for u in calls if u.endswith("/json")]
+    xml_calls = [u for u in calls if u.endswith("/xml")]
+    assert len(json_calls) == 2, f"Attendu 2 essais /json (un par base), obtenu: {json_calls}"
+    assert xml_calls == [], f"Aucun essai /xml attendu après terminal failure, obtenu: {xml_calls}"
+    assert result is None
+    assert base is None
+
+
+def test_fetch_votes_skips_xml_after_terminal_failure():
+    """fetch_votes ne doit pas tenter /xml si /json renvoie _TERMINAL_FAILURE."""
+    from candidate_profile import fetch_votes, _TERMINAL_FAILURE
+
+    calls: list[str] = []
+
+    def fake_get_payload(url: str):
+        calls.append(url)
+        return _TERMINAL_FAILURE
+
+    with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
+        votes, base = fetch_votes(["https://base1.test"], "slug")
+
+    xml_calls = [u for u in calls if "/votes/xml" in u]
+    assert xml_calls == [], f"Aucun essai /votes/xml attendu, obtenu: {xml_calls}"
+    assert votes is None
+    assert base is None
