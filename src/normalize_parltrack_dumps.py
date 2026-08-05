@@ -78,9 +78,11 @@ def enrich_pivot_with_parltrack(
     `amendements[]` signés, en mode additif (n'écrase pas les entrées
     existantes).
 
-    Les clés d'unicité utilisées pour la déduplication additive sont :
-    - `textes_portes` : (titre, role, source_url)
-    - `amendements` : (numero, texte_vise)
+    Les clés d'unicité utilisées pour la déduplication additive sont
+    identiques à celles de `merge_profile._pivot_texte_key` et
+    `merge_profile._pivot_amendement_key` :
+    - `textes_portes` : source_url (si présent) sinon (titre, date_min, legislature)
+    - `amendements`   : source_url (si présent) sinon (numero, texte_vise, date)
 
     Un warning est ajouté à `meta.warnings[]` si les dumps sont
     indisponibles.
@@ -95,15 +97,18 @@ def enrich_pivot_with_parltrack(
 
     # --- textes_portes (rapporteur) ---
     dossiers = get_dossiers_for_mep(mep_id, force_download=force_download)
+    def _tp_key(t: dict[str, Any]) -> Any:
+        return t.get("source_url") or (t.get("titre"), t.get("date_min"), t.get("legislature"))
+
     existing_tp_keys = {
-        (t.get("titre"), t.get("role"), t.get("source_url"))
+        _tp_key(t)
         for t in (profil.get("textes_portes") or [])
         if isinstance(t, dict)
     }
     new_tp = []
     for d in dossiers:
         entry = _make_texte_porte(d)
-        key = (entry.get("titre"), entry.get("role"), entry.get("source_url"))
+        key = _tp_key(entry)
         if key not in existing_tp_keys:
             existing_tp_keys.add(key)
             new_tp.append(entry)
@@ -114,15 +119,18 @@ def enrich_pivot_with_parltrack(
 
     # --- amendements ---
     amendments = get_amendments_for_mep(mep_id, force_download=force_download)
+    def _amd_key(a: dict[str, Any]) -> Any:
+        return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
+
     existing_amd_keys = {
-        (a.get("numero"), a.get("texte_vise"))
+        _amd_key(a)
         for a in (profil.get("amendements") or [])
         if isinstance(a, dict)
     }
     new_amds = []
     for a in amendments:
         entry = _make_amendement(a)
-        key = (entry.get("numero"), entry.get("texte_vise"))
+        key = _amd_key(entry)
         if key not in existing_amd_keys:
             existing_amd_keys.add(key)
             new_amds.append(entry)
