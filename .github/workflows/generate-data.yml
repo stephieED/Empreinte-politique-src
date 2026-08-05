@@ -28,10 +28,23 @@ concurrency:
   group: generate-data
   cancel-in-progress: false
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Timeout ParlTrack : modifiable ici (30 min par défaut). Rappel : ce job a
+# continue-on-error: true — son dépassement ne bloque pas merge-and-pivot.
+# Timeout AN 120 min / Sénat 90 min / UE 60 min / merge-and-pivot 60 min.
+# Total mur (parallèle) ≈ 120 + 60 = 180 min — contre 340 min séquentiel.
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
+
 jobs:
-  generate:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 1/4 — Extraction Assemblée nationale
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-an:
     runs-on: ubuntu-latest
-    timeout-minutes: 340   # bien au-delà de 59 min, limite standard des runners
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4
@@ -42,42 +55,293 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # fresh_run=true  → purge complète (sorties + .cache) avant régénération à zéro.
-      # fresh_run=false → les sorties existantes sont conservées pour la fusion additive.
-      - name: Nettoyage complet des données et du cache (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
-        run: |
-          rm -rf .cache
-          find raw_data/profiles   -name "*.json"       -delete
-          find pivot_data/profiles -name "*.pivot.json" -delete
-          find pivot_data/partis   -name "*.json"       -delete
-          find pivot_data/groupes  -name "*.json"       -delete
-
-      - name: Semaine ISO courante (clé de cache)
+      - name: Semaine ISO courante (clé de cache AN)
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      # fresh_run=true  → pas de restore (on repart de zéro, y compris pour .cache/).
-      # fresh_run=false → restore autorisé ; réduit les requêtes vers les API publiques.
-      # Clé renouvelée chaque semaine.
+      # fresh_run=true  → pas de restore (on repart de zéro).
+      # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
       - uses: actions/cache@v4
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
-          key: public-data-cache-${{ steps.week.outputs.week }}
+          key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
-            public-data-cache-
+            public-data-cache-an-
 
-      # fresh_run=true  → --no-merge : écrasement complet, données entièrement re-fetchées.
-      # fresh_run=false → fusion additive (défaut) : les entrées existantes sont préservées,
-      #                   seules les nouvelles données sont ajoutées. Résilient aux aléas réseau.
-      - name: Générer les profils individuels (extraction + pivot)
+      # fresh_run=true → purge des profils bruts et du cache avant extraction.
+      - name: Nettoyage complet (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
+        run: |
+          rm -rf .cache
+          find raw_data/profiles -name "*.json" -delete
+
+      # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
+      # fresh_run=true  → --no-merge : écrasement complet.
+      # fresh_run=false → fusion additive : données existantes préservées.
+      - name: Extraction AN (NosDéputés)
         env:
           FRESH: ${{ inputs.fresh_run }}
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --pivot "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source an "${MERGE_FLAG[@]}"
+
+      - name: Upload artifact AN
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-profiles-an
+          path: raw_data/profiles/
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 2/4 — Extraction Sénat
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-senat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache Sénat)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache
+          key: public-data-cache-senat-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-senat-
+
+      - name: Nettoyage complet (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
+        run: |
+          rm -rf .cache
+          find raw_data/profiles -name "*.json" -delete
+
+      # --source senat → NosSénateurs uniquement (pas d'AN, pas d'UE dans ce job).
+      - name: Extraction Sénat (NosSénateurs)
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          python3 src/generate_all_profiles.py --source senat "${MERGE_FLAG[@]}"
+
+      - name: Upload artifact Sénat
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-profiles-senat
+          path: raw_data/profiles/
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 3/4 — Extraction API officielle Parlement européen
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-ue-officiel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache UE)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache
+          key: public-data-cache-ue-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-ue-
+
+      - name: Nettoyage complet (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
+        run: |
+          rm -rf .cache
+          find raw_data/profiles -name "*.json" -delete
+
+      # --source ue → Open Data Portal Parlement européen uniquement (pas de FR).
+      - name: Extraction UE (Open Data Portal EP)
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          python3 src/generate_all_profiles.py --source ue "${MERGE_FLAG[@]}"
+
+      - name: Upload artifact UE
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-profiles-ue-officiel
+          path: raw_data/profiles/
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 4/4 — Extraction ParlTrack (fragile — tierce source non officielle)
+  #
+  # continue-on-error: true → son échec ou timeout ne bloque pas merge-and-pivot.
+  # Timeout court (env.PARLTRACK_TIMEOUT_MINUTES, défaut 30 min).
+  # En cas d'absence d'artifact, merge-and-pivot tourne en fallback
+  # (données ParlTrack du dépôt précédent, warning ajouté dans meta.warnings).
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-parltrack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # ← même valeur que env.PARLTRACK_TIMEOUT_MINUTES (Github Actions n'accepte pas les env vars ici)
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache ParlTrack)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # fresh_run=true  → pas de restore ; les dumps seront re-téléchargés.
+      # fresh_run=false → restore du cache ParlTrack (évite re-téléchargement de centaines de Mo).
+      - uses: actions/cache@v4
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache/parltrack
+          key: public-data-cache-parltrack-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-parltrack-
+
+      - name: Nettoyage cache ParlTrack (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
+        run: rm -rf .cache/parltrack
+
+      # Télécharge les dumps ParlTrack (.zst) dans .cache/parltrack/.
+      # Ces dumps seront uploadés comme artifact et utilisés par merge-and-pivot
+      # pour l'enrichissement ParlTrack (enrich_pivot_with_parltrack).
+      - name: Téléchargement dumps ParlTrack
+        run: |
+          python3 - <<'EOF'
+          import sys
+          sys.path.insert(0, "src")
+          from parltrack_dumps import ensure_dump, _DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS
+          force = "${{ inputs.fresh_run }}" == "true"
+          ok = True
+          for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS]:
+              path = ensure_dump(dump, force_download=force)
+              if path is None:
+                  print(f"[!] Échec téléchargement : {dump}", file=sys.stderr)
+                  ok = False
+          sys.exit(0 if ok else 1)
+          EOF
+
+      - name: Upload artifact ParlTrack (dumps .zst)
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-profiles-parltrack
+          path: .cache/parltrack/
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB FUSION — merge-and-pivot
+  #
+  # Fusionne les artifacts des 4 jobs d'extraction, génère les pivots, les
+  # profils de parti et de groupe, lance la quality gate, et committe.
+  # Tourne même si extract-parltrack a échoué (continue-on-error sur ce job).
+  # ──────────────────────────────────────────────────────────────────────────
+  merge-and-pivot:
+    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      # ── Téléchargement des artifacts d'extraction ─────────────────────────
+      # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
+      - name: Download artifact AN
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-profiles-an
+          path: _artifacts/an
+
+      - name: Download artifact Sénat
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-profiles-senat
+          path: _artifacts/senat
+
+      - name: Download artifact UE
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-profiles-ue-officiel
+          path: _artifacts/ue
+
+      # ParlTrack : optionnel — continue-on-error si l'artifact est absent
+      # (job extract-parltrack a échoué ou timeout). Le mode fallback est
+      # géré par --enrich-parltrack dans l'étape de pivot ci-dessous.
+      - name: Download artifact ParlTrack (optionnel)
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: raw-profiles-parltrack
+          path: .cache/parltrack
+
+      # ── Fusion des profils bruts des 3 sources FR/UE ──────────────────────
+      # merge_profile.py --dirs : fusionne additivement les profils de chaque
+      # source vers raw_data/profiles/ (même logique que --no-merge=false).
+      # fresh_run=true  → on fusionne quand même les 3 artifacts (aucune donnée
+      #                   repo n'est présente car les jobs extract ont purgé).
+      # fresh_run=false → les artifacts contiennent déjà la fusion avec les
+      #                   données repo (merge additif dans chaque job extract).
+      - name: Fusion des profils bruts (AN + Sénat + UE)
+        run: |
+          python3 src/merge_profile.py \
+            --dirs _artifacts/an _artifacts/senat _artifacts/ue \
+            --out raw_data/profiles
+
+      # ── Pivot + enrichissement ParlTrack ──────────────────────────────────
+      # --pivot-only   : pas d'appel réseau, normalise les profils bruts existants.
+      # --enrich-parltrack : enrichit les pivots MEP si .cache/parltrack/ est
+      #                      disponible ; sinon ajoute un warning fallback.
+      # --parltrack-status-out : fichier JSON lu par check_quality_gate.py §5.
+      # fresh_run=true  → --no-merge : recréation complète des pivots.
+      # fresh_run=false → fusion additive des pivots (défaut).
+      - name: Normalisation pivot + enrichissement ParlTrack
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          python3 src/generate_all_profiles.py \
+            --pivot-only \
+            --enrich-parltrack \
+            --parltrack-status-out parltrack-status.json \
+            "${MERGE_FLAG[@]}"
 
       - name: Générer les profils de parti
         run: |
@@ -86,13 +350,9 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/partis
 
-      # fresh_run=true  → recréation complète à chaque exécution (comportement strict,
-      #                   le fichier existant est entièrement remplacé par les données du run).
-      # fresh_run=false → --merge-existing : les membres du fichier précédent absents du
-      #                   roster récupéré cette fois-ci (ex. échec partiel de l'API live)
-      #                   sont réintégrés avec un avertissement dans meta.warnings. Évite
-      #                   les trous temporaires dus aux aléas réseau.
-      # Un seul fetch réseau par (chambre, législature) distincte (voir generate_group_profiles.py).
+      # fresh_run=true  → recréation complète des groupes.
+      # fresh_run=false → --merge-existing : membres absents du roster live
+      #                   réintégrés depuis le fichier précédent (résilience réseau).
       - name: Générer les profils de groupe parlementaire réel
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -105,10 +365,10 @@ jobs:
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
-      # fresh_run=true  → tolérance zéro (threshold=2) : 2 IncompleteRead bloque
-      #                   le commit. Structure groupe cassée = échec dur dans les deux cas.
-      # fresh_run=false → seuil souple (inputs.threshold, défaut 3) : les aléas réseau
-      #                   transitoires ne bloquent pas le commit incrémental.
+      # fresh_run=true  → tolérance zéro (threshold=2).
+      # fresh_run=false → seuil souple (inputs.threshold, défaut 3).
+      # §5 ParlTrack : --parltrack-status-file active la section de rapport
+      #   enrichi ce run vs fallback (nb candidats dans chaque catégorie).
       - name: Quality gate — résumé et contrôle qualité
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -124,7 +384,8 @@ jobs:
             --groupes-config    raw_data/groupes_reels.json \
             --threshold         "$GATE_THRESHOLD" \
             --low-interventions 10 \
-            --groupe-min-members 1
+            --groupe-min-members 1 \
+            --parltrack-status-file parltrack-status.json
 
       - name: Committer et pousser les données mises à jour
         run: |

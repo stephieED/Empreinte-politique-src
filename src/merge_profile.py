@@ -21,8 +21,15 @@ Usage :
     from merge_profile import merge_raw_profile, merge_pivot_profile
     profile = merge_raw_profile(old_profile, new_profile)
     pivot = merge_pivot_profile(old_pivot, new_pivot)
+
+CLI (fusion de répertoires d'extraction parallèles) :
+    python src/merge_profile.py --dirs artifacts/an artifacts/senat artifacts/ue \\
+                                 --out raw_data/profiles
 """
 
+import json
+from collections import defaultdict
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from candidate_profile import (
@@ -339,3 +346,88 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         merged["meta"]["warnings"] = filtered
 
     return merged
+
+
+# ---------------------------------------------------------------------------
+# CLI : fusion de répertoires d'extraction parallèles → merge-and-pivot
+# ---------------------------------------------------------------------------
+
+def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
+    """Fusionne les profils bruts (*.json) de plusieurs répertoires sources
+    (jobs d'extraction parallèles AN / Sénat / UE) vers un répertoire cible,
+    en appliquant merge_raw_profile de façon additive pour chaque slug.
+
+    Les fichiers de checkpoint (nom commençant par '.') sont ignorés.
+
+    Args:
+        source_dirs: liste de répertoires sources (certains peuvent être absents).
+        out_dir: répertoire de sortie, créé si nécessaire.
+
+    Returns:
+        Nombre de profils écrits dans out_dir.
+    """
+    slug_paths: dict[str, list[Path]] = defaultdict(list)
+    for src_dir in source_dirs:
+        if not src_dir.is_dir():
+            print(f"  [!] Répertoire source absent, ignoré : {src_dir}")
+            continue
+        for path in sorted(src_dir.glob("*.json")):
+            if path.name.startswith("."):
+                continue
+            slug_paths[path.name].append(path)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    n_written = 0
+    for filename, paths in sorted(slug_paths.items()):
+        merged: Optional[dict[str, Any]] = None
+        for path in paths:
+            try:
+                with open(path, encoding="utf-8") as f:
+                    profile = json.load(f)
+            except (json.JSONDecodeError, OSError) as exc:
+                print(f"  [!] Lecture impossible de {path}, ignoré : {exc}")
+                continue
+            merged = merge_raw_profile(merged, profile)
+        if merged is not None:
+            dest = out_dir / filename
+            with open(dest, "w", encoding="utf-8") as f:
+                json.dump(merged, f, ensure_ascii=False, indent=2)
+            n_written += 1
+
+    return n_written
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "Fusionne les profils bruts (*.json) de plusieurs répertoires "
+            "d'extraction parallèles vers un répertoire cible unique. "
+            "Usage typique : job merge-and-pivot après extract-an / "
+            "extract-senat / extract-ue-officiel dans le workflow GitHub Actions."
+        )
+    )
+    parser.add_argument(
+        "--dirs",
+        nargs="+",
+        required=True,
+        metavar="DIR",
+        help="Répertoires sources à fusionner (au moins un requis).",
+    )
+    parser.add_argument(
+        "--out",
+        required=True,
+        metavar="DIR",
+        help="Répertoire de sortie pour les profils fusionnés.",
+    )
+    _args = parser.parse_args()
+
+    _source_dirs = [Path(d) for d in _args.dirs]
+    _out_dir = Path(_args.out)
+
+    print(f"Fusion de {len(_source_dirs)} répertoire(s) → {_out_dir}")
+    _n = merge_raw_dirs(_source_dirs, _out_dir)
+    print(f"  ✓ {_n} profil(s) écrits dans {_out_dir}")
+    sys.exit(0)
