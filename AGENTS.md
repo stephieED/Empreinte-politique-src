@@ -30,21 +30,16 @@ Any schema/display change must preserve them:
 8. Thematic tags are reading aids, not declared candidate positions.
 
 ## 3. Pipeline
-
-```
-Public sources (APIs/dumps)
-        |
-        v
-raw_data/profiles/<slug>.json          <- candidate_profile.py / candidate_profile_ue.py
-        |  normalize_nosdeputes.py / normalize_europarl.py
-        v
-pivot_data/profiles/<slug>.pivot.json  <- pivot schema (schema_pivot.py)
-        |
-        |- group_profile.py   -> pivot_data/groupes/  (schema_groupe.py)
-        `- parti_profile.py   -> pivot_data/partis/   (schema_parti.py)
-                |
-                v
-        check_quality_gate.py  (pre-commit gate — see below)
+```mermaid
+graph TD
+    A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json<br/>(candidate_profile.py / candidate_profile_ue.py)"]
+    B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
+    C --> D["group_profile.py"]
+    C --> E["parti_profile.py"]
+    D --> F["pivot_data/groupes/<br/>(schema_groupe.py)"]
+    E --> G["pivot_data/partis/<br/>(schema_parti.py)"]
+    F --> H["check_quality_gate.py<br/>(pre-commit gate)"]
+    G --> H
 ```
 
 - `raw_data/` = source-near; `pivot_data/` = only layer `web/` reads.
@@ -123,11 +118,26 @@ Full rationale: `web/v3/methodologie.html` — do not duplicate prose here.
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
 Full details: `docs/technical_decisions.md#licences`.
 
+## 8. End-of-task documentation upkeep
+
+Before finishing a task, update only what actually changed — skip a file if nothing changed for it:
+
+| File | Update when |
+|---|---|
+| `AGENTS.md` | New agent-facing rule, command, or constraint. Rare edit; stay terse. |
+| `README.md` | New setup step, script, or user-visible workflow/command. |
+| `docs/technical_decisions.md` | New architectural choice or trade-off. Dated entry: context, decision, alternative rejected. |
+| `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `technical_decisions.md` instead. |
+
+Never create a missing file from this list without flagging it first.
+
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`: structure contracts.
 - `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
-- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`).
-- `ROADMAP.md`: next steps (not read automatically — consult on request).
+- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`).
+- `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
+  automatically — consult on request). Rationale for deferred items lives
+  in `docs/technical_decisions.md#hors-perimetre`, not duplicated here.
