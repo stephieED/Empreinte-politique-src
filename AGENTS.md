@@ -51,8 +51,9 @@ graph TD
 - Scalars: new value if populated, else keep old (never regress to `null`).
 Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 
-**CI/CD (`.github/workflows/generate-data.yml`)**: `fresh_run=true` = full purge, `--no-merge`, threshold=2 (tolère au plus 2 IncompleteRead).
-`fresh_run=false` = additive merge, cache restored, threshold=`inputs.threshold` (default 3).
+**CI/CD (`.github/workflows/generate-data.yml`)**: `fresh_run=true` = full purge, `--no-merge`.
+`fresh_run=false` = additive merge, cache restored.
+In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe file;
