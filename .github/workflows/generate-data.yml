@@ -14,8 +14,8 @@ on:
         default: false
       threshold:
         description: >
-          Seuil IncompleteRead (soft fail). Ignoré si fresh_run=true
-          (seuil forcé à 2). Défaut : 3.
+          Seuil IncompleteRead (soft fail). Appliqué dans tous les modes,
+          y compris fresh_run=true. Défaut : 3.
         type: number
         default: 3
 
@@ -365,19 +365,16 @@ jobs:
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
-      # fresh_run=true  → seuil strict (threshold=2) : tolère au plus 2 IncompleteRead.
-      # fresh_run=false → seuil souple (inputs.threshold, défaut 3).
+      # inputs.threshold appliqué dans tous les modes (y compris fresh_run=true).
       # §5 ParlTrack : --parltrack-status-file active la section de rapport
       #   enrichi ce run vs fallback (nb candidats dans chaque catégorie).
       - name: Quality gate — résumé et contrôle qualité
         env:
-          FRESH: ${{ inputs.fresh_run }}
           THRESHOLD: ${{ inputs.threshold }}
         run: |
           # inputs.threshold a un défaut déclaré de 3 ; traitement du défaut en
           # bash pour éviter que GHA évalue 0 comme falsy (0 || 3 → 3).
-          THRESHOLD="${THRESHOLD:-3}"
-          [[ "$FRESH" == "true" ]] && GATE_THRESHOLD=2 || GATE_THRESHOLD="$THRESHOLD"
+          GATE_THRESHOLD="${THRESHOLD:-3}"
           python3 src/check_quality_gate.py \
             --profiles-dir      pivot_data/profiles \
             --groupes-dir       pivot_data/groupes \
