@@ -128,6 +128,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `README.md` | New setup step, script, or user-visible workflow/command. |
 | `docs/technical_decisions.md` | New architectural choice or trade-off. Dated entry: context, decision, alternative rejected. |
 | `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `technical_decisions.md` instead. |
+| `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
 
 Never create a missing file from this list without flagging it first.
 
