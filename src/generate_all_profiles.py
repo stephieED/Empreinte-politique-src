@@ -71,6 +71,12 @@ DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 
 CHAMBRES = ["deputes", "senateurs"]
 
+# Répertoire de cache ParlTrack — identique à parltrack_dumps.PARLTRACK_CACHE_DIR.
+_PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
+
+# Valeurs acceptées par --source.
+SOURCE_VALUES = ("an", "senat", "ue", "all")
+
 # Verrou global pour sérialiser les print() et éviter un affichage interleaved.
 _PRINT_LOCK = threading.Lock()
 # Verrou global pour sérialiser l'écriture du fichier de point de sauvegarde.
@@ -119,9 +125,14 @@ def load_candidats(path: str) -> list[dict[str, Any]]:
 _slugify = slugify
 
 
-def build_profile_any_chambre(slug: str, max_pages: int) -> tuple[Optional[dict], Optional[str]]:
-    """Essaie 'deputes' puis 'senateurs' et renvoie le premier profil avec une identité exploitable."""
-    for chambre in CHAMBRES:
+def build_profile_any_chambre(
+    slug: str, max_pages: int, chambres: Optional[list[str]] = None
+) -> tuple[Optional[dict], Optional[str]]:
+    """Essaie les chambres indiquées (défaut : deputes puis senateurs) et renvoie
+    le premier profil avec une identité exploitable."""
+    if chambres is None:
+        chambres = CHAMBRES
+    for chambre in chambres:
         try:
             profile = build_profile(chambre, slug, intervention_max_pages=max_pages)
         except Exception as exc:
@@ -165,6 +176,58 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
 
 
 
+def _parltrack_cache_available() -> bool:
+    """Renvoie True si le cache ParlTrack (.zst dumps) semble disponible."""
+    if not _PARLTRACK_CACHE_DIR.is_dir():
+        return False
+    return any(_PARLTRACK_CACHE_DIR.glob("*.zst"))
+
+
+def _enrich_pivot_with_parltrack_safe(
+    pivot_profile: dict[str, Any],
+    mep_id: int,
+) -> str:
+    """Appelle enrich_pivot_with_parltrack et renvoie un statut lisible.
+
+    N'interrompt jamais : toute exception est capturée et reportée en warning.
+
+    Returns:
+        "enrichi"  — des données ParlTrack ont été ajoutées.
+        "vide"     — dump disponible, mais aucune donnée pour ce MEP ID.
+        "absent"   — dump non disponible (cache manquant ou erreur réseau).
+        "erreur"   — exception inattendue.
+    """
+    try:
+        from normalize_parltrack_dumps import enrich_pivot_with_parltrack  # noqa: PLC0415
+    except ImportError as exc:
+        _tprint(f"  [!] normalize_parltrack_dumps indisponible : {exc}")
+        return "absent"
+
+    if not _parltrack_cache_available():
+        meta = pivot_profile.setdefault("meta", {})
+        meta.setdefault("warnings", []).append(
+            "ParlTrack (fallback) : dumps absents ce run — "
+            "données ParlTrack issues du cache/dépôt précédent."
+        )
+        return "absent"
+
+    try:
+        nb_tp_avant = len(pivot_profile.get("textes_portes") or [])
+        nb_amd_avant = len(pivot_profile.get("amendements") or [])
+        enrich_pivot_with_parltrack(pivot_profile, mep_id=mep_id)
+        nb_tp_apres = len(pivot_profile.get("textes_portes") or [])
+        nb_amd_apres = len(pivot_profile.get("amendements") or [])
+        if nb_tp_apres > nb_tp_avant or nb_amd_apres > nb_amd_avant:
+            return "enrichi"
+        return "vide"
+    except Exception as exc:
+        pivot_profile.setdefault("meta", {}).setdefault("warnings", []).append(
+            f"ParlTrack enrichissement échoué : {exc}"
+        )
+        _tprint(f"  [!] Erreur ParlTrack pour MEP {mep_id} : {exc}")
+        return "erreur"
+
+
 def process_candidat(
     candidat: dict[str, Any],
     args: argparse.Namespace,
@@ -176,17 +239,86 @@ def process_candidat(
 
     Conçu pour être appelé depuis un ThreadPoolExecutor (niveau 2) : ne modifie
     aucun état partagé en dehors des fichiers de sortie individuels (thread-safe).
+
+    Modes :
+    - Normal (défaut) : fetch réseau FR et/ou UE selon --source, écriture raw, pivot optionnel.
+    - --pivot-only    : charge le profil brut existant, normalise en pivot (pas de réseau).
     """
     slug = candidat.get("slug")
     nom = candidat.get("nom")
     effective_slug = slug or _slugify(nom)
     json_path = out_dir / f"{effective_slug}.json"
 
+    source = getattr(args, "source", "all")
+
+    # ── Mode --pivot-only : pas de réseau, juste normalisation ──────────────
+    if getattr(args, "pivot_only", False):
+        if not json_path.exists():
+            _tprint(f"— {nom} ({effective_slug}) : profil brut absent, ignoré en mode --pivot-only.")
+            return {"nom": nom, "slug": effective_slug, "statut": "absent_raw", "parltrack": "n/a"}
+
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                profile = json.load(f)
+        except (json.JSONDecodeError, OSError) as exc:
+            _tprint(f"  [!] Lecture impossible de {json_path} : {exc}")
+            return {"nom": nom, "slug": effective_slug, "statut": "erreur", "parltrack": "n/a"}
+
+        chambre = profile.get("chambre")
+        mandat_ue = profile.get("mandat_europeen")
+        parti = candidat.get("parti")
+
+        pivot_profile = normalize_nosdeputes(profile, parti=parti) if chambre else None
+        if mandat_ue is not None:
+            ue_pivot = normalize_europarl(mandat_ue, parti=parti)
+            if pivot_profile is None:
+                pivot_profile = ue_pivot
+            else:
+                pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
+                pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
+
+        if pivot_profile is None:
+            _tprint(f"— {nom} ({effective_slug}) : aucune source normalisable en --pivot-only.")
+            return {"nom": nom, "slug": effective_slug, "statut": "non_normalisable", "parltrack": "n/a"}
+
+        parltrack_statut = "n/a"
+        if getattr(args, "enrich_parltrack", False) and mandat_ue:
+            mep_id = mandat_ue.get("identifiant_pe")
+            if mep_id is not None:
+                parltrack_statut = _enrich_pivot_with_parltrack_safe(pivot_profile, int(mep_id))
+                _tprint(f"  ParlTrack MEP {mep_id} : {parltrack_statut}")
+
+        pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
+        if not args.no_merge and pivot_path.exists():
+            try:
+                with open(pivot_path, encoding="utf-8") as f:
+                    existing_pivot = json.load(f)
+                pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+            except (json.JSONDecodeError, OSError) as exc:
+                _tprint(f"  [!] Fusion impossible avec le pivot existant ({pivot_path}), écrasement : {exc}")
+        with open(pivot_path, "w", encoding="utf-8") as f:
+            json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
+        _tprint(f"  ✓ pivot-only → {pivot_path}")
+        return {
+            "nom": nom, "slug": effective_slug, "statut": "ok_pivot_only", "parltrack": parltrack_statut,
+        }
+
+    # ── Mode normal : skip-existing ─────────────────────────────────────────
     if args.skip_existing and json_path.exists():
         _tprint(f"— {nom} ({effective_slug}) : profil déjà présent, ignoré (--skip-existing).")
-        return {"nom": nom, "slug": effective_slug, "statut": "deja_present"}
+        return {"nom": nom, "slug": effective_slug, "statut": "deja_present", "parltrack": "n/a"}
 
     _tprint(f"\n=== {nom} ({effective_slug}) ===")
+
+    # Chambres FR à interroger selon --source
+    if source == "an":
+        chambres_fr: list[str] = ["deputes"]
+    elif source == "senat":
+        chambres_fr = ["senateurs"]
+    elif source == "ue":
+        chambres_fr = []  # skip FR entièrement
+    else:  # "all"
+        chambres_fr = list(CHAMBRES)
 
     # --- Niveau 1 : appels FR et UE en parallèle ---
     profile: Optional[dict] = None
@@ -194,15 +326,20 @@ def process_candidat(
     mandat_ue: Optional[dict] = None
 
     def _fetch_fr() -> tuple[Optional[dict], Optional[str]]:
+        if not chambres_fr:
+            return None, None
         if not slug:
             _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés/NosSénateurs).")
             return None, None
-        result = build_profile_any_chambre(slug, args.max_pages)
+        result = build_profile_any_chambre(slug, args.max_pages, chambres=chambres_fr)
         if result[0] is None:
-            _tprint(f"  [!] Aucune identité trouvée pour {slug} (ni député, ni sénateur).")
+            _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
         return result
 
     def _fetch_ue() -> Optional[dict]:
+        # --source an ou senat : extraction scopée, pas d'UE dans cette passe
+        if source in ("an", "senat"):
+            return None
         if args.skip_ue:
             return None
         try:
@@ -220,7 +357,7 @@ def process_candidat(
         mandat_ue = future_ue.result()
 
     if profile is None and mandat_ue is None:
-        return {"nom": nom, "slug": effective_slug, "statut": "introuvable"}
+        return {"nom": nom, "slug": effective_slug, "statut": "introuvable", "parltrack": "n/a"}
     if profile is None:
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
@@ -281,6 +418,7 @@ def process_candidat(
         "chambre": chambre,
         "nb_interventions": nb_interventions,
         "nb_mandats_ue": nb_mandats_ue,
+        "parltrack": "n/a",
     }
 
 
@@ -291,8 +429,49 @@ def main() -> None:
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--skip-ue", action="store_true", help="Ne pas interroger l'Open Data Portal du Parlement européen (mandat européen)")
+    parser.add_argument(
+        "--source",
+        choices=list(SOURCE_VALUES),
+        default="all",
+        help=(
+            "Scoper l'extraction à une seule source : "
+            "'an' = Assemblée nationale uniquement, "
+            "'senat' = Sénat uniquement, "
+            "'ue' = Open Data Portal UE uniquement, "
+            "'all' = toutes les sources (comportement par défaut). "
+            "Avec 'an'/'senat', la source UE est ignorée. "
+            "Avec 'ue', les sources FR (AN/Sénat) sont ignorées."
+        ),
+    )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
     parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
+    parser.add_argument(
+        "--pivot-only",
+        action="store_true",
+        help=(
+            "Mode sans réseau : charge les profils bruts existants dans --out-dir et ne fait que la "
+            "normalisation pivot (--pivot implicite). Aucun appel API. Utile dans merge-and-pivot après "
+            "assemblage des artifacts d'extraction parallèles."
+        ),
+    )
+    parser.add_argument(
+        "--enrich-parltrack",
+        action="store_true",
+        help=(
+            "Enrichir les profils pivot avec les données ParlTrack (textes_portes, amendements) si les "
+            "dumps .zst sont disponibles dans .cache/parltrack/. Si les dumps sont absents, un warning "
+            "'ParlTrack (fallback)' est ajouté à meta.warnings sans bloquer la génération."
+        ),
+    )
+    parser.add_argument(
+        "--parltrack-status-out",
+        default=None,
+        metavar="FILE",
+        help=(
+            "Écrire un fichier JSON résumant le statut d'enrichissement ParlTrack par candidat "
+            "(enrichi / vide / absent / erreur / n/a). Utilisé par check_quality_gate.py --parltrack-status-file."
+        ),
+    )
     parser.add_argument("--pivot-dir", default=str(DEFAULT_PIVOT_DIR), help=f"Dossier de sortie des profils pivot (défaut: {DEFAULT_PIVOT_DIR})")
     parser.add_argument("--no-merge", action="store_true",
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
@@ -310,6 +489,10 @@ def main() -> None:
     parser.add_argument("--no-checkpoint", action="store_true",
                         help="Désactiver l'écriture du point de sauvegarde intermédiaire.")
     args = parser.parse_args()
+
+    # --pivot-only implique --pivot (normalisation pivot activée)
+    if args.pivot_only:
+        args.pivot = True
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -351,7 +534,7 @@ def main() -> None:
                 nom = candidat.get("nom", "?")
                 slug = candidat.get("slug") or _slugify(nom)
                 print(f"  [!] Erreur inattendue pour {nom} ({slug}) : {exc}")
-                resultat = {"nom": nom, "slug": slug, "statut": "erreur"}
+                resultat = {"nom": nom, "slug": slug, "statut": "erreur", "parltrack": "n/a"}
             resultats.append(resultat)
             if not args.no_checkpoint:
                 _save_checkpoint(checkpoint_path, resultats)
@@ -359,8 +542,29 @@ def main() -> None:
 
     print("\n=== Résumé ===")
     for r in sorted(resultats, key=lambda x: x.get("nom") or ""):
-        extra = f" ({r.get('nb_interventions')} interventions, {r.get('chambre')})" if r["statut"] == "ok" else ""
+        extra = f" ({r.get('nb_interventions')} interventions, {r.get('chambre')})" if r["statut"] in ("ok", "ok_pivot_only") else ""
         print(f"  - {r['nom']}: {r['statut']}{extra}")
+
+    # Écriture du fichier de statut ParlTrack si demandé
+    if args.parltrack_status_out:
+        parltrack_status: dict[str, Any] = {
+            "enrichi": [],
+            "vide": [],
+            "absent": [],
+            "erreur": [],
+            "n/a": [],
+        }
+        for r in resultats:
+            statut_pt = r.get("parltrack", "n/a") or "n/a"
+            parltrack_status.setdefault(statut_pt, []).append(r.get("slug") or r.get("nom", "?"))
+
+        status_path = Path(args.parltrack_status_out)
+        status_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(status_path, "w", encoding="utf-8") as f:
+            json.dump(parltrack_status, f, ensure_ascii=False, indent=2)
+        print(f"\n  ParlTrack status → {status_path}")
+        print(f"    enrichi : {len(parltrack_status.get('enrichi', []))}")
+        print(f"    absent (fallback) : {len(parltrack_status.get('absent', []))}")
 
 
 if __name__ == "__main__":
