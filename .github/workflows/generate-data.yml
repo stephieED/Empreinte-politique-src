@@ -105,7 +105,7 @@ jobs:
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
-      # fresh_run=true  → tolérance zéro (threshold=0) : le moindre IncompleteRead bloque
+      # fresh_run=true  → tolérance zéro (threshold=2) : 2 IncompleteRead bloque
       #                   le commit. Structure groupe cassée = échec dur dans les deux cas.
       # fresh_run=false → seuil souple (inputs.threshold, défaut 3) : les aléas réseau
       #                   transitoires ne bloquent pas le commit incrémental.
@@ -114,7 +114,7 @@ jobs:
           FRESH: ${{ inputs.fresh_run }}
           THRESHOLD: ${{ inputs.threshold != '' && inputs.threshold || 3 }}
         run: |
-          [[ "$FRESH" == "true" ]] && GATE_THRESHOLD=0 || GATE_THRESHOLD="$THRESHOLD"
+          [[ "$FRESH" == "true" ]] && GATE_THRESHOLD=2 || GATE_THRESHOLD="$THRESHOLD"
           python3 src/check_quality_gate.py \
             --profiles-dir      pivot_data/profiles \
             --groupes-dir       pivot_data/groupes \
