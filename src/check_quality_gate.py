@@ -617,6 +617,94 @@ def _report_groupes(
 
 
 # ---------------------------------------------------------------------------
+# Section 5 — Couverture ParlTrack (optionnelle)
+# ---------------------------------------------------------------------------
+
+def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
+    """Lit le fichier de statut ParlTrack produit par generate_all_profiles.py
+    et retourne (console_text, markdown_text).
+
+    Statuts attendus dans le fichier JSON :
+      enrichi  — données ParlTrack ajoutées ce run.
+      vide     — dumps disponibles, aucune donnée pour ce candidat.
+      absent   — dumps absents (fallback sur cache/dépôt précédent).
+      erreur   — exception lors de l'enrichissement.
+      n/a      — candidat sans mandat UE / enrichissement non demandé.
+    """
+    if not status_file.exists():
+        msg = f"Fichier de statut ParlTrack introuvable : {status_file}"
+        return (
+            f"\n┌─ 5/5  Enrichissement ParlTrack ────────────────────────────────────\n│  ⚠ {msg}\n└{'─'*67}",
+            f"### 5 · Enrichissement ParlTrack\n\n⚠️ {msg}\n",
+        )
+
+    data = _load_json(status_file)
+    if not isinstance(data, dict):
+        return ("", "")
+
+    enrichi: list[str] = data.get("enrichi") or []
+    vide: list[str] = data.get("vide") or []
+    absent: list[str] = data.get("absent") or []
+    erreur: list[str] = data.get("erreur") or []
+    na: list[str] = data.get("n/a") or []
+
+    n_enrichi = len(enrichi)
+    n_vide = len(vide)
+    n_absent = len(absent)
+    n_erreur = len(erreur)
+    n_na = len(na)
+
+    # ── Console ───────────────────────────────────────────────────────────
+    icon = "✓" if n_absent == 0 and n_erreur == 0 else ("⚠" if n_erreur == 0 else "✗")
+    lines = [
+        "",
+        "┌─ 5/5  Enrichissement ParlTrack ────────────────────────────────────",
+        f"│  Ce run : {n_enrichi} enrichi(s)   {n_vide} vide(s)   {n_absent} fallback(s)   {n_erreur} erreur(s)   {n_na} sans mandat UE",
+        "│",
+    ]
+    if n_absent > 0:
+        lines.append(f"│  ⚠ {n_absent} candidat(s) en fallback (dumps ParlTrack absents ce run) :")
+        for slug in absent:
+            lines.append(f"│    · {slug}")
+        lines.append("│")
+    if n_erreur > 0:
+        lines.append(f"│  ✗ {n_erreur} candidat(s) en erreur ParlTrack :")
+        for slug in erreur:
+            lines.append(f"│    • {slug}")
+        lines.append("│")
+    if n_enrichi > 0:
+        lines.append(f"│  ✓ {n_enrichi} candidat(s) enrichi(s) par ParlTrack ce run :")
+        for slug in enrichi:
+            lines.append(f"│    + {slug}")
+    elif n_absent == 0 and n_erreur == 0:
+        lines.append("│  ✓ Aucun MEP candidat à enrichir ou données déjà à jour.")
+    lines.append("└" + "─" * 67)
+    console = "\n".join(lines)
+
+    # ── Markdown ─────────────────────────────────────────────────────────
+    overall_md = "✅" if n_absent == 0 and n_erreur == 0 else ("⚠️" if n_erreur == 0 else "❌")
+    md_lines = [
+        "### 5 · Enrichissement ParlTrack",
+        "",
+        "| Statut | Nb | Candidats |",
+        "|---|---|---|",
+        f"| ✅ Enrichis ce run | {n_enrichi} | {', '.join(f'`{s}`' for s in enrichi) or '—'} |",
+        f"| 🔵 Dumps OK, aucune donnée | {n_vide} | {', '.join(f'`{s}`' for s in vide) or '—'} |",
+        f"| ⚠️ Fallback (dumps absents) | {n_absent} | {', '.join(f'`{s}`' for s in absent) or '—'} |",
+        f"| ❌ Erreur enrichissement | {n_erreur} | {', '.join(f'`{s}`' for s in erreur) or '—'} |",
+        f"| — Sans mandat UE / N/A | {n_na} | — |",
+        "",
+    ]
+    if n_absent > 0:
+        md_lines.append(
+            "> ⚠️ Les candidats en **fallback** conservent les données ParlTrack du dépôt précédent. "
+            "Relancer le job `extract-parltrack` pour actualiser."
+        )
+        md_lines.append("")
+    return console, "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -659,6 +747,16 @@ def main() -> int:
             "(soft fail si inférieur, défaut : 1). 0 = désactivé."
         ),
     )
+    parser.add_argument(
+        "--parltrack-status-file",
+        type=Path,
+        default=None,
+        dest="parltrack_status_file",
+        help=(
+            "Fichier JSON produit par generate_all_profiles.py --parltrack-status-out. "
+            "Active la section 5 du rapport (enrichissement ParlTrack ce run vs fallback)."
+        ),
+    )
     args = parser.parse_args()
 
     run_date = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -687,6 +785,12 @@ def main() -> int:
     )
     grp_exit = 1 if grp_hard else 0
 
+    # ── Section 5 : Couverture ParlTrack (optionnelle) ────────────────────
+    pt_console = ""
+    pt_md = ""
+    if args.parltrack_status_file is not None:
+        pt_console, pt_md = _report_parltrack_status(args.parltrack_status_file)
+
     exit_code = 1 if (ir_exit == 1 or grp_exit == 1) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
@@ -699,6 +803,8 @@ def main() -> int:
     print(cov_console)
     print(low_console)
     print(grp_console)
+    if pt_console:
+        print(pt_console)
     print()
 
     # ── GitHub Step Summary (Markdown) ────────────────────────────────────
@@ -712,6 +818,7 @@ def main() -> int:
         cov_md,
         low_md,
         grp_md,
+        pt_md,
     ])
     _write_step_summary(md)
 
