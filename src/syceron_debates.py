@@ -140,13 +140,13 @@ def ensure_syceron_downloaded(
                 shutil.copyfile(source, zip_path)
             return _extract_syceron_zip(zip_path, legislature)
 
+        if legislature not in SYCERON_AVAILABLE_LEGISLATURES:
+            return None
+
         if not force_download and zip_path.is_file():
             extracted = _extract_syceron_zip(zip_path, legislature)
             if extracted is not None:
                 return extracted
-
-        if legislature not in SYCERON_AVAILABLE_LEGISLATURES:
-            return None
 
         if not _download_syceron_zip(legislature, zip_path):
             return None

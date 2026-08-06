@@ -8,7 +8,11 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from syceron_debates import ensure_syceron_downloaded, iter_syceron_xml_files
+from syceron_debates import (
+    SYCERON_ZIP_NAME,
+    ensure_syceron_downloaded,
+    iter_syceron_xml_files,
+)
 
 
 def _make_syceron_zip(files: dict[str, str]) -> bytes:
@@ -45,7 +49,7 @@ def test_ensure_syceron_downloaded_from_local_zip(tmp_path):
 
     assert xml_dir == cache_dir / "15" / "xml" / "compteRendu"
     assert (xml_dir / "CRSANR5L15S001.xml").is_file()
-    assert (cache_dir / "15" / "syseron.xml.zip").is_file()
+    assert (cache_dir / "15" / SYCERON_ZIP_NAME).is_file()
 
 
 def test_ensure_syceron_downloaded_returns_none_for_unavailable_legislature(tmp_path):
