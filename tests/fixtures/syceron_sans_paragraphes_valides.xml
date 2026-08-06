@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture : aucun paragraphe avec orateur identifié → liste vide attendue -->
+<compteRendu>
+  <metadonnees>
+    <dateSeance>2025-02-03</dateSeance>
+    <numSeance>015</numSeance>
+    <legislature>17</legislature>
+    <session>ordinaire 2024-2025</session>
+  </metadonnees>
+  <contenu>
+    <pointODJ>
+      <titrePointODJ>Ouverture de séance</titrePointODJ>
+      <paragraphes>
+        <!-- Paragraphe présidence sans <orateur> -->
+        <paragraphe>
+          <texte>La séance est ouverte.</texte>
+        </paragraphe>
+        <!-- Paragraphe avec orateur sans acteurRef ni prenomNom -->
+        <paragraphe>
+          <orateur>
+            <qualite>M. le président</qualite>
+          </orateur>
+          <texte>L'ordre du jour appelle la suite de la discussion.</texte>
+        </paragraphe>
+      </paragraphes>
+    </pointODJ>
+  </contenu>
+</compteRendu>

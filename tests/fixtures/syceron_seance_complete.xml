@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture : compte rendu complet avec deux points ODJ et plusieurs orateurs -->
+<compteRendu>
+  <metadonnees>
+    <legislature>17</legislature>
+    <session>ordinaire 2024-2025</session>
+    <dateSeance>2024-10-15</dateSeance>
+    <numSeance>042</numSeance>
+  </metadonnees>
+  <contenu>
+    <pointODJ>
+      <titrePointODJ>Projet de loi de finances pour 2025</titrePointODJ>
+      <dossierRef>PLFR5L17B0512</dossierRef>
+      <thematiqueRef>budget</thematiqueRef>
+      <paragraphes>
+        <paragraphe>
+          <orateur>
+            <acteurRef>PA794412</acteurRef>
+            <prenomNom>Jean Dupont</prenomNom>
+            <qualite>député</qualite>
+          </orateur>
+          <texte>Monsieur le ministre, je souhaite attirer votre attention sur les crédits alloués aux collectivités territoriales dans ce projet de loi de finances.</texte>
+        </paragraphe>
+        <paragraphe>
+          <orateur>
+            <acteurRef>PA123456</acteurRef>
+            <prenomNom>Marie Martin</prenomNom>
+            <qualite>rapporteure spéciale</qualite>
+          </orateur>
+          <texte>Je rappelle que l'article 40 de la Constitution limite les marges de manœuvre parlementaires sur les dépenses.</texte>
+        </paragraphe>
+        <!-- Paragraphe de présidence sans orateur identifié : doit être ignoré -->
+        <paragraphe>
+          <texte>La séance est ouverte à quinze heures.</texte>
+        </paragraphe>
+      </paragraphes>
+    </pointODJ>
+    <pointODJ>
+      <titrePointODJ>Questions au gouvernement</titrePointODJ>
+      <dossierRef/>
+      <thematiqueRef>questions_gouvernement</thematiqueRef>
+      <paragraphes>
+        <paragraphe>
+          <orateur>
+            <acteurRef>PA794412</acteurRef>
+            <prenomNom>Jean Dupont</prenomNom>
+            <qualite>député</qualite>
+          </orateur>
+          <texte>Ma question porte sur la réforme des retraites.</texte>
+        </paragraphe>
+      </paragraphes>
+    </pointODJ>
+  </contenu>
+</compteRendu>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture : métadonnées partielles — dateSeance et numSeance absents -->
+<compteRendu>
+  <metadonnees>
+    <legislature>16</legislature>
+    <!-- dateSeance et numSeance intentionnellement absents -->
+    <session>extraordinaire 2022-2023</session>
+  </metadonnees>
+  <contenu>
+    <pointODJ>
+      <titrePointODJ>Discussion générale</titrePointODJ>
+      <paragraphes>
+        <paragraphe>
+          <orateur>
+            <acteurRef>PA654321</acteurRef>
+            <prenomNom>Sophie Bernard</prenomNom>
+            <qualite>sénatrice</qualite>
+          </orateur>
+          <texte>Je prends la parole au nom de mon groupe pour exprimer notre position.</texte>
+        </paragraphe>
+      </paragraphes>
+    </pointODJ>
+  </contenu>
+</compteRendu>

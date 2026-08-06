@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture : texte d'intervention dépassant 180 caractères → doit être tronqué -->
+<compteRendu>
+  <metadonnees>
+    <dateSeance>2025-01-20</dateSeance>
+    <numSeance>010</numSeance>
+    <legislature>17</legislature>
+    <session>ordinaire 2024-2025</session>
+  </metadonnees>
+  <contenu>
+    <pointODJ>
+      <titrePointODJ>Débat sur l'énergie</titrePointODJ>
+      <dossierRef>DOSS-ENERGIE-2025</dossierRef>
+      <thematiqueRef>energie</thematiqueRef>
+      <paragraphes>
+        <paragraphe>
+          <orateur>
+            <acteurRef>PA999001</acteurRef>
+            <prenomNom>Pierre Leroy</prenomNom>
+            <qualite>député</qualite>
+          </orateur>
+          <texte>La transition énergétique est un enjeu majeur pour notre pays et pour les générations futures. Il convient d'examiner avec soin les différentes options disponibles, qu'il s'agisse du nucléaire, des énergies renouvelables ou des économies d'énergie structurelles.</texte>
+        </paragraphe>
+      </paragraphes>
+    </pointODJ>
+  </contenu>
+</compteRendu>
