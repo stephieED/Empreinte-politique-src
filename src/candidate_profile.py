@@ -1984,7 +1984,7 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
 
 
 
-def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> dict:
+def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, skip_interventions: bool = False) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
     sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
@@ -2069,7 +2069,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
             base_urls,
             search_candidate_name,
             object_name="Intervention",
-            max_pages=intervention_max_pages,
+            max_pages=0 if skip_interventions else intervention_max_pages,
         )
         interventions_base_url = base_urls[0]
     except Exception as exc:
@@ -2285,7 +2285,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10) -> 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
     # NosDéputés déjà collectées (type_detail="question", source AN structurée). ---
-    if chambre == "deputes" and profile.get("identite"):
+    if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
             official_questions = fetch_questions_officielles(profile["identite"].get("url_an_ou_senat"))
             if official_questions:

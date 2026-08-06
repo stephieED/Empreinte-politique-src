@@ -126,7 +126,7 @@ _slugify = slugify
 
 
 def build_profile_any_chambre(
-    slug: str, max_pages: int, chambres: Optional[list[str]] = None
+    slug: str, max_pages: int, chambres: Optional[list[str]] = None, skip_interventions: bool = False
 ) -> tuple[Optional[dict], Optional[str]]:
     """Essaie les chambres indiquées (défaut : deputes puis senateurs) et renvoie
     le premier profil avec une identité exploitable."""
@@ -134,7 +134,7 @@ def build_profile_any_chambre(
         chambres = CHAMBRES
     for chambre in chambres:
         try:
-            profile = build_profile(chambre, slug, intervention_max_pages=max_pages)
+            profile = build_profile(chambre, slug, intervention_max_pages=max_pages, skip_interventions=skip_interventions)
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
             continue
@@ -331,7 +331,7 @@ def process_candidat(
         if not slug:
             _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés/NosSénateurs).")
             return None, None
-        result = build_profile_any_chambre(slug, args.max_pages, chambres=chambres_fr)
+        result = build_profile_any_chambre(slug, args.max_pages, chambres=chambres_fr, skip_interventions=args.skip_interventions)
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
         return result
@@ -477,6 +477,9 @@ def main() -> None:
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
                              "qui évite de perdre des votes/interventions/mandats déjà collectés en cas d'aléa des API).")
+    parser.add_argument("--skip-interventions", action="store_true",
+                        help="Ne pas extraire les interventions (ni la recherche NosDéputés ni les questions officielles AN). "
+                             "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
     parser.add_argument("--workers", type=int, default=4, metavar="N",
                         help="Nombre de candidats traités en parallèle (niveau 2 ; défaut: 4). "
                              "Réduire si les API publiques commencent à renvoyer des erreurs 429.")
