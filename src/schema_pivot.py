@@ -289,6 +289,10 @@ KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 # thèmes/sources textuels, séance et dossier sous forme libre mais structurée.
 KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS: tuple[str, ...] = ("theme_officiel", "source")
 KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS: tuple[str, ...] = ("seance", "dossier")
+KNOWN_OPTIONAL_INTERVENTION_FIELDS: tuple[str, ...] = (
+    *KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS,
+    *KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS,
+)
 
 
 def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
