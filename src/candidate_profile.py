@@ -283,36 +283,79 @@ def _xml_to_data(xml_text: str) -> Optional[Any]:
     return {root.tag: convert(root)}
 
 
-def _get_payload(url: str) -> Optional[Any]:
-    """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None en cas d'échec."""
+# Sentinel renvoyé par _get_payload pour signaler un échec déterministe (4xx,
+# format non pris en charge) qui ne doit pas déclencher de nouvel essai sur
+# d'autres formats ou d'autres bases pour la même ressource.
+_TERMINAL_FAILURE = object()
+
+
+def _get_payload(url: str) -> Any:
+    """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
+
+    Retourne :
+    - Un objet Python exploitable en cas de succès.
+    - ``_TERMINAL_FAILURE`` pour les échecs déterministes (4xx, format non pris
+      en charge) : aucun essai ultérieur sur d'autres formats ou miroirs ne
+      serait utile pour cette ressource.
+    - ``None`` pour les échecs transitoires (erreur réseau, timeout) : un
+      nouvel essai sur un autre miroir reste légitime.
+    """
     try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except requests.HTTPError as exc:
+            print(f"  [!] Échec HTTP {resp.status_code} depuis {url} : {exc}", file=sys.stderr)
+            # 4xx = erreur déterministe côté serveur (ressource absente, non
+            # autorisée...) : inutile de retenter sur un autre format.
+            # 5xx = erreur serveur potentiellement transitoire : on retourne
+            # None pour rester éligible à un essai sur un autre miroir.
+            return _TERMINAL_FAILURE if 400 <= resp.status_code < 500 else None
         content_type = resp.headers.get("content-type", "")
         if "json" in content_type.lower() or resp.text.lstrip().startswith("{"):
             try:
                 return resp.json()
             except ValueError as exc:
                 print(f"  [!] Réponse JSON invalide depuis {url} : {exc}", file=sys.stderr)
-                return None
+                # JSON malformé = réponse serveur incohérente, pas un vrai JSON :
+                # on traite comme terminal pour ne pas réessayer en XML.
+                return _TERMINAL_FAILURE
         if "xml" in content_type.lower() or resp.text.lstrip().startswith("<"):
             parsed = _xml_to_data(resp.text)
             if parsed is not None:
                 return parsed
         print(f"  [!] Format de réponse non pris en charge depuis {url}", file=sys.stderr)
-        return None
+        # Format inconnu = réponse serveur non exploitable de façon déterministe.
+        return _TERMINAL_FAILURE
     except requests.RequestException as exc:
         print(f"  [!] Échec de requête sur {url} : {exc}", file=sys.stderr)
         return None
 
 
 def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Optional[str]]:
-    """Essaie plusieurs URLs jusqu'à trouver un payload exploitable."""
+    """Essaie plusieurs URLs jusqu'à trouver un payload exploitable.
+
+    Logique de court-circuit :
+    - Si ``_get_payload`` renvoie ``_TERMINAL_FAILURE`` sur le suffixe ``/json``,
+      on saute directement le suffixe ``/xml`` pour ce ``base_url`` (même
+      ressource, format différent : le serveur a déjà répondu de façon
+      déterministe).
+    - Si ``_get_payload`` renvoie ``_TERMINAL_FAILURE`` directement sur un
+      ``base_url`` (4xx), on passe au ``base_url`` suivant sans essayer ``/xml``.
+    """
     for base_url in urls:
+        base_terminal = False
         for suffix in ["/json", "/xml"]:
+            if base_terminal:
+                break
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> {label} : {url}")
             data = _get_payload(url)
+            if data is _TERMINAL_FAILURE:
+                # Échec déterministe : inutile d'essayer l'autre format sur ce
+                # base_url (même ressource servie différemment).
+                base_terminal = True
+                break
             if not _is_empty_payload(data):
                 return data, base_url
             time.sleep(0.2)
@@ -1564,6 +1607,9 @@ def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Option
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> Récupération des votes : {url}")
             data = _get_payload(url)
+            if data is _TERMINAL_FAILURE:
+                # Échec déterministe : inutile d'essayer l'autre format sur ce base_url.
+                break
             if data is None:
                 continue
             votes = data.get("votes", data) if isinstance(data, dict) else data
