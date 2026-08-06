@@ -508,9 +508,9 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                     )
             for key in KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS:
                 value = intervention.get(key)
-                if value is not None and not isinstance(value, (str, dict)):
+                if value is not None and not isinstance(value, dict):
                     errors.append(
-                        f"interventions[{i}].{key} doit être une chaîne, un dict ou null, "
+                        f"interventions[{i}].{key} doit être un dict ou null, "
                         f"reçu : {type(value).__name__}."
                     )
 

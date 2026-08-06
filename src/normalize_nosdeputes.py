@@ -116,7 +116,7 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
     }
     for key in ("theme_officiel", "seance", "dossier", "source"):
         if key in i:
-            result[key] = i.get(key)
+            result[key] = i[key]
     # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").
     if i.get("type_detail") == "question":
         result["sous_type"] = i.get("sous_type")      # "QE" | "QG" | "QOSD"
