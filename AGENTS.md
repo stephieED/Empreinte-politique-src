@@ -133,11 +133,26 @@ Before finishing a task, update only what actually changed — skip a file if no
 
 Never create a missing file from this list without flagging it first.
 
+## 9. Agent chat verbosity
+
+Keep chat replies short — this file and `docs/` already hold the rationale;
+don't restate it in the chat.
+
+- 1-3 sentences per turn, no preamble, no "in summary" recap.
+- Report changes as: files touched + one-line reason. Skip what you read/considered.
+- Test/command output: pass/fail counts only, unless something failed.
+- Always flag in the chat: schema/validation changes, anything touching
+  rules in Section 2, new warnings/errors introduced, or a choice between
+  multiple valid approaches — even briefly.
+- Everything else (files read, intermediate reasoning, alternatives
+  considered but discarded) can be omitted from the chat.
+  
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`: structure contracts.
 - `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
+- `docs/extract-an.md`: extract-an job detail (sources, extraction chain, artifacts).
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read

@@ -36,7 +36,7 @@ rapporteur, not individual amendments to their actual authors.
 
 **Status: superseded.** A follow-up investigation into third-party
 aggregators (Parltrack, HowTheyVote) found a viable path — see
-`docs/ue_donnees_sources_investigation_2026-08.md` for the comparative
+`docs/extract-ue.md` for the comparative
 feasibility verdict and implementation brief. This entry is kept for
 context on why the official-API-only approach was abandoned.
 

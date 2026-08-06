@@ -18,6 +18,24 @@ on:
           y compris fresh_run=true. Défaut : 3.
         type: number
         default: 3
+      workers:
+        description: >
+          Nombre de workers parallèles pour generate_all_profiles.py
+          (candidats traités simultanément). Défaut : 1 (séquentiel).
+        type: number
+        default: 1
+      extract_interventions:
+        description: >
+          Extraire les interventions dans extract-an (recherche NosDéputés + questions officielles AN).
+          false (défaut) = skip interventions, extraction plus rapide.
+        type: boolean
+        default: false
+      max_pages:
+        description: >
+          Pages max. de recherche d'interventions par candidat (50 résultats/page).
+          Ignoré si extract_interventions=false. Défaut : 5.
+        type: number
+        default: 5
 
 # Nécessaire pour que le job puisse pousser la mise à jour des données.
 permissions:
@@ -85,7 +103,11 @@ jobs:
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source an "${MERGE_FLAG[@]}"
+          INTERV_FLAG=()
+          [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
+          MAX_PAGES_FLAG=()
+          [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
+          python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       - name: Upload artifact AN
         uses: actions/upload-artifact@v4
@@ -135,7 +157,7 @@ jobs:
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source senat "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact Sénat
         uses: actions/upload-artifact@v4
@@ -185,7 +207,7 @@ jobs:
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source ue "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact UE
         uses: actions/upload-artifact@v4
@@ -341,6 +363,7 @@ jobs:
             --pivot-only \
             --enrich-parltrack \
             --parltrack-status-out parltrack-status.json \
+            --workers ${{ inputs.workers }} \
             "${MERGE_FLAG[@]}"
 
       - name: Générer les profils de parti
