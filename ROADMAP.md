@@ -26,7 +26,7 @@ something is pending, not *why*.
   `technical_decisions.md#hors-perimetre`.
 - EU textes_portés/amendements via the official API — superseded by the
   Parltrack approach, see `technical_decisions.md#hors-perimetre` and
-  `docs/ue_donnees_sources_investigation_2026-08.md`.
+  `docs/extract-ue.md`.
 - Precise ministerial portfolio title — no source identified, see
   `technical_decisions.md#hors-perimetre`.
 - Extra-parliamentary bodies matching — homonym risk, see
