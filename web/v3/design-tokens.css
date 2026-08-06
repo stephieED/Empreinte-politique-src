@@ -207,32 +207,38 @@
   }
   .textes-kpi-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 0.6rem;
     margin-bottom: 0.8rem;
-  }
-  .textes-kpi-grid.has-nondistinct {
-    grid-template-columns: 1fr 1fr;
-  }
-  .textes-kpi-grid.has-gouvernement {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-  .textes-kpi-nondistinct {
-    grid-column: 1 / -1;
   }
   .textes-kpi-col {
     border: 1px solid var(--line);
     padding: 0.6rem 0.7rem;
-    cursor: pointer;
     background: var(--surface);
-    transition: background 0.1s;
+    min-height: 140px;
   }
-  .textes-kpi-col:hover { background: var(--accent-soft); }
-  .textes-kpi-col.is-active {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
+  .textes-kpi-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.65rem;
+    margin-bottom: 0.55rem;
+    font: 600 0.62rem var(--font-family-mono);
+    text-transform: uppercase;
+  }
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid var(--line);
+    padding: 0.15rem 0.35rem;
+    background: var(--bg);
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    border: 1px solid var(--line);
   }
   .textes-kpi-col-label {
     font-size: 0.68rem;
@@ -265,6 +271,57 @@
     color: var(--muted);
     font-style: italic;
     margin-bottom: 0.4rem;
+  }
+  .scope-bars {
+    display: grid;
+    gap: 0.42rem;
+  }
+  .scope-bar-row {
+    display: grid;
+    grid-template-columns: minmax(92px, 1fr) minmax(0, 3fr) auto;
+    gap: 0.5rem;
+    align-items: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    width: 100%;
+    padding: 0.2rem 0.15rem;
+    cursor: pointer;
+  }
+  .scope-bar-row.is-active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .scope-bar-row.is-dimmed { opacity: 0.55; }
+  .scope-bar-label {
+    font: 600 0.64rem var(--font-family-mono);
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .scope-bar-track {
+    height: 11px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+    width: 100%;
+  }
+  .scope-bar-fill {
+    display: block;
+    height: 100%;
+    min-width: 0;
+  }
+  .scope-bar-count {
+    font: 600 0.7rem var(--font-family-mono);
+    min-width: 2ch;
+  }
+  .scope-bar-note {
+    grid-column: 2 / span 2;
+    font-size: 0.64rem;
+    color: var(--muted);
+    font-style: italic;
   }
   /* Barre empilée amendements */
   .outcome-bar {
@@ -353,6 +410,77 @@
     padding: 0.18rem 0.38rem;
     font-family: 'IBM Plex Mono', 'Courier New', monospace;
     font-size: 0.68rem;
+  }
+  .legislative-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+    padding-top: 0.35rem;
+  }
+  .legislative-left-column {
+    min-width: 0;
+  }
+  .legislative-right-column {
+    min-width: 0;
+  }
+  .legislative-scroll-frame {
+    position: relative;
+    border: 1px solid var(--line);
+    max-height: min(70vh, 860px);
+    overflow: auto;
+    padding: 0.65rem;
+    background: var(--bg);
+    scrollbar-gutter: stable both-edges;
+  }
+  .legislative-scroll-frame::after {
+    content: "";
+    position: sticky;
+    display: block;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 18px;
+    margin-top: -18px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
+  }
+  .legislative-details-head h2 {
+    margin-bottom: 0.2rem;
+    font-size: clamp(1.25rem, 3.6vw, 2rem);
+    max-width: none;
+  }
+  .legislative-detail-list,
+  .amendement-detail-list,
+  .amendement-nested-list {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .legislative-detail-card,
+  .amendement-detail-card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 0.6rem;
+    min-height: 120px;
+  }
+  .legislative-detail-card .text-leaf-title {
+    font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .amendement-detail-card strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .amendement-detail-card .small {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .section-kicker {
@@ -1463,9 +1591,19 @@
     border: var(--border-width) solid var(--line);
     border-radius: 0;
     background: var(--bg);
+    min-height: 120px;
   }
   .deconstructed .mandate-card.is-dashed { border-style: dashed; }
-  .deconstructed .mandate-card.is-current { background: var(--acid); }
+  .deconstructed .mandate-card.is-solid { border-style: solid; }
+  .deconstructed .mandate-card.is-current {
+    background: var(--acid);
+    border-left-width: 4px;
+    border-left-color: var(--accent);
+  }
+  .deconstructed .mandate-card.mandate-role--presidence { background: color-mix(in srgb, var(--vert) 18%, var(--bg)); }
+  .deconstructed .mandate-card.mandate-role--vice_presidence { background: color-mix(in srgb, var(--accent-soft) 65%, var(--bg)); }
+  .deconstructed .mandate-card.mandate-role--rapporteur { background: color-mix(in srgb, var(--pink) 40%, var(--bg)); }
+  .deconstructed .mandate-card.mandate-role--membre { background: var(--bg); }
   .deconstructed .mandate-function {
     display: block;
     margin-bottom: var(--space-4);
@@ -1495,6 +1633,49 @@
     color: var(--accent);
     font: 600 0.68rem var(--font-family-mono);
   }
+  .deconstructed .mandate-live-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.08rem 0.34rem;
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    font: 600 0.58rem var(--font-family-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .deconstructed .mandate-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.42rem 0.8rem;
+    margin: 0 0 var(--space-12);
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--line);
+    font: 600 0.62rem var(--font-family-mono);
+    text-transform: uppercase;
+    background: var(--surface);
+  }
+  .deconstructed .mandate-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .deconstructed .mandate-legend-swatch {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--line);
+    display: inline-block;
+  }
+  .deconstructed .mandate-legend-swatch.mandate-role--presidence { background: color-mix(in srgb, var(--vert) 18%, var(--bg)); }
+  .deconstructed .mandate-legend-swatch.mandate-role--vice_presidence { background: color-mix(in srgb, var(--accent-soft) 65%, var(--bg)); }
+  .deconstructed .mandate-legend-swatch.mandate-role--rapporteur { background: color-mix(in srgb, var(--pink) 40%, var(--bg)); }
+  .deconstructed .mandate-legend-swatch.mandate-role--membre { background: var(--bg); }
+  .deconstructed .mandate-legend-line {
+    width: 14px;
+    height: 0;
+    border-top: 2px solid var(--line);
+    display: inline-block;
+  }
+  .deconstructed .mandate-legend-line.is-dashed { border-top-style: dashed; }
   .deconstructed .orbit {
     display: flex;
     flex-wrap: wrap;
@@ -1670,6 +1851,8 @@
     .deconstructed .versus-person { border: 0; border-right: var(--border-width) solid var(--line); }
     .deconstructed .home-manifesto { grid-column: 1 / 4; }
     .deconstructed .home-candidates { grid-column: 4 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .legislative-layout { grid-template-columns: minmax(250px, 32%) minmax(0, 1fr); align-items: start; }
+    .textes-kpi-grid { grid-template-columns: 1fr; }
   }
 
   /* Responsive — 375px : aucune carte, texte ou bouton ne déborde du viewport */
