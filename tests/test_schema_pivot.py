@@ -465,17 +465,29 @@ def test_validate_intervention_champs_debat_officiel_valides():
 
 def test_validate_intervention_theme_officiel_type_invalide():
     p = _valid_profil()
-    p["interventions"] = [{"theme_officiel": 42}]
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "theme_officiel": 42}]
     errors = validate_profil(p)
-    assert any("theme_officiel" in e for e in errors)
+    assert any("interventions[0].theme_officiel" in e for e in errors)
 
 
-def test_validate_intervention_seance_dossier_source_types_invalides():
+def test_validate_intervention_seance_type_invalide():
     p = _valid_profil()
-    p["interventions"] = [{"seance": "S1", "dossier": ["D1"], "source": 123}]
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "seance": "S1"}]
     errors = validate_profil(p)
     assert any("interventions[0].seance" in e for e in errors)
+
+
+def test_validate_intervention_dossier_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "dossier": ["D1"]}]
+    errors = validate_profil(p)
     assert any("interventions[0].dossier" in e for e in errors)
+
+
+def test_validate_intervention_source_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "source": 123}]
+    errors = validate_profil(p)
     assert any("interventions[0].source" in e for e in errors)
 
 
