@@ -538,6 +538,34 @@ def test_normalize_intervention_question_includes_extra_fields():
     assert i["source_url"] == "https://questions.assemblee-nationale.fr/q17/QANR5L17QE1.htm"
 
 
+def test_normalize_intervention_preserves_official_debate_fields():
+    raw = _raw_depute()
+    raw["interventions"] = [
+        {
+            "date": "2023-03-15",
+            "type_detail": "loi",
+            "sujet": "PLF 2024",
+            "texte": "Je prends la parole...",
+            "fonction": "Rapporteur",
+            "format": "prise_de_parole_developpee",
+            "mots_cles": ["budget"],
+            "url_detail": "https://...",
+            "theme_officiel": "Discussion générale",
+            "seance": {"id": "3301", "titre": "2e séance"},
+            "dossier": {"id": "plf-2024", "titre": "Projet de loi de finances 2024"},
+            "source": "compte_rendu_officiel",
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+
+    assert len(pivot["interventions"]) == 1
+    i = pivot["interventions"][0]
+    assert i["theme_officiel"] == "Discussion générale"
+    assert i["seance"] == {"id": "3301", "titre": "2e séance"}
+    assert i["dossier"] == {"id": "plf-2024", "titre": "Projet de loi de finances 2024"}
+    assert i["source"] == "compte_rendu_officiel"
+
+
 def test_normalize_intervention_non_question_has_no_extra_fields():
     """Pour les interventions qui ne sont pas des questions, les champs
     supplémentaires (sous_type, ministere, reponse, date_reponse) ne doivent

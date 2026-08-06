@@ -103,6 +103,19 @@ def test_validate_valid_profil_chambre_none():
     assert validate_profil(p) == []
 
 
+def test_validate_intervention_official_debate_fields_are_allowed():
+    p = _valid_profil()
+    p["interventions"] = [{
+        "date": "2023-03-15",
+        "type_detail": "loi",
+        "theme_officiel": "Discussion générale",
+        "seance": {"id": "3301", "titre": "2e séance"},
+        "dossier": {"id": "plf-2024", "titre": "Projet de loi de finances 2024"},
+        "source": "compte_rendu_officiel",
+    }]
+    assert validate_profil(p) == []
+
+
 # ---------------------------------------------------------------------------
 # validate_profil — erreurs détectées
 # ---------------------------------------------------------------------------
@@ -188,6 +201,21 @@ def test_validate_non_dict_input():
     errors = validate_profil("not a dict")  # type: ignore[arg-type]
     assert errors
     assert any("dict" in e for e in errors)
+
+
+def test_validate_intervention_official_debate_field_types():
+    p = _valid_profil()
+    p["interventions"] = [{
+        "theme_officiel": ["pas", "une", "chaine"],
+        "seance": 3301,
+        "dossier": 42,
+        "source": {"label": "compte_rendu_officiel"},
+    }]
+    errors = validate_profil(p)
+    assert any("theme_officiel" in e for e in errors)
+    assert any("seance" in e for e in errors)
+    assert any("dossier" in e for e in errors)
+    assert any("source" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------

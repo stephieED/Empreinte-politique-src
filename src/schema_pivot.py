@@ -140,6 +140,19 @@ Format d'un profil pivot v1 :
             "format": "prise_de_parole_developpee",  # ou "reaction_courte"
             "mots_cles": ["budget", "fiscalité"],
             "source_url": "https://...",
+            # Champs optionnels d'enrichissement issus des débats officiels
+            # (ex. Syceron / comptes rendus institutionnels), sans rupture de
+            # compatibilité pour les anciennes interventions :
+            "theme_officiel": "Discussion générale",
+            "seance": {
+                "id": "3301",
+                "titre": "2e séance du mercredi 15 mars 2023",
+            },
+            "dossier": {
+                "id": "plf-2024",
+                "titre": "Projet de loi de finances pour 2024",
+            },
+            "source": "compte_rendu_officiel",
             # Champs supplémentaires présents uniquement si type_detail == "question"
             # (questions parlementaires officielles, source open data AN) :
             "sous_type": "QE",               # "QE" (écrite) | "QG" (au gouvernement) | "QOSD" (orale sans débat)
@@ -272,6 +285,11 @@ KNOWN_ROLES_SIGNATAIRE_AMENDEMENT: frozenset[str] = frozenset({
 # financière ; art. 45 : lien avec le texte — "cavalier législatif").
 KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 
+# Champs optionnels d'interventions enrichies depuis des débats officiels :
+# thèmes/sources textuels, séance et dossier sous forme libre mais structurée.
+KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS: tuple[str, ...] = ("theme_officiel", "source")
+KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS: tuple[str, ...] = ("seance", "dossier")
+
 
 def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
     """Crée un profil pivot v1 vide avec des valeurs par défaut.
@@ -315,7 +333,8 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
     schema_version) plus les invariants de contenu des champs sensibles :
     position_dans_hemicycle/source_url, mode_declenchement, type_scrutin,
     type_vote/texte_lie_id (motion_censure), type_rapport, stade_procedural,
-    type_deposant, et sort/base_juridique_irrecevabilite des amendements.
+    type_deposant, sort/base_juridique_irrecevabilite des amendements, et les
+    champs optionnels d'enrichissement des débats officiels dans interventions[].
 
     Args:
         profil: dict à valider.
@@ -474,6 +493,26 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                     f"amendements[{i}].base_juridique_irrecevabilite non reconnue : "
                     f"{base_juridique!r}. Valeurs connues : {sorted(KNOWN_BASES_IRRECEVABILITE)}."
                 )
+
+    interventions = profil.get("interventions")
+    if isinstance(interventions, list):
+        for i, intervention in enumerate(interventions):
+            if not isinstance(intervention, dict):
+                continue
+            for key in KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS:
+                value = intervention.get(key)
+                if value is not None and not isinstance(value, str):
+                    errors.append(
+                        f"interventions[{i}].{key} doit être une chaîne ou null, "
+                        f"reçu : {type(value).__name__}."
+                    )
+            for key in KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS:
+                value = intervention.get(key)
+                if value is not None and not isinstance(value, (str, dict)):
+                    errors.append(
+                        f"interventions[{i}].{key} doit être une chaîne, un dict ou null, "
+                        f"reçu : {type(value).__name__}."
+                    )
 
     meta = profil.get("meta")
     if not isinstance(meta, dict):
