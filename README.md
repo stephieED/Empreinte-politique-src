@@ -74,6 +74,7 @@ See:
 - `docs/pipeline-profiles-groupes.md` - end-to-end profiles/groups pipeline
   maps and implementation notes.
 - `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
+- `docs/extract-syceron.md` - Phase 0 report on AN Syceron XML structure and pivot mapping.
 - `docs/extract-senat.md` - CI job `extract-senat` (scope, extraction chain, sources).
 - `docs/extract-ue.md` - UE source investigation report and implementation context.
 - `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
