@@ -464,7 +464,10 @@
   }
   .legislative-detail-card .text-leaf-title {
     font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+    display: -webkit-box;
     -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .amendement-detail-card strong {
     display: block;

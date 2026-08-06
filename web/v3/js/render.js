@@ -69,8 +69,8 @@ export function isNotableResponsibility(responsibility) {
 
 export function mandateRoleTone(fonction) {
   const role = normalizedText(fonction || "");
-  if (/(^| )vice[- ]president/.test(role)) return "vice_presidence";
-  if (/(^| )co[- ]president/.test(role) || /(^| )president/.test(role)) return "presidence";
+  if (/\bvice[- ]president\b/.test(role)) return "vice_presidence";
+  if (/\bco[- ]president\b/.test(role) || /\bpresident\b/.test(role)) return "presidence";
   if (/rapporteur|rapporteure|co[- ]rapporteur/.test(role)) return "rapporteur";
   return "membre";
 }
@@ -300,7 +300,7 @@ export function renderKpiColumn(profile, scope, label, noPeriods, state) {
   </div>`;
 }
 
-export function renderLegislativeScopeBars(counts, total, state, kind, includeMinisterial = false) {
+export function renderLegislativeScopeBars(counts, total, state, includeMinisterial = false) {
   const rows = [
     { scope: "majorite", label: "Majorité", color: "var(--vert)" },
     { scope: "opposition", label: "Opposition", color: "var(--rouge)" },
@@ -310,7 +310,7 @@ export function renderLegislativeScopeBars(counts, total, state, kind, includeMi
     rows.push({ scope: "gouvernement", label: "Activité ministérielle", color: "var(--accent)" });
   }
   const isAnyActive = state.textesScopeFilter !== "all";
-  return `<div class="scope-bars" data-scope-kind="${escapeHtml(kind)}">${rows.map((row) => {
+  return `<div class="scope-bars">${rows.map((row) => {
     const count = counts[row.scope] || 0;
     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
     const isActive = state.textesScopeFilter === row.scope;
@@ -318,7 +318,7 @@ export function renderLegislativeScopeBars(counts, total, state, kind, includeMi
     const note = row.scope === "gouvernement" && count === 0
       ? `<span class="scope-bar-note">aucune activité ministérielle</span>`
       : "";
-    return `<button type="button" class="scope-bar-row${isActive ? " is-active" : ""}${isDimmed ? " is-dimmed" : ""}" data-textes-scope="${escapeHtml(row.scope)}" aria-pressed="${isActive}" aria-label="Filtrer ${escapeHtml(kind)} : ${escapeHtml(row.label)} (${count})">
+    return `<button type="button" class="scope-bar-row${isActive ? " is-active" : ""}${isDimmed ? " is-dimmed" : ""}" data-textes-scope="${escapeHtml(row.scope)}" aria-pressed="${isActive}" aria-label="Filtrer : ${escapeHtml(row.label)} (${count})">
       <span class="scope-bar-label">${escapeHtml(row.label)}</span>
       <span class="scope-bar-track"><span class="scope-bar-fill" style="width:${pct}%;background:${row.color}"></span></span>
       <span class="scope-bar-count">${count}</span>
@@ -369,11 +369,11 @@ export function renderTextesKpi(profile, state) {
     <div class="textes-kpi-grid">
       <article class="textes-kpi-col">
         <div class="textes-kpi-col-label">Textes portés</div>
-        ${renderLegislativeScopeBars(countBuckets.textes, allPublicTextes.length, state, "textes", true)}
+        ${renderLegislativeScopeBars(countBuckets.textes, allPublicTextes.length, state, true)}
       </article>
       <article class="textes-kpi-col">
         <div class="textes-kpi-col-label">Amendements</div>
-        ${renderLegislativeScopeBars(countBuckets.amendements, allAmendements.length, state, "amendements")}
+        ${renderLegislativeScopeBars(countBuckets.amendements, allAmendements.length, state)}
       </article>
     </div>
   `;
