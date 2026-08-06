@@ -20,7 +20,12 @@ Usage :
 import time
 from typing import Any, Optional
 
-from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from schema_pivot import (
+    SCHEMA_VERSION,
+    KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS,
+    KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS,
+    make_empty_profil,
+)
 
 # Correspondance chambre (clé du profil brut) → valeur normalisée du pivot.
 _CHAMBRE_MAP: dict[str, str] = {
@@ -114,7 +119,7 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "mots_cles": list(i.get("mots_cles") or []),
         "source_url": _first(i.get("url_detail"), i.get("url")),
     }
-    for key in ("theme_officiel", "seance", "dossier", "source"):
+    for key in KNOWN_OPTIONAL_INTERVENTION_TEXT_FIELDS + KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS:
         if key in i:
             result[key] = i[key]
     # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").
