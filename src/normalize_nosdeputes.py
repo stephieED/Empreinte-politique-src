@@ -21,8 +21,8 @@ import time
 from typing import Any, Optional
 
 from schema_pivot import (
+    OPTIONAL_INTERVENTION_KEYS,
     SCHEMA_VERSION,
-    KNOWN_OPTIONAL_INTERVENTION_FIELDS,
     make_empty_profil,
 )
 
@@ -118,7 +118,7 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "mots_cles": list(i.get("mots_cles") or []),
         "source_url": _first(i.get("url_detail"), i.get("url")),
     }
-    for key in KNOWN_OPTIONAL_INTERVENTION_FIELDS:
+    for key in OPTIONAL_INTERVENTION_KEYS:
         if key in i:
             result[key] = i[key]
     # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").

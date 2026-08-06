@@ -287,11 +287,11 @@ KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 
 # Champs optionnels d'interventions enrichies depuis des débats officiels :
 # thèmes/sources textuels, séance et dossier sous forme libre mais structurée.
-KNOWN_OPTIONAL_INTERVENTION_STRING_FIELDS: tuple[str, ...] = ("theme_officiel", "source")
-KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS: tuple[str, ...] = ("seance", "dossier")
-KNOWN_OPTIONAL_INTERVENTION_FIELDS: tuple[str, ...] = (
-    *KNOWN_OPTIONAL_INTERVENTION_STRING_FIELDS,
-    *KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS,
+OPTIONAL_INTERVENTION_STRING_KEYS: tuple[str, ...] = ("theme_officiel", "source")
+OPTIONAL_INTERVENTION_CONTEXT_KEYS: tuple[str, ...] = ("seance", "dossier")
+OPTIONAL_INTERVENTION_KEYS: tuple[str, ...] = (
+    *OPTIONAL_INTERVENTION_STRING_KEYS,
+    *OPTIONAL_INTERVENTION_CONTEXT_KEYS,
 )
 
 
@@ -503,14 +503,14 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
         for i, intervention in enumerate(interventions):
             if not isinstance(intervention, dict):
                 continue
-            for key in KNOWN_OPTIONAL_INTERVENTION_STRING_FIELDS:
+            for key in OPTIONAL_INTERVENTION_STRING_KEYS:
                 value = intervention.get(key)
                 if value is not None and not isinstance(value, str):
                     errors.append(
                         f"interventions[{i}].{key} doit être une chaîne ou null, "
                         f"reçu : {type(value).__name__}."
                     )
-            for key in KNOWN_OPTIONAL_INTERVENTION_CONTEXT_FIELDS:
+            for key in OPTIONAL_INTERVENTION_CONTEXT_KEYS:
                 value = intervention.get(key)
                 if value is not None and not isinstance(value, dict):
                     errors.append(
