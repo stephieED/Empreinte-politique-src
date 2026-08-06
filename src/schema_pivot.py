@@ -500,21 +500,21 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
 
     interventions = profil.get("interventions")
     if isinstance(interventions, list):
-        for i, intervention in enumerate(interventions):
+        for intervention_idx, intervention in enumerate(interventions):
             if not isinstance(intervention, dict):
                 continue
             for key in OPTIONAL_INTERVENTION_STRING_KEYS:
                 value = intervention.get(key)
                 if value is not None and not isinstance(value, str):
                     errors.append(
-                        f"interventions[{i}].{key} doit être une chaîne ou null, "
+                        f"interventions[{intervention_idx}].{key} doit être une chaîne ou null, "
                         f"reçu : {type(value).__name__}."
                     )
             for key in OPTIONAL_INTERVENTION_CONTEXT_KEYS:
                 value = intervention.get(key)
                 if value is not None and not isinstance(value, dict):
                     errors.append(
-                        f"interventions[{i}].{key} doit être un dict ou null, "
+                        f"interventions[{intervention_idx}].{key} doit être un dict ou null, "
                         f"reçu : {type(value).__name__}."
                     )
 
