@@ -695,6 +695,102 @@ def test_fetch_questions_officielles_aggregates_multiple_legislatures():
 # build_profile integrates official questions into interventions
 # ---------------------------------------------------------------------------
 
+def test_build_profile_prefers_official_debats_over_nosdeputes_search():
+    fake_identity = {
+        "nom": "Jean Dupont",
+        "groupe_sigle": "LFI",
+        "nom_groupe_politique": "La France insoumise",
+        "profession": "Député",
+        "date_naissance": "1980-01-01",
+        "url_an": "https://www.assemblee-nationale.fr/dyn/deputes/PA1234",
+        "mandat_debut": "2024-01-01",
+    }
+    official_debats = [
+        {
+            "id": "debat_1",
+            "date": "2025-01-20",
+            "type": "Intervention",
+            "type_detail": "debat",
+            "source": "assemblee_nationale_syceron",
+            "texte": "Texte officiel",
+            "url": "https://data.assemblee-nationale.fr/debat#1",
+            "url_detail": "https://data.assemblee-nationale.fr/debat#1",
+            "sujet": "Projet de loi",
+            "mots_cles": [],
+            "fonction": None,
+            "nb_mots": 20,
+            "format": "prise_de_parole_developpee",
+            "legislature": "17",
+        }
+    ]
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=fake_identity),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.fetch_activity_synthesis", return_value={}),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value={"results": [{"document_id": "fallback"}]}),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_debats_officiels", return_value=(official_debats, True)),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results") as extract_search_results,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        profile = build_profile("deputes", "slug-test")
+
+    assert profile["interventions"] == official_debats
+    assert profile["meta"]["synchro_sources"]["assemblee_nationale_debats"] is not None
+    assert not any("fallback NosDéputés" in warning for warning in profile["meta"]["warnings"])
+    extract_search_results.assert_not_called()
+
+
+def test_build_profile_uses_nosdeputes_fallback_when_official_debats_unavailable():
+    fake_identity = {
+        "nom": "Jean Dupont",
+        "groupe_sigle": "LFI",
+        "nom_groupe_politique": "La France insoumise",
+        "profession": "Député",
+        "date_naissance": "1980-01-01",
+        "url_an": "https://www.assemblee-nationale.fr/dyn/deputes/PA1234",
+        "mandat_debut": "2024-01-01",
+    }
+    fallback_interventions = [
+        {
+            "id": "nos_1",
+            "date": "2025-01-10",
+            "type_detail": "loi",
+            "texte": "Texte NosDéputés",
+            "url": "https://www.nosdeputes.fr/intervention/1",
+        }
+    ]
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=fake_identity),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.fetch_activity_synthesis", return_value={}),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value={"results": [{"document_id": "fallback"}]}),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_debats_officiels", return_value=([], False)),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=fallback_interventions),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        profile = build_profile("deputes", "slug-test")
+
+    assert profile["interventions"] == fallback_interventions
+    assert profile["meta"]["synchro_sources"]["assemblee_nationale_debats"] is None
+    assert any("fallback NosDéputés utilisé" in warning for warning in profile["meta"]["warnings"])
+
+
 def test_build_profile_includes_official_questions_in_interventions():
     fake_questions = [
         {

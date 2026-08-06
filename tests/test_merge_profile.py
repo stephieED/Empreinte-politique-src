@@ -376,3 +376,50 @@ def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
     }
     merged = merge_raw_profile(old, new)
     assert any("questions indisponibles" in w for w in merged["meta"]["warnings"])
+
+
+def test_prune_stale_warnings_removes_official_debates_fallback_warning():
+    """Le warning de fallback Syceron doit être retiré si des débats officiels
+    ont été restaurés via la fusion additive."""
+    from merge_profile import merge_raw_profile
+
+    old = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [
+            {
+                "id": "debat_1",
+                "type_detail": "debat",
+                "source": "assemblee_nationale_syceron",
+                "url": "https://data.assemblee-nationale.fr/debat#1",
+            },
+        ],
+        "meta": {"warnings": [], "synchro_sources": {}},
+    }
+    new = {
+        "slug": "jean-dupont",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Jean Dupont"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [],
+        "meta": {
+            "warnings": ["débats officiels indisponibles : fallback NosDéputés utilisé"],
+            "synchro_sources": {"nosdeputes": None, "assemblee_nationale_debats": None},
+        },
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert not any("débats officiels indisponibles" in w for w in merged["meta"]["warnings"])

@@ -156,6 +156,14 @@ AN_QUESTIONS_PATH: dict[str, dict[str, tuple[str, str]]] = {
 }
 QUESTIONS_CACHE_DIR = Path(".cache") / "questions_an"
 
+# Débats officiels (Syceron brut, Assemblée nationale). Archive ZIP unique par
+# législature, contenant les comptes rendus XML de séance publique.
+AN_DEBATS_ZIP_URLS: dict[str, str] = {
+    legislature: f"{AN_OPENDATA_BASE}/{legislature}/vp/syceronbrut/syseron.xml.zip"
+    for legislature in ("14", "15", "16", "17")
+}
+DEBATS_CACHE_DIR = Path(".cache") / "debats_an"
+
 # Verrous par législature pour `_build_acteur_vote_index` : plusieurs threads peuvent
 # appeler cette fonction simultanément pour des législatures différentes (pas de blocage
 # entre eux), mais on sérialise les accès pour une même législature afin d'éviter un
@@ -170,6 +178,10 @@ _AMENDEMENTS_LOCKS_META = threading.Lock()
 # Même principe que _SCRUTINS_LOCKS, pour l'index des questions officielles.
 _QUESTIONS_LOCKS: dict[str, threading.Lock] = {}
 _QUESTIONS_LOCKS_META = threading.Lock()
+
+# Même principe que _SCRUTINS_LOCKS, pour l'index des débats officiels.
+_DEBATS_LOCKS: dict[str, threading.Lock] = {}
+_DEBATS_LOCKS_META = threading.Lock()
 
 # Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
 # pas de decoupage par legislature).
@@ -206,6 +218,7 @@ WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
+WARNING_PREFIX_DEBATS_INDISPONIBLES = "débats officiels indisponibles"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -230,6 +243,14 @@ def _get_questions_lock(legislature: str) -> threading.Lock:
         if legislature not in _QUESTIONS_LOCKS:
             _QUESTIONS_LOCKS[legislature] = threading.Lock()
         return _QUESTIONS_LOCKS[legislature]
+
+
+def _get_debats_lock(legislature: str) -> threading.Lock:
+    """Retourne (ou crée) le verrou associé à une législature donnée (débats)."""
+    with _DEBATS_LOCKS_META:
+        if legislature not in _DEBATS_LOCKS:
+            _DEBATS_LOCKS[legislature] = threading.Lock()
+        return _DEBATS_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -1600,6 +1621,205 @@ def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str
     return questions
 
 
+def _flatten_xml_text(node: Optional[ET.Element]) -> Optional[str]:
+    """Concatène le texte d'un nœud XML Syceron en chaîne simple."""
+    if node is None:
+        return None
+    text = " ".join(part.strip() for part in node.itertext() if part and part.strip())
+    return text or None
+
+
+def _parse_syceron_date(raw_value: Optional[str]) -> Optional[str]:
+    """Convertit une date Syceron AAAAMMJJ... en ISO YYYY-MM-DD."""
+    if not raw_value:
+        return None
+    digits = re.sub(r"\D", "", raw_value)
+    if len(digits) < 8:
+        return None
+    return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+
+
+def _extract_debat_officiel_sujet(
+    node: ET.Element,
+    parent_map: dict[int, ET.Element],
+    namespace: str,
+) -> Optional[str]:
+    """Retrouve le sujet de débat le plus proche d'un paragraphe Syceron."""
+    current: Optional[ET.Element] = node
+    while current is not None:
+        if current.tag in {
+            f"{namespace}point",
+            f"{namespace}pointEtape",
+            f"{namespace}section",
+            f"{namespace}sousSection",
+            f"{namespace}ouvertureSeance",
+            f"{namespace}changementPresidence",
+            f"{namespace}finSeance",
+        }:
+            for child_tag in ("texte", "intitule"):
+                text = _flatten_xml_text(current.find(f"{namespace}{child_tag}"))
+                if text:
+                    return text
+            for descendant_path in (
+                f".//{namespace}titreStruct/{namespace}intitule",
+                f".//{namespace}titreSection/{namespace}intitule",
+            ):
+                text = _flatten_xml_text(current.find(descendant_path))
+                if text:
+                    return text
+        current = parent_map.get(id(current))
+    return None
+
+
+def _parse_debat_officiel_entry(
+    paragraphe: ET.Element,
+    parent_map: dict[int, ET.Element],
+    legislature: str,
+    seance_uid: Optional[str],
+    seance_date: Optional[str],
+    zip_source_url: str,
+    namespace: str,
+) -> Optional[tuple[str, dict[str, Any]]]:
+    """Normalise un paragraphe Syceron en entrée interventions[]."""
+    acteur_ref = paragraphe.attrib.get("id_acteur")
+    if not acteur_ref or not acteur_ref.startswith("PA"):
+        return None
+
+    texte = _flatten_xml_text(paragraphe.find(f"{namespace}texte"))
+    if not texte:
+        return None
+
+    id_syceron = paragraphe.attrib.get("id_syceron")
+    source_url = zip_source_url
+    if seance_uid and id_syceron:
+        source_url = f"{zip_source_url}#{seance_uid}-{id_syceron}"
+    elif seance_uid:
+        source_url = f"{zip_source_url}#{seance_uid}"
+
+    qualite = _flatten_xml_text(
+        paragraphe.find(f"{namespace}orateurs/{namespace}orateur/{namespace}qualite")
+    )
+    fonction = qualite or None
+    if not fonction and paragraphe.attrib.get("roledebat") == "president":
+        fonction = "Présidence"
+
+    nb_mots = len(re.findall(r"\w+", texte, flags=re.UNICODE))
+
+    return acteur_ref, {
+        "id": f"debat_{id_syceron}" if id_syceron else None,
+        "date": seance_date,
+        "created_at": None,
+        "type": "Intervention",
+        "type_detail": "debat",
+        "source": "assemblee_nationale_syceron",
+        "texte": texte,
+        "url": source_url,
+        "url_detail": source_url,
+        "sujet": _extract_debat_officiel_sujet(paragraphe, parent_map, namespace),
+        "mots_cles": [],
+        "fonction": fonction,
+        "nb_mots": nb_mots,
+        "format": _classify_intervention_format(nb_mots),
+        "legislature": legislature,
+    }
+
+
+def _build_acteur_debats_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
+    """Construit (et met en cache) un index acteurRef -> débats officiels."""
+    with _get_debats_lock(legislature):
+        index_path = DEBATS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        zip_url = AN_DEBATS_ZIP_URLS.get(legislature)
+        if not zip_url:
+            return {}
+
+        zip_path = DEBATS_CACHE_DIR / legislature / "syceron.zip"
+        if not zip_path.is_file():
+            print(f"-> Téléchargement des débats officiels (Assemblée nationale, législature {legislature}) : {zip_url}")
+            try:
+                zip_path.parent.mkdir(parents=True, exist_ok=True)
+                with requests.get(zip_url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                    resp.raise_for_status()
+                    with open(zip_path, "wb") as out:
+                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                            if chunk:
+                                out.write(chunk)
+            except (requests.RequestException, OSError) as exc:
+                print(f"  [!] Débats officiels législature {legislature} indisponibles : {exc}")
+                return None
+
+        namespace = "{http://schemas.assemblee-nationale.fr/referentiel}"
+        index: dict[str, list[dict[str, Any]]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                for nom in [n for n in zf.namelist() if n.endswith(".xml")]:
+                    try:
+                        with zf.open(nom) as f:
+                            root = ET.parse(f).getroot()
+                    except ET.ParseError:
+                        continue
+                    seance_uid = root.findtext(f"{namespace}uid")
+                    seance_date = _parse_syceron_date(root.findtext(f".//{namespace}dateSeance"))
+                    parent_map = {id(child): parent for parent in root.iter() for child in parent}
+                    for paragraphe in root.iter(f"{namespace}paragraphe"):
+                        parsed = _parse_debat_officiel_entry(
+                            paragraphe,
+                            parent_map,
+                            legislature,
+                            seance_uid,
+                            seance_date,
+                            zip_url,
+                            namespace,
+                        )
+                        if parsed is None:
+                            continue
+                        acteur_ref, record = parsed
+                        index.setdefault(acteur_ref, []).append(record)
+        except (OSError, zipfile.BadZipFile) as exc:
+            print(f"  [!] Archive des débats officiels législature {legislature} invalide : {exc}")
+            return None
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_debats_officiels(url_an_ou_senat: Optional[str]) -> tuple[list[dict[str, Any]], bool]:
+    """Récupère les débats officiels Syceron d'un député.
+
+    Retourne `(debats, source_disponible)`. `source_disponible=False` signifie
+    qu'aucune archive officielle exploitable n'a pu être utilisée pour ce député
+    (pas d'identifiant acteur ou archives indisponibles), ce qui autorise un
+    fallback vers la recherche NosDéputés.
+    """
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return [], False
+
+    debates: list[dict[str, Any]] = []
+    source_disponible = False
+    for legislature in AN_DEBATS_ZIP_URLS:
+        index = _build_acteur_debats_index(legislature)
+        if index is None:
+            continue
+        source_disponible = True
+        debates.extend(index.get(acteur_ref, []))
+
+    debates.sort(key=lambda d: (d.get("date") or "", d.get("id") or ""), reverse=True)
+    return debates, source_disponible
+
+
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
     """Liste des scrutins auxquels le parlementaire a participé, avec sa position."""
     for base_url in base_urls:
@@ -2142,6 +2362,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
             "synchro_sources": {
                 "nosdeputes": None,
                 "assemblee_nationale": None,
+                "assemblee_nationale_debats": None,
                 "assemblee_nationale_questions": None,
             },
             "warnings": [],
@@ -2326,7 +2547,36 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         parlementaire = _extract_parlementaire(identity_raw)
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
-    profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+    use_interventions_fallback = True
+    if not skip_interventions and chambre == "deputes" and profile.get("identite"):
+        try:
+            official_debats, official_debats_available = fetch_debats_officiels(
+                profile["identite"].get("url_an_ou_senat")
+            )
+        except Exception as exc:
+            warnings.append(
+                f"{WARNING_PREFIX_DEBATS_INDISPONIBLES} : fallback NosDéputés utilisé ({exc})"
+            )
+        else:
+            if official_debats_available:
+                profile["interventions"] = official_debats
+                profile["meta"]["synchro_sources"]["assemblee_nationale_debats"] = time.strftime(
+                    "%Y-%m-%dT%H:%M:%S%z"
+                )
+                use_interventions_fallback = False
+            else:
+                warnings.append(
+                    f"{WARNING_PREFIX_DEBATS_INDISPONIBLES} : fallback NosDéputés utilisé "
+                    "(source Syceron indisponible pour ce profil)."
+                )
+
+    if use_interventions_fallback:
+        profile["interventions"] = _extract_search_results(
+            interventions_base_url,
+            interventions_payload,
+            candidate_name,
+            candidate_id,
+        )
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
