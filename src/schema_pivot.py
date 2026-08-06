@@ -148,7 +148,7 @@ Format d'un profil pivot v1 :
             "date_reponse": "2023-04-20",    # date JO de la réponse (null si pas encore répondu)
         }
     ],
-    "tags_thematiques": ["budget", "fiscalité"],  # bruts, avant harmonisation Phase 4
+    "tags_thematiques": ["budget", "sante"],  # thèmes stables (STABLE_THEMES) via classify_keywords
     "meta": {
         "schema_version": "1",
         "genere_le": "2026-07-29T...",

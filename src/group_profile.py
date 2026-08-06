@@ -83,6 +83,7 @@ from schema_groupe import (
     validate_profil_groupe,
 )
 from normalize_nosdeputes import normalize_nosdeputes
+from text_utils import classify_keywords
 
 
 # ---------------------------------------------------------------------------
@@ -396,14 +397,14 @@ def aggregate_tags_thematiques(
         if tags:
             sources_used.add("tags_thematiques")
         else:
-            # Fallback : mots-clés bruts des interventions
-            kw_set: set[str] = set()
+            # Fallback : mots-clés bruts des interventions → classifiés en thèmes stables
+            raw_kw: list[str] = []
             for interv in (profil.get("interventions") or []):
                 for kw in (interv.get("mots_cles") or []):
-                    cleaned = kw.strip().lower() if isinstance(kw, str) else ""
+                    cleaned = kw.strip() if isinstance(kw, str) else ""
                     if cleaned:
-                        kw_set.add(cleaned)
-            tags = list(kw_set)
+                        raw_kw.append(cleaned)
+            tags = classify_keywords(raw_kw)
             if tags:
                 sources_used.add("mots_cles_interventions")
 

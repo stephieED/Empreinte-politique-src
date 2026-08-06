@@ -387,17 +387,43 @@ def test_pivot_amendement_cosignataire_preserve_premier_signataire():
 # ---------------------------------------------------------------------------
 
 def test_pivot_tags_thematiques_agrege_mots_cles():
+    """Le sujet 'Budget 2024' et les mots-clés sont classifiés en thème 'budget'."""
     pivot = normalize_nosdeputes(_raw_depute())
     assert "budget" in pivot["tags_thematiques"]
-    assert "fiscalité" in pivot["tags_thematiques"]
+
+
+def test_pivot_tags_thematiques_tous_stables():
+    """Les tags résultants sont tous des thèmes stables."""
+    from text_utils import STABLE_THEMES
+    pivot = normalize_nosdeputes(_raw_depute())
+    for tag in pivot["tags_thematiques"]:
+        assert tag in STABLE_THEMES, f"Tag non stable inattendu : {tag!r}"
 
 
 def test_pivot_tags_thematiques_minuscules():
     raw = _raw_depute()
+    raw["interventions"][0]["sujet"] = None
     raw["interventions"][0]["mots_cles"] = ["Budget", "FISCALITÉ"]
     pivot = normalize_nosdeputes(raw)
     assert "budget" in pivot["tags_thematiques"]
-    assert "fiscalité" in pivot["tags_thematiques"]
+
+
+def test_pivot_tags_sujet_officiel_prioritaire():
+    """Quand le sujet officiel est présent, il est utilisé (sans les mots-clés)."""
+    raw = _raw_depute()
+    raw["interventions"][0]["sujet"] = "Projet de loi de finances 2025"
+    raw["interventions"][0]["mots_cles"] = ["securite"]  # ignoré si sujet présent
+    pivot = normalize_nosdeputes(raw)
+    assert "budget" in pivot["tags_thematiques"]
+
+
+def test_pivot_tags_fallback_mots_cles_sans_sujet():
+    """Sans sujet, les mots-clés sont classifiés en fallback."""
+    raw = _raw_depute()
+    raw["interventions"][0]["sujet"] = None
+    raw["interventions"][0]["mots_cles"] = ["emploi", "chômage"]
+    pivot = normalize_nosdeputes(raw)
+    assert "social" in pivot["tags_thematiques"]
 
 
 def test_pivot_tags_thematiques_tries():

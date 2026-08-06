@@ -21,6 +21,7 @@ import time
 from typing import Any, Optional
 
 from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from text_utils import classify_keywords
 
 # Correspondance chambre (clé du profil brut) → valeur normalisée du pivot.
 _CHAMBRE_MAP: dict[str, str] = {
@@ -224,15 +225,20 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
     profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
 
-    # --- Tags thématiques bruts : agrégation des mots-clés des interventions ---
-    # Pas d'harmonisation thématique à ce stade (Phase 4 à venir).
-    tags: set[str] = set()
+    # --- Tags thématiques : logique hybride thèmes officiels / mots-clés ---
+    # Pour chaque intervention, le sujet officiel (quand présent) est utilisé
+    # en priorité ; sinon on se rabat sur les mots-clés bruts.  Les deux sont
+    # ensuite classifiés en thèmes stables via classify_keywords().
+    raw_signals: list[str] = []
     for i in (raw_profile.get("interventions") or []):
-        for kw in (i.get("mots_cles") or []):
-            cleaned = kw.strip().lower()
-            if cleaned:
-                tags.add(cleaned)
-    profil["tags_thematiques"] = sorted(tags)
+        sujet = (i.get("sujet") or "").strip()
+        if sujet:
+            raw_signals.append(sujet)
+        else:
+            for kw in (i.get("mots_cles") or []):
+                if isinstance(kw, str) and kw.strip():
+                    raw_signals.append(kw.strip())
+    profil["tags_thematiques"] = classify_keywords(raw_signals)
 
     # --- Métadonnées ---
     profil["meta"]["licence_donnees"] = meta_raw.get("licence_donnees") or ""

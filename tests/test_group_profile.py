@@ -409,12 +409,13 @@ def test_tags_trie_par_nombre_membres_desc():
 
 
 def test_tags_fallback_sur_mots_cles_interventions():
-    """Si tags_thematiques est vide, on utilise les mots-clés des interventions."""
-    interventions = [{"mots_cles": ["immigration", "social"], "date": "2024-01-01"}]
+    """Si tags_thematiques est vide, les mots-clés sont classifiés en thèmes stables."""
+    interventions = [{"mots_cles": ["immigration", "emploi"], "date": "2024-01-01"}]
     p1 = _pivot(tags=[], interventions=interventions)
     tags, source = aggregate_tags_thematiques([p1])
     tag_names = {t["tag"] for t in tags}
-    assert "immigration" in tag_names
+    assert "international" in tag_names   # "immigration" → international
+    assert "social" in tag_names          # "emploi" → social
     assert source == "mots_cles_interventions"
 
 
@@ -427,7 +428,10 @@ def test_tags_source_tags_thematiques():
 def test_tags_source_mixed():
     p1 = _pivot(tags=["budget"])
     p2 = _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}])
-    _, source = aggregate_tags_thematiques([p1, p2])
+    tags, source = aggregate_tags_thematiques([p1, p2])
+    tag_names = {t["tag"] for t in tags}
+    assert "budget" in tag_names
+    assert "sante" in tag_names  # "santé" → sante via classify_keywords
     assert source == "mixed"
 
 
