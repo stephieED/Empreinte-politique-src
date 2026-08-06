@@ -77,6 +77,7 @@ See:
 - `docs/extract-senat.md` - CI job `extract-senat` (scope, extraction chain, sources).
 - `docs/extract-ue.md` - UE source investigation report and implementation context.
 - `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
+- `docs/extract-syceron-an.md` - AN Syceron XML structure report + pivot mapping proposal.
 - `docs/technical_decisions.md` - full rationale and edge-case history.
 - `AGENTS.md` - condensed non-negotiable rules for agents.
 

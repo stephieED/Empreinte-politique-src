@@ -52,6 +52,101 @@ dense (~149 MB, législature complète de 5 ans).
 
 Le champ `<seanceRef>` permet de joindre avec le dataset `reunionsAN` (agenda/réunions).
 
+## Rapport de structure XML (Phase 0)
+
+### Échantillon analysé
+
+- Source : ZIP L17 `.../17/vp/syceronbrut/syseron.xml.zip`
+- Taille : ~56 MB
+- Fichiers XML : 601
+- Fichiers inspectés en détail : `CRSANR5L17S2025O1N037.xml`, `CRSANR5L17S2025O1N079.xml`
+
+### Arborescence observée
+
+```xml
+<compteRendu>
+  <uid/>
+  <seanceRef/>
+  <sessionRef/>
+  <metadonnees>
+    <dateSeance/> <dateSeanceJour/> <numSeanceJour/> <numSeance/>
+    <typeAssemblee/> <legislature/> <session/> <nomFichierJo/>
+    <validite/> <etat/> <diffusion/> <version/> <environnement/>
+    <heureGeneration/> <sommaire/>
+  </metadonnees>
+  <contenu>
+    <ouvertureSeance/> <point/> <changementPresidence/> <finSeance/>
+  </contenu>
+</compteRendu>
+```
+
+Dans `contenu`, la granularité utile est :
+- `point` (bloc de débat / item d'ordre du jour, avec `titreStruct/intitule` quand présent),
+- `paragraphe` (tour de parole / fragment),
+- `orateurs/orateur` (`id`, `nom`, `qualite`),
+- `texte` (contenu verbal, avec balises inline `br`, `italique`, `sup`, etc.).
+
+### Champs demandés par l'issue
+
+| Champ cible | Présence dans Syceron XML | Observations |
+|---|---|---|
+| séance | ✅ | `uid`, `seanceRef`, `sessionRef`, `metadonnees.*` |
+| orateur | ✅ | `paragraphe/orateurs/orateur/{id,nom,qualite}` |
+| texte | ✅ | `paragraphe/texte` (+ balisage inline) |
+| thème | ⚠️ indirect | pas de champ `theme`; approximation possible via `titreStruct/intitule` + classification existante |
+| dossier | ⚠️ indirect | pas de champ `dossier` natif; nécessite jointure (`seanceRef` → `reunionsAN` puis dossiers) |
+| date | ✅ | `metadonnees/dateSeance` (horodatage compact) + `dateSeanceJour` |
+
+## Mapping proposé vers le pipeline
+
+### 1) `interventions[]` (cible principale)
+
+| Pivot `interventions[]` | Source Syceron | Règle de mapping |
+|---|---|---|
+| `date` | `metadonnees/dateSeance` | convertir `YYYYMMDD...` en `YYYY-MM-DD` |
+| `type_detail` | `point/titreStruct/intitule` | heuristique de typage (questions au Gouvernement, débat, explication de vote, etc.) |
+| `sujet` | `point/titreStruct/intitule` ou `metadonnees/sommaire*` | fallback progressif |
+| `texte` | `paragraphe/texte` | concaténation texte + inline tags normalisés |
+| `fonction` | `paragraphe/orateurs/orateur/qualite` | `null` si vide |
+| `format` | `paragraphe/texte` | heuristique existante longueur texte (réaction courte vs prise développée) |
+| `mots_cles` | `sujet` + `texte` | réutiliser `classify_keywords()` |
+| `source_url` | URL ZIP Syceron | conserver la traçabilité primaire AN |
+
+Clé de dédoublonnage recommandée : `compteRendu.uid + index(point) + index(paragraphe) + orateur.id`.
+
+### 2) `textes_portes[]` (enrichissement indirect)
+
+Syceron ne publie pas de structure explicite "dossier législatif porté par tel orateur".
+Le mapping recommandé est donc **indirect** :
+
+1. prendre `seanceRef`,
+2. joindre avec `reunionsAN` pour récupérer le contexte de séance,
+3. joindre avec la source dossiers/textes déjà exploitée dans le pipeline AN,
+4. n'alimenter `textes_portes[]` que si le lien texte↔élu est explicite et traçable.
+
+Sans cette jointure, ne pas inférer un `textes_portes[]` depuis la seule prise de parole.
+
+### 3) Métadonnées de profil (`meta`)
+
+- Ajouter un warning si XML `etat != "complet"` ou `version != "JO"` selon politique retenue.
+- Conserver dans la trace d'extraction les identifiants de séance (`uid`, `seanceRef`, `sessionRef`).
+
+## Champs à enrichir dans le schéma pivot (proposition)
+
+Pour une intégration propre de Syceron sans perdre la traçabilité fine, proposer
+des champs optionnels supplémentaires sur `interventions[]` :
+
+- `source_id` (ex: `CRSANR5L17S2025O1N037`)
+- `seance_ref` (ex: `RUANR5L17S2025IDS28624`)
+- `session_ref` (ex: `SCR5A2025O1`)
+- `orateur_id_source` (id Syceron de l'orateur)
+- `point_ordre_du_jour` (intitulé de `point/titreStruct/intitule`)
+- `etat_compte_rendu` (`complet` / `provisoire`)
+- `version_compte_rendu` (`avant_JO` / `JO`)
+
+Ces champs restent descriptifs et n'introduisent ni score ni interprétation
+politique ; ils servent la règle de traçabilité et l'audit qualité.
+
 ## Stratégie de téléchargement : full dump recommandé
 
 **Décision : full dump unique par législature**, pas de téléchargement ciblé par séance.
