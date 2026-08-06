@@ -313,6 +313,10 @@
     height: 100%;
     min-width: 0;
   }
+  .scope-bar-fill--stacked {
+    display: flex;
+    overflow: hidden;
+  }
   .scope-bar-count {
     font: 600 0.7rem var(--font-family-mono);
     min-width: 2ch;

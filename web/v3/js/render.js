@@ -189,14 +189,7 @@ export function buildKpiColumnData(profile, scope, state) {
 
 export function renderOutcomeBar(counts, totalAmends, scope, state) {
   if (totalAmends === 0) return `<div class="outcome-bar"></div>`;
-  const segments = AMENDMENT_OUTCOMES.map(([outcome]) => {
-    const n = counts[outcome] || 0;
-    if (!n) return "";
-    const pct = (n / totalAmends * 100).toFixed(2);
-    const isActive = state.amendementsOutcomeFilter === outcome && state.textesScopeFilter === scope;
-    return `<div class="outcome-segment${isActive ? " is-active" : ""}" data-outcome="${escapeHtml(outcome)}" data-scope="${escapeHtml(scope)}" style="flex:${pct}" title="${escapeHtml(outcome)}: ${n}/${totalAmends}" role="button" tabindex="0" aria-label="${escapeHtml(outcome)}: ${n} sur ${totalAmends}"></div>`;
-  }).join("");
-  return `<div class="outcome-bar">${segments}</div>`;
+  return `<div class="outcome-bar">${renderOutcomeSegments(counts, totalAmends, scope, state)}</div>`;
 }
 
 export function renderOutcomeLegend(counts, totalAmends, scope, state) {
@@ -212,17 +205,7 @@ export function renderOutcomeLegend(counts, totalAmends, scope, state) {
 export function renderThemeBar(amendements, scope) {
   const total = amendements.length;
   if (total === 0) return `<div class="outcome-bar"></div>`;
-  const themeCounts = {};
-  for (const a of amendements) {
-    const t = a._theme || DEFAULT_THEME;
-    themeCounts[t] = (themeCounts[t] || 0) + 1;
-  }
-  const segments = Object.entries(themeCounts).map(([theme, n]) => {
-    const pct = (n / total * 100).toFixed(2);
-    const color = THEME_COLORS[theme] || "var(--muted)";
-    return `<div class="theme-segment" data-theme="${escapeHtml(theme)}" data-scope="${escapeHtml(scope)}" style="flex:${pct};background:${color}" title="${escapeHtml(themeLabel(theme))}: ${n}/${total}"></div>`;
-  }).join("");
-  return `<div class="outcome-bar">${segments}</div>`;
+  return `<div class="outcome-bar">${renderThemeSegments(amendements, scope)}</div>`;
 }
 
 export function renderThemeLegend(amendements, scope) {
@@ -241,18 +224,49 @@ export function renderThemeLegend(amendements, scope) {
 export function renderStageBar(publicTextes) {
   const total = publicTextes.length;
   if (total === 0) return `<div class="outcome-bar"></div>`;
+  return `<div class="outcome-bar">${renderStageSegments(publicTextes)}</div>`;
+}
+
+export function renderOutcomeSegments(counts, totalAmends, scope, state, interactive = true) {
+  return AMENDMENT_OUTCOMES.map(([outcome]) => {
+    const n = counts[outcome] || 0;
+    if (!n) return "";
+    const pct = (n / totalAmends * 100).toFixed(2);
+    const isActive = interactive && state.amendementsOutcomeFilter === outcome && state.textesScopeFilter === scope;
+    const attrs = interactive
+      ? ` data-outcome="${escapeHtml(outcome)}" data-scope="${escapeHtml(scope)}" role="button" tabindex="0" aria-label="${escapeHtml(outcome)}: ${n} sur ${totalAmends}"`
+      : "";
+    return `<span class="outcome-segment${isActive ? " is-active" : ""}"${attrs} style="flex:${pct}" title="${escapeHtml(outcome)}: ${n}/${totalAmends}"></span>`;
+  }).join("");
+}
+
+export function renderThemeSegments(items, scope) {
+  const total = items.length;
+  const themeCounts = {};
+  for (const item of items) {
+    const t = item._theme || DEFAULT_THEME;
+    themeCounts[t] = (themeCounts[t] || 0) + 1;
+  }
+  return Object.entries(themeCounts).map(([theme, n]) => {
+    const pct = (n / total * 100).toFixed(2);
+    const color = THEME_COLORS[theme] || "var(--muted)";
+    return `<span class="theme-segment" data-theme="${escapeHtml(theme)}" data-scope="${escapeHtml(scope)}" style="flex:${pct};background:${color}" title="${escapeHtml(themeLabel(theme))}: ${n}/${total}"></span>`;
+  }).join("");
+}
+
+export function renderStageSegments(publicTextes) {
+  const total = publicTextes.length;
   const counts = {};
   for (const d of publicTextes) {
     const s = TEXT_STAGES_ORDER.includes(d.stade_procedural) ? d.stade_procedural : "examine_commission";
     counts[s] = (counts[s] || 0) + 1;
   }
-  const segments = TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
+  return TEXT_STAGES_ORDER.filter((s) => counts[s]).map((stage) => {
     const n = counts[stage];
     const pct = (n / total * 100).toFixed(2);
     const color = TEXT_STAGE_COLORS[stage] || "var(--muted)";
-    return `<div class="theme-segment" data-stage="${escapeHtml(stage)}" style="flex:${pct};background:${color}" title="${escapeHtml(TEXT_STAGE_LABELS[stage] || stage)}: ${n}/${total}"></div>`;
+    return `<span class="theme-segment" data-stage="${escapeHtml(stage)}" style="flex:${pct};background:${color}" title="${escapeHtml(TEXT_STAGE_LABELS[stage] || stage)}: ${n}/${total}"></span>`;
   }).join("");
-  return `<div class="outcome-bar">${segments}</div>`;
 }
 
 export function renderStageLegend(publicTextes) {
@@ -300,27 +314,37 @@ export function renderKpiColumn(profile, scope, label, noPeriods, state) {
   </div>`;
 }
 
-export function renderLegislativeScopeBars(counts, total, state, includeMinisterial = false) {
+export function renderLegislativeScopeBars(profile, counts, total, state, kind, includeMinisterial = false) {
   const rows = [
-    { scope: "majorite", label: "Majorité", color: "var(--vert)" },
-    { scope: "opposition", label: "Opposition", color: "var(--rouge)" },
-    { scope: "non_distingue", label: "Non distingué", color: "var(--muted)" },
+    { scope: "majorite", label: "Majorité" },
+    { scope: "opposition", label: "Opposition" },
+    { scope: "non_distingue", label: "Non distingué" },
   ];
   if (includeMinisterial) {
-    rows.push({ scope: "gouvernement", label: "Activité ministérielle", color: "var(--accent)" });
+    rows.push({ scope: "gouvernement", label: "Activité ministérielle" });
   }
   const isAnyActive = state.textesScopeFilter !== "all";
   return `<div class="scope-bars">${rows.map((row) => {
     const count = counts[row.scope] || 0;
-    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+    const pct = total > 0 ? ((count / total) * 100).toFixed(2) : "0.00";
     const isActive = state.textesScopeFilter === row.scope;
     const isDimmed = isAnyActive && !isActive;
+    const items = kind === "textes"
+      ? filterTextesByScope(profile, row.scope, state).filter((d) => isPublicCarriedText(d))
+      : filterAmendementsByScope(profile, row.scope, state);
+    const itemCounts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
+    for (const item of items) {
+      if (kind === "amendements" && Object.hasOwn(itemCounts, item.sort)) itemCounts[item.sort] += 1;
+    }
+    const segments = state.textesKpiView === "par_theme"
+      ? renderThemeSegments(items, row.scope)
+      : (kind === "textes" ? renderStageSegments(items) : renderOutcomeSegments(itemCounts, items.length, row.scope, state, false));
     const note = row.scope === "gouvernement" && count === 0
       ? `<span class="scope-bar-note">aucune activité ministérielle</span>`
       : "";
     return `<button type="button" class="scope-bar-row${isActive ? " is-active" : ""}${isDimmed ? " is-dimmed" : ""}" data-textes-scope="${escapeHtml(row.scope)}" aria-pressed="${isActive}" aria-label="Filtrer : ${escapeHtml(row.label)} (${count})">
       <span class="scope-bar-label">${escapeHtml(row.label)}</span>
-      <span class="scope-bar-track"><span class="scope-bar-fill" style="width:${pct}%;background:${row.color}"></span></span>
+      <span class="scope-bar-track"><span class="scope-bar-fill scope-bar-fill--stacked" style="width:${pct}%">${segments}</span></span>
       <span class="scope-bar-count">${count}</span>
       ${note}
     </button>`;
@@ -352,28 +376,35 @@ export function renderTextesKpi(profile, state) {
       amendements: { majorite: 0, opposition: 0, non_distingue: allAmendements.length },
     };
   const isFilterActive = state.textesScopeFilter !== "all" || state.amendementsOutcomeFilter !== "all";
+  const byTheme = state.textesKpiView === "par_theme";
+  const allAmendementCounts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
+  for (const a of allAmendements) {
+    if (Object.hasOwn(allAmendementCounts, a.sort)) allAmendementCounts[a.sort] += 1;
+  }
   const resetBtn = isFilterActive
     ? `<button type="button" class="textes-kpi-reset" data-reset-textes-filters>Réinitialiser les filtres</button>`
     : "";
 
   return `
-    <div class="textes-kpi-controls" role="group" aria-label="Filtres textes et amendements">
+    <div class="textes-kpi-controls" role="group" aria-label="Coloration des barres">
+      <button type="button" data-textes-kpi-view="par_statut" aria-pressed="${state.textesKpiView === "par_statut"}">Par statut</button>
+      <button type="button" data-textes-kpi-view="par_theme" aria-pressed="${state.textesKpiView === "par_theme"}">Par thème</button>
       ${resetBtn}
-    </div>
-    <div class="textes-kpi-legend" aria-label="Légende des catégories">
-      <span class="legend-chip"><span class="legend-dot" style="background:var(--vert)"></span>Majorité</span>
-      <span class="legend-chip"><span class="legend-dot" style="background:var(--rouge)"></span>Opposition</span>
-      <span class="legend-chip"><span class="legend-dot" style="background:var(--muted)"></span>Non distingué</span>
-      <span class="legend-chip"><span class="legend-dot" style="background:var(--accent)"></span>Activité ministérielle</span>
     </div>
     <div class="textes-kpi-grid">
       <article class="textes-kpi-col">
         <div class="textes-kpi-col-label">Textes portés</div>
-        ${renderLegislativeScopeBars(countBuckets.textes, allPublicTextes.length, state, true)}
+        ${renderLegislativeScopeBars(profile, countBuckets.textes, allPublicTextes.length, state, "textes", true)}
+        ${allPublicTextes.length
+          ? (byTheme ? renderThemeLegend(allPublicTextes, "all") : renderStageLegend(allPublicTextes))
+          : `<div class="textes-kpi-empty">Aucun texte porté</div>`}
       </article>
       <article class="textes-kpi-col">
         <div class="textes-kpi-col-label">Amendements</div>
-        ${renderLegislativeScopeBars(countBuckets.amendements, allAmendements.length, state)}
+        ${renderLegislativeScopeBars(profile, countBuckets.amendements, allAmendements.length, state, "amendements")}
+        ${allAmendements.length
+          ? (byTheme ? renderThemeLegend(allAmendements, "all") : renderOutcomeLegend(allAmendementCounts, allAmendements.length, "all", state))
+          : `<div class="textes-kpi-empty">Aucun amendement</div>`}
       </article>
     </div>
   `;
