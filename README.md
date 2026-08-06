@@ -71,11 +71,12 @@ See:
   and pipeline (including additive merge logic in `merge_profile.py`).
 - `docs/an_opendata.md` - practical AN Open Data references (dataset URLs,
   key fields).
-- `docs/extract-an.md` - extract-an job: what it does, internal extraction
-  chain, and data sources.
-- `docs/extract-ue.md` - UE data-source
-   investigation report (ParlTrack/Europarl/HowTheyVote) and agent-ready
-   implementation instructions for the ParlTrack dumps approach.
+- `docs/pipeline-profiles-groupes.md` - end-to-end profiles/groups pipeline
+  maps and implementation notes.
+- `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
+- `docs/extract-senat.md` - CI job `extract-senat` (scope, extraction chain, sources).
+- `docs/extract-ue.md` - UE source investigation report and implementation context.
+- `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
 - `docs/technical_decisions.md` - full rationale and edge-case history.
 - `AGENTS.md` - condensed non-negotiable rules for agents.
 
@@ -245,43 +246,16 @@ summary for manual validation.
 The workflow `.github/workflows/generate-data.yml` runs the full pipeline
 on GitHub Actions and is triggered manually (`workflow_dispatch`).
 
-### Inputs
+Detailed extraction and merge flow is documented in:
 
-| Input | Type | Default | Effect |
-|---|---|---|---|
-| `fresh_run` | boolean | `false` | See modes below |
-| `threshold` | number | `3` | Max tolerated `IncompleteRead` errors before hard fail (ignored if `fresh_run=true`) |
+- `docs/pipeline-profiles-groupes.md`
+- `docs/extract-an.md`
+- `docs/extract-senat.md`
+- `docs/extract-ue.md`
+- `docs/extract-parltrack.md`
 
-### Two operating modes
-
-| Step | `fresh_run=true` | `fresh_run=false` |
-|---|---|---|
-| **Cleanup** | Full purge of outputs + `.cache/` | Skipped (existing data preserved) |
-| **Actions cache** | Not restored | Restored (reduces API calls) |
-| **Individual profiles** | `--no-merge` (full overwrite) | Additive merge (resilient to transient failures) |
-| **Group profiles** | Full recreation | `--merge-existing` (avoids temporary gaps) |
-| **Quality gate threshold** | `0` (zero tolerance) | `inputs.threshold` (default 3) |
-
-### Quality gate (`src/check_quality_gate.py`)
-
-Runs before every commit. Produces a 4-section report to the job log and
-to the GitHub Actions job summary tab (Markdown tables):
-
-1. **IncompleteRead errors** — counts occurrences of `IncompleteRead` in
-   `meta.warnings[]` of all generated JSON files; hard fail if count exceeds
-   threshold.
-2. **Candidates generated vs expected** — compares `raw_data/candidats.json`
-   (slugs) against actual `pivot_data/profiles/*.pivot.json` files; lists
-   missing profiles and candidates without a slug.
-3. **Low intervention count** — flags candidates with fewer than 10
-   interventions (configurable via `--low-interventions`).
-4. **Group structure validation** — hard fail on missing file, invalid JSON,
-   or schema errors (`validate_profil_groupe()`); soft warning on low
-   coverage (`profils_disponibles < --groupe-min-members`) or network
-   signals. The `fraicheur_donnees` warning (expected on all frozen
-   AN/Sénat data) is silently ignored.
-
-The commit step is only reached if the gate exits with code 0.
+The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
+the gate exits with code 0.
 
 To run the gate locally:
 
