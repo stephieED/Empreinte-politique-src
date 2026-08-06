@@ -94,6 +94,67 @@ def _intervention_key(i: dict[str, Any]) -> Key:
     return (i.get("id"), i.get("url") or i.get("url_detail"))
 
 
+def _merge_intervention_fields(old_entry: dict[str, Any], new_entry: dict[str, Any]) -> dict[str, Any]:
+    """Fusionne les champs de deux entrées d'intervention partageant la même clé.
+
+    Stratégie champ par champ (additive, sans perte) :
+    - Si un champ est présent uniquement dans l'une des entrées, il est conservé.
+    - En cas de collision, `_prefer_non_empty` garde la valeur non vide ; si les
+      deux sont renseignées, la nouvelle valeur l'emporte.
+
+    Cela garantit que les champs ajoutés par un enrichissement Syceron (ex.
+    `texte_complet`, `url_video`, `longueur_mots`) ne sont jamais écrasés par une
+    régénération de base qui ne connaît pas ces champs, tout en laissant une
+    régénération enrichie mettre à jour les champs qu'elle renseigne.
+    """
+    merged = dict(old_entry)
+    for key, new_val in new_entry.items():
+        merged[key] = _prefer_non_empty(new_val, old_entry.get(key))
+    return merged
+
+
+def merge_enriched_interventions(
+    old_list: Optional[list[dict[str, Any]]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Fusionne deux listes d'interventions avec stratégie additive enrichie.
+
+    Contrairement à `merge_lists_by_key` (old entry wins intégral), cette
+    fonction fusionne les champs au niveau du dict pour les entrées en collision
+    (même clé d'unicité), via `_merge_intervention_fields` :
+    - Les entrées uniquement dans `old_list` sont conservées telles quelles.
+    - Les entrées uniquement dans `new_list` sont ajoutées à la suite.
+    - Pour les entrées présentes dans les deux listes (même clé) :
+      les champs sont fusionnés, la valeur non vide l'emportant.
+
+    Cela préserve les champs d'enrichissement Syceron (ex. `texte_complet`,
+    `url_video`, `longueur_mots`) qu'ils viennent de l'ancienne ou de la nouvelle
+    version, sans jamais créer de doublon.
+    """
+    old_list = old_list or []
+    new_list = new_list or []
+    by_key: dict[Key, dict[str, Any]] = {}
+    order: list[Key] = []
+    for item in old_list:
+        if not isinstance(item, dict):
+            continue
+        k = key_fn(item)
+        if k not in by_key:
+            order.append(k)
+        by_key[k] = item
+    for item in new_list:
+        if not isinstance(item, dict):
+            continue
+        k = key_fn(item)
+        if k in by_key:
+            by_key[k] = _merge_intervention_fields(by_key[k], item)
+        else:
+            order.append(k)
+            by_key[k] = item
+    return [by_key[k] for k in order]
+
+
 def _amendement_key(a: dict[str, Any]) -> Key:
     return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
@@ -172,7 +233,7 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         key=lambda d: (d.get("date_max") or "", d.get("titre") or ""),
         reverse=True,
     )
-    merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _intervention_key)
+    merged["interventions"] = merge_enriched_interventions(old.get("interventions"), new.get("interventions"), _intervention_key)
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
     # sinon) : un echec/vide transitoire de l'open data amendements ne doit pas
     # effacer des amendements deja collectes lors d'une regeneration precedente.
@@ -322,7 +383,7 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         key=lambda t: (t.get("date_max") or "", t.get("titre") or ""),
         reverse=True,
     )
-    merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
+    merged["interventions"] = merge_enriched_interventions(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
     # sinon) : un echec/vide transitoire de l'open data amendements (voir
     # candidate_profile.fetch_amendements_officiels) ne doit pas effacer des

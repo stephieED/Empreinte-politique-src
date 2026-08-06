@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from merge_profile import clean_stale_textes_portes, merge_lists_by_key, merge_pivot_profile, merge_raw_profile
+from merge_profile import clean_stale_textes_portes, merge_enriched_interventions, merge_lists_by_key, merge_pivot_profile, merge_raw_profile
 
 
 def test_merge_lists_by_key_keeps_old_and_adds_new_only():
@@ -376,3 +376,207 @@ def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
     }
     merged = merge_raw_profile(old, new)
     assert any("questions indisponibles" in w for w in merged["meta"]["warnings"])
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 : merge additif des interventions enrichies (Syceron)
+# ---------------------------------------------------------------------------
+
+def test_merge_enriched_interventions_preserves_syceron_fields_from_old():
+    """Les champs Syceron présents dans l'ancien profil (texte_complet, url_video,
+    longueur_mots) doivent être conservés si le nouveau profil (régénération de
+    base) ne les renseigne pas."""
+    old = [
+        {
+            "source_url": "https://a.fr/1",
+            "date": "2024-01-01",
+            "sujet": "Budget",
+            "texte": "Extrait court...",
+            "texte_complet": "Texte intégral de l'intervention enrichie via Syceron.",
+            "url_video": "https://videos.assemblee-nationale.fr/42",
+            "longueur_mots": 312,
+        }
+    ]
+    new = [
+        {
+            "source_url": "https://a.fr/1",
+            "date": "2024-01-01",
+            "sujet": "Budget",
+            "texte": "Extrait court...",
+            # pas de texte_complet / url_video / longueur_mots → régénération de base
+        }
+    ]
+
+    merged = merge_enriched_interventions(old, new, key_fn=lambda i: i.get("source_url"))
+
+    assert len(merged) == 1
+    assert merged[0]["texte_complet"] == old[0]["texte_complet"]
+    assert merged[0]["url_video"] == old[0]["url_video"]
+    assert merged[0]["longueur_mots"] == old[0]["longueur_mots"]
+
+
+def test_merge_enriched_interventions_absorbs_syceron_fields_from_new():
+    """Si le nouveau profil apporte un enrichissement Syceron absent de l'ancien,
+    ces champs doivent être intégrés (la régénération enrichie l'emporte sur le
+    champ absent)."""
+    old = [
+        {
+            "source_url": "https://a.fr/2",
+            "date": "2024-02-01",
+            "sujet": "Fiscalité",
+            "texte": "Extrait...",
+            # pas encore enrichi
+        }
+    ]
+    new = [
+        {
+            "source_url": "https://a.fr/2",
+            "date": "2024-02-01",
+            "sujet": "Fiscalité",
+            "texte": "Extrait...",
+            "texte_complet": "Texte complet récupéré par Syceron.",
+            "url_video": "https://videos.assemblee-nationale.fr/99",
+            "longueur_mots": 150,
+        }
+    ]
+
+    merged = merge_enriched_interventions(old, new, key_fn=lambda i: i.get("source_url"))
+
+    assert len(merged) == 1
+    assert merged[0]["texte_complet"] == new[0]["texte_complet"]
+    assert merged[0]["url_video"] == new[0]["url_video"]
+    assert merged[0]["longueur_mots"] == new[0]["longueur_mots"]
+
+
+def test_merge_enriched_interventions_no_duplication():
+    """Même clé dans les deux listes → une seule entrée dans le résultat."""
+    entry = {"source_url": "https://a.fr/3", "date": "2024-03-01", "sujet": "Santé", "texte": "..."}
+
+    merged = merge_enriched_interventions([entry], [entry], key_fn=lambda i: i.get("source_url"))
+
+    assert len(merged) == 1
+
+
+def test_merge_enriched_interventions_adds_genuinely_new_entries():
+    """Les entrées absentes de l'ancien profil doivent être ajoutées à la suite."""
+    old = [{"source_url": "https://a.fr/1", "date": "2024-01-01", "sujet": "A", "texte": "..."}]
+    new = [
+        {"source_url": "https://a.fr/1", "date": "2024-01-01", "sujet": "A", "texte": "..."},
+        {"source_url": "https://a.fr/2", "date": "2024-02-01", "sujet": "B", "texte": "..."},
+    ]
+
+    merged = merge_enriched_interventions(old, new, key_fn=lambda i: i.get("source_url"))
+
+    assert len(merged) == 2
+    assert merged[1]["source_url"] == "https://a.fr/2"
+
+
+def test_merge_enriched_interventions_base_field_update_when_old_is_null():
+    """Un champ de base nul dans l'ancien profil (ex. sujet absent) doit être
+    mis à jour si le nouveau le renseigne."""
+    old = [{"source_url": "https://a.fr/4", "date": "2024-04-01", "sujet": None, "texte": "Texte."}]
+    new = [{"source_url": "https://a.fr/4", "date": "2024-04-01", "sujet": "Éducation", "texte": "Texte."}]
+
+    merged = merge_enriched_interventions(old, new, key_fn=lambda i: i.get("source_url"))
+
+    assert merged[0]["sujet"] == "Éducation"
+
+
+def test_merge_raw_profile_preserves_syceron_enrichment_on_regen():
+    """Intégration : une régénération de base (new sans champs Syceron) ne doit
+    pas effacer les champs Syceron présents dans le profil existant."""
+    old = {
+        "slug": "test-depute",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Test Député"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [
+            {
+                "id": 42,
+                "url": "https://a.fr/42",
+                "date": "2024-01-15",
+                "texte": "Extrait.",
+                "texte_complet": "Discours complet enrichi.",
+                "url_video": "https://videos.assemblee.fr/42",
+                "longueur_mots": 500,
+            }
+        ],
+        "meta": {"warnings": [], "synchro_sources": {}},
+    }
+    new = {
+        "slug": "test-depute",
+        "chambre": "deputes",
+        "identite": {"nom_complet": "Test Député"},
+        "mandats": [],
+        "votes": [],
+        "votes_source": None,
+        "synthese_activite": None,
+        "dossiers_legislatifs": [],
+        "amendements": [],
+        "interventions": [
+            {
+                "id": 42,
+                "url": "https://a.fr/42",
+                "date": "2024-01-15",
+                "texte": "Extrait.",
+                # champs Syceron absents de la régénération de base
+            }
+        ],
+        "meta": {"warnings": [], "synchro_sources": {}},
+    }
+
+    merged = merge_raw_profile(old, new)
+
+    assert len(merged["interventions"]) == 1
+    i = merged["interventions"][0]
+    assert i["texte_complet"] == "Discours complet enrichi."
+    assert i["url_video"] == "https://videos.assemblee.fr/42"
+    assert i["longueur_mots"] == 500
+
+
+def test_merge_pivot_profile_preserves_syceron_enrichment_on_regen():
+    """Intégration pivot : une régénération de base ne doit pas effacer les champs
+    Syceron présents dans le profil pivot existant."""
+    old = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "interventions": [
+            {
+                "source_url": "https://a.fr/pivot/1",
+                "date": "2024-03-01",
+                "sujet": "Logement",
+                "texte": "Extrait pivot.",
+                "texte_complet": "Discours pivot complet enrichi via Syceron.",
+                "longueur_mots": 220,
+            }
+        ],
+        "amendements": [],
+        "tags_thematiques": [],
+        "meta": {"warnings": []},
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "interventions": [
+            {
+                "source_url": "https://a.fr/pivot/1",
+                "date": "2024-03-01",
+                "sujet": "Logement",
+                "texte": "Extrait pivot.",
+                # champs Syceron absents
+            }
+        ],
+        "amendements": [],
+        "tags_thematiques": [],
+        "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    assert len(merged["interventions"]) == 1
+    i = merged["interventions"][0]
+    assert i["texte_complet"] == "Discours pivot complet enrichi via Syceron."
+    assert i["longueur_mots"] == 220
