@@ -30,6 +30,7 @@ flowchart TD
     AN4["AN Open Data\nActeurs actifs + mandats + organes"] --> C
     AN5["AN Open Data\nHistorique acteurs/mandats\n(positions hémicycle)"] --> C
     AN6["AN Open Data\nQuestions (QE / QG / QOSD)"] --> C
+    AN7["AN Open Data\nDébats officiels Syceron\n(leg. 16/17 — fallback NosDéputés)"] --> C
 
     CACHE[".cache/\n(évite les re-téléchargements)"] -. mise en cache .-> C
 
@@ -41,7 +42,8 @@ flowchart TD
 > **Priorité des votes** : scrutins nominatifs AN Open Data en premier ; endpoint votes NosDéputés en fallback uniquement.  
 > **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.  
 > **Textes portés** : rôles factuels extraits des dossiers législatifs (auteur, rapporteur, co-rapporteur).  
-> **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).
+> **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).  
+> **Débats officiels** : transcriptions Syceron indexées par `acteurRef` (leg. 16/17) ; fallback NosDéputés conservé si source indisponible, avec warning qualité.
 
 ---
 
@@ -54,8 +56,9 @@ flowchart TD
 5. Les amendements AN sont indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.
 6. Les dossiers législatifs AN servent à produire les textes portés avec rôles factuels (auteur, rapporteur, co-rapporteur).
 7. Les questions parlementaires (QE/QG/QOSD) sont transformées puis ajoutées aux interventions.
-8. Des enrichissements identité/mandats AN existent aussi via les dumps acteurs (actifs + historique), dont les positions hémicycle.
-9. Les données sont mises en cache sous `.cache/` pour éviter les re-téléchargements massifs.
+8. Les débats officiels Syceron (leg. 16/17) sont indexés par `acteurRef` et fusionnés dans `interventions` avec priorité sur les résultats NosDéputés ; si la source est absente, le fallback NosDéputés est conservé et un warning qualité est émis.
+9. Des enrichissements identité/mandats AN existent aussi via les dumps acteurs (actifs + historique), dont les positions hémicycle.
+10. Les données sont mises en cache sous `.cache/` pour éviter les re-téléchargements massifs.
 
 ---
 
@@ -71,6 +74,7 @@ flowchart TD
 | Acteurs actifs + mandats + organes | Identité, mandats |
 | Historique acteurs/mandats/organes | Positions hémicycle |
 | Questions (QE/QG/QOSD) | Interventions écrites et orales |
+| [Débats officiels Syceron](https://data.assemblee-nationale.fr/static/openData/repository) (leg. 16/17) | Transcriptions verbatim en séance plénière |
 
 Référentiel documentaire détaillé : [`an_opendata.md`](./an_opendata.md).
 

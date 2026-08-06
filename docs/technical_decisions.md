@@ -1,3 +1,40 @@
+<a id="debats-officiels"></a>
+## Débats officiels — intégration de la source Syceron (2026-08-06)
+
+**Contexte.** Les interventions en séance plénière étaient collectées
+exclusivement via l'API de recherche NosDéputés.fr (endpoint
+`/api/recherche/Intervention`). Cette approche reposait sur du scraping HTML
+de pages de séance pour identifier l'orateur et extraire le sujet (`sujet`,
+`mots_cles`), ce qui la rendait fragile face aux mises à jour du site.
+
+**Décision.** Intégrer le jeu de données verbatim Syceron publié par l'AN sur
+son portail Open Data (`.../17/vp/sycerondbk/Debats.json.zip`). Cette source
+attribue chaque intervention à un `acteurRef` (`PAxxxxx`), ce qui permet une
+indexation directe sans fuzzy-matching sur les noms. Elle est disponible pour
+les législatures 16 et 17 ; les législatures antérieures restent couvertes par
+le fallback NosDéputés.
+
+**Architecture retenue :**
+
+- `fetch_debats_officiels` télécharge et met en cache le ZIP par législature.
+- `_build_acteur_debats_index` construit un index `acteurRef -> interventions`.
+- `build_profile()` fusionne les entrées Syceron dans `profile["interventions"]`
+  avec `source="an_officiel"` et préserve le fallback NosDéputés quand la
+  source officielle est absente.
+- Un warning qualité `"debats_officiels_indisponibles"` est émis si le fallback
+  est utilisé (cohérent avec la logique de la quality gate).
+
+**Alternative écartée.** Garder uniquement NosDéputés : risque de rupture à
+chaque refonte du site, plus dépendance à du scraping HTML fragile pour
+l'identification de l'orateur. La source AN officielle est préférable pour la
+traçabilité (règle 2, AGENTS.md §2).
+
+**Périmètre.** Seul le format JSON `sycerondbk` est intégré, disponible pour
+les législatures 16 et 17. La législature 15 dispose d'un dump XML brut
+(`syceronbrut`, ~149 MB) dont la structure est incompatible avec l'indexation
+directe par `acteurRef` — non implémenté pour l'instant. Pour les législatures
+15 et antérieures, le fallback NosDéputés reste la seule source disponible.
+
 <a id="hors-perimetre"></a>
 ## Deferred / out-of-scope investigations
 

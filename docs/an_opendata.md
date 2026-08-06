@@ -143,6 +143,57 @@ Implemented in code:
   `normalize_nosdeputes._normalize_intervention`
 - Merge in `merge_profile.merge_raw_profile`
 
+## Official debates (Syceron)
+
+`.../17/vp/sycerondbk/Debats.json.zip`
+
+Verbatim plenary session transcripts produced by Syceron (the AN's official
+transcript provider). Unlike the NosDéputés search API, this dataset is
+organized by `acteurRef` which allows reliable per-deputy attribution without
+HTML scraping or speaker-name fuzzy matching.
+
+Legislature availability:
+
+| Legislature | Dataset | File | Notes |
+|---|---|---|---|
+| 17 | `sycerondbk` | `Debats.json.zip` | Available — JSON, per-`acteurRef` |
+| 16 | `sycerondbk` | `Debats.json.zip` | Available — JSON, per-`acteurRef` |
+| 15 | `syceronbrut` | `Debats_XV.zip` | XML raw dump (~149 MB) — not the JSON format; not implemented |
+| 14 and earlier | — | — | No Syceron dataset found |
+
+Only the `sycerondbk` JSON format (L16–17) is integrated. Legislature 15 has a
+`syceronbrut` XML archive, but its structure differs significantly (raw XML
+rather than per-actor JSON entries) and is not currently parsed. Legislatures
+14 and below have no Syceron dataset at all.
+
+Key JSON fields (empirical observations):
+
+- `intervention.acteurRef` (`PAxxxxx`): direct link to AN actor ID, used by
+  `_build_acteur_debats_index` to route entries to the right candidate.
+- `intervention.uid`: unique intervention identifier within the dataset.
+- `intervention.texte`: verbatim speech text.
+- `intervention.dateSeance`: ISO date of the plenary session.
+- `intervention.typeIntervention`: observed values include `"intervention"`,
+  `"question"`, `"reponse"` — used to set `type_detail` on the normalized
+  intervention record.
+- `intervention.idSeance`: session reference, used to group interventions and
+  derive `sujet` without fetching the session page.
+- `intervention.idDossierRef`: legislative dossier reference (optional),
+  linked against `textes_portes` for contextual enrichment.
+
+Implemented path (code in `src/candidate_profile.py`):
+
+- `fetch_debats_officiels(url_an_ou_senat, legislature)`: downloads and
+  caches the ZIP, returns the parsed list.
+- `_build_acteur_debats_index`: builds `acteurRef -> [interventions]` from the
+  full corpus.
+- Integration in `build_profile()` under the `--source an` path:
+  Syceron entries are merged into `profile["interventions"]` with
+  `source="an_officiel"` priority; fallback to the NosDéputés search results
+  is preserved when the official dataset is unavailable for a given legislature.
+- Quality warning emitted (`"debats_officiels_indisponibles"`) when the
+  official source is missing and the fallback path is used.
+
 ## Agenda / meetings (committees) - low priority
 
 `.../17/vp/reunions/Agenda.json.zip` (~7.8 MB).
