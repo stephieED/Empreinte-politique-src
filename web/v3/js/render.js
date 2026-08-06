@@ -67,6 +67,18 @@ export function isNotableResponsibility(responsibility) {
   return ROLE_PRIORITY.some((keyword) => (responsibility.type || "").toLowerCase().includes(keyword));
 }
 
+export function mandateRoleTone(fonction) {
+  const role = normalizedText(fonction || "");
+  if (/(^| )vice[- ]president/.test(role)) return "vice_presidence";
+  if (/(^| )co[- ]president/.test(role) || /(^| )president/.test(role)) return "presidence";
+  if (/rapporteur|rapporteure|co[- ]rapporteur/.test(role)) return "rapporteur";
+  return "membre";
+}
+
+export function mandateBorderStyle(categorie) {
+  return ["groupe_amitie", "extra_parlementaire"].includes(categorie) ? "is-dashed" : "is-solid";
+}
+
 export function sourcedHemicyclePosition(profile) {
   const mandate = (profile.pivot_mandats || []).find((item) => item.position_dans_hemicycle && item.source_url);
   return mandate?.position_dans_hemicycle || null;
@@ -139,17 +151,22 @@ export function filterTextesByScope(profile, scope, state) {
   const themedTextes = (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme));
   if (scope === "all") return themedTextes;
   const split = splitLegislativeFactsByHemicycle(profile);
-  if (!split.periods.length) return [];
-  const bucket = split.textesBuckets[scope] || [];
+  if (!split.periods.length) return scope === "non_distingue" ? themedTextes : [];
+  const bucket = scope === "non_distingue"
+    ? [...(split.textesBuckets.mixte || []), ...(split.textesBuckets.indetermine || [])]
+    : (split.textesBuckets[scope] || []);
   return themedTextes.filter((item) => bucket.includes(item));
 }
 
-export function filterAmendementsByScope(profile, scope) {
-  const amendements = (profile.amendements || []);
+export function filterAmendementsByScope(profile, scope, state = null) {
+  const amendements = (profile.amendements || []).filter((a) => (state ? inTheme(a, state.selectedTheme) : true));
   if (scope === "all") return amendements;
+  if (scope === "gouvernement") return [];
   const split = splitLegislativeFactsByHemicycle(profile);
-  if (!split.periods.length) return [];
-  const bucket = split.amendementsBuckets[scope] || [];
+  if (!split.periods.length) return scope === "non_distingue" ? amendements : [];
+  const bucket = scope === "non_distingue"
+    ? [...(split.amendementsBuckets.mixte || []), ...(split.amendementsBuckets.indetermine || [])]
+    : (split.amendementsBuckets[scope] || []);
   return amendements.filter((item) => bucket.includes(item));
 }
 
@@ -283,62 +300,81 @@ export function renderKpiColumn(profile, scope, label, noPeriods, state) {
   </div>`;
 }
 
+export function renderLegislativeScopeBars(counts, total, state, kind, includeMinisterial = false) {
+  const rows = [
+    { scope: "majorite", label: "Majorité", color: "var(--vert)" },
+    { scope: "opposition", label: "Opposition", color: "var(--rouge)" },
+    { scope: "non_distingue", label: "Non distingué", color: "var(--muted)" },
+  ];
+  if (includeMinisterial) {
+    rows.push({ scope: "gouvernement", label: "Activité ministérielle", color: "var(--accent)" });
+  }
+  const isAnyActive = state.textesScopeFilter !== "all";
+  return `<div class="scope-bars" data-scope-kind="${escapeHtml(kind)}">${rows.map((row) => {
+    const count = counts[row.scope] || 0;
+    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+    const isActive = state.textesScopeFilter === row.scope;
+    const isDimmed = isAnyActive && !isActive;
+    const note = row.scope === "gouvernement" && count === 0
+      ? `<span class="scope-bar-note">aucune activité ministérielle</span>`
+      : "";
+    return `<button type="button" class="scope-bar-row${isActive ? " is-active" : ""}${isDimmed ? " is-dimmed" : ""}" data-textes-scope="${escapeHtml(row.scope)}" aria-pressed="${isActive}" aria-label="Filtrer ${escapeHtml(kind)} : ${escapeHtml(row.label)} (${count})">
+      <span class="scope-bar-label">${escapeHtml(row.label)}</span>
+      <span class="scope-bar-track"><span class="scope-bar-fill" style="width:${pct}%;background:${row.color}"></span></span>
+      <span class="scope-bar-count">${count}</span>
+      ${note}
+    </button>`;
+  }).join("")}</div>`;
+}
+
 export function renderTextesKpi(profile, state) {
   const split = splitLegislativeFactsByHemicycle(profile);
-  const noPeriods = split.periods.length === 0;
-  const hasGouvernement = split.periods.some((p) => p.position === "gouvernement");
-
-  const nonDistingueTextes = [
-    ...(split.textesBuckets.mixte || []),
-    ...(split.textesBuckets.indetermine || []),
-  ].filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d));
-  const nonDistingueAmends = [
-    ...(split.amendementsBuckets.mixte || []),
-    ...(split.amendementsBuckets.indetermine || []),
-  ];
-  const hasNonDistingue = noPeriods || nonDistingueTextes.length > 0 || nonDistingueAmends.length > 0;
-
+  const allPublicTextes = (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d));
+  const allAmendements = (profile.amendements || []).filter((a) => inTheme(a, state.selectedTheme));
+  const countBuckets = split.periods.length
+    ? {
+      textes: {
+        majorite: split.textesBuckets.majorite.filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d)).length,
+        opposition: split.textesBuckets.opposition.filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d)).length,
+        non_distingue: [...(split.textesBuckets.mixte || []), ...(split.textesBuckets.indetermine || [])]
+          .filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d)).length,
+        gouvernement: split.textesBuckets.gouvernement.filter((d) => inTheme(d, state.selectedTheme) && isPublicCarriedText(d)).length,
+      },
+      amendements: {
+        majorite: split.amendementsBuckets.majorite.filter((a) => inTheme(a, state.selectedTheme)).length,
+        opposition: split.amendementsBuckets.opposition.filter((a) => inTheme(a, state.selectedTheme)).length,
+        non_distingue: [...(split.amendementsBuckets.mixte || []), ...(split.amendementsBuckets.indetermine || [])]
+          .filter((a) => inTheme(a, state.selectedTheme)).length,
+      },
+    }
+    : {
+      textes: { majorite: 0, opposition: 0, non_distingue: allPublicTextes.length, gouvernement: 0 },
+      amendements: { majorite: 0, opposition: 0, non_distingue: allAmendements.length },
+    };
   const isFilterActive = state.textesScopeFilter !== "all" || state.amendementsOutcomeFilter !== "all";
   const resetBtn = isFilterActive
     ? `<button type="button" class="textes-kpi-reset" data-reset-textes-filters>Réinitialiser les filtres</button>`
     : "";
 
-  const byTheme = state.textesKpiView === "par_theme";
-  const ndCounts = Object.fromEntries(AMENDMENT_OUTCOMES.map(([o]) => [o, 0]));
-  for (const a of nonDistingueAmends) { if (Object.hasOwn(ndCounts, a.sort)) ndCounts[a.sort] += 1; }
-  const ndIsActive = state.textesScopeFilter === "non_distingue" && state.amendementsOutcomeFilter === "all";
-  const ndTextesBarBlock = nonDistingueTextes.length
-    ? `<div class="textes-kpi-bar-label">Textes portés</div>
-       ${byTheme ? renderThemeBar(nonDistingueTextes, "non_distingue") : renderStageBar(nonDistingueTextes)}
-       ${byTheme ? renderThemeLegend(nonDistingueTextes, "non_distingue") : renderStageLegend(nonDistingueTextes)}`
-    : "";
-  const nonDistingueBlock = hasNonDistingue
-    ? `<div class="textes-kpi-nondistinct">
-        <div class="textes-kpi-col${ndIsActive ? " is-active" : ""}" data-textes-scope="non_distingue" role="button" tabindex="0" aria-label="Filtrer: Non distingué" aria-pressed="${ndIsActive}" style="cursor:pointer">
-          <div class="textes-kpi-col-label">Non distingué <span style="font-weight:400">(mixte + non sourcé)</span></div>
-          <div class="textes-kpi-col-count">${nonDistingueTextes.length}</div>
-          <div class="textes-kpi-col-sublabel">texte(s) porté(s)</div>
-          ${ndTextesBarBlock}
-          <div class="textes-kpi-bar-label">Amendements</div>
-          ${byTheme ? renderThemeBar(nonDistingueAmends, "non_distingue") : renderOutcomeBar(ndCounts, nonDistingueAmends.length, "non_distingue", state)}
-          ${nonDistingueAmends.length
-            ? (byTheme ? renderThemeLegend(nonDistingueAmends, "non_distingue") : renderOutcomeLegend(ndCounts, nonDistingueAmends.length, "non_distingue", state))
-            : `<div class="textes-kpi-empty">Aucun amendement</div>`}
-        </div>
-      </div>`
-    : "";
-
   return `
-    <div class="textes-kpi-controls" role="group" aria-label="Coloration des barres">
-      <button type="button" data-textes-kpi-view="par_statut" aria-pressed="${state.textesKpiView === "par_statut"}">Par statut</button>
-      <button type="button" data-textes-kpi-view="par_theme" aria-pressed="${state.textesKpiView === "par_theme"}">Par thème</button>
+    <div class="textes-kpi-controls" role="group" aria-label="Filtres textes et amendements">
       ${resetBtn}
     </div>
-    <div class="textes-kpi-grid${hasNonDistingue ? " has-nondistinct" : ""}${hasGouvernement ? " has-gouvernement" : ""}">
-      ${renderKpiColumn(profile, "majorite", "Majorité", noPeriods, state)}
-      ${renderKpiColumn(profile, "opposition", "Opposition", noPeriods, state)}
-      ${hasGouvernement ? renderKpiColumn(profile, "gouvernement", "Gouvernement", noPeriods, state) : ""}
-      ${nonDistingueBlock}
+    <div class="textes-kpi-legend" aria-label="Légende des catégories">
+      <span class="legend-chip"><span class="legend-dot" style="background:var(--vert)"></span>Majorité</span>
+      <span class="legend-chip"><span class="legend-dot" style="background:var(--rouge)"></span>Opposition</span>
+      <span class="legend-chip"><span class="legend-dot" style="background:var(--muted)"></span>Non distingué</span>
+      <span class="legend-chip"><span class="legend-dot" style="background:var(--accent)"></span>Activité ministérielle</span>
+    </div>
+    <div class="textes-kpi-grid">
+      <article class="textes-kpi-col">
+        <div class="textes-kpi-col-label">Textes portés</div>
+        ${renderLegislativeScopeBars(countBuckets.textes, allPublicTextes.length, state, "textes", true)}
+      </article>
+      <article class="textes-kpi-col">
+        <div class="textes-kpi-col-label">Amendements</div>
+        ${renderLegislativeScopeBars(countBuckets.amendements, allAmendements.length, state, "amendements")}
+      </article>
     </div>
   `;
 }
@@ -453,16 +489,29 @@ export function renderMandateTimeline(profile, state) {
       : "date non renseignée";
     return `<article class="mandate-timeline-item">
       <div class="mandate-period">${escapeHtml(period)}</div>
-      <div class="mandate-card ${mandate.categorie === "mandat_electif" ? "" : "is-dashed"} ${mandate.actif ? "is-current" : ""}">
+      <div class="mandate-card ${mandateBorderStyle(mandate.categorie)} mandate-role--${mandateRoleTone(mandate.fonction)} ${mandate.actif ? "is-current" : ""}">
         <strong class="mandate-function">${escapeHtml(mandate.label || "Mandat non précisé")}</strong>
         <div class="mandate-row">
           <span class="mandate-role">${escapeHtml(mandate.fonction || "Fonction non renseignée")}</span>
           <small class="mandate-meta">${escapeHtml(CATEGORIE_LABELS_FR[mandate.categorie] || mandate.categorie || "Catégorie non renseignée")}</small>
+          ${mandate.actif ? `<span class="mandate-live-tag">en cours</span>` : ""}
         </div>
         ${mandate.sourceUrls.length ? `<div class="mandate-sources">${mandate.sourceUrls.map((url, index) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Source${mandate.sourceUrls.length > 1 ? ` ${index + 1}` : ""}</a>`).join(" · ")}</div>` : ""}
       </div>
     </article>`;
   }).join("")}</div>`;
+}
+
+export function renderMandateLegend() {
+  return `<div class="mandate-legend" role="note" aria-label="Légende des mandats">
+    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--presidence"></span>Présidence</span>
+    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--vice_presidence"></span>Vice-présidence</span>
+    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--rapporteur"></span>Rapporteur / rapporteure</span>
+    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--membre"></span>Membre</span>
+    <span class="mandate-legend-item"><span class="mandate-legend-line is-solid"></span>Trait plein : rôle institutionnel formel</span>
+    <span class="mandate-legend-item"><span class="mandate-legend-line is-dashed"></span>Pointillé : rôle déclaratif (amitié / extra-parlementaire)</span>
+    <span class="mandate-legend-item"><span class="mandate-live-tag">en cours</span>Mandat actif</span>
+  </div>`;
 }
 
 export function renderMandates(profile, state) {
@@ -471,13 +520,13 @@ export function renderMandates(profile, state) {
       `<button type="button" class="${state.mandateView === value ? "active" : ""}" data-mandate-view="${value}" aria-pressed="${state.mandateView === value}">${label}</button>`
     )).join("")}
   </div>`;
-  if (state.mandateView === "responsibilities") return `${viewControls}${renderResponsabilites(profile)}`;
+  if (state.mandateView === "responsibilities") return `${viewControls}${renderMandateLegend()}${renderResponsabilites(profile)}`;
   const filters = `<div class="mandate-filters" role="group" aria-label="Filtrer les mandats">
     ${[["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]].map(([value, label]) => (
       `<button type="button" class="${state.mandateFilter === value ? "active" : ""}" data-mandate-filter="${value}" aria-pressed="${state.mandateFilter === value}">${label}</button>`
     )).join("")}
   </div>`;
-  return `${viewControls}${filters}${renderMandateTimeline(profile, state)}`;
+  return `${viewControls}${filters}${renderMandateLegend()}${renderMandateTimeline(profile, state)}`;
 }
 
 export function renderThemePills(state) {
@@ -757,10 +806,90 @@ export function renderAmendements(profile, scope = "all", outcomeFilter = "all")
     if (Object.hasOwn(counts, amendement.sort)) counts[amendement.sort] += 1;
   }
   return `
-    <p class="source-ref">Comptes bruts par issue sur ${amendements.length} amendement(s) documenté(s)${outcomeFilter !== "all" ? ` — filtre actif : ${escapeHtml(outcomeFilter)}` : ""}. Aucun taux isolé : l'issue dépend aussi de la procédure et du texte.</p>
+    <p class="source-ref">Répartition des issues sur ${amendements.length} amendement(s) documenté(s)${outcomeFilter !== "all" ? ` — filtre actif : ${escapeHtml(outcomeFilter)}` : ""}. Aucun taux isolé : l'issue dépend aussi de la procédure et du texte.</p>
     <div class="void-map">${AMENDMENT_OUTCOMES.map(([outcome, label]) => `
       <div class="void-signal"><span class="void-number">${counts[outcome]}</span><strong>${escapeHtml(label)}</strong></div>
     `).join("")}</div>
+  `;
+}
+
+export function buildAmendementMatchMap(textes, amendements) {
+  const normalizedTextes = textes.map((texte) => ({
+    texte,
+    key: normalizedText(simplifyTitle(texte.titre || "")),
+  }));
+  const map = new Map(textes.map((texte) => [texte, []]));
+  for (const amendement of amendements) {
+    const cible = normalizedText(simplifyTitle(amendement.texte_vise || ""));
+    const direct = normalizedTextes.find(({ key }) => key && cible && (key.includes(cible) || cible.includes(key)));
+    if (direct) {
+      map.get(direct.texte).push(amendement);
+    }
+  }
+  return map;
+}
+
+export function renderLegislativeDetails(profile, state) {
+  const scope = state.textesScopeFilter;
+  const textes = (scope === "all"
+    ? (profile.textes_portes || []).filter((d) => inTheme(d, state.selectedTheme))
+    : filterTextesByScope(profile, scope, state))
+    .filter((d) => isPublicCarriedText(d))
+    .sort((a, b) => toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min));
+  const amendements = filterAmendementsByScope(profile, scope, state)
+    .sort((a, b) => toDateMs(b.date) - toDateMs(a.date));
+  const amendementMap = buildAmendementMatchMap(textes, amendements);
+  const outcomeLabels = Object.fromEntries(AMENDMENT_OUTCOMES.map(([value, label]) => [value, label]));
+  const activeScopeLabel = {
+    all: "Tous les éléments",
+    majorite: "Majorité",
+    opposition: "Opposition",
+    non_distingue: "Non distingué",
+    gouvernement: "Activité ministérielle",
+  }[scope] || "Tous les éléments";
+  return `
+    <div class="legislative-details-head">
+      <h2>Détail filtré</h2>
+      <p class="source-ref">Filtre actif : ${escapeHtml(activeScopeLabel)}.</p>
+    </div>
+    <section class="legislative-block">
+      <div class="legislative-block-head">
+        <h3>Textes portés</h3>
+      </div>
+      ${textes.length ? `<div class="legislative-detail-list">${textes.map((texte) => {
+    const linkedAmends = amendementMap.get(texte) || [];
+    return `<article class="legislative-detail-card">
+            <div class="text-leaf-title">${escapeHtml(simplifyTitle(texte.titre) || "Titre non renseigné")}</div>
+            <div class="text-leaf-meta">${escapeHtml(TEXT_ROLE_LABELS[texte.role] || texte.role || "Rôle non renseigné")} / ${escapeHtml(TEXT_STAGE_LABELS[texte.stade_procedural] || texte.stade_procedural || "stade non renseigné")} / ${escapeHtml(formatIsoDate(texte.date_min))}${texte.date_max ? ` → ${escapeHtml(formatIsoDate(texte.date_max))}` : ""}</div>
+            ${sourceLinkHtml(texte.source_url, "↗ source")}
+            <div class="amendement-nested-list">
+              ${linkedAmends.length ? linkedAmends.map((amendement) => `<article class="amendement-detail-card">
+                <strong>${escapeHtml(amendement.numero || "Amendement sans numéro")}</strong>
+                <div class="small">${escapeHtml(amendement.texte_vise || "Texte visé non renseigné")}</div>
+                <div class="small">${escapeHtml(outcomeLabels[amendement.sort] || amendement.sort || "Issue non renseignée")} · ${escapeHtml(formatIsoDate(amendement.date))}</div>
+                <div class="small">${escapeHtml(amendement.premier_signataire || "Auteur non renseigné")}</div>
+                ${sourceLinkHtml(amendement.source_url, "↗ source")}
+              </article>`).join("") : `<p class="small">Aucun amendement rattaché sur ce filtre.</p>`}
+            </div>
+          </article>`;
+  }).join("")}</div>` : `<p class="empty">Aucun texte porté pour ce filtre.</p>`}
+    </section>
+    <section class="legislative-block">
+      <div class="legislative-block-head">
+        <h3>Amendements (liste filtrée)</h3>
+      </div>
+      ${scope === "gouvernement"
+    ? `<p class="empty">Les amendements ne sont pas classés par activité ministérielle dans ce panneau.</p>`
+    : (amendements.length
+      ? `<div class="amendement-detail-list">${amendements.map((amendement) => `<article class="amendement-detail-card">
+              <strong>${escapeHtml(amendement.numero || "Amendement sans numéro")}</strong>
+              <div class="small">${escapeHtml(amendement.texte_vise || "Texte visé non renseigné")}</div>
+              <div class="small">${escapeHtml(outcomeLabels[amendement.sort] || amendement.sort || "Issue non renseignée")} · ${escapeHtml(formatIsoDate(amendement.date))}</div>
+              <div class="small">${escapeHtml(amendement.premier_signataire || "Auteur non renseigné")}</div>
+              ${sourceLinkHtml(amendement.source_url, "↗ source")}
+            </article>`).join("")}</div>`
+      : `<p class="empty">Aucun amendement structuré pour ce filtre.</p>`)}
+    </section>
   `;
 }
 
@@ -1113,9 +1242,6 @@ export function renderPage(state) {
     return;
   }
 
-  const texteScope = state.textesScopeFilter;
-  const outcomeFilter = state.amendementsOutcomeFilter;
-
   root.innerHTML = `
     ${renderHeader(meta, profile, state)}
 
@@ -1136,19 +1262,16 @@ export function renderPage(state) {
 
       <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
         <section class="panel">
-          ${renderTextesKpi(profile, state)}
-          <section class="legislative-block">
-            <div class="legislative-block-head">
-              <h2>Textes portés</h2>
+          <section class="legislative-layout">
+            <div class="legislative-left-column">
+              <h2>Textes portés & amendements</h2>
+              ${renderTextesKpi(profile, state)}
             </div>
-            <div id="textes">${renderTextes(profile, texteScope, state)}</div>
-          </section>
-          <section class="legislative-block">
-            <div class="legislative-block-head">
-              <h2>Amendements</h2>
-              <div class="legislative-block-badges"><span class="legislative-badge">comptes bruts</span></div>
+            <div class="legislative-right-column">
+              <div class="legislative-scroll-frame">
+                ${renderLegislativeDetails(profile, state)}
+              </div>
             </div>
-            <div id="amendements">${renderAmendements(profile, texteScope, outcomeFilter)}</div>
           </section>
         </section>
       </div>
