@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/styles.css">
+  <script src="_ds/empreinte-politique-design-system-0817cb69-eb36-4602-91de-43162da69e7d/_ds_bundle.js"></script>
+  <style>
+    body{margin:0}
+    a{color:var(--accent)}
+    a:hover{color:var(--text)}
+    button{font-family:inherit}
+  </style>
+</helmet>
+
+<div style="background:var(--bg);color:var(--text);font-family:var(--font-ui);min-height:100vh;padding-bottom:80px" data-screen-label="Profil candidat — Textes portés">
+
+  <div style="display:grid;align-content:end;gap:16px;padding:clamp(24px,5vw,64px);border-bottom:var(--border-width) solid var(--line);color:var(--text-inverse);background:var(--text)">
+    <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.SectionKicker" hint-size="auto,16px">Présidentielle 2027 / données publiques</x-import>
+    <h1 style="color:var(--text-inverse);font-family:var(--font-display);font-size:clamp(3rem,10vw,7rem);line-height:var(--leading-tight);letter-spacing:var(--tracking-tight);text-transform:uppercase;margin:0;max-width:14ch">Gabriel Attal</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.Tag" variant="inverse" hint-size="auto,28px">Ancien Premier ministre</x-import>
+      <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.Tag" variant="inverse" hint-size="auto,28px">Renaissance</x-import>
+      <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.Tag" variant="inverse" hint-size="auto,28px">Député — Hauts-de-Seine (10e circ.)</x-import>
+    </div>
+  </div>
+
+  <div style="padding:clamp(16px,4vw,48px)">
+
+    <sc-if value="{{isTextes}}" hint-placeholder-val="{{true}}">
+      <div>
+        
+        <h2 style="font-family:var(--font-display);text-transform:uppercase;letter-spacing:var(--tracking-tight);font-size:clamp(1.8rem,4vw,2.6rem);margin:6px 0 8px">Textes portés</h2>
+        <p style="font-family:var(--font-mono);font-size:12px;line-height:var(--leading-normal);color:var(--muted);margin:0 0 24px;max-width:72ch">Textes sourcés et examinés en commission parlementaire uniquement</p>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px">
+          <button type="button" onclick="{{setStatutView}}" style="{{statutBtnStyle}}">Par statut</button>
+          <button type="button" onclick="{{setThemeView}}" style="{{themeBtnStyle}}">Par thème</button>
+          <sc-if value="{{hasActiveFilter}}">
+            <button type="button" onclick="{{resetFilters}}" style="border:1px solid var(--line);background:var(--bg);color:var(--muted);font-family:var(--font-mono);font-size:11px;text-transform:uppercase;padding:6px 12px;cursor:pointer">Réinitialiser les filtres</button>
+          </sc-if>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,2.4fr) minmax(0,2.4fr);gap:10px;align-items:center;margin-bottom:4px">
+          <span></span>
+          <div style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--muted)">Textes portés — {{visibleCount}}</div>
+          <div style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--muted)">Amendements — {{amendCount}}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:10px">
+          <sc-for list="{{combinedScopeRows}}" as="row" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,2.4fr) minmax(0,2.4fr);gap:10px;align-items:center;padding:3px 4px">
+              <span style="font-family:var(--font-mono);font-weight:600;font-size:10.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{row.label}}</span>
+              <div style="display:grid;grid-template-columns:minmax(0,3fr) auto;gap:8px;align-items:center;padding:2px 3px;cursor:pointer;opacity:{{row.textes.opacity}};background:{{row.textes.style.background}};border:{{row.textes.style.border}}" onclick="{{row.textes.onClick}}">
+                <span style="height:11px;border-radius:2px;background:var(--line);overflow:hidden;width:100%;display:block">
+                  <span style="display:flex;height:100%;width:{{row.textes.pct}}%">
+                    <sc-for list="{{row.textes.segments}}" as="seg" hint-placeholder-count="1"><span style="flex:{{seg.pct}} 0 0;background:{{seg.color}};height:100%;display:block;cursor:pointer" onclick="{{seg.onClick}}" title="Filtrer sur cette catégorie"></span></sc-for>
+                  </span>
+                </span>
+                <span style="font-family:var(--font-mono);font-weight:600;font-size:12px;min-width:2ch">{{row.textes.count}}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:minmax(0,3fr) auto;gap:8px;align-items:center;padding:2px 3px;cursor:pointer;opacity:{{row.amend.opacity}};background:{{row.amend.style.background}};border:{{row.amend.style.border}}" onclick="{{row.amend.onClick}}">
+                <span style="height:11px;border-radius:2px;background:var(--line);overflow:hidden;width:100%;display:block">
+                  <span style="display:flex;height:100%;width:{{row.amend.pct}}%">
+                    <sc-for list="{{row.amend.segments}}" as="seg" hint-placeholder-count="1"><span style="flex:{{seg.pct}} 0 0;background:{{seg.color}};height:100%;display:block;cursor:pointer" onclick="{{seg.onClick}}" title="Filtrer sur cette catégorie"></span></sc-for>
+                  </span>
+                </span>
+                <span style="font-family:var(--font-mono);font-weight:600;font-size:12px;min-width:2ch">{{row.amend.count}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-style:italic;margin:0 0 10px">Cliquer un segment de couleur affine le filtre.</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px">
+          <sc-for list="{{legendGroups}}" as="grp" hint-placeholder-count="2">
+            <div>
+              <div style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">{{grp.title}}</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <sc-for list="{{grp.items}}" as="it" hint-placeholder-count="2">
+                  <span style="display:flex;align-items:center;gap:5px;font-size:11.5px">
+                    <span style="width:9px;height:9px;border-radius:1px;display:inline-block;background:{{it.color}}"></span>{{it.label}}
+                  </span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px">
+          <sc-for list="{{themePills}}" as="pill" hint-placeholder-count="7">
+            <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.Tag" as="button" variant="{{pill.variant}}" onClick="{{pill.onClick}}" hint-size="auto,28px">{{pill.text}}</x-import>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 36px;margin-bottom:8px">
+          <div style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--muted)">Textes portés</div>
+          <div style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase;color:var(--muted)">Amendements</div>
+        </div>
+        <sc-if value="{{noShelves}}">
+          <p style="font-family:var(--font-mono);font-size:13px;color:var(--muted)">Aucun texte publiable pour ce filtre.</p>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:26px">
+          <sc-for list="{{themeRows}}" as="th" hint-placeholder-count="4">
+            <section>
+              <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:12px">
+                <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.Icon" name="{{th.icon}}" size="{{16}}" hint-size="16px,16px"></x-import>
+                <strong style="font-family:var(--font-mono);text-transform:uppercase;font-size:12px;letter-spacing:0.04em">{{th.label}}</strong>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{th.textesItems}}" as="item" hint-placeholder-count="1">
+                    <article style="border:1px solid var(--line);border-left:4px solid {{item.dotColor}};padding:12px;display:flex;flex-direction:column;gap:7px;background:var(--surface)">
+                      <div style="font-weight:600;font-size:14px;line-height:1.3">{{item.titre}}</div>
+                      <div style="display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+                        <span style="width:8px;height:8px;border-radius:1px;flex:none;background:{{item.dotColor}}"></span>
+                        {{item.meta}}
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{th.amendItems}}" as="item" hint-placeholder-count="1">
+                    <article style="border:1px solid var(--line);border-left:4px solid {{item.dotColor}};padding:12px;display:flex;flex-direction:column;gap:7px;background:var(--surface)">
+                      <div style="font-weight:600;font-size:14px;line-height:1.3">{{item.titre}}</div>
+                      <div style="display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+                        <span style="width:8px;height:8px;border-radius:1px;flex:none;background:{{item.dotColor}}"></span>
+                        {{item.meta}}
+                      </div>
+                    </article>
+                  </sc-for>
+                </div>
+              </div>
+            </section>
+          </sc-for>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:10px;color:var(--muted);font-style:italic;margin-top:16px">Amendements illustratifs — aucun amendement recensé dans la source pour ce mandat.</p>
+
+        <div style="margin-top:32px;border-top:1px solid var(--line);padding-top:16px">
+          <button type="button" onclick="{{toggleExcluded}}" style="border:0;background:transparent;color:var(--text);font-family:var(--font-mono);font-size:12px;text-transform:uppercase;padding:0;cursor:pointer;text-decoration:underline">{{excludedToggleLabel}}</button>
+          <sc-if value="{{showExcluded}}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:14px">
+              <sc-for list="{{excludedItems}}" as="item" hint-placeholder-count="2">
+                <article style="border:1px dashed var(--muted);padding:12px">
+                  <div style="font-weight:600;font-size:14px;margin-bottom:4px">{{item.titre}}</div>
+                  <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:8px">{{item.dateRange}}</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{item.reasons}}" as="reason" hint-placeholder-count="1">
+                      <span style="font-family:var(--font-mono);font-size:10px;text-transform:uppercase;background:var(--flag);color:var(--text);padding:2px 7px">{{reason}}</span>
+                    </sc-for>
+                  </div>
+                </article>
+              </sc-for>
+            </div>
+            <p style="font-family:var(--font-mono);font-size:10.5px;color:var(--muted);font-style:italic;margin-top:10px">Exemples illustratifs ajoutés pour montrer le mécanisme d'exclusion — non issus des données réelles d'Gabriel Attal.</p>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isApercu}}">
+      <div>
+        <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.SectionKicker" hint-size="auto,16px">Présidentielle 2027 / données publiques</x-import>
+        <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:clamp(1.8rem,4vw,2.6rem);margin:6px 0 16px">Aperçu</h2>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);border:var(--border-width) solid var(--line);margin-bottom:20px">
+          <div style="grid-column:span 1;border-right:var(--border-width) solid var(--line)"><x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.KpiCard" icon="kpi-anciennete" value="1,4 an" label="Ancienneté (mandat sourcé)" explanation="Mesure la durée d'un mandat électif sourcé (2017–2018), pas l'implication. Les fonctions ministérielles ultérieures sont documentées séparément dans les mandats." tint="{{0}}" hint-size="100%,170px"></x-import></div>
+          <div style="grid-column:span 1;border-right:var(--border-width) solid var(--line)"><x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.KpiCard" icon="kpi-responsabilites" value="18" label="Responsabilités occupées" explanation="Commissions, groupes d'études et missions distincts, dédupliqués par intitulé. Jamais un score." tint="{{0}}" hint-size="100%,170px"></x-import></div>
+          <div style="grid-column:span 1;border-right:var(--border-width) solid var(--line)"><x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.KpiCard" icon="kpi-vote" value="359" label="Votes de texte recensés" explanation="Scrutins publics recensés sur la période sourcée. Lecture la plus avancée retenue par texte." tint="{{0}}" hint-size="100%,170px"></x-import></div>
+          <div style="grid-column:span 1"><x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.KpiCard" icon="kpi-theme" value="Institutions" label="Thème dominant des textes portés" explanation="5 des 12 textes portés relèvent des institutions (traités, textes de gestion). Aide de lecture par mots-clés, pas une position déclarée." tint="{{0}}" hint-size="100%,170px"></x-import></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0;border:1px solid var(--line);margin-bottom:28px">
+          <sc-for list="{{glanceStats}}" as="g" hint-placeholder-count="2">
+            <div style="padding:16px;border-right:1px solid var(--line)">
+              <div style="font-family:var(--font-mono);font-weight:700;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-0.02em">{{g.value}}</div>
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;margin-top:4px">{{g.label}}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <sc-for list="{{overviewViewOptions}}" as="o" hint-placeholder-count="2">
+            <button type="button" onclick="{{o.onClick}}" style="{{o.buttonStyle}}">{{o.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+          <sc-for list="{{overviewFilterOptions}}" as="f" hint-placeholder-count="4">
+            <button type="button" onclick="{{f.onClick}}" style="{{f.buttonStyle}}">{{f.label}}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{overviewIsChrono}}" hint-placeholder-val="{{true}}">
+          <div style="display:flex;flex-direction:column;gap:8px;max-width:760px">
+            <sc-for list="{{overviewMandates}}" as="m" hint-placeholder-count="4">
+              <div style="border:1px solid var(--line);border-left:4px solid {{m.color}};padding:12px 14px;display:flex;justify-content:space-between;gap:16px">
+                <span>{{m.label}}</span>
+                <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap">{{m.period}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{overviewIsResp}}">
+          <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
+            <sc-for list="{{overviewResp}}" as="r" hint-placeholder-count="3">
+              <div style="border:1px solid var(--line);padding:12px 14px;display:flex;justify-content:space-between;gap:16px">
+                <span>{{r.label}}</span>
+                <span style="font-family:var(--font-mono);font-weight:700;font-size:14px">{{r.count}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:20px;padding-top:12px">
+          <sc-for list="{{mandateLegend}}" as="l" hint-placeholder-count="3">
+            <span style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+              <span style="width:9px;height:9px;border-radius:1px;display:inline-block;background:{{l.color}}"></span>{{l.label}}
+            </span>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMandats}}">
+      <div>
+        <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.SectionKicker" hint-size="auto,16px">Présidentielle 2027 / données publiques</x-import>
+        <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:clamp(1.8rem,4vw,2.6rem);margin:6px 0 10px">Mandats &amp; responsabilités</h2>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin:0 0 12px">Triés du plus récent au plus ancien.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <sc-for list="{{mandateFilterOptions}}" as="f" hint-placeholder-count="4">
+            <button type="button" onclick="{{f.onClick}}" style="{{f.buttonStyle}}">{{f.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+          <sc-for list="{{mandateLegend}}" as="l" hint-placeholder-count="3">
+            <span style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+              <span style="width:9px;height:9px;border-radius:1px;display:inline-block;background:{{l.color}}"></span>{{l.label}}
+            </span>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:720px">
+          <sc-for list="{{mandateSample}}" as="m" hint-placeholder-count="4">
+            <div style="border:1px solid var(--line);border-left:4px solid {{m.color}};padding:12px 14px;display:flex;justify-content:space-between;gap:16px">
+              <span>{{m.label}}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap">{{m.period}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:14px">18 responsabilités distinctes recensées au total (dédupliquées par intitulé) — liste complète non affichée dans cette maquette.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isVotes}}">
+      <div>
+        <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.SectionKicker" hint-size="auto,16px">Présidentielle 2027 / données publiques</x-import>
+        <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:clamp(1.8rem,4vw,2.6rem);margin:6px 0 8px">Votes de texte</h2>
+        <p style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin:0 0 20px;max-width:70ch">Lecture agrégée : positions sur l'ensemble d'un texte (dernière lecture retenue par texte). Motions de censure et engagements de responsabilité (49.3) exclus par construction — ce ne sont pas des votes sur un texte. Échantillon sourcé 2017–2018 (9 textes) ; ne représente pas l'intégralité des 359 scrutins recensés.</p>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+          <sc-for list="{{votesViewOptions}}" as="o" hint-placeholder-count="3">
+            <button type="button" onclick="{{o.onClick}}" style="{{o.buttonStyle}}">{{o.label}}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{votesViewIsProfil}}" hint-placeholder-val="{{true}}">
+          <div style="max-width:520px;margin-bottom:8px">
+            <div style="display:flex;height:14px;border-radius:2px;overflow:hidden;background:var(--line);margin-bottom:10px">
+              <sc-for list="{{voteProfileSegments}}" as="seg" hint-placeholder-count="1"><span style="flex:{{seg.pct}} 0 0;background:{{seg.color}};height:100%;display:block"></span></sc-for>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <sc-for list="{{voteProfileSegments}}" as="seg" hint-placeholder-count="1">
+                <span style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:12px"><span style="width:9px;height:9px;border-radius:1px;display:inline-block;background:{{seg.color}}"></span>{{seg.label}}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{votesViewIsTheme}}">
+          <div style="display:flex;flex-direction:column;gap:6px;max-width:600px;margin-bottom:8px">
+            <sc-for list="{{voteThemeRows}}" as="row" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,3fr) auto;gap:8px;align-items:center">
+                <span style="font-family:var(--font-mono);font-size:11px;text-transform:uppercase">{{row.label}}</span>
+                <span style="height:10px;background:var(--line);display:block;overflow:hidden;border-radius:2px">
+                  <span style="display:block;height:100%;width:{{row.pct}}%;background:{{row.color}}"></span>
+                </span>
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:600">{{row.count}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:10.5px;color:var(--muted);font-style:italic;margin:0 0 8px">Classement par mots-clés — une aide de lecture, jamais une position déclarée sur le thème.</p>
+        </sc-if>
+
+        <sc-if value="{{votesViewIsChrono}}">
+          <div style="display:flex;flex-direction:column;gap:6px;max-width:680px;margin-bottom:8px">
+            <sc-for list="{{voteChronoRows}}" as="row" hint-placeholder-count="4">
+              <div style="border-left:4px solid {{row.color}};border:1px solid var(--line);border-left-width:4px;padding:8px 12px;display:flex;justify-content:space-between;gap:12px;align-items:baseline">
+                <span style="font-size:13.5px">{{row.titre}}</span>
+                <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap">{{row.posLabel}} · {{row.date}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{votesViewIsFrise}}">
+          <div style="max-width:720px;margin-bottom:8px">
+            <div style="position:relative;height:36px;border-bottom:1px solid var(--line)">
+              <sc-for list="{{voteFriseTicks}}" as="t" hint-placeholder-count="4">
+                <span style="position:absolute;bottom:0;left:{{t.left}}%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)" title="{{t.titre}} — {{t.date}}">
+                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:{{t.color}};line-height:1">{{t.symbol}}</span>
+                  <span style="width:3px;height:16px;background:{{t.color}}"></span>
+                </span>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-top:4px">
+              <span>{{voteFriseStart}}</span>
+              <span>{{voteFriseEnd}}</span>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:10.5px;color:var(--muted);font-style:italic;margin:0 0 8px">Chaque trait = une position sur un texte entier, positionnée dans le temps. Survoler pour le détail.</p>
+        </sc-if>
+
+        <h3 style="font-family:var(--font-display);text-transform:uppercase;font-size:1.1rem;margin:28px 0 12px">Exemples de scrutins</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:720px">
+          <sc-for list="{{voteSample}}" as="v" hint-placeholder-count="4">
+            <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.VoteCard" title="{{v.titre}}" position="{{v.position}}" meta="{{v.meta}}" hint-size="100%,64px"></x-import>
+          </sc-for>
+        </div>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:14px">359 votes recensés sur le mandat sourcé (2017–2018). 4 votes présentés à titre d'illustration.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDonnees}}">
+      <div>
+        <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.SectionKicker" hint-size="auto,16px">Présidentielle 2027 / données publiques</x-import>
+        <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:clamp(1.8rem,4vw,2.6rem);margin:6px 0 16px">Données &amp; méthode</h2>
+        <p style="color:var(--muted);font-style:italic;max-width:60ch;line-height:var(--leading-normal)">Empreinte politique ne publie aucun taux individuel d'assiduité, de présence ou d'absence — un scrutin manqué ne décrit ni le travail parlementaire ni ses motifs.</p>
+        <p style="color:var(--muted);font-style:italic;max-width:60ch;line-height:var(--leading-normal)">Un texte porté n'est publié que si le rôle de l'élu (auteur, rapporteur, co-rapporteur) est sourcé et que le texte a atteint au moins l'examen en commission. Un simple dépôt ou un rôle non déterminé reste consultable via le bouton "textes non publiés", jamais mêlé aux textes retenus.</p>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <x-import component-from-global-scope="EmpreintePolitiqueDesignSystem_0817cb.PanelNav" items="{{panelItems}}" value="{{panel}}" onChange="{{setPanel}}" fixed="{{true}}" hint-size="100%,64px"></x-import>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000},&quot;initialPanel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;textes&quot;,&quot;options&quot;:[&quot;apercu&quot;,&quot;mandats&quot;,&quot;textes&quot;,&quot;votes&quot;,&quot;donnees&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Comportement&quot;},&quot;showExcludedByDefault&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Comportement&quot;}}">
+const TEXTES = [
+  { titre: "Projet de loi de simplification de la vie économique", stade: "promulgue", min: "2024-04-24", max: "2026-05-26", theme: "economie", scope: "gouvernement" },
+  { titre: "Élever Alfred Dreyfus au grade de général de brigade", stade: "promulgue", min: "2025-05-07", max: "2025-11-17", theme: "institutions", scope: "non_distingue" },
+  { titre: "Ratification de la convention n°155 sur la sécurité et la santé des travailleurs (1981)", stade: "promulgue", min: "2024-06-12", max: "2025-10-22", theme: "sante", scope: "gouvernement" },
+  { titre: "Restaurer l'autorité de la justice à l'égard des mineurs délinquants et de leurs parents", stade: "promulgue", min: "2024-10-15", max: "2025-06-23", theme: "institutions", scope: "non_distingue" },
+  { titre: "Approbation de l'accord France–Indonésie relatif à la coopération en matière de défense", stade: "promulgue", min: "2024-04-17", max: "2025-03-25", theme: "securite", scope: "gouvernement" },
+  { titre: "Espace aérien commun UE–Arménie et UE–Ukraine", stade: "promulgue", min: "2024-04-17", max: "2025-03-25", theme: "europe_international", scope: "gouvernement" },
+  { titre: "Souveraineté en matière agricole et renouvellement des générations en agriculture", stade: "promulgue", min: "2024-03-26", max: "2025-03-24", theme: "institutions", scope: "gouvernement" },
+  { titre: "Approbation des comptes de la sécurité sociale pour l'année 2023", stade: "discute_seance", min: "2024-07-19", max: "2025-02-19", theme: "securite", scope: "gouvernement" },
+  { titre: "Accord France–Allemagne relatif à l'apprentissage transfrontalier", stade: "promulgue", min: "2024-03-13", max: "2025-02-17", theme: "education", scope: "gouvernement" },
+  { titre: "Convention des Nations unies sur le droit de la mer — biodiversité marine hors juridiction nationale", stade: "promulgue", min: "2024-02-07", max: "2024-11-13", theme: "institutions", scope: "gouvernement" },
+  { titre: "Accord France–Papouasie-Nouvelle-Guinée relatif à la coopération en matière de défense", stade: "promulgue", min: "2023-12-13", max: "2024-11-13", theme: "securite", scope: "gouvernement" },
+  { titre: "Résultats de la gestion et approbation des comptes de l'année 2023", stade: "discute_seance", min: "2024-07-19", max: "2024-10-22", theme: "institutions", scope: "gouvernement" },
+];
+
+const EXCLUDED = [
+  { titre: "Proposition de loi relative à la gouvernance des centres de données publics", dateRange: "Déposée le 12/02/2025", reasons: ["rôle factuel non renseigné"] },
+  { titre: "Proposition de loi visant à réformer le financement des campagnes locales", dateRange: "Déposée le 03/09/2025 · dépôt seul", reasons: ["stade non retenu pour publication"] },
+];
+
+const STAGE_LABEL = { promulgue: "promulgué", discute_seance: "discuté en séance" };
+const STAGE_COLOR = { promulgue: "#145A32", discute_seance: "#2E86C1" };
+const THEME_LABEL = { economie: "Économie", institutions: "Institutions", sante: "Santé", securite: "Sécurité", europe_international: "Europe / International", education: "Éducation" };
+const THEME_ICON = { economie: "wallet", institutions: "building", sante: "stethoscope", securite: "shield", europe_international: "globe", education: "graduation" };
+const THEME_COLOR = { economie: "#D4A017", institutions: "#6C757D", sante: "#0077B6", securite: "#9B2226", europe_international: "#003566", education: "#4895EF" };
+const THEME_ORDER = ["institutions", "securite", "economie", "sante", "europe_international", "education"];
+const CATEGORIE_LABEL = { fonction_gouvernementale: "Fonction gouvernementale", commission: "Commission / mission", mandat_electif: "Mandat électif", groupe_politique: "Groupe politique", groupe_amitie: "Groupe d'amitié" };
+
+const AMENDEMENTS = [
+  { titre: "Financement des maisons de santé rurales", sort: "adopté", theme: "sante", scope: "gouvernement" },
+  { titre: "Plafonnement des frais bancaires", sort: "rejeté", theme: "economie", scope: "non_distingue" },
+  { titre: "Simplification des démarches d'apprentissage", sort: "adopté", theme: "education", scope: "gouvernement" },
+  { titre: "Zones de sécurité prioritaires", sort: "irrecevable", theme: "securite", scope: "gouvernement" },
+  { titre: "Statut des lanceurs d'alerte", sort: "retiré", theme: "institutions", scope: "non_distingue" },
+  { titre: "Coopération transfrontalière énergétique", sort: "tombé", theme: "europe_international", scope: "gouvernement" },
+];
+const OUTCOME_LABEL = { "adopté": "Adopté", "rejeté": "Rejeté", "retiré": "Retiré", "tombé": "Tombé", "irrecevable": "Irrecevable", "non_soutenu": "Non soutenu" };
+const OUTCOME_COLOR = { "adopté": "var(--outcome-adopte)", "rejeté": "var(--outcome-rejete)", "retiré": "var(--outcome-retire)", "tombé": "var(--outcome-tombe)", "irrecevable": "var(--outcome-irrecevable)", "non_soutenu": "var(--outcome-non-soutenu)" };
+
+const MANDATS = [
+  { label: "Gouvernement (Attal) — membre", period: "10/01/2024 → 05/09/2024", color: "var(--flag)", categorie: "fonction_gouvernementale" },
+  { label: "Gouvernement (Borne) — membre", period: "21/05/2022 → 09/01/2024", color: "var(--flag)", categorie: "fonction_gouvernementale" },
+  { label: "Gouvernement (Castex) — membre", period: "07/07/2020 → 16/05/2022", color: "var(--flag)", categorie: "fonction_gouvernementale" },
+  { label: "Groupe politique (RE) — membre", period: "29/06/2022 → 22/07/2022", color: "var(--muted)", categorie: "groupe_politique" },
+  { label: "Mandat parlementaire", period: "21/06/2017 → 16/11/2018", color: "var(--muted)", categorie: "mandat_electif" },
+  { label: "Groupe d'amitié France-Maroc — vice-président", period: "11/11/2017 → 16/11/2018", color: "var(--accent)", categorie: "groupe_amitie" },
+  { label: "Commission des affaires culturelles et de l'éducation — membre", period: "29/06/2017 → 16/11/2018", color: "var(--muted)", categorie: "commission" },
+  { label: "Groupe politique (LaREM) — membre", period: "27/06/2017 → 16/11/2018", color: "var(--muted)", categorie: "groupe_politique" },
+];
+
+const VOTE_TEXTES = [
+  { titre: "Croissance et transformation des entreprises", position: "pour", theme: "economie", date: "2018-10-09" },
+  { titre: "Lutte contre la manipulation de l'information (ordinaire)", position: "pour", theme: "institutions", date: "2018-10-09" },
+  { titre: "Lutte contre la fraude", position: "pour", theme: "institutions", date: "2018-09-26" },
+  { titre: "Évolution du logement, de l'aménagement et du numérique", position: "pour", theme: "social", date: "2018-10-03" },
+  { titre: "Liberté de choisir son avenir professionnel", position: "pour", theme: "institutions", date: "2018-08-01" },
+  { titre: "Immigration maîtrisée, droit d'asile effectif et intégration réussie", position: "pour", theme: "institutions", date: "2018-08-01" },
+  { titre: "Encadrement de l'utilisation du téléphone portable à l'école", position: "pour", theme: "education", date: "2018-07-30" },
+  { titre: "Lutte contre la manipulation de l'information (organique)", position: "pour", theme: "institutions", date: "2018-07-03" },
+  { titre: "Accueil des gens du voyage et lutte contre les installations illicites", position: "pour", theme: "institutions", date: "2018-06-21" },
+];
+const POSITION_COLOR = { pour: "var(--vote-pour)", contre: "var(--vote-contre)", abstention: "var(--muted)" };
+const POSITION_LABEL = { pour: "Pour", contre: "Contre", abstention: "Abstention" };
+
+function filterMandats(filter) {
+  return MANDATS.filter((m) => {
+    if (filter === "all") return true;
+    if (filter === "elective") return m.categorie === "mandat_electif";
+    if (filter === "groups") return m.categorie === "groupe_politique" || m.categorie === "groupe_amitie";
+    return !["mandat_electif", "groupe_politique", "groupe_amitie"].includes(m.categorie);
+  });
+}
+
+function fmt(iso) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+const SCOPE_KEYS = [["majorite", "Majorité"], ["opposition", "Opposition"], ["non_distingue", "Non distingué"], ["gouvernement", "Activité ministérielle"]];
+
+function buildScopeRows(items, totalAll, scopeState, colorFn, onScope, onSegment) {
+  return SCOPE_KEYS.map(([key, label]) => {
+    const bucket = items.filter((i) => i.scope === key);
+    const count = bucket.length;
+    const pct = totalAll ? (count / totalAll * 100) : 0;
+    const segCounts = {};
+    bucket.forEach((i) => {
+      const c = colorFn(i);
+      if (!segCounts[c.key]) segCounts[c.key] = { color: c.color, n: 0 };
+      segCounts[c.key].n += 1;
+    });
+    const segments = Object.entries(segCounts).map(([key2, v]) => ({ color: v.color, pct: count ? (v.n / count * 100) : 0, onClick: (e) => { e.stopPropagation(); onScope(key); onSegment(key2); } }));
+    return {
+      label, count, pct, segments,
+      opacity: scopeState !== "all" && scopeState !== key ? 0.5 : 1,
+      style: { border: scopeState === key ? "1px solid var(--accent)" : "1px solid transparent", background: scopeState === key ? "var(--accent-soft)" : "transparent" },
+      onClick: () => onScope(key),
+    };
+  });
+}
+
+class Component extends DCLogic {
+  state = {
+    panel: this.props.initialPanel || "textes",
+    kpiView: "statut",
+    scope: "all",
+    theme: "all",
+    showExcluded: !!this.props.showExcludedByDefault,
+    mandateFilter: "all",
+    stade: "all",
+    overviewView: "chronologie",
+    overviewFilter: "all",
+    votesView: "profil",
+  };
+
+  renderVals() {
+    const s = this.state;
+    const scoped = TEXTES.filter((t) => s.scope === "all" || t.scope === s.scope);
+    const visible = scoped.filter((t) => (s.theme === "all" || t.theme === s.theme) && (s.stade === "all" || t.stade === s.stade));
+
+    const colorForTexte = (t) => (s.kpiView === "statut" ? { color: STAGE_COLOR[t.stade], key: t.stade } : { color: THEME_COLOR[t.theme], key: t.theme });
+    const colorForAmend = (a) => (s.kpiView === "statut" ? { color: OUTCOME_COLOR[a.sort], key: a.sort } : { color: THEME_COLOR[a.theme], key: a.theme });
+    const setScope = (key) => this.setState({ scope: s.scope === key ? "all" : key });
+    const onTexteSegment = (key) => (s.kpiView === "statut" ? this.setState({ stade: s.stade === key ? "all" : key }) : this.setState({ theme: s.theme === key ? "all" : key }));
+    const onAmendSegment = (key) => { if (s.kpiView === "theme") this.setState({ theme: s.theme === key ? "all" : key }); };
+    const textesScopeRows = buildScopeRows(TEXTES, TEXTES.length, s.scope, colorForTexte, setScope, onTexteSegment);
+    const amendScopeRows = buildScopeRows(AMENDEMENTS, AMENDEMENTS.length, s.scope, colorForAmend, setScope, onAmendSegment);
+    const combinedScopeRows = textesScopeRows.map((row, i) => ({ label: row.label, textes: row, amend: amendScopeRows[i] }));
+
+    const legendGroups = s.kpiView === "statut"
+      ? [
+          { title: "Statut des textes", items: [["promulgue", STAGE_LABEL], ["discute_seance", STAGE_LABEL]].filter((x) => TEXTES.some((t) => t.stade === x[0])).map((x) => ({ color: STAGE_COLOR[x[0]], label: STAGE_LABEL[x[0]] })) },
+          { title: "Issue des amendements", items: Object.keys(OUTCOME_LABEL).filter((k) => AMENDEMENTS.some((a) => a.sort === k)).map((k) => ({ color: OUTCOME_COLOR[k], label: OUTCOME_LABEL[k] })) },
+        ]
+      : [{ title: "Thèmes", items: THEME_ORDER.filter((k) => TEXTES.some((t) => t.theme === k) || AMENDEMENTS.some((a) => a.theme === k)).map((k) => ({ color: THEME_COLOR[k], label: THEME_LABEL[k] })) }];
+
+    const themeCounts = {};
+    scoped.forEach((t) => { themeCounts[t.theme] = (themeCounts[t.theme] || 0) + 1; });
+    const themePills = [{ key: "all", label: "Tous les thèmes" }, ...THEME_ORDER.filter((k) => themeCounts[k]).map((k) => ({ key: k, label: THEME_LABEL[k] }))]
+      .map((p) => ({
+        text: p.key === "all" ? `Tous les thèmes (${scoped.length})` : `${p.label} (${themeCounts[p.key]})`,
+        variant: s.theme === p.key ? "active" : "pill",
+        onClick: () => this.setState({ theme: p.key }),
+      }));
+
+    const byTheme = new Map();
+    visible.forEach((t) => {
+      if (!byTheme.has(t.theme)) byTheme.set(t.theme, []);
+      byTheme.get(t.theme).push(t);
+    });
+    const shelves = THEME_ORDER.filter((k) => byTheme.has(k)).map((k) => ({
+      label: THEME_LABEL[k],
+      icon: THEME_ICON[k],
+      count: byTheme.get(k).length,
+      items: byTheme.get(k).map((t) => ({
+        titre: t.titre,
+        dotColor: colorForTexte(t).color,
+        meta: `auteur · ${STAGE_LABEL[t.stade]} · ${fmt(t.min)} → ${fmt(t.max)}`,
+      })),
+    }));
+
+    return {
+      panel: s.panel,
+      isTextes: s.panel === "textes",
+      isMandats: s.panel === "mandats",
+      isVotes: s.panel === "votes",
+      isDonnees: s.panel === "donnees",
+      isApercu: s.panel === "apercu",
+      setPanel: (v) => this.setState({ panel: v }),
+      panelItems: [
+        { value: "apercu", label: "Aperçu", icon: "list" },
+        { value: "mandats", label: "Mandats", icon: "briefcase" },
+        { value: "textes", label: "Textes", icon: "fileText" },
+        { value: "votes", label: "Votes", icon: "ballot" },
+        { value: "donnees", label: "Données", icon: "database" },
+      ],
+      overviewViewOptions: [["chronologie", "Chronologie"], ["responsabilites", "Responsabilités"]].map(([key, label]) => ({
+        label, onClick: () => this.setState({ overviewView: key }),
+        buttonStyle: { border: "1px solid var(--line)", background: s.overviewView === key ? "var(--text)" : "var(--bg)", color: s.overviewView === key ? "var(--text-inverse)" : "var(--text)", fontFamily: "var(--font-mono)", fontSize: "12px", padding: "8px 16px", cursor: "pointer" },
+      })),
+      overviewFilterOptions: [["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]].map(([key, label]) => ({
+        label, onClick: () => this.setState({ overviewFilter: key }),
+        buttonStyle: { border: "1px solid var(--line)", background: s.overviewFilter === key ? "var(--text)" : "var(--bg)", color: s.overviewFilter === key ? "var(--text-inverse)" : "var(--text)", fontFamily: "var(--font-mono)", fontSize: "11px", padding: "6px 14px", cursor: "pointer" },
+      })),
+      overviewIsChrono: s.overviewView === "chronologie",
+      overviewIsResp: s.overviewView === "responsabilites",
+      overviewMandates: filterMandats(s.overviewFilter).filter((m) => m.categorie === "mandat_electif"),
+      overviewResp: Object.entries(filterMandats(s.overviewFilter).reduce((acc, m) => { acc[m.categorie] = (acc[m.categorie] || 0) + 1; return acc; }, {})).map(([cat, n]) => ({ label: CATEGORIE_LABEL[cat] || cat, count: n })),
+      glanceStats: [
+        { value: "10 / 12", label: "Textes portés lors d'une fonction gouvernementale" },
+        { value: "8", label: "Mandats et fonctions recensés (source ouverte)" },
+      ],
+      visibleCount: visible.length,
+      publicCount: scoped.length,
+      statutBtnStyle: { border: "1px solid var(--line)", background: s.kpiView === "statut" ? "var(--highlight)" : "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: "11px", textTransform: "uppercase", padding: "6px 12px", cursor: "pointer" },
+      themeBtnStyle: { border: "1px solid var(--line)", background: s.kpiView === "theme" ? "var(--highlight)" : "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: "11px", textTransform: "uppercase", padding: "6px 12px", cursor: "pointer" },
+      setStatutView: () => this.setState({ kpiView: "statut" }),
+      setThemeView: () => this.setState({ kpiView: "theme" }),
+      hasActiveFilter: s.scope !== "all" || s.theme !== "all" || s.stade !== "all",
+      resetFilters: () => this.setState({ scope: "all", theme: "all", stade: "all" }),
+      combinedScopeRows,
+      amendCount: AMENDEMENTS.length,
+      themeRows: (() => {
+        const filteredAmend = AMENDEMENTS.filter((a) => s.scope === "all" || a.scope === s.scope);
+        const byThTextes = new Map();
+        visible.forEach((t) => { if (!byThTextes.has(t.theme)) byThTextes.set(t.theme, []); byThTextes.get(t.theme).push(t); });
+        const byThAmend = new Map();
+        filteredAmend.forEach((a) => { if (!byThAmend.has(a.theme)) byThAmend.set(a.theme, []); byThAmend.get(a.theme).push(a); });
+        const themes = THEME_ORDER.filter((k) => byThTextes.has(k) || byThAmend.has(k));
+        return themes.map((k) => ({
+          label: THEME_LABEL[k],
+          icon: THEME_ICON[k],
+          textesCount: (byThTextes.get(k) || []).length,
+          amendCount: (byThAmend.get(k) || []).length,
+          textesItems: (byThTextes.get(k) || []).map((t) => ({
+            titre: t.titre, dotColor: colorForTexte(t).color,
+            meta: `auteur · ${STAGE_LABEL[t.stade]} · ${fmt(t.min)} → ${fmt(t.max)}`,
+          })),
+          amendItems: (byThAmend.get(k) || []).map((a) => ({ titre: a.titre, dotColor: colorForAmend(a).color, meta: OUTCOME_LABEL[a.sort] })),
+        }));
+      })(),
+      legendGroups,
+      themePills,
+      shelves,
+      hasShelves: shelves.length > 0,
+      noShelves: shelves.length === 0,
+      showExcluded: s.showExcluded,
+      toggleExcluded: () => this.setState({ showExcluded: !s.showExcluded }),
+      excludedToggleLabel: s.showExcluded ? "Masquer les textes non publiés" : `Voir les ${EXCLUDED.length} texte(s) non publiés`,
+      excludedItems: EXCLUDED,
+      mandateFilterOptions: [
+        { key: "all", label: "Tous" },
+        { key: "elective", label: "Électifs" },
+        { key: "responsibilities", label: "Responsabilités" },
+        { key: "groups", label: "Groupes" },
+      ].map((o) => ({
+        label: o.label,
+        onClick: () => this.setState({ mandateFilter: o.key }),
+        buttonStyle: { border: "1px solid var(--line)", background: s.mandateFilter === o.key ? "var(--highlight)" : "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: "11px", textTransform: "uppercase", padding: "6px 12px", cursor: "pointer" },
+      })),
+      mandateSample: filterMandats(s.mandateFilter),
+      mandateLegend: [
+        { color: "var(--flag)", label: "Fonction gouvernementale" },
+        { color: "var(--accent)", label: "Présidence / vice-présidence" },
+        { color: "var(--muted)", label: "Membre" },
+      ],
+      votesViewOptions: [["profil", "Profil synthétique"], ["theme", "Par thème"], ["chronologie", "Chronologie clé"], ["frise", "Frise temporelle"]].map(([key, label]) => ({
+        label, onClick: () => this.setState({ votesView: key }),
+        buttonStyle: { border: "1px solid var(--line)", background: s.votesView === key ? "var(--highlight)" : "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: "11px", textTransform: "uppercase", padding: "6px 12px", cursor: "pointer" },
+      })),
+      votesViewIsProfil: s.votesView === "profil",
+      votesViewIsTheme: s.votesView === "theme",
+      votesViewIsChrono: s.votesView === "chronologie",
+      votesViewIsFrise: s.votesView === "frise",
+      voteFriseTicks: (() => {
+        const dates = VOTE_TEXTES.map((v) => new Date(v.date).getTime());
+        const min = Math.min(...dates), max = Math.max(...dates);
+        const span = max - min || 1;
+        return VOTE_TEXTES.map((v) => ({
+          left: ((new Date(v.date).getTime() - min) / span * 96) + 2,
+          color: THEME_COLOR[v.theme] || "var(--muted)",
+          symbol: v.position === "pour" ? "+" : (v.position === "contre" ? "–" : "○"),
+          titre: v.titre,
+          date: fmt(v.date),
+        }));
+      })(),
+      voteFriseStart: fmt(VOTE_TEXTES.reduce((a, b) => (a.date < b.date ? a : b)).date),
+      voteFriseEnd: fmt(VOTE_TEXTES.reduce((a, b) => (a.date > b.date ? a : b)).date),
+      voteProfileSegments: (() => {
+        const total = VOTE_TEXTES.length;
+        const counts = { pour: 0, contre: 0, abstention: 0 };
+        VOTE_TEXTES.forEach((v) => { counts[v.position] += 1; });
+        return ["pour", "contre", "abstention"].filter((k) => counts[k]).map((k) => ({ color: POSITION_COLOR[k], pct: (counts[k] / total * 100), label: `${POSITION_LABEL[k]} (${counts[k]})` }));
+      })(),
+      voteThemeRows: (() => {
+        const counts = {};
+        VOTE_TEXTES.forEach((v) => { counts[v.theme] = (counts[v.theme] || 0) + 1; });
+        const max = Math.max(...Object.values(counts));
+        return THEME_ORDER.filter((k) => counts[k]).map((k) => ({ label: THEME_LABEL[k], count: counts[k], pct: (counts[k] / max * 100), color: THEME_COLOR[k] }));
+      })(),
+      voteChronoRows: [...VOTE_TEXTES].sort((a, b) => b.date.localeCompare(a.date)).map((v) => ({ titre: v.titre, date: fmt(v.date), color: POSITION_COLOR[v.position], posLabel: POSITION_LABEL[v.position] })),
+      voteSample: [
+        { titre: "L'ensemble du projet de loi relatif à la croissance et la transformation des entreprises (1ère lecture)", position: "pour", meta: "Scrutin n°1209 · AN · 09/10/2018" },
+        { titre: "L'ensemble du projet de loi pour la liberté de choisir son avenir professionnel (lecture définitive)", position: "pour", meta: "Scrutin n°1116 · AN · 01/08/2018" },
+        { titre: "L'ensemble du projet de loi pour une immigration maîtrisée, un droit d'asile effectif et une intégration réussie (lecture définitive)", position: "pour", meta: "Scrutin n°1117 · AN · 01/08/2018" },
+        { titre: "Motion de rejet préalable — projet de loi relatif à la croissance et la transformation des entreprises", position: "contre", meta: "Scrutin n°1169 · AN · 25/09/2018" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
