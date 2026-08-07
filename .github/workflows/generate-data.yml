@@ -26,13 +26,16 @@ on:
         default: 1
       extract_interventions:
         description: >
-          Extraire les interventions dans extract-an (recherche NosDéputés + questions officielles AN).
+          Extraire les interventions dans extract-an (débats officiels Syceron en
+          source primaire, avec fallback recherche NosDéputés + questions officielles AN
+          si Syceron indisponible pour le candidat/législature).
           false (défaut) = skip interventions, extraction plus rapide.
         type: boolean
         default: false
       max_pages:
         description: >
-          Pages max. de recherche d'interventions par candidat (50 résultats/page).
+          Pages max. de recherche NosDéputés par candidat (50 résultats/page,
+          utilisé seulement en fallback si Syceron ne retourne rien).
           Ignoré si extract_interventions=false. Défaut : 5.
         type: number
         default: 5
