@@ -373,16 +373,19 @@ def aggregate_tags_thematiques(
     """Agrège les tags thématiques de tous les profils membres.
 
     Stratégie : utilise ``tags_thematiques`` de chaque profil individuel.
-    Si un profil a ``tags_thematiques`` vide, ses ``interventions[].mots_cles``
-    sont utilisés en fallback (les deux sources peuvent coexister dans le même
-    appel si les profils sont hétérogènes).
+    Si un profil a ``tags_thematiques`` vide, ses interventions sont consultées
+    en fallback : d'abord ``interventions[].theme_officiel`` (débats officiels
+    Syceron), puis ``interventions[].mots_cles`` (scraping NosDéputés).
+    Les deux sources peuvent coexister dans le même appel si les profils sont
+    hétérogènes (``tag_source`` vaut alors "mixed").
 
     Args:
         profils: liste de profils pivot v1.
 
     Returns:
         Tuple (liste triée par nb_membres_porteurs desc, tag_source).
-        ``tag_source`` vaut "tags_thematiques", "mots_cles_interventions" ou "mixed".
+        ``tag_source`` vaut "tags_thematiques", "theme_officiel",
+        "mots_cles_interventions" ou "mixed".
     """
     n = len(profils)
     if n == 0:
@@ -396,15 +399,25 @@ def aggregate_tags_thematiques(
         if tags:
             sources_used.add("tags_thematiques")
         else:
-            # Fallback : mots-clés bruts des interventions
+            # Fallback : thèmes officiels Syceron en priorité, mots-clés scraping sinon
             kw_set: set[str] = set()
+            theme_set: set[str] = set()
             for interv in (profil.get("interventions") or []):
-                for kw in (interv.get("mots_cles") or []):
-                    cleaned = kw.strip().lower() if isinstance(kw, str) else ""
+                theme = interv.get("theme_officiel")
+                if theme and isinstance(theme, str):
+                    cleaned = theme.strip().lower()
                     if cleaned:
-                        kw_set.add(cleaned)
-            tags = list(kw_set)
-            if tags:
+                        theme_set.add(cleaned)
+                else:
+                    for kw in (interv.get("mots_cles") or []):
+                        cleaned = kw.strip().lower() if isinstance(kw, str) else ""
+                        if cleaned:
+                            kw_set.add(cleaned)
+            if theme_set:
+                tags = list(theme_set)
+                sources_used.add("theme_officiel")
+            elif kw_set:
+                tags = list(kw_set)
                 sources_used.add("mots_cles_interventions")
 
         # Un tag compte une seule fois par membre (même s'il est répété)
@@ -705,7 +718,13 @@ def build_groupe_profile(
 
     # --- Tags thématiques ---
     tags_agreges, tag_source = aggregate_tags_thematiques(profils)
-    if tag_source == "mots_cles_interventions":
+    if tag_source == "theme_officiel":
+        warnings.append(
+            "tags_thematiques_agreges : source=theme_officiel "
+            "(tags_thematiques individuels absents ou vides ; thèmes officiels "
+            "Syceron des interventions utilisés en fallback)."
+        )
+    elif tag_source == "mots_cles_interventions":
         warnings.append(
             "tags_thematiques_agreges : source=mots_cles_interventions "
             "(tags_thematiques individuels absents ou vides ; mots-clés des "
