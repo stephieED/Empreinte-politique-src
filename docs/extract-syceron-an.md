@@ -179,9 +179,10 @@ Les comptes rendus Syceron permettent d'enrichir les `interventions[]` du pivot 
 - les orateurs identifiés par leur `id_syceron` (à croiser avec l'acteurRef AN)
 - le type d'intervention dans le contexte de séance (débat général, questions, etc.)
 
-L'intégration reste **hors périmètre immédiat** (voir `ROADMAP.md` et
-`technical_decisions.md#hors-perimetre`) — cette page documente la cartographie
-pour préparer l'implémentation future.
+L'intégration est **active** dans le pipeline via `syceron_debates.py` et `parse_syceron.py`
+(fetch, cache, parseur XML) et `fetch_interventions_syceron` /
+`_build_acteur_interventions_syceron_index` dans `candidate_profile.py`.
+Voir `docs/technical_decisions.md#syceron` pour le raisonnement architectural.
 
 ## Vérification de disponibilité (audit du 06/08/2026)
 
