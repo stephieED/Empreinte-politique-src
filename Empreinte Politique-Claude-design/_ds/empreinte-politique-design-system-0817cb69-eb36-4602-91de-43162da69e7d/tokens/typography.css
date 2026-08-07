@@ -1,0 +1,22 @@
+:root{
+--font-display:'Archivo Black',sans-serif;
+--font-ui:'Space Grotesk',sans-serif;
+--font-mono:'IBM Plex Mono','Courier New',monospace;
+
+--text-12:12px;
+--text-14:14px;
+--text-16:16px;
+--text-20:20px;
+--text-24:24px;
+--text-32:32px;
+--text-48:48px;
+--text-64:64px;
+
+/* fluid display sizes used for hero/section titles */
+--text-hero:clamp(48px,12vw,144px);
+--text-section:clamp(40px,7vw,96px);
+
+--leading-tight:0.85;
+--leading-normal:1.45;
+--tracking-tight:-0.03em;
+}
