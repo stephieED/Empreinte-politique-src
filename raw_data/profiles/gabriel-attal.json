@@ -242,9 +242,80 @@
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire",
+      "debut": "2022-06-22",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires sociales",
+      "debut": "2022-07-14",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Délégation aux outre-mer",
+      "debut": "2022-07-13",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Renaissance",
+      "debut": "2022-06-29",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "Ministre auprès du ministre de l'économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
+      "label": "Gouvernement",
+      "debut": "2022-06-24",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "debut": "2022-07-12",
+      "fin": "2022-07-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires sociales",
+      "debut": "2022-06-30",
+      "fin": "2022-07-12",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Députés Non Inscrits",
+      "debut": "2022-06-24",
+      "fin": "2022-06-29",
+      "actif": false
     }
   ],
   "votes": [
+    {
+      "date": "2022-07-11",
+      "titre": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mme Mathilde Panot, MM. Boris Vallaud et Julien Bayou, Mme Cyrielle Chatelain, M. André Chassaigne et 145 de leurs collègues.",
+      "position": "non_votant",
+      "numero_scrutin": "1",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
     {
       "date": "2018-10-15",
       "titre": "la motion de renvoi en commission, déposée par M. André Chassaigne, du projet de loi de finances pour 2019 (première lecture).",
@@ -2259,14 +2330,106 @@
     }
   ],
   "amendements": [],
-  "interventions": [],
+  "interventions": [
+    {
+      "id": "question_QANR5L17QG817",
+      "date": null,
+      "type_detail": "question",
+      "sous_type": "QG",
+      "sujet": "Situation internationale",
+      "texte": null,
+      "reponse": "</p><p align=\"CENTER\"> SITUATION INTERNATIONALE <a name=PG2></a> </p><br><strong>Mme la présidente . </strong>La parole est à M. Gabriel Attal.<br><br><strong>M. Gabriel Attal . </strong>La France a toujours porté une voix singulière dans le monde : un soutien au droit international – sans naïveté ; un soutien à la sécurité internationale et aux initiatives de paix. Ce rôle, nous devons plus que jamais le tenir, en rappelant une chose claire : l'Iran, depuis des années, viole, matin, midi et soir, toutes les normes du droit international. <i>(Applaudissements sur les bancs du groupe EPR. – Mme Marina Ferrari applaudit également.)</i><br><br><strong>M. Jean-Paul Lecoq .</strong> Et Israël ?<br><br><strong>M. Gabriel Attal . </strong>Le respect de la souveraineté des États, principe cardinal du droit international, est violé par l'Iran, qui finance des milices au Liban, au Yémen, en Irak et en Syrie. La convention de Vienne sur les relations consulaires est violée par l'Iran, qui retient en otages, dans des conditions inhumaines, nos compatriotes Cécile Kohler et Jacques Paris. <i>(Applaudissements sur les bancs du groupe EPR et sur quelques bancs du groupe Dem. – MM. Jérôme Guedj et David Habib applaudissent également.) </i>Les accords sur le nucléaire sont violés par l'Iran, qui continue l’enrichissement d’uranium, bien au-delà des seuils autorisés.<br><br>L’Iran est multirécidiviste en matière de violations du droit international. Notre devoir est de le rappeler fermement et de rappeler qu’un pays qui piétine toutes les règles du droit international ne peut pas, dans le même temps, s’en prévaloir pour s'abriter derrière elles. <i>(Applaudissements sur les bancs du groupe EPR.)</i><br><br>La voix singulière de la France, c’est aussi celle de la sécurité internationale. Le régime des mollahs est un régime sanguinaire, qui brise son peuple, asservit les femmes et revendique de vouloir détruire l’Occident.<br><br><strong>M. Jean-Paul Lecoq .</strong> Et Poutine ?<br><br><strong>M. Gabriel Attal . </strong>Dans ces conditions, peut-on déplorer que les capacités nucléaires iraniennes soient détruites ? Non ! L’Iran doit-elle disposer de l’arme nucléaire ? Jamais ! C’est une condition de notre sécurité collective. <i>(Mêmes mouvements.)</i><br><br>La situation évolue d'heure en heure et de minute en minute, et nous devons éviter l'embrasement. Le cessez-le-feu annoncé cette nuit doit être l'amorce d'un chemin qui mènera l'Iran à enfin comprendre que la politique régionale d'agressions qu'elle mène depuis vingt ans est une impasse. Nous devons, nous Français, peser de tout notre poids pour soutenir toutes les initiatives de paix.<br><br>Monsieur le premier ministre, pouvez-vous nous indiquer comment notre pays compte agir pour la sécurité et la paix dans la région ? <i>(Applaudissements sur les bancs du groupe EPR et plusieurs bancs du groupe DR.)</i><br><br><strong>M. Jean-Paul Lecoq .</strong> Avec vous, le droit international est à géométrie variable !<br><br><strong>Mme la présidente . </strong>La parole est à M. le premier ministre, chargé de la planification écologique et énergétique.<br><br><strong>M. François Bayrou,</strong><i> premier ministre, chargé de la planification écologique et énergétique . </i>Tous, sur ces bancs, nous connaissons la situation. Vous avez eu raison de dire que, dans de telles circonstances, le message de la France a toujours été qu'il fallait défendre la paix et le droit à l'intégrité des États, des nations et des communautés.<br><br>Ce droit-là a en effet été durement bousculé, menacé et mis en cause lorsque la Russie de Poutine a attaqué l'Ukraine <i>(Applaudissements sur les bancs du groupe EPR – Mme Michèle Tabarot applaudit également)</i>, ce qui a évidemment bouleversé notre vision de l'avenir ; ce jour-là, les principes que nous défendions ont été balayés. Il y a eu ensuite l'attaque, le pogrom, du 7 octobre, destinée, je le crois, à rendre irréversible l'état de guerre et d'affrontements entre Israël et ses voisins palestiniens…<br><br><strong>M. Louis Boyard .</strong> Ce n'est pas une guerre, c'est un génocide !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>…alors que tous les efforts étaient faits, notamment avec les accords d'Abraham, pour installer la paix entre des voisins qui vivent perpétuellement dans la violence des affrontements.<br><br><strong>M. Jean-Paul Lecoq .</strong> C'est Israël qui a commencé !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>Nous avons vu ce qui se passait à Gaza, dont aucun d'entre nous ne peut dire que c'est sans conséquence ni sans importance. Tout le monde est choqué par la situation faite aux Gazaouis.<br><br>Ces derniers jours enfin, ce sont les récents événements entre Israël et l'Iran.<br><br>Vous avez raison de dire que l'Iran a violé des accords internationaux,…<br><br><strong>Mme Sabrina Sebaihi .</strong> Israël aussi ! Ce qu'on entend est invraisemblable !<br><br><strong>Mme Dieynaba Diop .</strong> C'est dingue ! C'est du droit à géométrie variable !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>…notamment l'accord sur la prolifération nucléaire, ainsi qu'en a attesté l'Agence internationale de l'énergie atomique.<br><br>Reste une position de principe que je tiens à défendre devant vous. La France a conscience de ces manquements. Elle sait que le pouvoir iranien a exécuté par pendaison des centaines de femmes qui ne respectaient pas les codes vestimentaires en vigueur ; elle sait aussi que les femmes n'ont pas le droit d'étudier. Tout le monde le sait, la France le sait. Mais la France ne peut pas être durablement du côté des infractions au droit international. <i>(Applaudissements sur quelques bancs du groupe LFI-NFP. – M. Stéphane Peu applaudit également.)</i><br><br>Tout en prenant la pleine mesure des manquements que vous indiquez, la France doit réaffirmer que, dans l'avenir, le droit international doit s'imposer.<br><br><strong>Mme Sabrina Sebaihi .</strong> Et à Gaza ?<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>J'espère, comme vous, que le cessez-le-feu qui a été annoncé, sans qu'on sache s'il est respecté, sera le commencement d'un nouvel état de paix pour les belligérants et pour la planète, même si nous en sommes, hélas, encore très loin. <i>(Applaudissements sur quelques bancs des groupes EPR et Dem.)</i><br> <p>",
+      "date_reponse": "2025-06-25",
+      "ministere": "Premier ministre",
+      "groupe_sigle": "EPR",
+      "fonction": null,
+      "format": "prise_de_parole_developpee",
+      "mots_cles": [],
+      "url": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG817.htm",
+      "url_detail": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG817.htm",
+      "legislature": "17"
+    },
+    {
+      "id": "question_QANR5L17QG604",
+      "date": null,
+      "type_detail": "question",
+      "sous_type": "QG",
+      "sujet": "Défense de la République",
+      "texte": null,
+      "reponse": "</p><p align=\"CENTER\"> DÉFENSE DE LA RÉPUBLIQUE <a name=PG4></a> </p><br><strong>Mme la présidente . </strong>La parole est à M. Gabriel Attal.<br><br><strong>M. Gabriel Attal . </strong>Monsieur le premier ministre, il y a une chose que tous les Français ont en partage : la volonté de vivre sereinement, ensemble et en paix, dans un cadre qui libère, émancipe, donne à chacun sa chance. La République protège, aveugle aux croyances ; la République rassemble, comme un lien indéfectible entre les Français. <br><br>Vendredi dernier, Aboubakar Cissé était assassiné, non dans un endroit quelconque, mais dans une mosquée, là où il pratiquait sa religion. Pour tous les Français, pour la République, ce meurtre est une déchirure : que l'on s'attaque à un musulman, un juif, un chrétien, dans un lieu de culte, alors qu’il prie son Dieu, c’est une immense défaite de nos valeurs. <i>(Applaudissements sur les bancs des groupes EPR et Dem ainsi que sur quelques bancs du groupe DR.) </i>Je le dis avec fermeté : honte à ceux qui oublient ce meurtre sauvage ou ne le condamnent qu’à demi ; honte, aussi, à ceux qui se servent de ce drame à des fins politiques ! <br><br><strong>M. Julien Odoul .</strong> C'est vous qui les avez fait élire !<br><br><strong>M. Gabriel Attal . </strong>Honte à ceux qui font le choix du pire, le choix du communautarisme ! Au nom de mon groupe, j'exprime tout notre soutien à notre collègue Jérôme Guedj, chassé, sous les insultes et les cris à résonance antisémite, d'une manifestation en mémoire du jeune défunt. <i>(Applaudissements sur les bancs des groupes EPR, DR, Dem et HOR ainsi que sur quelques bancs du groupe RN.)</i><br><br>Voilà le résultat du communautarisme ; alors, ensemble, luttons ! C'est ce qu'attend l'immense majorité des Français, qui ne supporte plus l'idée selon laquelle il conviendrait, pour défendre les juifs, de s'en prendre aux musulmans, pour défendre les musulmans, de s'en prendre aux juifs. <i>(Applaudissements sur les bancs des groupes EPR, Dem et HOR ainsi que sur quelques bancs du groupe DR.)</i><br><br><strong>Mme Sarah Legrain.</strong> Et que faites-vous, si ce n'est cela ?<br><br><strong>M. Gabriel Attal. </strong>Ne laissons pas la politique défaire ce que la République a su faire durant si longtemps : notre union ! <br><br><strong>Une députée du groupe LFI-NFP .</strong> Retailleau, démission !<br><br><strong>M. Gabriel Attal . </strong>Comment le gouvernement compte-t-il nous aider à lutter pour la République, pour l'universalisme, contre tous ceux qui prêchent la haine et veulent nous diviser ? <i>(Applaudissements sur les bancs du groupe EPR, dont les députés se lèvent, ainsi que sur quelques bancs des groupes Dem et HOR.)</i><br><br><strong>Mme la présidente . </strong>La parole est à M. le premier ministre, chargé de la planification écologique et énergétique.<br><br><strong>M. François Bayrou,</strong><i> premier ministre, chargé de la planification écologique et énergétique . </i>Merci de votre question, ainsi que de la gravité que vous y avez mise. Nous avons assisté à des affrontements, bord contre bord : ce n'est pas du tout là le climat dans lequel nous devrions vivre, c'est même exactement le contraire. <i>(Exclamations sur quelques bancs du groupe LFI-NFP.)</i><br><br><strong>Mme Marie-Agnès Poussier-Winsback .</strong> Ça suffit, les cris !<br><br><strong>Mme la présidente .</strong> S'il vous plaît, chers collègues !<br><br><strong>M. Patrick Hetzel.</strong> Un peu de respect envers le premier ministre !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>En décembre 1957, un grand Français, Albert Camus, à l'occasion de son discours de réception du prix Nobel de littérature, déclarait : « Chaque génération, sans doute, se croit vouée à refaire le monde. La mienne sait pourtant qu’elle ne le refera pas. Mais sa tâche est peut-être plus grande. Elle consiste à empêcher que le monde ne se défasse. » Sur la planète, à l'échelle de la géopolitique, au sein de nos sociétés <i>(Exclamations sur quelques bancs du groupe LFI-NFP. – Protestations sur divers bancs)</i>,…<br><br><strong>Mme la présidente .</strong> Chers collègues, s'il vous plaît !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>…des forces nombreuses, puissantes, obscures, œuvrent à défaire le monde dans lequel nous vivons. Certains alimentent les affrontements dans un intérêt électoral ou idéologique, d'autres croient que l'adhésion à un camp nécessite l'humiliation, voire l'anéantissement de la partie adverse. Nous, en République, pensons exactement le contraire. Le droit de cité commence par l'acceptation des différences, par l'amorce d'une compréhension mutuelle, par le fait de dire à nos compatriotes musulmans, juifs, chrétiens, agnostiques ou athées, de toutes convictions, de toutes origines, que la France est leur pays, leur maison. J'irai plus loin : non seulement tout le monde a droit de cité, mais nous avons un devoir de cité – le devoir de construire quelque chose qui nous réunit, nous fait grandir, nous amène à nous comprendre, si différents que nous soyons. <br><br>Il a tout à l'heure été question de laïcité. Celle-ci se résume à une règle simple : la foi ne fait pas la loi, mais la loi protège la foi. Chacun a droit à sa conviction ; il est protégé non seulement par notre règle de droit, mais par notre volonté nationale. <br><br><strong>Mme Caroline Parmentier .</strong> Non !<br><br><strong>M. François Bayrou,</strong><i> premier ministre . </i>C'est pourquoi nous ne laisserons pas faire les destructeurs, ceux qui veulent dissoudre ce monde : pas à pas, jour après jour, nous défendrons notre devoir de vivre ensemble. <i>(Applaudissements sur les bancs des groupes EPR, Dem et HOR ainsi que sur quelques bancs du groupe DR.)</i><br> <p>",
+      "date_reponse": "2025-04-30",
+      "ministere": "Premier ministre",
+      "groupe_sigle": "EPR",
+      "fonction": null,
+      "format": "prise_de_parole_developpee",
+      "mots_cles": [],
+      "url": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG604.htm",
+      "url_detail": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG604.htm",
+      "legislature": "17"
+    },
+    {
+      "id": "question_QANR5L17QG433",
+      "date": null,
+      "type_detail": "question",
+      "sous_type": "QG",
+      "sujet": "Guerre en Ukraine",
+      "texte": null,
+      "reponse": "</p><p align=\"CENTER\"> GUERRE EN UKRAINE <a name=PG3></a> </p><br><strong>Mme la présidente . </strong>La parole est à M. Gabriel Attal.<br><br><strong>M. Gabriel Attal . </strong>Il y a une semaine, à Zaporijjia, un soldat ukrainien me confiait : quand nous sommes au front, nous pensons à notre famille et à la famille européenne. Telle est la réalité de cette guerre : des Ukrainiens qui donnent leurs vies pour défendre leur pays, mais aussi la sécurité d'une Union dont ils ne sont pourtant pas membres ; des Ukrainiens qui remercient la France et le président de la République pour le soutien constant apporté depuis trois ans – ce qui est un motif de fierté <i>(Applaudissements sur les bancs des groupes EPR, DR, Dem et HOR. – Plusieurs députés du groupe SOC ainsi que Mme Sandrine Rousseau applaudissent également)</i> ; mais des Ukrainiens qui redoutent l'avenir, au moment de la suspension de l'aide américaine.<br><br>Hier, nous avons longuement débattu de l'autonomie stratégique à construire en Europe, mais c'est sur le très court terme que je veux vous poser deux questions claires, monsieur le premier ministre : en cas de désengagement américain, quels besoins concrets de l'armée ukrainienne identifions-nous ? Quels équipements supplémentaires la France est-elle en mesure de mobiliser immédiatement pour répondre à ces besoins ?<br><br>J'ajoute que nous sommes nombreux à ne plus partager la position du gouvernement au sujet de la saisie des avoirs russes. La donne a changé. Avant de faire payer les Français et les Européens, faisons payer les Russes pour la sécurité de l'Ukraine ! <i>(Applaudissements sur les bancs des groupes EPR, DR, Dem et HOR, ainsi que sur plusieurs bancs des groupes SOC et LIOT.)</i><br><br>Enfin, je veux revenir sur la complète inversion des valeurs à laquelle nous assistons : du Kremlin au Bureau ovale, en passant par Mme Le Pen, on cherche à présenter les Ukrainiens comme des va-t-en-guerre. <i>(Mêmes mouvements. – Exclamations sur les bancs du groupe RN.) </i>Je veux leur rappeler des choses simples :…<br><br><strong>M. Emeric Salmon .</strong> À qui s'adresse-t-il ? Ce n'est pas une question au gouvernement !<br><br><strong>M. Gabriel Attal . </strong>…l'Ukraine veut la paix, la Russie veut l'Ukraine ; l'Ukraine veut la liberté, la Russie veut un empire ; l'Ukraine veut l'Europe, la Russie veut la disloquer. Tourner le dos à l'Ukraine reviendrait à tourner le dos à notre passé comme à notre avenir. Ne nous contentons pas d'être du bon côté de l'histoire, écrivons-la jusqu'au bout ! <i>(Applaudissements sur les bancs des groupes EPR, DR, Dem et HOR. – Les députés des groupes EPR et Dem ainsi que Mmes Justine Gruet et Estelle Youssouffa se lèvent et continuent d'applaudir.)</i><br><br><strong>Mme la présidente . </strong>La parole est à M. le premier ministre, chargé de la planification écologique et énergétique.<br><br><strong>M. François Bayrou,</strong><i> premier ministre, chargé de la planification écologique et énergétique . </i>Monsieur le président Attal, je tiens à vous remercier pour votre participation à notre débat d'hier, qui a été, je crois, de haute tenue. Comme vous l'avez justement indiqué, hier est déjà dépassé : hier nous en étions restés à la manière brutale dont avait été traité Volodymyr Zelensky, président de l'Ukraine ; nous y avions vu un renversement qui faisait passer notre univers, singulièrement en Europe, d'un monde régi par la loi du plus juste au monde brutal de la loi du plus fort.<br><br>Vous avez, à juste titre, ajouté que ce qui rend plus insupportable encore la situation, c'est l'inversion de valeurs, au terme de laquelle les États-Unis, qui ont défendu la liberté et les principes démocratiques à nos côtés, en viennent à reprendre les arguments, les mots, les raisonnements de l'envahisseur, de celui qui veut détruire.<br><br>Vous avez eu une formule, que j'ai trouvée excellente : si la Russie arrête de combattre, la guerre est finie ; si l'Ukraine arrête de se battre, l'Ukraine est finie. Cette éloquente mise en perspective résume la situation devant laquelle nous sommes.<br><br>Vous me demandez ce qui manquera aux forces armées ukrainiennes si les livraisons d'aide américaines cessent brutalement – elles sont en train de cesser : des trains entiers, chargés de matériels pour l'Ukraine sont arrêtés et interdits de se rendre à destination. Ce qui peut manquer, ce sont les munitions, certains systèmes de renseignement, l'accès à des réseaux et la connectivité, divers soutiens logistiques et de formation. J'ajoute le soutien diplomatique et, peut-être plus important encore, le soutien de peuple à peuple : les Ukrainiens se sentent abandonnés et terriblement seuls. Vous en avez fait l'expérience quand vous vous êtes rendu en Ukraine ces derniers jours.<br><br>Quel est l'enjeu pour la France ? Il s'agit de réunir tous les moyens possibles pour nous substituer, autant que faire se peut, à une aide internationale venant à s'arrêter.<br><br>C'est un effort considérable que les Européens, du moins ceux qui sont décidés à aider l'Ukraine, doivent fournir. Mais au-delà, et tout en souhaitant que notre soutien permette à l'Ukraine de résister, il nous faut bâtir une défense européenne. Nous devons le faire avec nos moyens, dont je me suis efforcé de montrer, hier, qu'ils ne sont pas négligeables – ils sont même, si on les additionne, nettement supérieurs aux capacités russes. La France demande depuis des années – huit années sous la présidence d'Emmanuel Macron – et même depuis des décennies, si l'on remonte à la présidence du général de Gaulle, la création d'une capacité de sécurité et de défense indépendante, qui ne soit pas soumise aux décisions de ses alliés, notamment pour ce qui est des livraisons d'armements et de systèmes de sécurité.<br><br>C'est donc un immense effort que nous devons fournir. Si je puis vous dire ce que je pense vraiment, cela va nous obliger à réfléchir à notre modèle, à nos priorités, et à voir différemment le monde que nous pensions connaître et dont nous avons découvert, par l'action de ceux que nous croyions être nos alliés, qu'il était plus dangereux que nous ne l'imaginions. <i>(Applaudissements sur les bancs des groupes EPR, DR, Dem et HOR.)</i><br> <p>",
+      "date_reponse": "2025-03-05",
+      "ministere": "Premier ministre",
+      "groupe_sigle": "EPR",
+      "fonction": null,
+      "format": "prise_de_parole_developpee",
+      "mots_cles": [],
+      "url": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG433.htm",
+      "url_detail": "https://questions.assemblee-nationale.fr/q17/QANR5L17QG433.htm",
+      "legislature": "17"
+    },
+    {
+      "id": "question_QANR5L15QG14",
+      "date": null,
+      "type_detail": "question",
+      "sous_type": "QG",
+      "sujet": null,
+      "texte": null,
+      "reponse": "</p><p align=\"CENTER\"> RENTRÉE SCOLAIRE <a name=PG14></a> </p><br><strong>M. le président. </strong>La parole est à M. Gabriel Attal, pour le groupe La République en marche.<br><br><strong>M. Gabriel Attal. </strong>Ma question s'adresse à M. le ministre de l'éducation nationale. J'en profite pour saluer les 700 000 bacheliers qui ont reçu ce matin leurs résultats, et pour remercier leurs enseignants de leur engagement tout au long de l'année. <i>(Applaudissements sur les bancs des groupes REM et MODEM.)</i><br><br>Monsieur le ministre, l'école est un lieu formidable d'innovation, de dépassement de soi, de réussites individuelles et collectives. Mais c'est aussi un lieu où se nouent des inégalités, qu'elles concernent la maîtrise des fondamentaux à l'entrée en sixième ou des 100 000 jeunes qui quittent chaque année le système scolaire sans qualification.<br><br>Les Français nous ont donné mandat pour agir, et vous avez fixé un cap et une méthode, celle de la confiance et de l'intelligence collective, parce que l'école n'a pas besoin d'une énième grande loi de refondation, mais d'initiatives innovantes, proches du terrain. C'est un travail de longue haleine qui va nous occuper collectivement et dont le Premier ministre a défini le cadre hier, à l'occasion de sa déclaration de politique générale. Toutefois, d'ores et déjà, vous avez mis l'école en mouvement.<br><br>Dès la prochaine rentrée scolaire, les classes de CP seront dédoublées dans les réseaux d'éducation prioritaire renforcés. Dès la prochaine rentrée scolaire, les classes bilangues seront rétablies et l'enseignement du grec et du latin sera renforcé dans tous les établissements. Dès la prochaine rentrée scolaire, les collectivités pourront mieux adapter l'organisation des rythmes scolaires, en lien avec l'ensemble des acteurs de leur territoire. Dès la prochaine rentrée, enfin,…<br><br><strong>M. Éric Straumann.</strong> C'est la question ou la réponse ?<br><br><strong>M. Gabriel Attal. </strong>…les collégiens bénéficieront d'un accompagnement après la classe, parce que nous savons que les devoirs sont indispensables à l'excellence de l'apprentissage et qu'en même temps ils peuvent donner lieu à des inégalités sociales, scolaires, ou à des problèmes dans la famille.<br><br>Monsieur le ministre, ma question est la suivante :…<br><br><strong>M. Éric Straumann.</strong> Ah !<br><br><strong>M. Gabriel Attal. </strong>…comment allez-vous mettre en place le dispositif « Devoirs faits » que vous avez récemment annoncé ? Sachez, en tout cas, que l'ensemble des parlementaires de La République en marche seront à vos côtés pour soutenir votre action nécessaire. <i>(Applaudissements sur les bancs des groupes REM et MODEM.)</i><br><br><strong>M. le président. </strong>La parole est à M. le ministre de l'éducation nationale.<br><br><strong>M. Jean-Michel Blanquer,</strong><i> ministre de l'éducation nationale. </i>Merci, monsieur le député, d'avoir rappelé les mesures concrètes qui vont s'appliquer dès la rentrée. Elles sont importantes, et elles doivent produire leurs effets sur les élèves, leur famille et sur toute la société française.<br><br>L'une d'entre elles, vous l'avez rappelé, s'appelle « Devoirs faits ». L'expression est significative. D'abord, du fait que nous avons voulu une mesure visant à la qualité pédagogique : il faut que les élèves fassent des exercices par eux-mêmes, en dehors des heures de cours. C'est une question qui a souvent été posée dans le passé, sans réponse très claire. Deuxièmement, c'est une mesure de justice sociale : on sait bien que les devoirs à la maison peuvent accentuer les inégalités, toutes les familles n'étant pas dans la même situation à leur égard. Nous avons réussi à concilier ces deux aspects grâce à cette mesure qui consiste en un soutien scolaire à l'intérieur de l'école, à l'intérieur des collèges.<br><br>Vous l'avez dit, nous pourrons la proposer dès la rentrée prochaine dans les collèges, aux élèves volontaires et à leur famille. Nous le ferons en mobilisant d'abord, au moyen d'heures supplémentaires, les professeurs, qui superviseront le dispositif. Nous mobiliserons aussi les assistants d'éducation : c'est le début d'une réforme touchant ces agents, dont le rôle sera toujours plus important à l'avenir et qui sont le vivier de nos futurs professeurs. Nous mobiliserons également 10 000 volontaires du service civique, au titre de ma compétence sur la jeunesse et la vie associative. Enfin, nous mobiliserons bien entendu les collectivités locales et les associations, qui font déjà beaucoup en la matière et auxquelles nous ferons toujours plus appel.<br><br>Notre but est le progrès de tous les élèves, avec la qualité pédagogique et la justice sociale. <i>(Applaudissements sur les bancs des groupes REM et MODEM et sur plusieurs bancs du groupe LC.)</i><br> <p>",
+      "date_reponse": "06/07/2017",
+      "ministere": "Ministère de l'éducation nationale",
+      "groupe_sigle": "LAREM",
+      "fonction": null,
+      "format": "prise_de_parole_developpee",
+      "mots_cles": [],
+      "url": "https://questions.assemblee-nationale.fr/q15/QANR5L15QG14.htm",
+      "url_detail": "https://questions.assemblee-nationale.fr/q15/QANR5L15QG14.htm",
+      "legislature": "15"
+    },
+    {
+      "id": "question_QANR5L15QG864",
+      "date": null,
+      "type_detail": "question",
+      "sous_type": "QG",
+      "sujet": null,
+      "texte": null,
+      "reponse": "</p><p align=\"CENTER\"> SITUATION DANS LES UNIVERSITÉS <a name=PG11></a> </p><br><strong>M. le président. </strong>La parole est à M. Gabriel Attal, pour le groupe La République en marche.<br><br><strong>M. Gabriel Attal. </strong>Madame la ministre de l'enseignement supérieur, de la recherche et de l'innovation, vous étiez ce matin à Vanves, dans ma circonscription, pour rencontrer les élèves de terminale des lycées Michelet et Dardenne. Qu'avons-nous vu ? Des élèves anxieux, impatients, à une semaine des premiers résultats à leurs souhaits d'affectation sur Parcoursup, mais surtout des jeunes motivés par la perspective de poursuivre leurs études dans le supérieur.<br><br>Mais ces jeunes ont été troublés par le récit de certains de leurs aînés qui leur ont raconté que des agitateurs politiques, qui instrumentalisent la jeunesse et voudraient s'en faire les porte-parole, ont bloqué leur faculté ! <i>(Protestations sur les bancs du groupe FI. – Applaudissements sur les bancs des groupes LaREM, MODEM et UDI-Agir, ainsi que sur quelques bancs du groupe LR.).)</i><br><br><strong>Mme Huguette Bello.</strong> Honteux !<br><br><strong>M. Gabriel Attal. </strong>Ils ont été troublés par les images d'Arcueil où l'on voit des jeunes empêchés de passer leurs examens, certains se faisant intimider. Ces images ont indigné les Français, elles nous ont choqués, nous députés. S'il y a une chose qui nous rassemble tous, par-delà les clivages, c'est l'écharpe tricolore qui nous a été remise. <i>(Applaudissements sur les bancs du groupe LaREM.) </i>Cette écharpe incarne la République, et la République, c'est le droit à l'éducation. Cette écharpe incarne l'intérêt général. Or, l'intérêt des jeunes est de valider leurs diplômes, première garantie d'emploi, non de gâcher un semestre, car tous les jeunes ne peuvent pas se payer une année d'études supplémentaire. (Applaudissements sur les bancs des groupes LaREM, MODEM, UDI-Agir et sur quelques bancs du groupe LR. – De nombreux députés du groupe La République en marche se lèvent et continuent à applaudir.)<br><br>Cette écharpe nous permet de défendre des causes, mais elle n'autorise pas tout. Elle nous oblige. Oui, je le dis, vendredi dernier, cette écharpe a été abîmée.<br><br>Madame la ministre, nous avons mis fin à l'arbitraire du tirage au sort, les étudiants savent que l'université est revalorisée, qu'ils ont un droit à l'année de césure, qu'ils ont le droit au paiement à date de leur bourse, qu'ils ont le droit à une assurance maladie gratuite.<br><br>Madame la ministre, alors que des milliers d'étudiants passent en ce moment leurs examens, pouvez-vous les rassurer sur le fait qu'ils pourront travailler sereinement ? Pouvez-vous assurer aux Français que, malgré les tentatives de certains, jamais dans notre pays réussir ne sera un gros mot ? <i>(Applaudissements sur les bancs des groupes LaREM, MODEM et UDI-Agir, ainsi que sur quelques bancs du groupe LR. – Exclamations sur les bancs du groupe FI.)</i><br><br><strong>M. le président. </strong>La parole est à Mme la ministre de l'enseignement supérieur, de la recherche et de l'innovation.<br><br><strong>Mme Frédérique Vidal,</strong><i> ministre de l'enseignement supérieur, de la recherche et de l'innovation. </i>Monsieur le député, vous avez raison, je suis entièrement d'accord avec vous : les images que nous avons vues vendredi et lundi, en début de matinée, sont inadmissibles.<br><br><strong>M. Pierre Cordier.</strong> Vous disiez le contraire il y a dix ans, au Mouvement des jeunes socialistes !<br><br><strong>Mme Frédérique Vidal,</strong><i> ministre. </i>Elles révèlent surtout un très grand cynisme, le cynisme de ceux qui n'ont pas à passer leurs examens, qui n'ont pas à valider leur année et qui, pourtant, se rejoignent pour empêcher les étudiants de le faire.<br><br>S'en prendre aux examens, c'est s'en prendre aux étudiants les plus faibles, aux étudiants boursiers, aux étudiants obligés de travailler, aux étudiants qui attendent leur stage, aux étudiants qui doivent travailler l'été pour financer leurs études. <i>(Applaudissements sur les bancs des groupes LaREM, MODEM et UDI-Agir, et sur quelques bancs du groupe LR. – Protestations sur les bancs du groupe FI.) </i>Si vous aviez été sur les bancs de l'Assemblée plutôt que de haranguer les foules à Arcueil pendant la discussion de cette loi, vous auriez su que celle-ci permettra plus d'accompagnement, plus de réussite, plus d'orientation. (Protestations sur les bancs du groupe FI.)<br><br><strong>Mme Caroline Fiat.</strong> On était là !<br><br><strong>Mme Frédérique Vidal,</strong><i> ministre. </i>Cette mise en scène organisée de manière à décrédibiliser l'université, la valeur des diplômes universitaires, est d'un cynisme absolu.<br><br><strong>M. Charles de la Verpillière.</strong> Passez aux actes !<br><br><strong>M. Thibault Bazin.</strong> Quel laxisme !<br><br><strong>Mme Frédérique Vidal,</strong><i> ministre . </i>Seize mille examens se sont d'ores et déjà tenus, mais on ne parle que de la dizaine qui a été perturbée. Ces examens seront reprogrammés et ils se tiendront. Pas moins de 1 600 000 étudiants sont en train de passer leurs examens ; 15 000 examens ont déjà eu lieu, plus des deux tiers ont été validés.<br><br>Les années universitaires 2018-2019, comme les précédentes et les suivantes, garderont toute leur valeur. <i>(Applaudissements sur les bancs des groupes LaREM et MODEM, et sur quelques bancs des groupes UDI-Agir et LR. – Protestations sur les bancs du groupe FI.) </i><br> <p>",
+      "date_reponse": "16/05/2018",
+      "ministere": "Ministère de l'enseignement supérieur, de la recherche et de l'innovation",
+      "groupe_sigle": "LAREM",
+      "fonction": null,
+      "format": "prise_de_parole_developpee",
+      "mots_cles": [],
+      "url": "https://questions.assemblee-nationale.fr/q15/QANR5L15QG864.htm",
+      "url_detail": "https://questions.assemblee-nationale.fr/q15/QANR5L15QG864.htm",
+      "legislature": "15"
+    }
+  ],
   "meta": {
     "genere_le": "2026-08-06T09:05:24+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:05:24+0000",
+      "assemblee_nationale_questions": "2026-08-07T10:12:31+0000",
+      "assemblee_nationale_syceron": null,
       "assemblee_nationale": "2026-08-06T09:05:25+0000",
-      "assemblee_nationale_questions": null
+      "nosdeputes": "2026-08-06T09:05:24+0000"
     },
     "warnings": []
   }

@@ -72,6 +72,62 @@
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre suppléant",
+      "label": "Commission chargée de l'application de l'article 26 de la constitution",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "vice-président",
+      "label": "Groupe d'études politique portuaire",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études villes et banlieues",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études automobile",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études energies",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études mer, pêche et souveraineté maritime",
+      "debut": null,
+      "fin": null,
+      "actif": true
     }
   ],
   "votes": [],
@@ -79,14 +135,1339 @@
   "synthese_activite": null,
   "dossiers_legislatifs": [],
   "amendements": [],
-  "interventions": [],
+  "interventions": [
+    {
+      "type": "Intervention",
+      "id": 29173,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/29173/json",
+      "date": "2017-08-09",
+      "created_at": "2017-08-10 06:03:39",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2016-2017-extra/20171033.asp#P1019133",
+      "texte": "<p>… de celui de la justice, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/131#inter_78eecc9dc94da665e50bfcec91180051",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux militaires de l'opération sentinelle agressés à levallois-perret",
+      "mots_cles": [
+        "séance",
+        "association",
+        "certain",
+        "citoyen",
+        "commune",
+        "confiance",
+        "français",
+        "majorité"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 86867,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/86867/json",
+      "date": "2017-11-15",
+      "created_at": "2017-11-16 09:24:45",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180055.asp#P1095074",
+      "texte": "<p>… ce qui ne devrait pas vous gêner.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/480#inter_6c4b8f7e673ffcb606c197ec65bb3c19",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "DETR",
+        "DGF",
+        "DSIL",
+        "FPIC",
+        "dotation",
+        "département",
+        "péréquation"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 94967,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/94967/json",
+      "date": "2017-11-22",
+      "created_at": "2017-11-23 17:21:39",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180066.asp#P1107601",
+      "texte": "<p>Enfin, président !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/525#inter_c902abc73ac4efc743d916032ea6a069",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "CHSCT",
+        "collectif",
+        "dialogue",
+        "délégué",
+        "employeur",
+        "instance",
+        "négociation"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 123574,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/123574/json",
+      "date": "2017-12-19",
+      "created_at": "2017-12-20 15:34:08",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180105.asp#P1150428",
+      "texte": "<p>C'est indispensable, vous le savez, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/677#inter_b8b30be2d604b6e4b570f9e626e394fe",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux victimes de l'accident de millas",
+      "mots_cles": [
+        "séance",
+        "prélèvement",
+        "source",
+        "sénat",
+        "énergie"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 133381,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/133381/json",
+      "date": "2018-01-23",
+      "created_at": "2018-01-25 01:56:20",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180120.asp#P1163770",
+      "texte": "<p>Madame de Montchalin, votre question…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/759#inter_93b8613f8cf7a45c33a8402f76c3b13a",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "agent",
+        "erreur",
+        "expérimentation",
+        "fonctionnaire",
+        "simplification",
+        "usager"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 133397,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/133397/json",
+      "date": "2018-01-23",
+      "created_at": "2018-01-25 01:56:21",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180120.asp#P1164060",
+      "texte": "<p>Tant mieux, madame la députée !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/759#inter_932f2a613a7dbc43f06127360f56cef7",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "agent",
+        "erreur",
+        "expérimentation",
+        "fonctionnaire",
+        "simplification",
+        "usager"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 161799,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/161799/json",
+      "date": "2018-03-14",
+      "created_at": "2018-03-15 01:24:04",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180159.asp#P1203393",
+      "texte": "<p>J'y réponds bien volontiers, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1032#inter_343ad45eb46ce032895bf0e59c822213",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "jeux",
+        "olympique",
+        "paralympique",
+        "sport",
+        "sportif"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 172163,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/172163/json",
+      "date": "2018-03-27",
+      "created_at": "2018-03-29 00:33:27",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180168.asp#P1213441",
+      "texte": "<p>Dire cela, mesdames, messieurs les députés, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1127#inter_af7cb27566dc39384dfdfb7088a01746",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux victimes des attentats dans l'aude",
+      "mots_cles": [
+        "séance",
+        "alerte",
+        "directive",
+        "lanceurs",
+        "d'alerte",
+        "militaire",
+        "protéger",
+        "secret"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 172171,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/172171/json",
+      "date": "2018-03-27",
+      "created_at": "2018-03-29 00:33:28",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180168.asp#P1213446",
+      "texte": "<p>Oui, il faut enfermer les terroristes,</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1127#inter_62919aa57b4c5d8180e0f75351090ed2",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux victimes des attentats dans l'aude",
+      "mots_cles": [
+        "séance",
+        "alerte",
+        "directive",
+        "lanceurs",
+        "d'alerte",
+        "militaire",
+        "protéger",
+        "secret"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 176314,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/176314/json",
+      "date": "2018-04-03",
+      "created_at": "2018-04-08 20:58:04",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180174.asp#P1218481",
+      "texte": "<p>Ce sera un élément intéressant !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1200#inter_2fe1a2cbbc6695c7afb27dab769e51aa",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Communication de m. le président",
+      "mots_cles": [
+        "séance",
+        "amende",
+        "consommation",
+        "drogue",
+        "forfaitaire",
+        "pénale",
+        "sanction",
+        "stupéfiant"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 213189,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/213189/json",
+      "date": "2018-05-09",
+      "created_at": "2018-05-10 13:30:11",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180207.asp#P1257006",
+      "texte": "<p>Monsieur le député, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1358#inter_29b210c391ed2894b0fb6226738418f9",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "compétences",
+        "constitution",
+        "constitutionnelle",
+        "garde"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 213211,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/213211/json",
+      "date": "2018-05-09",
+      "created_at": "2018-05-10 13:30:12",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180207.asp#P1257017",
+      "texte": "<p>Je vous sortirai les textes !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1358#inter_60f7b593f45c6acb50d91cdfa914fddd",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "compétences",
+        "constitution",
+        "constitutionnelle",
+        "garde"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 222457,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/222457/json",
+      "date": "2018-05-22",
+      "created_at": "2018-05-23 17:07:04",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180217.asp#P1268042",
+      "texte": "<p>… des procédures.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1418#inter_80938f41ab5cd3e3756a21037598eda6",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "agriculteur",
+        "agriculture",
+        "alimentaire",
+        "alimentation",
+        "généraux",
+        "l'alimentation",
+        "paysan"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 258826,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/258826/json",
+      "date": "2018-06-06",
+      "created_at": "2018-06-12 03:20:55",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180256.asp#P1312495",
+      "texte": "<p>Ce n'est pas vrai.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1569#inter_88297cdba7c39c5b53fee4660fb2b20a",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "SRU",
+        "construction",
+        "construire",
+        "habitants",
+        "logement",
+        "logements",
+        "sociaux"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 271053,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/271053/json",
+      "date": "2018-06-12",
+      "created_at": "2018-06-14 22:58:06",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180267.asp#P1325218",
+      "texte": "<p>Après la très large approbation du texte…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1618#inter_23b50733f44a585b55c07425f72f15a7",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "CPF",
+        "logement"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 11,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 271066,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/271066/json",
+      "date": "2018-06-12",
+      "created_at": "2018-06-14 22:58:07",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180267.asp#P1325232",
+      "texte": "<p>J'y insiste : le Gouvernement a pris ses responsabilités,</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1618#inter_2068531338f1d6c1365e2cc6e8cdc8eb",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "CPF",
+        "logement"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 11,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 271072,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/271072/json",
+      "date": "2018-06-12",
+      "created_at": "2018-06-14 22:58:07",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180267.asp#P1325234",
+      "texte": "<p>Il est temps que chacun prenne ses responsabilités.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1618#inter_075fbdfc3fe98ab531428bcba1dcdbc2",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "CPF",
+        "logement"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 11,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 272733,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/272733/json",
+      "date": "2018-06-13",
+      "created_at": "2018-06-14 22:59:10",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018/20180269.asp#P1327776",
+      "texte": "<p>… , cela s'entretient…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1620#inter_ea9ba9518e50b21599f87cc7ac9509b3",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "CEP",
+        "SNCF",
+        "cheminot",
+        "ferroviaire",
+        "orientation",
+        "ouverture",
+        "train"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 321842,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/321842/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:54:55",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389238",
+      "texte": "<p>Je suis heureux de pouvoir vous répondre.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_599df5703e47f086cca555d27d663e6c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 321970,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/321970/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:54:57",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389441",
+      "texte": "<p>Cet examen n'ayant pas été possible, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_c9d38551f4f0850551adbc894fb2e23c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 321987,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/321987/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:54:58",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389454",
+      "texte": "<p>… prévoit la diminution du nombre de parlementaires…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_ee244d5d4ccf6ea8350cb7fad07aba6b",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 322018,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/322018/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:54:58",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389481",
+      "texte": "<p>… et elle a été effective.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_60459e6f35b0cd2cdba7acb1a57d26fe",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 322164,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/322164/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:55:01",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389677",
+      "texte": "<p>… les procédures judiciaires ont été immédiatement engagées,</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_467bf454b419a5ef255cbfd29c292637",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 12,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 322214,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/322214/json",
+      "date": "2018-07-24",
+      "created_at": "2018-07-27 02:55:02",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181034.asp#P1389711",
+      "texte": "<p>… aux procédures judiciaires, aux sanctions administratives.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1912#inter_d589fd70ba3a9bddb374f6bb6db4155e",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "apprenti",
+        "métier"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 333422,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/333422/json",
+      "date": "2018-07-31",
+      "created_at": "2018-08-04 19:15:21",
+      "type_detail": "loi",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181042.asp#P1401331",
+      "texte": "<p>Peu importe, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1956#inter_3ffd181cae9fb3dfd3d22b4a383a819b",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Motions de censure",
+      "mots_cles": [
+        "séance",
+        "benalla",
+        "institution",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "motions"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 333456,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/333456/json",
+      "date": "2018-07-31",
+      "created_at": "2018-08-04 19:15:22",
+      "type_detail": "loi",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2017-2018-extra/20181042.asp#P1401344",
+      "texte": "<p>… avec les collectivités.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/1956#inter_7a6330f6b9b3a235fd7309b8fcd058f8",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Motions de censure",
+      "mots_cles": [
+        "séance",
+        "benalla",
+        "institution",
+        "macron",
+        "motion",
+        "motion",
+        "censure",
+        "motions"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 357500,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/357500/json",
+      "date": "2018-10-02",
+      "created_at": "2018-10-08 01:38:30",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190002.asp#P1433179",
+      "texte": "<p>Monsieur Ciotti, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2081#inter_7c3979e8b054f62c5721dada73dceb2e",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Attribution du prix nobel de physique à m. gérard mourou",
+      "mots_cles": [
+        "séance",
+        "ESUS",
+        "agrément",
+        "solidaire"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 357735,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/357735/json",
+      "date": "2018-10-02",
+      "created_at": "2018-10-08 01:38:44",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190002.asp#P1433614",
+      "texte": "<p>Je vous souhaite le meilleur, monsieur le député.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2081#inter_137353f7e861c07dbe50727a3b4b265e",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Attribution du prix nobel de physique à m. gérard mourou",
+      "mots_cles": [
+        "séance",
+        "ESUS",
+        "agrément",
+        "solidaire"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 11,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 359128,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/359128/json",
+      "date": "2018-10-03",
+      "created_at": "2018-10-08 01:40:52",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190004.asp#P1435872",
+      "texte": "<p>Les cinq dernières années, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2083#inter_79ead3218b0cd3259307336da259cc8f",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ADP",
+        "aéroport",
+        "logement",
+        "privatisation",
+        "stratégique"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 359139,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/359139/json",
+      "date": "2018-10-03",
+      "created_at": "2018-10-08 01:40:52",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190004.asp#P1435880",
+      "texte": "<p>Vous voyez que le simple rappel de faits…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2083#inter_c520a228715befd5ad0a728aba2d4514",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "ADP",
+        "aéroport",
+        "logement",
+        "privatisation",
+        "stratégique"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 365256,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/365256/json",
+      "date": "2018-10-09",
+      "created_at": "2018-10-11 01:56:11",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190011.asp#P1444127",
+      "texte": "<p>Cette décision, qui peut sembler…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2109#inter_50cea1d548aa0c3241fb820c25367ad4",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "expression",
+        "fausse",
+        "motion",
+        "presse"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 385226,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/385226/json",
+      "date": "2018-10-23",
+      "created_at": "2018-10-27 17:36:22",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190031.asp#P1470632",
+      "texte": "<p>… moins simple.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2294#inter_364ff7044adea62b8a1a4d205c14c293",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "PLFSS"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 400566,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/400566/json",
+      "date": "2018-11-06",
+      "created_at": "2018-11-08 00:55:55",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190049.asp#P1493565",
+      "texte": "<p>… et avec beaucoup de fermeté.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2347#inter_1a984a60c583eb4dcbada62104b6d841",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "immigration",
+        "intégration",
+        "préfecture"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 402898,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/402898/json",
+      "date": "2018-11-07",
+      "created_at": "2018-11-11 18:34:30",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190051.asp#P1496136",
+      "texte": "<p>Je ne l'ai pas votée, en effet,...</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2382#inter_65b833665874faf9bccce3a0a35eaa32",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "dette"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 422725,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/422725/json",
+      "date": "2018-11-20",
+      "created_at": "2018-11-22 00:17:15",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190071.asp#P1523773",
+      "texte": "<p>Cela peut arriver…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2434#inter_52561225786615d0b3fd4ceb887a7b1f",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "fausse",
+        "média"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 438389,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/438389/json",
+      "date": "2018-12-04",
+      "created_at": "2018-12-06 00:16:00",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190092.asp#P1548512",
+      "texte": "<p>Elle vient de loin, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2521#inter_1eba6345786fdab4b0cd46c1e98474de",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "condamné",
+        "détention",
+        "détenu",
+        "prison",
+        "pénale",
+        "pénitentiaire",
+        "violence"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 438425,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/438425/json",
+      "date": "2018-12-04",
+      "created_at": "2018-12-06 00:16:04",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190092.asp#P1548551",
+      "texte": "<p>Bien entendu, je les condamne.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2521#inter_b0c3dcab4f268e2937ef30314a6a34bf",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "condamné",
+        "détention",
+        "détenu",
+        "prison",
+        "pénale",
+        "pénitentiaire",
+        "violence"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 462493,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/462493/json",
+      "date": "2019-01-15",
+      "created_at": "2019-01-19 23:23:43",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190117.asp#P1581243",
+      "texte": "<p>… alors il me sera difficile…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2636#inter_caa8cd7e486ceb639232d1e16fa55e27",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "juridiction",
+        "justiciable",
+        "motion",
+        "tribunaux"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 463418,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/463418/json",
+      "date": "2019-01-16",
+      "created_at": "2019-01-19 23:25:10",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190119.asp#P1583528",
+      "texte": "<p>six heures et demie de débat…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2638#inter_a9faa7c1834f62c28831a5f6e3ef1911",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "brexit",
+        "britannique",
+        "conciliation",
+        "litige",
+        "médiation",
+        "royaume-uni"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 9,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 472593,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/472593/json",
+      "date": "2019-01-30",
+      "created_at": "2019-02-10 16:42:26",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190131.asp#P1598044",
+      "texte": "<p>Eh oui !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2739#inter_1cba51870748b779b864bde414ebd1ef",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "casseur",
+        "interdiction",
+        "manifestation",
+        "manifester",
+        "préfet",
+        "périmètre"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 478971,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/478971/json",
+      "date": "2019-02-12",
+      "created_at": "2019-02-18 00:41:53",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190144.asp#P1611808",
+      "texte": "<p>… et qu'elle veut établir les faits, …</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2783#inter_22efbe37a1e8e36a4fe22cdfad73971c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Condamnation d'actes de violence visant des représentants de la nation",
+      "mots_cles": [
+        "séance",
+        "carte",
+        "classe",
+        "enseignant",
+        "harcèlement",
+        "uniforme"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 8,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 516022,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/516022/json",
+      "date": "2019-03-19",
+      "created_at": "2019-03-20 10:21:16",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190185.asp#P1662654",
+      "texte": "<p>… sont effectivement inacceptables.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/2931#inter_2702b591fd1d72a15255ce8cfb0f5db8",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux victimes des attaques terroristes en nouvelle-zélande et aux pays-bas",
+      "mots_cles": [
+        "séance",
+        "cycle",
+        "médecin",
+        "médecine",
+        "médicale",
+        "parcours",
+        "sous-dense",
+        "stage"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 542151,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/542151/json",
+      "date": "2019-04-30",
+      "created_at": "2019-05-10 01:35:00",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190217.asp#P1701611",
+      "texte": "<p>J'aurai l'occasion de présenter…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/3173#inter_a2537e28cd5ab663523af05c06f129ee",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "PIB",
+        "dette",
+        "programme",
+        "stabilité",
+        "stabilité",
+        "trajectoire"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 7,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 542153,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/542153/json",
+      "date": "2019-04-30",
+      "created_at": "2019-05-10 01:35:00",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190217.asp#P1701613",
+      "texte": "<p>… au mois de juin –</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/3173#inter_0cfddf4fe51366f73fa5fef366435e78",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "PIB",
+        "dette",
+        "programme",
+        "stabilité",
+        "stabilité",
+        "trajectoire"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 581609,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/581609/json",
+      "date": "2019-06-11",
+      "created_at": "2019-06-13 00:46:22",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190266.asp#P1754845",
+      "texte": "<p>Nous le sommes aussi.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/3447#inter_b12b0c1cdd1c28ba2b1430513b3ced36",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage aux sauveteurs en mer décédés au large de la vendée",
+      "mots_cles": [
+        "séance",
+        "automobile",
+        "carbone",
+        "publicité",
+        "émission"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 583435,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/583435/json",
+      "date": "2019-06-12",
+      "created_at": "2019-06-16 22:53:48",
+      "type_detail": "loi",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2018-2019/20190268.asp#P1757840",
+      "texte": "<p>Nous tous !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/3468#inter_19d0153885757d284e7dc8134b85d97c",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Déclaration de politique générale du gouvernement",
+      "mots_cles": [],
+      "fonction": "Premier ministre",
+      "nb_mots": 4,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 684647,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/684647/json",
+      "date": "2019-11-05",
+      "created_at": "2019-11-06 15:27:08",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2019-2020/20200055.asp#P1903419",
+      "texte": "<p>Vous en êtes là ? Bravo les gars, chapeau !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/4153#inter_b2867eef747fff107a72917967a40ce5",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage au brigadier ronan pointeau",
+      "mots_cles": [
+        "séance",
+        "gendarmerie",
+        "policiers"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 10,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 684688,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/684688/json",
+      "date": "2019-11-05",
+      "created_at": "2019-11-06 15:27:11",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2019-2020/20200055.asp#P1903142",
+      "texte": "<p>c'est le chômage !</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/4153#inter_714773fff17cb600075a6fd51c335efd",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Hommage au brigadier ronan pointeau",
+      "mots_cles": [
+        "séance",
+        "gendarmerie",
+        "policiers"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 724719,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/724719/json",
+      "date": "2019-12-10",
+      "created_at": "2019-12-13 01:00:00",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2019-2020/20200096.asp#P1953183",
+      "texte": "<p>… ne baisse pas.</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/4376#inter_1bfe80869b5485e6e9bf35fbdca1c660",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "endocrinien",
+        "environnementale",
+        "pension",
+        "perturbateurs",
+        "endocriniens",
+        "substances"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 5,
+      "format": "reaction_courte"
+    },
+    {
+      "type": "Intervention",
+      "id": 724754,
+      "url": "https://2017-2022.nosdeputes.fr//api/document/Intervention/724754/json",
+      "date": "2019-12-10",
+      "created_at": "2019-12-13 01:00:02",
+      "type_detail": "question",
+      "source": "http://www.assemblee-nationale.fr/15/cri/2019-2020/20200096.asp#P1953207",
+      "texte": "<p>Monsieur le député…</p>",
+      "url_detail": "https://2017-2022.nosdeputes.fr/15/seance/4376#inter_b7af19ed58ce5ad5503b9a400c768b35",
+      "classification": {
+        "mode": "prise_de_parole",
+        "reason": "orateur_bloc_perso_nom_correspondant"
+      },
+      "sujet": "Questions au gouvernement",
+      "mots_cles": [
+        "séance",
+        "endocrinien",
+        "environnementale",
+        "pension",
+        "perturbateurs",
+        "endocriniens",
+        "substances"
+      ],
+      "fonction": "Premier ministre",
+      "nb_mots": 6,
+      "format": "reaction_courte"
+    }
+  ],
   "meta": {
     "genere_le": "2026-08-06T09:02:12+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:02:12+0000",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null,
       "assemblee_nationale": null,
-      "assemblee_nationale_questions": null
+      "nosdeputes": "2026-08-06T09:02:12+0000"
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
