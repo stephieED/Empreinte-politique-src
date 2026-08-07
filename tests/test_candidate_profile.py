@@ -343,6 +343,53 @@ def test_parse_amendement_entry_returns_none_without_acteur_ref():
     assert _parse_amendement_entry(raw) is None
 
 
+def test_parse_amendement_entry_keeps_cosignataire_from_nested_acteur_dict():
+    raw = {
+        "amendement": {
+            "identification": {"numeroLong": "AS2"},
+            "signataires": {
+                "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+                "cosignataires": {"acteur": {"acteurRef": "PA842001"}},
+            },
+            "cycleDeVie": {"dateDepot": "2025-02-18"},
+        }
+    }
+
+    result = _parse_amendement_entry(raw)
+
+    assert result is not None
+    assert {acteur_ref for acteur_ref, _ in result} == {"PA1567", "PA842001"}
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+    assert by_acteur["PA842001"]["role_signataire"] == "cosignataire"
+    assert by_acteur["PA842001"]["co_signataires"] == ["an:PA842001"]
+
+
+def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
+    raw = {
+        "amendement": {
+            "identification": {"numeroLong": "AS3"},
+            "signataires": {
+                "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+                "cosignataires": {
+                    "acteur": [
+                        {"acteurRef": "PA842001"},
+                        {"acteurRef": "PA793182"},
+                    ]
+                },
+            },
+            "cycleDeVie": {"dateDepot": "2025-02-19"},
+        }
+    }
+
+    result = _parse_amendement_entry(raw)
+
+    assert result is not None
+    assert {acteur_ref for acteur_ref, _ in result} == {"PA1567", "PA842001", "PA793182"}
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+    assert by_acteur["PA1567"]["co_signataires"] == ["an:PA842001", "an:PA793182"]
+    assert by_acteur["PA793182"]["role_signataire"] == "cosignataire"
+
+
 def test_collect_texte_codes_walks_nested_actes_legislatifs():
     """Un dossier législatif imbrique les codes de texte à plusieurs niveaux
     (actesLegislatifs récursif, textesAssocies en liste) : le collecteur doit

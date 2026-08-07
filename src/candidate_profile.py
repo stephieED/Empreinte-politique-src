@@ -703,6 +703,35 @@ def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optio
     return _AMENDEMENT_SORT_MAP.get((etat_libelle, sousetat_libelle)), None
 
 
+def _extract_cosignataire_refs(cosignataires_bloc: Any) -> list[str]:
+    """Normalise les différentes formes de `signataires.cosignataires`.
+
+    Le bulk AN expose selon les jeux soit `{"acteurRef": ...}`, soit
+    `{"acteur": {"acteurRef": ...}}` / `{"acteur": [{"acteurRef": ...}, ...]}`.
+    """
+    if not isinstance(cosignataires_bloc, dict):
+        return []
+
+    refs: list[str] = []
+
+    direct_refs = cosignataires_bloc.get("acteurRef")
+    if isinstance(direct_refs, str) and direct_refs:
+        refs.append(direct_refs)
+    elif isinstance(direct_refs, list):
+        refs.extend(ref for ref in direct_refs if isinstance(ref, str) and ref)
+
+    acteurs = cosignataires_bloc.get("acteur")
+    items = acteurs if isinstance(acteurs, list) else [acteurs]
+    for item in items:
+        if isinstance(item, dict):
+            acteur_ref = item.get("acteurRef")
+            if isinstance(acteur_ref, str) and acteur_ref:
+                refs.append(acteur_ref)
+
+    # Déduplication en conservant l'ordre de lecture du payload source.
+    return list(dict.fromkeys(refs))
+
+
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
     """Extrait les enregistrements indexés par acteurRef d'un amendement brut.
 
@@ -721,11 +750,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         return None
 
     cosignataires_bloc = signataires.get("cosignataires") or {}
-    cosign_refs = cosignataires_bloc.get("acteurRef")
-    if isinstance(cosign_refs, str):
-        cosign_refs = [cosign_refs]
-    elif not isinstance(cosign_refs, list):
-        cosign_refs = []
+    cosign_refs = _extract_cosignataire_refs(cosignataires_bloc)
 
     cycle_de_vie = amendement.get("cycleDeVie") or {}
     etat = cycle_de_vie.get("etatDesTraitements") or {}
