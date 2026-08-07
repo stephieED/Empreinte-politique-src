@@ -1738,7 +1738,7 @@ def fetch_interventions_syceron(url_an_ou_senat: Optional[str]) -> list[dict[str
         index = _build_acteur_interventions_syceron_index(legislature)
         interventions.extend(index.get(acteur_ref, []))
 
-    interventions.sort(key=lambda i: (i.get("date") or "", i.get("id") or ""), reverse=True)
+    interventions.sort(key=lambda entry: (entry.get("date") or "", entry.get("id") or ""), reverse=True)
     return interventions
 
 
