@@ -212,6 +212,7 @@ WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
+WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES = "interventions syceron indisponibles (fallback nosdeputes)"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -2285,6 +2286,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
                 "nosdeputes": None,
                 "assemblee_nationale": None,
                 "assemblee_nationale_questions": None,
+                "assemblee_nationale_syceron": None,
             },
             "warnings": [],
         },
@@ -2468,11 +2470,33 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         parlementaire = _extract_parlementaire(identity_raw)
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
-    profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+
+    # --- 9. Interventions : source primaire Syceron (débats officiels AN) pour les
+    # députés ; fallback vers le scraping NosDéputés si Syceron ne retourne rien
+    # (acteurRef non résolu ou législature hors SYCERON_AVAILABLE_LEGISLATURES).
+    # Sénat/PE non couverts par Syceron : chemin NosDéputés uniquement. ---
+    if not skip_interventions and chambre == "deputes" and profile.get("identite"):
+        try:
+            syceron_interventions = fetch_interventions_syceron(profile["identite"].get("url_an_ou_senat"))
+        except Exception as exc:
+            syceron_interventions = []
+            warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : {exc}")
+        if syceron_interventions:
+            profile["interventions"] = syceron_interventions
+            profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        else:
+            profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+            warnings.append(
+                f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : "
+                "aucune intervention Syceron trouvée pour cet acteurRef ; "
+                "interventions NosDéputés utilisées en fallback."
+            )
+    else:
+        profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
-    # NosDéputés déjà collectées (type_detail="question", source AN structurée). ---
+    # déjà collectées (type_detail="question", source AN structurée). ---
     if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
             official_questions = fetch_questions_officielles(profile["identite"].get("url_an_ou_senat"))

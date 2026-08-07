@@ -563,3 +563,105 @@ def test_normalize_intervention_non_question_has_no_extra_fields():
     assert "ministere" not in i
     assert "reponse" not in i
     assert "date_reponse" not in i
+
+
+# ---------------------------------------------------------------------------
+# #80 — mapping Syceron → champs pivot (theme_officiel, seance, dossier, source)
+# ---------------------------------------------------------------------------
+
+def _raw_syceron_intervention() -> dict:
+    """Retourne une intervention brute au format Syceron (depuis fetch_interventions_syceron)."""
+    return {
+        "id": "syceron_CRS17_000001",
+        "date": "2025-02-11",
+        "type_detail": "loi",
+        "sujet": "Débat sur le budget rectificatif",
+        "texte": "Je soutiens ce texte.",
+        "fonction": "Président de groupe",
+        "format": "prise_de_parole_developpee",
+        "mots_cles": ["budget", "déficit"],
+        "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/syceronbrut/syseron.xml.zip",
+        "url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/syceronbrut/syseron.xml.zip",
+        "url_detail": None,
+        "source_id": "CRS17_000001",
+        "seance_ref": "RUANR5L17S2025O1N037",
+        "session_ref": "S2024-2025",
+        "orateur_id_source": "PA123456",
+        "orateur_nom": "Jean Dupont",
+        "point_ordre_du_jour": "Examen du PLF 2026",
+        "legislature": "17",
+    }
+
+
+def test_normalize_syceron_intervention_theme_officiel():
+    """Quand seance_ref est présent, theme_officiel doit être le sujet du débat."""
+    raw = _raw_depute()
+    raw["interventions"] = [_raw_syceron_intervention()]
+    pivot = normalize_nosdeputes(raw)
+    i = pivot["interventions"][0]
+    assert i["theme_officiel"] == "Débat sur le budget rectificatif"
+
+
+def test_normalize_syceron_intervention_seance():
+    """Le champ seance doit contenir ref et session_ref depuis Syceron."""
+    raw = _raw_depute()
+    raw["interventions"] = [_raw_syceron_intervention()]
+    pivot = normalize_nosdeputes(raw)
+    i = pivot["interventions"][0]
+    assert i["seance"] is not None
+    assert i["seance"]["ref"] == "RUANR5L17S2025O1N037"
+    assert i["seance"]["session_ref"] == "S2024-2025"
+
+
+def test_normalize_syceron_intervention_dossier():
+    """Le champ dossier doit contenir point_ordre_du_jour depuis Syceron."""
+    raw = _raw_depute()
+    raw["interventions"] = [_raw_syceron_intervention()]
+    pivot = normalize_nosdeputes(raw)
+    i = pivot["interventions"][0]
+    assert i["dossier"] is not None
+    assert i["dossier"]["point_ordre_du_jour"] == "Examen du PLF 2026"
+
+
+def test_normalize_syceron_intervention_source():
+    """Le champ source doit contenir les métadonnées de source Syceron."""
+    raw = _raw_depute()
+    raw["interventions"] = [_raw_syceron_intervention()]
+    pivot = normalize_nosdeputes(raw)
+    i = pivot["interventions"][0]
+    assert i["source"] is not None
+    assert i["source"]["type"] == "syceron"
+    assert i["source"]["legislature"] == "17"
+
+
+def test_normalize_nosdeputes_intervention_sans_syceron_champs_null():
+    """Une intervention NosDéputés (sans seance_ref) doit avoir theme_officiel/seance/dossier/source à None."""
+    raw = _raw_depute()
+    # Intervention classique NosDéputés sans champs Syceron
+    pivot = normalize_nosdeputes(raw)
+    i = pivot["interventions"][0]
+    assert i["theme_officiel"] is None
+    assert i["seance"] is None
+    assert i["dossier"] is None
+    assert i["source"] is None
+
+
+def test_tags_preferent_theme_officiel_si_disponible():
+    """Quand theme_officiel est renseigné, il est préféré aux mots_cles pour les tags."""
+    raw = _raw_depute()
+    raw["interventions"] = [_raw_syceron_intervention()]
+    pivot = normalize_nosdeputes(raw)
+    # Le sujet Syceron doit être dans les tags
+    assert "débat sur le budget rectificatif" in pivot["tags_thematiques"]
+    # Les mots-clés scraping ne doivent PAS être dans les tags (theme_officiel prioritaire)
+    assert "budget" not in pivot["tags_thematiques"]
+    assert "déficit" not in pivot["tags_thematiques"]
+
+
+def test_tags_fallback_mots_cles_sans_theme_officiel():
+    """Sans theme_officiel, les mots_cles sont utilisés comme avant."""
+    raw = _raw_depute()
+    # L'intervention fixture n'a pas de seance_ref, donc theme_officiel = None
+    pivot = normalize_nosdeputes(raw)
+    assert "budget" in pivot["tags_thematiques"]
+    assert "fiscalité" in pivot["tags_thematiques"]
