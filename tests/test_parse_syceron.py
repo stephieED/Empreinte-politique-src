@@ -301,6 +301,30 @@ def test_xml_accepts_str_input():
     assert result["seance"]["uid"] == "CRSTEST"
 
 
+def test_multiple_orateurs_distincts_are_treated_as_ambiguous():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
+  <uid>CRSTEST-AMBIGU</uid>
+  <metadonnees><dateSeance>20260101</dateSeance></metadonnees>
+  <contenu>
+    <point>
+      <titreStruct><intitule>Discussion generale</intitule></titreStruct>
+      <paragraphe>
+        <orateurs>
+          <orateur><id>PA1</id><nom>Jean Dupont</nom></orateur>
+          <orateur><id>PA2</id><nom>Jeanne Martin</nom></orateur>
+        </orateurs>
+        <texte>Texte attribuable sans ambiguïté impossible.</texte>
+      </paragraphe>
+    </point>
+  </contenu>
+</compteRendu>""".encode("utf-8")
+    result = parse_syceron_xml(xml)
+    assert len(result["interventions"]) == 1
+    assert result["interventions"][0]["orateur_id_source"] is None
+    assert result["interventions"][0]["orateur_nom"] is None
+
+
 def test_xml_malformed_raises():
     import xml.etree.ElementTree as ET
     with pytest.raises(ET.ParseError):
