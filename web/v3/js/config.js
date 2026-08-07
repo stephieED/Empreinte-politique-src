@@ -90,9 +90,10 @@ export const THEME_COLORS = {
 };
 
 // Ordre des panneaux du carrousel glissant (remplace la pile d'accordéons)
-export const PANEL_ORDER = ["mandats", "textes", "votes", "absences", "interventions", "compare"];
+export const PANEL_ORDER = ["apercu", "mandats", "textes", "votes", "absences", "interventions", "compare"];
 export const PANEL_ICON_ATTRS = 'viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
 export const PANEL_META = {
+  apercu: { label: "Aperçu", icon: UI_ICONS.list },
   mandats: { label: "Mandats", icon: UI_ICONS.briefcase },
   textes: { label: "Textes", icon: UI_ICONS.fileText },
   votes: { label: "Votes", icon: UI_ICONS.ballot },
