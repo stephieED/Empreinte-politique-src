@@ -8,7 +8,7 @@
   "legislature": "16",
   "periode": {
     "debut": "2017-06-21",
-    "fin": "2018-11-16",
+    "fin": "2022-07-22",
     "actif": false
   },
   "historique_noms": [],
@@ -17,7 +17,7 @@
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
       "debut_dans_groupe": "2017-06-21",
-      "fin_dans_groupe": "2018-11-16",
+      "fin_dans_groupe": "2022-07-22",
       "actif": false
     }
   ],
@@ -27,6 +27,24 @@
     "max_historique": null
   },
   "cohesion_votes": [
+    {
+      "numero_scrutin": "1",
+      "date": "2022-07-11",
+      "texte": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mme Mathilde Panot, MM. Boris Vallaud et Julien Bayou, Mme Cyrielle Chatelain, M. André Chassaigne et 145 de leurs collègues.",
+      "sort": "L'Assemblée nationale n'a pas adopté",
+      "membres_eligibles": 1,
+      "position_majoritaire": "pour",
+      "pour": 1,
+      "contre": 0,
+      "abstention": 0,
+      "non_votant": 0,
+      "absents": 0,
+      "excuses": 0,
+      "taux_participation": 1.0,
+      "taux_coherence": 1.0,
+      "taux_coherence_hors_absents": 1.0,
+      "quorum_atteint": true
+    },
     {
       "numero_scrutin": "1229",
       "date": "2018-10-15",
@@ -4832,24 +4850,6 @@
       "taux_coherence": 1.0,
       "taux_coherence_hors_absents": 1.0,
       "quorum_atteint": true
-    },
-    {
-      "numero_scrutin": "1",
-      "date": "2017-07-04",
-      "texte": "la declaration de politique generale du Gouvernement de M. Edouard Philippe (application de l'article 49, alinea premier, de la Constitution).",
-      "sort": "l'Assemblée nationale a adopté",
-      "membres_eligibles": 1,
-      "position_majoritaire": "pour",
-      "pour": 1,
-      "contre": 0,
-      "abstention": 0,
-      "non_votant": 0,
-      "absents": 0,
-      "excuses": 0,
-      "taux_participation": 1.0,
-      "taux_coherence": 1.0,
-      "taux_coherence_hors_absents": 1.0,
-      "quorum_atteint": true
     }
   ],
   "tags_thematiques_agreges": [],
@@ -4909,7 +4909,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-06T09:24:30+0000",
+    "genere_le": "2026-08-07T10:29:16+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:gabriel-attal"

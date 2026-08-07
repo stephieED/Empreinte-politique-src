@@ -98,9 +98,10 @@
     "genere_le": "2026-08-06T09:20:03+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:20:03+0000",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null,
       "assemblee_nationale": null,
-      "assemblee_nationale_questions": null
+      "nosdeputes": "2026-08-06T09:20:03+0000"
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
