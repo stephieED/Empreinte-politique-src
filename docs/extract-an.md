@@ -30,6 +30,7 @@ flowchart TD
     AN4["AN Open Data\nActeurs actifs + mandats + organes"] --> C
     AN5["AN Open Data\nHistorique acteurs/mandats\n(positions hémicycle)"] --> C
     AN6["AN Open Data\nQuestions (QE / QG / QOSD)"] --> C
+    SYC["AN Open Data\nComptes rendus Syceron\n(syceron_debates.py / parse_syceron.py)"] --> C
 
     CACHE[".cache/\n(évite les re-téléchargements)"] -. mise en cache .-> C
 
@@ -41,7 +42,8 @@ flowchart TD
 > **Priorité des votes** : scrutins nominatifs AN Open Data en premier ; endpoint votes NosDéputés en fallback uniquement.  
 > **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.  
 > **Textes portés** : rôles factuels extraits des dossiers législatifs (auteur, rapporteur, co-rapporteur).  
-> **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).
+> **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).  
+> **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` puis fusionné dans les `interventions[]` par `fetch_interventions_syceron`. Voir [`extract-syceron-an.md`](./extract-syceron-an.md).
 
 ---
 
@@ -54,8 +56,9 @@ flowchart TD
 5. Les amendements AN sont indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.
 6. Les dossiers législatifs AN servent à produire les textes portés avec rôles factuels (auteur, rapporteur, co-rapporteur).
 7. Les questions parlementaires (QE/QG/QOSD) sont transformées puis ajoutées aux interventions.
-8. Des enrichissements identité/mandats AN existent aussi via les dumps acteurs (actifs + historique), dont les positions hémicycle.
-9. Les données sont mises en cache sous `.cache/` pour éviter les re-téléchargements massifs.
+8. Les comptes rendus de séance Syceron (L15/L16/L17) sont téléchargés via `syceron_debates.py`, parsés par `parse_syceron.py`, et les interventions de l'élu sont extraites et fusionnées dans `interventions[]`.
+9. Des enrichissements identité/mandats AN existent aussi via les dumps acteurs (actifs + historique), dont les positions hémicycle.
+10. Les données sont mises en cache sous `.cache/` pour éviter les re-téléchargements massifs.
 
 ---
 
@@ -71,6 +74,7 @@ flowchart TD
 | Acteurs actifs + mandats + organes | Identité, mandats |
 | Historique acteurs/mandats/organes | Positions hémicycle |
 | Questions (QE/QG/QOSD) | Interventions écrites et orales |
+| [Comptes rendus Syceron](./extract-syceron-an.md) | Texte intégral des prises de parole en séance (L15/L16/L17) |
 
 Référentiel documentaire détaillé : [`an_opendata.md`](./an_opendata.md).
 
