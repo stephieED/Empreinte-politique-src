@@ -43,7 +43,7 @@ flowchart TD
 > **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.  
 > **Textes portés** : rôles factuels extraits des dossiers législatifs (auteur, rapporteur, co-rapporteur).  
 > **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).  
-> **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` puis fusionné dans les `interventions[]` par `fetch_interventions_syceron`. Voir [`extract-syceron-an.md`](./extract-syceron-an.md).
+> **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` puis fusionné dans les `interventions[]` par `fetch_interventions_syceron`.
 
 ---
 
@@ -74,7 +74,7 @@ flowchart TD
 | Acteurs actifs + mandats + organes | Identité, mandats |
 | Historique acteurs/mandats/organes | Positions hémicycle |
 | Questions (QE/QG/QOSD) | Interventions écrites et orales |
-| [Comptes rendus Syceron](./extract-syceron-an.md) | Texte intégral des prises de parole en séance (L15/L16/L17) |
+| Comptes rendus Syceron | Texte intégral des prises de parole en séance (L15/L16/L17) |
 
 Référentiel documentaire détaillé : [`an_opendata.md`](./an_opendata.md).
 

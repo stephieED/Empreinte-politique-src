@@ -145,12 +145,14 @@ Implemented in code:
 
 ## Comptes rendus de séance (Syceron)
 
-Full documentation: [`extract-syceron-an.md`](./extract-syceron-an.md).
-
 URL pattern:
 ```
 https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/vp/syceronbrut/syseron.xml.zip
 ```
+
+Attention path/case:
+- `vp` en minuscule (la variante `VP/` retourne 404)
+- nom de fichier `syseron.xml.zip`
 
 | Législature | Disponible | Taille ZIP | Statut |
 |---|---|---|---|
@@ -160,8 +162,36 @@ https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/vp/
 | 16 | ✅ 200 | ~57 MB | Archivé (2024) |
 | 17 | ✅ 200 | ~56 MB | Live, quotidien |
 
-Format: ZIP → `xml/compteRendu/CRSANR5L{legislature}*.xml`, un fichier par séance.
-Stratégie recommandée: full dump unique par législature (L17 prioritaire, puis L16).
+Format:
+- ZIP vers `xml/compteRendu/CRSANR5L{legislature}*.xml` (un XML par séance)
+- identifiants clés: `uid`, `seanceRef`, `sessionRef`
+- métadonnées utiles: `metadonnees/dateSeance`, `metadonnees/etat`, `metadonnees/version`
+
+Structure utile de contenu:
+- `contenu/point` pour le bloc d'ordre du jour
+- `paragraphe/orateurs/orateur/{id,nom,qualite}` pour l'orateur
+- `paragraphe/texte` pour le texte (avec balises inline)
+
+Intégration pipeline (active):
+- fetch/cache XML via `src/syceron_debates.py`
+- parsing via `src/parse_syceron.py`
+- indexation acteur via `src/candidate_profile.py` (`_build_acteur_interventions_syceron_index`)
+- fusion dans `interventions[]` via `fetch_interventions_syceron`
+
+Mapping effectif dans `interventions[]`:
+- `date` depuis `metadonnees/dateSeance` (normalisée)
+- `type_detail` / `sujet` depuis `point/titreStruct/intitule` (fallback progressif)
+- `texte` depuis `paragraphe/texte`
+- `fonction` depuis `orateur/qualite`
+- `source_url` conservée pour traçabilité
+
+Contraintes/limites:
+- pas de champ `theme` natif (classification dérivée seulement)
+- pas de lien direct fiable vers `textes_portes[]` sans jointures additionnelles
+
+Stratégie recommandée:
+- full dump par législature (pas de téléchargement ciblé par séance)
+- priorité produit: L17 puis L16, L15 en profondeur historique
 
 ## Agenda / meetings (committees) - low priority
 
