@@ -704,37 +704,32 @@ def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optio
 
 
 def _extract_cosignataire_refs(cosignataires_bloc: Any) -> list[str]:
-    """Normalise le bloc cosignataires d'un amendement AN en liste de refs.
+    """Normalise les différentes formes de `signataires.cosignataires`.
 
-    Le schéma XML-to-JSON de l'AN peut exposer les cosignataires sous trois formes :
-      - {"acteurRef": "PA..."} ou {"acteurRef": ["PA...", ...]}  (forme directe)
-      - {"acteur": {"acteurRef": "PA..."}}                       (forme imbriquée dict)
-      - {"acteur": [{"acteurRef": "PA..."}, ...]}                (forme imbriquée liste)
+    Le bulk AN expose selon les jeux soit `{"acteurRef": ...}`, soit
+    `{"acteur": {"acteurRef": ...}}` / `{"acteur": [{"acteurRef": ...}, ...]}`.
     """
     if not isinstance(cosignataires_bloc, dict):
         return []
 
     refs: list[str] = []
 
-    direct = cosignataires_bloc.get("acteurRef")
-    if isinstance(direct, str):
-        refs.append(direct)
-    elif isinstance(direct, list):
-        refs.extend(r for r in direct if isinstance(r, str))
+    direct_refs = cosignataires_bloc.get("acteurRef")
+    if isinstance(direct_refs, str) and direct_refs:
+        refs.append(direct_refs)
+    elif isinstance(direct_refs, list):
+        refs.extend(ref for ref in direct_refs if isinstance(ref, str) and ref)
 
-    acteur = cosignataires_bloc.get("acteur")
-    if isinstance(acteur, dict):
-        ref = acteur.get("acteurRef")
-        if isinstance(ref, str):
-            refs.append(ref)
-    elif isinstance(acteur, list):
-        for item in acteur:
-            if isinstance(item, dict):
-                ref = item.get("acteurRef")
-                if isinstance(ref, str):
-                    refs.append(ref)
+    acteurs = cosignataires_bloc.get("acteur")
+    items = acteurs if isinstance(acteurs, list) else [acteurs]
+    for item in items:
+        if isinstance(item, dict):
+            acteur_ref = item.get("acteurRef")
+            if isinstance(acteur_ref, str) and acteur_ref:
+                refs.append(acteur_ref)
 
-    return [r for r in list(dict.fromkeys(refs)) if r]
+    # Déduplication en conservant l'ordre de lecture du payload source.
+    return list(dict.fromkeys(refs))
 
 
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:

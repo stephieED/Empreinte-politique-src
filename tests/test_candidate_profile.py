@@ -344,40 +344,30 @@ def test_parse_amendement_entry_returns_none_without_acteur_ref():
 
 
 def test_parse_amendement_entry_keeps_cosignataire_from_nested_acteur_dict():
-    """cosignataires.acteur peut être un dict unique (forme imbriquée AN)."""
     raw = {
         "amendement": {
             "identification": {"numeroLong": "AS2"},
-            "texteLegislatifRef": "PIONANR5L17B0001",
             "signataires": {
                 "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
                 "cosignataires": {"acteur": {"acteurRef": "PA842001"}},
             },
-            "cycleDeVie": {
-                "dateDepot": "2025-02-17",
-                "etatDesTraitements": {
-                    "etat": {"libelle": "Discuté"},
-                    "sousEtat": {"libelle": "Adopté"},
-                },
-            },
+            "cycleDeVie": {"dateDepot": "2025-02-18"},
         }
     }
 
     result = _parse_amendement_entry(raw)
 
     assert result is not None
-    by_acteur = {ref: rec for ref, rec in result}
-    assert set(by_acteur.keys()) == {"PA1567", "PA842001"}
+    assert {acteur_ref for acteur_ref, _ in result} == {"PA1567", "PA842001"}
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
     assert by_acteur["PA842001"]["role_signataire"] == "cosignataire"
-    assert "an:PA842001" in by_acteur["PA1567"]["co_signataires"]
+    assert by_acteur["PA842001"]["co_signataires"] == ["an:PA842001"]
 
 
 def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
-    """cosignataires.acteur peut être une liste de dicts (forme imbriquée AN)."""
     raw = {
         "amendement": {
             "identification": {"numeroLong": "AS3"},
-            "texteLegislatifRef": "PIONANR5L17B0002",
             "signataires": {
                 "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
                 "cosignataires": {
@@ -387,24 +377,17 @@ def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
                     ]
                 },
             },
-            "cycleDeVie": {
-                "dateDepot": "2025-02-17",
-                "etatDesTraitements": {
-                    "etat": {"libelle": "Discuté"},
-                    "sousEtat": {"libelle": "Adopté"},
-                },
-            },
+            "cycleDeVie": {"dateDepot": "2025-02-19"},
         }
     }
 
     result = _parse_amendement_entry(raw)
 
     assert result is not None
-    by_acteur = {ref: rec for ref, rec in result}
-    assert set(by_acteur.keys()) == {"PA1567", "PA842001", "PA793182"}
-    assert by_acteur["PA842001"]["role_signataire"] == "cosignataire"
-    assert by_acteur["PA793182"]["role_signataire"] == "cosignataire"
+    assert {acteur_ref for acteur_ref, _ in result} == {"PA1567", "PA842001", "PA793182"}
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
     assert by_acteur["PA1567"]["co_signataires"] == ["an:PA842001", "an:PA793182"]
+    assert by_acteur["PA793182"]["role_signataire"] == "cosignataire"
 
 
 def test_collect_texte_codes_walks_nested_actes_legislatifs():

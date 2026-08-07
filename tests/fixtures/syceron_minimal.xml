@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
+  <uid>CRSANR5L17S2025O1N037</uid>
+  <seanceRef>RUANR5L17S2025IDS28624</seanceRef>
+  <sessionRef>SCR5A2025O1</sessionRef>
+  <metadonnees>
+    <dateSeance>20250211150000000</dateSeance>
+    <dateSeanceJour>20250211</dateSeanceJour>
+    <numSeanceJour>1</numSeanceJour>
+    <numSeance>037</numSeance>
+    <typeAssemblee>assemblee_nationale</typeAssemblee>
+    <legislature>17</legislature>
+    <session>2024-2025</session>
+    <nomFichierJo>jo20250212</nomFichierJo>
+    <validite>valide</validite>
+    <etat>complet</etat>
+    <diffusion>public</diffusion>
+    <version>JO</version>
+    <environnement>prod</environnement>
+    <heureGeneration>20250212T063542</heureGeneration>
+    <sommaire>Questions au Gouvernement — PLF 2025 — Discussion générale</sommaire>
+  </metadonnees>
+  <contenu>
+    <ouvertureSeance>
+      <texte>La séance est ouverte à quinze heures.</texte>
+    </ouvertureSeance>
+    <point>
+      <titreStruct>
+        <intitule>Questions au Gouvernement</intitule>
+      </titreStruct>
+      <paragraphe>
+        <orateurs>
+          <orateur>
+            <id>PA123456</id>
+            <nom>Jean Dupont</nom>
+            <qualite>député</qualite>
+          </orateur>
+        </orateurs>
+        <texte>Monsieur le Premier ministre, ma question porte sur le budget 2025. Le Gouvernement entend-il maintenir les engagements pris en matière de réduction du déficit public tout en préservant les services essentiels aux citoyens ?</texte>
+      </paragraphe>
+      <paragraphe>
+        <orateurs>
+          <orateur>
+            <id>PA654321</id>
+            <nom>Marie Martin</nom>
+            <qualite>Rapporteure générale</qualite>
+          </orateur>
+        </orateurs>
+        <texte>Je souhaite compléter la question de mon collègue en insistant sur les conséquences pour les collectivités territoriales, notamment les communes rurales qui dépendent fortement des dotations de l'État pour financer leurs investissements indispensables.</texte>
+      </paragraphe>
+    </point>
+    <point>
+      <titreStruct>
+        <intitule>Discussion générale sur le projet de loi de finances pour 2025</intitule>
+      </titreStruct>
+      <paragraphe>
+        <orateurs>
+          <orateur>
+            <id>PA123456</id>
+            <nom>Jean Dupont</nom>
+            <qualite>Rapporteur spécial</qualite>
+          </orateur>
+        </orateurs>
+        <texte>Monsieur le président, madame la ministre, mes chers collègues, ce projet de loi de finances pour 2025 s'inscrit dans un contexte macroéconomique particulièrement délicat. Le déficit prévu atteint 5 % du PIB, ce qui impose des choix difficiles mais nécessaires pour garantir la soutenabilité de nos finances publiques.<br/>Les crédits alloués à la mission éducation sont maintenus, conformément aux engagements du Gouvernement en matière d'investissement dans la jeunesse.</texte>
+      </paragraphe>
+    </point>
+    <finSeance>
+      <texte>La séance est levée.</texte>
+    </finSeance>
+  </contenu>
+</compteRendu>

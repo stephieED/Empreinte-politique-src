@@ -135,6 +135,11 @@ Format d'un profil pivot v1 :
             "date": "2023-03-15",
             "type_detail": "loi",            # "loi" | "question" | ...
             "sujet": "Budget 2024",
+            "theme_officiel": null,          # thème officiel du débat si fourni par
+                                             # une source institutionnelle (sinon null)
+            "seance": null,                  # métadonnées de séance officielles (dict)
+            "dossier": null,                 # métadonnées de dossier officiel (dict)
+            "source": null,                  # métadonnées de source officielle (dict)
             "texte": "...",                  # extrait (180 premiers caractères)
             "fonction": "Rapporteur",        # rôle institutionnel au moment de l'intervention
             "format": "prise_de_parole_developpee",  # ou "reaction_courte"
@@ -315,7 +320,9 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
     schema_version) plus les invariants de contenu des champs sensibles :
     position_dans_hemicycle/source_url, mode_declenchement, type_scrutin,
     type_vote/texte_lie_id (motion_censure), type_rapport, stade_procedural,
-    type_deposant, et sort/base_juridique_irrecevabilite des amendements.
+    type_deposant, sort/base_juridique_irrecevabilite des amendements, et
+    structure des champs optionnels de débats officiels dans interventions[]
+    (theme_officiel, seance, dossier, source).
 
     Args:
         profil: dict à valider.
@@ -474,6 +481,25 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                     f"amendements[{i}].base_juridique_irrecevabilite non reconnue : "
                     f"{base_juridique!r}. Valeurs connues : {sorted(KNOWN_BASES_IRRECEVABILITE)}."
                 )
+
+    interventions = profil.get("interventions")
+    if isinstance(interventions, list):
+        for i, inter in enumerate(interventions):
+            if not isinstance(inter, dict):
+                continue
+            theme_officiel = inter.get("theme_officiel")
+            if theme_officiel is not None and not isinstance(theme_officiel, str):
+                errors.append(
+                    f"interventions[{i}].theme_officiel doit être une chaîne ou null, "
+                    f"reçu : {type(theme_officiel).__name__}."
+                )
+            for key in ("seance", "dossier", "source"):
+                val = inter.get(key)
+                if val is not None and not isinstance(val, dict):
+                    errors.append(
+                        f"interventions[{i}].{key} doit être un dict ou null, "
+                        f"reçu : {type(val).__name__}."
+                    )
 
     meta = profil.get("meta")
     if not isinstance(meta, dict):
