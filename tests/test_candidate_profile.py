@@ -1081,6 +1081,9 @@ def test_build_profile_no_syceron_for_senat():
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
+        # Évite un vrai appel réseau : chambre="senateurs" ne prend jamais le
+        # chemin Syceron, mais tombe dans la branche NosDéputés générique.
+        patch("candidate_profile._extract_search_results", return_value=[]),
     ):
         build_profile("senateurs", "jean-dupont")
 
