@@ -14,10 +14,10 @@ def test_mandate_legend_and_role_tones_present():
     assert ".deconstructed .mandate-live-tag" in CSS
 
 
-def test_textes_view_has_four_scope_bars_and_scroll_layout():
+def test_textes_view_has_four_scope_bars_and_theme_split_layout():
     assert "Activité ministérielle" in RENDER_JS
     assert 'scope: "gouvernement"' in RENDER_JS
     assert "Les amendements ne sont pas classés par activité ministérielle" in RENDER_JS
-    assert "legislative-layout" in RENDER_JS
-    assert ".legislative-scroll-frame" in CSS
+    assert "text-theme-split" in RENDER_JS
+    assert ".text-theme-split" in CSS
     assert ".scope-bar-row" in CSS

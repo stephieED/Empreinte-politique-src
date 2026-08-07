@@ -514,13 +514,14 @@ export function renderMandateTimeline(profile, state) {
   const filter = MANDATE_FILTERS[state.mandateFilter] || MANDATE_FILTERS.all;
   const items = buildMandateTimeline(profile).filter(filter);
   if (!items.length) return `<p class="empty">Aucun mandat documenté pour ce filtre.</p>`;
-  return `<div class="mandate-timeline">${items.map((mandate) => {
+  return `<div class="mandate-list">${items.map((mandate) => {
     const period = mandate.debut
       ? `${formatIsoDate(mandate.debut)} → ${mandate.actif ? "aujourd’hui" : (mandate.fin ? formatIsoDate(mandate.fin) : "fin non renseignée")}`
       : "date non renseignée";
-    return `<article class="mandate-timeline-item">
-      <div class="mandate-period">${escapeHtml(period)}</div>
-      <div class="mandate-card ${mandateBorderStyle(mandate.categorie)} mandate-role--${mandateRoleTone(mandate.fonction)} ${mandate.actif ? "is-current" : ""}">
+    const tone = mandateRoleTone(mandate.fonction);
+    const borderStyle = mandateBorderStyle(mandate.categorie);
+    return `<article class="mandate-item mandate-item--${tone} ${borderStyle}${mandate.actif ? " is-current" : ""}">
+      <div class="mandate-item-body">
         <strong class="mandate-function">${escapeHtml(mandate.label || "Mandat non précisé")}</strong>
         <div class="mandate-row">
           <span class="mandate-role">${escapeHtml(mandate.fonction || "Fonction non renseignée")}</span>
@@ -529,19 +530,22 @@ export function renderMandateTimeline(profile, state) {
         </div>
         ${mandate.sourceUrls.length ? `<div class="mandate-sources">${mandate.sourceUrls.map((url, index) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Source${mandate.sourceUrls.length > 1 ? ` ${index + 1}` : ""}</a>`).join(" · ")}</div>` : ""}
       </div>
+      <div class="mandate-item-period">${escapeHtml(period)}</div>
     </article>`;
   }).join("")}</div>`;
 }
 
 export function renderMandateLegend() {
-  return `<div class="mandate-legend" role="note" aria-label="Légende des mandats">
-    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--presidence"></span>Présidence</span>
-    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--vice_presidence"></span>Vice-présidence</span>
-    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--rapporteur"></span>Rapporteur / rapporteure</span>
-    <span class="mandate-legend-item"><span class="mandate-legend-swatch mandate-role--membre"></span>Membre</span>
-    <span class="mandate-legend-item"><span class="mandate-legend-line is-solid"></span>Trait plein : rôle institutionnel formel</span>
-    <span class="mandate-legend-item"><span class="mandate-legend-line is-dashed"></span>Pointillé : rôle déclaratif (amitié / extra-parlementaire)</span>
-    <span class="mandate-legend-item"><span class="mandate-live-tag">en cours</span>Mandat actif</span>
+  const entries = [
+    { cls: "presidence", label: "Présidence" },
+    { cls: "vice_presidence", label: "Vice-présidence" },
+    { cls: "rapporteur", label: "Rapporteur·e" },
+    { cls: "membre", label: "Membre" },
+  ];
+  return `<div class="mandate-compact-legend" role="note" aria-label="Légende des mandats">
+    ${entries.map((e) => `<span class="mandate-compact-legend-entry"><span class="mandate-color-dot mandate-color-dot--${e.cls}"></span>${escapeHtml(e.label)}</span>`).join("")}
+    <span class="mandate-compact-legend-entry"><span class="mandate-live-tag">en cours</span>\u00a0Mandat actif</span>
+    <span class="mandate-compact-legend-entry mandate-legend-note">Pointillé = rôle déclaratif</span>
   </div>`;
 }
 
@@ -557,7 +561,9 @@ export function renderMandates(profile, state) {
       `<button type="button" class="${state.mandateFilter === value ? "active" : ""}" data-mandate-filter="${value}" aria-pressed="${state.mandateFilter === value}">${label}</button>`
     )).join("")}
   </div>`;
-  return `${viewControls}${filters}${renderMandateLegend()}${renderMandateTimeline(profile, state)}`;
+  return `${viewControls}
+    <p class="section-subtitle">Triés du plus récent au plus ancien · ${(profile.pivot_mandats || []).length} mandat(s) documenté(s).</p>
+    ${filters}${renderMandateLegend()}${renderMandateTimeline(profile, state)}`;
 }
 
 export function renderThemePills(state) {
@@ -762,6 +768,19 @@ export function renderTextes(profile, scope = "all", state) {
     const dateDiff = toDateMs(b.date_max || b.date_min) - toDateMs(a.date_max || a.date_min);
     return dateDiff || simplifyTitle(a.titre).localeCompare(simplifyTitle(b.titre), "fr");
   });
+
+  // Amendements filtrés par scope pour correspondre à la vue active
+  const scopeAmendements = filterAmendementsByScope(profile, scope);
+
+  const outcomeColors = {
+    "adopté": "var(--vert)",
+    "rejeté": "var(--rouge)",
+    "retiré": "var(--amend-retire)",
+    "tombé": "var(--muted)",
+    "irrecevable": "var(--amend-irrecevable)",
+    "non_soutenu": "var(--amend-non-soutenu)",
+  };
+
   const byTheme = new Map();
   for (const item of sorted) {
     if (!byTheme.has(item._theme)) byTheme.set(item._theme, []);
@@ -775,8 +794,21 @@ export function renderTextes(profile, scope = "all", state) {
   });
 
   return `<p class="source-ref">Sont retenus les textes dont le rôle est sourcé et qui ont au moins été examinés en commission.</p><div class="text-atlas">${shelves.map(([theme, themeItems]) => {
+    const themeAmends = scopeAmendements.filter((a) => a._theme === theme);
     const expanded = state.expandedTextThemes.has(theme);
     const visible = expanded ? themeItems : themeItems.slice(0, 6);
+    const amendsVisible = themeAmends.slice(0, 8);
+    const amendsOverflow = themeAmends.length > 8 ? themeAmends.length - 8 : 0;
+    const amendHtml = themeAmends.length
+      ? amendsVisible.map((a) => {
+          const amendColor = outcomeColors[a.sort] || "var(--muted)";
+          return `<article class="text-item" style="border-left-color:${amendColor}">
+                <div class="text-item-title">${escapeHtml(a.numero || "Amendement sans numéro")}</div>
+                <div class="text-item-meta">${escapeHtml(a.sort || "issue non renseignée")} · ${escapeHtml(formatIsoDate(a.date))}${a.texte_vise ? ` · ${escapeHtml(simplifyTitle(a.texte_vise).slice(0, 60))}` : ""}</div>
+                ${sourceLinkHtml(a.source_url, "↗ source")}
+              </article>`;
+        }).join("") + (amendsOverflow ? `<p class="text-shelf-count">+ ${amendsOverflow} amendement(s) supplémentaire(s) sur ce thème.</p>` : "")
+      : `<p class="empty">Aucun amendement sur ce thème${scope !== "all" ? " pour ce filtre" : ""}.</p>`;
     return `
       <section class="text-shelf" aria-labelledby="text-theme-${escapeHtml(theme)}">
         <div class="text-shelf-head">
@@ -784,18 +816,24 @@ export function renderTextes(profile, scope = "all", state) {
           <span></span>
           <span class="text-shelf-count">${themeItems.length} texte(s)</span>
         </div>
-        <div class="text-shelf-track">
-          ${visible.map((d) => `
-            <article class="text-leaf">
-              <div class="text-leaf-title">${escapeHtml(simplifyTitle(d.titre))}</div>
-              <div>
-                <div class="text-leaf-meta">${escapeHtml(TEXT_ROLE_LABELS[d.role])} / ${escapeHtml(TEXT_STAGE_LABELS[d.stade_procedural])} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
+        <div class="text-theme-split">
+          <div class="text-theme-col">
+            <div class="text-col-label">Textes portés</div>
+            ${visible.map((d) => {
+    const stageColor = TEXT_STAGE_COLORS[d.stade_procedural] || "var(--muted)";
+    return `<article class="text-item" style="border-left-color:${stageColor}">
+                <div class="text-item-title">${escapeHtml(simplifyTitle(d.titre))}</div>
+                <div class="text-item-meta">${escapeHtml(TEXT_ROLE_LABELS[d.role])} / ${escapeHtml(TEXT_STAGE_LABELS[d.stade_procedural])} / ${escapeHtml(formatIsoDate(d.date_min))}${d.date_max ? ` → ${escapeHtml(formatIsoDate(d.date_max))}` : ""}</div>
                 ${sourceLinkHtml(d.source_url, "↗ source")}
-              </div>
-            </article>
-          `).join("")}
+              </article>`;
+  }).join("")}
+            ${themeItems.length > 6 ? `<button type="button" class="text-shelf-more" data-expand-text-theme="${escapeHtml(theme)}">${expanded ? "Réduire" : `Voir les ${themeItems.length} textes`} ${escapeHtml(themeLabel(theme))}</button>` : ""}
+          </div>
+          <div class="text-theme-col">
+            <div class="text-col-label">Amendements</div>
+            ${amendHtml}
+          </div>
         </div>
-        ${themeItems.length > 6 ? `<button type="button" class="text-shelf-more" data-expand-text-theme="${escapeHtml(theme)}">${expanded ? "Réduire" : `Voir les ${themeItems.length} textes`} ${escapeHtml(themeLabel(theme))}</button>` : ""}
       </section>
     `;
   }).join("")}</div>${excludedItems.length ? `
@@ -1347,7 +1385,7 @@ export function renderPage(state) {
 
       <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
         <section class="panel">
-          <h2>Mandats documentés <span class="source-ref">(${(profile.pivot_mandats || []).length})</span></h2>
+          <h2>Mandats &amp; responsabilités</h2>
           ${renderMinisterialIncompatibilities(profile)}
           <div id="mandats">${renderMandates(profile, state)}</div>
         </section>
@@ -1355,17 +1393,10 @@ export function renderPage(state) {
 
       <div class="swipe-panel ${state.activePanelIndex === 2 ? "active" : ""}">
         <section class="panel">
-          <section class="legislative-layout">
-            <div class="legislative-left-column">
-              <h2>Textes portés & amendements</h2>
-              ${renderTextesKpi(profile, state)}
-            </div>
-            <div class="legislative-right-column">
-              <div class="legislative-scroll-frame">
-                ${renderLegislativeDetails(profile, state)}
-              </div>
-            </div>
-          </section>
+          <h2>Textes portés</h2>
+          <p class="section-subtitle">Textes sourcés et examinés en commission parlementaire uniquement.</p>
+          ${renderTextesKpi(profile, state)}
+          ${renderTextes(profile, state.textesScopeFilter, state)}
         </section>
       </div>
 

@@ -4,18 +4,29 @@ import unittest
 from pathlib import Path
 
 
-INDEX = Path(__file__).parents[1] / "web" / "v3" / "index.html"
+ROOT = Path(__file__).parents[1]
+RENDER_JS = (ROOT / "web" / "v3" / "js" / "render.js").read_text(encoding="utf-8")
+APP_JS = (ROOT / "web" / "v3" / "js" / "app.js").read_text(encoding="utf-8")
+CSS = (ROOT / "web" / "v3" / "design-tokens.css").read_text(encoding="utf-8")
 
 
 class MandateTimelineTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.html = INDEX.read_text(encoding="utf-8")
 
     def run_builder(self, mandates):
-        start = self.html.index("    function buildMandateTimeline(profile) {")
-        end = self.html.index("\n\n    function renderMandateTimeline(profile)", start)
-        function_source = self.html[start:end]
+        # Extract buildMandateTimeline from render.js for unit-testing
+        start = RENDER_JS.index("export function buildMandateTimeline(profile) {")
+        # Find the matching closing brace for the function
+        brace_depth = 0
+        end = start
+        for i, ch in enumerate(RENDER_JS[start:], start=start):
+            if ch == "{":
+                brace_depth += 1
+            elif ch == "}":
+                brace_depth -= 1
+                if brace_depth == 0:
+                    end = i + 1
+                    break
+        function_source = RENDER_JS[start:end].replace("export function", "function")
         script = f"""
         function toDateMs(value) {{ return value ? new Date(value).getTime() : 0; }}
         {function_source}
@@ -94,12 +105,17 @@ class MandateTimelineTests(unittest.TestCase):
         self.assertEqual(result[1]["sourceUrls"], [])
 
     def test_primary_view_and_mobile_layout_are_explicit(self):
-        self.assertIn('mandateView: "timeline"', self.html)
-        self.assertIn("<h2>Mandats documentés", self.html)
-        self.assertIn('["timeline", "Chronologie"], ["responsibilities", "Responsabilités"]', self.html)
-        self.assertIn('["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]', self.html)
-        self.assertIn("grid-template-columns: 56px minmax(0, 1fr)", self.html)
-        self.assertIn('"date non renseignée"', self.html)
+        # mandateView default is in app.js
+        self.assertIn('mandateView: "timeline"', APP_JS)
+        # Updated panel heading (PR2: "Mandats & responsabilités")
+        self.assertIn("Mandats &amp; responsabilités", RENDER_JS)
+        # View control buttons still present
+        self.assertIn('["timeline", "Chronologie"], ["responsibilities", "Responsabilités"]', RENDER_JS)
+        self.assertIn('["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]', RENDER_JS)
+        # Mobile compact layout (small viewport override)
+        self.assertIn("grid-template-columns: 56px minmax(0, 1fr)", CSS)
+        # Date fallback string still in render
+        self.assertIn('"date non renseignée"', RENDER_JS)
 
 
 if __name__ == "__main__":
