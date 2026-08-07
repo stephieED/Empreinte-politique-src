@@ -20,6 +20,8 @@ const state = {
   compareProfiles: {},
   availableCompareCandidates: [],
   activePanelIndex: 0,
+  apercuView: "synthese",
+  apercuFilter: "all",
   flippedKpis: new Set(),
   expandedTextThemes: new Set(),
   expandedVoteThemes: new Set(),
@@ -75,6 +77,20 @@ export function bindRenderedEvents() {
   document.querySelector(".express-summary-close")?.addEventListener("click", closeExpressSummary);
   document.querySelectorAll("[data-express-dir]").forEach((button) => {
     button.addEventListener("click", () => setExpressScene(state.expressIndex + Number(button.dataset.expressDir), state));
+  });
+
+  document.querySelectorAll("[data-apercu-view]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.apercuView = btn.dataset.apercuView;
+      renderPage(state);
+    });
+  });
+
+  document.querySelectorAll("[data-apercu-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.apercuFilter = btn.dataset.apercuFilter;
+      renderPage(state);
+    });
   });
 
   document.querySelectorAll("[data-expand-vote-theme]").forEach((button) => {
@@ -375,6 +391,8 @@ export async function selectCandidate(slug) {
   state.compareSlugs = ["", ""];
   state.compareProfiles = {};
   state.activePanelIndex = 0;
+  state.apercuView = "synthese";
+  state.apercuFilter = "all";
   state.flippedKpis = new Set();
   state.expandedTextThemes = new Set();
   state.expandedVoteThemes = new Set();

@@ -1263,6 +1263,64 @@ export function renderRealGroupPage(state) {
   setDocumentTitle(title);
 }
 
+export function renderApercu(profile, state) {
+  const kpis = expressSummaryData(profile);
+  const theme = state.apercuFilter === "all" ? null : state.apercuFilter;
+  const votes = (profile.votes || []).filter((v) => !theme || v._theme === theme);
+  const textes = publicCarriedTexts(profile).filter((t) => !theme || t._theme === theme);
+  const interventions = (profile.interventions || []).filter((i) => !theme || i._theme === theme);
+  const views = [
+    { key: "synthese", label: "Synthèse" },
+    { key: "votes", label: "Votes" },
+    { key: "textes", label: "Textes" },
+    { key: "paroles", label: "Paroles" },
+  ];
+  const filterButtons = [{ key: "all", label: "Tous les thèmes" }, ...Object.entries(THEME_COLORS).map(([key]) => ({
+    key,
+    label: themeLabel(key),
+  }))];
+
+  return `
+    <section class="panel apercu-panel">
+      <h2>Aperçu</h2>
+      <div class="apercu-view-tabs" role="tablist" aria-label="Vue Aperçu">
+        ${views.map((v) => `
+          <button type="button" class="apercu-view-tab ${state.apercuView === v.key ? "active" : ""}" data-apercu-view="${escapeHtml(v.key)}" role="tab" aria-selected="${state.apercuView === v.key}">
+            ${escapeHtml(v.label)}
+          </button>
+        `).join("")}
+      </div>
+      <div class="apercu-filter-row" role="group" aria-label="Filtrer par thème">
+        ${filterButtons.map((f) => `
+          <button type="button" class="apercu-filter-btn ${state.apercuFilter === f.key ? "active" : ""}" data-apercu-filter="${escapeHtml(f.key)}">
+            ${escapeHtml(f.label)}
+          </button>
+        `).join("")}
+      </div>
+      ${state.apercuView === "synthese" ? `
+        <div class="apercu-kpi-grid">
+          ${kpis.map((kpi) => `
+            <div class="apercu-kpi-card">
+              <p class="apercu-kpi-question">${escapeHtml(kpi.question)}</p>
+              <p class="apercu-kpi-value"><b>${escapeHtml(kpi.value)}</b></p>
+              <p class="apercu-kpi-note">${escapeHtml(kpi.note)}</p>
+            </div>
+          `).join("")}
+        </div>
+      ` : ""}
+      ${state.apercuView === "votes" ? `
+        <p class="apercu-count">${votes.length} vote(s) documenté(s)${theme ? ` — ${escapeHtml(themeLabel(theme))}` : ""}</p>
+      ` : ""}
+      ${state.apercuView === "textes" ? `
+        <p class="apercu-count">${textes.length} texte(s) porté(s)${theme ? ` — ${escapeHtml(themeLabel(theme))}` : ""}</p>
+      ` : ""}
+      ${state.apercuView === "paroles" ? `
+        <p class="apercu-count">${interventions.length} intervention(s)${theme ? ` — ${escapeHtml(themeLabel(theme))}` : ""}</p>
+      ` : ""}
+    </section>
+  `;
+}
+
 export function renderPage(state) {
   const root = document.getElementById("candidat-root");
   const profile = state.currentProfile;
@@ -1284,6 +1342,10 @@ export function renderPage(state) {
     ${renderPanelIndicator(state)}
     <div class="swipe-deck" id="swipe-deck">
       <div class="swipe-panel ${state.activePanelIndex === 0 ? "active" : ""}">
+        ${renderApercu(profile, state)}
+      </div>
+
+      <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
         <section class="panel">
           <h2>Mandats documentés <span class="source-ref">(${(profile.pivot_mandats || []).length})</span></h2>
           ${renderMinisterialIncompatibilities(profile)}
@@ -1291,7 +1353,7 @@ export function renderPage(state) {
         </section>
       </div>
 
-      <div class="swipe-panel ${state.activePanelIndex === 1 ? "active" : ""}">
+      <div class="swipe-panel ${state.activePanelIndex === 2 ? "active" : ""}">
         <section class="panel">
           <section class="legislative-layout">
             <div class="legislative-left-column">
@@ -1307,28 +1369,28 @@ export function renderPage(state) {
         </section>
       </div>
 
-      <div class="swipe-panel ${state.activePanelIndex === 2 ? "active" : ""}">
+      <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
         <section class="panel">
           <h2>Votes enregistrés <span class="source-ref">(${(profile.votes || []).length})</span></h2>
           <div id="votes">${renderVotes(profile, state)}</div>
         </section>
       </div>
 
-      <div class="swipe-panel ${state.activePanelIndex === 3 ? "active" : ""}">
+      <div class="swipe-panel ${state.activePanelIndex === 4 ? "active" : ""}">
         <section class="panel">
           <h2>Angles morts documentaires</h2>
           <div id="absences">${renderAbsences(profile, state)}</div>
         </section>
       </div>
 
-      <div class="swipe-panel ${state.activePanelIndex === 4 ? "active" : ""}">
+      <div class="swipe-panel ${state.activePanelIndex === 5 ? "active" : ""}">
         <section class="panel">
           <h2>Prises de parole <span class="source-ref">(${(profile.interventions || []).length})</span></h2>
           <div id="interventions">${renderInterventions(profile, state)}</div>
         </section>
       </div>
 
-      <div class="swipe-panel ${state.activePanelIndex === 5 ? "active" : ""}">${renderCompareSection(profile, state)}</div>
+      <div class="swipe-panel ${state.activePanelIndex === 6 ? "active" : ""}">${renderCompareSection(profile, state)}</div>
     </div>
     <p class="swipe-hint">← Glissez ou touchez les icônes pour changer de section →</p>
     ${renderExpressSummary(profile, state)}
