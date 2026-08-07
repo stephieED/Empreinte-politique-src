@@ -1731,7 +1731,7 @@ def fetch_interventions_syceron(url_an_ou_senat: Optional[str]) -> list[dict[str
         return []
 
     interventions: list[dict[str, Any]] = []
-    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES):
+    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int):
         index = _build_acteur_interventions_syceron_index(legislature)
         interventions.extend(index.get(acteur_ref, []))
 
