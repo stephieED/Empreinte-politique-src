@@ -97,7 +97,9 @@ export function withTheme(profile) {
   }));
   const interventions = (profile.interventions || []).map((i) => ({
     ...i,
-    _theme: detectThemeFromText(normalizedText(i.sujet, i.texte, ...(i.mots_cles || []))),
+    _theme: i.theme_officiel
+      ? detectThemeFromText(normalizedText(i.theme_officiel))
+      : detectThemeFromText(normalizedText(i.sujet, i.texte, ...(i.mots_cles || []))),
   }));
   const amendements = (profile.amendements || []).map((a) => ({
     ...a,
