@@ -115,7 +115,8 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "source_url": _first(i.get("url_detail"), i.get("url")),
         # Champs pivot officiels — renseignés depuis les données Syceron (débats AN)
         # quand disponibles, null sinon (interventions NosDéputés scraping).
-        "theme_officiel": i.get("sujet") if i.get("point_ordre_du_jour") or i.get("seance_ref") else None,
+        # La présence de seance_ref ou session_ref identifie une intervention Syceron.
+        "theme_officiel": i.get("sujet") if i.get("seance_ref") or i.get("session_ref") else None,
         "seance": (
             {
                 "ref": i.get("seance_ref"),
