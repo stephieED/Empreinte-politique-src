@@ -31,7 +31,7 @@ something is pending, not *why*.
   `technical_decisions.md#hors-perimetre`.
 - Extra-parliamentary bodies matching — homonym risk, see
   `technical_decisions.md#hors-perimetre`.
-- Syceron (comptes rendus de séance) AN open data — fetch/caching par législature implémenté ; interpréteur XML -> `interventions[]` encore à planifier. Voir `docs/extract-syceron-an.md`.
+- Syceron (comptes rendus de séance) AN open data — fetch/caching, parse XML -> `interventions[]` et index `acteurRef -> interventions` implémentés ; intégration éditoriale aval encore à planifier. Voir `docs/extract-syceron-an.md`.
 - Agenda/committee meetings dataset — low priority, see
   `technical_decisions.md#hors-perimetre`.
 - Mayors — no dedicated collection module yet.

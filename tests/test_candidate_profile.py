@@ -13,12 +13,14 @@ from candidate_profile import (
     _collect_texte_codes,
     _derive_amendement_sort,
     _extract_mandats,
+    _parse_syceron_intervention_entry,
     _format_lieu_naissance,
     _groupe_label,
     _parse_amendement_entry,
     _parse_question_entry,
     _stade_from_code_acte,
     build_profile,
+    fetch_interventions_syceron,
     fetch_all_intervention_results_from_domains,
     fetch_questions_officielles,
     fetch_seance_context,
@@ -736,6 +738,97 @@ def test_fetch_questions_officielles_aggregates_multiple_legislatures():
     assert len(result) == 2
     subjects = {r["sujet"] for r in result}
     assert subjects == {"S16", "S17"}
+
+
+# ---------------------------------------------------------------------------
+# Syceron (débats officiels)
+# ---------------------------------------------------------------------------
+
+def test_parse_syceron_intervention_entry_keeps_official_actor_match():
+    parsed = _parse_syceron_intervention_entry(
+        {
+            "date": "2025-02-11",
+            "type_detail": "question_gouvernement",
+            "sujet": "Questions au Gouvernement",
+            "texte": "Monsieur le Premier ministre...",
+            "fonction": "député",
+            "format": "prise_de_parole_developpee",
+            "mots_cles": [],
+            "source_id": "CRSANR5L17S2025O1N037",
+            "seance_ref": "RUANR5L17S2025IDS28624",
+            "session_ref": "SCR5A2025O1",
+            "orateur_id_source": "PA1567",
+            "orateur_nom": "Jean Dupont",
+            "point_ordre_du_jour": "Questions au Gouvernement",
+            "etat_compte_rendu": "complet",
+            "version_compte_rendu": "JO",
+        },
+        "17",
+        3,
+    )
+
+    assert parsed is not None
+    acteur_ref, record = parsed
+    assert acteur_ref == "PA1567"
+    assert record["id"] == "syceron_CRSANR5L17S2025O1N037_000003"
+    assert record["legislature"] == "17"
+    assert record["source_url"].endswith("/17/vp/syceronbrut/syseron.xml.zip")
+
+
+def test_parse_syceron_intervention_entry_returns_none_without_official_actor_ref():
+    assert _parse_syceron_intervention_entry({"orateur_id_source": None}, "17", 0) is None
+    assert _parse_syceron_intervention_entry({"orateur_id_source": "GVT1"}, "17", 0) is None
+
+
+def test_fetch_interventions_syceron_returns_empty_without_acteur_ref():
+    assert fetch_interventions_syceron(None) == []
+    assert fetch_interventions_syceron("https://www.nosdeputes.fr/jean-dupont") == []
+
+
+def test_fetch_interventions_syceron_maps_actor_to_candidate_interventions():
+    index = {
+        "PA1567": [
+            {
+                "id": "syceron_CRS17_000001",
+                "date": "2025-02-11",
+                "type_detail": "question_gouvernement",
+                "sujet": "Questions au Gouvernement",
+                "texte": "Texte 17",
+                "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/syceronbrut/syseron.xml.zip",
+                "legislature": "17",
+            }
+        ]
+    }
+
+    with patch("candidate_profile.SYCERON_AVAILABLE_LEGISLATURES", {"17"}), \
+         patch("candidate_profile._build_acteur_interventions_syceron_index", return_value=index):
+        result = fetch_interventions_syceron(
+            "https://www.assemblee-nationale.fr/dyn/deputes/PA1567"
+        )
+
+    assert len(result) == 1
+    assert result[0]["id"] == "syceron_CRS17_000001"
+    assert result[0]["sujet"] == "Questions au Gouvernement"
+
+
+def test_fetch_interventions_syceron_aggregates_multiple_legislatures():
+    index_16 = {
+        "PA1567": [{"id": "syceron_CRS16_000001", "date": "2024-06-01", "sujet": "L16"}]
+    }
+    index_17 = {
+        "PA1567": [{"id": "syceron_CRS17_000001", "date": "2025-02-11", "sujet": "L17"}]
+    }
+
+    def fake_build_index(legislature):
+        return index_17 if legislature == "17" else index_16 if legislature == "16" else {}
+
+    with patch("candidate_profile.SYCERON_AVAILABLE_LEGISLATURES", {"16", "17"}), \
+         patch("candidate_profile._build_acteur_interventions_syceron_index", side_effect=fake_build_index):
+        result = fetch_interventions_syceron(
+            "https://www.assemblee-nationale.fr/dyn/deputes/PA1567"
+        )
+
+    assert [r["sujet"] for r in result] == ["L17", "L16"]
 
 
 # ---------------------------------------------------------------------------

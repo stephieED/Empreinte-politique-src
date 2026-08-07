@@ -36,6 +36,8 @@ from xml.etree import ElementTree as ET
 
 import requests
 from bs4 import BeautifulSoup
+from parse_syceron import parse_syceron_xml
+from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
 
 BASE_URLS = {
     "deputes": [
@@ -171,6 +173,10 @@ _AMENDEMENTS_LOCKS_META = threading.Lock()
 _QUESTIONS_LOCKS: dict[str, threading.Lock] = {}
 _QUESTIONS_LOCKS_META = threading.Lock()
 
+# Même principe que _SCRUTINS_LOCKS, pour l'index des débats Syceron.
+_SYCERON_LOCKS: dict[str, threading.Lock] = {}
+_SYCERON_LOCKS_META = threading.Lock()
+
 # Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
 # pas de decoupage par legislature).
 _DOSSIERS_TITRE_LOCK = threading.Lock()
@@ -230,6 +236,14 @@ def _get_questions_lock(legislature: str) -> threading.Lock:
         if legislature not in _QUESTIONS_LOCKS:
             _QUESTIONS_LOCKS[legislature] = threading.Lock()
         return _QUESTIONS_LOCKS[legislature]
+
+
+def _get_syceron_lock(legislature: str) -> threading.Lock:
+    """Retourne (ou crée) le verrou associé à une législature donnée (débats Syceron)."""
+    with _SYCERON_LOCKS_META:
+        if legislature not in _SYCERON_LOCKS:
+            _SYCERON_LOCKS[legislature] = threading.Lock()
+        return _SYCERON_LOCKS[legislature]
 
 
 def _is_empty_payload(value: Any) -> bool:
@@ -1623,6 +1637,109 @@ def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str
 
     questions.sort(key=lambda q: q.get("date") or "", reverse=True)
     return questions
+
+
+def _parse_syceron_intervention_entry(
+    intervention: Any,
+    legislature: str,
+    index_in_source: int,
+) -> Optional[tuple[str, dict[str, Any]]]:
+    """Convertit une intervention Syceron en entrée d'index acteurRef -> interventions.
+
+    Seules les interventions dont l'orateur est relié sans ambiguïté à un
+    `acteurRef` officiel Assemblée nationale (`PA...`) sont indexées.
+    """
+    if not isinstance(intervention, dict):
+        return None
+
+    acteur_ref = intervention.get("orateur_id_source")
+    if not isinstance(acteur_ref, str) or not re.fullmatch(r"PA\d+", acteur_ref):
+        return None
+
+    source_id = intervention.get("source_id")
+    suffix = f"{index_in_source:06d}"
+    source_url = syceron_zip_url(legislature)
+    record = {
+        "id": f"syceron_{source_id or 'inconnu'}_{suffix}",
+        "date": intervention.get("date"),
+        "type_detail": intervention.get("type_detail"),
+        "sujet": intervention.get("sujet"),
+        "texte": intervention.get("texte"),
+        "fonction": intervention.get("fonction"),
+        "format": intervention.get("format"),
+        "mots_cles": intervention.get("mots_cles") or [],
+        # Compatibilité avec les autres formats bruts d'interventions : `source`
+        # est consommé par certains helpers existants, tandis que `url`/`url_detail`
+        # restent les clés attendues par le chemin de normalisation NosDéputés.
+        "source": source_url,
+        "source_url": source_url,
+        "url": source_url,
+        "url_detail": None,
+        "source_id": source_id,
+        "seance_ref": intervention.get("seance_ref"),
+        "session_ref": intervention.get("session_ref"),
+        "orateur_id_source": acteur_ref,
+        "orateur_nom": intervention.get("orateur_nom"),
+        "point_ordre_du_jour": intervention.get("point_ordre_du_jour"),
+        "etat_compte_rendu": intervention.get("etat_compte_rendu"),
+        "version_compte_rendu": intervention.get("version_compte_rendu"),
+        "legislature": legislature,
+    }
+    return acteur_ref, record
+
+
+def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache) un index acteurRef -> interventions Syceron.
+
+    Les XML Syceron sont déjà téléchargés/extraits par `syceron_debates.py` ;
+    ici on ne sérialise que l'index final des interventions rattachables sans
+    ambiguïté à un `acteurRef` officiel.
+    """
+    with _get_syceron_lock(legislature):
+        index_path = Path(".cache") / "syceron_an" / legislature / "index_par_acteur.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        for xml_path in iter_syceron_xml_files(legislature):
+            try:
+                parsed = parse_syceron_xml(xml_path.read_bytes())
+            except (ET.ParseError, OSError):
+                continue
+            for idx, intervention in enumerate(parsed.get("interventions") or []):
+                parsed_entry = _parse_syceron_intervention_entry(intervention, legislature, idx)
+                if parsed_entry is None:
+                    continue
+                acteur_ref, record = parsed_entry
+                index.setdefault(acteur_ref, []).append(record)
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_interventions_syceron(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+    """Récupère les débats Syceron d'un député via son `acteurRef` officiel AN."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return []
+
+    interventions: list[dict[str, Any]] = []
+    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int, reverse=True):
+        index = _build_acteur_interventions_syceron_index(legislature)
+        interventions.extend(index.get(acteur_ref, []))
+
+    interventions.sort(key=lambda entry: (entry.get("date") or "", entry.get("id") or ""), reverse=True)
+    return interventions
 
 
 def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:

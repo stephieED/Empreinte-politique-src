@@ -128,21 +128,32 @@ def _parse_metadonnees(root: ET.Element) -> dict[str, Any]:
 
 
 def _parse_orateur(paragraphe: ET.Element) -> tuple[Optional[str], Optional[str], Optional[str]]:
-    """Extrait (id_source, nom, qualite) du premier orateur du paragraphe.
+    """Extrait (id_source, nom, qualite) de l'orateur du paragraphe.
 
-    Retourne (None, None, None) si aucun orateur n'est renseigné.
+    Retourne (None, None, None) si aucun orateur n'est renseigné, ou si
+    plusieurs orateurs distincts sont présents dans le même paragraphe
+    (correspondance ambiguë : on préfère ne rien attribuer).
     """
     orateurs_el = paragraphe.find(_tag("orateurs"))
     if orateurs_el is None:
         return None, None, None
-    orateur_el = orateurs_el.find(_tag("orateur"))
-    if orateur_el is None:
+
+    orateurs = []
+    for orateur_el in orateurs_el.findall(_tag("orateur")):
+        oid = _text(orateur_el, _tag("id"))
+        nom = _text(orateur_el, _tag("nom"))
+        qualite = _text(orateur_el, _tag("qualite"))
+        if oid or nom:
+            orateurs.append((oid, nom, qualite))
+
+    if not orateurs:
         return None, None, None
-    oid = _text(orateur_el, _tag("id"))
-    nom = _text(orateur_el, _tag("nom"))
-    qualite = _text(orateur_el, _tag("qualite"))
-    if not oid and not nom:
+
+    distincts = {(oid, nom) for oid, nom, _ in orateurs}
+    if len(distincts) > 1:
         return None, None, None
+
+    oid, nom, qualite = orateurs[0]
     return oid, nom, qualite
 
 
