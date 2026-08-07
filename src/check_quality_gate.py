@@ -382,6 +382,117 @@ def _report_low_interventions(
 
 
 # ---------------------------------------------------------------------------
+# Section 3b — Couverture Syceron (soft warning)
+# ---------------------------------------------------------------------------
+
+# Législatures pour lesquelles Syceron fournit des données de débats AN.
+_SYCERON_LEGISLATURES = frozenset({"15", "16", "17"})
+
+
+def _report_low_syceron_coverage(
+    profiles_dir: Path,
+    threshold: int,
+) -> tuple[list[str], str, str]:
+    """Détecte les candidats AN ayant des mandats actifs sur une législature
+    couverte par Syceron mais un nombre de débats Syceron inférieur au seuil.
+
+    Retourne (soft_warnings, console_text, markdown_text).
+
+    Soft fail uniquement : n'empêche pas le commit (exit_code inchangé).
+    Un avertissement est émis si le nombre d'interventions dont
+    `source.type == "syceron"` est < threshold pour un candidat dont les
+    mandats couvrent au moins une législature Syceron.
+    """
+    rows: list[dict] = []
+    if profiles_dir.exists():
+        for path in sorted(profiles_dir.glob("*.pivot.json")):
+            data = _load_json(path)
+            if data is None:
+                continue
+            chambre = data.get("chambre") or ""
+            if chambre not in ("AN", "deputes"):
+                continue
+            # Vérifie si le candidat a des mandats sur une législature Syceron.
+            mandats = data.get("mandats") or []
+            legislatures_syceron = {
+                str(m.get("legislature") or "")
+                for m in mandats
+                if str(m.get("legislature") or "") in _SYCERON_LEGISLATURES
+            }
+            if not legislatures_syceron:
+                continue
+            slug = _slug_from_stem(path.stem)
+            nom = data.get("nom") or slug
+            interventions = data.get("interventions") or []
+            n_syceron = sum(
+                1
+                for i in interventions
+                if isinstance(i.get("source"), dict) and i["source"].get("type") == "syceron"
+            )
+            rows.append(
+                {
+                    "slug": slug,
+                    "nom": nom,
+                    "legislatures": sorted(legislatures_syceron),
+                    "n_syceron": n_syceron,
+                }
+            )
+
+    low = [r for r in rows if r["n_syceron"] < threshold]
+    low.sort(key=lambda r: r["n_syceron"])
+
+    soft_warnings: list[str] = []
+    for r in low:
+        legs = ", ".join(r["legislatures"])
+        soft_warnings.append(
+            f"{r['slug']}: couverture Syceron faible ({r['n_syceron']} débat(s) < seuil {threshold}, législature(s) {legs})"
+        )
+
+    icon = "✓" if not low else "⚠"
+    lines = [
+        "",
+        f"┌─ 3b/4  Couverture Syceron (< {threshold} débat(s)) ─────────────────",
+        f"│  Candidats AN avec législature Syceron : {len(rows)}   Sous le seuil : {len(low)}",
+        "│",
+    ]
+    if low:
+        header = f"│  {'Candidat':<30} {'Législatures':<15} {'Débats Syceron':>14}"
+        lines.append(header)
+        lines.append("│  " + "─" * 60)
+        for r in low:
+            legs = ", ".join(r["legislatures"])
+            lines.append(f"│  {r['nom']:<30} {legs:<15} {r['n_syceron']:>14}")
+    else:
+        lines.append(f"│  {icon} Tous les candidats AN ont ≥ {threshold} débat(s) Syceron.")
+    lines.append("└" + "─" * 67)
+    console = "\n".join(lines)
+
+    ok_icon = "✅" if not low else "⚠️"
+    md_lines = [
+        f"### 3b · Couverture Syceron (seuil : {threshold} débat(s))",
+        "",
+        "| Métrique | Valeur |",
+        "|---|---|",
+        f"| {ok_icon} Candidats AN avec législature Syceron | {len(rows)} |",
+        f"| Sous le seuil (< {threshold}) | {len(low)} |",
+        "",
+    ]
+    if low:
+        md_lines += [
+            "| Candidat | Législatures | Débats Syceron |",
+            "|---|---|---|",
+        ]
+        for r in low:
+            legs = ", ".join(r["legislatures"])
+            md_lines.append(f"| {r['nom']} | {legs} | {r['n_syceron']} |")
+        md_lines.append("")
+    else:
+        md_lines.append(f"_Tous les candidats AN ont au moins {threshold} débat(s) Syceron._\n")
+
+    return soft_warnings, console, "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Section 4 — Groupes parlementaires
 # ---------------------------------------------------------------------------
 
@@ -748,6 +859,16 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--low-syceron-coverage",
+        type=int,
+        default=1,
+        dest="low_syceron_coverage",
+        help=(
+            "Seuil de débats Syceron 'faibles' à signaler pour les candidats AN "
+            "avec un mandat sur une législature couverte (défaut : 1). 0 = désactivé."
+        ),
+    )
+    parser.add_argument(
         "--parltrack-status-file",
         type=Path,
         default=None,
@@ -779,6 +900,15 @@ def main() -> int:
         args.profiles_dir, args.candidats, args.low_interventions
     )
 
+    # ── Section 3b : Couverture Syceron ───────────────────────────────────
+    syc_soft: list[str] = []
+    syc_console = ""
+    syc_md = ""
+    if args.low_syceron_coverage > 0:
+        syc_soft, syc_console, syc_md = _report_low_syceron_coverage(
+            args.profiles_dir, args.low_syceron_coverage
+        )
+
     # ── Section 4 : Groupes parlementaires ────────────────────────────────
     grp_hard, grp_soft, grp_console, grp_md = _report_groupes(
         args.groupes_config, args.groupes_dir, args.groupe_min_members
@@ -802,6 +932,8 @@ def main() -> int:
     print(ir_console)
     print(cov_console)
     print(low_console)
+    if syc_console:
+        print(syc_console)
     print(grp_console)
     if pt_console:
         print(pt_console)
@@ -817,6 +949,7 @@ def main() -> int:
         ir_md,
         cov_md,
         low_md,
+        syc_md,
         grp_md,
         pt_md,
     ])
@@ -839,6 +972,8 @@ def main() -> int:
         _gha_annotation("error", f"Groupe — structure cassée : {err}")
     for warn in grp_soft:
         _gha_annotation("warning", f"Groupe — qualité dégradée : {warn}")
+    for warn in syc_soft:
+        _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
 
     return exit_code
 

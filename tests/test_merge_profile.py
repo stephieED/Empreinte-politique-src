@@ -376,3 +376,65 @@ def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
     }
     merged = merge_raw_profile(old, new)
     assert any("questions indisponibles" in w for w in merged["meta"]["warnings"])
+
+
+def test_merge_pivot_profile_intervention_enrichie_syceron_ancienne_entree_gagne():
+    """Quand une intervention déjà présente dans le pivot est enrichie par Syceron
+    (theme_officiel, seance, dossier, source renseignés), la stratégie additive
+    (ancienne entrée gagne) doit préserver les champs Syceron en cas de refusion
+    avec une version NosDéputés seule (champs Syceron absents/null).
+    Pas de duplication : une seule entrée pour la même source_url."""
+    source_url = "https://nosdeputes.fr/seance/2025-01-15#intervention-123"
+    old_interv_enrichie = {
+        "date": "2025-01-15",
+        "type_detail": "intervention",
+        "sujet": "Débat sur le budget",
+        "texte": "Je prends la parole pour...",
+        "source_url": source_url,
+        "theme_officiel": "Finances publiques",
+        "seance": {"ref": "PRJLANR5L17B1234", "session_ref": "17ord2024-2025"},
+        "dossier": {"point_ordre_du_jour": "PLF 2025"},
+        "source": {
+            "type": "syceron",
+            "url": "https://data.assemblee-nationale.fr/debats/17/2025-01-15.zip",
+            "source_id": "syceron_123",
+            "legislature": "17",
+        },
+    }
+    old = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [],
+        "interventions": [old_interv_enrichie],
+        "tags_thematiques": [], "meta": {"warnings": []},
+    }
+    # Nouvelle collecte sans Syceron (fallback NosDéputés) : même source_url,
+    # champs Syceron absents.
+    new_interv_nosdeputes = {
+        "date": "2025-01-15",
+        "type_detail": "intervention",
+        "sujet": "Débat sur le budget",
+        "texte": "Je prends la parole pour...",
+        "source_url": source_url,
+        "theme_officiel": None,
+        "seance": None,
+        "dossier": None,
+        "source": None,
+    }
+    new = {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [],
+        "interventions": [new_interv_nosdeputes],
+        "tags_thematiques": [], "meta": {"warnings": []},
+    }
+
+    merged = merge_pivot_profile(old, new)
+
+    # Pas de duplication : une seule intervention.
+    assert len(merged["interventions"]) == 1
+    interv = merged["interventions"][0]
+    # L'ancienne entrée (enrichie Syceron) est préservée intégralement.
+    assert interv["theme_officiel"] == "Finances publiques"
+    assert interv["seance"] is not None
+    assert interv["dossier"] is not None
+    assert interv["source"] is not None
+    assert interv["source"]["type"] == "syceron"
