@@ -446,6 +446,52 @@ def test_validate_sort_non_irrecevable_ne_requiert_pas_de_base_juridique():
 
 
 # ---------------------------------------------------------------------------
+# validate_profil — interventions[].* (champs débats officiels optionnels)
+# ---------------------------------------------------------------------------
+
+def test_validate_intervention_champs_debat_officiel_valides():
+    p = _valid_profil()
+    p["interventions"] = [{
+        "date": "2026-01-01",
+        "type_detail": "loi",
+        "theme_officiel": "Pouvoir d'achat",
+        "seance": {"uid": "CRS-17-001", "intitule": "Séance du soir"},
+        "dossier": {"id": "AN-2026-001", "titre": "Projet de loi X"},
+        "source": {"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr/..."},
+        "source_url": "https://www.assemblee-nationale.fr/...",
+    }]
+    assert validate_profil(p) == []
+
+
+def test_validate_intervention_theme_officiel_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "theme_officiel": 42}]
+    errors = validate_profil(p)
+    assert any("interventions[0].theme_officiel" in e for e in errors)
+
+
+def test_validate_intervention_seance_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "seance": "S1"}]
+    errors = validate_profil(p)
+    assert any("interventions[0].seance" in e for e in errors)
+
+
+def test_validate_intervention_dossier_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "dossier": ["D1"]}]
+    errors = validate_profil(p)
+    assert any("interventions[0].dossier" in e for e in errors)
+
+
+def test_validate_intervention_source_type_invalide():
+    p = _valid_profil()
+    p["interventions"] = [{"date": "2026-01-01", "type_detail": "loi", "source": 123}]
+    errors = validate_profil(p)
+    assert any("interventions[0].source" in e for e in errors)
+
+
+# ---------------------------------------------------------------------------
 # Constantes exposées
 # ---------------------------------------------------------------------------
 

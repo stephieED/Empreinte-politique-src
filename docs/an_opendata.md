@@ -143,6 +143,26 @@ Implemented in code:
   `normalize_nosdeputes._normalize_intervention`
 - Merge in `merge_profile.merge_raw_profile`
 
+## Comptes rendus de séance (Syceron) - hors périmètre immédiat
+
+Full documentation: [`extract-syceron-an.md`](./extract-syceron-an.md).
+
+URL pattern:
+```
+https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/vp/syceronbrut/syseron.xml.zip
+```
+
+| Législature | Disponible | Taille ZIP | Statut |
+|---|---|---|---|
+| 13 | ❌ 404 | — | Non disponible |
+| 14 | ❌ 404 | — | Non disponible |
+| 15 | ✅ 200 | ~149 MB | Archivé (2022) |
+| 16 | ✅ 200 | ~57 MB | Archivé (2024) |
+| 17 | ✅ 200 | ~56 MB | Live, quotidien |
+
+Format: ZIP → `xml/compteRendu/CRSANR5L{legislature}*.xml`, un fichier par séance.
+Stratégie recommandée: full dump unique par législature (L17 prioritaire, puis L16).
+
 ## Agenda / meetings (committees) - low priority
 
 `.../17/vp/reunions/Agenda.json.zip` (~7.8 MB).

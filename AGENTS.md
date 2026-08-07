@@ -152,7 +152,8 @@ don't restate it in the chat.
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`: structure contracts.
 - `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
-- `docs/extract-an.md`: extract-an job detail (sources, extraction chain, artifacts).
+- `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
+- `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
