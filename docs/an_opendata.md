@@ -143,7 +143,7 @@ Implemented in code:
   `normalize_nosdeputes._normalize_intervention`
 - Merge in `merge_profile.merge_raw_profile`
 
-## Comptes rendus de séance (Syceron) - hors périmètre immédiat
+## Comptes rendus de séance (Syceron)
 
 Full documentation: [`extract-syceron-an.md`](./extract-syceron-an.md).
 
