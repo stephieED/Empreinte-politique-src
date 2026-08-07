@@ -861,3 +861,41 @@ def test_main_from_roster_sans_merge_existing_perd_membre_absent_du_roster(tmp_p
     assert membres_ids == {"nosdeputes:bob"}
 
 
+
+
+# ---------------------------------------------------------------------------
+# #80 — aggregate_tags_thematiques avec theme_officiel Syceron
+# ---------------------------------------------------------------------------
+
+def test_tags_fallback_sur_theme_officiel_avant_mots_cles():
+    """Si tags_thematiques est vide, theme_officiel est préféré aux mots_cles."""
+    interventions = [
+        {
+            "theme_officiel": "réforme des retraites",
+            "mots_cles": ["social", "emploi"],
+            "date": "2025-01-01",
+        }
+    ]
+    p1 = _pivot(tags=[], interventions=interventions)
+    tags, source = aggregate_tags_thematiques([p1])
+    tag_names = {t["tag"] for t in tags}
+    assert "réforme des retraites" in tag_names
+    # mots_cles ne doivent pas apparaître quand theme_officiel est disponible
+    assert "social" not in tag_names
+    assert source == "theme_officiel"
+
+
+def test_tags_fallback_mots_cles_si_pas_theme_officiel():
+    """Si theme_officiel est absent (None), les mots_cles sont utilisés en fallback."""
+    interventions = [
+        {
+            "theme_officiel": None,
+            "mots_cles": ["immigration", "social"],
+            "date": "2024-01-01",
+        }
+    ]
+    p1 = _pivot(tags=[], interventions=interventions)
+    tags, source = aggregate_tags_thematiques([p1])
+    tag_names = {t["tag"] for t in tags}
+    assert "immigration" in tag_names
+    assert source == "mots_cles_interventions"

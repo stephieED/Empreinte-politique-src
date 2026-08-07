@@ -993,3 +993,95 @@ def test_fetch_votes_skips_xml_after_terminal_failure():
     assert xml_calls == [], f"Aucun essai /votes/xml attendu, obtenu: {xml_calls}"
     assert votes is None
     assert base is None
+
+
+# ---------------------------------------------------------------------------
+# #78 — Syceron comme source primaire dans build_profile()
+# ---------------------------------------------------------------------------
+
+def _fake_identity_with_acteur_ref():
+    """Retourne un payload identité minimal permettant de résoudre un acteurRef."""
+    return {
+        "depute": {
+            "id": "PA123456",
+            "nom": "Dupont",
+            "prenom": "Jean",
+            "slug": "jean-dupont",
+            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
+            "url_an_ou_senat": "https://www.assemblee-nationale.fr/dyn/deputes/PA123456",
+        }
+    }
+
+
+def test_build_profile_uses_syceron_as_primary_for_deputes():
+    """Quand Syceron retourne des interventions, elles doivent être utilisées comme source primaire."""
+    fake_syceron = [
+        {
+            "id": "syceron_CRS17_000001",
+            "date": "2025-02-11",
+            "type_detail": "loi",
+            "sujet": "Débat officiel",
+            "texte": "Texte officiel.",
+            "seance_ref": "RUANR5L17S2025O1N037",
+        }
+    ]
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+    ):
+        profile = build_profile("deputes", "jean-dupont")
+
+    assert profile["interventions"] == fake_syceron
+    assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is not None
+    # Pas de warning de fallback
+    assert not any("fallback" in w for w in profile["meta"]["warnings"])
+
+
+def test_build_profile_falls_back_to_nosdeputes_when_syceron_empty():
+    """Quand Syceron ne retourne rien, le fallback NosDéputés doit être utilisé et un warning ajouté."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[{"id": "nosdeputes_1"}]),
+    ):
+        profile = build_profile("deputes", "jean-dupont")
+
+    assert profile["interventions"] == [{"id": "nosdeputes_1"}]
+    assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is None
+    fallback_warnings = [w for w in profile["meta"]["warnings"] if "fallback" in w.lower() or "nosdeputes" in w.lower()]
+    assert fallback_warnings, "Un warning de fallback NosDéputés doit être présent"
+
+
+def test_build_profile_syceron_exception_triggers_fallback_warning():
+    """Si fetch_interventions_syceron lève une exception, le fallback NosDéputés doit être utilisé et un warning ajouté."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        profile = build_profile("deputes", "jean-dupont")
+
+    assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is None
+    assert any("syceron" in w.lower() for w in profile["meta"]["warnings"])
+
+
+def test_build_profile_no_syceron_for_senat():
+    """Le chemin Syceron ne doit pas être pris pour la chambre sénateurs."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
+    ):
+        build_profile("senateurs", "jean-dupont")
+
+    mock_syceron.assert_not_called()

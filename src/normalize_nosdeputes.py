@@ -113,6 +113,33 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
         "format": i.get("format"),
         "mots_cles": list(i.get("mots_cles") or []),
         "source_url": _first(i.get("url_detail"), i.get("url")),
+        # Champs pivot officiels — renseignés depuis les données Syceron (débats AN)
+        # quand disponibles, null sinon (interventions NosDéputés scraping).
+        # La présence de seance_ref ou session_ref identifie une intervention Syceron.
+        "theme_officiel": i.get("sujet") if i.get("seance_ref") or i.get("session_ref") else None,
+        "seance": (
+            {
+                "ref": i.get("seance_ref"),
+                "session_ref": i.get("session_ref"),
+            }
+            if i.get("seance_ref")
+            else None
+        ),
+        "dossier": (
+            {"point_ordre_du_jour": i.get("point_ordre_du_jour")}
+            if i.get("point_ordre_du_jour")
+            else None
+        ),
+        "source": (
+            {
+                "type": "syceron",
+                "url": i.get("source_url") or i.get("url"),
+                "source_id": i.get("source_id"),
+                "legislature": i.get("legislature"),
+            }
+            if i.get("seance_ref") or i.get("session_ref")
+            else None
+        ),
     }
     # Champs supplémentaires pour les questions parlementaires officielles (type_detail == "question").
     if i.get("type_detail") == "question":
@@ -224,14 +251,21 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
     profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
 
-    # --- Tags thématiques bruts : agrégation des mots-clés des interventions ---
-    # Pas d'harmonisation thématique à ce stade (Phase 4 à venir).
+    # --- Tags thématiques bruts : source hybride — thème officiel Syceron (quand
+    # disponible via `theme_officiel`) ou mots-clés scraping NosDéputés en fallback.
+    # `theme_officiel` est préféré car il provient du compte rendu officiel de l'AN.
     tags: set[str] = set()
-    for i in (raw_profile.get("interventions") or []):
-        for kw in (i.get("mots_cles") or []):
-            cleaned = kw.strip().lower()
+    for i in profil.get("interventions") or []:
+        theme = i.get("theme_officiel")
+        if theme and isinstance(theme, str):
+            cleaned = theme.strip().lower()
             if cleaned:
                 tags.add(cleaned)
+        else:
+            for kw in (i.get("mots_cles") or []):
+                cleaned = kw.strip().lower()
+                if cleaned:
+                    tags.add(cleaned)
     profil["tags_thematiques"] = sorted(tags)
 
     # --- Métadonnées ---
