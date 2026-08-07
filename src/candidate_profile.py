@@ -703,6 +703,40 @@ def _derive_amendement_sort(etat_libelle: Optional[str], sousetat_libelle: Optio
     return _AMENDEMENT_SORT_MAP.get((etat_libelle, sousetat_libelle)), None
 
 
+def _extract_cosignataire_refs(cosignataires_bloc: Any) -> list[str]:
+    """Normalise le bloc cosignataires d'un amendement AN en liste de refs.
+
+    Le schéma XML-to-JSON de l'AN peut exposer les cosignataires sous trois formes :
+      - {"acteurRef": "PA..."} ou {"acteurRef": ["PA...", ...]}  (forme directe)
+      - {"acteur": {"acteurRef": "PA..."}}                       (forme imbriquée dict)
+      - {"acteur": [{"acteurRef": "PA..."}, ...]}                (forme imbriquée liste)
+    """
+    if not isinstance(cosignataires_bloc, dict):
+        return []
+
+    refs: list[str] = []
+
+    direct = cosignataires_bloc.get("acteurRef")
+    if isinstance(direct, str):
+        refs.append(direct)
+    elif isinstance(direct, list):
+        refs.extend(r for r in direct if isinstance(r, str))
+
+    acteur = cosignataires_bloc.get("acteur")
+    if isinstance(acteur, dict):
+        ref = acteur.get("acteurRef")
+        if isinstance(ref, str):
+            refs.append(ref)
+    elif isinstance(acteur, list):
+        for item in acteur:
+            if isinstance(item, dict):
+                ref = item.get("acteurRef")
+                if isinstance(ref, str):
+                    refs.append(ref)
+
+    return [r for r in list(dict.fromkeys(refs)) if r]
+
+
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
     """Extrait les enregistrements indexés par acteurRef d'un amendement brut.
 
@@ -721,11 +755,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         return None
 
     cosignataires_bloc = signataires.get("cosignataires") or {}
-    cosign_refs = cosignataires_bloc.get("acteurRef")
-    if isinstance(cosign_refs, str):
-        cosign_refs = [cosign_refs]
-    elif not isinstance(cosign_refs, list):
-        cosign_refs = []
+    cosign_refs = _extract_cosignataire_refs(cosignataires_bloc)
 
     cycle_de_vie = amendement.get("cycleDeVie") or {}
     etat = cycle_de_vie.get("etatDesTraitements") or {}
