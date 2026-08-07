@@ -1668,6 +1668,9 @@ def _parse_syceron_intervention_entry(
         "fonction": intervention.get("fonction"),
         "format": intervention.get("format"),
         "mots_cles": intervention.get("mots_cles") or [],
+        # Compatibilité avec les autres formats bruts d'interventions : `source`
+        # est consommé par certains helpers existants, tandis que `url`/`url_detail`
+        # restent les clés attendues par le chemin de normalisation NosDéputés.
         "source": source_url,
         "source_url": source_url,
         "url": source_url,
@@ -1731,7 +1734,7 @@ def fetch_interventions_syceron(url_an_ou_senat: Optional[str]) -> list[dict[str
         return []
 
     interventions: list[dict[str, Any]] = []
-    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int):
+    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int, reverse=True):
         index = _build_acteur_interventions_syceron_index(legislature)
         interventions.extend(index.get(acteur_ref, []))
 
