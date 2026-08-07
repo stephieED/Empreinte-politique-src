@@ -26,6 +26,7 @@ from candidate_profile import (
     fetch_seance_context,
     _extract_speaker_identity_from_html,
 )
+from normalize_nosdeputes import normalize_nosdeputes
 
 
 class DummyResponse:
@@ -1088,3 +1089,195 @@ def test_build_profile_no_syceron_for_senat():
         build_profile("senateurs", "jean-dupont")
 
     mock_syceron.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# #83 — Tests d'intégration bout-en-bout : build_profile() → normalize_nosdeputes()
+# ---------------------------------------------------------------------------
+
+def _fake_syceron_interventions():
+    """3 interventions Syceron avec seance_ref, session_ref et point_ordre_du_jour."""
+    syceron_zip = "https://data.assemblee-nationale.fr/static/openData/repository/17/vp/syceronXML/syceron.zip"
+    return [
+        {
+            "id": "syceron_CRS17_000001_000000",
+            "date": "2025-02-11",
+            "type_detail": "loi",
+            "sujet": "Débat sur le budget rectificatif",
+            "texte": "Texte de l'intervention 1.",
+            "fonction": None,
+            "format": "long",
+            "mots_cles": ["budget", "fiscalité"],
+            "source": syceron_zip,
+            "source_url": syceron_zip,
+            "url": syceron_zip,
+            "url_detail": None,
+            "source_id": "CRS17_000001",
+            "seance_ref": "RUANR5L17S2025O1N037",
+            "session_ref": "S2024-2025",
+            "orateur_id_source": "PA123456",
+            "orateur_nom": "Jean Dupont",
+            "point_ordre_du_jour": "Examen du PLFR 2025",
+            "etat_compte_rendu": "definitif",
+            "version_compte_rendu": "1",
+            "legislature": "17",
+        },
+        {
+            "id": "syceron_CRS17_000002_000000",
+            "date": "2025-03-05",
+            "type_detail": "commission",
+            "sujet": "Audition du ministre de l'économie",
+            "texte": "Texte de l'intervention 2.",
+            "fonction": "president",
+            "format": "court",
+            "mots_cles": ["économie"],
+            "source": syceron_zip,
+            "source_url": syceron_zip,
+            "url": syceron_zip,
+            "url_detail": None,
+            "source_id": "CRS17_000002",
+            "seance_ref": "RUANR5L17S2025O1N041",
+            "session_ref": "S2024-2025",
+            "orateur_id_source": "PA123456",
+            "orateur_nom": "Jean Dupont",
+            "point_ordre_du_jour": None,
+            "etat_compte_rendu": "definitif",
+            "version_compte_rendu": "1",
+            "legislature": "17",
+        },
+        {
+            "id": "syceron_CRS17_000003_000000",
+            "date": "2025-04-22",
+            "type_detail": "loi",
+            "sujet": "Discussion générale sur la réforme des retraites",
+            "texte": "Texte de l'intervention 3.",
+            "fonction": None,
+            "format": "long",
+            "mots_cles": ["social", "retraites"],
+            "source": syceron_zip,
+            "source_url": syceron_zip,
+            "url": syceron_zip,
+            "url_detail": None,
+            "source_id": "CRS17_000003",
+            "seance_ref": "RUANR5L17S2025O1N055",
+            "session_ref": "S2024-2025",
+            "orateur_id_source": "PA123456",
+            "orateur_nom": "Jean Dupont",
+            "point_ordre_du_jour": "Réforme des retraites — PL n° 2025-17",
+            "etat_compte_rendu": "provisoire",
+            "version_compte_rendu": "1",
+            "legislature": "17",
+        },
+    ]
+
+
+def test_integration_build_profile_syceron_enrichit_champs_pivot():
+    """Intégration bout-en-bout : build_profile() avec Syceron → normalize_nosdeputes()
+    doit produire des interventions avec theme_officiel, seance, dossier et source renseignés,
+    sans passer par le scraping HTML NosDéputés."""
+    fake_syceron = _fake_syceron_interventions()
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        # Vérifie que le scraping HTML NosDéputés (fetch_seance_context) n'est jamais appelé.
+        patch("candidate_profile.fetch_seance_context") as mock_scraping,
+    ):
+        raw_profile = build_profile("deputes", "jean-dupont")
+
+    mock_scraping.assert_not_called()
+
+    # L'étape de normalisation transforme les enregistrements bruts Syceron en format pivot.
+    pivot = normalize_nosdeputes(raw_profile)
+
+    assert len(pivot["interventions"]) == 3, "Les 3 interventions Syceron doivent être présentes dans le pivot"
+
+    # Intervention 1 — avec seance_ref, session_ref et point_ordre_du_jour
+    i1 = pivot["interventions"][0]
+    assert i1["theme_officiel"] == "Débat sur le budget rectificatif"
+    assert i1["seance"] == {"ref": "RUANR5L17S2025O1N037", "session_ref": "S2024-2025"}
+    assert i1["dossier"] == {"point_ordre_du_jour": "Examen du PLFR 2025"}
+    assert i1["source"]["type"] == "syceron"
+    assert i1["source"]["source_id"] == "CRS17_000001"
+    assert i1["source"]["legislature"] == "17"
+
+    # Intervention 2 — avec seance_ref mais sans point_ordre_du_jour
+    i2 = pivot["interventions"][1]
+    assert i2["theme_officiel"] == "Audition du ministre de l'économie"
+    assert i2["seance"]["ref"] == "RUANR5L17S2025O1N041"
+    assert i2["dossier"] is None
+    assert i2["source"]["type"] == "syceron"
+
+    # Intervention 3 — avec seance_ref et point_ordre_du_jour
+    i3 = pivot["interventions"][2]
+    assert i3["theme_officiel"] == "Discussion générale sur la réforme des retraites"
+    assert i3["seance"]["ref"] == "RUANR5L17S2025O1N055"
+    assert i3["dossier"] == {"point_ordre_du_jour": "Réforme des retraites — PL n° 2025-17"}
+    assert i3["source"]["type"] == "syceron"
+
+
+def test_integration_build_profile_fallback_sans_acteur_ref():
+    """Intégration bout-en-bout : quand fetch_interventions_syceron retourne une liste vide
+    (acteurRef non résolu), le fallback NosDéputés est utilisé et les champs pivot
+    Syceron (theme_officiel, seance, source syceron) doivent être absents/null."""
+    nosdeputes_intervention = {
+        "type": "Intervention",
+        "date": "2024-11-15",
+        "sujet": "Discussion générale",
+        "texte": "Intervention de fallback NosDéputés.",
+        "url": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
+        "url_detail": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
+        "speaker_name": "Jean Dupont",
+        "speaker_url": "/jean-dupont",
+        "mots_cles": [],
+        "source_id": None,
+        "seance_ref": None,
+        "session_ref": None,
+        "point_ordre_du_jour": None,
+    }
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        # Syceron retourne une liste vide : acteurRef non résolu
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[nosdeputes_intervention]),
+    ):
+        raw_profile = build_profile("deputes", "jean-dupont")
+
+    # Un warning de fallback NosDéputés doit être présent
+    fallback_warnings = [w for w in raw_profile["meta"]["warnings"] if "fallback" in w.lower()]
+    assert fallback_warnings, "Un warning de fallback doit être émis quand Syceron ne retourne rien"
+
+    # Pas de synchro Syceron horodatée
+    assert raw_profile["meta"]["synchro_sources"].get("assemblee_nationale_syceron") is None
+
+    # La normalisation ne doit pas produire de champs Syceron
+    pivot = normalize_nosdeputes(raw_profile)
+
+    assert len(pivot["interventions"]) == 1
+    i = pivot["interventions"][0]
+    assert i["theme_officiel"] is None, "theme_officiel doit être null pour une intervention NosDéputés"
+    assert i["seance"] is None, "seance doit être null pour une intervention NosDéputés"
+    assert i["source"] is None, "source syceron doit être null pour une intervention NosDéputés"
