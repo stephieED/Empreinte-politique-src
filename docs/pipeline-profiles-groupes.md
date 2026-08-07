@@ -14,6 +14,7 @@ graph TD
     %% =========================
     S1[NosDeputes.fr / NosSenateurs.fr\nAPI elus, votes, interventions]
     S2[data.assemblee-nationale.fr\nScrutins, amendements, dossiers]
+    S2b[data.assemblee-nationale.fr\nComptes rendus Syceron - deputes]
     S3[Parltrack dumps\nMEPs, dossiers, amendments]
     S4[Europarl Open Data Portal\nReferentiel officiel MEP]
     S5[Wikipedia / Wikidata\nMonitoring candidatures]
@@ -23,6 +24,7 @@ graph TD
     %% =========================
     S1 --> C1[src/candidate_profile.py\nExtraction profil FR]
     S2 --> C1
+    S2b --> C1
     S3 --> C2[src/candidate_profile_ue.py + src/mep_profile.py\nExtraction mandat europeen]
     S4 --> C2
     S5 --> C3[src/fetch_wikipedia_candidates.py\nSuivi candidats]
@@ -65,6 +67,7 @@ graph TD
         %% =========================
         S1[NosDeputes / NosSenateurs] --> C1[candidate_profile.py]
         S2[Open Data Assemblee nationale] --> C1
+        S2b[Open Data AN - Syceron\ncomptes rendus deputes] --> C1
         S3[Europarl API + ParlTrack] --> C2[candidate_profile_ue.py / mep_profile.py]
         S4[Wikipedia / Wikidata] --> C3[fetch_wikipedia_candidates.py]
 
@@ -139,6 +142,11 @@ Comment ça marche concrètement
          NosSénateurs (identité, mandats, interventions).
      - Pour les votes/amendements/questions, la pipeline complète avec les
          jeux de données officiels AN Open Data quand disponibles.
+     - Pour les interventions des députés, les comptes rendus de séance
+         Syceron (`syceron_debates.py` / `parse_syceron.py`, législatures 15-17)
+         sont la source primaire ; le scraping NosDéputés reste un fallback si
+         Syceron ne retourne rien pour l'acteurRef du candidat. Voir
+         `docs/extract-syceron-an.md`.
      - Sortie: `raw_data/profiles/<slug>.json`.
 
 3. Collecte du volet européen
