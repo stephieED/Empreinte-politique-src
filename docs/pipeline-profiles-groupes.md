@@ -146,7 +146,7 @@ Comment ça marche concrètement
          Syceron (`syceron_debates.py` / `parse_syceron.py`, législatures 15-17)
          sont la source primaire ; le scraping NosDéputés reste un fallback si
          Syceron ne retourne rien pour l'acteurRef du candidat. Voir
-         `docs/extract-syceron-an.md`.
+         `docs/an_opendata.md` (section Syceron).
      - Sortie: `raw_data/profiles/<slug>.json`.
 
 3. Collecte du volet européen
