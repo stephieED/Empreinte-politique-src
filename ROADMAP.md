@@ -8,12 +8,12 @@ something is pending, not *why*.
 
 ## Known bugs
 
-- `minoritaire` position unhandled in JS (`web/v3/index.html`):
-  `classifyDateInHemicycle` / `classifyTexteInHemicycle` only handle
-  `"majorite"` and `"opposition"`. The value `"minoritaire"` (valid per
-  `schema_pivot.py` `KNOWN_POSITIONS_HEMICYCLE`) falls through to
-  `"indetermine"`, mis-bucketing texts/amendments from minority-group
-  periods when the legislative reading-mode filter is active.
+- `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
+  `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
+  archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.
+  The value `"minoritaire"` (valid per `schema_pivot.py` `KNOWN_POSITIONS_HEMICYCLE`)
+  falls through to `"indetermine"` / `non_distingue`, mis-bucketing texts/amendments
+  from minority-group periods when the legislative reading-mode filter is active.
 
 ## Ideas not yet scheduled
 
