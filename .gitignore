@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Données générées (copie de pivot_data/ + raw_data pour le serveur Vite)
+web/UI_finale/public/data/
+
+# Node.js (web/UI_finale)
+node_modules/
+
 # Distribution / packaging
 .Python
 build/

@@ -280,6 +280,14 @@ Then open <http://localhost:8000/web/>.
 - `web/atlas-augmente/`: atlas powered by real profiles
 - `web/scene-cinetique/`, `web/interface-essentielle/`: studies reused in V3
 - `web/matiere-politique/`, `web/revue-civique/`, `web/moodboard/`: intermediate studies
+- `web/UI_finale/`: CONTRECHAMP interface design lab (React/Vite), wired to real
+  data — same scope as v3 (**Candidats** · **Groupes**, no Partis tab).
+  `npm run dev` / `npm run build` (in `web/UI_finale/`) auto-copy
+  `pivot_data/profiles/`, `pivot_data/groupes/` and `raw_data/candidats.json`
+  into `public/data/` (see `scripts/sync-data.mjs`) before starting Vite —
+  needed because Vite doesn't serve files outside the project root. Coverage
+  is limited to the 8 candidates with a local pivot profile and the 7 real
+  groups in `pivot_data/groupes/`.
 
 ## Raw profile content (Nos* format)
 
