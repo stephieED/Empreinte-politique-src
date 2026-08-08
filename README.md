@@ -23,14 +23,22 @@ CV_CandidatFR/
 |  |- candidate_profile.py           # Collect raw profile for ONE FR parliamentarian (AN/Senate)
 |  |- candidate_profile_ue.py        # Build the "European mandate" section for ONE candidate
 |  |- generate_all_profiles.py       # Batch: profiles for ALL candidates in candidats.json
+|  |- merge_profile.py               # Additive merge logic (old wins on lists, new wins on scalars)
+|  |- normalize_nosdeputes.py        # NosDeputes/NosSenateurs -> pivot adapter
+|  |- normalize_europarl.py          # European Parliament Open Data -> pivot adapter
+|  |- normalize_parltrack_dumps.py   # Parltrack dumps -> pivot adapter (EP mandates)
+|  |- parltrack_dumps.py             # Parltrack dump download/cache helpers
+|  |- syceron_debates.py             # AN Syceron comptes rendus: download, cache, acteurRef index
+|  |- parse_syceron.py               # AN Syceron XML parser -> interventions[]
+|  |- text_utils.py                  # Shared text helpers (normalisation, accent folding)
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
 |  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
+|  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
-|  |- normalize_nosdeputes.py        # NosDeputes/NosSenateurs -> pivot adapter
-|  |- normalize_europarl.py          # European Parliament Open Data -> pivot adapter
+|  |- schema_parti.py                # Party profile schema v1
 |  |- mep_profile.py                 # Collect/normalize EP profiles (Parltrack)
 |  `- fetch_wikipedia_candidates.py  # Candidate monitoring via Wikipedia/Wikidata
 |- raw_data/                          # Declarative inputs + raw outputs (non-normalized)
@@ -42,20 +50,32 @@ CV_CandidatFR/
 |  |- partis/                        # parti-<slug>.json: editorial party aggregates
 |  `- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
 |- web/
-|  `- index.html                     # Dynamic web page
+|  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes)
+|  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
 |- docs/
 |  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference (kept in French)
-|  `- an_opendata.md                 # Notes on AN open data (votes, amendments)
+|  `- an_opendata.md                 # Notes on AN open data (votes, amendments, Syceron)
 |- tests/
 |  |- test_candidate_profile.py
 |  |- test_candidate_profile_ue.py
 |  |- test_group_profile.py
 |  |- test_group_roster.py
 |  |- test_generate_group_profiles.py
+|  |- test_merge_profile.py
 |  |- test_normalize_europarl.py
 |  |- test_normalize_nosdeputes.py
+|  |- test_normalize_parltrack_dumps.py
+|  |- test_parltrack_dumps.py
+|  |- test_parse_syceron.py
+|  |- test_parti_profile.py
+|  |- test_quality_gate_syceron.py
 |  |- test_schema_groupe.py
-|  `- test_schema_pivot.py
+|  |- test_schema_parti.py
+|  |- test_schema_pivot.py
+|  |- test_syceron_debates.py
+|  |- test_web_v3_issue_66.py
+|  |- test_web_v3_issue_128.py
+|  `- test_web_v3_mandate_timeline.py
 `- README.md
 ```
 
@@ -190,7 +210,7 @@ python src/parti_profile.py \
 
 These are editorial aggregates of declared candidates, not real parliamentary
 cohesion profiles. `pivot_data/partis/` is still generated for internal use
-but is not displayed as a top-level tab in `web/v3/`.
+but is not displayed as a top-level tab in `web/UI_finale/`.
 
 ## 6. Generate parliamentary group profiles
 
@@ -267,27 +287,22 @@ python src/check_quality_gate.py --low-interventions 5  # stricter signal
 
 ## 9. Open the web UI locally
 
-Serve with a local HTTP server (needed because `fetch()` cannot read `file://`):
+`web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes**,
+no Partis tab). Before running it, sync pivot data into `public/data/`:
 
 ```bash
-python -m http.server 8000
+cd web/UI_finale
+npm install          # first time only
+npm run dev          # syncs data then starts Vite dev server
 ```
 
-Then open <http://localhost:8000/web/>.
+`scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/` and
+`raw_data/candidats.json` into `public/data/` (generated, git-ignored) and writes
+`public/data/manifest.json`. Coverage is limited to the candidates/groups with a
+local pivot file (8 candidates, 7 real groups as of last pipeline run).
 
-- `web/v1/`, `web/v2/`: older design generations
-- `web/v3/`: editorial reference — **Candidats** · **Groupes** (real parliamentary groups); excluded texts accessible via toggle
-- `web/atlas-augmente/`: atlas powered by real profiles
-- `web/scene-cinetique/`, `web/interface-essentielle/`: studies reused in V3
-- `web/matiere-politique/`, `web/revue-civique/`, `web/moodboard/`: intermediate studies
-- `web/UI_finale/`: CONTRECHAMP interface design lab (React/Vite), wired to real
-  data — same scope as v3 (**Candidats** · **Groupes**, no Partis tab).
-  `npm run dev` / `npm run build` (in `web/UI_finale/`) auto-copy
-  `pivot_data/profiles/`, `pivot_data/groupes/` and `raw_data/candidats.json`
-  into `public/data/` (see `scripts/sync-data.mjs`) before starting Vite —
-  needed because Vite doesn't serve files outside the project root. Coverage
-  is limited to the 8 candidates with a local pivot profile and the 7 real
-  groups in `pivot_data/groupes/`.
+Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
+studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
 
 ## Raw profile content (Nos* format)
 
