@@ -1,0 +1,24 @@
+.scroll-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  touch-action: pan-x;
+  cursor: grab;
+  padding: 2px 0 10px;
+  scrollbar-width: none;
+}
+
+.scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-row.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.scroll-row.is-dragging * {
+  user-select: none;
+}

@@ -55,10 +55,10 @@ graph TD
     O1 --> Q1[src/check_quality_gate.py\nQuality gate CI]
 ```
 
-## Variante: flux prolongé jusqu'aux vues web v3
+## Variante: flux prolongé jusqu'aux vues web (UI_finale)
 
 Cette variante explicite la consommation des artefacts JSON par l'interface
-`web/v3` (onglets `Candidats` et `Groupes`).
+`web/UI_finale` (React 19 + Vite, onglets `Candidats` et `Groupes`).
 
 ```mermaid
 graph TD
@@ -89,26 +89,43 @@ graph TD
         G1 --> PG[pivot_data/groupes slash groupe-*.json]
 
         %% =========================
-        %% CONSOMMATION FRONT V3
+        %% SYNCHRONISATION FRONT
         %% =========================
-        R2 --> CFG[web/v3/js/config.js]
-        R1 --> CFG
-        P1 --> CFG
-        PG --> CFG
+        R2 --> SYNC[web/UI_finale/scripts/sync-data.mjs]
+        P1 --> SYNC
+        PG --> SYNC
 
-        CFG --> V3[web/v3/index.html]
+        SYNC --> MAN[public/data/manifest.json\ncandidats + groupes + groupIds]
+        SYNC --> PP[public/data/profiles slash slug.pivot.json]
+        SYNC --> PGP[public/data/groupes slash groupe-*.json]
 
-        V3 --> VC[Vue Candidats\nprofil individuel + comparaison]
-        V3 --> VG[Vue Groupes\ncohesion, effectifs, themes, amendements]
+        %% =========================
+        %% COUCHE DONNEES REACT
+        %% =========================
+        MAN --> IDX[data/index.js\ngetCandidateProfile / getGroupProfile]
+        PP --> IDX
+        PGP --> IDX
+        IDX --> ADP[data/pivotAdapter.js\nbuildCandidateView / buildGroupView]
+
+        %% =========================
+        %% VUES REACT
+        %% =========================
+        ADP --> VC[Vue Candidats\n/candidats/:id\nKPIs, Votes, Textes]
+        ADP --> VG[Vue Groupes\n/groupes/:id\ncohesion, effectifs, themes, amendements]
 ```
 
-Repères d'implémentation v3:
+Repères d'implémentation UI_finale :
 
-- `web/v3/js/config.js` déclare les URLs de données (`candidats`, `profiles`,
-    `pivot profiles`, `group profiles`).
-- `web/v3/index.html` charge ces JSON et rend les vues côté client.
-- Les profils de groupes affichés dans v3 sont ceux listés dans
-    `REAL_GROUP_PROFILES` puis chargés depuis `pivot_data/groupes`.
+- `web/UI_finale/scripts/sync-data.mjs` copie les artefacts pivot vers
+    `public/data/` et génère `manifest.json` (index des candidats et groupes
+    disponibles, avec `groupIds[]` pour le filtrage côté client).
+- `web/UI_finale/src/data/index.js` expose l'API de fetch (`getCandidateProfile`,
+    `getGroupProfile`, `getCandidatesList`, `getGroupsList`).
+- `web/UI_finale/src/data/pivotAdapter.js` transforme le JSON pivot en objets
+    prêts à l'affichage (calcul KPIs, tri votes, classification thématique,
+    classification hémicycle majorité/opposition).
+- Les profils de groupes affichés sont ceux copiés depuis `pivot_data/groupes`
+    par `sync-data.mjs`.
 
 ## Lecture rapide
 
