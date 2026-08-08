@@ -61,6 +61,9 @@ export function useDragScroll(ref) {
       el.removeEventListener('pointerup', endDrag);
       el.removeEventListener('pointerleave', endDrag);
       el.removeEventListener('click', onClickCapture, true);
+      if (dragging && pointerId !== null) {
+        try { el.releasePointerCapture(pointerId); } catch (_) { /* element peut être détaché */ }
+      }
     };
   }, [ref]);
 }

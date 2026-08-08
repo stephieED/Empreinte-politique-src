@@ -91,7 +91,7 @@ export default function CandidateProfile({ candidate }) {
       counts[t.theme] = (counts[t.theme] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [candidate.textes]);
 
   const themePills = useMemo(() => {
     const themes = Object.keys(themeCounts);
@@ -99,7 +99,7 @@ export default function CandidateProfile({ candidate }) {
       { key: 'all', label: `Tous les thèmes (${candidate.textes.length})` },
       ...themes.map((k) => ({ key: k, label: `${k} (${themeCounts[k]})` })),
     ];
-  }, [themeCounts]);
+  }, [themeCounts, candidate.textes]);
 
   const themeShelves = useMemo(() => {
     const visible = themeFilter === 'all' ? candidate.textes : candidate.textes.filter((t) => t.theme === themeFilter);
@@ -109,7 +109,7 @@ export default function CandidateProfile({ candidate }) {
       byTheme.get(t.theme).push(t);
     });
     return Array.from(byTheme.entries()).map(([label, items]) => ({ label, items }));
-  }, [themeFilter]);
+  }, [themeFilter, candidate.textes]);
 
   const flyoutTitle = openFlyout === 'mandats' ? 'Mandats en cours' : openFlyout === 'resp' ? 'Responsabilités' : '';
   const flyoutItems = openFlyout === 'mandats' ? candidate.mandats : openFlyout === 'resp' ? candidate.responsabilites : [];

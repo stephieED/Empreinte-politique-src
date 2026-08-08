@@ -104,7 +104,9 @@ export default function GroupProfile({ group }) {
               </div>
               <p className="gp-vote-texte">{vote.texte}</p>
               <div className="gp-coherence-track">
-                <div className="gp-coherence-fill" style={{ width: `${vote.coherence}%`, background: vote.color }} />
+                {vote.coherence != null
+                  ? <div className="gp-coherence-fill" style={{ width: `${vote.coherence}%`, background: vote.color }} />
+                  : <span className="gp-coherence-nd">N/D</span>}
               </div>
               <div className="gp-vote-footer">
                 <span className="gp-verified-badge">

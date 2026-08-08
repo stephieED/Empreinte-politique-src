@@ -15,7 +15,7 @@ export default function CandidatesBar() {
   const { candidateId: activeCandidateId } = useParams();
 
   const filtered = useMemo(
-    () => (selectedGroupId ? (candidates || []).filter((c) => c.groupId === selectedGroupId) : (candidates || [])),
+    () => (selectedGroupId ? (candidates || []).filter((c) => c.groupIds?.includes(selectedGroupId)) : (candidates || [])),
     [candidates, selectedGroupId],
   );
 

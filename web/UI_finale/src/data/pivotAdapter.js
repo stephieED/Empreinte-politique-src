@@ -264,7 +264,7 @@ export function buildGroupView(groupe) {
     date: formatFrDate(v.date) || 'Date non renseignée',
     texte: v.texte,
     position: v.position_majoritaire,
-    coherence: Math.round((v.taux_coherence ?? 0) * 100),
+    coherence: v.taux_coherence != null ? Math.round(v.taux_coherence * 100) : null,
     quorum: v.quorum_atteint,
   }));
 

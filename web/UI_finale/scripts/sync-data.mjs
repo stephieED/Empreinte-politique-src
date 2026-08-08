@@ -64,7 +64,10 @@ for (const file of groupeFiles) {
   for (const membre of groupe.membres || []) {
     const slug = String(membre.membre_id || '').split(':').pop();
     const candidate = slugByMembreId.get(slug);
-    if (candidate) candidate.groupId = id;
+    if (candidate) {
+      if (!candidate.groupIds) candidate.groupIds = [];
+      candidate.groupIds.push(id);
+    }
   }
 }
 
