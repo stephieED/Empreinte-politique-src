@@ -1,10 +1,16 @@
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_pivot_dataset import (
+    compute_agregation_warnings,
+    compute_distribution_listes,
+    compute_fraicheur_sources,
+    compute_nombre_sources,
+    compute_profils_perimes,
     compute_coherence_chambre_sources,
     compute_coherence_schema_version,
     compute_distribution_listes,
@@ -265,6 +271,212 @@ def test_compute_nombre_sources_champ_absent_compte_comme_zero():
 
 
 # ---------------------------------------------------------------------------
+# Fixtures pour compute_fraicheur_sources / compute_profils_perimes.
+# ---------------------------------------------------------------------------
+
+REFERENCE = datetime(2026, 8, 9, tzinfo=timezone.utc)
+
+
+def source(type_source, jours_anciennete):
+    synchro = REFERENCE - timedelta(days=jours_anciennete)
+    return {"type": type_source, "url": "u", "synchro_le": synchro.isoformat()}
+
+
+def profil_sources(id_, *sources):
+    return {"id": id_, "sources": list(sources)}
+
+
+# ---------------------------------------------------------------------------
+# compute_fraicheur_sources
+# ---------------------------------------------------------------------------
+
+def test_compute_fraicheur_sources_liste_vide():
+    resultat = compute_fraicheur_sources([], reference_date=REFERENCE)
+
+    assert resultat == {"total_sources_datees": 0, "par_type_source": {}}
+
+
+def test_compute_fraicheur_sources_min_max_mediane_moyenne():
+    profils = [
+        profil_sources("a", source("nosdeputes", 0)),
+        profil_sources("b", source("nosdeputes", 10)),
+        profil_sources("c", source("nosdeputes", 20)),
+    ]
+
+    resultat = compute_fraicheur_sources(profils, reference_date=REFERENCE)
+    stats = resultat["par_type_source"]["nosdeputes"]
+
+    assert resultat["total_sources_datees"] == 3
+    assert stats["nombre_sources"] == 3
+    assert stats["min_jours"] == 0
+    assert stats["max_jours"] == 20
+    assert stats["mediane_jours"] == 10
+    assert stats["moyenne_jours"] == 10.0
+
+
+def test_compute_fraicheur_sources_regroupe_par_type():
+    profils = [profil_sources("a", source("nosdeputes", 5), source("parltrack", 50))]
+
+    resultat = compute_fraicheur_sources(profils, reference_date=REFERENCE)
+
+    assert set(resultat["par_type_source"]) == {"nosdeputes", "parltrack"}
+    assert resultat["par_type_source"]["nosdeputes"]["min_jours"] == 5
+    assert resultat["par_type_source"]["parltrack"]["min_jours"] == 50
+
+
+def test_compute_fraicheur_sources_type_absent_regroupe_sous_null():
+    profils = [profil_sources("a", {"url": "u", "synchro_le": REFERENCE.isoformat()})]
+
+    resultat = compute_fraicheur_sources(profils, reference_date=REFERENCE)
+
+    assert resultat["par_type_source"]["null"]["nombre_sources"] == 1
+
+
+def test_compute_fraicheur_sources_ignore_synchro_le_invalide_ou_absente():
+    profils = [
+        profil_sources("a", {"type": "nosdeputes", "url": "u", "synchro_le": "pas-une-date"}),
+        profil_sources("b", {"type": "nosdeputes", "url": "u"}),
+        profil_sources("c", source("nosdeputes", 1)),
+    ]
+
+    resultat = compute_fraicheur_sources(profils, reference_date=REFERENCE)
+
+    assert resultat["total_sources_datees"] == 1
+    assert resultat["par_type_source"]["nosdeputes"]["nombre_sources"] == 1
+
+
+def test_compute_fraicheur_sources_ignore_profils_sans_sources():
+    resultat = compute_fraicheur_sources(
+        [profil_sources("a"), {"id": "b"}], reference_date=REFERENCE
+    )
+
+    assert resultat == {"total_sources_datees": 0, "par_type_source": {}}
+
+
+def test_compute_fraicheur_sources_sans_reference_date_utilise_maintenant():
+    hier = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    profils = [profil_sources("a", {"type": "nosdeputes", "url": "u", "synchro_le": hier})]
+
+    resultat = compute_fraicheur_sources(profils)
+
+    assert resultat["par_type_source"]["nosdeputes"]["min_jours"] == 1
+
+
+# ---------------------------------------------------------------------------
+# compute_profils_perimes
+# ---------------------------------------------------------------------------
+
+def test_compute_profils_perimes_toutes_sources_perimees():
+    profils = [profil_sources("a", source("nosdeputes", 100))]
+
+    resultat = compute_profils_perimes(profils, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == ["a"]
+
+
+def test_compute_profils_perimes_une_source_fraiche_suffit_a_exclure():
+    profils = [profil_sources("a", source("nosdeputes", 100), source("parltrack", 5))]
+
+    resultat = compute_profils_perimes(profils, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_profils_perimes_seuil_variable():
+    profils = [profil_sources("a", source("nosdeputes", 15))]
+
+    assert compute_profils_perimes(profils, staleness_days=10, reference_date=REFERENCE) == ["a"]
+    assert compute_profils_perimes(profils, staleness_days=20, reference_date=REFERENCE) == []
+
+
+def test_compute_profils_perimes_exactement_au_seuil_n_est_pas_perime():
+    profils = [profil_sources("a", source("nosdeputes", 30))]
+
+    resultat = compute_profils_perimes(profils, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_profils_perimes_aucune_source_n_est_jamais_perime():
+    profils = [profil_sources("a"), {"id": "b"}]
+
+    resultat = compute_profils_perimes(profils, staleness_days=0, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_profils_perimes_resultat_trie_par_id():
+    profils = [
+        profil_sources("z", source("nosdeputes", 100)),
+        profil_sources("a", source("nosdeputes", 100)),
+    ]
+
+    resultat = compute_profils_perimes(profils, staleness_days=10, reference_date=REFERENCE)
+
+    assert resultat == ["a", "z"]
+
+
+# ---------------------------------------------------------------------------
+# compute_agregation_warnings
+# ---------------------------------------------------------------------------
+
+def profil_warnings(id_, *warnings):
+    return {"id": id_, "meta": {"warnings": list(warnings)}}
+
+
+def test_compute_agregation_warnings_aucun_profil():
+    assert compute_agregation_warnings([]) == {"total_warnings": 0, "par_type": {}}
+
+
+def test_compute_agregation_warnings_profils_sans_warnings():
+    profils = [profil_warnings("a"), {"id": "b"}, {"id": "c", "meta": {}}]
+
+    resultat = compute_agregation_warnings(profils)
+
+    assert resultat == {"total_warnings": 0, "par_type": {}}
+
+
+def test_compute_agregation_warnings_type_par_prefixe_avant_les_deux_points():
+    profils = [
+        profil_warnings("a", "identité introuvable : l'API ne renvoie pas de profil exploitable."),
+        profil_warnings("b", "identité introuvable : réponse API vide."),
+    ]
+
+    resultat = compute_agregation_warnings(profils)
+
+    assert resultat["total_warnings"] == 2
+    assert resultat["par_type"]["identité introuvable"] == {"frequence": 2, "ids": ["a", "b"]}
+
+
+def test_compute_agregation_warnings_message_sans_deux_points_utilise_le_message_entier():
+    profils = [profil_warnings("a", "MEP marqué inactif dans le dump Parltrack.")]
+
+    resultat = compute_agregation_warnings(profils)
+
+    assert resultat["par_type"] == {
+        "MEP marqué inactif dans le dump Parltrack.": {"frequence": 1, "ids": ["a"]},
+    }
+
+
+def test_compute_agregation_warnings_plusieurs_types_et_frequences():
+    profils = [
+        profil_warnings("a", "votes introuvables : x", "amendements indisponibles : y"),
+        profil_warnings("b", "votes introuvables : z"),
+    ]
+
+    resultat = compute_agregation_warnings(profils)
+
+    assert resultat["total_warnings"] == 3
+    assert resultat["par_type"]["votes introuvables"] == {"frequence": 2, "ids": ["a", "b"]}
+    assert resultat["par_type"]["amendements indisponibles"] == {"frequence": 1, "ids": ["a"]}
+
+
+def test_compute_agregation_warnings_meme_type_deux_fois_meme_profil_ids_dedupliques():
+    profils = [profil_warnings("a", "votes introuvables : x", "votes introuvables : y")]
+
+    resultat = compute_agregation_warnings(profils)
+
+    assert resultat["par_type"]["votes introuvables"] == {"frequence": 2, "ids": ["a"]}
 # compute_doublons_id
 # ---------------------------------------------------------------------------
 
