@@ -24,11 +24,19 @@ fonctions pures, sans I/O. Une donnée absente ou vide n'est jamais
 comptée comme renseignée (AGENTS.md §2.5 : "missing data means missing
 data, never default 0").
 
-Aucune dépendance lourde : stdlib uniquement à ce stade.
+Sous-tâche 6/6 : CLI (`main()` / `_build_arg_parser()`), assemblage de tous
+les indicateurs ci-dessus dans `build_report()` et génération d'un rapport
+Markdown lisible par un humain (`generate_markdown_report()`). Ce rapport est
+un outil de qualité interne : il ne doit jamais introduire de jugement de
+valeur, de score ou de classement (AGENTS.md §2.1).
+
+Aucune dépendance lourde : stdlib uniquement.
 """
 
+import argparse
 import json
 import statistics
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -598,3 +606,347 @@ def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
         "licence_donnees_manquante": ids_licence_manquante,
         "genere_le_manquant": ids_genere_le_manquant,
     }
+
+
+# ---------------------------------------------------------------------------
+# Assemblage du rapport (sous-tâche 6/6)
+# ---------------------------------------------------------------------------
+
+def build_report(
+    profils: list[dict[str, Any]],
+    erreurs_lecture: list[dict[str, Any]],
+    staleness_days: int = 30,
+    reference_date: datetime | None = None,
+) -> dict[str, Any]:
+    """Assemble tous les indicateurs `compute_*` en un rapport structuré unique.
+
+    Args:
+        profils: profils pivot valides (sortie de `load_pivot_directory`).
+        erreurs_lecture: erreurs de lecture (sortie de `load_pivot_directory`).
+        staleness_days: seuil d'ancienneté en jours pour `compute_profils_perimes`
+            (défaut : 30).
+        reference_date: date de référence injectable pour les indicateurs de
+            fraîcheur, voir `compute_fraicheur_sources` (défaut :
+            `datetime.now(timezone.utc)`).
+
+    Returns:
+        Dict sérialisable JSON, une section par catégorie d'indicateur
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`) plus
+        `meta` et `erreurs_lecture`. Un outil de qualité interne : ce rapport
+        ne doit jamais introduire de jugement de valeur, de score ou de
+        classement (AGENTS.md §2.1).
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    return {
+        "meta": {
+            "genere_le": reference.isoformat(),
+            "total_profils": len(profils),
+            "total_erreurs_lecture": len(erreurs_lecture),
+            "staleness_days": staleness_days,
+        },
+        "volumetrie": {
+            "repartition_chambre": compute_repartition_chambre(profils),
+            "distribution_listes": compute_distribution_listes(profils),
+            "nombre_sources": compute_nombre_sources(profils),
+        },
+        "completude": {
+            "taux_remplissage": compute_taux_remplissage(profils),
+            "profils_sans_activite": compute_profils_sans_activite(profils),
+            "presence_meta": compute_presence_meta(profils),
+        },
+        "coherence": {
+            "doublons_id": compute_doublons_id(profils),
+            "coherence_schema_version": compute_coherence_schema_version(profils),
+            "validite_dates": compute_validite_dates(profils),
+            "coherence_chambre_sources": compute_coherence_chambre_sources(profils),
+        },
+        "fraicheur": {
+            "fraicheur_sources": compute_fraicheur_sources(profils, reference_date=reference),
+            "profils_perimes": compute_profils_perimes(
+                profils, staleness_days=staleness_days, reference_date=reference
+            ),
+        },
+        "warnings": compute_agregation_warnings(profils),
+        "erreurs_lecture": erreurs_lecture,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Génération du rapport Markdown
+# ---------------------------------------------------------------------------
+
+def _md_escape(valeur: Any) -> str:
+    """Neutralise les caractères cassant une cellule de tableau Markdown."""
+    texte = "" if valeur is None else str(valeur)
+    return texte.replace("|", "\\|").replace("\n", " ")
+
+
+def _md_table(en_tetes: list[str], lignes: list[list[Any]], si_vide: str) -> str:
+    """Construit un tableau Markdown, ou renvoie `si_vide` si `lignes` est vide."""
+    if not lignes:
+        return si_vide + "\n"
+
+    entete = "| " + " | ".join(en_tetes) + " |"
+    separateur = "| " + " | ".join("---" for _ in en_tetes) + " |"
+    corps = "\n".join(
+        "| " + " | ".join(_md_escape(cellule) for cellule in ligne) + " |" for ligne in lignes
+    )
+    return f"{entete}\n{separateur}\n{corps}\n"
+
+
+def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
+    par_chambre = volumetrie["repartition_chambre"]["par_chambre"]
+    lignes_chambre = [[chambre, effectif] for chambre, effectif in par_chambre.items()]
+
+    lignes_listes = [
+        [
+            champ,
+            stats["min"], stats["max"], stats["mediane"], stats["moyenne"],
+            stats["pct_profils_a_zero"],
+        ]
+        for champ, stats in volumetrie["distribution_listes"].items()
+    ]
+
+    sources = volumetrie["nombre_sources"]
+
+    return (
+        "## Volumétrie\n\n"
+        f"Total profils : {volumetrie['repartition_chambre']['total_profils']}\n\n"
+        "### Répartition par chambre\n\n"
+        + _md_table(["Chambre", "Profils"], lignes_chambre, "Aucun profil.")
+        + "\n### Distribution des listes métier (par profil)\n\n"
+        + _md_table(
+            ["Champ", "Min", "Max", "Médiane", "Moyenne", "% profils à 0"],
+            lignes_listes, "Aucun profil.",
+        )
+        + "\n### Sources déclarées\n\n"
+        + _md_table(
+            ["Moyenne de sources par profil", "% profils à une seule source"],
+            [[sources["moyenne_sources"], sources["pct_profils_une_source"]]],
+            "Aucun profil.",
+        )
+    )
+
+
+def _md_section_completude(completude: dict[str, Any]) -> str:
+    lignes_remplissage = [
+        [champ, stats["renseignes"], stats["total"], stats["taux_pct"]]
+        for champ, stats in completude["taux_remplissage"].items()
+    ]
+
+    sans_activite = completude["profils_sans_activite"]
+    presence_meta = completude["presence_meta"]
+    lignes_presence_meta = [
+        ["meta absente", len(presence_meta["meta_absente"])],
+        ["licence_donnees manquante", len(presence_meta["licence_donnees_manquante"])],
+        ["genere_le manquant", len(presence_meta["genere_le_manquant"])],
+    ]
+
+    return (
+        "## Complétude\n\n"
+        "### Taux de remplissage\n\n"
+        + _md_table(
+            ["Champ", "Renseignés", "Total", "Taux (%)"],
+            lignes_remplissage, "Aucun profil.",
+        )
+        + "\n### Profils sans activité (aucun vote, amendement ni intervention)\n\n"
+        f"{sans_activite['nb_profils_sans_activite']} / {sans_activite['total_profils']} profil(s).\n\n"
+        "### Présence des métadonnées\n\n"
+        + _md_table(
+            ["Critère", f"Profils en défaut (sur {presence_meta['total_profils']})"],
+            lignes_presence_meta, "Aucun profil.",
+        )
+    )
+
+
+def _md_section_coherence(coherence: dict[str, Any]) -> str:
+    lignes_doublons = [
+        [d["id"], d["occurrences"]] for d in coherence["doublons_id"]["doublons"]
+    ]
+    lignes_schema = [
+        [p["id"], p["schema_version"], p["meta_schema_version"]]
+        for p in coherence["coherence_schema_version"]["profils_incoherents"]
+    ]
+    lignes_dates = [
+        [d["id"], d["champ"], d["valeur"], d["erreur"]]
+        for d in coherence["validite_dates"]["dates_invalides"]
+    ]
+    lignes_chambre_sources = [
+        [p["id"], p["chambre"], ", ".join(t or "null" for t in p["types_sources"]) or "—"]
+        for p in coherence["coherence_chambre_sources"]["profils_incoherents"]
+    ]
+
+    return (
+        "## Cohérence\n\n"
+        "### Doublons d'`id`\n\n"
+        + _md_table(["id", "Occurrences"], lignes_doublons, "Aucun doublon détecté.")
+        + "\n### Divergence `schema_version` / `meta.schema_version`\n\n"
+        + _md_table(
+            ["id", "schema_version", "meta.schema_version"],
+            lignes_schema, "Aucune divergence détectée.",
+        )
+        + "\n### Dates de traçabilité invalides ou futures\n\n"
+        + _md_table(["id", "Champ", "Valeur", "Erreur"], lignes_dates, "Aucune date invalide détectée.")
+        + "\n### Cohérence `chambre` / types de `sources[]`\n\n"
+        + _md_table(
+            ["id", "Chambre", "Types de sources déclarés"],
+            lignes_chambre_sources, "Aucune incohérence détectée.",
+        )
+    )
+
+
+def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str:
+    lignes_fraicheur = [
+        [
+            type_source, stats["nombre_sources"],
+            stats["min_jours"], stats["max_jours"], stats["mediane_jours"], stats["moyenne_jours"],
+        ]
+        for type_source, stats in fraicheur["fraicheur_sources"]["par_type_source"].items()
+    ]
+
+    profils_perimes = fraicheur["profils_perimes"]
+    lignes_perimes = [[id_] for id_ in profils_perimes]
+
+    return (
+        "## Fraîcheur\n\n"
+        "### Ancienneté des sources par type (jours écoulés depuis `synchro_le`)\n\n"
+        + _md_table(
+            ["Type de source", "Nombre de sources", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_fraicheur, "Aucune source datée.",
+        )
+        + f"\n### Profils périmés (toutes sources > {staleness_days} jours)\n\n"
+        + _md_table(["id"], lignes_perimes, "Aucun profil périmé.")
+    )
+
+
+def _md_section_warnings(warnings: dict[str, Any]) -> str:
+    lignes = [
+        [type_warning, entree["frequence"], ", ".join(entree["ids"])]
+        for type_warning, entree in warnings["par_type"].items()
+    ]
+
+    return (
+        "## Warnings\n\n"
+        f"Total : {warnings['total_warnings']}\n\n"
+        + _md_table(["Type", "Fréquence", "Profils concernés"], lignes, "Aucun warning.")
+    )
+
+
+def _md_section_erreurs_lecture(erreurs_lecture: list[dict[str, Any]]) -> str:
+    lignes = [[e["fichier"], e["erreur"]] for e in erreurs_lecture]
+
+    return (
+        "## Erreurs de lecture\n\n"
+        + _md_table(["Fichier", "Erreur"], lignes, "Aucune erreur de lecture.")
+    )
+
+
+def generate_markdown_report(rapport: dict[str, Any]) -> str:
+    """Génère un rapport Markdown lisible par un humain à partir du dict `build_report`.
+
+    Une section par catégorie d'indicateur, sous forme de tableaux synthétiques.
+    Aucun score ni classement n'est calculé : ce rapport présente les chiffres
+    bruts produits par les fonctions `compute_*` (AGENTS.md §2.1).
+    """
+    meta = rapport["meta"]
+
+    sections = [
+        (
+            "# Rapport d'audit du jeu de données pivot\n\n"
+            f"Généré le {meta['genere_le']}. "
+            f"{meta['total_profils']} profil(s) analysé(s), "
+            f"{meta['total_erreurs_lecture']} erreur(s) de lecture. "
+            f"Seuil de péremption des sources : {meta['staleness_days']} jour(s).\n\n"
+            "Ce rapport est un outil de qualité interne : il présente des "
+            "indicateurs bruts, sans jugement de valeur ni classement.\n"
+        ),
+        _md_section_volumetrie(rapport["volumetrie"]),
+        _md_section_completude(rapport["completude"]),
+        _md_section_coherence(rapport["coherence"]),
+        _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),
+        _md_section_warnings(rapport["warnings"]),
+        _md_section_erreurs_lecture(rapport["erreurs_lecture"]),
+    ]
+
+    return "\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="audit_pivot_dataset.py",
+        description=(
+            "Audite un jeu de données pivot : volumétrie, complétude, cohérence, "
+            "fraîcheur des sources et warnings agrégés. Outil de qualité interne, "
+            "ne produit aucun score ni classement."
+        ),
+    )
+    parser.add_argument(
+        "--input-dir",
+        required=True,
+        metavar="DOSSIER",
+        help="Dossier contenant les fichiers *.pivot.json à auditer (scan récursif).",
+    )
+    parser.add_argument(
+        "--output-json",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport JSON (défaut : affiché sur stdout).",
+    )
+    parser.add_argument(
+        "--output-md",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport Markdown (défaut : non généré).",
+    )
+    parser.add_argument(
+        "--staleness-days",
+        type=int,
+        default=30,
+        metavar="JOURS",
+        help="Seuil d'ancienneté (jours) au-delà duquel un profil est périmé (défaut : 30).",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_arg_parser()
+    args = parser.parse_args(argv)
+
+    input_dir = Path(args.input_dir)
+    if not input_dir.is_dir():
+        print(f"[!] Dossier introuvable : {input_dir}", file=sys.stderr)
+        return 1
+
+    profils, erreurs_lecture = load_pivot_directory(input_dir)
+    print(
+        f"→ {len(profils)} profil(s) chargé(s), {len(erreurs_lecture)} erreur(s) de lecture.",
+        file=sys.stderr,
+    )
+
+    rapport = build_report(profils, erreurs_lecture, staleness_days=args.staleness_days)
+    output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
+
+    if args.output_json:
+        out_path = Path(args.output_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(output_json, encoding="utf-8")
+        print(f"  ✓ Rapport JSON écrit : {out_path}", file=sys.stderr)
+    else:
+        print(output_json)
+
+    if args.output_md:
+        md_path = Path(args.output_md)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(generate_markdown_report(rapport), encoding="utf-8")
+        print(f"  ✓ Rapport Markdown écrit : {md_path}", file=sys.stderr)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

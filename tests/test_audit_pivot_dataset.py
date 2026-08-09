@@ -6,6 +6,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_pivot_dataset import (
+    _build_arg_parser,
+    build_report,
     compute_agregation_warnings,
     compute_distribution_listes,
     compute_fraicheur_sources,
@@ -21,7 +23,9 @@ from audit_pivot_dataset import (
     compute_repartition_chambre,
     compute_validite_dates,
     compute_taux_remplissage,
+    generate_markdown_report,
     load_pivot_directory,
+    main,
 )
 
 
@@ -848,3 +852,234 @@ def test_compute_presence_meta_total_profils():
     assert resultat["meta_absente"] == ["a"]
     assert set(resultat["licence_donnees_manquante"]) == {"a", "b"}
     assert set(resultat["genere_le_manquant"]) == {"a", "b"}
+
+
+# ---------------------------------------------------------------------------
+# build_report
+# ---------------------------------------------------------------------------
+
+def test_build_report_structure_top_level_keys():
+    rapport = build_report([], [], staleness_days=30, reference_date=REFERENCE)
+
+    assert set(rapport.keys()) == {
+        "meta", "volumetrie", "completude", "coherence", "fraicheur",
+        "warnings", "erreurs_lecture",
+    }
+    assert set(rapport["volumetrie"].keys()) == {
+        "repartition_chambre", "distribution_listes", "nombre_sources",
+    }
+    assert set(rapport["completude"].keys()) == {
+        "taux_remplissage", "profils_sans_activite", "presence_meta",
+    }
+    assert set(rapport["coherence"].keys()) == {
+        "doublons_id", "coherence_schema_version", "validite_dates",
+        "coherence_chambre_sources",
+    }
+    assert set(rapport["fraicheur"].keys()) == {"fraicheur_sources", "profils_perimes"}
+
+
+def test_build_report_meta_section():
+    erreurs = [{"fichier": "x.pivot.json", "erreur": "boom"}]
+    profils = [profil_sources("a", source("nosdeputes", 5))]
+
+    rapport = build_report(profils, erreurs, staleness_days=15, reference_date=REFERENCE)
+
+    assert rapport["meta"] == {
+        "genere_le": REFERENCE.isoformat(),
+        "total_profils": 1,
+        "total_erreurs_lecture": 1,
+        "staleness_days": 15,
+    }
+
+
+def test_build_report_erreurs_lecture_passthrough():
+    erreurs = [{"fichier": "a.pivot.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report([], erreurs, reference_date=REFERENCE)
+
+    assert rapport["erreurs_lecture"] == erreurs
+
+
+def test_build_report_delegue_aux_fonctions_compute():
+    profils = [
+        profil_warnings("a", "votes introuvables : x"),
+        profil_chambre("AN", ["wikidata"], id_="b"),
+    ]
+    erreurs = []
+
+    rapport = build_report(profils, erreurs, staleness_days=30, reference_date=REFERENCE)
+
+    assert rapport["volumetrie"]["repartition_chambre"] == compute_repartition_chambre(profils)
+    assert rapport["volumetrie"]["distribution_listes"] == compute_distribution_listes(profils)
+    assert rapport["volumetrie"]["nombre_sources"] == compute_nombre_sources(profils)
+    assert rapport["completude"]["taux_remplissage"] == compute_taux_remplissage(profils)
+    assert rapport["completude"]["profils_sans_activite"] == compute_profils_sans_activite(profils)
+    assert rapport["completude"]["presence_meta"] == compute_presence_meta(profils)
+    assert rapport["coherence"]["doublons_id"] == compute_doublons_id(profils)
+    assert rapport["coherence"]["coherence_schema_version"] == compute_coherence_schema_version(profils)
+    assert rapport["coherence"]["validite_dates"] == compute_validite_dates(profils)
+    assert (
+        rapport["coherence"]["coherence_chambre_sources"]
+        == compute_coherence_chambre_sources(profils)
+    )
+    assert (
+        rapport["fraicheur"]["fraicheur_sources"]
+        == compute_fraicheur_sources(profils, reference_date=REFERENCE)
+    )
+    assert (
+        rapport["fraicheur"]["profils_perimes"]
+        == compute_profils_perimes(profils, staleness_days=30, reference_date=REFERENCE)
+    )
+    assert rapport["warnings"] == compute_agregation_warnings(profils)
+
+
+def test_build_report_staleness_days_par_defaut():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    assert rapport["meta"]["staleness_days"] == 30
+
+
+def test_build_report_sans_reference_date_utilise_maintenant():
+    rapport = build_report([], [])
+
+    genere_le = datetime.fromisoformat(rapport["meta"]["genere_le"])
+    assert (datetime.now(timezone.utc) - genere_le).total_seconds() < 5
+
+
+def test_build_report_sur_les_fixtures_du_depot():
+    profils, erreurs_lecture = load_pivot_directory(FIXTURES_DIR)
+
+    rapport = build_report(profils, erreurs_lecture, staleness_days=30, reference_date=REFERENCE)
+
+    assert rapport["meta"]["total_profils"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    # Le rapport doit rester intégralement sérialisable en JSON.
+    json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# generate_markdown_report
+# ---------------------------------------------------------------------------
+
+def test_generate_markdown_report_contient_toutes_les_sections():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "# Rapport d'audit du jeu de données pivot" in markdown
+    assert "## Volumétrie" in markdown
+    assert "## Complétude" in markdown
+    assert "## Cohérence" in markdown
+    assert "## Fraîcheur" in markdown
+    assert "## Warnings" in markdown
+    assert "## Erreurs de lecture" in markdown
+
+
+def test_generate_markdown_report_sections_vides_affichent_un_message_explicite():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "Aucun doublon détecté." in markdown
+    assert "Aucune divergence détectée." in markdown
+    assert "Aucune date invalide détectée." in markdown
+    assert "Aucune incohérence détectée." in markdown
+    assert "Aucune source datée." in markdown
+    assert "Aucun profil périmé." in markdown
+    assert "Aucun warning." in markdown
+    assert "Aucune erreur de lecture." in markdown
+
+
+def test_generate_markdown_report_reflete_les_donnees_du_rapport():
+    profils = [
+        profil_chambre("AN", ["nosdeputes"], id_="a"),
+        profil_chambre("AN", ["nosdeputes"], id_="a"),  # doublon volontaire
+    ]
+    erreurs = [{"fichier": "casse.pivot.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report(profils, erreurs, reference_date=REFERENCE)
+    markdown = generate_markdown_report(rapport)
+
+    assert "casse.pivot.json" in markdown
+    assert "JSON invalide" in markdown
+    assert "| a | 2 |" in markdown  # doublons_id : id "a" en double
+
+
+def test_generate_markdown_report_retourne_une_chaine_non_vide():
+    profils, erreurs_lecture = load_pivot_directory(FIXTURES_DIR)
+    rapport = build_report(profils, erreurs_lecture, reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert isinstance(markdown, str)
+    assert len(markdown) > 0
+
+
+# ---------------------------------------------------------------------------
+# CLI : _build_arg_parser / main
+# ---------------------------------------------------------------------------
+
+def test_build_arg_parser_defaut_staleness_days():
+    parser = _build_arg_parser()
+    args = parser.parse_args(["--input-dir", str(FIXTURES_DIR)])
+
+    assert args.staleness_days == 30
+    assert args.output_json is None
+    assert args.output_md is None
+
+
+def test_build_arg_parser_input_dir_obligatoire():
+    parser = _build_arg_parser()
+    try:
+        parser.parse_args([])
+        assert False, "SystemExit attendu (--input-dir manquant)"
+    except SystemExit:
+        pass
+
+
+def test_main_ecrit_json_et_markdown(tmp_path):
+    output_json = tmp_path / "rapport.json"
+    output_md = tmp_path / "rapport.md"
+
+    code = main([
+        "--input-dir", str(FIXTURES_DIR),
+        "--output-json", str(output_json),
+        "--output-md", str(output_md),
+        "--staleness-days", "30",
+    ])
+
+    assert code == 0
+    assert output_json.exists()
+    assert output_md.exists()
+
+    rapport = json.loads(output_json.read_text(encoding="utf-8"))
+    assert rapport["meta"]["total_profils"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    assert rapport["meta"]["staleness_days"] == 30
+
+    markdown = output_md.read_text(encoding="utf-8")
+    assert "# Rapport d'audit du jeu de données pivot" in markdown
+
+
+def test_main_sans_output_json_ecrit_sur_stdout(capsys):
+    code = main(["--input-dir", str(FIXTURES_DIR)])
+
+    assert code == 0
+    captured = capsys.readouterr()
+    rapport = json.loads(captured.out)
+    assert rapport["meta"]["total_profils"] == 3
+
+
+def test_main_dossier_introuvable_retourne_1(tmp_path):
+    code = main(["--input-dir", str(tmp_path / "n-existe-pas")])
+
+    assert code == 1
+
+
+def test_main_out_dir_est_cree_si_absent(tmp_path):
+    output_json = tmp_path / "sous" / "dossier" / "rapport.json"
+
+    code = main(["--input-dir", str(FIXTURES_DIR), "--output-json", str(output_json)])
+
+    assert code == 0
+    assert output_json.exists()

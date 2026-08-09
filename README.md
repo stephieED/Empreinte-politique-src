@@ -36,6 +36,7 @@ CV_CandidatFR/
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
+|  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -303,6 +304,27 @@ local pivot file (8 candidates, 7 real groups as of last pipeline run).
 
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
+
+## 10. Audit the pivot dataset
+
+`src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
+volumetry, completeness, consistency, source freshness and aggregated
+`meta.warnings[]` indicators — an internal quality tool, not an end-user report
+(no score, no ranking, see `AGENTS.md` §2).
+
+```bash
+python src/audit_pivot_dataset.py \
+    --input-dir pivot_data/profiles \
+    --output-json audit_report.json \
+    --output-md audit_report.md \
+    --staleness-days 30
+```
+
+`--output-json`/`--output-md` default to unset (JSON prints to stdout, Markdown is
+skipped if `--output-md` is omitted). `--staleness-days` (default 30) sets the
+threshold beyond which a profile with only stale sources is flagged. See
+`docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
+generated on `tests/fixtures/audit_pivot/`.
 
 ## Raw profile content (Nos* format)
 
