@@ -352,6 +352,9 @@ def compute_agregation_warnings(profils: list[dict[str, Any]]) -> dict[str, Any]
             }
             for type_warning, entree in sorted(par_type.items())
         },
+    }
+
+
 def compute_doublons_id(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Détecte les `id` présents plusieurs fois dans le corpus pivot.
 
