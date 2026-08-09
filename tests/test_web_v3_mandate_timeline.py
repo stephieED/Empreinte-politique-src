@@ -4,18 +4,23 @@ import unittest
 from pathlib import Path
 
 
-INDEX = Path(__file__).parents[1] / "web" / "v3" / "index.html"
+ROOT = Path(__file__).parents[1]
+RENDER_JS = ROOT / "web" / "old" / "v3" / "js" / "render.js"
+APP_JS = ROOT / "web" / "old" / "v3" / "js" / "app.js"
+CSS = ROOT / "web" / "old" / "v3" / "design-tokens.css"
 
 
 class MandateTimelineTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.html = INDEX.read_text(encoding="utf-8")
+        cls.render_js = RENDER_JS.read_text(encoding="utf-8")
+        cls.app_js = APP_JS.read_text(encoding="utf-8")
+        cls.css = CSS.read_text(encoding="utf-8")
 
     def run_builder(self, mandates):
-        start = self.html.index("    function buildMandateTimeline(profile) {")
-        end = self.html.index("\n\n    function renderMandateTimeline(profile)", start)
-        function_source = self.html[start:end]
+        start = self.render_js.index("export function buildMandateTimeline(profile) {")
+        end = self.render_js.index("\n\nexport function renderMandateTimeline(profile", start)
+        function_source = self.render_js[start:end].replace("export function", "function", 1)
         script = f"""
         function toDateMs(value) {{ return value ? new Date(value).getTime() : 0; }}
         {function_source}
@@ -94,12 +99,12 @@ class MandateTimelineTests(unittest.TestCase):
         self.assertEqual(result[1]["sourceUrls"], [])
 
     def test_primary_view_and_mobile_layout_are_explicit(self):
-        self.assertIn('mandateView: "timeline"', self.html)
-        self.assertIn("<h2>Mandats documentés", self.html)
-        self.assertIn('["timeline", "Chronologie"], ["responsibilities", "Responsabilités"]', self.html)
-        self.assertIn('["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]', self.html)
-        self.assertIn("grid-template-columns: 56px minmax(0, 1fr)", self.html)
-        self.assertIn('"date non renseignée"', self.html)
+        self.assertIn('mandateView: "timeline"', self.app_js)
+        self.assertIn("<h2>Mandats documentés", self.render_js)
+        self.assertIn('["timeline", "Chronologie"], ["responsibilities", "Responsabilités"]', self.render_js)
+        self.assertIn('["all", "Tous"], ["elective", "Électifs"], ["responsibilities", "Responsabilités"], ["groups", "Groupes"]', self.render_js)
+        self.assertIn("grid-template-columns: 56px minmax(0, 1fr)", self.css)
+        self.assertIn('"date non renseignée"', self.render_js)
 
 
 if __name__ == "__main__":
