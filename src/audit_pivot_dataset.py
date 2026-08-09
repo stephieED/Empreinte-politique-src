@@ -15,6 +15,14 @@ Sous-tâche 5/6 : fraîcheur des données (ancienneté de `sources[].synchro_le`
 et agrégation des `meta.warnings[]`, toujours sous forme de fonctions pures
 avec une date de référence injectable (jamais de `datetime.now()` en dur)
 pour rendre les tests déterministes.
+Sous-tâche 4/6 : indicateurs de cohérence (mêmes contraintes de pureté) —
+doublons d'`id`, divergence `schema_version`/`meta.schema_version`, dates de
+traçabilité invalides ou futures, et cohérence `chambre`/`sources[].type`.
+Sous-tâche 3/6 : indicateurs de complétude (taux de remplissage, profils
+sans activité, présence des métadonnées `meta`). Mêmes contraintes :
+fonctions pures, sans I/O. Une donnée absente ou vide n'est jamais
+comptée comme renseignée (AGENTS.md §2.5 : "missing data means missing
+data, never default 0").
 
 Aucune dépendance lourde : stdlib uniquement à ce stade.
 """
@@ -27,10 +35,32 @@ from typing import Any
 
 from schema_pivot import KNOWN_CHAMBRES
 
+# Types de sources attendus par chambre pour compute_coherence_chambre_sources :
+# chaque chambre doit avoir déclaré au moins une source de l'un de ces types.
+# "PE" utilise "parltrack" (dumps croisés Parltrack/Wikidata, voir
+# normalize_parltrack_dumps.py / mep_profile.py) et "europarl" (Open Data
+# Portal du Parlement européen, voir normalize_europarl.py) — pas
+# "assemblee_nationale", qui désigne le référentiel officiel des acteurs de
+# l'Assemblée nationale (chambre "AN" uniquement). "mairie" n'a pas de type de
+# source dédié dans KNOWN_SOURCE_TYPES à ce stade et n'est donc jamais
+# signalée en incohérence par cette fonction.
+MAPPING_CHAMBRE_SOURCES: dict[str, frozenset[str]] = {
+    "AN": frozenset({"nosdeputes", "assemblee_nationale"}),
+    "Senat": frozenset({"nossenateurs"}),
+    "PE": frozenset({"parltrack", "europarl"}),
+}
+
 # Listes du schéma pivot dont on mesure la volumétrie par profil.
 CHAMPS_LISTES_VOLUMETRIE: tuple[str, ...] = (
     "votes", "textes_portes", "amendements", "interventions",
 )
+
+# Champs dont on mesure le taux de remplissage (complétude).
+CHAMPS_COMPLETUDE: tuple[str, ...] = ("parti", "groupe", "tags_thematiques", "mandats")
+
+# Listes d'activité : un profil sans aucun élément dans ces trois champs est
+# un candidat à un enrichissement manquant.
+CHAMPS_ACTIVITE: tuple[str, ...] = ("votes", "amendements", "interventions")
 
 
 def load_pivot_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -322,4 +352,246 @@ def compute_agregation_warnings(profils: list[dict[str, Any]]) -> dict[str, Any]
             }
             for type_warning, entree in sorted(par_type.items())
         },
+def compute_doublons_id(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Détecte les `id` présents plusieurs fois dans le corpus pivot.
+
+    L'`id` pivot (`"<source>:<identifiant_source>"`) doit être unique : un
+    doublon signale une erreur amont de génération ou de fusion. Les profils
+    sans `id` (absent ou vide) sont ignorés — ce défaut relève de la
+    validation structurelle (`validate_profil`), pas de la cohérence
+    inter-profils.
+
+    Returns:
+        {"doublons": [{"id": str, "occurrences": int}, ...]}, trié par `id`
+        pour un résultat déterministe ; liste vide si aucun doublon.
+    """
+    occurrences_par_id: dict[str, int] = {}
+    for profil in profils:
+        id_ = profil.get("id")
+        if not id_:
+            continue
+        occurrences_par_id[id_] = occurrences_par_id.get(id_, 0) + 1
+
+    return {
+        "doublons": [
+            {"id": id_, "occurrences": occurrences}
+            for id_, occurrences in sorted(occurrences_par_id.items())
+            if occurrences > 1
+        ]
+    }
+
+
+def compute_coherence_schema_version(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Compare `schema_version` (racine) et `meta.schema_version`.
+
+    Les deux champs doivent porter la même valeur : une divergence signale un
+    profil partiellement régénéré (ex. `meta` reconstruit sans mettre à jour
+    la racine, ou l'inverse).
+
+    Returns:
+        {"profils_incoherents": [{"id":..., "schema_version":...,
+                                   "meta_schema_version":...}, ...]}
+    """
+    profils_incoherents: list[dict[str, Any]] = []
+
+    for profil in profils:
+        schema_version = profil.get("schema_version")
+        meta = profil.get("meta")
+        meta_schema_version = meta.get("schema_version") if isinstance(meta, dict) else None
+
+        if schema_version != meta_schema_version:
+            profils_incoherents.append({
+                "id": profil.get("id"),
+                "schema_version": schema_version,
+                "meta_schema_version": meta_schema_version,
+            })
+
+    return {"profils_incoherents": profils_incoherents}
+
+
+def _erreur_date(valeur: Any, maintenant: datetime) -> str | None:
+    """Code d'erreur pour `valeur` si ce n'est pas une date ISO-8601 passée valide, sinon `None`."""
+    if not isinstance(valeur, str) or not valeur:
+        return "format_invalide"
+
+    try:
+        parsed = datetime.fromisoformat(valeur.replace("Z", "+00:00"))
+    except ValueError:
+        return "format_invalide"
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+
+    return "date_future" if parsed > maintenant else None
+
+
+def compute_validite_dates(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Valide les dates de traçabilité `sources[].synchro_le` et `meta.genere_le`.
+
+    Une date est en défaut si elle n'est pas une chaîne ISO-8601 parseable
+    (`datetime.fromisoformat`, suffixe `Z` accepté comme UTC) ou si elle est
+    postérieure à l'instant de l'audit — ces deux champs sont générés par le
+    pipeline lui-même (pas une donnée source potentiellement manquante), une
+    valeur absente ou future y signale toujours une anomalie amont.
+
+    Returns:
+        {"dates_invalides": [{"id":..., "champ": "meta.genere_le" |
+                               "sources[i].synchro_le", "valeur":...,
+                               "erreur": "format_invalide" | "date_future"}, ...]}
+    """
+    maintenant = datetime.now(timezone.utc)
+    dates_invalides: list[dict[str, Any]] = []
+
+    for profil in profils:
+        id_ = profil.get("id")
+
+        meta = profil.get("meta")
+        meta = meta if isinstance(meta, dict) else {}
+        valeur_meta = meta.get("genere_le")
+        erreur_meta = _erreur_date(valeur_meta, maintenant)
+        if erreur_meta:
+            dates_invalides.append({
+                "id": id_, "champ": "meta.genere_le", "valeur": valeur_meta, "erreur": erreur_meta,
+            })
+
+        sources = profil.get("sources")
+        if isinstance(sources, list):
+            for i, source in enumerate(sources):
+                if not isinstance(source, dict):
+                    continue
+                valeur_source = source.get("synchro_le")
+                erreur_source = _erreur_date(valeur_source, maintenant)
+                if erreur_source:
+                    dates_invalides.append({
+                        "id": id_,
+                        "champ": f"sources[{i}].synchro_le",
+                        "valeur": valeur_source,
+                        "erreur": erreur_source,
+                    })
+
+    return {"dates_invalides": dates_invalides}
+
+
+def compute_coherence_chambre_sources(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Vérifie la cohérence entre `chambre` et les types de `sources[]` déclarés.
+
+    Chaque chambre attend au moins une source d'un type de référence, voir
+    `MAPPING_CHAMBRE_SOURCES` : `"AN"` -> `nosdeputes`/`assemblee_nationale`,
+    `"Senat"` -> `nossenateurs`, `"PE"` -> `parltrack`/`europarl`. `"mairie"`
+    et `chambre` absente/inconnue n'ont pas de mapping de référence à ce
+    stade et ne sont jamais signalées en incohérence par cette fonction.
+
+    Returns:
+        {"profils_incoherents": [{"id":..., "chambre":...,
+                                   "types_sources": [...]}, ...]}
+    """
+    profils_incoherents: list[dict[str, Any]] = []
+
+    for profil in profils:
+        chambre = profil.get("chambre")
+        types_attendus = MAPPING_CHAMBRE_SOURCES.get(chambre)
+        if types_attendus is None:
+            continue
+
+        sources = profil.get("sources")
+        types_sources = (
+            [s.get("type") for s in sources if isinstance(s, dict)]
+            if isinstance(sources, list) else []
+        )
+
+        if not types_attendus.intersection(types_sources):
+            profils_incoherents.append({
+                "id": profil.get("id"),
+                "chambre": chambre,
+                "types_sources": types_sources,
+            })
+
+    return {"profils_incoherents": profils_incoherents}
+def _est_renseigne(valeur: Any) -> bool:
+    """True si `valeur` est une donnée renseignée.
+
+    `None`, chaîne vide et liste vide comptent comme non renseignés — une
+    chaîne/liste vide est une absence de donnée déguisée, jamais un
+    remplissage valide (AGENTS.md §2.5).
+    """
+    if valeur is None:
+        return False
+    if isinstance(valeur, (str, list)):
+        return len(valeur) > 0
+    return True
+
+
+def compute_taux_remplissage(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Taux de remplissage de `parti`, `groupe`, `tags_thematiques`, `mandats`.
+
+    Pour chaque champ : nombre de profils où il est renseigné (ni absent,
+    ni `null`, ni chaîne/liste vide), sur le total de profils. Sur une
+    liste de profils vide, `taux_pct` vaut `0.0` (rien à mesurer).
+    """
+    total = len(profils)
+    resultat: dict[str, Any] = {}
+
+    for champ in CHAMPS_COMPLETUDE:
+        renseignes = sum(1 for profil in profils if _est_renseigne(profil.get(champ)))
+        resultat[champ] = {
+            "renseignes": renseignes,
+            "total": total,
+            "taux_pct": round(100 * renseignes / total, 2) if total else 0.0,
+        }
+
+    return resultat
+
+
+def compute_profils_sans_activite(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Profils sans aucun élément dans `votes`, `amendements` ou `interventions`.
+
+    Ces profils sont des candidats à un enrichissement manquant. Un champ
+    absent ou `null` compte comme "aucun élément", au même titre qu'une
+    liste vide.
+    """
+    ids = [
+        profil.get("id")
+        for profil in profils
+        if all(_taille_liste(profil, champ) == 0 for champ in CHAMPS_ACTIVITE)
+    ]
+
+    return {
+        "total_profils": len(profils),
+        "nb_profils_sans_activite": len(ids),
+        "profils_sans_activite": ids,
+    }
+
+
+def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Présence et non-vacuité de `meta.licence_donnees` et `meta.genere_le`.
+
+    Un `meta` absent ou de mauvais type compte comme un défaut pour les
+    deux champs. Retourne la liste des `id` en défaut pour chaque critère,
+    afin de cibler précisément les profils à corriger.
+    """
+    ids_meta_absente: list[Any] = []
+    ids_licence_manquante: list[Any] = []
+    ids_genere_le_manquant: list[Any] = []
+
+    for profil in profils:
+        identifiant = profil.get("id")
+        meta = profil.get("meta")
+
+        if not isinstance(meta, dict):
+            ids_meta_absente.append(identifiant)
+            ids_licence_manquante.append(identifiant)
+            ids_genere_le_manquant.append(identifiant)
+            continue
+
+        if not _est_renseigne(meta.get("licence_donnees")):
+            ids_licence_manquante.append(identifiant)
+
+        if not _est_renseigne(meta.get("genere_le")):
+            ids_genere_le_manquant.append(identifiant)
+
+    return {
+        "total_profils": len(profils),
+        "meta_absente": ids_meta_absente,
+        "licence_donnees_manquante": ids_licence_manquante,
+        "genere_le_manquant": ids_genere_le_manquant,
     }
