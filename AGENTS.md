@@ -10,13 +10,15 @@ Commands, structure, coverage limits: `README.md`.
 
 **Empreinte politique** — "Politics made clear". Factual, sourced political CVs
 (mandates, votes, texts, interventions) for 2027 presidential candidates.
-`CONTRECHAMP` (`web/`) is the interface design lab; `v3` is the editorial reference.
-`v3` navigation: **Candidats** · **Groupes** (real parliamentary groups) — no Partis tab.
+`CONTRECHAMP` (`web/`) is the interface design lab. `web/UI_finale` (React 19 + Vite) is
+the current production interface, wired to real pivot data (`#web-v3-ui`). Earlier design
+generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
+`web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) — no Partis tab.
 Positioning, naming, target audience: `docs/technical_decisions.md#positionnement`.
 
 ## 2. Non-negotiable editorial rules
 
-Duplicated in `schema_pivot.py`, `validate_profil()`, and `web/v3/methodologie.html`.
+Duplicated in `schema_pivot.py`, `validate_profil()`, and `web/old/v3/methodologie.html`.
 Any schema/display change must preserve them:
 
 1. No value judgments, no score, no ranking.
@@ -103,7 +105,7 @@ Edge-case history: `docs/technical_decisions.md#cas-limites`.
 | `mandats[].notableCount` | Internal only (display ordering) |
 | `tags_thematiques[]` (8 categories) | Public |
 
-Full rationale: `web/v3/methodologie.html` — do not duplicate prose here.
+Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 ## 7. Sources and licenses (reuse implications)
 
