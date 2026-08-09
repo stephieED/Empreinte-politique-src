@@ -11,11 +11,17 @@ Sous-tâche 2/6 : indicateurs de volumétrie, sous forme de fonctions pures
 (liste de profils pivot -> dict sérialisable JSON), sans aucune I/O. Le
 rapport JSON/Markdown et la CLI sont ajoutés par une sous-issue dédiée.
 
+Sous-tâche 5/6 : fraîcheur des données (ancienneté de `sources[].synchro_le`)
+et agrégation des `meta.warnings[]`, toujours sous forme de fonctions pures
+avec une date de référence injectable (jamais de `datetime.now()` en dur)
+pour rendre les tests déterministes.
+
 Aucune dépendance lourde : stdlib uniquement à ce stade.
 """
 
 import json
 import statistics
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -143,4 +149,177 @@ def compute_nombre_sources(profils: list[dict[str, Any]]) -> dict[str, Any]:
         "pct_profils_une_source": round(
             100 * sum(1 for n in nombres_sources if n == 1) / len(nombres_sources), 2
         ),
+    }
+
+
+def _parse_synchro_le(valeur: Any) -> datetime | None:
+    """Parse une date ISO-8601 `sources[].synchro_le`, `None` si absente/invalide.
+
+    Les dates invalides sont normalement déjà filtrées en amont (#156) ;
+    cette fonction reste défensive pour ne jamais lever d'exception ici. Une
+    date naïve (sans fuseau) est supposée UTC.
+    """
+    if not isinstance(valeur, str) or not valeur:
+        return None
+
+    texte = valeur[:-1] + "+00:00" if valeur.endswith("Z") else valeur
+    try:
+        date_synchro = datetime.fromisoformat(texte)
+    except ValueError:
+        return None
+
+    return date_synchro if date_synchro.tzinfo is not None else date_synchro.replace(tzinfo=timezone.utc)
+
+
+def _anciennete_jours(date_synchro: datetime, reference_date: datetime) -> int:
+    """Nombre de jours écoulés entre `date_synchro` et `reference_date`."""
+    return (reference_date - date_synchro).days
+
+
+def _anciennetes_sources_jours(profil: dict[str, Any], reference_date: datetime) -> list[int]:
+    """Anciennetés (en jours) des sources du profil dont `synchro_le` est valide."""
+    anciennetes: list[int] = []
+    for source in profil.get("sources") or []:
+        if not isinstance(source, dict):
+            continue
+        date_synchro = _parse_synchro_le(source.get("synchro_le"))
+        if date_synchro is not None:
+            anciennetes.append(_anciennete_jours(date_synchro, reference_date))
+    return anciennetes
+
+
+def compute_fraicheur_sources(
+    profils: list[dict[str, Any]], reference_date: datetime | None = None
+) -> dict[str, Any]:
+    """Ancienneté des sources (`sources[].synchro_le`) par type de source.
+
+    Pour chaque type de source rencontré (`sources[].type`, `"null"` si
+    absent), distribution en jours écoulés depuis la dernière synchro : min,
+    max, médiane, moyenne. Les sources sans `synchro_le` valide sont ignorées
+    (dates déjà filtrées en amont par #156).
+
+    Args:
+        profils: liste de profils pivot.
+        reference_date: date de référence pour le calcul de l'ancienneté,
+            injectable pour des tests déterministes (défaut :
+            `datetime.now(timezone.utc)`).
+
+    Returns:
+        `{"total_sources_datees": int, "par_type_source": {type: {...}}}`.
+        Un type de source absent de `profils` n'apparaît pas dans le résultat.
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    anciennetes_par_type: dict[str, list[int]] = {}
+    for profil in profils:
+        for source in profil.get("sources") or []:
+            if not isinstance(source, dict):
+                continue
+            date_synchro = _parse_synchro_le(source.get("synchro_le"))
+            if date_synchro is None:
+                continue
+            type_source = source.get("type") or "null"
+            anciennetes_par_type.setdefault(type_source, []).append(
+                _anciennete_jours(date_synchro, reference)
+            )
+
+    par_type_source: dict[str, Any] = {}
+    for type_source in sorted(anciennetes_par_type):
+        anciennetes = anciennetes_par_type[type_source]
+        par_type_source[type_source] = {
+            "nombre_sources": len(anciennetes),
+            "min_jours": min(anciennetes),
+            "max_jours": max(anciennetes),
+            "mediane_jours": statistics.median(anciennetes),
+            "moyenne_jours": round(statistics.mean(anciennetes), 2),
+        }
+
+    return {
+        "total_sources_datees": sum(len(v) for v in anciennetes_par_type.values()),
+        "par_type_source": par_type_source,
+    }
+
+
+def compute_profils_perimes(
+    profils: list[dict[str, Any]],
+    staleness_days: int,
+    reference_date: datetime | None = None,
+) -> list[str]:
+    """`id` des profils dont **toutes** les sources ont plus de `staleness_days` jours.
+
+    Un profil sans aucune source dont `synchro_le` est exploitable n'est
+    jamais considéré comme périmé (il n'y a rien à mesurer) : seuls les
+    profils ayant au moins une source datée, et dont la source la plus
+    fraîche dépasse tout de même le seuil, sont retournés.
+
+    Args:
+        profils: liste de profils pivot.
+        staleness_days: seuil d'ancienneté (en jours) au-delà duquel une
+            source est considérée périmée.
+        reference_date: date de référence injectable (voir
+            `compute_fraicheur_sources`).
+
+    Returns:
+        Liste triée des `id` de profils périmés.
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    perimes = []
+    for profil in profils:
+        anciennetes = _anciennetes_sources_jours(profil, reference)
+        if anciennetes and min(anciennetes) > staleness_days:
+            perimes.append(profil.get("id"))
+
+    return sorted(perimes)
+
+
+def _type_warning(warning: str) -> str:
+    """Type d'un warning : préfixe avant le premier ':', message complet sinon.
+
+    Convention déjà utilisée dans le dépôt pour les warnings de
+    `meta.warnings[]` (voir les constantes `WARNING_PREFIX_*` de
+    `candidate_profile.py`, ex. `"identité introuvable : ..."`).
+    """
+    prefixe, separateur, _ = warning.partition(":")
+    return prefixe.strip() if separateur else warning.strip()
+
+
+def compute_agregation_warnings(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Compile tous les `meta.warnings[]` des profils par type.
+
+    Le "type" d'un warning est déterminé par `_type_warning` (préfixe avant
+    le premier ':').
+
+    Returns:
+        `{"total_warnings": int, "par_type": {type: {"frequence": int,
+        "ids": [str, ...]}}}`. `frequence` compte chaque occurrence (un
+        profil avec deux warnings du même type compte pour 2) ; `ids` liste
+        sans doublon les profils concernés par ce type, triés.
+    """
+    par_type: dict[str, dict[str, Any]] = {}
+    total_warnings = 0
+
+    for profil in profils:
+        meta = profil.get("meta") or {}
+        warnings = meta.get("warnings") or []
+        profil_id = profil.get("id")
+
+        for warning in warnings:
+            if not isinstance(warning, str) or not warning:
+                continue
+            total_warnings += 1
+            type_warning = _type_warning(warning)
+            entree = par_type.setdefault(type_warning, {"frequence": 0, "ids": set()})
+            entree["frequence"] += 1
+            entree["ids"].add(profil_id)
+
+    return {
+        "total_warnings": total_warnings,
+        "par_type": {
+            type_warning: {
+                "frequence": entree["frequence"],
+                "ids": sorted(entree["ids"]),
+            }
+            for type_warning, entree in sorted(par_type.items())
+        },
     }
