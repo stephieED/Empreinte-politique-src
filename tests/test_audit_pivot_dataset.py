@@ -10,8 +10,11 @@ from audit_pivot_dataset import (
     compute_distribution_listes,
     compute_doublons_id,
     compute_nombre_sources,
+    compute_presence_meta,
+    compute_profils_sans_activite,
     compute_repartition_chambre,
     compute_validite_dates,
+    compute_taux_remplissage,
     load_pivot_directory,
 )
 
@@ -506,3 +509,130 @@ def test_compute_coherence_chambre_sources_sources_absentes():
     assert resultat == {
         "profils_incoherents": [{"id": "a", "chambre": "AN", "types_sources": []}]
     }
+# compute_taux_remplissage
+# ---------------------------------------------------------------------------
+
+def test_compute_taux_remplissage_liste_vide():
+    resultat = compute_taux_remplissage([])
+
+    for champ in ("parti", "groupe", "tags_thematiques", "mandats"):
+        assert resultat[champ] == {"renseignes": 0, "total": 0, "taux_pct": 0.0}
+
+
+def test_compute_taux_remplissage_champ_absent_du_profil():
+    resultat = compute_taux_remplissage([{"id": "a"}])
+
+    assert resultat["parti"] == {"renseignes": 0, "total": 1, "taux_pct": 0.0}
+    assert resultat["mandats"] == {"renseignes": 0, "total": 1, "taux_pct": 0.0}
+
+
+def test_compute_taux_remplissage_distingue_null_vide_et_renseigne():
+    profils = [
+        {"id": "a", "parti": None, "groupe": "", "tags_thematiques": [], "mandats": []},
+        {"id": "b", "parti": "PS", "groupe": "LFI", "tags_thematiques": ["budget"],
+         "mandats": [{"type": "depute"}]},
+    ]
+
+    resultat = compute_taux_remplissage(profils)
+
+    # null (a.parti) et chaîne/liste vide (a.groupe, a.tags, a.mandats) comptent
+    # tous les deux comme "non renseigné" : seul le profil "b" est renseigné.
+    assert resultat["parti"] == {"renseignes": 1, "total": 2, "taux_pct": 50.0}
+    assert resultat["groupe"] == {"renseignes": 1, "total": 2, "taux_pct": 50.0}
+    assert resultat["tags_thematiques"] == {"renseignes": 1, "total": 2, "taux_pct": 50.0}
+    assert resultat["mandats"] == {"renseignes": 1, "total": 2, "taux_pct": 50.0}
+
+
+def test_compute_taux_remplissage_tous_champs_renseignes():
+    profils = [
+        {"id": "a", "parti": "PS", "groupe": "LFI", "tags_thematiques": ["budget"],
+         "mandats": [{"type": "depute"}]},
+    ]
+
+    resultat = compute_taux_remplissage(profils)
+
+    for champ in ("parti", "groupe", "tags_thematiques", "mandats"):
+        assert resultat[champ]["taux_pct"] == 100.0
+
+
+# ---------------------------------------------------------------------------
+# compute_profils_sans_activite
+# ---------------------------------------------------------------------------
+
+def test_compute_profils_sans_activite_liste_vide():
+    resultat = compute_profils_sans_activite([])
+
+    assert resultat == {
+        "total_profils": 0, "nb_profils_sans_activite": 0, "profils_sans_activite": [],
+    }
+
+
+def test_compute_profils_sans_activite_detecte_les_profils_totalement_vides():
+    profils = [
+        {"id": "sans-activite-1"},
+        {"id": "sans-activite-2", "votes": None, "amendements": [], "interventions": None},
+        {"id": "avec-votes", "votes": [{"id": 1}], "amendements": [], "interventions": []},
+    ]
+
+    resultat = compute_profils_sans_activite(profils)
+
+    assert resultat["total_profils"] == 3
+    assert resultat["nb_profils_sans_activite"] == 2
+    assert set(resultat["profils_sans_activite"]) == {"sans-activite-1", "sans-activite-2"}
+
+
+def test_compute_profils_sans_activite_un_seul_champ_actif_suffit():
+    profils = [
+        {"id": "a", "votes": [], "amendements": [{"id": 1}], "interventions": []},
+    ]
+
+    resultat = compute_profils_sans_activite(profils)
+
+    assert resultat["nb_profils_sans_activite"] == 0
+    assert resultat["profils_sans_activite"] == []
+
+
+# ---------------------------------------------------------------------------
+# compute_presence_meta
+# ---------------------------------------------------------------------------
+
+def test_compute_presence_meta_liste_vide():
+    resultat = compute_presence_meta([])
+
+    assert resultat == {
+        "total_profils": 0,
+        "meta_absente": [],
+        "licence_donnees_manquante": [],
+        "genere_le_manquant": [],
+    }
+
+
+def test_compute_presence_meta_meta_absent_du_profil():
+    resultat = compute_presence_meta([{"id": "sans-meta"}])
+
+    assert resultat["meta_absente"] == ["sans-meta"]
+    assert resultat["licence_donnees_manquante"] == ["sans-meta"]
+    assert resultat["genere_le_manquant"] == ["sans-meta"]
+
+
+def test_compute_presence_meta_meta_incomplet():
+    profils = [
+        {"id": "licence-vide", "meta": {"licence_donnees": "", "genere_le": "2026-01-01T00:00:00"}},
+        {"id": "genere_le-null", "meta": {"licence_donnees": "ODbL", "genere_le": None}},
+        {"id": "complet", "meta": {"licence_donnees": "ODbL", "genere_le": "2026-01-01T00:00:00"}},
+    ]
+
+    resultat = compute_presence_meta(profils)
+
+    assert resultat["meta_absente"] == []
+    assert resultat["licence_donnees_manquante"] == ["licence-vide"]
+    assert resultat["genere_le_manquant"] == ["genere_le-null"]
+
+
+def test_compute_presence_meta_total_profils():
+    resultat = compute_presence_meta([{"id": "a"}, {"id": "b", "meta": {}}])
+
+    assert resultat["total_profils"] == 2
+    assert resultat["meta_absente"] == ["a"]
+    assert set(resultat["licence_donnees_manquante"]) == {"a", "b"}
+    assert set(resultat["genere_le_manquant"]) == {"a", "b"}
