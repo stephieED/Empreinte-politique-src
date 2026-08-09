@@ -4,7 +4,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from audit_pivot_dataset import load_pivot_directory
+from audit_pivot_dataset import (
+    compute_distribution_listes,
+    compute_nombre_sources,
+    compute_repartition_chambre,
+    load_pivot_directory,
+)
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "audit_pivot"
@@ -91,3 +96,162 @@ def test_load_pivot_directory_est_pure(tmp_path):
 
     # Le fichier source ne doit pas être modifié par le chargement.
     assert json.loads(fichier.read_text(encoding="utf-8")) == contenu
+
+
+# ---------------------------------------------------------------------------
+# Fixtures minimalistes en mémoire pour les indicateurs de volumétrie.
+# ---------------------------------------------------------------------------
+
+def profil(chambre=None, nb_votes=0, nb_textes=0, nb_amendements=0,
+           nb_interventions=0, nb_sources=0):
+    return {
+        "id": "source:x",
+        "chambre": chambre,
+        "sources": [{"type": "nosdeputes", "url": "u", "synchro_le": "t"}] * nb_sources,
+        "votes": [{"id": i} for i in range(nb_votes)],
+        "textes_portes": [{"id": i} for i in range(nb_textes)],
+        "amendements": [{"id": i} for i in range(nb_amendements)],
+        "interventions": [{"id": i} for i in range(nb_interventions)],
+    }
+
+
+# ---------------------------------------------------------------------------
+# compute_repartition_chambre
+# ---------------------------------------------------------------------------
+
+def test_compute_repartition_chambre_liste_vide():
+    resultat = compute_repartition_chambre([])
+
+    assert resultat["total_profils"] == 0
+    assert resultat["par_chambre"] == {
+        "AN": 0, "PE": 0, "Senat": 0, "mairie": 0, "null": 0,
+    }
+
+
+def test_compute_repartition_chambre_repartit_par_chambre_connue():
+    profils = [
+        profil(chambre="AN"),
+        profil(chambre="AN"),
+        profil(chambre="Senat"),
+        profil(chambre="PE"),
+        profil(chambre="mairie"),
+    ]
+
+    resultat = compute_repartition_chambre(profils)
+
+    assert resultat["total_profils"] == 5
+    assert resultat["par_chambre"] == {
+        "AN": 2, "Senat": 1, "PE": 1, "mairie": 1, "null": 0,
+    }
+
+
+def test_compute_repartition_chambre_valeur_null_ou_inconnue():
+    profils = [
+        profil(chambre=None),
+        profil(chambre="valeur_inconnue"),
+        profil(chambre="AN"),
+    ]
+
+    resultat = compute_repartition_chambre(profils)
+
+    assert resultat["total_profils"] == 3
+    assert resultat["par_chambre"]["null"] == 2
+    assert resultat["par_chambre"]["AN"] == 1
+
+
+def test_compute_repartition_chambre_chambre_absente_du_profil():
+    resultat = compute_repartition_chambre([{"id": "source:x"}])
+
+    assert resultat["total_profils"] == 1
+    assert resultat["par_chambre"]["null"] == 1
+
+
+# ---------------------------------------------------------------------------
+# compute_distribution_listes
+# ---------------------------------------------------------------------------
+
+def test_compute_distribution_listes_liste_vide():
+    resultat = compute_distribution_listes([])
+
+    for champ in ("votes", "textes_portes", "amendements", "interventions"):
+        assert resultat[champ] == {
+            "min": None, "max": None, "mediane": None,
+            "moyenne": None, "pct_profils_a_zero": 0.0,
+        }
+
+
+def test_compute_distribution_listes_0_1_plusieurs_elements():
+    profils = [
+        profil(nb_votes=0),
+        profil(nb_votes=1),
+        profil(nb_votes=5),
+        profil(nb_votes=6),
+    ]
+
+    resultat = compute_distribution_listes(profils)
+    votes = resultat["votes"]
+
+    assert votes["min"] == 0
+    assert votes["max"] == 6
+    assert votes["mediane"] == 3
+    assert votes["moyenne"] == 3.0
+    assert votes["pct_profils_a_zero"] == 25.0
+
+
+def test_compute_distribution_listes_champ_absent_ou_null_compte_comme_zero():
+    profils = [
+        {"id": "a"},                 # champ "votes" absent
+        {"id": "b", "votes": None},  # champ "votes" explicitement null
+        {"id": "c", "votes": [{"id": 1}]},
+    ]
+
+    resultat = compute_distribution_listes(profils)
+    votes = resultat["votes"]
+
+    assert votes["min"] == 0
+    assert votes["max"] == 1
+    assert votes["pct_profils_a_zero"] == round(200 / 3, 2)
+
+
+def test_compute_distribution_listes_couvre_les_quatre_champs_independamment():
+    profils = [
+        profil(nb_votes=2, nb_textes=0, nb_amendements=1, nb_interventions=3),
+    ]
+
+    resultat = compute_distribution_listes(profils)
+
+    assert resultat["votes"]["max"] == 2
+    assert resultat["textes_portes"]["max"] == 0
+    assert resultat["amendements"]["max"] == 1
+    assert resultat["interventions"]["max"] == 3
+
+
+# ---------------------------------------------------------------------------
+# compute_nombre_sources
+# ---------------------------------------------------------------------------
+
+def test_compute_nombre_sources_liste_vide():
+    resultat = compute_nombre_sources([])
+
+    assert resultat == {"moyenne_sources": None, "pct_profils_une_source": 0.0}
+
+
+def test_compute_nombre_sources_moyenne_et_pourcentage_une_source():
+    profils = [
+        profil(nb_sources=0),
+        profil(nb_sources=1),
+        profil(nb_sources=1),
+        profil(nb_sources=3),
+    ]
+
+    resultat = compute_nombre_sources(profils)
+
+    assert resultat["moyenne_sources"] == 1.25
+    assert resultat["pct_profils_une_source"] == 50.0
+
+
+def test_compute_nombre_sources_champ_absent_compte_comme_zero():
+    resultat = compute_nombre_sources([{"id": "a"}, {"id": "b", "sources": [{"type": "x"}]}])
+
+    assert resultat["moyenne_sources"] == 0.5
+    assert resultat["pct_profils_une_source"] == 50.0
