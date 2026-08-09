@@ -5,9 +5,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_pivot_dataset import (
+    compute_coherence_chambre_sources,
+    compute_coherence_schema_version,
     compute_distribution_listes,
+    compute_doublons_id,
     compute_nombre_sources,
     compute_repartition_chambre,
+    compute_validite_dates,
     load_pivot_directory,
 )
 
@@ -255,3 +259,250 @@ def test_compute_nombre_sources_champ_absent_compte_comme_zero():
 
     assert resultat["moyenne_sources"] == 0.5
     assert resultat["pct_profils_une_source"] == 50.0
+
+
+# ---------------------------------------------------------------------------
+# compute_doublons_id
+# ---------------------------------------------------------------------------
+
+def test_compute_doublons_id_liste_vide():
+    assert compute_doublons_id([]) == {"doublons": []}
+
+
+def test_compute_doublons_id_sans_doublon():
+    profils = [{"id": "nosdeputes:a"}, {"id": "nosdeputes:b"}]
+
+    assert compute_doublons_id(profils) == {"doublons": []}
+
+
+def test_compute_doublons_id_detecte_les_doublons():
+    profils = [
+        {"id": "nosdeputes:a"},
+        {"id": "nosdeputes:a"},
+        {"id": "nosdeputes:b"},
+        {"id": "nosdeputes:a"},
+        {"id": "nosdeputes:c"},
+        {"id": "nosdeputes:c"},
+    ]
+
+    resultat = compute_doublons_id(profils)
+
+    assert resultat == {
+        "doublons": [
+            {"id": "nosdeputes:a", "occurrences": 3},
+            {"id": "nosdeputes:c", "occurrences": 2},
+        ]
+    }
+
+
+def test_compute_doublons_id_ignore_id_absent_ou_vide():
+    profils = [{"id": ""}, {"id": ""}, {}, {}]
+
+    assert compute_doublons_id(profils) == {"doublons": []}
+
+
+# ---------------------------------------------------------------------------
+# compute_coherence_schema_version
+# ---------------------------------------------------------------------------
+
+def test_compute_coherence_schema_version_liste_vide():
+    assert compute_coherence_schema_version([]) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_schema_version_coherente():
+    profils = [{"id": "a", "schema_version": "1", "meta": {"schema_version": "1"}}]
+
+    assert compute_coherence_schema_version(profils) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_schema_version_divergente():
+    profils = [{"id": "a", "schema_version": "1", "meta": {"schema_version": "2"}}]
+
+    resultat = compute_coherence_schema_version(profils)
+
+    assert resultat == {
+        "profils_incoherents": [
+            {"id": "a", "schema_version": "1", "meta_schema_version": "2"}
+        ]
+    }
+
+
+def test_compute_coherence_schema_version_meta_absente_ou_invalide():
+    profils = [
+        {"id": "a", "schema_version": "1"},                # meta absente
+        {"id": "b", "schema_version": "1", "meta": "pas un dict"},
+    ]
+
+    resultat = compute_coherence_schema_version(profils)
+
+    assert {p["id"] for p in resultat["profils_incoherents"]} == {"a", "b"}
+    assert all(p["meta_schema_version"] is None for p in resultat["profils_incoherents"])
+
+
+# ---------------------------------------------------------------------------
+# compute_validite_dates
+# ---------------------------------------------------------------------------
+
+def profil_dates(genere_le="2024-01-01T00:00:00+00:00", sources=None, id_="a"):
+    return {
+        "id": id_,
+        "meta": {"genere_le": genere_le},
+        "sources": sources if sources is not None else [],
+    }
+
+
+def test_compute_validite_dates_liste_vide():
+    assert compute_validite_dates([]) == {"dates_invalides": []}
+
+
+def test_compute_validite_dates_dates_valides():
+    profils = [
+        profil_dates(
+            genere_le="2024-01-01T00:00:00+00:00",
+            sources=[{"type": "nosdeputes", "synchro_le": "2024-06-01T12:00:00Z"}],
+        )
+    ]
+
+    assert compute_validite_dates(profils) == {"dates_invalides": []}
+
+
+def test_compute_validite_dates_format_invalide():
+    profils = [profil_dates(genere_le="pas une date")]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat == {
+        "dates_invalides": [
+            {"id": "a", "champ": "meta.genere_le", "valeur": "pas une date", "erreur": "format_invalide"}
+        ]
+    }
+
+
+def test_compute_validite_dates_genere_le_absent():
+    profils = [{"id": "a", "meta": {}, "sources": []}]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat["dates_invalides"] == [
+        {"id": "a", "champ": "meta.genere_le", "valeur": None, "erreur": "format_invalide"}
+    ]
+
+
+def test_compute_validite_dates_date_future():
+    profils = [profil_dates(genere_le="2999-01-01T00:00:00+00:00")]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat == {
+        "dates_invalides": [
+            {
+                "id": "a", "champ": "meta.genere_le",
+                "valeur": "2999-01-01T00:00:00+00:00", "erreur": "date_future",
+            }
+        ]
+    }
+
+
+def test_compute_validite_dates_source_invalide_indexee():
+    profils = [
+        profil_dates(sources=[
+            {"type": "nosdeputes", "synchro_le": "2024-01-01T00:00:00+00:00"},
+            {"type": "wikidata", "synchro_le": "2999-01-01T00:00:00+00:00"},
+        ])
+    ]
+
+    resultat = compute_validite_dates(profils)
+
+    assert resultat == {
+        "dates_invalides": [
+            {
+                "id": "a", "champ": "sources[1].synchro_le",
+                "valeur": "2999-01-01T00:00:00+00:00", "erreur": "date_future",
+            }
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# compute_coherence_chambre_sources
+# ---------------------------------------------------------------------------
+
+def profil_chambre(chambre, types_sources, id_="a"):
+    return {
+        "id": id_,
+        "chambre": chambre,
+        "sources": [{"type": t} for t in types_sources],
+    }
+
+
+def test_compute_coherence_chambre_sources_liste_vide():
+    assert compute_coherence_chambre_sources([]) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_chambre_sources_an_coherente():
+    profils = [
+        profil_chambre("AN", ["nosdeputes"]),
+        profil_chambre("AN", ["assemblee_nationale"]),
+    ]
+
+    assert compute_coherence_chambre_sources(profils) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_chambre_sources_an_incoherente():
+    profils = [profil_chambre("AN", ["wikidata"])]
+
+    resultat = compute_coherence_chambre_sources(profils)
+
+    assert resultat == {
+        "profils_incoherents": [
+            {"id": "a", "chambre": "AN", "types_sources": ["wikidata"]}
+        ]
+    }
+
+
+def test_compute_coherence_chambre_sources_senat():
+    profils = [
+        profil_chambre("Senat", ["nossenateurs"], id_="ok"),
+        profil_chambre("Senat", ["nosdeputes"], id_="ko"),
+    ]
+
+    resultat = compute_coherence_chambre_sources(profils)
+
+    assert [p["id"] for p in resultat["profils_incoherents"]] == ["ko"]
+
+
+def test_compute_coherence_chambre_sources_pe():
+    profils = [
+        profil_chambre("PE", ["parltrack"], id_="ok1"),
+        profil_chambre("PE", ["europarl"], id_="ok2"),
+        profil_chambre("PE", ["nosdeputes"], id_="ko"),
+    ]
+
+    resultat = compute_coherence_chambre_sources(profils)
+
+    assert [p["id"] for p in resultat["profils_incoherents"]] == ["ko"]
+
+
+def test_compute_coherence_chambre_sources_mairie_jamais_signalee():
+    profils = [profil_chambre("mairie", [])]
+
+    assert compute_coherence_chambre_sources(profils) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_chambre_sources_chambre_absente_ou_inconnue():
+    profils = [
+        {"id": "a", "chambre": None, "sources": []},
+        {"id": "b", "chambre": "inconnue", "sources": []},
+    ]
+
+    assert compute_coherence_chambre_sources(profils) == {"profils_incoherents": []}
+
+
+def test_compute_coherence_chambre_sources_sources_absentes():
+    profils = [{"id": "a", "chambre": "AN"}]
+
+    resultat = compute_coherence_chambre_sources(profils)
+
+    assert resultat == {
+        "profils_incoherents": [{"id": "a", "chambre": "AN", "types_sources": []}]
+    }
