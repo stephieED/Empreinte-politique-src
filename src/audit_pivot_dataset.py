@@ -11,6 +11,12 @@ Sous-tâche 2/6 : indicateurs de volumétrie, sous forme de fonctions pures
 (liste de profils pivot -> dict sérialisable JSON), sans aucune I/O. Le
 rapport JSON/Markdown et la CLI sont ajoutés par une sous-issue dédiée.
 
+Sous-tâche 3/6 : indicateurs de complétude (taux de remplissage, profils
+sans activité, présence des métadonnées `meta`). Mêmes contraintes :
+fonctions pures, sans I/O. Une donnée absente ou vide n'est jamais
+comptée comme renseignée (AGENTS.md §2.5 : "missing data means missing
+data, never default 0").
+
 Aucune dépendance lourde : stdlib uniquement à ce stade.
 """
 
@@ -25,6 +31,13 @@ from schema_pivot import KNOWN_CHAMBRES
 CHAMPS_LISTES_VOLUMETRIE: tuple[str, ...] = (
     "votes", "textes_portes", "amendements", "interventions",
 )
+
+# Champs dont on mesure le taux de remplissage (complétude).
+CHAMPS_COMPLETUDE: tuple[str, ...] = ("parti", "groupe", "tags_thematiques", "mandats")
+
+# Listes d'activité : un profil sans aucun élément dans ces trois champs est
+# un candidat à un enrichissement manquant.
+CHAMPS_ACTIVITE: tuple[str, ...] = ("votes", "amendements", "interventions")
 
 
 def load_pivot_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -143,4 +156,94 @@ def compute_nombre_sources(profils: list[dict[str, Any]]) -> dict[str, Any]:
         "pct_profils_une_source": round(
             100 * sum(1 for n in nombres_sources if n == 1) / len(nombres_sources), 2
         ),
+    }
+
+
+def _est_renseigne(valeur: Any) -> bool:
+    """True si `valeur` est une donnée renseignée.
+
+    `None`, chaîne vide et liste vide comptent comme non renseignés — une
+    chaîne/liste vide est une absence de donnée déguisée, jamais un
+    remplissage valide (AGENTS.md §2.5).
+    """
+    if valeur is None:
+        return False
+    if isinstance(valeur, (str, list)):
+        return len(valeur) > 0
+    return True
+
+
+def compute_taux_remplissage(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Taux de remplissage de `parti`, `groupe`, `tags_thematiques`, `mandats`.
+
+    Pour chaque champ : nombre de profils où il est renseigné (ni absent,
+    ni `null`, ni chaîne/liste vide), sur le total de profils. Sur une
+    liste de profils vide, `taux_pct` vaut `0.0` (rien à mesurer).
+    """
+    total = len(profils)
+    resultat: dict[str, Any] = {}
+
+    for champ in CHAMPS_COMPLETUDE:
+        renseignes = sum(1 for profil in profils if _est_renseigne(profil.get(champ)))
+        resultat[champ] = {
+            "renseignes": renseignes,
+            "total": total,
+            "taux_pct": round(100 * renseignes / total, 2) if total else 0.0,
+        }
+
+    return resultat
+
+
+def compute_profils_sans_activite(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Profils sans aucun élément dans `votes`, `amendements` ou `interventions`.
+
+    Ces profils sont des candidats à un enrichissement manquant. Un champ
+    absent ou `null` compte comme "aucun élément", au même titre qu'une
+    liste vide.
+    """
+    ids = [
+        profil.get("id")
+        for profil in profils
+        if all(_taille_liste(profil, champ) == 0 for champ in CHAMPS_ACTIVITE)
+    ]
+
+    return {
+        "total_profils": len(profils),
+        "nb_profils_sans_activite": len(ids),
+        "profils_sans_activite": ids,
+    }
+
+
+def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Présence et non-vacuité de `meta.licence_donnees` et `meta.genere_le`.
+
+    Un `meta` absent ou de mauvais type compte comme un défaut pour les
+    deux champs. Retourne la liste des `id` en défaut pour chaque critère,
+    afin de cibler précisément les profils à corriger.
+    """
+    ids_meta_absente: list[Any] = []
+    ids_licence_manquante: list[Any] = []
+    ids_genere_le_manquant: list[Any] = []
+
+    for profil in profils:
+        identifiant = profil.get("id")
+        meta = profil.get("meta")
+
+        if not isinstance(meta, dict):
+            ids_meta_absente.append(identifiant)
+            ids_licence_manquante.append(identifiant)
+            ids_genere_le_manquant.append(identifiant)
+            continue
+
+        if not _est_renseigne(meta.get("licence_donnees")):
+            ids_licence_manquante.append(identifiant)
+
+        if not _est_renseigne(meta.get("genere_le")):
+            ids_genere_le_manquant.append(identifiant)
+
+    return {
+        "total_profils": len(profils),
+        "meta_absente": ids_meta_absente,
+        "licence_donnees_manquante": ids_licence_manquante,
+        "genere_le_manquant": ids_genere_le_manquant,
     }
