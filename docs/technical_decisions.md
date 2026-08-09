@@ -13,7 +13,7 @@ vers `public/data/` (généré, gitignoré) et produit `public/data/manifest.jso
 (roster candidats/groupes + rattachement candidat→groupe réel via
 `membres[].membre_id`), car Vite ne sert pas de fichiers hors du dossier
 projet. `src/data/pivotAdapter.js` porte vers React la logique déjà validée
-dans `web/v3/js` (ancienneté de mandat, dédoublonnage des responsabilités,
+dans `web/old/v3/js` (ancienneté de mandat, dédoublonnage des responsabilités,
 classification majorité/opposition/gouvernement par `position_dans_hemicycle`
 + `source_url`, classification thématique par mots-clés) plutôt que de la
 dupliquer en Python : cette logique est un pur calcul d'affichage, sans
@@ -22,8 +22,8 @@ web. *Alternative rejetée* : script Python générant des JSON pré-calculés �
 aurait dupliqué une logique déjà écrite et éprouvée en JS pour v3.
 
 **Périmètre restreint assumé** : `web/UI_finale` affiche désormais uniquement
-Candidats + Groupes parlementaires réels (alignement sur `web/v3`, pas
-d'onglet Partis). Plusieurs groupes réels ont 0 ou 1 profil individuel
+Candidats + Groupes parlementaires réels (alignement sur l'ancien `web/old/v3`,
+pas d'onglet Partis). Plusieurs groupes réels ont 0 ou 1 profil individuel
 disponible localement (`profils_disponibles` très inférieur à `roster_total`)
 : les composants affichent un état "aucune donnée" explicite plutôt qu'un
 graphique à 0 silencieux, conformément à la règle 5 (une donnée manquante
