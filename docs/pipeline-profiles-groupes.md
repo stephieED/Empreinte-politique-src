@@ -53,6 +53,7 @@ graph TD
     %% =========================
     O1 --> V1[src/schema_groupe.py\nValidation schema]
     O1 --> Q1[src/check_quality_gate.py\nQuality gate CI]
+    O1 --> A1[src/audit_groupe_dataset.py\nAudit qualite interne - CLI]
 ```
 
 ## Variante: flux prolongé jusqu'aux vues web (UI_finale)
@@ -247,4 +248,14 @@ Points importants de la pipeline
   - group_profile.py n’interroge pas le réseau: il agrège des données déjà présentes localement.
   - En mode batch, la couverture roster/profils disponibles est tracée (pour éviter de confondre effectif réel et effectif effectivement agrégé).
   - Le quality gate peut faire échouer le run si structure invalide ou incidents réseau au-delà du seuil.
+
+### Audit du jeu de données groupes
+
+`src/audit_groupe_dataset.py` est un outil de qualité interne, distinct du
+quality gate CI : il scanne `pivot_data/groupes` (par défaut) et produit un
+rapport JSON/Markdown (volumétrie, complétude, cohérence, fraîcheur des
+sources, warnings agrégés), sur le même modèle que `audit_pivot_dataset.py`
+pour `pivot_data/profiles`. Aucun score ni classement — voir `README.md`
+§11 et `docs/examples/audit_groupe_report_sample.md` pour un exemple de
+rapport.
 
