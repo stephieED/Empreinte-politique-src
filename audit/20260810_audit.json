@@ -1,6 +1,6 @@
 {
   "meta": {
-    "genere_le": "2026-08-10T15:44:00.283667+00:00",
+    "genere_le": "2026-08-10T16:08:19.291182+00:00",
     "staleness_days": 30
   },
   "vue_ensemble": {
@@ -58,7 +58,7 @@
   },
   "audit_profils": {
     "meta": {
-      "genere_le": "2026-08-10T15:44:00.283667+00:00",
+      "genere_le": "2026-08-10T16:08:19.291182+00:00",
       "total_profils": 8,
       "total_erreurs_lecture": 0,
       "staleness_days": 30
@@ -305,7 +305,7 @@
   },
   "audit_groupes": {
     "meta": {
-      "genere_le": "2026-08-10T15:44:00.283667+00:00",
+      "genere_le": "2026-08-10T16:08:19.291182+00:00",
       "total_groupes": 7,
       "total_erreurs_lecture": 0,
       "staleness_days": 30
@@ -631,6 +631,73 @@
           ]
         }
       }
+    },
+    "tableau_croise_groupes": {
+      "lignes": [
+        {
+          "groupe_id": "AN:LFI",
+          "groupe_nom": "La France insoumise - NUPES",
+          "chambre": "AN",
+          "membres": 0,
+          "cohesion_votes": 0,
+          "tags_thematiques_agreges": 0,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "AN:LR",
+          "groupe_nom": "Les Républicains",
+          "chambre": "AN",
+          "membres": 0,
+          "cohesion_votes": 0,
+          "tags_thematiques_agreges": 0,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "Senat:LR",
+          "groupe_nom": "Les Républicains",
+          "chambre": "Senat",
+          "membres": 1,
+          "cohesion_votes": 0,
+          "tags_thematiques_agreges": 0,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "AN:RN",
+          "groupe_nom": "Rassemblement National",
+          "chambre": "AN",
+          "membres": 1,
+          "cohesion_votes": 558,
+          "tags_thematiques_agreges": 318,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "AN:REN",
+          "groupe_nom": "Renaissance",
+          "chambre": "AN",
+          "membres": 1,
+          "cohesion_votes": 268,
+          "tags_thematiques_agreges": 0,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "Senat:SER",
+          "groupe_nom": "Socialiste, Écologiste et Républicain",
+          "chambre": "Senat",
+          "membres": 0,
+          "cohesion_votes": 0,
+          "tags_thematiques_agreges": 0,
+          "amendements": 0
+        },
+        {
+          "groupe_id": "AN:SOC",
+          "groupe_nom": "Socialistes et apparentés",
+          "chambre": "AN",
+          "membres": 1,
+          "cohesion_votes": 814,
+          "tags_thematiques_agreges": 179,
+          "amendements": 0
+        }
+      ]
     },
     "erreurs_lecture": []
   }
