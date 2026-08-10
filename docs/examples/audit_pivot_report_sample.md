@@ -1,0 +1,116 @@
+> Exemple statique généré sur `tests/fixtures/audit_pivot/` (3 profils + 1 fichier
+> corrompu) avec une date de référence fixée au 2026-08-09, pour que ce document
+> reste reproductible. La commande CLI réelle (`python src/audit_pivot_dataset.py
+> --input-dir tests/fixtures/audit_pivot --output-json ... --output-md ...`)
+> utilise l'heure courante : seul `meta.genere_le` diffère alors d'une exécution
+> à l'autre sur ces fixtures (aucune source datée n'y figure).
+
+# Rapport d'audit du jeu de données pivot
+
+Généré le 2026-08-09T00:00:00+00:00. 3 profil(s) analysé(s), 1 erreur(s) de lecture. Seuil de péremption des sources : 30 jour(s).
+
+Ce rapport est un outil de qualité interne : il présente des indicateurs bruts, sans jugement de valeur ni classement.
+
+## Volumétrie
+
+Total profils : 3
+
+### Répartition par chambre
+
+| Chambre | Profils |
+| --- | --- |
+| AN | 2 |
+| PE | 0 |
+| Senat | 1 |
+| mairie | 0 |
+| null | 0 |
+
+### Distribution des listes métier (par profil)
+
+| Champ | Min | Max | Médiane | Moyenne | % profils à 0 |
+| --- | --- | --- | --- | --- | --- |
+| votes | 0 | 0 | 0 | 0 | 100.0 |
+| textes_portes | 0 | 0 | 0 | 0 | 100.0 |
+| amendements | 0 | 0 | 0 | 0 | 100.0 |
+| interventions | 0 | 0 | 0 | 0 | 100.0 |
+
+### Sources déclarées
+
+| Moyenne de sources par profil | % profils à une seule source |
+| --- | --- |
+| 0 | 0.0 |
+
+## Tableau croisé des volumes par candidat
+
+| id | Nom | Chambre | Votes | Textes portés | Amendements | Interventions |
+| --- | --- | --- | --- | --- | --- | --- |
+| nosdeputes:jean-dupont | Jean Dupont | AN | 0 | 0 | 0 | 0 |
+| nosdeputes:marie-martin | Marie Martin | AN | 0 | 0 | 0 | 0 |
+| nossenateurs:paul-durand | Paul Durand | Senat | 0 | 0 | 0 | 0 |
+
+## Complétude
+
+### Taux de remplissage
+
+| Champ | Renseignés | Total | Taux (%) |
+| --- | --- | --- | --- |
+| parti | 0 | 3 | 0.0 |
+| groupe | 3 | 3 | 100.0 |
+| tags_thematiques | 0 | 3 | 0.0 |
+| mandats | 0 | 3 | 0.0 |
+
+### Profils sans activité (aucun vote, amendement ni intervention)
+
+3 / 3 profil(s).
+
+### Présence des métadonnées
+
+| Critère | Profils en défaut (sur 3) |
+| --- | --- |
+| meta absente | 0 |
+| licence_donnees manquante | 3 |
+| genere_le manquant | 0 |
+
+## Cohérence
+
+### Doublons d'`id`
+
+Aucun doublon détecté.
+
+### Divergence `schema_version` / `meta.schema_version`
+
+Aucune divergence détectée.
+
+### Dates de traçabilité invalides ou futures
+
+Aucune date invalide détectée.
+
+### Cohérence `chambre` / types de `sources[]`
+
+| id | Chambre | Types de sources déclarés |
+| --- | --- | --- |
+| nosdeputes:jean-dupont | AN | — |
+| nosdeputes:marie-martin | AN | — |
+| nossenateurs:paul-durand | Senat | — |
+
+## Fraîcheur
+
+### Ancienneté des sources par type (jours écoulés depuis `synchro_le`)
+
+Aucune source datée.
+
+### Profils périmés (toutes sources > 30 jours)
+
+Aucun profil périmé.
+
+## Warnings
+
+Total : 0
+
+Aucun warning.
+
+## Erreurs de lecture
+
+| Fichier | Erreur |
+| --- | --- |
+| tests/fixtures/audit_pivot/invalide.pivot.json | Expecting value: line 7 column 1 (char 122) |

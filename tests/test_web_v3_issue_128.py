@@ -2,10 +2,10 @@
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-CONFIG_JS = (ROOT / "web" / "v3" / "js" / "config.js").read_text(encoding="utf-8")
-APP_JS = (ROOT / "web" / "v3" / "js" / "app.js").read_text(encoding="utf-8")
-RENDER_JS = (ROOT / "web" / "v3" / "js" / "render.js").read_text(encoding="utf-8")
-CSS = (ROOT / "web" / "v3" / "design-tokens.css").read_text(encoding="utf-8")
+CONFIG_JS = (ROOT / "web" / "old" / "v3" / "js" / "config.js").read_text(encoding="utf-8")
+APP_JS = (ROOT / "web" / "old" / "v3" / "js" / "app.js").read_text(encoding="utf-8")
+RENDER_JS = (ROOT / "web" / "old" / "v3" / "js" / "render.js").read_text(encoding="utf-8")
+CSS = (ROOT / "web" / "old" / "v3" / "design-tokens.css").read_text(encoding="utf-8")
 
 
 def test_apercu_in_panel_order():
