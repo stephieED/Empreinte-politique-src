@@ -37,6 +37,7 @@ CV_CandidatFR/
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
+|  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py, no CLI/report yet
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
