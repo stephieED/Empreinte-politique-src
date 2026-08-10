@@ -38,6 +38,7 @@ CV_CandidatFR/
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
+|  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -355,6 +356,35 @@ a group with only stale sources is flagged — same option contract as
 `audit_pivot_dataset.py` for combined use. See
 `docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_groupe/`.
+
+## 12. Combined audit pipeline (manual tool)
+
+`src/audit_pipeline.py` is a **manual** entry point that runs both audits
+above by calling their functions directly (no subprocess) and compiles an
+"overview" section on top of the two detailed reports: total profiles/groups
+audited, aggregated read errors, and aggregated `meta.warnings[]` across both
+document types. Pure composition of the reports produced by
+`audit_pivot_dataset.py` / `audit_groupe_dataset.py` — no new business logic.
+
+It is separate from `src/check_quality_gate.py` (the only CI-blocking gate)
+and is **not** wired into `.github/workflows/generate-data.yml` — this was an
+explicit decision (see issue #178): this tool is never invoked automatically
+by CI.
+
+```bash
+python src/audit_pipeline.py \
+    --profiles-dir pivot_data/profiles \
+    --groupes-dir pivot_data/groupes \
+    --output-json audit_pipeline_report.json \
+    --output-md audit_pipeline_report.md \
+    --staleness-days 30
+```
+
+`--profiles-dir`/`--groupes-dir` default to `pivot_data/profiles` /
+`pivot_data/groupes`. `--output-json`/`--output-md` default to unset (JSON
+prints to stdout, Markdown is skipped if `--output-md` is omitted).
+`--staleness-days` (default 30) is forwarded unchanged to both underlying
+audits.
 
 ## Raw profile content (Nos* format)
 
