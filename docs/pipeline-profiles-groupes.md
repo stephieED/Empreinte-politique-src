@@ -254,10 +254,11 @@ Points importants de la pipeline
 `src/audit_groupe_dataset.py` est un outil de qualité interne, distinct du
 quality gate CI : il scanne `pivot_data/groupes` (par défaut) et produit un
 rapport JSON/Markdown (volumétrie, complétude, cohérence, fraîcheur des
-sources, warnings agrégés), sur le même modèle que `audit_pivot_dataset.py`
-pour `pivot_data/profiles`. Aucun score ni classement — voir `README.md`
-§11 et `docs/examples/audit_groupe_report_sample.md` pour un exemple de
-rapport.
+sources, warnings agrégés, tableau croisé des volumes par groupe — membres,
+cohesion_votes, tags_thematiques_agreges, amendements_agreges), sur le même
+modèle que `audit_pivot_dataset.py` pour `pivot_data/profiles`. Aucun score
+ni classement — voir `README.md` §11 et
+`docs/examples/audit_groupe_report_sample.md` pour un exemple de rapport.
 
 ### Pipeline d'audit combiné (outil manuel)
 

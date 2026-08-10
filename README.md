@@ -337,9 +337,11 @@ profile `*.json` files and reports volumetry (effectifs, `cohesion_votes`,
 `amendements_agreges` — global and per `type_deposant`), completeness
 (`tags_thematiques_agreges`, groups with members but no cohesion votes),
 consistency (`validate_profil_groupe`, `schema_version` divergence, roster
-coverage gap, duplicate `groupe_id`), source freshness and stale groups, and
-aggregated `meta.warnings[]` — same internal-quality-tool contract as the
-pivot audit (no score, no ranking, see `AGENTS.md` §2).
+coverage gap, duplicate `groupe_id`), source freshness and stale groups,
+aggregated `meta.warnings[]`, and a per-groupe cross-tab of `membres` /
+`cohesion_votes` / `tags_thematiques_agreges` / `amendements_agreges`
+(global `nb_amendements`) counts — same internal-quality-tool contract as
+the pivot audit (no score, no ranking, see `AGENTS.md` §2).
 
 ```bash
 python src/audit_groupe_dataset.py \

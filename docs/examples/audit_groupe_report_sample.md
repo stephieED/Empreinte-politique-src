@@ -80,6 +80,14 @@ Ce rapport est un outil de qualité interne : il présente des indicateurs bruts
 | nb_irrecevables | 0 | 0 | 0 | 0 |
 | nb_retires_ou_tombes | 0 | 0 | 0 | 0 |
 
+## Tableau croisé des volumes par groupe
+
+| groupe_id | Nom | Chambre | Membres | Cohésion de vote | Tags thématiques | Amendements |
+| --- | --- | --- | --- | --- | --- | --- |
+| AN:LFI | La France insoumise | AN | 2 | 2 | 2 | 10 |
+| AN:LFI | La France insoumise (doublon) | AN | 1 | 0 | 0 | 0 |
+| Senat:SOC | Socialiste, Ecologiste et Republicain | Senat | 1 | 0 | 0 | 0 |
+
 ## Complétude
 
 ### Présence des tags thématiques agrégés
