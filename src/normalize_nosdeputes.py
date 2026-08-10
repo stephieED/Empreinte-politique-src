@@ -181,13 +181,20 @@ def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
 # Fonction principale
 # ---------------------------------------------------------------------------
 
-def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = None) -> dict[str, Any]:
+def normalize_nosdeputes(
+    raw_profile: dict[str, Any],
+    parti: Optional[str] = None,
+    provenance: str = "candidat_declare",
+) -> dict[str, Any]:
     """Convertit un profil brut NosDéputés/NosSénateurs vers le schéma pivot v1.
 
     Args:
         raw_profile: dict produit par candidate_profile.build_profile().
         parti: parti politique de l'élu (optionnel ; peut être passé depuis
                candidats.json car non fourni par l'API NosDéputés).
+        provenance: "candidat_declare" (défaut) ou "roster_groupe" — voir
+                    schema_pivot.KNOWN_PROVENANCES. Propagé tel quel vers
+                    meta.provenance du profil pivot.
 
     Returns:
         Profil pivot dict conforme au schéma v1.
@@ -207,7 +214,7 @@ def normalize_nosdeputes(raw_profile: dict[str, Any], parti: Optional[str] = Non
     if "nosdeputes" not in synchro_sources:
         synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     # --- Profil pivot de base ---
-    profil: dict[str, Any] = make_empty_profil(f"{source_type}:{slug}", nom)
+    profil: dict[str, Any] = make_empty_profil(f"{source_type}:{slug}", nom, provenance=provenance)
     profil["chambre"] = chambre
     profil["parti"] = parti
     profil["groupe"] = identite.get("groupe_nom") or identite.get("groupe_sigle")

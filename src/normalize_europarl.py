@@ -45,12 +45,16 @@ def _extract_groupe(mandats_europeens: list[dict[str, Any]]) -> Optional[str]:
 def normalize_europarl(
     ue_profile: dict[str, Any],
     parti: Optional[str] = None,
+    provenance: str = "candidat_declare",
 ) -> dict[str, Any]:
     """Convertit un profil Open Data Portal Parlement européen en pivot v1.
 
     Args:
         ue_profile: sortie de `candidate_profile_ue.build_profile_ue()`.
         parti: parti politique issu de raw_data/candidats.json (optionnel).
+        provenance: "candidat_declare" (défaut) ou "roster_groupe" — voir
+                    schema_pivot.KNOWN_PROVENANCES. Propagé tel quel vers
+                    meta.provenance du profil pivot.
 
     Returns:
         Profil pivot v1 dict (chambre: "PE").
@@ -62,7 +66,7 @@ def normalize_europarl(
     synchro_le = meta_ue.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     licence = meta_ue.get("licence_donnees") or None
 
-    profil = make_empty_profil(id_=f"europarl:{mep_id}", nom=nom)
+    profil = make_empty_profil(id_=f"europarl:{mep_id}", nom=nom, provenance=provenance)
     profil["chambre"] = "PE"
     profil["parti"] = parti
     profil["sources"] = [

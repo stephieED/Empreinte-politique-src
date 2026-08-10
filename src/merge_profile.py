@@ -333,6 +333,21 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     new_tags = new.get("tags_thematiques") or []
     merged["tags_thematiques"] = list(dict.fromkeys(list(old_tags) + list(new_tags)))
 
+    if isinstance(merged.get("meta"), dict):
+        # Politique de fusion provenance (#189) : un profil déjà enrichi via
+        # raw_data/candidats.json (provenance="candidat_declare", source éditoriale
+        # de vérité) ne doit JAMAIS être rétrogradé vers provenance="roster_groupe"
+        # par une régénération roster-driven (#188) du même slug — même si le
+        # nouveau run produit provenance="roster_groupe". Un ancien pivot sans
+        # meta.provenance (pré-#189) est traité comme "candidat_declare" par défaut,
+        # pour rester rétro-compatible. Les autres champs éditoriaux (ex. `parti`)
+        # sont déjà protégés plus haut par `_prefer_non_empty` : un run roster-driven
+        # ne les renseigne jamais (valeur None côté generate_roster_candidats.py),
+        # donc l'ancienne valeur est conservée automatiquement.
+        old_meta = old.get("meta") if isinstance(old.get("meta"), dict) else {}
+        if old_meta.get("provenance", "candidat_declare") == "candidat_declare":
+            merged["meta"]["provenance"] = "candidat_declare"
+
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
         for w in merged["meta"]["warnings"]:

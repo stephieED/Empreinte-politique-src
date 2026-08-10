@@ -438,3 +438,74 @@ def test_merge_pivot_profile_intervention_enrichie_syceron_ancienne_entree_gagne
     assert interv["dossier"] is not None
     assert interv["source"] is not None
     assert interv["source"]["type"] == "syceron"
+
+
+# ---------------------------------------------------------------------------
+# merge_pivot_profile — politique de fusion provenance (#189)
+# ---------------------------------------------------------------------------
+
+def _base_pivot(meta_extra=None):
+    return {
+        "sources": [], "mandats": [], "votes": [], "textes_portes": [],
+        "amendements": [], "interventions": [], "tags_thematiques": [],
+        "meta": {"warnings": [], **(meta_extra or {})},
+    }
+
+
+def test_merge_pivot_profile_candidat_declare_non_degrade_par_run_roster():
+    """Un profil déjà enrichi via candidats.json (provenance="candidat_declare",
+    parti renseigné) régénéré par un run roster-driven du même slug (#188) ne doit
+    jamais perdre son enrichissement éditorial : `parti` reste renseigné et
+    `meta.provenance` reste "candidat_declare" (jamais rétrogradé)."""
+    old = _base_pivot({"provenance": "candidat_declare"})
+    old["parti"] = "La France Insoumise"
+
+    new = _base_pivot({"provenance": "roster_groupe"})
+    new["parti"] = None  # generate_roster_candidats.py ne renseigne jamais `parti`.
+
+    merged = merge_pivot_profile(old, new)
+
+    assert merged["parti"] == "La France Insoumise"
+    assert merged["meta"]["provenance"] == "candidat_declare"
+
+
+def test_merge_pivot_profile_candidat_declare_sans_provenance_existante_traite_comme_candidat_declare():
+    """Rétro-compatibilité : un pivot existant écrit avant #189 (pas de
+    meta.provenance) régénéré par un run roster-driven doit être traité comme
+    s'il était "candidat_declare" (valeur par défaut), donc pas rétrogradé."""
+    old = _base_pivot()  # pas de "provenance" dans meta
+    old["parti"] = "Renaissance"
+
+    new = _base_pivot({"provenance": "roster_groupe"})
+    new["parti"] = None
+
+    merged = merge_pivot_profile(old, new)
+
+    assert merged["parti"] == "Renaissance"
+    assert merged["meta"]["provenance"] == "candidat_declare"
+
+
+def test_merge_pivot_profile_roster_groupe_sans_conflit_ecriture_normale():
+    """Un profil "roster_groupe" régénéré par un nouveau run roster-driven (pas de
+    profil candidat_declare préexistant pour ce slug) garde provenance="roster_groupe" :
+    aucune règle de préservation ne s'applique."""
+    old = _base_pivot({"provenance": "roster_groupe"})
+    new = _base_pivot({"provenance": "roster_groupe"})
+
+    merged = merge_pivot_profile(old, new)
+
+    assert merged["meta"]["provenance"] == "roster_groupe"
+
+
+def test_merge_pivot_profile_roster_groupe_regenere_par_candidat_declare_prend_le_dessus():
+    """Cas inverse : un profil "roster_groupe" devient "candidat_declare" si le
+    même slug est désormais suivi via candidats.json (pas de règle de préservation
+    à l'envers — seul "candidat_declare" côté ancien profil est protégé)."""
+    old = _base_pivot({"provenance": "roster_groupe"})
+    new = _base_pivot({"provenance": "candidat_declare"})
+    new["parti"] = "Horizons"
+
+    merged = merge_pivot_profile(old, new)
+
+    assert merged["meta"]["provenance"] == "candidat_declare"
+    assert merged["parti"] == "Horizons"
