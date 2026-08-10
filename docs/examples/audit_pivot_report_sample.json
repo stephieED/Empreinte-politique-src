@@ -68,6 +68,37 @@
     "profils_perimes": []
   },
   "warnings": {"total_warnings": 0, "par_type": {}},
+  "tableau_croise_candidats": {
+    "lignes": [
+      {
+        "id": "nosdeputes:jean-dupont",
+        "nom": "Jean Dupont",
+        "chambre": "AN",
+        "votes": 0,
+        "textes_portes": 0,
+        "amendements": 0,
+        "interventions": 0
+      },
+      {
+        "id": "nosdeputes:marie-martin",
+        "nom": "Marie Martin",
+        "chambre": "AN",
+        "votes": 0,
+        "textes_portes": 0,
+        "amendements": 0,
+        "interventions": 0
+      },
+      {
+        "id": "nossenateurs:paul-durand",
+        "nom": "Paul Durand",
+        "chambre": "Senat",
+        "votes": 0,
+        "textes_portes": 0,
+        "amendements": 0,
+        "interventions": 0
+      }
+    ]
+  },
   "erreurs_lecture": [
     {
       "fichier": "tests/fixtures/audit_pivot/invalide.pivot.json",
