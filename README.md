@@ -37,7 +37,7 @@ CV_CandidatFR/
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
-|  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py, no CLI/report yet
+|  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -327,6 +327,34 @@ skipped if `--output-md` is omitted). `--staleness-days` (default 30) sets the
 threshold beyond which a profile with only stale sources is flagged. See
 `docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_pivot/`.
+
+## 11. Audit the groupe dataset
+
+`src/audit_groupe_dataset.py` mirrors `audit_pivot_dataset.py` for
+`pivot_data/groupes` (`schema_groupe.py`): it scans a directory of group
+profile `*.json` files and reports volumetry (effectifs, `cohesion_votes`,
+`amendements_agreges` — global and per `type_deposant`), completeness
+(`tags_thematiques_agreges`, groups with members but no cohesion votes),
+consistency (`validate_profil_groupe`, `schema_version` divergence, roster
+coverage gap, duplicate `groupe_id`), source freshness and stale groups, and
+aggregated `meta.warnings[]` — same internal-quality-tool contract as the
+pivot audit (no score, no ranking, see `AGENTS.md` §2).
+
+```bash
+python src/audit_groupe_dataset.py \
+    --input-dir pivot_data/groupes \
+    --output-json audit_groupe_report.json \
+    --output-md audit_groupe_report.md \
+    --staleness-days 30
+```
+
+`--input-dir` defaults to `pivot_data/groupes`. `--output-json`/`--output-md`
+default to unset (JSON prints to stdout, Markdown is skipped if `--output-md`
+is omitted). `--staleness-days` (default 30) sets the threshold beyond which
+a group with only stale sources is flagged — same option contract as
+`audit_pivot_dataset.py` for combined use. See
+`docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
+generated on `tests/fixtures/audit_groupe/`.
 
 ## Raw profile content (Nos* format)
 

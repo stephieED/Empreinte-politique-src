@@ -18,19 +18,25 @@ dict sérialisable JSON), sans aucune I/O :
     `schema_version`/`meta.schema_version`, écart
     `couverture_roster.profils_disponibles`/`roster_total`, doublons de
     `groupe_id` ;
-  - fraîcheur : ancienneté de `sources[].synchro_le` ;
+  - fraîcheur : ancienneté de `sources[].synchro_le`, groupes périmés
+    (`compute_groupes_perimes`, seuil `staleness_days` injectable) ;
   - agrégation des `meta.warnings[]` par fichier.
 
-Pas encore de CLI ni de `build_report()`/rapport Markdown à ce stade (voir
-sous-issue suivante) — un `id` manquant, une donnée absente ou vide n'est
+`build_report()` assemble tous ces indicateurs en un rapport structuré
+unique, et `generate_markdown_report()` en dérive un rendu Markdown lisible
+par un humain, sur le même modèle que `audit_pivot_dataset.py` (issue #177,
+plan #174). La CLI (`main()` / `_build_arg_parser()`) partage le même
+contrat d'options — un `id` manquant, une donnée absente ou vide n'est
 jamais comptée comme renseignée (AGENTS.md §2.5 : "missing data means
 missing data, never default 0").
 
 Aucune dépendance lourde : stdlib uniquement.
 """
 
+import argparse
 import json
 import statistics
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -470,6 +476,51 @@ def compute_fraicheur_sources(
     }
 
 
+def _anciennetes_sources_jours(groupe: dict[str, Any], reference_date: datetime) -> list[int]:
+    """Anciennetés (en jours) des sources du groupe dont `synchro_le` est valide."""
+    anciennetes: list[int] = []
+    for source in groupe.get("sources") or []:
+        if not isinstance(source, dict):
+            continue
+        date_synchro = _parse_synchro_le(source.get("synchro_le"))
+        if date_synchro is not None:
+            anciennetes.append(_anciennete_jours(date_synchro, reference_date))
+    return anciennetes
+
+
+def compute_groupes_perimes(
+    groupes: list[dict[str, Any]],
+    staleness_days: int,
+    reference_date: datetime | None = None,
+) -> list[str]:
+    """`groupe_id` des groupes dont **toutes** les sources ont plus de `staleness_days` jours.
+
+    Un groupe sans aucune source dont `synchro_le` est exploitable n'est
+    jamais considéré comme périmé (il n'y a rien à mesurer) : seuls les
+    groupes ayant au moins une source datée, et dont la source la plus
+    fraîche dépasse tout de même le seuil, sont retournés.
+
+    Args:
+        groupes: liste de profils de groupe.
+        staleness_days: seuil d'ancienneté (en jours) au-delà duquel une
+            source est considérée périmée.
+        reference_date: date de référence injectable (voir
+            `compute_fraicheur_sources`).
+
+    Returns:
+        Liste triée des `groupe_id` de groupes périmés.
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    perimes = []
+    for groupe in groupes:
+        anciennetes = _anciennetes_sources_jours(groupe, reference)
+        if anciennetes and min(anciennetes) > staleness_days:
+            perimes.append(groupe.get("groupe_id"))
+
+    return sorted(perimes)
+
+
 # ---------------------------------------------------------------------------
 # Agrégation des warnings
 # ---------------------------------------------------------------------------
@@ -520,3 +571,357 @@ def compute_agregation_warnings(groupes: list[dict[str, Any]]) -> dict[str, Any]
             for type_warning, entree in sorted(par_type.items())
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Assemblage du rapport
+# ---------------------------------------------------------------------------
+
+def build_report(
+    groupes: list[dict[str, Any]],
+    erreurs_lecture: list[dict[str, Any]],
+    staleness_days: int = 30,
+    reference_date: datetime | None = None,
+) -> dict[str, Any]:
+    """Assemble tous les indicateurs `compute_*` en un rapport structuré unique.
+
+    Args:
+        groupes: profils de groupe valides (sortie de `load_groupe_directory`).
+        erreurs_lecture: erreurs de lecture (sortie de `load_groupe_directory`).
+        staleness_days: seuil d'ancienneté en jours pour `compute_groupes_perimes`
+            (défaut : 30).
+        reference_date: date de référence injectable pour les indicateurs de
+            fraîcheur, voir `compute_fraicheur_sources` (défaut :
+            `datetime.now(timezone.utc)`).
+
+    Returns:
+        Dict sérialisable JSON, une section par catégorie d'indicateur
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`)
+        plus `meta` et `erreurs_lecture`. Un outil de qualité interne : ce
+        rapport ne doit jamais introduire de jugement de valeur, de score ou
+        de classement (AGENTS.md §2.1).
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    return {
+        "meta": {
+            "genere_le": reference.isoformat(),
+            "total_groupes": len(groupes),
+            "total_erreurs_lecture": len(erreurs_lecture),
+            "staleness_days": staleness_days,
+        },
+        "volumetrie": {
+            "effectifs": compute_effectifs(groupes),
+            "nombre_cohesion_votes": compute_nombre_cohesion_votes(groupes),
+            "distribution_amendements": compute_distribution_amendements(groupes),
+        },
+        "completude": {
+            "presence_tags_thematiques": compute_presence_tags_thematiques(groupes),
+            "groupes_membres_sans_cohesion": compute_groupes_membres_sans_cohesion(groupes),
+        },
+        "coherence": {
+            "validation_schema": compute_validation_schema(groupes),
+            "coherence_schema_version": compute_coherence_schema_version(groupes),
+            "ecart_couverture_roster": compute_ecart_couverture_roster(groupes),
+            "doublons_groupe_id": compute_doublons_groupe_id(groupes),
+        },
+        "fraicheur": {
+            "fraicheur_sources": compute_fraicheur_sources(groupes, reference_date=reference),
+            "groupes_perimes": compute_groupes_perimes(
+                groupes, staleness_days=staleness_days, reference_date=reference
+            ),
+        },
+        "warnings": compute_agregation_warnings(groupes),
+        "erreurs_lecture": erreurs_lecture,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Génération du rapport Markdown
+# ---------------------------------------------------------------------------
+
+def _md_escape(valeur: Any) -> str:
+    """Neutralise les caractères cassant une cellule de tableau Markdown."""
+    texte = "" if valeur is None else str(valeur)
+    return texte.replace("|", "\\|").replace("\n", " ")
+
+
+def _md_table(en_tetes: list[str], lignes: list[list[Any]], si_vide: str) -> str:
+    """Construit un tableau Markdown, ou renvoie `si_vide` si `lignes` est vide."""
+    if not lignes:
+        return si_vide + "\n"
+
+    entete = "| " + " | ".join(en_tetes) + " |"
+    separateur = "| " + " | ".join("---" for _ in en_tetes) + " |"
+    corps = "\n".join(
+        "| " + " | ".join(_md_escape(cellule) for cellule in ligne) + " |" for ligne in lignes
+    )
+    return f"{entete}\n{separateur}\n{corps}\n"
+
+
+def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
+    lignes_effectifs = [
+        [
+            champ, stats["nombre_groupes_renseignes"],
+            stats["min"], stats["max"], stats["mediane"], stats["moyenne"],
+        ]
+        for champ, stats in volumetrie["effectifs"].items()
+    ]
+
+    cohesion = volumetrie["nombre_cohesion_votes"]
+
+    amendements = volumetrie["distribution_amendements"]
+    lignes_amendements_global = [
+        [champ, stats["min"], stats["max"], stats["mediane"], stats["moyenne"]]
+        for champ, stats in amendements["global"].items()
+    ]
+
+    sections_par_type_deposant = "".join(
+        f"\n#### {type_deposant}\n\n"
+        + _md_table(
+            ["Compteur", "Min", "Max", "Médiane", "Moyenne"],
+            [
+                [champ, stats["min"], stats["max"], stats["mediane"], stats["moyenne"]]
+                for champ, stats in amendements["par_type_deposant"][type_deposant].items()
+            ],
+            "Aucun groupe.",
+        )
+        for type_deposant in sorted(amendements["par_type_deposant"])
+    )
+
+    return (
+        "## Volumétrie\n\n"
+        "### Effectifs (`effectif.actuel` / `min_historique` / `max_historique`)\n\n"
+        + _md_table(
+            ["Champ", "Groupes renseignés", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_effectifs, "Aucun groupe.",
+        )
+        + "\n### Cohésion de vote (nombre de scrutins recensés par groupe)\n\n"
+        + _md_table(
+            ["Min", "Max", "Médiane", "Moyenne", "% groupes à 0"],
+            [[
+                cohesion["min"], cohesion["max"], cohesion["mediane"], cohesion["moyenne"],
+                cohesion["pct_groupes_a_zero"],
+            ]],
+            "Aucun groupe.",
+        )
+        + "\n### Amendements agrégés (tous types de déposants confondus)\n\n"
+        + _md_table(
+            ["Compteur", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_amendements_global, "Aucun groupe.",
+        )
+        + "\n### Amendements agrégés par type de déposant\n"
+        + sections_par_type_deposant
+    )
+
+
+def _md_section_completude(completude: dict[str, Any]) -> str:
+    tags = completude["presence_tags_thematiques"]
+    sans_cohesion = completude["groupes_membres_sans_cohesion"]
+
+    return (
+        "## Complétude\n\n"
+        "### Présence des tags thématiques agrégés\n\n"
+        + _md_table(
+            ["Renseignés", "Total", "Taux (%)"],
+            [[tags["renseignes"], tags["total"], tags["taux_pct"]]],
+            "Aucun groupe.",
+        )
+        + "\n### Groupes avec des membres mais sans `cohesion_votes`\n\n"
+        f"{sans_cohesion['nb_groupes_membres_sans_cohesion']} / "
+        f"{sans_cohesion['total_groupes']} groupe(s).\n"
+    )
+
+
+def _md_section_coherence(coherence: dict[str, Any]) -> str:
+    lignes_validation = [
+        [g["groupe_id"], "; ".join(g["erreurs"])]
+        for g in coherence["validation_schema"]["groupes_invalides"]
+    ]
+    lignes_schema = [
+        [g["groupe_id"], g["schema_version"], g["meta_schema_version"]]
+        for g in coherence["coherence_schema_version"]["groupes_incoherents"]
+    ]
+    lignes_roster = [
+        [g["groupe_id"], g["roster_total"], g["profils_disponibles"], g["ecart"]]
+        for g in coherence["ecart_couverture_roster"]["groupes"]
+    ]
+    lignes_doublons = [
+        [d["groupe_id"], d["occurrences"]] for d in coherence["doublons_groupe_id"]["doublons"]
+    ]
+
+    return (
+        "## Cohérence\n\n"
+        "### Validation du schéma (`validate_profil_groupe`)\n\n"
+        + _md_table(["groupe_id", "Erreurs"], lignes_validation, "Aucun groupe invalide détecté.")
+        + "\n### Divergence `schema_version` / `meta.schema_version`\n\n"
+        + _md_table(
+            ["groupe_id", "schema_version", "meta.schema_version"],
+            lignes_schema, "Aucune divergence détectée.",
+        )
+        + "\n### Écart de couverture du roster\n\n"
+        + _md_table(
+            ["groupe_id", "Roster total", "Profils disponibles", "Écart"],
+            lignes_roster, "Aucune donnée de couverture roster (`meta.couverture_roster`).",
+        )
+        + "\n### Doublons de `groupe_id`\n\n"
+        + _md_table(["groupe_id", "Occurrences"], lignes_doublons, "Aucun doublon détecté.")
+    )
+
+
+def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str:
+    lignes_fraicheur = [
+        [
+            type_source, stats["nombre_sources"],
+            stats["min_jours"], stats["max_jours"], stats["mediane_jours"], stats["moyenne_jours"],
+        ]
+        for type_source, stats in fraicheur["fraicheur_sources"]["par_type_source"].items()
+    ]
+
+    lignes_perimes = [[groupe_id] for groupe_id in fraicheur["groupes_perimes"]]
+
+    return (
+        "## Fraîcheur\n\n"
+        "### Ancienneté des sources par type (jours écoulés depuis `synchro_le`)\n\n"
+        + _md_table(
+            ["Type de source", "Nombre de sources", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_fraicheur, "Aucune source datée.",
+        )
+        + f"\n### Groupes périmés (toutes sources > {staleness_days} jours)\n\n"
+        + _md_table(["groupe_id"], lignes_perimes, "Aucun groupe périmé.")
+    )
+
+
+def _md_section_warnings(warnings: dict[str, Any]) -> str:
+    lignes = [
+        [type_warning, entree["frequence"], ", ".join(entree["groupe_ids"])]
+        for type_warning, entree in warnings["par_type"].items()
+    ]
+
+    return (
+        "## Warnings\n\n"
+        f"Total : {warnings['total_warnings']}\n\n"
+        + _md_table(["Type", "Fréquence", "Groupes concernés"], lignes, "Aucun warning.")
+    )
+
+
+def _md_section_erreurs_lecture(erreurs_lecture: list[dict[str, Any]]) -> str:
+    lignes = [[e["fichier"], e["erreur"]] for e in erreurs_lecture]
+
+    return (
+        "## Erreurs de lecture\n\n"
+        + _md_table(["Fichier", "Erreur"], lignes, "Aucune erreur de lecture.")
+    )
+
+
+def generate_markdown_report(rapport: dict[str, Any]) -> str:
+    """Génère un rapport Markdown lisible par un humain à partir du dict `build_report`.
+
+    Une section par catégorie d'indicateur, sous forme de tableaux synthétiques.
+    Aucun score ni classement n'est calculé : ce rapport présente les chiffres
+    bruts produits par les fonctions `compute_*` (AGENTS.md §2.1).
+    """
+    meta = rapport["meta"]
+
+    sections = [
+        (
+            "# Rapport d'audit du jeu de données groupes\n\n"
+            f"Généré le {meta['genere_le']}. "
+            f"{meta['total_groupes']} groupe(s) analysé(s), "
+            f"{meta['total_erreurs_lecture']} erreur(s) de lecture. "
+            f"Seuil de péremption des sources : {meta['staleness_days']} jour(s).\n\n"
+            "Ce rapport est un outil de qualité interne : il présente des "
+            "indicateurs bruts, sans jugement de valeur ni classement.\n"
+        ),
+        _md_section_volumetrie(rapport["volumetrie"]),
+        _md_section_completude(rapport["completude"]),
+        _md_section_coherence(rapport["coherence"]),
+        _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),
+        _md_section_warnings(rapport["warnings"]),
+        _md_section_erreurs_lecture(rapport["erreurs_lecture"]),
+    ]
+
+    return "\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="audit_groupe_dataset.py",
+        description=(
+            "Audite un jeu de données de profils de groupe : volumétrie, "
+            "complétude, cohérence, fraîcheur des sources et warnings agrégés. "
+            "Outil de qualité interne, ne produit aucun score ni classement."
+        ),
+    )
+    parser.add_argument(
+        "--input-dir",
+        default="pivot_data/groupes",
+        metavar="DOSSIER",
+        help=(
+            "Dossier contenant les fichiers *.json à auditer (scan récursif, "
+            "défaut : pivot_data/groupes)."
+        ),
+    )
+    parser.add_argument(
+        "--output-json",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport JSON (défaut : affiché sur stdout).",
+    )
+    parser.add_argument(
+        "--output-md",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport Markdown (défaut : non généré).",
+    )
+    parser.add_argument(
+        "--staleness-days",
+        type=int,
+        default=30,
+        metavar="JOURS",
+        help="Seuil d'ancienneté (jours) au-delà duquel un groupe est périmé (défaut : 30).",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_arg_parser()
+    args = parser.parse_args(argv)
+
+    input_dir = Path(args.input_dir)
+    if not input_dir.is_dir():
+        print(f"[!] Dossier introuvable : {input_dir}", file=sys.stderr)
+        return 1
+
+    groupes, erreurs_lecture = load_groupe_directory(input_dir)
+    print(
+        f"→ {len(groupes)} groupe(s) chargé(s), {len(erreurs_lecture)} erreur(s) de lecture.",
+        file=sys.stderr,
+    )
+
+    rapport = build_report(groupes, erreurs_lecture, staleness_days=args.staleness_days)
+    output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
+
+    if args.output_json:
+        out_path = Path(args.output_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(output_json, encoding="utf-8")
+        print(f"  ✓ Rapport JSON écrit : {out_path}", file=sys.stderr)
+    else:
+        print(output_json)
+
+    if args.output_md:
+        md_path = Path(args.output_md)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(generate_markdown_report(rapport), encoding="utf-8")
+        print(f"  ✓ Rapport Markdown écrit : {md_path}", file=sys.stderr)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
