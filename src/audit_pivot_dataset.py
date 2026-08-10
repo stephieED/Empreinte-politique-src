@@ -573,6 +573,35 @@ def compute_profils_sans_activite(profils: list[dict[str, Any]]) -> dict[str, An
     }
 
 
+def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tableau croisé du volume d'entrées par candidat et par type d'activité.
+
+    Une ligne par candidat : `id`, `nom`, `chambre`, et le nombre d'éléments
+    dans chacune des listes de `CHAMPS_LISTES_VOLUMETRIE` (votes,
+    textes_portes, amendements, interventions). Un champ absent ou `null`
+    compte pour 0, comme dans `compute_distribution_listes`.
+
+    Returns:
+        {"lignes": [{"id":..., "nom":..., "chambre":..., "votes": int,
+                      "textes_portes": int, "amendements": int,
+                      "interventions": int}, ...]}, trié par `nom` puis `id`
+        (ordre déterministe en cas d'égalité ou de `nom` absent).
+    """
+    lignes = [
+        {
+            "id": profil.get("id"),
+            "nom": profil.get("nom"),
+            "chambre": profil.get("chambre"),
+            **{champ: _taille_liste(profil, champ) for champ in CHAMPS_LISTES_VOLUMETRIE},
+        }
+        for profil in profils
+    ]
+
+    lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["id"] or ""))
+
+    return {"lignes": lignes}
+
+
 def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Présence et non-vacuité de `meta.licence_donnees` et `meta.genere_le`.
 
@@ -631,10 +660,10 @@ def build_report(
 
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
-        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`) plus
-        `meta` et `erreurs_lecture`. Un outil de qualité interne : ce rapport
-        ne doit jamais introduire de jugement de valeur, de score ou de
-        classement (AGENTS.md §2.1).
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`,
+        `tableau_croise_candidats`) plus `meta` et `erreurs_lecture`. Un outil
+        de qualité interne : ce rapport ne doit jamais introduire de jugement
+        de valeur, de score ou de classement (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -668,6 +697,7 @@ def build_report(
             ),
         },
         "warnings": compute_agregation_warnings(profils),
+        "tableau_croise_candidats": compute_tableau_croise_candidats(profils),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -820,6 +850,24 @@ def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str
     )
 
 
+def _md_section_tableau_croise_candidats(tableau: dict[str, Any]) -> str:
+    lignes = [
+        [
+            ligne["id"], ligne["nom"], ligne["chambre"],
+            ligne["votes"], ligne["textes_portes"], ligne["amendements"], ligne["interventions"],
+        ]
+        for ligne in tableau["lignes"]
+    ]
+
+    return (
+        "## Tableau croisé des volumes par candidat\n\n"
+        + _md_table(
+            ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
+            lignes, "Aucun profil.",
+        )
+    )
+
+
 def _md_section_warnings(warnings: dict[str, Any]) -> str:
     lignes = [
         [type_warning, entree["frequence"], ", ".join(entree["ids"])]
@@ -862,6 +910,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             "indicateurs bruts, sans jugement de valeur ni classement.\n"
         ),
         _md_section_volumetrie(rapport["volumetrie"]),
+        _md_section_tableau_croise_candidats(rapport["tableau_croise_candidats"]),
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),

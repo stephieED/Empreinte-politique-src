@@ -40,6 +40,14 @@ Total profils : 3
 | --- | --- |
 | 0 | 0.0 |
 
+## Tableau croisé des volumes par candidat
+
+| id | Nom | Chambre | Votes | Textes portés | Amendements | Interventions |
+| --- | --- | --- | --- | --- | --- | --- |
+| nosdeputes:jean-dupont | Jean Dupont | AN | 0 | 0 | 0 | 0 |
+| nosdeputes:marie-martin | Marie Martin | AN | 0 | 0 | 0 | 0 |
+| nossenateurs:paul-durand | Paul Durand | Senat | 0 | 0 | 0 | 0 |
+
 ## Complétude
 
 ### Taux de remplissage

@@ -308,9 +308,10 @@ studies) — static HTML, serve with `python -m http.server 8000` from the repo 
 ## 10. Audit the pivot dataset
 
 `src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
-volumetry, completeness, consistency, source freshness and aggregated
-`meta.warnings[]` indicators — an internal quality tool, not an end-user report
-(no score, no ranking, see `AGENTS.md` §2).
+volumetry, completeness, consistency, source freshness, aggregated
+`meta.warnings[]` indicators, and a per-candidate cross-tab of `votes` /
+`textes_portes` / `amendements` / `interventions` counts — an internal quality
+tool, not an end-user report (no score, no ranking, see `AGENTS.md` §2).
 
 ```bash
 python src/audit_pivot_dataset.py \

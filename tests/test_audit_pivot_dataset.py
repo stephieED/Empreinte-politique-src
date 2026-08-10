@@ -21,6 +21,7 @@ from audit_pivot_dataset import (
     compute_presence_meta,
     compute_profils_sans_activite,
     compute_repartition_chambre,
+    compute_tableau_croise_candidats,
     compute_validite_dates,
     compute_taux_remplissage,
     generate_markdown_report,
@@ -809,6 +810,82 @@ def test_compute_profils_sans_activite_un_seul_champ_actif_suffit():
 
 
 # ---------------------------------------------------------------------------
+# compute_tableau_croise_candidats
+# ---------------------------------------------------------------------------
+
+def test_compute_tableau_croise_candidats_liste_vide():
+    resultat = compute_tableau_croise_candidats([])
+
+    assert resultat == {"lignes": []}
+
+
+def test_compute_tableau_croise_candidats_candidat_toutes_categories_renseignees():
+    profils = [
+        {
+            "id": "nosdeputes:a",
+            "nom": "Alice",
+            "chambre": "AN",
+            "votes": [{"id": 1}, {"id": 2}],
+            "textes_portes": [{"id": 1}],
+            "amendements": [{"id": 1}, {"id": 2}, {"id": 3}],
+            "interventions": [{"id": 1}],
+        },
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert resultat["lignes"] == [
+        {
+            "id": "nosdeputes:a", "nom": "Alice", "chambre": "AN",
+            "votes": 2, "textes_portes": 1, "amendements": 3, "interventions": 1,
+        },
+    ]
+
+
+def test_compute_tableau_croise_candidats_categories_vides_ou_absentes():
+    profils = [
+        {"id": "nosdeputes:b", "nom": "Bob", "chambre": "AN", "votes": [], "textes_portes": None},
+        {"id": "nosdeputes:c", "nom": "Chloé", "chambre": "Senat"},
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert resultat["lignes"] == [
+        {
+            "id": "nosdeputes:b", "nom": "Bob", "chambre": "AN",
+            "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
+        },
+        {
+            "id": "nosdeputes:c", "nom": "Chloé", "chambre": "Senat",
+            "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
+        },
+    ]
+
+
+def test_compute_tableau_croise_candidats_trie_par_nom():
+    profils = [
+        {"id": "x:z", "nom": "Zoé", "chambre": "AN"},
+        {"id": "x:a", "nom": "Alban", "chambre": "AN"},
+        {"id": "x:m", "nom": "Marc", "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert [ligne["nom"] for ligne in resultat["lignes"]] == ["Alban", "Marc", "Zoé"]
+
+
+def test_compute_tableau_croise_candidats_nom_absent_tri_deterministe_par_id():
+    profils = [
+        {"id": "x:b", "nom": None, "chambre": "AN"},
+        {"id": "x:a", "nom": None, "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a", "x:b"]
+
+
+# ---------------------------------------------------------------------------
 # compute_presence_meta
 # ---------------------------------------------------------------------------
 
@@ -863,7 +940,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "warnings", "erreurs_lecture",
+        "warnings", "tableau_croise_candidats", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "repartition_chambre", "distribution_listes", "nombre_sources",
@@ -931,6 +1008,10 @@ def test_build_report_delegue_aux_fonctions_compute():
         == compute_profils_perimes(profils, staleness_days=30, reference_date=REFERENCE)
     )
     assert rapport["warnings"] == compute_agregation_warnings(profils)
+    assert (
+        rapport["tableau_croise_candidats"]
+        == compute_tableau_croise_candidats(profils)
+    )
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -968,6 +1049,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
 
     assert "# Rapport d'audit du jeu de données pivot" in markdown
     assert "## Volumétrie" in markdown
+    assert "## Tableau croisé des volumes par candidat" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
     assert "## Fraîcheur" in markdown
