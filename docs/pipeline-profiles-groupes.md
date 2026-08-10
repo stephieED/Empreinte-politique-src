@@ -259,3 +259,18 @@ pour `pivot_data/profiles`. Aucun score ni classement — voir `README.md`
 §11 et `docs/examples/audit_groupe_report_sample.md` pour un exemple de
 rapport.
 
+### Pipeline d'audit combiné (outil manuel)
+
+`src/audit_pipeline.py` est un point d'entrée **manuel** qui exécute les deux
+audits ci-dessus (`audit_pivot_dataset.py` et `audit_groupe_dataset.py`) en
+appelant directement leurs fonctions (pas de sous-processus) et compile une
+section « vue d'ensemble » en plus des deux rapports détaillés : totaux
+profils/groupes audités, erreurs de lecture agrégées, warnings agrégés tous
+documents confondus. Pure composition des rapports déjà produits par les deux
+modules `audit_*` — aucune nouvelle logique de calcul métier.
+
+Cet outil est distinct de `src/check_quality_gate.py` (seul gate bloquant en
+CI) et n'est **pas** intégré à `.github/workflows/generate-data.yml` — choix
+explicite (issue #178) : jamais appelé automatiquement par la CI, usage
+manuel uniquement. Voir `README.md` §12 pour la commande CLI.
+
