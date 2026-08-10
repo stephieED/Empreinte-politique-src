@@ -272,6 +272,37 @@
       }
     }
   },
+  "tableau_croise_groupes": {
+    "lignes": [
+      {
+        "groupe_id": "AN:LFI",
+        "groupe_nom": "La France insoumise",
+        "chambre": "AN",
+        "membres": 2,
+        "cohesion_votes": 2,
+        "tags_thematiques_agreges": 2,
+        "amendements": 10
+      },
+      {
+        "groupe_id": "AN:LFI",
+        "groupe_nom": "La France insoumise (doublon)",
+        "chambre": "AN",
+        "membres": 1,
+        "cohesion_votes": 0,
+        "tags_thematiques_agreges": 0,
+        "amendements": 0
+      },
+      {
+        "groupe_id": "Senat:SOC",
+        "groupe_nom": "Socialiste, Ecologiste et Republicain",
+        "chambre": "Senat",
+        "membres": 1,
+        "cohesion_votes": 0,
+        "tags_thematiques_agreges": 0,
+        "amendements": 0
+      }
+    ]
+  },
   "erreurs_lecture": [
     {
       "fichier": "tests/fixtures/audit_groupe/invalide.json",

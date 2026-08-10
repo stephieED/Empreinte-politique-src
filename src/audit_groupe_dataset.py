@@ -20,7 +20,12 @@ dict sérialisable JSON), sans aucune I/O :
     `groupe_id` ;
   - fraîcheur : ancienneté de `sources[].synchro_le`, groupes périmés
     (`compute_groupes_perimes`, seuil `staleness_days` injectable) ;
-  - agrégation des `meta.warnings[]` par fichier.
+  - agrégation des `meta.warnings[]` par fichier ;
+  - tableau croisé par groupe (`compute_tableau_croise_groupes`) : une ligne
+    par groupe avec le nombre de `membres`, `cohesion_votes`,
+    `tags_thematiques_agreges` et `amendements_agreges.nb_amendements`
+    (bloc global), sur le même principe que
+    `audit_pivot_dataset.compute_tableau_croise_candidats` (issue #174).
 
 `build_report()` assemble tous ces indicateurs en un rapport structuré
 unique, et `generate_markdown_report()` en dérive un rendu Markdown lisible
@@ -272,6 +277,49 @@ def compute_groupes_membres_sans_cohesion(groupes: list[dict[str, Any]]) -> dict
         "nb_groupes_membres_sans_cohesion": len(ids),
         "groupes_membres_sans_cohesion": ids,
     }
+
+
+def _nb_amendements_global(groupe: dict[str, Any]) -> int:
+    """`amendements_agreges.nb_amendements` (bloc global), `0` si absent ou invalide."""
+    amendements = groupe.get("amendements_agreges")
+    if not isinstance(amendements, dict):
+        return 0
+    valeur = amendements.get("nb_amendements")
+    return valeur if isinstance(valeur, int) and not isinstance(valeur, bool) else 0
+
+
+def compute_tableau_croise_groupes(groupes: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tableau croisé du volume d'entrées par groupe et par type d'activité agrégée.
+
+    Une ligne par groupe : `groupe_id`, `groupe_nom`, `chambre`, et le nombre
+    d'éléments dans `membres`, `cohesion_votes`, `tags_thematiques_agreges`,
+    ainsi que `amendements_agreges.nb_amendements` (bloc global, tous types de
+    déposants confondus — voir `compute_distribution_amendements` pour la
+    ventilation par type de déposant). Un champ absent ou `null` compte pour
+    0, comme dans `compute_nombre_cohesion_votes`.
+
+    Returns:
+        `{"lignes": [{"groupe_id":..., "groupe_nom":..., "chambre":...,
+        "membres": int, "cohesion_votes": int, "tags_thematiques_agreges": int,
+        "amendements": int}, ...]}`, trié par `groupe_nom` puis `groupe_id`
+        (ordre déterministe en cas d'égalité ou de `groupe_nom` absent).
+    """
+    lignes = [
+        {
+            "groupe_id": groupe.get("groupe_id"),
+            "groupe_nom": groupe.get("groupe_nom"),
+            "chambre": groupe.get("chambre"),
+            "membres": _taille_liste(groupe, "membres"),
+            "cohesion_votes": _taille_liste(groupe, "cohesion_votes"),
+            "tags_thematiques_agreges": _taille_liste(groupe, "tags_thematiques_agreges"),
+            "amendements": _nb_amendements_global(groupe),
+        }
+        for groupe in groupes
+    ]
+
+    lignes.sort(key=lambda ligne: (ligne["groupe_nom"] or "", ligne["groupe_id"] or ""))
+
+    return {"lignes": lignes}
 
 
 # ---------------------------------------------------------------------------
@@ -596,10 +644,10 @@ def build_report(
 
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
-        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`)
-        plus `meta` et `erreurs_lecture`. Un outil de qualité interne : ce
-        rapport ne doit jamais introduire de jugement de valeur, de score ou
-        de classement (AGENTS.md §2.1).
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`,
+        `tableau_croise_groupes`) plus `meta` et `erreurs_lecture`. Un outil
+        de qualité interne : ce rapport ne doit jamais introduire de jugement
+        de valeur, de score ou de classement (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -632,6 +680,7 @@ def build_report(
             ),
         },
         "warnings": compute_agregation_warnings(groupes),
+        "tableau_croise_groupes": compute_tableau_croise_groupes(groupes),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -792,6 +841,28 @@ def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str
     )
 
 
+def _md_section_tableau_croise_groupes(tableau: dict[str, Any]) -> str:
+    lignes = [
+        [
+            ligne["groupe_id"], ligne["groupe_nom"], ligne["chambre"],
+            ligne["membres"], ligne["cohesion_votes"],
+            ligne["tags_thematiques_agreges"], ligne["amendements"],
+        ]
+        for ligne in tableau["lignes"]
+    ]
+
+    return (
+        "## Tableau croisé des volumes par groupe\n\n"
+        + _md_table(
+            [
+                "groupe_id", "Nom", "Chambre", "Membres",
+                "Cohésion de vote", "Tags thématiques", "Amendements",
+            ],
+            lignes, "Aucun groupe.",
+        )
+    )
+
+
 def _md_section_warnings(warnings: dict[str, Any]) -> str:
     lignes = [
         [type_warning, entree["frequence"], ", ".join(entree["groupe_ids"])]
@@ -834,6 +905,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             "indicateurs bruts, sans jugement de valeur ni classement.\n"
         ),
         _md_section_volumetrie(rapport["volumetrie"]),
+        _md_section_tableau_croise_groupes(rapport["tableau_croise_groupes"]),
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),

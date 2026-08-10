@@ -19,6 +19,7 @@ from audit_groupe_dataset import (
     compute_groupes_perimes,
     compute_nombre_cohesion_votes,
     compute_presence_tags_thematiques,
+    compute_tableau_croise_groupes,
     compute_validation_schema,
     generate_markdown_report,
     load_groupe_directory,
@@ -318,6 +319,94 @@ def test_compute_groupes_membres_sans_cohesion_detecte_le_cas():
     assert resultat["total_groupes"] == 3
     assert resultat["nb_groupes_membres_sans_cohesion"] == 1
     assert resultat["groupes_membres_sans_cohesion"] == ["AN:X"]
+
+
+# ---------------------------------------------------------------------------
+# compute_tableau_croise_groupes
+# ---------------------------------------------------------------------------
+
+def test_compute_tableau_croise_groupes_liste_vide():
+    resultat = compute_tableau_croise_groupes([])
+
+    assert resultat == {"lignes": []}
+
+
+def test_compute_tableau_croise_groupes_groupe_toutes_categories_renseignees():
+    groupes = [
+        {
+            "groupe_id": "AN:LFI",
+            "groupe_nom": "La France insoumise",
+            "chambre": "AN",
+            "membres": [{"membre_id": "a"}, {"membre_id": "b"}],
+            "cohesion_votes": [{"numero_scrutin": "1"}],
+            "tags_thematiques_agreges": [{"tag": "budget"}, {"tag": "sante"}, {"tag": "climat"}],
+            "amendements_agreges": {"nb_amendements": 10},
+        },
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert resultat["lignes"] == [
+        {
+            "groupe_id": "AN:LFI", "groupe_nom": "La France insoumise", "chambre": "AN",
+            "membres": 2, "cohesion_votes": 1, "tags_thematiques_agreges": 3, "amendements": 10,
+        },
+    ]
+
+
+def test_compute_tableau_croise_groupes_categories_vides_ou_absentes():
+    groupes = [
+        {"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN", "membres": [], "cohesion_votes": None},
+        {"groupe_id": "AN:Y", "groupe_nom": "Y", "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert resultat["lignes"] == [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "membres": 0, "cohesion_votes": 0, "tags_thematiques_agreges": 0, "amendements": 0,
+        },
+        {
+            "groupe_id": "AN:Y", "groupe_nom": "Y", "chambre": "AN",
+            "membres": 0, "cohesion_votes": 0, "tags_thematiques_agreges": 0, "amendements": 0,
+        },
+    ]
+
+
+def test_compute_tableau_croise_groupes_amendements_agreges_absent_ou_invalide():
+    groupes = [
+        {"groupe_id": "AN:X", "amendements_agreges": None},
+        {"groupe_id": "AN:Y"},
+        {"groupe_id": "AN:Z", "amendements_agreges": {"nb_amendements": "12"}},  # type invalide
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["amendements"] for ligne in resultat["lignes"]] == [0, 0, 0]
+
+
+def test_compute_tableau_croise_groupes_trie_par_nom():
+    groupes = [
+        {"groupe_id": "x:z", "groupe_nom": "Zoé", "chambre": "AN"},
+        {"groupe_id": "x:a", "groupe_nom": "Alban", "chambre": "AN"},
+        {"groupe_id": "x:m", "groupe_nom": "Marc", "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["groupe_nom"] for ligne in resultat["lignes"]] == ["Alban", "Marc", "Zoé"]
+
+
+def test_compute_tableau_croise_groupes_nom_absent_tri_deterministe_par_id():
+    groupes = [
+        {"groupe_id": "x:b", "groupe_nom": None, "chambre": "AN"},
+        {"groupe_id": "x:a", "groupe_nom": None, "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["groupe_id"] for ligne in resultat["lignes"]] == ["x:a", "x:b"]
 
 
 # ---------------------------------------------------------------------------
@@ -738,7 +827,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "warnings", "erreurs_lecture",
+        "warnings", "tableau_croise_groupes", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "effectifs", "nombre_cohesion_votes", "distribution_amendements",
@@ -817,6 +906,10 @@ def test_build_report_delegue_aux_fonctions_compute():
         == compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
     )
     assert rapport["warnings"] == compute_agregation_warnings(groupes)
+    assert (
+        rapport["tableau_croise_groupes"]
+        == compute_tableau_croise_groupes(groupes)
+    )
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -854,6 +947,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
 
     assert "# Rapport d'audit du jeu de données groupes" in markdown
     assert "## Volumétrie" in markdown
+    assert "## Tableau croisé des volumes par groupe" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
     assert "## Fraîcheur" in markdown
