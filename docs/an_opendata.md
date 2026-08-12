@@ -114,6 +114,93 @@ Implemented path:
 - `merge_profile.py` drops `dossiers_legislatifs`/`textes_portes` entries that
   have no factual `role` during migration/merge.
 
+### Spike : origine (gouvernementale vs parlementaire) et statuts (`codeActe`) (2026-08-12)
+
+Spike documentaire pour #207 (préparation de #184). **Limite importante** :
+cette session n'a pas eu accès réseau sortant vers
+`data.assemblee-nationale.fr` (tentatives via `curl`, `gh api` et `WebFetch`
+toutes bloquées faute d'approbation possible dans ce contexte automatisé —
+voir AGENTS.md règle 5, "missing data means missing data, never assume").
+Le ZIP `Dossiers_Legislatifs.json.zip` n'a donc **pas pu être re-téléchargé
+ni ré-inspecté** dans le cadre de ce spike. Ce qui suit distingue clairement
+ce qui est déjà confirmé (code existant, propre session antérieure) de ce qui
+reste à vérifier avec un accès réel au dump.
+
+**Origine gouvernementale vs parlementaire — non confirmé.**
+
+- Le code actuel (`_collect_initiateurs`, `src/candidate_profile.py:1004-1017`)
+  ne lit que `initiateur.acteurs.acteur[].acteurRef` ; il ne regarde ni
+  `organe.codeType`, ni aucun autre champ d'origine. Aucune distinction
+  gouvernemental/parlementaire n'est donc calculée aujourd'hui.
+- L'hypothèse posée dans l'issue (repérer un acteur dont l'`organe`
+  référencé a `codeType == "GOUVERNEMENT"`, cf. valeurs `typeOrgane`
+  déjà observées côté acteurs/mandats — voir section "Actors / mandates /
+  bodies" plus haut, qui liste `GOUVERNEMENT`/`MINISTERE` parmi les
+  `typeOrgane` réels de `AMO10_...json.zip`) est plausible mais **non
+  vérifiée sur `initiateur.acteurs.acteur[]` lui-même** : on ignore si un
+  acteur gouvernemental y apparaît avec un `acteurRef` de type `PAxxxxx`
+  (comme un député), avec un identifiant distinct, ou pas du tout (dossier
+  sans aucun `initiateur.acteurs` renseigné).
+- Signal alternatif, connu indépendamment de ce dataset (droit
+  constitutionnel, art. 39 de la Constitution, pas une inspection de
+  données) : un dossier dont `titreDossier.titre` commence par
+  "Projet de loi" est d'origine gouvernementale ; un dossier dont le titre
+  commence par "Proposition de loi" est d'origine parlementaire. Ce signal
+  est **complémentaire**, pas un substitut : il ne repose pas sur la
+  structure `initiateur.acteurs.acteur[]` demandée par l'issue, et ses cas
+  limites (ex. propositions issues d'un rapport de commission, textes
+  transmis du Sénat) n'ont pas non plus été vérifiés sur un échantillon réel.
+- **À faire avant de coder cette distinction en dur** (sous-issue #4) :
+  ré-exécuter cette inspection dans un environnement avec accès réseau
+  sortant vers `data.assemblee-nationale.fr`, sur un échantillon d'au moins
+  quelques dizaines de dossiers couvrant les deux origines.
+
+**Statuts (`codeActe`) — partiellement confirmé.**
+
+- Seul le mapping déjà en production est confirmé par le code existant
+  (`_stade_from_code_acte`, `src/candidate_profile.py:982-1001`), et
+  volontairement conservateur (nomenclature du schéma pivot, pas la
+  nomenclature cible de #184) :
+  - `codeActe` contient `"PROM"` → `promulgue`.
+  - `codeActe` se termine par `"-DEBATS-DEC"` **et**
+    `statutConclusion.libelle` commence par `"adopt"` → `adopte` ; sinon
+    `discute_seance`.
+  - `codeActe` contient `"DEBATS"` (sans `-DEBATS-DEC`) → `discute_seance`.
+  - `codeActe` contient `"COM"` → `examine_commission`.
+  - `codeActe` contient `"DEPOT"` → `depose`.
+  - Ce sont des correspondances par sous-chaîne, pas une énumération exacte
+    des valeurs de `codeActe` observées dans le dump.
+- Valeurs illustratives présentes dans `tests/test_candidate_profile.py`
+  (`"AN1-COM-FOND-NOMIN"`, `"AN1-DEPOT"`, `"PROM-PUB"`) sont des fixtures de
+  test, **pas des valeurs confirmées comme exhaustives ou représentatives**
+  du dump réel — à ne pas réutiliser comme référence de nomenclature sans
+  revérification.
+- **Non confirmable dans ce spike** (aucun exemple réel disponible) :
+  - `codeActe` exact pour un **rejet** de dossier (aucun heuristique
+    existant ne couvre ce cas — `_stade_from_code_acte` n'a pas de valeur
+    de retour pour "rejeté").
+  - `codeActe` exact pour un **retrait** de dossier (même limite).
+  - `codeActe` et/ou combinaison de champs (`codeActe` +
+    `statutConclusion.libelle`, par analogie avec le cas `adopte` ci-dessus)
+    identifiant une **adoption via l'article 49.3** (engagement de la
+    responsabilité du gouvernement). Le schéma pivot réserve déjà la valeur
+    `sort = "adopte_sans_vote_49_3"` pour `votes[]`
+    (`src/schema_pivot.py:81-90`, `:403-433`) mais aucun code ne la produit
+    encore à partir de `Dossiers_Legislatifs.json.zip` ni de `Scrutins.json.zip`.
+  - Absence de confirmation qu'il existe un `codeActe` **unique et stable**
+    pour "adoption définitive" à travers toutes les législatures `{8, 11,
+    12, ..., 17}` couvertes par le fichier bulk, vs une variation possible
+    selon la chambre/législature.
+
+**Conclusion du spike** : aucun des quatre statuts cibles (adopté, rejeté,
+retiré, adopté 49.3) ni l'hypothèse d'origine gouvernementale ne peuvent être
+considérés comme confirmés à ce stade. Seul le sous-ensemble déjà en
+production (`depose`, `examine_commission`, `discute_seance`, `adopte`,
+`promulgue`, approximatif) est fiable. Toute sous-issue qui dépend de ces
+mappings (schéma #2, parsing #4) doit prévoir sa propre vérification sur
+échantillon réel avant implémentation, ou être bloquée en attendant un accès
+réseau sortant pour refaire ce spike correctement.
+
 ## Parliamentary questions (written/oral/government)
 
 Unlike actors/files, these datasets use per-legislature paths:
