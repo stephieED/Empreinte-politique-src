@@ -811,6 +811,14 @@ def _amendements_zip_url(legislature: str) -> Optional[str]:
     return f"{AN_OPENDATA_BASE}/{legislature}/loi/{path_segment}/{zip_name}"
 
 
+class AmendementsIndexError(Exception):
+    """Levée quand la construction de l'index amendements échoue (téléchargement ou
+    parsing de l'archive AN). Distincte d'un index vide légitime (pas de dataset
+    pour cette législature) : ne doit jamais être avalée silencieusement, pour que
+    `fetch_amendements_officiels` (et le warning meta.warnings à l'appel) reflète
+    l'échec au lieu d'un simple "aucun amendement"."""
+
+
 def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
 
@@ -819,6 +827,10 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
     un depuis le zip) : seul l'index final (acteurRef -> amendements) est mis en
     cache, pour éviter d'écrire des dizaines de milliers de petits fichiers.
     Thread-safe (verrou par législature), même principe que pour les scrutins.
+
+    Lève `AmendementsIndexError` en cas d'échec de téléchargement ou de parsing de
+    l'archive (au lieu de retourner un {} indiscernable d'un index vide légitime),
+    pour que l'appelant puisse le distinguer et le tracer dans meta.warnings.
     """
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
@@ -845,7 +857,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                             out.write(chunk)
         except (requests.RequestException, OSError) as exc:
             print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
-            return {}
+            raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
         index: dict[str, list[dict[str, Any]]] = {}
         try:
@@ -864,7 +876,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                         index.setdefault(acteur_ref, []).append(record)
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
-            return {}
+            raise AmendementsIndexError(f"archive invalide ({exc})") from exc
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)

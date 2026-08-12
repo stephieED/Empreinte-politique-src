@@ -493,6 +493,105 @@ def _report_low_syceron_coverage(
 
 
 # ---------------------------------------------------------------------------
+# Section 3c — Couverture Amendements (soft warning)
+# ---------------------------------------------------------------------------
+
+# Préfixe du warning émis par candidate_profile.py (fetch_amendements_officiels)
+# quand la collecte des amendements officiels échoue (téléchargement/parsing AN).
+_AMENDEMENTS_INDISPONIBLES_PREFIX = "amendements indisponibles"
+
+
+def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, str]:
+    """Détecte les régressions silencieuses sur amendements[] pour les député·e·s AN.
+
+    Retourne (soft_warnings, console_text, markdown_text). Soft fail uniquement
+    (n'empêche pas le commit).
+
+    Deux signaux distincts :
+      - par candidat : un warning `amendements indisponibles` est présent dans
+        meta.warnings (échec de collecte tracé côté candidate_profile.py).
+      - global : aucun des candidats AN avec identité (éligibles à la collecte
+        d'amendements) n'a la moindre entrée dans amendements[], alors que
+        plusieurs candidats sont analysés — signal d'une régression touchant
+        toute la chaîne, y compris silencieuse (cf. issue #185).
+    """
+    rows: list[dict] = []
+    if profiles_dir.exists():
+        for path in sorted(profiles_dir.glob("*.pivot.json")):
+            data = _load_json(path)
+            if data is None:
+                continue
+            chambre = data.get("chambre") or ""
+            if chambre not in ("AN", "deputes"):
+                continue
+            if not data.get("identite"):
+                continue
+            slug = _slug_from_stem(path.stem)
+            nom = data.get("nom") or slug
+            n_amendements = len(data.get("amendements") or [])
+            warnings_list: list[str] = (data.get("meta") or {}).get("warnings") or []
+            has_fetch_error = any(w.startswith(_AMENDEMENTS_INDISPONIBLES_PREFIX) for w in warnings_list)
+            rows.append(
+                {
+                    "slug": slug,
+                    "nom": nom,
+                    "n_amendements": n_amendements,
+                    "has_fetch_error": has_fetch_error,
+                }
+            )
+
+    soft_warnings: list[str] = []
+    for r in rows:
+        if r["has_fetch_error"]:
+            soft_warnings.append(f"{r['slug']}: collecte des amendements officiels en échec (voir meta.warnings)")
+
+    n_avec_amendements = sum(1 for r in rows if r["n_amendements"] > 0)
+    if rows and n_avec_amendements == 0:
+        soft_warnings.append(
+            f"aucun candidat AN sur {len(rows)} n'a d'amendements collectés (amendements[] vide partout) "
+            "— possible régression de collecte (candidate_profile.fetch_amendements_officiels)"
+        )
+
+    icon = "✓" if not soft_warnings else "⚠"
+    lines = [
+        "",
+        "┌─ 3c/4  Couverture amendements (AN) ────────────────────────────────",
+        f"│  Candidats AN avec identité : {len(rows)}   Avec amendements : {n_avec_amendements}"
+        f"   Avertissements : {len(soft_warnings)}",
+        "│",
+    ]
+    if soft_warnings:
+        lines.append("│  ⚠ Avertissements qualité :")
+        for w in soft_warnings:
+            lines.append(f"│    · {w}")
+    else:
+        lines.append(f"│  {icon} Couverture amendements cohérente.")
+    lines.append("└" + "─" * 67)
+    console = "\n".join(lines)
+
+    ok_icon = "✅" if not soft_warnings else "⚠️"
+    md_lines = [
+        "### 3c · Couverture amendements (AN)",
+        "",
+        "| Métrique | Valeur |",
+        "|---|---|",
+        f"| {ok_icon} Candidats AN avec identité | {len(rows)} |",
+        f"| Avec ≥ 1 amendement | {n_avec_amendements} |",
+        f"| Avertissements | {len(soft_warnings)} |",
+        "",
+    ]
+    if soft_warnings:
+        md_lines += ["**Avertissements**", ""]
+        for w in soft_warnings:
+            md_lines.append(f"- {w}")
+        md_lines.append("")
+    else:
+        md_lines.append("_Couverture amendements cohérente._\n")
+
+    return soft_warnings, console, "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Section 4 — Groupes parlementaires
 # ---------------------------------------------------------------------------
 
@@ -909,6 +1008,9 @@ def main() -> int:
             args.profiles_dir, args.low_syceron_coverage
         )
 
+    # ── Section 3c : Couverture amendements (AN) ───────────────────────────
+    amd_soft, amd_console, amd_md = _report_amendements_coverage(args.profiles_dir)
+
     # ── Section 4 : Groupes parlementaires ────────────────────────────────
     grp_hard, grp_soft, grp_console, grp_md = _report_groupes(
         args.groupes_config, args.groupes_dir, args.groupe_min_members
@@ -934,6 +1036,7 @@ def main() -> int:
     print(low_console)
     if syc_console:
         print(syc_console)
+    print(amd_console)
     print(grp_console)
     if pt_console:
         print(pt_console)
@@ -950,6 +1053,7 @@ def main() -> int:
         cov_md,
         low_md,
         syc_md,
+        amd_md,
         grp_md,
         pt_md,
     ])
@@ -974,6 +1078,8 @@ def main() -> int:
         _gha_annotation("warning", f"Groupe — qualité dégradée : {warn}")
     for warn in syc_soft:
         _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
+    for warn in amd_soft:
+        _gha_annotation("warning", f"Amendements — {warn}")
 
     return exit_code
 
