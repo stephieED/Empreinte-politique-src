@@ -110,10 +110,6 @@ jobs:
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
       # fresh_run=true  → --no-merge : écrasement complet.
       # fresh_run=false → fusion additive : données existantes préservées.
-      # --skip-existing --resume : ne retraite pas un profil déjà présent sur
-      # disque (reprise depuis un run précédent annulé/interrompu — #219) ;
-      # sans effet en fresh_run=true puisque le nettoyage ci-dessus a déjà
-      # vidé raw_data/profiles.
       - name: Extraction AN (NosDéputés)
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -124,14 +120,9 @@ jobs:
           [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
           [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
-          python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} --skip-existing --resume "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
-      # if: always() : même si l'étape d'extraction ci-dessus échoue/est
-      # annulée en cours de route, les profils déjà écrits sur disque à cet
-      # instant sont malgré tout remontés en artifact (#219) — au lieu d'être
-      # perdus (step "skipped" sans if: always()).
       - name: Upload artifact AN
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-an
@@ -173,18 +164,15 @@ jobs:
           find raw_data/profiles -name "*.json" -delete
 
       # --source senat → NosSénateurs uniquement (pas d'AN, pas d'UE dans ce job).
-      # --skip-existing --resume : voir commentaire équivalent dans extract-an (#219).
       - name: Extraction Sénat (NosSénateurs)
         env:
           FRESH: ${{ inputs.fresh_run }}
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} --skip-existing --resume "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
-      # if: always() : voir commentaire équivalent dans extract-an (#219).
       - name: Upload artifact Sénat
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-senat
@@ -226,18 +214,15 @@ jobs:
           find raw_data/profiles -name "*.json" -delete
 
       # --source ue → Open Data Portal Parlement européen uniquement (pas de FR).
-      # --skip-existing --resume : voir commentaire équivalent dans extract-an (#219).
       - name: Extraction UE (Open Data Portal EP)
         env:
           FRESH: ${{ inputs.fresh_run }}
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} --skip-existing --resume "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
-      # if: always() : voir commentaire équivalent dans extract-an (#219).
       - name: Upload artifact UE
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-ue-officiel
@@ -303,12 +288,7 @@ jobs:
           sys.exit(0 if ok else 1)
           EOF
 
-      # if: always() : continue-on-error au niveau du job (ligne 243) évite que
-      # ce job bloque merge-and-pivot, mais ne rejoue pas les steps suivants
-      # après une annulation/échec — sans if: always(), les dumps déjà
-      # téléchargés à cet instant seraient perdus comme sur extract-an (#219).
       - name: Upload artifact ParlTrack (dumps .zst)
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-parltrack
@@ -395,11 +375,7 @@ jobs:
             --skip-existing --resume \
             "${LIMIT_FLAG[@]}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
-      # if: always() : même rationale que extract-parltrack ci-dessus — le
-      # continue-on-error du job (ligne 321) ne suffit pas à préserver le
-      # travail déjà fait en cas d'annulation/échec de l'étape d'extraction (#219).
       - name: Upload artifact roster-driven
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-roster-groupes
