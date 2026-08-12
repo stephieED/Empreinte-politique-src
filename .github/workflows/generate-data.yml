@@ -311,6 +311,15 @@ jobs:
   # périmètre : l'activation d'un run complet planifié est une décision
   # ultérieure distincte, schedule: cron toujours commenté ci-dessus).
   #
+  # Séquencé après les 4 jobs d'extraction existants (needs: ci-dessous, #222)
+  # : réduit le pic de jobs Actions simultanés de 5 à 4 — mitigation du
+  # plafond de dépense Actions suspecté en cause du run #24 (cf. #221), au
+  # prix d'un temps mur total plus long. Requis conjointement à la clé de
+  # cache AN partagée (step "Semaine ISO courante" ci-dessous) : ce
+  # séquencement garantit que ce cache est déjà chaud (écrit par extract-an)
+  # au moment de sa restauration ici, évitant que les deux jobs se disputent
+  # le même téléchargement des dumps AN Open Data en concurrence.
+  #
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
   #
@@ -320,6 +329,7 @@ jobs:
   # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
+    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
     runs-on: ubuntu-latest
     timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
     continue-on-error: true
@@ -333,17 +343,25 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Semaine ISO courante (clé de cache roster)
+      - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # Clé de cache partagée avec extract-an (public-data-cache-an-*), pas
+      # une clé "roster" séparée : ce job consomme le même jeu de données
+      # source (AN Open Data — SCRUTINS/AMENDEMENTS/DOSSIERS/ACTEURS/
+      # ACTEURS_HISTORIQUE/QUESTIONS_CACHE_DIR, cf. src/candidate_profile.py)
+      # que extract-an dès qu'un membre de roster appartient à la chambre
+      # "deputes", indépendamment de la liste de candidats/membres traitée.
+      # Le séquencement (needs: ci-dessus, #222) garantit que ce cache est
+      # déjà chaud au moment de cette restauration.
       - uses: actions/cache@v4
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
-          key: public-data-cache-roster-${{ steps.week.outputs.week }}
+          key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
-            public-data-cache-roster-
+            public-data-cache-an-
 
       - name: Nettoyage complet (fresh_run uniquement)
         if: ${{ inputs.fresh_run }}
