@@ -46,10 +46,19 @@ Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
     python src/generate_all_profiles.py --workers 4        # nb de candidats traités en parallèle (défaut: 4)
     python src/generate_all_profiles.py --resume            # reprendre depuis le dernier point de sauvegarde après une interruption
+    python src/generate_all_profiles.py --limit 20          # ne traiter que les 20 premiers candidats (déploiement progressif)
+    python src/generate_all_profiles.py --sample 20         # ne traiter qu'un échantillon aléatoire de 20 candidats
+
+Extraction pilotée par roster (composition réelle des groupes parlementaires,
+cf. generate_roster_candidats.py et docs/technical_decisions.md#provenance-pivot)
+plutôt que par la liste éditoriale par défaut (raw_data/candidats.json) :
+    python src/generate_roster_candidats.py
+    python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
 """
 
 import argparse
 import json
+import random
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -119,6 +128,24 @@ def load_candidats(path: str) -> list[dict[str, Any]]:
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("candidats", [])
+
+
+def _select_candidats(
+    candidats: list[dict[str, Any]], limit: Optional[int] = None, sample: Optional[int] = None
+) -> list[dict[str, Any]]:
+    """Réduit la liste de candidats pour un déploiement progressif contrôlé
+    (--limit/--sample), utile pour tester à petite échelle avant d'ouvrir
+    l'extraction à la liste complète (ex. les ~750 membres d'un roster).
+
+    --limit : les N premiers candidats (ordre du fichier source, déterministe).
+    --sample : N candidats tirés aléatoirement sans remise (ordre non garanti).
+    Mutuellement exclusifs (appliqué par le groupe argparse dans main()).
+    """
+    if limit is not None:
+        return candidats[:limit]
+    if sample is not None:
+        return random.sample(candidats, min(sample, len(candidats)))
+    return candidats
 
 
 # Alias local : voir text_utils.slugify (mutualisé avec parti_profile._slugify).
@@ -497,6 +524,14 @@ def main() -> None:
                              "marqués 'ok' ou 'deja_present' lors d'une exécution précédente interrompue.")
     parser.add_argument("--no-checkpoint", action="store_true",
                         help="Désactiver l'écriture du point de sauvegarde intermédiaire.")
+    limit_group = parser.add_mutually_exclusive_group()
+    limit_group.add_argument("--limit", type=int, default=None, metavar="N",
+                        help="Ne traiter que les N premiers candidats de la liste (déploiement progressif "
+                             "contrôlé, ex. avant d'ouvrir l'extraction à un roster complet). "
+                             "Mutuellement exclusif avec --sample.")
+    limit_group.add_argument("--sample", type=int, default=None, metavar="N",
+                        help="Ne traiter qu'un échantillon aléatoire de N candidats. "
+                             "Mutuellement exclusif avec --limit.")
     args = parser.parse_args()
 
     # --pivot-only implique --pivot (normalisation pivot activée)
@@ -515,6 +550,12 @@ def main() -> None:
         if not candidats:
             print(f"Aucun candidat avec le slug '{args.only}' dans {args.candidats}.")
             return
+
+    if args.limit is not None or args.sample is not None:
+        avant = len(candidats)
+        candidats = _select_candidats(candidats, limit=args.limit, sample=args.sample)
+        print(f"Sélection réduite ({'--limit' if args.limit is not None else '--sample'}) : "
+              f"{len(candidats)}/{avant} candidat(s) retenu(s).")
 
     checkpoint_path = Path(args.checkpoint_file)
     checkpoint = _load_checkpoint(checkpoint_path) if not args.no_checkpoint else {"resultats": []}
