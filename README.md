@@ -181,6 +181,13 @@ python src/generate_roster_candidats.py
 python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
 ```
 
+With `--limit` **and** `--skip-existing` combined (the invocation used by the CI roster job), selection
+is progressive and self-refreshing instead of always retrying the same first N candidates (#224): budget
+goes first to roster members with no existing pivot (moving the coverage frontier forward run over run),
+then — if budget remains — to already-covered members whose pivot is stale (`--staleness-days`, default
+30, same semantics as `audit_pivot_dataset.py --staleness-days`); those are refreshed via additive merge,
+never skipped. A covered and fresh profile is neither re-fetched nor counted against the budget.
+
 For each candidate from `raw_data/candidats.json`, the script:
 
 1. tries FR profile collection (`deputes`, then `senateurs`) using Nos*
