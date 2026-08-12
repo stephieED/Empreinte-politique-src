@@ -143,6 +143,12 @@ Repères d'implémentation UI_finale :
   `generate_group_profiles.py` pour eviter les appels redondants.
 - La logique groupe parlementaire reel est distincte de l'agregation editoriale
   par parti (`parti_profile.py`).
+- A ne pas confondre avec le job CI `extract-roster-groupes` : ce dernier
+  utilise aussi `group_roster.py` (via `generate_roster_candidats.py`), mais
+  pour produire des profils *individuels* bruts (`raw_data/profiles/`,
+  reseau) couvrant tous les membres du roster, en amont de l'agregation
+  faite ici par `group_profile.py`. Voir
+  [`extract-roster-groupes.md`](./extract-roster-groupes.md).
 
 
 ## Détails: pipeline profils candidats
@@ -165,6 +171,12 @@ politique de fusion (`merge_profile.merge_pivot_profile()`) ne rétrograde
 jamais un profil `candidat_declare` vers `roster_groupe`, la source éditoriale
 prime toujours. Détail complet de cette décision :
 [`docs/technical_decisions.md#provenance-pivot`](./technical_decisions.md#provenance-pivot).
+
+En CI/CD, la voie roster-driven est un job dédié, distinct de
+`extract-an`/`extract-senat`/`extract-ue-officiel` : `extract-roster-groupes`
+(`.github/workflows/generate-data.yml`), en rollout progressif (#188/#190/#192,
+`continue-on-error: true`, volume borné par l'input `roster_extraction_limit`).
+Détail complet du job : [`extract-roster-groupes.md`](./extract-roster-groupes.md).
 
 1. Source de vérité éditoriale
      - `raw_data/candidats.json` contient la liste des candidats suivis
