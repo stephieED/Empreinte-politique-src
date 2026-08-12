@@ -25,6 +25,14 @@ Total profils : 3
 | mairie | 0 |
 | null | 0 |
 
+### Répartition par provenance (`meta.provenance`)
+
+| Provenance | Profils |
+| --- | --- |
+| candidat_declare | 2 |
+| roster_groupe | 1 |
+| null | 0 |
+
 ### Distribution des listes métier (par profil)
 
 | Champ | Min | Max | Médiane | Moyenne | % profils à 0 |

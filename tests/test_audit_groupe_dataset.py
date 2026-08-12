@@ -513,9 +513,53 @@ def test_compute_ecart_couverture_roster_calcule_l_ecart():
 
     assert resultat == {
         "groupes": [
-            {"groupe_id": "AN:X", "roster_total": 10, "profils_disponibles": 3, "ecart": 7}
+            {
+                "groupe_id": "AN:X", "roster_total": 10, "profils_disponibles": 3,
+                "ecart": 7, "taux_couverture_pct": 30.0,
+            }
         ]
     }
+
+
+def test_compute_ecart_couverture_roster_taux_couverture_zero_pourcent():
+    groupes = [
+        {"groupe_id": "AN:X", "meta": {"couverture_roster": {"roster_total": 76, "profils_disponibles": 0}}},
+    ]
+
+    resultat = compute_ecart_couverture_roster(groupes)
+
+    assert resultat["groupes"][0]["taux_couverture_pct"] == 0.0
+
+
+def test_compute_ecart_couverture_roster_taux_couverture_partiel():
+    groupes = [
+        {"groupe_id": "AN:X", "meta": {"couverture_roster": {"roster_total": 193, "profils_disponibles": 1}}},
+    ]
+
+    resultat = compute_ecart_couverture_roster(groupes)
+
+    assert resultat["groupes"][0]["taux_couverture_pct"] == round(100 / 193, 2)
+
+
+def test_compute_ecart_couverture_roster_taux_couverture_quasi_complete():
+    groupes = [
+        {"groupe_id": "AN:X", "meta": {"couverture_roster": {"roster_total": 100, "profils_disponibles": 99}}},
+    ]
+
+    resultat = compute_ecart_couverture_roster(groupes)
+
+    assert resultat["groupes"][0]["taux_couverture_pct"] == 99.0
+
+
+def test_compute_ecart_couverture_roster_roster_total_zero_ne_divise_pas_par_zero():
+    groupes = [
+        {"groupe_id": "AN:X", "meta": {"couverture_roster": {"roster_total": 0, "profils_disponibles": 0}}},
+    ]
+
+    resultat = compute_ecart_couverture_roster(groupes)
+
+    assert resultat["groupes"][0]["taux_couverture_pct"] == 0.0
+    assert resultat["groupes"][0]["ecart"] == 0
 
 
 def test_compute_ecart_couverture_roster_trie_par_groupe_id():

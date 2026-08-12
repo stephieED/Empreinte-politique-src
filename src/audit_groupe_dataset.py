@@ -387,8 +387,15 @@ def compute_ecart_couverture_roster(groupes: list[dict[str, Any]]) -> dict[str, 
 
     Returns:
         `{"groupes": [{"groupe_id":..., "roster_total":...,
-        "profils_disponibles":..., "ecart": int}, ...]}`, `ecart` =
-        `roster_total - profils_disponibles`, triés par `groupe_id`.
+        "profils_disponibles":..., "ecart": int,
+        "taux_couverture_pct": float}, ...]}`, `ecart` =
+        `roster_total - profils_disponibles`, `taux_couverture_pct` =
+        `100 * profils_disponibles / roster_total` (arrondi à 2 décimales ;
+        `0.0` si `roster_total` vaut `0`, pour ne jamais diviser par zéro).
+        Triés par `groupe_id`. Ce taux rend visible, dans le temps, la
+        progression de la couverture roster (avant/après activation de
+        l'extraction roster-driven, voir
+        `docs/technical_decisions.md#provenance-pivot`).
     """
     resultat: list[dict[str, Any]] = []
 
@@ -405,11 +412,16 @@ def compute_ecart_couverture_roster(groupes: list[dict[str, Any]]) -> dict[str, 
         if isinstance(roster_total, bool) or isinstance(profils_disponibles, bool):
             continue
 
+        taux_couverture_pct = (
+            round(100 * profils_disponibles / roster_total, 2) if roster_total > 0 else 0.0
+        )
+
         resultat.append({
             "groupe_id": groupe.get("groupe_id"),
             "roster_total": roster_total,
             "profils_disponibles": profils_disponibles,
             "ecart": roster_total - profils_disponibles,
+            "taux_couverture_pct": taux_couverture_pct,
         })
 
     resultat.sort(key=lambda entree: (entree["groupe_id"] is None, entree["groupe_id"]))
@@ -792,7 +804,7 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         for g in coherence["coherence_schema_version"]["groupes_incoherents"]
     ]
     lignes_roster = [
-        [g["groupe_id"], g["roster_total"], g["profils_disponibles"], g["ecart"]]
+        [g["groupe_id"], g["roster_total"], g["profils_disponibles"], g["ecart"], g["taux_couverture_pct"]]
         for g in coherence["ecart_couverture_roster"]["groupes"]
     ]
     lignes_doublons = [
@@ -810,7 +822,7 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         )
         + "\n### Écart de couverture du roster\n\n"
         + _md_table(
-            ["groupe_id", "Roster total", "Profils disponibles", "Écart"],
+            ["groupe_id", "Roster total", "Profils disponibles", "Écart", "Taux de couverture (%)"],
             lignes_roster, "Aucune donnée de couverture roster (`meta.couverture_roster`).",
         )
         + "\n### Doublons de `groupe_id`\n\n"

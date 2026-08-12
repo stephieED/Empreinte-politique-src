@@ -41,7 +41,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from schema_pivot import KNOWN_CHAMBRES
+from schema_pivot import KNOWN_CHAMBRES, KNOWN_PROVENANCES
 
 # Types de sources attendus par chambre pour compute_coherence_chambre_sources :
 # chaque chambre doit avoir déclaré au moins une source de l'un de ces types.
@@ -132,6 +132,38 @@ def compute_repartition_chambre(profils: list[dict[str, Any]]) -> dict[str, Any]
     return {
         "total_profils": len(profils),
         "par_chambre": repartition,
+    }
+
+
+def compute_repartition_provenance(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Nombre total de profils et répartition par `meta.provenance`.
+
+    Un profil sans `meta.provenance` (pivot généré avant #189) est compté
+    sous `"candidat_declare"`, la valeur de repli rétro-compatible retenue
+    par `validate_profil()` (voir
+    `docs/technical_decisions.md#provenance-pivot`). Les valeurs hors
+    `KNOWN_PROVENANCES` sont comptées sous la clé `"null"`, pour garantir un
+    rapport toujours sérialisable en JSON quelle que soit la donnée.
+    """
+    repartition: dict[str, int] = {provenance: 0 for provenance in sorted(KNOWN_PROVENANCES)}
+    repartition["null"] = 0
+
+    for profil in profils:
+        meta = profil.get("meta")
+        provenance = meta.get("provenance") if isinstance(meta, dict) else None
+
+        if provenance is None:
+            cle = "candidat_declare"
+        elif provenance in KNOWN_PROVENANCES:
+            cle = provenance
+        else:
+            cle = "null"
+
+        repartition[cle] += 1
+
+    return {
+        "total_profils": len(profils),
+        "par_provenance": repartition,
     }
 
 
@@ -676,6 +708,7 @@ def build_report(
         },
         "volumetrie": {
             "repartition_chambre": compute_repartition_chambre(profils),
+            "repartition_provenance": compute_repartition_provenance(profils),
             "distribution_listes": compute_distribution_listes(profils),
             "nombre_sources": compute_nombre_sources(profils),
         },
@@ -729,6 +762,9 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
     par_chambre = volumetrie["repartition_chambre"]["par_chambre"]
     lignes_chambre = [[chambre, effectif] for chambre, effectif in par_chambre.items()]
 
+    par_provenance = volumetrie["repartition_provenance"]["par_provenance"]
+    lignes_provenance = [[provenance, effectif] for provenance, effectif in par_provenance.items()]
+
     lignes_listes = [
         [
             champ,
@@ -745,6 +781,8 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
         f"Total profils : {volumetrie['repartition_chambre']['total_profils']}\n\n"
         "### Répartition par chambre\n\n"
         + _md_table(["Chambre", "Profils"], lignes_chambre, "Aucun profil.")
+        + "\n### Répartition par provenance (`meta.provenance`)\n\n"
+        + _md_table(["Provenance", "Profils"], lignes_provenance, "Aucun profil.")
         + "\n### Distribution des listes métier (par profil)\n\n"
         + _md_table(
             ["Champ", "Min", "Max", "Médiane", "Moyenne", "% profils à 0"],

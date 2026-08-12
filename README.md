@@ -296,9 +296,16 @@ To run the gate locally:
 
 ```bash
 python src/check_quality_gate.py
-python src/check_quality_gate.py --threshold 0          # zero tolerance
-python src/check_quality_gate.py --low-interventions 5  # stricter signal
+python src/check_quality_gate.py --threshold 0                # zero tolerance
+python src/check_quality_gate.py --low-interventions 5        # stricter signal
+python src/check_quality_gate.py --groupe-min-coverage-pct 50  # relative groupe coverage soft fail (disabled by default)
 ```
+
+`--groupe-min-coverage-pct` (default `0`, disabled) is a relative alternative/complement
+to `--groupe-min-members` (default `1`, absolute count) for the groupe coverage soft
+warning — see `docs/technical_decisions.md#seuil-couverture-groupe` for why the absolute
+default is kept until full-scale roster-driven extraction (#188/#190/#191) produces real
+coverage numbers.
 
 ## 9. Open the web UI locally
 
@@ -322,7 +329,8 @@ studies) — static HTML, serve with `python -m http.server 8000` from the repo 
 ## 10. Audit the pivot dataset
 
 `src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
-volumetry, completeness, consistency, source freshness, aggregated
+volumetry (including a breakdown by `meta.provenance`, `candidat_declare` vs.
+`roster_groupe`), completeness, consistency, source freshness, aggregated
 `meta.warnings[]` indicators, and a per-candidate cross-tab of `votes` /
 `textes_portes` / `amendements` / `interventions` counts — an internal quality
 tool, not an end-user report (no score, no ranking, see `AGENTS.md` §2).
@@ -349,7 +357,7 @@ profile `*.json` files and reports volumetry (effectifs, `cohesion_votes`,
 `amendements_agreges` — global and per `type_deposant`), completeness
 (`tags_thematiques_agreges`, groups with members but no cohesion votes),
 consistency (`validate_profil_groupe`, `schema_version` divergence, roster
-coverage gap, duplicate `groupe_id`), source freshness and stale groups,
+coverage gap with a coverage rate in %, duplicate `groupe_id`), source freshness and stale groups,
 aggregated `meta.warnings[]`, and a per-groupe cross-tab of `membres` /
 `cohesion_votes` / `tags_thematiques_agreges` / `amendements_agreges`
 (global `nb_amendements`) counts — same internal-quality-tool contract as
