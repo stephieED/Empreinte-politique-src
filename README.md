@@ -22,7 +22,8 @@ CV_CandidatFR/
 |- src/                               # Python scripts
 |  |- candidate_profile.py           # Collect raw profile for ONE FR parliamentarian (AN/Senate)
 |  |- candidate_profile_ue.py        # Build the "European mandate" section for ONE candidate
-|  |- generate_all_profiles.py       # Batch: profiles for ALL candidates in candidats.json
+|  |- generate_all_profiles.py       # Batch: profiles for candidates in a --candidats list (candidats.json by default, or a roster-driven file)
+|  |- generate_roster_candidats.py   # Builds a --candidats-compatible list from real group rosters (groupes_reels.json), for full group coverage beyond declared candidates
 |  |- merge_profile.py               # Additive merge logic (old wins on lists, new wins on scalars)
 |  |- normalize_nosdeputes.py        # NosDeputes/NosSenateurs -> pivot adapter
 |  |- normalize_europarl.py          # European Parliament Open Data -> pivot adapter
@@ -321,7 +322,8 @@ npm run dev          # syncs data then starts Vite dev server
 `scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/` and
 `raw_data/candidats.json` into `public/data/` (generated, git-ignored) and writes
 `public/data/manifest.json`. Coverage is limited to the candidates/groups with a
-local pivot file (8 candidates, 7 real groups as of last pipeline run).
+local pivot file — see "Coverage limits" below for the current state of the
+roster-driven rollout.
 
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
@@ -476,6 +478,20 @@ pytest -q
 
 ## Coverage limits
 
+- **Group scope**: profile generation (roster-driven or not) only covers the
+  7 groups declared in `raw_data/groupes_reels.json` (5 AN + 2 Senate) — not
+  every parliamentary group that exists. Extending coverage means adding
+  entries to that file, a separate editorial decision.
+- **Roster-driven candidate/member coverage**: `generate_roster_candidats.py`
+  + `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
+  (see [`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot))
+  aims for near-complete coverage of the ~750 roster members of the 7
+  configured groups, but no full-scale run had landed in CI as of this
+  writing — see
+  [`docs/technical_decisions.md#seuil-couverture-groupe`](docs/technical_decisions.md#seuil-couverture-groupe)
+  for the latest real coverage numbers. Until coverage is consistently
+  near-100%, `web/UI_finale` shows an explicit "no data" state instead of a
+  misleading zero (rule 5, `AGENTS.md`).
 - **AN votes**: official open data for deputies (14th-17th legislatures,
   depending on available dumps).
 - **Senate votes**: no equivalent official source integrated yet.

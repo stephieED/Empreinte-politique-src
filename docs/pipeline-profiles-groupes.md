@@ -149,11 +149,33 @@ Repères d'implémentation UI_finale :
 
 Comment ça marche concrètement
 
+L'extraction individuelle (`generate_all_profiles.py`) accepte deux sources
+d'entrée distinctes via `--candidats`, qui pilotent des périmètres différents :
+
+| Source | Fichier | Qui la produit | Portée | `meta.provenance` |
+|---|---|---|---|---|
+| Éditoriale (défaut) | `raw_data/candidats.json` | Maintenue à la main | Candidats/présidentiables déclarés/pressentis | `candidat_declare` |
+| Roster-driven | `raw_data/roster_candidats.json` | Générée par `generate_roster_candidats.py` depuis `raw_data/groupes_reels.json` | Tou·te·s les membres réels des 7 groupes configurés (couverture de groupe complète, pas seulement les présidentiables) | `roster_groupe` |
+
+Les deux sources partagent le même format d'entrée (attendu par
+`generate_all_profiles.py --candidats`) et alimentent le même pipeline de
+collecte/normalisation ci-dessous. Un même `slug` peut apparaître dans les
+deux sources (un membre de groupe qui est aussi candidat déclaré) : la
+politique de fusion (`merge_profile.merge_pivot_profile()`) ne rétrograde
+jamais un profil `candidat_declare` vers `roster_groupe`, la source éditoriale
+prime toujours. Détail complet de cette décision :
+[`docs/technical_decisions.md#provenance-pivot`](./technical_decisions.md#provenance-pivot).
+
 1. Source de vérité éditoriale
      - `raw_data/candidats.json` contient la liste des candidats suivis
          (`nom`, `slug`, `parti`, `statut`, `source`).
      - Ce fichier reste éditorial: `fetch_wikipedia_candidates.py` propose des
          écarts, mais ne modifie jamais automatiquement `candidats.json`.
+     - Source alternative pour la couverture de groupe complète :
+         `raw_data/roster_candidats.json`, générée par
+         `python src/generate_roster_candidats.py` (un seul fetch réseau par
+         couple `(chambre, legislature)`, comme `generate_group_profiles.py`)
+         — voir le tableau ci-dessus.
 
 2. Collecte du profil FR (Assemblée/Sénat)
      - `candidate_profile.py` collecte les faits bruts depuis NosDéputés /
@@ -211,11 +233,17 @@ Commandes usuelles
     `python src/generate_all_profiles.py --only jean-luc-melenchon --pivot`
 - Reprendre après interruption:
     `python src/generate_all_profiles.py --resume --pivot`
+- Générer la liste roster-driven puis les pivots pour la couverture de groupe
+  complète:
+    `python src/generate_roster_candidats.py`
+    `python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing`
 
 Entrées / sorties de la pipeline candidats
 
 - Entrées principales:
-    - `raw_data/candidats.json`
+    - `raw_data/candidats.json` (défaut, éditorial) ou
+      `raw_data/roster_candidats.json` (roster-driven, généré) — voir
+      tableau des deux sources ci-dessus
     - APIs NosDéputés / NosSénateurs
     - Open Data AN
     - API Open Data Parlement européen (+ éventuel enrichissement ParlTrack)
