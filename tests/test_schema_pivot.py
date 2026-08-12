@@ -19,6 +19,7 @@ from schema_pivot import (
     KNOWN_TYPES_DEPOSANT,
     KNOWN_ROLES_SIGNATAIRE_AMENDEMENT,
     KNOWN_BASES_IRRECEVABILITE,
+    KNOWN_PROVENANCES,
     make_empty_profil,
     validate_profil,
 )
@@ -67,6 +68,16 @@ def test_make_empty_profil_genere_le_looks_like_iso():
 def test_make_empty_profil_warnings_empty():
     p = make_empty_profil("test:x", "X")
     assert p["meta"]["warnings"] == []
+
+
+def test_make_empty_profil_provenance_defaut_candidat_declare():
+    p = make_empty_profil("test:x", "X")
+    assert p["meta"]["provenance"] == "candidat_declare"
+
+
+def test_make_empty_profil_provenance_explicite_roster_groupe():
+    p = make_empty_profil("test:x", "X", provenance="roster_groupe")
+    assert p["meta"]["provenance"] == "roster_groupe"
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +186,41 @@ def test_validate_meta_schema_version_mismatch():
     p["meta"]["schema_version"] = "99"
     errors = validate_profil(p)
     assert any("meta.schema_version" in e for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# validate_profil — meta.provenance
+# ---------------------------------------------------------------------------
+
+def test_validate_provenance_candidat_declare_valide():
+    p = _valid_profil()
+    p["meta"]["provenance"] = "candidat_declare"
+    assert validate_profil(p) == []
+
+
+def test_validate_provenance_roster_groupe_valide():
+    p = _valid_profil()
+    p["meta"]["provenance"] = "roster_groupe"
+    assert validate_profil(p) == []
+
+
+def test_validate_provenance_absente_reste_valide():
+    """Rétro-compatibilité : un pivot existant sans meta.provenance (pré-#189)
+    reste valide, traité comme "candidat_declare" par défaut par les consommateurs."""
+    p = _valid_profil()
+    del p["meta"]["provenance"]
+    assert validate_profil(p) == []
+
+
+def test_validate_provenance_valeur_hors_enum_rejetee():
+    p = _valid_profil()
+    p["meta"]["provenance"] = "extraterrestre"
+    errors = validate_profil(p)
+    assert any("meta.provenance" in e for e in errors)
+
+
+def test_known_provenances_contient_les_deux_valeurs():
+    assert KNOWN_PROVENANCES == frozenset({"candidat_declare", "roster_groupe"})
 
 
 def test_validate_meta_warnings_not_a_list():

@@ -37,7 +37,8 @@ CV_CandidatFR/
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
-|  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py, no CLI/report yet
+|  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
+|  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -70,6 +71,7 @@ CV_CandidatFR/
 |  |- test_parltrack_dumps.py
 |  |- test_parse_syceron.py
 |  |- test_parti_profile.py
+|  |- test_quality_gate_amendements.py
 |  |- test_quality_gate_syceron.py
 |  |- test_schema_groupe.py
 |  |- test_schema_parti.py
@@ -165,6 +167,17 @@ python src/generate_all_profiles.py --skip-ue
 python src/generate_all_profiles.py --workers 8
 python src/generate_all_profiles.py --out-dir /tmp/profiles
 python src/generate_all_profiles.py --pivot-dir /tmp/pivots
+python src/generate_all_profiles.py --limit 20    # premiers N candidats (déploiement progressif)
+python src/generate_all_profiles.py --sample 20   # échantillon aléatoire de N candidats
+```
+
+Extraction pilotée par roster (composition réelle des groupes parlementaires,
+au lieu de la liste éditoriale `raw_data/candidats.json`, voir
+[`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot)) :
+
+```bash
+python src/generate_roster_candidats.py
+python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
 ```
 
 For each candidate from `raw_data/candidats.json`, the script:
@@ -327,6 +340,65 @@ skipped if `--output-md` is omitted). `--staleness-days` (default 30) sets the
 threshold beyond which a profile with only stale sources is flagged. See
 `docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_pivot/`.
+
+## 11. Audit the groupe dataset
+
+`src/audit_groupe_dataset.py` mirrors `audit_pivot_dataset.py` for
+`pivot_data/groupes` (`schema_groupe.py`): it scans a directory of group
+profile `*.json` files and reports volumetry (effectifs, `cohesion_votes`,
+`amendements_agreges` — global and per `type_deposant`), completeness
+(`tags_thematiques_agreges`, groups with members but no cohesion votes),
+consistency (`validate_profil_groupe`, `schema_version` divergence, roster
+coverage gap, duplicate `groupe_id`), source freshness and stale groups,
+aggregated `meta.warnings[]`, and a per-groupe cross-tab of `membres` /
+`cohesion_votes` / `tags_thematiques_agreges` / `amendements_agreges`
+(global `nb_amendements`) counts — same internal-quality-tool contract as
+the pivot audit (no score, no ranking, see `AGENTS.md` §2).
+
+```bash
+python src/audit_groupe_dataset.py \
+    --input-dir pivot_data/groupes \
+    --output-json audit_groupe_report.json \
+    --output-md audit_groupe_report.md \
+    --staleness-days 30
+```
+
+`--input-dir` defaults to `pivot_data/groupes`. `--output-json`/`--output-md`
+default to unset (JSON prints to stdout, Markdown is skipped if `--output-md`
+is omitted). `--staleness-days` (default 30) sets the threshold beyond which
+a group with only stale sources is flagged — same option contract as
+`audit_pivot_dataset.py` for combined use. See
+`docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
+generated on `tests/fixtures/audit_groupe/`.
+
+## 12. Combined audit pipeline (manual tool)
+
+`src/audit_pipeline.py` is a **manual** entry point that runs both audits
+above by calling their functions directly (no subprocess) and compiles an
+"overview" section on top of the two detailed reports: total profiles/groups
+audited, aggregated read errors, and aggregated `meta.warnings[]` across both
+document types. Pure composition of the reports produced by
+`audit_pivot_dataset.py` / `audit_groupe_dataset.py` — no new business logic.
+
+It is separate from `src/check_quality_gate.py` (the only CI-blocking gate)
+and is **not** wired into `.github/workflows/generate-data.yml` — this was an
+explicit decision (see issue #178): this tool is never invoked automatically
+by CI.
+
+```bash
+python src/audit_pipeline.py \
+    --profiles-dir pivot_data/profiles \
+    --groupes-dir pivot_data/groupes \
+    --output-json audit_pipeline_report.json \
+    --output-md audit_pipeline_report.md \
+    --staleness-days 30
+```
+
+`--profiles-dir`/`--groupes-dir` default to `pivot_data/profiles` /
+`pivot_data/groupes`. `--output-json`/`--output-md` default to unset (JSON
+prints to stdout, Markdown is skipped if `--output-md` is omitted).
+`--staleness-days` (default 30) is forwarded unchanged to both underlying
+audits.
 
 ## Raw profile content (Nos* format)
 

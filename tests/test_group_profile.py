@@ -15,6 +15,7 @@ from group_profile import (
     compute_ecarts_cohesion_internes,
     build_groupe_profile,
     _is_pivot_v1,
+    generate_groupe_profile_from_roster,
     main as group_profile_main,
 )
 from schema_groupe import validate_profil_groupe
@@ -899,3 +900,106 @@ def test_tags_fallback_mots_cles_si_pas_theme_officiel():
     tag_names = {t["tag"] for t in tags}
     assert "immigration" in tag_names
     assert source == "mots_cles_interventions"
+
+
+# ---------------------------------------------------------------------------
+# #191 — roster largement couvert (post #190), à l'opposé des scénarios de
+# faible couverture ci-dessus (candidats.json, échantillon éditorial réduit).
+# ---------------------------------------------------------------------------
+
+def _synthetic_pivot(i: int, nb_votes: int = 5) -> dict:
+    """Profil pivot synthétique pour un membre numéroté (scénario grande échelle)."""
+    slug = f"membre-{i}"
+    votes = [
+        _vote(str(v), "pour" if (i + v) % 2 == 0 else "contre", date=f"2023-{(v % 12) + 1:02d}-01")
+        for v in range(nb_votes)
+    ]
+    return _pivot(f"nosdeputes:{slug}", f"Membre {i}", mandats=[_mandat_electif("2022-06-22")], votes=votes)
+
+
+def test_from_roster_couverture_roster_grande_echelle_quasi_complete(tmp_path):
+    """Roster de 60 membres avec 58 profils pivot locaux (~97 %) — scénario
+    'roster largement couvert', complémentaire des tests de faible couverture
+    ci-dessus (test_main_from_roster_builds_group_and_reports_couverture)."""
+    n = 60
+    n_manquants = 2
+    roster = []
+    for i in range(n):
+        slug = f"membre-{i}"
+        roster.append({
+            "slug": slug, "nom": f"Membre {i}", "groupe_sigle": "LR",
+            "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True,
+        })
+        if i < n - n_manquants:
+            (tmp_path / f"{slug}.pivot.json").write_text(
+                json.dumps(_synthetic_pivot(i)), encoding="utf-8",
+            )
+
+    profil_groupe = generate_groupe_profile_from_roster(
+        roster=roster,
+        groupe_id="AN:LR", groupe_sigle="LR", groupe_nom="Les Républicains",
+        chambre="AN", legislature="16", roster_chambre="deputes",
+        profiles_dir=tmp_path,
+    )
+
+    couverture = profil_groupe["meta"]["couverture_roster"]
+    assert couverture["roster_total"] == n
+    assert couverture["profils_disponibles"] == n - n_manquants
+    assert couverture["profils_disponibles"] / couverture["roster_total"] > 0.95
+    assert len(profil_groupe["membres"]) == n - n_manquants
+    assert profil_groupe["effectif"]["actuel"] == n - n_manquants
+    assert validate_profil_groupe(profil_groupe) == []
+
+
+def test_build_groupe_profile_scale_200_membres_sans_lenteur_perceptible():
+    """Pas de dégradation de performance perceptible à ~200 membres/groupe
+    (mesure informelle, cf. critère d'acceptation #191 — pas de benchmark
+    formel requis). Sert aussi de garde-fou anti-régression quadratique :
+    _compute_cohesion_votes est O(scrutins x membres), jamais O(membres^2)."""
+    import time
+
+    n_membres = 200
+    n_votes = 150
+    profils = [_synthetic_pivot(i, nb_votes=n_votes) for i in range(n_membres)]
+
+    debut = time.monotonic()
+    g = build_groupe_profile("AN:LR", "LR", "Les Républicains", "AN", "16", profils)
+    duree = time.monotonic() - debut
+
+    assert len(g["membres"]) == n_membres
+    assert len(g["cohesion_votes"]) == n_votes
+    assert validate_profil_groupe(g) == []
+    assert duree < 5.0, f"build_groupe_profile trop lent à l'échelle ({duree:.2f}s) : régression possible"
+
+
+def test_from_roster_senat_warning_couverture_roster_senat_present(tmp_path):
+    """Un profil de groupe Sénat généré via --from-roster porte toujours un
+    avertissement explicite sur la limite de mandat_fin/senat_periode_debut
+    (voir docs/technical_decisions.md#senat-periode-debut) : ce comportement
+    doit être visible dans le profil, pas seulement découvert via l'audit."""
+    roster = [{"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2023-09-24", "mandat_fin": None, "actif": True}]
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+
+    profil_groupe = generate_groupe_profile_from_roster(
+        roster=roster,
+        groupe_id="Senat:LR", groupe_sigle="LR", groupe_nom="Les Républicains",
+        chambre="Senat", legislature=None, roster_chambre="senateurs",
+        profiles_dir=tmp_path,
+    )
+
+    assert any("couverture_roster_senat" in w for w in profil_groupe["meta"]["warnings"])
+
+
+def test_from_roster_deputes_pas_de_warning_couverture_roster_senat(tmp_path):
+    """Le warning spécifique Sénat ne doit pas apparaître pour un roster AN."""
+    roster = [{"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True}]
+    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
+
+    profil_groupe = generate_groupe_profile_from_roster(
+        roster=roster,
+        groupe_id="AN:LR", groupe_sigle="LR", groupe_nom="Les Républicains",
+        chambre="AN", legislature="16", roster_chambre="deputes",
+        profiles_dir=tmp_path,
+    )
+
+    assert not any("couverture_roster_senat" in w for w in profil_groupe["meta"]["warnings"])

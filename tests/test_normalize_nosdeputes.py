@@ -173,6 +173,16 @@ def test_pivot_parti_absent_par_defaut():
     assert pivot["parti"] is None
 
 
+def test_pivot_provenance_defaut_candidat_declare():
+    pivot = normalize_nosdeputes(_raw_depute())
+    assert pivot["meta"]["provenance"] == "candidat_declare"
+
+
+def test_pivot_provenance_roster_groupe_propagee():
+    pivot = normalize_nosdeputes(_raw_depute(), provenance="roster_groupe")
+    assert pivot["meta"]["provenance"] == "roster_groupe"
+
+
 # ---------------------------------------------------------------------------
 # Sources
 # ---------------------------------------------------------------------------

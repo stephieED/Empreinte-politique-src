@@ -53,6 +53,7 @@ graph TD
     %% =========================
     O1 --> V1[src/schema_groupe.py\nValidation schema]
     O1 --> Q1[src/check_quality_gate.py\nQuality gate CI]
+    O1 --> A1[src/audit_groupe_dataset.py\nAudit qualite interne - CLI]
 ```
 
 ## Variante: flux prolongé jusqu'aux vues web (UI_finale)
@@ -247,4 +248,30 @@ Points importants de la pipeline
   - group_profile.py n’interroge pas le réseau: il agrège des données déjà présentes localement.
   - En mode batch, la couverture roster/profils disponibles est tracée (pour éviter de confondre effectif réel et effectif effectivement agrégé).
   - Le quality gate peut faire échouer le run si structure invalide ou incidents réseau au-delà du seuil.
+
+### Audit du jeu de données groupes
+
+`src/audit_groupe_dataset.py` est un outil de qualité interne, distinct du
+quality gate CI : il scanne `pivot_data/groupes` (par défaut) et produit un
+rapport JSON/Markdown (volumétrie, complétude, cohérence, fraîcheur des
+sources, warnings agrégés, tableau croisé des volumes par groupe — membres,
+cohesion_votes, tags_thematiques_agreges, amendements_agreges), sur le même
+modèle que `audit_pivot_dataset.py` pour `pivot_data/profiles`. Aucun score
+ni classement — voir `README.md` §11 et
+`docs/examples/audit_groupe_report_sample.md` pour un exemple de rapport.
+
+### Pipeline d'audit combiné (outil manuel)
+
+`src/audit_pipeline.py` est un point d'entrée **manuel** qui exécute les deux
+audits ci-dessus (`audit_pivot_dataset.py` et `audit_groupe_dataset.py`) en
+appelant directement leurs fonctions (pas de sous-processus) et compile une
+section « vue d'ensemble » en plus des deux rapports détaillés : totaux
+profils/groupes audités, erreurs de lecture agrégées, warnings agrégés tous
+documents confondus. Pure composition des rapports déjà produits par les deux
+modules `audit_*` — aucune nouvelle logique de calcul métier.
+
+Cet outil est distinct de `src/check_quality_gate.py` (seul gate bloquant en
+CI) et n'est **pas** intégré à `.github/workflows/generate-data.yml` — choix
+explicite (issue #178) : jamais appelé automatiquement par la CI, usage
+manuel uniquement. Voir `README.md` §12 pour la commande CLI.
 

@@ -1,3 +1,92 @@
+<a id="senat-periode-debut"></a>
+## Groupes Sénat : ne pas renseigner `senat_periode_debut` dans `groupes_reels.json` (2026-08-12)
+
+**Contexte** : #191 durcit `group_profile.py`/`generate_group_profiles.py` pour une
+couverture de profils quasi complète (post #190). À couverture quasi complète, les
+2 groupes Sénat de `groupes_reels.json` (`Senat:LR`, `Senat:SER`) exposent un effet
+auparavant masqué par la faible couverture : `_member_matches_legislature`
+(`group_roster.py:73-84`) ne filtre par date que si `senat_periode_debut` est fourni,
+et ces 2 entrées ne le renseignent pas — le roster Sénat mélange donc sénateurs·rices
+en fonction et anciens·nes, ce qui biaise `cohesion_votes`/`effectif` (calculés sur des
+membres qui ne siègent parfois plus).
+
+**Décision** : ne PAS renseigner `senat_periode_debut` pour autant. La cause racine
+n'est pas l'absence de date de filtrage mais la donnée source elle-même :
+`archive.nossenateurs.fr` (site arrêté par Regards Citoyens) n'expose pas de champ
+`mandat_fin` exploitable pour la majorité des entrées archivées — déjà documenté dans
+l'avertissement `fraicheur_donnees` de `generate_groupe_profile_from_roster`
+(`group_profile.py`). Or `_member_matches_legislature` filtre précisément sur
+`mandat_fin` : sans cette donnée fiable, fixer une date arbitraire ne exclurait pas
+significativement plus d'anciens sénateurs (la plupart afficheraient encore
+`mandat_fin: null`, donc `actif` par défaut) — cela donnerait une fausse impression de
+correction sans effet mesurable, pire que de documenter la limite explicitement. Un
+second avertissement `couverture_roster_senat` a été ajouté dans
+`generate_groupe_profile_from_roster` pour rendre ce comportement visible directement
+dans chaque profil de groupe Sénat généré (`meta.warnings`), plutôt que de le laisser
+à découvrir uniquement dans l'audit qualité (`audit_groupe_dataset.py`) ou le quality
+gate CI.
+
+*Alternative rejetée* : renseigner une date de référence (ex. début de législature en
+cours) dans `senat_periode_debut` pour les 2 groupes — rejeté car non fiable tant que
+`mandat_fin` n'est pas exploitable côté source (voir ci-dessus) ; réévaluer si
+`group_roster.py` change de source de données pour le Sénat.
+
+<a id="limit-sample"></a>
+## Déploiement progressif de l'extraction roster-driven : --limit vs --sample (2026-08-12)
+
+**Contexte** : #190 branche la liste roster-driven (#188) dans
+`generate_all_profiles.py` (`--candidats raw_data/roster_candidats.json`).
+Avant d'ouvrir l'extraction aux ~750 membres complets, une sous-issue CI
+dédiée a besoin de pouvoir tester à petite échelle sans consommer tout le
+budget CI.
+
+**Décision** : ajouter les deux options plutôt que de trancher entre elles —
+`--limit N` (les N premiers candidats, ordre déterministe du fichier source)
+et `--sample N` (N candidats tirés aléatoirement sans remise), mutuellement
+exclusives (`argparse` mutually exclusive group). `--limit` sert les tests
+reproductibles (CI, `--resume` stable d'un run à l'autre) ; `--sample` sert la
+vérification ponctuelle de la diversité de couverture (chambres/groupes
+différents) sans dépendre de l'ordre du fichier. Aucune graine (`seed`) fixée
+pour `--sample` : chaque run tire un échantillon différent, ce qui est
+acceptable pour un usage de spot-check et documenté dans l'aide CLI.
+
+*Alternative rejetée* : n'implémenter que l'un des deux (comme suggéré par
+l'issue, "à trancher en implémentation") — rejeté car les deux usages
+(reproductible pour la CI, aléatoire pour la diversité) sont distincts et peu
+coûteux à supporter simultanément.
+
+<a id="provenance-pivot"></a>
+## Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)
+
+**Contexte** : #188 introduit `generate_roster_candidats.py`, qui produit une
+liste de "candidats" alternative à `raw_data/candidats.json`, pilotée par la
+composition réelle des groupes parlementaires (`statut: "roster_groupe"`) plutôt
+que par la liste éditoriale des candidats déclarés à la présidentielle. Une fois
+les deux sources utilisées pour générer des pivots (`generate_all_profiles.py`),
+un même `slug` peut être régénéré par les deux : un membre de groupe extrait via
+le roster peut aussi être un candidat déclaré déjà enrichi manuellement (`parti`
+notamment, renseigné depuis `candidats.json`).
+
+**Décision** : ajouter `meta.provenance` (`"candidat_declare"` | `"roster_groupe"`,
+voir `schema_pivot.KNOWN_PROVENANCES`) au schéma pivot, propagé par
+`normalize_nosdeputes()`/`normalize_europarl()` et renseigné par
+`generate_all_profiles.py` selon `candidat["statut"]`. Règle de fusion dans
+`merge_profile.merge_pivot_profile()` : un profil déjà `"candidat_declare"` n'est
+jamais rétrogradé vers `"roster_groupe"` par une régénération roster-driven du
+même slug — la valeur éditoriale de vérité (`candidats.json`) prime toujours sur
+l'extraction automatique par roster. Les autres champs éditoriaux (`parti`, etc.)
+sont déjà protégés par la stratégie `_prefer_non_empty` existante, car
+`generate_roster_candidats.py` ne renseigne jamais ces champs (valeur `None`).
+Rétro-compatibilité : un pivot existant sans `meta.provenance` (généré avant
+cette décision) reste valide et est traité comme `"candidat_declare"` par défaut
+par `validate_profil()` et la politique de fusion — pas de migration nécessaire.
+
+*Alternative rejetée* : marquer la provenance au niveau du fichier `candidats.json`
+uniquement (sans persister l'info dans le pivot) — rejeté car le pivot est la
+seule couche lue par les agrégations groupes/partis et par `web/` ; sans champ
+dédié dans le pivot lui-même, aucune politique de fusion protectrice n'aurait été
+possible lors d'une régénération croisée des deux sources.
+
 <a id="web-v3-ui"></a>
 ## Interfacer web/UI_finale (CONTRECHAMP) aux données réelles (2026-08-08)
 

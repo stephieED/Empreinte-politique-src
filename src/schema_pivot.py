@@ -158,7 +158,9 @@ Format d'un profil pivot v1 :
         "schema_version": "1",
         "genere_le": "2026-07-29T...",
         "licence_donnees": "ODbL ...",
-        "warnings": []
+        "warnings": [],
+        "provenance": "candidat_declare"          # "candidat_declare" | "roster_groupe" ;
+                                             # voir KNOWN_PROVENANCES
     }
 }
 
@@ -277,14 +279,26 @@ KNOWN_ROLES_SIGNATAIRE_AMENDEMENT: frozenset[str] = frozenset({
 # financière ; art. 45 : lien avec le texte — "cavalier législatif").
 KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 
+# Provenance du profil (meta.provenance) : distingue un candidat déclaré à la
+# présidentielle (raw_data/candidats.json, source éditoriale) d'un profil
+# extrait via le roster réel d'un groupe parlementaire (generate_roster_candidats.py,
+# #188). Politique de fusion (voir merge_profile.merge_pivot_profile) : un profil
+# "candidat_declare" n'est jamais rétrogradé vers "roster_groupe" par une
+# régénération roster-driven du même slug, pour ne jamais perdre l'enrichissement
+# éditorial déjà présent (parti, etc.).
+KNOWN_PROVENANCES: frozenset[str] = frozenset({"candidat_declare", "roster_groupe"})
 
-def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
+
+def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") -> dict[str, Any]:
     """Crée un profil pivot v1 vide avec des valeurs par défaut.
 
     Args:
         id_: identifiant unique de la forme "<source>:<identifiant_source>",
              ex. "nosdeputes:jean-luc-melenchon", "parltrack:197451".
         nom: nom complet de l'élu.
+        provenance: origine du profil, "candidat_declare" (défaut, raw_data/candidats.json)
+                    ou "roster_groupe" (extraction pilotée par le roster réel d'un
+                    groupe parlementaire, #188). Voir KNOWN_PROVENANCES.
 
     Returns:
         Profil pivot dict initialisé, prêt à être enrichi.
@@ -309,6 +323,7 @@ def make_empty_profil(id_: str, nom: str) -> dict[str, Any]:
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "",
             "warnings": [],
+            "provenance": provenance,
         },
     }
 
@@ -515,5 +530,14 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
             )
         if not isinstance(meta.get("warnings"), list):
             errors.append("'meta.warnings' doit être une liste.")
+        # meta.provenance : absent = rétro-compatible (traité comme "candidat_declare"
+        # par les consommateurs, voir merge_profile.merge_pivot_profile), donc validé
+        # uniquement s'il est présent.
+        provenance = meta.get("provenance")
+        if provenance is not None and provenance not in KNOWN_PROVENANCES:
+            errors.append(
+                f"meta.provenance non reconnue : {provenance!r}. "
+                f"Valeurs connues : {sorted(KNOWN_PROVENANCES)}."
+            )
 
     return errors

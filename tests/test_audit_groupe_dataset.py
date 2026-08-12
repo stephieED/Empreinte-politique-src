@@ -6,6 +6,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_groupe_dataset import (
+    _build_arg_parser,
+    build_report,
     compute_agregation_warnings,
     compute_coherence_schema_version,
     compute_distribution_amendements,
@@ -14,10 +16,14 @@ from audit_groupe_dataset import (
     compute_effectifs,
     compute_fraicheur_sources,
     compute_groupes_membres_sans_cohesion,
+    compute_groupes_perimes,
     compute_nombre_cohesion_votes,
     compute_presence_tags_thematiques,
+    compute_tableau_croise_groupes,
     compute_validation_schema,
+    generate_markdown_report,
     load_groupe_directory,
+    main,
 )
 
 
@@ -316,6 +322,94 @@ def test_compute_groupes_membres_sans_cohesion_detecte_le_cas():
 
 
 # ---------------------------------------------------------------------------
+# compute_tableau_croise_groupes
+# ---------------------------------------------------------------------------
+
+def test_compute_tableau_croise_groupes_liste_vide():
+    resultat = compute_tableau_croise_groupes([])
+
+    assert resultat == {"lignes": []}
+
+
+def test_compute_tableau_croise_groupes_groupe_toutes_categories_renseignees():
+    groupes = [
+        {
+            "groupe_id": "AN:LFI",
+            "groupe_nom": "La France insoumise",
+            "chambre": "AN",
+            "membres": [{"membre_id": "a"}, {"membre_id": "b"}],
+            "cohesion_votes": [{"numero_scrutin": "1"}],
+            "tags_thematiques_agreges": [{"tag": "budget"}, {"tag": "sante"}, {"tag": "climat"}],
+            "amendements_agreges": {"nb_amendements": 10},
+        },
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert resultat["lignes"] == [
+        {
+            "groupe_id": "AN:LFI", "groupe_nom": "La France insoumise", "chambre": "AN",
+            "membres": 2, "cohesion_votes": 1, "tags_thematiques_agreges": 3, "amendements": 10,
+        },
+    ]
+
+
+def test_compute_tableau_croise_groupes_categories_vides_ou_absentes():
+    groupes = [
+        {"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN", "membres": [], "cohesion_votes": None},
+        {"groupe_id": "AN:Y", "groupe_nom": "Y", "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert resultat["lignes"] == [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "membres": 0, "cohesion_votes": 0, "tags_thematiques_agreges": 0, "amendements": 0,
+        },
+        {
+            "groupe_id": "AN:Y", "groupe_nom": "Y", "chambre": "AN",
+            "membres": 0, "cohesion_votes": 0, "tags_thematiques_agreges": 0, "amendements": 0,
+        },
+    ]
+
+
+def test_compute_tableau_croise_groupes_amendements_agreges_absent_ou_invalide():
+    groupes = [
+        {"groupe_id": "AN:X", "amendements_agreges": None},
+        {"groupe_id": "AN:Y"},
+        {"groupe_id": "AN:Z", "amendements_agreges": {"nb_amendements": "12"}},  # type invalide
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["amendements"] for ligne in resultat["lignes"]] == [0, 0, 0]
+
+
+def test_compute_tableau_croise_groupes_trie_par_nom():
+    groupes = [
+        {"groupe_id": "x:z", "groupe_nom": "Zoé", "chambre": "AN"},
+        {"groupe_id": "x:a", "groupe_nom": "Alban", "chambre": "AN"},
+        {"groupe_id": "x:m", "groupe_nom": "Marc", "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["groupe_nom"] for ligne in resultat["lignes"]] == ["Alban", "Marc", "Zoé"]
+
+
+def test_compute_tableau_croise_groupes_nom_absent_tri_deterministe_par_id():
+    groupes = [
+        {"groupe_id": "x:b", "groupe_nom": None, "chambre": "AN"},
+        {"groupe_id": "x:a", "groupe_nom": None, "chambre": "AN"},
+    ]
+
+    resultat = compute_tableau_croise_groupes(groupes)
+
+    assert [ligne["groupe_id"] for ligne in resultat["lignes"]] == ["x:a", "x:b"]
+
+
+# ---------------------------------------------------------------------------
 # compute_validation_schema
 # ---------------------------------------------------------------------------
 
@@ -574,6 +668,60 @@ def test_compute_fraicheur_sources_sans_reference_date_utilise_maintenant():
 
 
 # ---------------------------------------------------------------------------
+# compute_groupes_perimes
+# ---------------------------------------------------------------------------
+
+def test_compute_groupes_perimes_toutes_sources_perimees():
+    groupes = [groupe_sources("a", source("nosdeputes", 100))]
+
+    resultat = compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == ["a"]
+
+
+def test_compute_groupes_perimes_une_source_fraiche_suffit_a_exclure():
+    groupes = [groupe_sources("a", source("nosdeputes", 100), source("nossenateurs", 5))]
+
+    resultat = compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_groupes_perimes_seuil_variable():
+    groupes = [groupe_sources("a", source("nosdeputes", 15))]
+
+    assert compute_groupes_perimes(groupes, staleness_days=10, reference_date=REFERENCE) == ["a"]
+    assert compute_groupes_perimes(groupes, staleness_days=20, reference_date=REFERENCE) == []
+
+
+def test_compute_groupes_perimes_exactement_au_seuil_n_est_pas_perime():
+    groupes = [groupe_sources("a", source("nosdeputes", 30))]
+
+    resultat = compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_groupes_perimes_aucune_source_n_est_jamais_perime():
+    groupes = [groupe_sources("a"), {"groupe_id": "b"}]
+
+    resultat = compute_groupes_perimes(groupes, staleness_days=0, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_groupes_perimes_trie_les_resultats():
+    groupes = [
+        groupe_sources("z", source("nosdeputes", 100)),
+        groupe_sources("a", source("nosdeputes", 100)),
+    ]
+
+    resultat = compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == ["a", "z"]
+
+
+# ---------------------------------------------------------------------------
 # compute_agregation_warnings
 # ---------------------------------------------------------------------------
 
@@ -668,3 +816,239 @@ def test_toutes_les_fonctions_compute_sur_les_fixtures_du_depot_sont_serialisabl
     }
 
     json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# build_report
+# ---------------------------------------------------------------------------
+
+def test_build_report_structure_top_level_keys():
+    rapport = build_report([], [], staleness_days=30, reference_date=REFERENCE)
+
+    assert set(rapport.keys()) == {
+        "meta", "volumetrie", "completude", "coherence", "fraicheur",
+        "warnings", "tableau_croise_groupes", "erreurs_lecture",
+    }
+    assert set(rapport["volumetrie"].keys()) == {
+        "effectifs", "nombre_cohesion_votes", "distribution_amendements",
+    }
+    assert set(rapport["completude"].keys()) == {
+        "presence_tags_thematiques", "groupes_membres_sans_cohesion",
+    }
+    assert set(rapport["coherence"].keys()) == {
+        "validation_schema", "coherence_schema_version",
+        "ecart_couverture_roster", "doublons_groupe_id",
+    }
+    assert set(rapport["fraicheur"].keys()) == {"fraicheur_sources", "groupes_perimes"}
+
+
+def test_build_report_meta_section():
+    erreurs = [{"fichier": "x.json", "erreur": "boom"}]
+    groupes = [groupe_sources("a", source("nosdeputes", 5))]
+
+    rapport = build_report(groupes, erreurs, staleness_days=15, reference_date=REFERENCE)
+
+    assert rapport["meta"] == {
+        "genere_le": REFERENCE.isoformat(),
+        "total_groupes": 1,
+        "total_erreurs_lecture": 1,
+        "staleness_days": 15,
+    }
+
+
+def test_build_report_erreurs_lecture_passthrough():
+    erreurs = [{"fichier": "a.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report([], erreurs, reference_date=REFERENCE)
+
+    assert rapport["erreurs_lecture"] == erreurs
+
+
+def test_build_report_delegue_aux_fonctions_compute():
+    groupes = [
+        groupe_warnings("a", "cohesion introuvable : x"),
+        groupe(groupe_id="b", nb_membres=3, nb_cohesion=0),
+    ]
+    erreurs = []
+
+    rapport = build_report(groupes, erreurs, staleness_days=30, reference_date=REFERENCE)
+
+    assert rapport["volumetrie"]["effectifs"] == compute_effectifs(groupes)
+    assert rapport["volumetrie"]["nombre_cohesion_votes"] == compute_nombre_cohesion_votes(groupes)
+    assert (
+        rapport["volumetrie"]["distribution_amendements"]
+        == compute_distribution_amendements(groupes)
+    )
+    assert (
+        rapport["completude"]["presence_tags_thematiques"]
+        == compute_presence_tags_thematiques(groupes)
+    )
+    assert (
+        rapport["completude"]["groupes_membres_sans_cohesion"]
+        == compute_groupes_membres_sans_cohesion(groupes)
+    )
+    assert rapport["coherence"]["validation_schema"] == compute_validation_schema(groupes)
+    assert (
+        rapport["coherence"]["coherence_schema_version"]
+        == compute_coherence_schema_version(groupes)
+    )
+    assert (
+        rapport["coherence"]["ecart_couverture_roster"]
+        == compute_ecart_couverture_roster(groupes)
+    )
+    assert rapport["coherence"]["doublons_groupe_id"] == compute_doublons_groupe_id(groupes)
+    assert (
+        rapport["fraicheur"]["fraicheur_sources"]
+        == compute_fraicheur_sources(groupes, reference_date=REFERENCE)
+    )
+    assert (
+        rapport["fraicheur"]["groupes_perimes"]
+        == compute_groupes_perimes(groupes, staleness_days=30, reference_date=REFERENCE)
+    )
+    assert rapport["warnings"] == compute_agregation_warnings(groupes)
+    assert (
+        rapport["tableau_croise_groupes"]
+        == compute_tableau_croise_groupes(groupes)
+    )
+
+
+def test_build_report_staleness_days_par_defaut():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    assert rapport["meta"]["staleness_days"] == 30
+
+
+def test_build_report_sans_reference_date_utilise_maintenant():
+    rapport = build_report([], [])
+
+    genere_le = datetime.fromisoformat(rapport["meta"]["genere_le"])
+    assert (datetime.now(timezone.utc) - genere_le).total_seconds() < 5
+
+
+def test_build_report_sur_les_fixtures_du_depot():
+    groupes_valides, erreurs_lecture = load_groupe_directory(FIXTURES_DIR)
+
+    rapport = build_report(groupes_valides, erreurs_lecture, staleness_days=30, reference_date=REFERENCE)
+
+    assert rapport["meta"]["total_groupes"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    # Le rapport doit rester intégralement sérialisable en JSON.
+    json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# generate_markdown_report
+# ---------------------------------------------------------------------------
+
+def test_generate_markdown_report_contient_toutes_les_sections():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "# Rapport d'audit du jeu de données groupes" in markdown
+    assert "## Volumétrie" in markdown
+    assert "## Tableau croisé des volumes par groupe" in markdown
+    assert "## Complétude" in markdown
+    assert "## Cohérence" in markdown
+    assert "## Fraîcheur" in markdown
+    assert "## Warnings" in markdown
+    assert "## Erreurs de lecture" in markdown
+
+
+def test_generate_markdown_report_sections_vides_affichent_un_message_explicite():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "Aucun groupe invalide détecté." in markdown
+    assert "Aucune divergence détectée." in markdown
+    assert "Aucune donnée de couverture roster" in markdown
+    assert "Aucun doublon détecté." in markdown
+    assert "Aucune source datée." in markdown
+    assert "Aucun groupe périmé." in markdown
+    assert "Aucun warning." in markdown
+    assert "Aucune erreur de lecture." in markdown
+
+
+def test_generate_markdown_report_reflete_les_donnees_du_rapport():
+    groupes = [{"groupe_id": "a"}, {"groupe_id": "a"}]  # doublon volontaire
+    erreurs = [{"fichier": "casse.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report(groupes, erreurs, reference_date=REFERENCE)
+    markdown = generate_markdown_report(rapport)
+
+    assert "casse.json" in markdown
+    assert "JSON invalide" in markdown
+    assert "| a | 2 |" in markdown  # doublons_groupe_id : "a" en double
+
+
+def test_generate_markdown_report_retourne_une_chaine_non_vide():
+    groupes_valides, erreurs_lecture = load_groupe_directory(FIXTURES_DIR)
+    rapport = build_report(groupes_valides, erreurs_lecture, reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert isinstance(markdown, str)
+    assert len(markdown) > 0
+
+
+# ---------------------------------------------------------------------------
+# CLI : _build_arg_parser / main
+# ---------------------------------------------------------------------------
+
+def test_build_arg_parser_defauts():
+    parser = _build_arg_parser()
+    args = parser.parse_args([])
+
+    assert args.input_dir == "pivot_data/groupes"
+    assert args.staleness_days == 30
+    assert args.output_json is None
+    assert args.output_md is None
+
+
+def test_main_ecrit_json_et_markdown(tmp_path):
+    output_json = tmp_path / "rapport.json"
+    output_md = tmp_path / "rapport.md"
+
+    code = main([
+        "--input-dir", str(FIXTURES_DIR),
+        "--output-json", str(output_json),
+        "--output-md", str(output_md),
+        "--staleness-days", "30",
+    ])
+
+    assert code == 0
+    assert output_json.exists()
+    assert output_md.exists()
+
+    rapport = json.loads(output_json.read_text(encoding="utf-8"))
+    assert rapport["meta"]["total_groupes"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    assert rapport["meta"]["staleness_days"] == 30
+
+    markdown = output_md.read_text(encoding="utf-8")
+    assert "# Rapport d'audit du jeu de données groupes" in markdown
+
+
+def test_main_sans_output_json_ecrit_sur_stdout(capsys):
+    code = main(["--input-dir", str(FIXTURES_DIR)])
+
+    assert code == 0
+    captured = capsys.readouterr()
+    rapport = json.loads(captured.out)
+    assert rapport["meta"]["total_groupes"] == 3
+
+
+def test_main_dossier_introuvable_retourne_1(tmp_path):
+    code = main(["--input-dir", str(tmp_path / "n-existe-pas")])
+
+    assert code == 1
+
+
+def test_main_out_dir_est_cree_si_absent(tmp_path):
+    output_json = tmp_path / "sous" / "dossier" / "rapport.json"
+
+    code = main(["--input-dir", str(FIXTURES_DIR), "--output-json", str(output_json)])
+
+    assert code == 0
+    assert output_json.exists()
