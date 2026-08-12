@@ -166,6 +166,17 @@ python src/generate_all_profiles.py --skip-ue
 python src/generate_all_profiles.py --workers 8
 python src/generate_all_profiles.py --out-dir /tmp/profiles
 python src/generate_all_profiles.py --pivot-dir /tmp/pivots
+python src/generate_all_profiles.py --limit 20    # premiers N candidats (déploiement progressif)
+python src/generate_all_profiles.py --sample 20   # échantillon aléatoire de N candidats
+```
+
+Extraction pilotée par roster (composition réelle des groupes parlementaires,
+au lieu de la liste éditoriale `raw_data/candidats.json`, voir
+[`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot)) :
+
+```bash
+python src/generate_roster_candidats.py
+python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
 ```
 
 For each candidate from `raw_data/candidats.json`, the script:
