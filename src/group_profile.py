@@ -1007,6 +1007,18 @@ def generate_groupe_profile_from_roster(
             "actuelle du Sénat (ex. incompatibilités liées à une fonction "
             "ministérielle non détectables automatiquement)."
         )
+        profil_groupe["meta"]["warnings"].append(
+            "couverture_roster_senat : sans mandat_fin exploitable (voir avertissement "
+            "fraicheur_donnees ci-dessus), _member_matches_legislature/senat_periode_debut "
+            "(group_roster.py) ne peut pas fiablement distinguer les sénateurs·rices "
+            "encore en fonction des anciens·nes sur ce roster — renseigner "
+            "senat_periode_debut ne comble pas cette lacune tant que mandat_fin n'est "
+            "pas exploitable pour la majorité des entrées archivées (décision "
+            "documentée dans docs/technical_decisions.md#senat-periode-debut). "
+            "cohesion_votes/effectif peuvent donc inclure des membres qui ne siègent "
+            "plus, avec un effet d'autant plus visible que la couverture des profils "
+            "(meta.couverture_roster) se rapproche de 100 %."
+        )
 
     if validate:
         errors = validate_profil_groupe(profil_groupe)

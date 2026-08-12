@@ -158,3 +158,66 @@ def test_fetch_full_roster_one_call_shared_across_multiple_sigles():
     assert session.get.call_count == 1
     assert {m["slug"] for m in lr} == {"alice", "carla"}
     assert {m["slug"] for m in soc} == {"bob"}
+
+
+# ---------------------------------------------------------------------------
+# senat_periode_debut / _member_matches_legislature (#191)
+#
+# archive.nossenateurs.fr (domaine unique, pas de sous-domaine par
+# législature) : filtrage optionnel côté client par date de fin de mandat.
+# Voir docs/technical_decisions.md#senat-periode-debut pour la limite connue
+# de ce filtrage (mandat_fin pas exploitable pour la majorité des entrées
+# archivées) — ces tests verrouillent le comportement du code tel qu'il
+# existe, indépendamment de cette limite de données.
+# ---------------------------------------------------------------------------
+
+def _senateurs_raw_members():
+    return [
+        {"slug": "courant", "nom": "Courant", "groupe_sigle": "LR", "mandat_debut": "2023-09-24", "mandat_fin": None},
+        {"slug": "ancien", "nom": "Ancien", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": "2017-09-30"},
+        {"slug": "sans-fin", "nom": "SansFin", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": None},
+    ]
+
+
+def test_filter_roster_by_sigle_senat_sans_date_garde_tous_les_membres():
+    """Sans senat_periode_debut, aucun filtrage temporel (comportement par défaut,
+    voir raw_data/groupes_reels.json qui ne renseigne pas ce paramètre)."""
+    roster = filter_roster_by_sigle(_senateurs_raw_members(), "senateurs", "LR")
+    assert {m["slug"] for m in roster} == {"courant", "ancien", "sans-fin"}
+
+
+def test_filter_roster_by_sigle_senat_periode_debut_exclut_ancien_avec_mandat_fin_connu():
+    roster = filter_roster_by_sigle(
+        _senateurs_raw_members(), "senateurs", "LR", senat_periode_debut="2020-01-01",
+    )
+    assert {m["slug"] for m in roster} == {"courant", "sans-fin"}
+
+
+def test_filter_roster_by_sigle_senat_periode_debut_garde_membre_sans_mandat_fin():
+    """mandat_fin absent (None) est traité comme 'toujours en fonction' — la
+    limite documentée de ce filtrage sur les données archivées (voir
+    docs/technical_decisions.md#senat-periode-debut) : un ancien sénateur dont
+    mandat_fin n'a jamais été renseigné n'est PAS exclu par ce filtrage."""
+    roster = filter_roster_by_sigle(
+        [{"slug": "sans-fin", "nom": "SansFin", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": None}],
+        "senateurs", "LR", senat_periode_debut="2024-01-01",
+    )
+    assert {m["slug"] for m in roster} == {"sans-fin"}
+
+
+def test_filter_roster_by_sigle_senat_periode_debut_frontiere_incluse():
+    """mandat_fin == senat_periode_debut est retenu (comparaison >=, pas >)."""
+    roster = filter_roster_by_sigle(
+        [{"slug": "frontiere", "nom": "Frontiere", "groupe_sigle": "LR", "mandat_debut": "2017-01-01", "mandat_fin": "2023-01-01"}],
+        "senateurs", "LR", senat_periode_debut="2023-01-01",
+    )
+    assert {m["slug"] for m in roster} == {"frontiere"}
+
+
+def test_filter_roster_by_sigle_senat_periode_debut_ignoree_pour_deputes():
+    """senat_periode_debut n'a d'effet que pour chambre == 'senateurs'."""
+    raw_members = [m.get("depute") for m in _deputes_payload()["deputes"]]
+    # carla a un mandat terminé en 2022-06-21, largement avant la date fournie ici ;
+    # côté "deputes" ce paramètre est ignoré, carla reste donc incluse.
+    roster = filter_roster_by_sigle(raw_members, "deputes", "LR", senat_periode_debut="2024-01-01")
+    assert {m["slug"] for m in roster} == {"alice", "carla"}
