@@ -96,6 +96,14 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "15": ("amendements_legis", "Amendements_XV.json.zip"),
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
+# Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
+# alea reseau transitoire sur un telechargement de cette taille (deja observe
+# en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
+# warning permanent si une tentative suivante aboutit. Borne volontairement
+# basse (budget CI) : 3 tentatives, backoff court et fixe (pas d'exponentiel,
+# le fichier est deja volumineux a re-telecharger).
+AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS = 3
+AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS = 5
 
 # Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
 # multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
@@ -847,17 +855,29 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
 
         print(f"-> Téléchargement des amendements officiels (Assemblée nationale) : {url}")
         zip_path = AMENDEMENTS_CACHE_DIR / legislature / "amendements.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
-            raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
+        last_exc: Optional[Exception] = None
+        for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
+            try:
+                zip_path.parent.mkdir(parents=True, exist_ok=True)
+                with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                    resp.raise_for_status()
+                    with open(zip_path, "wb") as out:
+                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                            if chunk:
+                                out.write(chunk)
+                last_exc = None
+                break
+            except (requests.RequestException, OSError) as exc:
+                last_exc = exc
+                if attempt < AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS:
+                    print(
+                        f"  [!] Échec du téléchargement des amendements officiels "
+                        f"(tentative {attempt}/{AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS}) : {exc} — nouvel essai"
+                    )
+                    time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
+        if last_exc is not None:
+            print(f"  [!] Échec du téléchargement des amendements officiels : {last_exc}")
+            raise AmendementsIndexError(f"échec du téléchargement ({last_exc})") from last_exc
 
         index: dict[str, list[dict[str, Any]]] = {}
         try:
