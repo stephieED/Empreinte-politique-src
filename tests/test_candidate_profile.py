@@ -1281,3 +1281,91 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
     assert i["theme_officiel"] is None, "theme_officiel doit être null pour une intervention NosDéputés"
     assert i["seance"] is None, "seance doit être null pour une intervention NosDéputés"
     assert i["source"] is None, "source syceron doit être null pour une intervention NosDéputés"
+
+
+# ---------------------------------------------------------------------------
+# Tests pour la non-avalage des échecs de collecte des amendements officiels
+# (issue #185 : un échec réseau/zip était indiscernable d'un simple "aucun
+# amendement" — aucun warning n'était jamais tracé dans meta.warnings).
+# ---------------------------------------------------------------------------
+
+def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
+    from candidate_profile import AmendementsIndexError, _build_acteur_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")),
+    ):
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+
+def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):
+    import zipfile
+
+    from candidate_profile import AmendementsIndexError, _build_acteur_amendement_index
+
+    class FakeStreamResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1024 * 1024):
+            yield b"not a valid zip archive"
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=FakeStreamResponse()),
+    ):
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+        except zipfile.BadZipFile:
+            assert False, "BadZipFile ne doit pas être avalée : elle doit être reconvertie en AmendementsIndexError"
+
+
+def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
+    """Quand fetch_amendements_officiels échoue (ex. AmendementsIndexError propagée
+    depuis _build_acteur_amendement_index), le try/except de build_profile doit
+    ajouter un warning WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES — au lieu de
+    silencieusement laisser profile['amendements'] absent/vide sans trace."""
+    from candidate_profile import AmendementsIndexError, WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch(
+            "candidate_profile.fetch_amendements_officiels",
+            side_effect=AmendementsIndexError("échec du téléchargement (boom)"),
+        ),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        raw_profile = build_profile("deputes", "jean-dupont")
+
+    amendements_warnings = [
+        w for w in raw_profile["meta"]["warnings"] if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES)
+    ]
+    assert amendements_warnings, (
+        "Un échec de collecte des amendements officiels doit être tracé dans meta.warnings, "
+        "pas avalé silencieusement"
+    )

@@ -71,6 +71,7 @@ CV_CandidatFR/
 |  |- test_parltrack_dumps.py
 |  |- test_parse_syceron.py
 |  |- test_parti_profile.py
+|  |- test_quality_gate_amendements.py
 |  |- test_quality_gate_syceron.py
 |  |- test_schema_groupe.py
 |  |- test_schema_parti.py
