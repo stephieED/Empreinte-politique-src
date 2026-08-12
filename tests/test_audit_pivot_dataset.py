@@ -21,6 +21,7 @@ from audit_pivot_dataset import (
     compute_presence_meta,
     compute_profils_sans_activite,
     compute_repartition_chambre,
+    compute_repartition_provenance,
     compute_tableau_croise_candidats,
     compute_validite_dates,
     compute_taux_remplissage,
@@ -182,6 +183,66 @@ def test_compute_repartition_chambre_chambre_absente_du_profil():
 
     assert resultat["total_profils"] == 1
     assert resultat["par_chambre"]["null"] == 1
+
+
+# ---------------------------------------------------------------------------
+# compute_repartition_provenance
+# ---------------------------------------------------------------------------
+
+def profil_provenance(provenance, id_="source:x"):
+    return {"id": id_, "meta": {"provenance": provenance}}
+
+
+def test_compute_repartition_provenance_liste_vide():
+    resultat = compute_repartition_provenance([])
+
+    assert resultat == {
+        "total_profils": 0,
+        "par_provenance": {"candidat_declare": 0, "roster_groupe": 0, "null": 0},
+    }
+
+
+def test_compute_repartition_provenance_profils_mixtes():
+    profils = [
+        profil_provenance("candidat_declare", id_="a"),
+        profil_provenance("roster_groupe", id_="b"),
+        profil_provenance("roster_groupe", id_="c"),
+    ]
+
+    resultat = compute_repartition_provenance(profils)
+
+    assert resultat == {
+        "total_profils": 3,
+        "par_provenance": {"candidat_declare": 1, "roster_groupe": 2, "null": 0},
+    }
+
+
+def test_compute_repartition_provenance_meta_absente_compte_candidat_declare():
+    # Pivot généré avant #189 (rétro-compatibilité, voir validate_profil()).
+    resultat = compute_repartition_provenance([{"id": "a"}])
+
+    assert resultat["par_provenance"]["candidat_declare"] == 1
+    assert resultat["par_provenance"]["roster_groupe"] == 0
+    assert resultat["par_provenance"]["null"] == 0
+
+
+def test_compute_repartition_provenance_meta_provenance_absente_compte_candidat_declare():
+    resultat = compute_repartition_provenance([{"id": "a", "meta": {}}])
+
+    assert resultat["par_provenance"]["candidat_declare"] == 1
+
+
+def test_compute_repartition_provenance_valeur_inconnue_compte_null():
+    resultat = compute_repartition_provenance([profil_provenance("valeur_inconnue")])
+
+    assert resultat["par_provenance"]["null"] == 1
+    assert resultat["par_provenance"]["candidat_declare"] == 0
+
+
+def test_compute_repartition_provenance_meta_invalide_compte_candidat_declare():
+    resultat = compute_repartition_provenance([{"id": "a", "meta": "pas un dict"}])
+
+    assert resultat["par_provenance"]["candidat_declare"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -943,7 +1004,7 @@ def test_build_report_structure_top_level_keys():
         "warnings", "tableau_croise_candidats", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
-        "repartition_chambre", "distribution_listes", "nombre_sources",
+        "repartition_chambre", "repartition_provenance", "distribution_listes", "nombre_sources",
     }
     assert set(rapport["completude"].keys()) == {
         "taux_remplissage", "profils_sans_activite", "presence_meta",
@@ -987,6 +1048,7 @@ def test_build_report_delegue_aux_fonctions_compute():
     rapport = build_report(profils, erreurs, staleness_days=30, reference_date=REFERENCE)
 
     assert rapport["volumetrie"]["repartition_chambre"] == compute_repartition_chambre(profils)
+    assert rapport["volumetrie"]["repartition_provenance"] == compute_repartition_provenance(profils)
     assert rapport["volumetrie"]["distribution_listes"] == compute_distribution_listes(profils)
     assert rapport["volumetrie"]["nombre_sources"] == compute_nombre_sources(profils)
     assert rapport["completude"]["taux_remplissage"] == compute_taux_remplissage(profils)
@@ -1049,6 +1111,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
 
     assert "# Rapport d'audit du jeu de données pivot" in markdown
     assert "## Volumétrie" in markdown
+    assert "### Répartition par provenance" in markdown
     assert "## Tableau croisé des volumes par candidat" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown

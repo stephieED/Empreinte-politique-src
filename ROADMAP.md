@@ -35,4 +35,6 @@ something is pending, not *why*.
 - Agenda/committee meetings dataset — low priority, see
   `technical_decisions.md#hors-perimetre`.
 - Mayors — no dedicated collection module yet.
-- Implementation of test_check_quality_gate.py (needs to integrate test_quality_gate_syceron.py)
+- Consolidate `test_quality_gate_syceron.py` and `test_quality_gate_groupes.py`
+  (added by #193 for `_report_groupes`) into a single `test_check_quality_gate.py`
+  covering all sections of `check_quality_gate.py`.

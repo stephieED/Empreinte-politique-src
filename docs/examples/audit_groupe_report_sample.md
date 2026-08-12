@@ -112,9 +112,9 @@ Aucune divergence détectée.
 
 ### Écart de couverture du roster
 
-| groupe_id | Roster total | Profils disponibles | Écart |
-| --- | --- | --- | --- |
-| AN:LFI | 5 | 2 | 3 |
+| groupe_id | Roster total | Profils disponibles | Écart | Taux de couverture (%) |
+| --- | --- | --- | --- | --- |
+| AN:LFI | 5 | 2 | 3 | 40.0 |
 
 ### Doublons de `groupe_id`
 

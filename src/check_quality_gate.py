@@ -500,6 +500,7 @@ def _report_groupes(
     groupes_config_path: Path,
     groupes_dir: Path,
     min_members: int,
+    min_coverage_pct: float = 0.0,
 ) -> tuple[list[str], list[str], str, str]:
     """Analyse la qualité des fichiers de groupe générés.
 
@@ -511,9 +512,25 @@ def _report_groupes(
       - échec de validation de schéma (validate_profil_groupe)
 
     soft_warnings — signaux de qualité dégradée (n'empêchent pas le commit) :
-      - profils_disponibles < min_members (couverture insuffisante)
+      - profils_disponibles < min_members (couverture insuffisante, seuil absolu)
+      - taux de couverture < min_coverage_pct (couverture insuffisante, seuil
+        relatif — désactivé par défaut, voir doc de `min_coverage_pct`)
       - IncompleteRead dans meta.warnings (signal réseau)
       - pas de cohesion_votes malgré des membres présents (données incomplètes)
+
+    Args:
+        min_members: seuil absolu (nombre de profils chargés). Voir
+            `docs/technical_decisions.md#seuil-couverture-groupe` pour la
+            justification du défaut conservé (1) : les chiffres réels de
+            couverture à pleine échelle de l'extraction roster-driven
+            (#188/#190/#191) ne sont pas encore disponibles au moment de
+            cette recalibration (#193) — seuls des runs à échelle réduite
+            (`--limit`/`--sample`) ont été observés.
+        min_coverage_pct: seuil relatif optionnel (0-100, `profils_disponibles
+            / roster_total`). `0` désactive ce contrôle (défaut) : ce seuil
+            relatif est ajouté pour permettre une recalibration future une
+            fois des chiffres réels disponibles, sans devoir de nouveau
+            changer la signature de cette fonction ni le format du rapport.
     """
     # ── Lecture de la config ──────────────────────────────────────────────
     raw_cfg = _load_json(groupes_config_path)
@@ -584,8 +601,9 @@ def _report_groupes(
 
         row_soft: list[str] = []
         row_status = "ok"
+        coverage_pct = round(100 * profils_dispo / roster_total, 2) if roster_total > 0 else None
 
-        # Soft 1 — couverture insuffisante
+        # Soft 1a — couverture insuffisante (seuil absolu)
         if roster_total > 0 and profils_dispo < min_members:
             msg = (
                 f"{groupe_id}: couverture insuffisante "
@@ -593,6 +611,16 @@ def _report_groupes(
             )
             soft_warnings.append(msg)
             row_soft.append(f"couverture {profils_dispo}/{roster_total}")
+            row_status = "soft"
+
+        # Soft 1b — couverture insuffisante (seuil relatif, désactivé par défaut)
+        if min_coverage_pct > 0 and roster_total > 0 and coverage_pct < min_coverage_pct:
+            msg = (
+                f"{groupe_id}: taux de couverture insuffisant "
+                f"({coverage_pct}% < seuil {min_coverage_pct}%)"
+            )
+            soft_warnings.append(msg)
+            row_soft.append(f"taux couverture {coverage_pct}%")
             row_status = "soft"
 
         # Soft 2 — signaux réseau (IncompleteRead ou autre pattern réseau)
@@ -623,6 +651,7 @@ def _report_groupes(
             "chambre": chambre,
             "profils_dispo": profils_dispo,
             "roster_total": roster_total,
+            "coverage_pct": coverage_pct,
             "nb_membres": nb_membres,
             "nb_cohesion": nb_cohesion,
             "status": row_status,
@@ -659,19 +688,22 @@ def _report_groupes(
         lines.append("│")
 
     # Tableau récap
-    header = f"│  {'Groupe':<22} {'Chambre':<8} {'Couverts/Roster':>16}  {'Membres':>8}  {'Votes':>6}  Flags"
+    header = f"│  {'Groupe':<22} {'Chambre':<8} {'Couverts/Roster (%)':>20}  {'Membres':>8}  {'Votes':>6}  Flags"
     lines.append(header)
     lines.append("│  " + "─" * 72)
     for r in rows:
         status_marker = "✗" if r["status"] == "hard" else ("⚠" if r["status"] == "soft" else "✓")
-        coverage = f"{r.get('profils_dispo','?')}/{r.get('roster_total','?')}" if r.get('roster_total') else "—"
+        if r.get("roster_total"):
+            coverage = f"{r.get('profils_dispo','?')}/{r.get('roster_total','?')} ({r.get('coverage_pct','?')}%)"
+        else:
+            coverage = "—"
         membres = str(r.get("nb_membres", "?"))
         votes = str(r.get("nb_cohesion", "?"))
         flags = r.get("soft_flags", "—")
         if r["status"] == "hard":
             flags = r.get("detail", "—")
         lines.append(
-            f"│  {status_marker} {r['nom']:<20} {r.get('chambre','?'):<8} {coverage:>16}"
+            f"│  {status_marker} {r['nom']:<20} {r.get('chambre','?'):<8} {coverage:>20}"
             f"  {membres:>8}  {votes:>6}  {flags}"
         )
     lines.append("└" + "─" * 67)
@@ -708,8 +740,8 @@ def _report_groupes(
     md_lines += [
         "**Détail par groupe**",
         "",
-        "| Groupe | Chambre | Couverts / Roster | Membres | Votes cohésion | Flags |",
-        "|---|---|---|---|---|---|",
+        "| Groupe | Chambre | Couverts / Roster | Taux de couverture (%) | Membres | Votes cohésion | Flags |",
+        "|---|---|---|---|---|---|---|",
     ]
     for r in rows:
         status_icon = "❌" if r["status"] == "hard" else ("⚠️" if r["status"] == "soft" else "✅")
@@ -717,9 +749,11 @@ def _report_groupes(
             f"{r.get('profils_dispo','?')}/{r.get('roster_total','?')}"
             if r.get("roster_total") else "—"
         )
+        coverage_pct = r.get("coverage_pct")
+        coverage_pct_cell = f"{coverage_pct}%" if coverage_pct is not None else "—"
         flags = r.get("soft_flags", "—") if r["status"] != "hard" else r.get("detail", "—")
         md_lines.append(
-            f"| {status_icon} {r['nom']} | {r.get('chambre','?')} | {coverage} "
+            f"| {status_icon} {r['nom']} | {r.get('chambre','?')} | {coverage} | {coverage_pct_cell} "
             f"| {r.get('nb_membres','?')} | {r.get('nb_cohesion','?')} | {flags} |"
         )
     md_lines.append("")
@@ -855,7 +889,22 @@ def main() -> int:
         dest="groupe_min_members",
         help=(
             "Nombre minimum de profils candidats attendus dans chaque groupe "
-            "(soft fail si inférieur, défaut : 1). 0 = désactivé."
+            "(soft fail si inférieur, défaut : 1). 0 = désactivé. Seuil "
+            "absolu conservé par défaut faute de chiffres réels de couverture "
+            "à pleine échelle (voir docs/technical_decisions.md#seuil-couverture-groupe)."
+        ),
+    )
+    parser.add_argument(
+        "--groupe-min-coverage-pct",
+        type=float,
+        default=0.0,
+        dest="groupe_min_coverage_pct",
+        help=(
+            "Taux de couverture minimum (%%, profils_disponibles / roster_total) "
+            "attendu dans chaque groupe (soft fail si inférieur, défaut : 0 = "
+            "désactivé). Seuil relatif complémentaire de --groupe-min-members, "
+            "à activer une fois des chiffres réels de couverture à pleine "
+            "échelle disponibles (voir docs/technical_decisions.md#seuil-couverture-groupe)."
         ),
     )
     parser.add_argument(
@@ -911,7 +960,8 @@ def main() -> int:
 
     # ── Section 4 : Groupes parlementaires ────────────────────────────────
     grp_hard, grp_soft, grp_console, grp_md = _report_groupes(
-        args.groupes_config, args.groupes_dir, args.groupe_min_members
+        args.groupes_config, args.groupes_dir, args.groupe_min_members,
+        min_coverage_pct=args.groupe_min_coverage_pct,
     )
     grp_exit = 1 if grp_hard else 0
 

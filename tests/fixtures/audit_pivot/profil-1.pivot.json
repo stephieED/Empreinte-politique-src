@@ -16,6 +16,7 @@
     "schema_version": "1",
     "genere_le": "2026-07-29T10:00:00+0000",
     "licence_donnees": "",
-    "warnings": []
+    "warnings": [],
+    "provenance": "roster_groupe"
   }
 }

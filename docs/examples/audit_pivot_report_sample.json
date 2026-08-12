@@ -16,6 +16,14 @@
         "null": 0
       }
     },
+    "repartition_provenance": {
+      "total_profils": 3,
+      "par_provenance": {
+        "candidat_declare": 2,
+        "roster_groupe": 1,
+        "null": 0
+      }
+    },
     "distribution_listes": {
       "votes": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0},
       "textes_portes": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0},

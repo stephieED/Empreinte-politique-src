@@ -231,7 +231,8 @@
           "groupe_id": "AN:LFI",
           "roster_total": 5,
           "profils_disponibles": 2,
-          "ecart": 3
+          "ecart": 3,
+          "taux_couverture_pct": 40.0
         }
       ]
     },
