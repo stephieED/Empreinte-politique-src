@@ -187,3 +187,44 @@ def test_repository_groupes_reels_json_is_valid():
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     assert isinstance(payload.get("groupes"), list)
     assert payload["groupes"]
+
+
+# ---------------------------------------------------------------------------
+# #191 — roster largement couvert (post #190), à l'échelle d'un batch complet
+# generate_all(), au-delà des scénarios de faible couverture ci-dessus.
+# ---------------------------------------------------------------------------
+
+def test_generate_all_couverture_roster_grande_echelle_quasi_complete(tmp_path, monkeypatch):
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    out_dir = tmp_path / "groupes"
+    out_dir.mkdir()
+
+    n = 50
+    n_manquants = 3
+    roster_members = []
+    for i in range(n):
+        slug = f"membre-{i}"
+        roster_members.append({"slug": slug, "nom": f"Membre {i}", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None})
+        if i < n - n_manquants:
+            (profiles_dir / f"{slug}.pivot.json").write_text(json.dumps(_pivot(f"nosdeputes:{slug}", f"Membre {i}")), encoding="utf-8")
+
+    def fake_fetch_full_roster(chambre, legislature=None, session=None):
+        return roster_members
+
+    monkeypatch.setattr("generate_group_profiles.fetch_full_roster", fake_fetch_full_roster)
+
+    groupes = [
+        {"roster_chambre": "deputes", "groupe_id": "AN:LR", "groupe_sigle": "LR", "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "16", "fichier": "groupe-AN-LR-16.json"},
+    ]
+
+    echecs = generate_all(groupes, profiles_dir=profiles_dir, out_dir=out_dir, validate=True)
+    assert echecs == 0
+
+    lr = json.loads((out_dir / "groupe-AN-LR-16.json").read_text(encoding="utf-8"))
+    couverture = lr["meta"]["couverture_roster"]
+    assert couverture["roster_total"] == n
+    assert couverture["profils_disponibles"] == n - n_manquants
+    assert couverture["profils_disponibles"] / couverture["roster_total"] > 0.9
+    assert len(lr["membres"]) == n - n_manquants
+    assert validate_profil_groupe(lr) == []
