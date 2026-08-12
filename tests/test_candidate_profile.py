@@ -1290,17 +1290,79 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 # ---------------------------------------------------------------------------
 
 def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
-    from candidate_profile import AmendementsIndexError, _build_acteur_amendement_index
+    """Échec persistant (toutes les tentatives échouent) : AmendementsIndexError
+    doit toujours être levée après épuisement des tentatives (non-régression #199),
+    et toutes les tentatives prévues doivent avoir été consommées."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AmendementsIndexError,
+        _build_acteur_amendement_index,
+    )
 
     with (
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
-        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None) as mock_sleep,
     ):
         try:
             _build_acteur_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
+
+    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+        "Le téléchargement doit être retenté jusqu'à épuisement du nombre de tentatives borné"
+    )
+    # Backoff entre chaque tentative, mais pas après la dernière (déjà en échec définitif).
+    assert mock_sleep.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS - 1
+
+
+def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(tmp_path):
+    """Un échec réseau transitoire isolé (ex. un seul IncompleteRead/RequestException)
+    ne doit plus faire échouer la construction de l'index si une tentative suivante
+    aboutit — c'est le comportement central demandé par #220."""
+    import io
+    import zipfile as zipfile_module
+
+    from candidate_profile import _build_acteur_amendement_index
+
+    buf = io.BytesIO()
+    with zipfile_module.ZipFile(buf, "w") as zf:
+        pass  # zip valide mais vide : suffisant pour vérifier l'absence d'erreur
+    valid_zip_bytes = buf.getvalue()
+
+    class FakeStreamResponse:
+        def __init__(self, payload: bytes):
+            self._payload = payload
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1024 * 1024):
+            yield self._payload
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch(
+            "candidate_profile.requests.get",
+            side_effect=[
+                _requests.RequestException("IncompleteRead(16779130 bytes read, 346527232 more expected)"),
+                FakeStreamResponse(valid_zip_bytes),
+            ],
+        ) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None) as mock_sleep,
+    ):
+        index = _build_acteur_amendement_index("17")
+
+    assert index == {}
+    assert mock_get.call_count == 2, "Un seul échec transitoire suivi d'un succès : exactement 2 tentatives"
+    assert mock_sleep.call_count == 1, "Backoff attendu une seule fois, entre l'échec et la tentative réussie"
 
 
 def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):

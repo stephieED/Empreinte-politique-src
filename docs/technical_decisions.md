@@ -1,3 +1,210 @@
+<a id="retry-generate-data-preemption"></a>
+## Retry automatique de `generate-data.yml` sur signature de préemption runner (#230) (2026-08-12)
+
+**Contexte** : #217/#221/#228 (voir [[verification-billing-actions]] et
+[[ci-cd]] ci-dessous) ont établi qu'un `generate-data.yml` tué par un
+`shutdown signal` runner GitHub (préemption infra transitoire, hors contrôle
+du workflow) reste en échec jusqu'à un re-déclenchement manuel — vécu deux
+fois de suite sur les runs #24/#25. #230 demande une récupération
+automatique de ce mode de défaillance précis, sans masquer un vrai échec
+applicatif (#218 : bug de script shell du Quality Gate, qu'un retry
+généralisé aurait fait disparaître silencieusement au lieu de le signaler).
+
+**Décision** : un second workflow, déclenché sur `workflow_run` (`types:
+[completed]`) ciblant `Génération des données`, qui :
+1. **Plafonne à 1 tentative** en vérifiant `github.event.workflow_run
+   .triggering_actor.login` — si le run échoué a lui-même été déclenché par
+   `github-actions[bot]` (identité utilisée par `gh workflow run` via
+   `GITHUB_TOKEN`), c'est déjà une relance automatique : pas de nouvelle
+   tentative. Choisi plutôt qu'un compteur externe (variable de dépôt,
+   artifact dédié) car il ne nécessite aucun état persistant ni permission
+   supplémentaire — l'identité de l'acteur déclencheur suffit à distinguer un
+   run humain d'un run auto-relancé.
+2. **Détecte la signature précise** via l'API Actions (`gh api .../actions/
+   runs/<id>/jobs` puis `.../jobs/<job_id>/logs`) : au moins un job en échec
+   dont les steps `if: always()`/`if: failure()` (`Upload artifact *`,
+   `Diagnostic — job en échec`) sont `skipped` **et** dont les logs
+   contiennent `shutdown signal` / `The operation was canceled.`. Un échec
+   applicatif (exception Python, Quality Gate en échec réel) laisse toujours
+   ces steps s'exécuter normalement — la combinaison des deux signaux évite
+   les faux positifs qu'un simple grep de log seul ne suffirait pas à écarter.
+3. **Reconstruit les inputs du run échoué en best-effort** : l'API Actions
+   n'expose pas les inputs d'un `workflow_dispatch` passé (pas de champ
+   dédié sur l'objet run). `fresh_run` est lu de façon fiable via la
+   conclusion du step conditionnel `Nettoyage complet (fresh_run
+   uniquement)` (skipped/success reflète directement `inputs.fresh_run`) ;
+   `workers`/`extract_interventions`/`max_pages` sont extraits du texte
+   résolu du step `Extraction AN` (ces valeurs sont substituées directement
+   par `${{ inputs.* }}` dans le script, donc visibles telles quelles dans le
+   log) ; `threshold` est lu depuis le rapport stdout de
+   `check_quality_gate.py` (`Seuil : N`) ; `roster_extraction_limit` depuis
+   le rapport stdout de `generate_all_profiles.py`. En cas d'échec
+   d'extraction d'une valeur, repli sur le défaut déclaré de
+   `generate-data.yml` pour cet input — dégradation documentée, pas un
+   blocage du retry.
+4. **Re-déclenche** `generate-data.yml` via `gh workflow run` avec les
+   inputs reconstruits, sur la même branche que le run échoué
+   (`github.event.workflow_run.head_branch`).
+5. **Notifie explicitement** via `$GITHUB_STEP_SUMMARY` (même pattern que
+   les steps de diagnostic existants de `generate-data.yml`) : retry
+   déclenché, plafond déjà atteint, ou signature non reconnue — dans les
+   trois cas, une trace visible plutôt qu'un re-run silencieux ou une
+   absence de retry inexpliquée.
+
+**Note d'implémentation** : comme pour #228, l'agent qui a traité #230 n'a
+pas les permissions GitHub App pour créer/modifier des fichiers sous
+`.github/workflows/*` — le fichier `.github/workflows/retry-generate-
+data.yml` n'a donc pas pu être poussé directement et doit être créé
+manuellement à partir du YAML fourni en commentaire de résolution de #230.
+Restriction d'outillage CI, pas une décision produit.
+
+*Alternative rejetée* : retry généralisé sur tout `conclusion: failure`
+sans vérification de signature — rejeté explicitement par #230 lui-même
+(masquerait une régression applicative réelle comme #218 au lieu de la
+signaler). *Alternative rejetée* : plafonner le retry via un nouvel input
+`workflow_dispatch` dédié sur `generate-data.yml` (ex. `auto_retry_count`)
+plutôt que l'identité de l'acteur déclencheur — rejeté car cela nécessiterait
+de modifier `generate-data.yml`, hors de portée de cet agent pour la même
+raison que le nouveau fichier lui-même (restriction de permissions
+`.github/workflows/*`), et l'identité de l'acteur atteint le même résultat
+sans ce besoin.
+
+<a id="ci-cd"></a>
+## Angle mort du `runner shutdown signal` sur `if: always()` et la sauvegarde de cache (#228) (2026-08-12)
+
+**Contexte** : #219 a ajouté `if: always()` sur les steps `Upload artifact *`
+de `generate-data.yml` pour préserver la progression partielle (profils déjà
+écrits sur disque) en cas d'annulation/échec de job. Le run #25
+(récidive de #217/#221, https://github.com/stephieED/Empreinte-politique-src/actions/runs/31605692943)
+montre empiriquement que ce mécanisme a un angle mort : quand le runner
+hébergé GitHub reçoit un `shutdown signal` d'infrastructure (cause retenue
+pour #217, voir [[verification-billing-actions]] — préemption transitoire,
+indépendante de la facturation), **aucun step suivant ne s'exécute, `if:
+always()` inclus**. Dans ce run, `Upload artifact AN`, le `Post Run
+actions/cache@v4` (sauvegarde implicite du cache `.cache` en fin de job) et
+les deux steps de diagnostic `if: cancelled()`/`if: failure()` de #223 sont
+tous `skipped`, alors que le job est en `failure`. Toute la progression du
+job (profils + cache) est donc perdue dans ce mode précis, contrairement à ce
+que #219 visait à garantir : GitHub Actions tue le process runner lui-même
+avant que la couche `if:`/post-step ne puisse s'évaluer, ce qui est différent
+d'une annulation ou d'un échec applicatif classique que `always()` couvre
+correctement.
+
+**Pistes évaluées** (#228) :
+1. Réduire la granularité des jobs d'extraction coûteux (`extract-an`,
+   `extract-roster-groupes`) en sous-lots (matrix strategy par tranche de
+   candidats/roster), pour borner la perte à un lot plutôt qu'à tout le job.
+2. Invoquer `actions/cache/save@v4` à des points de contrôle intermédiaires
+   plutôt qu'en post-step implicite de fin de job.
+3. Documenter explicitement le blind spot dans `generate-data.yml` (commentaire),
+   pour éviter une fausse impression de résilience lors de futures modifications.
+
+**Décision retenue : option 3 seule pour l'instant** (commentaire explicite à
+ajouter en tête de `generate-data.yml`, à côté du bloc de commentaires
+existant sur les timeouts) — patch fourni en commentaire de #228 pour
+application manuelle (voir note d'implémentation ci-dessous). Réduit le risque
+de régression silencieuse (un futur changement qui s'appuierait à tort sur
+`always()` comme garantie totale) à coût nul, sans toucher au comportement du
+workflow.
+
+**Options 1 et 2 différées, pas rejetées** : les deux réduiraient réellement
+le blast radius, mais seule l'option 1 (sharding) couvre la perte des *deux*
+formes de progression (artifacts de profils **et** cache) — l'option 2 seule
+ne couvre que la sauvegarde du cache, pas l'upload d'artifact, tant que
+l'extraction reste un unique step long ; elle ne devient réellement utile que
+combinée à un découpage en plusieurs steps/lots, c'est-à-dire à l'option 1.
+Le sharding matrix a un coût de conception non trivial (clés de cache par lot,
+fusion de N artifacts au lieu d'un seul dans `merge-and-pivot`, interaction
+avec la réduction du pic de jobs concurrents de #222,
+[[concurrence-ci-roster]]) et une urgence limitée tant que
+`roster_extraction_limit` reste à 20 (rollout restreint, #192) — l'exposition
+réelle grandira surtout au passage à un run à pleine échelle (~750 membres),
+pas encore planifié (voir [[seuil-couverture-groupe]]). À concevoir avec cette
+recalibration plutôt qu'en réaction isolée à #228.
+
+**Note d'implémentation** : l'agent qui a traité #228 n'a pas les permissions
+GitHub App pour modifier `.github/workflows/*` (restriction de l'outillage
+CI, pas une décision produit) — le commentaire YAML de l'option 3 n'a donc
+pas pu être poussé directement et doit être appliqué manuellement à partir du
+patch fourni dans le commentaire de résolution de #228.
+
+<a id="verification-billing-actions"></a>
+## Vérification quota/limite de dépense GitHub Actions (#221) : hypothèse infirmée (2026-08-12)
+
+**Contexte** : #221, sous-issue du diagnostic #217, vérifiait si l'annulation
+des jobs `extract-an`/`extract-roster-groupes` (run #24, récidive sur le run
+#25) était due à un plafond de minutes Actions ou à une limite de dépense
+atteinte en cours de run sur ce dépôt **privé**, dans un contexte de volume
+inhabituellement élevé de runs `Claude Code`/`Claude Code Review` concurrents
+ce même jour. Vérification hors périmètre agent (accès au tableau de bord de
+facturation requis) — réalisée par @stephieED via Settings → Billing and
+plans, capture d'écran "Usage breakdown" et export CSV du cycle en cours
+fournis en commentaire.
+
+**Constat (cycle de facturation d'août 2026)** :
+- Minutes Actions incluses : 1 511 / 2 000 min utilisées (75 %) — sous quota.
+- Stockage Actions inclus : 0,2 / 0,5 GB utilisés (40 %) — sous quota.
+- "Usage breakdown" : Actions Linux (1 511 min, $9.07 brut) + Actions storage
+  (132,12 GB-h, $0.04 brut) → **montant facturé $0**, entièrement absorbé par
+  le quota inclus du plan.
+- L'export CSV journalier (`225 min` le 12/08, `discount=0` par ligne) est
+  cohérent avec ce total : la déduction du quota inclus n'apparaît qu'au
+  niveau agrégé du cycle de facturation, pas ligne à ligne — l'absence de
+  remise par jour n'est donc pas un signal de dépassement.
+
+**Conclusion : hypothèse infirmée.** Ni le quota de minutes (marge de 489 min
+restante) ni le stockage ne sont dépassés, et rien n'est facturé ce mois-ci
+sur ce dépôt. Une limite de dépense à $0 combinée à un quota épuisé
+bloquerait le *démarrage* du job (erreur explicite avant exécution), pas un
+arrêt en cours de run — or le run #25 montre `The runner has received a
+shutdown signal`, un signal d'infrastructure au niveau du runner hébergé,
+sans lien avec la facturation. Cause la plus probable retenue pour #217 :
+incident/préemption transitoire côté runners hébergés GitHub, indépendante du
+statut public/privé du dépôt — passer le dépôt en public n'aurait pas
+empêché ce type d'arrêt et n'est donc pas recommandé pour ce problème précis.
+
+*Non vérifié précisément* : la valeur exacte configurée sur *Settings →
+Billing and plans → Spending limits* n'a pas été communiquée telle quelle —
+seul le résultat ($0 facturé, quota non atteint) est confirmé via le "Usage
+breakdown" et le CSV. Suffisant pour trancher #221 (le quota/la dépense n'est
+pas la cause de l'annulation), mais à compléter en commentaire si une valeur
+précise de configuration est un jour nécessaire.
+
+<a id="concurrence-ci-roster"></a>
+## Réduction du pic de jobs concurrents `generate-data.yml` : séquencement + cache AN partagé (2026-08-12)
+
+**Contexte** : #222 (sous-issue du diagnostic #217/#221) — `extract-roster-groupes`
+(#192) est le 5ᵉ job du graphe, lancé en parallèle des 4 jobs d'extraction
+historiques. `extract-an` et `extract-roster-groupes` téléchargent chacun,
+indépendamment, les mêmes dumps AN Open Data immuables dès qu'un membre de
+roster appartient à la chambre `deputes` (5 des 7 groupes configurés) — cas
+systématique en pratique. Run #24 : `Amendements.json.zip` (283-618 Mo)
+téléchargé deux fois en parallèle, doublant la bande passante et l'exposition
+aux `IncompleteRead` déjà diagnostiqués (#185/#220), en mitigation de
+l'hypothèse d'un plafond de dépense Actions atteint (#221).
+
+**Décision** : faire pointer `extract-roster-groupes` sur la même clé de
+cache `.cache` qu'`extract-an` (`public-data-cache-an-*` au lieu de
+`public-data-cache-roster-*`) et le séquencer après les 4 jobs existants
+(`needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]`)
+— option 1 du diagnostic #222. Réduit le pic de jobs simultanés de 5 à 4 et
+garantit, via le séquencement, que le cache AN partagé est déjà chaud
+(écrit par `extract-an`) au moment de sa restauration par
+`extract-roster-groupes` : plus de course au premier run de chaque semaine
+ISO, plus de double téléchargement. Coût : temps mur total plus long
+(`extract-roster-groupes` démarre après les 4 autres au lieu d'en parallèle).
+
+*Alternatives rejetées* : réduire davantage `roster_extraction_limit`
+(option 2) — n'aurait qu'atténué le doublon de téléchargement AN Open Data
+sans l'éliminer (le doublon existe dès qu'un seul membre AN est traité,
+indépendamment du volume) ; gater `extract-roster-groupes` derrière un input
+explicite `run_roster_extraction` (option 3) — retardé au-delà du correctif
+obligatoire de #222, car cela retire de la capacité d'extraction plutôt que
+de réduire la concurrence, contrairement à l'objectif de l'issue ("sans
+perdre en capacité"). Les deux restent des options possibles si #221
+confirme un plafond de dépense atteint et qu'une réduction supplémentaire du
+pic s'avère nécessaire.
+
 <a id="seuil-couverture-groupe"></a>
 ## Seuil de couverture de groupe (`--groupe-min-members`) : conservé faute de chiffres réels à pleine échelle (2026-08-12)
 
@@ -93,6 +300,53 @@ acceptable pour un usage de spot-check et documenté dans l'aide CLI.
 l'issue, "à trancher en implémentation") — rejeté car les deux usages
 (reproductible pour la CI, aléatoire pour la diversité) sont distincts et peu
 coûteux à supporter simultanément.
+
+## `--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)
+
+**Contexte** : #224 diagnostique que la combinaison `--skip-existing` +
+`--limit N` fixe (introduite par #192, voir section précédente) empêche à la
+fois la conquête progressive de couverture du roster et le rafraîchissement
+des profils déjà collectés — `--limit` resélectionne toujours les N premiers
+candidats du fichier source (ordre déterministe), qui existent tous dès le
+run 2, et `--skip-existing` les saute alors systématiquement : le job ne
+traite plus jamais personne sans intervention manuelle, et les profils
+couverts ne sont plus jamais rafraîchis (votes/amendements/interventions
+figés à leur état de première extraction).
+
+**Décision** : dans `generate_all_profiles.main()`, quand `--limit` et
+`--skip-existing` sont combinés, remplacer la troncature naïve
+(`_select_candidats`) par `_select_candidats_couverture` : partitionner les
+candidats en "non couverts" (pas de `pivot_data/profiles/<slug>.pivot.json`)
+et "couverts" avant application de `--limit`, puis allouer le budget en
+priorité aux non-couverts (frontière de conquête, ordre du fichier source) et,
+s'il en reste, aux couverts périmés — fraîcheur réutilisée telle quelle depuis
+`audit_pivot_dataset.compute_profils_perimes` (`--staleness-days`, défaut 30,
+même sémantique). Les slugs sélectionnés pour rafraîchissement sont exemptés
+du court-circuit `--skip-existing` dans `process_candidat` (nouveau paramètre
+`refresh_slugs`) : ils repassent par le fetch + merge additif normal plutôt
+que d'être sautés. `--limit` seul ou `--sample` gardent le comportement
+historique (troncature simple), inchangé.
+
+Contrainte de mise en œuvre : `.github/workflows/generate-data.yml` n'est pas
+modifiable par cet agent (permissions GitHub App) — la correction devait donc
+être transparente pour l'invocation CLI existante du job `extract-roster-groupes`
+(`--limit ... --skip-existing`, sans nouveau flag requis), ce qui a aussi
+tranché en faveur d'un comportement déclenché par la combinaison de flags
+plutôt que par un nouveau flag dédié.
+
+*Alternative rejetée* : trier les profils périmés du plus périmé au moins
+périmé pour l'allocation du budget restant (suggéré par l'issue). Rejeté pour
+rester simple — l'ordre utilisé est celui renvoyé par
+`compute_profils_perimes` (tri alphabétique par `id`), sans tri additionnel
+par degré de péremption ; à revisiter si un déséquilibre de rafraîchissement
+est observé en usage réel.
+
+*Hors périmètre (explicite dans #224)* : pas de changement du budget/timeout
+CI (`generate-data.yml`) ni du seuil de péremption par défaut
+(`staleness_days=30`, déjà utilisé par `audit_pivot_dataset.py`) — réutilisé
+tel quel. Impact réel sur le budget CI (coût par run d'un mix
+conquête+rafraîchissement) à évaluer une fois #222 en place, comme demandé
+par l'issue.
 
 <a id="provenance-pivot"></a>
 ## Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)

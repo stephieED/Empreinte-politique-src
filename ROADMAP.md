@@ -8,6 +8,12 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- `generate-data.yml`: `if: always()` upload/cache steps don't survive a
+  runner infrastructure `shutdown signal` (#228) — YAML comment documenting
+  the blind spot pending manual application (agent has no `.github/workflows`
+  write permission), see `technical_decisions.md#ci-cd`. Matrix-sharding
+  mitigation deferred to the full-scale roster rollout, see
+  `technical_decisions.md#seuil-couverture-groupe`.
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.

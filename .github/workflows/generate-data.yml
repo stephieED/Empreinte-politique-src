@@ -80,6 +80,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -123,11 +126,38 @@ jobs:
           python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       - name: Upload artifact AN
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-an
           path: raw_data/profiles/
           if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB 2/4 — Extraction Sénat
@@ -138,6 +168,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
@@ -173,11 +206,38 @@ jobs:
           python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact Sénat
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-senat
           path: raw_data/profiles/
           if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB 3/4 — Extraction API officielle Parlement européen
@@ -188,6 +248,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
@@ -223,11 +286,37 @@ jobs:
           python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact UE
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-ue-officiel
           path: raw_data/profiles/
           if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB 4/4 — Extraction ParlTrack (fragile — tierce source non officielle)
@@ -244,6 +333,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
@@ -289,11 +381,37 @@ jobs:
           EOF
 
       - name: Upload artifact ParlTrack (dumps .zst)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-parltrack
           path: .cache/parltrack/
           if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB SUPPLÉMENTAIRE — Extraction roster-driven (rollout progressif, #192)
@@ -307,6 +425,15 @@ jobs:
   # périmètre : l'activation d'un run complet planifié est une décision
   # ultérieure distincte, schedule: cron toujours commenté ci-dessus).
   #
+  # Séquencé après les 4 jobs d'extraction existants (needs: ci-dessous, #222)
+  # : réduit le pic de jobs Actions simultanés de 5 à 4 — mitigation du
+  # plafond de dépense Actions suspecté en cause du run #24 (cf. #221), au
+  # prix d'un temps mur total plus long. Requis conjointement à la clé de
+  # cache AN partagée (step "Semaine ISO courante" ci-dessous) : ce
+  # séquencement garantit que ce cache est déjà chaud (écrit par extract-an)
+  # au moment de sa restauration ici, évitant que les deux jobs se disputent
+  # le même téléchargement des dumps AN Open Data en concurrence.
+  #
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
   #
@@ -316,6 +443,7 @@ jobs:
   # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
+    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
     runs-on: ubuntu-latest
     timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
     continue-on-error: true
@@ -323,23 +451,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - run: pip install -r requirements.txt
 
-      - name: Semaine ISO courante (clé de cache roster)
+      - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # Clé de cache partagée avec extract-an (public-data-cache-an-*), pas
+      # une clé "roster" séparée : ce job consomme le même jeu de données
+      # source (AN Open Data — SCRUTINS/AMENDEMENTS/DOSSIERS/ACTEURS/
+      # ACTEURS_HISTORIQUE/QUESTIONS_CACHE_DIR, cf. src/candidate_profile.py)
+      # que extract-an dès qu'un membre de roster appartient à la chambre
+      # "deputes", indépendamment de la liste de candidats/membres traitée.
+      # Le séquencement (needs: ci-dessus, #222) garantit que ce cache est
+      # déjà chaud au moment de cette restauration.
       - uses: actions/cache@v4
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
-          key: public-data-cache-roster-${{ steps.week.outputs.week }}
+          key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
-            public-data-cache-roster-
+            public-data-cache-an-
 
       - name: Nettoyage complet (fresh_run uniquement)
         if: ${{ inputs.fresh_run }}
@@ -376,11 +515,38 @@ jobs:
             "${LIMIT_FLAG[@]}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       - name: Upload artifact roster-driven
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-roster-groupes
           path: raw_data/profiles/
           if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB FUSION — merge-and-pivot
@@ -540,8 +706,8 @@ jobs:
             --threshold         "$GATE_THRESHOLD" \
             --low-interventions 10 \
             --groupe-min-members 1 \
-            # --groupe-min-coverage-pct XX \ # To be set after running and audit of workflow
             --parltrack-status-file parltrack-status.json
+            # --groupe-min-coverage-pct XX  # To be set after running and audit of workflow (cf. #193)
 
       - name: Committer et pousser les données mises à jour
         run: |

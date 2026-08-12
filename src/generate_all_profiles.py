@@ -54,6 +54,11 @@ cf. generate_roster_candidats.py et docs/technical_decisions.md#provenance-pivot
 plutôt que par la liste éditoriale par défaut (raw_data/candidats.json) :
     python src/generate_roster_candidats.py
     python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
+
+Avec --limit ET --skip-existing combinés (cas ci-dessus), la sélection est
+progressive et rafraîchissante plutôt que de reprendre systématiquement les N
+premiers candidats du fichier source (#224) : voir _select_candidats_couverture
+et --staleness-days.
 """
 
 import argparse
@@ -62,9 +67,11 @@ import random
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
+from audit_pivot_dataset import compute_profils_perimes
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
 from merge_profile import merge_pivot_profile, merge_raw_profile
@@ -150,6 +157,87 @@ def _select_candidats(
 
 # Alias local : voir text_utils.slugify (mutualisé avec parti_profile._slugify).
 _slugify = slugify
+
+
+def _effective_slug(candidat: dict[str, Any]) -> str:
+    """Slug effectif d'un candidat : `slug` s'il est renseigné, sinon dérivé du nom."""
+    return candidat.get("slug") or _slugify(candidat.get("nom") or "")
+
+
+def _charger_pivot_existant(pivot_dir: Path, slug: str) -> Optional[dict[str, Any]]:
+    """Charge le pivot existant d'un candidat (`pivot_dir/<slug>.pivot.json`), ou
+    None si absent/illisible."""
+    pivot_path = pivot_dir / f"{slug}.pivot.json"
+    if not pivot_path.exists():
+        return None
+    try:
+        with open(pivot_path, encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _select_candidats_couverture(
+    candidats: list[dict[str, Any]],
+    pivot_dir: Path,
+    limit: int,
+    staleness_days: int,
+    reference_date: Optional[datetime] = None,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    """Sélection progressive + rafraîchissement pour --limit combiné à
+    --skip-existing (#224).
+
+    Sans cela, --limit sélectionne toujours les N premiers candidats du
+    fichier source (ordre déterministe) ; dès qu'ils existent tous (run 2),
+    --skip-existing les saute tous et le job ne traite plus jamais personne.
+    Les profils déjà couverts, eux, ne sont alors plus jamais rafraîchis.
+
+    Partitionne `candidats` en "non couverts" (pas de pivot dans `pivot_dir`)
+    et "couverts" (pivot existant), avant toute troncature par `limit` : le
+    budget va d'abord aux non-couverts (frontière de conquête, ordre du
+    fichier source), puis, s'il en reste, aux couverts périmés — fraîcheur au
+    sens de `audit_pivot_dataset.compute_profils_perimes`, même seuil
+    `staleness_days`. Un profil couvert et frais n'est jamais resélectionné :
+    pas de gaspillage de budget sur des profils déjà à jour.
+
+    L'ordre des couverts périmés au sein du budget restant suit celui renvoyé
+    par `compute_profils_perimes` (tri alphabétique par `id`), pas un tri par
+    degré de péremption — choix volontairement simple, cf. #224.
+
+    Returns:
+        (selection, slugs_a_rafraichir) : `slugs_a_rafraichir` est le
+        sous-ensemble de `selection` (slugs effectifs) à exempter de
+        --skip-existing dans `process_candidat` — ces profils existent déjà
+        et doivent repasser par le merge additif plutôt que d'être sautés.
+    """
+    non_couverts: list[dict[str, Any]] = []
+    couverts: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for candidat in candidats:
+        pivot = _charger_pivot_existant(pivot_dir, _effective_slug(candidat))
+        if pivot is None:
+            non_couverts.append(candidat)
+        else:
+            couverts.append((candidat, pivot))
+
+    selection = non_couverts[:limit]
+    restant = limit - len(selection)
+
+    slugs_a_rafraichir: set[str] = set()
+    if restant > 0 and couverts:
+        pivots_par_id = {
+            pivot["id"]: candidat for candidat, pivot in couverts if pivot.get("id")
+        }
+        perimes_ids = compute_profils_perimes(
+            [pivot for _, pivot in couverts if pivot.get("id")],
+            staleness_days=staleness_days,
+            reference_date=reference_date,
+        )
+        for pid in perimes_ids[:restant]:
+            candidat = pivots_par_id[pid]
+            selection.append(candidat)
+            slugs_a_rafraichir.add(_effective_slug(candidat))
+
+    return selection, slugs_a_rafraichir
 
 
 def build_profile_any_chambre(
@@ -260,6 +348,7 @@ def process_candidat(
     args: argparse.Namespace,
     out_dir: Path,
     pivot_dir: Path,
+    refresh_slugs: Optional[set[str]] = None,
 ) -> dict[str, Any]:
     """Traite un candidat : collecte les données FR et UE en parallèle (niveau 1),
     écrit les fichiers JSON/HTML (et pivot si demandé), et renvoie un dict de résultat.
@@ -270,6 +359,11 @@ def process_candidat(
     Modes :
     - Normal (défaut) : fetch réseau FR et/ou UE selon --source, écriture raw, pivot optionnel.
     - --pivot-only    : charge le profil brut existant, normalise en pivot (pas de réseau).
+
+    `refresh_slugs` (#224) : sous-ensemble de slugs à traiter normalement
+    (fetch + merge additif) même si --skip-existing est actif et que le
+    profil existe déjà — utilisé par `_select_candidats_couverture` pour
+    rafraîchir les profils couverts mais périmés sans jamais les sauter.
     """
     slug = candidat.get("slug")
     nom = candidat.get("nom")
@@ -335,7 +429,7 @@ def process_candidat(
         }
 
     # ── Mode normal : skip-existing ─────────────────────────────────────────
-    if args.skip_existing and json_path.exists():
+    if args.skip_existing and json_path.exists() and effective_slug not in (refresh_slugs or ()):
         _tprint(f"— {nom} ({effective_slug}) : profil déjà présent, ignoré (--skip-existing).")
         return {"nom": nom, "slug": effective_slug, "statut": "deja_present", "parltrack": "n/a"}
 
@@ -532,6 +626,12 @@ def main() -> None:
     limit_group.add_argument("--sample", type=int, default=None, metavar="N",
                         help="Ne traiter qu'un échantillon aléatoire de N candidats. "
                              "Mutuellement exclusif avec --limit.")
+    parser.add_argument("--staleness-days", type=int, default=30, metavar="JOURS",
+                        help="Utilisé seulement quand --limit et --skip-existing sont combinés (#224, lot "
+                             "roster) : seuil d'ancienneté (jours) au-delà duquel un candidat déjà couvert "
+                             "(pivot existant) est considéré périmé et resélectionné pour rafraîchissement "
+                             "par merge additif plutôt que sauté par --skip-existing. Même sémantique et "
+                             "défaut que audit_pivot_dataset.py --staleness-days (défaut: 30).")
     args = parser.parse_args()
 
     # --pivot-only implique --pivot (normalisation pivot activée)
@@ -551,11 +651,26 @@ def main() -> None:
             print(f"Aucun candidat avec le slug '{args.only}' dans {args.candidats}.")
             return
 
+    refresh_slugs: set[str] = set()
     if args.limit is not None or args.sample is not None:
         avant = len(candidats)
-        candidats = _select_candidats(candidats, limit=args.limit, sample=args.sample)
-        print(f"Sélection réduite ({'--limit' if args.limit is not None else '--sample'}) : "
-              f"{len(candidats)}/{avant} candidat(s) retenu(s).")
+        if args.limit is not None and args.skip_existing:
+            # Sélection progressive + rafraîchissement (#224) : voir
+            # _select_candidats_couverture. Ne s'applique qu'à cette
+            # combinaison précise de flags (--limit + --skip-existing,
+            # utilisée par le job roster de generate-data.yml) ; --sample ou
+            # --limit seul gardent le comportement historique ci-dessous.
+            candidats, refresh_slugs = _select_candidats_couverture(
+                candidats, pivot_dir, limit=args.limit, staleness_days=args.staleness_days,
+            )
+            print(f"Sélection progressive + rafraîchissement (--limit + --skip-existing, #224) : "
+                  f"{len(candidats)}/{avant} candidat(s) retenu(s) "
+                  f"({len(candidats) - len(refresh_slugs)} non couvert(s), "
+                  f"{len(refresh_slugs)} périmé(s) à rafraîchir).")
+        else:
+            candidats = _select_candidats(candidats, limit=args.limit, sample=args.sample)
+            print(f"Sélection réduite ({'--limit' if args.limit is not None else '--sample'}) : "
+                  f"{len(candidats)}/{avant} candidat(s) retenu(s).")
 
     checkpoint_path = Path(args.checkpoint_file)
     checkpoint = _load_checkpoint(checkpoint_path) if not args.no_checkpoint else {"resultats": []}
@@ -573,7 +688,7 @@ def main() -> None:
     nb_workers = min(args.workers, len(candidats)) if candidats else 1
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
-            pool.submit(process_candidat, candidat, args, out_dir, pivot_dir): candidat
+            pool.submit(process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs): candidat
             for candidat in candidats
         }
         for i, future in enumerate(as_completed(futures), start=1):
