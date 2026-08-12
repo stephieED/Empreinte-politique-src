@@ -131,9 +131,21 @@ possible lors d'une régénération croisée des deux sources.
 
 **Contexte** : `web/UI_finale` (React/Vite) était câblé sur des données mock
 (`candidates.json`/`groups.json`/`mockGenerator.js`) bien plus riches en volume
-que les données réelles disponibles : `pivot_data/` ne couvre que 8 candidats
-(présidentiables 2027 aussi élus, ceux ayant un `slug` dans
+que les données réelles disponibles : `pivot_data/` ne couvrait alors que 8
+candidats (présidentiables 2027 aussi élus, ceux ayant un `slug` dans
 `raw_data/candidats.json`) et 7 groupes parlementaires réels (5 AN + 2 Sénat).
+
+**Mise à jour (#187, roster-driven)** : ce chiffre de 8 candidats était une
+limite de l'extraction éditoriale-uniquement, résolue par l'extraction
+roster-driven (`generate_roster_candidats.py`, #188/#190/#191, voir
+[[provenance-pivot]]) qui couvre tou·te·s les membres réels des groupes
+configurés, pas seulement les candidats déclarés. Le nombre de 7 groupes reste
+en revanche une limite assumée du périmètre : `pivot_data/groupes/` ne couvre
+que les groupes listés dans `raw_data/groupes_reels.json`, pas l'ensemble des
+groupes parlementaires existants (voir "Coverage limits" dans `README.md`).
+La couverture individuelle réelle au sein de ces 7 groupes dépend d'un run à
+pleine échelle qui n'avait pas encore eu lieu en CI au moment de cette mise à
+jour — chiffres et suivi dans [[seuil-couverture-groupe]].
 
 **Décision** : remplacer intégralement le mock. `web/UI_finale/scripts/sync-data.mjs`
 copie `pivot_data/profiles/`, `pivot_data/groupes/` et `raw_data/candidats.json`
