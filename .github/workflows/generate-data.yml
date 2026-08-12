@@ -39,6 +39,16 @@ on:
           Ignoré si extract_interventions=false. Défaut : 5.
         type: number
         default: 5
+      roster_extraction_limit:
+        description: >
+          Déploiement progressif de l'extraction roster-driven (#190, job
+          extract-roster-groupes) : ne traiter que les N premiers membres du
+          roster (raw_data/roster_candidats.json, ordre déterministe --limit).
+          Défaut : 20 (rollout manuel à petite échelle, cf. #192 — pas de run
+          complet ~750+ membres tant que le budget de timeout n'a pas été
+          recalibré). 0 = pas de limite (déconseillé pour l'instant).
+        type: number
+        default: 20
 
 # Nécessaire pour que le job puisse pousser la mise à jour des données.
 permissions:
@@ -286,6 +296,93 @@ jobs:
           if-no-files-found: warn
 
   # ──────────────────────────────────────────────────────────────────────────
+  # JOB SUPPLÉMENTAIRE — Extraction roster-driven (rollout progressif, #192)
+  #
+  # Déploiement progressif de l'extraction pilotée par la composition réelle
+  # des groupes parlementaires (#188/#190), en alternative à la liste
+  # éditoriale raw_data/candidats.json (~8 personnes) : le roster couvre
+  # ~750+ membres. `roster_extraction_limit` (défaut 20) borne le volume
+  # traité par run pour rester dans un budget CI raisonnable pendant le
+  # rollout — PAS de run complet dans cette sous-issue (voir #192, hors
+  # périmètre : l'activation d'un run complet planifié est une décision
+  # ultérieure distincte, schedule: cron toujours commenté ci-dessus).
+  #
+  # continue-on-error: true, comme extract-parltrack : un échec ou
+  # dépassement de ce job ne bloque pas merge-and-pivot.
+  #
+  # TIMEOUT PROVISOIRE (60 min pour roster_extraction_limit=20, --source all
+  # implicite donc coût par membre comparable à extract-an) : à recalibrer
+  # après un premier run mesuré manuellement (workflow_dispatch, limite
+  # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-roster-groupes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache roster)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache
+          key: public-data-cache-roster-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-roster-
+
+      - name: Nettoyage complet (fresh_run uniquement)
+        if: ${{ inputs.fresh_run }}
+        run: |
+          rm -rf .cache
+          find raw_data/profiles -name "*.json" -delete
+
+      # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
+      # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
+      # n'est pas committé : régénéré à chaque run (source de vérité = groupes_reels.json).
+      - name: Construction de la liste roster-driven
+        run: python3 src/generate_roster_candidats.py
+
+      # Même fan-out par membre que extract-an/extract-senat (coût par candidat
+      # identique, seul le volume change) — roster_extraction_limit borne ce
+      # volume pendant le rollout progressif.
+      - name: Extraction roster-driven (rollout progressif)
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+          ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          INTERV_FLAG=()
+          [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
+          MAX_PAGES_FLAG=()
+          [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
+          LIMIT_FLAG=()
+          [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
+          python3 src/generate_all_profiles.py \
+            --candidats raw_data/roster_candidats.json \
+            --workers ${{ inputs.workers }} \
+            --skip-existing --resume \
+            "${LIMIT_FLAG[@]}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+
+      - name: Upload artifact roster-driven
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-profiles-roster-groupes
+          path: raw_data/profiles/
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
   # JOB FUSION — merge-and-pivot
   #
   # Fusionne les artifacts des 4 jobs d'extraction, génère les pivots, les
@@ -293,7 +390,7 @@ jobs:
   # Tourne même si extract-parltrack a échoué (continue-on-error sur ce job).
   # ──────────────────────────────────────────────────────────────────────────
   merge-and-pivot:
-    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
+    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -336,6 +433,15 @@ jobs:
           name: raw-profiles-parltrack
           path: .cache/parltrack
 
+      # Roster-driven : optionnel — continue-on-error si l'artifact est absent
+      # (job extract-roster-groupes a échoué/timeout, rollout progressif #192).
+      - name: Download artifact roster-driven (optionnel)
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: raw-profiles-roster-groupes
+          path: _artifacts/roster
+
       # ── Fusion des profils bruts des 3 sources FR/UE ──────────────────────
       # merge_profile.py --dirs : fusionne additivement les profils de chaque
       # source vers raw_data/profiles/ (même logique que --no-merge=false).
@@ -343,10 +449,10 @@ jobs:
       #                   repo n'est présente car les jobs extract ont purgé).
       # fresh_run=false → les artifacts contiennent déjà la fusion avec les
       #                   données repo (merge additif dans chaque job extract).
-      - name: Fusion des profils bruts (AN + Sénat + UE)
+      - name: Fusion des profils bruts (AN + Sénat + UE + roster)
         run: |
           python3 src/merge_profile.py \
-            --dirs _artifacts/an _artifacts/senat _artifacts/ue \
+            --dirs _artifacts/an _artifacts/senat _artifacts/ue _artifacts/roster \
             --out raw_data/profiles
 
       # ── Pivot + enrichissement ParlTrack ──────────────────────────────────
@@ -366,6 +472,29 @@ jobs:
             --pivot-only \
             --enrich-parltrack \
             --parltrack-status-out parltrack-status.json \
+            --workers ${{ inputs.workers }} \
+            "${MERGE_FLAG[@]}"
+
+      # Pivots roster-driven (#192) : repasse --pivot-only explicitement sur
+      # raw_data/roster_candidats.json (régénéré ici — fetch réseau bon marché,
+      # 2 appels — plutôt que transitée par artifact) pour normaliser aussi les
+      # profils bruts fusionnés depuis extract-roster-groupes. meta.provenance
+      # "roster_groupe" ne rétrograde jamais un pivot "candidat_declare"
+      # existant (merge_pivot_profile, voir docs/technical_decisions.md
+      # #provenance-pivot) : sûr même si le même slug existe dans les deux
+      # listes. No-op silencieux si extract-roster-groupes a échoué/été
+      # absent (raw_data/profiles ne contient alors aucun profil roster-driven
+      # → chaque candidat roster est ignoré comme "profil brut absent").
+      - name: Normalisation pivot roster-driven
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+        run: |
+          MERGE_FLAG=()
+          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          python3 src/generate_roster_candidats.py
+          python3 src/generate_all_profiles.py \
+            --pivot-only \
+            --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
             "${MERGE_FLAG[@]}"
 
