@@ -540,7 +540,7 @@ jobs:
             --threshold         "$GATE_THRESHOLD" \
             --low-interventions 10 \
             --groupe-min-members 1 \
- #           --groupe-min-coverage-pct XX \ To be set after running and audit of workflow
+            # --groupe-min-coverage-pct XX \ # To be set after running and audit of workflow
             --parltrack-status-file parltrack-status.json
 
       - name: Committer et pousser les données mises à jour
