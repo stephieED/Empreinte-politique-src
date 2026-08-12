@@ -215,6 +215,16 @@ def test_pivot_parti_absent_par_defaut():
     assert pivot["parti"] is None
 
 
+def test_pivot_provenance_defaut_candidat_declare():
+    pivot = normalize_europarl(_raw_ue_profile())
+    assert pivot["meta"]["provenance"] == "candidat_declare"
+
+
+def test_pivot_provenance_roster_groupe_propagee():
+    pivot = normalize_europarl(_raw_ue_profile(), provenance="roster_groupe")
+    assert pivot["meta"]["provenance"] == "roster_groupe"
+
+
 def test_pivot_source_type_europarl():
     pivot = normalize_europarl(_raw_ue_profile())
     assert pivot["sources"][0]["type"] == "europarl"

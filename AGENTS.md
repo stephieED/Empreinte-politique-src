@@ -75,7 +75,7 @@ soft warnings on low interventions, low coverage, network signals.
 | `amendements[]` | Outcome + inadmissibility/rejection distinction |
 | `interventions[]` | Speeches, questions (`type_detail`) |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
-| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]` |
+| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/technical_decisions.md#provenance-pivot`) |
 
 Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed values in
 `frozenset KNOWN_*`, validated by `validate_profil()` — extend the frozenset, never bypass.

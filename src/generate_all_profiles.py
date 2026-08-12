@@ -267,10 +267,14 @@ def process_candidat(
         chambre = profile.get("chambre")
         mandat_ue = profile.get("mandat_europeen")
         parti = candidat.get("parti")
+        # provenance (#189) : "roster_groupe" pour les entrées produites par
+        # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
+        # sinon (raw_data/candidats.json, comportement historique par défaut).
+        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
 
-        pivot_profile = normalize_nosdeputes(profile, parti=parti) if chambre else None
+        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance) if chambre else None
         if mandat_ue is not None:
-            ue_pivot = normalize_europarl(mandat_ue, parti=parti)
+            ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
                 pivot_profile = ue_pivot
             else:
@@ -381,9 +385,11 @@ def process_candidat(
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
         parti = candidat.get("parti")
-        pivot_profile = normalize_nosdeputes(profile, parti=parti) if chambre else None
+        # provenance (#189) : voir commentaire équivalent dans le bloc --pivot-only ci-dessus.
+        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
+        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance) if chambre else None
         if mandat_ue is not None:
-            ue_pivot = normalize_europarl(mandat_ue, parti=parti)
+            ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
                 pivot_profile = ue_pivot
             else:
