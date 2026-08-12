@@ -123,6 +123,7 @@ jobs:
           python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       - name: Upload artifact AN
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-an
@@ -173,6 +174,7 @@ jobs:
           python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact Sénat
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-senat
@@ -223,6 +225,7 @@ jobs:
           python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact UE
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-ue-officiel
@@ -289,6 +292,7 @@ jobs:
           EOF
 
       - name: Upload artifact ParlTrack (dumps .zst)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-parltrack
@@ -376,6 +380,7 @@ jobs:
             "${LIMIT_FLAG[@]}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       - name: Upload artifact roster-driven
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: raw-profiles-roster-groupes
