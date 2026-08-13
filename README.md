@@ -306,7 +306,12 @@ construction to lazy per-candidate calls in `extract-an`/
 `extract-parltrack` — see `docs/technical_decisions.md#amendements-index-job-dedie-ci`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
-the gate exits with code 0.
+the gate exits with code 0. Before that step, the `merge-and-pivot` job also
+downloads the `amendements-index-an` artifact into `.cache/amendements_an`
+(optional, `continue-on-error: true`, same cache-only pattern as `extract-an`/
+`extract-roster-groupes`) so the gate's amendements freshness section (3d) can
+read the real `fraicheur.json` indicators instead of always reporting "never
+built".
 
 To run the gate locally:
 
@@ -315,6 +320,7 @@ python src/check_quality_gate.py
 python src/check_quality_gate.py --threshold 0                # zero tolerance
 python src/check_quality_gate.py --low-interventions 5        # stricter signal
 python src/check_quality_gate.py --groupe-min-coverage-pct 50  # relative groupe coverage soft fail (disabled by default)
+python src/check_quality_gate.py --amendements-staleness-days 14  # laxer amendements freshness signal (default: 7, 0 disables)
 ```
 
 `--groupe-min-coverage-pct` (default `0`, disabled) is a relative alternative/complement
@@ -322,6 +328,13 @@ to `--groupe-min-members` (default `1`, absolute count) for the groupe coverage 
 warning — see `docs/technical_decisions.md#seuil-couverture-groupe` for why the absolute
 default is kept until full-scale roster-driven extraction (#188/#190/#191) produces real
 coverage numbers.
+
+`--amendements-cache-dir` (default `.cache/amendements_an`) / `--amendements-staleness-days`
+(default `7`, `0` disables) control the section 3d soft warning that distinguishes, per
+legislature, an amendements index that was never built from one that is present but stale
+(no successful rebuild within the threshold, per the `fraicheur.json` indicator written by
+`candidate_profile.py`, #253) — see
+`docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`.
 
 ## 9. Open the web UI locally
 

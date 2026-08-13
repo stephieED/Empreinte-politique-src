@@ -1,14 +1,23 @@
 """Tests de non-régression pour la couverture amendements dans check_quality_gate.py
 (issue #185 : une régression de collecte qui vide amendements[] sur tous les
-candidats AN n'était détectée par aucune section du quality gate)."""
+candidats AN n'était détectée par aucune section du quality gate) et pour le
+signal de fraîcheur des index de législature (issue #254, sous-issue 6/6 de
+#248 : distinguer un index jamais construit d'un index présent mais périmé,
+en s'appuyant sur `fraicheur.json` écrit par `_write_amendements_fraicheur`,
+candidate_profile.py, issue #253)."""
 
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from check_quality_gate import _report_amendements_coverage
+from check_quality_gate import (
+    _AMENDEMENTS_LEGISLATURES,
+    _report_amendements_coverage,
+    _report_amendements_freshness,
+)
 
 
 def _write_pivot(tmp_path: Path, slug: str, chambre: str, identite, amendements: list, warnings: list) -> None:
@@ -112,3 +121,135 @@ def test_report_amendements_coverage_empty_dir_returns_no_warning(tmp_path):
     """Aucun profil AN analysé : pas de faux positif sur régression globale."""
     soft, console, md = _report_amendements_coverage(tmp_path)
     assert len(soft) == 0
+
+
+# ---------------------------------------------------------------------------
+# _report_amendements_freshness (issue #254)
+# ---------------------------------------------------------------------------
+
+REFERENCE = datetime(2026, 8, 13, 12, 0, 0, tzinfo=timezone.utc)
+
+
+def _horodatage(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+
+def _write_index(cache_dir: Path, legislature: str) -> None:
+    leg_dir = cache_dir / legislature
+    leg_dir.mkdir(parents=True, exist_ok=True)
+    (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
+
+
+def _write_fraicheur(cache_dir: Path, legislature: str, reussi: bool, horodatage: str) -> None:
+    leg_dir = cache_dir / legislature
+    leg_dir.mkdir(parents=True, exist_ok=True)
+    (leg_dir / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": reussi, "horodatage": horodatage}),
+        encoding="utf-8",
+    )
+
+
+def _write_all_fresh(cache_dir: Path) -> None:
+    """Prépare les 3 législatures comme fraîches, pour isoler une seule
+    législature sous test dans les cas ci-dessous (une législature non
+    créée du tout serait autrement comptée « jamais construite »)."""
+    for legislature in _AMENDEMENTS_LEGISLATURES:
+        _write_index(cache_dir, legislature)
+        _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
+
+
+def test_report_amendements_freshness_all_never_built_on_empty_cache_dir(tmp_path):
+    """Répertoire de cache absent/vide : chaque législature est signalée
+    « jamais construite », pas de faux « périmé »."""
+    soft, console, md = _report_amendements_freshness(tmp_path / "amendements_an", staleness_days=7)
+
+    assert len(soft) == len(_AMENDEMENTS_LEGISLATURES)
+    assert all("jamais construit" in w for w in soft)
+    assert "⚠" in console
+
+
+def test_report_amendements_freshness_fresh_index_no_warning(tmp_path):
+    """Index présent, dernière reconstruction réussie et récente : pas de warning."""
+    cache_dir = tmp_path / "amendements_an"
+    for legislature in _AMENDEMENTS_LEGISLATURES:
+        _write_index(cache_dir, legislature)
+        _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert len(soft) == 0
+    assert "✓" in console
+
+
+def test_report_amendements_freshness_stale_successful_build_flagged(tmp_path):
+    """Index présent, dernière reconstruction réussie mais au-delà du seuil : périmé."""
+    cache_dir = tmp_path / "amendements_an"
+    _write_all_fresh(cache_dir)
+    legislature = _AMENDEMENTS_LEGISLATURES[0]
+    _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=10)))
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert len(soft) == 1
+    assert "périmé" in soft[0]
+    assert "10 jour" in soft[0]
+
+
+def test_report_amendements_freshness_failed_last_attempt_flagged_regardless_of_age(tmp_path):
+    """Dernière tentative de reconstruction en échec (index préservé, #253) :
+    périmé même si l'horodatage de l'échec est récent."""
+    cache_dir = tmp_path / "amendements_an"
+    _write_all_fresh(cache_dir)
+    legislature = _AMENDEMENTS_LEGISLATURES[0]
+    _write_fraicheur(cache_dir, legislature, reussi=False, horodatage=_horodatage(REFERENCE))
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert len(soft) == 1
+    assert "échec" in soft[0]
+
+
+def test_report_amendements_freshness_index_without_fraicheur_file_flagged(tmp_path):
+    """Index présent mais sans fraicheur.json (ex. cache antérieur à #253) :
+    fraîcheur non garantie, traité comme périmé plutôt que comme faux frais."""
+    cache_dir = tmp_path / "amendements_an"
+    _write_all_fresh(cache_dir)
+    legislature = _AMENDEMENTS_LEGISLATURES[0]
+    (cache_dir / legislature / "fraicheur.json").unlink()
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert len(soft) == 1
+    assert "absent" in soft[0]
+
+
+def test_report_amendements_freshness_mixed_states_across_legislatures(tmp_path):
+    """Les 3 législatures peuvent être dans des états différents simultanément :
+    chacune est rapportée indépendamment."""
+    cache_dir = tmp_path / "amendements_an"
+    leg_fresh, leg_stale, leg_never = _AMENDEMENTS_LEGISLATURES
+    _write_index(cache_dir, leg_fresh)
+    _write_fraicheur(cache_dir, leg_fresh, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
+    _write_index(cache_dir, leg_stale)
+    _write_fraicheur(cache_dir, leg_stale, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=30)))
+    # leg_never : aucun fichier créé.
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert len(soft) == 2
+    assert any(leg_stale in w and "périmé" in w for w in soft)
+    assert any(leg_never in w and "jamais construit" in w for w in soft)
+    assert not any(leg_fresh in w for w in soft)
+
+
+def test_report_amendements_freshness_disabled_via_zero_threshold_is_caller_responsibility(tmp_path):
+    """staleness_days=0 : tout âge positif dépasse le seuil (aucun raccourci
+    interne de désactivation — c'est main() qui saute l'appel sur 0, voir CLI)."""
+    cache_dir = tmp_path / "amendements_an"
+    legislature = _AMENDEMENTS_LEGISLATURES[0]
+    _write_index(cache_dir, legislature)
+    _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=0, reference_date=REFERENCE)
+
+    assert any(legislature in w and "périmé" in w and "seuil 0" in w for w in soft)

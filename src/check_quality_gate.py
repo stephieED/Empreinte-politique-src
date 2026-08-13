@@ -500,6 +500,18 @@ def _report_low_syceron_coverage(
 # quand la collecte des amendements officiels échoue (téléchargement/parsing AN).
 _AMENDEMENTS_INDISPONIBLES_PREFIX = "amendements indisponibles"
 
+# Contrat avec candidate_profile.py : législatures couvertes (AN_AMENDEMENTS_PATH)
+# et nom du fichier d'indicateur de fraîcheur écrit par _write_amendements_fraicheur
+# (issue #253) à côté de chaque index_par_acteur.json mis en cache. Dupliqués ici
+# plutôt qu'importés — même choix de découplage que _AMENDEMENTS_INDISPONIBLES_PREFIX
+# ci-dessus (ce script n'importe jamais candidate_profile.py).
+_AMENDEMENTS_LEGISLATURES = ("17", "16", "15")
+_AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
+# Seuil par défaut (en jours) au-delà duquel un index présent mais sans
+# reconstruction réussie récente est signalé comme périmé — voir
+# docs/technical_decisions.md#amendements-index-quality-gate-fraicheur.
+_AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
+
 
 def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, str]:
     """Détecte les régressions silencieuses sur amendements[] pour les député·e·s AN.
@@ -587,6 +599,143 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, st
         md_lines.append("")
     else:
         md_lines.append("_Couverture amendements cohérente._\n")
+
+    return soft_warnings, console, "\n".join(md_lines)
+
+
+def _parse_amendements_horodatage(valeur: object) -> datetime | None:
+    """Parse `fraicheur.json["horodatage"]` (format `time.strftime('%Y-%m-%dT%H:%M:%S%z')`,
+    voir `_write_amendements_fraicheur` dans candidate_profile.py). `None` si
+    absent/illisible — traité par l'appelant comme fraîcheur non garantie plutôt
+    que de lever. Une date sans fuseau (ne devrait pas arriver en pratique, `%z`
+    fournit toujours un offset) est supposée UTC, même défense qu'`audit_pivot_dataset.py`."""
+    if not isinstance(valeur, str) or not valeur:
+        return None
+    try:
+        horodatage = datetime.fromisoformat(valeur)
+    except ValueError:
+        return None
+    return horodatage if horodatage.tzinfo is not None else horodatage.replace(tzinfo=timezone.utc)
+
+
+def _report_amendements_freshness(
+    cache_dir: Path,
+    staleness_days: int,
+    reference_date: datetime | None = None,
+) -> tuple[list[str], str, str]:
+    """Distingue, pour chaque législature AN d'amendements, un index jamais
+    construit d'un index présent mais périmé (issue #254, sous-issue 6/6 de
+    #248 — exploite l'indicateur de fraîcheur écrit par
+    `_write_amendements_fraicheur`, candidate_profile.py, issue #253).
+
+    Retourne (soft_warnings, console_text, markdown_text). Soft fail uniquement
+    (n'empêche pas le commit), même traitement que le reste de la section 3c.
+
+    Trois états par législature :
+      - jamais construit : aucun `index_par_acteur.json` en cache — jamais
+        construit avec succès, ou pas encore présent dans ce job CI (voir
+        `docs/technical_decisions.md#amendements-index-job-dedie-ci` pour le
+        job dédié qui l'alimente).
+      - périmé : index présent, mais soit `fraicheur.json` est absent/illisible
+        (fraîcheur non garantie), soit sa dernière tentative connue a échoué
+        (`derniere_construction_reussie: false`, index existant conservé), soit
+        elle a réussi il y a plus de `staleness_days` jours.
+      - frais : index présent, dernière tentative connue réussie et récente —
+        pas de warning.
+    """
+    reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
+
+    soft_warnings: list[str] = []
+    jamais_construit: list[str] = []
+    perime: list[str] = []
+    frais: list[str] = []
+
+    for legislature in _AMENDEMENTS_LEGISLATURES:
+        index_path = cache_dir / legislature / "index_par_acteur.json"
+        if not index_path.is_file():
+            jamais_construit.append(legislature)
+            soft_warnings.append(
+                f"législature {legislature} : index jamais construit (aucun "
+                f"{index_path.name} en cache)"
+            )
+            continue
+
+        fraicheur_path = cache_dir / legislature / _AMENDEMENTS_FRAICHEUR_FILENAME
+        fraicheur = _load_json(fraicheur_path) if fraicheur_path.is_file() else None
+        if not isinstance(fraicheur, dict):
+            perime.append(legislature)
+            soft_warnings.append(
+                f"législature {legislature} : index périmé — indicateur de fraîcheur "
+                f"absent ou illisible ({_AMENDEMENTS_FRAICHEUR_FILENAME}), fraîcheur non garantie"
+            )
+            continue
+
+        if not fraicheur.get("derniere_construction_reussie"):
+            perime.append(legislature)
+            soft_warnings.append(
+                f"législature {legislature} : index périmé — dernière tentative de "
+                "reconstruction en échec (index existant conservé, voir fraicheur.json)"
+            )
+            continue
+
+        horodatage = _parse_amendements_horodatage(fraicheur.get("horodatage"))
+        if horodatage is None:
+            perime.append(legislature)
+            soft_warnings.append(
+                f"législature {legislature} : index périmé — horodatage de fraîcheur "
+                "illisible, fraîcheur non garantie"
+            )
+            continue
+
+        age_days = (reference - horodatage).days
+        if age_days > staleness_days:
+            perime.append(legislature)
+            soft_warnings.append(
+                f"législature {legislature} : index périmé — dernière reconstruction "
+                f"réussie il y a {age_days} jour(s) (seuil {staleness_days})"
+            )
+        else:
+            frais.append(legislature)
+
+    icon = "✓" if not soft_warnings else "⚠"
+    lines = [
+        "",
+        "┌─ 3d/4  Fraîcheur index amendements (AN) ───────────────────────────",
+        f"│  Jamais construit : {len(jamais_construit)}   Périmé : {len(perime)}   Frais : {len(frais)}",
+        "│",
+    ]
+    if soft_warnings:
+        lines.append("│  ⚠ Avertissements fraîcheur :")
+        for w in soft_warnings:
+            lines.append(f"│    · {w}")
+    else:
+        lines.append(f"│  {icon} Index de législature jamais-construit/périmé : aucun.")
+    lines.append("└" + "─" * 67)
+    console = "\n".join(lines)
+
+    ok_icon = "✅" if not soft_warnings else "⚠️"
+    md_lines = [
+        "### 3d · Fraîcheur index amendements (AN)",
+        "",
+        "| Législature | État |",
+        "|---|---|",
+    ]
+    for legislature in _AMENDEMENTS_LEGISLATURES:
+        if legislature in jamais_construit:
+            etat = "❌ jamais construit"
+        elif legislature in perime:
+            etat = "⚠️ périmé"
+        else:
+            etat = "✅ frais"
+        md_lines.append(f"| {legislature} | {etat} |")
+    md_lines += ["", f"| {ok_icon} Avertissements | {len(soft_warnings)} |", ""]
+    if soft_warnings:
+        md_lines += ["**Avertissements**", ""]
+        for w in soft_warnings:
+            md_lines.append(f"- {w}")
+        md_lines.append("")
+    else:
+        md_lines.append("_Aucun index jamais-construit ou périmé._\n")
 
     return soft_warnings, console, "\n".join(md_lines)
 
@@ -1017,6 +1166,27 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--amendements-cache-dir",
+        type=Path,
+        default=Path(".cache") / "amendements_an",
+        dest="amendements_cache_dir",
+        help=(
+            "Répertoire de cache des index amendements AN, alimenté par le job CI "
+            "dédié extract-amendements-an (défaut : .cache/amendements_an)."
+        ),
+    )
+    parser.add_argument(
+        "--amendements-staleness-days",
+        type=int,
+        default=_AMENDEMENTS_STALENESS_DAYS_DEFAULT,
+        dest="amendements_staleness_days",
+        help=(
+            "Seuil (jours) au-delà duquel un index amendements présent mais sans "
+            f"reconstruction réussie récente est signalé comme périmé (défaut : "
+            f"{_AMENDEMENTS_STALENESS_DAYS_DEFAULT}). 0 = désactivé."
+        ),
+    )
+    parser.add_argument(
         "--parltrack-status-file",
         type=Path,
         default=None,
@@ -1060,6 +1230,15 @@ def main() -> int:
     # ── Section 3c : Couverture amendements (AN) ───────────────────────────
     amd_soft, amd_console, amd_md = _report_amendements_coverage(args.profiles_dir)
 
+    # ── Section 3d : Fraîcheur index amendements (AN) ──────────────────────
+    amdf_soft: list[str] = []
+    amdf_console = ""
+    amdf_md = ""
+    if args.amendements_staleness_days > 0:
+        amdf_soft, amdf_console, amdf_md = _report_amendements_freshness(
+            args.amendements_cache_dir, args.amendements_staleness_days
+        )
+
     # ── Section 4 : Groupes parlementaires ────────────────────────────────
     grp_hard, grp_soft, grp_console, grp_md = _report_groupes(
         args.groupes_config, args.groupes_dir, args.groupe_min_members,
@@ -1087,6 +1266,8 @@ def main() -> int:
     if syc_console:
         print(syc_console)
     print(amd_console)
+    if amdf_console:
+        print(amdf_console)
     print(grp_console)
     if pt_console:
         print(pt_console)
@@ -1104,6 +1285,7 @@ def main() -> int:
         low_md,
         syc_md,
         amd_md,
+        amdf_md,
         grp_md,
         pt_md,
     ])
@@ -1130,6 +1312,8 @@ def main() -> int:
         _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
     for warn in amd_soft:
         _gha_annotation("warning", f"Amendements — {warn}")
+    for warn in amdf_soft:
+        _gha_annotation("warning", f"Amendements fraîcheur — {warn}")
 
     return exit_code
 
