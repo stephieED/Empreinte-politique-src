@@ -118,6 +118,24 @@ AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS = 5
 # abandonner la tentative plutot que d'attendre.
 AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS = 120
 
+# Taille de segment pour le telechargement par plages (requetes HTTP Range) des
+# archives d'amendements (issue #241). Le CDN devant data.assemblee-nationale.fr
+# supporte fonctionnellement les requetes par plage (verifie : reponse 206 +
+# Content-Range, le 13/08/2026) ; decouper le flux permet de ne retenter que le
+# segment en echec (AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS/BACKOFF_SECONDS
+# s'appliquent desormais par segment) au lieu de tout le fichier sur un
+# IncompleteRead survenant a un point variable du flux. Valeur choisie comme
+# compromis : assez grande pour ne pas multiplier le nombre de requetes sur un
+# flux par ailleurs sain (~10-20 segments pour les plus grosses archives,
+# 283-618 Mo), assez petite pour qu'un retry de segment reste marginal.
+AMENDEMENTS_DOWNLOAD_CHUNK_BYTES = 32 * 1024 * 1024
+
+# Nombre de segments ayant necessite au moins un retry au-dela duquel un
+# warning "doux" est journalise (jamais ajoute a meta.warnings : ceci est un
+# signal de qualite de flux, pas un echec de collecte) — permet de distinguer
+# en CI un alea reseau ponctuel absorbe d'une degradation plus large.
+AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD = 3
+
 # Legislatures dont le telechargement de l'archive amendements a echoue de
 # facon definitive (toutes les tentatives de _build_acteur_amendement_index
 # epuisees) pour le run (process) courant. Verifie en tete de cette fonction
@@ -852,6 +870,115 @@ class AmendementsIndexError(Exception):
     l'échec au lieu d'un simple "aucun amendement"."""
 
 
+def _content_range_total(resp: "requests.Response") -> Optional[int]:
+    """Extrait la taille totale de la ressource depuis l'en-tête `Content-Range`
+    d'une réponse HTTP 206 (ex. "bytes 100000000-101048575/363306362" -> 363306362).
+    Retourne `None` si l'en-tête est absent ou mal formé."""
+    content_range = resp.headers.get("Content-Range")
+    if not content_range or "/" not in content_range:
+        return None
+    try:
+        return int(content_range.rsplit("/", 1)[-1])
+    except ValueError:
+        return None
+
+
+def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> None:
+    """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
+    pour ne retenter que le segment en échec au lieu de tout le fichier sur une
+    coupure mi-flux (`IncompleteRead` déjà observé en pratique sur ces archives de
+    283-618 Mo — voir issue #241). Le support Range du CDN devant
+    data.assemblee-nationale.fr a été vérifié fonctionnellement (réponse 206 +
+    Content-Range) le 13/08/2026.
+
+    Écrit séquentiellement dans `zip_path` (jamais en accès aléatoire) : un segment
+    n'est écrit qu'une fois intégralement reçu, pour ne jamais laisser de segment
+    partiel sur disque. Si le serveur ignore l'en-tête Range (réponse 200 au lieu
+    de 206, cas non observé mais possible), bascule sur un téléchargement classique
+    en un seul segment.
+
+    Réutilise `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`/`AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS`
+    (#225), désormais appliqués par segment plutôt qu'au fichier entier. Lève la
+    dernière `requests.RequestException`/`OSError` rencontrée si un segment échoue
+    après épuisement des tentatives — l'appelant convertit en `AmendementsIndexError`.
+    """
+    zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+    offset = 0
+    total_size: Optional[int] = None
+    segments_total = 0
+    segments_retried = 0
+
+    with open(zip_path, "wb") as out:
+        while total_size is None or offset < total_size:
+            range_end = offset + AMENDEMENTS_DOWNLOAD_CHUNK_BYTES - 1
+            segments_total += 1
+            last_exc: Optional[Exception] = None
+            chunk = b""
+            status_code: Optional[int] = None
+            content_range_total: Optional[int] = None
+            for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
+                try:
+                    headers = {**HEADERS, "Range": f"bytes={offset}-{range_end}"}
+                    with requests.get(
+                        url, headers=headers,
+                        timeout=(TIMEOUT, AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS),
+                        stream=True,
+                    ) as resp:
+                        resp.raise_for_status()
+                        chunk = b"".join(resp.iter_content(chunk_size=1024 * 1024))
+                        status_code = resp.status_code
+                        if status_code == 206:
+                            content_range_total = _content_range_total(resp)
+                    last_exc = None
+                    break
+                except (requests.RequestException, OSError) as exc:
+                    last_exc = exc
+                    if attempt < AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS:
+                        print(
+                            f"  [!] Échec du téléchargement du segment amendements législature "
+                            f"{legislature} (offset {offset}, tentative "
+                            f"{attempt}/{AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS}) : {exc} — nouvel essai du segment seul"
+                        )
+                        time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
+            if last_exc is not None:
+                print(
+                    f"  [!] Segment amendements législature {legislature} (offset {offset}) en échec "
+                    f"définitif après {AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS} tentatives : {last_exc}"
+                )
+                raise last_exc
+            if attempt > 1:
+                segments_retried += 1
+
+            out.write(chunk)
+            if status_code == 200:
+                # Le serveur a ignoré l'en-tête Range et renvoyé le fichier entier.
+                total_size = len(chunk)
+                offset = total_size
+                break
+
+            if total_size is None:
+                total_size = content_range_total or (offset + len(chunk))
+            offset += len(chunk)
+            if not chunk:
+                break  # évite une boucle infinie sur un flux qui ne progresse plus
+
+    if segments_retried >= AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD:
+        print(
+            f"  [!] Législature {legislature} : {segments_retried}/{segments_total} segment(s) ont "
+            "nécessité un retry — instabilité réseau notable sur cette archive"
+        )
+    elif segments_retried:
+        print(f"  -> Législature {legislature} : {segments_retried}/{segments_total} segment(s) retenté(s) avec succès")
+
+    final_size = zip_path.stat().st_size
+    if total_size is not None and final_size != total_size:
+        raise OSError(
+            f"taille finale incohérente pour l'archive amendements législature {legislature} : "
+            f"{final_size} octets écrits, {total_size} attendus"
+        )
+
+
 def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
 
@@ -890,32 +1017,12 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
 
         print(f"-> Téléchargement des amendements officiels (Assemblée nationale) : {url}")
         zip_path = AMENDEMENTS_CACHE_DIR / legislature / "amendements.zip"
-        last_exc: Optional[Exception] = None
-        for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
-            try:
-                zip_path.parent.mkdir(parents=True, exist_ok=True)
-                with requests.get(
-                    url, headers=HEADERS, timeout=(TIMEOUT, AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS), stream=True
-                ) as resp:
-                    resp.raise_for_status()
-                    with open(zip_path, "wb") as out:
-                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                            if chunk:
-                                out.write(chunk)
-                last_exc = None
-                break
-            except (requests.RequestException, OSError) as exc:
-                last_exc = exc
-                if attempt < AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS:
-                    print(
-                        f"  [!] Échec du téléchargement des amendements officiels "
-                        f"(tentative {attempt}/{AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS}) : {exc} — nouvel essai"
-                    )
-                    time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
-        if last_exc is not None:
-            print(f"  [!] Échec du téléchargement des amendements officiels : {last_exc}")
+        try:
+            _download_amendements_zip(url, zip_path, legislature)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
             _amendements_failed_legislatures.add(legislature)
-            raise AmendementsIndexError(f"échec du téléchargement ({last_exc})") from last_exc
+            raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
         index: dict[str, list[dict[str, Any]]] = {}
         try:
@@ -1498,13 +1605,24 @@ def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> lis
     return index.get(acteur_ref, [])
 
 
-def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+def fetch_amendements_officiels(
+    url_an_ou_senat: Optional[str], warnings: Optional[list[str]] = None
+) -> list[dict[str, Any]]:
     """Récupère les amendements officiels dont le parlementaire est l'auteur principal.
 
     Agrège sur toutes les législatures pour lesquelles l'Assemblée nationale
     publie ces données en open data (voir AN_AMENDEMENTS_PATH), pas seulement
     celle de la source d'identité : un même élu peut avoir déposé des
     amendements sous plusieurs législatures successives.
+
+    Chaque législature est tentée indépendamment (`try`/`except` par
+    itération) : l'échec définitif d'une législature (ex. légis 16,
+    chroniquement instable) n'interrompt plus l'agrégation des autres —
+    corrige un défaut où la première législature en échec empêchait même
+    d'essayer les suivantes, faisant perdre par exemple une légis 17 pourtant
+    récupérée avec succès (issue #241). Si `warnings` est fourni, un message
+    `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES` précisant la législature en
+    échec y est ajouté pour chaque échec, au lieu d'un échec binaire global.
     """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
@@ -1512,7 +1630,12 @@ def fetch_amendements_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str
 
     amendements: list[dict[str, Any]] = []
     for legislature in AN_AMENDEMENTS_PATH:
-        index = _build_acteur_amendement_index(legislature)
+        try:
+            index = _build_acteur_amendement_index(legislature)
+        except AmendementsIndexError as exc:
+            if warnings is not None:
+                warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : {exc}")
+            continue
         for record in index.get(acteur_ref, []):
             amendements.append({**record, "legislature": legislature})
 
@@ -2501,7 +2624,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
     # toutes législatures disponibles — voir fetch_amendements_officiels). ---
     if chambre == "deputes" and profile.get("identite"):
         try:
-            profile["amendements"] = fetch_amendements_officiels(profile["identite"].get("url_an_ou_senat"))
+            profile["amendements"] = fetch_amendements_officiels(
+                profile["identite"].get("url_an_ou_senat"), warnings
+            )
         except Exception as exc:
             warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
