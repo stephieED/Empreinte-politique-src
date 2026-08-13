@@ -63,7 +63,7 @@ jobs:
               [.jobs[] | select(.id==($jid|tonumber)) | .steps[]
                | select(.name | test("Upload artifact|Diagnostic")) | select(.conclusion=="skipped")] | length')
             if [[ "$skipped_diag" -gt 0 ]]; then
-              log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" 2>/dev/null || true)
+              log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences 2>/dev/null || true)
               if echo "$log" | grep -qE "shutdown signal|The operation was canceled\."; then
                 matched=true
                 break
@@ -96,7 +96,7 @@ jobs:
             local name="$1"
             local id
             id=$(echo "$jobs_json" | jq -r --arg n "$name" '.jobs[] | select(.name==$n) | .id' | head -1)
-            [[ -n "$id" ]] && gh api "repos/${REPO}/actions/jobs/${id}/logs" 2>/dev/null || true
+            [[ -n "$id" ]] && gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences 2>/dev/null || true
           }
 
           fresh_run=false
