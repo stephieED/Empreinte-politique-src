@@ -1,3 +1,473 @@
+<a id="pythonunbuffered-generate-data"></a>
+## `PYTHONUNBUFFERED` global sur `generate-data.yml` : stdout fiable en CI non-TTY (#259) (2026-08-13)
+
+**Contexte** : CPython bufferise `stdout` par blocs (pas par ligne) dès qu'il
+détecte une sortie non-TTY — le cas de tout step GitHub Actions — alors que
+`stderr` n'est jamais bufferisé. Les `print()` de progression (ex.
+`candidate_profile.py`, `build_amendements_index.py`) apparaissaient donc en
+rafale différée en fin de step dans les logs CI, avec un ordre chronologique
+trompeur déjà rencontré au cours des diagnostics #239/#241/#246/#249. Risque
+aggravé : en cas de kill du job par timeout/préemption runner (angle mort
+déjà documenté en [[ci-cd]]), les lignes encore en buffer stdout ne sont
+jamais vidées vers le log — perte pure, contrairement à `stderr`.
+
+**Décision** : ajouter `PYTHONUNBUFFERED: "1"` au bloc `env:` global de
+`generate-data.yml`, à côté de `PARLTRACK_TIMEOUT_MINUTES` (déjà hérité par
+tous les jobs) — équivalent à `python3 -u` pour tout interpréteur Python
+invoqué dans le workflow, sans toucher aux scripts individuels.
+
+**Alternatives rejetées** : `flush=True` sur chaque `print()` du code source
+(dizaines de sites d'appel, oubli facile à chaque nouveau `print()`) ;
+`sys.stdout.reconfigure(line_buffering=True)` par point d'entrée (même
+défaut de maintenance dispersée) ; flag `-u` répété sur chaque `run:` du YAML
+(redondant avec la variable d'environnement globale, à répéter sur une
+dizaine de lignes). Coût du changement retenu : négligeable — sortie
+strictement identique, seul l'ordre d'apparition/flush change.
+
+<a id="amendements-index-quality-gate-fraicheur"></a>
+## Quality gate : distinguer un index amendements jamais construit d'un index périmé (#254) (2026-08-13)
+
+**Contexte** : sous-issue 6/6 (dernière) du plan d'architecture #248, bloquée
+par #251 ([[amendements-index-job-dedie-ci]]), #252
+([[amendements-index-cache-only-consumers]]) et #253
+([[amendements-index-non-regression-fraicheur]]). Clôture le fil ouvert par
+#239 ([[amendements-retry-blocage-legislature]]) → #241/#242
+([[amendements-range-download-legislature-isolation]]) → #245/#246
+([[retry-generate-data-continue-on-error]], [[amendements-failed-legislature-marker-inter-jobs]])
+→ cette issue : le quality gate n'exploitait jusqu'ici aucun des signaux déjà
+construits par cette chaîne de correctifs (isolation par législature, job
+dédié, indicateur de fraîcheur), alors que #253 avait explicitement laissé
+« l'exploitation par le quality gate » hors périmètre pour cette sous-issue.
+
+**Décision** :
+1. Nouvelle section 3d dans `check_quality_gate.py`
+   (`_report_amendements_freshness`) : pour chacune des 3 législatures de
+   `AN_AMENDEMENTS_PATH` (dupliquées localement en `_AMENDEMENTS_LEGISLATURES`
+   — même choix de découplage que `_AMENDEMENTS_INDISPONIBLES_PREFIX`
+   existant, ce script n'importe jamais `candidate_profile.py`), lit
+   `.cache/amendements_an/<legislature>/{index_par_acteur.json,fraicheur.json}`
+   et distingue trois états : **jamais construit** (aucun
+   `index_par_acteur.json` en cache), **périmé** (index présent mais
+   `fraicheur.json` absent/illisible, ou `derniere_construction_reussie:
+   false`, ou réussie il y a plus de `--amendements-staleness-days` jours) et
+   **frais** (index présent, dernière tentative connue réussie et récente).
+   Soft warning uniquement (n'empêche pas le commit), même traitement que le
+   reste de la section 3c dont elle prolonge la numérotation.
+2. **Limite assumée du signal « périmé »** : `fraicheur.json` (#253) ne
+   conserve que l'issue de la *dernière tentative connue*, pas un historique —
+   un échec écrase le `reussi`/`horodatage` d'un succès antérieur éventuel.
+   Le quality gate ne peut donc pas calculer un véritable « nombre de jours
+   sans reconstruction réussie » quand la dernière tentative a échoué ; dans
+   ce cas (ainsi que fraîcheur absente/illisible), l'index est signalé périmé
+   **immédiatement**, sans attendre le seuil en jours — seul le cas
+   `reussi=true` applique réellement le seuil `--amendements-staleness-days`
+   (défaut 7, aligné sur la granularité de cache hebdomadaire déjà tranchée
+   par #249, voir
+   [[amendements-index-budget-ci-cache-granularite]]). *Alternative rejetée* :
+   ajouter un champ supplémentaire à `fraicheur.json` (ex. horodatage du
+   dernier succès distinct de la dernière tentative) pour permettre un calcul
+   exact dans tous les cas — explicitement hors périmètre de #254 (« Pas de
+   nouveau mécanisme de détection au-delà du signal de péremption décrit
+   ci-dessus ») : le gate consomme strictement le contrat déjà livré par
+   #253, sans l'étendre.
+3. Deux nouvelles options CLI : `--amendements-cache-dir` (défaut
+   `.cache/amendements_an`) et `--amendements-staleness-days` (défaut 7, `0`
+   désactive entièrement la section, même convention que
+   `--low-syceron-coverage`).
+4. `.github/workflows/generate-data.yml` (job `merge-and-pivot`, seul job qui
+   exécute `check_quality_gate.py`) : ajout d'une étape `download-artifact`
+   optionnelle (`continue-on-error: true`) pour `amendements-index-an` vers
+   `.cache/amendements_an`, avant l'étape « Quality gate ». Nécessaire :
+   contrairement à `extract-an`/`extract-roster-groupes` (qui ont déjà cette
+   étape depuis #251/#252), `merge-and-pivot` ne restaurait jusqu'ici aucun
+   contenu de `.cache/amendements_an` — sans cet ajout, la nouvelle section 3d
+   aurait signalé les 3 législatures « jamais construites » à **chaque** run
+   réel, quelle que soit leur fraîcheur réelle côté job dédié, rendant le
+   signal inutilisable en production. Poussé directement dans ce commit —
+   contrairement à #228/#230 (création d'un nouveau fichier sous
+   `.github/workflows/`, bloquée par les permissions de l'app GitHub),
+   modifier un fichier existant a fonctionné pour #237 ; à vérifier au
+   prochain retour humain si ce n'est pas le cas ici.
+5. `docs/an_opendata.md` : **laissé inchangé** — ce fichier documente les
+   points d'accès AN Open Data (URLs, tailles d'archives), jamais la structure
+   du cache local ni le contrat `fraicheur.json` ; cette issue ne change ni
+   l'un ni l'autre, seulement un nouveau consommateur d'un fichier déjà livré
+   par #253.
+6. `AGENTS.md` §3 (diagramme pipeline Mermaid) : **laissé inchangé** — ce
+   diagramme représente le flux de transformation des données (raw_data →
+   pivot_data → quality gate), pas les jobs CI individuels ; le job dédié
+   `extract-amendements-an` lui-même (#251) n'y figure pas, pas plus que les
+   autres jobs `extract-*`. Le texte de prose au-dessus du diagramme (§3,
+   ligne « Quality gate ») est en revanche mis à jour pour mentionner le
+   nouveau signal.
+
+**Tests** : `tests/test_quality_gate_amendements.py` — cache absent (3×
+« jamais construit »), index frais (aucun warning), reconstruction réussie
+mais au-delà du seuil (périmé), dernière tentative en échec signalée
+immédiatement quel que soit l'âge, index sans `fraicheur.json` traité comme
+périmé plutôt que faux-frais, états mixtes sur les 3 législatures
+simultanément, et le cas `--amendements-staleness-days 0` (aucun raccourci de
+désactivation interne à `_report_amendements_freshness` — c'est `main()` qui
+saute l'appel sur seuil nul, la fonction elle-même applique un seuil de 0
+jour littéral si on l'appelle directement).
+
+*Alternative rejetée* : hard fail sur index périmé/jamais construit plutôt que
+soft warning — rejeté, l'issue #254 demande explicitement un traitement
+cohérent avec les autres signaux de la section 3c (soft warning), une
+législature d'amendements indisponible n'étant pas une régression de
+structure au même titre qu'un fichier groupe cassé (section 4).
+
+<a id="amendements-index-non-regression-fraicheur"></a>
+## Non-régression sur échec de reconstruction d'un index amendements + indicateur de fraîcheur (#253) (2026-08-13)
+
+**Contexte** : sous-issue 5/6 du plan d'architecture #248, bloquée par #251
+([[amendements-index-job-dedie-ci]]). Objectif : garantir qu'un échec
+définitif de reconstruction d'une législature dans `_download_and_build_amendement_index`
+(appelée par le job dédié `extract-amendements-an`, #251) ne peut jamais
+effacer un `index_par_acteur.json` déjà en cache et fonctionnel.
+
+**Constat** : `_download_and_build_amendement_index` (#250) n'ouvrait déjà
+`index_path` en écriture qu'après succès complet du téléchargement et du
+parsing — aucun chemin d'échec (`AmendementsIndexError`, raccourci
+`_amendements_legislature_failed_this_run`) n'écrivait donc jamais sur un
+index existant. Le seul cas où une reconstruction est réellement retentée
+malgré un fichier déjà présent est un cache corrompu (`JSONDecodeError`) :
+un index valide est utilisé tel quel sans nouvelle tentative (lecture en
+tête de fonction). L'invariant demandé par #253 était donc déjà correct,
+mais non testé explicitement ni observable par un consommateur externe.
+
+**Décision** :
+1. Tests de non-régression ajoutés (`tests/test_candidate_profile.py`) :
+   succès (index remplacé), échec sur cache corrompu préexistant (fichier
+   préservé à l'identique, byte pour byte), échec sans index préexistant
+   (comportement inchangé, aucun fichier créé), et le raccourci
+   inter-candidats/inter-jobs (`_amendements_legislature_failed_this_run`).
+2. Indicateur de fraîcheur `fraicheur.json`, écrit par
+   `_write_amendements_fraicheur` à côté de `index_par_acteur.json` :
+   `{"derniere_construction_reussie": bool, "horodatage": str}`. Écrit à
+   chaque tentative concernant un index existant ou nouvellement créé —
+   succès (`reussi=True`) ou échec définitif sur un index préexistant
+   conservé (`reussi=False`) ; jamais écrit si aucun index n'existe (rien à
+   qualifier). Best-effort comme l'écriture de l'index lui-même (`OSError`
+   avalée). Hors périmètre ici : exploitation par le quality gate
+   (sous-issue 6 de #248).
+
+*Alternative rejetée* : forcer un re-téléchargement inconditionnel à chaque
+exécution du job dédié (bypasser la lecture cache-only en tête de fonction)
+pour que la protection soit exercée à chaque run plutôt que seulement sur
+cache corrompu — rejeté car hors périmètre de #253 (qui ne demande pas de
+changer la politique de fraîcheur du cache, seulement de ne jamais régresser
+sur échec) et parce que cela viderait de son sens le choix déjà tranché par
+#250/#251 de ne retélécharger que si le cache est absent/corrompu.
+<a id="amendements-index-cache-only-consumers"></a>
+## Bascule d'`extract-an`/`extract-roster-groupes` vers la lecture cache-only des amendements (#252) (2026-08-13)
+
+**Contexte** : sous-issue 4/6 du plan d'architecture #248, bloquée par #250
+([[amendements-index-cache-only-split]]) et #251
+([[amendements-index-job-dedie-ci]]). C'est ce changement qui élimine
+réellement le problème documenté par #239/#245/#246 (coût réseau payé
+indépendamment par chaque job) : les deux sous-issues précédentes ont préparé
+le terrain (fonction cache-only isolée, job dédié qui pré-chauffe le cache)
+sans changer le comportement observable des appelants.
+
+**Décision** :
+1. `fetch_amendements_officiels` (`src/candidate_profile.py`) appelle
+   désormais `_read_cached_amendement_index` directement, pour chaque
+   législature de `AN_AMENDEMENTS_PATH` — plus d'appel à
+   `_build_acteur_amendement_index` (supprimée, devenue un pur orchestrateur
+   mort une fois ce dernier appelant retiré) ni, par transitivité, à
+   `_download_and_build_amendement_index` depuis ce chemin. Une législature
+   absente du cache produit le warning `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES`
+   existant (par législature, cf. #241/#242) au lieu d'un
+   `AmendementsIndexError` intercepté — `_read_cached_amendement_index` ne
+   lève jamais, elle retourne `None`.
+2. `_download_and_build_amendement_index` reste inchangée et devient le seul
+   point d'entrée réseau restant pour les amendements officiels, désormais
+   appelée exclusivement par le job dédié `extract-amendements-an`
+   (`src/build_amendements_index.py`, #251).
+3. `.github/workflows/generate-data.yml` : un step `download-artifact` pour
+   `amendements-index-an` (`continue-on-error: true`) doit être ajouté sur
+   `extract-an` et `extract-roster-groupes`, avant leur étape d'extraction —
+   en cas d'échec (artifact pas encore prêt, course sans `needs:` documentée
+   dans le job `extract-amendements-an` ; ou job en échec), ces deux jobs
+   s'appuient sur ce que la restauration du cache partagé `public-data-cache-an-*`
+   contient déjà. **Non appliqué dans le commit associé à cette entrée** : les
+   permissions de l'app GitHub utilisée par l'agent ne permettent pas de
+   pousser une modification sous `.github/workflows/` — un reviewer humain
+   doit appliquer ce step manuellement (voir le commentaire de la PR pour le
+   YAML exact).
+
+**Tests** : `test_fetch_amendements_officiels_never_triggers_network_when_cache_absent`
+(aucun appel réseau mocké quand le cache est absent pour toutes les
+législatures) et `test_fetch_amendements_officiels_returns_cached_amendements_when_index_present`
+(comportement inchangé quand le cache est présent) — `tests/test_candidate_profile.py`.
+Les tests existants ciblant l'ex-`_build_acteur_amendement_index` (retry,
+cache d'échec mémoire/disque, isolation par législature) sont retargetés vers
+`_download_and_build_amendement_index`, seule fonction restante à exercer
+cette logique.
+
+*Alternative rejetée* : garder `_build_acteur_amendement_index` comme
+fonction utilitaire inutilisée « au cas où » — rejeté, code mort non justifié
+une fois son unique appelant retiré (sa documentation la présentait
+explicitement comme le point d'entrée réservé à `fetch_amendements_officiels`).
+
+<a id="amendements-index-job-dedie-ci"></a>
+## Job CI dédié `extract-amendements-an` : construction inconditionnelle des 3 index de législature (#251) (2026-08-13)
+
+**Contexte** : sous-issue 3/6 du plan d'architecture #248, bloquée par #250
+([[amendements-index-cache-only-split]], qui isole
+`_download_and_build_amendement_index` comme point d'entrée réseau
+appelable indépendamment de tout candidat). Objectif : un job CI qui
+construit les 3 index de législature de `AN_AMENDEMENTS_PATH` sans
+condition, pour pré-chauffer le cache partagé `.cache/amendements_an/` une
+seule fois par run, au lieu de la construction paresseuse actuelle
+(déclenchée seulement quand un candidat traité par `extract-an`/
+`extract-roster-groupes` en a besoin).
+
+**Décision** :
+1. Nouveau point d'entrée `src/build_amendements_index.py`
+   (`build_all_amendements_index()` + `main()`) : boucle sur
+   `AN_AMENDEMENTS_PATH` (17/16/15), appelle
+   `_download_and_build_amendement_index` pour chacune dans un `try/except
+   AmendementsIndexError` isolé — un échec sur une législature n'interrompt
+   pas la boucle ni ne lève d'exception non gérée, même pattern d'isolation
+   que `fetch_amendements_officiels` (#241/#242). Le code de sortie du
+   script (1 si au moins une législature a échoué) reste diagnosticable dans
+   les logs du step CI ; c'est `continue-on-error: true` sur le job, pas ce
+   script, qui empêche qu'un échec bloque le reste du pipeline.
+2. Nouveau job `extract-amendements-an` dans `generate-data.yml` : mêmes
+   `checkout`/`setup-python`/`pip install` que les autres jobs
+   d'extraction, restauration de cache sur la clé hebdomadaire partagée
+   `public-data-cache-an-<semaine ISO>` (pas de clé dédiée — déjà tranché
+   par #249, voir
+   [[amendements-index-budget-ci-cache-granularite]]), exécution du script,
+   upload artifact `amendements-index-an` (`path: .cache/amendements_an/`).
+   `continue-on-error: true` et `timeout-minutes: 30`, mêmes valeurs que
+   `extract-parltrack`/déjà tranchées par #249.
+3. **Pas de `needs:`** (exigence explicite de l'issue #251) : ce job tourne
+   en parallèle des 4 jobs d'extraction existants et d'
+   `extract-roster-groupes`, plutôt que d'être séquencé après eux comme
+   `extract-roster-groupes` l'a été pour la clé de cache AN partagée
+   (#222, [[concurrence-ci-roster]]). Accepté explicitement : tant que les
+   jobs consommateurs (`extract-an`/`extract-roster-groupes`) continuent de
+   déclencher leur propre téléchargement paresseux (bascule vers une
+   lecture cache-only hors périmètre ici, sous-issue 4 de #248), une course
+   sur la clé de cache partagée reste possible si un candidat sollicite une
+   législature avant que ce nouveau job ait sauvegardé son cache — pas une
+   régression fonctionnelle (le pire cas est un téléchargement dupliqué
+   ponctuel, déjà toléré aujourd'hui en l'absence de ce job), seulement un
+   gain de pré-chauffage partiel tant que la sous-issue 4 n'est pas faite.
+
+**Tests** : `tests/test_build_amendements_index.py` — appel des 3
+législatures dans l'ordre déclaré, isolation d'un échec partiel (une légis
+en échec n'empêche pas les autres, pas d'exception non gérée), code de
+sortie de `main()` reflétant un échec partiel ou total. Pas de test
+automatisé pour le YAML CI (pattern déjà établi dans ce dépôt, cf. les jobs
+existants) — validation par `workflow_dispatch` manuel réservée à
+@stephieED (vérifier l'artifact `amendements-index-an` et la sauvegarde de
+cache sur un run réel).
+
+*Alternative rejetée* : séquencer ce job après les 4 jobs d'extraction
+existants (`needs:`), comme `extract-roster-groupes` (#222) — éliminerait la
+course décrite au point 3, mais rejeté ici car explicitement hors périmètre
+de l'issue #251 (« Le job n'a pas de `needs:` sur les autres jobs
+d'extraction — il tourne en parallèle », critère d'acceptation explicite) ;
+à réévaluer si la course s'avère coûteuse en pratique une fois la
+sous-issue 4 en place.
+
+<a id="amendements-index-cache-only-split"></a>
+## Séparer téléchargement/construction et lecture cache-only dans `_build_acteur_amendement_index` (#250) (2026-08-13)
+
+**Contexte** : sous-issue 2/6 du plan d'architecture #248, bloquée par
+[[amendements-index-budget-ci-cache-granularite]] (#249, granularité de cache
+tranchée : clé hebdomadaire existante, `.cache/amendements_an/<legislature>/
+index_par_acteur.json`). Préparation nécessaire avant de pouvoir déplacer la
+partie réseau dans un job dédié (sous-issue 3) sans changer le comportement
+des appelants existants dans cette sous-issue.
+
+**Décision** : `_build_acteur_amendement_index` (`src/candidate_profile.py`)
+scindée en deux fonctions :
+1. `_read_cached_amendement_index(legislature)` — lecture seule de
+   `index_par_acteur.json` s'il existe ; retourne `None` (pas `{}`, pour
+   rester distinguable d'un index vide légitime déjà mis en cache) si absent
+   ou corrompu. Ne déclenche jamais d'appel réseau.
+2. `_download_and_build_amendement_index(legislature)` — reprend telle quelle
+   la logique réseau précédemment inline (téléchargement par plages #241,
+   cache d'échec mémoire+disque #239/#246, écriture de
+   `index_par_acteur.json`), y compris son propre double-check du cache en
+   tête (sous le même verrou par législature) pour rester thread-safe.
+
+`_build_acteur_amendement_index` (nom conservé, seul point d'entrée utilisé
+par `fetch_amendements_officiels`) devient un simple orchestrateur : essaie
+`_read_cached_amendement_index`, puis retombe sur
+`_download_and_build_amendement_index` si absent — comportement observable
+strictement inchangé (tous les tests existants sur le téléchargement/retry/
+cache d'échec/isolation par législature passent sans modification de leurs
+assertions). La bascule réelle vers "jamais de téléchargement depuis ces
+jobs" reste hors périmètre de cette sous-issue (sous-issue 4).
+
+**Granularité du verrou** : les deux nouvelles fonctions acquièrent chacune
+séparément `_get_amendements_lock(legislature)` (verrou non réentrant)
+plutôt qu'un unique verrou tenu sur toute la section critique comme avant le
+découpage. Un thread peut donc en théorie observer un cache absent via
+`_read_cached_amendement_index` puis, pendant l'appel séparé à
+`_download_and_build_amendement_index`, retomber sur son propre double-check
+de cache (qui retrouvera le fichier si un autre thread l'a entre-temps
+écrit) — pas de régression : le pire cas est un aller-retour disque
+supplémentaire, jamais un téléchargement dupliqué ni une corruption.
+
+*Alternative rejetée* : faire porter le fallback réseau par
+`_read_cached_amendement_index` elle-même (une seule fonction avec un
+paramètre `allow_download`) — rejeté car cela va à l'encontre de l'objectif
+explicite de l'issue (deux responsabilités testables indépendamment, la
+fonction cache-only devant être *structurellement* incapable de déclencher
+un appel réseau, pas seulement par défaut).
+
+<a id="amendements-index-budget-ci-cache-granularite"></a>
+## Spike : budget CI pour un job dédié `extract-amendements-an` et granularité de cache (#249) (2026-08-13)
+
+**Contexte** : sous-issue 1/6 du plan d'architecture #248, en préparation
+d'un futur job dédié qui construirait les 3 index de législature (17/16/15)
+sans condition (indépendamment de la liste de candidats traitée par
+`extract-an`/`extract-roster-groupes`), pour pré-chauffer le cache partagé
+`.cache/amendements_an/`. Spike sans code : mesurer un budget de timeout
+réaliste et trancher la granularité de clé de cache, avant la conception du
+job lui-même (sous-issue 3, hors périmètre ici).
+
+**Mesures effectuées** :
+
+1. Tailles exactes (vérifiées en direct, requêtes `Range` sur l'origine,
+   13/08 11:31 UTC — affinent les approximations « 283-618 Mo » déjà
+   présentes dans `docs/an_opendata.md`) :
+   ```
+   $ curl -sS --http1.1 -D - -o /dev/null -r 0-4194303 \
+     https://data.assemblee-nationale.fr/static/openData/repository/<leg>/loi/<segment>/<fichier>
+   ```
+   | Législature | Content-Range total | ~MiB | Cache CDN |
+   |---|---|---|---|
+   | 17 | 296 735 207 o | 283,0 | `Cacheable: force cache` (rafraîchi quotidiennement, cf. `docs/an_opendata.md`) |
+   | 16 | 363 306 362 o | 346,5 | `Not cacheable: too big` (confirmé, cohérent avec [[amendements-retry-blocage-legislature]]) |
+   | 15 | 648 539 281 o | 618,6 | `Not cacheable: too big` |
+
+   Total des 3 archives : 1 308 580 850 o (≈ 1,22 Gio). Le support des
+   requêtes `Range` (206 + `Content-Range`) est reconfirmé sur les 3 URLs,
+   cohérent avec la vérification du 13/08 07:29 UTC déjà consignée dans
+   [[amendements-range-download-legislature-isolation]].
+
+2. Reproduction, depuis l'environnement d'exécution de ce spike (bac à sable
+   Claude Code — **pas** un runner GitHub Actions, chemin réseau différent
+   via une passerelle egress restreinte), du comportement de retry par
+   segment de `_download_amendements_zip` (script autonome réutilisant les
+   mêmes constantes — `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`,
+   `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, `AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS`,
+   `AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS` — et la même logique de
+   segment/retry/`Content-Range`). Deux essais indépendants sur la
+   législature 17 ont chacun atteint un échec définitif après 3 tentatives
+   (`IncompleteRead`), en 20 à 68 s — bien en-deçà du plafond théorique de
+   370 s (3 × 120 s de timeout de lecture + 2 × 5 s de backoff), signe que
+   les échecs observés ici sont des coupures de connexion rapides plutôt que
+   des blocages. Fait notable : les deux essais échouent au même offset
+   cumulé exact (33 554 432 o = 32 Mio), ce qui pointe vers un plafond
+   propre à la passerelle réseau du bac à sable plutôt qu'un phénomène de
+   l'origine AN — **ces essais ne sont donc pas utilisés comme mesure de
+   débit de référence** ; ils servent uniquement à revalider le support
+   `Range`/`Content-Range` et le comportement de retry par segment sur les
+   URLs réelles.
+3. Aucun téléchargement complet et propre des 3 archives n'a pu être obtenu
+   depuis cet environnement (plafond ci-dessus), et les logs bruts d'un run
+   GitHub Actions réel n'ont pas pu être récupérés depuis ce spike (l'hôte de
+   stockage des logs, `*.blob.core.windows.net`, n'est pas dans la liste
+   d'autorisation réseau de cet environnement). Le budget proposé ci-dessous
+   s'appuie donc principalement sur des mesures de production **déjà
+   consignées dans ce fichier**, réutilisées ici comme la mesure réelle la
+   plus fiable disponible :
+   - Run #30 (13/08, `https://github.com/stephieED/Empreinte-politique-src/actions/runs/31685914622`) :
+     un blocage réel (pas une coupure rapide) sur une législature amendements
+     a consommé **6 min 48 s** avant préemption du runner — cf.
+     [[amendements-failed-legislature-marker-inter-jobs]]. Cohérent avec le
+     plafond théorique par législature (3 tentatives × 120 s de lecture +
+     2 × 5 s de backoff = 370 s ≈ 6 min 10 s, marge de préemption/latence
+     réseau incluse).
+   - [[amendements-retry-blocage-legislature]] : la législature 17 (servie
+     depuis le cache CDN) « se charge rapidement » en conditions saines ; les
+     législatures 16/15 (toujours servies depuis l'origine, non
+     cacheables) sont les seules concernées par les `IncompleteRead`
+     observés en production.
+
+**Décision — budget de timeout proposé** : **30 minutes** pour le futur job
+`extract-amendements-an`, calculé comme la somme du pire cas raisonnable
+couvrant les deux scénarios demandés (le job doit tenir dans les deux) :
+- 2 législatures en conditions saines : 5 min chacune (marge large — aucune
+  mesure de débit soutenu fiable n'a pu être obtenue depuis cet
+  environnement ; valeur volontairement prudente plutôt qu'optimiste) → 10 min.
+- 1 législature en échec définitif après épuisement des tentatives (scénario
+  dégradé demandé par l'issue) : 6 min 48 s mesurés en production
+  (arrondis à 7 min).
+- Overhead fixe (checkout, `setup-python`, `pip install`, parsing en mémoire
+  des zips téléchargés avec succès — dizaines à centaines de milliers de
+  fichiers JSON par archive, jamais extraits sur disque) : 3 min, cohérent
+  avec l'overhead de démarrage observé sur les jobs `extract-*` existants
+  (~10 s hors installation) mais avec marge pour le coût CPU du parsing zip.
+
+Total ≈ 20 min ; **30 min** retenu pour une marge ×1,5 et pour rester un
+nombre rond cohérent avec les autres jobs du fichier (`generate-data.yml` :
+120/90/60/30 min). Valeur **provisoire**, comme déjà pratiqué pour le
+timeout de `extract-roster-groupes` dans ce même workflow (60 min
+« provisoire ») : à recalibrer sur le premier run réel du job dédié
+(sous-issue 3), aucune mesure de débit GitHub Actions authentique n'ayant pu
+être obtenue depuis ce spike.
+
+**Décision — granularité de clé de cache** : réutiliser la clé
+hebdomadaire existante `public-data-cache-an-<semaine ISO>`, **pas** de clé
+quotidienne dédiée aux amendements. Justification :
+1. Les jobs AN existants (`extract-an`, `extract-roster-groupes`) partagent
+   déjà un seul répertoire `.cache` et une seule clé hebdomadaire pour
+   plusieurs jeux de données également documentés comme rafraîchis
+   quotidiennement côté AN Open Data (acteurs actifs, dossiers législatifs —
+   cf. `docs/an_opendata.md`), sans que cela ait posé de problème identifié
+   dans l'historique de ce fichier. Une clé quotidienne spécifique aux
+   amendements introduirait une incohérence de granularité au sein du même
+   répertoire de cache sans bénéfice démontré.
+2. `actions/cache` met en cache le répertoire `.cache` dans son ensemble : on
+   ne peut pas donner une granularité différente à un seul sous-répertoire
+   sans un `path` de cache séparé — changement de structure hors périmètre
+   de ce spike (« pas d'implémentation »).
+3. Seule la 17ᵉ législature est concernée par la mise à jour quotidienne ; les
+   16ᵉ et 15ᵉ sont des législatures archivées dont les archives ne changeront
+   plus jamais (`Last-Modified` observé : 2024-06-28 pour la 16ᵉ, 2022-06-09
+   pour la 15ᵉ — vérifié en direct le 13/08). Une clé quotidienne
+   multiplierait par ~7 la fréquence de re-téléchargement des 2/3 du volume
+   (965 Mio sur 1,22 Gio) sans aucune justification de fraîcheur.
+4. Une clé quotidienne multiplie aussi par ~7 le nombre d'entrées de cache
+   distinctes sous le préfixe `public-data-cache-an-*` (partagé par tous les
+   jeux AN, pas seulement les amendements), ce qui accélère la pression
+   d'éviction LRU du cache GitHub Actions (limite globale par dépôt) — allant
+   à l'encontre de l'objectif même du job dédié (pré-chauffer un cache
+   durable).
+5. Le produit (CV politiques factuels) ne porte aucune exigence de fraîcheur
+   infra-hebdomadaire documentée dans `AGENTS.md` — une amende récente
+   n'ayant pas encore atteint le cache n'est pas un défaut fonctionnel.
+
+**Décision — `runs-on`** : pas de runner différent, `ubuntu-latest` standard
+(cohérent avec les 5 autres jobs de `generate-data.yml`). Ces mêmes
+téléchargements s'exécutent déjà aujourd'hui, sur ce runner standard, au sein
+de `extract-an`/`extract-roster-groupes` (mémoire/bande passante suffisantes
+en pratique) ; aucun incident de mémoire ou de CPU n'apparaît dans l'historique
+d'incidents amendements de ce fichier (#185/#199/#220/#225/#239/#241/#246,
+uniquement des incidents réseau). `_download_amendements_zip` écrit chaque
+segment directement sur disque (jamais le zip entier en mémoire) et
+`_build_acteur_amendement_index` ne lit qu'un membre du zip à la fois sans
+extraction sur disque — empreinte mémoire déjà conçue pour rester modeste,
+indépendamment du runner.
+
+**Alternative rejetée** : mesurer le budget en déclenchant un run
+`workflow_dispatch` réel et en lisant ses logs. Écartée pour ce spike — la
+sous-issue 3 (hors périmètre ici) n'existe pas encore en tant que job
+dédié isolable, et les jobs existants ne téléchargent les amendements que
+paresseusement (au niveau candidat, avec cache), rendant une mesure isolée
+du futur comportement « sans condition » impossible sans implémenter
+d'abord le job — précisément ce que ce spike doit précéder.
+
 <a id="amendements-failed-legislature-marker-inter-jobs"></a>
 ## Marqueur disque inter-jobs pour le cache d'échec amendements par législature (#246) (2026-08-13)
 

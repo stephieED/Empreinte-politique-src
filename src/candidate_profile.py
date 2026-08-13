@@ -97,6 +97,12 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "15": ("amendements_legis", "Amendements_XV.json.zip"),
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
+# Nom du fichier d'indicateur de fraîcheur écrit à côté de `index_par_acteur.json`
+# (issue #253, sous-issue 5/6 de #248) : permet à un futur consommateur (quality
+# gate, sous-issue 6) de distinguer un index frais d'un index conservé faute de
+# mieux après un échec définitif de reconstruction — voir
+# `_write_amendements_fraicheur`.
+AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -138,7 +144,7 @@ AMENDEMENTS_DOWNLOAD_CHUNK_BYTES = 32 * 1024 * 1024
 AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD = 3
 
 # Legislatures dont le telechargement de l'archive amendements a echoue de
-# facon definitive (toutes les tentatives de _build_acteur_amendement_index
+# facon definitive (toutes les tentatives de _download_and_build_amendement_index
 # epuisees) pour le run (process) courant. Verifie en tete de cette fonction
 # avant toute tentative reseau : sans ce cache, chaque candidat suivant ayant
 # besoin de la meme legislature repayait l'integralite du cycle de retry
@@ -1032,8 +1038,54 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
         )
 
 
-def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
+def _read_cached_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
+    """Lecture seule du cache disque `index_par_acteur.json` pour une législature,
+    sans jamais déclencher de téléchargement. Retourne `None` (pas `{}`) si le
+    fichier est absent ou illisible, pour rester distinguable d'un index vide
+    légitime déjà mis en cache (issue #250, préparation à l'isolation du job
+    dédié de la sous-issue 3 de #248)."""
+    with _get_amendements_lock(legislature):
+        index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if not index_path.is_file():
+            return None
+        try:
+            with open(index_path, encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None  # cache corrompu : traité comme absent, l'appelant reconstruit
+
+
+def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
+    """Écrit (best-effort, comme l'index lui-même) le fichier d'indicateur de
+    fraîcheur à côté de `index_par_acteur.json` : `derniere_construction_reussie`
+    reflète l'issue de la tentative courante, `horodatage` son moment. N'est
+    appelée en cas d'échec que lorsqu'un index existe déjà à préserver (issue
+    #253) — pas d'indicateur de fraîcheur sans index à qualifier."""
+    fraicheur_path = index_path.with_name(AMENDEMENTS_FRAICHEUR_FILENAME)
+    try:
+        with open(fraicheur_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "derniere_construction_reussie": reussi,
+                    "horodatage": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                },
+                f,
+                ensure_ascii=False,
+            )
+    except OSError:
+        pass
+
+
+def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Télécharge l'archive AN et construit (en la mettant en cache sur disque) un
+    index acteurRef -> liste d'amendements. Reprend telle quelle la logique réseau
+    précédemment inline dans l'ex-`_build_acteur_amendement_index` (issue #250).
+
+    Seul point d'entrée réseau restant pour les amendements officiels, appelé
+    exclusivement par le job CI dédié `extract-amendements-an`
+    (`src/build_amendements_index.py`, #251) : `fetch_amendements_officiels`
+    ne l'appelle plus depuis #252 (sous-issue 4/6 de #248), elle lit
+    uniquement `_read_cached_amendement_index`.
 
     Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
@@ -1043,7 +1095,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
 
     Lève `AmendementsIndexError` en cas d'échec de téléchargement ou de parsing de
     l'archive (au lieu de retourner un {} indiscernable d'un index vide légitime),
-    pour que l'appelant puisse le distinguer et le tracer dans meta.warnings.
+    pour que l'appelant puisse le distinguer et le tracer.
 
     Un échec définitif (tentatives épuisées) est mémorisé à la fois en mémoire
     process (`_amendements_failed_legislatures`, #239) et sur un marqueur disque
@@ -1052,6 +1104,15 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
     CI suivant (ex. `extract-roster-groupes` après `extract-an`) ayant besoin de
     la même législature durant ce run, lèvent immédiatement
     `AmendementsIndexError` sans nouvelle tentative réseau.
+
+    Un index déjà en cache n'est jamais écrasé par un échec (`index_path` n'est
+    ouvert en écriture qu'après succès complet du téléchargement et du parsing
+    ci-dessous) : un échec définitif laisse le fichier existant tel quel, s'il y
+    en a un (issue #253). Un indicateur de fraîcheur (`fraicheur.json`, voir
+    `_write_amendements_fraicheur`) est écrit à côté de l'index à chaque
+    tentative qui en concerne un — succès (index remplacé) ou échec définitif
+    sur un index préexistant conservé — pour qu'un futur consommateur puisse
+    distinguer les deux.
     """
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
@@ -1063,6 +1124,8 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                 pass  # cache corrompu : on reconstruit
 
         if _amendements_legislature_failed_this_run(legislature):
+            if index_path.is_file():
+                _write_amendements_fraicheur(index_path, reussi=False)
             raise AmendementsIndexError(
                 f"téléchargement déjà en échec pour la législature {legislature} durant ce run (non retenté)"
             )
@@ -1078,6 +1141,8 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
         except (requests.RequestException, OSError) as exc:
             print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
             _mark_amendements_legislature_failed(legislature)
+            if index_path.is_file():
+                _write_amendements_fraicheur(index_path, reussi=False)
             raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -1098,12 +1163,15 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
             _mark_amendements_legislature_failed(legislature)
+            if index_path.is_file():
+                _write_amendements_fraicheur(index_path, reussi=False)
             raise AmendementsIndexError(f"archive invalide ({exc})") from exc
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
             with open(index_path, "w", encoding="utf-8") as f:
                 json.dump(index, f, ensure_ascii=False)
+            _write_amendements_fraicheur(index_path, reussi=True)
         except OSError:
             pass
 
@@ -1671,14 +1739,22 @@ def fetch_amendements_officiels(
     celle de la source d'identité : un même élu peut avoir déposé des
     amendements sous plusieurs législatures successives.
 
-    Chaque législature est tentée indépendamment (`try`/`except` par
-    itération) : l'échec définitif d'une législature (ex. légis 16,
-    chroniquement instable) n'interrompt plus l'agrégation des autres —
-    corrige un défaut où la première législature en échec empêchait même
-    d'essayer les suivantes, faisant perdre par exemple une légis 17 pourtant
-    récupérée avec succès (issue #241). Si `warnings` est fourni, un message
-    `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES` précisant la législature en
-    échec y est ajouté pour chaque échec, au lieu d'un échec binaire global.
+    Chaque législature est tentée indépendamment : l'absence de cache pour une
+    législature (ex. légis 16, chroniquement instable côté téléchargement)
+    n'interrompt plus l'agrégation des autres — corrige un défaut où la
+    première législature en échec empêchait même d'essayer les suivantes,
+    faisant perdre par exemple une légis 17 pourtant disponible (issue #241).
+    Si `warnings` est fourni, un message `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES`
+    précisant la législature concernée y est ajouté pour chaque absence, au
+    lieu d'un échec binaire global.
+
+    Lecture cache-only exclusivement (`_read_cached_amendement_index`, #250) :
+    ne déclenche jamais de téléchargement depuis ce chemin. La construction de
+    l'index (téléchargement + parsing de l'archive AN) est désormais la seule
+    responsabilité du job CI dédié `extract-amendements-an`
+    (`src/build_amendements_index.py`, #251) — sous-issue 4/6 de #248, pour
+    que le coût réseau ne soit plus payé indépendamment par chaque job
+    consommateur (`extract-an`/`extract-roster-groupes`, issues #239/#245/#246).
     """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
@@ -1686,11 +1762,13 @@ def fetch_amendements_officiels(
 
     amendements: list[dict[str, Any]] = []
     for legislature in AN_AMENDEMENTS_PATH:
-        try:
-            index = _build_acteur_amendement_index(legislature)
-        except AmendementsIndexError as exc:
+        index = _read_cached_amendement_index(legislature)
+        if index is None:
             if warnings is not None:
-                warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : {exc}")
+                warnings.append(
+                    f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : "
+                    "index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+                )
             continue
         for record in index.get(acteur_ref, []):
             amendements.append({**record, "legislature": legislature})

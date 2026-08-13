@@ -40,7 +40,7 @@ flowchart TD
 ```
 
 > **Priorité des votes** : scrutins nominatifs AN Open Data en premier ; endpoint votes NosDéputés en fallback uniquement.  
-> **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.  
+> **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux. Lecture **cache-only** de `.cache/amendements_an/` (`_read_cached_amendement_index`) — ce job ne télécharge plus jamais les archives lui-même ; l'index est construit par le job dédié `extract-amendements-an` (`generate-data.yml`, voir `docs/technical_decisions.md#amendements-index-job-dedie-ci`), et une législature absente du cache produit un warning `meta.warnings` au lieu d'un téléchargement.  
 > **Textes portés** : rôles factuels extraits des dossiers législatifs (auteur, rapporteur, co-rapporteur).  
 > **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).  
 > **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` puis fusionné dans les `interventions[]` par `fetch_interventions_syceron`.
@@ -53,7 +53,7 @@ flowchart TD
 2. Pour chaque candidat (`source=an`), il appelle uniquement la chambre `deputes` via `build_profile` dans `candidate_profile.py`.
 3. `candidate_profile.py` récupère l'identité NosDéputés, la synthèse, les interventions, puis enrichit avec les jeux AN officiels.
 4. Les votes sont prioritairement pris depuis l'open data AN (scrutins nominatifs), pas depuis le endpoint votes NosDéputés (fallback seulement).
-5. Les amendements AN sont indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux.
+5. Les amendements AN sont indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux — lus exclusivement depuis `.cache/amendements_an/` (jamais téléchargés par ce job, voir `docs/technical_decisions.md#amendements-index-cache-only-consumers`).
 6. Les dossiers législatifs AN servent à produire les textes portés avec rôles factuels (auteur, rapporteur, co-rapporteur).
 7. Les questions parlementaires (QE/QG/QOSD) sont transformées puis ajoutées aux interventions.
 8. Les comptes rendus de séance Syceron (L15/L16/L17) sont téléchargés via `syceron_debates.py`, parsés par `parse_syceron.py`, et les interventions de l'élu sont extraites et fusionnées dans `interventions[]`.

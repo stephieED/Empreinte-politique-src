@@ -11774,10 +11774,10 @@
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
     ],
     "synchro_sources": {
-      "assemblee_nationale_questions": "2026-08-07T10:24:50+0000",
       "nosdeputes": "2026-08-06T09:14:21+0000",
-      "assemblee_nationale_syceron": null,
-      "assemblee_nationale": "2026-08-06T09:14:22+0000"
+      "assemblee_nationale": "2026-08-06T09:14:22+0000",
+      "assemblee_nationale_questions": "2026-08-07T10:24:50+0000",
+      "assemblee_nationale_syceron": null
     }
   },
   "mandat_europeen": {

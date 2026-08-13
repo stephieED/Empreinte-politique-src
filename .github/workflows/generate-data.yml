@@ -67,6 +67,12 @@ concurrency:
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
+  # stdout est bufferisé par blocs (pas par ligne) par CPython dès qu'il détecte
+  # une sortie non-TTY (cas de tout step GitHub Actions) ; stderr ne l'est jamais.
+  # Sans ceci, les print() de progression apparaissent en rafale différée dans les
+  # logs CI (ordre chronologique trompeur) et sont perdus si le job est tué avant
+  # la fin normale du process (#259).
+  PYTHONUNBUFFERED: "1"
 
 jobs:
 
@@ -109,6 +115,20 @@ jobs:
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
+
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
+      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
+      # ce job s'appuie sur ce que la restauration du cache partagé
+      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
+      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
+      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
 
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
       # fresh_run=true  → --no-merge : écrasement complet.
@@ -414,6 +434,117 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ──────────────────────────────────────────────────────────────────────────
+  # JOB SUPPLÉMENTAIRE — Construction dédiée des index amendements AN (#251,
+  # sous-issue 3/6 du plan d'architecture #248)
+  #
+  # Construit sans condition les 3 index de législature (17/16/15,
+  # AN_AMENDEMENTS_PATH dans src/candidate_profile.py) via
+  # _download_and_build_amendement_index (#250, src/build_amendements_index.py),
+  # indépendamment de toute liste de candidats — à la différence de
+  # extract-an/extract-roster-groupes, qui ne déclenchent cette construction
+  # que paresseusement, au niveau candidat. Objectif : pré-chauffer le cache
+  # partagé .cache/amendements_an/ une seule fois par run.
+  #
+  # Pas de needs: — tourne en parallèle des autres jobs d'extraction, y
+  # compris extract-an/extract-roster-groupes qui restent, pour l'instant,
+  # susceptibles de déclencher leur propre téléchargement paresseux des mêmes
+  # archives si un candidat les sollicite avant la sauvegarde du cache de ce
+  # job (course possible sur la clé de cache partagée ci-dessous). Accepté
+  # explicitement par l'issue #251 : la bascule des jobs consommateurs vers
+  # une lecture cache-only de ce cache pré-chaud (ce qui éliminerait cette
+  # course) est hors périmètre ici, réservée à la sous-issue 4 de #248.
+  #
+  # Clé de cache réutilisée : la même clé hebdomadaire partagée
+  # public-data-cache-an-* que extract-an/extract-roster-groupes, pas de clé
+  # quotidienne dédiée aux amendements — décision et justification complète
+  # dans docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite
+  # (sous-issue 1 de #248).
+  #
+  # continue-on-error: true, même pattern que extract-parltrack : un échec
+  # (total ou partiel, une seule législature) ne bloque pas merge-and-pivot.
+  # Isolation par législature préservée (#241/#242) : un échec sur l'une
+  # n'empêche jamais la construction des autres (voir
+  # src/build_amendements_index.py et son test dédié).
+  #
+  # Timeout 30 min : budget mesuré par le spike sans code de la sous-issue 1
+  # de #248 (voir docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite)
+  # — valeur provisoire, à recalibrer sur le premier run réel
+  # (workflow_dispatch), aucune mesure de débit GitHub Actions authentique
+  # n'ayant pu être obtenue lors du spike.
+  # ──────────────────────────────────────────────────────────────────────────
+  extract-amendements-an:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Horodatage de démarrage (diagnostic annulation/échec)
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # Clé de cache partagée avec extract-an/extract-roster-groupes
+      # (public-data-cache-an-*) — voir
+      # docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite.
+      # fresh_run=true → pas de restore : le job repart de zéro et retélécharge
+      # les 3 archives, sans étape de purge dédiée (ce job n'écrit que sous
+      # .cache/amendements_an/, absent par construction sur un checkout neuf
+      # quand aucun cache n'est restauré).
+      - uses: actions/cache@v5
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache
+          key: public-data-cache-an-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-an-
+
+      - name: Construction des index amendements (législatures 17/16/15)
+        run: python3 src/build_amendements_index.py
+
+      - name: Upload artifact amendements AN
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an/
+          if-no-files-found: warn
+
+      - name: Diagnostic — job annulé (signal externe)
+        if: cancelled()
+        run: |
+          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
+          {
+            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo ""
+            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
+            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo ""
+            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
+            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostic — job en échec
+        if: failure()
+        run: |
+          {
+            echo "### ❌ Job en échec"
+            echo ""
+            echo "Voir la checklist de diagnostic dans #217 (ou la section"
+            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
+            echo "depuis)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ──────────────────────────────────────────────────────────────────────────
   # JOB SUPPLÉMENTAIRE — Extraction roster-driven (rollout progressif, #192)
   #
   # Déploiement progressif de l'extraction pilotée par la composition réelle
@@ -485,6 +616,20 @@ jobs:
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
+
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
+      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
+      # ce job s'appuie sur ce que la restauration du cache partagé
+      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
+      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
+      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
 
       # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
       # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
@@ -685,6 +830,20 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
+
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — même pattern que l'étape homonyme d'extract-an/
+      # extract-roster-groupes (#252) : en cas d'échec/absence, la section 3d du
+      # quality gate signale simplement chaque législature "jamais construite"
+      # au lieu de lire une fraîcheur réelle (dégradation gracieuse, pas un échec
+      # de job). Alimente check_quality_gate.py --amendements-cache-dir (défaut
+      # .cache/amendements_an, section 3d, issue #254).
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
 
       # inputs.threshold appliqué dans tous les modes (y compris fresh_run=true).
       # §5 ParlTrack : --parltrack-status-file active la section de rapport

@@ -59,7 +59,9 @@ In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe file;
-soft warnings on low interventions, low coverage, network signals.
+soft warnings on low interventions, low coverage, network signals, and amendements index
+freshness (§3d: distinguishes "never built" from "present but stale beyond N days without
+a successful rebuild", see `docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`).
 
 ## 4. Pivot schema v1 (`src/schema_pivot.py`)
 
