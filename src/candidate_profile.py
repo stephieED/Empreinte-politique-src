@@ -104,6 +104,31 @@ AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 # le fichier est deja volumineux a re-telecharger).
 AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS = 3
 AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS = 5
+# Timeout de lecture (par tentative). Les deux plus grosses archives
+# (legislatures 15/16, 363-618 Mo) ne sont pas cacheables par le CDN AN
+# (verifie : "x-cacheable: Not cacheable: too big") et frappent donc toujours
+# l'origine — un blocage en cours de stream (deja observe : IncompleteRead) y
+# est plus probable que sur un petit fichier. 600s etait beaucoup trop large :
+# un pire cas de 3 tentatives x 600s (30 min) par legislature, repete pour
+# chaque candidat ayant besoin de cette meme legislature (aucun cache
+# d'echec avant #239), a suffi a declencher des "runner shutdown signal" en
+# CI. Borne desormais a une valeur coherente avec le budget CI du job (cf.
+# PARLTRACK_TIMEOUT_MINUTES=30 dans generate-data.yml comme reference) : un
+# blocage de plus de 2 min sur un flux CI sain est deja le signe qu'il faut
+# abandonner la tentative plutot que d'attendre.
+AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS = 120
+
+# Legislatures dont le telechargement de l'archive amendements a echoue de
+# facon definitive (toutes les tentatives de _build_acteur_amendement_index
+# epuisees) pour le run (process) courant. Verifie en tete de cette fonction
+# avant toute tentative reseau : sans ce cache, chaque candidat suivant ayant
+# besoin de la meme legislature repayait l'integralite du cycle de retry
+# (issue #239). Volontairement non persiste sur disque (contrairement a
+# l'index lui-meme) : une legislature reellement indisponible en fin de run
+# le sera tres probablement encore au run suivant (nouveau process), qui
+# retentera naturellement depuis zero plutot que de rester bloquee par un
+# etat d'echec perime.
+_amendements_failed_legislatures: set[str] = set()
 
 # Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
 # multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
@@ -839,6 +864,11 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
     Lève `AmendementsIndexError` en cas d'échec de téléchargement ou de parsing de
     l'archive (au lieu de retourner un {} indiscernable d'un index vide légitime),
     pour que l'appelant puisse le distinguer et le tracer dans meta.warnings.
+
+    Un échec définitif (tentatives épuisées) est mémorisé dans
+    `_amendements_failed_legislatures` : les candidats suivants ayant besoin de
+    la même législature durant ce run lèvent immédiatement `AmendementsIndexError`
+    sans nouvelle tentative réseau (voir issue #239).
     """
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
@@ -848,6 +878,11 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                     return json.load(f)
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
+
+        if legislature in _amendements_failed_legislatures:
+            raise AmendementsIndexError(
+                f"téléchargement déjà en échec pour la législature {legislature} durant ce run (non retenté)"
+            )
 
         url = _amendements_zip_url(legislature)
         if not url:
@@ -859,7 +894,9 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
         for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
             try:
                 zip_path.parent.mkdir(parents=True, exist_ok=True)
-                with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                with requests.get(
+                    url, headers=HEADERS, timeout=(TIMEOUT, AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS), stream=True
+                ) as resp:
                     resp.raise_for_status()
                     with open(zip_path, "wb") as out:
                         for chunk in resp.iter_content(chunk_size=1024 * 1024):
@@ -877,6 +914,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                     time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
         if last_exc is not None:
             print(f"  [!] Échec du téléchargement des amendements officiels : {last_exc}")
+            _amendements_failed_legislatures.add(legislature)
             raise AmendementsIndexError(f"échec du téléchargement ({last_exc})") from last_exc
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -896,6 +934,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                         index.setdefault(acteur_ref, []).append(record)
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
+            _amendements_failed_legislatures.add(legislature)
             raise AmendementsIndexError(f"archive invalide ({exc})") from exc
 
         try:
