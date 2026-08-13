@@ -1308,9 +1308,11 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 # ---------------------------------------------------------------------------
 # Tests pour la séparation téléchargement/construction vs lecture cache-only
 # (issue #250, sous-issue 2/6 de #248) : `_read_cached_amendement_index` ne
-# doit jamais déclencher d'appel réseau, `_download_and_build_amendement_index`
-# reprend telle quelle la logique réseau, et `_build_acteur_amendement_index`
-# reste l'unique point d'entrée (cache-only puis fallback téléchargement).
+# doit jamais déclencher d'appel réseau ; `_download_and_build_amendement_index`
+# reprend telle quelle la logique réseau (téléchargement/retry/cache d'échec),
+# désormais appelée uniquement par le job dédié `extract-amendements-an`
+# (`src/build_amendements_index.py`, #251) — plus par `fetch_amendements_officiels`,
+# qui lit exclusivement le cache depuis #252 (sous-issue 4/6 de #248).
 # ---------------------------------------------------------------------------
 
 def test_read_cached_amendement_index_returns_none_when_absent(tmp_path):
@@ -1395,11 +1397,11 @@ def test_download_and_build_amendement_index_ignores_existing_cache_write(tmp_pa
     assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
 
 
-def test_build_acteur_amendement_index_uses_cache_only_when_present(tmp_path):
-    """Point d'entrée `_build_acteur_amendement_index` : quand le cache disque
-    existe déjà, il est utilisé tel quel — pas de téléchargement (comportement
-    observable inchangé par le découpage de #250)."""
-    from candidate_profile import _build_acteur_amendement_index
+def test_download_and_build_amendement_index_uses_existing_cache_without_download(tmp_path):
+    """`_download_and_build_amendement_index` : quand le cache disque existe déjà
+    (double-check en tête, sous le même verrou), il est utilisé tel quel — pas de
+    téléchargement."""
+    from candidate_profile import _download_and_build_amendement_index
 
     cached_index = {"PA1": [{"uid": "AMANR5L17PO123456B0001P0D1N001"}]}
     index_dir = tmp_path / "17"
@@ -1412,20 +1414,20 @@ def test_build_acteur_amendement_index_uses_cache_only_when_present(tmp_path):
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
     ):
-        result = _build_acteur_amendement_index("17")
+        result = _download_and_build_amendement_index("17")
 
     assert result == cached_index
     mock_get.assert_not_called()
 
 
-def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
+def test_download_and_build_amendement_index_raises_on_download_failure(tmp_path):
     """Échec persistant (toutes les tentatives échouent) : AmendementsIndexError
     doit toujours être levée après épuisement des tentatives (non-régression #199),
     et toutes les tentatives prévues doivent avoir été consommées."""
     from candidate_profile import (
         AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
         AmendementsIndexError,
-        _build_acteur_amendement_index,
+        _download_and_build_amendement_index,
     )
 
     with (
@@ -1434,7 +1436,7 @@ def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
         patch("candidate_profile.time.sleep", return_value=None) as mock_sleep,
     ):
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
@@ -1446,17 +1448,16 @@ def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
     assert mock_sleep.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS - 1
 
 
-def test_build_acteur_amendement_index_failed_legislature_is_not_retried_for_next_candidate(tmp_path):
+def test_download_and_build_amendement_index_failed_legislature_is_not_retried_for_next_candidate(tmp_path):
     """Une législature dont le téléchargement échoue définitivement (toutes les
     tentatives épuisées) ne doit être retentée qu'une seule fois par run — pas
-    une fois par candidat suivant en ayant besoin (issue #239 : régression de
-    #225, où l'absence de mémoire inter-candidats d'un échec transformait un
-    échec instantané pré-#225 en plusieurs minutes de blocage répétées par
-    candidat)."""
+    une fois par appelant suivant en ayant besoin (issue #239 : régression de
+    #225, où l'absence de mémoire inter-appels d'un échec transformait un
+    échec instantané pré-#225 en plusieurs minutes de blocage répétées)."""
     from candidate_profile import (
         AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
         AmendementsIndexError,
-        _build_acteur_amendement_index,
+        _download_and_build_amendement_index,
     )
 
     with (
@@ -1464,40 +1465,41 @@ def test_build_acteur_amendement_index_failed_legislature_is_not_retried_for_nex
         patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
         patch("candidate_profile.time.sleep", return_value=None),
     ):
-        # Premier candidat ayant besoin de cette législature : cycle complet de
+        # Premier appel ayant besoin de cette législature : cycle complet de
         # tentatives (comportement de #225 préservé), puis échec définitif.
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
         assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
 
-        # Second candidat, même législature : échec immédiat depuis le cache
+        # Second appel, même législature : échec immédiat depuis le cache
         # d'échec, sans aucun nouvel appel réseau.
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
         assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
-            "Le second candidat ne doit déclencher aucun nouvel appel réseau pour "
+            "Le second appel ne doit déclencher aucun nouvel appel réseau pour "
             "une législature déjà en échec définitif durant ce run"
         )
 
 
-def test_build_acteur_amendement_index_failed_legislature_shared_across_jobs_via_disk_marker(tmp_path, monkeypatch):
-    """Deux jobs CI distincts du même run (deux process Python distincts en
-    pratique, ex. `extract-an` puis `extract-roster-groupes` séquencés par #222)
-    ne doivent pas payer chacun le cycle complet de retry pour la même
-    législature en échec : le second job doit lever immédiatement grâce au
-    marqueur disque partagé (`GITHUB_RUN_ID`), même sans mémoire process
-    partagée (issue #246, extension de #239 au-delà du process courant)."""
+def test_download_and_build_amendement_index_failed_legislature_shared_across_jobs_via_disk_marker(tmp_path, monkeypatch):
+    """Deux process Python distincts du même run (ex. deux invocations
+    successives de `src/build_amendements_index.py` dans le job
+    `extract-amendements-an`, ou une reprise du même run) ne doivent pas payer
+    chacune le cycle complet de retry pour la même législature en échec : la
+    seconde doit lever immédiatement grâce au marqueur disque partagé
+    (`GITHUB_RUN_ID`), même sans mémoire process partagée (issue #246,
+    extension de #239 au-delà du process courant)."""
     from candidate_profile import (
         AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
         AmendementsIndexError,
         _amendements_failed_legislatures,
-        _build_acteur_amendement_index,
+        _download_and_build_amendement_index,
     )
 
     monkeypatch.setenv("GITHUB_RUN_ID", "31685914622")
@@ -1507,32 +1509,31 @@ def test_build_acteur_amendement_index_failed_legislature_shared_across_jobs_via
         patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
         patch("candidate_profile.time.sleep", return_value=None),
     ):
-        # Job 1 (ex. extract-an) : cycle complet de tentatives, échec définitif.
+        # Premier process : cycle complet de tentatives, échec définitif.
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
         assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
 
-        # Simule le passage à un second job CI (process Python distinct) : le
+        # Simule le passage à un second process (ex. reprise du même run) : le
         # cache mémoire intra-process est réinitialisé, mais le cache disque
-        # (`.cache/amendements_an/`) est le même — restauré/sauvegardé par
-        # chaque job via la même clé de cache (#222).
+        # (`.cache/amendements_an/`) est le même.
         _amendements_failed_legislatures.clear()
 
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
         assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
-            "Le second job ne doit déclencher aucun nouvel appel réseau : le marqueur "
+            "Le second process ne doit déclencher aucun nouvel appel réseau : le marqueur "
             "disque du run courant doit suffire à lever immédiatement"
         )
 
 
-def test_build_acteur_amendement_index_disk_marker_from_different_run_is_ignored(tmp_path, monkeypatch):
+def test_download_and_build_amendement_index_disk_marker_from_different_run_is_ignored(tmp_path, monkeypatch):
     """Un marqueur disque référençant un `GITHUB_RUN_ID` différent du run courant
     (résidu d'une semaine ISO précédente restauré via `restore-keys`) doit être
     ignoré : la législature est retentée normalement, sans dépendre d'un TTL
@@ -1542,7 +1543,7 @@ def test_build_acteur_amendement_index_disk_marker_from_different_run_is_ignored
         AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
         AmendementsIndexError,
         _amendements_failed_marker_path,
-        _build_acteur_amendement_index,
+        _download_and_build_amendement_index,
     )
 
     monkeypatch.setenv("GITHUB_RUN_ID", "31694500982")
@@ -1557,7 +1558,7 @@ def test_build_acteur_amendement_index_disk_marker_from_different_run_is_ignored
             patch("candidate_profile.time.sleep", return_value=None),
         ):
             try:
-                _build_acteur_amendement_index("17")
+                _download_and_build_amendement_index("17")
                 assert False, "AmendementsIndexError attendue (échec réseau simulé, pas le marqueur périmé)"
             except AmendementsIndexError:
                 pass
@@ -1568,14 +1569,14 @@ def test_build_acteur_amendement_index_disk_marker_from_different_run_is_ignored
     )
 
 
-def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(tmp_path):
+def test_download_and_build_amendement_index_retries_transient_failure_then_succeeds(tmp_path):
     """Un échec réseau transitoire isolé (ex. un seul IncompleteRead/RequestException)
     ne doit plus faire échouer la construction de l'index si une tentative suivante
     aboutit — c'est le comportement central demandé par #220."""
     import io
     import zipfile as zipfile_module
 
-    from candidate_profile import _build_acteur_amendement_index
+    from candidate_profile import _download_and_build_amendement_index
 
     buf = io.BytesIO()
     with zipfile_module.ZipFile(buf, "w") as zf:
@@ -1616,17 +1617,17 @@ def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(t
         ) as mock_get,
         patch("candidate_profile.time.sleep", return_value=None) as mock_sleep,
     ):
-        index = _build_acteur_amendement_index("17")
+        index = _download_and_build_amendement_index("17")
 
     assert index == {}
     assert mock_get.call_count == 2, "Un seul échec transitoire suivi d'un succès : exactement 2 tentatives"
     assert mock_sleep.call_count == 1, "Backoff attendu une seule fois, entre l'échec et la tentative réussie"
 
 
-def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):
+def test_download_and_build_amendement_index_raises_on_bad_zip(tmp_path):
     import zipfile
 
-    from candidate_profile import AmendementsIndexError, _build_acteur_amendement_index
+    from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
 
     class FakeStreamResponse:
         status_code = 200  # fichier entier en un seul segment, voir commentaire ci-dessus
@@ -1648,7 +1649,7 @@ def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):
         patch("candidate_profile.requests.get", return_value=FakeStreamResponse()),
     ):
         try:
-            _build_acteur_amendement_index("17")
+            _download_and_build_amendement_index("17")
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
@@ -1707,12 +1708,13 @@ def test_download_amendements_zip_retries_only_failed_segment(tmp_path):
 
 
 def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others():
-    """Légis 17 réussie + légis 16/15 en échec définitif : les amendements de la
-    légis 17 doivent être conservés (plus de vidage global sur l'échec d'une
-    seule législature), et chaque échec doit être tracé avec la législature
-    concernée dans les warnings (critères d'acceptation de l'issue #241)."""
+    """Légis 17 en cache + légis 16/15 absentes du cache : les amendements de la
+    légis 17 doivent être conservés (plus de vidage global sur l'absence d'une
+    seule législature), et chaque absence doit être tracée avec la législature
+    concernée dans les warnings (critères d'acceptation de l'issue #241,
+    adaptés à la lecture cache-only de #252 : plus d'`AmendementsIndexError`,
+    une législature absente du cache retourne simplement `None`)."""
     from candidate_profile import (
-        AmendementsIndexError,
         WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
         fetch_amendements_officiels,
     )
@@ -1720,30 +1722,88 @@ def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others()
     def fake_index(legislature):
         if legislature == "17":
             return {"PA1": [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}]}
-        raise AmendementsIndexError(f"téléchargement en échec pour la législature {legislature}")
+        return None
 
     warnings: list[str] = []
     with (
-        patch("candidate_profile._build_acteur_amendement_index", side_effect=fake_index),
+        patch("candidate_profile._read_cached_amendement_index", side_effect=fake_index),
         patch("candidate_profile._build_texte_titre_index", return_value={}),
         patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
     ):
         amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
 
-    assert len(amendements) == 1, "Les amendements de la législature réussie (17) doivent être conservés"
+    assert len(amendements) == 1, "Les amendements de la législature en cache (17) doivent être conservés"
     assert amendements[0]["legislature"] == "17"
 
     failure_warnings = [w for w in warnings if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES)]
-    assert len(failure_warnings) == 2, "Un warning distinct par législature en échec (16 et 15), pas un échec global"
+    assert len(failure_warnings) == 2, "Un warning distinct par législature absente (16 et 15), pas un échec global"
     assert any("16" in w for w in failure_warnings), "Le warning doit mentionner spécifiquement la législature 16"
-    assert any("15" in w for w in failure_warnings), "La légis 15 doit être tentée même quand la légis 16 échoue"
+    assert any("15" in w for w in failure_warnings), "La légis 15 doit être tentée même quand la légis 16 est absente"
+
+
+def test_fetch_amendements_officiels_never_triggers_network_when_cache_absent(tmp_path):
+    """Critère d'acceptation central de l'issue #252 : quand l'index en cache est
+    absent pour toutes les législatures, `fetch_amendements_officiels` ne doit
+    déclencher aucun appel réseau (mocké) — seulement le warning existant."""
+    from candidate_profile import (
+        AN_AMENDEMENTS_PATH,
+        WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+        fetch_amendements_officiels,
+    )
+
+    warnings: list[str] = []
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+        patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
+    ):
+        amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
+
+    assert amendements == []
+    mock_get.assert_not_called()
+    failure_warnings = [w for w in warnings if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES)]
+    assert len(failure_warnings) == len(AN_AMENDEMENTS_PATH), (
+        "Un warning par législature absente du cache, aucune tentative réseau"
+    )
+
+
+def test_fetch_amendements_officiels_returns_cached_amendements_when_index_present(tmp_path):
+    """Quand l'index est présent en cache pour une législature, les amendements
+    de l'acteur doivent être retournés — identique au comportement actuel,
+    sans passer par un téléchargement (critère d'acceptation de l'issue #252)."""
+    from candidate_profile import AN_AMENDEMENTS_PATH as _LEGISLATURES
+    from candidate_profile import fetch_amendements_officiels
+
+    legislature = next(iter(_LEGISLATURES))
+    cached_index = {
+        "PA1": [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}],
+    }
+    index_dir = tmp_path / legislature
+    index_dir.mkdir(parents=True)
+    (index_dir / "index_par_acteur.json").write_text(
+        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    )
+
+    warnings: list[str] = []
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+        patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
+        patch("candidate_profile._build_texte_titre_index", return_value={}),
+    ):
+        amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
+
+    mock_get.assert_not_called()
+    matching = [a for a in amendements if a["legislature"] == legislature]
+    assert len(matching) == 1
+    assert matching[0]["numero"] == "1"
 
 
 def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
-    """Quand fetch_amendements_officiels échoue (ex. AmendementsIndexError propagée
-    depuis _build_acteur_amendement_index), le try/except de build_profile doit
-    ajouter un warning WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES — au lieu de
-    silencieusement laisser profile['amendements'] absent/vide sans trace."""
+    """Quand fetch_amendements_officiels échoue de façon inattendue (ex. exception
+    propagée), le try/except de build_profile doit ajouter un warning
+    WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES — au lieu de silencieusement laisser
+    profile['amendements'] absent/vide sans trace."""
     from candidate_profile import AmendementsIndexError, WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES
 
     with (
