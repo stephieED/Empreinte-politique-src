@@ -1567,6 +1567,64 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
     mock_get.assert_not_called()
 
 
+# ---------------------------------------------------------------------------
+# Législatures figées (15/16) : fallback committé, aucun accès réseau
+# (docs/technical_decisions.md#amendements-legislatures-figees).
+# ---------------------------------------------------------------------------
+
+def test_download_and_build_amendement_index_uses_frozen_fallback_without_download(tmp_path):
+    """Pour une législature dans `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, l'index
+    committé (`AN_AMENDEMENTS_FIGEES_DIR`) est utilisé sans jamais toucher le
+    réseau, même en l'absence de tout cache disque préexistant."""
+    from candidate_profile import _download_and_build_amendement_index
+
+    frozen_index = {"PA1": [{"uid": "AMANR5L15PO123456B0001P0D1N001"}]}
+    frozen_dir = tmp_path / "figees" / "15"
+    frozen_dir.mkdir(parents=True)
+    (frozen_dir / "index_par_acteur.json").write_text(
+        json.dumps(frozen_index, ensure_ascii=False), encoding="utf-8"
+    )
+    (frozen_dir / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    cache_dir = tmp_path / "cache"
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile.AN_AMENDEMENTS_FIGEES_DIR", tmp_path / "figees"),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        result = _download_and_build_amendement_index("15")
+
+    assert result == frozen_index
+    mock_get.assert_not_called()
+    # Matérialisé dans le cache disque standard, même format qu'une construction réseau.
+    assert json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8")) == frozen_index
+    assert json.loads((cache_dir / "15" / "fraicheur.json").read_text(encoding="utf-8"))["figee"] is True
+
+
+def test_download_and_build_amendement_index_frozen_legislature_falls_back_to_network_if_no_committed_index(tmp_path):
+    """Une législature figée sans fallback committé (ne devrait pas arriver en
+    pratique) ne doit pas lever : elle retombe simplement sur le chemin réseau
+    standard, qui échoue ici normalement (aucune archive servie)."""
+    from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path / "cache"),
+        patch("candidate_profile.AN_AMENDEMENTS_FIGEES_DIR", tmp_path / "figees_absent"),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        try:
+            _download_and_build_amendement_index("15")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    mock_get.assert_called()
+
+
 def test_download_and_build_amendement_index_raises_on_download_failure(tmp_path):
     """Échec persistant (toutes les tentatives échouent) : AmendementsIndexError
     doit toujours être levée après épuisement des tentatives (non-régression #199),

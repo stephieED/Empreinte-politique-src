@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from check_quality_gate import (
     _AMENDEMENTS_LEGISLATURES,
+    _AMENDEMENTS_LEGISLATURES_FIGEES,
     _report_amendements_coverage,
     _report_amendements_freshness,
 )
@@ -140,13 +141,13 @@ def _write_index(cache_dir: Path, legislature: str) -> None:
     (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
 
 
-def _write_fraicheur(cache_dir: Path, legislature: str, reussi: bool, horodatage: str) -> None:
+def _write_fraicheur(cache_dir: Path, legislature: str, reussi: bool, horodatage: str, figee: bool = False) -> None:
     leg_dir = cache_dir / legislature
     leg_dir.mkdir(parents=True, exist_ok=True)
-    (leg_dir / "fraicheur.json").write_text(
-        json.dumps({"derniere_construction_reussie": reussi, "horodatage": horodatage}),
-        encoding="utf-8",
-    )
+    payload = {"derniere_construction_reussie": reussi, "horodatage": horodatage}
+    if figee:
+        payload["figee"] = True
+    (leg_dir / "fraicheur.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
 def _write_all_fresh(cache_dir: Path) -> None:
@@ -240,6 +241,45 @@ def test_report_amendements_freshness_mixed_states_across_legislatures(tmp_path)
     assert any(leg_stale in w and "périmé" in w for w in soft)
     assert any(leg_never in w and "jamais construit" in w for w in soft)
     assert not any(leg_fresh in w for w in soft)
+
+
+# ---------------------------------------------------------------------------
+# État « figé » (légis 15/16 : dossier clos, fallback committé, jamais
+# reconstruit — docs/technical_decisions.md#amendements-legislatures-figees).
+# ---------------------------------------------------------------------------
+
+def test_report_amendements_freshness_frozen_legislature_no_warning_even_when_very_old(tmp_path):
+    """Une législature figée (fraicheur.json avec figee: true) ne doit jamais
+    être signalée périmée, même très au-delà du seuil de péremption."""
+    cache_dir = tmp_path / "amendements_an"
+    _write_all_fresh(cache_dir)
+    legislature = next(iter(_AMENDEMENTS_LEGISLATURES_FIGEES))
+    _write_fraicheur(
+        cache_dir, legislature, reussi=True,
+        horodatage=_horodatage(REFERENCE - timedelta(days=365)), figee=True,
+    )
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert not any(legislature in w for w in soft)
+    assert "❄️" in md
+
+
+def test_report_amendements_freshness_legislature_marked_figee_but_not_in_frozen_set_still_checked(tmp_path):
+    """Défense en profondeur : un `figee: true` errant sur une législature hors
+    `_AMENDEMENTS_LEGISLATURES_FIGEES` (ex. la 17e, active) ne doit pas la
+    dispenser du contrôle de péremption normal."""
+    cache_dir = tmp_path / "amendements_an"
+    _write_all_fresh(cache_dir)
+    active_legislature = next(leg for leg in _AMENDEMENTS_LEGISLATURES if leg not in _AMENDEMENTS_LEGISLATURES_FIGEES)
+    _write_fraicheur(
+        cache_dir, active_legislature, reussi=True,
+        horodatage=_horodatage(REFERENCE - timedelta(days=30)), figee=True,
+    )
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert any(active_legislature in w and "périmé" in w for w in soft)
 
 
 def test_report_amendements_freshness_disabled_via_zero_threshold_is_caller_responsibility(tmp_path):
