@@ -67,7 +67,7 @@ jobs:
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
           # prompt: 'Update the pull request description to include a summary of changes.'
-          prompt: 'Always read AGENTS.md and follow the instructions there. Update docs/technical-decisions.md if required.'
+          prompt: 'Always read AGENTS.md and follow the instructions there. Update docs/technical-decisions.md if required. Never modify .github/workflows/claude.yml or .github/workflows/claude-code-review.yml. If you need to modify these files, please ask a human reviewer for assistance.'
 
           # Sandbox Bash : isolation réseau/fichiers en défense en profondeur contre
           # une injection de prompt via un commentaire d'issue/PR (ex. tentative
