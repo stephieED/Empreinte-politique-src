@@ -297,6 +297,14 @@ Detailed extraction and merge flow is documented in:
 - `docs/extract-ue.md`
 - `docs/extract-parltrack.md`
 
+The `extract-amendements-an` job runs `src/build_amendements_index.py`
+independently (no `needs:`) to build the 3 AN amendements legislature
+indexes unconditionally and pre-warm the shared `.cache/amendements_an/`
+cache (artifact `amendements-index-an`), instead of leaving that
+construction to lazy per-candidate calls in `extract-an`/
+`extract-roster-groupes`. `continue-on-error: true`, same pattern as
+`extract-parltrack` — see `docs/technical_decisions.md#amendements-index-job-dedie-ci`.
+
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0.
 
