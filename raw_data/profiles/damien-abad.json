@@ -1,0 +1,2272 @@
+{
+  "slug": "damien-abad",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/damien-abad",
+  "identite": {
+    "nom_complet": "Damien Abad",
+    "groupe_sigle": "REN",
+    "groupe_nom": null,
+    "profession": null,
+    "date_naissance": "1980-04-05",
+    "lieu_naissance": null,
+    "num_circo": 5,
+    "nb_mandats": 0,
+    "uri_hatvp": null,
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605036"
+  },
+  "mandats": [
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire",
+      "debut": "2022-06-22",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Section française de l'assemblée parlementaire de la francophonie a.p.f",
+      "debut": "2023-01-25",
+      "fin": "2024-06-11",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre titulaire",
+      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
+      "debut": "2023-01-25",
+      "fin": "2024-06-11",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Mission d'information sur le rôle local et l'ancrage territorial des parlementaires",
+      "debut": "2024-04-05",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Mission d'information sur le rôle du pastoralisme dans l'aménagement du territoire, les causes de son déclin et les conséquences pour le développement durable des territoires ruraux",
+      "debut": "2024-01-26",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "vice-président",
+      "label": "Groupe d'amitié france-jordanie",
+      "debut": "2023-10-05",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études chrétiens d'orient",
+      "debut": "2023-09-07",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission du développement durable et de l'aménagement du territoire",
+      "debut": "2023-09-01",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études alzheimer",
+      "debut": "2023-02-17",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études montagne",
+      "debut": "2023-02-16",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études gastronomie, métiers de bouche et arts de la table",
+      "debut": "2023-02-16",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études filière brassicole",
+      "debut": "2023-02-14",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études camargue",
+      "debut": "2023-02-09",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études tourisme et patrimoine",
+      "debut": "2023-02-04",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études Économie du livre et du papier",
+      "debut": "2023-02-03",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études Économie sociale et solidaire et responsabilité sociétale des entreprises",
+      "debut": "2023-02-01",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études ruralité",
+      "debut": "2023-02-01",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
+      "debut": "2023-01-25",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Groupe d'études vigne, vin et œnologie",
+      "debut": "2023-01-25",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "président",
+      "label": "Groupe d'amitié france-liban",
+      "debut": "2022-12-09",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "apparenté",
+      "label": "Renaissance",
+      "debut": "2022-06-29",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Rôle du pastoralisme dans l'aménagement du territoire, les causes de son déclin et les conséquences pour le développement durable des territoires ruraux",
+      "debut": "2024-01-25",
+      "fin": "2024-01-26",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2022-07-01",
+      "fin": "2023-09-01",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "Ministre des solidarités, de l'autonomie et des personnes handicapées",
+      "label": "Gouvernement",
+      "debut": "2022-06-24",
+      "fin": "2022-07-05",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires économiques",
+      "debut": "2022-06-30",
+      "fin": "2022-07-01",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Députés Non Inscrits",
+      "debut": "2022-06-24",
+      "fin": "2022-06-29",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (BORNE)",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (Les Républicains)",
+      "debut": "2015-06-02",
+      "fin": "2017-06-20",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (UMP)",
+      "debut": "2012-06-26",
+      "fin": "2015-06-01",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (LR)",
+      "debut": "2017-06-27",
+      "fin": "2022-05-23",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (LR)",
+      "debut": "2019-11-07",
+      "fin": "2022-05-20",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (RE)",
+      "debut": "2022-06-29",
+      "fin": "2024-06-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    }
+  ],
+  "votes": [
+    {
+      "date": "2024-05-28",
+      "titre": "l'ensemble du projet de loi d'orientation pour la souveraineté alimentaire et agricole et le renouvellement des générations en agriculture (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3966",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-05-21",
+      "titre": "l'amendement n° 916 de M. Prud'homme à l'article 3 du projet de loi d'orientation pour la souveraineté alimentaire et agricole et le renouvellement des générations en agriculture (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3857",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-05-15",
+      "titre": "la motion de rejet préalable, déposée par Mme Cyrielle Chatelain, du projet de loi d’orientation pour la souveraineté alimentaire et agricole et le renouvellement des générations en agriculture (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3726",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-05-14",
+      "titre": "l'article premier du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3719",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-05-14",
+      "titre": "l'amendement de suppression n° 16 de M. Delaporte et les amendements identiques suivants à l'article 2 du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3720",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-05-14",
+      "titre": "l'ensemble du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3725",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-04-10",
+      "titre": "l'ensemble du projet de loi visant à sécuriser et réguler l'espace numérique (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3668",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "la motion de rejet préalable, déposée par M. André Chassaigne, du projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (texte de la commission paritaire).",
+      "position": "contre",
+      "numero_scrutin": "3661",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "l'ensemble du projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3662",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3663",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "l'ensemble du projet de loi relatif à l'organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3546",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3547",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "l'ensemble du projet de loi relatif à l'accélération et à la simplification de la rénovation de l'habitat dégradé et des grandes opérations d'aménagement (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3548",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "la motion de rejet préalable, déposée par M. Boris Vallaud, de la proposition de loi portant diverses mesures relatives au grand âge et à l’autonomie (texte de la commission paritaire).",
+      "position": "contre",
+      "numero_scrutin": "3549",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-12",
+      "titre": "la déclaration du Gouvernement relative au débat sur l'accord de sécurité franco-ukrainien et la situation en Ukraine (application de l'article 50-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "3461",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-11",
+      "titre": "l'ensemble de la proposition de loi renforçant la sécurité et la protection des maires et des élus locaux (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3457",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-11",
+      "titre": "l'ensemble de la proposition de loi visant à mieux protéger et accompagner les enfants victimes et co-victimes de violences intrafamiliales (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3458",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-11",
+      "titre": "la motion de rejet préalable, déposée par M. Bertrand Pancher, du projet de loi relatif à l'organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (1ère lecture).",
+      "position": "contre",
+      "numero_scrutin": "3459",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-02-06",
+      "titre": "l'ensemble de la proposition de loi visant à garantir le respect du droit à l'image des enfants (lecture défnitive).",
+      "position": "pour",
+      "numero_scrutin": "3336",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-01-30",
+      "titre": "l’ensemble du projet de loi constitutionnelle relatif à la liberté de recourir à l’interruption volontaire de grossesse (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3289",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 41 de M. François à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3263",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 63 de M. François à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3264",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 3 de M. Leseul à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3265",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 67 de Mme Chikirou à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3266",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 45 de Mme Levavasseur à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3267",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-01-29",
+      "titre": "l'amendement n° 62 de M. François à l'article premier de la proposition de loi visant à reconnaître les métiers de la médiation sociale (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3268",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-12-19",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi pour contrôler l'immigration, améliorer l'intégration (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "3212",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-12-19",
+      "titre": "l'ensemble du projet de loi pour contrôler l'immigration, améliorer l'intégration (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3213",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-12-13",
+      "titre": "l'ensemble du projet de loi autorisant l’approbation de la convention entre le Gouvernement de la République française et le Gouvernement du Royaume du Danemark pour l’élimination de la double imposition en matière d’impôts sur le revenu et la prévention de l’évasion et de la fraude fiscales et la ratification de la convention entre la République française et la République hellénique pour l’élimination de la double imposition en matière d’impôts sur le revenu et pour la prévention de l’évasion et de la fraude fiscales (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3208",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-12-12",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, de la proposition de loi relative à l'ouverture à la concurrence du réseau de bus francilien de la RATP (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "3204",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-12-11",
+      "titre": "la motion de rejet préalable, déposée par Mme Cyrielle Chatelain, du projet de loi pour contrôler l'immigration, améliorer l'intégration (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3203",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-12-05",
+      "titre": "l'article unique de la proposition de loi visant à réduire les inégalités territoriales pour les ouvertures de casinos (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3135",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-28",
+      "titre": "l’article unique de la proposition de résolution tendant à la création d'une commission d'enquête sur le modèle économique des entreprises de crèches et la qualité de l’accueil des jeunes enfants au sein de leurs établissements.",
+      "position": "contre",
+      "numero_scrutin": "3047",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-28",
+      "titre": "l’ensemble de la proposition de résolution tendant à la création d'une commission d'enquête sur le modèle économique des entreprises de crèches et la qualité de l’accueil des jeunes enfants au sein de leurs établissements.",
+      "position": "contre",
+      "numero_scrutin": "3048",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-22",
+      "titre": "l'ensemble du projet de loi portant transposition de l'accord national interprofessionnel relatif au partage de la valeur au sein de l'entreprise (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3009",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-20",
+      "titre": "l'amendement n° 1404 (2ème rect.) du Gouvernement et les amendements identiques suivants à l'article 8 de la proposition de loi portant mesures pour bâtir la société du bien vieillir en France (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2993",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-14",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi pour le plein emploi (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "2964",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-11-14",
+      "titre": "l'ensemble du projet de loi pour le plein emploi (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "2965",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'amendement n° 26 de M. Lachaud à l'article premier de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2953",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'amendement n° 7 de Mme Descamps à l'article premier de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2954",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'article premier de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2955",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'article 2 de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2956",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'amendement n° 22 de Mme Reid Arbelot après l'article 2 de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2957",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-11-13",
+      "titre": "l'ensemble de la proposition de loi relative à la restitution des restes humains appartenant aux collections publiques (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2958",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-10-24",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi de financement de la sécurité sociale pour 2024 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2800",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-10-17",
+      "titre": "l'ensemble du projet de loi visant à sécuriser et réguler l'espace numérique (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2796",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-10-17",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi de finances pour 2024 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2797",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-10-10",
+      "titre": "l'ensemble du projet de loi pour le plein emploi (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2717",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-10-10",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "2718",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-10-10",
+      "titre": "l'ensemble du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "2719",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-10-10",
+      "titre": "l'ensemble du projet de loi organique relatif à l'ouverture, la modernisation et la responsabilité du corps judiciaire (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "2720",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-10-03",
+      "titre": "l'amendement n° 1747 de M. Peytavie à l'article 9 du projet de loi pour le plein emploi (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "2621",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-10-03",
+      "titre": "l'amendement n° 1748 de M. Peytavie à l'article 9 du projet de loi pour le plein emploi (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2622",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-10-03",
+      "titre": "l'article 9 du projet de loi pour le plein emploi (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2623",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-09-26",
+      "titre": "l'amendement n° 342 de M. Delaporte et l'amendement identique suivant à l'article premier du projet de loi pour le plein emploi (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2531",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-07-20",
+      "titre": "l'ensemble du projet de loi relatif à l'accélération de la reconstruction et de la réfection des bâtiments dégradés ou détruits au cours des violences urbaines survenues du 27 juin au 5 juillet 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2444",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-18",
+      "titre": "l'ensemble du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2356",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-18",
+      "titre": "l'ensemble du projet de loi organique relatif à l'ouverture, la modernisation et la responsabilité du corps judiciaire (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2357",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-11",
+      "titre": "l'amendement n° 1273 de M. Rebeyrotte à l'article 29 du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2230",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-11",
+      "titre": "l'amendement n° 1088 de M. Pradal à l'article 29 du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2231",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-11",
+      "titre": "l'amendement n° 617 de M. Houlié à l'article 29 du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2232",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-11",
+      "titre": "l'article 29 du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2233",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-07-04",
+      "titre": "l'amendement n° 230 de Mme Bordes à l'article 3 du projet de loi d'orientation et de programmation du ministère de la justice 2023-2027 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "2129",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-06-27",
+      "titre": "l'ensemble de la proposition de loi visant à renforcer l'accompagnement des élus locaux dans la mise en œuvre de la lutte contre l'artificialisation des sols (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "2046",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-21",
+      "titre": "l'ensemble du projet de loi visant à donner à la douane les moyens de faire face aux nouvelles menaces (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1948",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'amendement n° 3 de Mme Dufour à l'article premier de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "contre",
+      "numero_scrutin": "1915",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'article premier de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "pour",
+      "numero_scrutin": "1916",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'amendement n° 16 de Mme Battistel à l'article 2 de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "contre",
+      "numero_scrutin": "1917",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'amendement n° 18 de Mme Battistel à l'article 2 de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "contre",
+      "numero_scrutin": "1918",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'article 2 de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "pour",
+      "numero_scrutin": "1919",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-20",
+      "titre": "l'ensemble la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (nouvelle lecture).",
+      "position": "pour",
+      "numero_scrutin": "1920",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-13",
+      "titre": "la proposition de résolution relative à l'accord commercial entre l'Union européenne et le Mercosur (article 34-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "1804",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-06-06",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi d'approbation des comptes de la sécurité sociale pour l'année 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1772",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-05-31",
+      "titre": "l'ensemble de la proposition de loi maintenant provisoirement un dispositif de plafonnement de revalorisation de la variation annuelle des indices locatifs (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1762",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-05-16",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi relatif à l'accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "1532",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-05-16",
+      "titre": "l'ensemble du projet de loi relatif à l'accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "1533",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-05-09",
+      "titre": "la proposition de résolution visant à appeler la France et l'Union européenne à inscrire le groupe militaire privé Wagner sur la liste des organisations terroristes (article 34-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "1483",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-05-09",
+      "titre": "la motion de rejet préalable, déposée par Mme mathilde Panot, de la proposition de loi visant à rendre obligatoire le pavoisement des drapeaux français et européen sur le fronton des mairies (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1484",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-04-12",
+      "titre": "l'ensemble du projet de loi autorisant la ratification de la résolution A.1152 (32) relative aux amendements à la Convention du 6 mars 1948 portant création de l'Organisation maritime internationale (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1412",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-04-12",
+      "titre": "l'amendement de suppression n° 14 de M. Panifous et les amendements identiques suivants à l'article premier de la proposition de loi portant mesures pour bâtir la société du bien vieillir en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1413",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-04-12",
+      "titre": "l'amendement n° 15 de M. Castellani à l'article premier de la proposition de loi portant mesures pour bâtir la société du bien vieillir en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1414",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-04-11",
+      "titre": "l'ensemble du projet de loi relatif aux jeux Olympiques et Paralympiques de 2024 et portant diverses autres dispositions (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "1409",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-04-04",
+      "titre": "l'ensemble de la proposition de loi visant à protéger les logements contre l'occupation illicite (deuxième lecture).",
+      "position": "pour",
+      "numero_scrutin": "1361",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-28",
+      "titre": "l'ensemble du projet de loi relatif aux jeux Olympiques et Paralympiques de 2024 et portant diverses autres dispositions (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1305",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-21",
+      "titre": "l'ensemble du projet de loi relatif à l’accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1243",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-16",
+      "titre": "l'amendement n° 623 de Mme Trouvé à l'article 9 A du projet de loi relatif à l’accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1223",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-03-16",
+      "titre": "l'amendement n° 472 de M. Armand à l'article 9 A du projet de loi relatif à l’accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1224",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-16",
+      "titre": "l'article 9 du projet de loi relatif à l’accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1225",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-13",
+      "titre": "la motion de rejet préalable, déposée par M. Boris Vallaud, du projet de loi relatif à l'accélération des procédures lièes à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes (première lecture)",
+      "position": "contre",
+      "numero_scrutin": "1156",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-03-07",
+      "titre": "l'amendement n° 1 de M. Saulignac à l'article unique de la proposition de loi visant à étendre le champ d'application de la peine complémentaire obligatoire d'inégibilité aux cas de condamnation pour des violences aggravées ayant entraîné une incapacité temporaire de huit jours ou moins (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1126",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-03-07",
+      "titre": "l'amendement n° 4 de Mme Regol à l'article unique de la proposition de loi visant à étendre le champ d'application de la peine complémentaire obligatoire d'inégibilité aux cas de condamnation pour des violences aggravées ayant entraîné une incapacité temporaire de huit jours ou moins (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1127",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-03-07",
+      "titre": "l'article unique de la proposition de loi visant à étendre le champ d'application de la peine complémentaire obligatoire d'inégibilité aux cas de condamnation pour des violences aggravées ayant entraîné une incapacité temporaire de huit jours ou moins (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1128",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-03-06",
+      "titre": "l'amendement n° 8 de Mme Amiot après l'article 3 de la proposition de loi visant à garantir le respect du droit à l'image des enfants (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1118",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-03-06",
+      "titre": "l'ensemble de la proposition de loi visant à garantir le respect du droit à l'image des enfants (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1119",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-02-28",
+      "titre": "l'ensemble du projet de loi portant diverses dispositions d'adaptation au droit de l'Union européenne dans les domaines de l'économie, de la santé, du travail, des transports et de l'agriculture (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "1098",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 1808 de M. Tavel et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1019",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 16663 de M. Jean-Philippe Tanguy après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1020",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 1658 de M. Tavel et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1021",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3178 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1022",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3295 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1023",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3179 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1024",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3184 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1025",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3180 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1026",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3185 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1027",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3181 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1028",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3249 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1029",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3182 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1030",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3183 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1031",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3252 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1032",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3186 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1033",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 6491 de M. Clouet et l'amendement identique suivant après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1034",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3187 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1035",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3296 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1036",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3257 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1037",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3188 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1038",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3299 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1039",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3189 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1040",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3300 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1041",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3190 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1042",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3301 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1043",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3191 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1044",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3302 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1045",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3192 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1046",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3303 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1047",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3193 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1048",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3304 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1049",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3194 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1050",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3305 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1051",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3266 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1052",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3509 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1053",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3267 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1054",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3506 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1055",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3268 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1056",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3195 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1057",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3269 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1058",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3504 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1059",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3270 de M. ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1060",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3503 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1061",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3196 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1062",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3197 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1064",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3501 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1065",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3198 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1066",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3500 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1067",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3199 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1068",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3499 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1069",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3200 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1070",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3495 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1071",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3279 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1072",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3494 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1073",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3280 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1074",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3493 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1075",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3281 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1076",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3282 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1077",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3491 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1078",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3283 de Mme Manon Meunier et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1079",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 6519 de M. Clouet et l'amendement identique suivant après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1080",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3284 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1081",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3489 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1082",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3483 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1083",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3291 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1084",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3482 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1085",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 1646 de M. Tavel et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1086",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3481 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1087",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3293 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1088",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3480 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1089",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3294 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1090",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 3479 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1091",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 16608 de M. Jean-Philippe Tanguy après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1092",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 1537 de M. Cordier et l'amendement identique suivant après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1093",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 329 de M. Breton après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "1094",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 2808 de M. Bernalicis et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1095",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-17",
+      "titre": "l'amendement n° 2809 de M. Bernalicis et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1096",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 4592 de Mme Etienne et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1004",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3118 de Mme Maximi et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1006",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 1018 de M. de Courson après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1007",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3606 de Mme Amiot et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1008",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 6655 de M. Laisney après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1009",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3451 de Mme Maximi et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1010",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3452 de Mme Maximi et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1011",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 4723 de Mme Etienne et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "1012",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 18838 du Gouvernement et l'amendement identique suivant après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "1013",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3112 de Mme Maximi et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "990",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 5302 de Mme Trouvé et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "991",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 3103 de Mme Maximi et l'amendement identique suivant après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "992",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 4506 de Mme Etienne après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "993",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 10731 de M. Coulomme après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "994",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 4508 de Mme Etienne après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "995",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 6600 de M. Clouet après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "996",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 6642 de Mme Trouvé après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "997",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-16",
+      "titre": "l'amendement n° 4695 de Mme Etienne après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "998",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-15",
+      "titre": "l'amendement n° 1513 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "973",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-15",
+      "titre": "l'amendement n° 1523 de M. Ruffin et les amendements identiques suivants après l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "974",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-14",
+      "titre": "l'amendement n° 20403 de M. Croizier à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "965",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-14",
+      "titre": "l'amendement n° 20313 de M. Maillard à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "966",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 16733 de M. Peytavie à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "953",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 737 de M. Guedj à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "954",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 1098 de M. Ruffin et les amendements identiques suivants à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "955",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 50 de M. Mathiasin à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "956",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 746 de M. Guedj et les amendements identiques suivants à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "957",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 14104 de M. Marchio à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "958",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-13",
+      "titre": "l'amendement n° 14172 de M. Baubry à l'article 2 du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "959",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-07",
+      "titre": "l'amendement de suppression n° 114 de M. Fabrice Brun et les amendements identiques suivants à l'article liminaire du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "910",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-07",
+      "titre": "l'article liminaire du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "911",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-02-07",
+      "titre": "la demande de constitution d’une commission spéciale pour l’examen de la proposition de loi pour une retraite universellement juste.",
+      "position": "contre",
+      "numero_scrutin": "912",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-06",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "908",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-02-06",
+      "titre": "la motion référendaire, présentée par Mme Marine Le Pen et 59 députés, sur le projet de loi de financement rectificative de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "909",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'amendement n° 16 du Gouvernement au projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "892",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'amendement n° 2 du Gouvernement au projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "893",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'amendement n° 17 du Gouvernement au projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "894",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'amendement n° 18 du Gouvernement au projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "895",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'amendement n° 7 du Gouvernement au projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "896",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-31",
+      "titre": "l'ensemble du projet de loi relatif à l'accélération de la production d'énergies renouvelables (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "897",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2023-01-10",
+      "titre": "l'ensemble du projet de loi relatif à l'accélération de la production d'énergies renouvelables (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "823",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-12-07",
+      "titre": "l'ensemble du projet de loi d'orientation et de programmation du ministère de l'intérieur (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "671",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-30",
+      "titre": "la proposition de résolution affirmant le soutien de l'Assemblée nationale à l'Ukraine et condamnant la guerre menée par la Fédération de Russie (art. 34-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "652",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-28",
+      "titre": "la proposition de résolution en soutien au mouvement pour la liberté du peuple iranien (art. 34-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "633",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-23",
+      "titre": "l'ensemble du projet de loi de finances rectificative pour 2022 (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "624",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-22",
+      "titre": "l'ensemble du projet de loi d'orientation et de programmation du ministère de l'intérieur (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "623",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-21",
+      "titre": "la motion de rejet préalable, déposée par M. Boris Vallaud, du projet de loi de financement de la sécurité sociale pour 2023 (nouvelle lecture).",
+      "position": "contre",
+      "numero_scrutin": "618",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-21",
+      "titre": "l'amendement n° 194 de M. Guedj à l'article 4 du projet de loi de financement de la sécurité sociale pour 2023 (nouvelle lecture).",
+      "position": "contre",
+      "numero_scrutin": "620",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-21",
+      "titre": "l'article 4 du projet de loi de financement de la sécurité sociale pour 2023 (nouvelle lecture).",
+      "position": "pour",
+      "numero_scrutin": "621",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-21",
+      "titre": "la deuxième partie du projet de loi de financement de la sécurité sociale pour 2023 (nouvelle lecture).",
+      "position": "pour",
+      "numero_scrutin": "622",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-15",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi portant mesures d'urgence relatives au fonctionnement du marché du travail en vue du plein emploi (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "566",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-15",
+      "titre": "l'ensemble du projet de loi portant mesures d'urgence relatives au fonctionnement du marché du travail en vue du plein emploi (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "567",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-11-14",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, de la proposition de loi visant à accompagner la mise en place de comités sociaux et économiques à la Poste (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "558",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-14",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi d'orientation et de programmation du ministère de l'intérieur (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "561",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-08",
+      "titre": "l'amendement n° 352 de M. Jean-Philippe Tanguy avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "520",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-08",
+      "titre": "l'amendement n° 493 de M. Philippe Brun avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "521",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-08",
+      "titre": "l'amendement n° 195 de M. Nury avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "522",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-07",
+      "titre": "l'amendement n° 370 de M. de Courson avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "498",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-07",
+      "titre": "l'amendement n° 158 de M. Le Fur avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "500",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-07",
+      "titre": "l'amendement n° 2 de Mme Pires Beaune et les amendements identiques suivants avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "501",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-11-07",
+      "titre": "l'amendement n° 292 de M. Sansu et l'amendement identique suivant avant l'article 1 du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "502",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-25",
+      "titre": "l'ensemble du projet de loi de programmation des finances publiques pour les années 2023 à 2027 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "361",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-25",
+      "titre": "l'amendement n° 2752 de Mme Janvier et les amendements identiques suivants à l'article 32 (examen prioritaire) du projet de loi de financement de la sécurité sociale pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "362",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-10-25",
+      "titre": "l'amendement n° 2229 de Mme Fiat à l'article 32 (examen prioritaire) du projet de loi de financement de la sécurité sociale pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "363",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-18",
+      "titre": "l'article 4 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "338",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-10-18",
+      "titre": "l'amendement n° 3339 de M. Jolivet après l'article 4 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "339",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-18",
+      "titre": "l'amendement n°1562 de Mme Bonnivard après l'article 4 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "340",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement de suppression n° 3189 de la commission des finances à l'article liminaire du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "252",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 766 de Mme Louwagie à l'article liminaire du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "253",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'article liminaire du projet de loi de finances pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "254",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 3121 de la commission des finances et l'amendement identique suivant à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "255",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 1481 de M. Adam à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "256",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 474 de Mme Pires Beaune à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "257",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 39 de M. Cordier à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "258",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 539 de Mme Dalloz et l'amendement identique suivant à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "259",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 3 de Mme Anthoine et les amendements identiques suivants à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "abstention",
+      "numero_scrutin": "260",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'amendement n° 1221 de M. Serva à l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "261",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-12",
+      "titre": "l'article 2 du projet de loi de finances pour 2023 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "262",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-10-11",
+      "titre": "l'ensemble du projet de loi portant mesures d'urgence relatives au fonctionnement du marché de travail en vue du plein emploi (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "236",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-10-10",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi de programmation des finances publiques pour les années 2023 à 2027 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "234",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-10-10",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, du projet de loi de finances pour 2023 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "235",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2022-08-04",
+      "titre": "l'ensemble du projet de loi de finances rectificative pour 2022 (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "191",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-08-03",
+      "titre": "l'ensemble du projet de loi portant mesures d'urgence pour la protection du pouvoir d'achat (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "186",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-07-26",
+      "titre": "l'ensemble du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "180",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-07-25",
+      "titre": "l'amendement n° 340 de M. Nury à l'article 6 et État B du projet de loi de finances rectificative pour 2022 (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "126",
+      "sort": "l'Assemblée nationale a adopté"
+    }
+  ],
+  "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 16)",
+  "synthese_activite": {
+    "nom": "Damien Abad",
+    "groupe_sigle": "REN",
+    "profession": 0,
+    "nb_mandats": 0,
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605036"
+  },
+  "dossiers_legislatifs": [],
+  "amendements": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-08-13T13:44:07+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": "2026-08-13T13:44:07+0000",
+      "assemblee_nationale": "2026-08-13T13:44:08+0000",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null
+    },
+    "warnings": [
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 16) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 15) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+    ]
+  },
+  "mandat_europeen": {
+    "identifiant_pe": "96850",
+    "nom_complet": "Damien ABAD",
+    "date_naissance": "1980-04-05",
+    "lieu_naissance": "Nîmes",
+    "photo": "https://www.europarl.europa.eu/mepphoto/96850.jpg",
+    "url_source": "https://www.europarl.europa.eu/meps/fr/96850",
+    "mandats_europeens": [
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "INTA",
+        "organisation_nom": "Commission du commerce international",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2012-03-12",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "IMCO",
+        "organisation_nom": "Commission du marché intérieur et de la protection des consommateurs",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2012-01-19",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "BUDG",
+        "organisation_nom": "Commission des budgets",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2012-01-19",
+        "fin": "2012-03-11",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_TEMPORARY",
+        "type_label": "Commission parlementaire spéciale/temporaire",
+        "organisation_sigle": "SURE",
+        "organisation_nom": "Commission spéciale sur les défis politiques et les ressources budgétaires pour une Union européenne durable après 2013",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2010-06-17",
+        "fin": "2011-06-30",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "DPLC",
+        "organisation_nom": "Délégation pour les relations avec le Conseil législatif palestinien",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-09-16",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY",
+        "type_label": "Délégation interparlementaire",
+        "organisation_sigle": "DSCA",
+        "organisation_nom": "Délégation aux commissions de coopération parlementaire UE-Arménie, UE-Azerbaïdjan et UE-Géorgie",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2009-09-16",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "DELEGATION_PARLIAMENTARY_ASSEMBLY",
+        "type_label": "Délégation à une assemblée parlementaire",
+        "organisation_sigle": "DEPA",
+        "organisation_nom": "Délégation à l'Assemblée parlementaire Euronest",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2009-09-16",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "IMCO",
+        "organisation_nom": "Commission du marché intérieur et de la protection des consommateurs",
+        "role": "MEMBER_SUBSTITUTE",
+        "role_label": "Membre suppléant(e)",
+        "debut": "2009-07-16",
+        "fin": "2012-01-18",
+        "actif": false
+      },
+      {
+        "type": "COMMITTEE_PARLIAMENTARY_STANDING",
+        "type_label": "Commission parlementaire permanente",
+        "organisation_sigle": "BUDG",
+        "organisation_nom": "Commission des budgets",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-16",
+        "fin": "2012-01-18",
+        "actif": false
+      },
+      {
+        "type": "EU_POLITICAL_GROUP",
+        "type_label": "Groupe politique européen",
+        "organisation_sigle": "PPE",
+        "organisation_nom": "Groupe du Parti Populaire Européen (Démocrates-Chrétiens)",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "NATIONAL_POLITICAL_GROUP",
+        "type_label": "Parti national (au sein du groupe européen)",
+        "organisation_sigle": "NC",
+        "organisation_nom": "Nouveau Centre",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "EU_INSTITUTION",
+        "type_label": "Mandat de député européen",
+        "organisation_sigle": "7e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER",
+        "role_label": "Membre",
+        "debut": "2009-07-14",
+        "fin": "2012-06-16",
+        "actif": false
+      },
+      {
+        "type": "AUTRE",
+        "type_label": "Autre",
+        "organisation_sigle": "7e législature",
+        "organisation_nom": "Mandat de député européen",
+        "role": "MEMBER_PARLIAMENT",
+        "role_label": "Membre du Parlement européen",
+        "debut": "2009-07-14",
+        "fin": "2012-06-16",
+        "actif": false
+      }
+    ],
+    "meta": {
+      "genere_le": "2026-08-13T13:44:03+0000",
+      "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
+      "source_api": "https://data.europarl.europa.eu/api/v2"
+    }
+  }
+}
