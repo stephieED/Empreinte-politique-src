@@ -1454,7 +1454,7 @@ def test_download_and_build_amendement_index_failure_preserves_existing_index(tm
     corrompu — seul cas où une reconstruction est réellement retentée malgré
     un fichier déjà présent : un index valide est utilisé tel quel sans
     nouvelle tentative, voir
-    `test_build_acteur_amendement_index_uses_cache_only_when_present`) : le
+    `test_download_and_build_amendement_index_uses_existing_cache_without_download`) : le
     fichier existant ne doit être ni supprimé ni remplacé par un résultat
     vide/partiel, et `fraicheur.json` doit refléter l'échec."""
     from candidate_profile import (
@@ -1544,11 +1544,6 @@ def test_download_and_build_amendement_index_already_failed_this_run_preserves_e
     assert fraicheur["derniere_construction_reussie"] is False
 
 
-def test_build_acteur_amendement_index_uses_cache_only_when_present(tmp_path):
-    """Point d'entrée `_build_acteur_amendement_index` : quand le cache disque
-    existe déjà, il est utilisé tel quel — pas de téléchargement (comportement
-    observable inchangé par le découpage de #250)."""
-    from candidate_profile import _build_acteur_amendement_index
 def test_download_and_build_amendement_index_uses_existing_cache_without_download(tmp_path):
     """`_download_and_build_amendement_index` : quand le cache disque existe déjà
     (double-check en tête, sous le même verrou), il est utilisé tel quel — pas de
