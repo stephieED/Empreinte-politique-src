@@ -256,17 +256,21 @@ est en revanche régulièrement servie depuis le cache CDN
 sur le disque local (`.cache/amendements_an/17/`) — elle n'est pas mise en
 cause ici.
 
-**Décision** : documenté et tracé dans #239 (diagnostic uniquement à ce
-stade, pas encore corrigé). Correctif proposé, non encore implémenté : (1)
-mémoriser en mémoire process (pas sur disque) qu'une législature a
+**Décision (implémentée, PR #240)** : (1) mémoriser en mémoire process (pas
+sur disque, `_amendements_failed_legislatures`) qu'une législature a
 définitivement échoué pour le run courant, pour que seul le premier candidat
 qui la rencontre paie le cycle de retry complet — les suivants lèvent
 immédiatement sans nouvel appel réseau ; (2) réduire le budget temps par
-législature (borner le pire cas plutôt que de le laisser à 3×600s). Ceci
-recadre potentiellement une partie du narratif « préemption infra aléatoire,
-hors de notre contrôle » retenu par [[verification-billing-actions]] et
-[[ci-cd]] : au moins cette occurrence précise a une cause déterministe et
-corrigible côté code.
+tentative (`AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS`, 600s → 120s) plutôt
+que de le laisser à 3×600s dans le pire cas. Ceci recadre potentiellement une
+partie du narratif « préemption infra aléatoire, hors de notre contrôle »
+retenu par [[verification-billing-actions]] et [[ci-cd]] : au moins cette
+occurrence précise avait une cause déterministe et corrigible côté code.
+Correctif suffisant pour le symptôme CI mais qui abandonne toujours la
+collecte de la législature en échec pour tout le run — étendu par #241 (voir
+[[amendements-range-download-legislature-isolation]] ci-dessus), qui
+remplace l'abandon par un téléchargement par plages et une isolation par
+législature.
 
 <a id="retry-generate-data-preemption"></a>
 ## Retry automatique de `generate-data.yml` sur signature de préemption runner (#230) (2026-08-12)
@@ -322,11 +326,13 @@ généralisé aurait fait disparaître silencieusement au lieu de le signaler).
    absence de retry inexpliquée.
 
 **Note d'implémentation** : comme pour #228, l'agent qui a traité #230 n'a
-pas les permissions GitHub App pour créer/modifier des fichiers sous
-`.github/workflows/*` — le fichier `.github/workflows/retry-generate-
-data.yml` n'a donc pas pu être poussé directement et doit être créé
-manuellement à partir du YAML fourni en commentaire de résolution de #230.
-Restriction d'outillage CI, pas une décision produit.
+pas pu pousser directement le nouveau fichier `.github/workflows/retry-
+generate-data.yml` (créé manuellement à partir du YAML fourni en commentaire
+de résolution de #230). Restriction d'outillage CI, pas une décision produit
+— nuancée depuis par #237 : seule la **création** d'un nouveau fichier sous
+`.github/workflows/*` s'est heurtée à la restriction, la **modification**
+d'un fichier existant a ensuite fonctionné sans intervention manuelle (détail
+et reproduction dans [[retry-generate-data-detection-impossible]]).
 
 *Alternative rejetée* : retry généralisé sur tout `conclusion: failure`
 sans vérification de signature — rejeté explicitement par #230 lui-même
@@ -392,11 +398,14 @@ réelle grandira surtout au passage à un run à pleine échelle (~750 membres),
 pas encore planifié (voir [[seuil-couverture-groupe]]). À concevoir avec cette
 recalibration plutôt qu'en réaction isolée à #228.
 
-**Note d'implémentation** : l'agent qui a traité #228 n'a pas les permissions
-GitHub App pour modifier `.github/workflows/*` (restriction de l'outillage
-CI, pas une décision produit) — le commentaire YAML de l'option 3 n'a donc
-pas pu être poussé directement et doit être appliqué manuellement à partir du
-patch fourni dans le commentaire de résolution de #228.
+**Note d'implémentation** : l'agent qui a traité #228 n'a pas pu pousser
+directement le commentaire YAML de l'option 3 sous `.github/workflows/*`
+(appliqué manuellement à partir du patch fourni en commentaire de résolution
+de #228). Restriction d'outillage CI, pas une décision produit — nuancée
+depuis par #237 : seule la **création** d'un nouveau fichier sous
+`.github/workflows/*` s'est heurtée à la restriction, la **modification**
+d'un fichier existant a ensuite fonctionné sans intervention manuelle (détail
+et reproduction dans [[retry-generate-data-detection-impossible]]).
 
 <a id="verification-billing-actions"></a>
 ## Vérification quota/limite de dépense GitHub Actions (#221) : hypothèse infirmée (2026-08-12)
