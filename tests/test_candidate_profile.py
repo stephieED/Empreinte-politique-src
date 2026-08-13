@@ -1372,6 +1372,88 @@ def test_build_acteur_amendement_index_failed_legislature_is_not_retried_for_nex
         )
 
 
+def test_build_acteur_amendement_index_failed_legislature_shared_across_jobs_via_disk_marker(tmp_path, monkeypatch):
+    """Deux jobs CI distincts du même run (deux process Python distincts en
+    pratique, ex. `extract-an` puis `extract-roster-groupes` séquencés par #222)
+    ne doivent pas payer chacun le cycle complet de retry pour la même
+    législature en échec : le second job doit lever immédiatement grâce au
+    marqueur disque partagé (`GITHUB_RUN_ID`), même sans mémoire process
+    partagée (issue #246, extension de #239 au-delà du process courant)."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AmendementsIndexError,
+        _amendements_failed_legislatures,
+        _build_acteur_amendement_index,
+    )
+
+    monkeypatch.setenv("GITHUB_RUN_ID", "31685914622")
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        # Job 1 (ex. extract-an) : cycle complet de tentatives, échec définitif.
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+
+        # Simule le passage à un second job CI (process Python distinct) : le
+        # cache mémoire intra-process est réinitialisé, mais le cache disque
+        # (`.cache/amendements_an/`) est le même — restauré/sauvegardé par
+        # chaque job via la même clé de cache (#222).
+        _amendements_failed_legislatures.clear()
+
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+            "Le second job ne doit déclencher aucun nouvel appel réseau : le marqueur "
+            "disque du run courant doit suffire à lever immédiatement"
+        )
+
+
+def test_build_acteur_amendement_index_disk_marker_from_different_run_is_ignored(tmp_path, monkeypatch):
+    """Un marqueur disque référençant un `GITHUB_RUN_ID` différent du run courant
+    (résidu d'une semaine ISO précédente restauré via `restore-keys`) doit être
+    ignoré : la législature est retentée normalement, sans dépendre d'un TTL
+    explicite (comportement de #239 volontairement préservé, critère
+    d'acceptation de #246)."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AmendementsIndexError,
+        _amendements_failed_marker_path,
+        _build_acteur_amendement_index,
+    )
+
+    monkeypatch.setenv("GITHUB_RUN_ID", "31694500982")
+
+    marker_path = _amendements_failed_marker_path("17")
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        marker_path.parent.mkdir(parents=True, exist_ok=True)
+        marker_path.write_text("99999999999", encoding="utf-8")  # run_id d'un run précédent
+
+        with (
+            patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+            patch("candidate_profile.time.sleep", return_value=None),
+        ):
+            try:
+                _build_acteur_amendement_index("17")
+                assert False, "AmendementsIndexError attendue (échec réseau simulé, pas le marqueur périmé)"
+            except AmendementsIndexError:
+                pass
+
+    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+        "Un marqueur d'un GITHUB_RUN_ID différent doit être ignoré : cycle complet de "
+        "tentatives réseau attendu, pas un échec immédiat depuis le marqueur périmé"
+    )
+
+
 def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(tmp_path):
     """Un échec réseau transitoire isolé (ex. un seul IncompleteRead/RequestException)
     ne doit plus faire échouer la construction de l'index si une tentative suivante
