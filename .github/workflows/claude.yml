@@ -30,22 +30,102 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Dépendances requises par le sandbox Bash de Claude Code sur Linux
+      # (isolation réseau/fichiers, cf. settings.sandbox ci-dessous).
+      - name: Installer les dépendances du sandbox (bubblewrap, socat)
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap socat
+
+      # Ubuntu 24.04+ (image ubuntu-latest actuelle) restreint par défaut la
+      # création d'espaces de noms utilisateur non privilégiés via AppArmor,
+      # ce qui empêche bubblewrap de démarrer. Contournement documenté :
+      # https://code.claude.com/docs/en/sandboxing#set-up-linux-and-wsl2
+      - name: Autoriser bubblewrap à créer des espaces de noms utilisateur (AppArmor)
+        run: |
+          if [ "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns 2>/dev/null || echo 0)" = "1" ]; then
+            sudo tee /etc/apparmor.d/bwrap > /dev/null <<'EOF'
+          abi <abi/4.0>,
+          include <tunables/global>
+
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+            include if exists <local/bwrap>
+          }
+          EOF
+            sudo systemctl reload apparmor
+          fi
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.WORKFLOW_PAT }}
 
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
+          # NOTE: setting `prompt` switches the action from interactive mode (waits for
+          # and replies to @claude mentions) to automation mode (runs this fixed prompt
+          # immediately, ignoring the triggering comment's content, no reply posted) —
+          # see https://github.com/anthropics/claude-code-action/blob/main/docs/faq.md.
+          # Leave unset to keep responding to @claude comments as usual; put standing
+          # guardrails in claude_args' --append-system-prompt below instead.
           # prompt: 'Update the pull request description to include a summary of changes.'
+
+          # Sandbox Bash : isolation réseau/fichiers en défense en profondeur contre
+          # une injection de prompt via un commentaire d'issue/PR (ex. tentative
+          # d'exfiltration de secrets vers un domaine non listé). allowUnsandboxedCommands
+          # à false désactive l'échappatoire "dangerouslyDisableSandbox" — sans ça, une
+          # commande déjà couverte par --allowed-tools (ex. Bash(python3:*)) pourrait
+          # retenter hors sandbox et contourner la restriction réseau. failIfUnavailable
+          # évite un repli silencieux non-sandboxé si bubblewrap ne démarre pas.
+          # Liste de domaines = sources réseau réellement utilisées par ce dépôt
+          # (src/*.py) + PyPI (pip install) + GitHub (gh CLI). Étendre cette liste si
+          # Claude a besoin d'atteindre un nouveau domaine.
+          settings: |
+            {
+              "sandbox": {
+                "enabled": true,
+                "failIfUnavailable": true,
+                "allowUnsandboxedCommands": false,
+                "network": {
+                  "allowedDomains": [
+                    "github.com",
+                    "api.github.com",
+                    "*.githubusercontent.com",
+                    "objects.githubusercontent.com",
+                    "pypi.org",
+                    "files.pythonhosted.org",
+                    "www.nosdeputes.fr",
+                    "2017-2022.nosdeputes.fr",
+                    "2012-2017.nosdeputes.fr",
+                    "2007-2012.nosdeputes.fr",
+                    "www.nossenateurs.fr",
+                    "archive.nossenateurs.fr",
+                    "data.assemblee-nationale.fr",
+                    "questions.assemblee-nationale.fr",
+                    "schemas.assemblee-nationale.fr",
+                    "www.assemblee-nationale.fr",
+                    "data.europarl.europa.eu",
+                    "www.europarl.europa.eu",
+                    "parltrack.org",
+                    "fr.wikipedia.org",
+                    "query.wikidata.org"
+                  ]
+                }
+              }
+            }
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
+          # --append-system-prompt adds standing guardrails on top of the default
+          # system prompt without disabling interactive @claude-mention mode (unlike
+          # the `prompt` input above, which replaces it — see note above).
           claude_args: |
-            --allowed-tools Bash(gh pr *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *)
+            --append-system-prompt "Always read AGENTS.md and follow the instructions there. Update docs/technical_decisions.md if required. Never modify .github/workflows/claude.yml or .github/workflows/claude-code-review.yml — if these need changes, ask a human reviewer instead."
+            --allowed-tools Bash(gh pr *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *),WebFetch(domain:www.nosdeputes.fr),WebFetch(domain:2017-2022.nosdeputes.fr),WebFetch(domain:2012-2017.nosdeputes.fr),WebFetch(domain:2007-2012.nosdeputes.fr),WebFetch(domain:www.nossenateurs.fr),WebFetch(domain:archive.nossenateurs.fr),WebFetch(domain:data.assemblee-nationale.fr),WebFetch(domain:www.assemblee-nationale.fr),WebFetch(domain:data.europarl.europa.eu),WebFetch(domain:www.europarl.europa.eu),WebFetch(domain:parltrack.org),WebFetch(domain:fr.wikipedia.org),WebFetch(domain:query.wikidata.org)
+
 

@@ -1,3 +1,389 @@
+<a id="amendements-failed-legislature-marker-inter-jobs"></a>
+## Marqueur disque inter-jobs pour le cache d'échec amendements par législature (#246) (2026-08-13)
+
+**Contexte** : [[amendements-retry-blocage-legislature]] (#239) mémorise en
+mémoire process (`_amendements_failed_legislatures`) qu'une législature
+d'amendements a définitivement échoué, pour que seul le premier candidat
+rencontrant l'échec paie le cycle complet de retry. Ce cache est scopé au
+process Python — or `extract-an` et `extract-roster-groupes` sont deux jobs
+CI distincts (deux process), séquencés sur le même cache disque partagé
+`public-data-cache-an-*` par [[concurrence-ci-roster]] (#222). Sur le run #30
+(https://github.com/stephieED/Empreinte-politique-src/actions/runs/31685914622),
+`extract-an` a épuisé ses tentatives dès le premier segment sur les
+législatures 17/16/15 (`IncompleteRead` immédiat, aucun `index_par_acteur.json`
+mis en cache) sans que `extract-roster-groupes`, quelques minutes plus tard
+dans le même run, en garde aucune mémoire : son premier candidat AN a donc
+retenté les trois législatures depuis zéro, cette fois en stallant réellement
+jusqu'au timeout de lecture (`AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS = 120`
+× `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS = 3` ≈ 6 min), consommant l'écart de
+6m48s observé avant que le job soit tué par la préemption runner déjà
+documentée ([[retry-generate-data-preemption]]). Cause distincte du gap de
+visibilité tracé par #245 ([[retry-generate-data-continue-on-error]]) : ici
+c'est le temps de blocage lui-même qui est payé deux fois dans le même run.
+
+**Décision** : `_build_acteur_amendement_index` écrit désormais, en plus du
+cache mémoire process (#239 conservé tel quel comme raccourci intra-process),
+un marqueur disque `.cache/amendements_an/<legislature>/failed_run_id`
+contenant `GITHUB_RUN_ID` quand les tentatives sont épuisées pour une
+législature. Avant toute tentative réseau, ce marqueur est consulté après le
+cache mémoire : s'il existe et référence le `GITHUB_RUN_ID` courant, échec
+immédiat identique au cache mémoire de #239 ; s'il référence un
+`GITHUB_RUN_ID` différent (résidu d'une semaine ISO précédente via
+`restore-keys`), il est ignoré et la législature retentée normalement —
+préserve intentionnellement le comportement de #239 (un run suivant repart de
+zéro) sans TTL explicite à maintenir. Le marqueur vit dans le même
+sous-répertoire que `index_par_acteur.json`, donc profite du même
+restore/save de cache disque déjà séquencé par #222 : aucun changement de
+workflow CI nécessaire.
+
+*Hors périmètre (reporté)* : réduire davantage
+`AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS` (120s → 60s), qui réduirait le
+pire cas payé par le *premier* job du run à rencontrer une législature qui
+stalle réellement (ce correctif élimine la répétition entre jobs, pas le coût
+initial de découverte) — proposé dans l'issue comme optionnel, à évaluer
+séparément si ce coût initial redevient un problème en pratique.
+
+<a id="retry-generate-data-continue-on-error"></a>
+## Étendre `retry-generate-data.yml` aux échecs de job `continue-on-error` masqués par une conclusion de run `success` (#245) (2026-08-13)
+
+**Contexte** : [[retry-generate-data-preemption]] (#230) détecte la
+signature de préemption runner au niveau job, mais le job `detect-and-retry`
+n'était invoqué que sur `github.event.workflow_run.conclusion == 'failure'`.
+Run #30 (2026-08-13T09:17:33Z,
+https://github.com/stephieED/Empreinte-politique-src/actions/runs/31685914622) :
+`extract-roster-groupes` (`continue-on-error: true`, choix délibéré #192/#222)
+a été tué par la même signature de préemption déjà documentée
+([[retry-generate-data-preemption]], #217/#228/#230) — `shutdown signal` à
+09:29:44, confirmé `conclusion: "failure"` via `gh api
+.../jobs/94402695448` (`started_at 09:21:14`, `completed_at 10:14:16`,
+message serveur différent : *"The hosted runner lost communication with the
+server"*, 44 min après l'arrêt réel du job). Un job `continue-on-error` en
+échec ne fait pas basculer la conclusion globale du run à `failure` : le run
+#30 reste `success`, le `workflow_run` déclenché à 10:15:25Z a
+`conclusion: success`, et `detect-and-retry` a donc été entièrement
+`skipped` — aucune inspection de la liste des jobs, donc aucun retry, et
+aucune visibilité (le run s'affiche vert ; seuls les soft warnings du
+quality gate sur la couverture groupe, conformes à
+[[seuil-couverture-groupe]], révèlent l'échec à qui les lit).
+`extract-parltrack` (même configuration, ligne 332 de `generate-data.yml`)
+est exposé au même angle mort.
+
+**Décision** :
+1. Garde du job `detect-and-retry` élargie à
+   `conclusion == 'failure' || conclusion == 'success'` (exclut de fait
+   `cancelled`/`skipped`, pour lesquels un retry n'a pas de sens).
+2. Step de détection : nouvel output `no_job_failure`, positionné à `true`
+   uniquement quand la conclusion du run est `success` **et** qu'aucun job
+   de la liste n'a `conclusion == "failure"` — court-circuite la boucle de
+   détection existante dans ce seul cas. Sans ce circuit dédié, élargir la
+   garde du point 1 aurait fait tomber tout run 100% vert dans la branche
+   « signature non reconnue » du résumé (destinée à un vrai échec
+   applicatif), un faux signal sur l'immense majorité des runs qui n'ont
+   simplement aucun job en échec.
+3. La boucle de détection elle-même (filtrage `select(.conclusion==
+   "failure")` sur la liste des jobs, puis grep `shutdown signal|The
+   operation was canceled\.` sur leurs logs) n'a nécessité **aucune
+   modification** : elle opère déjà au niveau job et fonctionne
+   correctement dès qu'elle est atteinte — vérifié manuellement contre le
+   job réel 94402695448 du run #30.
+4. Step Résumé : quatrième branche dédiée à `no_job_failure == 'true'`
+   (« run réussi sans échec de job — rien à signaler »), distincte des
+   trois branches existantes ([[retry-generate-data-detection-impossible]]).
+
+Portée générique, pas spécifique à `extract-roster-groupes` : le correctif
+opère au niveau job (n'importe quel job en échec, `continue-on-error` ou
+non), donc `extract-parltrack` en bénéficie sans changement supplémentaire.
+
+*Hors périmètre* : retirer `continue-on-error: true` de
+`extract-parltrack`/`extract-roster-groupes` — choix délibéré et correct
+(#192/#222), non remis en cause par cette issue (visibilité/retry de
+l'échec, pas changement de comportement). Expliquer pourquoi le nettoyage
+runner a mis cette fois 44 minutes à se signaler côté serveur (`"lost
+communication with the server"` vs terminaison immédiate dans les
+incidents précédents) — signal d'infrastructure hors du contrôle du
+workflow, cohérent avec [[verification-billing-actions]].
+
+*Alternative rejetée* : ouvrir la garde du job sur toute conclusion
+(supprimer le filtre) plutôt que de lister explicitement `failure`/
+`success` — rejeté car `cancelled`/`skipped` ne doivent pas déclencher de
+tentative de détection (rien à détecter, `workflow_run.id` peut même ne pas
+avoir de jobs exploitables), et le lister explicitement documente
+l'intention plutôt que de la laisser implicite.
+
+<a id="retry-preemption-logs"></a>
+## `gh api .../logs` sans `--allow-escape-sequences` : cause racine de l'inefficacité du retry automatique sur les runs #26-28 (#236) (2026-08-13)
+
+**Contexte** : [[retry-generate-data-preemption]] (#230) a ajouté
+`retry-generate-data.yml`, qui détecte la signature de préemption runner via
+`gh api repos/${REPO}/actions/jobs/<id>/logs` (deux points d'appel). Sur les
+trois premiers runs `generate-data.yml` en échec après la fusion de #230
+(#26, #27, #28 — diagnostic complet en #235), le retry automatique ne s'est
+jamais concrétisé alors que la signature de préemption (`shutdown signal`
+runner) était bien présente dans les logs bruts des jobs concernés.
+
+**Cause racine** : `gh api` refuse d'écrire sur stdout un contenu contenant
+des séquences d'échappement ANSI (couleurs de terminal — présentes dans la
+quasi-totalité des logs Actions de ce dépôt) et retourne l'exit code 1 avec
+le message `the response contains terminal escape sequences; pass
+--allow-escape-sequences to output it anyway`, sauf si ce flag est
+explicitement passé. Reproduit manuellement contre le job réel du run #28
+(`extract-an`, job id `94359092658`, cf. corps de #235) :
+```
+$ gh api "repos/stephieED/Empreinte-politique-src/actions/jobs/94359092658/logs" 2>&1 1>/dev/null
+the response contains terminal escape sequences; pass --allow-escape-sequences to output it anyway
+$ echo $?
+1
+```
+Le `2>/dev/null || true` de `retry-generate-data.yml` avalait cette erreur
+silencieusement : `log` était capturé comme une chaîne vide, le
+`grep -qE "shutdown signal|The operation was canceled\."` ne matchait donc
+jamais, et `matched` restait `false` **même quand la signature était
+réellement présente** — un faux négatif systématique et non occasionnel,
+puisque la présence de couleurs ANSI dans un log Actions est la norme, pas
+l'exception.
+
+**Correctif (#236)** : ajout de `--allow-escape-sequences` aux deux appels
+`gh api .../logs` de `retry-generate-data.yml` (step de détection et
+fonction `job_log()` de reconstruction des inputs). Diff limité aux deux
+lignes concernées, aucun changement de logique de détection — déjà sur
+`main` au moment de cette entrée.
+
+**Validation empirique — état par run** :
+- **Run #28** (job `extract-an`, id `94359092658`) : confirmé — la commande
+  corrigée (`gh api .../logs --allow-escape-sequences`) a été rejouée
+  manuellement contre ce job réel (cf. #235) et le
+  `grep -qE "shutdown signal|The operation was canceled\."` matche
+  désormais, alors que la commande sans le flag échouait avec l'exit code 1
+  ci-dessus (log vide côté script).
+- **Runs #26 et #27** : ces deux runs n'ont **jamais atteint** le code
+  touché par #236. Leur retry a crashé plus tôt, sur
+  `jobs_json=$(gh api ".../jobs" --paginate)` (échec transitoire
+  d'API/pagination, sous `set -euo pipefail` sans fallback à l'époque) — bug
+  distinct, corrigé séparément par #237 (capture explicite + outputs
+  `api_error`/`inconclusive`, cf.
+  [[retry-generate-data-detection-impossible]]). Il n'existe donc pas de log
+  historique de ces deux runs démontrant `matched=true` obtenu via le
+  correctif #236 spécifiquement : l'erreur qui les a fait échouer était en
+  amont de ce code et transitoire (non reproductible à l'identique a
+  posteriori). Ce que #237 garantit pour ce cas précis : une erreur API sur
+  le listing des jobs se traduit désormais par `api_error=true` et un
+  message dédié « détection impossible », plus jamais par un crash opaque du
+  job — un futur run frappé du même incident transitoire restera visible
+  dans le résumé au lieu de se terminer en `failure` sans trace exploitable.
+- **Portée de la vérification agent (#238)** : le token disponible dans
+  l'environnement agent (`metadata=read` uniquement, pas de scope `actions`)
+  ne permet pas d'interroger l'API Actions depuis cette session — tout appel
+  `gh api repos/.../actions/...` y renvoie `403 Resource not accessible by
+  personal access token`. Impossible de rejouer une nouvelle fois la
+  commande corrigée contre les trois runs depuis cet agent ; la preuve
+  ci-dessus pour #28 réutilise la reproduction déjà réalisée manuellement
+  par @stephieED (accès dashboard complet) et documentée dans #235. Aucune
+  preuve équivalente n'est disponible pour #26/#27, par nature (voir
+  point précédent) — pas un manque de vérification, mais l'absence de
+  matière à vérifier pour ces deux runs sur ce correctif précis. Une
+  vérification complémentaire sur #26/#27 nécessiterait un token avec le
+  scope `actions:read`, ou une exécution manuelle de
+  `gh api .../jobs --paginate` sur ces runs (l'erreur d'origine étant
+  transitoire, elle peut désormais réussir ou échouer différemment).
+
+**Piège générique à retenir** : tout script CI de ce dépôt qui appelle
+`gh api` sur un endpoint `.../logs` ou `.../jobs/<id>/logs` (contenu texte
+potentiellement coloré ANSI) doit systématiquement passer
+`--allow-escape-sequences`, sous peine d'un échec silencieux si le flux
+d'erreur est avalé par `2>/dev/null || true` ou équivalent. Plus
+généralement : un `|| true` sur un appel `gh api`/`curl` qui peut
+légitimement échouer pour des raisons multiples (contenu, réseau,
+permissions, rate-limit) masque la distinction entre « résultat négatif
+attendu » et « la vérification elle-même a échoué » —
+cf. [[retry-generate-data-detection-impossible]] pour le correctif générique
+appliqué à ce risque (outputs dédiés plutôt que capture silencieuse).
+
+*Alternative rejetée* : ne documenter que le correctif de #236 sans
+distinguer explicitement le cas #26/#27 (erreur amont, jamais soumise au bug
+d'origine) — rejeté pour ne pas laisser croire à une preuve empirique
+équivalente sur les trois runs, alors que la nature des trois échecs diffère
+(cf. tableau de #235).
+
+<a id="retry-generate-data-detection-impossible"></a>
+## Distinguer erreur API et signature absente dans `retry-generate-data.yml` (#237) (2026-08-13)
+
+**Contexte** : [[retry-generate-data-preemption]] (#230) détecte la signature
+de préemption runner via deux appels `gh api` (`.../jobs` puis
+`.../jobs/<id>/logs`). Sur les runs #26/#27, `gh api .../jobs` a échoué
+(erreur transitoire d'API/pagination) sous `set -euo pipefail` sans
+fallback : le step entier s'est arrêté immédiatement (`Process completed with
+exit code 1`), avant même d'atteindre la boucle de détection — le job
+`detect-and-retry` a fini en `failure` sans résumé exploitable. Séparément,
+`gh api .../logs` retombait sur `2>/dev/null || true` (#236) : un échec
+ponctuel de récupération d'un log individuel produisait un `log=""`, traité
+exactement comme une signature absente, donc affiché dans le résumé comme
+« probablement un échec applicatif réel » — message trompeur qui a masqué le
+bug de listing des jobs pendant trois runs consécutifs (le résumé n'existait
+même pas dans ce cas précis, mais le même risque de confusion existe pour
+tout échec `.../logs` isolé).
+
+**Décision** : ajoute deux outputs dédiés au step de détection,
+`api_error` (échec de `gh api .../jobs`) et `inconclusive` (échec de
+`gh api .../jobs/<id>/logs` sur au moins un job candidat), capturés
+explicitement (`if ! cmd; then ...; fi`, message `::warning::` avec le détail
+de l'erreur) plutôt que laissés remonter via `set -e` ou avalés par
+`|| true`. Le step de résumé distingue désormais trois issues au lieu de
+deux : retry déclenché (`matched=true`, inchangé), signature non reconnue
+sur des logs effectivement lus (`matched=false` et aucune erreur, inchangé),
+et détection impossible (`api_error` ou `inconclusive` à `true`, ou
+`steps.signature.outcome == 'failure'` en filet de sécurité pour toute
+erreur bash non anticipée) — message dédié invitant à une vérification
+manuelle du run, explicitement non assimilé à un bug applicatif.
+
+**Note d'implémentation** : contrairement à #228/#230 où l'agent n'avait pas
+les permissions GitHub App pour pousser un fichier sous
+`.github/workflows/*` (patch livré en commentaire, application manuelle),
+le push direct a fonctionné pour ce correctif — la restriction ne semble
+plus s'appliquer (ou ne s'appliquait qu'à la création d'un nouveau fichier,
+pas à la modification d'un fichier existant). À vérifier si le patch #228
+toujours en attente (voir `ROADMAP.md`) peut désormais être appliqué de la
+même façon.
+
+*Alternative rejetée* : ne garder qu'un flag booléen unique (« détection
+fiable oui/non ») au lieu de deux outputs distincts `api_error`/
+`inconclusive` — rejeté pour ne pas perdre, dans les `::warning::` du job,
+la distinction entre un échec de listing (affecte toute la détection) et un
+échec de log isolé sur un seul job candidat (les autres jobs candidats
+restent exploitables), utile pour le diagnostic manuel demandé par le
+résumé.
+
+<a id="amendements-range-download-legislature-isolation"></a>
+## Téléchargement par plages (Range) + isolation par législature pour les amendements officiels (#241) (2026-08-13)
+
+**Contexte** : #239 (voir [[amendements-retry-blocage-legislature]] ci-dessous)
+a corrigé le blocage CI en mémorisant en mémoire process qu'une législature a
+définitivement échoué pour le run courant, et en réduisant le timeout de
+lecture par tentative (600s → 120s). Correctif suffisant pour le symptôme CI,
+mais qui a pour effet secondaire d'abandonner purement et simplement la
+collecte de la législature en échec pour tout le run — `amendements[]` est un
+champ central du schéma pivot (§4 AGENTS.md), et les législatures 15/16
+couvrent une fenêtre (2012-2022) où un profil type de candidat·e 2027 a une
+probabilité non négligeable d'avoir siégé (déjà visible sur Guedj, Le Pen).
+Deux défauts distincts identifiés : (1) `fetch_amendements_officiels` n'a pas
+de `try/except` par législature dans sa boucle sur `AN_AMENDEMENTS_PATH` — la
+première à échouer (généralement la légis 16, chroniquement instable)
+interrompt l'appel entier, avant même de tenter la légis 15 ; un échec sur la
+16 fait donc perdre une légis 17 pourtant récupérée avec succès. (2) le
+téléchargement est un flux HTTP continu unique : une coupure `IncompleteRead`
+en cours de flux (déjà observée à des points variables, 9 à 40 Mo lus sur des
+flux de 300-620 Mo) jette tout le travail déjà fait et force à tout
+redémarrer à zéro. Vérifié en direct (13/08 07:29 UTC) que le CDN devant
+`data.assemblee-nationale.fr` supporte fonctionnellement les requêtes par
+plage (`Range: bytes=...` → HTTP 206 + `Content-Range`), pas seulement
+annoncé via l'en-tête.
+
+**Décision** :
+1. `_download_amendements_zip` remplace le flux continu par un découpage en
+   segments de `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES` (32 Mo) via l'en-tête
+   `Range`, écrits séquentiellement dans le fichier local. Chaque segment est
+   retenté indépendamment avec le backoff existant de #225
+   (`AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`/`BACKOFF_SECONDS`, désormais appliqués
+   par segment plutôt qu'au fichier entier) : une coupure mi-flux ne force
+   plus qu'un nouvel appel pour le seul segment concerné. Taille finale
+   validée contre le total déduit de `Content-Range` (pas de requête `HEAD`
+   séparée : le premier `GET` par plage la fournit déjà). Repli sur un
+   téléchargement classique en un seul segment si le serveur ignore l'en-tête
+   Range (réponse 200 au lieu de 206).
+2. `fetch_amendements_officiels` encapsule désormais chaque appel à
+   `_build_acteur_amendement_index(legislature)` dans un `try/except
+   AmendementsIndexError` par itération de la boucle sur
+   `AN_AMENDEMENTS_PATH` : les législatures réussies sont conservées même si
+   une autre échoue définitivement, et un warning
+   `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES` précisant la législature
+   concernée est ajouté par échec (paramètre `warnings` optionnel, propagé
+   depuis `build_profile`) au lieu d'un échec binaire global propagé par
+   exception.
+3. Le cache d'échec inter-candidats de #239
+   (`_amendements_failed_legislatures`) est conservé tel quel comme filet de
+   sécurité : il ne s'active désormais qu'après épuisement des tentatives
+   *par segment*, pour le cas d'une archive réellement indisponible plutôt
+   qu'une simple coupure mi-flux.
+
+**Alternative rejetée** : persister le fichier partiel + les offsets déjà
+confirmés sur disque pour permettre une reprise *entre processus* (pas
+seulement entre tentatives au sein d'un même appel). Écartée pour ce
+correctif — gain marginal (l'essentiel du bénéfice vient déjà de la reprise
+intra-tentative par segment) face à la complexité ajoutée (état de reprise à
+invalider si l'archive distante change entre deux runs) ; à réévaluer
+séparément si des coupures en tout début de flux devenaient fréquentes en
+pratique.
+
+<a id="amendements-retry-blocage-legislature"></a>
+## Le retry avec backoff des amendements (#225) transforme un échec instantané en blocage de plusieurs minutes par candidat (#239) (2026-08-13)
+
+**Contexte** : #185 a diagnostiqué que la collecte des amendements officiels
+(`fetch_amendements_officiels`/`_build_acteur_amendement_index`) échouait
+silencieusement (`return {}` avalé) sur les trois archives AN Open Data
+concernées ; #199 a corrigé cela en levant `AmendementsIndexError` au lieu
+d'avaler l'échec. #220/#225 ont ensuite ajouté un retry avec backoff
+(`AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS = 3`, `AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS
+= 5`, timeout de lecture de 600s par tentative) pour absorber les
+`IncompleteRead` déjà observés sur ces téléchargements volumineux (voir
+[[concurrence-ci-roster]] pour un premier facteur aggravant, le double
+téléchargement parallèle extract-an/extract-roster-groupes, déjà mitigé).
+
+**Constat (#239)** : depuis le merge de #225 (2026-08-12T13:02Z), 100 % des
+runs de `generate-data.yml` échouent avec la signature « runner shutdown
+signal » / exit 143 sur `extract-an` — contre un mélange sain de succès/échecs
+auparavant. Chronométrage des logs bruts : sur le dernier succès connu
+(07/08, avant #199/#225), les 3 tentatives de téléchargement d'archives
+échouaient en moins d'1 ms au total (un seul essai, `IncompleteRead` immédiat,
+enchaînement direct au candidat suivant). Depuis #225, le même point du
+pipeline (transition candidat 1 → candidat 2, où `fetch_amendements_officiels`
+s'exécute) présente un écart silencieux de 3m46s à 8m18s selon les runs — un
+job dont le budget total tourne alors autour de 5 à 12 minutes avant que le
+runner ne reçoive le signal d'arrêt. Cause : un échec définitif de
+téléchargement n'est toujours pas persisté sur le cache disque (seul un index
+entièrement construit y est écrit), donc **chaque candidat suivant ayant
+besoin de la même législature répète le cycle complet de 3 tentatives ×
+600s de timeout depuis zéro**, sans mémoire inter-candidats qu'une
+législature est cassée pour ce run.
+
+**Législature spécifiquement en cause** : la 16ᵉ législature
+(`amendements_div_legis/Amendements.json.zip`). Vérifié en direct le
+13/08 06:53 UTC :
+```
+$ curl -sI https://data.assemblee-nationale.fr/static/openData/repository/16/loi/amendements_div_legis/Amendements.json.zip
+content-length: 363306362
+x-cacheable: Not cacheable: too big
+```
+— le CDN devant `data.assemblee-nationale.fr` refuse de mettre ce fichier en
+cache (trop volumineux), donc chaque tentative frappe l'origine sans cache.
+`IncompleteRead` observé en échec direct dans les logs de production à trois
+reprises (07/08, 12/08 08:45, et implicitement sur tous les runs suivants) —
+toujours sur cette même législature 16. La 15ᵉ (`amendements_legis/
+Amendements_XV.json.zip`, 618 Mo, également hors cache CDN par sa taille)
+n'a pas été observée en échec direct dans les runs examinés : la boucle sur
+`AN_AMENDEMENTS_PATH` s'interrompt dès que la législature 16 lève une
+exception, avant même de l'atteindre — elle reste donc une candidate
+plausible au même défaut, non confirmée faute d'avoir été atteinte. La 17ᵉ
+(législature active, dataset rafraîchi quotidiennement, généralement < 300 Mo)
+est en revanche régulièrement servie depuis le cache CDN
+(`x-cacheable: Matched cache`) et se charge rapidement, y compris en cache-hit
+sur le disque local (`.cache/amendements_an/17/`) — elle n'est pas mise en
+cause ici.
+
+**Décision (implémentée, PR #240)** : (1) mémoriser en mémoire process (pas
+sur disque, `_amendements_failed_legislatures`) qu'une législature a
+définitivement échoué pour le run courant, pour que seul le premier candidat
+qui la rencontre paie le cycle de retry complet — les suivants lèvent
+immédiatement sans nouvel appel réseau ; (2) réduire le budget temps par
+tentative (`AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS`, 600s → 120s) plutôt
+que de le laisser à 3×600s dans le pire cas. Ceci recadre potentiellement une
+partie du narratif « préemption infra aléatoire, hors de notre contrôle »
+retenu par [[verification-billing-actions]] et [[ci-cd]] : au moins cette
+occurrence précise avait une cause déterministe et corrigible côté code.
+Correctif suffisant pour le symptôme CI mais qui abandonne toujours la
+collecte de la législature en échec pour tout le run — étendu par #241 (voir
+[[amendements-range-download-legislature-isolation]] ci-dessus), qui
+remplace l'abandon par un téléchargement par plages et une isolation par
+législature.
+
 <a id="retry-generate-data-preemption"></a>
 ## Retry automatique de `generate-data.yml` sur signature de préemption runner (#230) (2026-08-12)
 
@@ -52,11 +438,13 @@ généralisé aurait fait disparaître silencieusement au lieu de le signaler).
    absence de retry inexpliquée.
 
 **Note d'implémentation** : comme pour #228, l'agent qui a traité #230 n'a
-pas les permissions GitHub App pour créer/modifier des fichiers sous
-`.github/workflows/*` — le fichier `.github/workflows/retry-generate-
-data.yml` n'a donc pas pu être poussé directement et doit être créé
-manuellement à partir du YAML fourni en commentaire de résolution de #230.
-Restriction d'outillage CI, pas une décision produit.
+pas pu pousser directement le nouveau fichier `.github/workflows/retry-
+generate-data.yml` (créé manuellement à partir du YAML fourni en commentaire
+de résolution de #230). Restriction d'outillage CI, pas une décision produit
+— nuancée depuis par #237 : seule la **création** d'un nouveau fichier sous
+`.github/workflows/*` s'est heurtée à la restriction, la **modification**
+d'un fichier existant a ensuite fonctionné sans intervention manuelle (détail
+et reproduction dans [[retry-generate-data-detection-impossible]]).
 
 *Alternative rejetée* : retry généralisé sur tout `conclusion: failure`
 sans vérification de signature — rejeté explicitement par #230 lui-même
@@ -122,11 +510,14 @@ réelle grandira surtout au passage à un run à pleine échelle (~750 membres),
 pas encore planifié (voir [[seuil-couverture-groupe]]). À concevoir avec cette
 recalibration plutôt qu'en réaction isolée à #228.
 
-**Note d'implémentation** : l'agent qui a traité #228 n'a pas les permissions
-GitHub App pour modifier `.github/workflows/*` (restriction de l'outillage
-CI, pas une décision produit) — le commentaire YAML de l'option 3 n'a donc
-pas pu être poussé directement et doit être appliqué manuellement à partir du
-patch fourni dans le commentaire de résolution de #228.
+**Note d'implémentation** : l'agent qui a traité #228 n'a pas pu pousser
+directement le commentaire YAML de l'option 3 sous `.github/workflows/*`
+(appliqué manuellement à partir du patch fourni en commentaire de résolution
+de #228). Restriction d'outillage CI, pas une décision produit — nuancée
+depuis par #237 : seule la **création** d'un nouveau fichier sous
+`.github/workflows/*` s'est heurtée à la restriction, la **modification**
+d'un fichier existant a ensuite fonctionné sans intervention manuelle (détail
+et reproduction dans [[retry-generate-data-detection-impossible]]).
 
 <a id="verification-billing-actions"></a>
 ## Vérification quota/limite de dépense GitHub Actions (#221) : hypothèse infirmée (2026-08-12)

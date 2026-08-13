@@ -10,6 +10,14 @@ name: Retry automatique — generate-data.yml (préemption runner)
 # NOTE : workflow_run ne se déclenche que pour la version du fichier présente
 # sur la branche par défaut (restriction GitHub) — ce fichier doit être fusionné
 # sur main pour devenir actif.
+#
+# Le job est aussi invoqué sur conclusion == 'success' (#245) : un job en
+# continue-on-error (extract-roster-groupes, extract-parltrack) peut échouer
+# réellement sans faire basculer la conclusion globale du run à 'failure' —
+# ce cas ne serait jamais vu si la garde restait limitée à 'failure'. La
+# détection au niveau job (step suivant) gère ce cas nativement puisqu'elle
+# filtre déjà sur conclusion=="failure" par job, indépendamment de la
+# conclusion globale du run.
 on:
   workflow_run:
     workflows: ["Génération des données"]
@@ -21,7 +29,7 @@ permissions:
 
 jobs:
   detect-and-retry:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: ${{ github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -47,6 +55,23 @@ jobs:
       # applicative (exception Python, Quality Gate en échec réel) laisse
       # toujours ces steps s'exécuter normalement (always()/failure() sont
       # évalués), donc ne matche jamais cette signature.
+      # Distingue quatre issues : signature confirmée (matched=true),
+      # détection impossible faute d'avoir pu interroger l'API Actions
+      # (api_error / inconclusive=true — jamais à confondre avec une
+      # signature absente), signature réellement absente sur des logs
+      # effectivement lus (matched=false, api_error=false, inconclusive=false,
+      # no_job_failure=false — #237), et run réussi sans aucun job en échec
+      # (no_job_failure=true — #245). Ce dernier cas ne peut survenir que
+      # lorsque la garde de haut niveau du job est ouverte sur conclusion ==
+      # 'success' (ci-dessus) : sans lui, un run 100% vert (aucun job en
+      # échec, y compris les jobs continue-on-error) retomberait à tort dans
+      # la branche « signature non reconnue » du résumé, qui suggère un bug
+      # applicatif à investiguer alors qu'il n'y a eu aucun échec de job.
+      # --allow-escape-sequences est requis sur tout appel gh api .../logs
+      # de ce fichier (#236) : sans ce flag, gh api échoue silencieusement
+      # dès que le log contient des couleurs ANSI (quasi systématique),
+      # ce qui a rendu ce mécanisme inopérant sur les runs #26-28 sans
+      # jamais le signaler — cf. docs/technical_decisions.md#retry-preemption-logs.
       - name: Détecter la signature de préemption runner
         id: signature
         if: steps.cap.outputs.already_retried == 'false'
@@ -54,23 +79,45 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
           set -euo pipefail
-          jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate)
           matched=false
-          for job_id in $(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion=="failure") | .id'); do
-            skipped_diag=$(echo "$jobs_json" | jq -r --arg jid "$job_id" '
-              [.jobs[] | select(.id==($jid|tonumber)) | .steps[]
-               | select(.name | test("Upload artifact|Diagnostic")) | select(.conclusion=="skipped")] | length')
-            if [[ "$skipped_diag" -gt 0 ]]; then
-              log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" 2>/dev/null || true)
-              if echo "$log" | grep -qE "shutdown signal|The operation was canceled\."; then
-                matched=true
-                break
-              fi
+          api_error=false
+          inconclusive=false
+          no_job_failure=false
+
+          if ! jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/tmp/gh_jobs_err.log); then
+            echo "::warning::Échec de récupération de la liste des jobs (run ${RUN_ID}) : $(cat /tmp/gh_jobs_err.log)"
+            api_error=true
+          else
+            failed_job_count=$(echo "$jobs_json" | jq -r '[.jobs[] | select(.conclusion=="failure")] | length')
+            if [[ "$WORKFLOW_CONCLUSION" == "success" && "$failed_job_count" -eq 0 ]]; then
+              no_job_failure=true
+            else
+              for job_id in $(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion=="failure") | .id'); do
+                skipped_diag=$(echo "$jobs_json" | jq -r --arg jid "$job_id" '
+                  [.jobs[] | select(.id==($jid|tonumber)) | .steps[]
+                   | select(.name | test("Upload artifact|Diagnostic")) | select(.conclusion=="skipped")] | length')
+                if [[ "$skipped_diag" -gt 0 ]]; then
+                  if ! log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences 2>/tmp/gh_log_err.log); then
+                    echo "::warning::Échec de récupération du log du job ${job_id} : $(cat /tmp/gh_log_err.log)"
+                    inconclusive=true
+                    continue
+                  fi
+                  if echo "$log" | grep -qE "shutdown signal|The operation was canceled\."; then
+                    matched=true
+                    break
+                  fi
+                fi
+              done
             fi
-          done
+          fi
+
           echo "matched=$matched" >> "$GITHUB_OUTPUT"
+          echo "api_error=$api_error" >> "$GITHUB_OUTPUT"
+          echo "inconclusive=$inconclusive" >> "$GITHUB_OUTPUT"
+          echo "no_job_failure=$no_job_failure" >> "$GITHUB_OUTPUT"
 
       # Best-effort : reconstruit les inputs du run échoué à partir des logs
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
@@ -96,7 +143,7 @@ jobs:
             local name="$1"
             local id
             id=$(echo "$jobs_json" | jq -r --arg n "$name" '.jobs[] | select(.name==$n) | .id' | head -1)
-            [[ -n "$id" ]] && gh api "repos/${REPO}/actions/jobs/${id}/logs" 2>/dev/null || true
+            [[ -n "$id" ]] && gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences 2>/dev/null || true
           }
 
           fresh_run=false
@@ -149,20 +196,39 @@ jobs:
             if [[ "${{ steps.cap.outputs.already_retried }}" == "true" ]]; then
               echo "### ⏭️ Pas de retry automatique — plafond déjà atteint (1 tentative)"
               echo ""
-              echo "Le run échoué (${RUN_URL}) était déjà lui-même une relance automatique."
+              echo "Le run (${RUN_URL}) était déjà lui-même une relance automatique."
               echo "Intervention manuelle requise si la préemption runner persiste."
             elif [[ "${{ steps.signature.outputs.matched }}" == "true" ]]; then
               echo "### 🔁 Retry automatique déclenché"
               echo ""
-              echo "Le run échoué (${RUN_URL}) correspond à la signature de préemption"
-              echo "runner (shutdown signal + steps de diagnostic skipped). Un nouveau"
-              echo "\`workflow_dispatch\` de \`generate-data.yml\` a été déclenché automatiquement."
+              echo "Le run (${RUN_URL}) a un job en échec (\`conclusion: failure\`,"
+              echo "éventuellement un job \`continue-on-error\` sans impact sur la conclusion"
+              echo "globale) qui correspond à la signature de préemption runner (shutdown"
+              echo "signal + steps de diagnostic skipped). Un nouveau \`workflow_dispatch\`"
+              echo "de \`generate-data.yml\` a été déclenché automatiquement."
+            elif [[ "${{ steps.signature.outputs.no_job_failure }}" == "true" ]]; then
+              echo "### ✅ Run réussi sans échec de job — rien à signaler"
+              echo ""
+              echo "Le run (${RUN_URL}) s'est terminé avec la conclusion \`success\` et"
+              echo "aucun job ne rapporte \`conclusion: failure\` (y compris les jobs en"
+              echo "\`continue-on-error\` comme \`extract-roster-groupes\`/\`extract-parltrack\`)."
+              echo "Aucune action nécessaire."
+            elif [[ "${{ steps.signature.outputs.api_error }}" == "true" || "${{ steps.signature.outputs.inconclusive }}" == "true" || "${{ steps.signature.outcome }}" == "failure" ]]; then
+              echo "### ⚠️ Détection impossible — erreur API, vérifier manuellement le run"
+              echo ""
+              echo "La détection de la signature de préemption sur le run"
+              echo "(${RUN_URL}) n'a pas pu être menée à terme : erreur lors de l'appel à"
+              echo "l'API GitHub Actions (listing des jobs et/ou récupération d'un log)."
+              echo "Ce n'est **pas** un signal de bug applicatif — voir les"
+              echo "\`::warning::\` de ce job pour le détail de l'erreur API, et vérifier"
+              echo "manuellement le run."
             else
               echo "### ❌ Pas de retry — signature non reconnue"
               echo ""
-              echo "Le run échoué (${RUN_URL}) ne correspond pas à la signature de"
-              echo "préemption runner : probablement un échec applicatif réel (bug de"
-              echo "code, Quality Gate). Pas de retry automatique — investigation"
-              echo "manuelle nécessaire (cf. #217)."
+              echo "Le run (${RUN_URL}) a au moins un job en échec (\`conclusion: failure\`,"
+              echo "éventuellement un job \`continue-on-error\` sans impact sur la conclusion"
+              echo "globale) qui ne correspond pas à la signature de préemption runner :"
+              echo "probablement un échec applicatif réel (bug de code, Quality Gate)."
+              echo "Pas de retry automatique — investigation manuelle nécessaire (cf. #217)."
             fi
           } >> "$GITHUB_STEP_SUMMARY"

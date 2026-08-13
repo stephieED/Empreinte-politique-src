@@ -20,7 +20,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-07T09:57:56+0000"
+      "synchro_le": "2026-08-13T09:17:53+0000"
     }
   ],
   "mandats": [
@@ -14075,11 +14075,11 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-07T10:29:13+0000",
+    "genere_le": "2026-08-13T10:15:12+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
-      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
-      "ParlTrack: aucune donnée trouvée pour le MEP ID 28210. Vérifier la disponibilité des dumps ou la validité du MEP ID."
-    ]
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
+    ],
+    "provenance": "candidat_declare"
   }
 }
