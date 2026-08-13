@@ -1032,8 +1032,28 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
         )
 
 
-def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Construit (et met en cache sur disque) un index acteurRef -> liste d'amendements.
+def _read_cached_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
+    """Lecture seule du cache disque `index_par_acteur.json` pour une législature,
+    sans jamais déclencher de téléchargement. Retourne `None` (pas `{}`) si le
+    fichier est absent ou illisible, pour rester distinguable d'un index vide
+    légitime déjà mis en cache (issue #250, préparation à l'isolation du job
+    dédié de la sous-issue 3 de #248)."""
+    with _get_amendements_lock(legislature):
+        index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
+        if not index_path.is_file():
+            return None
+        try:
+            with open(index_path, encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None  # cache corrompu : traité comme absent, l'appelant reconstruit
+
+
+def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Télécharge l'archive AN et construit (en la mettant en cache sur disque) un
+    index acteurRef -> liste d'amendements. Reprend telle quelle la logique réseau
+    précédemment inline dans `_build_acteur_amendement_index` (issue #250) : le
+    découpage vers deux fonctions distinctes n'a rien changé à ce comportement.
 
     Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
@@ -1108,6 +1128,21 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
             pass
 
         return index
+
+
+def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+    """Point d'entrée unique utilisé par `fetch_amendements_officiels` : essaie la
+    lecture cache-only (`_read_cached_amendement_index`) puis, si absente, retombe
+    sur le téléchargement+construction (`_download_and_build_amendement_index`).
+
+    Comportement observable inchangé par rapport à avant le découpage de l'issue
+    #250 — préparation nécessaire avant de pouvoir déplacer la partie réseau dans
+    un job dédié (sous-issue 3 de #248) sans changer les appelants existants.
+    """
+    cached = _read_cached_amendement_index(legislature)
+    if cached is not None:
+        return cached
+    return _download_and_build_amendement_index(legislature)
 
 
 def _collect_texte_codes(node: Any, codes: set[str]) -> None:

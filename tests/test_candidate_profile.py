@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -1303,6 +1304,119 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 # (issue #185 : un échec réseau/zip était indiscernable d'un simple "aucun
 # amendement" — aucun warning n'était jamais tracé dans meta.warnings).
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tests pour la séparation téléchargement/construction vs lecture cache-only
+# (issue #250, sous-issue 2/6 de #248) : `_read_cached_amendement_index` ne
+# doit jamais déclencher d'appel réseau, `_download_and_build_amendement_index`
+# reprend telle quelle la logique réseau, et `_build_acteur_amendement_index`
+# reste l'unique point d'entrée (cache-only puis fallback téléchargement).
+# ---------------------------------------------------------------------------
+
+def test_read_cached_amendement_index_returns_none_when_absent(tmp_path):
+    """Aucun fichier `index_par_acteur.json` en cache : `None` (pas `{}`, pour
+    rester distinguable d'un index vide légitime déjà mis en cache), et aucun
+    appel réseau ne doit être déclenché."""
+    from candidate_profile import _read_cached_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        result = _read_cached_amendement_index("17")
+
+    assert result is None
+    mock_get.assert_not_called()
+
+
+def test_read_cached_amendement_index_returns_cached_content(tmp_path):
+    """Fichier de cache présent : son contenu est retourné tel quel, sans appel
+    réseau."""
+    from candidate_profile import _read_cached_amendement_index
+
+    cached_index = {"PA1": [{"uid": "AMANR5L17PO123456B0001P0D1N001"}]}
+    index_dir = tmp_path / "17"
+    index_dir.mkdir(parents=True)
+    (index_dir / "index_par_acteur.json").write_text(
+        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        result = _read_cached_amendement_index("17")
+
+    assert result == cached_index
+    mock_get.assert_not_called()
+
+
+def test_read_cached_amendement_index_returns_none_on_corrupted_cache(tmp_path):
+    """Fichier de cache présent mais illisible (JSON corrompu) : traité comme
+    absent (`None`), pas d'exception propagée, aucun appel réseau."""
+    from candidate_profile import _read_cached_amendement_index
+
+    index_dir = tmp_path / "17"
+    index_dir.mkdir(parents=True)
+    (index_dir / "index_par_acteur.json").write_text("{not valid json", encoding="utf-8")
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        result = _read_cached_amendement_index("17")
+
+    assert result is None
+    mock_get.assert_not_called()
+
+
+def test_download_and_build_amendement_index_ignores_existing_cache_write(tmp_path):
+    """`_download_and_build_amendement_index` reprend telle quelle la logique
+    réseau : sur un échec de téléchargement, elle lève `AmendementsIndexError`
+    et marque la législature en échec (#239/#246), exactement comme
+    `_build_acteur_amendement_index` avant le découpage de #250."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AmendementsIndexError,
+        _download_and_build_amendement_index,
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+
+
+def test_build_acteur_amendement_index_uses_cache_only_when_present(tmp_path):
+    """Point d'entrée `_build_acteur_amendement_index` : quand le cache disque
+    existe déjà, il est utilisé tel quel — pas de téléchargement (comportement
+    observable inchangé par le découpage de #250)."""
+    from candidate_profile import _build_acteur_amendement_index
+
+    cached_index = {"PA1": [{"uid": "AMANR5L17PO123456B0001P0D1N001"}]}
+    index_dir = tmp_path / "17"
+    index_dir.mkdir(parents=True)
+    (index_dir / "index_par_acteur.json").write_text(
+        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        result = _build_acteur_amendement_index("17")
+
+    assert result == cached_index
+    mock_get.assert_not_called()
+
 
 def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
     """Échec persistant (toutes les tentatives échouent) : AmendementsIndexError
