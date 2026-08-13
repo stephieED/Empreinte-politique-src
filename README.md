@@ -304,6 +304,13 @@ cache (artifact `amendements-index-an`), instead of leaving that
 construction to lazy per-candidate calls in `extract-an`/
 `extract-roster-groupes`. `continue-on-error: true`, same pattern as
 `extract-parltrack` — see `docs/technical_decisions.md#amendements-index-job-dedie-ci`.
+Legislatures 15/16 are excluded from this network path: their dossier is
+closed and the CI download budget can't reliably fetch their 350-650 MB
+archive (recurring `IncompleteRead`, reproduced outside CI too). Their index
+is built once, offline, via `src/build_amendements_index_figees.py --legislature
+{15,16} --zip <local archive>` and committed under `raw_data/amendements_an_figes/`
+— `candidate_profile.py` reads that fallback instead of hitting the network
+for those two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0. Before that step, the `merge-and-pivot` job also
@@ -333,7 +340,8 @@ coverage numbers.
 (default `7`, `0` disables) control the section 3d soft warning that distinguishes, per
 legislature, an amendements index that was never built from one that is present but stale
 (no successful rebuild within the threshold, per the `fraicheur.json` indicator written by
-`candidate_profile.py`, #253) — see
+`candidate_profile.py`, #253), or frozen (légis 15/16, `fraicheur.json` carries `figee: true`
+— never staleness-checked, see `docs/technical_decisions.md#amendements-legislatures-figees`) — see
 `docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`.
 
 ## 9. Open the web UI locally

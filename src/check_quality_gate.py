@@ -511,6 +511,13 @@ _AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # reconstruction réussie récente est signalé comme périmé — voir
 # docs/technical_decisions.md#amendements-index-quality-gate-fraicheur.
 _AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
+# Législatures dont l'archive AN source est définitivement close — même
+# duplication délibérée que ci-dessus vis-à-vis de
+# AN_AMENDEMENTS_LEGISLATURES_FIGEES (candidate_profile.py). Leur index,
+# committé par build_amendements_index_figees.py, ne sera plus jamais
+# reconstruit : la fraîcheur n'a pas de sens pour elles (voir
+# docs/technical_decisions.md#amendements-legislatures-figees).
+_AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"15", "16"})
 
 
 def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, str]:
@@ -631,7 +638,7 @@ def _report_amendements_freshness(
     Retourne (soft_warnings, console_text, markdown_text). Soft fail uniquement
     (n'empêche pas le commit), même traitement que le reste de la section 3c.
 
-    Trois états par législature :
+    Quatre états par législature :
       - jamais construit : aucun `index_par_acteur.json` en cache — jamais
         construit avec succès, ou pas encore présent dans ce job CI (voir
         `docs/technical_decisions.md#amendements-index-job-dedie-ci` pour le
@@ -640,6 +647,11 @@ def _report_amendements_freshness(
         (fraîcheur non garantie), soit sa dernière tentative connue a échoué
         (`derniere_construction_reussie: false`, index existant conservé), soit
         elle a réussi il y a plus de `staleness_days` jours.
+      - figé : législature dans `_AMENDEMENTS_LEGISLATURES_FIGEES` avec un
+        index dont `fraicheur.json` porte `figee: true` (committé par
+        `build_amendements_index_figees.py`, jamais reconstruit) — aucune
+        notion de péremption, jamais de warning (voir
+        `docs/technical_decisions.md#amendements-legislatures-figees`).
       - frais : index présent, dernière tentative connue réussie et récente —
         pas de warning.
     """
@@ -648,6 +660,7 @@ def _report_amendements_freshness(
     soft_warnings: list[str] = []
     jamais_construit: list[str] = []
     perime: list[str] = []
+    figees: list[str] = []
     frais: list[str] = []
 
     for legislature in _AMENDEMENTS_LEGISLATURES:
@@ -668,6 +681,10 @@ def _report_amendements_freshness(
                 f"législature {legislature} : index périmé — indicateur de fraîcheur "
                 f"absent ou illisible ({_AMENDEMENTS_FRAICHEUR_FILENAME}), fraîcheur non garantie"
             )
+            continue
+
+        if legislature in _AMENDEMENTS_LEGISLATURES_FIGEES and fraicheur.get("figee"):
+            figees.append(legislature)
             continue
 
         if not fraicheur.get("derniere_construction_reussie"):
@@ -701,7 +718,8 @@ def _report_amendements_freshness(
     lines = [
         "",
         "┌─ 3d/4  Fraîcheur index amendements (AN) ───────────────────────────",
-        f"│  Jamais construit : {len(jamais_construit)}   Périmé : {len(perime)}   Frais : {len(frais)}",
+        f"│  Jamais construit : {len(jamais_construit)}   Périmé : {len(perime)}   "
+        f"Figé : {len(figees)}   Frais : {len(frais)}",
         "│",
     ]
     if soft_warnings:
@@ -725,6 +743,8 @@ def _report_amendements_freshness(
             etat = "❌ jamais construit"
         elif legislature in perime:
             etat = "⚠️ périmé"
+        elif legislature in figees:
+            etat = "❄️ figé (dossier clos, non reconstruit)"
         else:
             etat = "✅ frais"
         md_lines.append(f"| {legislature} | {etat} |")

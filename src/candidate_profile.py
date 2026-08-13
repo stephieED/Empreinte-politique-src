@@ -25,6 +25,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -97,6 +98,21 @@ AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "15": ("amendements_legis", "Amendements_XV.json.zip"),
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
+# Legislatures dont le dossier legislatif est definitivement clos : l'archive
+# amendements AN correspondante (Last-Modified verifie le 13/08/2026 :
+# 2022-06-09 pour la 15e, 2024-06-28 pour la 16e) ne sera plus jamais modifiee
+# par l'Assemblee nationale. Le telechargement en CI de ces deux archives
+# (350-650 Mo) echoue de facon recurrente dans le budget reseau/temps
+# disponible (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de
+# la CI - voir docs/technical_decisions.md#amendements-legislatures-figees) :
+# leur index est construit une fois pour toutes hors CI
+# (build_amendements_index_figees.py) et committe dans
+# AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index au lieu
+# d'un nouveau telechargement reseau. La 17e reste active (legislature en
+# cours) et continue d'etre reconstruite par le job CI dedie
+# extract-amendements-an.
+AN_AMENDEMENTS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"15", "16"})
+AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # Nom du fichier d'indicateur de fraîcheur écrit à côté de `index_par_acteur.json`
 # (issue #253, sous-issue 5/6 de #248) : permet à un futur consommateur (quality
 # gate, sous-issue 6) de distinguer un index frais d'un index conservé faute de
@@ -1076,6 +1092,64 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
         pass
 
 
+def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
+    """Charge l'index amendements committé pour une législature figée
+    (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour
+    toutes par `build_amendements_index_figees.py`, et le matérialise dans le
+    cache disque (`AMENDEMENTS_CACHE_DIR`) au même format qu'une construction
+    réseau réussie (`index_par_acteur.json` + `fraicheur.json`, ce dernier
+    copié tel quel avec son marqueur `figee: true`) — pour que le reste du
+    pipeline (quality gate section 3d comprise) n'ait pas à distinguer les
+    deux origines. Retourne `None` si le fallback committé est absent (ne
+    devrait pas arriver pour une législature figée, mais ne lève jamais :
+    l'appelant retombe alors sur le chemin réseau standard)."""
+    frozen_dir = AN_AMENDEMENTS_FIGEES_DIR / legislature
+    frozen_index_path = frozen_dir / "index_par_acteur.json"
+    if not frozen_index_path.is_file():
+        return None
+    try:
+        with open(frozen_index_path, encoding="utf-8") as f:
+            index = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    cache_index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
+    try:
+        cache_index_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(cache_index_path, "w", encoding="utf-8") as f:
+            json.dump(index, f, ensure_ascii=False)
+        frozen_fraicheur_path = frozen_dir / AMENDEMENTS_FRAICHEUR_FILENAME
+        if frozen_fraicheur_path.is_file():
+            shutil.copyfile(frozen_fraicheur_path, cache_index_path.with_name(AMENDEMENTS_FRAICHEUR_FILENAME))
+    except OSError:
+        pass
+
+    return index
+
+
+def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
+    """Parse une archive amendements AN déjà téléchargée en index acteurRef ->
+    liste d'amendements (extrait de `_download_and_build_amendement_index`
+    pour être réutilisable par `build_amendements_index_figees.py`, qui parse
+    une archive téléchargée manuellement hors CI). Lève `zipfile.BadZipFile`
+    si l'archive est invalide — laissé à l'appelant à traiter."""
+    index: dict[str, list[dict[str, Any]]] = {}
+    with zipfile.ZipFile(zip_path) as zf:
+        noms = [n for n in zf.namelist() if n.endswith(".json")]
+        for nom in noms:
+            try:
+                with zf.open(nom) as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, KeyError):
+                continue
+            parsed_entries = _parse_amendement_entry(data)
+            if parsed_entries is None:
+                continue
+            for acteur_ref, record in parsed_entries:
+                index.setdefault(acteur_ref, []).append(record)
+    return index
+
+
 def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
     """Télécharge l'archive AN et construit (en la mettant en cache sur disque) un
     index acteurRef -> liste d'amendements. Reprend telle quelle la logique réseau
@@ -1086,6 +1160,11 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     (`src/build_amendements_index.py`, #251) : `fetch_amendements_officiels`
     ne l'appelle plus depuis #252 (sous-issue 4/6 de #248), elle lit
     uniquement `_read_cached_amendement_index`.
+
+    Pour une législature figée (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), aucun
+    appel réseau n'a lieu : l'index committé est chargé par
+    `_load_frozen_amendement_index` (voir aussi
+    `docs/technical_decisions.md#amendements-legislatures-figees`).
 
     Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
@@ -1123,6 +1202,11 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
+        if legislature in AN_AMENDEMENTS_LEGISLATURES_FIGEES:
+            frozen_index = _load_frozen_amendement_index(legislature)
+            if frozen_index is not None:
+                return frozen_index
+
         if _amendements_legislature_failed_this_run(legislature):
             if index_path.is_file():
                 _write_amendements_fraicheur(index_path, reussi=False)
@@ -1145,21 +1229,8 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
                 _write_amendements_fraicheur(index_path, reussi=False)
             raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
-        index: dict[str, list[dict[str, Any]]] = {}
         try:
-            with zipfile.ZipFile(zip_path) as zf:
-                noms = [n for n in zf.namelist() if n.endswith(".json")]
-                for nom in noms:
-                    try:
-                        with zf.open(nom) as f:
-                            data = json.load(f)
-                    except (json.JSONDecodeError, KeyError):
-                        continue
-                    parsed_entries = _parse_amendement_entry(data)
-                    if parsed_entries is None:
-                        continue
-                    for acteur_ref, record in parsed_entries:
-                        index.setdefault(acteur_ref, []).append(record)
+            index = _parse_amendements_zip(zip_path)
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
             _mark_amendements_legislature_failed(legislature)

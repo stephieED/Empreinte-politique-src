@@ -61,7 +61,9 @@ Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe file;
 soft warnings on low interventions, low coverage, network signals, and amendements index
 freshness (§3d: distinguishes "never built" from "present but stale beyond N days without
-a successful rebuild", see `docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`).
+a successful rebuild" from "frozen" — légis 15/16 are closed dossiers, their index is
+committed under `raw_data/amendements_an_figes/` and never re-fetched, see
+`docs/technical_decisions.md#amendements-legislatures-figees`).
 
 ## 4. Pivot schema v1 (`src/schema_pivot.py`)
 

@@ -1,3 +1,69 @@
+<a id="amendements-legislatures-figees"></a>
+## Index amendements des législatures 15/16 : construction manuelle hors CI, committée (2026-08-13)
+
+**Contexte** : le job CI dédié `extract-amendements-an` ([[amendements-index-job-dedie-ci]],
+#251) a échoué sur son tout premier run réel pour les législatures 15 et 16 —
+`IncompleteRead` répété dès le premier segment de `Amendements_XV.json.zip`
+(648 Mo) et `Amendements.json.zip`/16 (363 Mo), les 3 tentatives
+(`AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`) épuisées à chaque fois (voir logs du run
+GitHub Actions #31705965678, job `extract-amendements-an`). La quality gate
+section 3d ([[amendements-index-quality-gate-fraicheur]], #254) rapportait
+alors, à raison, les deux comme « jamais construit ». Reproduit hors CI :
+un téléchargement manuel (`curl --http1.1`, retries, resume `-C -`, budget
+1h+) rencontre le même type de coupure (`HTTP/2 stream ... PROTOCOL_ERROR`
+puis, en HTTP/1.1, `transfer closed with N bytes remaining to read`) —
+confirme que la cause est le CDN d'`data.assemblee-nationale.fr` lui-même sur
+ces deux grosses archives, pas une contrainte spécifique aux runners GitHub
+Actions.
+
+Ces deux législatures sont closes : leurs dossiers législatifs ne seront plus
+jamais amendés, et l'en-tête `Last-Modified` des archives le confirme
+(`2022-06-09` pour la 15e, `2024-06-28` pour la 16e — probablement une
+dernière correction éditoriale AN, pas une évolution de fond). Retenter à
+chaque run CI un téléchargement de 350-650 Mo pour une donnée figée n'a donc
+aucune valeur — contrairement à la législature 17 (en cours), dont l'archive
+évolue et doit rester reconstruite en continu par le job CI existant.
+
+**Décision** :
+1. `AN_AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"15", "16"})`
+   (`candidate_profile.py`), et un nouveau script one-shot
+   `src/build_amendements_index_figees.py --legislature {15,16} --zip <archive locale>`
+   qui réutilise le parsing existant (`_parse_amendements_zip`, extrait de
+   `_download_and_build_amendement_index`) sur une archive téléchargée
+   manuellement (patience/retries hors budget CI), et écrit
+   `raw_data/amendements_an_figes/<legislature>/{index_par_acteur.json,
+   fraicheur.json}` — committé dans le dépôt (contrairement à
+   `.cache/amendements_an/`, gitignoré). `fraicheur.json` porte un marqueur
+   `figee: true` en plus des champs habituels.
+2. `_download_and_build_amendement_index` court-circuite tout accès réseau
+   pour ces deux législatures : `_load_frozen_amendement_index` lit le
+   fallback committé et le matérialise dans le cache disque standard
+   (`.cache/amendements_an/<legislature>/`), au même format qu'une
+   construction réseau réussie — transparent pour `fetch_amendements_officiels`
+   et pour `check_quality_gate.py`.
+3. Section 3d du quality gate : nouvel état **figé** (distinct de
+   jamais-construit/périmé/frais), déclenché quand la législature est dans
+   `_AMENDEMENTS_LEGISLATURES_FIGEES` *et* que `fraicheur.json` porte
+   `figee: true`. Aucune notion de péremption ne s'applique — pas de
+   warning, jamais, même après `--amendements-staleness-days`.
+
+**Alternatives rejetées** :
+- *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
+  dépôt Git sans bénéfice — seul l'index dérivé (`index_par_acteur.json`,
+  plusieurs ordres de grandeur plus petit) est effectivement consommé en
+  aval.
+- *Laisser le job CI retenter indéfiniment* : coût réseau/temps CI répété
+  pour un résultat qui ne peut structurellement pas changer une fois obtenu
+  une fois — pas de bénéfice, seulement un budget CI gaspillé et un signal
+  de warning permanent et non actionnable pour l'équipe.
+- *Étendre le seuil de péremption (`--amendements-staleness-days`) à
+  l'infini pour 15/16 au lieu d'un état dédié* : aurait masqué la vraie
+  distinction sémantique (« ne sera plus jamais reconstruit » vs « pas
+  reconstruit récemment mais pourrait/devrait l'être ») et empêché de
+  détecter un futur vrai problème si le fallback committé venait à
+  disparaître ou se corrompre (l'état « jamais construit »/« périmé »
+  resterait alors correctement déclenché).
+
 <a id="pythonunbuffered-generate-data"></a>
 ## `PYTHONUNBUFFERED` global sur `generate-data.yml` : stdout fiable en CI non-TTY (#259) (2026-08-13)
 
