@@ -20,7 +20,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-07T09:57:32+0000"
+      "synchro_le": "2026-08-13T09:17:48+0000"
     }
   ],
   "mandats": [
@@ -13159,11 +13159,12 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-07T10:29:01+0000",
+    "genere_le": "2026-08-13T10:14:52+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
       "ParlTrack: aucune donnée trouvée pour le MEP ID 96742. Vérifier la disponibilité des dumps ou la validité du MEP ID."
-    ]
+    ],
+    "provenance": "candidat_declare"
   }
 }

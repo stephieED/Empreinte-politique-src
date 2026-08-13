@@ -10,7 +10,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/131580",
-      "synchro_le": "2026-08-07T09:58:07+0000"
+      "synchro_le": "2026-08-13T09:17:54+0000"
     }
   ],
   "mandats": [
@@ -220,10 +220,11 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-07T09:58:07+0000",
+    "genere_le": "2026-08-13T09:17:54+0000",
     "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": [
       "ParlTrack: aucune donnée trouvée pour le MEP ID 131580. Vérifier la disponibilité des dumps ou la validité du MEP ID."
-    ]
+    ],
+    "provenance": "candidat_declare"
   }
 }

@@ -79,14 +79,15 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-07T10:29:23+0000",
+    "genere_le": "2026-08-13T10:15:17+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nossenateurs:bruno-retailleau"
     ],
     "seuil_quorum": 0.5,
     "warnings": [
-      "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, site arrêté par Regards Citoyens (plus de mise à jour, pas de champ mandat_fin exploitable). Ce profil reflète donc la dernière donnée disponible avant l'arrêt du site, pas nécessairement la composition actuelle du Sénat (ex. incompatibilités liées à une fonction ministérielle non détectables automatiquement)."
+      "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, site arrêté par Regards Citoyens (plus de mise à jour, pas de champ mandat_fin exploitable). Ce profil reflète donc la dernière donnée disponible avant l'arrêt du site, pas nécessairement la composition actuelle du Sénat (ex. incompatibilités liées à une fonction ministérielle non détectables automatiquement).",
+      "couverture_roster_senat : sans mandat_fin exploitable (voir avertissement fraicheur_donnees ci-dessus), _member_matches_legislature/senat_periode_debut (group_roster.py) ne peut pas fiablement distinguer les sénateurs·rices encore en fonction des anciens·nes sur ce roster — renseigner senat_periode_debut ne comble pas cette lacune tant que mandat_fin n'est pas exploitable pour la majorité des entrées archivées (décision documentée dans docs/technical_decisions.md#senat-periode-debut). cohesion_votes/effectif peuvent donc inclure des membres qui ne siègent plus, avec un effet d'autant plus visible que la couverture des profils (meta.couverture_roster) se rapproche de 100 %."
     ],
     "couverture_roster": {
       "roster_total": 235,

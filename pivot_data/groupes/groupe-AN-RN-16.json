@@ -11720,12 +11720,12 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-07T09:57:56+0000"
+      "synchro_le": "2026-08-13T09:17:53+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-07T10:29:16+0000",
+    "genere_le": "2026-08-13T10:15:15+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:marine-le-pen"
