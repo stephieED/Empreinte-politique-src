@@ -1387,6 +1387,13 @@ def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(t
     valid_zip_bytes = buf.getvalue()
 
     class FakeStreamResponse:
+        # status_code=200 (au lieu de 206) simule un serveur qui ignore l'en-tête
+        # Range et renvoie le fichier entier en un seul segment — suffisant ici
+        # puisque ce test porte sur le retry transitoire, pas sur le découpage
+        # par plages (voir test_download_amendements_zip_retries_only_failed_segment
+        # pour le retry ciblé d'un seul segment médian).
+        status_code = 200
+
         def __init__(self, payload: bytes):
             self._payload = payload
 
@@ -1426,6 +1433,8 @@ def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):
     from candidate_profile import AmendementsIndexError, _build_acteur_amendement_index
 
     class FakeStreamResponse:
+        status_code = 200  # fichier entier en un seul segment, voir commentaire ci-dessus
+
         def __enter__(self):
             return self
 
@@ -1449,6 +1458,89 @@ def test_build_acteur_amendement_index_raises_on_bad_zip(tmp_path):
             pass
         except zipfile.BadZipFile:
             assert False, "BadZipFile ne doit pas être avalée : elle doit être reconvertie en AmendementsIndexError"
+
+
+def test_download_amendements_zip_retries_only_failed_segment(tmp_path):
+    """Une coupure mi-flux sur un segment ne doit retenter que ce segment — pas
+    tout le fichier (critère d'acceptation de l'issue #241)."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets, découpés en segments de 4 -> 3 segments
+    calls: list[str] = []
+
+    class FakeRangeResponse:
+        def __init__(self, data: bytes, total: int):
+            self._data = data
+            self.status_code = 206
+            self.headers = {"Content-Range": f"bytes 0-0/{total}"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1024 * 1024):
+            yield self._data
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        range_value = headers["Range"]
+        calls.append(range_value)
+        start, end = (int(x) for x in range_value.removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        # Échec transitoire simulé une seule fois, sur le segment médian (offset 4).
+        if start == 4 and calls.count("bytes=4-7") == 1:
+            raise _requests.RequestException("IncompleteRead simulée mi-segment")
+        return FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        zip_path = tmp_path / "amendements.zip"
+        _download_amendements_zip("https://example.test/amendements.zip", zip_path, "17")
+
+    assert zip_path.read_bytes() == payload, "Le fichier reconstitué doit être identique octet pour octet"
+    assert calls.count("bytes=0-3") == 1, "Le premier segment (déjà réussi) ne doit pas être re-demandé"
+    assert calls.count("bytes=4-7") == 2, "Seul le segment en échec doit être retenté"
+    assert calls.count("bytes=8-11") == 1, "Le dernier segment ne doit être demandé qu'une fois"
+
+
+def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others():
+    """Légis 17 réussie + légis 16/15 en échec définitif : les amendements de la
+    légis 17 doivent être conservés (plus de vidage global sur l'échec d'une
+    seule législature), et chaque échec doit être tracé avec la législature
+    concernée dans les warnings (critères d'acceptation de l'issue #241)."""
+    from candidate_profile import (
+        AmendementsIndexError,
+        WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+        fetch_amendements_officiels,
+    )
+
+    def fake_index(legislature):
+        if legislature == "17":
+            return {"PA1": [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}]}
+        raise AmendementsIndexError(f"téléchargement en échec pour la législature {legislature}")
+
+    warnings: list[str] = []
+    with (
+        patch("candidate_profile._build_acteur_amendement_index", side_effect=fake_index),
+        patch("candidate_profile._build_texte_titre_index", return_value={}),
+        patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
+    ):
+        amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
+
+    assert len(amendements) == 1, "Les amendements de la législature réussie (17) doivent être conservés"
+    assert amendements[0]["legislature"] == "17"
+
+    failure_warnings = [w for w in warnings if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES)]
+    assert len(failure_warnings) == 2, "Un warning distinct par législature en échec (16 et 15), pas un échec global"
+    assert any("16" in w for w in failure_warnings), "Le warning doit mentionner spécifiquement la législature 16"
+    assert any("15" in w for w in failure_warnings), "La légis 15 doit être tentée même quand la légis 16 échoue"
 
 
 def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
