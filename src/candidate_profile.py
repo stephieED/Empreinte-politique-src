@@ -144,7 +144,7 @@ AMENDEMENTS_DOWNLOAD_CHUNK_BYTES = 32 * 1024 * 1024
 AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD = 3
 
 # Legislatures dont le telechargement de l'archive amendements a echoue de
-# facon definitive (toutes les tentatives de _build_acteur_amendement_index
+# facon definitive (toutes les tentatives de _download_and_build_amendement_index
 # epuisees) pour le run (process) courant. Verifie en tete de cette fonction
 # avant toute tentative reseau : sans ce cache, chaque candidat suivant ayant
 # besoin de la meme legislature repayait l'integralite du cycle de retry
@@ -1079,8 +1079,13 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
 def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
     """Télécharge l'archive AN et construit (en la mettant en cache sur disque) un
     index acteurRef -> liste d'amendements. Reprend telle quelle la logique réseau
-    précédemment inline dans `_build_acteur_amendement_index` (issue #250) : le
-    découpage vers deux fonctions distinctes n'a rien changé à ce comportement.
+    précédemment inline dans l'ex-`_build_acteur_amendement_index` (issue #250).
+
+    Seul point d'entrée réseau restant pour les amendements officiels, appelé
+    exclusivement par le job CI dédié `extract-amendements-an`
+    (`src/build_amendements_index.py`, #251) : `fetch_amendements_officiels`
+    ne l'appelle plus depuis #252 (sous-issue 4/6 de #248), elle lit
+    uniquement `_read_cached_amendement_index`.
 
     Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
@@ -1090,7 +1095,7 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
 
     Lève `AmendementsIndexError` en cas d'échec de téléchargement ou de parsing de
     l'archive (au lieu de retourner un {} indiscernable d'un index vide légitime),
-    pour que l'appelant puisse le distinguer et le tracer dans meta.warnings.
+    pour que l'appelant puisse le distinguer et le tracer.
 
     Un échec définitif (tentatives épuisées) est mémorisé à la fois en mémoire
     process (`_amendements_failed_legislatures`, #239) et sur un marqueur disque
@@ -1171,21 +1176,6 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
             pass
 
         return index
-
-
-def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Point d'entrée unique utilisé par `fetch_amendements_officiels` : essaie la
-    lecture cache-only (`_read_cached_amendement_index`) puis, si absente, retombe
-    sur le téléchargement+construction (`_download_and_build_amendement_index`).
-
-    Comportement observable inchangé par rapport à avant le découpage de l'issue
-    #250 — préparation nécessaire avant de pouvoir déplacer la partie réseau dans
-    un job dédié (sous-issue 3 de #248) sans changer les appelants existants.
-    """
-    cached = _read_cached_amendement_index(legislature)
-    if cached is not None:
-        return cached
-    return _download_and_build_amendement_index(legislature)
 
 
 def _collect_texte_codes(node: Any, codes: set[str]) -> None:
@@ -1749,14 +1739,22 @@ def fetch_amendements_officiels(
     celle de la source d'identité : un même élu peut avoir déposé des
     amendements sous plusieurs législatures successives.
 
-    Chaque législature est tentée indépendamment (`try`/`except` par
-    itération) : l'échec définitif d'une législature (ex. légis 16,
-    chroniquement instable) n'interrompt plus l'agrégation des autres —
-    corrige un défaut où la première législature en échec empêchait même
-    d'essayer les suivantes, faisant perdre par exemple une légis 17 pourtant
-    récupérée avec succès (issue #241). Si `warnings` est fourni, un message
-    `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES` précisant la législature en
-    échec y est ajouté pour chaque échec, au lieu d'un échec binaire global.
+    Chaque législature est tentée indépendamment : l'absence de cache pour une
+    législature (ex. légis 16, chroniquement instable côté téléchargement)
+    n'interrompt plus l'agrégation des autres — corrige un défaut où la
+    première législature en échec empêchait même d'essayer les suivantes,
+    faisant perdre par exemple une légis 17 pourtant disponible (issue #241).
+    Si `warnings` est fourni, un message `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES`
+    précisant la législature concernée y est ajouté pour chaque absence, au
+    lieu d'un échec binaire global.
+
+    Lecture cache-only exclusivement (`_read_cached_amendement_index`, #250) :
+    ne déclenche jamais de téléchargement depuis ce chemin. La construction de
+    l'index (téléchargement + parsing de l'archive AN) est désormais la seule
+    responsabilité du job CI dédié `extract-amendements-an`
+    (`src/build_amendements_index.py`, #251) — sous-issue 4/6 de #248, pour
+    que le coût réseau ne soit plus payé indépendamment par chaque job
+    consommateur (`extract-an`/`extract-roster-groupes`, issues #239/#245/#246).
     """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
@@ -1764,11 +1762,13 @@ def fetch_amendements_officiels(
 
     amendements: list[dict[str, Any]] = []
     for legislature in AN_AMENDEMENTS_PATH:
-        try:
-            index = _build_acteur_amendement_index(legislature)
-        except AmendementsIndexError as exc:
+        index = _read_cached_amendement_index(legislature)
+        if index is None:
             if warnings is not None:
-                warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : {exc}")
+                warnings.append(
+                    f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : "
+                    "index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+                )
             continue
         for record in index.get(acteur_ref, []):
             amendements.append({**record, "legislature": legislature})

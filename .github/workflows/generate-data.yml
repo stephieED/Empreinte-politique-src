@@ -110,6 +110,20 @@ jobs:
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
 
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
+      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
+      # ce job s'appuie sur ce que la restauration du cache partagé
+      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
+      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
+      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
+
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
       # fresh_run=true  → --no-merge : écrasement complet.
       # fresh_run=false → fusion additive : données existantes préservées.
@@ -596,6 +610,20 @@ jobs:
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
+
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
+      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
+      # ce job s'appuie sur ce que la restauration du cache partagé
+      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
+      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
+      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
 
       # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
       # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
