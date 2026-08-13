@@ -52,6 +52,11 @@ jobs:
       # (api_error / inconclusive=true — jamais à confondre avec une
       # signature absente), et signature réellement absente sur des logs
       # effectivement lus (matched=false, api_error=false, inconclusive=false).
+      # --allow-escape-sequences est requis sur tout appel gh api .../logs
+      # de ce fichier (#236) : sans ce flag, gh api échoue silencieusement
+      # dès que le log contient des couleurs ANSI (quasi systématique),
+      # ce qui a rendu ce mécanisme inopérant sur les runs #26-28 sans
+      # jamais le signaler — cf. docs/technical_decisions.md#retry-preemption-logs.
       - name: Détecter la signature de préemption runner
         id: signature
         if: steps.cap.outputs.already_retried == 'false'
