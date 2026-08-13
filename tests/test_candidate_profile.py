@@ -1397,6 +1397,158 @@ def test_download_and_build_amendement_index_ignores_existing_cache_write(tmp_pa
     assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
 
 
+# ---------------------------------------------------------------------------
+# Tests pour l'indicateur de fraîcheur et la non-régression d'un index déjà en
+# cache sur échec définitif de reconstruction (issue #253, sous-issue 5/6 de
+# #248) : `_download_and_build_amendement_index` n'ouvre `index_path` en
+# écriture qu'après succès complet — un échec, quel qu'il soit, laisse donc
+# tel quel un index déjà présent sur disque. `fraicheur.json`, écrit à côté,
+# permet de distinguer un index frais d'un index conservé faute de mieux.
+# ---------------------------------------------------------------------------
+
+def test_download_and_build_amendement_index_success_writes_fraicheur(tmp_path):
+    """Reconstruction réussie : l'index est remplacé et `fraicheur.json` reflète
+    le succès avec un horodatage."""
+    import io
+    import zipfile as zipfile_module
+
+    from candidate_profile import _download_and_build_amendement_index
+
+    buf = io.BytesIO()
+    with zipfile_module.ZipFile(buf, "w") as zf:
+        pass  # zip valide mais vide : suffisant, ce test porte sur la fraîcheur
+    valid_zip_bytes = buf.getvalue()
+
+    class FakeStreamResponse:
+        status_code = 200  # fichier entier en un seul segment (voir tests ci-dessus)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1024 * 1024):
+            yield valid_zip_bytes
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=FakeStreamResponse()),
+        patch("candidate_profile.time.strftime", return_value="2026-08-13T12:00:00+0000"),
+    ):
+        index = _download_and_build_amendement_index("17")
+
+    assert index == {}
+    fraicheur = json.loads((tmp_path / "17" / "fraicheur.json").read_text(encoding="utf-8"))
+    assert fraicheur == {
+        "derniere_construction_reussie": True,
+        "horodatage": "2026-08-13T12:00:00+0000",
+    }
+
+
+def test_download_and_build_amendement_index_failure_preserves_existing_index(tmp_path):
+    """Échec définitif sur une législature dont un index existait déjà (ici
+    corrompu — seul cas où une reconstruction est réellement retentée malgré
+    un fichier déjà présent : un index valide est utilisé tel quel sans
+    nouvelle tentative, voir
+    `test_build_acteur_amendement_index_uses_cache_only_when_present`) : le
+    fichier existant ne doit être ni supprimé ni remplacé par un résultat
+    vide/partiel, et `fraicheur.json` doit refléter l'échec."""
+    from candidate_profile import (
+        AmendementsIndexError,
+        _download_and_build_amendement_index,
+    )
+
+    index_dir = tmp_path / "17"
+    index_dir.mkdir(parents=True)
+    existing_content = "{not valid json"
+    (index_dir / "index_par_acteur.json").write_text(existing_content, encoding="utf-8")
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.time.strftime", return_value="2026-08-13T12:05:00+0000"),
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    assert (index_dir / "index_par_acteur.json").read_text(encoding="utf-8") == existing_content, (
+        "Le fichier existant ne doit jamais être supprimé ni remplacé par un résultat vide/partiel sur échec"
+    )
+    fraicheur = json.loads((index_dir / "fraicheur.json").read_text(encoding="utf-8"))
+    assert fraicheur == {
+        "derniere_construction_reussie": False,
+        "horodatage": "2026-08-13T12:05:00+0000",
+    }
+
+
+def test_download_and_build_amendement_index_failure_without_existing_index_writes_nothing(tmp_path):
+    """Échec définitif sur une législature sans index préexistant : comportement
+    actuel inchangé — ni `index_par_acteur.json` ni `fraicheur.json` ne sont
+    créés (rien à préserver, pas d'indicateur de fraîcheur à qualifier)."""
+    from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    index_dir = tmp_path / "17"
+    assert not (index_dir / "index_par_acteur.json").exists()
+    assert not (index_dir / "fraicheur.json").exists()
+
+
+def test_download_and_build_amendement_index_already_failed_this_run_preserves_existing_index(tmp_path):
+    """Même garantie sur le raccourci `_amendements_legislature_failed_this_run`
+    (appel suivant du même run pour une législature déjà en échec définitif) :
+    un index corrompu déjà présent est préservé et `fraicheur.json` est
+    rafraîchi, sans nouvelle tentative réseau."""
+    from candidate_profile import (
+        AmendementsIndexError,
+        _amendements_failed_legislatures,
+        _download_and_build_amendement_index,
+    )
+
+    index_dir = tmp_path / "17"
+    index_dir.mkdir(parents=True)
+    existing_content = "{not valid json"
+    (index_dir / "index_par_acteur.json").write_text(existing_content, encoding="utf-8")
+    _amendements_failed_legislatures.add("17")
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    mock_get.assert_not_called()
+    assert (index_dir / "index_par_acteur.json").read_text(encoding="utf-8") == existing_content
+    fraicheur = json.loads((index_dir / "fraicheur.json").read_text(encoding="utf-8"))
+    assert fraicheur["derniere_construction_reussie"] is False
+
+
+def test_build_acteur_amendement_index_uses_cache_only_when_present(tmp_path):
+    """Point d'entrée `_build_acteur_amendement_index` : quand le cache disque
+    existe déjà, il est utilisé tel quel — pas de téléchargement (comportement
+    observable inchangé par le découpage de #250)."""
+    from candidate_profile import _build_acteur_amendement_index
 def test_download_and_build_amendement_index_uses_existing_cache_without_download(tmp_path):
     """`_download_and_build_amendement_index` : quand le cache disque existe déjà
     (double-check en tête, sous le même verrou), il est utilisé tel quel — pas de
