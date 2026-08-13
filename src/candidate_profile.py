@@ -23,6 +23,7 @@ import argparse
 import concurrent.futures
 import io
 import json
+import os
 import re
 import sys
 import threading
@@ -141,12 +142,64 @@ AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD = 3
 # epuisees) pour le run (process) courant. Verifie en tete de cette fonction
 # avant toute tentative reseau : sans ce cache, chaque candidat suivant ayant
 # besoin de la meme legislature repayait l'integralite du cycle de retry
-# (issue #239). Volontairement non persiste sur disque (contrairement a
-# l'index lui-meme) : une legislature reellement indisponible en fin de run
-# le sera tres probablement encore au run suivant (nouveau process), qui
-# retentera naturellement depuis zero plutot que de rester bloquee par un
-# etat d'echec perime.
+# (issue #239). Raccourci intra-process uniquement : deux jobs CI du meme run
+# (ex. extract-an puis extract-roster-groupes, sequences par #222) sont deux
+# process Python distincts, donc deux instances vides de ce set — voir
+# _amendements_failed_marker_path ci-dessous pour la source de verite
+# inter-jobs (issue #246).
 _amendements_failed_legislatures: set[str] = set()
+
+
+def _amendements_failed_marker_path(legislature: str) -> Path:
+    """Chemin du marqueur disque d'echec definitif pour une legislature, sur le
+    cache disque partage `.cache/amendements_an/` (restaure/sauvegarde par
+    chaque job CI grace au sequencement de #222 sur la meme cle de cache,
+    voir [[concurrence-ci-roster]]). Contrairement a l'index lui-meme, ce
+    marqueur ne contient aucune donnee : juste le `GITHUB_RUN_ID` du run
+    l'ayant ecrit, pour distinguer un echec du run courant (a respecter) d'un
+    residu d'une semaine ISO precedente via `restore-keys` (a ignorer, issue
+    #246)."""
+    return AMENDEMENTS_CACHE_DIR / legislature / "failed_run_id"
+
+
+def _mark_amendements_legislature_failed(legislature: str) -> None:
+    """Memorise l'echec definitif d'une legislature : en memoire process
+    (raccourci intra-process, #239) et sur le marqueur disque partage entre
+    jobs CI du meme run (#246). `GITHUB_RUN_ID` est absent hors CI (ex. tests,
+    usage local) : dans ce cas, seul le cache memoire est utilise, comme avant
+    #246."""
+    _amendements_failed_legislatures.add(legislature)
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if not run_id:
+        return
+    marker_path = _amendements_failed_marker_path(legislature)
+    try:
+        marker_path.parent.mkdir(parents=True, exist_ok=True)
+        marker_path.write_text(run_id, encoding="utf-8")
+    except OSError:
+        pass  # marqueur best-effort : une legislature non marquee est simplement retentee
+
+
+def _amendements_legislature_failed_this_run(legislature: str) -> bool:
+    """Determine si une legislature a deja echoue definitivement durant le run
+    courant, en consultant d'abord le cache memoire intra-process (#239) puis,
+    a defaut, le marqueur disque inter-jobs (#246). Un marqueur disque
+    referencant un `GITHUB_RUN_ID` different du run courant est ignore (residu
+    perime) : comportement de #239 volontairement preserve pour les runs
+    suivants, sans TTL explicite a maintenir."""
+    if legislature in _amendements_failed_legislatures:
+        return True
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if not run_id:
+        return False
+    try:
+        marker_run_id = _amendements_failed_marker_path(legislature).read_text(encoding="utf-8").strip()
+    except OSError:
+        return False
+    if marker_run_id != run_id:
+        return False
+    _amendements_failed_legislatures.add(legislature)  # raccourci pour les prochains appels intra-process
+    return True
 
 # Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
 # multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
@@ -992,10 +1045,13 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
     l'archive (au lieu de retourner un {} indiscernable d'un index vide légitime),
     pour que l'appelant puisse le distinguer et le tracer dans meta.warnings.
 
-    Un échec définitif (tentatives épuisées) est mémorisé dans
-    `_amendements_failed_legislatures` : les candidats suivants ayant besoin de
-    la même législature durant ce run lèvent immédiatement `AmendementsIndexError`
-    sans nouvelle tentative réseau (voir issue #239).
+    Un échec définitif (tentatives épuisées) est mémorisé à la fois en mémoire
+    process (`_amendements_failed_legislatures`, #239) et sur un marqueur disque
+    partagé entre jobs CI du même run (`_mark_amendements_legislature_failed`,
+    #246) : les candidats suivants du même job, ou le premier candidat d'un job
+    CI suivant (ex. `extract-roster-groupes` après `extract-an`) ayant besoin de
+    la même législature durant ce run, lèvent immédiatement
+    `AmendementsIndexError` sans nouvelle tentative réseau.
     """
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
@@ -1006,7 +1062,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        if legislature in _amendements_failed_legislatures:
+        if _amendements_legislature_failed_this_run(legislature):
             raise AmendementsIndexError(
                 f"téléchargement déjà en échec pour la législature {legislature} durant ce run (non retenté)"
             )
@@ -1021,7 +1077,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
             _download_amendements_zip(url, zip_path, legislature)
         except (requests.RequestException, OSError) as exc:
             print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
-            _amendements_failed_legislatures.add(legislature)
+            _mark_amendements_legislature_failed(legislature)
             raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -1041,7 +1097,7 @@ def _build_acteur_amendement_index(legislature: str) -> dict[str, list[dict[str,
                         index.setdefault(acteur_ref, []).append(record)
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive d'amendements invalide : {exc}")
-            _amendements_failed_legislatures.add(legislature)
+            _mark_amendements_legislature_failed(legislature)
             raise AmendementsIndexError(f"archive invalide ({exc})") from exc
 
         try:
