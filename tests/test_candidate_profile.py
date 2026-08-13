@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 # Les modules testés vivent dans src/, à côté du dossier tests/.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -27,6 +29,19 @@ from candidate_profile import (
     _extract_speaker_identity_from_html,
 )
 from normalize_nosdeputes import normalize_nosdeputes
+
+
+@pytest.fixture(autouse=True)
+def _reset_amendements_failed_legislatures_cache():
+    """Le cache d'échec inter-candidats (`_amendements_failed_legislatures`, issue
+    #239) est un état module-level : sans réinitialisation, un test qui fait
+    échouer le téléchargement d'une législature pollue tous les tests suivants
+    utilisant la même législature (typiquement "17")."""
+    from candidate_profile import _amendements_failed_legislatures
+
+    _amendements_failed_legislatures.clear()
+    yield
+    _amendements_failed_legislatures.clear()
 
 
 class DummyResponse:
@@ -1315,6 +1330,46 @@ def test_build_acteur_amendement_index_raises_on_download_failure(tmp_path):
     )
     # Backoff entre chaque tentative, mais pas après la dernière (déjà en échec définitif).
     assert mock_sleep.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS - 1
+
+
+def test_build_acteur_amendement_index_failed_legislature_is_not_retried_for_next_candidate(tmp_path):
+    """Une législature dont le téléchargement échoue définitivement (toutes les
+    tentatives épuisées) ne doit être retentée qu'une seule fois par run — pas
+    une fois par candidat suivant en ayant besoin (issue #239 : régression de
+    #225, où l'absence de mémoire inter-candidats d'un échec transformait un
+    échec instantané pré-#225 en plusieurs minutes de blocage répétées par
+    candidat)."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AmendementsIndexError,
+        _build_acteur_amendement_index,
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        # Premier candidat ayant besoin de cette législature : cycle complet de
+        # tentatives (comportement de #225 préservé), puis échec définitif.
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+
+        # Second candidat, même législature : échec immédiat depuis le cache
+        # d'échec, sans aucun nouvel appel réseau.
+        try:
+            _build_acteur_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+            "Le second candidat ne doit déclencher aucun nouvel appel réseau pour "
+            "une législature déjà en échec définitif durant ce run"
+        )
 
 
 def test_build_acteur_amendement_index_retries_transient_failure_then_succeeds(tmp_path):
