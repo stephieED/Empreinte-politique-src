@@ -119,6 +119,11 @@ AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # mieux après un échec définitif de reconstruction — voir
 # `_write_amendements_fraicheur`.
 AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
+# Nom du fichier des enregistrements d'amendements dédupliqués, committé aux côtés
+# d'un `index_par_acteur.json` allégé (numero + role_signataire) pour une
+# législature figée — voir `_aggregate_amendements_index` et
+# docs/technical_decisions.md#amendements-legislatures-figees.
+AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json"
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -1095,23 +1100,32 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
     """Charge l'index amendements committé pour une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour
-    toutes par `build_amendements_index_figees.py`, et le matérialise dans le
-    cache disque (`AMENDEMENTS_CACHE_DIR`) au même format qu'une construction
-    réseau réussie (`index_par_acteur.json` + `fraicheur.json`, ce dernier
-    copié tel quel avec son marqueur `figee: true`) — pour que le reste du
-    pipeline (quality gate section 3d comprise) n'ait pas à distinguer les
-    deux origines. Retourne `None` si le fallback committé est absent (ne
-    devrait pas arriver pour une législature figée, mais ne lève jamais :
-    l'appelant retombe alors sur le chemin réseau standard)."""
+    toutes par `build_amendements_index_figees.py` sous forme dédupliquée
+    (`amendements.json` + `index_par_acteur.json` allégé, voir
+    `_aggregate_amendements_index`), la reconstruit sous la forme plate
+    standard (`_expand_aggregated_amendements_index`) et la matérialise dans
+    le cache disque (`AMENDEMENTS_CACHE_DIR`) au même format qu'une
+    construction réseau réussie (`index_par_acteur.json` + `fraicheur.json`,
+    ce dernier copié tel quel avec son marqueur `figee: true`) — pour que le
+    reste du pipeline (quality gate section 3d comprise, `fetch_amendements_officiels`)
+    n'ait pas à distinguer les deux origines. Retourne `None` si le fallback
+    committé est absent ou incomplet (ne devrait pas arriver pour une
+    législature figée, mais ne lève jamais : l'appelant retombe alors sur le
+    chemin réseau standard)."""
     frozen_dir = AN_AMENDEMENTS_FIGEES_DIR / legislature
+    frozen_amendements_path = frozen_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME
     frozen_index_path = frozen_dir / "index_par_acteur.json"
-    if not frozen_index_path.is_file():
+    if not frozen_amendements_path.is_file() or not frozen_index_path.is_file():
         return None
     try:
+        with open(frozen_amendements_path, encoding="utf-8") as f:
+            amendements = json.load(f)
         with open(frozen_index_path, encoding="utf-8") as f:
-            index = json.load(f)
+            index_par_acteur = json.load(f)
     except (json.JSONDecodeError, OSError):
         return None
+
+    index = _expand_aggregated_amendements_index(amendements, index_par_acteur)
 
     cache_index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
     try:
@@ -1148,6 +1162,76 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
             for acteur_ref, record in parsed_entries:
                 index.setdefault(acteur_ref, []).append(record)
     return index
+
+
+def _aggregate_amendements_index(
+    index: dict[str, list[dict[str, Any]]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
+    """Compacte un index acteurRef -> amendements (format `_parse_amendements_zip`)
+    pour le committer sans duplication, pour une législature figée
+    (`build_amendements_index_figees.py`).
+
+    `_parse_amendement_entry` construit un enregistrement par signataire
+    (auteur + chaque cosignataire), chacun portant sa propre copie complète du
+    même amendement — `co_signataires` compris. Pour un amendement à N
+    cosignataires, le même contenu est donc dupliqué N+1 fois dans `index`
+    (mesuré : 3,86 Go décompressés pour la législature 16, committable
+    uniquement une fois dédupliqué — voir la révision de
+    docs/technical_decisions.md#amendements-legislatures-figees).
+
+    Retourne (amendements, index_par_acteur) :
+    - `amendements` : chaque amendement stocké une seule fois, sous la clé
+      `numero` (identifiant stable, partagé par toutes les copies d'un même
+      amendement en entrée puisqu'elles dérivent du même `record_base`).
+    - `index_par_acteur` : acteurRef -> liste de `{numero, role_signataire}`,
+      une référence légère vers `amendements` au lieu d'une copie complète.
+
+    Les enregistrements sans `numero` (non observés en pratique, mais pas
+    exclus par le schéma AN) reçoivent une clé synthétique non partagée pour
+    ne jamais être perdus ni dédupliqués à tort avec un autre amendement.
+    Inverse : `_expand_aggregated_amendements_index`.
+    """
+    amendements: dict[str, dict[str, Any]] = {}
+    index_par_acteur: dict[str, list[dict[str, Any]]] = {}
+    sans_numero_compteur = 0
+
+    for acteur_ref, records in index.items():
+        refs: list[dict[str, Any]] = []
+        for record in records:
+            numero = record.get("numero")
+            if not numero:
+                numero = f"_sans_numero_{sans_numero_compteur}"
+                sans_numero_compteur += 1
+            refs.append({"numero": numero, "role_signataire": record.get("role_signataire")})
+            if numero not in amendements:
+                amendements[numero] = {k: v for k, v in record.items() if k != "role_signataire"}
+        index_par_acteur[acteur_ref] = refs
+
+    return amendements, index_par_acteur
+
+
+def _expand_aggregated_amendements_index(
+    amendements: dict[str, dict[str, Any]],
+    index_par_acteur: dict[str, list[dict[str, Any]]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Inverse de `_aggregate_amendements_index` : reconstruit la forme plate
+    acteurRef -> amendements (avec le contenu de chaque amendement à nouveau
+    dupliqué par entrée, `role_signataire` réinjecté) attendue par le reste du
+    pipeline — `fetch_amendements_officiels` lit exclusivement cette forme
+    depuis le cache disque standard, quelle que soit l'origine (réseau ou
+    fallback figé). Une référence dont le `numero` est absent de `amendements`
+    (ne devrait pas arriver, les deux fichiers étant committés ensemble) est
+    ignorée plutôt que de lever."""
+    expanded: dict[str, list[dict[str, Any]]] = {}
+    for acteur_ref, refs in index_par_acteur.items():
+        entries: list[dict[str, Any]] = []
+        for ref in refs:
+            base = amendements.get(ref.get("numero"))
+            if base is None:
+                continue
+            entries.append({**base, "role_signataire": ref.get("role_signataire")})
+        expanded[acteur_ref] = entries
+    return expanded
 
 
 def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dict[str, Any]]]:

@@ -27,14 +27,15 @@ aucune valeur — contrairement à la législature 17 (en cours), dont l'archive
 **Décision** :
 1. `AN_AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"15", "16"})`
    (`candidate_profile.py`), et un nouveau script one-shot
-   `src/build_amendements_index_figees.py --legislature {15,16} --zip <archive locale>`
-   qui réutilise le parsing existant (`_parse_amendements_zip`, extrait de
-   `_download_and_build_amendement_index`) sur une archive téléchargée
-   manuellement (patience/retries hors budget CI), et écrit
-   `raw_data/amendements_an_figes/<legislature>/{index_par_acteur.json,
-   fraicheur.json}` — committé dans le dépôt (contrairement à
-   `.cache/amendements_an/`, gitignoré). `fraicheur.json` porte un marqueur
-   `figee: true` en plus des champs habituels.
+   `src/build_amendements_index_figees.py --legislature {15,16} (--zip <archive
+   locale> | --download)` qui réutilise le parsing existant
+   (`_parse_amendements_zip`, extrait de `_download_and_build_amendement_index`)
+   sur une archive amendements AN, soit déjà téléchargée manuellement
+   (patience/retries hors budget CI, cas d'origine documenté ci-dessous), soit
+   téléchargée par le script lui-même via `--download` (réutilise
+   `_download_amendements_zip` — mêmes segments HTTP Range + retries que le
+   job CI réseau — dans `.cache/amendements_an/<legislature>/`, gitignoré,
+   jamais committé).
 2. `_download_and_build_amendement_index` court-circuite tout accès réseau
    pour ces deux législatures : `_load_frozen_amendement_index` lit le
    fallback committé et le matérialise dans le cache disque standard
@@ -47,11 +48,45 @@ aucune valeur — contrairement à la législature 17 (en cours), dont l'archive
    `figee: true`. Aucune notion de péremption ne s'applique — pas de
    warning, jamais, même après `--amendements-staleness-days`.
 
+**Révision (2026-08-13, après inspection de la release `amendements-figes-v1`)** :
+le point 1 ci-dessus committait initialement `index_par_acteur.json` tel que
+produit par `_parse_amendements_zip` — un enregistrement complet par
+signataire (auteur + chaque cosignataire), chacun portant sa propre copie
+intégrale de l'amendement (dont `co_signataires`). Un premier build réel de la
+législature 16 a mesuré ce fichier à **3,86 Go décompressés** (63,7 Mo une
+fois gzippé) — l'inverse de l'affirmation « plusieurs ordres de grandeur plus
+petit » ci-dessous, et surtout largement au-delà de la limite GitHub de
+100 Mo par blob une fois décompressé, rendant un `git add` direct
+structurellement impossible (pas seulement indésirable). La législature 15
+(archive source plus grosse) aurait vraisemblablement heurté la même limite,
+y compris compressée (marge insuffisante par simple extrapolation du ratio
+observé sur la 16).
+
+Plutôt que de committer le `.json.gz` compressé tel quel (alternative
+initialement envisagée, pariant sur le ratio de compression ~60:1 pour rester
+sous 100 Mo — non garanti pour la 15e), le format committé a été revu pour
+dédupliquer la donnée à la source : `_aggregate_amendements_index` (nouveau,
+`candidate_profile.py`) sépare l'index brut en `amendements.json` (chaque
+amendement stocké une seule fois, sous la clé `numero`) et
+`index_par_acteur.json` allégé (`acteurRef` -> liste de
+`{numero, role_signataire}`, une référence légère au lieu d'une copie
+complète). `_load_frozen_amendement_index` recompose la forme plate standard
+via `_expand_aggregated_amendements_index` (inverse exact) au moment de la
+matérialisation dans le cache disque — aucun changement pour
+`fetch_amendements_officiels` ni pour le chemin réseau (législature 17), qui
+continuent de produire/lire la forme plate non dédupliquée dans
+`.cache/amendements_an/` (gitignoré, jamais committé, donc son volume n'a
+jamais posé de problème).
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
-  dépôt Git sans bénéfice — seul l'index dérivé (`index_par_acteur.json`,
-  plusieurs ordres de grandeur plus petit) est effectivement consommé en
-  aval.
+  dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est
+  effectivement consommé en aval.
+- *Committer le `.json.gz` compressé sans dédupliquer* : évitait de toucher au
+  format/à la logique de parsing, mais reposait sur un ratio de compression
+  observé sur une seule législature (16) sans garantie qu'il tienne pour la
+  15e (archive source ~1,8× plus grosse) — écarté au profit d'une déduplication
+  structurelle, qui ne dépend d'aucune hypothèse de ratio.
 - *Laisser le job CI retenter indéfiniment* : coût réseau/temps CI répété
   pour un résultat qui ne peut structurellement pas changer une fois obtenu
   une fois — pas de bénéfice, seulement un budget CI gaspillé et un signal

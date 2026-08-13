@@ -4,20 +4,38 @@ build_amendements_index_figees.py
 
 Construit et committe l'index amendements d'une législature AN définitivement
 close (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`, candidate_profile.py) à partir
-d'une archive déjà téléchargée localement, hors du budget réseau/temps de la
-CI qui échoue de façon récurrente sur ces deux archives (350-650 Mo,
-IncompleteRead / HTTP2 PROTOCOL_ERROR répétés — voir
+d'une archive téléchargée localement (manuellement ou via `--download`), hors
+du budget réseau/temps de la CI qui échoue de façon récurrente sur ces deux
+archives (350-650 Mo, IncompleteRead / HTTP2 PROTOCOL_ERROR répétés — voir
 docs/technical_decisions.md#amendements-legislatures-figees).
 
-Usage (depuis la racine du dépôt, après téléchargement manuel de l'archive) :
-    python3 src/build_amendements_index_figees.py --legislature 15 --zip /tmp/Amendements_XV.json.zip
-    python3 src/build_amendements_index_figees.py --legislature 16 --zip /tmp/Amendements.json.zip
+Usage (depuis la racine du dépôt) :
+    # Téléchargement automatique (segments HTTP Range, retries — même logique
+    # que le job CI réseau) dans .cache/amendements_an/ (gitignored, jamais committé) :
+    python3 src/build_amendements_index_figees.py --legislature 16 --download
 
-Écrit raw_data/amendements_an_figes/<legislature>/{index_par_acteur.json,
-fraicheur.json} — à committer dans le dépôt. `fraicheur.json` porte un
-marqueur `figee: true`, lu par `check_quality_gate.py` (section 3d) pour ne
-jamais signaler ces deux législatures comme périmées : elles ne seront plus
-jamais reconstruites, l'archive source AN étant close.
+    # Ou à partir d'une archive déjà téléchargée manuellement (ex. curl --http1.1
+    # avec resume, quand le téléchargement automatique échoue aussi) :
+    python3 src/build_amendements_index_figees.py --legislature 15 --zip /tmp/Amendements_XV.json.zip
+
+Écrit raw_data/amendements_an_figes/<legislature>/{amendements.json,
+index_par_acteur.json, fraicheur.json} — à committer dans le dépôt.
+L'archive brute (283-618 Mo) n'est elle-même jamais committée : voir
+`.gitignore` (`.cache/`).
+
+`_parse_amendements_zip` produit un enregistrement complet par signataire
+(auteur + chaque cosignataire), donc N+1 copies dupliquées d'un même
+amendement à N cosignataires. Committer cette forme brute est infaisable —
+mesuré à 3,86 Go décompressés pour la seule législature 16, très au-delà de
+la limite GitHub de 100 Mo par blob. `_aggregate_amendements_index` compacte
+donc le résultat avant écriture : chaque amendement une seule fois
+(`amendements.json`, clé `numero`), `index_par_acteur.json` réduit à une
+référence légère (`numero` + `role_signataire`) par lien acteur/amendement.
+Voir la révision de docs/technical_decisions.md#amendements-legislatures-figees.
+
+`fraicheur.json` porte un marqueur `figee: true`, lu par `check_quality_gate.py`
+(section 3d) pour ne jamais signaler ces deux législatures comme périmées :
+elles ne seront plus jamais reconstruites, l'archive source AN étant close.
 """
 
 import argparse
@@ -27,12 +45,19 @@ import time
 import zipfile
 from pathlib import Path
 
+import requests
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from candidate_profile import (  # noqa: E402
+    AMENDEMENTS_CACHE_DIR,
+    AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME,
     AMENDEMENTS_FRAICHEUR_FILENAME,
     AN_AMENDEMENTS_FIGEES_DIR,
     AN_AMENDEMENTS_LEGISLATURES_FIGEES,
+    _aggregate_amendements_index,
+    _amendements_zip_url,
+    _download_amendements_zip,
     _parse_amendements_zip,
 )
 
@@ -45,29 +70,61 @@ def main() -> int:
         choices=sorted(AN_AMENDEMENTS_LEGISLATURES_FIGEES),
         help="Législature figée à (re)construire.",
     )
-    parser.add_argument(
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
         "--zip",
-        required=True,
         type=Path,
         help="Archive amendements AN (Amendements.json.zip / Amendements_XV.json.zip) déjà téléchargée localement.",
     )
+    source.add_argument(
+        "--download",
+        action="store_true",
+        help=(
+            "Télécharge l'archive AN localement avant de la parser (segments HTTP "
+            "Range + retries, même logique que le job CI réseau), dans "
+            ".cache/amendements_an/<legislature>/amendements.zip — jamais committé "
+            "(voir .gitignore)."
+        ),
+    )
     args = parser.parse_args()
 
-    if not args.zip.is_file():
-        print(f"Archive introuvable : {args.zip}", file=sys.stderr)
-        return 1
+    if args.download:
+        url = _amendements_zip_url(args.legislature)
+        if not url:
+            print(f"Aucune URL connue pour la législature {args.legislature}", file=sys.stderr)
+            return 1
+        zip_path = AMENDEMENTS_CACHE_DIR / args.legislature / "amendements.zip"
+        if zip_path.is_file():
+            print(f"-> Archive déjà présente en cache local, réutilisée : {zip_path}")
+        else:
+            print(f"-> Téléchargement de {url} vers {zip_path}...")
+            try:
+                _download_amendements_zip(url, zip_path, args.legislature)
+            except (requests.RequestException, OSError) as exc:
+                print(f"Échec du téléchargement : {exc}", file=sys.stderr)
+                return 1
+        zip_path_to_parse = zip_path
+    else:
+        if not args.zip.is_file():
+            print(f"Archive introuvable : {args.zip}", file=sys.stderr)
+            return 1
+        zip_path_to_parse = args.zip
 
-    print(f"-> Parsing de {args.zip} (législature {args.legislature})...")
+    print(f"-> Parsing de {zip_path_to_parse} (législature {args.legislature})...")
     try:
-        index = _parse_amendements_zip(args.zip)
+        index = _parse_amendements_zip(zip_path_to_parse)
     except zipfile.BadZipFile as exc:
         print(f"Archive invalide : {exc}", file=sys.stderr)
         return 1
 
+    amendements, index_par_acteur = _aggregate_amendements_index(index)
+
     out_dir = AN_AMENDEMENTS_FIGEES_DIR / args.legislature
     out_dir.mkdir(parents=True, exist_ok=True)
+    with open(out_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME, "w", encoding="utf-8") as f:
+        json.dump(amendements, f, ensure_ascii=False)
     with open(out_dir / "index_par_acteur.json", "w", encoding="utf-8") as f:
-        json.dump(index, f, ensure_ascii=False)
+        json.dump(index_par_acteur, f, ensure_ascii=False)
     with open(out_dir / AMENDEMENTS_FRAICHEUR_FILENAME, "w", encoding="utf-8") as f:
         json.dump(
             {
@@ -79,7 +136,11 @@ def main() -> int:
             ensure_ascii=False,
         )
 
-    print(f"  -> {len(index)} acteur(s) indexé(s), écrit dans {out_dir}")
+    liens = sum(len(refs) for refs in index_par_acteur.values())
+    print(
+        f"  -> {len(amendements)} amendement(s) unique(s), {len(index_par_acteur)} acteur(s), "
+        f"{liens} lien(s) acteur/amendement — écrit dans {out_dir}"
+    )
     return 0
 
 
