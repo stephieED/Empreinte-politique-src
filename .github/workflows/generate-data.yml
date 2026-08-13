@@ -825,6 +825,20 @@ jobs:
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # continue-on-error: true — même pattern que l'étape homonyme d'extract-an/
+      # extract-roster-groupes (#252) : en cas d'échec/absence, la section 3d du
+      # quality gate signale simplement chaque législature "jamais construite"
+      # au lieu de lire une fraîcheur réelle (dégradation gracieuse, pas un échec
+      # de job). Alimente check_quality_gate.py --amendements-cache-dir (défaut
+      # .cache/amendements_an, section 3d, issue #254).
+      - name: Download artifact amendements AN (optionnel)
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: amendements-index-an
+          path: .cache/amendements_an
+
       # inputs.threshold appliqué dans tous les modes (y compris fresh_run=true).
       # §5 ParlTrack : --parltrack-status-file active la section de rapport
       #   enrichi ce run vs fallback (nb candidats dans chaque catégorie).
