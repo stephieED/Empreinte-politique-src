@@ -67,6 +67,12 @@ concurrency:
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
+  # stdout est bufferisé par blocs (pas par ligne) par CPython dès qu'il détecte
+  # une sortie non-TTY (cas de tout step GitHub Actions) ; stderr ne l'est jamais.
+  # Sans ceci, les print() de progression apparaissent en rafale différée dans les
+  # logs CI (ordre chronologique trompeur) et sont perdus si le job est tué avant
+  # la fin normale du process (#259).
+  PYTHONUNBUFFERED: "1"
 
 jobs:
 
