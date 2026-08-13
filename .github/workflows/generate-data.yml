@@ -80,6 +80,7 @@ jobs:
   # JOB 1/4 — Extraction Assemblée nationale
   # ──────────────────────────────────────────────────────────────────────────
   extract-an:
+    needs: [extract-amendements-an]
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -574,7 +575,7 @@ jobs:
   # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
-    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
+    needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
     runs-on: ubuntu-latest
     timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
     continue-on-error: true
