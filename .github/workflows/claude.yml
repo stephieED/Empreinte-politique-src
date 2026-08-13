@@ -23,7 +23,10 @@ jobs:
       pull-requests: read
       issues: read
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read # Required for Claude to read CI results on PRs — see
+      # Bash(gh run *) in claude_args below: this permission alone doesn't let
+      # Claude actually call `gh run`/`gh api .../actions/*` without also being
+      # allow-listed at the tool level.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -124,8 +127,13 @@ jobs:
           # --append-system-prompt adds standing guardrails on top of the default
           # system prompt without disabling interactive @claude-mention mode (unlike
           # the `prompt` input above, which replaces it — see note above).
+          # Bash(gh run *) : lecture seule (view/list/download — ex. inspecter les
+          # logs/artifacts d'un run CI). Choisi plutôt que Bash(gh workflow *) ou
+          # Bash(gh api *) : ne permet pas à Claude de déclencher un nouveau run
+          # (workflow_dispatch) ni d'appeler l'API Actions en écriture — un run réel
+          # de generate-data.yml reste une action à déclencher manuellement.
           claude_args: |
             --append-system-prompt "Always read AGENTS.md and follow the instructions there. Update docs/technical_decisions.md if required. Never modify .github/workflows/claude.yml or .github/workflows/claude-code-review.yml — if these need changes, ask a human reviewer instead."
-            --allowed-tools Bash(gh pr *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *),WebFetch(domain:www.nosdeputes.fr),WebFetch(domain:2017-2022.nosdeputes.fr),WebFetch(domain:2012-2017.nosdeputes.fr),WebFetch(domain:2007-2012.nosdeputes.fr),WebFetch(domain:www.nossenateurs.fr),WebFetch(domain:archive.nossenateurs.fr),WebFetch(domain:data.assemblee-nationale.fr),WebFetch(domain:www.assemblee-nationale.fr),WebFetch(domain:data.europarl.europa.eu),WebFetch(domain:www.europarl.europa.eu),WebFetch(domain:parltrack.org),WebFetch(domain:fr.wikipedia.org),WebFetch(domain:query.wikidata.org)
+            --allowed-tools Bash(gh pr *),Bash(gh run *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *),WebFetch(domain:www.nosdeputes.fr),WebFetch(domain:2017-2022.nosdeputes.fr),WebFetch(domain:2012-2017.nosdeputes.fr),WebFetch(domain:2007-2012.nosdeputes.fr),WebFetch(domain:www.nossenateurs.fr),WebFetch(domain:archive.nossenateurs.fr),WebFetch(domain:data.assemblee-nationale.fr),WebFetch(domain:www.assemblee-nationale.fr),WebFetch(domain:data.europarl.europa.eu),WebFetch(domain:www.europarl.europa.eu),WebFetch(domain:parltrack.org),WebFetch(domain:fr.wikipedia.org),WebFetch(domain:query.wikidata.org)
 
 
