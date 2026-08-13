@@ -78,12 +78,12 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -95,7 +95,7 @@ jobs:
 
       # fresh_run=true  → pas de restore (on repart de zéro).
       # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload artifact AN
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-an
           path: raw_data/profiles/
@@ -167,12 +167,12 @@ jobs:
     timeout-minutes: 90
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -182,7 +182,7 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
@@ -207,7 +207,7 @@ jobs:
 
       - name: Upload artifact Sénat
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-senat
           path: raw_data/profiles/
@@ -247,12 +247,12 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -262,7 +262,7 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
@@ -287,7 +287,7 @@ jobs:
 
       - name: Upload artifact UE
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-ue-officiel
           path: raw_data/profiles/
@@ -332,12 +332,12 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -349,7 +349,7 @@ jobs:
 
       # fresh_run=true  → pas de restore ; les dumps seront re-téléchargés.
       # fresh_run=false → restore du cache ParlTrack (évite re-téléchargement de centaines de Mo).
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache/parltrack
@@ -382,7 +382,7 @@ jobs:
 
       - name: Upload artifact ParlTrack (dumps .zst)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-parltrack
           path: .cache/parltrack/
@@ -449,12 +449,12 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -472,7 +472,7 @@ jobs:
       # "deputes", indépendamment de la liste de candidats/membres traitée.
       # Le séquencement (needs: ci-dessus, #222) garantit que ce cache est
       # déjà chaud au moment de cette restauration.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
           path: .cache
@@ -516,7 +516,7 @@ jobs:
 
       - name: Upload artifact roster-driven
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-roster-groupes
           path: raw_data/profiles/
@@ -561,9 +561,9 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -572,19 +572,19 @@ jobs:
       # ── Téléchargement des artifacts d'extraction ─────────────────────────
       # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
       - name: Download artifact AN
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: raw-profiles-an
           path: _artifacts/an
 
       - name: Download artifact Sénat
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: raw-profiles-senat
           path: _artifacts/senat
 
       - name: Download artifact UE
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: raw-profiles-ue-officiel
           path: _artifacts/ue
@@ -593,7 +593,7 @@ jobs:
       # (job extract-parltrack a échoué ou timeout). Le mode fallback est
       # géré par --enrich-parltrack dans l'étape de pivot ci-dessous.
       - name: Download artifact ParlTrack (optionnel)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           name: raw-profiles-parltrack
@@ -602,7 +602,7 @@ jobs:
       # Roster-driven : optionnel — continue-on-error si l'artifact est absent
       # (job extract-roster-groupes a échoué/timeout, rollout progressif #192).
       - name: Download artifact roster-driven (optionnel)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           name: raw-profiles-roster-groupes
@@ -716,7 +716,27 @@ jobs:
           git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
-          else
-            git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
-            git push
+            exit 0
           fi
+          git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
+
+          # actions/checkout sur workflow_dispatch fige le SHA de main au moment du
+          # déclenchement du run, pas au démarrage de ce job — et ce job ne démarre
+          # qu'après les 5 jobs d'extraction (needs), qui peuvent prendre 20+ min
+          # (extraction séquentielle, cf. #222). Tout commit humain ou automatisé
+          # atterrissant sur main dans cette fenêtre fait échouer un simple `git
+          # push` (non fast-forward) alors que la donnée collectée est valide —
+          # vécu sur le run #29 (rejeté par un commit doc poussé pendant le run).
+          # Rebase + retry au lieu d'échouer tout le job sur une donnée déjà
+          # committée localement.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "Push réussi (tentative ${attempt}/3)."
+              exit 0
+            fi
+            echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
+            git fetch origin main
+            git rebase --autostash origin/main
+          done
+          echo "::error::Échec du push après 3 tentatives (rebase inclus) — intervention manuelle requise."
+          exit 1
