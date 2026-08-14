@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ExplorerLayout from './components/ExplorerLayout';
+import LandingPage from './pages/LandingPage';
 import CandidateProfilePage from './pages/CandidateProfilePage';
 import GroupProfilePage from './pages/GroupProfilePage';
 import GovernmentProfilePage from './pages/GovernmentProfilePage';
@@ -10,8 +11,11 @@ import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from '.
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<ExplorerLayout />}>
-        <Route index element={<Navigate to={`/candidats/${DEFAULT_CANDIDATE_ID}`} replace />} />
+      <Route path="/" element={<LandingPage />} />
+      {/* Layout route sans path propre : les enfants gardent leurs URLs actuelles
+          (/candidats/:id, /groupes/:id, /gouvernements/:id), seule la racine "/"
+          bascule désormais vers la landing page au lieu de rediriger vers un candidat. */}
+      <Route element={<ExplorerLayout />}>
         <Route path="candidats" element={<Navigate to={`/candidats/${DEFAULT_CANDIDATE_ID}`} replace />} />
         <Route path="candidats/:candidateId" element={<CandidateProfilePage />} />
         <Route path="groupes" element={<Navigate to={`/groupes/${DEFAULT_GROUP_ID}`} replace />} />
