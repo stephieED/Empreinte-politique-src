@@ -92,15 +92,12 @@ angles morts non couverts par le spike :
 3. `fam_code == "TSORTFnull"` (constaté sur un acte de décision sans issue
    tranchée) est traité comme absence d'événement, jamais comme un `fam_code`
    inconnu à signaler.
-4. Cas non résolu, volontairement flagué plutôt que masqué : `TSORTF24`
-   (rejeté consécutivement à l'engagement de l'art. 49.3, motion de censure
-   adoptée) est mappé à `statut = "rejete"` + `sort_49_3 = True`, qui reflète
-   fidèlement le fait mais est **incompatible** avec l'invariant actuel de
-   `schema_gouvernement.validate_profil_gouvernement` (`sort_49_3 = True`
-   n'est autorisé qu'avec `statut == "adopte_49_3"`, faute de statut « rejeté
-   via 49.3 » dans la nomenclature fermée de #208). Un warning explicite est
-   émis dans ce cas ; la résolution (étendre la nomenclature ou assouplir le
-   validateur) relève de #208/#211, pas de la collecte.
+4. `TSORTF24` (rejeté consécutivement à l'engagement de l'art. 49.3, motion
+   de censure adoptée) est mappé à `statut = "rejete_49_3"` + `sort_49_3 =
+   True`, symétrique d'`adopte_49_3` — voir
+   [[gouvernement-textes-statut-49-3-rejete]] (#208 réouverte) pour l'ajout de
+   ce statut à la nomenclature fermée, qui rend la combinaison représentable
+   par `schema_gouvernement.validate_profil_gouvernement` sans warning.
 5. Infrastructure de téléchargement : `gouvernement_textes.py` devient la
    source canonique de `AN_DOSSIERS_ZIP_URL`/`DOSSIERS_CACHE_DIR` et d'un
    `ensure_dossiers_zip_downloaded()` partagé (écriture atomique via fichier

@@ -161,7 +161,7 @@ def test_fam_code_sentinelle_tsortfnull_ignore_sans_warning():
     assert record["warnings"] == []
 
 
-def test_rejete_via_49_3_censure_conserve_le_fait_et_avertit_de_la_tension_schema():
+def test_rejete_via_49_3_censure_mappe_vers_rejete_49_3_sans_warning():
     dossier = _dossier("TEST-CENSURE", "Projet de loi ordinaire test", [
         _acte("AN1-DEPOT", "2024-01-10"),
         _acte("CMP-DEBATS-AN-DEC", "2024-03-01", {
@@ -170,10 +170,9 @@ def test_rejete_via_49_3_censure_conserve_le_fait_et_avertit_de_la_tension_schem
         }),
     ])
     record = parse_dossier_gouvernemental(dossier)
-    assert record["statut"] == "rejete"
+    assert record["statut"] == "rejete_49_3"
     assert record["sort_49_3"] is True
-    assert len(record["warnings"]) == 1
-    assert "TEST-CENSURE" in record["warnings"][0]
+    assert record["warnings"] == []
 
 
 def test_conclusion_conseil_constitutionnel_nest_pas_une_decision_de_seance():
