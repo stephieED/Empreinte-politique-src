@@ -44,3 +44,14 @@ something is pending, not *why*.
 - Consolidate `test_quality_gate_syceron.py` and `test_quality_gate_groupes.py`
   (added by #193 for `_report_groupes`) into a single `test_check_quality_gate.py`
   covering all sections of `check_quality_gate.py`.
+- `gouvernement_textes.py`: `AMO30` fallback for government-origin detection
+  on dossiers without a "Projet de loi"/"Proposition de loi" title prefix
+  (2355/3044 dossiers, mostly motions/résolutions/rapports) — needs mandate-date
+  vs. deposit-date filtering to avoid the ~15% false-positive rate measured
+  in #207 (ex-minister co-signatories). See `technical_decisions.md#gouvernement-textes-statut`.
+- `schema_gouvernement.py`: `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` has no status
+  for "rejected via article 49.3 + adopted censure motion" (`fam_code TSORTF24`)
+  — `gouvernement_textes.py` maps it to `statut="rejete"` + `sort_49_3=True`,
+  which `validate_profil_gouvernement` currently rejects. Needs #208/#211 to
+  extend the nomenclature or relax the validator. See
+  `technical_decisions.md#gouvernement-textes-statut`.
