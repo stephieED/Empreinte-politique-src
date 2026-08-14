@@ -14,6 +14,12 @@ Usage (depuis la racine du dépôt) :
     # que le job CI réseau) dans .cache/amendements_an/ (gitignored, jamais committé) :
     python3 src/build_amendements_index_figees.py --legislature 16 --download
 
+    # Ré-invoquer la même commande après une interruption reprend le
+    # téléchargement là où il s'est arrêté (`_download_amendements_zip`, sonde
+    # HEAD + reprise par octet) au lieu de repartir de zéro — le CDN AN coupe
+    # aléatoirement en cours de segment sur ces deux grosses archives, souvent
+    # plusieurs fois avant d'aboutir.
+
     # Ou à partir d'une archive déjà téléchargée manuellement (ex. curl --http1.1
     # avec resume, quand le téléchargement automatique échoue aussi) :
     python3 src/build_amendements_index_figees.py --legislature 15 --zip /tmp/Amendements_XV.json.zip
@@ -86,6 +92,20 @@ def main() -> int:
             "(voir .gitignore)."
         ),
     )
+    parser.add_argument(
+        "--chunk-size-mb",
+        type=float,
+        default=None,
+        help=(
+            "Taille de segment HTTP Range en Mo pour --download (défaut : 32, voir "
+            "AMENDEMENTS_DOWNLOAD_CHUNK_BYTES). À réduire (ex. 1-2) quand le CDN AN "
+            "traverse une fenêtre où même une requête de quelques Ko échoue "
+            "systématiquement au-delà des tout premiers Mo du fichier (observé le "
+            "14/08/2026) — un petit segment a une chance de passer là où un segment "
+            "de 32 Mo n'en a quasiment aucune ; la reprise entre invocations garantit "
+            "qu'aucun petit gain n'est perdu d'un essai à l'autre."
+        ),
+    )
     args = parser.parse_args()
 
     if args.download:
@@ -94,15 +114,19 @@ def main() -> int:
             print(f"Aucune URL connue pour la législature {args.legislature}", file=sys.stderr)
             return 1
         zip_path = AMENDEMENTS_CACHE_DIR / args.legislature / "amendements.zip"
-        if zip_path.is_file():
-            print(f"-> Archive déjà présente en cache local, réutilisée : {zip_path}")
-        else:
-            print(f"-> Téléchargement de {url} vers {zip_path}...")
-            try:
-                _download_amendements_zip(url, zip_path, args.legislature)
-            except (requests.RequestException, OSError) as exc:
-                print(f"Échec du téléchargement : {exc}", file=sys.stderr)
-                return 1
+        chunk_bytes = int(args.chunk_size_mb * 1024 * 1024) if args.chunk_size_mb else None
+        print(f"-> Téléchargement de {url} vers {zip_path}...")
+        try:
+            # Toujours appelée, même si zip_path existe déjà : c'est
+            # _download_amendements_zip elle-même qui décide (sonde HEAD) entre
+            # sauter (déjà complet), reprendre (partiel, cas typique d'une
+            # invocation précédente interrompue par l'instabilité du CDN AN) ou
+            # redémarrer depuis le début (sonde en échec / fichier incohérent) —
+            # ne jamais réutiliser aveuglément un fichier existant sans vérifier.
+            _download_amendements_zip(url, zip_path, args.legislature, chunk_bytes=chunk_bytes)
+        except (requests.RequestException, OSError) as exc:
+            print(f"Échec du téléchargement : {exc}", file=sys.stderr)
+            return 1
         zip_path_to_parse = zip_path
     else:
         if not args.zip.is_file():
