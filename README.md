@@ -43,6 +43,7 @@ CV_CandidatFR/
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
+|  |- schema_gouvernement.py         # Government profile schema v1 (structure contract, no aggregation logic yet)
 |  |- mep_profile.py                 # Collect/normalize EP profiles (Parltrack)
 |  `- fetch_wikipedia_candidates.py  # Candidate monitoring via Wikipedia/Wikidata
 |- raw_data/                          # Declarative inputs + raw outputs (non-normalized)
@@ -75,6 +76,7 @@ CV_CandidatFR/
 |  |- test_quality_gate_amendements.py
 |  |- test_quality_gate_syceron.py
 |  |- test_schema_groupe.py
+|  |- test_schema_gouvernement.py
 |  |- test_schema_parti.py
 |  |- test_schema_pivot.py
 |  |- test_syceron_debates.py
