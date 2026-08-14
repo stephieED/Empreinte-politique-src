@@ -39,14 +39,22 @@ graph TD
     B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
     C --> D["group_profile.py"]
     C --> E["parti_profile.py"]
+    C --> I["gouvernement_roster.py<br/>(no network — local pivots only)"]
+    J["AN dossiers-legislatifs dump<br/>(gouvernement_textes.py)"] --> K["gouvernement_profile.py"]
+    I --> K
     D --> F["pivot_data/groupes/<br/>(schema_groupe.py)"]
     E --> G["pivot_data/partis/<br/>(schema_parti.py)"]
+    K --> L["pivot_data/gouvernements/<br/>(schema_gouvernement.py)"]
     F --> H["check_quality_gate.py<br/>(pre-commit gate)"]
     G --> H
+    L --> H
 ```
 
 - `raw_data/` = source-near; `pivot_data/` = only layer `web/` reads.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`.
+- Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
+  from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
+  once per batch (`generate_gouvernement_profiles.py`).
 
 **Additive merge (`merge_profile.py`)**: regeneration never removes collected data.
 - `votes`, `mandats`, `interventions`: additive, old entry wins (`merge_lists_by_key`).
