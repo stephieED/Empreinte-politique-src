@@ -78,6 +78,32 @@ continuent de produire/lire la forme plate non dédupliquée dans
 `.cache/amendements_an/` (gitignoré, jamais committé, donc son volume n'a
 jamais posé de problème).
 
+**Révision (2026-08-14, reprise du téléchargement entre invocations)** : un
+premier `--download` réel pour la législature 16 a échoué en cours de segment
+(`IncompleteRead(0 bytes read, ...)`), reproduit à la main juste après contre
+le CDN AN en dehors de toute exécution du script — coupures aléatoires en
+cours de flux, pas seulement en fin de fichier, sur des offsets variables
+d'un essai à l'autre. `_download_amendements_zip` ne persistait aucun état
+entre deux invocations : chaque nouvel appel repartait de l'octet 0, faisant
+perdre les dizaines/centaines de Mo déjà reçus lors d'une tentative
+précédente. `_download_amendements_zip` détecte désormais un `zip_path`
+existant non vide au démarrage, sonde la taille distante réelle via une
+requête `HEAD` (`_probe_amendements_total_size`, best-effort) puis choisit
+entre trois issues : fichier déjà complet (taille locale = taille distante)
+→ aucune requête de téléchargement, seulement la sonde ; fichier partiel plus
+petit → reprise en mode ajout (`"ab"`) à partir de l'octet déjà écrit ; sonde
+en échec ou taille locale incohérente (plus grande que la taille distante) →
+redémarrage prudent depuis le début plutôt que de deviner un offset invalide.
+`build_amendements_index_figees.py --download` appelle désormais
+systématiquement `_download_amendements_zip` (l'ancien raccourci "fichier déjà
+présent -> réutilisé tel quel sans vérification" contournait entièrement ce
+mécanisme et pouvait tenter de parser une archive partielle/corrompue comme
+si elle était complète). Garde-fou associé : si un segment demandé à un
+offset non nul reçoit malgré tout une réponse `200` (le serveur ignore
+`Range`), l'écriture est refusée (`OSError`) plutôt que d'ajouter le corps
+complet à la suite d'un fichier déjà partiellement écrit, ce qui produirait
+une archive corrompue silencieusement.
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
   dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est

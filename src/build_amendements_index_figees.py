@@ -14,6 +14,12 @@ Usage (depuis la racine du dépôt) :
     # que le job CI réseau) dans .cache/amendements_an/ (gitignored, jamais committé) :
     python3 src/build_amendements_index_figees.py --legislature 16 --download
 
+    # Ré-invoquer la même commande après une interruption reprend le
+    # téléchargement là où il s'est arrêté (`_download_amendements_zip`, sonde
+    # HEAD + reprise par octet) au lieu de repartir de zéro — le CDN AN coupe
+    # aléatoirement en cours de segment sur ces deux grosses archives, souvent
+    # plusieurs fois avant d'aboutir.
+
     # Ou à partir d'une archive déjà téléchargée manuellement (ex. curl --http1.1
     # avec resume, quand le téléchargement automatique échoue aussi) :
     python3 src/build_amendements_index_figees.py --legislature 15 --zip /tmp/Amendements_XV.json.zip
@@ -94,15 +100,18 @@ def main() -> int:
             print(f"Aucune URL connue pour la législature {args.legislature}", file=sys.stderr)
             return 1
         zip_path = AMENDEMENTS_CACHE_DIR / args.legislature / "amendements.zip"
-        if zip_path.is_file():
-            print(f"-> Archive déjà présente en cache local, réutilisée : {zip_path}")
-        else:
-            print(f"-> Téléchargement de {url} vers {zip_path}...")
-            try:
-                _download_amendements_zip(url, zip_path, args.legislature)
-            except (requests.RequestException, OSError) as exc:
-                print(f"Échec du téléchargement : {exc}", file=sys.stderr)
-                return 1
+        print(f"-> Téléchargement de {url} vers {zip_path}...")
+        try:
+            # Toujours appelée, même si zip_path existe déjà : c'est
+            # _download_amendements_zip elle-même qui décide (sonde HEAD) entre
+            # sauter (déjà complet), reprendre (partiel, cas typique d'une
+            # invocation précédente interrompue par l'instabilité du CDN AN) ou
+            # redémarrer depuis le début (sonde en échec / fichier incohérent) —
+            # ne jamais réutiliser aveuglément un fichier existant sans vérifier.
+            _download_amendements_zip(url, zip_path, args.legislature)
+        except (requests.RequestException, OSError) as exc:
+            print(f"Échec du téléchargement : {exc}", file=sys.stderr)
+            return 1
         zip_path_to_parse = zip_path
     else:
         if not args.zip.is_file():
