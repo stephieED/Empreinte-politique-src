@@ -979,7 +979,9 @@ def _probe_amendements_total_size(url: str) -> Optional[int]:
         return None
 
 
-def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> None:
+def _download_amendements_zip(
+    url: str, zip_path: Path, legislature: str, chunk_bytes: Optional[int] = None,
+) -> None:
     """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
     pour ne retenter que le segment en échec au lieu de tout le fichier sur une
     coupure mi-flux (`IncompleteRead` déjà observé en pratique sur ces archives de
@@ -1008,7 +1010,18 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
     (#225), désormais appliqués par segment plutôt qu'au fichier entier. Lève la
     dernière `requests.RequestException`/`OSError` rencontrée si un segment échoue
     après épuisement des tentatives — l'appelant convertit en `AmendementsIndexError`.
+
+    `chunk_bytes` permet de réduire ponctuellement la taille de segment (défaut
+    `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`, 32 Mo) sans toucher au chemin réseau
+    partagé de la législature 17 : observé le 14/08/2026, le CDN AN peut
+    traverser des fenêtres où même une requête de quelques Ko au-delà des tout
+    premiers Mo du fichier échoue systématiquement (`IncompleteRead(0 bytes
+    read, ...)`) — un segment de 32 Mo n'a alors quasiment aucune chance
+    d'aboutir intégralement, alors que de petits segments (1-2 Mo) ont une
+    fenêtre de succès bien plus large à saisir, et la reprise entre
+    invocations (ci-dessus) garantit qu'aucun de ces petits gains n'est perdu.
     """
+    chunk_bytes = chunk_bytes or AMENDEMENTS_DOWNLOAD_CHUNK_BYTES
     zip_path.parent.mkdir(parents=True, exist_ok=True)
 
     offset = 0
@@ -1049,7 +1062,7 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
 
     with open(zip_path, file_mode) as out:
         while total_size is None or offset < total_size:
-            range_end = offset + AMENDEMENTS_DOWNLOAD_CHUNK_BYTES - 1
+            range_end = offset + chunk_bytes - 1
             segments_total += 1
             last_exc: Optional[Exception] = None
             chunk = b""

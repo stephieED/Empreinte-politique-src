@@ -2123,6 +2123,39 @@ def test_download_amendements_zip_resumes_from_existing_partial_file(tmp_path):
     assert calls.count("bytes=8-11") == 1
 
 
+def test_download_amendements_zip_chunk_bytes_param_overrides_module_default(tmp_path):
+    """Le paramètre explicite `chunk_bytes` doit primer sur
+    `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES` — utilisé par `--chunk-size-mb` pour
+    réduire la taille de segment sans toucher au défaut partagé avec le
+    chemin réseau de la législature 17 (voir docstring de la fonction, ajout
+    du 14/08/2026)."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets
+    zip_path = tmp_path / "amendements.zip"
+    calls: list[str] = []
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        range_value = headers["Range"]
+        calls.append(range_value)
+        start, end = (int(x) for x in range_value.removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        return _FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+    ):
+        _download_amendements_zip(
+            "https://example.test/amendements.zip", zip_path, "17", chunk_bytes=2,
+        )
+
+    assert zip_path.read_bytes() == payload
+    assert calls == ["bytes=0-1", "bytes=2-3", "bytes=4-5", "bytes=6-7", "bytes=8-9", "bytes=10-11"], (
+        "Les segments doivent suivre chunk_bytes=2, pas AMENDEMENTS_DOWNLOAD_CHUNK_BYTES=4"
+    )
+
+
 def test_download_amendements_zip_skips_entirely_when_already_complete(tmp_path):
     """Un fichier partiel dont la taille locale correspond déjà à la taille
     distante (téléchargement complet mais échec précédent avant l'écriture de

@@ -92,6 +92,20 @@ def main() -> int:
             "(voir .gitignore)."
         ),
     )
+    parser.add_argument(
+        "--chunk-size-mb",
+        type=float,
+        default=None,
+        help=(
+            "Taille de segment HTTP Range en Mo pour --download (défaut : 32, voir "
+            "AMENDEMENTS_DOWNLOAD_CHUNK_BYTES). À réduire (ex. 1-2) quand le CDN AN "
+            "traverse une fenêtre où même une requête de quelques Ko échoue "
+            "systématiquement au-delà des tout premiers Mo du fichier (observé le "
+            "14/08/2026) — un petit segment a une chance de passer là où un segment "
+            "de 32 Mo n'en a quasiment aucune ; la reprise entre invocations garantit "
+            "qu'aucun petit gain n'est perdu d'un essai à l'autre."
+        ),
+    )
     args = parser.parse_args()
 
     if args.download:
@@ -100,6 +114,7 @@ def main() -> int:
             print(f"Aucune URL connue pour la législature {args.legislature}", file=sys.stderr)
             return 1
         zip_path = AMENDEMENTS_CACHE_DIR / args.legislature / "amendements.zip"
+        chunk_bytes = int(args.chunk_size_mb * 1024 * 1024) if args.chunk_size_mb else None
         print(f"-> Téléchargement de {url} vers {zip_path}...")
         try:
             # Toujours appelée, même si zip_path existe déjà : c'est
@@ -108,7 +123,7 @@ def main() -> int:
             # invocation précédente interrompue par l'instabilité du CDN AN) ou
             # redémarrer depuis le début (sonde en échec / fichier incohérent) —
             # ne jamais réutiliser aveuglément un fichier existant sans vérifier.
-            _download_amendements_zip(url, zip_path, args.legislature)
+            _download_amendements_zip(url, zip_path, args.legislature, chunk_bytes=chunk_bytes)
         except (requests.RequestException, OSError) as exc:
             print(f"Échec du téléchargement : {exc}", file=sys.stderr)
             return 1
