@@ -69,18 +69,18 @@ après coup (docs/technical_decisions.md#gouvernement-textes-statut-49-3-rejete)
 donc cette combinaison est représentable par
 `schema_gouvernement.validate_profil_gouvernement` sans warning.
 
-Rattachement à un gouvernement (hors périmètre de ce module — #211) : par
-date de dépôt initial (`date_depot`, calculée ici), jamais par date de
-statut final — décision actée dans le plan d'implémentation de #184 (issue
-#210) : un texte déposé sous un gouvernement A puis conclu sous un
-gouvernement B reste crédité au gouvernement A, qui l'a initié.
+Rattachement à un gouvernement (hors périmètre de ce module, implémenté dans
+`gouvernement_profile.py` — #211) : par date de dépôt initial (`date_depot`,
+calculée ici), jamais par date de statut final — décision actée dans le plan
+d'implémentation de #184 (issue #210) : un texte déposé sous un gouvernement A
+puis conclu sous un gouvernement B reste crédité au gouvernement A, qui l'a
+initié. Voir `docs/technical_decisions.md#gouvernement-profile-rattachement`.
 
 Hors périmètre : couverture Sénat comme chambre de dépôt *primaire* d'un
 dossier (le Sénat n'a pas de dataset équivalent exploitable — voir
 docs/technical_decisions.md#hors-perimetre) ; seuls les dossiers du dump AN
 sont vus ici, y compris ceux transmis en 2e lecture au Sénat (`chambre_depot_initial`
 peut valoir `"Senat"` si un dossier AN a été déposé au Sénat en 1ère lecture).
-Pas d'écriture du profil de gouvernement final (#211).
 """
 
 import json

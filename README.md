@@ -36,6 +36,8 @@ CV_CandidatFR/
 |  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- gouvernement_roster.py         # Ministerial roster of a government from local pivots (no network call)
+|  |- gouvernement_profile.py        # Aggregate roster + legislative files into a full government profile
+|  |- generate_gouvernement_profiles.py # Batch: all governments from raw_data/gouvernements_reels.json
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
@@ -56,7 +58,8 @@ CV_CandidatFR/
 |- pivot_data/                        # Anything in pivot schema format (or derived)
 |  |- profiles/                      # <slug>.pivot.json per candidate
 |  |- partis/                        # parti-<slug>.json: editorial party aggregates
-|  `- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
+|  |- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
+|  `- gouvernements/                 # gouvernement-<ID>.json: real government profiles
 |- web/
 |  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes)
 |  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
@@ -71,7 +74,8 @@ CV_CandidatFR/
 |  |- test_generate_group_profiles.py
 |  |- test_gouvernement_textes.py
 |  |- test_gouvernement_roster.py
-|  |- test_gouvernement_textes.py
+|  |- test_gouvernement_profile.py
+|  |- test_generate_gouvernement_profiles.py
 |  |- test_merge_profile.py
 |  |- test_normalize_europarl.py
 |  |- test_normalize_nosdeputes.py
@@ -290,14 +294,51 @@ validated `libelle_an` (exact match on `mandats[].label`, `organe.libelleAbrege`
 from the AN referential) combined with a period-overlap check. `portefeuille`
 stays `null` (see [`docs/technical_decisions.md#hors-perimetre`](docs/technical_decisions.md#hors-perimetre),
 § "Ministerial function"). Produces only the roster, not a full
-`pivot_data/gouvernements/*.json` profile (`schema_gouvernement.py`) — that
-combination with sponsored texts is a separate, not-yet-implemented step.
+`pivot_data/gouvernements/*.json` profile (`schema_gouvernement.py`) — see
+`gouvernement_profile.py` below for that combination with sponsored texts.
 
 ```bash
 python src/gouvernement_roster.py \
     --config raw_data/gouvernements_reels.json \
     --gouvernement-id "gouvernement:BAYROU" \
     --profiles-dir pivot_data/profiles
+```
+
+### Government profile
+
+`gouvernement_profile.py` combines `gouvernement_roster.py`'s ministerial
+composition and `gouvernement_textes.py`'s legislative files into a full
+government profile (`schema_gouvernement.py`), written to
+`pivot_data/gouvernements/<id>.json`. A text is attached to a government by
+overlap of its `date_depot` with the government's `periode` (never by its
+final-status date — a text initiated under government A stays credited to A
+even if concluded under government B). A text whose `statut` or
+`chambre_depot_initial` can't be determined is excluded from `textes[]` (never
+a guessed default), with a warning kept in `meta.warnings`; `comptages.par_statut`
+is a raw count of the retained texts only — no rate is ever computed (see
+[`docs/technical_decisions.md#gouvernement-profile-rattachement`](docs/technical_decisions.md#gouvernement-profile-rattachement)).
+
+```bash
+python src/gouvernement_profile.py \
+    --config raw_data/gouvernements_reels.json \
+    --gouvernement-id "gouvernement:BAYROU" \
+    --profiles-dir pivot_data/profiles \
+    --out pivot_data/gouvernements/gouvernement-BAYROU.json \
+    --validate
+```
+
+`generate_gouvernement_profiles.py` generates every government listed in
+`raw_data/gouvernements_reels.json` in a single run, fetching the legislative
+files dump and loading the local pivot profiles only once, shared across all
+governments (mirrors `generate_group_profiles.py`'s single roster fetch per
+`(chambre, legislature)`).
+
+```bash
+python src/generate_gouvernement_profiles.py \
+    --config raw_data/gouvernements_reels.json \
+    --profiles-dir pivot_data/profiles \
+    --out-dir pivot_data/gouvernements \
+    --validate
 ```
 
 ## 7. Candidate monitoring via Wikipedia / Wikidata

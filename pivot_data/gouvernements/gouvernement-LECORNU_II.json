@@ -1,0 +1,593 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:LECORNU_II",
+  "nom": "Gouvernement Lecornu II",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2025-10-13",
+    "fin": null,
+    "actif": true
+  },
+  "membres": [
+    {
+      "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
+      "nom": "Charlotte Parmentier-Lecocq",
+      "portefeuille": null,
+      "debut": "2025-10-13",
+      "fin": "2026-02-26",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:david-amiel",
+      "nom": "David Amiel",
+      "portefeuille": null,
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": null
+    }
+  ],
+  "textes": [
+    {
+      "dossier_id": "DLR5L17N54767",
+      "titre": "Projet de loi autorisant la ratification de l'accord de protection des investissements entre l'Union européenne et ses États membres, d'une part, et la République socialiste du Vietnam, d'autre part",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-27",
+      "date_dernier_evenement": "2026-07-27",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54767"
+    },
+    {
+      "dossier_id": "DLR5L17N54762",
+      "titre": "Projet de loi autorisant l'approbation de l'accord multilatéral entre autorités compétentes concernant l'échange automatique de renseignements relatifs au cadre de déclaration applicable aux crypto-actifs, et l'approbation de  l'addendum à  l'accord multilatéral entre autorités compétentes concernant l'échange automatique de renseignements relatifs aux comptes financiers",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-27",
+      "date_dernier_evenement": "2026-07-27",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54762"
+    },
+    {
+      "dossier_id": "DLR5L17N54703",
+      "titre": "Projet de loi relatif à la lutte contre les ingérences étrangères dans la vie démocratique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-22",
+      "date_dernier_evenement": "2026-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54703"
+    },
+    {
+      "dossier_id": "DLR5L17N54702",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2026-468 du 10 juin 2026 portant extension et adaptation aux collectivités relevant de l'article 74 de la Constitution et à la Nouvelle-Calédonie des dispositions de la loi n° 2025-1249 du 22 décembre 2025 portant création d'un statut de l'élu local",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-22",
+      "date_dernier_evenement": "2026-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54702"
+    },
+    {
+      "dossier_id": "DLR5L17N54666",
+      "titre": "Projet de loi ratifiant l’ordonnance no 2026-326 du 29 avril 2026 portant adaptation du droit français aux textes pris pour l’application du règlement (UE) 2023/956 du Parlement européen et du Conseil du 10 mai 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-09",
+      "date_dernier_evenement": "2026-07-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54666"
+    },
+    {
+      "dossier_id": "DLR5L17N54696",
+      "titre": "Projet de loi de cohésion républicaine par la lutte contre le racisme et l’antisémitisme",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-09",
+      "date_dernier_evenement": "2026-07-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54696"
+    },
+    {
+      "dossier_id": "DLR5L17N54616",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2026-265 du 8 avril 2026 portant partie législative du code des douanes",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-07-01",
+      "date_dernier_evenement": "2026-07-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54616"
+    },
+    {
+      "dossier_id": "DLR5L17N54573",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2026-255 du 8 avril 2026 relative à la transposition de la directive (UE) 2024/1619 du Parlement européen et du Conseil du 31 mai 2024 modifiant la directive 2013/36/UE en ce qui concerne les pouvoirs de surveillance, les sanctions, les succursales de pays tiers et les risques environnementaux, sociaux et de gouvernance",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-06-24",
+      "date_dernier_evenement": "2026-06-24",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54573"
+    },
+    {
+      "dossier_id": "DLR5L17N54567",
+      "titre": "Projet de loi autorisant la ratification de l’accord de passation conjointe de marché en vue de l’acquisition d’une plateforme centrale commune pour le mécanisme d’ajustement carbone aux frontières",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-06-24",
+      "date_dernier_evenement": "2026-07-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54567"
+    },
+    {
+      "dossier_id": "DLR5L17N54372",
+      "titre": "Projet de loi relatif à la protection des enfants",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2026-05-27",
+      "date_dernier_evenement": "2026-07-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_relatif_a_la_protection_des_enfants"
+    },
+    {
+      "dossier_id": "DLR5L17N54379",
+      "titre": "Projet de loi autorisant l’approbation de l’accord multilatéral entre autorités compétentes portant sur l’échange des informations GloBE",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-05-27",
+      "date_dernier_evenement": "2026-07-10",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54379"
+    },
+    {
+      "dossier_id": "DLR5L17N54347",
+      "titre": "Projet de loi visant à renforcer l’Etat local, articuler son action avec les collectivités territoriales et sécuriser les décideurs publics",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-05-20",
+      "date_dernier_evenement": "2026-05-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54347"
+    },
+    {
+      "dossier_id": "DLR5L17N54291",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2026-154 du 4 mars 2026 portant actualisation et adaptation des dispositions du livre VIII du code rural et de la pêche maritime relatives à l’outre-mer",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-05-06",
+      "date_dernier_evenement": "2026-05-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54291"
+    },
+    {
+      "dossier_id": "DLR5L17N54292",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-1091 du 19 novembre 2025 portant réécriture du code de procédure pénale (partie législative)",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-05-06",
+      "date_dernier_evenement": "2026-05-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54292"
+    },
+    {
+      "dossier_id": "DLR5L17N54258",
+      "titre": "Projet de loi portant habilitation du Gouvernement à refondre par ordonnance la partie législative du code des postes et des communications électroniques",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-29",
+      "date_dernier_evenement": "2026-04-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54258"
+    },
+    {
+      "dossier_id": "DLR5L17N54259",
+      "titre": "Projet de loi de sécurisation du travail le 1er mai des salariés volontaires des boulangers-pâtissiers artisanaux et des artisans fleuristes grâce au dialogue social de branche",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-29",
+      "date_dernier_evenement": "2026-06-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54259"
+    },
+    {
+      "dossier_id": "DLR5L17N54218",
+      "titre": "Projet de loi constitutionnelle pour une Corse autonome au sein de la République",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2026-04-27",
+      "date_dernier_evenement": "2026-06-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_constitutionnelle_pour_Corse_autonome_au_sein_Republique"
+    },
+    {
+      "dossier_id": "DLR5L17N54164",
+      "titre": "Projet de loi portant simplification des normes applicables aux collectivités territoriales",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-15",
+      "date_dernier_evenement": "2026-06-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54164"
+    },
+    {
+      "dossier_id": "DLR5L17N54169",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement d’Antigua-et-Barbuda relatif aux services aériens",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-15",
+      "date_dernier_evenement": "2026-06-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54169"
+    },
+    {
+      "dossier_id": "DLR5L17N54168",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République unie de Tanzanie relatif aux services aériens",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-15",
+      "date_dernier_evenement": "2026-06-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54168"
+    },
+    {
+      "dossier_id": "DLR5L17N54094",
+      "titre": "Projet de loi habilitant le Gouvernement à prendre, par ordonnances, les adaptations rendues nécessaires par l’entrée en application des règlements (UE) n°s 2024/1347, 2024/1348, 2024/1349, 2024/1350, 2024/1351, 2024/1352, 2024/1356, 2024/1358, 2024/1359 du Parlement européen et du Conseil du 14 mai 2024, et les dispositions nécessaires à la transposition de la directive (UE) 2024/1346 du Parlement européen et \rdu Conseil du 14 mai 2024",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-04-08",
+      "date_dernier_evenement": "2026-07-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54094"
+    },
+    {
+      "dossier_id": "DLR5L17N53983",
+      "titre": "Projet de loi ratifiant l’ordonnance 2026-2 du 5 janvier 2026 relative à la commercialisation à distance de services financiers auprès des consommateurs",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-03-25",
+      "date_dernier_evenement": "2026-03-25",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53983"
+    },
+    {
+      "dossier_id": "DLR5L17N53920",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2026-31 du 28 janvier 2026 relative au point d’accès unique européen fournissant un accès centralisé aux informations publiées utiles pour les services financiers, les marchés des capitaux et la durabilité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-03-11",
+      "date_dernier_evenement": "2026-03-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53920"
+    },
+    {
+      "dossier_id": "DLR5L17N53882",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-1247 du 17 décembre 2025 portant recodification de la taxe sur la valeur ajoutée et diverses modifications du code des impositions sur les biens et services",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-03-04",
+      "date_dernier_evenement": "2026-03-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53882"
+    },
+    {
+      "dossier_id": "DLR5L17N53847",
+      "titre": "Projet de loi portant diverses mesures urgentes de sécurisation du droit de la fonction publique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-02-25",
+      "date_dernier_evenement": "2026-02-25",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53847"
+    },
+    {
+      "dossier_id": "DLR5L17N53760",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-1095 du 19 novembre 2025 étendant et adaptant en Polynésie française et en Nouvelle-Calédonie les dispositions de la loi n° 2025-444 du 21 mai 2025 visant à harmoniser le mode de scrutin aux élections municipales afin de garantir la vitalité démocratique, la cohésion municipale et la parité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-02-11",
+      "date_dernier_evenement": "2026-02-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53760"
+    },
+    {
+      "dossier_id": "DLR5L17N53743",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldavie dans le domaine de la sécurité sociale",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2026-02-11",
+      "date_dernier_evenement": "2026-04-10",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/moldavie_securite_sociale"
+    },
+    {
+      "dossier_id": "DLR5L17N53785",
+      "titre": "Projet de loi Projet de loi-cadre relatif au développement des transports",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-02-11",
+      "date_dernier_evenement": "2026-07-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53785"
+    },
+    {
+      "dossier_id": "DLR5L17N54344",
+      "titre": "Projet de loi relatif à la régulation de l'enseignement supérieur privé",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-01-28",
+      "date_dernier_evenement": "2026-06-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/regulation_enseignement_superieur_prive_2026"
+    },
+    {
+      "dossier_id": "DLR5L17N53706",
+      "titre": "Projet de loi autorisant l’approbation de la convention entre le Gouvernement de la République française et le Gouvernement de la République de Chypre pour l’élimination de la double imposition en matière d’impôts sur le revenu et la prévention de l’évasion et de la fraude fiscales",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-01-28",
+      "date_dernier_evenement": "2026-06-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53706"
+    },
+    {
+      "dossier_id": "DLR5L17N53496",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2025-1073 du 10 novembre 2025 portant extension et adaptation des dispositions de la loi n° 2025-796 du 11 août 2025 visant à faciliter le maintien en rétention des personnes condamnées pour des faits d’une particulière gravité et présentant de forts risques de récidive à Saint-Barthélemy, à Saint-Martin, dans les îles Wallis et Futuna, en Polynésie française et en Nouvelle-Calédonie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-01-05",
+      "date_dernier_evenement": "2026-01-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53496"
+    },
+    {
+      "dossier_id": "DLR5L17N53762",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-979 du 14 octobre 2025 portant transposition des articles 7, 26 et 27 de la directive (UE) 2023/1791 du Parlement européen et du Conseil du 13 septembre 2023 relative à l'efficacité énergétique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-01-05",
+      "date_dernier_evenement": "2026-01-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53762"
+    },
+    {
+      "dossier_id": "DLR5L17N53497",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-1154 du 2 décembre 2025 relative au crédit à la consommation",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-01-05",
+      "date_dernier_evenement": "2026-01-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53497"
+    },
+    {
+      "dossier_id": "DLR5L17N53386",
+      "titre": "Projet de loi spéciale prévue par l'article 45 de la loi organique n°2001-692 du 1er août 2001 relative aux lois de finances",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-12-22",
+      "date_dernier_evenement": "2025-12-26",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/loi_speciale_2026"
+    },
+    {
+      "dossier_id": "DLR5L17N53388",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République du Kazakhstan sur la réadmission des personnes",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-12-17",
+      "date_dernier_evenement": "2026-04-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53388"
+    },
+    {
+      "dossier_id": "DLR5L17N53299",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-880 du 3 septembre 2025 relative au crédit à la consommation",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-12-02",
+      "date_dernier_evenement": "2025-12-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53299"
+    },
+    {
+      "dossier_id": "DLR5L17N53230",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2025-521 du 12 juin 2025 relative aux personnels enseignants du premier degré des îles Wallis et Futuna",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-11-26",
+      "date_dernier_evenement": "2025-11-26",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53230"
+    },
+    {
+      "dossier_id": "DLR5L17N53140",
+      "titre": "Projet de loi portant diverses dispositions d'adaptation au droit de l’Union européenne en matière économique, financière, environnementale, énergétique, d’information, de transport, de santé, d’agriculture et de pêche",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-11-10",
+      "date_dernier_evenement": "2026-05-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53140"
+    },
+    {
+      "dossier_id": "DLR5L17N53096",
+      "titre": "Projet de loi relatif à l’extension des prérogatives, des moyens, de l’organisation et du contrôle des polices municipales et des gardes champêtres",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-10-29",
+      "date_dernier_evenement": "2026-04-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53096"
+    },
+    {
+      "dossier_id": "DLR5L17N53075",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République de Moldova relatif à la coopération dans le domaine de la défense",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-10-29",
+      "date_dernier_evenement": "2026-05-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_autorisant_approbation_accord_gouvernement_moldova_defense"
+    },
+    {
+      "dossier_id": "DLR5L17N53095",
+      "titre": "Projet de loi autorisant l’approbation de la convention d’extradition entre le Gouvernement de la République française et le Gouvernement de la République de Colombie",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-10-29",
+      "date_dernier_evenement": "2026-05-06",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53095"
+    },
+    {
+      "dossier_id": "DLR5L17N52998",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-646 du 16 juillet 2025 portant extension et adaptation des dispositions de la loi n° 2024-42 du 26 janvier 2024 pour contrôler l’immigration, améliorer l’intégration à Saint-Barthélemy, à Saint-Martin, dans les îles Wallis et Futuna, en Polynésie française, en Nouvelle-Calédonie et dans les Terres australes et antarctiques françaises",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-10-14",
+      "date_dernier_evenement": "2025-10-14",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52998"
+    },
+    {
+      "dossier_id": "DLR5L17N52428",
+      "titre": "Projet de loi de finances pour 2026",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-10-14",
+      "date_dernier_evenement": "2026-02-19",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLF_2026"
+    },
+    {
+      "dossier_id": "DLR5L17N52922",
+      "titre": "Projet de loi de financement de la sécurité sociale pour 2026",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-10-14",
+      "date_dernier_evenement": "2025-12-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLFSS_2026"
+    },
+    {
+      "dossier_id": "DLR5L17N52984",
+      "titre": "Projet de loi constitutionnelle relatif à la Nouvelle-Calédonie",
+      "statut": "rejete",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-10-14",
+      "date_dernier_evenement": "2026-04-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52984"
+    }
+  ],
+  "comptages": {
+    "par_statut": {
+      "adopte": 17,
+      "adopte_49_3": 1,
+      "depose": 0,
+      "navette_en_cours": 26,
+      "rejete": 1,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
+      "synchro_le": "2026-08-13T13:45:01+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-13T13:45:02+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/david-amiel",
+      "synchro_le": "2026-08-13T13:44:48+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-14T12:06:38+0000",
+    "licence_donnees": "",
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N54373' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N54196 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N54196' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N54085 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N54085' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N54083 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N54083' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53980 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53980' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53981 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53981' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53940' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53942 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53942' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53848 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53848' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53844 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53844' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53730 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53730' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53600 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53600' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53235 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53235' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_profile: dossier 'DLR5L17N53195' exclu de textes[] : chambre_depot_initial indéterminée (None).",
+      "gouvernement_textes: dossier DLR5L17N53135 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N53135' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52985' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50957 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52002 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52103 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54085 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54196 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49807 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53600 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52100 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53942 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51789 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52000 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51783 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53730 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52040 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52549 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51986 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51222 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53844 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51079 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53135 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49273 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51237 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50198 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52429 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54083 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50838 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52354 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50794 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53980 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49868 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52561 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51519 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49615 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53848 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53981 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53235 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49806 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé."
+    ]
+  }
+}
