@@ -966,7 +966,25 @@ def _content_range_total(resp: "requests.Response") -> Optional[int]:
         return None
 
 
-def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> None:
+def _probe_amendements_total_size(url: str) -> Optional[int]:
+    """Sonde légère (HEAD) pour connaître la taille totale de l'archive avant de
+    décider de reprendre un téléchargement partiel préexistant. Best-effort :
+    toute erreur réseau ou en-tête `Content-Length` absent/invalide retourne
+    `None`, auquel cas l'appelant de `_download_amendements_zip` ne prend pas
+    le risque de reprendre un fichier partiel et redémarre proprement depuis
+    le début plutôt que de deviner."""
+    try:
+        resp = requests.head(url, headers=HEADERS, timeout=TIMEOUT, allow_redirects=True)
+        resp.raise_for_status()
+        content_length = resp.headers.get("Content-Length")
+        return int(content_length) if content_length is not None else None
+    except (requests.RequestException, TypeError, ValueError):
+        return None
+
+
+def _download_amendements_zip(
+    url: str, zip_path: Path, legislature: str, chunk_bytes: Optional[int] = None,
+) -> None:
     """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
     pour ne retenter que le segment en échec au lieu de tout le fichier sur une
     coupure mi-flux (`IncompleteRead` déjà observé en pratique sur ces archives de
@@ -980,21 +998,74 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
     de 206, cas non observé mais possible), bascule sur un téléchargement classique
     en un seul segment.
 
+    Reprend un téléchargement interrompu **entre deux invocations** du script (pas
+    seulement entre deux segments d'une même invocation) : si `zip_path` existe déjà
+    avec un contenu non vide, une sonde `_probe_amendements_total_size` détermine la
+    taille distante avant de décider — fichier déjà complet -> aucune requête envoyée ;
+    fichier partiel plus petit que la taille distante -> reprise en mode ajout à partir
+    de l'octet déjà présent ; sonde en échec ou taille locale incohérente (plus grande
+    que la taille distante) -> redémarrage prudent depuis le début plutôt que de risquer
+    une archive corrompue. Le CDN AN étant instable sur ces deux archives (coupures
+    aléatoires en cours de segment, pas seulement à la fin), cette reprise évite de
+    reperdre à chaque nouvelle invocation les dizaines/centaines de Mo déjà reçus.
+
     Réutilise `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`/`AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS`
     (#225), désormais appliqués par segment plutôt qu'au fichier entier. Lève la
     dernière `requests.RequestException`/`OSError` rencontrée si un segment échoue
     après épuisement des tentatives — l'appelant convertit en `AmendementsIndexError`.
+
+    `chunk_bytes` permet de réduire ponctuellement la taille de segment (défaut
+    `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`, 32 Mo) sans toucher au chemin réseau
+    partagé de la législature 17 : observé le 14/08/2026, le CDN AN peut
+    traverser des fenêtres où même une requête de quelques Ko au-delà des tout
+    premiers Mo du fichier échoue systématiquement (`IncompleteRead(0 bytes
+    read, ...)`) — un segment de 32 Mo n'a alors quasiment aucune chance
+    d'aboutir intégralement, alors que de petits segments (1-2 Mo) ont une
+    fenêtre de succès bien plus large à saisir, et la reprise entre
+    invocations (ci-dessus) garantit qu'aucun de ces petits gains n'est perdu.
     """
+    chunk_bytes = chunk_bytes or AMENDEMENTS_DOWNLOAD_CHUNK_BYTES
     zip_path.parent.mkdir(parents=True, exist_ok=True)
 
     offset = 0
     total_size: Optional[int] = None
+    file_mode = "wb"
+
+    existing_size = zip_path.stat().st_size if zip_path.is_file() else 0
+    if existing_size > 0:
+        remote_total_size = _probe_amendements_total_size(url)
+        if remote_total_size is None:
+            print(
+                f"  -> Législature {legislature} : impossible de sonder la taille distante, "
+                "redémarrage du téléchargement depuis le début (fichier partiel existant ignoré)."
+            )
+        elif existing_size == remote_total_size:
+            print(
+                f"  -> Législature {legislature} : archive déjà complète en local "
+                f"({existing_size} octets), téléchargement sauté."
+            )
+            return
+        elif existing_size > remote_total_size:
+            print(
+                f"  -> Législature {legislature} : fichier local ({existing_size} octets) plus "
+                f"gros que l'archive distante ({remote_total_size} octets), incohérent — "
+                "redémarrage du téléchargement depuis le début."
+            )
+        else:
+            offset = existing_size
+            total_size = remote_total_size
+            file_mode = "ab"
+            print(
+                f"  -> Législature {legislature} : reprise du téléchargement à partir de "
+                f"l'octet {offset}/{total_size} (tentative précédente interrompue)."
+            )
+
     segments_total = 0
     segments_retried = 0
 
-    with open(zip_path, "wb") as out:
+    with open(zip_path, file_mode) as out:
         while total_size is None or offset < total_size:
-            range_end = offset + AMENDEMENTS_DOWNLOAD_CHUNK_BYTES - 1
+            range_end = offset + chunk_bytes - 1
             segments_total += 1
             last_exc: Optional[Exception] = None
             chunk = b""
@@ -1032,6 +1103,17 @@ def _download_amendements_zip(url: str, zip_path: Path, legislature: str) -> Non
                 raise last_exc
             if attempt > 1:
                 segments_retried += 1
+
+            if status_code == 200 and offset != 0:
+                # Le serveur a ignoré l'en-tête Range et renvoyé le fichier entier alors
+                # qu'un segment/une reprise à un offset non nul était attendu : l'écrire
+                # corromprait l'archive (contenu dupliqué/décalé) — jamais observé en
+                # pratique sur ce CDN, mais ne doit jamais être écrit silencieusement.
+                raise OSError(
+                    f"réponse HTTP 200 inattendue (en-tête Range ignoré) pour le segment "
+                    f"amendements législature {legislature} à l'offset {offset} : écriture "
+                    "annulée pour ne pas corrompre l'archive déjà partiellement écrite"
+                )
 
             out.write(chunk)
             if status_code == 200:
