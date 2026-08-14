@@ -14,7 +14,9 @@ from candidate_profile import (
     _collect_acteur_roles,
     _collect_initiateurs,
     _collect_texte_codes,
+    _aggregate_amendements_index,
     _derive_amendement_sort,
+    _expand_aggregated_amendements_index,
     _extract_mandats,
     _parse_syceron_intervention_entry,
     _format_lieu_naissance,
@@ -407,6 +409,120 @@ def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
     by_acteur = {acteur_ref: record for acteur_ref, record in result}
     assert by_acteur["PA1567"]["co_signataires"] == ["an:PA842001", "an:PA793182"]
     assert by_acteur["PA793182"]["role_signataire"] == "cosignataire"
+
+
+# ---------------------------------------------------------------------------
+# Tests pour `_aggregate_amendements_index` / `_expand_aggregated_amendements_index`
+# (issue #268) : le format brut d'`_parse_amendements_zip` duplique
+# l'intégralité de chaque amendement (dont `co_signataires`) une fois par
+# signataire — mesuré à 3,86 Go décompressés pour la législature 16,
+# impossible à committer. `_aggregate_amendements_index` compacte ce résultat
+# (chaque amendement une seule fois, référencé par `numero`) avant écriture
+# par `build_amendements_index_figees.py` ; `_expand_aggregated_amendements_index`
+# est l'inverse, utilisé par `_load_frozen_amendement_index` pour reconstruire
+# la forme plate attendue par le reste du pipeline.
+# ---------------------------------------------------------------------------
+
+def test_aggregate_amendements_index_deduplicates_shared_amendment():
+    """Un amendement à 2 cosignataires (3 entrées dupliquées en entrée) ne doit
+    apparaître qu'une seule fois dans `amendements`, sous sa clé `numero` ; les
+    3 signataires ne conservent chacun qu'une référence légère."""
+    shared_record = {
+        "texte_vise": "PIONANR5L17B0904",
+        "sort": None,
+        "base_juridique_irrecevabilite": None,
+        "premier_signataire": "an:PA1567",
+        "co_signataires": ["an:PA842001", "an:PA793182"],
+        "type_deposant": "depute",
+        "date": "2025-02-17",
+        "numero": "AS1",
+        "source_url": None,
+    }
+    index = {
+        "PA1567": [{**shared_record, "role_signataire": "auteur_principal"}],
+        "PA842001": [{**shared_record, "role_signataire": "cosignataire"}],
+        "PA793182": [{**shared_record, "role_signataire": "cosignataire"}],
+    }
+
+    amendements, index_par_acteur = _aggregate_amendements_index(index)
+
+    assert list(amendements.keys()) == ["AS1"]
+    assert amendements["AS1"] == shared_record
+    assert "role_signataire" not in amendements["AS1"]
+    assert index_par_acteur == {
+        "PA1567": [{"numero": "AS1", "role_signataire": "auteur_principal"}],
+        "PA842001": [{"numero": "AS1", "role_signataire": "cosignataire"}],
+        "PA793182": [{"numero": "AS1", "role_signataire": "cosignataire"}],
+    }
+
+
+def test_aggregate_amendements_index_assigns_synthetic_key_without_dropping_records_missing_numero():
+    """Un enregistrement sans `numero` (non observé en pratique) ne doit jamais
+    être perdu ni fusionné à tort avec un autre : il reçoit une clé
+    synthétique qui lui est propre."""
+    index = {
+        "PA1": [{"numero": None, "texte_vise": "A"}],
+        "PA2": [{"numero": None, "texte_vise": "B"}],
+    }
+
+    amendements, index_par_acteur = _aggregate_amendements_index(index)
+
+    assert len(amendements) == 2
+    assert {v["texte_vise"] for v in amendements.values()} == {"A", "B"}
+    assert len(index_par_acteur["PA1"]) == 1
+    assert len(index_par_acteur["PA2"]) == 1
+
+
+def test_expand_aggregated_amendements_index_reconstructs_flat_form():
+    amendements = {
+        "AS1": {
+            "texte_vise": "PIONANR5L17B0904",
+            "premier_signataire": "an:PA1567",
+            "co_signataires": ["an:PA842001"],
+            "numero": "AS1",
+        }
+    }
+    index_par_acteur = {
+        "PA1567": [{"numero": "AS1", "role_signataire": "auteur_principal"}],
+        "PA842001": [{"numero": "AS1", "role_signataire": "cosignataire"}],
+    }
+
+    expanded = _expand_aggregated_amendements_index(amendements, index_par_acteur)
+
+    assert expanded == {
+        "PA1567": [{**amendements["AS1"], "role_signataire": "auteur_principal"}],
+        "PA842001": [{**amendements["AS1"], "role_signataire": "cosignataire"}],
+    }
+
+
+def test_expand_aggregated_amendements_index_ignores_dangling_reference():
+    """Une référence dont le `numero` est absent de `amendements` (ne devrait
+    pas arriver, les deux fichiers étant committés ensemble) est ignorée sans
+    lever."""
+    expanded = _expand_aggregated_amendements_index(
+        {}, {"PA1": [{"numero": "INTROUVABLE", "role_signataire": "auteur_principal"}]}
+    )
+    assert expanded == {"PA1": []}
+
+
+def test_aggregate_then_expand_amendements_index_round_trips():
+    """L'aller-retour agrégation -> expansion doit reproduire exactement
+    l'index plat d'origine — invariant central de la compaction committée."""
+    shared_record = {
+        "texte_vise": "PIONANR5L17B0904",
+        "premier_signataire": "an:PA1567",
+        "co_signataires": ["an:PA842001"],
+        "numero": "AS1",
+    }
+    original = {
+        "PA1567": [{**shared_record, "role_signataire": "auteur_principal"}],
+        "PA842001": [{**shared_record, "role_signataire": "cosignataire"}],
+    }
+
+    amendements, index_par_acteur = _aggregate_amendements_index(original)
+    roundtripped = _expand_aggregated_amendements_index(amendements, index_par_acteur)
+
+    assert roundtripped == original
 
 
 def test_collect_texte_codes_walks_nested_actes_legislatifs():
@@ -1574,15 +1690,44 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
 
 def test_download_and_build_amendement_index_uses_frozen_fallback_without_download(tmp_path):
     """Pour une législature dans `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, l'index
-    committé (`AN_AMENDEMENTS_FIGEES_DIR`) est utilisé sans jamais toucher le
-    réseau, même en l'absence de tout cache disque préexistant."""
+    committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée
+    `amendements.json` + `index_par_acteur.json` allégé — voir
+    `_aggregate_amendements_index`) est utilisé sans jamais toucher le réseau,
+    même en l'absence de tout cache disque préexistant, et reconstruit sous la
+    forme plate standard avant matérialisation dans le cache."""
     from candidate_profile import _download_and_build_amendement_index
 
-    frozen_index = {"PA1": [{"uid": "AMANR5L15PO123456B0001P0D1N001"}]}
+    frozen_amendements = {
+        "AMANR5L15PO123456B0001P0D1N001": {
+            "texte_vise": "PRJLANR5L15B0001",
+            "sort": None,
+            "base_juridique_irrecevabilite": None,
+            "premier_signataire": "an:PA1",
+            "co_signataires": [],
+            "type_deposant": None,
+            "date": "2018-01-01",
+            "numero": "AMANR5L15PO123456B0001P0D1N001",
+            "source_url": None,
+        }
+    }
+    frozen_index_par_acteur = {
+        "PA1": [{"numero": "AMANR5L15PO123456B0001P0D1N001", "role_signataire": "auteur_principal"}]
+    }
+    expected_index = {
+        "PA1": [
+            {
+                **frozen_amendements["AMANR5L15PO123456B0001P0D1N001"],
+                "role_signataire": "auteur_principal",
+            }
+        ]
+    }
     frozen_dir = tmp_path / "figees" / "15"
     frozen_dir.mkdir(parents=True)
+    (frozen_dir / "amendements.json").write_text(
+        json.dumps(frozen_amendements, ensure_ascii=False), encoding="utf-8"
+    )
     (frozen_dir / "index_par_acteur.json").write_text(
-        json.dumps(frozen_index, ensure_ascii=False), encoding="utf-8"
+        json.dumps(frozen_index_par_acteur, ensure_ascii=False), encoding="utf-8"
     )
     (frozen_dir / "fraicheur.json").write_text(
         json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
@@ -1597,10 +1742,11 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     ):
         result = _download_and_build_amendement_index("15")
 
-    assert result == frozen_index
+    assert result == expected_index
     mock_get.assert_not_called()
-    # Matérialisé dans le cache disque standard, même format qu'une construction réseau.
-    assert json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8")) == frozen_index
+    # Matérialisé dans le cache disque standard, sous forme plate (même format
+    # qu'une construction réseau), pas la forme dédupliquée committée.
+    assert json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8")) == expected_index
     assert json.loads((cache_dir / "15" / "fraicheur.json").read_text(encoding="utf-8"))["figee"] is True
 
 

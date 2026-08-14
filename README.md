@@ -308,9 +308,15 @@ Legislatures 15/16 are excluded from this network path: their dossier is
 closed and the CI download budget can't reliably fetch their 350-650 MB
 archive (recurring `IncompleteRead`, reproduced outside CI too). Their index
 is built once, offline, via `src/build_amendements_index_figees.py --legislature
-{15,16} --zip <local archive>` and committed under `raw_data/amendements_an_figes/`
-— `candidate_profile.py` reads that fallback instead of hitting the network
-for those two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
+{15,16} (--zip <local archive> | --download)` (`--download` reuses the same
+segmented/retried fetch as the CI job, writing into gitignored
+`.cache/amendements_an/`) and committed under `raw_data/amendements_an_figes/`
+— the script deduplicates the raw per-signataire index into
+`amendements.json` + a slim `index_par_acteur.json` before writing, since the
+undeduplicated form is multiple GB uncompressed (measured on legislature 16)
+and can't be committed. `candidate_profile.py` reads that fallback (expanding
+it back to the standard flat shape) instead of hitting the network for those
+two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0. Before that step, the `merge-and-pivot` job also
