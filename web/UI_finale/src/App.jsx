@@ -3,6 +3,8 @@ import ExplorerLayout from './components/ExplorerLayout';
 import CandidateProfilePage from './pages/CandidateProfilePage';
 import GroupProfilePage from './pages/GroupProfilePage';
 import GovernmentProfilePage from './pages/GovernmentProfilePage';
+import MethodologyPage from './pages/MethodologyPage';
+import LegalNoticePage from './pages/LegalNoticePage';
 import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from './data';
 
 function App() {
@@ -17,6 +19,10 @@ function App() {
         <Route path="gouvernements" element={<Navigate to={`/gouvernements/${DEFAULT_GOVERNMENT_ID}`} replace />} />
         <Route path="gouvernements/:governmentId" element={<GovernmentProfilePage />} />
       </Route>
+      {/* Pages statiques hors ExplorerLayout : pas de candidat/groupe sélectionné,
+          les bandeaux Groupes/Gouvernements/Candidats n'ont pas de sens ici. */}
+      <Route path="/methodologie" element={<MethodologyPage />} />
+      <Route path="/mentions-legales" element={<LegalNoticePage />} />
     </Routes>
   );
 }
