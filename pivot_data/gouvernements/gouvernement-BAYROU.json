@@ -1,0 +1,230 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:BAYROU",
+  "nom": "Gouvernement Bayrou",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2024-12-24",
+    "fin": "2025-09-09",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
+      "nom": "Charlotte Parmentier-Lecocq",
+      "portefeuille": null,
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": null
+    }
+  ],
+  "textes": [
+    {
+      "dossier_id": "DLR5L17N52677",
+      "titre": "Projet de loi portant ratification de l'ordonnance n° 2025-526 du 12 juin 2025 relative à la généralisation du compte financier unique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-08-27",
+      "date_dernier_evenement": "2025-08-27",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52677"
+    },
+    {
+      "dossier_id": "DLR5L17N52596",
+      "titre": "Projet de loi relatif à la régulation de l'enseignement supérieur privé",
+      "statut": "retire",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-07-30",
+      "date_dernier_evenement": "2026-01-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_regulation_enseignement_superieur_prive"
+    },
+    {
+      "dossier_id": "DLR5L17N52600",
+      "titre": "Projet de loi de lutte contre la vie chère dans les outre-mer",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-07-30",
+      "date_dernier_evenement": "2025-10-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52600"
+    },
+    {
+      "dossier_id": "DLR5L17N52599",
+      "titre": "Projet de loi constitutionnelle pour une Corse autonome au sein de la République",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-07-30",
+      "date_dernier_evenement": "2025-07-30",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52599"
+    },
+    {
+      "dossier_id": "DLR5L17N52433",
+      "titre": "Projet de loi ratifiant les ordonnances n° 2025-453 du 23 mai 2025 relative à la transformation de l'établissement public foncier et d'aménagement de Mayotte et n° 2025-454 du 23 mai 2025 portant diverses mesures d'adaptations et de dérogations temporaires aux règles de construction à Mayotte afin d'accélérer sa reconstruction à la suite du passage du cyclone Chido",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-07-02",
+      "date_dernier_evenement": "2025-07-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52433"
+    },
+    {
+      "dossier_id": "DLR5L17N52247",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2025-230 du 12 mars 2025 relative aux organismes de placement collectif",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-06-04",
+      "date_dernier_evenement": "2025-06-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52247"
+    },
+    {
+      "dossier_id": "DLR5L17N52135",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2025-229 du 12 mars 2025 portant réforme du régime des nullités en droit des sociétés",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-05-23",
+      "date_dernier_evenement": "2025-05-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52135"
+    },
+    {
+      "dossier_id": "DLR5L17N51919",
+      "titre": "Projet de loi relatif aux résultats de la gestion et portant approbation des comptes de l'année 2024",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-04-16",
+      "date_dernier_evenement": "2025-06-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/Projetdeloirelatifauxresultatsdelagestionetportantapprobationdescomptesdelannee2024"
+    },
+    {
+      "dossier_id": "DLR5L17N51420",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2024-1019 du 13 novembre 2024 portant extension et adaptation en outre-mer des dispositions de la loi n° 2024-449 du 21 mai 2024 visant à sécuriser et à réguler l'espace numérique et du règlement européen 2022/2065",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-01-29",
+      "date_dernier_evenement": "2025-01-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51420"
+    },
+    {
+      "dossier_id": "DLR5L17N51236",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2024-936 du 15 octobre 2024 relative aux marchés de crypto-actifs et l’ordonnance n°2024-937 du 15 octobre 2024 relative au renforcement des obligations de lutte contre le blanchiment de capitaux et le financement du terrorisme en matière de transfert de crypto-actifs",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2025-01-08",
+      "date_dernier_evenement": "2025-01-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51236"
+    }
+  ],
+  "comptages": {
+    "par_statut": {
+      "adopte": 1,
+      "adopte_49_3": 0,
+      "depose": 0,
+      "navette_en_cours": 7,
+      "rejete": 1,
+      "rejete_49_3": 0,
+      "retire": 1
+    }
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
+      "synchro_le": "2026-08-13T13:45:01+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-13T13:45:02+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-14T12:06:38+0000",
+    "licence_donnees": "",
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52635' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52561 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52561' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52549 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52549' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52429 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52429' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52354 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52354' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52100 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52100' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52103 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52103' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52040 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52040' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52002 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52002' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N52000 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N52000' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51986 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51986' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51985' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51789 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51789' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51519 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51519' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51222 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51222' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N51237 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L17N51237' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50957 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52002 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52103 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54085 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54196 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49807 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53600 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52100 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53942 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51789 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52000 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51783 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53730 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52040 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52549 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51986 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51222 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53844 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51079 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53135 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49273 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51237 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50198 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52429 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54083 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50838 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52354 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50794 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53980 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49868 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52561 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51519 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49615 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53848 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53981 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53235 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49806 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé."
+    ]
+  }
+}

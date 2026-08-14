@@ -55,6 +55,245 @@ esthétique mais parce qu'elle réintroduirait un jugement de valeur expliciteme
 interdit par la règle 1 de `AGENTS.md §2`. Toute proposition future de
 gamification de l'interface doit être évaluée à l'aune de cette même règle, pas
 seulement d'une préférence de design.
+<a id="gouvernement-profile-rattachement"></a>
+## `gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)
+
+**Contexte** : #211 combine la sortie de `gouvernement_roster.py` (composition
+ministérielle, pure) et `gouvernement_textes.py` (dossiers d'origine
+gouvernementale, non filtrés par gouvernement — le rattachement était
+explicitement laissé hors périmètre par sa docstring) en un profil de
+gouvernement complet conforme à `schema_gouvernement.py`.
+
+**Décision** :
+1. Rattachement d'un dossier à un gouvernement par recouvrement de sa
+   `date_depot` avec `periode` (bornes incluses, `periode.fin = None` = borne
+   haute ouverte), jamais par `date_dernier_evenement` — un texte déposé sous
+   un gouvernement A puis conclu sous un gouvernement B reste crédité à A, qui
+   l'a initié (décision déjà actée dans le plan d'implémentation de #184, voir
+   docstring `gouvernement_textes.py`). Une `date_depot` absente exclut
+   silencieusement le dossier (jamais de rattachement par défaut).
+2. Un dossier dont `statut` est `None` (fam_code inconnu côté
+   `gouvernement_textes.py`, voir [#gouvernement-textes-statut](#gouvernement-textes-statut))
+   ou dont `chambre_depot_initial` est `None` (aucun acte `-DEPOT`
+   identifiable) est exclu de `textes[]`, avec un warning explicite dans
+   `meta.warnings` : le schéma n'admet aucune valeur `null` sur ces deux
+   champs (`KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`/`KNOWN_CHAMBRES_DEPOT_TEXTE`),
+   et inventer une valeur par défaut violerait la règle AGENTS.md §2.5.
+   Conséquence directe : `comptages.par_statut` ne compte que les dossiers
+   effectivement inclus dans `textes[]`, jamais un dossier exclu.
+3. Anti double-comptage : dédoublonnage par `dossier_id` au sein d'un même
+   appel à `build_gouvernement_profile` (protège contre un dossier présent
+   deux fois dans l'entrée non filtrée) ; `generate_gouvernement_profiles.py`
+   ne fetch les dossiers et ne charge les profils pivot qu'UNE SEULE fois
+   pour l'ensemble du batch (mutualisé entre tous les gouvernements), comme
+   `generate_group_profiles.py` le fait pour le roster par `(chambre,
+   legislature)`. Vérifié sur les 10 gouvernements réels de
+   `raw_data/gouvernements_reels.json` (run du 2026-08-14) : 61 `dossier_id`
+   dans `textes[]` au total, tous distincts, aucun partagé entre deux
+   fichiers `pivot_data/gouvernements/*.json`.
+4. `comptages.par_statut` : uniquement des entiers bruts (dénombrement),
+   aucun taux ni pourcentage — vérifié par test explicite sur les clés du
+   dict (règle AGENTS.md §2.1).
+5. `sources[]` du profil de gouvernement : dédoublonnées, mais limitées aux
+   profils pivot des membres effectivement retenus dans `membres[]` (pas de
+   tous les profils passés en entrée, qui couvrent potentiellement
+   l'ensemble du dépôt local) — sinon un gouvernement à faible couverture
+   afficherait des sources sans rapport avec ses membres réels.
+
+**Vérification manuelle (critère d'acceptation #211)** : `gouvernement:ATTAL`
+généré en conditions réelles inclut le dossier `DLR5L16N50115` (« Projet de
+loi autorisant la ratification de la convention n°155 sur la sécurité et la
+santé des travailleurs, 1981 »), déposé le 2024-06-12 (dans la période Attal,
+2024-01-10/2024-09-05), `statut = "adopte"`. Confirmé contre
+`assemblee-nationale.fr` : promulguée sous le n° 2025-983 au Journal officiel
+du 23/10/2025.
+
+**Hors périmètre** : `premier_ministre` reste `null` (aucune source encore
+câblée pour le déterminer) ; intégration à `check_quality_gate.py` (#6) et
+CI/CD (#9) non traitées ici.
+
+<a id="gouvernement-textes-statut"></a>
+## `gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)
+
+**Contexte** : #210 (sous-issue de #184) demandait la collecte des dossiers
+législatifs d'origine gouvernementale et l'extraction de leur statut, en
+s'appuyant sur le mapping `statutConclusion.fam_code` confirmé par le spike
+#207 (déjà reporté dans `docs/an_opendata.md`, section « Spike : origine »).
+Vérification sur données réelles (téléchargement direct de
+`Dossiers_Legislatifs.json.zip` le 2026-08-14, mêmes deux dossiers cités par
+le spike, `DLR5L17N50588`/`DLR5L17N54196`) : un dossier accumule souvent
+*plusieurs* actes portant `statutConclusion` à des dates différentes (une
+décision par lecture/chambre, plus les constats de CMP et les décisions du
+Conseil constitutionnel), et pas seulement les 4 `fam_code` confirmés. Deux
+angles morts non couverts par le spike :
+1. Le Conseil constitutionnel (`CC-CONCLUSION`) et l'accord/désaccord de CMP
+   (`CMP-DEC`) portent eux aussi un `statutConclusion` (`fam_code` `TCD0x`/
+   `TCCMP01`), postérieur en date à la décision de séance qui a réellement
+   tranché le sort du texte (constaté sur `DLR5L17N50588` : `CC-CONCLUSION`
+   daté du 2025-02-28, après l'adoption via 49.3 du 2025-02-12) — un simple
+   « dernier `statutConclusion` par date » aurait donc rapporté un statut
+   inexistant plutôt que le vrai statut final.
+2. Le code de décision de CMP ne se termine pas par `-DEBATS-DEC` mais par
+   `-AN-DEC`/`-SN-DEC` (`CMP-DEBATS-AN-DEC`, `CMP-DEBATS-SN-DEC`) : un filtre
+   `codeActe.endswith("-DEBATS-DEC")` les exclut à tort, alors que ce sont de
+   vraies décisions de séance (constaté sur `DLR5L17N50588`, l'unique
+   occurrence connue de `TSORTF24` dans le dataset).
+
+**Décision** :
+1. `_est_decision_de_seance(code_acte)` filtre sur `"-DEBATS-" in code_acte
+   and code_acte.endswith("-DEC")` plutôt qu'un `endswith` unique, pour
+   couvrir les codes de CMP sans réintroduire `CC-CONCLUSION`/`CMP-DEC` (qui
+   ne contiennent pas `-DEBATS-`).
+2. Seule la décision de séance **chronologiquement la plus récente** parmi
+   celles-ci détermine le statut du dossier (pas le dernier `statutConclusion`
+   toutes origines confondues) — un dossier adopté en 1ère lecture puis
+   modifié par la seconde chambre reste en navette, pas « adopté ».
+3. `fam_code == "TSORTFnull"` (constaté sur un acte de décision sans issue
+   tranchée) est traité comme absence d'événement, jamais comme un `fam_code`
+   inconnu à signaler.
+4. Cas non résolu, volontairement flagué plutôt que masqué : `TSORTF24`
+   (rejeté consécutivement à l'engagement de l'art. 49.3, motion de censure
+   adoptée) est mappé à `statut = "rejete"` + `sort_49_3 = True`, qui reflète
+   fidèlement le fait mais est **incompatible** avec l'invariant actuel de
+   `schema_gouvernement.validate_profil_gouvernement` (`sort_49_3 = True`
+   n'est autorisé qu'avec `statut == "adopte_49_3"`, faute de statut « rejeté
+   via 49.3 » dans la nomenclature fermée de #208). Un warning explicite est
+   émis dans ce cas ; la résolution (étendre la nomenclature ou assouplir le
+   validateur) relève de #208/#211, pas de la collecte.
+5. Infrastructure de téléchargement : `gouvernement_textes.py` devient la
+   source canonique de `AN_DOSSIERS_ZIP_URL`/`DOSSIERS_CACHE_DIR` et d'un
+   `ensure_dossiers_zip_downloaded()` partagé (écriture atomique via fichier
+   `.part`) ; `candidate_profile.py` (`_build_texte_titre_index`,
+   `_build_acteur_textes_portes_index`) importe désormais ces symboles au
+   lieu de dupliquer le téléchargement (deux blocs identiques avant ce
+   correctif) — un seul cache pour ce fichier ~10 Mo, comme demandé par #210.
+
+**Alternative rejetée** : implémenter la chaîne `initiateur.acteurs.acteur[]
+-> mandat GOUVERNEMENT -> organeRef` (dataset `AMO30`) comme signal
+d'origine. Rejetée pour ce module : ~15 % de faux positifs sans filtrage par
+date de mandat vs date de dépôt (co-signataires ex-ministres, mesuré par le
+spike #207), pour ne couvrir que les dossiers hors préfixe de titre (2355 sur
+3044, majoritairement motions/résolutions/rapports hors périmètre éditorial).
+Seul le préfixe de titre (« Projet de loi » vs « Proposition de loi »,
+689/3044 dossiers, aucun faux positif) est implémenté ; `AMO30` reste un
+repli possible pour un futur complément, non fait ici.
+<a id="gouvernement-textes-statut-49-3-rejete"></a>
+## `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` : ajout de `rejete_49_3` (#208, réouverte) (2026-08-14)
+
+**Contexte** : la nomenclature fermée des statuts de texte gouvernemental
+(#208, fusionnée dans `main`) n'anticipait le 49.3 (art. 49 al. 3 de la
+Constitution) que comme voie d'**adoption** (`statut = "adopte_49_3"`). En
+implémentant la collecte réelle (#210), un cas non anticipé est apparu sur
+des données AN réelles : `fam_code` `TSORTF24` = « rejeté via 49.3, motion de
+censure adoptée » — c'est le sort effectivement survenu au budget 2025 sous
+le gouvernement Barnier (décembre 2024). Ce n'est pas un cas hypothétique
+qu'on choisirait d'anticiper par prudence : c'est un fait déjà survenu, donc
+certain de réapparaître dans la donnée historique. `gouvernement_textes.py`
+mappait ce cas à `statut = "rejete"` + `sort_49_3 = True`, une combinaison
+que `validate_profil_gouvernement` rejetait (seul `"adopte_49_3"` était
+autorisé avec `sort_49_3 = True`) — ce qui aurait fait échouer dur
+l'agrégation (#211) dès le premier gouvernement réel touché par ce cas.
+
+**Décision** : ajout de `"rejete_49_3"` à `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`,
+symétrique d'`"adopte_49_3"` — même exigence d'appariement avec
+`sort_49_3 = True`, même interdiction de collapse silencieux (cette fois vers
+`"rejete"` simple plutôt que vers `"adopte"`). Alternative rejetée : assouplir
+le validateur pour rendre `sort_49_3` orthogonal au `statut` (autorisé avec
+n'importe quelle valeur) — écartée car elle affaiblirait la garantie actuelle
+que le 49.3 reste toujours visible comme son propre statut explicite plutôt
+que comme un simple booléen surimposé (règle AGENTS.md §2.4). Cohérent avec
+le principe déjà acté en #208 : le 49.3 est un fait procédural distinct de
+l'issue du vote, jamais fusionné avec elle — cette règle s'applique
+symétriquement au rejet, pas seulement à l'adoption.
+
+<a id="gouvernement-roster-desambiguisation"></a>
+## `gouvernement_roster.py` : désambiguïsation par libellé exact + garde-fou de période, pas l'inverse (#209) (2026-08-14)
+
+**Contexte** : `mandats[].categorie == "fonction_gouvernementale"` (déjà peuplé
+par `candidate_profile.py` depuis `AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`,
+voir [[hors-perimetre]] § "Ministerial function") porte un `label` du type
+`"Gouvernement (<libelleAbrege>)"`, où `libelleAbrege` est le seul identifiant
+que l'AN expose pour un gouvernement (ex. "BORNE", "LECORNU II") — ambigu en
+cas de gouvernements homonymes lors d'un remaniement.
+
+**Décision** : `raw_data/gouvernements_reels.json` (miroir éditorial de
+`groupes_reels.json`) fixe manuellement `libelle_an` par gouvernement.
+`gouvernement_roster.build_gouvernement_roster` sélectionne un mandat membre
+d'abord par correspondance **exacte** de ce libellé, puis vérifie en second
+lieu que la période du mandat chevauche celle du gouvernement (garde-fou
+contre une anomalie de données, pas critère principal). Périodes de
+`gouvernements_reels.json` dérivées des dates min/max réellement observées
+sur les mandats `fonction_gouvernementale` déjà présents dans
+`pivot_data/profiles/*.pivot.json` (zéro appel réseau, zéro date inventée).
+
+**Alternative rejetée** : filtrer uniquement par chevauchement de période
+(sans libellé). Rejeté parce que c'est précisément le chevauchement qui est
+ambigu lors d'un remaniement rapproché (l'exemple donné dans l'issue #209 est
+la distinction entre deux gouvernements homonymes successifs) — le libellé
+exact est la seule donnée qui lève cette ambiguïté de façon fiable.
+
+<a id="gouvernement-textes-statut"></a>
+## `gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)
+
+**Contexte** : #210 (sous-issue de #184) demandait la collecte des dossiers
+législatifs d'origine gouvernementale et l'extraction de leur statut, en
+s'appuyant sur le mapping `statutConclusion.fam_code` confirmé par le spike
+#207 (déjà reporté dans `docs/an_opendata.md`, section « Spike : origine »).
+Vérification sur données réelles (téléchargement direct de
+`Dossiers_Legislatifs.json.zip` le 2026-08-14, mêmes deux dossiers cités par
+le spike, `DLR5L17N50588`/`DLR5L17N54196`) : un dossier accumule souvent
+*plusieurs* actes portant `statutConclusion` à des dates différentes (une
+décision par lecture/chambre, plus les constats de CMP et les décisions du
+Conseil constitutionnel), et pas seulement les 4 `fam_code` confirmés. Deux
+angles morts non couverts par le spike :
+1. Le Conseil constitutionnel (`CC-CONCLUSION`) et l'accord/désaccord de CMP
+   (`CMP-DEC`) portent eux aussi un `statutConclusion` (`fam_code` `TCD0x`/
+   `TCCMP01`), postérieur en date à la décision de séance qui a réellement
+   tranché le sort du texte (constaté sur `DLR5L17N50588` : `CC-CONCLUSION`
+   daté du 2025-02-28, après l'adoption via 49.3 du 2025-02-12) — un simple
+   « dernier `statutConclusion` par date » aurait donc rapporté un statut
+   inexistant plutôt que le vrai statut final.
+2. Le code de décision de CMP ne se termine pas par `-DEBATS-DEC` mais par
+   `-AN-DEC`/`-SN-DEC` (`CMP-DEBATS-AN-DEC`, `CMP-DEBATS-SN-DEC`) : un filtre
+   `codeActe.endswith("-DEBATS-DEC")` les exclut à tort, alors que ce sont de
+   vraies décisions de séance (constaté sur `DLR5L17N50588`, l'unique
+   occurrence connue de `TSORTF24` dans le dataset).
+
+**Décision** :
+1. `_est_decision_de_seance(code_acte)` filtre sur `"-DEBATS-" in code_acte
+   and code_acte.endswith("-DEC")` plutôt qu'un `endswith` unique, pour
+   couvrir les codes de CMP sans réintroduire `CC-CONCLUSION`/`CMP-DEC` (qui
+   ne contiennent pas `-DEBATS-`).
+2. Seule la décision de séance **chronologiquement la plus récente** parmi
+   celles-ci détermine le statut du dossier (pas le dernier `statutConclusion`
+   toutes origines confondues) — un dossier adopté en 1ère lecture puis
+   modifié par la seconde chambre reste en navette, pas « adopté ».
+3. `fam_code == "TSORTFnull"` (constaté sur un acte de décision sans issue
+   tranchée) est traité comme absence d'événement, jamais comme un `fam_code`
+   inconnu à signaler.
+4. `TSORTF24` (rejeté consécutivement à l'engagement de l'art. 49.3, motion
+   de censure adoptée) est mappé à `statut = "rejete_49_3"` + `sort_49_3 =
+   True`, symétrique d'`adopte_49_3` — voir
+   [[gouvernement-textes-statut-49-3-rejete]] (#208 réouverte) pour l'ajout de
+   ce statut à la nomenclature fermée, qui rend la combinaison représentable
+   par `schema_gouvernement.validate_profil_gouvernement` sans warning.
+5. Infrastructure de téléchargement : `gouvernement_textes.py` devient la
+   source canonique de `AN_DOSSIERS_ZIP_URL`/`DOSSIERS_CACHE_DIR` et d'un
+   `ensure_dossiers_zip_downloaded()` partagé (écriture atomique via fichier
+   `.part`) ; `candidate_profile.py` (`_build_texte_titre_index`,
+   `_build_acteur_textes_portes_index`) importe désormais ces symboles au
+   lieu de dupliquer le téléchargement (deux blocs identiques avant ce
+   correctif) — un seul cache pour ce fichier ~10 Mo, comme demandé par #210.
+
+**Alternative rejetée** : implémenter la chaîne `initiateur.acteurs.acteur[]
+-> mandat GOUVERNEMENT -> organeRef` (dataset `AMO30`) comme signal
+d'origine. Rejetée pour ce module : ~15 % de faux positifs sans filtrage par
+date de mandat vs date de dépôt (co-signataires ex-ministres, mesuré par le
+spike #207), pour ne couvrir que les dossiers hors préfixe de titre (2355 sur
+3044, majoritairement motions/résolutions/rapports hors périmètre éditorial).
+Seul le préfixe de titre (« Projet de loi » vs « Proposition de loi »,
+689/3044 dossiers, aucun faux positif) est implémenté ; `AMO30` reste un
+repli possible pour un futur complément, non fait ici.
 
 <a id="amendements-legislatures-figees"></a>
 ## Index amendements des législatures 15/16 : construction manuelle hors CI, committée (2026-08-13)

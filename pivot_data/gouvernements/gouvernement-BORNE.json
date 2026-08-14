@@ -1,0 +1,172 @@
+{
+  "schema_version": "1",
+  "type_document": "profil_gouvernement",
+  "gouvernement_id": "gouvernement:BORNE",
+  "nom": "Gouvernement Borne",
+  "premier_ministre": null,
+  "periode": {
+    "debut": "2022-05-21",
+    "fin": "2024-01-09",
+    "actif": false
+  },
+  "membres": [
+    {
+      "membre_id": "nosdeputes:damien-abad",
+      "nom": "Damien Abad",
+      "portefeuille": null,
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:fadila-khattabi",
+      "nom": "Fadila Khattabi",
+      "portefeuille": null,
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:gabriel-attal",
+      "nom": "Gabriel Attal",
+      "portefeuille": null,
+      "debut": "2022-05-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:olivier-veran",
+      "nom": "Olivier Véran",
+      "portefeuille": null,
+      "debut": "2022-05-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:thomas-cazenave",
+      "nom": "Thomas Cazenave",
+      "portefeuille": null,
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:yael-braun-pivet",
+      "nom": "Yaël Braun-Pivet",
+      "portefeuille": null,
+      "debut": "2022-05-21",
+      "fin": "2022-06-25",
+      "actif": false,
+      "source_url": null
+    }
+  ],
+  "textes": [],
+  "comptages": {
+    "par_statut": {
+      "adopte": 0,
+      "adopte_49_3": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "rejete": 0,
+      "rejete_49_3": 0,
+      "retire": 0
+    }
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/damien-abad",
+      "synchro_le": "2026-08-13T13:44:07+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-13T13:44:08+0000"
+    },
+    {
+      "type": "europarl",
+      "url": "https://www.europarl.europa.eu/meps/fr/96850",
+      "synchro_le": "2026-08-13T13:44:03+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/fadila-khattabi",
+      "synchro_le": "2026-08-13T13:45:39+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
+      "synchro_le": "2026-08-06T09:05:24+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivier-veran",
+      "synchro_le": "2026-08-13T13:42:46+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/thomas-cazenave",
+      "synchro_le": "2026-08-13T13:43:13+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/yael-braun-pivet",
+      "synchro_le": "2026-08-13T13:45:14+0000"
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-14T12:06:38+0000",
+    "licence_donnees": "",
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50957 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52002 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52103 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54085 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54196 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49807 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53600 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52100 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53942 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51789 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52000 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51783 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53730 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52040 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52549 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51986 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51222 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53844 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51079 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53135 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49273 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51237 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50198 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52429 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N54083 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50838 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52354 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N50794 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53980 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49868 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N52561 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51519 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49615 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53848 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53981 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N53235 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49806 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé."
+    ]
+  }
+}

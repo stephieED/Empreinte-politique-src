@@ -38,6 +38,7 @@ from xml.etree import ElementTree as ET
 
 import requests
 from bs4 import BeautifulSoup
+from gouvernement_textes import DOSSIERS_CACHE_DIR, ensure_dossiers_zip_downloaded
 from parse_syceron import parse_syceron_xml
 from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
 
@@ -232,8 +233,10 @@ def _amendements_legislature_failed_this_run(legislature: str) -> bool:
 # multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
 # uniquement pour resoudre le code source d'un texte (texteLegislatifRef d'un
 # amendement, ex. "PIONANR5L17B0904") vers son titre lisible (titreDossier.titre).
-AN_DOSSIERS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
-DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
+# DOSSIERS_CACHE_DIR/ensure_dossiers_zip_downloaded (URL incluse) sont
+# importés depuis gouvernement_textes.py, qui en est la source canonique
+# (téléchargement/cache partagé avec la collecte des dossiers gouvernementaux,
+# voir issue #210 : un seul cache pour ce fichier ~10 Mo).
 
 # Acteurs (deputes actifs) + mandats + organes (Assemblee nationale) : un seul
 # fichier bulk, mais limite aux deputes ACTIFS de la legislature en cours (577
@@ -1446,18 +1449,8 @@ def _build_texte_titre_index() -> dict[str, str]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
-        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
+        zip_path = ensure_dossiers_zip_downloaded()
+        if zip_path is None:
             return {}
 
         index: dict[str, str] = {}
@@ -1619,20 +1612,9 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
-        if not zip_path.is_file():
-            print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
-            try:
-                zip_path.parent.mkdir(parents=True, exist_ok=True)
-                with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                    resp.raise_for_status()
-                    with open(zip_path, "wb") as out:
-                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                            if chunk:
-                                out.write(chunk)
-            except (requests.RequestException, OSError) as exc:
-                print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
-                return {}
+        zip_path = ensure_dossiers_zip_downloaded()
+        if zip_path is None:
+            return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
         try:

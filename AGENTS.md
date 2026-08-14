@@ -155,7 +155,7 @@ don't restate it in the chat.
   
 ## References
 
-- `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`: structure contracts.
+- `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
 - `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
 - `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
