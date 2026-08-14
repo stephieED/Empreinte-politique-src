@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """Quality gate pré-commit + résumé de run du pipeline de génération de données.
 
-Produit quatre sections de rapport :
+Produit cinq sections de rapport :
   1. Erreurs IncompleteRead dans meta.warnings[] de tous les JSON générés.
   2. Candidats générés vs attendus (d'après raw_data/candidats.json).
   3. Candidats avec un faible nombre d'interventions.
   4. Groupes parlementaires : hard fail sur structure cassée, soft fail sur
      qualité dégradée (couverture, signaux réseau).
+  5. Gouvernements : hard fail sur structure cassée, soft fail sur qualité
+     dégradée (couverture ministérielle, textes vides, signaux réseau) —
+     miroir de la section 4, sur le modèle de #184.
 
 Codes de sortie :
-  0  — aucune erreur bloquante (IncompleteRead dans seuil, groupes valides)
-  1  — structure groupe cassée (fichier manquant / JSON invalide / schéma invalide)
-       OU erreurs IncompleteRead > seuil
+  0  — aucune erreur bloquante (IncompleteRead dans seuil, groupes et
+       gouvernements valides)
+  1  — structure groupe ou gouvernement cassée (fichier manquant / JSON
+       invalide / schéma invalide) OU erreurs IncompleteRead > seuil
 
 Sorties :
   - Console (stdout) : rapport lisible.
@@ -36,6 +40,11 @@ try:
     _SCHEMA_GROUPE_AVAILABLE = True
 except ImportError:
     _SCHEMA_GROUPE_AVAILABLE = False
+try:
+    from schema_gouvernement import validate_profil_gouvernement as _validate_gouvernement  # type: ignore[import]
+    _SCHEMA_GOUVERNEMENT_AVAILABLE = True
+except ImportError:
+    _SCHEMA_GOUVERNEMENT_AVAILABLE = False
 
 INCOMPLETE_READ_MARKER = "IncompleteRead"
 # Signaux réseau spécifiques aux groupes (hors IncompleteRead, déjà traité §1)
@@ -1030,7 +1039,243 @@ def _report_groupes(
 
 
 # ---------------------------------------------------------------------------
-# Section 5 — Couverture ParlTrack (optionnelle)
+# Section 5 — Gouvernements
+# ---------------------------------------------------------------------------
+
+def _report_gouvernements(
+    gouvernements_config_path: Path,
+    gouvernements_dir: Path,
+) -> tuple[list[str], list[str], str, str]:
+    """Analyse la qualité des fichiers de profil de gouvernement générés.
+
+    Miroir de `_report_groupes` (§4) — mêmes catégories hard/soft, adaptées
+    au schéma `schema_gouvernement.py` (pas de notion de roster réseau : un
+    gouvernement est agrégé localement depuis les profils pivot déjà
+    présents, voir `docs/pipeline-profiles-groupes.md`).
+
+    Retourne (hard_errors, soft_warnings, console_text, markdown_text).
+
+    hard_errors  — chaque élément provoque exit_code=1 (structure cassée) :
+      - fichier attendu manquant
+      - JSON invalide
+      - échec de validation de schéma (validate_profil_gouvernement)
+
+    soft_warnings — signaux de qualité dégradée (n'empêchent pas le commit) :
+      - couverture ministérielle incomplète (aucun/peu de `portefeuille`
+        confirmé par une source primaire — limitation connue documentée dans
+        docs/technical_decisions.md, §"Ministerial function")
+      - `textes[]` vide alors que la période du gouvernement est renseignée
+      - IncompleteRead dans meta.warnings (signal réseau, propagé depuis
+        `gouvernement_textes.py`)
+    """
+    # ── Lecture de la config ──────────────────────────────────────────────
+    raw_cfg = _load_json(gouvernements_config_path)
+    if raw_cfg is None:
+        msg = f"Impossible de lire la config gouvernements : {gouvernements_config_path}"
+        return (
+            [msg],
+            [],
+            f"\n┌─ 5/5  Gouvernements ───────────────────────────────────────────────\n│  ✗ {msg}\n└{'─'*67}",
+            f"### 5 · Gouvernements\n\n❌ {msg}\n",
+        )
+
+    expected: list[dict] = raw_cfg.get("gouvernements") or []
+
+    hard_errors: list[str] = []
+    soft_warnings: list[str] = []
+
+    # ── Analyse par gouvernement attendu ──────────────────────────────────
+    rows: list[dict] = []   # one row per expected gouvernement
+
+    for gouv in expected:
+        gouvernement_id = gouv.get("gouvernement_id", "?")
+        fichier = gouv.get("fichier")
+        if not fichier:
+            hard_errors.append(f"{gouvernement_id}: champ 'fichier' absent de gouvernements_reels.json")
+            rows.append({"gouvernement_id": gouvernement_id, "nom": gouv.get("nom", "?"),
+                         "status": "hard", "detail": "config manquante"})
+            continue
+
+        path = gouvernements_dir / fichier
+
+        # Hard 1 — fichier manquant
+        if not path.exists():
+            hard_errors.append(f"{gouvernement_id}: fichier manquant ({path})")
+            rows.append({"gouvernement_id": gouvernement_id, "nom": gouv.get("nom", "?"),
+                         "status": "hard", "detail": "fichier manquant"})
+            continue
+
+        # Hard 2 — JSON invalide
+        data = _load_json(path)
+        if data is None:
+            hard_errors.append(f"{gouvernement_id}: JSON invalide ({fichier})")
+            rows.append({"gouvernement_id": gouvernement_id, "nom": gouv.get("nom", "?"),
+                         "status": "hard", "detail": "JSON invalide"})
+            continue
+
+        # Hard 3 — schéma invalide
+        schema_errors: list[str] = []
+        if _SCHEMA_GOUVERNEMENT_AVAILABLE:
+            schema_errors = _validate_gouvernement(data)
+        if schema_errors:
+            detail = "; ".join(schema_errors[:3]) + ("…" if len(schema_errors) > 3 else "")
+            hard_errors.append(f"{gouvernement_id}: schéma invalide — {detail}")
+            rows.append({"gouvernement_id": gouvernement_id, "nom": gouv.get("nom", "?"),
+                         "status": "hard", "detail": f"schéma invalide ({len(schema_errors)} erreur(s))"})
+            continue
+
+        # ── Données valides : contrôles de qualité ────────────────────────
+        meta = data.get("meta") or {}
+        warnings_list: list[str] = meta.get("warnings") or []
+        membres = data.get("membres") or []
+        textes = data.get("textes") or []
+        periode = data.get("periode") or {}
+        nb_membres = len(membres)
+        nb_textes = len(textes)
+        nb_portefeuille_connu = sum(1 for m in membres if m.get("portefeuille"))
+        gouvernement_nom = data.get("nom") or gouvernement_id
+
+        row_soft: list[str] = []
+        row_status = "ok"
+
+        # Soft 1 — couverture ministérielle incomplète (portefeuille non confirmé)
+        if nb_membres > 0 and nb_portefeuille_connu < nb_membres:
+            msg = (
+                f"{gouvernement_id}: couverture ministérielle incomplète "
+                f"({nb_portefeuille_connu}/{nb_membres} portefeuilles confirmés)"
+            )
+            soft_warnings.append(msg)
+            row_soft.append(f"portefeuilles {nb_portefeuille_connu}/{nb_membres}")
+            row_status = "soft"
+
+        # Soft 2 — signaux réseau IncompleteRead
+        for w in warnings_list:
+            if INCOMPLETE_READ_MARKER in w:
+                endpoint = w.split(":")[0].strip() if ":" in w else "inconnu"
+                msg = f"{gouvernement_id}: signal réseau IncompleteRead sur '{endpoint}'"
+                soft_warnings.append(msg)
+                row_soft.append(f"IncompleteRead ({endpoint})")
+                row_status = "soft"
+
+        # Soft 3 — textes[] vide alors que la période est renseignée
+        if periode.get("debut") is not None and nb_textes == 0:
+            msg = f"{gouvernement_id}: aucun texte porté malgré une période renseignée"
+            soft_warnings.append(msg)
+            row_soft.append("0 texte porté")
+            row_status = "soft"
+
+        rows.append({
+            "gouvernement_id": gouvernement_id,
+            "nom": gouvernement_nom,
+            "nb_membres": nb_membres,
+            "nb_portefeuille_connu": nb_portefeuille_connu,
+            "nb_textes": nb_textes,
+            "status": row_status,
+            "soft_flags": ", ".join(row_soft) if row_soft else "—",
+        })
+
+    # ── Résumé global ─────────────────────────────────────────────────────
+    n_hard = len(hard_errors)
+    n_soft = len(soft_warnings)
+    n_ok = sum(1 for r in rows if r["status"] == "ok")
+
+    # ── Console ──────────────────────────────────────────────────────────────
+    lines = [
+        "",
+        "┌─ 5/5  Gouvernements ───────────────────────────────────────────────",
+        f"│  Attendus : {len(expected)}   OK : {n_ok}   "
+        f"Échecs durs : {n_hard}   Avertissements : {n_soft}",
+        "│",
+    ]
+    if not _SCHEMA_GOUVERNEMENT_AVAILABLE:
+        lines.append("│  [!] schema_gouvernement non disponible — validation de schéma ignorée.")
+        lines.append("│")
+    if hard_errors:
+        lines.append("│  ✗ Erreurs dures (commit bloqué) :")
+        for e in hard_errors:
+            lines.append(f"│    • {e}")
+        lines.append("│")
+    if soft_warnings:
+        lines.append("│  ⚠ Avertissements qualité :")
+        for w in soft_warnings:
+            lines.append(f"│    · {w}")
+        lines.append("│")
+
+    # Tableau récap
+    header = f"│  {'Gouvernement':<24} {'Portefeuilles':>15}  {'Membres':>8}  {'Textes':>6}  Flags"
+    lines.append(header)
+    lines.append("│  " + "─" * 72)
+    for r in rows:
+        status_marker = "✗" if r["status"] == "hard" else ("⚠" if r["status"] == "soft" else "✓")
+        portefeuilles = f"{r.get('nb_portefeuille_connu','?')}/{r.get('nb_membres','?')}"
+        membres = str(r.get("nb_membres", "?"))
+        textes = str(r.get("nb_textes", "?"))
+        flags = r.get("soft_flags", "—")
+        if r["status"] == "hard":
+            flags = r.get("detail", "—")
+            portefeuilles = "—"
+            membres = "—"
+            textes = "—"
+        lines.append(
+            f"│  {status_marker} {r['nom']:<22} {portefeuilles:>15}"
+            f"  {membres:>8}  {textes:>6}  {flags}"
+        )
+    lines.append("└" + "─" * 67)
+    console = "\n".join(lines)
+
+    # ── Markdown ──────────────────────────────────────────────────────────
+    overall_md = "✅" if n_hard == 0 and n_soft == 0 else ("❌" if n_hard > 0 else "⚠️")
+    md_lines = [
+        "### 5 · Gouvernements",
+        "",
+        f"| | Nb |",
+        "|---|---|",
+        f"| {overall_md} Attendus | {len(expected)} |",
+        f"| ✅ Valides | {n_ok} |",
+        f"| ❌ Échecs durs | {n_hard} |",
+        f"| ⚠️ Avertissements qualité | {n_soft} |",
+        "",
+    ]
+    if not _SCHEMA_GOUVERNEMENT_AVAILABLE:
+        md_lines.append("> ⚠️ `schema_gouvernement` non importé — validation de schéma ignorée.\n")
+
+    if hard_errors:
+        md_lines += [
+            "**Erreurs dures** _(bloquent le commit)_",
+            "",
+            "| Gouvernement | Problème |",
+            "|---|---|",
+        ]
+        for r in rows:
+            if r["status"] == "hard":
+                md_lines.append(f"| `{r['gouvernement_id']}` | {r.get('detail', '?')} |")
+        md_lines.append("")
+
+    md_lines += [
+        "**Détail par gouvernement**",
+        "",
+        "| Gouvernement | Portefeuilles confirmés | Membres | Textes | Flags |",
+        "|---|---|---|---|---|",
+    ]
+    for r in rows:
+        status_icon = "❌" if r["status"] == "hard" else ("⚠️" if r["status"] == "soft" else "✅")
+        portefeuilles = (
+            f"{r.get('nb_portefeuille_connu','?')}/{r.get('nb_membres','?')}"
+            if r["status"] != "hard" else "—"
+        )
+        flags = r.get("soft_flags", "—") if r["status"] != "hard" else r.get("detail", "—")
+        md_lines.append(
+            f"| {status_icon} {r['nom']} | {portefeuilles} "
+            f"| {r.get('nb_membres','?') if r['status'] != 'hard' else '—'} "
+            f"| {r.get('nb_textes','?') if r['status'] != 'hard' else '—'} | {flags} |"
+        )
+    md_lines.append("")
+
+    return hard_errors, soft_warnings, console, "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
+# Section 6 — Couverture ParlTrack (optionnelle)
 # ---------------------------------------------------------------------------
 
 def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
@@ -1047,8 +1292,8 @@ def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
     if not status_file.exists():
         msg = f"Fichier de statut ParlTrack introuvable : {status_file}"
         return (
-            f"\n┌─ 5/5  Enrichissement ParlTrack ────────────────────────────────────\n│  ⚠ {msg}\n└{'─'*67}",
-            f"### 5 · Enrichissement ParlTrack\n\n⚠️ {msg}\n",
+            f"\n┌─ 6/6  Enrichissement ParlTrack ────────────────────────────────────\n│  ⚠ {msg}\n└{'─'*67}",
+            f"### 6 · Enrichissement ParlTrack\n\n⚠️ {msg}\n",
         )
 
     data = _load_json(status_file)
@@ -1071,7 +1316,7 @@ def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
     icon = "✓" if n_absent == 0 and n_erreur == 0 else ("⚠" if n_erreur == 0 else "✗")
     lines = [
         "",
-        "┌─ 5/5  Enrichissement ParlTrack ────────────────────────────────────",
+        "┌─ 6/6  Enrichissement ParlTrack ────────────────────────────────────",
         f"│  Ce run : {n_enrichi} enrichi(s)   {n_vide} vide(s)   {n_absent} fallback(s)   {n_erreur} erreur(s)   {n_na} sans mandat UE",
         "│",
     ]
@@ -1097,7 +1342,7 @@ def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
     # ── Markdown ─────────────────────────────────────────────────────────
     overall_md = "✅" if n_absent == 0 and n_erreur == 0 else ("⚠️" if n_erreur == 0 else "❌")
     md_lines = [
-        "### 5 · Enrichissement ParlTrack",
+        "### 6 · Enrichissement ParlTrack",
         "",
         "| Statut | Nb | Candidats |",
         "|---|---|---|",
@@ -1121,7 +1366,7 @@ def _report_parltrack_status(status_file: Path) -> tuple[str, str]:
 # Main
 # ---------------------------------------------------------------------------
 
-def main() -> int:
+def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Quality gate + résumé du pipeline de génération de données."
     )
@@ -1136,6 +1381,20 @@ def main() -> int:
         default=Path("raw_data/groupes_reels.json"),
         dest="groupes_config",
         help="Config des groupes attendus (défaut : raw_data/groupes_reels.json).",
+    )
+    parser.add_argument(
+        "--gouvernements-dir",
+        type=Path,
+        default=Path("pivot_data/gouvernements"),
+        dest="gouvernements_dir",
+        help="Répertoire des profils de gouvernement générés (défaut : pivot_data/gouvernements).",
+    )
+    parser.add_argument(
+        "--gouvernements-config",
+        type=Path,
+        default=Path("raw_data/gouvernements_reels.json"),
+        dest="gouvernements_config",
+        help="Config des gouvernements attendus (défaut : raw_data/gouvernements_reels.json).",
     )
     parser.add_argument(
         "--threshold",
@@ -1213,9 +1472,14 @@ def main() -> int:
         dest="parltrack_status_file",
         help=(
             "Fichier JSON produit par generate_all_profiles.py --parltrack-status-out. "
-            "Active la section 5 du rapport (enrichissement ParlTrack ce run vs fallback)."
+            "Active la section 6 du rapport (enrichissement ParlTrack ce run vs fallback)."
         ),
     )
+    return parser
+
+
+def main() -> int:
+    parser = _build_arg_parser()
     args = parser.parse_args()
 
     run_date = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -1225,6 +1489,7 @@ def main() -> int:
         "pivot_data/profiles": args.profiles_dir,
         "pivot_data/groupes": args.groupes_dir,
         "pivot_data/partis": args.partis_dir,
+        "pivot_data/gouvernements": args.gouvernements_dir,
         "raw_data/profiles": args.raw_dir,
     }
     ir_hits = _collect_incomplete_reads(ir_dirs)
@@ -1266,13 +1531,19 @@ def main() -> int:
     )
     grp_exit = 1 if grp_hard else 0
 
-    # ── Section 5 : Couverture ParlTrack (optionnelle) ────────────────────
+    # ── Section 5 : Gouvernements ───────────────────────────────────────────
+    gouv_hard, gouv_soft, gouv_console, gouv_md = _report_gouvernements(
+        args.gouvernements_config, args.gouvernements_dir,
+    )
+    gouv_exit = 1 if gouv_hard else 0
+
+    # ── Section 6 : Couverture ParlTrack (optionnelle) ─────────────────────
     pt_console = ""
     pt_md = ""
     if args.parltrack_status_file is not None:
         pt_console, pt_md = _report_parltrack_status(args.parltrack_status_file)
 
-    exit_code = 1 if (ir_exit == 1 or grp_exit == 1) else 0
+    exit_code = 1 if (ir_exit == 1 or grp_exit == 1 or gouv_exit == 1) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
     gate_label = "✓ COMMIT AUTORISÉ" if exit_code == 0 else "✗ COMMIT BLOQUÉ"
@@ -1289,6 +1560,7 @@ def main() -> int:
     if amdf_console:
         print(amdf_console)
     print(grp_console)
+    print(gouv_console)
     if pt_console:
         print(pt_console)
     print()
@@ -1307,6 +1579,7 @@ def main() -> int:
         amd_md,
         amdf_md,
         grp_md,
+        gouv_md,
         pt_md,
     ])
     _write_step_summary(md)
@@ -1328,6 +1601,10 @@ def main() -> int:
         _gha_annotation("error", f"Groupe — structure cassée : {err}")
     for warn in grp_soft:
         _gha_annotation("warning", f"Groupe — qualité dégradée : {warn}")
+    for err in gouv_hard:
+        _gha_annotation("error", f"Gouvernement — structure cassée : {err}")
+    for warn in gouv_soft:
+        _gha_annotation("warning", f"Gouvernement — qualité dégradée : {warn}")
     for warn in syc_soft:
         _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
     for warn in amd_soft:
