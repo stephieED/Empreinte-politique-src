@@ -1,0 +1,126 @@
+{
+  "slug": "dominique-faure",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/dominique-faure",
+  "identite": {
+    "nom_complet": "Dominique Faure",
+    "groupe_sigle": "REN",
+    "groupe_nom": null,
+    "profession": "Senior Advisor",
+    "date_naissance": "1959-08-28",
+    "lieu_naissance": null,
+    "num_circo": 10,
+    "nb_mandats": 0,
+    "uri_hatvp": null,
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788"
+  },
+  "mandats": [
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire",
+      "debut": "2022-06-22",
+      "fin": "2022-08-04",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "Secrétaire d'État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de la ruralité",
+      "label": "Gouvernement",
+      "debut": "2022-07-05",
+      "fin": "2022-08-05",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission du développement durable et de l'aménagement du territoire",
+      "debut": "2022-07-24",
+      "fin": "2022-08-04",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Renaissance",
+      "debut": "2022-06-29",
+      "fin": "2022-08-04",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires économiques",
+      "debut": "2022-06-30",
+      "fin": "2022-07-24",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Députés Non Inscrits",
+      "debut": "2022-06-24",
+      "fin": "2022-06-29",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (ATTAL)",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (BORNE)",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (RE)",
+      "debut": "2022-06-29",
+      "fin": "2022-08-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    }
+  ],
+  "votes": [
+    {
+      "date": "2022-07-11",
+      "titre": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mme Mathilde Panot, MM. Boris Vallaud et Julien Bayou, Mme Cyrielle Chatelain, M. André Chassaigne et 145 de leurs collègues.",
+      "position": "non_votant",
+      "numero_scrutin": "1",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    }
+  ],
+  "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 16)",
+  "synthese_activite": null,
+  "dossiers_legislatifs": [],
+  "amendements": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-08-14T14:47:51+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": "2026-08-14T14:47:51+0000",
+      "assemblee_nationale": "2026-08-14T14:47:53+0000",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null
+    },
+    "warnings": [
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 16) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 15) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+    ]
+  }
+}

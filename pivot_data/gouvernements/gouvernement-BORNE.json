@@ -20,6 +20,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:dominique-faure",
+      "nom": "Dominique Faure",
+      "portefeuille": null,
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:fadila-khattabi",
       "nom": "Fadila Khattabi",
       "portefeuille": null,
@@ -31,6 +40,15 @@
     {
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
+      "portefeuille": null,
+      "debut": "2022-05-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:olivier-dussopt",
+      "nom": "Olivier Dussopt",
       "portefeuille": null,
       "debut": "2022-05-21",
       "fin": "2024-01-09",
@@ -95,6 +113,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/dominique-faure",
+      "synchro_le": "2026-08-14T14:47:51+0000"
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/fadila-khattabi",
       "synchro_le": "2026-08-13T13:45:39+0000"
     },
@@ -102,6 +125,11 @@
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivier-dussopt",
+      "synchro_le": "2026-08-14T14:48:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -121,7 +149,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-14T12:06:38+0000",
+    "genere_le": "2026-08-14T14:49:50+0000",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

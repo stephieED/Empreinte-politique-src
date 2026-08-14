@@ -1,0 +1,413 @@
+{
+  "slug": "olivier-dussopt",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/olivier-dussopt",
+  "identite": {
+    "nom_complet": "Olivier Dussopt",
+    "groupe_sigle": "REN",
+    "groupe_nom": "Renaissance",
+    "profession": "Assistant parlementaire",
+    "date_naissance": "1978-08-16",
+    "lieu_naissance": null,
+    "num_circo": 2,
+    "nb_mandats": 0,
+    "uri_hatvp": null,
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357"
+  },
+  "mandats": [
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire (Renaissance)",
+      "debut": "2024-02-12",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission de la défense nationale et des forces armées",
+      "debut": "2024-02-14",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre titulaire",
+      "label": "Commission départementale de coopération intercommunale",
+      "debut": "2024-05-08",
+      "fin": "2024-06-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre titulaire",
+      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
+      "debut": "2024-05-08",
+      "fin": "2024-06-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre titulaire",
+      "label": "Commission parlementaire d'évaluation de la politique du gouvernement d'exportation de matériels de guerre et de matériels assimilés, de transfert de produits liés à la défense ainsi que d'exportation et de transfert de biens à double usage",
+      "debut": "2024-04-05",
+      "fin": "2024-04-16",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission des affaires étrangères",
+      "debut": "2022-07-01",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Renaissance",
+      "debut": "2022-06-29",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "Ministre du travail, du plein emploi et de l'insertion",
+      "label": "Gouvernement",
+      "debut": "2022-06-24",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Commission du développement durable et de l'aménagement du territoire",
+      "debut": "2022-06-30",
+      "fin": "2022-07-01",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Députés Non Inscrits",
+      "debut": "2022-06-24",
+      "fin": "2022-06-29",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études pastoralisme",
+      "debut": "2024-06-06",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (BORNE)",
+      "debut": "2022-05-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (PHILIPPE 2)",
+      "debut": "2017-11-25",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (CASTEX)",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (NG)",
+      "debut": "2017-06-27",
+      "fin": "2017-12-24",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (SER)",
+      "debut": "2016-05-25",
+      "fin": "2017-06-20",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (RE)",
+      "debut": "2022-06-29",
+      "fin": "2022-07-22",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (RE)",
+      "debut": "2024-02-13",
+      "fin": "2024-06-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (S.R.C.)",
+      "debut": "2007-06-27",
+      "fin": "2012-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "opposition"
+    },
+    {
+      "categorie": "groupe_politique",
+      "type": "membre",
+      "label": "Groupe politique (SRC)",
+      "debut": "2012-06-26",
+      "fin": "2016-05-24",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "majorite"
+    }
+  ],
+  "votes": [
+    {
+      "date": "2024-06-05",
+      "titre": "l'ensemble de la proposition de loi visant à accroître le financement et l'attractivité de la France (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "4048",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-06-05",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde Panot, de la proposition de loi visant à prévenir les ingérences étrangères en France (texte de la commission mixte paritaire).",
+      "position": "contre",
+      "numero_scrutin": "4050",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-05-28",
+      "titre": "l'ensemble du projet de loi d'orientation pour la souveraineté alimentaire et agricole et le renouvellement des générations en agriculture (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3966",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-05-14",
+      "titre": "l'ensemble du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3725",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-05-13",
+      "titre": "l'ensemble de la proposition de loi améliorant l'efficacité des dispositifs de saisie et de confiscation des avoirs criminels (texte de la commission mixte paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3716",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-05-13",
+      "titre": "la motion de rejet préalable, déposée par M. Boris Vallaud, du projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3717",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "l'ensemble du projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3662",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (texte de la commission paritaire).",
+      "position": "pour",
+      "numero_scrutin": "3663",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-04-09",
+      "titre": "l’ensemble du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (lecture définitive).",
+      "position": "pour",
+      "numero_scrutin": "3664",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'amendement n° 112 de M. Lachaud après l'article 4 de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3582",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'amendement n° 114 de M. Lachaud après l'article 4 de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3583",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'amendement n° 115 de M. Lachaud après l'article 4 de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3584",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'amendement n° 120 de M. Jacobelli après l'article 4 de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3585",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'amendement n° 121 de M. Jacobelli après l'article 4 de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3586",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-27",
+      "titre": "l'ensemble de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3587",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-26",
+      "titre": "la motion de rejet préalable, déposée par Mme Mathilde panot, de la proposition de loi visant à prévenir les ingérences étrangères en France (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3567",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "l'ensemble du projet de loi relatif à l'organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3546",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-19",
+      "titre": "l’ensemble du projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3547",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-12",
+      "titre": "la déclaration du Gouvernement relative au débat sur l'accord de sécurité franco-ukrainien et la situation en Ukraine (application de l'article 50-1 de la Constitution).",
+      "position": "pour",
+      "numero_scrutin": "3461",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-06",
+      "titre": "l'amendement n° 18 de M. Bernalicis de suppression de l'article premier de la proposition de loi visant à renforcer la réponse pénale contre les infractions à caractère raciste, antisémite ou discriminatoire (première lecture).",
+      "position": "contre",
+      "numero_scrutin": "3412",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    },
+    {
+      "date": "2024-03-06",
+      "titre": "l'article premier de la proposition de loi visant à renforcer la réponse pénale contre les infractions à caractère raciste, antisémite ou discriminatoire (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3413",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-03-06",
+      "titre": "l'ensemble de la proposition de loi portant reconnaissance de la Nation et réparation des préjudices subis par les personnes condamnées pour homosexualité entre 1942 et 1982 (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3436",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-02-14",
+      "titre": "le sous-amendement n° 5 de M. Delaporte à l'amendement n° 3 de Mme Liso à l'article 4 du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (seconde délibération)(première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3366",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-02-14",
+      "titre": "l'amendement n° 3 de Mme Liso à l'article 4 du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (seconde délibération)(première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3367",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2024-02-14",
+      "titre": "l'ensemble du projet de loi visant à renforcer la lutte contre les dérives sectaires et à améliorer l'accompagnement des victimes (première lecture).",
+      "position": "pour",
+      "numero_scrutin": "3368",
+      "sort": "l'Assemblée nationale a adopté"
+    },
+    {
+      "date": "2022-07-11",
+      "titre": "la motion de censure déposée en application de l'article 49, alinéa 2, de la Constitution par Mme Mathilde Panot, MM. Boris Vallaud et Julien Bayou, Mme Cyrielle Chatelain, M. André Chassaigne et 145 de leurs collègues.",
+      "position": "non_votant",
+      "numero_scrutin": "1",
+      "sort": "L'Assemblée nationale n'a pas adopté"
+    }
+  ],
+  "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 16)",
+  "synthese_activite": null,
+  "dossiers_legislatifs": [
+    {
+      "id": "DLR5L14N31233",
+      "titre": "Avis rendus par le Conseil national d’évaluation des normes",
+      "role": "rapporteur",
+      "type_rapport": "rapporteur_fond",
+      "stade_procedural": "adopte",
+      "date_min": "2013-09-10",
+      "date_max": "2024-07-23",
+      "legislature": "14",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/conseil_evaluation_normes_collectivites_territoriales"
+    }
+  ],
+  "amendements": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-08-14T14:48:31+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": "2026-08-14T14:48:31+0000",
+      "assemblee_nationale": "2026-08-14T14:48:33+0000",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null
+    },
+    "warnings": [
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 16) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "amendements indisponibles (législature 15) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+    ]
+  }
+}

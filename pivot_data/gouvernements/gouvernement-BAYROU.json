@@ -11,6 +11,15 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:benjamin-haddad",
+      "nom": "Benjamin Haddad",
+      "portefeuille": null,
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": null,
@@ -136,18 +145,23 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
-      "synchro_le": "2026-08-13T13:45:01+0000"
+      "url": "https://www.nosdeputes.fr/benjamin-haddad",
+      "synchro_le": "2026-08-14T14:47:05+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-13T13:45:02+0000"
+      "synchro_le": "2026-08-14T14:47:06+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
+      "synchro_le": "2026-08-13T13:45:01+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-14T12:06:38+0000",
+    "genere_le": "2026-08-14T14:49:50+0000",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
