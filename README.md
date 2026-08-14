@@ -39,7 +39,7 @@ CV_CandidatFR/
 |  |- gouvernement_profile.py        # Aggregate roster + legislative files into a full government profile
 |  |- generate_gouvernement_profiles.py # Batch: all governments from raw_data/gouvernements_reels.json
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
-|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
+|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (5 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
@@ -418,6 +418,12 @@ legislature, an amendements index that was never built from one that is present 
 `candidate_profile.py`, #253), or frozen (légis 15/16, `fraicheur.json` carries `figee: true`
 — never staleness-checked, see `docs/technical_decisions.md#amendements-legislatures-figees`) — see
 `docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`.
+
+`--gouvernements-dir` (default `pivot_data/gouvernements`) / `--gouvernements-config`
+(default `raw_data/gouvernements_reels.json`) drive section 5 (gouvernements), mirroring
+`--groupes-dir`/`--groupes-config` for section 4 — hard fail on missing/invalid file or
+schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, empty
+`textes[]` with a non-null `periode`, or IncompleteRead network signals.
 
 ## 9. Open the web UI locally
 

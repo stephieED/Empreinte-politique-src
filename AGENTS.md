@@ -58,12 +58,14 @@ Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
-**Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe file;
-soft warnings on low interventions, low coverage, network signals, and amendements index
-freshness (§3d: distinguishes "never built" from "present but stale beyond N days without
-a successful rebuild" from "frozen" — légis 15/16 are closed dossiers, their index is
-committed under `raw_data/amendements_an_figes/` and never re-fetched, see
-`docs/technical_decisions.md#amendements-legislatures-figees`).
+**Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
+gouvernement file; soft warnings on low interventions, low coverage, network signals, and
+amendements index freshness (§3d: distinguishes "never built" from "present but stale
+beyond N days without a successful rebuild" from "frozen" — légis 15/16 are closed
+dossiers, their index is committed under `raw_data/amendements_an_figes/` and never
+re-fetched, see `docs/technical_decisions.md#amendements-legislatures-figees`). Gouvernement
+section (§5) mirrors groupes (§4): couverture ministérielle (portefeuille attribution),
+empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212.
 
 ## 4. Pivot schema v1 (`src/schema_pivot.py`)
 
