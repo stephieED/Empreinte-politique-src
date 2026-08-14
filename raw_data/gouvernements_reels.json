@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "description": "Liste validée manuellement (voir issue #209) des gouvernements réels à générer via un futur gouvernement_profile.py / gouvernement_roster.py. Miroir éditorial de raw_data/groupes_reels.json. `libelle_an` est le `organe.libelleAbrege` officiel tel qu'il apparaît dans mandats[].label (\"Gouvernement (<libelle_an>)\") des profils pivot individuels — nécessaire pour désambiguïser deux gouvernements homonymes lors d'un remaniement (l'AN n'expose que ce libellé abrégé, potentiellement ambigu). `periode` est dérivée des dates min/max observées sur les mandats fonction_gouvernementale réellement présents dans pivot_data/profiles/*.pivot.json (source : AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip), pas d'une source éditoriale externe.",
+    "avertissement": "Couverture limitée aux gouvernements pour lesquels au moins un ministre a un profil pivot local dans pivot_data/profiles/ (voir README §6 'Coverage limits'). Un gouvernement dont aucun membre n'a de pivot généré n'apparaît pas ici, même s'il a existé."
+  },
+  "gouvernements": [
+    {
+      "gouvernement_id": "gouvernement:FILLON_2",
+      "nom": "Gouvernement Fillon II",
+      "libelle_an": "FILLON 2",
+      "periode": {
+        "debut": "2007-06-19",
+        "fin": "2010-11-13"
+      },
+      "fichier": "gouvernement-FILLON_2.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:FILLON_3",
+      "nom": "Gouvernement Fillon III",
+      "libelle_an": "FILLON 3",
+      "periode": {
+        "debut": "2010-11-14",
+        "fin": "2012-05-10"
+      },
+      "fichier": "gouvernement-FILLON_3.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:PHILIPPE",
+      "nom": "Gouvernement Philippe I",
+      "libelle_an": "PHILIPPE",
+      "periode": {
+        "debut": "2017-05-18",
+        "fin": "2017-06-19"
+      },
+      "fichier": "gouvernement-PHILIPPE.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:PHILIPPE_2",
+      "nom": "Gouvernement Philippe II",
+      "libelle_an": "PHILIPPE 2",
+      "periode": {
+        "debut": "2017-06-20",
+        "fin": "2020-07-06"
+      },
+      "fichier": "gouvernement-PHILIPPE_2.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:CASTEX",
+      "nom": "Gouvernement Castex",
+      "libelle_an": "CASTEX",
+      "periode": {
+        "debut": "2020-07-07",
+        "fin": "2022-05-16"
+      },
+      "fichier": "gouvernement-CASTEX.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:BORNE",
+      "nom": "Gouvernement Borne",
+      "libelle_an": "BORNE",
+      "periode": {
+        "debut": "2022-05-21",
+        "fin": "2024-01-09"
+      },
+      "fichier": "gouvernement-BORNE.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:ATTAL",
+      "nom": "Gouvernement Attal",
+      "libelle_an": "ATTAL",
+      "periode": {
+        "debut": "2024-01-10",
+        "fin": "2024-09-05"
+      },
+      "fichier": "gouvernement-ATTAL.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:BARNIER",
+      "nom": "Gouvernement Barnier",
+      "libelle_an": "BARNIER",
+      "periode": {
+        "debut": "2024-09-28",
+        "fin": "2024-12-13"
+      },
+      "fichier": "gouvernement-BARNIER.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:BAYROU",
+      "nom": "Gouvernement Bayrou",
+      "libelle_an": "BAYROU",
+      "periode": {
+        "debut": "2024-12-24",
+        "fin": "2025-09-09"
+      },
+      "fichier": "gouvernement-BAYROU.json"
+    },
+    {
+      "gouvernement_id": "gouvernement:LECORNU_II",
+      "nom": "Gouvernement Lecornu II",
+      "libelle_an": "LECORNU II",
+      "periode": {
+        "debut": "2025-10-13",
+        "fin": null
+      },
+      "fichier": "gouvernement-LECORNU_II.json"
+    }
+  ]
+}

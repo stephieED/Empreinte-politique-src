@@ -63,6 +63,60 @@ spike #207), pour ne couvrir que les dossiers hors préfixe de titre (2355 sur
 Seul le préfixe de titre (« Projet de loi » vs « Proposition de loi »,
 689/3044 dossiers, aucun faux positif) est implémenté ; `AMO30` reste un
 repli possible pour un futur complément, non fait ici.
+<a id="gouvernement-textes-statut-49-3-rejete"></a>
+## `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` : ajout de `rejete_49_3` (#208, réouverte) (2026-08-14)
+
+**Contexte** : la nomenclature fermée des statuts de texte gouvernemental
+(#208, fusionnée dans `main`) n'anticipait le 49.3 (art. 49 al. 3 de la
+Constitution) que comme voie d'**adoption** (`statut = "adopte_49_3"`). En
+implémentant la collecte réelle (#210), un cas non anticipé est apparu sur
+des données AN réelles : `fam_code` `TSORTF24` = « rejeté via 49.3, motion de
+censure adoptée » — c'est le sort effectivement survenu au budget 2025 sous
+le gouvernement Barnier (décembre 2024). Ce n'est pas un cas hypothétique
+qu'on choisirait d'anticiper par prudence : c'est un fait déjà survenu, donc
+certain de réapparaître dans la donnée historique. `gouvernement_textes.py`
+mappait ce cas à `statut = "rejete"` + `sort_49_3 = True`, une combinaison
+que `validate_profil_gouvernement` rejetait (seul `"adopte_49_3"` était
+autorisé avec `sort_49_3 = True`) — ce qui aurait fait échouer dur
+l'agrégation (#211) dès le premier gouvernement réel touché par ce cas.
+
+**Décision** : ajout de `"rejete_49_3"` à `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`,
+symétrique d'`"adopte_49_3"` — même exigence d'appariement avec
+`sort_49_3 = True`, même interdiction de collapse silencieux (cette fois vers
+`"rejete"` simple plutôt que vers `"adopte"`). Alternative rejetée : assouplir
+le validateur pour rendre `sort_49_3` orthogonal au `statut` (autorisé avec
+n'importe quelle valeur) — écartée car elle affaiblirait la garantie actuelle
+que le 49.3 reste toujours visible comme son propre statut explicite plutôt
+que comme un simple booléen surimposé (règle AGENTS.md §2.4). Cohérent avec
+le principe déjà acté en #208 : le 49.3 est un fait procédural distinct de
+l'issue du vote, jamais fusionné avec elle — cette règle s'applique
+symétriquement au rejet, pas seulement à l'adoption.
+
+<a id="gouvernement-roster-desambiguisation"></a>
+## `gouvernement_roster.py` : désambiguïsation par libellé exact + garde-fou de période, pas l'inverse (#209) (2026-08-14)
+
+**Contexte** : `mandats[].categorie == "fonction_gouvernementale"` (déjà peuplé
+par `candidate_profile.py` depuis `AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`,
+voir [[hors-perimetre]] § "Ministerial function") porte un `label` du type
+`"Gouvernement (<libelleAbrege>)"`, où `libelleAbrege` est le seul identifiant
+que l'AN expose pour un gouvernement (ex. "BORNE", "LECORNU II") — ambigu en
+cas de gouvernements homonymes lors d'un remaniement.
+
+**Décision** : `raw_data/gouvernements_reels.json` (miroir éditorial de
+`groupes_reels.json`) fixe manuellement `libelle_an` par gouvernement.
+`gouvernement_roster.build_gouvernement_roster` sélectionne un mandat membre
+d'abord par correspondance **exacte** de ce libellé, puis vérifie en second
+lieu que la période du mandat chevauche celle du gouvernement (garde-fou
+contre une anomalie de données, pas critère principal). Périodes de
+`gouvernements_reels.json` dérivées des dates min/max réellement observées
+sur les mandats `fonction_gouvernementale` déjà présents dans
+`pivot_data/profiles/*.pivot.json` (zéro appel réseau, zéro date inventée).
+
+**Alternative rejetée** : filtrer uniquement par chevauchement de période
+(sans libellé). Rejeté parce que c'est précisément le chevauchement qui est
+ambigu lors d'un remaniement rapproché (l'exemple donné dans l'issue #209 est
+la distinction entre deux gouvernements homonymes successifs) — le libellé
+exact est la seule donnée qui lève cette ambiguïté de façon fiable.
 
 <a id="amendements-legislatures-figees"></a>
 ## Index amendements des législatures 15/16 : construction manuelle hors CI, committée (2026-08-13)

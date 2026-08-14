@@ -81,6 +81,7 @@ Format d'un profil de gouvernement v1 :
             "adopte": 0,
             "adopte_49_3": 1,
             "rejete": 0,
+            "rejete_49_3": 0,
             "retire": 0,
         }
     },
@@ -113,6 +114,10 @@ Cas limites gérés :
   `sort_49_3 = True` avec `statut = "adopte"` (collapse silencieux vers une
   adoption « normale », interdit par la règle AGENTS.md §2.4), et interdit de
   renseigner `statut = "adopte_49_3"` sans `sort_49_3 = True`.
+- Texte rejeté via l'article 49.3 (motion de censure adoptée) : même logique,
+  symétrique, avec `statut = "rejete_49_3"` — `sort_49_3 = True` est exigé
+  avec ce statut, et interdit de le renseigner avec `statut = "rejete"`
+  (même collapse silencieux interdit que pour `adopte`).
 - Gouvernement encore en fonction : `periode.fin = null`, `periode.actif = true`.
 
 Hors périmètre de ce schéma (volontairement) :
@@ -150,12 +155,19 @@ SCHEMA_GOUVERNEMENT_VERSION = "1"
 
 # Nomenclature fermée de l'issue d'un texte porté par le gouvernement.
 # Distincte de KNOWN_STADES_PROCEDURAUX (schema_pivot.py) qui encode une
-# progression procédurale, pas une issue. adopte_49_3 reste un statut
-# séparé d'adopte : le 49.3 est un fait procédural, jamais une position de
-# vote ni un "blocage" (règle AGENTS.md §2.4) — voir validate_profil_gouvernement
-# pour le refus explicite de tout collapse silencieux.
+# progression procédurale, pas une issue. adopte_49_3/rejete_49_3 restent des
+# statuts séparés d'adopte/rejete : le 49.3 est un fait procédural, jamais une
+# position de vote ni un "blocage" (règle AGENTS.md §2.4) — voir
+# validate_profil_gouvernement pour le refus explicite de tout collapse
+# silencieux. rejete_49_3 (fam_code AN `TSORTF24` : motion de censure adoptée
+# après engagement de l'article 49.3, ex. le budget 2025 sous le gouvernement
+# Barnier) a été ajouté après coup : la nomenclature initiale (#208) n'avait
+# anticipé le 49.3 que comme voie d'adoption, pas de rejet — gap découvert
+# lors de la collecte réelle en #210, cf. docs/technical_decisions.md
+# #gouvernement-textes-statut.
 KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL: frozenset[str] = frozenset({
-    "depose", "navette_en_cours", "adopte", "adopte_49_3", "rejete", "retire",
+    "depose", "navette_en_cours", "adopte", "adopte_49_3",
+    "rejete", "rejete_49_3", "retire",
 })
 
 # Chambre de dépôt initial d'un texte gouvernemental : un gouvernement n'est
@@ -359,15 +371,15 @@ def validate_profil_gouvernement(profil: dict[str, Any]) -> list[str]:
             if sort_49_3 is not None and not isinstance(sort_49_3, bool):
                 errors.append(f"textes[{i}].sort_49_3 doit être un booléen ou null.")
 
-            if statut == "adopte_49_3" and sort_49_3 is not True:
+            if statut in ("adopte_49_3", "rejete_49_3") and sort_49_3 is not True:
                 errors.append(
-                    f"textes[{i}] : statut 'adopte_49_3' exige sort_49_3 = True "
+                    f"textes[{i}] : statut {statut!r} exige sort_49_3 = True "
                     f"(reçu : {sort_49_3!r})."
                 )
-            if sort_49_3 is True and statut != "adopte_49_3":
+            if sort_49_3 is True and statut not in ("adopte_49_3", "rejete_49_3"):
                 errors.append(
                     f"textes[{i}] : sort_49_3 = True mais statut = {statut!r} — "
-                    f"le 49.3 ne doit jamais être collapsé vers 'adopte' ou tout autre statut."
+                    f"le 49.3 ne doit jamais être collapsé vers 'adopte'/'rejete' ou tout autre statut."
                 )
 
     comptages = profil.get("comptages")
