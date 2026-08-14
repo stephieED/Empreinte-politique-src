@@ -45,6 +45,7 @@ CV_CandidatFR/
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
 |  |- schema_gouvernement.py         # Government profile schema v1 (structure contract, no aggregation logic yet)
+|  |- gouvernement_textes.py         # AN legislative files (bulk dump): government-origin filter + statut extraction
 |  |- mep_profile.py                 # Collect/normalize EP profiles (Parltrack)
 |  `- fetch_wikipedia_candidates.py  # Candidate monitoring via Wikipedia/Wikidata
 |- raw_data/                          # Declarative inputs + raw outputs (non-normalized)
@@ -69,6 +70,7 @@ CV_CandidatFR/
 |  |- test_group_roster.py
 |  |- test_generate_group_profiles.py
 |  |- test_gouvernement_roster.py
+|  |- test_gouvernement_textes.py
 |  |- test_merge_profile.py
 |  |- test_normalize_europarl.py
 |  |- test_normalize_nosdeputes.py
