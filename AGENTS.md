@@ -126,12 +126,12 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 | Source | License | Constraint |
 |---|---|---|
-| NosDeputes.fr / NosSenateurs.fr | ODbL | Share-alike if published as downloadable dataset |
-| data.assemblee-nationale.fr | Open License (Etalab) | Attribution only |
-| Parltrack | CC0 / ODbL (mixed) | Share-alike for ODbL parts if republished |
-| European Parliament Open Data Portal | CC BY 4.0 | Attribution only |
+| NosDeputes.fr / NosSenateurs.fr | ODbL v1.0 | Share-alike if published as downloadable dataset |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | Licence Ouverte / Open Licence (Etalab) | Attribution only |
+| Parltrack (JSON dumps) | ODbL v1.0 | Share-alike if republished as downloadable dataset |
+| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | French Wikipedia | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
-| Wikidata | CC0 | No restriction |
+| Wikidata | CC0 1.0 | No restriction |
 
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
 Full details: `docs/technical_decisions.md#licences`.
