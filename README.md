@@ -69,6 +69,7 @@ CV_CandidatFR/
 |  |- test_group_profile.py
 |  |- test_group_roster.py
 |  |- test_generate_group_profiles.py
+|  |- test_gouvernement_textes.py
 |  |- test_gouvernement_roster.py
 |  |- test_gouvernement_textes.py
 |  |- test_merge_profile.py

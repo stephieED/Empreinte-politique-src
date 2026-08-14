@@ -49,3 +49,9 @@ something is pending, not *why*.
   (2355/3044 dossiers, mostly motions/résolutions/rapports) — needs mandate-date
   vs. deposit-date filtering to avoid the ~15% false-positive rate measured
   in #207 (ex-minister co-signatories). See `technical_decisions.md#gouvernement-textes-statut`.
+- `schema_gouvernement.py`: `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` has no status
+  for "rejected via article 49.3 + adopted censure motion" (`fam_code TSORTF24`)
+  — `gouvernement_textes.py` maps it to `statut="rejete"` + `sort_49_3=True`,
+  which `validate_profil_gouvernement` currently rejects. Needs #208/#211 to
+  extend the nomenclature or relax the validator. See
+  `technical_decisions.md#gouvernement-textes-statut`.
