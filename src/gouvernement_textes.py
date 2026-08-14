@@ -60,18 +60,14 @@ inconnu à signaler.
 Retrait : `codeActe` dédié (`AN1-RTRINI`/`ANLUNI-RTRINI`), sans
 `statutConclusion` associé (spike #207).
 
-Cas limite documenté mais non résolu ici (`TSORTF24`, « rejeté via 49.3,
-motion de censure adoptée ») : ce `fam_code` est mappé à
-`statut = "rejete"` avec `sort_49_3 = True`, ce qui reflète fidèlement le
-fait (rejet consécutif à l'engagement de responsabilité du gouvernement,
-art. 49.3 — jamais fusionné avec une position de vote, règle AGENTS.md §2.4)
-mais est **incompatible** avec l'invariant actuel de
-`schema_gouvernement.validate_profil_gouvernement`, qui n'autorise
-`sort_49_3 = True` qu'avec `statut == "adopte_49_3"` (nomenclature fermée de
-#208, qui ne prévoit pas de statut « rejeté via 49.3 »). Un warning explicite
-est émis dans ce cas pour ne pas masquer la tension ; sa résolution
-(étendre la nomenclature ou assouplir le validateur) relève de #208/#211,
-pas de ce module de collecte.
+`TSORTF24` (« rejeté via 49.3, motion de censure adoptée », ex. le budget
+2025 sous le gouvernement Barnier) est mappé à `statut = "rejete_49_3"` avec
+`sort_49_3 = True`, symétrique d'`adopte_49_3` — le 49.3 reste un fait
+procédural distinct de l'issue du vote, jamais fusionné avec elle (règle
+AGENTS.md §2.4). `rejete_49_3` a été ajouté à la nomenclature fermée de #208
+après coup (docs/technical_decisions.md#gouvernement-textes-statut-49-3-rejete),
+donc cette combinaison est représentable par
+`schema_gouvernement.validate_profil_gouvernement` sans warning.
 
 Rattachement à un gouvernement (hors périmètre de ce module — #211) : par
 date de dépôt initial (`date_depot`, calculée ici), jamais par date de
@@ -122,7 +118,7 @@ _FAM_CODE_STATUT_MAP: dict[str, tuple[str, bool]] = {
     "TSORTF01": ("adopte", False),
     "TSORTF07": ("rejete", False),
     "TSORTF06": ("adopte_49_3", True),
-    "TSORTF24": ("rejete", True),
+    "TSORTF24": ("rejete_49_3", True),
 }
 
 # Sentinelle du dataset source : absence de statut réel, pas un fam_code
@@ -312,15 +308,7 @@ def _determine_statut(
         return None, None, warning
 
     statut, sort_49_3 = mapping
-    warning = None
-    if sort_49_3 and statut != "adopte_49_3":
-        warning = (
-            f"gouvernement_textes: dossier {dossier_id} : statut={statut!r} avec "
-            f"sort_49_3=True (rejet consécutif à l'engagement de l'article 49.3) "
-            f"— combinaison non représentable par validate_profil_gouvernement "
-            f"en l'état (schema_gouvernement.py, cf. #208/#211)."
-        )
-    return statut, sort_49_3, warning
+    return statut, sort_49_3, None
 
 
 def _source_url(legislature: Optional[str], titre_chemin: Optional[str]) -> Optional[str]:

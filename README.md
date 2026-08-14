@@ -71,6 +71,7 @@ CV_CandidatFR/
 |  |- test_generate_group_profiles.py
 |  |- test_gouvernement_textes.py
 |  |- test_gouvernement_roster.py
+|  |- test_gouvernement_textes.py
 |  |- test_merge_profile.py
 |  |- test_normalize_europarl.py
 |  |- test_normalize_nosdeputes.py
