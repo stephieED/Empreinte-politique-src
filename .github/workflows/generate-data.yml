@@ -832,6 +832,23 @@ jobs:
             --out-dir pivot_data/groupes \
             --validate "${MERGE_FLAG[@]}"
 
+      # Agrégation locale depuis les profils pivot déjà produits ci-dessus,
+      # pas de roster réseau (gouvernement_roster.py) : contrairement au step
+      # groupes, pas de FRESH/--merge-existing équivalent — le résultat est
+      # entièrement déterministe à partir des données locales à chaque run.
+      # Seul appel réseau : le dump AN des dossiers législatifs
+      # (gouvernement_textes.py, ~10 Mo), mutualisé une seule fois pour tous
+      # les gouvernements du batch. Coût mesuré négligeable au regard du
+      # budget de 60 min de ce job (#215) — pas de job dédié nécessaire, voir
+      # docs/technical_decisions.md#gouvernement-ci-integration.
+      - name: Générer les profils de gouvernement
+        run: |
+          python3 src/generate_gouvernement_profiles.py \
+            --config raw_data/gouvernements_reels.json \
+            --profiles-dir pivot_data/profiles \
+            --out-dir pivot_data/gouvernements \
+            --validate
+
       # Cache-only : cet artifact provient du job extract-amendements-an (#251).
       # continue-on-error: true — même pattern que l'étape homonyme d'extract-an/
       # extract-roster-groupes (#252) : en cas d'échec/absence, la section 3d du
@@ -863,6 +880,8 @@ jobs:
             --raw-dir           raw_data/profiles \
             --candidats         raw_data/candidats.json \
             --groupes-config    raw_data/groupes_reels.json \
+            --gouvernements-dir    pivot_data/gouvernements \
+            --gouvernements-config raw_data/gouvernements_reels.json \
             --threshold         "$GATE_THRESHOLD" \
             --low-interventions 10 \
             --groupe-min-members 1 \
@@ -873,7 +892,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes
+          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
             exit 0

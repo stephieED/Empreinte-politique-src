@@ -395,6 +395,12 @@ downloads the `amendements-index-an` artifact into `.cache/amendements_an`
 read the real `fraicheur.json` indicators instead of always reporting "never
 built".
 
+`merge-and-pivot` also runs `src/generate_gouvernement_profiles.py --validate`
+right after the groupe step, on the same model, writing `pivot_data/gouvernements/`
+(included in the automatic commit alongside `pivot_data/groupes`) — see
+`docs/technical_decisions.md#gouvernement-ci-integration` for the timeout
+budget measurement (no dedicated job needed, unlike the AN extraction jobs).
+
 To run the gate locally:
 
 ```bash
