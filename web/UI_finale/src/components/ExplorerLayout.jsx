@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import Brand from './Brand';
 import GroupsBar from './GroupsBar';
 import GovernmentsBar from './GovernmentsBar';
@@ -21,6 +21,13 @@ export default function ExplorerLayout() {
           <div className="explorer-profile-zone">
             <Outlet />
           </div>
+          <footer className="explorer-footer">
+            <p className="explorer-footer-text">Données publiques agrégées. Aucun score, aucun classement.</p>
+            <nav className="explorer-footer-links" aria-label="Pages légales">
+              <Link to="/methodologie">Méthodologie</Link>
+              <Link to="/mentions-legales">Mentions légales</Link>
+            </nav>
+          </footer>
         </div>
       </div>
     </GroupFilterProvider>
