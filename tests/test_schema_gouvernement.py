@@ -413,6 +413,58 @@ def test_validate_texte_sort_49_3_true_collapsed_into_adopte_rejected():
     assert any("collapsé" in e for e in errors)
 
 
+def test_validate_texte_rejete_49_3_requires_sort_49_3_true():
+    g = _valid_gouvernement()
+    g["textes"].append({
+        "dossier_id": "X",
+        "titre": "Texte",
+        "statut": "rejete_49_3",
+        "chambre_depot_initial": "AN",
+        "date_depot": "2024-10-10",
+        "date_dernier_evenement": None,
+        "sort_49_3": None,
+        "source_url": None,
+    })
+    errors = validate_profil_gouvernement(g)
+    assert any("sort_49_3" in e and "rejete_49_3" in e for e in errors)
+
+
+def test_validate_texte_rejete_49_3_with_sort_49_3_true_is_valid():
+    """Cas réel TSORTF24 (#210) : motion de censure adoptée après 49.3 —
+    doit être représentable sans erreur une fois la nomenclature étendue."""
+    g = _valid_gouvernement()
+    g["textes"].append({
+        "dossier_id": "X",
+        "titre": "Texte",
+        "statut": "rejete_49_3",
+        "chambre_depot_initial": "AN",
+        "date_depot": "2024-10-10",
+        "date_dernier_evenement": None,
+        "sort_49_3": True,
+        "source_url": None,
+    })
+    errors = validate_profil_gouvernement(g)
+    assert not any("sort_49_3" in e or "rejete_49_3" in e for e in errors)
+
+
+def test_validate_texte_sort_49_3_true_collapsed_into_rejete_rejected():
+    """Symétrique du cas 'adopte' : le 49.3 ne doit pas non plus être
+    collapsé silencieusement vers 'rejete' simple."""
+    g = _valid_gouvernement()
+    g["textes"].append({
+        "dossier_id": "X",
+        "titre": "Texte",
+        "statut": "rejete",
+        "chambre_depot_initial": "AN",
+        "date_depot": "2024-10-10",
+        "date_dernier_evenement": None,
+        "sort_49_3": True,
+        "source_url": None,
+    })
+    errors = validate_profil_gouvernement(g)
+    assert any("collapsé" in e for e in errors)
+
+
 # --- comptages ---
 
 def test_validate_comptages_not_a_dict():
@@ -471,7 +523,8 @@ def test_validate_comptages_par_statut_negative():
 
 def test_known_statuts_texte_gouvernemental():
     assert KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL == frozenset({
-        "depose", "navette_en_cours", "adopte", "adopte_49_3", "rejete", "retire",
+        "depose", "navette_en_cours", "adopte", "adopte_49_3",
+        "rejete", "rejete_49_3", "retire",
     })
 
 
