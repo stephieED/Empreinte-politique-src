@@ -13,7 +13,8 @@ Commands, structure, coverage limits: `README.md`.
 `CONTRECHAMP` (`web/`) is the interface design lab. `web/UI_finale` (React 19 + Vite) is
 the current production interface, wired to real pivot data (`#web-v3-ui`). Earlier design
 generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
-`web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) — no Partis tab.
+`web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) ·
+**Gouvernement** (real governments) — no Partis tab.
 Positioning, naming, target audience: `docs/technical_decisions.md#positionnement`.
 
 ## 2. Non-negotiable editorial rules

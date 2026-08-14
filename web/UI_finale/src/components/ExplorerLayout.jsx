@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Brand from './Brand';
 import GroupsBar from './GroupsBar';
+import GovernmentsBar from './GovernmentsBar';
 import CandidatesBar from './CandidatesBar';
 import { GroupFilterProvider } from '../context/GroupFilterContext';
 import '../styles/shell.css';
@@ -14,6 +15,7 @@ export default function ExplorerLayout() {
           <div className="explorer-bars">
             <Brand />
             <GroupsBar />
+            <GovernmentsBar />
             <CandidatesBar />
           </div>
           <div className="explorer-profile-zone">

@@ -61,7 +61,7 @@ CV_CandidatFR/
 |  |- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
 |  `- gouvernements/                 # gouvernement-<ID>.json: real government profiles
 |- web/
-|  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes)
+|  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes · Gouvernement)
 |  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
 |- docs/
 |  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference (kept in French)
@@ -427,8 +427,8 @@ schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, e
 
 ## 9. Open the web UI locally
 
-`web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes**,
-no Partis tab). Before running it, sync pivot data into `public/data/`:
+`web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes** ·
+**Gouvernement**, no Partis tab). Before running it, sync pivot data into `public/data/`:
 
 ```bash
 cd web/UI_finale
@@ -436,11 +436,11 @@ npm install          # first time only
 npm run dev          # syncs data then starts Vite dev server
 ```
 
-`scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/` and
-`raw_data/candidats.json` into `public/data/` (generated, git-ignored) and writes
-`public/data/manifest.json`. Coverage is limited to the candidates/groups with a
-local pivot file — see "Coverage limits" below for the current state of the
-roster-driven rollout.
+`scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/`,
+`pivot_data/gouvernements/` and `raw_data/candidats.json` into `public/data/` (generated,
+git-ignored) and writes `public/data/manifest.json`. Coverage is limited to the
+candidates/groups/governments with a local pivot file — see "Coverage limits" below for the
+current state of the roster-driven rollout.
 
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
@@ -599,6 +599,13 @@ pytest -q
   7 groups declared in `raw_data/groupes_reels.json` (5 AN + 2 Senate) — not
   every parliamentary group that exists. Extending coverage means adding
   entries to that file, a separate editorial decision.
+- **Government scope**: profile generation only covers the governments
+  declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
+  Fillon II through Lecornu II) — not every government in the Fifth
+  Republic. `membres[].portefeuille` is `null` until confirmed by a primary
+  source (never a placeholder like "Ministre"), and `textes[]` can be empty
+  for a recent government; `web/UI_finale` shows an explicit "no data" state
+  in both cases (rule 5, `AGENTS.md`).
 - **Roster-driven candidate/member coverage**: `generate_roster_candidats.py`
   + `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
   (see [`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot))

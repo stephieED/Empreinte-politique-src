@@ -1758,6 +1758,18 @@ disponible localement (`profils_disponibles` très inférieur à `roster_total`)
 graphique à 0 silencieux, conformément à la règle 5 (une donnée manquante
 n'est jamais un 0 par défaut).
 
+**Mise à jour (#213, onglet Gouvernement)** : `web/UI_finale` ajoute un troisième
+onglet, Gouvernement, sur le modèle exact de Groupes (`GovernmentsBar`/
+`GovernmentProfile`/`GovernmentProfilePage`, `buildGovernmentView` dans
+`pivotAdapter.js`) — `sync-data.mjs` copie désormais aussi `pivot_data/gouvernements/`
+vers `public/data/gouvernements/`. Point d'attention spécifique retenu de
+`schema_gouvernement.py` (règle AGENTS.md §2.1) : `comptages.par_statut` est rendu
+comme une liste de badges texte (nombres bruts, statuts à 0 omis), jamais comme une
+jauge, un donut ou un pourcentage — contrairement au donut de couverture de
+`GroupProfile` (qui mesure la complétude des données collectées, pas un score). Même
+pattern "aucune donnée" que les groupes à faible couverture pour `textes[]` vide
+(gouvernements récents) et `membres[].portefeuille` manquant.
+
 <a id="syceron"></a>
 ## Syceron : remplacement du scraping NosDéputés pour les débats en séance (2026-08-07)
 
