@@ -585,13 +585,14 @@ Sensitive institutional constraints are documented in `AGENTS.md` and in
 
 | Source | Type | Update cadence | License | Chamber(s) |
 |---|---|---|---|---|
-| NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL | AN |
-| NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL | AN |
-| NosSenateurs archives | JSON/XML API | Frozen | ODbL | Senate |
-| data.assemblee-nationale.fr | ZIP dumps | Daily | Open License | AN |
-| Parltrack | LZMA dumps | Weekly (approx.) | CC0/ODbL | EP |
+| NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL v1.0 | AN |
+| NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL v1.0 | AN |
+| NosSenateurs archives | JSON/XML API | Frozen | ODbL v1.0 | Senate |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily | Licence Ouverte / Open Licence (Etalab) | AN |
+| Parltrack | LZMA dumps | Weekly (approx.) | ODbL v1.0 | EP |
+| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | REST API + MEP pages | Live (fetched per run, no weekly cache) | EP Legal Notice (reuse policy, attribution-based) | EP |
 | French Wikipedia | MediaWiki REST API | Immediate | CC BY-SA 4.0 | Candidate monitoring |
-| Wikidata | SPARQL | Immediate | CC0 | Candidate monitoring |
+| Wikidata | SPARQL | Immediate | CC0 1.0 | Candidate monitoring |
 
 ## Tests
 
