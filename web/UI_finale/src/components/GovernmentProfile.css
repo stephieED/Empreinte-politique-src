@@ -1,0 +1,232 @@
+.gvp-main {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 32px 40px 64px;
+  max-width: 1600px;
+}
+
+.gvp-breadcrumb {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.gvp-breadcrumb strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.gvp-banner {
+  background: var(--dark);
+  box-shadow: 0 2px 16px rgba(20, 15, 40, 0.07);
+  padding: 28px;
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+  margin-bottom: 20px;
+}
+
+.gvp-banner-tag {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid #ffffff;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.gvp-banner h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.gvp-banner p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gvp-banner-pm {
+  margin-top: 4px;
+}
+
+.gvp-section-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.gvp-statut-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.gvp-statut-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--card);
+  box-shadow: 0 2px 8px rgba(20, 15, 40, 0.06);
+  color: var(--ink);
+}
+
+.gvp-textes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.gvp-texte-card {
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
+  padding: 18px;
+}
+
+.gvp-texte-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.gvp-texte-statut {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.gvp-texte-493 {
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--dark);
+  color: #ffffff;
+}
+
+.gvp-texte-titre {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  min-height: 40px;
+}
+
+.gvp-texte-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.gvp-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dark);
+  background: var(--accent);
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-decoration: none;
+  flex: 0 0 auto;
+}
+
+.gvp-texte-nd {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.gvp-texte-meta {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.gvp-members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.gvp-member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 1px 8px rgba(20, 15, 40, 0.05);
+  padding: 10px 14px;
+}
+
+.gvp-member-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--dark);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.gvp-member-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gvp-member-name {
+  font-size: 14px;
+}
+
+.gvp-member-portefeuille {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.gvp-member-status {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.gvp-member-status-actif {
+  background: var(--dark);
+  color: #ffffff;
+}
+
+.gvp-member-status-ancien {
+  background: transparent;
+  border: 1px solid #c9c4be;
+  color: var(--muted);
+}
+
+.gvp-empty {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 32px;
+}

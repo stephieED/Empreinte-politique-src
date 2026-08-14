@@ -14,10 +14,12 @@ const outDir = path.join(projectRoot, 'public', 'data');
 
 const pivotProfilesDir = path.join(repoRoot, 'pivot_data', 'profiles');
 const pivotGroupesDir = path.join(repoRoot, 'pivot_data', 'groupes');
+const pivotGouvernementsDir = path.join(repoRoot, 'pivot_data', 'gouvernements');
 const candidatsPath = path.join(repoRoot, 'raw_data', 'candidats.json');
 
 mkdirSync(path.join(outDir, 'profiles'), { recursive: true });
 mkdirSync(path.join(outDir, 'groupes'), { recursive: true });
+mkdirSync(path.join(outDir, 'gouvernements'), { recursive: true });
 
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
@@ -71,9 +73,32 @@ for (const file of groupeFiles) {
   }
 }
 
+// --- profils de gouvernement réels ---
+const gouvernementFiles = readdirSync(pivotGouvernementsDir).filter((f) => f.endsWith('.json'));
+const manifestGouvernements = [];
+for (const file of gouvernementFiles) {
+  cpSync(path.join(pivotGouvernementsDir, file), path.join(outDir, 'gouvernements', file));
+  const gouvernement = JSON.parse(readFileSync(path.join(pivotGouvernementsDir, file), 'utf-8'));
+  const id = file.replace(/^gouvernement-/, '').replace(/\.json$/, '');
+  manifestGouvernements.push({
+    id,
+    fichier: file,
+    gouvernementId: gouvernement.gouvernement_id,
+    nom: gouvernement.nom,
+    debut: gouvernement.periode?.debut ?? null,
+    fin: gouvernement.periode?.fin ?? null,
+    actif: gouvernement.periode?.actif ?? false,
+  });
+}
+manifestGouvernements.sort((a, b) => (b.debut || '').localeCompare(a.debut || ''));
+
 writeFileSync(
   path.join(outDir, 'manifest.json'),
-  JSON.stringify({ candidates: manifestCandidates, groupes: manifestGroupes }, null, 2),
+  JSON.stringify(
+    { candidates: manifestCandidates, groupes: manifestGroupes, gouvernements: manifestGouvernements },
+    null,
+    2,
+  ),
 );
 
-console.log(`sync-data : ${manifestCandidates.length} candidat(s), ${manifestGroupes.length} groupe(s) copiés vers public/data/.`);
+console.log(`sync-data : ${manifestCandidates.length} candidat(s), ${manifestGroupes.length} groupe(s), ${manifestGouvernements.length} gouvernement(s) copiés vers public/data/.`);
