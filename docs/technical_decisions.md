@@ -931,6 +931,25 @@ législatures figées (753 Ko + 3,4 Mo, largement sous la limite). La 13e
 reste sans équivalent trouvé (ni chemin openData ni page d'archives dédiée
 ne répond). Voir #298/#299/#300.
 
+**Révision (2026-08-15, vérification finale de bout en bout) (#302)** :
+- Quality gate section 3d (`check_quality_gate.py`) confirmée sur un run
+  réel : avec `.cache/amendements_an/14/` matérialisé depuis le fallback
+  committé (`_load_frozen_amendement_index("14")`), la législature 14 est
+  rapportée **❄️ figé**, sans aucun avertissement de fraîcheur — même
+  comportement que la 16e (déjà vérifiée sous #273).
+- Pipeline exécuté sur un parlementaire réel ayant siégé sous la 14e
+  législature (Laurent Wauquiez, `identite.url_an_ou_senat` ->
+  `PA267285`) : `generate_all_profiles.py --source an --only
+  laurent-wauquiez --pivot` fait passer son nombre d'amendements de 0 à
+  **1 200** entrées (`profile["amendements"]`, toutes `"legislature": "14"`
+  côté profil brut), sans régression sur `votes`/`mandats`/`interventions`/
+  `dossiers_legislatifs` (fusion additive, aucune perte). Confirme la levée
+  du défaut initial de l'epic (index légis 14 silencieusement vide).
+- Suite de tests complète (`pytest`) : 962 tests passés, aucune régression.
+- Docstrings `_parse_amendement_entry`/`_parse_amendement_entry_legacy`
+  (`candidate_profile.py`) mises à jour pour se référencer mutuellement et
+  nommer explicitement les deux schémas supportés.
+
 <a id="pythonunbuffered-generate-data"></a>
 ## `PYTHONUNBUFFERED` global sur `generate-data.yml` : stdout fiable en CI non-TTY (#259) (2026-08-13)
 

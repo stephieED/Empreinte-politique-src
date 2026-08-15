@@ -912,6 +912,15 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
     Construit une entrée pour l'auteur principal et une entrée par cosignataire,
     avec un champ `role_signataire` permettant de distinguer les deux cas dans
     les usages avals.
+
+    Gère le schéma « moderne » des archives amendements AN (légis 15/16/17,
+    un fichier JSON par amendement, racine `{"amendement": {...}}`). La
+    législature 14 utilise un schéma « legacy » distinct (un unique fichier
+    JSON agrégeant tous les amendements, racine `{"textesEtAmendements":
+    {...}}`), géré par `_parse_amendement_entry_legacy` — voir #299,
+    docs/technical_decisions.md#amendements-legislatures-figees. Le choix
+    entre les deux se fait dans `_parse_amendements_zip`, par entrée, selon
+    la clé racine du contenu.
     """
     amendement = data.get("amendement") if isinstance(data, dict) else None
     if not isinstance(amendement, dict):
