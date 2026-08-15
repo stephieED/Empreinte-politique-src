@@ -508,7 +508,41 @@ a group with only stale sources is flagged — same option contract as
 `docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_groupe/`.
 
-## 12. Combined audit pipeline (manual tool)
+## 12. Audit the gouvernement dataset
+
+`src/audit_gouvernement_dataset.py` mirrors `audit_groupe_dataset.py` for
+`pivot_data/gouvernements` (`schema_gouvernement.py`): it scans a directory
+of `gouvernement-*.json` files and reports volumetry (`periode.actif`
+breakdown, `membres`/`textes` distribution, `comptages.par_statut`
+aggregated across governments), completeness (`premier_ministre`,
+`membres[].portefeuille`, `meta`), consistency
+(`validate_profil_gouvernement` — already covers the 49.3 non-collapse
+invariant, `schema_version` divergence, duplicate `gouvernement_id`), source
+freshness and stale governments, and a per-government cross-tab of date
+ranges (`compute_plage_dates_gouvernements`): min/max of
+`membres[].debut`/`.fin` (`mandats_membres`) and `textes[].date_depot`/
+`.date_dernier_evenement` (`textes`) — a `membres[].fin = null` (ongoing
+mandate) is excluded from the max without ever being substituted by today's
+date (`AGENTS.md` §2.5). Same internal-quality-tool contract as the other
+audits (no score, no ranking, see `AGENTS.md` §2).
+
+```bash
+python src/audit_gouvernement_dataset.py \
+    --input-dir pivot_data/gouvernements \
+    --output-json audit_gouvernement_report.json \
+    --output-md audit_gouvernement_report.md \
+    --staleness-days 30
+```
+
+`--input-dir` defaults to `pivot_data/gouvernements`. `--output-json`/
+`--output-md` default to unset (JSON prints to stdout, Markdown is skipped
+if `--output-md` is omitted). `--staleness-days` (default 30) sets the
+threshold beyond which a government with only stale sources is flagged —
+same option contract as the other audit scripts. See
+`docs/examples/audit_gouvernement_report_sample.json` / `.md` for a sample
+report generated on `tests/fixtures/audit_gouvernement/`.
+
+## 13. Combined audit pipeline (manual tool)
 
 `src/audit_pipeline.py` is a **manual** entry point that runs both audits
 above by calling their functions directly (no subprocess) and compiles an
