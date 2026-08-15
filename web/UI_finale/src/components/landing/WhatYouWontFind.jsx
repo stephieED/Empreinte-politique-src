@@ -1,15 +1,39 @@
 import './landing.css';
 
-// Squelette : contenu éditorial et style final traités dans une sub-issue dédiée.
-const ITEMS = ['[Placeholder] Pas de score', '[Placeholder] Pas de classement', '[Placeholder] Pas de taux d\'assiduité'];
+// Contenu éditorial : reformulation positive des règles éditoriales
+// non-négociables (AGENTS.md §2 et §6) — jamais un aveu de manque.
+const ITEMS = [
+  {
+    title: 'Aucun score, aucune note',
+    detail:
+      "Chaque fait parlementaire est décrit pour ce qu'il est, jamais ramené à un chiffre unique ou à une appréciation.",
+  },
+  {
+    title: 'Aucun classement entre candidats',
+    detail:
+      "Les chiffres se lisent côte à côte, avec leur contexte — jamais ordonnés du meilleur au pire.",
+  },
+  {
+    title: "Aucun taux individuel d'assiduité ou de présence",
+    detail:
+      "Un scrutin manqué ne décrit ni le travail parlementaire d'un candidat ni ses motifs — cette donnée n'est jamais publiée à l'échelle individuelle.",
+  },
+];
 
 export default function WhatYouWontFind() {
   return (
     <section className="landing-section" aria-label="Ce que vous ne trouverez pas ici">
-      <h2>[Placeholder] Ce que vous ne trouverez pas ici</h2>
-      <ul>
+      <h2>Ce que vous ne trouverez pas ici</h2>
+      <p>
+        Empreinte politique documente l'activité parlementaire, elle ne la classe pas. Trois
+        engagements tiennent cette ligne :
+      </p>
+      <ul className="wontfind-list">
         {ITEMS.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item.title}>
+            <p className="wontfind-title">{item.title}</p>
+            <p className="wontfind-detail">{item.detail}</p>
+          </li>
         ))}
       </ul>
     </section>
