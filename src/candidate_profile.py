@@ -89,11 +89,18 @@ LEGISLATURE_BY_BASE_URL = {
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
-# sous-repertoire differe selon la legislature : "amendements_div_legis" pour
-# les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
-# 15e, "amendements_legis_XIV" pour la 14e (fichier unique nomme par numero
-# romain pour les deux). Verifie manuellement (HTTP 200) pour chaque entree
-# ci-dessous. La 14e a ete trouvee le 15/08/2026 via la page d'archives dediee
+# sous-repertoire et du zip differe selon la legislature : "amendements_div_legis"
+# / "Amendements.json.zip" pour les legislatures 16/17, "amendements_legis" /
+# "Amendements_XV.json.zip" pour la 15e, "amendements_legis_XIV" /
+# "Amendements_XIV.json.zip" pour la 14e. Cette similitude de nommage entre
+# 14e et 15e (suffixe numero romain) ne reflete PAS le contenu : verifie le
+# 15/08/2026 (#301) via lecture partielle en HTTP Range de l'archive 15e
+# (en-tetes locaux ZIP a l'offset 0 et vers 5 Mo) que son zip contient, comme
+# les 16e/17e, un fichier JSON par amendement de racine `{"amendement": {...}}`
+# (`_parse_amendement_entry`) — pas le schema legacy "fichier unique" /
+# `{"textesEtAmendements": {...}}` de la 14e (#299, `_parse_amendement_entry_legacy`).
+# Verifie manuellement (HTTP 200) pour chaque entree ci-dessous. La 14e a ete
+# trouvee le 15/08/2026 via la page d'archives dediee
 # (data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements),
 # pas via le repertoire openData standard qui ne la liste pas directement ;
 # aucun equivalent trouve pour la 13e (aucune page d'archives ni chemin
