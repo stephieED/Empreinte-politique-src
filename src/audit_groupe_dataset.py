@@ -25,7 +25,13 @@ dict sérialisable JSON), sans aucune I/O :
     par groupe avec le nombre de `membres`, `cohesion_votes`,
     `tags_thematiques_agreges` et `amendements_agreges.nb_amendements`
     (bloc global), sur le même principe que
-    `audit_pivot_dataset.compute_tableau_croise_candidats` (issue #174).
+    `audit_pivot_dataset.compute_tableau_croise_candidats` (issue #174) ;
+  - tableau croisé des plages temporelles par groupe
+    (`compute_plage_dates_groupes`, issue #318, sous-issue 2/6 de #316) :
+    symétrique du tableau ci-dessus, min/max de `cohesion_votes[].date` par
+    groupe. `amendements_agreges` n'a pas de cellule calculée (aucune date
+    au niveau de l'agrégat dans `schema_groupe.py`, voir #316 Hors
+    périmètre).
 
 `build_report()` assemble tous ces indicateurs en un rapport structuré
 unique, et `generate_markdown_report()` en dérive un rendu Markdown lisible
@@ -42,7 +48,7 @@ import argparse
 import json
 import statistics
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -320,6 +326,98 @@ def compute_tableau_croise_groupes(groupes: list[dict[str, Any]]) -> dict[str, A
     lignes.sort(key=lambda ligne: (ligne["groupe_nom"] or "", ligne["groupe_id"] or ""))
 
     return {"lignes": lignes}
+
+
+def _parse_date_cohesion(valeur: Any) -> date | None:
+    """Parse `cohesion_votes[].date` (`"YYYY-MM-DD"`, sous-préfixe accepté), `None` si invalide."""
+    if not isinstance(valeur, str) or not valeur:
+        return None
+    try:
+        return date.fromisoformat(valeur[:10])
+    except ValueError:
+        return None
+
+
+def _plage_cohesion_votes(
+    groupe: dict[str, Any], dates_invalides: list[dict[str, Any]]
+) -> dict[str, str] | None:
+    """Plage `{"min":..., "max":...}` de `cohesion_votes[].date`, `None` si aucune date exploitable.
+
+    Chaque entrée sans date exploitable (absente, non-dict, ou format
+    invalide) est ajoutée à `dates_invalides` (muté en place) plutôt
+    qu'ignorée silencieusement.
+    """
+    cohesion_votes = groupe.get("cohesion_votes")
+    if not isinstance(cohesion_votes, list):
+        return None
+
+    groupe_id = groupe.get("groupe_id")
+    dates_valides: list[date] = []
+
+    for i, entree in enumerate(cohesion_votes):
+        valeur = entree.get("date") if isinstance(entree, dict) else None
+        date_parsee = _parse_date_cohesion(valeur)
+        if date_parsee is not None:
+            dates_valides.append(date_parsee)
+        else:
+            dates_invalides.append({
+                "groupe_id": groupe_id, "champ": f"cohesion_votes[{i}].date", "valeur": valeur,
+            })
+
+    if not dates_valides:
+        return None
+
+    return {"min": min(dates_valides).isoformat(), "max": max(dates_valides).isoformat()}
+
+
+def compute_plage_dates_groupes(groupes: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tableau croisé des plages temporelles par groupe, symétrique de `compute_tableau_croise_groupes`.
+
+    Là où `compute_tableau_croise_groupes` répond à « combien d'entrées ? »,
+    cette fonction répond à « sur quelle période ? » : une ligne par groupe,
+    avec une cellule `{"min": "YYYY-MM-DD", "max": "YYYY-MM-DD"}` pour
+    `cohesion_votes` (via `cohesion_votes[].date`).
+
+    `amendements_agreges` vaut toujours `None` : `schema_groupe.py` ne
+    stocke que des compteurs au niveau de l'agrégat, aucune date — une
+    limite structurelle du schéma actuel, pas une donnée manquante à
+    corriger (issue #316, section Hors périmètre). La cellule est
+    documentée comme telle dans le rapport Markdown, jamais laissée vide
+    sans explication.
+
+    Une date invalide ou une entrée `cohesion_votes` sans date exploitable
+    est exclue du calcul min/max (jamais traitée comme une date par défaut,
+    AGENTS.md §2.5), mais comptée et recensée dans `dates_invalides` plutôt
+    qu'ignorée silencieusement.
+
+    Returns:
+        `{"lignes": [{"groupe_id":..., "groupe_nom":..., "chambre":...,
+        "cohesion_votes": {"min":..., "max":...} | None,
+        "amendements_agreges": None}, ...], "dates_invalides": [{"groupe_id":...,
+        "champ": "cohesion_votes[i].date", "valeur":...}, ...]}`. `lignes`
+        trié par `groupe_nom` puis `groupe_id`, même ordre que
+        `compute_tableau_croise_groupes` ; `dates_invalides` trié par
+        `groupe_id` puis `champ`.
+    """
+    dates_invalides: list[dict[str, Any]] = []
+
+    lignes = [
+        {
+            "groupe_id": groupe.get("groupe_id"),
+            "groupe_nom": groupe.get("groupe_nom"),
+            "chambre": groupe.get("chambre"),
+            "cohesion_votes": _plage_cohesion_votes(groupe, dates_invalides),
+            "amendements_agreges": None,
+        }
+        for groupe in groupes
+    ]
+
+    lignes.sort(key=lambda ligne: (ligne["groupe_nom"] or "", ligne["groupe_id"] or ""))
+    dates_invalides.sort(
+        key=lambda entree: (entree["groupe_id"] is None, entree["groupe_id"], entree["champ"])
+    )
+
+    return {"lignes": lignes, "dates_invalides": dates_invalides}
 
 
 # ---------------------------------------------------------------------------
@@ -657,9 +755,10 @@ def build_report(
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
         (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`,
-        `tableau_croise_groupes`) plus `meta` et `erreurs_lecture`. Un outil
-        de qualité interne : ce rapport ne doit jamais introduire de jugement
-        de valeur, de score ou de classement (AGENTS.md §2.1).
+        `tableau_croise_groupes`, `plage_dates_groupes`) plus `meta` et
+        `erreurs_lecture`. Un outil de qualité interne : ce rapport ne doit
+        jamais introduire de jugement de valeur, de score ou de classement
+        (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -693,6 +792,7 @@ def build_report(
         },
         "warnings": compute_agregation_warnings(groupes),
         "tableau_croise_groupes": compute_tableau_croise_groupes(groupes),
+        "plage_dates_groupes": compute_plage_dates_groupes(groupes),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -875,6 +975,52 @@ def _md_section_tableau_croise_groupes(tableau: dict[str, Any]) -> str:
     )
 
 
+def _fmt_plage_cellule(cellule: dict[str, str] | None) -> str:
+    """`"min → max"` si la cellule est renseignée, `"N/D"` sinon (donnée manquante)."""
+    return "N/D" if cellule is None else f"{cellule['min']} → {cellule['max']}"
+
+
+def _md_section_plage_dates_groupes(plage: dict[str, Any]) -> str:
+    lignes = [
+        [
+            ligne["groupe_id"], ligne["groupe_nom"], ligne["chambre"],
+            _fmt_plage_cellule(ligne["cohesion_votes"]), "N/A (non applicable)",
+        ]
+        for ligne in plage["lignes"]
+    ]
+
+    lignes_dates_invalides = [
+        [e["groupe_id"], e["champ"], e["valeur"]] for e in plage["dates_invalides"]
+    ]
+
+    return (
+        "## Tableau croisé des plages temporelles par groupe\n\n"
+        "Complète (sans le remplacer) le tableau croisé des volumes ci-dessus : "
+        "pour chaque groupe, la période couverte par les dates disponibles "
+        "(min → max), plutôt que le nombre d'entrées.\n\n"
+        + _md_table(
+            [
+                "groupe_id", "Nom", "Chambre",
+                "Cohésion de vote (min → max)", "Amendements agrégés",
+            ],
+            lignes, "Aucun groupe.",
+        )
+        + "\n> **`amendements_agreges`** : colonne marquée **N/A (non "
+        "applicable)**, jamais une cellule vide silencieuse. "
+        "`schema_groupe.py` ne stocke que des compteurs au niveau de "
+        "l'agrégat (`nb_amendements`, `nb_adoptes`...), aucune date : c'est "
+        "une limite structurelle du schéma actuel, pas une donnée "
+        "manquante à corriger. Voir la section Hors périmètre de l'issue "
+        "#316.\n\n"
+        + f"### Dates `cohesion_votes[].date` invalides ignorées pour le calcul "
+        f"({len(plage['dates_invalides'])})\n\n"
+        + _md_table(
+            ["groupe_id", "Champ", "Valeur"],
+            lignes_dates_invalides, "Aucune date invalide détectée.",
+        )
+    )
+
+
 def _md_section_warnings(warnings: dict[str, Any]) -> str:
     lignes = [
         [type_warning, entree["frequence"], ", ".join(entree["groupe_ids"])]
@@ -918,6 +1064,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         ),
         _md_section_volumetrie(rapport["volumetrie"]),
         _md_section_tableau_croise_groupes(rapport["tableau_croise_groupes"]),
+        _md_section_plage_dates_groupes(rapport["plage_dates_groupes"]),
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),

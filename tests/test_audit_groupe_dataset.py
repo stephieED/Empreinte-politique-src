@@ -18,6 +18,7 @@ from audit_groupe_dataset import (
     compute_groupes_membres_sans_cohesion,
     compute_groupes_perimes,
     compute_nombre_cohesion_votes,
+    compute_plage_dates_groupes,
     compute_presence_tags_thematiques,
     compute_tableau_croise_groupes,
     compute_validation_schema,
@@ -407,6 +408,130 @@ def test_compute_tableau_croise_groupes_nom_absent_tri_deterministe_par_id():
     resultat = compute_tableau_croise_groupes(groupes)
 
     assert [ligne["groupe_id"] for ligne in resultat["lignes"]] == ["x:a", "x:b"]
+
+
+# ---------------------------------------------------------------------------
+# compute_plage_dates_groupes
+# ---------------------------------------------------------------------------
+
+def test_compute_plage_dates_groupes_liste_vide():
+    resultat = compute_plage_dates_groupes([])
+
+    assert resultat == {"lignes": [], "dates_invalides": []}
+
+
+def test_compute_plage_dates_groupes_sans_cohesion_votes_cellule_null():
+    groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN"}]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert resultat["lignes"] == [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": None, "amendements_agreges": None,
+        },
+    ]
+    assert resultat["dates_invalides"] == []
+
+
+def test_compute_plage_dates_groupes_cohesion_votes_vide_cellule_null():
+    groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN", "cohesion_votes": []}]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert resultat["lignes"][0]["cohesion_votes"] is None
+
+
+def test_compute_plage_dates_groupes_plusieurs_scrutins_min_max():
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": [
+                {"numero_scrutin": "1", "date": "2023-05-10"},
+                {"numero_scrutin": "2", "date": "2024-06-07"},
+                {"numero_scrutin": "3", "date": "2022-01-01"},
+            ],
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert resultat["lignes"][0]["cohesion_votes"] == {"min": "2022-01-01", "max": "2024-06-07"}
+
+
+def test_compute_plage_dates_groupes_amendements_agreges_toujours_null():
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "amendements_agreges": {"nb_amendements": 100},
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    # Aucune date au niveau de l'agrégat dans schema_groupe.py : jamais calculée.
+    assert resultat["lignes"][0]["amendements_agreges"] is None
+
+
+def test_compute_plage_dates_groupes_dates_invalides_ignorees_mais_comptees():
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": [
+                {"numero_scrutin": "1", "date": "2024-06-07"},
+                {"numero_scrutin": "2", "date": "pas-une-date"},
+                {"numero_scrutin": "3"},  # date absente
+            ],
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    # La date invalide/absente n'entre jamais dans le calcul min/max (AGENTS.md §2.5).
+    assert resultat["lignes"][0]["cohesion_votes"] == {"min": "2024-06-07", "max": "2024-06-07"}
+    assert len(resultat["dates_invalides"]) == 2
+    assert resultat["dates_invalides"][0] == {
+        "groupe_id": "AN:X", "champ": "cohesion_votes[1].date", "valeur": "pas-une-date",
+    }
+    assert resultat["dates_invalides"][1] == {
+        "groupe_id": "AN:X", "champ": "cohesion_votes[2].date", "valeur": None,
+    }
+
+
+def test_compute_plage_dates_groupes_toutes_dates_invalides_cellule_null():
+    groupes = [
+        {
+            "groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN",
+            "cohesion_votes": [{"numero_scrutin": "1", "date": "invalide"}],
+        },
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert resultat["lignes"][0]["cohesion_votes"] is None
+    assert len(resultat["dates_invalides"]) == 1
+
+
+def test_compute_plage_dates_groupes_trie_par_nom_comme_tableau_croise():
+    groupes = [
+        {"groupe_id": "x:z", "groupe_nom": "Zoé", "chambre": "AN"},
+        {"groupe_id": "x:a", "groupe_nom": "Alban", "chambre": "AN"},
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert [ligne["groupe_nom"] for ligne in resultat["lignes"]] == ["Alban", "Zoé"]
+
+
+def test_compute_plage_dates_groupes_dates_invalides_triees_par_groupe_id():
+    groupes = [
+        {"groupe_id": "AN:Z", "groupe_nom": "Z", "chambre": "AN", "cohesion_votes": [{"date": "invalide"}]},
+        {"groupe_id": "AN:A", "groupe_nom": "A", "chambre": "AN", "cohesion_votes": [{"date": "invalide"}]},
+    ]
+
+    resultat = compute_plage_dates_groupes(groupes)
+
+    assert [e["groupe_id"] for e in resultat["dates_invalides"]] == ["AN:A", "AN:Z"]
 
 
 # ---------------------------------------------------------------------------
@@ -871,7 +996,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "warnings", "tableau_croise_groupes", "erreurs_lecture",
+        "warnings", "tableau_croise_groupes", "plage_dates_groupes", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "effectifs", "nombre_cohesion_votes", "distribution_amendements",
@@ -954,6 +1079,10 @@ def test_build_report_delegue_aux_fonctions_compute():
         rapport["tableau_croise_groupes"]
         == compute_tableau_croise_groupes(groupes)
     )
+    assert (
+        rapport["plage_dates_groupes"]
+        == compute_plage_dates_groupes(groupes)
+    )
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -992,6 +1121,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
     assert "# Rapport d'audit du jeu de données groupes" in markdown
     assert "## Volumétrie" in markdown
     assert "## Tableau croisé des volumes par groupe" in markdown
+    assert "## Tableau croisé des plages temporelles par groupe" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
     assert "## Fraîcheur" in markdown
@@ -1012,6 +1142,7 @@ def test_generate_markdown_report_sections_vides_affichent_un_message_explicite(
     assert "Aucun groupe périmé." in markdown
     assert "Aucun warning." in markdown
     assert "Aucune erreur de lecture." in markdown
+    assert "Aucune date invalide détectée." in markdown
 
 
 def test_generate_markdown_report_reflete_les_donnees_du_rapport():
@@ -1024,6 +1155,19 @@ def test_generate_markdown_report_reflete_les_donnees_du_rapport():
     assert "casse.json" in markdown
     assert "JSON invalide" in markdown
     assert "| a | 2 |" in markdown  # doublons_groupe_id : "a" en double
+
+
+def test_generate_markdown_report_amendements_agreges_documente_non_applicable():
+    groupes = [{"groupe_id": "AN:X", "groupe_nom": "X", "chambre": "AN"}]
+
+    rapport = build_report(groupes, [], reference_date=REFERENCE)
+    markdown = generate_markdown_report(rapport)
+
+    # La colonne amendements_agreges est explicitement documentée comme non
+    # applicable, jamais une cellule vide silencieuse.
+    assert "N/A (non applicable)" in markdown
+    assert "ne stocke que des compteurs" in markdown
+    assert "N/D" in markdown  # cellule cohesion_votes du groupe sans cohesion_votes
 
 
 def test_generate_markdown_report_retourne_une_chaine_non_vide():
