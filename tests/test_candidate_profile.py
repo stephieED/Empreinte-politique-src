@@ -2345,13 +2345,15 @@ def test_download_amendements_zip_prints_progress_on_success(tmp_path, capsys):
 
 
 def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others():
-    """Légis 17 en cache + légis 16/15 absentes du cache : les amendements de la
-    légis 17 doivent être conservés (plus de vidage global sur l'absence d'une
-    seule législature), et chaque absence doit être tracée avec la législature
-    concernée dans les warnings (critères d'acceptation de l'issue #241,
-    adaptés à la lecture cache-only de #252 : plus d'`AmendementsIndexError`,
-    une législature absente du cache retourne simplement `None`)."""
+    """Légis 17 en cache + les autres législatures absentes du cache : les
+    amendements de la légis 17 doivent être conservés (plus de vidage global
+    sur l'absence d'une seule législature), et chaque absence doit être
+    tracée avec la législature concernée dans les warnings (critères
+    d'acceptation de l'issue #241, adaptés à la lecture cache-only de #252 :
+    plus d'`AmendementsIndexError`, une législature absente du cache retourne
+    simplement `None`)."""
     from candidate_profile import (
+        AN_AMENDEMENTS_PATH,
         WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
         fetch_amendements_officiels,
     )
@@ -2372,10 +2374,13 @@ def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others()
     assert len(amendements) == 1, "Les amendements de la législature en cache (17) doivent être conservés"
     assert amendements[0]["legislature"] == "17"
 
+    autres_legislatures = [leg for leg in AN_AMENDEMENTS_PATH if leg != "17"]
     failure_warnings = [w for w in warnings if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES)]
-    assert len(failure_warnings) == 2, "Un warning distinct par législature absente (16 et 15), pas un échec global"
-    assert any("16" in w for w in failure_warnings), "Le warning doit mentionner spécifiquement la législature 16"
-    assert any("15" in w for w in failure_warnings), "La légis 15 doit être tentée même quand la légis 16 est absente"
+    assert len(failure_warnings) == len(autres_legislatures), (
+        "Un warning distinct par législature absente, pas un échec global"
+    )
+    for leg in autres_legislatures:
+        assert any(leg in w for w in failure_warnings), f"Le warning doit mentionner spécifiquement la législature {leg}"
 
 
 def test_fetch_amendements_officiels_never_triggers_network_when_cache_absent(tmp_path):

@@ -91,29 +91,37 @@ SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
 # sous-repertoire differe selon la legislature : "amendements_div_legis" pour
 # les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
-# 15e (fichier unique nomme par numero romain). Verifie manuellement (HTTP 200)
-# pour chaque entree ci-dessous ; pas de jeu de donnees equivalent trouve pour
-# les legislatures 13/14.
+# 15e, "amendements_legis_XIV" pour la 14e (fichier unique nomme par numero
+# romain pour les deux). Verifie manuellement (HTTP 200) pour chaque entree
+# ci-dessous. La 14e a ete trouvee le 15/08/2026 via la page d'archives dediee
+# (data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements),
+# pas via le repertoire openData standard qui ne la liste pas directement ;
+# aucun equivalent trouve pour la 13e (aucune page d'archives ni chemin
+# openData ne repond, contrairement a la 14e/15e qui en ont une).
 AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "17": ("amendements_div_legis", "Amendements.json.zip"),
     "16": ("amendements_div_legis", "Amendements.json.zip"),
     "15": ("amendements_legis", "Amendements_XV.json.zip"),
+    "14": ("amendements_legis_XIV", "Amendements_XIV.json.zip"),
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 # Legislatures dont le dossier legislatif est definitivement clos : l'archive
 # amendements AN correspondante (Last-Modified verifie le 13/08/2026 :
-# 2022-06-09 pour la 15e, 2024-06-28 pour la 16e) ne sera plus jamais modifiee
-# par l'Assemblee nationale. Le telechargement en CI de ces deux archives
-# (350-650 Mo) echoue de facon recurrente dans le budget reseau/temps
-# disponible (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de
-# la CI - voir docs/technical_decisions.md#amendements-legislatures-figees) :
-# leur index est construit une fois pour toutes hors CI
-# (build_amendements_index_figees.py) et committe dans
-# AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index au lieu
-# d'un nouveau telechargement reseau. La 17e reste active (legislature en
+# 2022-06-09 pour la 15e, 2024-06-28 pour la 16e ; 2018-03-21 pour la 14e,
+# verifie le 15/08/2026) ne sera plus jamais modifiee par l'Assemblee
+# nationale. Le telechargement en CI de ces archives (350-650 Mo pour la
+# 15e/16e) echoue de facon recurrente dans le budget reseau/temps disponible
+# (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de la CI - voir
+# docs/technical_decisions.md#amendements-legislatures-figees) : leur index
+# est construit une fois pour toutes hors CI (build_amendements_index_figees.py)
+# et committe dans AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index
+# au lieu d'un nouveau telechargement reseau. La 14e (~99 Mo, marquee
+# "Cacheable" par le CDN contrairement a la 15e/16e/17e) est nettement moins
+# a risque de reseau mais reste figee au meme titre : son dossier legislatif
+# est clos, donc jamais reconstruite. La 17e reste active (legislature en
 # cours) et continue d'etre reconstruite par le job CI dedie
 # extract-amendements-an.
-AN_AMENDEMENTS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"15", "16"})
+AN_AMENDEMENTS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"14", "15", "16"})
 AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # Nom du fichier d'indicateur de fraîcheur écrit à côté de `index_par_acteur.json`
 # (issue #253, sous-issue 5/6 de #248) : permet à un futur consommateur (quality
