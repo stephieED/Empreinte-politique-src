@@ -18,6 +18,19 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Scopé par issue/PR (pas un groupe global) : deux @claude sur des issues
+    # différentes restent parallèles, seuls deux triggers sur la même
+    # issue/PR se sérialisent (évite deux tentatives concurrentes sur la même
+    # branche claude/issue-*). github.event.issue.number couvre issue_comment
+    # (issues et PR, l'event issue_comment porte .issue.number dans les deux
+    # cas) et issues ; github.event.pull_request.number couvre
+    # pull_request_review_comment/pull_request_review, où .issue est absent.
+    # cancel-in-progress: false — un nouveau commentaire ne doit pas tuer un
+    # travail déjà en cours (même choix que generate-data.yml).
+    concurrency:
+      group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: false
     permissions:
       contents: read
       pull-requests: read
@@ -85,8 +98,9 @@ jobs:
           # retenter hors sandbox et contourner la restriction réseau. failIfUnavailable
           # évite un repli silencieux non-sandboxé si bubblewrap ne démarre pas.
           # Liste de domaines = sources réseau réellement utilisées par ce dépôt
-          # (src/*.py) + PyPI (pip install) + GitHub (gh CLI). Étendre cette liste si
-          # Claude a besoin d'atteindre un nouveau domaine.
+          # (src/*.py) + PyPI (pip install) + npm (web/UI_finale, npm install/npm run
+          # lint) + GitHub (gh CLI). Étendre cette liste si Claude a besoin d'atteindre
+          # un nouveau domaine.
           settings: |
             {
               "sandbox": {
@@ -101,6 +115,7 @@ jobs:
                     "objects.githubusercontent.com",
                     "pypi.org",
                     "files.pythonhosted.org",
+                    "registry.npmjs.org",
                     "www.nosdeputes.fr",
                     "2017-2022.nosdeputes.fr",
                     "2012-2017.nosdeputes.fr",
@@ -134,6 +149,6 @@ jobs:
           # de generate-data.yml reste une action à déclencher manuellement.
           claude_args: |
             --append-system-prompt "Always read AGENTS.md and follow the instructions there. Update docs/technical_decisions.md if required. Never modify .github/workflows/claude.yml or .github/workflows/claude-code-review.yml — if these need changes, ask a human reviewer instead."
-            --allowed-tools Bash(gh pr *),Bash(gh run *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *),WebFetch(domain:www.nosdeputes.fr),WebFetch(domain:2017-2022.nosdeputes.fr),WebFetch(domain:2012-2017.nosdeputes.fr),WebFetch(domain:2007-2012.nosdeputes.fr),WebFetch(domain:www.nossenateurs.fr),WebFetch(domain:archive.nossenateurs.fr),WebFetch(domain:data.assemblee-nationale.fr),WebFetch(domain:www.assemblee-nationale.fr),WebFetch(domain:data.europarl.europa.eu),WebFetch(domain:www.europarl.europa.eu),WebFetch(domain:parltrack.org),WebFetch(domain:fr.wikipedia.org),WebFetch(domain:query.wikidata.org)
+            --allowed-tools Bash(gh pr *),Bash(gh run *),Bash(python3 -m pytest:*),Bash(python3 -m pytest *),Bash(pytest:*),Bash(python3 -m pytest),Bash(python3 -m unittest), Bash(python3:*),Bash(pytest:*),Bash(pip install *),Bash(npm:*),WebFetch(domain:www.nosdeputes.fr),WebFetch(domain:2017-2022.nosdeputes.fr),WebFetch(domain:2012-2017.nosdeputes.fr),WebFetch(domain:2007-2012.nosdeputes.fr),WebFetch(domain:www.nossenateurs.fr),WebFetch(domain:archive.nossenateurs.fr),WebFetch(domain:data.assemblee-nationale.fr),WebFetch(domain:www.assemblee-nationale.fr),WebFetch(domain:data.europarl.europa.eu),WebFetch(domain:www.europarl.europa.eu),WebFetch(domain:parltrack.org),WebFetch(domain:fr.wikipedia.org),WebFetch(domain:query.wikidata.org)
 
 

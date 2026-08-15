@@ -765,6 +765,27 @@ Le fallback runtime matérialisé dans `.cache/amendements_an/` (gitignoré)
 reste en clair, non compressé : seuls les fichiers committés changent de
 format.
 
+**Révision (2026-08-15, ajout de la 14e législature)** : l'affirmation
+initiale (« pas de jeu de données équivalent trouvé pour les législatures
+13/14 ») était inexacte pour la 14e. L'archive existe, mais pas au chemin
+openData standard (`AN_AMENDEMENTS_PATH`) : elle est publiée via une page
+d'archives dédiée hors du répertoire openData habituel
+(`data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements`),
+à un chemin distinct — `14/loi/amendements_legis_XIV/Amendements_XIV.json.zip`
+(vérifié le 15/08/2026 : HTTP 200, 103 716 698 octets, Last-Modified
+2018-03-21). Contrairement aux archives 15/16/17, le CDN la marque
+`x-cacheable: Cacheable: force cache` (probablement du fait de sa taille,
+~99 Mo, sous le seuil qui rend 15/16/17 non cacheables) — le risque
+d'`IncompleteRead` en cours de flux qui a motivé toute la mécanique de
+reprise/segments ci-dessus est donc structurellement plus faible pour cette
+archive, sans que cela change son statut : son dossier législatif est clos
+au même titre que la 15e/16e, donc figée elle aussi (`AN_AMENDEMENTS_PATH`
+et `AN_AMENDEMENTS_LEGISLATURES_FIGEES` dans `candidate_profile.py`,
+`_AMENDEMENTS_LEGISLATURES`/`_AMENDEMENTS_LEGISLATURES_FIGEES` dans
+`check_quality_gate.py`, mis à jour en conséquence). La 13e reste sans
+équivalent trouvé : ni chemin openData ni page d'archives dédiée ne répond
+(vérifié le 15/08/2026).
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
   dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est

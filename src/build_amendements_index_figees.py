@@ -44,7 +44,7 @@ compressant très bien). Voir la révision de
 docs/technical_decisions.md#amendements-legislatures-figees.
 
 `fraicheur.json` porte un marqueur `figee: true`, lu par `check_quality_gate.py`
-(section 3d) pour ne jamais signaler ces deux législatures comme périmées :
+(section 3d) pour ne jamais signaler ces législatures comme périmées :
 elles ne seront plus jamais reconstruites, l'archive source AN étant close.
 """
 
