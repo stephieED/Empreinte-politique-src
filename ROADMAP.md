@@ -51,3 +51,10 @@ something is pending, not *why*.
   (2355/3044 dossiers, mostly motions/résolutions/rapports) — needs mandate-date
   vs. deposit-date filtering to avoid the ~15% false-positive rate measured
   in #207 (ex-minister co-signatories). See `technical_decisions.md#gouvernement-textes-statut`.
+- Audit temporal-range cross-tables (`compute_plage_dates_*`, #316): no
+  alerting on threshold yet (e.g. "profile doesn't cover the current
+  legislature") — raw min/max indicator only. See
+  `technical_decisions.md#audit-plages-temporelles`.
+- `schema_groupe.py`: `amendements_agreges` has no date field, so its audit
+  temporal-range cell is always `null` — schema change, out of scope for
+  #316. See `technical_decisions.md#audit-plages-temporelles`.
