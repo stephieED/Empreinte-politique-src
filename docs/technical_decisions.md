@@ -822,6 +822,45 @@ de produire un index vide pour cette entrée, mais avec un warning explicite
 sur `stderr` — corrige le défaut latent constaté ci-dessus au lieu de ne
 traiter que le cas légis 14.
 
+**Révision (2026-08-15, la légis 15 ne partage pas le schéma legacy de la
+14e) (#301)** : la convention de nommage « fichier unique » du sous-répertoire
+et du zip (`amendements_legis`/`Amendements_XV.json.zip` pour la 15e,
+identique dans l'esprit à `amendements_legis_XIV`/`Amendements_XIV.json.zip`
+pour la 14e, à l'inverse de `amendements_div_legis`/`Amendements.json.zip`
+pour les 16e/17e) laissait supposer que la 15e partage aussi le schéma
+imbriqué `textesEtAmendements.texteleg[].amendements.amendement[]` de la 14e
+(#299) plutôt que le schéma par-fichier des légis 16/17. Vérifié le
+15/08/2026 sans télécharger l'archive complète (648 539 281 octets,
+`Last-Modified: 2022-06-09`, confirmé par `HEAD`, cohérent avec la révision
+du 2026-08-13 ci-dessus) : une lecture partielle en HTTP Range
+(`curl -r <offset>-<offset+N>`, contournant le même CDN instable documenté
+ci-dessus — les requêtes `-H "Range: ..."` demandent une approbation
+interactive indisponible en session non surveillée, `-r` non) aux offsets 0
+et ~5 Mo suffit à lire plusieurs en-têtes locaux ZIP consécutifs (signature
+`PK\x03\x04`, nom, méthode, tailles) sans extraire l'archive entière : les
+noms d'entrée suivent le schéma
+`json/<dossier>/<texteLegislatifRef>/<amendementUid>.json` (un fichier par
+amendement, ex. `json/DLR5L15N36728/PRJLANR5L15B1088/AMANR5L15PO757…N000396.json`)
+et chaque entrée décompressée (`zlib.decompress(..., -15)` sur les octets
+compressés bruts) a pour racine `{"amendement": {...}}` — exactement le
+schéma 16/17 consommé par `_parse_amendement_entry`, vérifié sur deux textes
+législatifs distincts (`PRJLANR5L15B1088` en tête d'archive,
+`PRJLANR5L15BTC1237` vers 5 Mo) pour exclure un schéma hétérogène au sein
+même de l'archive.
+
+**Conclusion** : la convention de nommage « fichier unique » du
+sous-répertoire/zip ne prédit donc pas le schéma interne — seule la 14e
+utilise réellement un fichier JSON unique agrégeant tous les amendements ;
+la 15e, malgré un nommage similaire, est structurée comme les 16e/17e (un
+fichier par amendement, racine `amendement`). `_parse_amendements_zip`
+détecte déjà le schéma par entrée via sa clé racine (révision précédente,
+2026-08-15, #299) : la 15e emprunte donc naturellement la branche
+`_parse_amendement_entry` (pas `_parse_amendement_entry_legacy`) sans aucune
+modification de code. Aucun travail supplémentaire requis pour #271 (le
+build légis 15 peut aboutir avec le parseur existant) ; le commentaire de
+`AN_AMENDEMENTS_PATH` (`candidate_profile.py`) a été corrigé pour ne plus
+laisser entendre que la 15e partage le format « fichier unique » de la 14e.
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
   dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est
