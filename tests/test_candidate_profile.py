@@ -440,7 +440,13 @@ def test_derive_amendement_sort_legacy_unknown_returns_none():
 
 def _legacy_amendement_raw(**overrides):
     base = {
-        "identifiant": {"numero": "7", "numeroLong": "7 (Rect)"},
+        # numeroLong ("7 (Rect)") est à la racine de l'amendement sur
+        # l'archive réelle, pas imbriqué sous identifiant (qui ne porte que
+        # le numéro nu "7") — vérifié le 15/08/2026, corrigé après un premier
+        # essai qui lisait par erreur depuis `identifiant` et perdait
+        # silencieusement le suffixe de rectification.
+        "numeroLong": "7 (Rect)",
+        "identifiant": {"numero": "7"},
         "dateDepot": "2014-02-14",
         "etat": "Discuté",
         "sort": {"sortEnSeance": "Tombé"},
@@ -485,6 +491,38 @@ def test_parse_amendement_entry_legacy_maps_fields_and_cosignataires():
     cosign = by_acteur["PA842001"]
     assert cosign["role_signataire"] == "cosignataire"
     assert cosign["premier_signataire"] == "an:PA1567"
+
+
+def test_parse_amendement_entry_legacy_maps_unaccented_type_auteur():
+    """L'archive réelle de la 14e législature porte `typeAuteur: "Depute"`
+    (sans accent), contrairement au schéma moderne (`"Député"`) — vérifié le
+    15/08/2026. `_AMENDEMENT_TYPE_AUTEUR_MAP` doit reconnaître les deux
+    formes plutôt que de laisser `type_deposant` à `None` pour toute la 14e."""
+    raw = {
+        "textesEtAmendements": {
+            "texteleg": [
+                {
+                    "refTexteLegislatif": "PIONANR5L14B0013",
+                    "amendements": {
+                        "amendement": [
+                            _legacy_amendement_raw(
+                                signataires={
+                                    "auteur": {"typeAuteur": "Depute", "acteurRef": "PA1567"},
+                                    "cosignataires": {},
+                                }
+                            )
+                        ]
+                    },
+                }
+            ]
+        }
+    }
+
+    result = _parse_amendement_entry_legacy(raw)
+
+    assert result is not None
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+    assert by_acteur["PA1567"]["type_deposant"] == "depute"
 
 
 def test_parse_amendement_entry_legacy_handles_singular_amendement_dict():
