@@ -1,0 +1,61 @@
+name: Déploiement GitHub Pages (web/UI_finale)
+
+# Construit web/UI_finale (Vite) et publie dist/ sur GitHub Pages via le
+# mode de déploiement "Actions" (pas de branche gh-pages committée). Le
+# domaine personnalisé (empreinte-politique.fr, configuré dans Settings >
+# Pages) est préservé via web/UI_finale/public/CNAME, copié tel quel dans
+# dist/ par Vite au build — sans lui, un déploiement via Actions peut
+# réinitialiser le domaine personnalisé.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/UI_finale/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement Pages à la fois ; ne pas annuler un déploiement déjà en
+# cours (un déploiement partiel ne doit jamais rester en ligne).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/UI_finale
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web/UI_finale/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/UI_finale/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
