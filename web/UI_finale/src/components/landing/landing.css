@@ -14,6 +14,40 @@
   align-items: start;
 }
 
+.landing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px 40px 28px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.landing-footer-text {
+  margin: 0;
+}
+
+.landing-footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.landing-footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.landing-footer-links a:hover,
+.landing-footer-links a:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
 /* Hero, FAQ and final CTA anchor the page full-width; HowItWorks/FactDemo
    and WhatYouWontFind/SourcesFreshness pair up side by side so desktop/
    tablet widths read as a composed layout, not a single feed column. */
@@ -611,6 +645,10 @@
   .landing-main {
     grid-template-columns: 1fr;
     padding: 24px 20px 48px;
+  }
+
+  .landing-footer {
+    padding: 16px 20px 24px;
   }
 
   .landing-section {

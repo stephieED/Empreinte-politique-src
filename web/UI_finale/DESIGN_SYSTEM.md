@@ -161,7 +161,7 @@ Deux textes permanents cités par la DA préliminaire :
 > « Données publiques agrégées. Aucun score, aucun classement. » — pied de la navigation
 > « Empreinte politique ne publie aucun taux individuel d'assiduité, de présence ou d'absence — un scrutin manqué ne décrit ni le travail parlementaire ni ses motifs. »
 
-Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explorer-footer`, affiché sur les trois vues principales (candidat/groupe/gouvernement) avec les liens vers `/methodologie` et `/mentions-legales`. Le second (panneau latéral) reste à vérifier au prochain audit — non confirmé dans le CSS/JSX lu pour cette version.
+Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explorer-footer`, affiché sur les trois vues principales (candidat/groupe/gouvernement) avec les liens vers `/methodologie` et `/mentions-legales`, et repris à l'identique sur `LandingPage.jsx` (`.landing-footer`) pour que ces deux pages restent atteignables sans détour par l'outil. Le second (panneau latéral) reste à vérifier au prochain audit — non confirmé dans le CSS/JSX lu pour cette version.
 
 ---
 
