@@ -456,9 +456,12 @@ studies) — static HTML, serve with `python -m http.server 8000` from the repo 
 `src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
 volumetry (including a breakdown by `meta.provenance`, `candidat_declare` vs.
 `roster_groupe`), completeness, consistency, source freshness, aggregated
-`meta.warnings[]` indicators, and a per-candidate cross-tab of `votes` /
-`textes_portes` / `amendements` / `interventions` counts — an internal quality
-tool, not an end-user report (no score, no ranking, see `AGENTS.md` §2).
+`meta.warnings[]` indicators, and two per-candidate cross-tabs of `votes` /
+`textes_portes` / `amendements` / `interventions`: counts, and date range
+(min/max, `textes_portes` aggregating `date_min`/`date_max` across entries;
+unparseable dates are ignored and tallied per field, never silently
+defaulted) — an internal quality tool, not an end-user report (no score, no
+ranking, see `AGENTS.md` §2).
 
 ```bash
 python src/audit_pivot_dataset.py \

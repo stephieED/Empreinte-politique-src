@@ -107,6 +107,38 @@
       }
     ]
   },
+  "plage_dates_candidats": {
+    "lignes": [
+      {
+        "id": "nosdeputes:jean-dupont",
+        "nom": "Jean Dupont",
+        "chambre": "AN",
+        "votes": {"min": null, "max": null},
+        "textes_portes": {"min": null, "max": null},
+        "amendements": {"min": null, "max": null},
+        "interventions": {"min": null, "max": null}
+      },
+      {
+        "id": "nosdeputes:marie-martin",
+        "nom": "Marie Martin",
+        "chambre": "AN",
+        "votes": {"min": null, "max": null},
+        "textes_portes": {"min": null, "max": null},
+        "amendements": {"min": null, "max": null},
+        "interventions": {"min": null, "max": null}
+      },
+      {
+        "id": "nossenateurs:paul-durand",
+        "nom": "Paul Durand",
+        "chambre": "Senat",
+        "votes": {"min": null, "max": null},
+        "textes_portes": {"min": null, "max": null},
+        "amendements": {"min": null, "max": null},
+        "interventions": {"min": null, "max": null}
+      }
+    ],
+    "dates_ignorees": {"votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0}
+  },
   "erreurs_lecture": [
     {
       "fichier": "tests/fixtures/audit_pivot/invalide.pivot.json",
