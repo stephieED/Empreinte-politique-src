@@ -225,15 +225,21 @@ def test_report_amendements_freshness_index_without_fraicheur_file_flagged(tmp_p
 
 
 def test_report_amendements_freshness_mixed_states_across_legislatures(tmp_path):
-    """Les 3 législatures peuvent être dans des états différents simultanément :
-    chacune est rapportée indépendamment."""
+    """Des législatures différentes peuvent être dans des états différents
+    simultanément : chacune est rapportée indépendamment."""
     cache_dir = tmp_path / "amendements_an"
-    leg_fresh, leg_stale, leg_never = _AMENDEMENTS_LEGISLATURES
+    leg_fresh, leg_stale, leg_never = _AMENDEMENTS_LEGISLATURES[:3]
     _write_index(cache_dir, leg_fresh)
     _write_fraicheur(cache_dir, leg_fresh, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
     _write_index(cache_dir, leg_stale)
     _write_fraicheur(cache_dir, leg_stale, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=30)))
     # leg_never : aucun fichier créé.
+    # Toute autre législature au-delà des 3 ci-dessus (ex. l'ajout futur d'une
+    # 4e) est mise fraîche pour ne pas fausser l'assertion `len(soft) == 2`
+    # ci-dessous, qui ne porte que sur leg_stale/leg_never.
+    for leg_autre in _AMENDEMENTS_LEGISLATURES[3:]:
+        _write_index(cache_dir, leg_autre)
+        _write_fraicheur(cache_dir, leg_autre, reussi=True, horodatage=_horodatage(REFERENCE - timedelta(days=1)))
 
     soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
 
