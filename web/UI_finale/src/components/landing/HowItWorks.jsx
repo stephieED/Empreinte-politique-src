@@ -1,21 +1,120 @@
+import { useState } from 'react';
+import sourcesConfig from '../../data/sources.config';
 import './landing.css';
 
-// Squelette : contenu éditorial et style final traités dans une sub-issue dédiée.
+function IconSources() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function IconNormalize() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path
+        d="M4 4 L20 4 L14 12 L14 20 L10 20 L10 12 Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconTrace() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <rect x="2" y="9" width="9" height="6" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="13" y="9" width="9" height="6" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="9" y1="12" x2="15" y2="12" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function IconNeutral() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="5.8" y1="18.2" x2="18.2" y2="5.8" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 const STEPS = [
-  '[Placeholder] Étape 1',
-  '[Placeholder] Étape 2',
-  '[Placeholder] Étape 3',
+  {
+    id: 'sources',
+    label: 'On part de sources ouvertes',
+    stat: `${sourcesConfig.length} sources publiques`,
+    detail:
+      "NosDéputés.fr, NosSénateurs.fr, l'Assemblée nationale, le Parlement européen, Wikipédia et Wikidata — aucune donnée déclarative non sourcée.",
+    Icon: IconSources,
+  },
+  {
+    id: 'normalise',
+    label: 'On normalise',
+    stat: '1 schéma commun',
+    detail:
+      "Assemblée nationale, Sénat et Parlement européen sont convertis vers la même structure de données, pour rendre les profils comparables entre eux.",
+    Icon: IconNormalize,
+  },
+  {
+    id: 'trace',
+    label: 'On trace chaque fait à sa source',
+    stat: 'Chaque fait → sa source',
+    detail: "Un vote, un texte porté ou un mandat renvoie toujours au document officiel dont il provient.",
+    Icon: IconTrace,
+  },
+  {
+    id: 'neutre',
+    label: 'Aucune note, aucun classement',
+    stat: '0 note · 0 classement',
+    detail: "Les faits sont donnés bruts, jamais transformés en score ou en rang.",
+    Icon: IconNeutral,
+  },
 ];
 
 export default function HowItWorks() {
+  const [activeId, setActiveId] = useState(STEPS[0].id);
+  const active = STEPS.find((step) => step.id === activeId) ?? STEPS[0];
+
   return (
     <section className="landing-section" aria-label="Comment ça marche">
-      <h2>[Placeholder] Comment ça marche</h2>
-      <ol>
-        {STEPS.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
+      <h2>Comment ça marche</h2>
+      <ol className="how-it-works-steps">
+        {STEPS.map((step, index) => {
+          const Icon = step.Icon;
+          const isActive = step.id === activeId;
+          return (
+            <li key={step.id}>
+              <button
+                type="button"
+                className={`how-it-works-step ${isActive ? 'active' : ''}`}
+                aria-current={isActive ? 'step' : undefined}
+                aria-describedby="how-it-works-detail"
+                onClick={() => setActiveId(step.id)}
+                onFocus={() => setActiveId(step.id)}
+                onMouseEnter={() => setActiveId(step.id)}
+              >
+                <span className="how-it-works-step-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="how-it-works-step-icon">
+                  <Icon />
+                </span>
+                <span className="how-it-works-step-label">{step.label}</span>
+                <span className="how-it-works-step-stat">{step.stat}</span>
+              </button>
+            </li>
+          );
+        })}
       </ol>
+      <p id="how-it-works-detail" className="how-it-works-detail" aria-live="polite">
+        {active.detail}
+      </p>
     </section>
   );
 }
