@@ -30,6 +30,10 @@ Markdown lisible par un humain (`generate_markdown_report()`). Ce rapport est
 un outil de qualité interne : il ne doit jamais introduire de jugement de
 valeur, de score ou de classement (AGENTS.md §2.1).
 
+Sous-issue 1/6 de #316 : `compute_plage_dates_candidats`, symétrique de
+`compute_tableau_croise_candidats` (#175) mais pour la plage temporelle
+(min/max) de chaque type de donnée plutôt que son volume.
+
 Aucune dépendance lourde : stdlib uniquement.
 """
 
@@ -37,7 +41,7 @@ import argparse
 import json
 import statistics
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -634,6 +638,139 @@ def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str,
     return {"lignes": lignes}
 
 
+def _parse_date_seule(valeur: Any) -> date | None:
+    """Parse une date ISO-8601 (date seule ou horodatage), `None` si absente/invalide.
+
+    Accepte aussi bien `"2024-06-12"` qu'un horodatage complet (dont on ne
+    garde que la partie date) — mêmes tolérances que `_parse_synchro_le`
+    (suffixe `Z` accepté comme UTC), jamais d'exception levée ici.
+    """
+    if not isinstance(valeur, str) or not valeur:
+        return None
+
+    texte = valeur[:-1] + "+00:00" if valeur.endswith("Z") else valeur
+    try:
+        return datetime.fromisoformat(texte).date()
+    except ValueError:
+        return None
+
+
+def _plage_dates_champ_simple(
+    profil: dict[str, Any], champ: str, dates_ignorees: dict[str, int]
+) -> dict[str, str | None]:
+    """Min/max de `profil[champ][i]["date"]`, en ignorant les dates invalides.
+
+    Chaque valeur présente mais non parseable incrémente
+    `dates_ignorees[champ]` (traçabilité, AGENTS.md §2.5) sans jamais faire
+    échouer le calcul.
+    """
+    entrees = profil.get(champ)
+    dates: list[date] = []
+
+    if isinstance(entrees, list):
+        for entree in entrees:
+            if not isinstance(entree, dict):
+                continue
+            valeur = entree.get("date")
+            if valeur is None:
+                continue
+            date_parsee = _parse_date_seule(valeur)
+            if date_parsee is not None:
+                dates.append(date_parsee)
+            else:
+                dates_ignorees[champ] += 1
+
+    return {
+        "min": min(dates).isoformat() if dates else None,
+        "max": max(dates).isoformat() if dates else None,
+    }
+
+
+def _plage_dates_textes_portes(
+    profil: dict[str, Any], dates_ignorees: dict[str, int]
+) -> dict[str, str | None]:
+    """Min de `date_min` / max de `date_max` sur toutes les entrées de `textes_portes`.
+
+    `textes_portes[]` porte `date_min`/`date_max` par entrée (pas un champ
+    `date` unique, voir `schema_pivot.py`) : la cellule agrège séparément le
+    plus petit `date_min` et le plus grand `date_max` du corpus. Dates
+    invalides ignorées et comptabilisées dans `dates_ignorees["textes_portes"]`.
+    """
+    entrees = profil.get("textes_portes")
+    dates_min: list[date] = []
+    dates_max: list[date] = []
+
+    if isinstance(entrees, list):
+        for entree in entrees:
+            if not isinstance(entree, dict):
+                continue
+
+            valeur_min = entree.get("date_min")
+            if valeur_min is not None:
+                date_min_parsee = _parse_date_seule(valeur_min)
+                if date_min_parsee is not None:
+                    dates_min.append(date_min_parsee)
+                else:
+                    dates_ignorees["textes_portes"] += 1
+
+            valeur_max = entree.get("date_max")
+            if valeur_max is not None:
+                date_max_parsee = _parse_date_seule(valeur_max)
+                if date_max_parsee is not None:
+                    dates_max.append(date_max_parsee)
+                else:
+                    dates_ignorees["textes_portes"] += 1
+
+    return {
+        "min": min(dates_min).isoformat() if dates_min else None,
+        "max": max(dates_max).isoformat() if dates_max else None,
+    }
+
+
+def compute_plage_dates_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tableau croisé de la plage temporelle par candidat et par type d'activité.
+
+    Symétrique de `compute_tableau_croise_candidats` (volumes) : une ligne
+    par candidat avec `id`, `nom`, `chambre`, et pour chacune des listes de
+    `CHAMPS_LISTES_VOLUMETRIE` une cellule `{"min": ..., "max": ...}` (dates
+    ISO-8601, `null` si la liste est vide ou sans aucune date exploitable —
+    jamais de date par défaut, AGENTS.md §2.5). `votes`/`amendements`/
+    `interventions` utilisent le champ `date` de chaque entrée ;
+    `textes_portes` agrège `date_min`/`date_max` (voir
+    `_plage_dates_textes_portes`).
+
+    Returns:
+        {"lignes": [{"id":..., "nom":..., "chambre":..., "votes": {...},
+                      "textes_portes": {...}, "amendements": {...},
+                      "interventions": {...}}, ...], trié comme
+        `compute_tableau_croise_candidats`, "dates_ignorees": {champ: int,
+        ...}} — compte, par champ, les dates présentes mais non parseables,
+        ignorées silencieusement du calcul mais jamais masquées sans
+        indicateur.
+    """
+    dates_ignorees = {champ: 0 for champ in CHAMPS_LISTES_VOLUMETRIE}
+    lignes = []
+
+    for profil in profils:
+        lignes.append({
+            "id": profil.get("id"),
+            "nom": profil.get("nom"),
+            "chambre": profil.get("chambre"),
+            **{
+                champ: (
+                    _plage_dates_textes_portes(profil, dates_ignorees)
+                    if champ == "textes_portes"
+                    else _plage_dates_champ_simple(profil, champ, dates_ignorees)
+                )
+                for champ in CHAMPS_LISTES_VOLUMETRIE
+            },
+        })
+
+    lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["id"] or ""))
+
+    return {"lignes": lignes, "dates_ignorees": dates_ignorees}
+
+
 def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Présence et non-vacuité de `meta.licence_donnees` et `meta.genere_le`.
 
@@ -693,9 +830,10 @@ def build_report(
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
         (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`,
-        `tableau_croise_candidats`) plus `meta` et `erreurs_lecture`. Un outil
-        de qualité interne : ce rapport ne doit jamais introduire de jugement
-        de valeur, de score ou de classement (AGENTS.md §2.1).
+        `tableau_croise_candidats`, `plage_dates_candidats`) plus `meta` et
+        `erreurs_lecture`. Un outil de qualité interne : ce rapport ne doit
+        jamais introduire de jugement de valeur, de score ou de classement
+        (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -731,6 +869,7 @@ def build_report(
         },
         "warnings": compute_agregation_warnings(profils),
         "tableau_croise_candidats": compute_tableau_croise_candidats(profils),
+        "plage_dates_candidats": compute_plage_dates_candidats(profils),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -906,6 +1045,38 @@ def _md_section_tableau_croise_candidats(tableau: dict[str, Any]) -> str:
     )
 
 
+def _md_format_plage(plage: dict[str, str | None]) -> str:
+    """Formatte une cellule `{"min":..., "max":...}` en `"min → max"`, `"—"` si les deux sont `null`."""
+    debut = plage["min"] if plage["min"] is not None else "—"
+    fin = plage["max"] if plage["max"] is not None else "—"
+    return "—" if debut == "—" and fin == "—" else f"{debut} → {fin}"
+
+
+def _md_section_plage_dates_candidats(plage_dates: dict[str, Any]) -> str:
+    lignes = [
+        [
+            ligne["id"], ligne["nom"], ligne["chambre"],
+            _md_format_plage(ligne["votes"]), _md_format_plage(ligne["textes_portes"]),
+            _md_format_plage(ligne["amendements"]), _md_format_plage(ligne["interventions"]),
+        ]
+        for ligne in plage_dates["lignes"]
+    ]
+
+    lignes_ignorees = [
+        [champ, nombre] for champ, nombre in plage_dates["dates_ignorees"].items() if nombre > 0
+    ]
+
+    return (
+        "## Plages temporelles par candidat\n\n"
+        + _md_table(
+            ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
+            lignes, "Aucun profil.",
+        )
+        + "\n### Dates ignorées (invalides ou non parseables)\n\n"
+        + _md_table(["Champ", "Dates ignorées"], lignes_ignorees, "Aucune date ignorée.")
+    )
+
+
 def _md_section_warnings(warnings: dict[str, Any]) -> str:
     lignes = [
         [type_warning, entree["frequence"], ", ".join(entree["ids"])]
@@ -949,6 +1120,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         ),
         _md_section_volumetrie(rapport["volumetrie"]),
         _md_section_tableau_croise_candidats(rapport["tableau_croise_candidats"]),
+        _md_section_plage_dates_candidats(rapport["plage_dates_candidats"]),
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),

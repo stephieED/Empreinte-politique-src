@@ -56,6 +56,18 @@ Total profils : 3
 | nosdeputes:marie-martin | Marie Martin | AN | 0 | 0 | 0 | 0 |
 | nossenateurs:paul-durand | Paul Durand | Senat | 0 | 0 | 0 | 0 |
 
+## Plages temporelles par candidat
+
+| id | Nom | Chambre | Votes | Textes portés | Amendements | Interventions |
+| --- | --- | --- | --- | --- | --- | --- |
+| nosdeputes:jean-dupont | Jean Dupont | AN | — | — | — | — |
+| nosdeputes:marie-martin | Marie Martin | AN | — | — | — | — |
+| nossenateurs:paul-durand | Paul Durand | Senat | — | — | — | — |
+
+### Dates ignorées (invalides ou non parseables)
+
+Aucune date ignorée.
+
 ## Complétude
 
 ### Taux de remplissage

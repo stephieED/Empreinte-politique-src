@@ -18,6 +18,7 @@ from audit_pivot_dataset import (
     compute_distribution_listes,
     compute_doublons_id,
     compute_nombre_sources,
+    compute_plage_dates_candidats,
     compute_presence_meta,
     compute_profils_sans_activite,
     compute_repartition_chambre,
@@ -947,6 +948,126 @@ def test_compute_tableau_croise_candidats_nom_absent_tri_deterministe_par_id():
 
 
 # ---------------------------------------------------------------------------
+# compute_plage_dates_candidats
+# ---------------------------------------------------------------------------
+
+def test_compute_plage_dates_candidats_liste_vide():
+    resultat = compute_plage_dates_candidats([])
+
+    assert resultat == {
+        "lignes": [],
+        "dates_ignorees": {
+            "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
+        },
+    }
+
+
+def test_compute_plage_dates_candidats_listes_vides_ou_absentes_donnent_null():
+    profils = [
+        {"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [], "textes_portes": None},
+        {"id": "x:b", "nom": "Bob", "chambre": "AN"},
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    for ligne in resultat["lignes"]:
+        for champ in ("votes", "textes_portes", "amendements", "interventions"):
+            assert ligne[champ] == {"min": None, "max": None}
+    assert resultat["dates_ignorees"] == {
+        "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
+    }
+
+
+def test_compute_plage_dates_candidats_min_max_direct_sur_champ_date():
+    profils = [
+        {
+            "id": "x:a", "nom": "Alice", "chambre": "AN",
+            "votes": [{"date": "2024-06-12"}, {"date": "2022-01-01"}, {"date": "2023-05-05"}],
+            "amendements": [{"date": "2021-11-30"}],
+            "interventions": [{"date": "2020-03-14"}, {"date": "2020-09-01"}],
+        },
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    ligne = resultat["lignes"][0]
+    assert ligne["votes"] == {"min": "2022-01-01", "max": "2024-06-12"}
+    assert ligne["amendements"] == {"min": "2021-11-30", "max": "2021-11-30"}
+    assert ligne["interventions"] == {"min": "2020-03-14", "max": "2020-09-01"}
+
+
+def test_compute_plage_dates_candidats_textes_portes_agrege_date_min_date_max():
+    profils = [
+        {
+            "id": "x:a", "nom": "Alice", "chambre": "AN",
+            "textes_portes": [
+                {"date_min": "2022-01-01", "date_max": "2022-06-30"},
+                {"date_min": "2023-02-01", "date_max": "2023-12-15"},
+            ],
+        },
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert resultat["lignes"][0]["textes_portes"] == {"min": "2022-01-01", "max": "2023-12-15"}
+
+
+def test_compute_plage_dates_candidats_dates_invalides_ignorees_et_comptees():
+    profils = [
+        {
+            "id": "x:a", "nom": "Alice", "chambre": "AN",
+            "votes": [
+                {"date": "2024-06-12"},
+                {"date": "pas-une-date"},
+                {"date": ""},
+            ],
+        },
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert resultat["lignes"][0]["votes"] == {"min": "2024-06-12", "max": "2024-06-12"}
+    assert resultat["dates_ignorees"]["votes"] == 2
+
+
+def test_compute_plage_dates_candidats_date_absente_pas_comptee_comme_ignoree():
+    profils = [{"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [{"id": 1}]}]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert resultat["lignes"][0]["votes"] == {"min": None, "max": None}
+    assert resultat["dates_ignorees"]["votes"] == 0
+
+
+def test_compute_plage_dates_candidats_textes_portes_dates_invalides_comptees():
+    profils = [
+        {
+            "id": "x:a", "nom": "Alice", "chambre": "AN",
+            "textes_portes": [
+                {"date_min": "invalide", "date_max": "2022-06-30"},
+                {"date_min": "2023-02-01", "date_max": "invalide"},
+            ],
+        },
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert resultat["lignes"][0]["textes_portes"] == {"min": "2023-02-01", "max": "2022-06-30"}
+    assert resultat["dates_ignorees"]["textes_portes"] == 2
+
+
+def test_compute_plage_dates_candidats_trie_par_nom():
+    profils = [
+        {"id": "x:z", "nom": "Zoé", "chambre": "AN"},
+        {"id": "x:a", "nom": "Alban", "chambre": "AN"},
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert [ligne["nom"] for ligne in resultat["lignes"]] == ["Alban", "Zoé"]
+
+
+# ---------------------------------------------------------------------------
 # compute_presence_meta
 # ---------------------------------------------------------------------------
 
@@ -1001,7 +1122,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "warnings", "tableau_croise_candidats", "erreurs_lecture",
+        "warnings", "tableau_croise_candidats", "plage_dates_candidats", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "repartition_chambre", "repartition_provenance", "distribution_listes", "nombre_sources",
@@ -1074,6 +1195,10 @@ def test_build_report_delegue_aux_fonctions_compute():
         rapport["tableau_croise_candidats"]
         == compute_tableau_croise_candidats(profils)
     )
+    assert (
+        rapport["plage_dates_candidats"]
+        == compute_plage_dates_candidats(profils)
+    )
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -1113,6 +1238,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
     assert "## Volumétrie" in markdown
     assert "### Répartition par provenance" in markdown
     assert "## Tableau croisé des volumes par candidat" in markdown
+    assert "## Plages temporelles par candidat" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
     assert "## Fraîcheur" in markdown
@@ -1131,6 +1257,7 @@ def test_generate_markdown_report_sections_vides_affichent_un_message_explicite(
     assert "Aucune incohérence détectée." in markdown
     assert "Aucune source datée." in markdown
     assert "Aucun profil périmé." in markdown
+    assert "Aucune date ignorée." in markdown
     assert "Aucun warning." in markdown
     assert "Aucune erreur de lecture." in markdown
 
