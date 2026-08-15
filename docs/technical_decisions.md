@@ -786,6 +786,42 @@ et `AN_AMENDEMENTS_LEGISLATURES_FIGEES` dans `candidate_profile.py`,
 équivalent trouvé : ni chemin openData ni page d'archives dédiée ne répond
 (vérifié le 15/08/2026).
 
+**Révision (2026-08-15, schéma legacy de l'archive 14e législature) (#299)** :
+l'archive légis 14 obtenue ci-dessus ne suit pas le schéma 15/16/17
+(`_parse_amendement_entry`, un fichier JSON par amendement, racine
+`{"amendement": {...}}`). Elle contient une unique entrée
+(`Amendements_XIV.json`) de racine `{"textesEtAmendements": {"texteleg":
+[...]}}`, chaque `texteleg` (843 au total) listant ses amendements
+(`amendements.amendement[]`, 167 420 au total, singulier en dict plutôt
+qu'en liste pour un `texteleg` à un seul amendement — même écueil que
+`signataires.cosignataires.acteur`). `_parse_amendement_entry` retournait
+`None` pour cette entrée (`data.get("amendement")` absent à la racine) :
+l'index légis 14 se construisait donc silencieusement vide, sans erreur ni
+warning — un défaut latent plus général que le seul cas légis 14 (tout
+schéma inattendu produisait le même résultat vide silencieux).
+
+`_parse_amendements_zip` détecte désormais le schéma de chaque entrée par
+sa clé racine (`"amendement"` vs `"textesEtAmendements"`) et bascule vers
+`_parse_amendement_entry_legacy` (nouveau) pour la seconde — qui aplatit
+`texteleg[] -> amendements.amendement[]` et produit les mêmes clés de
+sortie que `_parse_amendement_entry` (`texte_vise` porté par le `texteleg`
+parent plutôt que par l'amendement individuel ; `numero` depuis
+`identifiant.numeroLong`/`numero` plutôt que `identification.numeroLong` ;
+`date` depuis `dateDepot` racine plutôt que `cycleDeVie.dateDepot`).
+`_extract_cosignataire_refs` et la boucle auteur+cosignataires sont
+réutilisées telles quelles (`signataires` est structurellement identique).
+Pour `sort`/`base_juridique_irrecevabilite`, `_derive_amendement_sort_legacy`
+(nouveau) reprend la même logique d'irrecevabilité que
+`_derive_amendement_sort` (`etat` "Irrecevable"/"Irrecevable 40" — identique
+littéralement), mais l'issue en séance n'a plus besoin d'une table
+`(etat, sousEtat)` ambiguë selon le contexte : `sort.sortEnSeance` la porte
+déjà sans ambiguïté, une simple table de normalisation de casse suffit
+(`_LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP`). Un schéma qui n'est ni l'un ni
+l'autre (`"amendement"` absent et `"textesEtAmendements"` absent) continue
+de produire un index vide pour cette entrée, mais avec un warning explicite
+sur `stderr` — corrige le défaut latent constaté ci-dessus au lieu de ne
+traiter que le cas légis 14.
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
   dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est
