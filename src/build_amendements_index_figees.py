@@ -24,8 +24,8 @@ Usage (depuis la racine du dépôt) :
     # avec resume, quand le téléchargement automatique échoue aussi) :
     python3 src/build_amendements_index_figees.py --legislature 15 --zip /tmp/Amendements_XV.json.zip
 
-Écrit raw_data/amendements_an_figes/<legislature>/{amendements.json,
-index_par_acteur.json, fraicheur.json} — à committer dans le dépôt.
+Écrit raw_data/amendements_an_figes/<legislature>/{amendements.json.gz,
+index_par_acteur.json.gz, fraicheur.json} — à committer dans le dépôt.
 L'archive brute (283-618 Mo) n'est elle-même jamais committée : voir
 `.gitignore` (`.cache/`).
 
@@ -45,6 +45,7 @@ elles ne seront plus jamais reconstruites, l'archive source AN étant close.
 """
 
 import argparse
+import gzip
 import json
 import sys
 import time
@@ -58,6 +59,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from candidate_profile import (  # noqa: E402
     AMENDEMENTS_CACHE_DIR,
     AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME,
+    AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME,
     AMENDEMENTS_FRAICHEUR_FILENAME,
     AN_AMENDEMENTS_FIGEES_DIR,
     AN_AMENDEMENTS_LEGISLATURES_FIGEES,
@@ -145,9 +147,12 @@ def main() -> int:
 
     out_dir = AN_AMENDEMENTS_FIGEES_DIR / args.legislature
     out_dir.mkdir(parents=True, exist_ok=True)
-    with open(out_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME, "w", encoding="utf-8") as f:
+    # Compressés gzip : `index_par_acteur.json` en clair peut dépasser la
+    # limite GitHub de 100 Mo par blob (mesuré à 177 Mo pour la législature
+    # 16, 10,4 Mo une fois gzippé — voir docs/technical_decisions.md).
+    with gzip.open(out_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME, "wt", encoding="utf-8") as f:
         json.dump(amendements, f, ensure_ascii=False)
-    with open(out_dir / "index_par_acteur.json", "w", encoding="utf-8") as f:
+    with gzip.open(out_dir / AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME, "wt", encoding="utf-8") as f:
         json.dump(index_par_acteur, f, ensure_ascii=False)
     with open(out_dir / AMENDEMENTS_FRAICHEUR_FILENAME, "w", encoding="utf-8") as f:
         json.dump(

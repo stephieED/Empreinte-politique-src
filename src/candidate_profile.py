@@ -21,6 +21,7 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 
 import argparse
 import concurrent.futures
+import gzip
 import io
 import json
 import os
@@ -90,29 +91,39 @@ SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
 # sous-repertoire differe selon la legislature : "amendements_div_legis" pour
 # les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
-# 15e (fichier unique nomme par numero romain). Verifie manuellement (HTTP 200)
-# pour chaque entree ci-dessous ; pas de jeu de donnees equivalent trouve pour
-# les legislatures 13/14.
+# 15e, "amendements_legis_XIV" pour la 14e (fichier unique nomme par numero
+# romain pour les deux). Verifie manuellement (HTTP 200) pour chaque entree
+# ci-dessous. La 14e a ete trouvee le 15/08/2026 via la page d'archives dediee
+# (data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements),
+# pas via le repertoire openData standard qui ne la liste pas directement ;
+# aucun equivalent trouve pour la 13e (aucune page d'archives ni chemin
+# openData ne repond, contrairement a la 14e/15e qui en ont une). La 14e
+# utilise en outre un schema JSON different (imbrique, "legacy") des 15/16/17
+# — voir _parse_amendement_entry_legacy.
 AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "17": ("amendements_div_legis", "Amendements.json.zip"),
     "16": ("amendements_div_legis", "Amendements.json.zip"),
     "15": ("amendements_legis", "Amendements_XV.json.zip"),
+    "14": ("amendements_legis_XIV", "Amendements_XIV.json.zip"),
 }
 AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 # Legislatures dont le dossier legislatif est definitivement clos : l'archive
 # amendements AN correspondante (Last-Modified verifie le 13/08/2026 :
-# 2022-06-09 pour la 15e, 2024-06-28 pour la 16e) ne sera plus jamais modifiee
-# par l'Assemblee nationale. Le telechargement en CI de ces deux archives
-# (350-650 Mo) echoue de facon recurrente dans le budget reseau/temps
-# disponible (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de
-# la CI - voir docs/technical_decisions.md#amendements-legislatures-figees) :
-# leur index est construit une fois pour toutes hors CI
-# (build_amendements_index_figees.py) et committe dans
-# AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index au lieu
-# d'un nouveau telechargement reseau. La 17e reste active (legislature en
+# 2022-06-09 pour la 15e, 2024-06-28 pour la 16e ; 2018-03-21 pour la 14e,
+# verifie le 15/08/2026) ne sera plus jamais modifiee par l'Assemblee
+# nationale. Le telechargement en CI de ces archives (350-650 Mo pour la
+# 15e/16e) echoue de facon recurrente dans le budget reseau/temps disponible
+# (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de la CI - voir
+# docs/technical_decisions.md#amendements-legislatures-figees) : leur index
+# est construit une fois pour toutes hors CI (build_amendements_index_figees.py)
+# et committe dans AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index
+# au lieu d'un nouveau telechargement reseau. La 14e (~99 Mo, marquee
+# "Cacheable" par le CDN contrairement a la 15e/16e/17e) est nettement moins
+# a risque de reseau mais reste figee au meme titre : son dossier legislatif
+# est clos, donc jamais reconstruite. La 17e reste active (legislature en
 # cours) et continue d'etre reconstruite par le job CI dedie
 # extract-amendements-an.
-AN_AMENDEMENTS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"15", "16"})
+AN_AMENDEMENTS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"14", "15", "16"})
 AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # Nom du fichier d'indicateur de fraîcheur écrit à côté de `index_par_acteur.json`
 # (issue #253, sous-issue 5/6 de #248) : permet à un futur consommateur (quality
@@ -120,11 +131,16 @@ AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # mieux après un échec définitif de reconstruction — voir
 # `_write_amendements_fraicheur`.
 AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
-# Nom du fichier des enregistrements d'amendements dédupliqués, committé aux côtés
-# d'un `index_par_acteur.json` allégé (numero + role_signataire) pour une
-# législature figée — voir `_aggregate_amendements_index` et
-# docs/technical_decisions.md#amendements-legislatures-figees.
-AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json"
+# Noms des fichiers committés pour une législature figée (compressés gzip :
+# `index_par_acteur.json` allégé peut malgré tout dépasser la limite GitHub de
+# 100 Mo par blob une fois décompressé — mesuré à 177 Mo pour la législature
+# 16, contre 10,4 Mo une fois gzippé, la structure très répétitive
+# {numero, role_signataire} compressant très bien). `amendements.json`
+# regroupe les enregistrements dédupliqués (voir `_aggregate_amendements_index`
+# et docs/technical_decisions.md#amendements-legislatures-figees) ; le
+# contenu JSON est identique, seule la compression change.
+AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json.gz"
+AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -811,8 +827,12 @@ def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tupl
 
 
 # Type d'auteur (open data amendements) -> type_deposant du schema pivot.
+# "Depute" (sans accent) : forme observee dans le schema legacy de la 14e
+# legislature (voir _parse_amendement_entry_legacy) - jamais produite par le
+# schema moderne (15/16/17), ajoutee ici sans risque de collision.
 _AMENDEMENT_TYPE_AUTEUR_MAP: dict[str, str] = {
     "Député": "depute",
+    "Depute": "depute",
     "Gouvernement": "gouvernement",
     "Rapporteur": "commission_rapporteur",
     "Commission": "commission_rapporteur",
@@ -935,6 +955,102 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         out.append((cosign_ref, {**record_base, "role_signataire": "cosignataire"}))
 
     return out
+
+
+def _parse_amendement_entry_legacy(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
+    """Équivalent de `_parse_amendement_entry` pour le schéma « legacy » de la
+    14e législature (`amendements_legis_XIV`), structurellement différent du
+    schéma moderne (15/16/17) : un seul fichier JSON pour toute la
+    législature (`{"textesEtAmendements": {"texteleg": [{"amendements":
+    {"amendement": [...]}}]}}`, voir `_parse_amendements_zip`) au lieu d'un
+    fichier par amendement, et des noms de champs différents au niveau de
+    chaque amendement individuel — mesuré le 15/08/2026 sur l'archive réelle
+    (103 716 698 octets, 843 texteleg, 167 420 amendements) :
+      - `dateDepot`/`numeroLong`/`etat` à la racine de l'amendement, au lieu
+        de `cycleDeVie.dateDepot`/`identification.numeroLong`/
+        `cycleDeVie.etatDesTraitements.etat.libelle` ;
+      - `etat` est une chaîne simple (ex. "Discuté") et le sort en séance est
+        déjà porté tel quel par AN sous `sort.sortEnSeance` (ex. "Tombé") —
+        pas de sousEtat.libelle distinct à combiner comme dans le schéma
+        moderne, mais le vocabulaire observé coïncide avec celui de
+        `_AMENDEMENT_SORT_MAP` (clé (etat, sortEnSeance)), donc
+        `_derive_amendement_sort` est réutilisée telle quelle plutôt que
+        dupliquée ;
+      - `texteLegislatifRef` (moderne, à la racine) devient
+        `identifiant.saisine.refTexteLegislatif` ;
+      - `signataires.auteur`/`signataires.cosignataires` : structure
+        identique au schéma moderne (`_extract_cosignataire_refs` déjà
+        compatible), à l'exception de `typeAuteur` observé sans accent
+        ("Depute" plutôt que "Député" — voir _AMENDEMENT_TYPE_AUTEUR_MAP).
+    """
+    if not isinstance(data, dict):
+        return None
+
+    signataires = data.get("signataires") or {}
+    auteur = signataires.get("auteur") or {}
+    acteur_ref = auteur.get("acteurRef")
+    if not isinstance(acteur_ref, str) or not acteur_ref:
+        return None
+
+    cosignataires_bloc = signataires.get("cosignataires") or {}
+    cosign_refs = _extract_cosignataire_refs(cosignataires_bloc)
+
+    etat_libelle = data.get("etat") if isinstance(data.get("etat"), str) else None
+    sort_bloc = data.get("sort") or {}
+    sortenseance_libelle = sort_bloc.get("sortEnSeance") if isinstance(sort_bloc, dict) else None
+    sort, base_juridique = _derive_amendement_sort(etat_libelle, sortenseance_libelle)
+
+    identifiant = data.get("identifiant") or {}
+    saisine = identifiant.get("saisine") or {}
+
+    record_base = {
+        "texte_vise": saisine.get("refTexteLegislatif"),
+        "sort": sort,
+        "base_juridique_irrecevabilite": base_juridique,
+        "premier_signataire": f"an:{acteur_ref}",
+        "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
+        "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
+        "date": data.get("dateDepot"),
+        "numero": data.get("numeroLong"),
+        "source_url": None,
+    }
+
+    out: list[tuple[str, dict[str, Any]]] = [
+        (acteur_ref, {**record_base, "role_signataire": "auteur_principal"})
+    ]
+
+    for cosign_ref in cosign_refs:
+        if not isinstance(cosign_ref, str) or not cosign_ref or cosign_ref == acteur_ref:
+            continue
+        out.append((cosign_ref, {**record_base, "role_signataire": "cosignataire"}))
+
+    return out
+
+
+def _iter_legacy_amendements(data: Any) -> list[Any]:
+    """Aplatit `{"textesEtAmendements": {"texteleg": [...]}}` (schéma legacy,
+    14e législature) en une liste d'amendements individuels, un `texteleg`
+    pouvant porter soit une liste d'amendements (`amendements.amendement` en
+    liste, cas courant), soit un unique amendement non enveloppé dans une
+    liste (conversion XML->JSON de l'AN qui « déballe » les listes à un seul
+    élément — même défensive qu'`_extract_cosignataire_refs` pour
+    `cosignataires.acteur`)."""
+    racine = data.get("textesEtAmendements") if isinstance(data, dict) else None
+    texteleg = racine.get("texteleg") if isinstance(racine, dict) else None
+    if texteleg is None:
+        return []
+    texteleg_items = texteleg if isinstance(texteleg, list) else [texteleg]
+
+    amendements: list[Any] = []
+    for texte in texteleg_items:
+        if not isinstance(texte, dict):
+            continue
+        bloc = texte.get("amendements") or {}
+        amendement = bloc.get("amendement") if isinstance(bloc, dict) else None
+        if amendement is None:
+            continue
+        amendements.extend(amendement if isinstance(amendement, list) else [amendement])
+    return amendements
 
 
 def _amendements_zip_url(legislature: str) -> Optional[str]:
@@ -1185,27 +1301,28 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
     """Charge l'index amendements committé pour une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour
-    toutes par `build_amendements_index_figees.py` sous forme dédupliquée
-    (`amendements.json` + `index_par_acteur.json` allégé, voir
-    `_aggregate_amendements_index`), la reconstruit sous la forme plate
+    toutes par `build_amendements_index_figees.py` sous forme dédupliquée et
+    compressée gzip (`amendements.json.gz` + `index_par_acteur.json.gz`
+    allégé, voir `_aggregate_amendements_index` — nécessaire pour rester sous
+    la limite GitHub de 100 Mo par blob), la reconstruit sous la forme plate
     standard (`_expand_aggregated_amendements_index`) et la matérialise dans
-    le cache disque (`AMENDEMENTS_CACHE_DIR`) au même format qu'une
+    le cache disque (`AMENDEMENTS_CACHE_DIR`), en clair, au même format qu'une
     construction réseau réussie (`index_par_acteur.json` + `fraicheur.json`,
     ce dernier copié tel quel avec son marqueur `figee: true`) — pour que le
     reste du pipeline (quality gate section 3d comprise, `fetch_amendements_officiels`)
-    n'ait pas à distinguer les deux origines. Retourne `None` si le fallback
-    committé est absent ou incomplet (ne devrait pas arriver pour une
-    législature figée, mais ne lève jamais : l'appelant retombe alors sur le
-    chemin réseau standard)."""
+    n'ait pas à distinguer les deux origines ni à connaître la compression du
+    fallback committé. Retourne `None` si le fallback committé est absent ou
+    incomplet (ne devrait pas arriver pour une législature figée, mais ne
+    lève jamais : l'appelant retombe alors sur le chemin réseau standard)."""
     frozen_dir = AN_AMENDEMENTS_FIGEES_DIR / legislature
     frozen_amendements_path = frozen_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME
-    frozen_index_path = frozen_dir / "index_par_acteur.json"
+    frozen_index_path = frozen_dir / AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME
     if not frozen_amendements_path.is_file() or not frozen_index_path.is_file():
         return None
     try:
-        with open(frozen_amendements_path, encoding="utf-8") as f:
+        with gzip.open(frozen_amendements_path, "rt", encoding="utf-8") as f:
             amendements = json.load(f)
-        with open(frozen_index_path, encoding="utf-8") as f:
+        with gzip.open(frozen_index_path, "rt", encoding="utf-8") as f:
             index_par_acteur = json.load(f)
     except (json.JSONDecodeError, OSError):
         return None
@@ -1231,7 +1348,14 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
     liste d'amendements (extrait de `_download_and_build_amendement_index`
     pour être réutilisable par `build_amendements_index_figees.py`, qui parse
     une archive téléchargée manuellement hors CI). Lève `zipfile.BadZipFile`
-    si l'archive est invalide — laissé à l'appelant à traiter."""
+    si l'archive est invalide — laissé à l'appelant à traiter.
+
+    Deux schémas AN détectés au contenu (pas au nom de fichier) : le schéma
+    moderne (15/16/17), un fichier JSON par amendement (`{"amendement":
+    {...}}`), et le schéma legacy (14e législature), un unique fichier JSON
+    imbriqué (`{"textesEtAmendements": {"texteleg": [...]}}`,
+    `_iter_legacy_amendements`/`_parse_amendement_entry_legacy`) — voir
+    docs/technical_decisions.md#amendements-legislatures-figees."""
     index: dict[str, list[dict[str, Any]]] = {}
     with zipfile.ZipFile(zip_path) as zf:
         noms = [n for n in zf.namelist() if n.endswith(".json")]
@@ -1241,6 +1365,16 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
                     data = json.load(f)
             except (json.JSONDecodeError, KeyError):
                 continue
+
+            if isinstance(data, dict) and "textesEtAmendements" in data:
+                for amendement in _iter_legacy_amendements(data):
+                    parsed_entries = _parse_amendement_entry_legacy(amendement)
+                    if parsed_entries is None:
+                        continue
+                    for acteur_ref, record in parsed_entries:
+                        index.setdefault(acteur_ref, []).append(record)
+                continue
+
             parsed_entries = _parse_amendement_entry(data)
             if parsed_entries is None:
                 continue

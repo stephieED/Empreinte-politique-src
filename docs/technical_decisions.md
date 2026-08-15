@@ -422,6 +422,55 @@ une archive corrompue silencieusement.
   disparaître ou se corrompre (l'état « jamais construit »/« périmé »
   resterait alors correctement déclenché).
 
+**Révision (2026-08-15, la dédup seule ne suffit pas non plus + 14e
+législature)** : un premier build réel complet de la législature 16 a mesuré
+`index_par_acteur.json` allégé (post-`_aggregate_amendements_index`, donc
+déjà `{numero, role_signataire}` par lien plutôt qu'une copie complète) à
+**177 Mo en clair** — toujours au-delà de la limite GitHub de 100 Mo par
+blob. La structure `{numero, role_signataire}` étant très répétitive, gzip
+compresse ce fichier à **10,4 Mo** — `build_amendements_index_figees.py`
+écrit donc désormais `amendements.json.gz` et `index_par_acteur.json.gz`
+(constantes `AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME`/
+`AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME`, `candidate_profile.py`) via
+`gzip.open(..., "wt")`, et `_load_frozen_amendement_index` les décompresse à
+la lecture avant `_expand_aggregated_amendements_index` — `fraicheur.json`
+reste en clair (quelques dizaines d'octets). Le fallback runtime matérialisé
+dans `.cache/amendements_an/` (gitignoré) reste en clair, non compressé :
+seuls les fichiers committés changent de format.
+
+Une **14e législature** a par ailleurs été ajoutée au même mécanisme figé
+(`AN_AMENDEMENTS_PATH["14"]`, `AN_AMENDEMENTS_LEGISLATURES_FIGEES`) : son
+archive (`amendements_legis_XIV/Amendements_XIV.json.zip`, ~99 Mo, marquée
+`Cacheable` par le CDN AN contrairement à la 15e/16e/17e) n'est publiée que
+via une page d'archives dédiée
+(`data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements`),
+pas via le répertoire openData standard. Elle porte surtout un **schéma JSON
+différent** (« legacy ») des législatures 15/16/17 : un unique fichier JSON
+pour toute la législature (`{"textesEtAmendements": {"texteleg": [...]}}`,
+843 texteleg, 167 420 amendements), avec des noms de champs différents par
+amendement (`dateDepot`/`numeroLong`/`etat` à la racine au lieu de
+`cycleDeVie.dateDepot`/`identification.numeroLong`/
+`cycleDeVie.etatDesTraitements.etat.libelle`) — un premier essai avec le
+parseur existant (`_parse_amendement_entry`, qui s'attend à
+`{"amendement": {...}}` par entrée de zip) a silencieusement produit un
+index à 0 amendement, sans erreur.
+
+`_parse_amendements_zip` détecte désormais le schéma au contenu (clé racine
+`textesEtAmendements`) et bascule sur `_iter_legacy_amendements`
+(aplatit `texteleg[].amendements.amendement`, liste ou singulier) +
+`_parse_amendement_entry_legacy` (mapping des champs, réutilise telle quelle
+`_derive_amendement_sort(etat, sort.sortEnSeance)` — le vocabulaire
+`etat`/`sortEnSeance` de la 14e coïncide avec celui de `_AMENDEMENT_SORT_MAP`
+déjà utilisée pour 15/16/17 ; `_extract_cosignataire_refs` déjà compatible
+avec la forme `signataires.cosignataires` observée). Seul écart de
+vocabulaire trouvé : `typeAuteur` sans accent (`"Depute"` vs `"Député"`),
+ajouté comme alias dans `_AMENDEMENT_TYPE_AUTEUR_MAP`. Build réel
+(103 716 698 octets) : **21 624 amendements uniques, 636 acteurs,
+1 338 262 liens acteur/amendement** — committé compressé comme les autres
+législatures figées (753 Ko + 3,4 Mo, largement sous la limite). La 13e
+reste sans équivalent trouvé (ni chemin openData ni page d'archives dédiée
+ne répond). Voir #298/#299/#300.
+
 <a id="pythonunbuffered-generate-data"></a>
 ## `PYTHONUNBUFFERED` global sur `generate-data.yml` : stdout fiable en CI non-TTY (#259) (2026-08-13)
 

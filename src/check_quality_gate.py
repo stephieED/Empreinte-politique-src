@@ -505,7 +505,7 @@ _AMENDEMENTS_INDISPONIBLES_PREFIX = "amendements indisponibles"
 # (issue #253) à côté de chaque index_par_acteur.json mis en cache. Dupliqués ici
 # plutôt qu'importés — même choix de découplage que _AMENDEMENTS_INDISPONIBLES_PREFIX
 # ci-dessus (ce script n'importe jamais candidate_profile.py).
-_AMENDEMENTS_LEGISLATURES = ("17", "16", "15")
+_AMENDEMENTS_LEGISLATURES = ("17", "16", "15", "14")
 _AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # Seuil par défaut (en jours) au-delà duquel un index présent mais sans
 # reconstruction réussie récente est signalé comme périmé — voir
@@ -517,7 +517,7 @@ _AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
 # committé par build_amendements_index_figees.py, ne sera plus jamais
 # reconstruit : la fraîcheur n'a pas de sens pour elles (voir
 # docs/technical_decisions.md#amendements-legislatures-figees).
-_AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"15", "16"})
+_AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"14", "15", "16"})
 
 
 def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, str]:
