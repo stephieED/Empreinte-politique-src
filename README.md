@@ -42,6 +42,7 @@ CV_CandidatFR/
 |  |- check_quality_gate.py          # Pre-commit quality gate + run summary (5 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
+|  |- audit_gouvernement_dataset.py  # Gouvernement dataset audit: I/O + volumetry/completeness/consistency/freshness indicators (no CLI/Markdown yet, see #319)
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
