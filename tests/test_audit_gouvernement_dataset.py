@@ -1,0 +1,731 @@
+import json
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from audit_gouvernement_dataset import (
+    build_report,
+    compute_coherence_schema_version,
+    compute_comptages_agreges,
+    compute_distribution_membres_textes,
+    compute_doublons_gouvernement_id,
+    compute_fraicheur_sources,
+    compute_gouvernements_perimes,
+    compute_presence_meta,
+    compute_presence_premier_ministre,
+    compute_repartition_periode_actif,
+    compute_taux_portefeuille_renseigne,
+    compute_validation_schema,
+    load_gouvernement_directory,
+)
+
+
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "audit_gouvernement"
+
+
+# ---------------------------------------------------------------------------
+# load_gouvernement_directory : chargement des fixtures du dépôt
+# ---------------------------------------------------------------------------
+
+def test_load_gouvernement_directory_charge_les_gouvernements_valides():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    ids = {g["gouvernement_id"] for g in gouvernements_valides}
+    assert ids == {"gouvernement:LECORNU", "gouvernement:BARNIER"}
+    assert len(gouvernements_valides) == 3  # LECORNU apparaît deux fois (doublon volontaire)
+
+
+def test_load_gouvernement_directory_scanne_recursivement():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    # sous_dossier/gouvernement-LECORNU.json doit être trouvé malgré tout.
+    assert sum(1 for g in gouvernements_valides if g["gouvernement_id"] == "gouvernement:LECORNU") == 2
+
+
+def test_load_gouvernement_directory_ne_s_interrompt_pas_sur_fichier_invalide():
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(FIXTURES_DIR)
+
+    assert len(gouvernements_valides) == 3
+    assert len(erreurs_lecture) == 1
+
+
+def test_load_gouvernement_directory_contenu_erreurs_lecture():
+    _, erreurs_lecture = load_gouvernement_directory(FIXTURES_DIR)
+
+    assert len(erreurs_lecture) == 1
+    erreur = erreurs_lecture[0]
+    assert set(erreur.keys()) == {"fichier", "erreur"}
+    assert erreur["fichier"].endswith("gouvernement-INVALIDE.json")
+    assert isinstance(erreur["erreur"], str)
+    assert erreur["erreur"]  # message non vide
+
+
+# ---------------------------------------------------------------------------
+# load_gouvernement_directory : cas limites construits en mémoire (tmp_path)
+# ---------------------------------------------------------------------------
+
+def test_load_gouvernement_directory_repertoire_vide(tmp_path):
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(tmp_path)
+
+    assert gouvernements_valides == []
+    assert erreurs_lecture == []
+
+
+def test_load_gouvernement_directory_ignore_fichiers_hors_convention(tmp_path):
+    (tmp_path / "notes.txt").write_text("pas un gouvernement", encoding="utf-8")
+    (tmp_path / "autre.json").write_text("{}", encoding="utf-8")
+
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(tmp_path)
+
+    assert gouvernements_valides == []
+    assert erreurs_lecture == []
+
+
+def test_load_gouvernement_directory_objet_racine_non_dict(tmp_path):
+    (tmp_path / "gouvernement-X.json").write_text("[1, 2, 3]", encoding="utf-8")
+
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(tmp_path)
+
+    assert gouvernements_valides == []
+    assert len(erreurs_lecture) == 1
+    assert erreurs_lecture[0]["fichier"].endswith("gouvernement-X.json")
+
+
+def test_load_gouvernement_directory_est_pure(tmp_path):
+    fichier = tmp_path / "gouvernement-X.json"
+    contenu = {"schema_version": "1", "gouvernement_id": "gouvernement:X"}
+    fichier.write_text(json.dumps(contenu), encoding="utf-8")
+
+    load_gouvernement_directory(tmp_path)
+
+    assert json.loads(fichier.read_text(encoding="utf-8")) == contenu
+
+
+# ---------------------------------------------------------------------------
+# Fixtures minimalistes en mémoire.
+# ---------------------------------------------------------------------------
+
+def make_comptages(**overrides):
+    par_statut = {
+        "depose": 0, "navette_en_cours": 0, "adopte": 0, "adopte_49_3": 0,
+        "rejete": 0, "rejete_49_3": 0, "retire": 0,
+    }
+    par_statut.update(overrides)
+    return {"par_statut": par_statut}
+
+
+def gouvernement(gouvernement_id="gouvernement:X", actif=True, nb_membres=0, nb_textes=0,
+                  premier_ministre=None, comptages=None, sources=None):
+    return {
+        "gouvernement_id": gouvernement_id,
+        "periode": {"debut": "2025-01-01", "fin": None, "actif": actif},
+        "premier_ministre": premier_ministre,
+        "membres": [{"membre_id": f"m{i}", "portefeuille": None} for i in range(nb_membres)],
+        "textes": [{"dossier_id": f"t{i}"} for i in range(nb_textes)],
+        "comptages": comptages if comptages is not None else make_comptages(),
+        "sources": sources if sources is not None else [],
+    }
+
+
+# ---------------------------------------------------------------------------
+# compute_repartition_periode_actif
+# ---------------------------------------------------------------------------
+
+def test_compute_repartition_periode_actif_liste_vide():
+    resultat = compute_repartition_periode_actif([])
+
+    assert resultat == {"total_gouvernements": 0, "actifs": 0, "inactifs": 0, "indetermines": 0}
+
+
+def test_compute_repartition_periode_actif_repartit_les_cas():
+    gouvernements = [
+        gouvernement(actif=True), gouvernement(actif=False), gouvernement(actif=True),
+    ]
+
+    resultat = compute_repartition_periode_actif(gouvernements)
+
+    assert resultat == {"total_gouvernements": 3, "actifs": 2, "inactifs": 1, "indetermines": 0}
+
+
+def test_compute_repartition_periode_actif_periode_absente_ou_invalide_indeterminee():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:X"},
+        {"gouvernement_id": "gouvernement:Y", "periode": "pas un dict"},
+        {"gouvernement_id": "gouvernement:Z", "periode": {"actif": None}},
+    ]
+
+    resultat = compute_repartition_periode_actif(gouvernements)
+
+    assert resultat == {"total_gouvernements": 3, "actifs": 0, "inactifs": 0, "indetermines": 3}
+
+
+# ---------------------------------------------------------------------------
+# compute_distribution_membres_textes
+# ---------------------------------------------------------------------------
+
+def test_compute_distribution_membres_textes_liste_vide():
+    resultat = compute_distribution_membres_textes([])
+
+    assert resultat == {
+        "membres": {"min": None, "max": None, "mediane": None, "moyenne": None},
+        "textes": {"min": None, "max": None, "mediane": None, "moyenne": None},
+    }
+
+
+def test_compute_distribution_membres_textes_distribution():
+    gouvernements = [
+        gouvernement(nb_membres=2, nb_textes=1),
+        gouvernement(nb_membres=4, nb_textes=3),
+    ]
+
+    resultat = compute_distribution_membres_textes(gouvernements)
+
+    assert resultat["membres"] == {"min": 2, "max": 4, "mediane": 3, "moyenne": 3.0}
+    assert resultat["textes"] == {"min": 1, "max": 3, "mediane": 2, "moyenne": 2.0}
+
+
+def test_compute_distribution_membres_textes_champs_absents_comptent_zero():
+    resultat = compute_distribution_membres_textes([{"gouvernement_id": "gouvernement:X"}])
+
+    assert resultat["membres"]["min"] == 0
+    assert resultat["textes"]["min"] == 0
+
+
+# ---------------------------------------------------------------------------
+# compute_comptages_agreges
+# ---------------------------------------------------------------------------
+
+def test_compute_comptages_agreges_liste_vide():
+    resultat = compute_comptages_agreges([])
+
+    assert resultat == {
+        "depose": 0, "navette_en_cours": 0, "adopte": 0, "adopte_49_3": 0,
+        "rejete": 0, "rejete_49_3": 0, "retire": 0,
+    }
+
+
+def test_compute_comptages_agreges_somme_tous_gouvernements():
+    gouvernements = [
+        gouvernement(comptages=make_comptages(adopte=2, adopte_49_3=1)),
+        gouvernement(comptages=make_comptages(adopte=3, rejete_49_3=1)),
+    ]
+
+    resultat = compute_comptages_agreges(gouvernements)
+
+    assert resultat["adopte"] == 5
+    assert resultat["adopte_49_3"] == 1
+    assert resultat["rejete_49_3"] == 1
+
+
+def test_compute_comptages_agreges_bloc_absent_ou_invalide_ignore():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:X"},
+        {"gouvernement_id": "gouvernement:Y", "comptages": None},
+        gouvernement(comptages=make_comptages(adopte=5)),
+    ]
+
+    resultat = compute_comptages_agreges(gouvernements)
+
+    assert resultat["adopte"] == 5
+
+
+# ---------------------------------------------------------------------------
+# compute_presence_premier_ministre
+# ---------------------------------------------------------------------------
+
+def test_compute_presence_premier_ministre_liste_vide():
+    assert compute_presence_premier_ministre([]) == {"renseignes": 0, "total": 0, "taux_pct": 0.0}
+
+
+def test_compute_presence_premier_ministre_distingue_present_et_absent():
+    gouvernements = [
+        gouvernement(premier_ministre={"nom": "A", "acteur_ref": None, "source_url": None}),
+        gouvernement(premier_ministre=None),
+    ]
+
+    resultat = compute_presence_premier_ministre(gouvernements)
+
+    assert resultat == {"renseignes": 1, "total": 2, "taux_pct": 50.0}
+
+
+def test_compute_presence_premier_ministre_champ_absent():
+    resultat = compute_presence_premier_ministre([{"gouvernement_id": "gouvernement:X"}])
+
+    assert resultat == {"renseignes": 0, "total": 1, "taux_pct": 0.0}
+
+
+# ---------------------------------------------------------------------------
+# compute_taux_portefeuille_renseigne
+# ---------------------------------------------------------------------------
+
+def test_compute_taux_portefeuille_renseigne_liste_vide():
+    assert compute_taux_portefeuille_renseigne([]) == {"renseignes": 0, "total": 0, "taux_pct": 0.0}
+
+
+def test_compute_taux_portefeuille_renseigne_agrege_tous_gouvernements():
+    gouvernements = [
+        {
+            "gouvernement_id": "gouvernement:X",
+            "membres": [
+                {"membre_id": "a", "portefeuille": "Économie"},
+                {"membre_id": "b", "portefeuille": None},
+            ],
+        },
+        {
+            "gouvernement_id": "gouvernement:Y",
+            "membres": [{"membre_id": "c", "portefeuille": "Santé"}],
+        },
+    ]
+
+    resultat = compute_taux_portefeuille_renseigne(gouvernements)
+
+    assert resultat == {"renseignes": 2, "total": 3, "taux_pct": round(200 / 3, 2)}
+
+
+def test_compute_taux_portefeuille_renseigne_membres_absents_ne_contribuent_pas():
+    resultat = compute_taux_portefeuille_renseigne([{"gouvernement_id": "gouvernement:X"}])
+
+    assert resultat == {"renseignes": 0, "total": 0, "taux_pct": 0.0}
+
+
+# ---------------------------------------------------------------------------
+# compute_presence_meta
+# ---------------------------------------------------------------------------
+
+def test_compute_presence_meta_liste_vide():
+    assert compute_presence_meta([]) == {"renseignes": 0, "total": 0, "taux_pct": 0.0}
+
+
+def test_compute_presence_meta_distingue_present_et_absent():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:X", "meta": {"schema_version": "1", "warnings": []}},
+        {"gouvernement_id": "gouvernement:Y", "meta": None},
+        {"gouvernement_id": "gouvernement:Z"},
+    ]
+
+    resultat = compute_presence_meta(gouvernements)
+
+    assert resultat == {"renseignes": 1, "total": 3, "taux_pct": round(100 / 3, 2)}
+
+
+# ---------------------------------------------------------------------------
+# compute_validation_schema
+# ---------------------------------------------------------------------------
+
+def test_compute_validation_schema_liste_vide():
+    assert compute_validation_schema([]) == {
+        "total_gouvernements": 0, "nb_gouvernements_invalides": 0, "gouvernements_invalides": [],
+    }
+
+
+def test_compute_validation_schema_gouvernements_valides_des_fixtures():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    resultat = compute_validation_schema(gouvernements_valides)
+
+    assert resultat["total_gouvernements"] == 3
+    assert resultat["nb_gouvernements_invalides"] == 0
+    assert resultat["gouvernements_invalides"] == []
+
+
+def test_compute_validation_schema_detecte_les_erreurs():
+    gouvernements = [{"gouvernement_id": "gouvernement:X"}]  # clés obligatoires manquantes
+
+    resultat = compute_validation_schema(gouvernements)
+
+    assert resultat["nb_gouvernements_invalides"] == 1
+    entree = resultat["gouvernements_invalides"][0]
+    assert entree["gouvernement_id"] == "gouvernement:X"
+    assert entree["erreurs"]  # au moins une erreur remontée
+
+
+def test_compute_validation_schema_detecte_le_collapse_du_49_3():
+    from schema_gouvernement import make_empty_profil_gouvernement
+
+    profil = make_empty_profil_gouvernement("gouvernement:X", "Gouvernement X")
+    profil["textes"] = [{
+        "dossier_id": "d1", "titre": "t", "statut": "adopte",
+        "chambre_depot_initial": "AN", "date_depot": "2025-01-01",
+        "date_dernier_evenement": "2025-01-02", "sort_49_3": True, "source_url": None,
+    }]
+
+    resultat = compute_validation_schema([profil])
+
+    assert resultat["nb_gouvernements_invalides"] == 1
+    assert any("49_3" in e or "49.3" in e for e in resultat["gouvernements_invalides"][0]["erreurs"])
+
+
+def test_compute_validation_schema_trie_par_gouvernement_id():
+    gouvernements = [{"gouvernement_id": "gouvernement:Z"}, {"gouvernement_id": "gouvernement:A"}]
+
+    resultat = compute_validation_schema(gouvernements)
+
+    assert [e["gouvernement_id"] for e in resultat["gouvernements_invalides"]] == [
+        "gouvernement:A", "gouvernement:Z",
+    ]
+
+
+# ---------------------------------------------------------------------------
+# compute_coherence_schema_version
+# ---------------------------------------------------------------------------
+
+def test_compute_coherence_schema_version_liste_vide():
+    assert compute_coherence_schema_version([]) == {"gouvernements_incoherents": []}
+
+
+def test_compute_coherence_schema_version_coherente():
+    gouvernements = [{"gouvernement_id": "gouvernement:X", "schema_version": "1", "meta": {"schema_version": "1"}}]
+
+    assert compute_coherence_schema_version(gouvernements) == {"gouvernements_incoherents": []}
+
+
+def test_compute_coherence_schema_version_divergente():
+    gouvernements = [{"gouvernement_id": "gouvernement:X", "schema_version": "1", "meta": {"schema_version": "2"}}]
+
+    resultat = compute_coherence_schema_version(gouvernements)
+
+    assert resultat == {
+        "gouvernements_incoherents": [
+            {"gouvernement_id": "gouvernement:X", "schema_version": "1", "meta_schema_version": "2"}
+        ]
+    }
+
+
+def test_compute_coherence_schema_version_meta_absente_ou_invalide():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:X", "schema_version": "1"},
+        {"gouvernement_id": "gouvernement:Y", "schema_version": "1", "meta": "pas un dict"},
+    ]
+
+    resultat = compute_coherence_schema_version(gouvernements)
+
+    assert {g["gouvernement_id"] for g in resultat["gouvernements_incoherents"]} == {
+        "gouvernement:X", "gouvernement:Y",
+    }
+    assert all(g["meta_schema_version"] is None for g in resultat["gouvernements_incoherents"])
+
+
+# ---------------------------------------------------------------------------
+# compute_doublons_gouvernement_id
+# ---------------------------------------------------------------------------
+
+def test_compute_doublons_gouvernement_id_liste_vide():
+    assert compute_doublons_gouvernement_id([]) == {"doublons": []}
+
+
+def test_compute_doublons_gouvernement_id_sans_doublon():
+    gouvernements = [{"gouvernement_id": "gouvernement:X"}, {"gouvernement_id": "gouvernement:Y"}]
+
+    assert compute_doublons_gouvernement_id(gouvernements) == {"doublons": []}
+
+
+def test_compute_doublons_gouvernement_id_detecte_les_doublons():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:X"}, {"gouvernement_id": "gouvernement:X"},
+        {"gouvernement_id": "gouvernement:Y"}, {"gouvernement_id": "gouvernement:X"},
+    ]
+
+    resultat = compute_doublons_gouvernement_id(gouvernements)
+
+    assert resultat == {"doublons": [{"gouvernement_id": "gouvernement:X", "occurrences": 3}]}
+
+
+def test_compute_doublons_gouvernement_id_ignore_id_absent_ou_vide():
+    gouvernements = [{"gouvernement_id": ""}, {"gouvernement_id": ""}, {}, {}]
+
+    assert compute_doublons_gouvernement_id(gouvernements) == {"doublons": []}
+
+
+def test_compute_doublons_gouvernement_id_sur_les_fixtures_du_depot():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    resultat = compute_doublons_gouvernement_id(gouvernements_valides)
+
+    assert resultat == {"doublons": [{"gouvernement_id": "gouvernement:LECORNU", "occurrences": 2}]}
+
+
+# ---------------------------------------------------------------------------
+# Fixtures pour compute_fraicheur_sources / compute_gouvernements_perimes.
+# ---------------------------------------------------------------------------
+
+REFERENCE = datetime(2026, 8, 9, tzinfo=timezone.utc)
+
+
+def source(type_source, jours_anciennete):
+    synchro = REFERENCE - timedelta(days=jours_anciennete)
+    return {"type": type_source, "url": "u", "synchro_le": synchro.isoformat()}
+
+
+def gouvernement_sources(gouvernement_id, *sources):
+    return {"gouvernement_id": gouvernement_id, "sources": list(sources)}
+
+
+# ---------------------------------------------------------------------------
+# compute_fraicheur_sources
+# ---------------------------------------------------------------------------
+
+def test_compute_fraicheur_sources_liste_vide():
+    resultat = compute_fraicheur_sources([], reference_date=REFERENCE)
+
+    assert resultat == {"total_sources_datees": 0, "par_type_source": {}}
+
+
+def test_compute_fraicheur_sources_min_max_mediane_moyenne():
+    gouvernements = [
+        gouvernement_sources("a", source("assemblee_nationale", 0)),
+        gouvernement_sources("b", source("assemblee_nationale", 10)),
+        gouvernement_sources("c", source("assemblee_nationale", 20)),
+    ]
+
+    resultat = compute_fraicheur_sources(gouvernements, reference_date=REFERENCE)
+    stats = resultat["par_type_source"]["assemblee_nationale"]
+
+    assert resultat["total_sources_datees"] == 3
+    assert stats["nombre_sources"] == 3
+    assert stats["min_jours"] == 0
+    assert stats["max_jours"] == 20
+    assert stats["mediane_jours"] == 10
+    assert stats["moyenne_jours"] == 10.0
+
+
+def test_compute_fraicheur_sources_regroupe_par_type():
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 5), source("senat", 50))]
+
+    resultat = compute_fraicheur_sources(gouvernements, reference_date=REFERENCE)
+
+    assert set(resultat["par_type_source"]) == {"assemblee_nationale", "senat"}
+    assert resultat["par_type_source"]["assemblee_nationale"]["min_jours"] == 5
+    assert resultat["par_type_source"]["senat"]["min_jours"] == 50
+
+
+def test_compute_fraicheur_sources_type_absent_regroupe_sous_null():
+    gouvernements = [gouvernement_sources("a", {"url": "u", "synchro_le": REFERENCE.isoformat()})]
+
+    resultat = compute_fraicheur_sources(gouvernements, reference_date=REFERENCE)
+
+    assert resultat["par_type_source"]["null"]["nombre_sources"] == 1
+
+
+def test_compute_fraicheur_sources_ignore_synchro_le_invalide_ou_absente():
+    gouvernements = [
+        gouvernement_sources("a", {"type": "assemblee_nationale", "url": "u", "synchro_le": "pas-une-date"}),
+        gouvernement_sources("b", {"type": "assemblee_nationale", "url": "u"}),
+        gouvernement_sources("c", source("assemblee_nationale", 1)),
+    ]
+
+    resultat = compute_fraicheur_sources(gouvernements, reference_date=REFERENCE)
+
+    assert resultat["total_sources_datees"] == 1
+    assert resultat["par_type_source"]["assemblee_nationale"]["nombre_sources"] == 1
+
+
+def test_compute_fraicheur_sources_ignore_gouvernements_sans_sources():
+    resultat = compute_fraicheur_sources(
+        [gouvernement_sources("a"), {"gouvernement_id": "b"}], reference_date=REFERENCE
+    )
+
+    assert resultat == {"total_sources_datees": 0, "par_type_source": {}}
+
+
+def test_compute_fraicheur_sources_sans_reference_date_utilise_maintenant():
+    hier = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    gouvernements = [gouvernement_sources("a", {"type": "assemblee_nationale", "url": "u", "synchro_le": hier})]
+
+    resultat = compute_fraicheur_sources(gouvernements)
+
+    assert resultat["par_type_source"]["assemblee_nationale"]["min_jours"] == 1
+
+
+# ---------------------------------------------------------------------------
+# compute_gouvernements_perimes
+# ---------------------------------------------------------------------------
+
+def test_compute_gouvernements_perimes_toutes_sources_perimees():
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 100))]
+
+    resultat = compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == ["a"]
+
+
+def test_compute_gouvernements_perimes_une_source_fraiche_suffit_a_exclure():
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 100), source("senat", 5))]
+
+    resultat = compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_gouvernements_perimes_seuil_variable():
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 15))]
+
+    assert compute_gouvernements_perimes(gouvernements, staleness_days=10, reference_date=REFERENCE) == ["a"]
+    assert compute_gouvernements_perimes(gouvernements, staleness_days=20, reference_date=REFERENCE) == []
+
+
+def test_compute_gouvernements_perimes_exactement_au_seuil_n_est_pas_perime():
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 30))]
+
+    resultat = compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_gouvernements_perimes_aucune_source_n_est_jamais_perime():
+    gouvernements = [gouvernement_sources("a"), {"gouvernement_id": "b"}]
+
+    resultat = compute_gouvernements_perimes(gouvernements, staleness_days=0, reference_date=REFERENCE)
+
+    assert resultat == []
+
+
+def test_compute_gouvernements_perimes_trie_les_resultats():
+    gouvernements = [
+        gouvernement_sources("z", source("assemblee_nationale", 100)),
+        gouvernement_sources("a", source("assemblee_nationale", 100)),
+    ]
+
+    resultat = compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
+
+    assert resultat == ["a", "z"]
+
+
+# ---------------------------------------------------------------------------
+# Toutes les fonctions compute_* restent pures et sérialisables en JSON
+# sur le corpus de fixtures du dépôt.
+# ---------------------------------------------------------------------------
+
+def test_toutes_les_fonctions_compute_sur_les_fixtures_du_depot_sont_serialisables():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    rapport = {
+        "repartition_periode_actif": compute_repartition_periode_actif(gouvernements_valides),
+        "distribution_membres_textes": compute_distribution_membres_textes(gouvernements_valides),
+        "comptages_agreges": compute_comptages_agreges(gouvernements_valides),
+        "presence_premier_ministre": compute_presence_premier_ministre(gouvernements_valides),
+        "taux_portefeuille_renseigne": compute_taux_portefeuille_renseigne(gouvernements_valides),
+        "presence_meta": compute_presence_meta(gouvernements_valides),
+        "validation_schema": compute_validation_schema(gouvernements_valides),
+        "coherence_schema_version": compute_coherence_schema_version(gouvernements_valides),
+        "doublons_gouvernement_id": compute_doublons_gouvernement_id(gouvernements_valides),
+        "fraicheur_sources": compute_fraicheur_sources(gouvernements_valides, reference_date=REFERENCE),
+        "gouvernements_perimes": compute_gouvernements_perimes(
+            gouvernements_valides, staleness_days=30, reference_date=REFERENCE
+        ),
+    }
+
+    json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# build_report
+# ---------------------------------------------------------------------------
+
+def test_build_report_structure_top_level_keys():
+    rapport = build_report([], [], staleness_days=30, reference_date=REFERENCE)
+
+    assert set(rapport.keys()) == {"meta", "volumetrie", "completude", "coherence", "fraicheur", "erreurs_lecture"}
+    assert set(rapport["volumetrie"].keys()) == {
+        "repartition_periode_actif", "distribution_membres_textes", "comptages_agreges",
+    }
+    assert set(rapport["completude"].keys()) == {
+        "presence_premier_ministre", "taux_portefeuille_renseigne", "presence_meta",
+    }
+    assert set(rapport["coherence"].keys()) == {
+        "validation_schema", "coherence_schema_version", "doublons_gouvernement_id",
+    }
+    assert set(rapport["fraicheur"].keys()) == {"fraicheur_sources", "gouvernements_perimes"}
+
+
+def test_build_report_meta_section():
+    erreurs = [{"fichier": "x.json", "erreur": "boom"}]
+    gouvernements = [gouvernement_sources("a", source("assemblee_nationale", 5))]
+
+    rapport = build_report(gouvernements, erreurs, staleness_days=15, reference_date=REFERENCE)
+
+    assert rapport["meta"] == {
+        "genere_le": REFERENCE.isoformat(),
+        "total_gouvernements": 1,
+        "total_erreurs_lecture": 1,
+        "staleness_days": 15,
+    }
+
+
+def test_build_report_erreurs_lecture_passthrough():
+    erreurs = [{"fichier": "a.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report([], erreurs, reference_date=REFERENCE)
+
+    assert rapport["erreurs_lecture"] == erreurs
+
+
+def test_build_report_delegue_aux_fonctions_compute():
+    gouvernements = [
+        gouvernement(gouvernement_id="a", actif=True, nb_membres=2),
+        gouvernement(gouvernement_id="b", actif=False, nb_textes=1),
+    ]
+    erreurs = []
+
+    rapport = build_report(gouvernements, erreurs, staleness_days=30, reference_date=REFERENCE)
+
+    assert (
+        rapport["volumetrie"]["repartition_periode_actif"]
+        == compute_repartition_periode_actif(gouvernements)
+    )
+    assert (
+        rapport["volumetrie"]["distribution_membres_textes"]
+        == compute_distribution_membres_textes(gouvernements)
+    )
+    assert rapport["volumetrie"]["comptages_agreges"] == compute_comptages_agreges(gouvernements)
+    assert (
+        rapport["completude"]["presence_premier_ministre"]
+        == compute_presence_premier_ministre(gouvernements)
+    )
+    assert (
+        rapport["completude"]["taux_portefeuille_renseigne"]
+        == compute_taux_portefeuille_renseigne(gouvernements)
+    )
+    assert rapport["completude"]["presence_meta"] == compute_presence_meta(gouvernements)
+    assert rapport["coherence"]["validation_schema"] == compute_validation_schema(gouvernements)
+    assert (
+        rapport["coherence"]["coherence_schema_version"]
+        == compute_coherence_schema_version(gouvernements)
+    )
+    assert (
+        rapport["coherence"]["doublons_gouvernement_id"]
+        == compute_doublons_gouvernement_id(gouvernements)
+    )
+    assert (
+        rapport["fraicheur"]["fraicheur_sources"]
+        == compute_fraicheur_sources(gouvernements, reference_date=REFERENCE)
+    )
+    assert (
+        rapport["fraicheur"]["gouvernements_perimes"]
+        == compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
+    )
+
+
+def test_build_report_staleness_days_par_defaut():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    assert rapport["meta"]["staleness_days"] == 30
+
+
+def test_build_report_sans_reference_date_utilise_maintenant():
+    rapport = build_report([], [])
+
+    genere_le = datetime.fromisoformat(rapport["meta"]["genere_le"])
+    assert (datetime.now(timezone.utc) - genere_le).total_seconds() < 5
+
+
+def test_build_report_sur_les_fixtures_du_depot():
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(FIXTURES_DIR)
+
+    rapport = build_report(gouvernements_valides, erreurs_lecture, staleness_days=30, reference_date=REFERENCE)
+
+    assert rapport["meta"]["total_gouvernements"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    # Le rapport doit rester intégralement sérialisable en JSON.
+    json.dumps(rapport, ensure_ascii=False)
