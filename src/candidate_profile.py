@@ -834,6 +834,10 @@ def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tupl
 # Type d'auteur (open data amendements) -> type_deposant du schema pivot.
 _AMENDEMENT_TYPE_AUTEUR_MAP: dict[str, str] = {
     "Député": "depute",
+    # "Depute" (sans accent) : forme observée dans le schéma legacy de la 14e
+    # législature (archive réelle, 15/08/2026) — jamais produite par le
+    # schéma moderne (15/16/17), ajoutée sans risque de collision.
+    "Depute": "depute",
     "Gouvernement": "gouvernement",
     "Rapporteur": "commission_rapporteur",
     "Commission": "commission_rapporteur",
@@ -1017,7 +1021,12 @@ def _parse_amendement_legacy_single(
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
         "date": amendement.get("dateDepot"),
-        "numero": identifiant.get("numeroLong") or identifiant.get("numero"),
+        # `numeroLong` (ex. "7 (Rect)") est à la racine de l'amendement, pas
+        # imbriqué sous `identifiant` (qui ne porte que le numéro nu "7" —
+        # vérifié sur l'archive réelle le 15/08/2026 : lire depuis
+        # `identifiant` ici perdait silencieusement le suffixe de
+        # rectification sur tout amendement rectifié).
+        "numero": amendement.get("numeroLong") or identifiant.get("numero"),
         "source_url": None,
     }
 
