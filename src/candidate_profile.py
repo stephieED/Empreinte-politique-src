@@ -21,6 +21,7 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 
 import argparse
 import concurrent.futures
+import gzip
 import io
 import json
 import os
@@ -120,11 +121,16 @@ AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # mieux après un échec définitif de reconstruction — voir
 # `_write_amendements_fraicheur`.
 AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
-# Nom du fichier des enregistrements d'amendements dédupliqués, committé aux côtés
-# d'un `index_par_acteur.json` allégé (numero + role_signataire) pour une
-# législature figée — voir `_aggregate_amendements_index` et
-# docs/technical_decisions.md#amendements-legislatures-figees.
-AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json"
+# Noms des fichiers committés pour une législature figée (compressés gzip :
+# mesuré le 15/08/2026 sur la législature 16, `index_par_acteur.json` allégé
+# pèse malgré tout 177 Mo en clair — au-delà de la limite GitHub de 100 Mo par
+# blob — contre 10,4 Mo une fois gzippé, la structure très répétitive
+# {numero, role_signataire} compressant très bien). `amendements.json`
+# regroupe les enregistrements dédupliqués (voir `_aggregate_amendements_index`
+# et docs/technical_decisions.md#amendements-legislatures-figees) ; le
+# contenu JSON est identique, seule la compression change.
+AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json.gz"
+AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -984,6 +990,7 @@ def _probe_amendements_total_size(url: str) -> Optional[int]:
 
 def _download_amendements_zip(
     url: str, zip_path: Path, legislature: str, chunk_bytes: Optional[int] = None,
+    max_attempts: Optional[int] = None,
 ) -> None:
     """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
     pour ne retenter que le segment en échec au lieu de tout le fichier sur une
@@ -1023,8 +1030,23 @@ def _download_amendements_zip(
     d'aboutir intégralement, alors que de petits segments (1-2 Mo) ont une
     fenêtre de succès bien plus large à saisir, et la reprise entre
     invocations (ci-dessus) garantit qu'aucun de ces petits gains n'est perdu.
+
+    Affiche une ligne de progression après chaque segment écrit avec succès
+    (octets/total, pourcentage) — pas seulement en cas d'échec/retry : avec de
+    petits `chunk_bytes`, une invocation peut compter des centaines de segments
+    et rester silencieuse plusieurs minutes sans ce retour, au point de
+    ressembler à un blocage (observé le 15/08/2026).
+
+    `max_attempts` permet d'augmenter ponctuellement le nombre de tentatives
+    par segment (défaut `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, 3) sans toucher au
+    chemin réseau partagé de la législature 17, où cette valeur est
+    volontairement basse pour rester dans le budget CI. Reprise entre
+    invocations oblige, la reprendre à une valeur plus haute ici ne coûte rien
+    au-delà du temps d'attente : chaque tentative supplémentaire ne retente que
+    le segment en échec, jamais le fichier entier.
     """
     chunk_bytes = chunk_bytes or AMENDEMENTS_DOWNLOAD_CHUNK_BYTES
+    max_attempts = max_attempts or AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
     zip_path.parent.mkdir(parents=True, exist_ok=True)
 
     offset = 0
@@ -1071,7 +1093,7 @@ def _download_amendements_zip(
             chunk = b""
             status_code: Optional[int] = None
             content_range_total: Optional[int] = None
-            for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
+            for attempt in range(1, max_attempts + 1):
                 try:
                     headers = {**HEADERS, "Range": f"bytes={offset}-{range_end}"}
                     with requests.get(
@@ -1088,17 +1110,17 @@ def _download_amendements_zip(
                     break
                 except (requests.RequestException, OSError) as exc:
                     last_exc = exc
-                    if attempt < AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS:
+                    if attempt < max_attempts:
                         print(
                             f"  [!] Échec du téléchargement du segment amendements législature "
                             f"{legislature} (offset {offset}, tentative "
-                            f"{attempt}/{AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS}) : {exc} — nouvel essai du segment seul"
+                            f"{attempt}/{max_attempts}) : {exc} — nouvel essai du segment seul"
                         )
                         time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
             if last_exc is not None:
                 print(
                     f"  [!] Segment amendements législature {legislature} (offset {offset}) en échec "
-                    f"définitif après {AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS} tentatives : {last_exc}"
+                    f"définitif après {max_attempts} tentatives : {last_exc}"
                 )
                 raise last_exc
             if attempt > 1:
@@ -1127,6 +1149,18 @@ def _download_amendements_zip(
             offset += len(chunk)
             if not chunk:
                 break  # évite une boucle infinie sur un flux qui ne progresse plus
+
+            if total_size:
+                percent = offset / total_size * 100
+                print(
+                    f"  -> Législature {legislature} : {offset}/{total_size} octets "
+                    f"({percent:.1f}%) — segment {segments_total} écrit"
+                )
+            else:
+                print(
+                    f"  -> Législature {legislature} : {offset} octets — segment "
+                    f"{segments_total} écrit"
+                )
 
     if segments_retried >= AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD:
         print(
@@ -1185,27 +1219,30 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
     """Charge l'index amendements committé pour une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour
-    toutes par `build_amendements_index_figees.py` sous forme dédupliquée
-    (`amendements.json` + `index_par_acteur.json` allégé, voir
-    `_aggregate_amendements_index`), la reconstruit sous la forme plate
-    standard (`_expand_aggregated_amendements_index`) et la matérialise dans
-    le cache disque (`AMENDEMENTS_CACHE_DIR`) au même format qu'une
+    toutes par `build_amendements_index_figees.py` sous forme dédupliquée et
+    compressée gzip (`amendements.json.gz` + `index_par_acteur.json.gz`
+    allégé, voir `_aggregate_amendements_index` — nécessaire pour rester sous
+    la limite GitHub de 100 Mo par blob, voir la révision du 15/08/2026 de
+    docs/technical_decisions.md#amendements-legislatures-figees), la
+    reconstruit sous la forme plate standard
+    (`_expand_aggregated_amendements_index`) et la matérialise dans le cache
+    disque (`AMENDEMENTS_CACHE_DIR`), en clair, au même format qu'une
     construction réseau réussie (`index_par_acteur.json` + `fraicheur.json`,
     ce dernier copié tel quel avec son marqueur `figee: true`) — pour que le
     reste du pipeline (quality gate section 3d comprise, `fetch_amendements_officiels`)
-    n'ait pas à distinguer les deux origines. Retourne `None` si le fallback
-    committé est absent ou incomplet (ne devrait pas arriver pour une
-    législature figée, mais ne lève jamais : l'appelant retombe alors sur le
-    chemin réseau standard)."""
+    n'ait pas à distinguer les deux origines ni à connaître la compression du
+    fallback committé. Retourne `None` si le fallback committé est absent ou
+    incomplet (ne devrait pas arriver pour une législature figée, mais ne
+    lève jamais : l'appelant retombe alors sur le chemin réseau standard)."""
     frozen_dir = AN_AMENDEMENTS_FIGEES_DIR / legislature
     frozen_amendements_path = frozen_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME
-    frozen_index_path = frozen_dir / "index_par_acteur.json"
+    frozen_index_path = frozen_dir / AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME
     if not frozen_amendements_path.is_file() or not frozen_index_path.is_file():
         return None
     try:
-        with open(frozen_amendements_path, encoding="utf-8") as f:
+        with gzip.open(frozen_amendements_path, "rt", encoding="utf-8") as f:
             amendements = json.load(f)
-        with open(frozen_index_path, encoding="utf-8") as f:
+        with gzip.open(frozen_index_path, "rt", encoding="utf-8") as f:
             index_par_acteur = json.load(f)
     except (json.JSONDecodeError, OSError):
         return None

@@ -723,6 +723,48 @@ offset non nul reçoit malgré tout une réponse `200` (le serveur ignore
 complet à la suite d'un fichier déjà partiellement écrit, ce qui produirait
 une archive corrompue silencieusement.
 
+Complément (même date) : le CDN AN a ensuite traversé une fenêtre où même une
+requête Range de quelques Ko au-delà des tout premiers Mo du fichier échouait
+systématiquement (`IncompleteRead(0 bytes read, ...)`) — un segment de 32 Mo
+(`AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`, défaut) n'avait alors quasiment aucune
+chance d'aboutir intégralement. `_download_amendements_zip` accepte désormais
+un paramètre `chunk_bytes` optionnel, exposé via `--chunk-size-mb` sur
+`build_amendements_index_figees.py`, pour réduire ponctuellement la taille de
+segment (ex. 1 Mo) sans toucher au défaut partagé avec le chemin réseau de la
+législature 17 — la reprise entre invocations garantit qu'aucun petit gain
+n'est perdu d'un essai à l'autre. `_download_amendements_zip` affiche
+également désormais une ligne de progression (octets/total, pourcentage)
+après chaque segment écrit avec succès, pas seulement en cas
+d'échec/retry : avec de petits `chunk_bytes`, une invocation peut compter des
+centaines de segments et rester silencieuse plusieurs minutes sans ce retour.
+
+De même, `max_attempts` (optionnel, défaut `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`,
+3) permet d'augmenter le nombre de tentatives par segment via `--max-attempts`
+sans toucher au défaut CI de la législature 17 — utile quand le CDN traverse
+une fenêtre où 3 tentatives ne suffisent pas systématiquement ; chaque
+tentative supplémentaire ne coûte que le temps d'attente (un retry ne
+retente jamais que le segment en échec), et la reprise entre invocations
+couvre de toute façon le cas d'un abandon total.
+
+**Révision (2026-08-15, la dédup seule ne suffit pas non plus)** : le premier
+build réel complet de la législature 16 (archive téléchargée en entier) a
+mesuré `index_par_acteur.json` allégé (post-`_aggregate_amendements_index`,
+donc déjà `{numero, role_signataire}` par lien plutôt qu'une copie complète)
+à **177 Mo en clair** — toujours au-delà de la limite GitHub de 100 Mo par
+blob, contrairement à ce que laissait supposer la révision du 2026-08-13
+(`amendements.json` compacté à 1,1 Mo gzippé n'a en revanche jamais posé de
+problème). La structure `{numero, role_signataire}` étant très répétitive,
+gzip compresse ce fichier à **10,4 Mo** — `build_amendements_index_figees.py`
+écrit donc désormais `amendements.json.gz` et `index_par_acteur.json.gz`
+(constantes `AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME`/
+`AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME`, `candidate_profile.py`) via
+`gzip.open(..., "wt")`, et `_load_frozen_amendement_index` les décompresse à
+la lecture avant `_expand_aggregated_amendements_index` — `fraicheur.json`
+reste en clair (quelques dizaines d'octets, aucun intérêt à le compresser).
+Le fallback runtime matérialisé dans `.cache/amendements_an/` (gitignoré)
+reste en clair, non compressé : seuls les fichiers committés changent de
+format.
+
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
   dépôt Git sans bénéfice — seul l'index dérivé, une fois dédupliqué, est

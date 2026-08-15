@@ -1,3 +1,4 @@
+import gzip
 import json
 import sys
 from pathlib import Path
@@ -1690,11 +1691,11 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
 
 def test_download_and_build_amendement_index_uses_frozen_fallback_without_download(tmp_path):
     """Pour une législature dans `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, l'index
-    committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée
-    `amendements.json` + `index_par_acteur.json` allégé — voir
+    committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée et compressée
+    gzip — `amendements.json.gz` + `index_par_acteur.json.gz` allégé, voir
     `_aggregate_amendements_index`) est utilisé sans jamais toucher le réseau,
     même en l'absence de tout cache disque préexistant, et reconstruit sous la
-    forme plate standard avant matérialisation dans le cache."""
+    forme plate standard (en clair) avant matérialisation dans le cache."""
     from candidate_profile import _download_and_build_amendement_index
 
     frozen_amendements = {
@@ -1723,12 +1724,10 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     }
     frozen_dir = tmp_path / "figees" / "15"
     frozen_dir.mkdir(parents=True)
-    (frozen_dir / "amendements.json").write_text(
-        json.dumps(frozen_amendements, ensure_ascii=False), encoding="utf-8"
-    )
-    (frozen_dir / "index_par_acteur.json").write_text(
-        json.dumps(frozen_index_par_acteur, ensure_ascii=False), encoding="utf-8"
-    )
+    with gzip.open(frozen_dir / "amendements.json.gz", "wt", encoding="utf-8") as f:
+        json.dump(frozen_amendements, f, ensure_ascii=False)
+    with gzip.open(frozen_dir / "index_par_acteur.json.gz", "wt", encoding="utf-8") as f:
+        json.dump(frozen_index_par_acteur, f, ensure_ascii=False)
     (frozen_dir / "fraicheur.json").write_text(
         json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
         encoding="utf-8",
@@ -2156,6 +2155,44 @@ def test_download_amendements_zip_chunk_bytes_param_overrides_module_default(tmp
     )
 
 
+def test_download_amendements_zip_max_attempts_param_overrides_module_default(tmp_path):
+    """Le paramètre explicite `max_attempts` doit primer sur
+    `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS` — utilisé par `--max-attempts` pour
+    augmenter le nombre de tentatives par segment sans toucher au défaut
+    partagé avec le chemin réseau de la législature 17."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets, segments de 4 -> 3 segments
+    zip_path = tmp_path / "amendements.zip"
+    attempts_for_middle_segment = 0
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        nonlocal attempts_for_middle_segment
+        start, end = (int(x) for x in headers["Range"].removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        if start == 4:
+            attempts_for_middle_segment += 1
+            if attempts_for_middle_segment < 4:
+                raise _requests.RequestException("IncompleteRead simulée")
+        return _FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS", 2),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        _download_amendements_zip(
+            "https://example.test/amendements.zip", zip_path, "17", max_attempts=5,
+        )
+
+    assert zip_path.read_bytes() == payload, (
+        "Avec max_attempts=5 (> AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS=2 patché), le segment "
+        "qui échoue 3 fois avant de réussir à la 4e doit tout de même aboutir"
+    )
+    assert attempts_for_middle_segment == 4
+
+
 def test_download_amendements_zip_skips_entirely_when_already_complete(tmp_path):
     """Un fichier partiel dont la taille locale correspond déjà à la taille
     distante (téléchargement complet mais échec précédent avant l'écriture de
@@ -2278,6 +2315,33 @@ def test_download_amendements_zip_raises_instead_of_corrupting_on_unexpected_200
             pass
 
     assert zip_path.read_bytes() == payload[:4], "Le fichier partiel existant ne doit pas être corrompu"
+
+
+def test_download_amendements_zip_prints_progress_on_success(tmp_path, capsys):
+    """Chaque segment écrit avec succès doit produire une ligne de progression
+    (octets/total, pourcentage), pas seulement les échecs/retries — sinon une
+    invocation avec de petits `chunk_bytes` reste silencieuse pendant des
+    minutes et ressemble à un blocage (voir docstring, ajout du 15/08/2026)."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets, segments de 4 -> 3 segments
+    zip_path = tmp_path / "amendements.zip"
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        start, end = (int(x) for x in headers["Range"].removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        return _FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+    ):
+        _download_amendements_zip("https://example.test/amendements.zip", zip_path, "17")
+
+    out = capsys.readouterr().out
+    assert out.count("écrit") == 3, "Une ligne de progression par segment réussi (3 segments)"
+    assert "4/12" in out and "8/12" in out and "12/12" in out
+    assert "100.0%" in out
 
 
 def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others():
