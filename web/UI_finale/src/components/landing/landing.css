@@ -130,6 +130,124 @@
   text-decoration: underline;
 }
 
+.fact-demo-card {
+  border-radius: 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.fact-demo-kicker {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.fact-demo-position {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+
+.fact-demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.fact-demo-position-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fact-demo-titre {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.fact-demo-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.fact-demo-toggle {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.fact-demo-toggle:hover {
+  text-decoration: underline;
+}
+
+.fact-demo-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.fact-demo-source {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.fact-demo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dark);
+  background: var(--accent);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.fact-demo-source-details {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fact-demo-source-details dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.fact-demo-source-details dd {
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.fact-demo-url {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  word-break: break-all;
+}
+
+.fact-demo-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
 .how-it-works-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
