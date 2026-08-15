@@ -1,6 +1,6 @@
 {
   "meta": {
-    "genere_le": "2026-08-15T18:56:19.656000+00:00",
+    "genere_le": "2026-08-15T22:03:03.566100+00:00",
     "total_gouvernements": 3,
     "total_erreurs_lecture": 1,
     "staleness_days": 30
@@ -122,6 +122,17 @@
       }
     ],
     "dates_invalides": []
+  },
+  "warnings": {
+    "total_warnings": 1,
+    "par_type": {
+      "couverture_ministerielle": {
+        "frequence": 1,
+        "gouvernement_ids": [
+          "gouvernement:BARNIER"
+        ]
+      }
+    }
   },
   "erreurs_lecture": [
     {

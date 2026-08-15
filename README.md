@@ -523,8 +523,11 @@ ranges (`compute_plage_dates_gouvernements`): min/max of
 `membres[].debut`/`.fin` (`mandats_membres`) and `textes[].date_depot`/
 `.date_dernier_evenement` (`textes`) — a `membres[].fin = null` (ongoing
 mandate) is excluded from the max without ever being substituted by today's
-date (`AGENTS.md` §2.5). Same internal-quality-tool contract as the other
-audits (no score, no ranking, see `AGENTS.md` §2).
+date (`AGENTS.md` §2.5). Also aggregates `meta.warnings[]` by type
+(`compute_agregation_warnings`, same contract as `audit_groupe_dataset.py`,
+added for #321 so `audit_pipeline.py`'s compiled overview can report
+government warnings alongside profiles/groups). Same internal-quality-tool
+contract as the other audits (no score, no ranking, see `AGENTS.md` §2).
 
 ```bash
 python src/audit_gouvernement_dataset.py \
@@ -544,12 +547,15 @@ report generated on `tests/fixtures/audit_gouvernement/`.
 
 ## 13. Combined audit pipeline (manual tool)
 
-`src/audit_pipeline.py` is a **manual** entry point that runs both audits
+`src/audit_pipeline.py` is a **manual** entry point that runs all three audits
 above by calling their functions directly (no subprocess) and compiles an
-"overview" section on top of the two detailed reports: total profiles/groups
-audited, aggregated read errors, and aggregated `meta.warnings[]` across both
-document types. Pure composition of the reports produced by
-`audit_pivot_dataset.py` / `audit_groupe_dataset.py` — no new business logic.
+"overview" section on top of the three detailed reports: total
+profiles/groups/governments audited, aggregated read errors, and aggregated
+`meta.warnings[]` across all three document types. Pure composition of the
+reports produced by `audit_pivot_dataset.py` / `audit_groupe_dataset.py` /
+`audit_gouvernement_dataset.py` — no new business logic (issue #321,
+sub-issue 5/6 of #316, extends the profiles+groups compilation from #178 to
+governments).
 
 It is separate from `src/check_quality_gate.py` (the only CI-blocking gate)
 and is **not** wired into `.github/workflows/generate-data.yml` — this was an
@@ -560,16 +566,19 @@ by CI.
 python src/audit_pipeline.py \
     --profiles-dir pivot_data/profiles \
     --groupes-dir pivot_data/groupes \
+    --gouvernements-dir pivot_data/gouvernements \
     --output-json audit_pipeline_report.json \
     --output-md audit_pipeline_report.md \
     --staleness-days 30
 ```
 
-`--profiles-dir`/`--groupes-dir` default to `pivot_data/profiles` /
-`pivot_data/groupes`. `--output-json`/`--output-md` default to unset (JSON
-prints to stdout, Markdown is skipped if `--output-md` is omitted).
-`--staleness-days` (default 30) is forwarded unchanged to both underlying
-audits.
+`--profiles-dir`/`--groupes-dir`/`--gouvernements-dir` default to
+`pivot_data/profiles` / `pivot_data/groupes` / `pivot_data/gouvernements`.
+`--output-json`/`--output-md` default to unset (JSON prints to stdout,
+Markdown is skipped if `--output-md` is omitted). `--staleness-days` (default
+30) is forwarded unchanged to all three underlying audits. A missing
+directory (any of the three) is a hard error (explicit message + exit code
+1, never a crash traceback), same behavior across all three.
 
 ## Raw profile content (Nos* format)
 

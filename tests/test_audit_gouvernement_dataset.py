@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from audit_gouvernement_dataset import (
     _build_arg_parser,
     build_report,
+    compute_agregation_warnings,
     compute_coherence_schema_version,
     compute_comptages_agreges,
     compute_distribution_membres_textes,
@@ -597,6 +598,84 @@ def test_compute_gouvernements_perimes_trie_les_resultats():
 
 
 # ---------------------------------------------------------------------------
+# compute_agregation_warnings
+# ---------------------------------------------------------------------------
+
+def gouvernement_warnings(gouvernement_id, *warnings):
+    return {"gouvernement_id": gouvernement_id, "meta": {"warnings": list(warnings)}}
+
+
+def test_compute_agregation_warnings_aucun_gouvernement():
+    assert compute_agregation_warnings([]) == {"total_warnings": 0, "par_type": {}}
+
+
+def test_compute_agregation_warnings_gouvernements_sans_warnings():
+    gouvernements = [
+        gouvernement_warnings("a"), {"gouvernement_id": "b"}, {"gouvernement_id": "c", "meta": {}},
+    ]
+
+    resultat = compute_agregation_warnings(gouvernements)
+
+    assert resultat == {"total_warnings": 0, "par_type": {}}
+
+
+def test_compute_agregation_warnings_type_par_prefixe_avant_les_deux_points():
+    gouvernements = [
+        gouvernement_warnings("a", "couverture_ministerielle : portefeuille non confirme."),
+        gouvernement_warnings("b", "couverture_ministerielle : portefeuille non confirme."),
+    ]
+
+    resultat = compute_agregation_warnings(gouvernements)
+
+    assert resultat["total_warnings"] == 2
+    assert resultat["par_type"]["couverture_ministerielle"] == {
+        "frequence": 2, "gouvernement_ids": ["a", "b"],
+    }
+
+
+def test_compute_agregation_warnings_message_sans_deux_points_utilise_le_message_entier():
+    gouvernements = [gouvernement_warnings("a", "dossier exclu de textes[].")]
+
+    resultat = compute_agregation_warnings(gouvernements)
+
+    assert resultat["par_type"] == {
+        "dossier exclu de textes[].": {"frequence": 1, "gouvernement_ids": ["a"]},
+    }
+
+
+def test_compute_agregation_warnings_plusieurs_types_et_frequences():
+    gouvernements = [
+        gouvernement_warnings("a", "statut inconnu : x", "chambre inconnue : y"),
+        gouvernement_warnings("b", "statut inconnu : z"),
+    ]
+
+    resultat = compute_agregation_warnings(gouvernements)
+
+    assert resultat["total_warnings"] == 3
+    assert resultat["par_type"]["statut inconnu"] == {"frequence": 2, "gouvernement_ids": ["a", "b"]}
+    assert resultat["par_type"]["chambre inconnue"] == {"frequence": 1, "gouvernement_ids": ["a"]}
+
+
+def test_compute_agregation_warnings_meme_type_deux_fois_meme_gouvernement_ids_dedupliques():
+    gouvernements = [gouvernement_warnings("a", "statut inconnu : x", "statut inconnu : y")]
+
+    resultat = compute_agregation_warnings(gouvernements)
+
+    assert resultat["par_type"]["statut inconnu"] == {"frequence": 2, "gouvernement_ids": ["a"]}
+
+
+def test_compute_agregation_warnings_sur_les_fixtures_du_depot():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    resultat = compute_agregation_warnings(gouvernements_valides)
+
+    assert resultat["total_warnings"] == 1
+    assert resultat["par_type"]["couverture_ministerielle"]["gouvernement_ids"] == [
+        "gouvernement:BARNIER",
+    ]
+
+
+# ---------------------------------------------------------------------------
 # Toutes les fonctions compute_* restent pures et sérialisables en JSON
 # sur le corpus de fixtures du dépôt.
 # ---------------------------------------------------------------------------
@@ -619,6 +698,7 @@ def test_toutes_les_fonctions_compute_sur_les_fixtures_du_depot_sont_serialisabl
             gouvernements_valides, staleness_days=30, reference_date=REFERENCE
         ),
         "plage_dates_gouvernements": compute_plage_dates_gouvernements(gouvernements_valides),
+        "warnings": compute_agregation_warnings(gouvernements_valides),
     }
 
     json.dumps(rapport, ensure_ascii=False)
@@ -633,7 +713,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "plage_dates_gouvernements", "erreurs_lecture",
+        "plage_dates_gouvernements", "warnings", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "repartition_periode_actif", "distribution_membres_textes", "comptages_agreges",
@@ -717,6 +797,7 @@ def test_build_report_delegue_aux_fonctions_compute():
         rapport["plage_dates_gouvernements"]
         == compute_plage_dates_gouvernements(gouvernements)
     )
+    assert rapport["warnings"] == compute_agregation_warnings(gouvernements)
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -879,6 +960,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
     assert "## Fraîcheur" in markdown
+    assert "## Warnings" in markdown
     assert "## Erreurs de lecture" in markdown
 
 
@@ -892,6 +974,7 @@ def test_generate_markdown_report_sections_vides_affichent_un_message_explicite(
     assert "Aucun doublon détecté." in markdown
     assert "Aucune source datée." in markdown
     assert "Aucun gouvernement périmé." in markdown
+    assert "Aucun warning." in markdown
     assert "Aucune erreur de lecture." in markdown
     assert "Aucune date invalide détectée." in markdown
 

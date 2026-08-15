@@ -1,6 +1,6 @@
 # Rapport d'audit du jeu de données gouvernements
 
-Généré le 2026-08-15T18:56:19.656000+00:00. 3 gouvernement(s) analysé(s), 1 erreur(s) de lecture. Seuil de péremption des sources : 30 jour(s).
+Généré le 2026-08-15T22:03:03.566100+00:00. 3 gouvernement(s) analysé(s), 1 erreur(s) de lecture. Seuil de péremption des sources : 30 jour(s).
 
 Ce rapport est un outil de qualité interne : il présente des indicateurs bruts, sans jugement de valeur ni classement.
 
@@ -96,6 +96,14 @@ Aucune divergence détectée.
 | gouvernement_id |
 | --- |
 | gouvernement:BARNIER |
+
+## Warnings
+
+Total : 1
+
+| Type | Fréquence | Gouvernements concernés |
+| --- | --- | --- |
+| couverture_ministerielle | 1 | gouvernement:BARNIER |
 
 ## Erreurs de lecture
 
