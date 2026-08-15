@@ -1,7 +1,8 @@
-import { buildCandidateView, buildGroupView } from './pivotAdapter';
+import { buildCandidateView, buildGroupView, buildGovernmentView } from './pivotAdapter';
 
 export const DEFAULT_CANDIDATE_ID = 'jean-luc-melenchon';
 export const DEFAULT_GROUP_ID = 'AN-SOC-16';
+export const DEFAULT_GOVERNMENT_ID = 'LECORNU_II';
 
 let manifestPromise = null;
 
@@ -54,4 +55,22 @@ export async function getGroupProfile(id) {
   const groupe = await fetchJson(`/data/groupes/${entry.fichier}`);
   if (!groupe) return null;
   return buildGroupView(groupe);
+}
+
+export async function getGovernmentsList() {
+  const manifest = await loadManifest();
+  return (manifest.gouvernements || []).map((g) => ({
+    id: g.id,
+    title: g.nom,
+    kicker: g.actif ? 'En fonction' : `Jusqu'en ${g.fin ? new Date(g.fin).getFullYear() : '?'}`,
+  }));
+}
+
+export async function getGovernmentProfile(id) {
+  const manifest = await loadManifest();
+  const entry = (manifest.gouvernements || []).find((g) => g.id === id);
+  if (!entry) return null;
+  const gouvernement = await fetchJson(`/data/gouvernements/${entry.fichier}`);
+  if (!gouvernement) return null;
+  return buildGovernmentView(gouvernement);
 }

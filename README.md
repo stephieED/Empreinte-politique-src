@@ -39,7 +39,7 @@ CV_CandidatFR/
 |  |- gouvernement_profile.py        # Aggregate roster + legislative files into a full government profile
 |  |- generate_gouvernement_profiles.py # Batch: all governments from raw_data/gouvernements_reels.json
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
-|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (4 sections)
+|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (5 sections)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
@@ -61,7 +61,7 @@ CV_CandidatFR/
 |  |- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
 |  `- gouvernements/                 # gouvernement-<ID>.json: real government profiles
 |- web/
-|  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes)
+|  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes · Gouvernement)
 |  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
 |- docs/
 |  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference (kept in French)
@@ -395,6 +395,12 @@ downloads the `amendements-index-an` artifact into `.cache/amendements_an`
 read the real `fraicheur.json` indicators instead of always reporting "never
 built".
 
+`merge-and-pivot` also runs `src/generate_gouvernement_profiles.py --validate`
+right after the groupe step, on the same model, writing `pivot_data/gouvernements/`
+(included in the automatic commit alongside `pivot_data/groupes`) — see
+`docs/technical_decisions.md#gouvernement-ci-integration` for the timeout
+budget measurement (no dedicated job needed, unlike the AN extraction jobs).
+
 To run the gate locally:
 
 ```bash
@@ -419,10 +425,16 @@ legislature, an amendements index that was never built from one that is present 
 — never staleness-checked, see `docs/technical_decisions.md#amendements-legislatures-figees`) — see
 `docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`.
 
+`--gouvernements-dir` (default `pivot_data/gouvernements`) / `--gouvernements-config`
+(default `raw_data/gouvernements_reels.json`) drive section 5 (gouvernements), mirroring
+`--groupes-dir`/`--groupes-config` for section 4 — hard fail on missing/invalid file or
+schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, empty
+`textes[]` with a non-null `periode`, or IncompleteRead network signals.
+
 ## 9. Open the web UI locally
 
-`web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes**,
-no Partis tab). Before running it, sync pivot data into `public/data/`:
+`web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes** ·
+**Gouvernement**, no Partis tab). Before running it, sync pivot data into `public/data/`:
 
 ```bash
 cd web/UI_finale
@@ -430,11 +442,11 @@ npm install          # first time only
 npm run dev          # syncs data then starts Vite dev server
 ```
 
-`scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/` and
-`raw_data/candidats.json` into `public/data/` (generated, git-ignored) and writes
-`public/data/manifest.json`. Coverage is limited to the candidates/groups with a
-local pivot file — see "Coverage limits" below for the current state of the
-roster-driven rollout.
+`scripts/sync-data.mjs` copies `pivot_data/profiles/`, `pivot_data/groupes/`,
+`pivot_data/gouvernements/` and `raw_data/candidats.json` into `public/data/` (generated,
+git-ignored) and writes `public/data/manifest.json`. Coverage is limited to the
+candidates/groups/governments with a local pivot file — see "Coverage limits" below for the
+current state of the roster-driven rollout.
 
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
@@ -573,13 +585,14 @@ Sensitive institutional constraints are documented in `AGENTS.md` and in
 
 | Source | Type | Update cadence | License | Chamber(s) |
 |---|---|---|---|---|
-| NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL | AN |
-| NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL | AN |
-| NosSenateurs archives | JSON/XML API | Frozen | ODbL | Senate |
-| data.assemblee-nationale.fr | ZIP dumps | Daily | Open License | AN |
-| Parltrack | LZMA dumps | Weekly (approx.) | CC0/ODbL | EP |
+| NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL v1.0 | AN |
+| NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL v1.0 | AN |
+| NosSenateurs archives | JSON/XML API | Frozen | ODbL v1.0 | Senate |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily | Licence Ouverte / Open Licence (Etalab) | AN |
+| Parltrack | LZMA dumps | Weekly (approx.) | ODbL v1.0 | EP |
+| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | REST API + MEP pages | Live (fetched per run, no weekly cache) | EP Legal Notice (reuse policy, attribution-based) | EP |
 | French Wikipedia | MediaWiki REST API | Immediate | CC BY-SA 4.0 | Candidate monitoring |
-| Wikidata | SPARQL | Immediate | CC0 | Candidate monitoring |
+| Wikidata | SPARQL | Immediate | CC0 1.0 | Candidate monitoring |
 
 ## Tests
 
@@ -593,6 +606,13 @@ pytest -q
   7 groups declared in `raw_data/groupes_reels.json` (5 AN + 2 Senate) — not
   every parliamentary group that exists. Extending coverage means adding
   entries to that file, a separate editorial decision.
+- **Government scope**: profile generation only covers the governments
+  declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
+  Fillon II through Lecornu II) — not every government in the Fifth
+  Republic. `membres[].portefeuille` is `null` until confirmed by a primary
+  source (never a placeholder like "Ministre"), and `textes[]` can be empty
+  for a recent government; `web/UI_finale` shows an explicit "no data" state
+  in both cases (rule 5, `AGENTS.md`).
 - **Roster-driven candidate/member coverage**: `generate_roster_candidats.py`
   + `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
   (see [`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot))

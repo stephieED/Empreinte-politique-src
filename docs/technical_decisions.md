@@ -1,3 +1,325 @@
+<a id="pages-statiques-methodologie-mentions-legales"></a>
+## Pages Méthodologie et Mentions légales dans web/UI_finale (#289, plan #140) (2026-08-14)
+
+**Contexte** : sous-issue 2/3 du plan #140, portant `web/old/v3/methodologie.html`
+et `mentions-legales.html` dans `web/UI_finale`. Bloquée par #288 pour le
+contenu Mentions légales — voir [[licences]] pour le texte validé, repris
+tel quel.
+
+**Décision — composant partagé** : `src/components/StaticPage.jsx` + `.css`
+factorise bannière + sections pour les deux pages (`MethodologyPage.jsx`,
+`LegalNoticePage.jsx`), avec des classes entièrement préfixées
+(`static-*`) plutôt que de réutiliser les classes `.main`/`.banner` de
+`CandidateProfile.css` — ce fichier ne définit ses classes qu'une fois
+(`GroupProfile.jsx`/`GovernmentProfile.jsx` préfixent déjà en `gp-`/`gov-`
+pour la même raison) ; s'appuyer dessus par coïncidence de bundle CSS
+global aurait couplé silencieusement une page statique à l'implémentation
+d'un composant candidat.
+
+**Décision — routes hors `ExplorerLayout`** : l'issue laissait le choix
+ouvert entre bandeaux visibles ou page seule. Retenu : `/methodologie` et
+`/mentions-legales` sont déclarées en dehors de la route `ExplorerLayout`
+dans `App.jsx`, sans les bandeaux Groupes/Gouvernements/Candidats — ces
+pages n'ont pas de candidat/groupe sélectionné, et `GroupsBar`/`CandidatesBar`
+n'ont de sens que dans ce contexte. *Alternative rejetée* : les nicher sous
+`ExplorerLayout` pour réutiliser `Brand` déjà monté — `StaticPage` importe
+directement `Brand`, le gain de réutilisation ne justifiait pas d'exposer
+des bandeaux de sélection inertes sur une page sans profil.
+
+**Contenu Méthodologie corrigé vs v3** : la section "Ordre des catégories"
+de `web/old/v3/methodologie.html` décrit un clic sur les KPI
+Majorité/Opposition/Non distingué qui filtre la liste détaillée, avec un
+bouton "Réinitialiser". Vérifié dans `CandidateProfile.jsx` et
+`src/data/pivotAdapter.js` (`buildCandidateView`, `scopeBuckets`) : ce
+comportement n'existe plus — la répartition Majorité/Opposition/Non
+distingué s'affiche aujourd'hui comme un graphique de comparaison en
+barres (`compare-rows`), non cliquable, uniquement dans l'onglet "Textes"
+du profil candidat (`GroupProfile.jsx` n'a pas d'équivalent). Le texte
+repris dans `MethodologyPage.jsx` décrit ce comportement actuel plutôt que
+celui de v3.
+
+**Hors périmètre** (comme précisé par l'issue) : aucun lien de navigation
+vers ces pages depuis le reste de l'app (sous-issue 3/3).
+
+<a id="licences"></a>
+## Audit des sources de données et de leurs licences, pour les Mentions légales (#288) (2026-08-14)
+
+**Contexte** : sous-issue 1/3 du plan #140. L'ancien `web/old/v3/mentions-legales.html`
+ne couvre que NosDéputés/NosSénateurs, Parltrack et Wikipédia, alors que le pipeline
+actuel interroge aussi l'Open Data de l'Assemblée nationale, l'Open Data du Parlement
+européen et Wikidata. Audit exhaustif via `grep -rn https:// src/*.py` (tous les
+domaines listés en AGENTS.md §7), puis vérification en direct de chaque page de
+licence officielle (accessible dans le sandbox réseau de cet agent pour tous les
+domaines listés, sauf `data.europarl.europa.eu`, portail Angular non rendu par un
+simple `curl`, et `www.wikidata.org`, hors liste des hôtes autorisés — `query.wikidata.org`
+seul y figure).
+
+**Constat par domaine** :
+
+| Domaine(s) | Donnée réutilisée | Licence | Texte officiel | Attribution requise |
+|---|---|---|---|---|
+| `www.nosdeputes.fr`, `2007-2012\|2012-2017\|2017-2022.nosdeputes.fr`, `archive.nossenateurs.fr` | Mandats, votes, amendements, fiches parlementaires (législatures 13 à 17) | **ODbL v1.0** | https://opendatacommons.org/licenses/odbl/1-0/ (référencée par https://www.nosdeputes.fr/a-propos : « les données sous licence ODbL ») | Oui — « NosDéputés.fr (ou NosSénateurs.fr) par Regards Citoyens à partir de l'Assemblée nationale (ou du Sénat) et du Journal Officiel » |
+| `data.assemblee-nationale.fr`, `questions.assemblee-nationale.fr`, `www.assemblee-nationale.fr`, `schemas.assemblee-nationale.fr` | Scrutins, amendements, dossiers législatifs, questions écrites, débats Syceron | **Licence Ouverte / Open Licence (Etalab)** | https://data.assemblee-nationale.fr/licence-ouverte-open-licence (PDF/RTF téléchargeables sur cette page — la page ne précise pas explicitement 1.0 vs 2.0 ; utiliser le PDF de l'AN comme texte de référence plutôt que de présumer une version) | Oui, mention de la paternité obligatoire — **pas** de partage à l'identique |
+| `parltrack.org` (dumps JSON) | Dossiers législatifs, votes, activités des député·es européen·nes | **ODbL v1.0** | https://opendatacommons.org/licenses/odbl/1-0/, référencée en direct par https://parltrack.org/ (section Copyright : « data … ODBLv1.0 ») | Oui — partage à l'identique si republication d'un jeu de données dérivé |
+| `data.europarl.europa.eu`, `www.europarl.europa.eu` | Fiches et photos des député·es européen·nes (API v2 + pages MEP) | Politique de réutilisation du **Legal Notice** du Parlement européen (reproduction/adaptation/diffusion commerciale ou non commerciale autorisée si l'élément est reproduit intégralement et la source indiquée) | https://www.europarl.europa.eu/legal-notice/fr/ (confirmée en direct) | Oui — « © Union européenne, [année] – Source : Parlement européen » |
+| `fr.wikipedia.org` | Statut de candidature déclarée (pas de citation de texte actuellement) | **CC BY-SA 4.0** | https://creativecommons.org/licenses/by-sa/4.0/ (confirmée en direct via le pied de page Wikipédia) | Oui, + partage à l'identique si citation de texte |
+| `query.wikidata.org` | Identifiants/métadonnées structurées liées aux candidatures | **CC0 1.0** | https://creativecommons.org/publicdomain/zero/1.0/ (politique de licence Wikidata bien établie — non re-vérifiée en direct dans ce sandbox, `www.wikidata.org` n'étant pas dans la liste des hôtes réseau autorisés) | Non — aucune obligation |
+
+**Correction apportée à AGENTS.md §7** : la ligne Parltrack indiquait « CC0 / ODbL
+(mixed) », ce que ne confirme pas la page Copyright de parltrack.org (uniquement
+ODbL v1.0 pour les dumps JSON que consomme ce pipeline — le CC BY-SA 3.0 mentionné
+sur ce site concerne le contenu HTML des pages, jamais téléchargé ici). Corrigée en
+« ODbL v1.0 ». *Point non corrigé dans ce ticket* (hors périmètre, aucun fichier de
+code) : `src/mep_profile.py:419` inscrit `"Open Data — Parltrack (CC0 / Open Database
+License)"` dans `meta.licence_donnees`, la même approximation — à corriger dans la
+sous-issue d'implémentation ou un ticket dédié. De même, `candidate_profile.py:2829`
+et `generate_all_profiles.py:287` étiquettent tout `meta.licence_donnees` d'un profil
+`"ODbL (Regards Citoyens…)"` alors que le même profil peut aussi contenir des champs
+issus de l'Open Data AN (Etalab) via Syceron/scrutins/amendements — la métadonnée
+interne ne distingue donc pas aujourd'hui les deux licences au sein d'un même profil ;
+sans incidence sur le texte public des Mentions légales ci-dessous (qui couvre les deux
+sources séparément), mais à garder en tête si `licence_donnees` est un jour affiché
+tel quel côté `web/`.
+
+**Hébergement de `web/UI_finale`** : aucun pipeline de déploiement du site trouvé —
+`.github/workflows/` ne contient que `claude.yml`, `claude-code-review.yml`,
+`generate-data.yml` et `retry-generate-data.yml` (génération de données, pas de build/
+déploiement front), et `web/UI_finale` n'a ni config Vercel/Netlify ni workflow
+GitHub Pages. **Statué : à préciser** — ne pas reprendre la mention « GitHub, Inc. »
+de `web/old/v3/mentions-legales.html` tant qu'un hébergeur réel n'est pas choisi.
+
+**Clause de partage à l'identique révisée** : dans `web/old/v3/mentions-legales.html`,
+la clause « Implication pour la réutilisation de nos propres données » applique le
+partage à l'identique ODbL à l'ensemble du jeu de données combiné. C'est inexact
+depuis l'ajout des sources Etalab (AN) et CC0 (Wikidata), qui n'ont pas de clause de
+réciprocité. Le partage à l'identique ne s'applique qu'aux **champs dérivés de
+sources ODbL** (NosDéputés/NosSénateurs, Parltrack) en cas de republication d'un jeu
+de données téléchargeable — voir le texte ci-dessous.
+
+**Texte "Mentions légales" prêt à intégrer (sous-issue 2/3)** :
+
+> # Mentions légales
+>
+> *Dernière mise à jour : 14 août 2026*
+>
+> ## Éditeur du site
+>
+> Ce site est édité à titre non professionnel et non commercial par une personne
+> physique. Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour
+> la confiance dans l'économie numérique (LCEN), l'identité complète de l'éditeur est
+> tenue à la disposition de l'hébergeur du site et pourra être communiquée, sur
+> demande, à toute autorité judiciaire compétente.
+>
+> **Contact éditeur** : empreinte.politique@gmail.com
+>
+> ## Hébergement
+>
+> *À préciser.* L'hébergement définitif de ce site n'est pas encore déterminé à la
+> date de rédaction de cette page ; cette section sera complétée dès qu'un hébergeur
+> sera choisi.
+>
+> ## Directeur de la publication
+>
+> La direction de la publication est assurée par l'éditeur du site, joignable à
+> l'adresse ci-dessus.
+>
+> ## Propriété intellectuelle — code et contenu éditorial
+>
+> Le code source, la charte graphique et les textes rédigés pour ce site sont à
+> préciser, sauf mention contraire pour les données présentées (voir « Sources et
+> licences des données » ci-dessous).
+>
+> ## Sources et licences des données
+>
+> Ce site s'appuie exclusivement sur des données publiques, réutilisées conformément
+> aux licences suivantes.
+>
+> ### NosDéputés.fr et NosSénateurs.fr (Regards Citoyens)
+>
+> Les données relatives aux député·es et sénateur·rices français·es (mandats, votes,
+> amendements) proviennent de NosDéputés.fr et NosSénateurs.fr, projets de
+> l'association Regards Citoyens, mises à disposition sous licence **Open Database
+> License (ODbL) v1.0** : https://opendatacommons.org/licenses/odbl/1-0/
+>
+> *Contient des informations issues de NosDéputés.fr et NosSénateurs.fr, par Regards
+> Citoyens à partir de l'Assemblée nationale (ou du Sénat) et du Journal Officiel,
+> mises à disposition sous licence ODbL.*
+>
+> ### Open Data de l'Assemblée nationale
+>
+> Les scrutins, amendements, dossiers législatifs, questions écrites et débats en
+> séance (Syceron) proviennent du portail Open Data officiel de l'Assemblée nationale
+> (data.assemblee-nationale.fr), mis à disposition sous **Licence Ouverte / Open
+> Licence** (Etalab) : https://data.assemblee-nationale.fr/licence-ouverte-open-licence
+>
+> *Contient des informations publiques issues du portail Open Data de l'Assemblée
+> nationale, sous Licence Ouverte / Open Licence.* Cette licence autorise la
+> réutilisation commerciale et l'adaptation sans obligation de partage à l'identique,
+> sous réserve de mention de la paternité.
+>
+> ### Parltrack
+>
+> Les données relatives aux député·es européen·nes (dossiers législatifs, votes,
+> activités) proviennent des dumps JSON de Parltrack (parltrack.org), mis à
+> disposition sous licence **Open Database License (ODbL) v1.0** :
+> https://opendatacommons.org/licenses/odbl/1-0/
+>
+> *Contient des informations issues de Parltrack (parltrack.org), mises à disposition
+> sous licence ODbL.*
+>
+> ### Parlement européen
+>
+> Les fiches et photos des député·es européen·nes proviennent du portail Open Data du
+> Parlement européen (data.europarl.europa.eu) et du site institutionnel
+> (www.europarl.europa.eu), réutilisées conformément au Legal Notice du Parlement
+> européen : https://www.europarl.europa.eu/legal-notice/fr/ — reproduction, diffusion
+> commerciale ou non commerciale autorisées sous réserve de reproduire l'élément dans
+> son intégralité et d'en indiquer la source (« © Union européenne, [année] – Source :
+> Parlement européen »).
+>
+> ### Wikipédia et Wikidata
+>
+> Le statut de candidature déclarée peut être recoupé via Wikipédia (fr.wikipedia.org)
+> et Wikidata (query.wikidata.org). Ces deux sources ont des licences **distinctes** :
+> Wikipédia est sous **Creative Commons Attribution — Partage dans les mêmes
+> conditions 4.0 (CC BY-SA 4.0)** (https://creativecommons.org/licenses/by-sa/4.0/) ;
+> les données structurées de Wikidata sont sous **CC0 1.0**, domaine public
+> (https://creativecommons.org/publicdomain/zero/1.0/), sans obligation d'attribution
+> ni de partage à l'identique.
+>
+> ### Implication pour la réutilisation de nos propres données
+>
+> Les jeux de données JSON produits et publiés par ce site combinent des contenus sous
+> plusieurs licences. **Seuls les champs dérivés de sources sous ODbL (NosDéputés.fr,
+> NosSénateurs.fr, Parltrack)** sont soumis à la clause de partage à l'identique de
+> l'ODbL : toute republication d'un jeu de données dérivé téléchargeable incluant ces
+> champs doit être mise à disposition sous une licence à clauses équivalentes.
+> Les champs issus de l'Open Data de l'Assemblée nationale (Licence Ouverte / Etalab)
+> et du Parlement européen n'imposent qu'une obligation d'attribution, sans partage à
+> l'identique. Les champs issus de Wikidata (CC0) ne sont soumis à aucune restriction.
+> Dans tous les cas, la consultation du site lui-même (page HTML, « Produced Work » au
+> sens de l'ODbL) reste couverte par la simple attribution ci-dessus.
+
+<a id="gouvernement-ci-integration"></a>
+## Intégration de `generate_gouvernement_profiles.py` dans `generate-data.yml` (#215) (2026-08-14)
+
+**Contexte** : #212 avait explicitement laissé le branchement CI hors
+périmètre (voir [[quality-gate-gouvernements]], dernier paragraphe). #215
+ajoute l'appel dans le job `merge-and-pivot`, juste après le step groupes
+et avant le téléchargement (optionnel) de l'artifact amendements AN.
+
+**Décision** : pas de job dédié, contrairement à `extract-amendements-an`/
+`extract-parltrack`. `generate_gouvernement_profiles.py` n'a qu'un seul appel
+réseau (le dump AN des dossiers législatifs, `gouvernement_textes.py`,
+mutualisé pour tous les gouvernements du batch, ~10 Mo) — mesuré localement
+à ~2 s à froid (téléchargement + parsing) et <0.5 s à chaud (cache
+`.cache/dossiers_an/dossiers.zip` déjà présent), pour 10 gouvernements
+générés à partir de 28 profils pivot locaux. Négligeable face au budget de
+60 min de `merge-and-pivot` : mesuré, pas deviné (critère d'acceptation de
+#215), aucun ajustement de `timeout-minutes` nécessaire.
+
+Contrairement au step groupes (`--merge-existing` en mode `fresh_run=false`,
+résilience réseau sur un roster live), le step gouvernement n'a pas
+d'équivalent : `gouvernement_roster.py` n'interroge aucun réseau
+(agrégation locale depuis les pivots déjà présents, voir
+[[quality-gate-gouvernements]]), donc pas de FRESH-branching — le résultat
+est déterministe à partir des données locales à chaque run, que `fresh_run`
+soit `true` ou `false`.
+
+`pivot_data/gouvernements` ajouté au `git add` du step de commit final, aux
+côtés de `pivot_data/groupes`. La quality gate passait déjà `--gouvernements-dir`/
+`--gouvernements-config` avec des défauts qui coïncidaient exactement avec
+les valeurs utilisées ici ; ils sont désormais passés explicitement dans le
+step CI, par cohérence avec `--groupes-dir`/`--groupes-config` (déjà
+explicites) plutôt que de compter silencieusement sur les défauts du script.
+
+*Hors périmètre* (comme #212 le précisait déjà, et non remis en cause ici) :
+activation d'un `schedule:` cron pour ce nouvel appel — le `schedule:`
+global du workflow reste commenté.
+<a id="gouvernement-doc-cloture"></a>
+## Documentation upkeep de clôture, vue Gouvernement (#214, plan #184) (2026-08-14)
+
+**Contexte** : #214 demandait une passe finale de mise à jour documentaire
+une fois #207-#213 réellement mergées, sans anticiper de fonctionnalité non
+livrée. Les PR #207-#213 avaient déjà fait leur propre upkeep `AGENTS.md §8`
+au fil de l'eau ; cette entrée ne duplique pas ce contenu, elle le
+consolide par renvoi :
+
+1. **Rattachement des textes par `date_depot`** : décision et alternative
+   rejetée (chaîne `AMO30`) déjà documentées in extenso —
+   voir [[gouvernement-profile-rattachement]] (#211) et [[gouvernement-textes-statut]]
+   (#210, section "Alternative rejetée").
+2. **Gap couverture ministérielle (`portefeuille`)** : déjà documenté comme
+   hors périmètre — voir [[hors-perimetre]] § "Ministerial function", repris
+   dans `check_quality_gate.py` ([[quality-gate-gouvernements]]) et `ROADMAP.md`.
+   Pas de nouvelle source identifiée depuis #212 ; toujours non résolu.
+3. **Limite Sénat, confirmée spécifique à cette vue** : `gouvernement_textes.py`
+   ne lit que le dump AN `Dossiers_Legislatifs.json.zip` — un texte dont le
+   Sénat est la chambre de dépôt *primaire* n'est jamais vu (seuls les textes
+   déposés à l'AN, y compris ceux transmis en 2e lecture au Sénat, entrent
+   dans `textes[]`). C'est un cas particulier de la limite déjà actée en
+   [[hors-perimetre]] § "Senate votes, amendments, sponsored texts" (aucun
+   dataset Sénat structuré exploitable), reconfirmé ici pour la vue
+   Gouvernement spécifiquement car `schema_gouvernement.py` expose
+   `chambre_depot_initial` (`"AN"` ou `"Senat"`) et pourrait laisser croire à
+   tort à une couverture bicamérale complète.
+
+**Hors périmètre de cette entrée** : aucun changement de code ; voir la table
+`AGENTS.md §8` appliquée dans la PR de #214 pour le détail fichier par
+fichier. `docs/pipeline-gouvernement.md` (miroir de
+`docs/pipeline-profiles-groupes.md`) n'est pas créé ici : proposition
+soumise à validation explicite (hors table d'upkeep existante), voir la PR.
+
+<a id="quality-gate-gouvernements"></a>
+## `check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)
+
+**Contexte** : #212 (plan #184) demandait d'intégrer les profils de
+gouvernement au quality gate CI sur le modèle de la section groupes
+existante (`_report_groupes`, §4) : hard fail sur structure cassée, soft
+fail sur qualité dégradée. Contrairement à `_report_groupes`, `schema_gouvernement.py`
+n'a pas de notion de `meta.couverture_roster` (roster_total/profils_disponibles) :
+un gouvernement est agrégé localement à partir des profils pivot déjà présents,
+sans fetch réseau dédié (`gouvernement_roster.py` n'interroge aucun roster
+externe, voir [[gouvernement-roster-desambiguisation]]) — il n'y a donc pas de
+dénominateur "effectif réel" à comparer aux `membres[]` obtenus.
+
+**Décision** : `_report_gouvernements()` (miroir de `_report_groupes()`) retient
+trois soft fails adaptés :
+1. **Couverture ministérielle incomplète** — proxy sur `membres[].portefeuille`
+   (nb de portefeuilles confirmés / nb de membres), pas sur un ratio
+   roster/profils. Cette incomplétude est structurelle et documentée
+   ([[hors-perimetre]] § "Ministerial function") : aucune source open-data
+   n'identifie encore le portefeuille précis, donc ce warning se déclenche
+   aujourd'hui sur la totalité des gouvernements réels — signal volontairement
+   bruyant tant que la source manque, non bloquant (soft), utile pour
+   constater automatiquement une future amélioration de couverture.
+2. **`textes[]` vide alors que `periode.debut` est renseigné** — mirroir de
+   "membres présents mais 0 cohesion_votes" côté groupes.
+3. **Signaux réseau `IncompleteRead`** dans `meta.warnings`, propagés depuis
+   `gouvernement_textes.py` (même logique que `_GROUPE_NETWORK_SIGNALS`, sans
+   les motifs spécifiques roster qui n'ont pas d'équivalent gouvernemental).
+
+Hard fails identiques à `_report_groupes` : fichier attendu manquant, JSON
+invalide, `validate_profil_gouvernement()` en erreur — OR-é dans le code de
+sortie final aux côtés de `grp_exit`. `pivot_data/gouvernements` ajouté au
+scan `IncompleteRead` générique (`ir_dirs`, section 1). Nouveaux arguments
+CLI `--gouvernements-dir` (défaut `pivot_data/gouvernements`) et
+`--gouvernements-config` (défaut `raw_data/gouvernements_reels.json`), miroir
+de `--groupes-dir`/`--groupes-config`. Rapport renuméroté en conséquence :
+groupes reste §4, gouvernements §5, ParlTrack (optionnel) devient §6.
+
+**Alternative rejetée** : réutiliser `min_members`/`min_coverage_pct` (seuils
+de `_report_groupes`) tels quels pour la couverture ministérielle. Écartée
+car ces seuils comparent à un roster réseau qui n'existe pas ici — le seul
+dénominateur disponible localement est `len(membres)`, donc un seuil absolu
+sur le nombre de membres n'aurait mesuré qu'une réalité déjà garantie par la
+construction du roster (`gouvernement_roster.build_gouvernement_roster`), pas
+une qualité de donnée dégradée.
+
+Hors périmètre (comme demandé par #212) : pas de branchement dans
+`generate-data.yml` (sous-issue #9), pas de nouvelle section dans
+`audit_pivot_dataset.py`/`audit_groupe_dataset.py`.
+
 <a id="direction-artistique-empreinte"></a>
 ## Direction artistique de `web/UI_finale` : brief, itérations et alternatives écartées (2026-08-14)
 
@@ -400,6 +722,144 @@ offset non nul reçoit malgré tout une réponse `200` (le serveur ignore
 `Range`), l'écriture est refusée (`OSError`) plutôt que d'ajouter le corps
 complet à la suite d'un fichier déjà partiellement écrit, ce qui produirait
 une archive corrompue silencieusement.
+
+Complément (même date) : le CDN AN a ensuite traversé une fenêtre où même une
+requête Range de quelques Ko au-delà des tout premiers Mo du fichier échouait
+systématiquement (`IncompleteRead(0 bytes read, ...)`) — un segment de 32 Mo
+(`AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`, défaut) n'avait alors quasiment aucune
+chance d'aboutir intégralement. `_download_amendements_zip` accepte désormais
+un paramètre `chunk_bytes` optionnel, exposé via `--chunk-size-mb` sur
+`build_amendements_index_figees.py`, pour réduire ponctuellement la taille de
+segment (ex. 1 Mo) sans toucher au défaut partagé avec le chemin réseau de la
+législature 17 — la reprise entre invocations garantit qu'aucun petit gain
+n'est perdu d'un essai à l'autre. `_download_amendements_zip` affiche
+également désormais une ligne de progression (octets/total, pourcentage)
+après chaque segment écrit avec succès, pas seulement en cas
+d'échec/retry : avec de petits `chunk_bytes`, une invocation peut compter des
+centaines de segments et rester silencieuse plusieurs minutes sans ce retour.
+
+De même, `max_attempts` (optionnel, défaut `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`,
+3) permet d'augmenter le nombre de tentatives par segment via `--max-attempts`
+sans toucher au défaut CI de la législature 17 — utile quand le CDN traverse
+une fenêtre où 3 tentatives ne suffisent pas systématiquement ; chaque
+tentative supplémentaire ne coûte que le temps d'attente (un retry ne
+retente jamais que le segment en échec), et la reprise entre invocations
+couvre de toute façon le cas d'un abandon total.
+
+**Révision (2026-08-15, la dédup seule ne suffit pas non plus)** : le premier
+build réel complet de la législature 16 (archive téléchargée en entier) a
+mesuré `index_par_acteur.json` allégé (post-`_aggregate_amendements_index`,
+donc déjà `{numero, role_signataire}` par lien plutôt qu'une copie complète)
+à **177 Mo en clair** — toujours au-delà de la limite GitHub de 100 Mo par
+blob, contrairement à ce que laissait supposer la révision du 2026-08-13
+(`amendements.json` compacté à 1,1 Mo gzippé n'a en revanche jamais posé de
+problème). La structure `{numero, role_signataire}` étant très répétitive,
+gzip compresse ce fichier à **10,4 Mo** — `build_amendements_index_figees.py`
+écrit donc désormais `amendements.json.gz` et `index_par_acteur.json.gz`
+(constantes `AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME`/
+`AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME`, `candidate_profile.py`) via
+`gzip.open(..., "wt")`, et `_load_frozen_amendement_index` les décompresse à
+la lecture avant `_expand_aggregated_amendements_index` — `fraicheur.json`
+reste en clair (quelques dizaines d'octets, aucun intérêt à le compresser).
+Le fallback runtime matérialisé dans `.cache/amendements_an/` (gitignoré)
+reste en clair, non compressé : seuls les fichiers committés changent de
+format.
+
+**Révision (2026-08-15, ajout de la 14e législature)** : l'affirmation
+initiale (« pas de jeu de données équivalent trouvé pour les législatures
+13/14 ») était inexacte pour la 14e. L'archive existe, mais pas au chemin
+openData standard (`AN_AMENDEMENTS_PATH`) : elle est publiée via une page
+d'archives dédiée hors du répertoire openData habituel
+(`data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements`),
+à un chemin distinct — `14/loi/amendements_legis_XIV/Amendements_XIV.json.zip`
+(vérifié le 15/08/2026 : HTTP 200, 103 716 698 octets, Last-Modified
+2018-03-21). Contrairement aux archives 15/16/17, le CDN la marque
+`x-cacheable: Cacheable: force cache` (probablement du fait de sa taille,
+~99 Mo, sous le seuil qui rend 15/16/17 non cacheables) — le risque
+d'`IncompleteRead` en cours de flux qui a motivé toute la mécanique de
+reprise/segments ci-dessus est donc structurellement plus faible pour cette
+archive, sans que cela change son statut : son dossier législatif est clos
+au même titre que la 15e/16e, donc figée elle aussi (`AN_AMENDEMENTS_PATH`
+et `AN_AMENDEMENTS_LEGISLATURES_FIGEES` dans `candidate_profile.py`,
+`_AMENDEMENTS_LEGISLATURES`/`_AMENDEMENTS_LEGISLATURES_FIGEES` dans
+`check_quality_gate.py`, mis à jour en conséquence). La 13e reste sans
+équivalent trouvé : ni chemin openData ni page d'archives dédiée ne répond
+(vérifié le 15/08/2026).
+
+**Révision (2026-08-15, schéma legacy de l'archive 14e législature) (#299)** :
+l'archive légis 14 obtenue ci-dessus ne suit pas le schéma 15/16/17
+(`_parse_amendement_entry`, un fichier JSON par amendement, racine
+`{"amendement": {...}}`). Elle contient une unique entrée
+(`Amendements_XIV.json`) de racine `{"textesEtAmendements": {"texteleg":
+[...]}}`, chaque `texteleg` (843 au total) listant ses amendements
+(`amendements.amendement[]`, 167 420 au total, singulier en dict plutôt
+qu'en liste pour un `texteleg` à un seul amendement — même écueil que
+`signataires.cosignataires.acteur`). `_parse_amendement_entry` retournait
+`None` pour cette entrée (`data.get("amendement")` absent à la racine) :
+l'index légis 14 se construisait donc silencieusement vide, sans erreur ni
+warning — un défaut latent plus général que le seul cas légis 14 (tout
+schéma inattendu produisait le même résultat vide silencieux).
+
+`_parse_amendements_zip` détecte désormais le schéma de chaque entrée par
+sa clé racine (`"amendement"` vs `"textesEtAmendements"`) et bascule vers
+`_parse_amendement_entry_legacy` (nouveau) pour la seconde — qui aplatit
+`texteleg[] -> amendements.amendement[]` et produit les mêmes clés de
+sortie que `_parse_amendement_entry` (`texte_vise` porté par le `texteleg`
+parent plutôt que par l'amendement individuel ; `numero` depuis
+`identifiant.numeroLong`/`numero` plutôt que `identification.numeroLong` ;
+`date` depuis `dateDepot` racine plutôt que `cycleDeVie.dateDepot`).
+`_extract_cosignataire_refs` et la boucle auteur+cosignataires sont
+réutilisées telles quelles (`signataires` est structurellement identique).
+Pour `sort`/`base_juridique_irrecevabilite`, `_derive_amendement_sort_legacy`
+(nouveau) reprend la même logique d'irrecevabilité que
+`_derive_amendement_sort` (`etat` "Irrecevable"/"Irrecevable 40" — identique
+littéralement), mais l'issue en séance n'a plus besoin d'une table
+`(etat, sousEtat)` ambiguë selon le contexte : `sort.sortEnSeance` la porte
+déjà sans ambiguïté, une simple table de normalisation de casse suffit
+(`_LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP`). Un schéma qui n'est ni l'un ni
+l'autre (`"amendement"` absent et `"textesEtAmendements"` absent) continue
+de produire un index vide pour cette entrée, mais avec un warning explicite
+sur `stderr` — corrige le défaut latent constaté ci-dessus au lieu de ne
+traiter que le cas légis 14.
+
+**Révision (2026-08-15, la légis 15 ne partage pas le schéma legacy de la
+14e) (#301)** : la convention de nommage « fichier unique » du sous-répertoire
+et du zip (`amendements_legis`/`Amendements_XV.json.zip` pour la 15e,
+identique dans l'esprit à `amendements_legis_XIV`/`Amendements_XIV.json.zip`
+pour la 14e, à l'inverse de `amendements_div_legis`/`Amendements.json.zip`
+pour les 16e/17e) laissait supposer que la 15e partage aussi le schéma
+imbriqué `textesEtAmendements.texteleg[].amendements.amendement[]` de la 14e
+(#299) plutôt que le schéma par-fichier des légis 16/17. Vérifié le
+15/08/2026 sans télécharger l'archive complète (648 539 281 octets,
+`Last-Modified: 2022-06-09`, confirmé par `HEAD`, cohérent avec la révision
+du 2026-08-13 ci-dessus) : une lecture partielle en HTTP Range
+(`curl -r <offset>-<offset+N>`, contournant le même CDN instable documenté
+ci-dessus — les requêtes `-H "Range: ..."` demandent une approbation
+interactive indisponible en session non surveillée, `-r` non) aux offsets 0
+et ~5 Mo suffit à lire plusieurs en-têtes locaux ZIP consécutifs (signature
+`PK\x03\x04`, nom, méthode, tailles) sans extraire l'archive entière : les
+noms d'entrée suivent le schéma
+`json/<dossier>/<texteLegislatifRef>/<amendementUid>.json` (un fichier par
+amendement, ex. `json/DLR5L15N36728/PRJLANR5L15B1088/AMANR5L15PO757…N000396.json`)
+et chaque entrée décompressée (`zlib.decompress(..., -15)` sur les octets
+compressés bruts) a pour racine `{"amendement": {...}}` — exactement le
+schéma 16/17 consommé par `_parse_amendement_entry`, vérifié sur deux textes
+législatifs distincts (`PRJLANR5L15B1088` en tête d'archive,
+`PRJLANR5L15BTC1237` vers 5 Mo) pour exclure un schéma hétérogène au sein
+même de l'archive.
+
+**Conclusion** : la convention de nommage « fichier unique » du
+sous-répertoire/zip ne prédit donc pas le schéma interne — seule la 14e
+utilise réellement un fichier JSON unique agrégeant tous les amendements ;
+la 15e, malgré un nommage similaire, est structurée comme les 16e/17e (un
+fichier par amendement, racine `amendement`). `_parse_amendements_zip`
+détecte déjà le schéma par entrée via sa clé racine (révision précédente,
+2026-08-15, #299) : la 15e emprunte donc naturellement la branche
+`_parse_amendement_entry` (pas `_parse_amendement_entry_legacy`) sans aucune
+modification de code. Aucun travail supplémentaire requis pour #271 (le
+build légis 15 peut aboutir avec le parseur existant) ; le commentaire de
+`AN_AMENDEMENTS_PATH` (`candidate_profile.py`) a été corrigé pour ne plus
+laisser entendre que la 15e partage le format « fichier unique » de la 14e.
 
 **Alternatives rejetées** :
 - *Committer les archives `.zip` brutes* (283-618 Mo chacune) : bloat du
@@ -1757,6 +2217,18 @@ disponible localement (`profils_disponibles` très inférieur à `roster_total`)
 graphique à 0 silencieux, conformément à la règle 5 (une donnée manquante
 n'est jamais un 0 par défaut).
 
+**Mise à jour (#213, onglet Gouvernement)** : `web/UI_finale` ajoute un troisième
+onglet, Gouvernement, sur le modèle exact de Groupes (`GovernmentsBar`/
+`GovernmentProfile`/`GovernmentProfilePage`, `buildGovernmentView` dans
+`pivotAdapter.js`) — `sync-data.mjs` copie désormais aussi `pivot_data/gouvernements/`
+vers `public/data/gouvernements/`. Point d'attention spécifique retenu de
+`schema_gouvernement.py` (règle AGENTS.md §2.1) : `comptages.par_statut` est rendu
+comme une liste de badges texte (nombres bruts, statuts à 0 omis), jamais comme une
+jauge, un donut ou un pourcentage — contrairement au donut de couverture de
+`GroupProfile` (qui mesure la complétude des données collectées, pas un score). Même
+pattern "aucune donnée" que les groupes à faible couverture pour `textes[]` vide
+(gouvernements récents) et `membres[].portefeuille` manquant.
+
 <a id="syceron"></a>
 ## Syceron : remplacement du scraping NosDéputés pour les débats en séance (2026-08-07)
 
@@ -1810,6 +2282,13 @@ with the rest of this project's official-JSON-based sources). A full Senate
 pipeline equivalent to the AN one is not currently feasible without a fragile
 HTML-scraping approach. No official structured vote source has been found
 as an alternative either.
+
+Applies to the gouvernement view's `textes[]` too (confirmed in
+[[gouvernement-doc-cloture]], #214): `gouvernement_textes.py` only reads the
+AN dossiers-legislatifs dump, so a bill whose primary deposit chamber is the
+Senate is never captured, regardless of `schema_gouvernement.py` exposing a
+`"Senat"` value for `chambre_depot_initial` (reachable only via texts
+deposited at the AN and later transmitted to the Senate).
 
 ### European Parliament — textes_portés / amendements via the official API
 

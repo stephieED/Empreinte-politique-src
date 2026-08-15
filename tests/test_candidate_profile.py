@@ -17,12 +17,15 @@ from candidate_profile import (
     _collect_texte_codes,
     _aggregate_amendements_index,
     _derive_amendement_sort,
+    _derive_amendement_sort_legacy,
     _expand_aggregated_amendements_index,
     _extract_mandats,
     _parse_syceron_intervention_entry,
     _format_lieu_naissance,
     _groupe_label,
     _parse_amendement_entry,
+    _parse_amendement_entry_legacy,
+    _parse_amendements_zip,
     _parse_question_entry,
     _stade_from_code_acte,
     build_profile,
@@ -413,120 +416,108 @@ def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
 
 
 # ---------------------------------------------------------------------------
-# Tests pour `_parse_amendement_entry_legacy`/`_iter_legacy_amendements`
-# (schéma imbriqué de la 14e législature, `amendements_legis_XIV` —
-# `{"textesEtAmendements": {"texteleg": [...]}}`, structurellement différent
-# du schéma moderne 15/16/17 : voir #298/#299).
+# Tests pour le schéma legacy légis 14 (`_parse_amendement_entry_legacy`,
+# `_derive_amendement_sort_legacy`, détection de schéma dans
+# `_parse_amendements_zip`) — issue #299.
 # ---------------------------------------------------------------------------
 
-def test_parse_amendement_entry_legacy_keeps_primary_author_and_cosignataires():
-    from candidate_profile import _parse_amendement_entry_legacy
+def test_derive_amendement_sort_legacy_maps_sort_en_seance():
+    assert _derive_amendement_sort_legacy("Discuté", "Tombé") == ("tombé", None)
+    assert _derive_amendement_sort_legacy("Discuté", "Adopté") == ("adopté", None)
+    assert _derive_amendement_sort_legacy("Discuté", "Rejeté") == ("rejeté", None)
+    assert _derive_amendement_sort_legacy("Discuté", "Non soutenu") == ("non_soutenu", None)
+    assert _derive_amendement_sort_legacy("Retiré", "Retiré") == ("retiré", None)
 
-    raw = {
-        "uid": "AMANR5L14SEA644420B0013P0D1N7",
-        "numeroLong": "7 (Rect)",
+
+def test_derive_amendement_sort_legacy_maps_irrecevabilite_by_base_juridique():
+    assert _derive_amendement_sort_legacy("Irrecevable 40", None) == ("irrecevable", "art. 40")
+    assert _derive_amendement_sort_legacy("Irrecevable", None) == ("irrecevable", "art. 45")
+
+
+def test_derive_amendement_sort_legacy_unknown_returns_none():
+    assert _derive_amendement_sort_legacy("En traitement", None) == (None, None)
+
+
+def _legacy_amendement_raw(**overrides):
+    base = {
+        "identifiant": {"numero": "7", "numeroLong": "7 (Rect)"},
         "dateDepot": "2014-02-14",
         "etat": "Discuté",
-        "sort": {"dateSaisie": "2014-02-20T12:45:45", "sortEnSeance": "Tombé"},
-        "identifiant": {
-            "legislature": "14",
-            "numero": "7",
-            "saisine": {"refTexteLegislatif": "PIONANR5L14B0013"},
-        },
+        "sort": {"sortEnSeance": "Tombé"},
         "signataires": {
-            "auteur": {"acteurRef": "PA267289", "typeAuteur": "Depute"},
-            "cosignataires": {"acteurRef": ["PA2099", "PA267289", "PA1699"]},
+            "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+            "cosignataires": {"acteurRef": ["PA842001", "PA793182"]},
         },
+    }
+    base.update(overrides)
+    return base
+
+
+def test_parse_amendement_entry_legacy_maps_fields_and_cosignataires():
+    raw = {
+        "textesEtAmendements": {
+            "texteleg": [
+                {
+                    "refTexteLegislatif": "PIONANR5L14B0013",
+                    "amendements": {"amendement": [_legacy_amendement_raw()]},
+                }
+            ]
+        }
     }
 
     result = _parse_amendement_entry_legacy(raw)
 
     assert result is not None
     by_acteur = {acteur_ref: record for acteur_ref, record in result}
-    # PA267289 est à la fois auteur et listé dans ses propres cosignataires —
-    # ne doit apparaître qu'une fois (même garde que le schéma moderne).
-    assert set(by_acteur.keys()) == {"PA267289", "PA2099", "PA1699"}
+    assert set(by_acteur.keys()) == {"PA1567", "PA842001", "PA793182"}
 
-    auteur = by_acteur["PA267289"]
+    auteur = by_acteur["PA1567"]
     assert auteur["role_signataire"] == "auteur_principal"
-    assert auteur["premier_signataire"] == "an:PA267289"
+    assert auteur["premier_signataire"] == "an:PA1567"
     assert auteur["numero"] == "7 (Rect)"
     assert auteur["texte_vise"] == "PIONANR5L14B0013"
     assert auteur["type_deposant"] == "depute"
     assert auteur["date"] == "2014-02-14"
     assert auteur["sort"] == "tombé"
-    # co_signataires reflète la liste brute telle quelle (y compris l'auteur
-    # lui-même s'il y figure, observé en pratique sur l'archive réelle) —
-    # même comportement que _parse_amendement_entry (schéma moderne) : seule
-    # la boucle de construction des entrées par signataire évite de dupliquer
-    # une entrée "cosignataire" pour l'auteur.
-    assert auteur["co_signataires"] == ["an:PA2099", "an:PA267289", "an:PA1699"]
+    assert auteur["base_juridique_irrecevabilite"] is None
+    assert auteur["co_signataires"] == ["an:PA842001", "an:PA793182"]
 
-    cosign = by_acteur["PA2099"]
+    cosign = by_acteur["PA842001"]
     assert cosign["role_signataire"] == "cosignataire"
-    assert cosign["premier_signataire"] == "an:PA267289"
+    assert cosign["premier_signataire"] == "an:PA1567"
 
 
-def test_parse_amendement_entry_legacy_returns_none_without_acteur_ref():
-    from candidate_profile import _parse_amendement_entry_legacy
-
-    assert _parse_amendement_entry_legacy({"signataires": {"auteur": {}}}) is None
-
-
-def test_iter_legacy_amendements_flattens_texteleg_list_and_handles_singular_amendement():
-    from candidate_profile import _iter_legacy_amendements
-
-    data = {
+def test_parse_amendement_entry_legacy_handles_singular_amendement_dict():
+    """Un texteleg à un seul amendement expose `amendement` comme dict plutôt
+    que liste (même écueil que `cosignataires.acteur` ailleurs dans le code)."""
+    raw = {
         "textesEtAmendements": {
-            "texteleg": [
-                {
-                    "refTexteLegislatif": "PIONANR5L14B0013",
-                    "amendements": {"amendement": [{"uid": "A1"}, {"uid": "A2"}]},
-                },
-                # Un texteleg à un seul amendement : l'AN "déballe" la liste
-                # à un élément (même défensive que cosignataires.acteur).
-                {
-                    "refTexteLegislatif": "PIONANR5L14B0014",
-                    "amendements": {"amendement": {"uid": "A3"}},
-                },
-            ]
+            "texteleg": {
+                "refTexteLegislatif": "PIONANR5L14B0013",
+                "amendements": {"amendement": _legacy_amendement_raw()},
+            }
         }
     }
 
-    result = _iter_legacy_amendements(data)
+    result = _parse_amendement_entry_legacy(raw)
 
-    assert [a["uid"] for a in result] == ["A1", "A2", "A3"]
-
-
-def test_iter_legacy_amendements_returns_empty_list_for_modern_schema():
-    from candidate_profile import _iter_legacy_amendements
-
-    assert _iter_legacy_amendements({"amendement": {"uid": "A1"}}) == []
+    assert result is not None
+    assert {acteur_ref for acteur_ref, _ in result} == {"PA1567", "PA842001", "PA793182"}
 
 
-def test_parse_amendements_zip_detects_legacy_schema(tmp_path):
-    """`_parse_amendements_zip` doit basculer sur le parseur legacy quand
-    l'entrée JSON a la clé racine `textesEtAmendements`, sans affecter le
-    chemin moderne (une entrée par amendement)."""
-    import zipfile as _zipfile
+def test_parse_amendement_entry_legacy_returns_none_without_root_key():
+    assert _parse_amendement_entry_legacy({"amendement": {}}) is None
 
-    from candidate_profile import _parse_amendements_zip
 
-    legacy_payload = {
+def test_parse_amendement_entry_legacy_irrecevable_sets_base_juridique():
+    raw = {
         "textesEtAmendements": {
             "texteleg": [
                 {
                     "refTexteLegislatif": "PIONANR5L14B0013",
                     "amendements": {
                         "amendement": [
-                            {
-                                "numeroLong": "7",
-                                "dateDepot": "2014-02-14",
-                                "etat": "Discuté",
-                                "sort": {"sortEnSeance": "Adopté"},
-                                "identifiant": {"saisine": {"refTexteLegislatif": "PIONANR5L14B0013"}},
-                                "signataires": {"auteur": {"acteurRef": "PA1", "typeAuteur": "Depute"}},
-                            }
+                            _legacy_amendement_raw(etat="Irrecevable 40", sort={})
                         ]
                     },
                 }
@@ -534,16 +525,69 @@ def test_parse_amendements_zip_detects_legacy_schema(tmp_path):
         }
     }
 
+    result = _parse_amendement_entry_legacy(raw)
+
+    assert result is not None
+    auteur = dict(result)["PA1567"]
+    assert auteur["sort"] == "irrecevable"
+    assert auteur["base_juridique_irrecevabilite"] == "art. 40"
+
+
+def _make_amendements_zip(tmp_path, entries: dict):
+    import zipfile as zipfile_module
+
     zip_path = tmp_path / "amendements.zip"
-    with _zipfile.ZipFile(zip_path, "w") as zf:
-        zf.writestr("Amendements_XIV.json", json.dumps(legacy_payload))
+    with zipfile_module.ZipFile(zip_path, "w") as zf:
+        for name, content in entries.items():
+            zf.writestr(name, json.dumps(content))
+    return zip_path
+
+
+def test_parse_amendements_zip_dispatches_current_schema(tmp_path):
+    raw = {
+        "amendement": {
+            "identification": {"numeroLong": "AS1"},
+            "texteLegislatifRef": "PIONANR5L17B0904",
+            "signataires": {"auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"}},
+            "cycleDeVie": {"dateDepot": "2025-02-17"},
+        }
+    }
+    zip_path = _make_amendements_zip(tmp_path, {"AMANR5L17PO001.json": raw})
 
     index = _parse_amendements_zip(zip_path)
 
-    assert set(index.keys()) == {"PA1"}
-    assert index["PA1"][0]["numero"] == "7"
-    assert index["PA1"][0]["sort"] == "adopté"
-    assert index["PA1"][0]["texte_vise"] == "PIONANR5L14B0013"
+    assert set(index.keys()) == {"PA1567"}
+    assert index["PA1567"][0]["numero"] == "AS1"
+
+
+def test_parse_amendements_zip_dispatches_legacy_schema(tmp_path):
+    raw = {
+        "textesEtAmendements": {
+            "texteleg": [
+                {
+                    "refTexteLegislatif": "PIONANR5L14B0013",
+                    "amendements": {"amendement": [_legacy_amendement_raw()]},
+                }
+            ]
+        }
+    }
+    zip_path = _make_amendements_zip(tmp_path, {"Amendements_XIV.json": raw})
+
+    index = _parse_amendements_zip(zip_path)
+
+    assert set(index.keys()) == {"PA1567", "PA842001", "PA793182"}
+    assert index["PA1567"][0]["sort"] == "tombé"
+
+
+def test_parse_amendements_zip_warns_explicitly_on_unknown_schema(tmp_path, capsys):
+    zip_path = _make_amendements_zip(tmp_path, {"unknown.json": {"somethingElse": {}}})
+
+    index = _parse_amendements_zip(zip_path)
+
+    assert index == {}
+    captured = capsys.readouterr()
+    assert "format inconnu" in captured.err
+    assert "unknown.json" in captured.err
 
 
 # ---------------------------------------------------------------------------
@@ -1825,11 +1869,11 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
 
 def test_download_and_build_amendement_index_uses_frozen_fallback_without_download(tmp_path):
     """Pour une législature dans `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, l'index
-    committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée
-    `amendements.json` + `index_par_acteur.json` allégé — voir
+    committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée et compressée
+    gzip — `amendements.json.gz` + `index_par_acteur.json.gz` allégé, voir
     `_aggregate_amendements_index`) est utilisé sans jamais toucher le réseau,
     même en l'absence de tout cache disque préexistant, et reconstruit sous la
-    forme plate standard avant matérialisation dans le cache."""
+    forme plate standard (en clair) avant matérialisation dans le cache."""
     from candidate_profile import _download_and_build_amendement_index
 
     frozen_amendements = {
@@ -2289,6 +2333,44 @@ def test_download_amendements_zip_chunk_bytes_param_overrides_module_default(tmp
     )
 
 
+def test_download_amendements_zip_max_attempts_param_overrides_module_default(tmp_path):
+    """Le paramètre explicite `max_attempts` doit primer sur
+    `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS` — utilisé par `--max-attempts` pour
+    augmenter le nombre de tentatives par segment sans toucher au défaut
+    partagé avec le chemin réseau de la législature 17."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets, segments de 4 -> 3 segments
+    zip_path = tmp_path / "amendements.zip"
+    attempts_for_middle_segment = 0
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        nonlocal attempts_for_middle_segment
+        start, end = (int(x) for x in headers["Range"].removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        if start == 4:
+            attempts_for_middle_segment += 1
+            if attempts_for_middle_segment < 4:
+                raise _requests.RequestException("IncompleteRead simulée")
+        return _FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS", 2),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        _download_amendements_zip(
+            "https://example.test/amendements.zip", zip_path, "17", max_attempts=5,
+        )
+
+    assert zip_path.read_bytes() == payload, (
+        "Avec max_attempts=5 (> AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS=2 patché), le segment "
+        "qui échoue 3 fois avant de réussir à la 4e doit tout de même aboutir"
+    )
+    assert attempts_for_middle_segment == 4
+
+
 def test_download_amendements_zip_skips_entirely_when_already_complete(tmp_path):
     """Un fichier partiel dont la taille locale correspond déjà à la taille
     distante (téléchargement complet mais échec précédent avant l'écriture de
@@ -2411,6 +2493,33 @@ def test_download_amendements_zip_raises_instead_of_corrupting_on_unexpected_200
             pass
 
     assert zip_path.read_bytes() == payload[:4], "Le fichier partiel existant ne doit pas être corrompu"
+
+
+def test_download_amendements_zip_prints_progress_on_success(tmp_path, capsys):
+    """Chaque segment écrit avec succès doit produire une ligne de progression
+    (octets/total, pourcentage), pas seulement les échecs/retries — sinon une
+    invocation avec de petits `chunk_bytes` reste silencieuse pendant des
+    minutes et ressemble à un blocage (voir docstring, ajout du 15/08/2026)."""
+    from candidate_profile import _download_amendements_zip
+
+    payload = b"0123456789AB"  # 12 octets, segments de 4 -> 3 segments
+    zip_path = tmp_path / "amendements.zip"
+
+    def fake_get(url, headers=None, timeout=None, stream=None):
+        start, end = (int(x) for x in headers["Range"].removeprefix("bytes=").split("-"))
+        end = min(end, len(payload) - 1)
+        return _FakeRangeResponse(payload[start : end + 1], len(payload))
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_DOWNLOAD_CHUNK_BYTES", 4),
+        patch("candidate_profile.requests.get", side_effect=fake_get),
+    ):
+        _download_amendements_zip("https://example.test/amendements.zip", zip_path, "17")
+
+    out = capsys.readouterr().out
+    assert out.count("écrit") == 3, "Une ligne de progression par segment réussi (3 segments)"
+    assert "4/12" in out and "8/12" in out and "12/12" in out
+    assert "100.0%" in out
 
 
 def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others():

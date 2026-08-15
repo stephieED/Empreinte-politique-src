@@ -157,9 +157,11 @@ Vocabulaire vérifié dans `src/components/*.css` et `*.jsx` :
 - **Aucun vocabulaire de classement** : pas de « score », « note », « rang » ou « performance » nulle part dans l'interface — jusque dans le texte d'aide du panneau latéral. Découle directement de la règle éditoriale 1 (`AGENTS.md §2`).
 - **La couverture partielle s'assume** : « 14 / 66 membres » s'affiche tel quel, sans arrondi flatteur ni habillage en pourcentage seul — cohérent avec la règle éditoriale 7 (ratios toujours num/dénom).
 
-Deux textes permanents cités par la DA préliminaire (à vérifier au prochain audit du pied de nav et du panneau latéral — non confirmés dans le CSS/JSX lu pour cette version) :
+Deux textes permanents cités par la DA préliminaire :
 > « Données publiques agrégées. Aucun score, aucun classement. » — pied de la navigation
 > « Empreinte politique ne publie aucun taux individuel d'assiduité, de présence ou d'absence — un scrutin manqué ne décrit ni le travail parlementaire ni ses motifs. »
+
+Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explorer-footer`, affiché sur les trois vues principales (candidat/groupe/gouvernement) avec les liens vers `/methodologie` et `/mentions-legales`, et repris à l'identique sur `LandingPage.jsx` (`.landing-footer`) pour que ces deux pages restent atteignables sans détour par l'outil. Le second (panneau latéral) reste à vérifier au prochain audit — non confirmé dans le CSS/JSX lu pour cette version.
 
 ---
 
@@ -180,7 +182,7 @@ Deux textes permanents cités par la DA préliminaire (à vérifier au prochain 
 2. **Échelle d'espacement plus dense que la cible** : la cible propose 8 valeurs (`4·8·12·16·20·28·40·64`), le code en utilise 19 (`2,3,4,5,6,8,9,10,12,14,16,18,20,22,24,28,32,40,64`). Pas nécessairement un bug — beaucoup de ces valeurs sont des ajustements fins légitimes (ex. `9px` padding tab) — mais si l'intention est de converger vers l'échelle à 8 valeurs, c'est un chantier de refactor CSS, pas une correction ponctuelle.
 3. **Couleurs de vote dupliquées sans partage de source** : `VOTE_STYLE`/`OUTCOME_COLOR` sont copiées à l'identique dans `CandidateProfile.jsx` et `GroupProfile.jsx`. Risque de divergence silencieuse si l'une est modifiée sans l'autre — candidat naturel à extraire dans un module partagé (`src/utils/` ou `src/data/`).
 4. **Chip active — asymétrie Candidats/Groupes** : `CandidatesBar` (`.cb-chip.active`) passe en fond blanc à bordure encre, `GroupsBar` (`.gb-chip.active`) passe en fond encre plein — la DA préliminaire ne documente qu'un seul comportement (« le fond de la chip passe à l'encre »). À vérifier si l'asymétrie est un choix voulu (différencier visuellement candidat vs groupe) ou une divergence non intentionnelle.
-5. **Textes permanents de la section Voix non retrouvés** dans le CSS/JSX lu pour cette version (pied de nav, panneau latéral) — à confirmer lors d'un prochain passage avant de les citer comme garantie de conformité.
+5. **Texte permanent du panneau latéral non retrouvé** dans le CSS/JSX lu pour cette version — à confirmer lors d'un prochain passage avant de le citer comme garantie de conformité. Le texte du pied de navigation est désormais implémenté (`ExplorerLayout.jsx` `.explorer-footer`).
 
 ---
 

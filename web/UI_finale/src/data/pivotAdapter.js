@@ -54,6 +54,31 @@ const AMENDMENT_OUTCOME_LABELS = {
   tombé: 'Tombés', irrecevable: 'Irrecevables', non_soutenu: 'Non soutenus',
 };
 
+// Ordre d'affichage + libellés (singulier/pluriel) des comptages par statut
+// d'un texte gouvernemental (schema_gouvernement.py). Entiers bruts
+// uniquement : jamais de jauge, donut ou pourcentage (AGENTS.md règle 2.1).
+const GOVERNMENT_STATUT_ORDER = [
+  'adopte', 'rejete', 'retire', 'adopte_49_3', 'rejete_49_3', 'navette_en_cours', 'depose',
+];
+const GOVERNMENT_STATUT_LABELS = {
+  adopte: { singular: 'adopté', plural: 'adoptés' },
+  rejete: { singular: 'rejeté', plural: 'rejetés' },
+  retire: { singular: 'retiré', plural: 'retirés' },
+  adopte_49_3: { singular: 'adopté via 49.3', plural: 'adoptés via 49.3' },
+  rejete_49_3: { singular: 'rejeté via 49.3', plural: 'rejetés via 49.3' },
+  navette_en_cours: { singular: 'en navette', plural: 'en navette' },
+  depose: { singular: 'déposé', plural: 'déposés' },
+};
+const GOVERNMENT_TEXTE_STATUT_LABELS = {
+  depose: 'Déposé',
+  navette_en_cours: 'Navette en cours',
+  adopte: 'Adopté',
+  adopte_49_3: 'Adopté via 49.3',
+  rejete: 'Rejeté',
+  rejete_49_3: 'Rejeté via 49.3',
+  retire: 'Retiré',
+};
+
 function toDateMs(value) {
   if (!value) return 0;
   const t = Date.parse(value);
@@ -303,5 +328,57 @@ export function buildGroupView(groupe) {
       nom: m.nom,
       actif: m.actif,
     })),
+  };
+}
+
+/** Construit l'objet consommé par GovernmentProfile.jsx à partir d'un profil de gouvernement v1 (schema_gouvernement.py). */
+export function buildGovernmentView(gouvernement) {
+  const periode = gouvernement.periode || {};
+  const membres = gouvernement.membres || [];
+  const textes = gouvernement.textes || [];
+  const parStatut = gouvernement.comptages?.par_statut || {};
+
+  const kicker = periode.actif
+    ? `En fonction depuis le ${formatFrDate(periode.debut) || 'date non renseignée'}`
+    : `Du ${formatFrDate(periode.debut) || '?'} au ${formatFrDate(periode.fin) || '?'}`;
+
+  // Comptages par statut : liste de nombres bruts uniquement, jamais un %
+  // ou une jauge (AGENTS.md règle 2.1) — statuts à 0 omis pour lisibilité.
+  const statutBadges = GOVERNMENT_STATUT_ORDER
+    .filter((key) => (parStatut[key] || 0) > 0)
+    .map((key) => {
+      const count = parStatut[key];
+      const labels = GOVERNMENT_STATUT_LABELS[key];
+      return { key, count, label: count === 1 ? labels.singular : labels.plural };
+    });
+
+  const textesView = [...textes]
+    .sort((a, b) => toDateMs(b.date_depot) - toDateMs(a.date_depot))
+    .map((t) => ({
+      dossierId: t.dossier_id,
+      titre: t.titre,
+      statutLabel: GOVERNMENT_TEXTE_STATUT_LABELS[t.statut] || t.statut,
+      chambre: t.chambre_depot_initial === 'AN' ? 'Assemblée nationale' : 'Sénat',
+      sort493: t.sort_49_3 === true,
+      meta: formatFrDate(t.date_depot) || 'Date de dépôt non renseignée',
+      sourceUrl: t.source_url,
+    }));
+
+  const membresView = membres.map((m) => ({
+    nom: m.nom,
+    portefeuille: m.portefeuille,
+    actif: m.actif,
+    period: `${yearOf(m.debut) || '?'} → ${m.actif ? "aujourd'hui" : (yearOf(m.fin) || '?')}`,
+  }));
+
+  return {
+    id: String(gouvernement.gouvernement_id || '').replace(/^gouvernement:/, ''),
+    title: gouvernement.nom,
+    kicker,
+    premierMinistre: gouvernement.premier_ministre?.nom || null,
+    actif: Boolean(periode.actif),
+    membres: membresView,
+    textes: textesView,
+    statutBadges,
   };
 }

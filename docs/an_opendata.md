@@ -38,10 +38,16 @@ See `AN_SCRUTINS_ZIP_NAME` / `fetch_votes_officiels` in
 | 17 (ongoing, daily updates) | `amendements_div_legis` | `Amendements.json.zip` | ~283 MB |
 | 16 (archived) | `amendements_div_legis` | `Amendements.json.zip` | ~363 MB |
 | 15 (archived) | `amendements_legis` | `Amendements_XV.json.zip` | ~618 MB |
-| 14, 13 | - | no equivalent dataset (tested paths return 404) |
+| 14 (archived) | `amendements_legis_XIV` | `Amendements_XIV.json.zip` | ~99 MB |
+| 13 | - | no equivalent dataset (tested paths return 404) |
 
 The ZIP contains one JSON per amendment (~123k files for legislature 17),
-under `json/{dataset}/{text}/AMANR5L{legislature}...json`.
+under `json/{dataset}/{text}/AMANR5L{legislature}...json` — except
+legislature 14, published via a separate archives page (not the standard
+openData path, see `docs/technical_decisions.md#amendements-legislatures-figees`),
+whose single JSON entry (`Amendements_XIV.json`) nests all amendments under
+a different schema (`textesEtAmendements.texteleg[].amendements.amendement[]`,
+see "Legacy schema (legislature 14)" below).
 See `AN_AMENDEMENTS_PATH` / `fetch_amendements_officiels` in
 `src/candidate_profile.py`.
 
@@ -58,6 +64,39 @@ See `AN_AMENDEMENTS_PATH` / `fetch_amendements_officiels` in
 - `.texteLegislatifRef`: raw target code, not a human title.
 - `.representations.representation.contenu.documentURI`: currently does not
   resolve to a stable public URL in tested cases.
+
+### Legacy schema (legislature 14)
+
+Measured on the legislature 14 archive (843 `texteleg`, 167,420 amendments
+total). Root: `{"textesEtAmendements": {"texteleg": [...]}}` — `texteleg` is
+a dict instead of a list when there is only one (same quirk as
+`cosignataires.acteur` below). Per `texteleg`:
+
+- `refTexteLegislatif`: shared by all its amendments (per-`texteleg`, not
+  per-amendement like `.texteLegislatifRef` in the current schema).
+- `amendements.amendement[]` (dict instead of list for a single amendment).
+
+Per amendement (differences from the 15/16/17 schema only; `signataires` is
+unchanged, see below):
+
+- `identifiant.numero` / `numeroLong` (root, e.g. `"7 (Rect)"`) instead of
+  `identification.numeroLong`.
+- `dateDepot` (root, e.g. `"2014-02-14"`) instead of `cycleDeVie.dateDepot`.
+- `etat` (string, e.g. `"Discuté"`) + `sort.sortEnSeance` (e.g. `"Tombé"`)
+  instead of `cycleDeVie.etatDesTraitements.etat/sousEtat.libelle`. Unlike
+  the current schema's `(etat, sousEtat)` pair (ambiguous depending on
+  context, see `_AMENDEMENT_SORT_MAP`), `sortEnSeance` unambiguously carries
+  the outcome — only a case-normalization table is needed
+  (`_LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP` in `candidate_profile.py`);
+  irrecevability (`etat` in `"Irrecevable"`/`"Irrecevable 40"`) reuses the
+  exact same logic as `_derive_amendement_sort()`.
+- `signataires.auteur.acteurRef` / `signataires.cosignataires.acteurRef`:
+  identical to the current schema, `_extract_cosignataire_refs()` reused as
+  is.
+
+See `_parse_amendement_entry_legacy()` / `_derive_amendement_sort_legacy()`
+in `candidate_profile.py` (issue #299); schema detection (root key
+`"amendement"` vs `"textesEtAmendements"`) happens in `_parse_amendements_zip()`.
 
 ## Archive: "Schemas and legislative data documentation"
 

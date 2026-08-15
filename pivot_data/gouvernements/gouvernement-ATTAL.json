@@ -11,6 +11,15 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:dominique-faure",
+      "nom": "Dominique Faure",
+      "portefeuille": null,
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:fadila-khattabi",
       "nom": "Fadila Khattabi",
       "portefeuille": null,
@@ -64,13 +73,18 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/fadila-khattabi",
-      "synchro_le": "2026-08-13T13:45:39+0000"
+      "url": "https://www.nosdeputes.fr/dominique-faure",
+      "synchro_le": "2026-08-14T14:47:51+0000"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-13T13:45:41+0000"
+      "synchro_le": "2026-08-14T14:47:53+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/fadila-khattabi",
+      "synchro_le": "2026-08-13T13:45:39+0000"
     },
     {
       "type": "nosdeputes",
@@ -85,7 +99,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-14T12:06:38+0000",
+    "genere_le": "2026-08-14T14:49:50+0000",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

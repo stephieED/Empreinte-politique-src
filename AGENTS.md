@@ -13,7 +13,8 @@ Commands, structure, coverage limits: `README.md`.
 `CONTRECHAMP` (`web/`) is the interface design lab. `web/UI_finale` (React 19 + Vite) is
 the current production interface, wired to real pivot data (`#web-v3-ui`). Earlier design
 generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
-`web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) — no Partis tab.
+`web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) ·
+**Gouvernement** (real governments) — no Partis tab.
 Positioning, naming, target audience: `docs/technical_decisions.md#positionnement`.
 
 ## 2. Non-negotiable editorial rules
@@ -38,14 +39,22 @@ graph TD
     B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
     C --> D["group_profile.py"]
     C --> E["parti_profile.py"]
+    C --> I["gouvernement_roster.py<br/>(no network — local pivots only)"]
+    J["AN dossiers-legislatifs dump<br/>(gouvernement_textes.py)"] --> K["gouvernement_profile.py"]
+    I --> K
     D --> F["pivot_data/groupes/<br/>(schema_groupe.py)"]
     E --> G["pivot_data/partis/<br/>(schema_parti.py)"]
+    K --> L["pivot_data/gouvernements/<br/>(schema_gouvernement.py)"]
     F --> H["check_quality_gate.py<br/>(pre-commit gate)"]
     G --> H
+    L --> H
 ```
 
 - `raw_data/` = source-near; `pivot_data/` = only layer `web/` reads.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`.
+- Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
+  from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
+  once per batch (`generate_gouvernement_profiles.py`).
 
 **Additive merge (`merge_profile.py`)**: regeneration never removes collected data.
 - `votes`, `mandats`, `interventions`: additive, old entry wins (`merge_lists_by_key`).
@@ -58,12 +67,14 @@ Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
-**Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe file;
-soft warnings on low interventions, low coverage, network signals, and amendements index
-freshness (§3d: distinguishes "never built" from "present but stale beyond N days without
-a successful rebuild" from "frozen" — légis 15/16 are closed dossiers, their index is
-committed under `raw_data/amendements_an_figes/` and never re-fetched, see
-`docs/technical_decisions.md#amendements-legislatures-figees`).
+**Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
+gouvernement file; soft warnings on low interventions, low coverage, network signals, and
+amendements index freshness (§3d: distinguishes "never built" from "present but stale
+beyond N days without a successful rebuild" from "frozen" — légis 15/16 are closed
+dossiers, their index is committed under `raw_data/amendements_an_figes/` and never
+re-fetched, see `docs/technical_decisions.md#amendements-legislatures-figees`). Gouvernement
+section (§5) mirrors groupes (§4): couverture ministérielle (portefeuille attribution),
+empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212.
 
 ## 4. Pivot schema v1 (`src/schema_pivot.py`)
 
@@ -115,12 +126,12 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 | Source | License | Constraint |
 |---|---|---|
-| NosDeputes.fr / NosSenateurs.fr | ODbL | Share-alike if published as downloadable dataset |
-| data.assemblee-nationale.fr | Open License (Etalab) | Attribution only |
-| Parltrack | CC0 / ODbL (mixed) | Share-alike for ODbL parts if republished |
-| European Parliament Open Data Portal | CC BY 4.0 | Attribution only |
+| NosDeputes.fr / NosSenateurs.fr | ODbL v1.0 | Share-alike if published as downloadable dataset |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | Licence Ouverte / Open Licence (Etalab) | Attribution only |
+| Parltrack (JSON dumps) | ODbL v1.0 | Share-alike if republished as downloadable dataset |
+| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
 | French Wikipedia | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
-| Wikidata | CC0 | No restriction |
+| Wikidata | CC0 1.0 | No restriction |
 
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
 Full details: `docs/technical_decisions.md#licences`.

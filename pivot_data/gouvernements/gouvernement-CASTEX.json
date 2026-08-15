@@ -20,6 +20,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:olivier-dussopt",
+      "nom": "Olivier Dussopt",
+      "portefeuille": null,
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:olivier-veran",
       "nom": "Olivier Véran",
       "portefeuille": null,
@@ -54,13 +63,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivier-dussopt",
+      "synchro_le": "2026-08-14T14:48:31+0000"
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
       "synchro_le": "2026-08-13T13:42:46+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-14T12:06:38+0000",
+    "genere_le": "2026-08-14T14:49:50+0000",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

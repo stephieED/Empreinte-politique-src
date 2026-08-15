@@ -89,17 +89,22 @@ LEGISLATURE_BY_BASE_URL = {
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
-# sous-repertoire differe selon la legislature : "amendements_div_legis" pour
-# les legislatures 16/17 (regroupement par texte), "amendements_legis" pour la
-# 15e, "amendements_legis_XIV" pour la 14e (fichier unique nomme par numero
-# romain pour les deux). Verifie manuellement (HTTP 200) pour chaque entree
-# ci-dessous. La 14e a ete trouvee le 15/08/2026 via la page d'archives dediee
+# sous-repertoire et du zip differe selon la legislature : "amendements_div_legis"
+# / "Amendements.json.zip" pour les legislatures 16/17, "amendements_legis" /
+# "Amendements_XV.json.zip" pour la 15e, "amendements_legis_XIV" /
+# "Amendements_XIV.json.zip" pour la 14e. Cette similitude de nommage entre
+# 14e et 15e (suffixe numero romain) ne reflete PAS le contenu : verifie le
+# 15/08/2026 (#301) via lecture partielle en HTTP Range de l'archive 15e
+# (en-tetes locaux ZIP a l'offset 0 et vers 5 Mo) que son zip contient, comme
+# les 16e/17e, un fichier JSON par amendement de racine `{"amendement": {...}}`
+# (`_parse_amendement_entry`) — pas le schema legacy "fichier unique" /
+# `{"textesEtAmendements": {...}}` de la 14e (#299, `_parse_amendement_entry_legacy`).
+# Verifie manuellement (HTTP 200) pour chaque entree ci-dessous. La 14e a ete
+# trouvee le 15/08/2026 via la page d'archives dediee
 # (data.assemblee-nationale.fr/archives-anterieures/archives-14e/amendements),
 # pas via le repertoire openData standard qui ne la liste pas directement ;
 # aucun equivalent trouve pour la 13e (aucune page d'archives ni chemin
-# openData ne repond, contrairement a la 14e/15e qui en ont une). La 14e
-# utilise en outre un schema JSON different (imbrique, "legacy") des 15/16/17
-# — voir _parse_amendement_entry_legacy.
+# openData ne repond, contrairement a la 14e/15e qui en ont une).
 AN_AMENDEMENTS_PATH: dict[str, tuple[str, str]] = {
     "17": ("amendements_div_legis", "Amendements.json.zip"),
     "16": ("amendements_div_legis", "Amendements.json.zip"),
@@ -132,9 +137,9 @@ AN_AMENDEMENTS_FIGEES_DIR = Path("raw_data") / "amendements_an_figes"
 # `_write_amendements_fraicheur`.
 AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # Noms des fichiers committés pour une législature figée (compressés gzip :
-# `index_par_acteur.json` allégé peut malgré tout dépasser la limite GitHub de
-# 100 Mo par blob une fois décompressé — mesuré à 177 Mo pour la législature
-# 16, contre 10,4 Mo une fois gzippé, la structure très répétitive
+# mesuré le 15/08/2026 sur la législature 16, `index_par_acteur.json` allégé
+# pèse malgré tout 177 Mo en clair — au-delà de la limite GitHub de 100 Mo par
+# blob — contre 10,4 Mo une fois gzippé, la structure très répétitive
 # {numero, role_signataire} compressant très bien). `amendements.json`
 # regroupe les enregistrements dédupliqués (voir `_aggregate_amendements_index`
 # et docs/technical_decisions.md#amendements-legislatures-figees) ; le
@@ -827,12 +832,8 @@ def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tupl
 
 
 # Type d'auteur (open data amendements) -> type_deposant du schema pivot.
-# "Depute" (sans accent) : forme observee dans le schema legacy de la 14e
-# legislature (voir _parse_amendement_entry_legacy) - jamais produite par le
-# schema moderne (15/16/17), ajoutee ici sans risque de collision.
 _AMENDEMENT_TYPE_AUTEUR_MAP: dict[str, str] = {
     "Député": "depute",
-    "Depute": "depute",
     "Gouvernement": "gouvernement",
     "Rapporteur": "commission_rapporteur",
     "Commission": "commission_rapporteur",
@@ -957,68 +958,72 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
     return out
 
 
-def _parse_amendement_entry_legacy(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
-    """Équivalent de `_parse_amendement_entry` pour le schéma « legacy » de la
-    14e législature (`amendements_legis_XIV`), structurellement différent du
-    schéma moderne (15/16/17) : un seul fichier JSON pour toute la
-    législature (`{"textesEtAmendements": {"texteleg": [{"amendements":
-    {"amendement": [...]}}]}}`, voir `_parse_amendements_zip`) au lieu d'un
-    fichier par amendement, et des noms de champs différents au niveau de
-    chaque amendement individuel — mesuré le 15/08/2026 sur l'archive réelle
-    (103 716 698 octets, 843 texteleg, 167 420 amendements) :
-      - `dateDepot`/`numeroLong`/`etat` à la racine de l'amendement, au lieu
-        de `cycleDeVie.dateDepot`/`identification.numeroLong`/
-        `cycleDeVie.etatDesTraitements.etat.libelle` ;
-      - `etat` est une chaîne simple (ex. "Discuté") et le sort en séance est
-        déjà porté tel quel par AN sous `sort.sortEnSeance` (ex. "Tombé") —
-        pas de sousEtat.libelle distinct à combiner comme dans le schéma
-        moderne, mais le vocabulaire observé coïncide avec celui de
-        `_AMENDEMENT_SORT_MAP` (clé (etat, sortEnSeance)), donc
-        `_derive_amendement_sort` est réutilisée telle quelle plutôt que
-        dupliquée ;
-      - `texteLegislatifRef` (moderne, à la racine) devient
-        `identifiant.saisine.refTexteLegislatif` ;
-      - `signataires.auteur`/`signataires.cosignataires` : structure
-        identique au schéma moderne (`_extract_cosignataire_refs` déjà
-        compatible), à l'exception de `typeAuteur` observé sans accent
-        ("Depute" plutôt que "Député" — voir _AMENDEMENT_TYPE_AUTEUR_MAP).
-    """
-    if not isinstance(data, dict):
-        return None
+# sortEnSeance (schéma legacy légis 14, racine `textesEtAmendements`) -> sort du
+# schéma pivot. Contrairement à `_AMENDEMENT_SORT_MAP` (paire etat/sousEtat
+# ambiguë selon le contexte), `sort.sortEnSeance` porte déjà sans ambiguïté
+# l'issue en séance : simple normalisation de casse/accentuation, pas de
+# dérivation heuristique. Voir issue #299.
+_LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP: dict[str, str] = {
+    "Adopté": "adopté",
+    "Rejeté": "rejeté",
+    "Tombé": "tombé",
+    "Non soutenu": "non_soutenu",
+    "Retiré": "retiré",
+}
 
-    signataires = data.get("signataires") or {}
+
+def _derive_amendement_sort_legacy(
+    etat: Optional[str], sort_en_seance: Optional[str]
+) -> tuple[Optional[str], Optional[str]]:
+    """Équivalent de `_derive_amendement_sort` pour le schéma legacy légis 14.
+
+    Même logique d'irrecevabilité (`etat` "Irrecevable"/"Irrecevable 40",
+    identique à `_derive_amendement_sort`), mais l'issue en séance est portée
+    directement par `sort.sortEnSeance` côté AN : pas de table (etat, sousEtat)
+    à interpréter, une simple normalisation suffit.
+    """
+    if etat in ("Irrecevable", "Irrecevable 40"):
+        base = "art. 40" if etat == "Irrecevable 40" else "art. 45"
+        return "irrecevable", base
+    return _LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP.get(sort_en_seance), None
+
+
+def _parse_amendement_legacy_single(
+    amendement: dict[str, Any], texte_ref: Optional[str]
+) -> list[tuple[str, dict[str, Any]]]:
+    """Extrait les enregistrements indexés par acteurRef d'un amendement au
+    format legacy (légis 14, déjà déballé d'un `texteleg`). `texte_ref` est
+    porté par le `texteleg` parent, pas par l'amendement lui-même."""
+    signataires = amendement.get("signataires") or {}
     auteur = signataires.get("auteur") or {}
     acteur_ref = auteur.get("acteurRef")
     if not isinstance(acteur_ref, str) or not acteur_ref:
-        return None
+        return []
 
     cosignataires_bloc = signataires.get("cosignataires") or {}
     cosign_refs = _extract_cosignataire_refs(cosignataires_bloc)
 
-    etat_libelle = data.get("etat") if isinstance(data.get("etat"), str) else None
-    sort_bloc = data.get("sort") or {}
-    sortenseance_libelle = sort_bloc.get("sortEnSeance") if isinstance(sort_bloc, dict) else None
-    sort, base_juridique = _derive_amendement_sort(etat_libelle, sortenseance_libelle)
-
-    identifiant = data.get("identifiant") or {}
-    saisine = identifiant.get("saisine") or {}
+    identifiant = amendement.get("identifiant") or {}
+    sort_bloc = amendement.get("sort") or {}
+    sort, base_juridique = _derive_amendement_sort_legacy(
+        amendement.get("etat"), sort_bloc.get("sortEnSeance")
+    )
 
     record_base = {
-        "texte_vise": saisine.get("refTexteLegislatif"),
+        "texte_vise": texte_ref,
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
-        "date": data.get("dateDepot"),
-        "numero": data.get("numeroLong"),
+        "date": amendement.get("dateDepot"),
+        "numero": identifiant.get("numeroLong") or identifiant.get("numero"),
         "source_url": None,
     }
 
     out: list[tuple[str, dict[str, Any]]] = [
         (acteur_ref, {**record_base, "role_signataire": "auteur_principal"})
     ]
-
     for cosign_ref in cosign_refs:
         if not isinstance(cosign_ref, str) or not cosign_ref or cosign_ref == acteur_ref:
             continue
@@ -1027,30 +1032,37 @@ def _parse_amendement_entry_legacy(data: Any) -> Optional[list[tuple[str, dict[s
     return out
 
 
-def _iter_legacy_amendements(data: Any) -> list[Any]:
-    """Aplatit `{"textesEtAmendements": {"texteleg": [...]}}` (schéma legacy,
-    14e législature) en une liste d'amendements individuels, un `texteleg`
-    pouvant porter soit une liste d'amendements (`amendements.amendement` en
-    liste, cas courant), soit un unique amendement non enveloppé dans une
-    liste (conversion XML->JSON de l'AN qui « déballe » les listes à un seul
-    élément — même défensive qu'`_extract_cosignataire_refs` pour
-    `cosignataires.acteur`)."""
-    racine = data.get("textesEtAmendements") if isinstance(data, dict) else None
-    texteleg = racine.get("texteleg") if isinstance(racine, dict) else None
-    if texteleg is None:
-        return []
-    texteleg_items = texteleg if isinstance(texteleg, list) else [texteleg]
+def _parse_amendement_entry_legacy(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
+    """Variante de `_parse_amendement_entry` pour le schéma legacy de la 14e
+    législature (clé racine `textesEtAmendements`, voir issue #299) : une
+    seule entrée JSON regroupe tous les `texteleg`, chacun listant ses
+    amendements (`texteleg[].amendements.amendement[]`), au lieu d'un fichier
+    par amendement. Produit les mêmes clés de sortie que
+    `_parse_amendement_entry`. Retourne `None` seulement si la clé racine
+    `textesEtAmendements` elle-même est absente/mal formée ; une liste vide
+    est un résultat légitime (aucun amendement exploitable dans l'entrée).
+    """
+    root = data.get("textesEtAmendements") if isinstance(data, dict) else None
+    if not isinstance(root, dict):
+        return None
 
-    amendements: list[Any] = []
-    for texte in texteleg_items:
-        if not isinstance(texte, dict):
+    texteleg_bloc = root.get("texteleg")
+    textelegs = texteleg_bloc if isinstance(texteleg_bloc, list) else [texteleg_bloc]
+
+    out: list[tuple[str, dict[str, Any]]] = []
+    for texteleg in textelegs:
+        if not isinstance(texteleg, dict):
             continue
-        bloc = texte.get("amendements") or {}
-        amendement = bloc.get("amendement") if isinstance(bloc, dict) else None
-        if amendement is None:
-            continue
-        amendements.extend(amendement if isinstance(amendement, list) else [amendement])
-    return amendements
+        texte_ref = texteleg.get("refTexteLegislatif")
+        amendement_bloc = (texteleg.get("amendements") or {}).get("amendement")
+        amendements = amendement_bloc if isinstance(amendement_bloc, list) else [amendement_bloc]
+
+        for amendement in amendements:
+            if not isinstance(amendement, dict):
+                continue
+            out.extend(_parse_amendement_legacy_single(amendement, texte_ref))
+
+    return out
 
 
 def _amendements_zip_url(legislature: str) -> Optional[str]:
@@ -1100,6 +1112,7 @@ def _probe_amendements_total_size(url: str) -> Optional[int]:
 
 def _download_amendements_zip(
     url: str, zip_path: Path, legislature: str, chunk_bytes: Optional[int] = None,
+    max_attempts: Optional[int] = None,
 ) -> None:
     """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
     pour ne retenter que le segment en échec au lieu de tout le fichier sur une
@@ -1139,8 +1152,23 @@ def _download_amendements_zip(
     d'aboutir intégralement, alors que de petits segments (1-2 Mo) ont une
     fenêtre de succès bien plus large à saisir, et la reprise entre
     invocations (ci-dessus) garantit qu'aucun de ces petits gains n'est perdu.
+
+    Affiche une ligne de progression après chaque segment écrit avec succès
+    (octets/total, pourcentage) — pas seulement en cas d'échec/retry : avec de
+    petits `chunk_bytes`, une invocation peut compter des centaines de segments
+    et rester silencieuse plusieurs minutes sans ce retour, au point de
+    ressembler à un blocage (observé le 15/08/2026).
+
+    `max_attempts` permet d'augmenter ponctuellement le nombre de tentatives
+    par segment (défaut `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, 3) sans toucher au
+    chemin réseau partagé de la législature 17, où cette valeur est
+    volontairement basse pour rester dans le budget CI. Reprise entre
+    invocations oblige, la reprendre à une valeur plus haute ici ne coûte rien
+    au-delà du temps d'attente : chaque tentative supplémentaire ne retente que
+    le segment en échec, jamais le fichier entier.
     """
     chunk_bytes = chunk_bytes or AMENDEMENTS_DOWNLOAD_CHUNK_BYTES
+    max_attempts = max_attempts or AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
     zip_path.parent.mkdir(parents=True, exist_ok=True)
 
     offset = 0
@@ -1187,7 +1215,7 @@ def _download_amendements_zip(
             chunk = b""
             status_code: Optional[int] = None
             content_range_total: Optional[int] = None
-            for attempt in range(1, AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1):
+            for attempt in range(1, max_attempts + 1):
                 try:
                     headers = {**HEADERS, "Range": f"bytes={offset}-{range_end}"}
                     with requests.get(
@@ -1204,17 +1232,17 @@ def _download_amendements_zip(
                     break
                 except (requests.RequestException, OSError) as exc:
                     last_exc = exc
-                    if attempt < AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS:
+                    if attempt < max_attempts:
                         print(
                             f"  [!] Échec du téléchargement du segment amendements législature "
                             f"{legislature} (offset {offset}, tentative "
-                            f"{attempt}/{AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS}) : {exc} — nouvel essai du segment seul"
+                            f"{attempt}/{max_attempts}) : {exc} — nouvel essai du segment seul"
                         )
                         time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
             if last_exc is not None:
                 print(
                     f"  [!] Segment amendements législature {legislature} (offset {offset}) en échec "
-                    f"définitif après {AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS} tentatives : {last_exc}"
+                    f"définitif après {max_attempts} tentatives : {last_exc}"
                 )
                 raise last_exc
             if attempt > 1:
@@ -1243,6 +1271,18 @@ def _download_amendements_zip(
             offset += len(chunk)
             if not chunk:
                 break  # évite une boucle infinie sur un flux qui ne progresse plus
+
+            if total_size:
+                percent = offset / total_size * 100
+                print(
+                    f"  -> Législature {legislature} : {offset}/{total_size} octets "
+                    f"({percent:.1f}%) — segment {segments_total} écrit"
+                )
+            else:
+                print(
+                    f"  -> Législature {legislature} : {offset} octets — segment "
+                    f"{segments_total} écrit"
+                )
 
     if segments_retried >= AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD:
         print(
@@ -1304,9 +1344,11 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     toutes par `build_amendements_index_figees.py` sous forme dédupliquée et
     compressée gzip (`amendements.json.gz` + `index_par_acteur.json.gz`
     allégé, voir `_aggregate_amendements_index` — nécessaire pour rester sous
-    la limite GitHub de 100 Mo par blob), la reconstruit sous la forme plate
-    standard (`_expand_aggregated_amendements_index`) et la matérialise dans
-    le cache disque (`AMENDEMENTS_CACHE_DIR`), en clair, au même format qu'une
+    la limite GitHub de 100 Mo par blob, voir la révision du 15/08/2026 de
+    docs/technical_decisions.md#amendements-legislatures-figees), la
+    reconstruit sous la forme plate standard
+    (`_expand_aggregated_amendements_index`) et la matérialise dans le cache
+    disque (`AMENDEMENTS_CACHE_DIR`), en clair, au même format qu'une
     construction réseau réussie (`index_par_acteur.json` + `fraicheur.json`,
     ce dernier copié tel quel avec son marqueur `figee: true`) — pour que le
     reste du pipeline (quality gate section 3d comprise, `fetch_amendements_officiels`)
@@ -1350,12 +1392,12 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
     une archive téléchargée manuellement hors CI). Lève `zipfile.BadZipFile`
     si l'archive est invalide — laissé à l'appelant à traiter.
 
-    Deux schémas AN détectés au contenu (pas au nom de fichier) : le schéma
-    moderne (15/16/17), un fichier JSON par amendement (`{"amendement":
-    {...}}`), et le schéma legacy (14e législature), un unique fichier JSON
-    imbriqué (`{"textesEtAmendements": {"texteleg": [...]}}`,
-    `_iter_legacy_amendements`/`_parse_amendement_entry_legacy`) — voir
-    docs/technical_decisions.md#amendements-legislatures-figees."""
+    Détecte le schéma de chaque entrée par sa clé racine : `"amendement"`
+    (schéma 15/16/17, un amendement par entrée) ou `"textesEtAmendements"`
+    (schéma legacy légis 14, une seule entrée regroupant tous les
+    texteleg/amendements — voir issue #299). Un schéma ni l'un ni l'autre
+    produit toujours un index vide pour cette entrée, mais avec un warning
+    explicite au lieu d'un échec silencieux."""
     index: dict[str, list[dict[str, Any]]] = {}
     with zipfile.ZipFile(zip_path) as zf:
         noms = [n for n in zf.namelist() if n.endswith(".json")]
@@ -1366,16 +1408,18 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
             except (json.JSONDecodeError, KeyError):
                 continue
 
-            if isinstance(data, dict) and "textesEtAmendements" in data:
-                for amendement in _iter_legacy_amendements(data):
-                    parsed_entries = _parse_amendement_entry_legacy(amendement)
-                    if parsed_entries is None:
-                        continue
-                    for acteur_ref, record in parsed_entries:
-                        index.setdefault(acteur_ref, []).append(record)
+            if isinstance(data, dict) and "amendement" in data:
+                parsed_entries = _parse_amendement_entry(data)
+            elif isinstance(data, dict) and "textesEtAmendements" in data:
+                parsed_entries = _parse_amendement_entry_legacy(data)
+            else:
+                print(
+                    f"  [!] Entrée '{nom}' au format inconnu (ni 'amendement' ni "
+                    "'textesEtAmendements'), ignorée",
+                    file=sys.stderr,
+                )
                 continue
 
-            parsed_entries = _parse_amendement_entry(data)
             if parsed_entries is None:
                 continue
             for acteur_ref, record in parsed_entries:

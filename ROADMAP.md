@@ -29,7 +29,9 @@ something is pending, not *why*.
 - Evaluate surfacing `pivot_data/partis/` aggregates in a comparison panel
   (non-navigation context) rather than as a top-level tab.
 - Senate adapter (votes/amendments/sponsored texts) — deferred, see
-  `technical_decisions.md#hors-perimetre`.
+  `technical_decisions.md#hors-perimetre`. Also applies to the gouvernement
+  view's `textes[]` (AN dossiers dump only, Senate-initiated bills not
+  captured), confirmed in `technical_decisions.md#gouvernement-doc-cloture`.
 - EU textes_portés/amendements via the official API — superseded by the
   Parltrack approach, see `technical_decisions.md#hors-perimetre` and
   `docs/extract-ue.md`.
