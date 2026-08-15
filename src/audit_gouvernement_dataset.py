@@ -24,18 +24,29 @@ Indicateurs sous forme de fonctions pures (liste de profils de gouvernement
     (`compute_gouvernements_perimes`, seuil `staleness_days` injectable), même
     logique que les deux scripts existants.
 
+  - tableau croisé des plages temporelles par gouvernement
+    (`compute_plage_dates_gouvernements`, issue #320, sous-issue 4/6 de
+    #316) : une ligne par gouvernement, min/max de `membres[].debut`/`.fin`
+    (`mandats_membres`) et de `textes[].date_depot`/`.date_dernier_evenement`
+    (`textes`). `membres[].fin` peut être `null` (mandat en cours) : exclu
+    du calcul sans jamais être remplacé par la date du jour (AGENTS.md
+    §2.5), et sans être compté comme une date invalide (c'est une absence
+    légitime, pas une erreur de donnée).
+
 `build_report()` assemble tous ces indicateurs en un rapport structuré
-unique, sérialisable en JSON. Pas de CLI ni de rendu Markdown dans ce
-fichier : la couche présentation (CLI, rapport Markdown, tableau croisé des
-plages temporelles) est hors périmètre de cette sous-issue, réservée à la
-sous-issue 4 de #316.
+unique, et `generate_markdown_report()` en dérive un rendu Markdown lisible
+par un humain, sur le même modèle que `audit_groupe_dataset.py`. La CLI
+(`main()` / `_build_arg_parser()`) partage le même contrat d'options que
+`audit_groupe_dataset.py`.
 
 Aucune dépendance lourde : stdlib uniquement.
 """
 
+import argparse
 import json
 import statistics
-from datetime import datetime, timezone
+import sys
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -336,6 +347,144 @@ def compute_doublons_gouvernement_id(gouvernements: list[dict[str, Any]]) -> dic
 
 
 # ---------------------------------------------------------------------------
+# Tableau croisé des plages temporelles
+# ---------------------------------------------------------------------------
+
+def _parse_date_gouvernement(valeur: Any) -> date | None:
+    """Parse une date ISO-8601 `"YYYY-MM-DD"` (sous-préfixe accepté), `None` si absente/invalide."""
+    if not isinstance(valeur, str) or not valeur:
+        return None
+    try:
+        return date.fromisoformat(valeur[:10])
+    except ValueError:
+        return None
+
+
+def _plage_dates_membres(
+    gouvernement: dict[str, Any], dates_invalides: list[dict[str, Any]]
+) -> dict[str, str] | None:
+    """Plage `{"min":..., "max":...}` de `membres[].debut`/`.fin`, `None` si aucune date exploitable.
+
+    `fin` peut être `null` (mandat en cours) : exclu du calcul sans être
+    compté comme une date invalide (absence légitime, jamais substituée par
+    la date du jour, AGENTS.md §2.5). Un `debut` absent ou invalide, ou un
+    `fin` présent mais invalide, est ajouté à `dates_invalides` (muté en
+    place) plutôt qu'ignoré silencieusement.
+    """
+    membres = gouvernement.get("membres")
+    if not isinstance(membres, list):
+        return None
+
+    gouvernement_id = gouvernement.get("gouvernement_id")
+    dates_valides: list[date] = []
+
+    for i, membre in enumerate(membres):
+        debut = membre.get("debut") if isinstance(membre, dict) else None
+        date_debut = _parse_date_gouvernement(debut)
+        if date_debut is not None:
+            dates_valides.append(date_debut)
+        else:
+            dates_invalides.append({
+                "gouvernement_id": gouvernement_id, "champ": f"membres[{i}].debut", "valeur": debut,
+            })
+
+        fin = membre.get("fin") if isinstance(membre, dict) else None
+        if fin is None:
+            continue
+
+        date_fin = _parse_date_gouvernement(fin)
+        if date_fin is not None:
+            dates_valides.append(date_fin)
+        else:
+            dates_invalides.append({
+                "gouvernement_id": gouvernement_id, "champ": f"membres[{i}].fin", "valeur": fin,
+            })
+
+    if not dates_valides:
+        return None
+
+    return {"min": min(dates_valides).isoformat(), "max": max(dates_valides).isoformat()}
+
+
+def _plage_dates_textes(
+    gouvernement: dict[str, Any], dates_invalides: list[dict[str, Any]]
+) -> dict[str, str] | None:
+    """Plage `{"min":..., "max":...}` de `textes[].date_depot`/`.date_dernier_evenement`.
+
+    `None` si aucune date exploitable. Chaque champ absent ou invalide est
+    ajouté à `dates_invalides` (muté en place) plutôt qu'ignoré
+    silencieusement — contrairement à `membres[].fin`, ces deux champs
+    n'ont pas de cas `null` légitime documenté dans `schema_gouvernement.py`.
+    """
+    textes = gouvernement.get("textes")
+    if not isinstance(textes, list):
+        return None
+
+    gouvernement_id = gouvernement.get("gouvernement_id")
+    dates_valides: list[date] = []
+
+    for i, texte in enumerate(textes):
+        for champ in ("date_depot", "date_dernier_evenement"):
+            valeur = texte.get(champ) if isinstance(texte, dict) else None
+            date_parsee = _parse_date_gouvernement(valeur)
+            if date_parsee is not None:
+                dates_valides.append(date_parsee)
+            else:
+                dates_invalides.append({
+                    "gouvernement_id": gouvernement_id, "champ": f"textes[{i}].{champ}", "valeur": valeur,
+                })
+
+    if not dates_valides:
+        return None
+
+    return {"min": min(dates_valides).isoformat(), "max": max(dates_valides).isoformat()}
+
+
+def compute_plage_dates_gouvernements(gouvernements: list[dict[str, Any]]) -> dict[str, Any]:
+    """Tableau croisé des plages temporelles par gouvernement.
+
+    Une ligne par gouvernement, avec deux cellules `{"min": "YYYY-MM-DD",
+    "max": "YYYY-MM-DD"}` (ou `None` si aucune date exploitable) :
+    `mandats_membres` (via `membres[].debut`/`.fin`) et `textes` (via
+    `textes[].date_depot`/`.date_dernier_evenement`).
+
+    Une date invalide (ou une entrée sans date exploitable) est exclue du
+    calcul min/max (jamais traitée comme une date par défaut, AGENTS.md
+    §2.5), mais comptée et recensée dans `dates_invalides` plutôt
+    qu'ignorée silencieusement — sauf `membres[].fin = null`, qui signale
+    légitimement un mandat en cours et n'est jamais compté comme invalide.
+
+    Returns:
+        `{"lignes": [{"gouvernement_id":..., "nom":...,
+        "mandats_membres": {"min":..., "max":...} | None,
+        "textes": {"min":..., "max":...} | None}, ...], "dates_invalides":
+        [{"gouvernement_id":..., "champ": "membres[i].debut"|"membres[i].fin"|
+        "textes[i].date_depot"|"textes[i].date_dernier_evenement",
+        "valeur":...}, ...]}`. `lignes` trié par `nom` puis `gouvernement_id`
+        (ordre déterministe en cas d'égalité ou de `nom` absent) ;
+        `dates_invalides` trié par `gouvernement_id` puis `champ`.
+    """
+    dates_invalides: list[dict[str, Any]] = []
+
+    lignes = [
+        {
+            "gouvernement_id": gouvernement.get("gouvernement_id"),
+            "nom": gouvernement.get("nom"),
+            "mandats_membres": _plage_dates_membres(gouvernement, dates_invalides),
+            "textes": _plage_dates_textes(gouvernement, dates_invalides),
+        }
+        for gouvernement in gouvernements
+    ]
+
+    lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["gouvernement_id"] or ""))
+    dates_invalides.sort(
+        key=lambda entree: (entree["gouvernement_id"] is None, entree["gouvernement_id"], entree["champ"])
+    )
+
+    return {"lignes": lignes, "dates_invalides": dates_invalides}
+
+
+# ---------------------------------------------------------------------------
 # Fraîcheur
 # ---------------------------------------------------------------------------
 
@@ -484,10 +633,10 @@ def build_report(
 
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
-        (`volumetrie`, `completude`, `coherence`, `fraicheur`) plus `meta` et
-        `erreurs_lecture`. Outil de qualité interne : ce rapport ne doit
-        jamais introduire de jugement de valeur, de score ou de classement
-        (AGENTS.md §2.1).
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`) plus
+        `plage_dates_gouvernements`, `meta` et `erreurs_lecture`. Outil de
+        qualité interne : ce rapport ne doit jamais introduire de jugement
+        de valeur, de score ou de classement (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -519,5 +668,304 @@ def build_report(
                 gouvernements, staleness_days=staleness_days, reference_date=reference
             ),
         },
+        "plage_dates_gouvernements": compute_plage_dates_gouvernements(gouvernements),
         "erreurs_lecture": erreurs_lecture,
     }
+
+
+# ---------------------------------------------------------------------------
+# Génération du rapport Markdown
+# ---------------------------------------------------------------------------
+
+def _md_escape(valeur: Any) -> str:
+    """Neutralise les caractères cassant une cellule de tableau Markdown."""
+    texte = "" if valeur is None else str(valeur)
+    return texte.replace("|", "\\|").replace("\n", " ")
+
+
+def _md_table(en_tetes: list[str], lignes: list[list[Any]], si_vide: str) -> str:
+    """Construit un tableau Markdown, ou renvoie `si_vide` si `lignes` est vide."""
+    if not lignes:
+        return si_vide + "\n"
+
+    entete = "| " + " | ".join(en_tetes) + " |"
+    separateur = "| " + " | ".join("---" for _ in en_tetes) + " |"
+    corps = "\n".join(
+        "| " + " | ".join(_md_escape(cellule) for cellule in ligne) + " |" for ligne in lignes
+    )
+    return f"{entete}\n{separateur}\n{corps}\n"
+
+
+def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
+    periode = volumetrie["repartition_periode_actif"]
+    distribution = volumetrie["distribution_membres_textes"]
+    lignes_distribution = [
+        [champ, stats["min"], stats["max"], stats["mediane"], stats["moyenne"]]
+        for champ, stats in distribution.items()
+    ]
+    lignes_comptages = sorted(volumetrie["comptages_agreges"].items())
+
+    return (
+        "## Volumétrie\n\n"
+        "### Répartition par `periode.actif`\n\n"
+        + _md_table(
+            ["Total", "Actifs", "Inactifs", "Indéterminés"],
+            [[
+                periode["total_gouvernements"], periode["actifs"],
+                periode["inactifs"], periode["indetermines"],
+            ]],
+            "Aucun gouvernement.",
+        )
+        + "\n### Distribution du nombre de `membres` / `textes` par gouvernement\n\n"
+        + _md_table(
+            ["Champ", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_distribution, "Aucun gouvernement.",
+        )
+        + "\n### Comptages agrégés par statut de texte (`comptages.par_statut`)\n\n"
+        + _md_table(["Statut", "Total"], lignes_comptages, "Aucun gouvernement.")
+    )
+
+
+def _md_section_completude(completude: dict[str, Any]) -> str:
+    pm = completude["presence_premier_ministre"]
+    portefeuille = completude["taux_portefeuille_renseigne"]
+    meta = completude["presence_meta"]
+
+    return (
+        "## Complétude\n\n"
+        "### Présence d'un `premier_ministre` renseigné\n\n"
+        + _md_table(
+            ["Renseignés", "Total", "Taux (%)"],
+            [[pm["renseignes"], pm["total"], pm["taux_pct"]]],
+            "Aucun gouvernement.",
+        )
+        + "\n### Taux de `membres[].portefeuille` renseigné\n\n"
+        + _md_table(
+            ["Renseignés", "Total", "Taux (%)"],
+            [[portefeuille["renseignes"], portefeuille["total"], portefeuille["taux_pct"]]],
+            "Aucun membre.",
+        )
+        + "\n### Présence d'un bloc `meta` renseigné\n\n"
+        + _md_table(
+            ["Renseignés", "Total", "Taux (%)"],
+            [[meta["renseignes"], meta["total"], meta["taux_pct"]]],
+            "Aucun gouvernement.",
+        )
+    )
+
+
+def _md_section_coherence(coherence: dict[str, Any]) -> str:
+    lignes_validation = [
+        [g["gouvernement_id"], "; ".join(g["erreurs"])]
+        for g in coherence["validation_schema"]["gouvernements_invalides"]
+    ]
+    lignes_schema = [
+        [g["gouvernement_id"], g["schema_version"], g["meta_schema_version"]]
+        for g in coherence["coherence_schema_version"]["gouvernements_incoherents"]
+    ]
+    lignes_doublons = [
+        [d["gouvernement_id"], d["occurrences"]] for d in coherence["doublons_gouvernement_id"]["doublons"]
+    ]
+
+    return (
+        "## Cohérence\n\n"
+        "### Validation du schéma (`validate_profil_gouvernement`)\n\n"
+        + _md_table(
+            ["gouvernement_id", "Erreurs"], lignes_validation, "Aucun gouvernement invalide détecté.",
+        )
+        + "\n### Divergence `schema_version` / `meta.schema_version`\n\n"
+        + _md_table(
+            ["gouvernement_id", "schema_version", "meta.schema_version"],
+            lignes_schema, "Aucune divergence détectée.",
+        )
+        + "\n### Doublons de `gouvernement_id`\n\n"
+        + _md_table(["gouvernement_id", "Occurrences"], lignes_doublons, "Aucun doublon détecté.")
+    )
+
+
+def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str:
+    lignes_fraicheur = [
+        [
+            type_source, stats["nombre_sources"],
+            stats["min_jours"], stats["max_jours"], stats["mediane_jours"], stats["moyenne_jours"],
+        ]
+        for type_source, stats in fraicheur["fraicheur_sources"]["par_type_source"].items()
+    ]
+
+    lignes_perimes = [[gouvernement_id] for gouvernement_id in fraicheur["gouvernements_perimes"]]
+
+    return (
+        "## Fraîcheur\n\n"
+        "### Ancienneté des sources par type (jours écoulés depuis `synchro_le`)\n\n"
+        + _md_table(
+            ["Type de source", "Nombre de sources", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_fraicheur, "Aucune source datée.",
+        )
+        + f"\n### Gouvernements périmés (toutes sources > {staleness_days} jours)\n\n"
+        + _md_table(["gouvernement_id"], lignes_perimes, "Aucun gouvernement périmé.")
+    )
+
+
+def _fmt_plage_cellule(cellule: dict[str, str] | None) -> str:
+    """`"min → max"` si la cellule est renseignée, `"N/D"` sinon (donnée manquante)."""
+    return "N/D" if cellule is None else f"{cellule['min']} → {cellule['max']}"
+
+
+def _md_section_plage_dates_gouvernements(plage: dict[str, Any]) -> str:
+    lignes = [
+        [
+            ligne["gouvernement_id"], ligne["nom"],
+            _fmt_plage_cellule(ligne["mandats_membres"]), _fmt_plage_cellule(ligne["textes"]),
+        ]
+        for ligne in plage["lignes"]
+    ]
+
+    lignes_dates_invalides = [
+        [e["gouvernement_id"], e["champ"], e["valeur"]] for e in plage["dates_invalides"]
+    ]
+
+    return (
+        "## Tableau croisé des plages temporelles par gouvernement\n\n"
+        "Pour chaque gouvernement, la période couverte par les dates "
+        "disponibles (min → max) des mandats de ses membres et des textes "
+        "qu'il a portés.\n\n"
+        + _md_table(
+            [
+                "gouvernement_id", "Nom",
+                "Mandats membres (min → max)", "Textes (min → max)",
+            ],
+            lignes, "Aucun gouvernement.",
+        )
+        + "\n> **`mandats_membres`** : calculée sur `membres[].debut`/`.fin`. "
+        "Un `fin = null` signale un mandat en cours — exclu du calcul sans "
+        "jamais être remplacé par la date du jour (AGENTS.md §2.5).\n\n"
+        + f"### Dates `membres[]`/`textes[]` invalides ignorées pour le calcul "
+        f"({len(plage['dates_invalides'])})\n\n"
+        + _md_table(
+            ["gouvernement_id", "Champ", "Valeur"],
+            lignes_dates_invalides, "Aucune date invalide détectée.",
+        )
+    )
+
+
+def _md_section_erreurs_lecture(erreurs_lecture: list[dict[str, Any]]) -> str:
+    lignes = [[e["fichier"], e["erreur"]] for e in erreurs_lecture]
+
+    return (
+        "## Erreurs de lecture\n\n"
+        + _md_table(["Fichier", "Erreur"], lignes, "Aucune erreur de lecture.")
+    )
+
+
+def generate_markdown_report(rapport: dict[str, Any]) -> str:
+    """Génère un rapport Markdown lisible par un humain à partir du dict `build_report`.
+
+    Une section par catégorie d'indicateur, sous forme de tableaux synthétiques.
+    Aucun score ni classement n'est calculé : ce rapport présente les chiffres
+    bruts produits par les fonctions `compute_*` (AGENTS.md §2.1).
+    """
+    meta = rapport["meta"]
+
+    sections = [
+        (
+            "# Rapport d'audit du jeu de données gouvernements\n\n"
+            f"Généré le {meta['genere_le']}. "
+            f"{meta['total_gouvernements']} gouvernement(s) analysé(s), "
+            f"{meta['total_erreurs_lecture']} erreur(s) de lecture. "
+            f"Seuil de péremption des sources : {meta['staleness_days']} jour(s).\n\n"
+            "Ce rapport est un outil de qualité interne : il présente des "
+            "indicateurs bruts, sans jugement de valeur ni classement.\n"
+        ),
+        _md_section_volumetrie(rapport["volumetrie"]),
+        _md_section_plage_dates_gouvernements(rapport["plage_dates_gouvernements"]),
+        _md_section_completude(rapport["completude"]),
+        _md_section_coherence(rapport["coherence"]),
+        _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),
+        _md_section_erreurs_lecture(rapport["erreurs_lecture"]),
+    ]
+
+    return "\n".join(sections)
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="audit_gouvernement_dataset.py",
+        description=(
+            "Audite un jeu de données de profils de gouvernement : volumétrie, "
+            "complétude, cohérence, fraîcheur des sources et plages temporelles "
+            "par gouvernement. Outil de qualité interne, ne produit aucun score "
+            "ni classement."
+        ),
+    )
+    parser.add_argument(
+        "--input-dir",
+        default="pivot_data/gouvernements",
+        metavar="DOSSIER",
+        help=(
+            "Dossier contenant les fichiers gouvernement-*.json à auditer "
+            "(scan récursif, défaut : pivot_data/gouvernements)."
+        ),
+    )
+    parser.add_argument(
+        "--output-json",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport JSON (défaut : affiché sur stdout).",
+    )
+    parser.add_argument(
+        "--output-md",
+        default=None,
+        metavar="FICHIER",
+        help="Chemin du rapport Markdown (défaut : non généré).",
+    )
+    parser.add_argument(
+        "--staleness-days",
+        type=int,
+        default=30,
+        metavar="JOURS",
+        help="Seuil d'ancienneté (jours) au-delà duquel un gouvernement est périmé (défaut : 30).",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_arg_parser()
+    args = parser.parse_args(argv)
+
+    input_dir = Path(args.input_dir)
+    if not input_dir.is_dir():
+        print(f"[!] Dossier introuvable : {input_dir}", file=sys.stderr)
+        return 1
+
+    gouvernements, erreurs_lecture = load_gouvernement_directory(input_dir)
+    print(
+        f"→ {len(gouvernements)} gouvernement(s) chargé(s), {len(erreurs_lecture)} erreur(s) de lecture.",
+        file=sys.stderr,
+    )
+
+    rapport = build_report(gouvernements, erreurs_lecture, staleness_days=args.staleness_days)
+    output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
+
+    if args.output_json:
+        out_path = Path(args.output_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(output_json, encoding="utf-8")
+        print(f"  ✓ Rapport JSON écrit : {out_path}", file=sys.stderr)
+    else:
+        print(output_json)
+
+    if args.output_md:
+        md_path = Path(args.output_md)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(generate_markdown_report(rapport), encoding="utf-8")
+        print(f"  ✓ Rapport Markdown écrit : {md_path}", file=sys.stderr)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

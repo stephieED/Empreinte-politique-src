@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_gouvernement_dataset import (
+    _build_arg_parser,
     build_report,
     compute_coherence_schema_version,
     compute_comptages_agreges,
@@ -13,12 +14,15 @@ from audit_gouvernement_dataset import (
     compute_doublons_gouvernement_id,
     compute_fraicheur_sources,
     compute_gouvernements_perimes,
+    compute_plage_dates_gouvernements,
     compute_presence_meta,
     compute_presence_premier_ministre,
     compute_repartition_periode_actif,
     compute_taux_portefeuille_renseigne,
     compute_validation_schema,
+    generate_markdown_report,
     load_gouvernement_directory,
+    main,
 )
 
 
@@ -614,6 +618,7 @@ def test_toutes_les_fonctions_compute_sur_les_fixtures_du_depot_sont_serialisabl
         "gouvernements_perimes": compute_gouvernements_perimes(
             gouvernements_valides, staleness_days=30, reference_date=REFERENCE
         ),
+        "plage_dates_gouvernements": compute_plage_dates_gouvernements(gouvernements_valides),
     }
 
     json.dumps(rapport, ensure_ascii=False)
@@ -626,7 +631,10 @@ def test_toutes_les_fonctions_compute_sur_les_fixtures_du_depot_sont_serialisabl
 def test_build_report_structure_top_level_keys():
     rapport = build_report([], [], staleness_days=30, reference_date=REFERENCE)
 
-    assert set(rapport.keys()) == {"meta", "volumetrie", "completude", "coherence", "fraicheur", "erreurs_lecture"}
+    assert set(rapport.keys()) == {
+        "meta", "volumetrie", "completude", "coherence", "fraicheur",
+        "plage_dates_gouvernements", "erreurs_lecture",
+    }
     assert set(rapport["volumetrie"].keys()) == {
         "repartition_periode_actif", "distribution_membres_textes", "comptages_agreges",
     }
@@ -705,6 +713,10 @@ def test_build_report_delegue_aux_fonctions_compute():
         rapport["fraicheur"]["gouvernements_perimes"]
         == compute_gouvernements_perimes(gouvernements, staleness_days=30, reference_date=REFERENCE)
     )
+    assert (
+        rapport["plage_dates_gouvernements"]
+        == compute_plage_dates_gouvernements(gouvernements)
+    )
 
 
 def test_build_report_staleness_days_par_defaut():
@@ -729,3 +741,254 @@ def test_build_report_sur_les_fixtures_du_depot():
     assert rapport["meta"]["total_erreurs_lecture"] == 1
     # Le rapport doit rester intégralement sérialisable en JSON.
     json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# compute_plage_dates_gouvernements
+# ---------------------------------------------------------------------------
+
+def membre(debut=None, fin=None, membre_id="m"):
+    return {"membre_id": membre_id, "portefeuille": None, "debut": debut, "fin": fin}
+
+
+def texte(date_depot=None, date_dernier_evenement=None, dossier_id="d"):
+    return {
+        "dossier_id": dossier_id, "date_depot": date_depot,
+        "date_dernier_evenement": date_dernier_evenement,
+    }
+
+
+def test_compute_plage_dates_gouvernements_liste_vide():
+    assert compute_plage_dates_gouvernements([]) == {"lignes": [], "dates_invalides": []}
+
+
+def test_compute_plage_dates_gouvernements_mandat_en_cours_fin_null():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "X",
+        "membres": [membre(debut="2025-09-09", fin=None)],
+        "textes": [],
+    }]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    ligne = resultat["lignes"][0]
+    assert ligne["mandats_membres"] == {"min": "2025-09-09", "max": "2025-09-09"}
+    # fin=null n'est jamais substitué par la date du jour, et n'est pas une date invalide.
+    assert resultat["dates_invalides"] == []
+
+
+def test_compute_plage_dates_gouvernements_mandat_termine_fin_incluse_dans_le_max():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "X",
+        "membres": [membre(debut="2024-01-01", fin="2024-06-01")],
+        "textes": [],
+    }]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    assert resultat["lignes"][0]["mandats_membres"] == {"min": "2024-01-01", "max": "2024-06-01"}
+
+
+def test_compute_plage_dates_gouvernements_gouvernement_sans_texte():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "X",
+        "membres": [membre(debut="2025-01-01", fin=None)],
+        "textes": [],
+    }]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    assert resultat["lignes"][0]["textes"] is None
+
+
+def test_compute_plage_dates_gouvernements_gouvernement_avec_plusieurs_textes():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "X",
+        "membres": [],
+        "textes": [
+            texte(date_depot="2024-10-10", date_dernier_evenement="2024-12-04", dossier_id="t1"),
+            texte(date_depot="2024-11-01", date_dernier_evenement="2025-01-15", dossier_id="t2"),
+        ],
+    }]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    assert resultat["lignes"][0]["textes"] == {"min": "2024-10-10", "max": "2025-01-15"}
+
+
+def test_compute_plage_dates_gouvernements_membres_et_textes_absents():
+    resultat = compute_plage_dates_gouvernements([{"gouvernement_id": "gouvernement:X", "nom": "X"}])
+
+    ligne = resultat["lignes"][0]
+    assert ligne["mandats_membres"] is None
+    assert ligne["textes"] is None
+    assert resultat["dates_invalides"] == []
+
+
+def test_compute_plage_dates_gouvernements_dates_invalides_recensees():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "X",
+        "membres": [membre(debut="pas-une-date", fin="aussi-invalide")],
+        "textes": [texte(date_depot=None, date_dernier_evenement="pas-une-date")],
+    }]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    assert resultat["lignes"][0]["mandats_membres"] is None
+    assert resultat["lignes"][0]["textes"] is None
+    champs = {e["champ"] for e in resultat["dates_invalides"]}
+    assert champs == {
+        "membres[0].debut", "membres[0].fin",
+        "textes[0].date_depot", "textes[0].date_dernier_evenement",
+    }
+
+
+def test_compute_plage_dates_gouvernements_trie_par_nom_puis_id():
+    gouvernements = [
+        {"gouvernement_id": "gouvernement:Z", "nom": "B"},
+        {"gouvernement_id": "gouvernement:A", "nom": "A"},
+    ]
+
+    resultat = compute_plage_dates_gouvernements(gouvernements)
+
+    assert [ligne["gouvernement_id"] for ligne in resultat["lignes"]] == [
+        "gouvernement:A", "gouvernement:Z",
+    ]
+
+
+def test_compute_plage_dates_gouvernements_est_serialisable_json():
+    gouvernements_valides, _ = load_gouvernement_directory(FIXTURES_DIR)
+
+    resultat = compute_plage_dates_gouvernements(gouvernements_valides)
+
+    json.dumps(resultat, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# generate_markdown_report
+# ---------------------------------------------------------------------------
+
+def test_generate_markdown_report_contient_toutes_les_sections():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "# Rapport d'audit du jeu de données gouvernements" in markdown
+    assert "## Volumétrie" in markdown
+    assert "## Tableau croisé des plages temporelles par gouvernement" in markdown
+    assert "## Complétude" in markdown
+    assert "## Cohérence" in markdown
+    assert "## Fraîcheur" in markdown
+    assert "## Erreurs de lecture" in markdown
+
+
+def test_generate_markdown_report_sections_vides_affichent_un_message_explicite():
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "Aucun gouvernement invalide détecté." in markdown
+    assert "Aucune divergence détectée." in markdown
+    assert "Aucun doublon détecté." in markdown
+    assert "Aucune source datée." in markdown
+    assert "Aucun gouvernement périmé." in markdown
+    assert "Aucune erreur de lecture." in markdown
+    assert "Aucune date invalide détectée." in markdown
+
+
+def test_generate_markdown_report_reflete_les_donnees_du_rapport():
+    gouvernements = [{"gouvernement_id": "a"}, {"gouvernement_id": "a"}]  # doublon volontaire
+    erreurs = [{"fichier": "casse.json", "erreur": "JSON invalide"}]
+
+    rapport = build_report(gouvernements, erreurs, reference_date=REFERENCE)
+    markdown = generate_markdown_report(rapport)
+
+    assert "casse.json" in markdown
+    assert "JSON invalide" in markdown
+    assert "| a | 2 |" in markdown  # doublons_gouvernement_id : "a" en double
+
+
+def test_generate_markdown_report_plage_dates_mandat_en_cours():
+    gouvernements = [{
+        "gouvernement_id": "gouvernement:X", "nom": "Gouvernement X",
+        "membres": [membre(debut="2025-09-09", fin=None)],
+        "textes": [],
+    }]
+
+    rapport = build_report(gouvernements, [], reference_date=REFERENCE)
+    markdown = generate_markdown_report(rapport)
+
+    assert "2025-09-09 → 2025-09-09" in markdown
+    assert "N/D" in markdown  # cellule "textes" du gouvernement sans texte
+
+
+def test_generate_markdown_report_retourne_une_chaine_non_vide():
+    gouvernements_valides, erreurs_lecture = load_gouvernement_directory(FIXTURES_DIR)
+    rapport = build_report(gouvernements_valides, erreurs_lecture, reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert isinstance(markdown, str)
+    assert len(markdown) > 0
+
+
+# ---------------------------------------------------------------------------
+# CLI : _build_arg_parser / main
+# ---------------------------------------------------------------------------
+
+def test_build_arg_parser_defauts():
+    parser = _build_arg_parser()
+    args = parser.parse_args([])
+
+    assert args.input_dir == "pivot_data/gouvernements"
+    assert args.staleness_days == 30
+    assert args.output_json is None
+    assert args.output_md is None
+
+
+def test_main_ecrit_json_et_markdown(tmp_path):
+    output_json = tmp_path / "rapport.json"
+    output_md = tmp_path / "rapport.md"
+
+    code = main([
+        "--input-dir", str(FIXTURES_DIR),
+        "--output-json", str(output_json),
+        "--output-md", str(output_md),
+        "--staleness-days", "30",
+    ])
+
+    assert code == 0
+    assert output_json.exists()
+    assert output_md.exists()
+
+    rapport = json.loads(output_json.read_text(encoding="utf-8"))
+    assert rapport["meta"]["total_gouvernements"] == 3
+    assert rapport["meta"]["total_erreurs_lecture"] == 1
+    assert rapport["meta"]["staleness_days"] == 30
+
+    markdown = output_md.read_text(encoding="utf-8")
+    assert "# Rapport d'audit du jeu de données gouvernements" in markdown
+
+
+def test_main_sans_output_json_ecrit_sur_stdout(capsys):
+    code = main(["--input-dir", str(FIXTURES_DIR)])
+
+    assert code == 0
+    captured = capsys.readouterr()
+    rapport = json.loads(captured.out)
+    assert rapport["meta"]["total_gouvernements"] == 3
+
+
+def test_main_dossier_introuvable_retourne_1(tmp_path):
+    code = main(["--input-dir", str(tmp_path / "n-existe-pas")])
+
+    assert code == 1
+
+
+def test_main_out_dir_est_cree_si_absent(tmp_path):
+    output_json = tmp_path / "sous" / "dossier" / "rapport.json"
+
+    code = main(["--input-dir", str(FIXTURES_DIR), "--output-json", str(output_json)])
+
+    assert code == 0
+    assert output_json.exists()
