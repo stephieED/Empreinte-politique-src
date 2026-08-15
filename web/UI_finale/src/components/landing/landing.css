@@ -5,12 +5,22 @@
 
 .landing-main {
   width: 100%;
-  max-width: 900px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 32px 40px 64px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
+  align-items: start;
+}
+
+/* Hero, FAQ and final CTA anchor the page full-width; HowItWorks/FactDemo
+   and WhatYouWontFind/SourcesFreshness pair up side by side so desktop/
+   tablet widths read as a composed layout, not a single feed column. */
+.landing-main > :first-child,
+.landing-main > :nth-child(6),
+.landing-main > :nth-child(7) {
+  grid-column: 1 / -1;
 }
 
 .landing-section {
@@ -588,17 +598,23 @@
   }
 }
 
+/* Below this width, HowItWorks only has half of .landing-main to itself
+   (paired with FactDemo) — its internal 4-column step grid needs the
+   same 2-column relief mobile already gets, or steps get too cramped. */
+@media (max-width: 1180px) {
+  .how-it-works-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 680px) {
   .landing-main {
+    grid-template-columns: 1fr;
     padding: 24px 20px 48px;
   }
 
   .landing-section {
     padding: 20px;
-  }
-
-  .how-it-works-steps {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .hero-pipeline-steps {
