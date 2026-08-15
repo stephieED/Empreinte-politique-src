@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Brand from '../components/Brand';
 import Hero from '../components/landing/Hero';
 import HowItWorks from '../components/landing/HowItWorks';
@@ -25,6 +26,13 @@ export default function LandingPage() {
           <Faq />
           <FinalCta />
         </main>
+        <footer className="landing-footer">
+          <p className="landing-footer-text">Données publiques agrégées. Aucun score, aucun classement.</p>
+          <nav className="landing-footer-links" aria-label="Pages légales">
+            <Link to="/methodologie">Méthodologie</Link>
+            <Link to="/mentions-legales">Mentions légales</Link>
+          </nav>
+        </footer>
       </div>
     </div>
   );
