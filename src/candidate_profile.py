@@ -951,6 +951,113 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
     return out
 
 
+# sortEnSeance (schéma legacy légis 14, racine `textesEtAmendements`) -> sort du
+# schéma pivot. Contrairement à `_AMENDEMENT_SORT_MAP` (paire etat/sousEtat
+# ambiguë selon le contexte), `sort.sortEnSeance` porte déjà sans ambiguïté
+# l'issue en séance : simple normalisation de casse/accentuation, pas de
+# dérivation heuristique. Voir issue #299.
+_LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP: dict[str, str] = {
+    "Adopté": "adopté",
+    "Rejeté": "rejeté",
+    "Tombé": "tombé",
+    "Non soutenu": "non_soutenu",
+    "Retiré": "retiré",
+}
+
+
+def _derive_amendement_sort_legacy(
+    etat: Optional[str], sort_en_seance: Optional[str]
+) -> tuple[Optional[str], Optional[str]]:
+    """Équivalent de `_derive_amendement_sort` pour le schéma legacy légis 14.
+
+    Même logique d'irrecevabilité (`etat` "Irrecevable"/"Irrecevable 40",
+    identique à `_derive_amendement_sort`), mais l'issue en séance est portée
+    directement par `sort.sortEnSeance` côté AN : pas de table (etat, sousEtat)
+    à interpréter, une simple normalisation suffit.
+    """
+    if etat in ("Irrecevable", "Irrecevable 40"):
+        base = "art. 40" if etat == "Irrecevable 40" else "art. 45"
+        return "irrecevable", base
+    return _LEGACY_AMENDEMENT_SORT_EN_SEANCE_MAP.get(sort_en_seance), None
+
+
+def _parse_amendement_legacy_single(
+    amendement: dict[str, Any], texte_ref: Optional[str]
+) -> list[tuple[str, dict[str, Any]]]:
+    """Extrait les enregistrements indexés par acteurRef d'un amendement au
+    format legacy (légis 14, déjà déballé d'un `texteleg`). `texte_ref` est
+    porté par le `texteleg` parent, pas par l'amendement lui-même."""
+    signataires = amendement.get("signataires") or {}
+    auteur = signataires.get("auteur") or {}
+    acteur_ref = auteur.get("acteurRef")
+    if not isinstance(acteur_ref, str) or not acteur_ref:
+        return []
+
+    cosignataires_bloc = signataires.get("cosignataires") or {}
+    cosign_refs = _extract_cosignataire_refs(cosignataires_bloc)
+
+    identifiant = amendement.get("identifiant") or {}
+    sort_bloc = amendement.get("sort") or {}
+    sort, base_juridique = _derive_amendement_sort_legacy(
+        amendement.get("etat"), sort_bloc.get("sortEnSeance")
+    )
+
+    record_base = {
+        "texte_vise": texte_ref,
+        "sort": sort,
+        "base_juridique_irrecevabilite": base_juridique,
+        "premier_signataire": f"an:{acteur_ref}",
+        "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
+        "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
+        "date": amendement.get("dateDepot"),
+        "numero": identifiant.get("numeroLong") or identifiant.get("numero"),
+        "source_url": None,
+    }
+
+    out: list[tuple[str, dict[str, Any]]] = [
+        (acteur_ref, {**record_base, "role_signataire": "auteur_principal"})
+    ]
+    for cosign_ref in cosign_refs:
+        if not isinstance(cosign_ref, str) or not cosign_ref or cosign_ref == acteur_ref:
+            continue
+        out.append((cosign_ref, {**record_base, "role_signataire": "cosignataire"}))
+
+    return out
+
+
+def _parse_amendement_entry_legacy(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
+    """Variante de `_parse_amendement_entry` pour le schéma legacy de la 14e
+    législature (clé racine `textesEtAmendements`, voir issue #299) : une
+    seule entrée JSON regroupe tous les `texteleg`, chacun listant ses
+    amendements (`texteleg[].amendements.amendement[]`), au lieu d'un fichier
+    par amendement. Produit les mêmes clés de sortie que
+    `_parse_amendement_entry`. Retourne `None` seulement si la clé racine
+    `textesEtAmendements` elle-même est absente/mal formée ; une liste vide
+    est un résultat légitime (aucun amendement exploitable dans l'entrée).
+    """
+    root = data.get("textesEtAmendements") if isinstance(data, dict) else None
+    if not isinstance(root, dict):
+        return None
+
+    texteleg_bloc = root.get("texteleg")
+    textelegs = texteleg_bloc if isinstance(texteleg_bloc, list) else [texteleg_bloc]
+
+    out: list[tuple[str, dict[str, Any]]] = []
+    for texteleg in textelegs:
+        if not isinstance(texteleg, dict):
+            continue
+        texte_ref = texteleg.get("refTexteLegislatif")
+        amendement_bloc = (texteleg.get("amendements") or {}).get("amendement")
+        amendements = amendement_bloc if isinstance(amendement_bloc, list) else [amendement_bloc]
+
+        for amendement in amendements:
+            if not isinstance(amendement, dict):
+                continue
+            out.extend(_parse_amendement_legacy_single(amendement, texte_ref))
+
+    return out
+
+
 def _amendements_zip_url(legislature: str) -> Optional[str]:
     entry = AN_AMENDEMENTS_PATH.get(legislature)
     if not entry:
@@ -1276,7 +1383,14 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
     liste d'amendements (extrait de `_download_and_build_amendement_index`
     pour être réutilisable par `build_amendements_index_figees.py`, qui parse
     une archive téléchargée manuellement hors CI). Lève `zipfile.BadZipFile`
-    si l'archive est invalide — laissé à l'appelant à traiter."""
+    si l'archive est invalide — laissé à l'appelant à traiter.
+
+    Détecte le schéma de chaque entrée par sa clé racine : `"amendement"`
+    (schéma 15/16/17, un amendement par entrée) ou `"textesEtAmendements"`
+    (schéma legacy légis 14, une seule entrée regroupant tous les
+    texteleg/amendements — voir issue #299). Un schéma ni l'un ni l'autre
+    produit toujours un index vide pour cette entrée, mais avec un warning
+    explicite au lieu d'un échec silencieux."""
     index: dict[str, list[dict[str, Any]]] = {}
     with zipfile.ZipFile(zip_path) as zf:
         noms = [n for n in zf.namelist() if n.endswith(".json")]
@@ -1286,7 +1400,19 @@ def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
                     data = json.load(f)
             except (json.JSONDecodeError, KeyError):
                 continue
-            parsed_entries = _parse_amendement_entry(data)
+
+            if isinstance(data, dict) and "amendement" in data:
+                parsed_entries = _parse_amendement_entry(data)
+            elif isinstance(data, dict) and "textesEtAmendements" in data:
+                parsed_entries = _parse_amendement_entry_legacy(data)
+            else:
+                print(
+                    f"  [!] Entrée '{nom}' au format inconnu (ni 'amendement' ni "
+                    "'textesEtAmendements'), ignorée",
+                    file=sys.stderr,
+                )
+                continue
+
             if parsed_entries is None:
                 continue
             for acteur_ref, record in parsed_entries:
