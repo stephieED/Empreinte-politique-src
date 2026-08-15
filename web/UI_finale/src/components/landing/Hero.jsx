@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { DEFAULT_CANDIDATE_ID } from '../../data';
+import { DEFAULT_CANDIDATE_ID, DEFAULT_GROUP_ID, DEFAULT_GOVERNMENT_ID } from '../../data';
 import './landing.css';
 
 function CheckIcon() {
@@ -51,7 +51,7 @@ const PIPELINE_STEPS = [
   },
   {
     key: 'fiche-candidat',
-    label: 'Fiche candidat',
+    label: 'Profil',
     content: (
       <span className="hero-pipeline-card">
         <span className="hero-pipeline-avatar" aria-hidden="true" />
@@ -61,28 +61,19 @@ const PIPELINE_STEPS = [
   },
 ];
 
-// Hero (#143) : promesse factuelle + CTA principal + micro-animation du pipeline
-// donnée brute → fait vérifié → fiche candidat. Le CTA principal reste unique
-// et cible la fiche candidat, cohérent avec la dernière étape de l'animation ;
-// les liens groupe/gouvernement restent réservés à la section CTA finale de la
-// page (#139, "Mise à jour" du 2026-08-14) pour ne pas surcharger le Hero.
+// Hero (#143) : promesse factuelle + micro-animation du pipeline donnée brute
+// → fait vérifié → fiche candidat. Le CTA final (candidat/groupe/gouvernement,
+// ex-FinalCta) est intégré directement ici plutôt que répété dans une section
+// dédiée en bas de page, pour éviter un unique bouton perdu en haut et un
+// second bloc de CTA redondant en bas (retour utilisateur du 2026-08-15).
 export default function Hero() {
   return (
     <section className="landing-section landing-hero" aria-label="Présentation">
-      <h1>Le mandat de chaque candidat, retracé jusqu'à sa source.</h1>
-      <p>
-        Empreinte politique rassemble mandats, votes, textes et interventions à partir des
-        données publiques de l'Assemblée nationale, du Sénat et du Parlement européen — chaque
-        fait relié à sa source primaire. Aucun score, aucun classement.
-      </p>
-      <div className="landing-cta-group">
-        <Link className="landing-cta" to={`/candidats/${DEFAULT_CANDIDATE_ID}`}>
-          Explorer une fiche candidat
-        </Link>
-      </div>
+      <h1>L'explorateur neutre et sourcé des parcours parlementaires pour la présidentielle 2027.</h1>
+      <p>Des faits sourcés, sans note ni classement — à consulter par candidat, par groupe ou par gouvernement.</p>
 
       <div className="hero-pipeline">
-        <p className="hero-pipeline-caption">De la donnée brute à la fiche candidat, en trois étapes :</p>
+        <p className="hero-pipeline-caption">Le concept</p>
         <div className="hero-pipeline-steps">
           {PIPELINE_STEPS.map((step, index) => (
             <Fragment key={step.key}>
@@ -94,6 +85,21 @@ export default function Hero() {
               {index < PIPELINE_STEPS.length - 1 && <ArrowIcon />}
             </Fragment>
           ))}
+        </div>
+      </div>
+
+      <div className="hero-ready">
+        <h2>Prêt à explorer ?</h2>
+        <div className="landing-cta-group">
+          <Link className="landing-cta" to={`/candidats/${DEFAULT_CANDIDATE_ID}`}>
+            Voir un profil candidat
+          </Link>
+          <Link className="landing-cta" to={`/groupes/${DEFAULT_GROUP_ID}`}>
+            Voir un profil de groupe
+          </Link>
+          <Link className="landing-cta" to={`/gouvernements/${DEFAULT_GOVERNMENT_ID}`}>
+            Voir un profil de gouvernement
+          </Link>
         </div>
       </div>
     </section>

@@ -22,10 +22,7 @@ export default function FactDemo() {
   return (
     <section className="landing-section fact-demo" aria-label="Exemple de fait sourcé">
       <h2>Un fait, une source</h2>
-      <p>
-        Exemple fictif, à but illustratif — aucun candidat réel. Chaque fait publié sur Empreinte
-        politique se vérifie de la même façon : un clic suffit pour révéler sa source primaire.
-      </p>
+      <p className="fact-demo-example-label">Exemple :</p>
 
       <div className="fact-demo-card">
         <span className="fact-demo-kicker">{mandat}</span>

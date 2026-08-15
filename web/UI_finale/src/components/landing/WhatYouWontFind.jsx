@@ -24,15 +24,13 @@ export default function WhatYouWontFind() {
   return (
     <section className="landing-section" aria-label="Ce que vous ne trouverez pas ici">
       <h2>Ce que vous ne trouverez pas ici</h2>
-      <p>
-        Empreinte politique documente l'activité parlementaire, elle ne la classe pas. Trois
-        engagements tiennent cette ligne :
-      </p>
       <ul className="wontfind-list">
         {ITEMS.map((item) => (
           <li key={item.title}>
-            <p className="wontfind-title">{item.title}</p>
-            <p className="wontfind-detail">{item.detail}</p>
+            <details className="wontfind-item">
+              <summary className="wontfind-title">{item.title}</summary>
+              <p className="wontfind-detail">{item.detail}</p>
+            </details>
           </li>
         ))}
       </ul>

@@ -51,16 +51,12 @@ const STEPS = [
     id: 'sources',
     label: 'On part de sources ouvertes',
     stat: `${sourcesConfig.length} sources publiques`,
-    detail:
-      "NosDéputés.fr, NosSénateurs.fr, l'Assemblée nationale, le Parlement européen, Wikipédia et Wikidata — aucune donnée déclarative non sourcée.",
     Icon: IconSources,
   },
   {
     id: 'normalise',
     label: 'On normalise',
     stat: '1 schéma commun',
-    detail:
-      "Assemblée nationale, Sénat et Parlement européen sont convertis vers la même structure de données, pour rendre les profils comparables entre eux.",
     Icon: IconNormalize,
   },
   {
@@ -112,9 +108,11 @@ export default function HowItWorks() {
           );
         })}
       </ol>
-      <p id="how-it-works-detail" className="how-it-works-detail" aria-live="polite">
-        {active.detail}
-      </p>
+      {active.detail && (
+        <p id="how-it-works-detail" className="how-it-works-detail" aria-live="polite">
+          {active.detail}
+        </p>
+      )}
     </section>
   );
 }

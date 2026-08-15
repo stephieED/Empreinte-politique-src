@@ -8,10 +8,22 @@
   max-width: 1600px;
   margin: 0 auto;
   padding: 32px 40px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.landing-columns {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   align-items: start;
+}
+
+.landing-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .landing-footer {
@@ -46,15 +58,6 @@
 .landing-footer-links a:focus-visible {
   color: var(--ink);
   text-decoration: underline;
-}
-
-/* Hero, FAQ and final CTA anchor the page full-width; HowItWorks/FactDemo
-   and WhatYouWontFind/SourcesFreshness pair up side by side so desktop/
-   tablet widths read as a composed layout, not a single feed column. */
-.landing-main > :first-child,
-.landing-main > :nth-child(6),
-.landing-main > :nth-child(7) {
-  grid-column: 1 / -1;
 }
 
 .landing-section {
@@ -99,6 +102,19 @@
 .landing-hero p {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-ready {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.landing-hero h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
 }
 
 .landing-faq-list {
@@ -190,16 +206,42 @@
   padding: 14px 16px;
 }
 
+/* <details> replié par défaut (retour utilisateur du 2026-08-15) : même
+   marqueur +/− que .landing-faq-item/.source-card-summary. */
 .wontfind-title {
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 4px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wontfind-title::-webkit-details-marker {
+  display: none;
+}
+
+.wontfind-title::before {
+  content: '+';
+  display: inline-block;
+  width: 16px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.wontfind-item[open] .wontfind-title::before {
+  content: '−';
+}
+
+.wontfind-title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .wontfind-detail {
   font-size: 13px;
   color: var(--muted);
+  margin-top: 8px;
   margin-bottom: 0;
+  margin-left: 16px;
 }
 
 .sources-grid {
@@ -214,9 +256,6 @@
   background: var(--bg);
   border: 1px solid #f0eeeb;
   padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   transition: box-shadow 0.15s ease;
 }
 
@@ -225,24 +264,57 @@
   box-shadow: 0 4px 14px rgba(20, 15, 40, 0.1);
 }
 
+/* <details> replié par défaut (retour utilisateur du 2026-08-15) : même
+   marqueur +/− que .landing-faq-item, adapté à un résumé multi-éléments
+   (nom + cadence + badge) plutôt qu'une simple question. */
+.source-card-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.source-card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-card-summary::before {
+  content: '+';
+  display: inline-block;
+  width: 16px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.source-card[open] .source-card-summary::before {
+  content: '−';
+}
+
+.source-card-summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .source-card-name {
   font-size: 14px;
   font-weight: 700;
   margin: 0;
 }
 
+.source-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  margin-left: 16px;
+}
+
 .source-card-row {
   font-size: 13px;
   line-height: 1.5;
   color: var(--ink);
-  margin: 0;
-}
-
-.source-card-badge-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
   margin: 0;
 }
 
@@ -325,6 +397,12 @@
 .sources-freshness-cta a {
   color: var(--ink);
   font-weight: 700;
+}
+
+.fact-demo-example-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
 }
 
 .fact-demo-card {
@@ -643,8 +721,11 @@
 
 @media (max-width: 680px) {
   .landing-main {
-    grid-template-columns: 1fr;
     padding: 24px 20px 48px;
+  }
+
+  .landing-columns {
+    grid-template-columns: 1fr;
   }
 
   .landing-footer {
