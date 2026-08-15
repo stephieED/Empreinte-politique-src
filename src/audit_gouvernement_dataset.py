@@ -23,6 +23,11 @@ Indicateurs sous forme de fonctions pures (liste de profils de gouvernement
   - fraîcheur : ancienneté de `sources[].synchro_le`, gouvernements périmés
     (`compute_gouvernements_perimes`, seuil `staleness_days` injectable), même
     logique que les deux scripts existants.
+  - warnings : agrégation de `meta.warnings[]` par type
+    (`compute_agregation_warnings`), même contrat que
+    `audit_groupe_dataset.compute_agregation_warnings` (issue #321, nécessaire
+    à `audit_pipeline.py::compute_vue_ensemble` pour agréger les warnings des
+    trois types de profil).
 
   - tableau croisé des plages temporelles par gouvernement
     (`compute_plage_dates_gouvernements`, issue #320, sous-issue 4/6 de
@@ -609,6 +614,58 @@ def compute_gouvernements_perimes(
 
 
 # ---------------------------------------------------------------------------
+# Agrégation des warnings
+# ---------------------------------------------------------------------------
+
+def _type_warning(warning: str) -> str:
+    """Type d'un warning : préfixe avant le premier ':', message complet sinon."""
+    prefixe, separateur, _ = warning.partition(":")
+    return prefixe.strip() if separateur else warning.strip()
+
+
+def compute_agregation_warnings(gouvernements: list[dict[str, Any]]) -> dict[str, Any]:
+    """Compile tous les `meta.warnings[]` des gouvernements par type.
+
+    Le "type" d'un warning est déterminé par `_type_warning` (préfixe avant
+    le premier ':'). Même contrat que `audit_groupe_dataset.compute_agregation_warnings`.
+
+    Returns:
+        `{"total_warnings": int, "par_type": {type: {"frequence": int,
+        "gouvernement_ids": [str, ...]}}}`. `frequence` compte chaque
+        occurrence (un gouvernement avec deux warnings du même type compte
+        pour 2) ; `gouvernement_ids` liste sans doublon les gouvernements
+        concernés par ce type, triés.
+    """
+    par_type: dict[str, dict[str, Any]] = {}
+    total_warnings = 0
+
+    for gouvernement in gouvernements:
+        meta = gouvernement.get("meta") or {}
+        warnings = meta.get("warnings") or []
+        gouvernement_id = gouvernement.get("gouvernement_id")
+
+        for warning in warnings:
+            if not isinstance(warning, str) or not warning:
+                continue
+            total_warnings += 1
+            type_warning = _type_warning(warning)
+            entree = par_type.setdefault(type_warning, {"frequence": 0, "gouvernement_ids": set()})
+            entree["frequence"] += 1
+            entree["gouvernement_ids"].add(gouvernement_id)
+
+    return {
+        "total_warnings": total_warnings,
+        "par_type": {
+            type_warning: {
+                "frequence": entree["frequence"],
+                "gouvernement_ids": sorted(entree["gouvernement_ids"]),
+            }
+            for type_warning, entree in sorted(par_type.items())
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Assemblage du rapport
 # ---------------------------------------------------------------------------
 
@@ -633,10 +690,10 @@ def build_report(
 
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
-        (`volumetrie`, `completude`, `coherence`, `fraicheur`) plus
-        `plage_dates_gouvernements`, `meta` et `erreurs_lecture`. Outil de
-        qualité interne : ce rapport ne doit jamais introduire de jugement
-        de valeur, de score ou de classement (AGENTS.md §2.1).
+        (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`)
+        plus `plage_dates_gouvernements`, `meta` et `erreurs_lecture`. Outil
+        de qualité interne : ce rapport ne doit jamais introduire de
+        jugement de valeur, de score ou de classement (AGENTS.md §2.1).
     """
     reference = reference_date if reference_date is not None else datetime.now(timezone.utc)
 
@@ -669,6 +726,7 @@ def build_report(
             ),
         },
         "plage_dates_gouvernements": compute_plage_dates_gouvernements(gouvernements),
+        "warnings": compute_agregation_warnings(gouvernements),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -848,6 +906,19 @@ def _md_section_plage_dates_gouvernements(plage: dict[str, Any]) -> str:
     )
 
 
+def _md_section_warnings(warnings: dict[str, Any]) -> str:
+    lignes = [
+        [type_warning, entree["frequence"], ", ".join(entree["gouvernement_ids"])]
+        for type_warning, entree in warnings["par_type"].items()
+    ]
+
+    return (
+        "## Warnings\n\n"
+        f"Total : {warnings['total_warnings']}\n\n"
+        + _md_table(["Type", "Fréquence", "Gouvernements concernés"], lignes, "Aucun warning.")
+    )
+
+
 def _md_section_erreurs_lecture(erreurs_lecture: list[dict[str, Any]]) -> str:
     lignes = [[e["fichier"], e["erreur"]] for e in erreurs_lecture]
 
@@ -881,6 +952,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),
+        _md_section_warnings(rapport["warnings"]),
         _md_section_erreurs_lecture(rapport["erreurs_lecture"]),
     ]
 
@@ -896,9 +968,9 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         prog="audit_gouvernement_dataset.py",
         description=(
             "Audite un jeu de données de profils de gouvernement : volumétrie, "
-            "complétude, cohérence, fraîcheur des sources et plages temporelles "
-            "par gouvernement. Outil de qualité interne, ne produit aucun score "
-            "ni classement."
+            "complétude, cohérence, fraîcheur des sources, plages temporelles "
+            "par gouvernement et warnings agrégés. Outil de qualité interne, "
+            "ne produit aucun score ni classement."
         ),
     )
     parser.add_argument(
