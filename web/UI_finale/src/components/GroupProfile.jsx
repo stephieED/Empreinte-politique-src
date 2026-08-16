@@ -50,6 +50,8 @@ export default function GroupProfile({ group }) {
 
   const amendmentSegments = group.amendmentSegments.map((s) => ({ ...s, color: OUTCOME_COLOR[s.key] }));
 
+  const mandatsAgreges = group.mandatsAgreges || [];
+
   return (
     <main className="gp-main">
       <div className="gp-breadcrumb">
@@ -116,6 +118,31 @@ export default function GroupProfile({ group }) {
                   {vote.date}
                   {vote.quorumNote}
                 </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        )}
+
+        <p className="gp-section-title">Mandats agrégés</p>
+        {mandatsAgreges.length === 0 ? (
+          <p className="gp-empty">Aucun mandat agrégé disponible pour ce groupe.</p>
+        ) : (
+        <div className="gp-mandats-grid">
+          {mandatsAgreges.map((m) => (
+            <div className="gp-mandat-card" key={`${m.categorie}-${m.label}`}>
+              <span className="gp-mandat-category">{m.categorieLabel}</span>
+              <p className="gp-mandat-label">{m.label}</p>
+              <p className="gp-mandat-count">
+                {m.nbMembres} / {group.profilsDisponibles} membres
+                {m.nbMembresActifs > 0 && ` · ${m.nbMembresActifs} actif${m.nbMembresActifs > 1 ? 's' : ''}`}
+              </p>
+              <div className="gp-mandat-fonctions">
+                {m.parFonction.map((f) => (
+                  <span className="gp-mandat-fonction-pill" key={f.fonction}>
+                    {f.fonction} <span className="gp-mandat-fonction-count">{f.count}</span>
+                  </span>
+                ))}
               </div>
             </div>
           ))}
