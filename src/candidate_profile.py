@@ -620,31 +620,6 @@ def fetch_identity(base_urls: list[str], slug: str) -> tuple[Optional[Any], Opti
     return _try_urls(base_urls, "Récupération de l'identité", slug)
 
 
-def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
-    """Récupère la synthèse d'activité globale via l'API NosDéputés."""
-    url = f"{base_url}/synthese/data/json"
-    print(f"-> Synthèse d'activité : {url}")
-    data = _get_payload(url)
-    if not isinstance(data, dict):
-        return None
-    deputes = [item.get("depute") or item for item in (data.get("deputes") or []) if isinstance(item, dict)]
-    deputes = [d for d in deputes if isinstance(d, dict)]
-
-    for depute in deputes:
-        if depute.get("slug") == slug:
-            return depute
-
-    # Repli si le slug ne correspond à aucune entrée : comparaison stricte (pas de
-    # sous-chaîne, qui matcherait faussement un homonyme partiel, ex. slug "guedj"
-    # dans le nom d'un autre député contenant "Guedjbaba") sur le nom désaccentué.
-    normalized_slug_name = _normalize_search_query(slug.replace("-", " "))
-    for depute in deputes:
-        nom = depute.get("nom")
-        if nom and _normalize_search_query(nom) == normalized_slug_name:
-            return depute
-    return None
-
-
 def fetch_dossiers(base_url: str, legislature: str) -> Optional[dict]:
     """Récupère la liste des dossiers législatifs d'une législature."""
     url = f"{base_url}/{legislature}/dossiers/nom/json"
@@ -3318,16 +3293,13 @@ def build_profile(
         else slug.replace("-", " ").title()
     )
 
-    # --- 3. Synthèse d'activité, dossiers législatifs, et recherche des interventions
-    # (sur le meilleur domaine/législature disponible). ---
-    synthesis_payload = None
+    # --- 3. Dossiers législatifs et recherche des interventions (sur le
+    # meilleur domaine/législature disponible). ---
     dossiers_payload = []
     interventions_payload = None
     interventions_base_url = base_urls[0]
     pre_profile_warnings: list[str] = []
     try:
-        synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
-        time.sleep(0.3)
         # Dossiers via NosDéputés : uniquement pour les sénateurs. Pour les
         # députés, ce résultat est de toute façon écrasé plus bas par l'étape
         # 8bis (fetch_textes_portes_officiels, source officielle AN, propre à
@@ -3372,7 +3344,6 @@ def build_profile(
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "amendements": [],
         "interventions": [],
@@ -3566,16 +3537,6 @@ def build_profile(
             )
         except Exception as exc:
             warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
-
-    if not _is_empty_payload(synthesis_payload):
-        # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---
-        profile["synthese_activite"] = {
-            "nom": synthesis_payload.get("nom"),
-            "groupe_sigle": synthesis_payload.get("groupe_sigle"),
-            "profession": synthesis_payload.get("profession"),
-            "nb_mandats": synthesis_payload.get("nb_mandats"),
-            "url_an_ou_senat": synthesis_payload.get("url_an") or synthesis_payload.get("url_nosdeputes"),
-        }
 
     if dossiers_payload:
         # --- 8. Dossiers législatifs (sénateurs uniquement, voir étape 3

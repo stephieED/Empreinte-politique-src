@@ -42,7 +42,6 @@ def test_merge_raw_profile_preserves_votes_lost_in_new_fetch():
             {"numero_scrutin": "100", "date": "2023-01-01", "titre": "Ancien vote", "position": "pour"},
         ],
         "votes_source": "open data Assemblée nationale (législature 15)",
-        "synthese_activite": {"nom": "X Y"},
         "dossiers_legislatifs": [],
         "interventions": [
             {"id": 111, "url": "https://a.fr/1", "texte": "ancienne intervention"},
@@ -57,7 +56,6 @@ def test_merge_raw_profile_preserves_votes_lost_in_new_fetch():
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "interventions": [],
         "meta": {"warnings": ["votes introuvables : ...", "identité introuvable : ..."]},
@@ -68,7 +66,6 @@ def test_merge_raw_profile_preserves_votes_lost_in_new_fetch():
     assert merged["votes"] == old["votes"]
     assert merged["interventions"] == old["interventions"]
     assert merged["votes_source"] == old["votes_source"]
-    assert merged["synthese_activite"] == old["synthese_activite"]
     # Les avertissements devenus faux après restauration des données doivent disparaître.
     assert not any(w.startswith("votes introuvables") for w in merged["meta"]["warnings"])
 
@@ -328,7 +325,6 @@ def test_prune_stale_warnings_removes_questions_warning_when_questions_present()
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "amendements": [],
         "interventions": [
@@ -343,7 +339,6 @@ def test_prune_stale_warnings_removes_questions_warning_when_questions_present()
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "amendements": [],
         "interventions": [],
@@ -365,7 +360,7 @@ def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
         "slug": "jean-dupont",
         "chambre": "deputes",
         "identite": {"nom_complet": "Jean Dupont"},
-        "mandats": [], "votes": [], "votes_source": None, "synthese_activite": None,
+        "mandats": [], "votes": [], "votes_source": None,
         "dossiers_legislatifs": [], "amendements": [], "interventions": [],
         "meta": {"warnings": [], "synchro_sources": {}},
     }
@@ -373,7 +368,7 @@ def test_prune_stale_warnings_keeps_questions_warning_when_no_questions():
         "slug": "jean-dupont",
         "chambre": "deputes",
         "identite": {"nom_complet": "Jean Dupont"},
-        "mandats": [], "votes": [], "votes_source": None, "synthese_activite": None,
+        "mandats": [], "votes": [], "votes_source": None,
         "dossiers_legislatifs": [], "amendements": [], "interventions": [],
         "meta": {
             "warnings": ["questions indisponibles : erreur réseau"],

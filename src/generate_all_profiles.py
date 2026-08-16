@@ -296,7 +296,6 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "interventions": [],
         "meta": {
