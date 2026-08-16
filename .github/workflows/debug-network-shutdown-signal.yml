@@ -46,9 +46,9 @@ on:
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # GROUPE TEST — requêtes répétées vers nosdeputes.fr (synthese/data/json :
-  # même URL que fetch_activity_synthesis en production, payload ~1,2 Mo,
-  # taille/latence connues et stables — voir
-  # docs/technical_decisions.md#get-payload-retry).
+  # endpoint retiré du pipeline de production depuis #356 — fetch_activity_synthesis
+  # n'existe plus — conservé ici comme URL de test à volume/latence connus et
+  # stables — voir docs/technical_decisions.md#get-payload-retry).
   # ──────────────────────────────────────────────────────────────────────────
   nosdeputes:
     runs-on: ubuntu-latest

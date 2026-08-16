@@ -155,7 +155,6 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
-    merged["synthese_activite"] = _prefer_non_empty(new.get("synthese_activite"), old.get("synthese_activite"))
     merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key)
     merged["votes"] = sorted(
         merge_lists_by_key(old.get("votes"), new.get("votes"), _vote_key),

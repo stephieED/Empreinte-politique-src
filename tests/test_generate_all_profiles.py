@@ -35,7 +35,6 @@ def _fake_raw_profile(slug: str, chambre: str = "deputes") -> dict:
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "interventions": [],
         "meta": {

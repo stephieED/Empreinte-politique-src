@@ -63,7 +63,6 @@ def _raw_depute(extra: dict = None) -> dict:
             },
         ],
         "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 17)",
-        "synthese_activite": {"nom": "Jean Dupont", "groupe_sigle": "RE"},
         "dossiers_legislatifs": [
             {
                 "legislature": "17",
