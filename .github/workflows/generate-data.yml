@@ -62,14 +62,24 @@ concurrency:
 # ─────────────────────────────────────────────────────────────────────────────
 # Timeout ParlTrack : modifiable ici (30 min par défaut). Rappel : ce job a
 # continue-on-error: true — son dépassement ne bloque pas merge-and-pivot.
-# Timeouts : amendements-an 30 min / AN 120 min (needs: amendements-an, donc
-# chaîné après, pas parallèle à lui) / Sénat 90 min / UE 60 min / ParlTrack
-# 30 min / roster-groupes 60 min (needs: les 4 jobs d'extraction précédents,
-# #222 — jamais parallèle à eux, contrairement à ce qu'un calcul purement
-# parallèle suggérerait) / merge-and-pivot 60 min (needs: roster-groupes
-# entre autres).
-# Total mur (parallèle) ≈ max(30+120, 90, 60, 30) + 60 + 60 = 270 min — contre
-# ~450 min si tout s'enchaînait séquentiellement.
+# extract-an (#344) : matrix strategy, un shard par candidat à slug résolvable
+# (raw_data/candidats.json, calculé par le job prepare-an-matrix) — isole la
+# perte en cas de shutdown signal runner (#228, angle mort de if: always()) à
+# un seul candidat au lieu de tout le job. max-parallel: 1 sur ce matrix :
+# préserve le pic de jobs simultanés à 4 déjà acté par #222/[[concurrence-ci-roster]]
+# (des shards en parallèle entre eux, en plus de Sénat/UE/ParlTrack déjà
+# concurrents, dépasseraient ce pic) — voir
+# docs/technical_decisions.md#matrix-extract-an-par-candidat.
+# Timeouts : amendements-an 30 min / AN 20 min par shard, shards exécutés en
+# série (max-parallel 1) → ≈ 20 × nb_candidats_a_slug (8 actuellement, donc
+# ≈160 min pire cas — recalculer si raw_data/candidats.json change
+# significativement) / Sénat 90 min / UE 60 min / ParlTrack 30 min /
+# roster-groupes 60 min (needs: les jobs d'extraction précédents, #222 —
+# jamais parallèle à eux, contrairement à ce qu'un calcul purement parallèle
+# suggérerait) / merge-and-pivot 60 min (needs: roster-groupes entre autres).
+# Total mur (parallèle) ≈ max(30+20×8, 90, 60, 30) + 60 + 60 = 310 min pire cas
+# (8 shards, contre 270 min avant #344) — contre bien plus de 450 min si tout
+# s'enchaînait séquentiellement.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
@@ -83,16 +93,59 @@ env:
 jobs:
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 1/4 — Extraction Assemblée nationale
+  # JOB PRÉPARATOIRE — Calcul du matrix extract-an, un shard par candidat
+  # (#344 — voir docs/technical_decisions.md#matrix-extract-an-par-candidat)
+  #
+  # Un shard par candidat à *slug résolvable* uniquement : un candidat sans
+  # slug (raw_data/candidats.json) est un no-op silencieux dans extract-an
+  # --source an (aucune chambre FR interrogeable, et --source an ne déclenche
+  # jamais la recherche UE — voir process_candidat/_fetch_ue dans
+  # generate_all_profiles.py), donc exclu du matrix plutôt que de générer un
+  # shard qui n'écrirait jamais de fichier.
+  # ──────────────────────────────────────────────────────────────────────────
+  prepare-an-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      slugs: ${{ steps.slugs.outputs.slugs }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Slugs résolvables (raw_data/candidats.json)
+        id: slugs
+        run: |
+          SLUGS_JSON=$(python3 - <<'EOF'
+          import json
+          data = json.load(open("raw_data/candidats.json", encoding="utf-8"))
+          slugs = [c["slug"] for c in data["candidats"] if c.get("slug")]
+          print(json.dumps(slugs))
+          EOF
+          )
+          echo "slugs=$SLUGS_JSON" >> "$GITHUB_OUTPUT"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 1/4 — Extraction Assemblée nationale (matrix par candidat, #344)
   # ──────────────────────────────────────────────────────────────────────────
   extract-an:
-    needs: [extract-amendements-an]
+    needs: [extract-amendements-an, prepare-an-matrix]
+    name: extract-an (${{ matrix.slug }})
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 20
+    strategy:
+      # fail-fast: false — un shard en échec/gelé (shutdown signal) ne doit
+      # jamais annuler les shards restants : sinon le matrix n'apporte aucune
+      # isolation, contrairement à l'objectif de #344.
+      fail-fast: false
+      # max-parallel: 1 — voir le commentaire de budget mur en tête de ce
+      # fichier : préserve le pic de 4 jobs simultanés déjà acté par #222.
+      max-parallel: 1
+      matrix:
+        slug: ${{ fromJson(needs.prepare-an-matrix.outputs.slugs) }}
     # continue-on-error: true — même pattern que extract-parltrack/
-    # extract-amendements-an : un échec de cette source ne doit pas empêcher
-    # merge-and-pivot de fusionner les autres sources qui ont réussi (avant
-    # ce changement, needs: sur ce job dans extract-roster-groupes/
+    # extract-amendements-an : l'échec d'un shard ne doit pas empêcher
+    # merge-and-pivot de fusionner les autres shards/sources qui ont réussi
+    # (avant #222, needs: sur ce job dans extract-roster-groupes/
     # merge-and-pivot bloquait tout le run dès qu'une seule des 3 sources
     # FR/UE échouait, même si les 2 autres avaient réussi).
     continue-on-error: true
@@ -115,6 +168,11 @@ jobs:
 
       # fresh_run=true  → pas de restore (on repart de zéro).
       # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
+      # Clé partagée entre tous les shards (comme avant #344, et avec
+      # extract-roster-groupes) : la course déjà documentée en #248
+      # sous-issue 4 n'est pas aggravée (chaque shard restaure la même clé
+      # séquentiellement, max-parallel: 1, donc pas de nouvelle concurrence
+      # d'écriture introduite par le matrix lui-même).
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
@@ -145,9 +203,11 @@ jobs:
           path: .cache/amendements_an
 
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
+      # --only : un seul candidat par shard, donc --workers n'a plus d'effet
+      # (le parallélisme inter-candidats est désormais porté par le matrix).
       # fresh_run=true  → --no-merge : écrasement complet.
       # fresh_run=false → fusion additive : données existantes préservées.
-      - name: Extraction AN (NosDéputés)
+      - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
           FRESH: ${{ inputs.fresh_run }}
         run: |
@@ -157,14 +217,19 @@ jobs:
           [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
           [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
-          python3 src/generate_all_profiles.py --source an --workers ${{ inputs.workers }} "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
-      - name: Upload artifact AN
+      # path scopé au seul fichier de ce candidat (pas tout raw_data/profiles/) :
+      # les autres jobs d'extraction (Sénat/UE/roster) uploadent déjà la
+      # totalité du dossier (baseline committée + leur propre mise à jour),
+      # donc merge-and-pivot reçoit toujours la baseline complète via eux —
+      # inutile de la dupliquer dans chacun des N shards AN (#344).
+      - name: Upload artifact AN — ${{ matrix.slug }}
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: raw-profiles-an
-          path: raw_data/profiles/
+          name: raw-profiles-an-${{ matrix.slug }}
+          path: raw_data/profiles/${{ matrix.slug }}.json
           if-no-files-found: warn
 
       - name: Diagnostic — job annulé (signal externe)
@@ -172,10 +237,12 @@ jobs:
         run: |
           ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
           {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
+            echo "### ⚠️ Job annulé — signal d'annulation externe (${{ matrix.slug }})"
             echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
+            echo "Ce shard (candidat \`${{ matrix.slug }}\`) a été annulé de façon"
+            echo "externe (signal \`cancelled()\` reçu, pas un timeout ni une erreur"
+            echo "applicative) après ~${ELAPSED_MIN} min. Grâce au matrix (#344), les"
+            echo "autres shards/candidats ne sont pas affectés."
             echo ""
             echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
             echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
@@ -185,7 +252,7 @@ jobs:
         if: failure()
         run: |
           {
-            echo "### ❌ Job en échec"
+            echo "### ❌ Job en échec (${{ matrix.slug }})"
             echo ""
             echo "Voir la checklist de diagnostic dans #217 (ou la section"
             echo "correspondante de \`docs/technical_decisions.md\` si archivée"
@@ -746,12 +813,19 @@ jobs:
       # simplement vide ; sans ce flag, download-artifact ferait échouer tout
       # ce job pour une seule source en échec. merge_raw_dirs (merge_profile.py)
       # ignore déjà silencieusement un répertoire source absent.
-      - name: Download artifact AN (optionnel)
+      # extract-an est un matrix (#344, un job par candidat à slug résolvable)
+      # : pattern + merge-multiple récupère tous les artifacts raw-profiles-an-*
+      # (un par shard) et les aplatit dans un seul dossier — download-artifact
+      # ne fait pas échouer ce step si aucun ne matche (continue-on-error déjà
+      # présent ci-dessous couvre ce cas, cohérent avec le pattern "optionnel"
+      # des autres téléchargements de ce job).
+      - name: Download artifacts AN — tous les shards (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
         with:
-          name: raw-profiles-an
+          pattern: raw-profiles-an-*
           path: _artifacts/an
+          merge-multiple: true
 
       - name: Download artifact Sénat (optionnel)
         uses: actions/download-artifact@v7

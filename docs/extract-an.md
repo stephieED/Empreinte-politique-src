@@ -2,16 +2,30 @@
 
 ## Ce que fait ce job
 
-Il installe l'environnement Python, restaure éventuellement le cache, puis lance :
+Matrix strategy depuis #344 (voir `docs/technical_decisions.md#matrix-extract-an-par-candidat`) :
+un job préparatoire léger `prepare-an-matrix` lit `raw_data/candidats.json` et calcule la liste
+des slugs résolvables, puis `extract-an` tourne en un shard (un runner) par candidat, séquencés
+un par un (`max-parallel: 1`). Chaque shard installe l'environnement Python, restaure
+éventuellement le cache, puis lance :
 
 ```
-python3 generate_all_profiles.py --source an
+python3 generate_all_profiles.py --source an --only <slug>
 ```
 
 (avec `--no-merge` si `fresh_run=true`). Voir `generate-data.yml`.
 
-Le scope `--source an` force une extraction Assemblée nationale uniquement (députés), sans Sénat, sans UE.  
-Les profils bruts produits vont dans `raw_data/profiles/`, puis sont uploadés comme artifact `raw-profiles-an`.
+Le scope `--source an` force une extraction Assemblée nationale uniquement (députés), sans Sénat, sans UE.
+Un candidat sans slug (liste éditoriale) est un no-op silencieux dans ce scope et n'a donc pas de shard.
+Le profil brut produit par chaque shard va dans `raw_data/profiles/<slug>.json`, puis est uploadé comme
+artifact `raw-profiles-an-<slug>` — `merge-and-pivot` télécharge tous les artifacts `raw-profiles-an-*`
+d'un coup (`download-artifact` en mode `pattern`/`merge-multiple`).
+
+**Pourquoi un shard par candidat plutôt qu'un seul job séquentiel** : le runner GitHub peut recevoir un
+`shutdown signal` d'infrastructure qui gèle le job entier, y compris ses steps `if: always()`
+(angle mort documenté dans `docs/technical_decisions.md#resilience-generate-data-shutdown-signal`
+et `#228`) — la progression déjà écrite sur disque pour les candidats précédents serait alors perdue
+avec le reste du job. Le sharding par candidat borne cette perte à un seul candidat : les shards
+déjà terminés ont déjà uploadé leur artifact indépendamment.
 
 ---
 
@@ -35,8 +49,8 @@ flowchart TD
     CACHE[".cache/\n(évite les re-téléchargements)"] -. mise en cache .-> C
 
     C --> D["raw_data/profiles/&lt;slug&gt;.json"]
-    D --> E["artifact : raw-profiles-an\n(CI/CD — generate-data.yml)"]
-    E --> F["merge-and-pivot"]
+    D --> E["artifact : raw-profiles-an-&lt;slug&gt;\n(un par shard — CI/CD generate-data.yml, #344)"]
+    E --> F["merge-and-pivot\n(download-artifact pattern/merge-multiple)"]
 ```
 
 > **Priorité des votes** : scrutins nominatifs AN Open Data en premier ; endpoint votes NosDéputés en fallback uniquement.  
