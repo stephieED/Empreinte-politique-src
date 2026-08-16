@@ -5,7 +5,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from merge_profile import clean_stale_textes_portes, merge_lists_by_key, merge_pivot_profile, merge_raw_profile
+from merge_profile import (
+    clean_stale_textes_portes,
+    merge_lists_by_key,
+    merge_pivot_profile,
+    merge_raw_profile,
+    preserve_stable_freshness_timestamps,
+)
 
 
 def test_merge_lists_by_key_keeps_old_and_adds_new_only():
@@ -509,3 +515,44 @@ def test_merge_pivot_profile_roster_groupe_regenere_par_candidat_declare_prend_l
 
     assert merged["meta"]["provenance"] == "candidat_declare"
     assert merged["parti"] == "Horizons"
+
+
+def test_preserve_stable_freshness_timestamps_garde_ancien_horodatage_si_contenu_identique():
+    """#343 : --pivot-only re-dérive le pivot depuis le profil brut existant (pas de
+    réseau) et re-tamponnait genere_le/synchro_le à chaque exécution même quand le
+    contenu n'avait pas bougé — trompeur pour un audit de fraîcheur."""
+    old = _base_pivot({"genere_le": "2026-08-13T09:17:48+0000"})
+    old["sources"] = [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-08-13T09:17:48+0000"}]
+    old["votes"] = [{"numero_scrutin": "1", "date": "2024-01-01", "texte": "T"}]
+
+    new = _base_pivot({"genere_le": "2026-08-16T06:50:38+0000"})
+    new["sources"] = [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-08-16T06:39:22+0000"}]
+    new["votes"] = [{"numero_scrutin": "1", "date": "2024-01-01", "texte": "T"}]
+
+    result = preserve_stable_freshness_timestamps(old, new)
+
+    assert result["meta"]["genere_le"] == "2026-08-13T09:17:48+0000"
+    assert result["sources"][0]["synchro_le"] == "2026-08-13T09:17:48+0000"
+
+
+def test_preserve_stable_freshness_timestamps_laisse_avancer_si_contenu_change():
+    old = _base_pivot({"genere_le": "2026-08-13T09:17:48+0000"})
+    old["sources"] = [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-08-13T09:17:48+0000"}]
+    old["votes"] = [{"numero_scrutin": "1", "date": "2024-01-01", "texte": "T"}]
+
+    new = _base_pivot({"genere_le": "2026-08-16T06:50:38+0000"})
+    new["sources"] = [{"type": "nosdeputes", "url": "u", "synchro_le": "2026-08-16T06:39:22+0000"}]
+    new["votes"] = [
+        {"numero_scrutin": "1", "date": "2024-01-01", "texte": "T"},
+        {"numero_scrutin": "2", "date": "2024-02-01", "texte": "T2"},
+    ]
+
+    result = preserve_stable_freshness_timestamps(old, new)
+
+    assert result["meta"]["genere_le"] == "2026-08-16T06:50:38+0000"
+    assert result["sources"][0]["synchro_le"] == "2026-08-16T06:39:22+0000"
+
+
+def test_preserve_stable_freshness_timestamps_sans_ancien_pivot():
+    new = _base_pivot({"genere_le": "2026-08-16T06:50:38+0000"})
+    assert preserve_stable_freshness_timestamps(None, new) is new

@@ -63,3 +63,8 @@ something is pending, not *why*.
 - `schema_groupe.py`: `amendements_agreges` has no date field, so its audit
   temporal-range cell is always `null` — schema change, out of scope for
   #316. See `technical_decisions.md#audit-plages-temporelles`.
+- Same unconditional `meta.genere_le` re-stamping pattern as #343 (fixed for
+  candidate pivots via `preserve_stable_freshness_timestamps`) likely applies
+  to `group_profile.py`/`gouvernement_profile.py`/`parti_profile.py`, which
+  rebuild their output unconditionally on every run with no old-vs-new
+  content comparison — not confirmed with a real repro, out of scope for #343.

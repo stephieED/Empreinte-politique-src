@@ -74,7 +74,7 @@ from typing import Any, Optional
 from audit_pivot_dataset import compute_profils_perimes
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
-from merge_profile import merge_pivot_profile, merge_raw_profile
+from merge_profile import merge_pivot_profile, merge_raw_profile, preserve_stable_freshness_timestamps
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
 from text_utils import slugify
@@ -414,13 +414,18 @@ def process_candidat(
                 _tprint(f"  ParlTrack MEP {mep_id} : {parltrack_statut}")
 
         pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
-        if not args.no_merge and pivot_path.exists():
+        existing_pivot = None
+        if pivot_path.exists():
             try:
                 with open(pivot_path, encoding="utf-8") as f:
                     existing_pivot = json.load(f)
-                pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
             except (json.JSONDecodeError, OSError) as exc:
-                _tprint(f"  [!] Fusion impossible avec le pivot existant ({pivot_path}), écrasement : {exc}")
+                _tprint(f"  [!] Lecture du pivot existant impossible ({pivot_path}) : {exc}")
+        if not args.no_merge and existing_pivot is not None:
+            pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+        # #343 : ne pas ré-avancer genere_le/synchro_le quand --pivot-only re-dérive
+        # un contenu strictement identique au pivot déjà commité (pas d'appel réseau).
+        pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
         with open(pivot_path, "w", encoding="utf-8") as f:
             json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
         _tprint(f"  ✓ pivot-only → {pivot_path}")
@@ -520,13 +525,18 @@ def process_candidat(
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
         if pivot_profile is not None:
             pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
-            if not args.no_merge and pivot_path.exists():
+            existing_pivot = None
+            if pivot_path.exists():
                 try:
                     with open(pivot_path, encoding="utf-8") as f:
                         existing_pivot = json.load(f)
-                    pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
                 except (json.JSONDecodeError, OSError) as exc:
-                    _tprint(f"  [!] Fusion impossible avec le pivot existant ({pivot_path}), écrasement : {exc}")
+                    _tprint(f"  [!] Lecture du pivot existant impossible ({pivot_path}) : {exc}")
+            if not args.no_merge and existing_pivot is not None:
+                pivot_profile = merge_pivot_profile(existing_pivot, pivot_profile)
+            # #343 : ne pas ré-avancer genere_le/synchro_le si le contenu régénéré
+            # est strictement identique au pivot déjà commité.
+            pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
             with open(pivot_path, "w", encoding="utf-8") as f:
                 json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
             _tprint(f"  ✓ pivot → {pivot_path}")
