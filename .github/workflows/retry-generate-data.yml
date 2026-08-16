@@ -128,6 +128,18 @@ jobs:
       # (threshold) / generate_all_profiles.py (roster_extraction_limit). En cas
       # d'échec d'extraction d'une valeur, retombe sur le défaut déclaré de
       # generate-data.yml pour cet input (dégradation documentée, pas un blocage).
+      #
+      # job_log() exclut les lignes ##[debug] : ce dépôt tourne avec le
+      # logging de debug activé, et le log brut d'un step contenant plusieurs
+      # ${{ }} contient alors AUSSI le texte du template GitHub Actions non
+      # résolu (ex. littéralement "--workers {3}", émis par
+      # "##[debug]Evaluating format(...)") avant la ligne "Run ..." réellement
+      # résolue. Sans ce filtre, `grep | head -1` peut capturer ce
+      # placeholder au lieu de la vraie valeur — régression constatée sur un
+      # run réel : "{3}"/"{2})" transmis tels quels au workflow_dispatch de
+      # relance, faisant planter extract-senat/extract-ue-officiel avec
+      # "invalid int value: '{3}'". Inoffensif pour gate_log/roster_log (leurs
+      # motifs ne visent que du stdout applicatif, jamais préfixé ##[debug]).
       - name: Reconstituer les inputs du run échoué (best-effort)
         id: inputs
         if: steps.signature.outputs.matched == 'true'
@@ -143,7 +155,8 @@ jobs:
             local name="$1"
             local id
             id=$(echo "$jobs_json" | jq -r --arg n "$name" '.jobs[] | select(.name==$n) | .id' | head -1)
-            [[ -n "$id" ]] && gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences 2>/dev/null || true
+            [[ -n "$id" ]] || return 0
+            gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences 2>/dev/null | grep -v '##\[debug\]' || true
           }
 
           fresh_run=false
@@ -153,16 +166,37 @@ jobs:
           fi
 
           an_log=$(job_log "extract-an")
-          workers=$(echo "$an_log" | grep -oP -- '--workers \K\S+' | head -1)
-          extract_interventions=true
-          echo "$an_log" | grep -q -- '--skip-interventions' && extract_interventions=false
-          max_pages=$(echo "$an_log" | grep -oP -- '--max-pages \K\S+' | head -1)
+          # Ancré sur la ligne de commande finale ("--source an --workers N")
+          # pour éviter tout autre match fortuit, et restreint à [0-9]+ (pas
+          # \S+) pour qu'une valeur inattendue échoue la validation ci-dessous
+          # plutôt que d'être transmise telle quelle. `|| true` : sous
+          # `set -e`/`pipefail`, un grep sans match (job_log vide, motif
+          # absent) ferait sinon avorter tout le step ici — perdant du même
+          # coup les valeurs suivantes, correctement extractibles, plutôt que
+          # de dégrader uniquement celle en cause vers son défaut.
+          workers=$(echo "$an_log" | grep -oP -- '--source an --workers \K[0-9]+' | head -1) || true
+          [[ "$workers" =~ ^[0-9]+$ ]] || workers=""
+
+          # Le texte source "--skip-interventions" est toujours présent dans
+          # le script échoué, que la condition ait été vraie ou non à
+          # l'exécution (GitHub échoue le SOURCE bash substitué, pas la trace
+          # d'exécution) : chercher sa seule présence donnerait donc toujours
+          # vrai. On lit à la place la valeur substituée de
+          # ${{ inputs.extract_interventions }} directement dans la
+          # condition `[[ "<valeur>" != "true" ]]`.
+          extract_interventions=$(echo "$an_log" | grep -oP -- '\[\[ "\K(true|false)(?=" != "true" \]\] && INTERV_FLAG)' | head -1) || true
+          [[ "$extract_interventions" == "true" || "$extract_interventions" == "false" ]] || extract_interventions=false
+
+          max_pages=$(echo "$an_log" | grep -oP -- '--max-pages \K[0-9]+' | head -1) || true
+          [[ "$max_pages" =~ ^[0-9]+$ ]] || max_pages=""
 
           gate_log=$(job_log "merge-and-pivot")
-          threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1)
+          threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1) || true
+          [[ "$threshold" =~ ^[0-9]+$ ]] || threshold=""
 
           roster_log=$(job_log "extract-roster-groupes")
-          roster_extraction_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1)
+          roster_extraction_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
+          [[ "$roster_extraction_limit" =~ ^[0-9]+$ ]] || roster_extraction_limit=""
 
           echo "fresh_run=${fresh_run}" >> "$GITHUB_OUTPUT"
           echo "threshold=${threshold:-3}" >> "$GITHUB_OUTPUT"

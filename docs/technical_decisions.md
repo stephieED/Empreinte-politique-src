@@ -1,3 +1,88 @@
+<a id="resilience-generate-data-shutdown-signal"></a>
+## Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry non-régressif, et appel NosDéputés mort pour les députés (2026-08-16)
+
+**Contexte** : investigation déclenchée par des échecs répétés d'`extract-an`
+et `extract-roster-groupes`, tous avec la même signature `shutdown signal`
+déjà documentée ([[retry-generate-data-preemption]], #217/#221/#228) —
+observée systématiquement juste après le print `-> Dossiers législatifs :
+...` (`fetch_dossiers`, `candidate_profile.py`), sur des candidats et
+législatures différents d'un run à l'autre.
+
+**Décision 1 — `continue-on-error: true` sur `extract-an`/`extract-senat`/
+`extract-ue-officiel`** : avant ce changement, ces 3 jobs n'avaient pas
+`continue-on-error`, contrairement à `extract-parltrack`/
+`extract-amendements-an`/`extract-roster-groupes`. Un échec de l'un des 3
+faisait donc sauter `extract-roster-groupes` **et** `merge-and-pivot` en
+entier (`needs:` bloquant), alors que la fusion additive de
+`merge_profile.py::merge_raw_dirs` gère déjà nativement un répertoire source
+absent. Étendu le même pattern aux 3 jobs restants, et rendu les
+téléchargements d'artifacts AN/Sénat/UE dans `merge-and-pivot` optionnels
+(`continue-on-error: true`) pour le même motif (un job ayant échoué avant son
+étape `Upload artifact` peut laisser l'artifact totalement absent, pas
+seulement vide). Résultat vérifié sur un run réel : `extract-an` et
+`extract-roster-groupes` en échec, `merge-and-pivot` a quand même tourné et
+réussi.
+
+**Décision 2 — watchdog mur (`_get_with_watchdog`,
+`candidate_profile.py`)** : `_get_payload` (chokepoint de `fetch_identity`/
+`fetch_votes`/`fetch_dossiers`/`fetch_activity_synthesis`) n'utilisait que
+`timeout=` de `requests`, qui ne couvre pas la résolution DNS
+(`getaddrinfo`) sur toutes les plateformes. Ajout d'un timeout mur
+indépendant : la requête tourne dans un thread démon, abandonné après
+`TIMEOUT + 10s` quoi qu'il arrive. **Vérifié insuffisant en pratique** : un
+run réel a rejoué exactement la même signature `shutdown signal` après ce
+correctif (commit confirmé via `headSha` du run), le blocage se produisant
+apparemment au niveau du runner entier (aucun thread, pas même celui du
+watchdog, n'a pu s'exécuter pour lever l'exception) — cohérent avec une
+préemption infra GitHub, pas un bug applicatif. Le watchdog reste une
+amélioration défensive légitime (protège contre un DNS/connect réellement
+bloqué en cas normal), mais n'était pas la cause du symptôme observé.
+
+**Décision 3 — fix de `retry-generate-data.yml` (reconstruction des
+inputs)** : avec le logging de debug activé sur ce dépôt, le log brut d'un
+step contenant plusieurs `${{ }}` contient aussi le texte du template GitHub
+Actions non résolu (ex. littéralement `--workers {3}`, émis par
+`##[debug]Evaluating format(...)`) en plus de la ligne `Run ...` réellement
+résolue. `grep -oP -- '--workers \K\S+' | head -1` capturait ce placeholder
+au lieu de la vraie valeur — régression constatée sur un run réel :
+`workers="{3}"` transmis tel quel au `workflow_dispatch` de relance, faisant
+planter `extract-senat`/`extract-ue-officiel` avec `invalid int value:
+'{3}'`. Fix : ancrage des motifs sur la ligne de commande finale et
+restriction aux caractères attendus (`[0-9]+`, `true|false`) — la valeur
+placeholder ne matche alors plus du tout, peu importe sa position dans le
+log. Découvert au passage : la détection d'`extract_interventions` était
+structurellement toujours fausse (`grep -q -- '--skip-interventions'`
+matchait le texte source du script, toujours présent que la condition soit
+vraie ou non) ; corrigé en lisant directement la valeur substituée dans la
+condition `[[ "<valeur>" != "true" ]]`. Chaque extraction est aussi passée en
+`|| true` : sous `set -e`/`pipefail`, un motif non trouvé faisait avant
+avorter tout le step (donc perdre les valeurs suivantes, correctement
+extractibles) plutôt que de ne dégrader que la valeur en cause vers son
+défaut.
+
+<a id="dossiers-legislatifs-nosdeputes-vs-an-officiel"></a>
+**Décision 4 — suppression de l'appel NosDéputés pour les dossiers
+législatifs des députés** : en creusant pourquoi `fetch_dossiers` (étape 3 de
+`build_profile`) était justement le point qui pendait dans tous les runs
+observés, découverte que pour `chambre == "deputes"`, son résultat
+(`dossiers_payload`, étape 8) est de toute façon **écrasé** juste après par
+l'étape 8bis (`fetch_textes_portes_officiels`, source officielle AN via
+`ensure_dossiers_zip_downloaded`/`gouvernement_textes.py`, déjà en place et
+donnant un résultat propre à chaque élu — voir le commentaire déjà présent
+avant ce jour à l'étape 8bis : « Remplace la liste NosDéputés [...], qui
+n'est pas propre à l'élu »). L'appel réseau à `nosdeputes.fr/.../dossiers/
+nom/json` pour les députés ne servait donc plus à rien depuis que 8bis existe
+— juste un risque de blocage gratuit. Décision : ne plus appeler
+`fetch_dossiers_for_legislatures` du tout quand `chambre == "deputes"`
+(`candidate_profile.py`, étape 3), sans ajouter de retry ni de bascule vers
+un téléchargement direct du zip AN pour ce cas — le zip AN est déjà consommé
+par 8bis, un deuxième chemin d'accès au même jeu de données officiel aurait
+été redondant. Pour `chambre == "senateurs"`, l'appel est conservé
+inchangé : aucun remplacement officiel n'est branché pour cette chambre
+(l'archive NosSénateurs reste la seule source), donc la question d'un retry
+dédié y reste ouverte et distincte — non traitée ici, ce chantier n'ayant mis
+en évidence aucun blocage côté sénateurs dans les runs examinés.
+
 <a id="audit-plages-temporelles"></a>
 ## Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)
 

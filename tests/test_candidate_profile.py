@@ -1470,6 +1470,53 @@ def test_build_profile_no_syceron_for_senat():
     mock_syceron.assert_not_called()
 
 
+def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_dossiers():
+    """Pour les députés, dossiers_legislatifs vient uniquement de la source
+    officielle AN (fetch_textes_portes_officiels, étape 8bis) : l'appel réseau
+    à NosDéputés (fetch_dossiers_for_legislatures) ne doit plus être fait —
+    son résultat était de toute façon écrasé juste après, et c'est ce point
+    d'appel précis (dossiers/nom/json) qui pendait régulièrement en CI jusqu'au
+    shutdown du runner, faute de retry."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        build_profile("deputes", "jean-dupont")
+
+    mock_dossiers.assert_not_called()
+
+
+def test_build_profile_senateurs_appelle_toujours_nosdeputes_dossiers():
+    """Pour les sénateurs, l'archive NosSénateurs reste la seule source de
+    dossiers législatifs : aucun remplacement officiel n'est branché pour
+    cette chambre (contrairement aux députés), l'appel doit donc être
+    préservé."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]) as mock_dossiers,
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        build_profile("senateurs", "jean-dupont")
+
+    mock_dossiers.assert_called_once()
+
+
 # ---------------------------------------------------------------------------
 # #83 — Tests d'intégration bout-en-bout : build_profile() → normalize_nosdeputes()
 # ---------------------------------------------------------------------------
