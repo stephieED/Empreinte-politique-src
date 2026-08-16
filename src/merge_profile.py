@@ -363,6 +363,62 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     return merged
 
 
+def _pivot_content_fingerprint(pivot: Optional[dict[str, Any]]) -> Any:
+    """Sérialise un profil pivot en ignorant les horodatages de fraîcheur
+    (`meta.genere_le`, `sources[].synchro_le`) : deux profils dont seuls ces
+    champs diffèrent ont la même empreinte."""
+    if not isinstance(pivot, dict):
+        return None
+    stripped = {k: v for k, v in pivot.items() if k not in ("meta", "sources")}
+    meta = pivot.get("meta")
+    if isinstance(meta, dict):
+        stripped["meta"] = {k: v for k, v in meta.items() if k != "genere_le"}
+    sources = pivot.get("sources")
+    if isinstance(sources, list):
+        stripped["sources"] = [
+            {k: v for k, v in s.items() if k != "synchro_le"} if isinstance(s, dict) else s
+            for s in sources
+        ]
+    return json.dumps(stripped, sort_keys=True, ensure_ascii=False)
+
+
+def preserve_stable_freshness_timestamps(
+    old_pivot: Optional[dict[str, Any]], new_pivot: dict[str, Any]
+) -> dict[str, Any]:
+    """Empêche `meta.genere_le`/`sources[].synchro_le` d'avancer quand le
+    pivot régénéré est identique à `old_pivot` en contenu (#343) :
+    `--pivot-only` re-dérive systématiquement le pivot depuis le profil brut
+    déjà présent (aucun appel réseau) et re-tamponnait ces deux champs à
+    chaque exécution, même quand la donnée sous-jacente n'avait pas bougé —
+    trompeur pour un audit de fraîcheur (règle de traçabilité, AGENTS.md §2).
+
+    Si le contenu (hors ces deux champs) est identique, restaure les anciens
+    horodatages sur `new_pivot` ; sinon le laisse tel quel (changement réel =
+    re-tamponnage légitime). Modifie et renvoie `new_pivot`.
+    """
+    if not isinstance(old_pivot, dict):
+        return new_pivot
+    if _pivot_content_fingerprint(old_pivot) != _pivot_content_fingerprint(new_pivot):
+        return new_pivot
+
+    old_meta = old_pivot.get("meta")
+    new_meta = new_pivot.get("meta")
+    if isinstance(old_meta, dict) and isinstance(new_meta, dict) and "genere_le" in old_meta:
+        new_meta["genere_le"] = old_meta["genere_le"]
+
+    old_sources_by_type = {
+        s.get("type"): s for s in (old_pivot.get("sources") or []) if isinstance(s, dict)
+    }
+    for s in new_pivot.get("sources") or []:
+        if not isinstance(s, dict):
+            continue
+        old_s = old_sources_by_type.get(s.get("type"))
+        if old_s and "synchro_le" in old_s:
+            s["synchro_le"] = old_s["synchro_le"]
+
+    return new_pivot
+
+
 # ---------------------------------------------------------------------------
 # CLI : fusion de répertoires d'extraction parallèles → merge-and-pivot
 # ---------------------------------------------------------------------------
