@@ -25,6 +25,7 @@ import gzip
 import io
 import json
 import os
+import queue
 import re
 import shutil
 import sys
@@ -458,6 +459,47 @@ def _xml_to_data(xml_text: str) -> Optional[Any]:
 # d'autres formats ou d'autres bases pour la même ressource.
 _TERMINAL_FAILURE = object()
 
+# Marge appliquée au-delà de TIMEOUT dans _get_with_watchdog avant d'abandonner
+# une requête bloquée : `timeout=` de `requests` ne couvre pas la résolution
+# DNS (getaddrinfo) sur toutes les plateformes, ce qui a déjà fait pendre le
+# process bien au-delà de TIMEOUT sans lever la moindre exception Python — le
+# runner GitHub Actions finissait tué par l'infra ("shutdown signal" opaque en
+# CI, aucune trace applicative) plutôt que le job échouant proprement.
+_WATCHDOG_MARGIN_SECONDS = 10
+
+
+def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
+    """`requests.get` protégé par un budget mur total, y compris pour les
+    blocages hors du contrôle du paramètre `timeout=` de `requests` (résolution
+    DNS notamment).
+
+    Exécute la requête dans un thread démon et abandonne après
+    ``timeout + _WATCHDOG_MARGIN_SECONDS``. Le thread sous-jacent peut rester
+    bloqué indéfiniment (impossible à interrompre depuis Python) : il est
+    volontairement laissé en arrière-plan plutôt que joint, mais étant démon,
+    il ne bloque jamais la sortie du process principal.
+    """
+    outcome: "queue.Queue[tuple[bool, Any]]" = queue.Queue(maxsize=1)
+
+    def _worker() -> None:
+        try:
+            outcome.put((True, requests.get(url, headers=HEADERS, timeout=timeout)))
+        except Exception as exc:  # relayé tel quel au thread appelant
+            outcome.put((False, exc))
+
+    threading.Thread(target=_worker, daemon=True).start()
+    try:
+        ok, payload = outcome.get(timeout=timeout + _WATCHDOG_MARGIN_SECONDS)
+    except queue.Empty:
+        raise requests.exceptions.Timeout(
+            f"Aucune réponse de {url} après {timeout + _WATCHDOG_MARGIN_SECONDS}s "
+            "(budget mur du watchdog dépassé — probable blocage DNS/réseau non "
+            "couvert par timeout= de requests)"
+        ) from None
+    if ok:
+        return payload
+    raise payload
+
 
 def _get_payload(url: str) -> Any:
     """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
@@ -471,7 +513,7 @@ def _get_payload(url: str) -> Any:
       nouvel essai sur un autre miroir reste légitime.
     """
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        resp = _get_with_watchdog(url, timeout=TIMEOUT)
         try:
             resp.raise_for_status()
         except requests.HTTPError as exc:
