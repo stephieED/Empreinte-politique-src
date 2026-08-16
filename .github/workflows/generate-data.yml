@@ -62,8 +62,14 @@ concurrency:
 # ─────────────────────────────────────────────────────────────────────────────
 # Timeout ParlTrack : modifiable ici (30 min par défaut). Rappel : ce job a
 # continue-on-error: true — son dépassement ne bloque pas merge-and-pivot.
-# Timeout AN 120 min / Sénat 90 min / UE 60 min / merge-and-pivot 60 min.
-# Total mur (parallèle) ≈ 120 + 60 = 180 min — contre 340 min séquentiel.
+# Timeouts : amendements-an 30 min / AN 120 min (needs: amendements-an, donc
+# chaîné après, pas parallèle à lui) / Sénat 90 min / UE 60 min / ParlTrack
+# 30 min / roster-groupes 60 min (needs: les 4 jobs d'extraction précédents,
+# #222 — jamais parallèle à eux, contrairement à ce qu'un calcul purement
+# parallèle suggérerait) / merge-and-pivot 60 min (needs: roster-groupes
+# entre autres).
+# Total mur (parallèle) ≈ max(30+120, 90, 60, 30) + 60 + 60 = 270 min — contre
+# ~450 min si tout s'enchaînait séquentiellement.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)

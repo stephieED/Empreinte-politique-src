@@ -1,5 +1,5 @@
 <a id="resilience-generate-data-shutdown-signal"></a>
-## Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry non-régressif, et appel NosDéputés mort pour les députés (2026-08-16)
+## Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)
 
 **Contexte** : investigation déclenchée par des échecs répétés d'`extract-an`
 et `extract-roster-groupes`, tous avec la même signature `shutdown signal`
@@ -82,6 +82,99 @@ inchangé : aucun remplacement officiel n'est branché pour cette chambre
 (l'archive NosSénateurs reste la seule source), donc la question d'un retry
 dédié y reste ouverte et distincte — non traitée ici, ce chantier n'ayant mis
 en évidence aucun blocage côté sénateurs dans les runs examinés.
+
+**Vérification post-Décision 4** : un run réel avec ce correctif déployé
+(`headSha` confirmé) a de nouveau échoué avec la même signature `shutdown
+signal` — mais cette fois bloqué sur l'appel suivant dans la séquence
+(`-> Synthèse d'activité : .../synthese/data/json`, `fetch_activity_synthesis`,
+aucun remplaçant officiel branché pour ce point), pas sur les dossiers.
+Confirme ce qu'on avait déjà déduit du watchdog (Décision 2) : le blocage
+n'est pas propre à une URL précise, c'est un gel du runner GitHub lui-même à
+peu près au même moment dans le job (~1-2 min), quel que soit l'appel réseau
+en cours à cet instant — retirer un appel donné ne fait donc que déplacer le
+point de blocage, pas disparaître le symptôme. Seul `continue-on-error`
+(Décision 1) protège réellement le run dans son ensemble contre ce mode de
+défaillance ; les Décisions 4/5 (ce chantier et le suivant) restent
+justifiées pour leur propre mérite (suppression d'appels réseau prouvés
+morts/inutiles), pas comme correctif du `shutdown signal`.
+
+**Décision 5 — même traitement pour les votes NosDéputés des députés** :
+`fetch_votes_officiels` (AN, déjà préféré à l'étape 6) documente déjà dans
+son propre docstring que « l'endpoint /votes de NosDéputés.fr est en panne
+(HTTP 500 systématique, testé sur tous les domaines et législatures
+disponibles) ». Constat confirmé empiriquement dans tous les logs de ce
+chantier : `fetch_votes` (étape 1, jusqu'à 8 requêtes — 4 domaines × 2
+formats) échoue systématiquement en HTTP 500 ou format non pris en charge,
+pour les députés. Conséquence : `votes_raw` y est *garanti* vide, rendant la
+branche de repli « `else`: utiliser `votes_raw` » (étape 6) strictement
+inatteignable pour cette chambre — plus net encore que pour les dossiers
+(pas de simple écrasement après coup, mais une branche de code déjà morte en
+pratique). Décision : ne plus appeler `fetch_votes` du tout quand `chambre
+== "deputes"` (`candidate_profile.py`, étape 1), même limite que la Décision
+4 (aucun effet sur le `shutdown signal` lui-même — voir vérification
+ci-dessus). Message de warning (`WARNING_PREFIX_VOTES_INTROUVABLES`) ajusté
+en conséquence pour ne plus mentionner une « erreur serveur » qui, pour les
+députés, ne se produit plus puisque l'appel n'est plus fait. Pour
+`chambre == "senateurs"`, l'appel est conservé inchangé — aucune preuve
+équivalente que l'archive NosSénateurs soit cassée, et c'est la seule source
+de votes pour cette chambre.
+
+<a id="get-payload-retry"></a>
+**Décision 6 — retry léger généralisé dans `_get_payload`** : suite à la
+vérification post-Décision 4 ci-dessus (le point de blocage se déplace d'un
+appel à l'autre — après le retrait de `fetch_dossiers_for_legislatures`,
+`fetch_activity_synthesis` a hérité du `shutdown signal` sur un run réel),
+question posée de retenter spécifiquement `fetch_activity_synthesis`.
+Écartée : ce point n'est pas la cause, seulement le prochain appel en vol au
+moment du gel — un retry câblé sur cette seule fonction n'aurait fait que
+redéplacer le symptôme vers l'appel suivant (interventions), et n'aide de
+toute façon pas contre un vrai gel du runner (Décision 2 : même un thread de
+watchdog totalement indépendant n'arrive pas à s'exécuter dans ce cas).
+Généralisé à la place : 3 tentatives max avec backoff fixe 1,5s, ajoutées
+directement dans `_get_payload` (le chokepoint déjà partagé par identité/
+votes/synthèse/dossiers-Sénat, entre autres). Un seul point d'ajout plutôt
+qu'un retry dupliqué par fonction appelante — couvre aussi la demande de
+retry Sénat de l'issue #340 (dossiers/votes) sans changement supplémentaire.
+Ne retente que les échecs transitoires (5xx, `requests.RequestException`, y
+compris le `Timeout` levé par le watchdog) — jamais `_TERMINAL_FAILURE`
+(4xx, format non exploitable, JSON malformé), qui reste un échec déterministe
+à usage unique. **Effet de bord sur les tests** : plusieurs tests
+`build_profile(...)` ne mockaient pas `fetch_activity_synthesis`/
+`fetch_all_intervention_results_from_domains`, s'appuyant sur un appel réseau
+réel qui échouait vite en sandbox — le retry l'a fait échouer 3× plus
+lentement (un test est passé de <1s à 22s). Corrigé en ajoutant les mocks
+manquants plutôt qu'en réduisant le retry : plus correct de toute façon (un
+test unitaire ne devrait pas dépendre d'un comportement réseau réel, retry ou
+pas).
+
+**Décision 7 — deux incohérences relevées par relecture indépendante** (mêmes
+fichiers, mêmes commits que ce chantier, non détectées avant relecture) :
+1. Le fallback GHA `-f extract_interventions="${{ ... || 'true' }}"`
+   (`retry-generate-data.yml`, step *« Re-déclencher generate-data.yml »*)
+   divergeait du vrai défaut `workflow_dispatch` déclaré dans
+   `generate-data.yml` (`default: false`) — contrairement aux 5 autres
+   fallbacks de ce step (`fresh_run||'false'`, `threshold||'3'`,
+   `workers||'1'`, `max_pages||'5'`, `roster_extraction_limit||'20'`), tous
+   correctement alignés. La justification d'origine de #336
+   ([[retry-generate-data-best-effort-non-bloquant]] ci-dessous — « valeur
+   initiale du script best-effort avant détection de --skip-interventions »)
+   est elle-même devenue caduque : la Décision 3 de ce jour a réécrit cette
+   logique bash pour qu'elle retombe correctement sur `false`, donc même le
+   script best-effort ne justifie plus le `'true'` du fallback GHA. Corrigé
+   en `|| 'false'`.
+2. Le commentaire de budget en tête de `generate-data.yml` (« Total mur
+   (parallèle) ≈ 120 + 60 = 180 min ») ne comptait que `max(AN, Sénat, UE)`
+   + `merge-and-pivot`, sans `extract-roster-groupes` — qui n'est *pas*
+   parallèle aux 4 jobs d'extraction (`needs:` sur les 4, #222,
+   [[concurrence-ci-roster]]) ni `extract-an` à `extract-amendements-an`
+   (`needs:` direct). Chemin critique réel : `max(30+120, 90, 60, 30)` (phase
+   parallèle, dominée par la chaîne amendements-an→AN) `+ 60` (roster,
+   séquencé après) `+ 60` (merge-and-pivot, séquencé après roster) `= 270
+   min`, pas 180. Commentaire manifestement écrit avant l'ajout du
+   séquencement roster (#222) et jamais mis à jour depuis. Corrigé avec le
+   détail des chaînes de dépendance, pour éviter qu'un futur ajout de job
+   laisse à nouveau ce commentaire dériver silencieusement.
+
 <a id="retry-generate-data-best-effort-non-bloquant"></a>
 ## `retry-generate-data.yml` : le step best-effort d'extraction des inputs ne doit pas pouvoir bloquer le retry (#336) (2026-08-16)
 

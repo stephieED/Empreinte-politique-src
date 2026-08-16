@@ -234,7 +234,7 @@ jobs:
             -f fresh_run="${{ steps.inputs.outputs.fresh_run || 'false' }}" \
             -f threshold="${{ steps.inputs.outputs.threshold || '3' }}" \
             -f workers="${{ steps.inputs.outputs.workers || '1' }}" \
-            -f extract_interventions="${{ steps.inputs.outputs.extract_interventions || 'true' }}" \
+            -f extract_interventions="${{ steps.inputs.outputs.extract_interventions || 'false' }}" \
             -f max_pages="${{ steps.inputs.outputs.max_pages || '5' }}" \
             -f roster_extraction_limit="${{ steps.inputs.outputs.roster_extraction_limit || '20' }}"
 
