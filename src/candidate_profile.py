@@ -3022,18 +3022,26 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
     try:
         synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
         time.sleep(0.3)
-        # Les dossiers doivent être demandés sur le domaine où l'identité a
-        # réellement été trouvée (donc sa législature) : utiliser systématiquement
-        # base_urls[0] (législature courante) renvoie une liste vide pour un
-        # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
-        dossiers_base_url = identity_base_url or base_urls[0]
-        dossiers_legislatures = (
-            [LEGISLATURE_BY_BASE_URL[dossiers_base_url]]
-            if dossiers_base_url in LEGISLATURE_BY_BASE_URL
-            else ["15", "16"]
-        )
-        dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, dossiers_legislatures)
-        time.sleep(0.3)
+        # Dossiers via NosDéputés : uniquement pour les sénateurs. Pour les
+        # députés, ce résultat est de toute façon écrasé plus bas par l'étape
+        # 8bis (fetch_textes_portes_officiels, source officielle AN, propre à
+        # chaque élu) — l'appel réseau ici serait fait pour rien, et c'est
+        # justement ce point d'appel (dossiers/nom/json) qui pendait
+        # régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
+        # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
+        if chambre != "deputes":
+            # Les dossiers doivent être demandés sur le domaine où l'identité a
+            # réellement été trouvée (donc sa législature) : utiliser systématiquement
+            # base_urls[0] (législature courante) renvoie une liste vide pour un
+            # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
+            dossiers_base_url = identity_base_url or base_urls[0]
+            dossiers_legislatures = (
+                [LEGISLATURE_BY_BASE_URL[dossiers_base_url]]
+                if dossiers_base_url in LEGISLATURE_BY_BASE_URL
+                else ["15", "16"]
+            )
+            dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, dossiers_legislatures)
+            time.sleep(0.3)
         # Un parlementaire dont le mandat s'est terminé lors d'une législature
         # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
         # la législature courante : ses interventions réelles sont archivées sur le
@@ -3232,7 +3240,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         }
 
     if dossiers_payload:
-        # --- 8. Dossiers législatifs, triés du plus récent au plus ancien. ---
+        # --- 8. Dossiers législatifs (sénateurs uniquement, voir étape 3
+        # ci-dessus — dossiers_payload reste [] pour les députés), triés du
+        # plus récent au plus ancien. ---
         profile["dossiers_legislatifs"] = sorted(
             dossiers_payload,
             key=lambda item: (item.get("date_max") or "", item.get("titre") or ""),
@@ -3241,8 +3251,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
 
     # --- 8bis. Textes portés officiels (Assemblée nationale, rôle factuel
     # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
-    # Remplace la liste NosDéputés ci-dessus, qui n'est pas propre à l'élu (mêmes
-    # dossiers pour tout le monde sur une législature donnée, role toujours null). ---
+    # Seule source de dossiers législatifs pour les députés (étape 3 : plus
+    # d'appel NosDéputés pour cette chambre, voir commentaire à l'appel de
+    # fetch_dossiers_for_legislatures). ---
     if chambre == "deputes" and profile.get("identite"):
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
