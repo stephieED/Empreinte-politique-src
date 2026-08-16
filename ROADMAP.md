@@ -68,3 +68,8 @@ something is pending, not *why*.
   to `group_profile.py`/`gouvernement_profile.py`/`parti_profile.py`, which
   rebuild their output unconditionally on every run with no old-vs-new
   content comparison — not confirmed with a real repro, out of scope for #343.
+- Rattacher `_build_organe_index` (#353) aux mandats/responsabilités du profil
+  député (commissions avec rôle, groupes d'amitié, engagements
+  extra-parlementaires, groupe déclaré) : ces champs restent sourcés
+  uniquement depuis NosDéputés après #355 (identité bio seule basculée vers
+  l'AN). Voir `technical_decisions.md#bascule-identite-an-primaire`.
