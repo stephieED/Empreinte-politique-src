@@ -1961,10 +1961,45 @@ def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pay
     return ville or complement or None
 
 
+_CONTACT_TYPE_LIBELLE_MAP: dict[str, str] = {
+    "Mèl": "email",
+    "Twitter": "twitter",
+    "Facebook": "facebook",
+    "Site internet": "site_web",
+}
+
+
+def _extract_contact(adresses: list[Any]) -> dict[str, Optional[str]]:
+    """Extrait les coordonnées de contact publiques (email, Twitter, Facebook,
+    site web) depuis `acteur.adresses.adresse[]`. Ignore volontairement les
+    autres types présents dans ce bloc (adresses postales, téléphone,
+    Instagram, Linkedin...) — hors périmètre de cette extraction."""
+    contact: dict[str, Optional[str]] = {key: None for key in _CONTACT_TYPE_LIBELLE_MAP.values()}
+    for adresse in adresses:
+        if not isinstance(adresse, dict):
+            continue
+        key = _CONTACT_TYPE_LIBELLE_MAP.get(adresse.get("typeLibelle"))
+        if key and not contact[key]:
+            contact[key] = adresse.get("valElec")
+    return contact
+
+
+def _format_nom_complet(prenom: Optional[str], nom: Optional[str]) -> Optional[str]:
+    """Formate prénom/nom (etatCivil.ident) en un nom complet lisible."""
+    if prenom and nom:
+        return f"{prenom} {nom}"
+    return prenom or nom or None
+
+
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
-    d'identité (profession, date/lieu de naissance, lien HATVP), à partir du
-    jeu de données des acteurs actifs de l'Assemblée nationale.
+    d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
+    contact, circonscription, place hémicycle), à partir du jeu de données
+    des acteurs actifs de l'Assemblée nationale.
+
+    Circonscription et place hémicycle proviennent du mandat
+    `typeOrgane == "ASSEMBLEE"` (élection en cours) : `election.lieu.
+    numDepartement/numCirco` et `mandature.placeHemicycle`.
 
     Limitation connue : ce jeu de données ne couvre QUE les député⋅e⋅s actifs
     de la législature en cours (~577 sur la 17e) — aucune entrée pour un élu
@@ -2011,10 +2046,34 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         continue
 
                     etat_civil = acteur.get("etatCivil") or {}
+                    ident = etat_civil.get("ident") or {}
                     info_naissance = etat_civil.get("infoNaissance") or {}
                     profession = (acteur.get("profession") or {}).get("libelleCourant")
 
+                    adresses = (acteur.get("adresses") or {}).get("adresse")
+                    if isinstance(adresses, dict):
+                        adresses = [adresses]
+                    contact = _extract_contact(adresses if isinstance(adresses, list) else [])
+
+                    mandats = (acteur.get("mandats") or {}).get("mandat")
+                    if isinstance(mandats, dict):
+                        mandats = [mandats]
+                    numero_departement = numero_circo = place_hemicycle = None
+                    if isinstance(mandats, list):
+                        for mandat in mandats:
+                            if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
+                                continue
+                            lieu = (mandat.get("election") or {}).get("lieu") or {}
+                            numero_departement = lieu.get("numDepartement")
+                            numero_circo = lieu.get("numCirco")
+                            place_hemicycle = (mandat.get("mandature") or {}).get("placeHemicycle")
+                            break
+
                     index[acteur_ref] = {
+                        "civilite": ident.get("civ"),
+                        "prenom": ident.get("prenom"),
+                        "nom": ident.get("nom"),
+                        "nom_complet": _format_nom_complet(ident.get("prenom"), ident.get("nom")),
                         "profession": profession,
                         "date_naissance": info_naissance.get("dateNais"),
                         "lieu_naissance": _format_lieu_naissance(
@@ -2023,6 +2082,10 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                             info_naissance.get("paysNais"),
                         ),
                         "uri_hatvp": acteur.get("uri_hatvp"),
+                        "contact": contact,
+                        "numero_departement": numero_departement,
+                        "numero_circo": numero_circo,
+                        "place_hemicycle": place_hemicycle,
                     }
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive des acteurs actifs invalide : {exc}")

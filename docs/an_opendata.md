@@ -125,8 +125,25 @@ Empirically documented structure:
 - `acteur.uri_hatvp`: link to HATVP declaration (not yet in current pivot schema).
 - `acteur.mandats.mandat[].typeOrgane`: wide set of observed types (`GP`,
   `COMPER`, `PARPOL`, `MISINFO*`, `DELEG`, `BUREAU`, `CMP`, `GOUVERNEMENT`,
-  `MINISTERE`, ...).
+  `MINISTERE`, `ASSEMBLEE`, ...).
 - `acteur.mandats.mandat[].infosQualite.codeQualite/libQualite`: free-text labels.
+- `acteur.etatCivil.ident.{civ,prenom,nom}`: full name (used by
+  `_build_acteur_identite_index` to build `nom_complet`).
+- `acteur.adresses.adresse[]` (single dict, not a list, when there is only
+  one entry — normalize like `mandats.mandat`): each entry has a
+  `typeLibelle` (`"Adresse officielle"`, `"Adresse publiée de
+  circonscription"`, `"Mèl"`, `"Twitter"`, `"Facebook"`, `"Instagram"`,
+  `"Linkedin"`, `"Site internet"`, `"Téléphone"`, `"Télécopie"`, `"Url
+  sénateur"` — observed on the full AMO10 set, 577 acteurs) and a `valElec`
+  field for non-postal types. `_build_acteur_identite_index` only extracts
+  `Mèl`/`Twitter`/`Facebook`/`Site internet` into `contact`
+  (email/twitter/facebook/site_web) — the rest is out of scope for now.
+- Circonscription/place hémicycle: on the mandat with
+  `typeOrgane == "ASSEMBLEE"` (current election), `election.lieu.
+  {numDepartement,numCirco}` and `mandature.placeHemicycle` — extracted by
+  `_build_acteur_identite_index` into `numero_departement`/`numero_circo`/
+  `place_hemicycle`. Not yet wired into the pivot schema (`identite` block) —
+  see #352/#351 subtask 4.
 
 ## Legislative files (bulk, multi-legislature in one file)
 

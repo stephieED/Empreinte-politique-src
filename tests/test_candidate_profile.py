@@ -19,9 +19,11 @@ from candidate_profile import (
     _derive_amendement_sort,
     _derive_amendement_sort_legacy,
     _expand_aggregated_amendements_index,
+    _extract_contact,
     _extract_mandats,
     _parse_syceron_intervention_entry,
     _format_lieu_naissance,
+    _format_nom_complet,
     _groupe_label,
     _parse_amendement_entry,
     _parse_amendement_entry_legacy,
@@ -791,6 +793,44 @@ def test_format_lieu_naissance_ville_seule():
 
 def test_format_lieu_naissance_tout_absent():
     assert _format_lieu_naissance(None, None, None) is None
+
+
+def test_format_nom_complet_prenom_et_nom():
+    assert _format_nom_complet("Antoine", "Golliot") == "Antoine Golliot"
+
+
+def test_format_nom_complet_nom_seul():
+    assert _format_nom_complet(None, "Golliot") == "Golliot"
+
+
+def test_format_nom_complet_tout_absent():
+    assert _format_nom_complet(None, None) is None
+
+
+def test_extract_contact_types_connus():
+    adresses = [
+        {"typeLibelle": "Adresse officielle", "intitule": "Assemblée nationale,"},
+        {"typeLibelle": "Mèl", "valElec": "antoine.golliot@assemblee-nationale.fr"},
+        {"typeLibelle": "Twitter", "valElec": "@AGolliot"},
+        {"typeLibelle": "Facebook", "valElec": "Antoine Golliot"},
+        {"typeLibelle": "Site internet", "valElec": "www.antoine-golliot.fr"},
+        {"typeLibelle": "Instagram", "valElec": "antoine.golliot"},
+    ]
+    assert _extract_contact(adresses) == {
+        "email": "antoine.golliot@assemblee-nationale.fr",
+        "twitter": "@AGolliot",
+        "facebook": "Antoine Golliot",
+        "site_web": "www.antoine-golliot.fr",
+    }
+
+
+def test_extract_contact_aucune_adresse():
+    assert _extract_contact([]) == {
+        "email": None,
+        "twitter": None,
+        "facebook": None,
+        "site_web": None,
+    }
 
 
 def test_stade_from_code_acte_depot():
