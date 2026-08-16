@@ -1303,6 +1303,36 @@ def test_get_payload_returns_terminal_failure_on_malformed_json():
     assert result is _TERMINAL_FAILURE
 
 
+def test_get_payload_watchdog_aborts_hung_request():
+    """Une requête qui pend au-delà de TIMEOUT + marge watchdog renvoie None
+    (échec transitoire) au lieu de bloquer indéfiniment le process appelant.
+
+    Reproduit le scenario CI observé (#voir historique) : requests.get() ne
+    revient jamais (ni succès, ni exception) — un DNS/réseau bloqué n'est pas
+    toujours couvert par le paramètre timeout= de requests. Sans le watchdog,
+    ce test bloquerait le process de test lui-même indéfiniment.
+    """
+    import time as _time
+
+    from candidate_profile import _get_payload
+
+    def hung_get(*args, **kwargs):
+        _time.sleep(5)
+        raise AssertionError("ne devrait jamais retourner : le watchdog doit abandonner avant")
+
+    with (
+        patch("candidate_profile.requests.get", side_effect=hung_get),
+        patch("candidate_profile.TIMEOUT", 0.1),
+        patch("candidate_profile._WATCHDOG_MARGIN_SECONDS", 0.1),
+    ):
+        start = _time.monotonic()
+        result = _get_payload("https://example.test/hung/json")
+        elapsed = _time.monotonic() - start
+
+    assert result is None
+    assert elapsed < 5
+
+
 def test_try_urls_skips_xml_after_json_terminal_failure():
     """Si /json renvoie _TERMINAL_FAILURE, /xml ne doit pas être essayé pour ce base_url."""
     from candidate_profile import _try_urls, _TERMINAL_FAILURE
