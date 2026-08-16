@@ -260,29 +260,28 @@ def _amendements_legislature_failed_this_run(legislature: str) -> bool:
 # (téléchargement/cache partagé avec la collecte des dossiers gouvernementaux,
 # voir issue #210 : un seul cache pour ce fichier ~10 Mo).
 
-# Acteurs (deputes actifs) + mandats + organes (Assemblee nationale) : un seul
-# fichier bulk, mais limite aux deputes ACTIFS de la legislature en cours (577
-# constates sur la 17e, contre 7126 organes historiques et 37 deports dans le
-# meme zip, non exploites ici). Utilise pour enrichir schema_pivot.identite
-# (profession/date_naissance/lieu_naissance/uri_hatvp) au-dela de ce que fournit
-# nosdeputes.fr : aucune couverture pour les elus dont le mandat est termine.
-AN_ACTEURS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
-ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
-
-# Acteurs/mandats/organes historique complet (Assemblee nationale) : contrairement
-# a AN_ACTEURS_ZIP_URL (limite aux deputes actifs de la legislature en cours), ce
-# fichier couvre TOUTES les legislatures depuis la XIe. Utilise pour
-# reconstituer l'historique date d'appartenance a un groupe politique
-# (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
-# organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
-# Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois la
-# legislature terminee (toujours null sur la 17e, en cours, y compris pour les
-# groupes du socle commun) - cette source ne couvre donc que les legislatures
-# achevees (jusqu'a la 16e comprise). Les 7126+ organes historiques de ce meme
-# zip (json/organe/*.json, tous codeType confondus : commissions, groupes
-# d'amitie, engagements extra-parlementaires...) sont aussi exploites par
-# _build_organe_index (issue #353) pour resoudre mandats[].organes.organeRef
-# vers un nom lisible, au-dela du seul sous-ensemble GP/GOUVERNEMENT ci-dessus.
+# Acteurs/mandats/organes historique complet (Assemblee nationale) : un seul
+# fichier bulk, couvrant TOUTES les legislatures depuis la XIe (3117 acteurs
+# constates, contre 577 deputes ACTIFS de la seule legislature en cours pour
+# l'ancien jeu de donnees AMO10 "deputes_actifs_mandats_actifs_organes", plus
+# utilise depuis l'issue #354 - voir docs/technical_decisions.md pour le choix
+# AMO30 plutot que combiner AMO20 par legislature comme envisage initialement).
+# Utilise pour :
+# - enrichir schema_pivot.identite (nom complet/profession/date+lieu de
+#   naissance/uri_hatvp/contact/circonscription/place hemicycle) au-dela de ce
+#   que fournit nosdeputes.fr, y compris pour les elus dont le mandat est
+#   termine (_build_acteur_identite_index, issue #354) ;
+# - reconstituer l'historique date d'appartenance a un groupe politique
+#   (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
+#   organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
+#   Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois
+#   la legislature terminee (toujours null sur la 17e, en cours, y compris
+#   pour les groupes du socle commun) - cette qualification ne couvre donc que
+#   les legislatures achevees (jusqu'a la 16e comprise) ;
+# - resoudre mandats[].organes.organeRef vers un nom lisible (_build_organe_index,
+#   issue #353), a partir des 7126+ organes historiques du meme zip
+#   (json/organe/*.json, tous codeType confondus : commissions, groupes
+#   d'amitie, engagements extra-parlementaires...).
 AN_ACTEURS_HISTORIQUE_ZIP_URL = (
     f"{AN_OPENDATA_BASE}/17/amo/tous_acteurs_mandats_organes_xi_legislature/"
     "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -342,7 +341,8 @@ _SYCERON_LOCKS_META = threading.Lock()
 _DOSSIERS_TITRE_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
-# decoupage par legislature).
+# decoupage par legislature), construit depuis le meme fichier bulk historique
+# que _ACTEURS_HEMICYCLE_LOCK/_ACTEURS_ORGANES_LOCK (issue #354).
 _ACTEURS_IDENTITE_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index des positions dans l'hemicycle (construit depuis
@@ -351,7 +351,7 @@ _ACTEURS_HEMICYCLE_LOCK = threading.Lock()
 
 # Verrou dedie au telechargement/cache disque de l'archive bulk historique
 # elle-meme (AN_ACTEURS_HISTORIQUE_ZIP_URL) : plusieurs index se construisent
-# a partir du meme zip (_build_acteur_positions_hemicycle_index,
+# a partir du meme zip (_build_acteur_identite_index, _build_acteur_positions_hemicycle_index,
 # _build_organe_index) sans se marcher dessus ni le retelecharger chacun de
 # leur cote (voir _ensure_acteurs_historique_zip_downloaded).
 _ACTEURS_HISTORIQUE_ZIP_LOCK = threading.Lock()
@@ -2006,21 +2006,56 @@ def _format_nom_complet(prenom: Optional[str], nom: Optional[str]) -> Optional[s
     return prenom or nom or None
 
 
+def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, Any]]:
+    """Sélectionne, parmi les mandats `typeOrgane == "ASSEMBLEE"` d'un acteur,
+    celui correspondant à l'élection la plus pertinente pour la circonscription/
+    place hémicycle à afficher : le mandat en cours (`dateFin` absent) s'il en
+    existe un, sinon celui dont `dateDebut` est le plus récent (élu dont le
+    mandat est terminé). Nécessaire depuis le passage à `AN_ACTEURS_HISTORIQUE_ZIP_URL`
+    (issue #354) : contrairement à l'ancien jeu de données `AMO10` (limité aux
+    mandats actifs, un seul mandat ASSEMBLEE possible par acteur), un acteur
+    peut désormais avoir plusieurs mandats ASSEMBLEE successifs (réélections
+    sur plusieurs législatures)."""
+    best: Optional[dict[str, Any]] = None
+    for mandat in mandats:
+        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
+            continue
+        if best is None:
+            best = mandat
+            continue
+        best_en_cours = best.get("dateFin") is None
+        mandat_en_cours = mandat.get("dateFin") is None
+        if mandat_en_cours and not best_en_cours:
+            best = mandat
+        elif mandat_en_cours == best_en_cours and (mandat.get("dateDebut") or "") > (best.get("dateDebut") or ""):
+            best = mandat
+    return best
+
+
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
     d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
     contact, circonscription, place hémicycle), à partir du jeu de données
-    des acteurs actifs de l'Assemblée nationale.
+    bulk historique des acteurs de l'Assemblée nationale
+    (`AN_ACTEURS_HISTORIQUE_ZIP_URL`, partagé avec `_build_organe_index` /
+    `_build_acteur_positions_hemicycle_index` via
+    `_ensure_acteurs_historique_zip_downloaded`).
 
-    Circonscription et place hémicycle proviennent du mandat
-    `typeOrgane == "ASSEMBLEE"` (élection en cours) : `election.lieu.
-    numDepartement/numCirco` et `mandature.placeHemicycle`.
+    Couvre tous les élu⋅e⋅s référencés depuis la XIe législature, actifs ou
+    non (issue #354) — contrairement à l'ancien jeu de données `AMO10`
+    ("deputes_actifs_mandats_actifs_organes"), limité aux ~577 député⋅e⋅s
+    actifs de la législature en cours. Voir docs/technical_decisions.md pour
+    le choix de réutiliser ce zip déjà exploité par #353 plutôt que combiner
+    les archives `AMO20` par législature comme envisagé initialement dans
+    l'issue.
 
-    Limitation connue : ce jeu de données ne couvre QUE les député⋅e⋅s actifs
-    de la législature en cours (~577 sur la 17e) — aucune entrée pour un élu
-    dont le mandat est terminé. Non-fatal en cas d'échec (retourne {})."""
+    Circonscription et place hémicycle proviennent du mandat le plus pertinent
+    parmi ceux `typeOrgane == "ASSEMBLEE"` (voir _select_mandat_assemblee_courant) :
+    `election.lieu.numDepartement/numCirco` et `mandature.placeHemicycle`.
+
+    Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_IDENTITE_LOCK:
-        index_path = ACTEURS_CACHE_DIR / "index_identite.json"
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -2028,18 +2063,8 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        print(f"-> Téléchargement des acteurs actifs (Assemblée nationale) : {AN_ACTEURS_ZIP_URL}")
-        zip_path = ACTEURS_CACHE_DIR / "acteurs.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_ACTEURS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement des acteurs actifs : {exc}")
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
             return {}
 
         index: dict[str, dict[str, Any]] = {}
@@ -2074,15 +2099,12 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     if isinstance(mandats, dict):
                         mandats = [mandats]
                     numero_departement = numero_circo = place_hemicycle = None
-                    if isinstance(mandats, list):
-                        for mandat in mandats:
-                            if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
-                                continue
-                            lieu = (mandat.get("election") or {}).get("lieu") or {}
-                            numero_departement = lieu.get("numDepartement")
-                            numero_circo = lieu.get("numCirco")
-                            place_hemicycle = (mandat.get("mandature") or {}).get("placeHemicycle")
-                            break
+                    mandat_assemblee = _select_mandat_assemblee_courant(mandats if isinstance(mandats, list) else [])
+                    if mandat_assemblee is not None:
+                        lieu = (mandat_assemblee.get("election") or {}).get("lieu") or {}
+                        numero_departement = lieu.get("numDepartement")
+                        numero_circo = lieu.get("numCirco")
+                        place_hemicycle = (mandat_assemblee.get("mandature") or {}).get("placeHemicycle")
 
                     index[acteur_ref] = {
                         "civilite": ident.get("civ"),
@@ -2103,7 +2125,7 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         "place_hemicycle": place_hemicycle,
                     }
         except zipfile.BadZipFile as exc:
-            print(f"  [!] Archive des acteurs actifs invalide : {exc}")
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
             return {}
 
         try:
@@ -2118,9 +2140,9 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
 
 def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[str, Any]]:
     """Récupère les champs d'identité officiels (Assemblée nationale) pour un
-    député, si son acteurRef fait partie des député⋅e⋅s actifs référencés
-    (voir _build_acteur_identite_index). Retourne None si non trouvé/non
-    applicable (ex. sénateur, ancien député)."""
+    député, actif ou non (voir _build_acteur_identite_index, issue #354).
+    Retourne None si non trouvé/non applicable (ex. sénateur, ou acteur absent
+    du référentiel historique de l'AN)."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return None
@@ -3184,7 +3206,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
 
     # --- 1. Identité brute (NosDéputés/NosSénateurs, source primaire pour toutes
     # les législatures — fetch_identite_officielle en 5bis ne fait que compléter
-    # des champs manquants pour les député⋅e⋅s actifs, jamais un remplacement). ---
+    # des champs manquants, jamais un remplacement). ---
     identity_result = fetch_identity(base_urls, slug)
     if isinstance(identity_result, tuple):
         identity_raw, identity_base_url = identity_result
@@ -3326,9 +3348,10 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
             if _is_empty_payload(profile["mandats"]):
                 warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
 
-            # --- 5bis. Enrichissement identité (Assemblée nationale, référentiel des
-            # député⋅e⋅s actifs uniquement — voir fetch_identite_officielle). Ne
-            # remplace jamais une valeur nosdeputes déjà renseignée (source secondaire). ---
+            # --- 5bis. Enrichissement identité (Assemblée nationale, référentiel
+            # historique complet, actifs et anciens élus — voir
+            # fetch_identite_officielle, issue #354). Ne remplace jamais une
+            # valeur nosdeputes déjà renseignée (source secondaire). ---
             if chambre == "deputes":
                 try:
                     identite_an = fetch_identite_officielle(profile["identite"].get("url_an_ou_senat"))
