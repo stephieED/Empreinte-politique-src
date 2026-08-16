@@ -19,7 +19,7 @@
   "dossiers_legislatifs": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-13T09:17:54+0000",
+    "genere_le": "2026-08-16T06:39:28+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
@@ -277,7 +277,7 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-08-13T09:17:54+0000",
+      "genere_le": "2026-08-16T06:39:27+0000",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }
