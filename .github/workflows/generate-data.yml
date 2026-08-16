@@ -83,6 +83,13 @@ jobs:
     needs: [extract-amendements-an]
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # continue-on-error: true — même pattern que extract-parltrack/
+    # extract-amendements-an : un échec de cette source ne doit pas empêcher
+    # merge-and-pivot de fusionner les autres sources qui ont réussi (avant
+    # ce changement, needs: sur ce job dans extract-roster-groupes/
+    # merge-and-pivot bloquait tout le run dès qu'une seule des 3 sources
+    # FR/UE échouait, même si les 2 autres avaient réussi).
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5
@@ -186,6 +193,8 @@ jobs:
   extract-senat:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    # continue-on-error: true — voir justification sur extract-an ci-dessus.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5
@@ -266,6 +275,8 @@ jobs:
   extract-ue-officiel:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # continue-on-error: true — voir justification sur extract-an ci-dessus.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5
@@ -699,7 +710,12 @@ jobs:
   #
   # Fusionne les artifacts des 4 jobs d'extraction, génère les pivots, les
   # profils de parti et de groupe, lance la quality gate, et committe.
-  # Tourne même si extract-parltrack a échoué (continue-on-error sur ce job).
+  # Tourne même si un ou plusieurs des 5 jobs `needs` ci-dessous ont échoué :
+  # chacun a continue-on-error: true (extract-an/extract-senat/
+  # extract-ue-officiel/extract-parltrack/extract-roster-groupes), donc leur
+  # échec individuel ne bloque jamais ce job — seule une annulation externe
+  # (cancelled()) le ferait. La résilience aux sources partiellement en échec
+  # est déléguée à la quality gate (check_quality_gate.py) plutôt qu'à needs:.
   # ──────────────────────────────────────────────────────────────────────────
   merge-and-pivot:
     needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
@@ -717,20 +733,30 @@ jobs:
 
       # ── Téléchargement des artifacts d'extraction ─────────────────────────
       # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
-      - name: Download artifact AN
+      # continue-on-error: true sur les 3 téléchargements ci-dessous — depuis
+      # que extract-an/extract-senat/extract-ue-officiel ont eux-mêmes
+      # continue-on-error: true, un échec précoce (avant l'étape "Upload
+      # artifact", ex. pip install) peut laisser l'artifact absent plutôt que
+      # simplement vide ; sans ce flag, download-artifact ferait échouer tout
+      # ce job pour une seule source en échec. merge_raw_dirs (merge_profile.py)
+      # ignore déjà silencieusement un répertoire source absent.
+      - name: Download artifact AN (optionnel)
         uses: actions/download-artifact@v7
+        continue-on-error: true
         with:
           name: raw-profiles-an
           path: _artifacts/an
 
-      - name: Download artifact Sénat
+      - name: Download artifact Sénat (optionnel)
         uses: actions/download-artifact@v7
+        continue-on-error: true
         with:
           name: raw-profiles-senat
           path: _artifacts/senat
 
-      - name: Download artifact UE
+      - name: Download artifact UE (optionnel)
         uses: actions/download-artifact@v7
+        continue-on-error: true
         with:
           name: raw-profiles-ue-officiel
           path: _artifacts/ue
