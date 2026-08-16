@@ -1,3 +1,280 @@
+<a id="mandats-agreges-famille-1"></a>
+## `mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)
+
+**Contexte** : #349 (agrégats de groupe) prévoyait une famille d'agrégats
+génériques sur `mandats[]` (commissions, groupes d'amitié, mandats
+extra-parlementaires…). Design proposé et validé sur #349 avant
+implémentation (voir historique de commentaires) : bloc dédié
+`mandats_agreges` plutôt qu'une structure générique `attributs_agreges:
+[{champ, type_agregation, résultat}]` — cohérent avec le style déjà en
+place (`cohesion_votes`, `amendements_agreges` sont déjà des blocs nommés,
+pas une structure générique unique) et plus simple à consommer côté UI. Le
+caractère « générique » demandé porte sur le *mécanisme de calcul* (une
+seule fonction `group_profile._aggregate_mandats` paramétrée par
+`MANDATS_AGREGES_CATEGORIES`), pas sur la forme de sortie.
+
+**Périmètre v1** : `MANDATS_AGREGES_CATEGORIES = ("commission",
+"groupe_amitie", "extra_parlementaire")`. Exclus explicitement (pas
+oubliés) : `mandat_electif` (définit déjà l'appartenance au groupe —
+l'agréger serait circulaire), `groupe_politique` (redondant avec
+`groupe_id`/`periode` dans un profil déjà scopé à un seul groupe),
+`fonction_gouvernementale` (recoupe
+`mandats[].suspendu_pour_fonction_gouvernementale`, AGENTS.md §5 — mérite
+sa propre décision), `autre` (filet de secours quasi jamais peuplé,
+`candidate_profile.py`).
+
+**Éligibilité temporelle** : réutilise `_member_eligibility_intervals`
+(intervalles de mandat électif du membre, déjà utilisés pour
+`cohesion_votes`) + nouvelle `_intervals_overlap` : un mandat catégoriel
+compte pour le groupe si sa période `[debut, fin]` chevauche au moins un
+intervalle de mandat électif (bornes `None` non bornées). Inclusion
+binaire, pas de pondération à la durée de chevauchement — cohérent avec les
+comptages simples déjà utilisés ailleurs dans ce module. Membre sans mandat
+électif renseigné → éligible par défaut (même approche conservatrice que
+`_is_eligible_at`).
+
+**Doublon `(categorie, label)` par membre** (ex. réélu·e à la même
+commission sur deux périodes) : une seule entrée retenue par
+`_select_mandat_entree_unique`, priorité à `actif=true`, sinon la plus
+récente par date de fin — même esprit que le tie-break déjà documenté pour
+`position_majoritaire` en cas d'égalité (`_compute_cohesion_votes`).
+
+**`poids_relatif`** : `nb_membres / len(profils)`, où `profils` est la
+couverture *disponible* (même dénominateur que `tags_thematiques_agreges`),
+jamais `meta.couverture_roster.roster_total` — point soulevé en revue de
+conception pour rester cohérent avec la règle éditoriale 7 (`AGENTS.md`
+§2). `nb_membres_actifs` requiert à la fois le mandat actif *et*
+l'appartenance au groupe active aujourd'hui (`membres[].actif`, dérivé de
+`_derive_membre_entry`), pas seulement l'un des deux.
+
+**Impact `mandats[]` plus riche à venir** (#351/#352/#353, nouvelles
+catégories côté source AN officielle — missions d'information, commissions
+d'enquête, délégations, groupes d'études, CMP…) : non bloquant pour cette
+implémentation, le schéma `mandats_agreges` ne change pas de forme selon la
+source ; `MANDATS_AGREGES_CATEGORIES` pourra être revisité séparément.
+
+<a id="mode-extraction-leger-roster"></a>
+## Mode d'extraction léger pour `extract-roster-groupes` (#357, sous-issue 6/6 de #351) (2026-08-16)
+
+**Contexte** : une fois #355 en place (identité biographique des députés
+résolue depuis l'AN, indépendante d'un appel réseau NosDéputés préalable),
+un membre roster n'a quasiment plus besoin d'appeler nosdeputes.fr pour son
+identité/mandats. `extract-roster-groupes` ne consomme, en aval, que
+`identite`/`mandats`/`votes`/`amendements` (agrégats de groupe, #349,
+`cohesion_votes`/`amendements_agreges`/`mandats_agreges`) — jamais
+`dossiers_legislatifs`/`interventions`/`questions_officielles`.
+
+**Décision** : nouveau paramètre `skip_dossiers_legislatifs` sur
+`candidate_profile.build_profile()`, symétrique à `skip_interventions` déjà
+existant (qui couvrait déjà interventions + questions officielles AN) — il
+neutralise l'étape 3 (dossiers NosDéputés, sénateurs) et l'étape 8bis
+(`fetch_textes_portes_officiels`, députés). Exposé côté CLI via
+`--skip-dossiers-legislatifs` (`generate_all_profiles.py`), combiné à
+`--skip-interventions` pour former le mode léger.
+
+**Toujours actif pour ce job, pas un toggle** : contrairement à
+`--skip-interventions` sur `extract-an` (piloté par l'input de workflow
+`extract_interventions`, réglable par run), les deux flags sont désormais
+appliqués *inconditionnellement* dans le step `extract-roster-groupes` de
+`generate-data.yml` — l'énoncé de #357 demande de sauter ces champs
+« entièrement », pas d'en faire une option : ils ne sont consommés par aucun
+agrégat de groupe actuel ni prévu, quel que soit le run. Alternative
+écartée : réutiliser `inputs.extract_interventions` pour piloter aussi
+`--skip-dossiers-legislatifs` sur ce job — rejetée car elle aurait couplé un
+choix de rollout `extract-an` (candidats déclarés, profils complets voulus)
+à un choix structurel roster (champs jamais voulus), deux décisions
+indépendantes.
+
+**Effet de bord attendu, pas une régression** : les ~750+ profils
+`roster_groupe` afficheront `nb_interventions == 0` dans la section « 3 ·
+Candidats avec peu d'interventions » de `check_quality_gate.py` — déjà le
+cas aujourd'hui pour la quasi-totalité d'entre eux (l'input
+`extract_interventions` vaut `false` par défaut) ; ce warning reste un soft
+warning (§6 `AGENTS.md`), jamais un hard fail.
+<a id="retrait-fetch-activity-synthesis"></a>
+## Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)
+
+**Contexte** : sous-issue 5/6 de #351, une fois `fetch_identity` basculé sur
+l'AN pour l'identité (bio) (#355, [[bascule-identite-an-primaire]]).
+L'énoncé demandait de réévaluer si `fetch_activity_synthesis` (endpoint
+NosDéputés `/synthese/data/json`) apporte encore une donnée non couverte
+ailleurs et publiable, et de le retirer purement et simplement si rien n'en
+dépend — plutôt que d'investir dans sa mise en cache comme envisagé
+initialement (voir la mention `fetch_activity_synthesis` dans la décision
+Résilience du 2026-08-16 : ce point d'appel a hérité du `shutdown signal`
+runner lors d'une vérification post-Décision 4, sans qu'un retry ciblé ne
+soit retenu).
+
+**Constat** : `synthese_activite` (nom, `groupe_sigle`, profession,
+`nb_mandats`, `url_an_ou_senat`) était stocké dans le profil brut mais
+**jamais lu par `normalize_nosdeputes.py`** — aucun de ces champs n'atteint
+`pivot_data/`. Ce n'était donc pas une donnée publiée mise en cache
+manquante, mais un appel réseau et un champ de profil brut entièrement
+morts : les champs qu'il portait sont soit déjà couverts (`profession` via
+`fetch_identity`, mandats/groupe via NosDéputés `identite`), soit hors
+périmètre éditorial (taux de présence agrégé, règle 3, §2 d'AGENTS.md), soit
+sans consommateur.
+
+**Décision : retrait complet**, pas de mise en cache. Supprimé :
+`fetch_activity_synthesis` et son appel dans `build_profile`
+(`candidate_profile.py`), le champ `synthese_activite` du profil brut
+(structure par défaut dans `build_profile`/`build_minimal_profile`), et sa
+fusion additive dans `merge_raw_profile` (`merge_profile.py`). Aucun impact
+sur le schéma pivot (`schema_pivot.py`) : ce champ n'y a jamais existé.
+
+<a id="bascule-identite-an-primaire"></a>
+## `fetch_identity` : identité (bio) des députés basculée sur l'AN comme source primaire, mandats/groupe restent sur NosDéputés (#355) (2026-08-16)
+
+**Contexte** : sous-issue 4/6 de #351, une fois l'index identité AN étendu
+(#352), les `organeRef` résolus (#353) et la couverture multi-législatures
+en place (#354). L'énoncé demandait de « basculer `fetch_identity` vers la
+source officielle AN, avec repli NosDéputés uniquement si un candidat reste
+introuvable dans les archives AN combinées ».
+
+**Constat qui borne le périmètre réel** : le payload NosDéputés consommé par
+`fetch_identity` sert à *deux* choses distinctes dans `build_profile` : les
+champs biographiques (profession, naissance, HATVP...) et les
+mandats/responsabilités + groupe parlementaire déclaré
+(`_extract_mandats`, `groupe_sigle`/`groupe_nom`). Cette seconde partie n'est
+**pas** encore sourcée depuis l'AN : #353 a construit l'index
+`organeRef -> {sigle, nom, type}` mais son rattachement aux mandats du profil
+(commissions avec rôle, groupes d'amitié, engagements extra-parlementaires)
+est explicitement noté « non traité ici » dans sa propre décision — futur
+travail, pas dans le périmètre de cette sous-issue. Basculer *tout*
+`fetch_identity` vers l'AN aurait donc silencieusement vidé `mandats[]` et
+`groupe_sigle`/`groupe_nom` pour tous les députés, une régression bien plus
+large que ce que l'énoncé visait.
+
+**Décision : ne basculer que les champs biographiques.** L'identité (bio) est
+désormais résolue en priorité via `fetch_identite_officielle_par_slug`,
+nouvelle fonction qui résout un `acteur_ref` AN directement depuis le slug
+NosDéputés par correspondance de nom normalisé (`_build_acteur_nom_index`,
+réutilise la même normalisation que le fallback nom de
+`fetch_activity_synthesis`) — donc sans dépendre d'un appel réseau NosDéputés
+préalable pour extraire l'URL AN, contrairement à l'ancien enrichissement
+« 5bis » qui ne faisait que compléter des champs après coup. NosDéputés
+reste la seule source pour les mandats/groupe, et sert de repli complet
+d'identité uniquement quand le candidat est absent des archives AN
+combinées (`identite_an is None`).
+
+**Effet de bord positif, cas résiduel réduit à zéro pour l'identité (bio)** :
+un député qui n'a plus de fiche exploitable sur nosdeputes.fr (ex. mandat
+clos d'une législature ancienne) n'obtenait auparavant *aucune* identité —
+`fetch_identite_officielle` (5bis) n'était jamais appelée car nichée sous le
+bloc « parlementaire NosDéputés valide ». Désormais l'identité (bio) est
+renseignée même dans ce cas, avec une URL AN synthétique
+(`_acteur_ref_to_pseudo_url`, même format que le champ `url_an` de
+NosDéputés) qui débloque en cascade tous les autres appels officiels AN
+qui n'ont besoin que d'en extraire l'`acteur_ref` (votes, amendements,
+textes portés, positions hémicycle) — seuls `mandats[]`/`groupe_sigle`
+restent vides dans ce cas résiduel, avec le warning `mandats introuvables`
+dédié (pas `identité introuvable`, pour ne pas mélanger les deux causes dans
+`merge_profile.py`, qui filtre chaque warning sur son propre champ).
+
+**Homonymie** : `_build_acteur_nom_index` peut associer plusieurs
+`acteur_ref` à un même nom normalisé (rare mais réel sur un référentiel de
+3117 acteurs, XIe-XVIIe législature). `fetch_identite_officielle_par_slug`
+renonce (retourne `None, None`) plutôt que de choisir arbitrairement — pas de
+règle éditoriale explicite là-dessus, mais attribuer une biographie au
+mauvais élu serait pire qu'un repli NosDéputés.
+
+**Non traité ici, reste dans le périmètre de #353/futur** : rattacher
+`_build_organe_index` aux mandats du profil (commissions avec rôle, groupes
+d'amitié, extra-parlementaire) et au groupe parlementaire déclaré — une fois
+fait, le repli NosDéputés pourrait se réduire encore, potentiellement à zéro
+pour les députés couverts par le référentiel AN.
+
+<a id="identite-acteurs-amo30"></a>
+## `_build_acteur_identite_index` : couvrir les élu⋅e⋅s dont le mandat est terminé via `AMO30`, pas en combinant `AMO20` par législature (#354) (2026-08-16)
+
+**Contexte** : sous-issue 3/6 de #351. `_build_acteur_identite_index`
+utilisait `AMO10` ("deputes_actifs_mandats_actifs_organes"), limité aux
+~577 député⋅e⋅s actifs de la législature en cours — aucune entrée pour un élu
+dont le mandat est terminé. L'issue proposait de combiner les archives
+`AMO20_dep_sen_min_tous_mandats_et_organes*`, une par législature (15/16/17
+confirmées disponibles en amont, 14 non trouvée sous les noms testés).
+
+**Décision : réutiliser `AMO30` (`AN_ACTEURS_HISTORIQUE_ZIP_URL`), déjà en
+production pour #353, plutôt que combiner des archives `AMO20` par
+législature.** Vérifié par téléchargement réel (13,6 Mo, 3117
+`json/acteur/*.json`, contre 577 sur `AMO10`) : `AMO30` a la même structure
+que `AMO10` (`etatCivil`, `profession`, `adresses`, `mandats` — vérifié champ
+par champ sur des député⋅e⋅s actifs et d'anciens député⋅e⋅s de législatures
+12 à 17), mais couvre déjà tous les acteurs référencés depuis la XIe
+législature — un strict sur-ensemble de ce qu'aurait apporté la combinaison
+`AMO20` sur 14-17, sans avoir à retrouver l'URL introuvable de la 14e ni à
+gérer 3-4 téléchargements/parseurs distincts. `AMO30` est de plus déjà
+téléchargé (et mis en cache disque) par `_build_organe_index`/
+`_build_acteur_positions_hemicycle_index` lors de la construction d'un profil
+député : `_build_acteur_identite_index` réutilise le même
+`_ensure_acteurs_historique_zip_downloaded` (issue #353) — zéro
+téléchargement réseau supplémentaire dans le cas courant où organes et
+identité sont tous deux résolus pour le même profil, aligné avec l'objectif
+de réduction des requêtes réseau redondantes posé par l'épic #351.
+
+**Effet de bord à corriger : sélection du mandat `ASSEMBLEE` pertinent.**
+`AMO10` ne contenant qu'un mandat actif par acteur, l'ancien code prenait le
+premier mandat `typeOrgane == "ASSEMBLEE"` rencontré pour en tirer
+circonscription/place hémicycle. Sur `AMO30`, un acteur réélu a plusieurs
+mandats `ASSEMBLEE` (un par législature) : prendre le premier trouvé aurait pu
+renvoyer une circonscription obsolète pour un élu actif. Nouvelle fonction
+`_select_mandat_assemblee_courant` : préfère le mandat sans `dateFin` (en
+cours) s'il existe, sinon celui dont `dateDebut` est le plus récent (élu dont
+le mandat est terminé).
+
+**Alternative rejetée : combiner `AMO20` par législature.** Aurait nécessité
+un téléchargement/parseur par législature (3-4 archives), une logique de
+fusion pour dédupliquer un même acteur présent dans plusieurs `AMO20`
+(réélections), et une couverture bornée à 14-17 — contre XIe-17e pour `AMO30`
+sans effort supplémentaire. Écarté une fois `AMO30` confirmé structurellement
+identique et déjà intégré au pipeline.
+
+**Non traité ici** : le branchement des champs déjà extraits mais non encore
+consommés par `build_profile` (`contact`, `numero_departement`, `numero_circo`,
+`place_hemicycle`, `nom_complet`) dans le schéma pivot — prérequis posé par
+la sous-issue 1, exploité par la sous-issue 4 de #351.
+
+<a id="organe-index-organeref"></a>
+## `_build_organe_index` : résoudre `organeRef` via `AMO30` (historique) sans filtrage par `codeType` (#353) (2026-08-16)
+
+**Contexte** : sous-issue 2/6 de #351. `mandats[].organes.organeRef` (ex.
+`PO59048`) ne référence un organe (commission, groupe politique, groupe
+d'amitié, engagement extra-parlementaire...) que par identifiant — aucun nom
+lisible sans résolution. Un index partiel existait déjà
+(`_build_organe_positions_index`), mais limité aux `codeType` `GP`/
+`GOUVERNEMENT`, pour un besoin différent (qualification majorité/opposition/
+gouvernement, voir `fetch_positions_hemicycle_officielles`).
+
+**Décision : réutiliser le zip bulk historique (`AMO30`,
+`AN_ACTEURS_HISTORIQUE_ZIP_URL`), pas `AMO10` (actifs).** Vérifié par
+téléchargement réel (13,6 Mo, 10 812 `json/organe/*.json`, 33 `codeType`
+distincts) : `AMO10` (mandats actifs de la législature en cours) ne couvre
+qu'un sous-ensemble des organes référencés par des mandats plus anciens —
+`AMO30` est nécessaire pour résoudre l'historique complet des mandats d'un
+élu, pas seulement ses mandats en cours. `_build_organe_index` indexe donc
+`organeRef -> {sigle, nom, type}` = `{libelleAbrege, libelle, codeType}`
+sans filtrer par `codeType`, contrairement à `_build_organe_positions_index`
+— voir `docs/an_opendata.md`, section "Actors / mandates / bodies", pour le
+détail des champs.
+
+**Refactor associé : téléchargement du zip mutualisé.**
+`_build_acteur_positions_hemicycle_index` et `_build_organe_index` lisent
+tous deux `AN_ACTEURS_HISTORIQUE_ZIP_URL`, mais construisent chacun leur
+propre index mis en cache séparément (`index_positions_hemicycle.json` /
+`index_organes.json`). Sans mutualisation, les deux fonctions auraient pu
+télécharger le zip (~13,6 Mo) chacune de leur côté en cas d'appel concurrent
+depuis des threads différents, avec un risque d'écriture concurrente sur le
+même fichier zip. Extrait dans
+`_ensure_acteurs_historique_zip_downloaded`, verrouillé par un verrou dédié
+(`_ACTEURS_HISTORIQUE_ZIP_LOCK`), séparé du verrou de construction de
+chaque index (un seul téléchargement, peu importe combien d'index en
+dépendent).
+
+**Non traité ici** : le rattachement de `_build_organe_index` aux mandats du
+schéma pivot (commissions avec rôle, groupes d'amitié, engagements
+extra-parlementaires, groupe politique) — prérequis posé par cette
+sous-issue, exploité par les sous-issues suivantes de #351.
+
 <a id="matrix-extract-an-par-candidat"></a>
 ## `extract-an` en matrix strategy par candidat, pour isoler la perte en cas de shutdown signal runner (#344) (2026-08-16)
 

@@ -35,7 +35,6 @@ def _fake_raw_profile(slug: str, chambre: str = "deputes") -> dict:
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "interventions": [],
         "meta": {
@@ -53,6 +52,7 @@ def _make_args(**overrides) -> argparse.Namespace:
         skip_existing=False,
         max_pages=1,
         skip_interventions=True,
+        skip_dossiers_legislatifs=True,
         skip_ue=True,
         pivot=True,
         no_merge=False,

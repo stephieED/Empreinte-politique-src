@@ -49,6 +49,7 @@ def _write_groupe(
         "effectif": {"actuel": nb_membres, "min_historique": None, "max_historique": None},
         "cohesion_votes": [{"numero_scrutin": str(i)} for i in range(nb_cohesion)],
         "tags_thematiques_agreges": [],
+        "mandats_agreges": [],
         "amendements_agreges": {
             "nb_amendements": 0, "nb_adoptes": 0, "nb_rejetes": 0,
             "nb_irrecevables": 0, "nb_retires_ou_tombes": 0, "taux_adoption": None,

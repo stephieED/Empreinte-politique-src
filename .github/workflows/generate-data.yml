@@ -734,24 +734,29 @@ jobs:
       # Même fan-out par membre que extract-an/extract-senat (coût par candidat
       # identique, seul le volume change) — roster_extraction_limit borne ce
       # volume pendant le rollout progressif.
-      - name: Extraction roster-driven (rollout progressif)
+      #
+      # Mode d'extraction léger (#357, sous-issue 6/6 de #351) : --skip-interventions
+      # --skip-dossiers-legislatifs sont *toujours* appliqués ici, indépendamment de
+      # inputs.extract_interventions (qui ne pilote que extract-an) — un membre
+      # roster n'a besoin que d'identité/mandats/votes/amendements pour les agrégats
+      # de groupe (#349) ; dossiers_legislatifs/interventions/questions_officielles
+      # ne sont consommés par aucun agrégat actuel ni prévu, les extraire ici serait
+      # du travail réseau pour rien (~750+ membres à terme, cf. rollout #192).
+      - name: Extraction roster-driven (mode léger)
         env:
           FRESH: ${{ inputs.fresh_run }}
           ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
-          INTERV_FLAG=()
-          [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
-          MAX_PAGES_FLAG=()
-          [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
           python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
             --skip-existing --resume \
-            "${LIMIT_FLAG[@]}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+            --skip-interventions --skip-dossiers-legislatifs \
+            "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
 
       - name: Upload artifact roster-driven
         if: always()

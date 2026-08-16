@@ -54,6 +54,13 @@ const AMENDMENT_OUTCOME_LABELS = {
   tombé: 'Tombés', irrecevable: 'Irrecevables', non_soutenu: 'Non soutenus',
 };
 
+// Périmètre v1 de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES) : voir #349/#361.
+const MANDAT_CATEGORY_LABELS = {
+  commission: 'Commission',
+  groupe_amitie: "Groupe d'amitié",
+  extra_parlementaire: 'Engagement extra-parlementaire',
+};
+
 // Ordre d'affichage + libellés (singulier/pluriel) des comptages par statut
 // d'un texte gouvernemental (schema_gouvernement.py). Entiers bruts
 // uniquement : jamais de jauge, donut ou pourcentage (AGENTS.md règle 2.1).
@@ -307,6 +314,19 @@ export function buildGroupView(groupe) {
     .slice(0, 20) // mots-clés bruts, non harmonisés (voir schema_pivot.py) : échantillon, pas une liste exhaustive
     .map((t) => ({ label: t.tag, count: t.nb_membres_porteurs }));
 
+  // mandats_agreges : déjà trié nb_membres desc puis categorie/label asc côté backend
+  // (group_profile._aggregate_mandats) — pas de re-tri ici.
+  const mandatsAgreges = (groupe.mandats_agreges || []).map((m) => ({
+    categorie: m.categorie,
+    categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
+    label: m.label,
+    nbMembres: m.nb_membres,
+    nbMembresActifs: m.nb_membres_actifs,
+    parFonction: Object.entries(m.par_fonction || {})
+      .sort((a, b) => b[1] - a[1])
+      .map(([fonction, count]) => ({ fonction, count })),
+  }));
+
   return {
     id: groupe.groupe_id,
     title: groupe.groupe_nom,
@@ -321,6 +341,7 @@ export function buildGroupView(groupe) {
     ],
     votes,
     tags,
+    mandatsAgreges,
     amendmentSegments,
     amendmentsDeposedTotal: parDepute?.nb_amendements ?? 0,
     amendmentsAllDeposantsTotal: agg.nb_amendements ?? 0,

@@ -19,9 +19,11 @@ from candidate_profile import (
     _derive_amendement_sort,
     _derive_amendement_sort_legacy,
     _expand_aggregated_amendements_index,
+    _extract_contact,
     _extract_mandats,
     _parse_syceron_intervention_entry,
     _format_lieu_naissance,
+    _format_nom_complet,
     _groupe_label,
     _parse_amendement_entry,
     _parse_amendement_entry_legacy,
@@ -68,8 +70,8 @@ def test_build_profile_reports_empty_api_payloads():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "slug-inexistant")
 
@@ -793,6 +795,44 @@ def test_format_lieu_naissance_tout_absent():
     assert _format_lieu_naissance(None, None, None) is None
 
 
+def test_format_nom_complet_prenom_et_nom():
+    assert _format_nom_complet("Antoine", "Golliot") == "Antoine Golliot"
+
+
+def test_format_nom_complet_nom_seul():
+    assert _format_nom_complet(None, "Golliot") == "Golliot"
+
+
+def test_format_nom_complet_tout_absent():
+    assert _format_nom_complet(None, None) is None
+
+
+def test_extract_contact_types_connus():
+    adresses = [
+        {"typeLibelle": "Adresse officielle", "intitule": "Assemblée nationale,"},
+        {"typeLibelle": "Mèl", "valElec": "antoine.golliot@assemblee-nationale.fr"},
+        {"typeLibelle": "Twitter", "valElec": "@AGolliot"},
+        {"typeLibelle": "Facebook", "valElec": "Antoine Golliot"},
+        {"typeLibelle": "Site internet", "valElec": "www.antoine-golliot.fr"},
+        {"typeLibelle": "Instagram", "valElec": "antoine.golliot"},
+    ]
+    assert _extract_contact(adresses) == {
+        "email": "antoine.golliot@assemblee-nationale.fr",
+        "twitter": "@AGolliot",
+        "facebook": "Antoine Golliot",
+        "site_web": "www.antoine-golliot.fr",
+    }
+
+
+def test_extract_contact_aucune_adresse():
+    assert _extract_contact([]) == {
+        "email": None,
+        "twitter": None,
+        "facebook": None,
+        "site_web": None,
+    }
+
+
 def test_stade_from_code_acte_depot():
     assert _stade_from_code_acte("AN1-DEPOT", None) == "depose"
 
@@ -1215,9 +1255,9 @@ def test_build_profile_includes_official_questions_in_interventions():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "slug-test")
 
@@ -1424,10 +1464,10 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
@@ -1443,11 +1483,11 @@ def test_build_profile_falls_back_to_nosdeputes_when_syceron_empty():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[{"id": "nosdeputes_1"}]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
@@ -1463,11 +1503,11 @@ def test_build_profile_syceron_exception_triggers_fallback_warning():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
@@ -1481,7 +1521,6 @@ def test_build_profile_no_syceron_for_senat():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
         # Évite un vrai appel réseau : chambre="senateurs" ne prend jamais le
@@ -1491,6 +1530,59 @@ def test_build_profile_no_syceron_for_senat():
         build_profile("senateurs", "jean-dupont")
 
     mock_syceron.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# #357 — mode d'extraction léger (extract-roster-groupes) : skip_dossiers_legislatifs
+# ---------------------------------------------------------------------------
+
+def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_portes():
+    """skip_dossiers_legislatifs=True doit empêcher tout appel à
+    fetch_textes_portes_officiels (étape 8bis, députés) et laisser
+    dossiers_legislatifs vide."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels") as mock_textes_portes,
+    ):
+        profile = build_profile(
+            "deputes", "jean-dupont", skip_interventions=True, skip_dossiers_legislatifs=True
+        )
+
+    mock_textes_portes.assert_not_called()
+    assert profile["dossiers_legislatifs"] == []
+
+
+def test_build_profile_skip_dossiers_legislatifs_senateurs_never_calls_fetch_dossiers():
+    """skip_dossiers_legislatifs=True doit empêcher tout appel à
+    fetch_dossiers_for_legislatures (étape 3, sénateurs) et laisser
+    dossiers_legislatifs vide."""
+    fake_identity = {"senateur": {"id": "PA999", "nom": "Martin", "slug": "jean-martin"}}
+    with (
+        patch("candidate_profile.fetch_identity", return_value=fake_identity),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
+    ):
+        profile = build_profile(
+            "senateurs", "jean-martin", skip_interventions=True, skip_dossiers_legislatifs=True
+        )
+
+    mock_dossiers.assert_not_called()
+    assert profile["dossiers_legislatifs"] == []
 
 
 def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_dossiers():
@@ -1504,10 +1596,9 @@ def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_dossiers():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
@@ -1530,7 +1621,6 @@ def test_build_profile_senateurs_appelle_toujours_nosdeputes_dossiers():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]) as mock_dossiers,
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -1552,10 +1642,9 @@ def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_votes():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes") as mock_votes,
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
@@ -1578,7 +1667,6 @@ def test_build_profile_senateurs_appelle_toujours_nosdeputes_votes():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}) as mock_votes,
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -1679,10 +1767,9 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
@@ -1749,10 +1836,9 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
@@ -2817,10 +2903,9 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch(
@@ -2841,3 +2926,547 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
         "Un échec de collecte des amendements officiels doit être tracé dans meta.warnings, "
         "pas avalé silencieusement"
     )
+
+
+# ---------------------------------------------------------------------------
+# Tests pour _build_organe_index / fetch_organe (issue #353) : index
+# organeRef -> {sigle, nom, type} construit depuis json/organe/*.json du zip
+# bulk historique des acteurs/mandats/organes, sans filtrage par codeType
+# (contrairement à _build_organe_positions_index, limité à GP/GOUVERNEMENT).
+# ---------------------------------------------------------------------------
+
+def _make_fake_acteurs_historique_zip_bytes(organe_entries, acteur_entries=None):
+    """Construit en mémoire un zip minimal imitant AN_ACTEURS_HISTORIQUE_ZIP_URL :
+    `organe_entries` est un mapping organeRef -> dict organe (ex. {"uid": ...,
+    "codeType": ..., "libelle": ..., "libelleAbrege": ...}), `acteur_entries`
+    un mapping acteurRef -> dict acteur, tous deux écrits sous
+    json/organe/{ref}.json et json/acteur/{ref}.json respectivement."""
+    import io
+    import zipfile as zipfile_module
+
+    buf = io.BytesIO()
+    with zipfile_module.ZipFile(buf, "w") as zf:
+        for organe_ref, organe in organe_entries.items():
+            zf.writestr(f"json/organe/{organe_ref}.json", json.dumps({"organe": organe}, ensure_ascii=False))
+        for acteur_ref, acteur in (acteur_entries or {}).items():
+            zf.writestr(f"json/acteur/{acteur_ref}.json", json.dumps({"acteur": acteur}, ensure_ascii=False))
+    return buf.getvalue()
+
+
+class _FakeActeursHistoriqueStreamResponse:
+    status_code = 200
+
+    def __init__(self, payload: bytes):
+        self._payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+    def raise_for_status(self):
+        pass
+
+    def iter_content(self, chunk_size=1024 * 1024):
+        yield self._payload
+
+
+def test_build_organe_index_parses_all_organe_types(tmp_path):
+    """L'index doit couvrir tous les codeType sans filtrage (commissions,
+    groupes politiques, groupes d'amitié...), contrairement à
+    _build_organe_positions_index limité à GP/GOUVERNEMENT — c'est tout
+    l'objet de l'issue #353. Les entrées json/acteur/*.json du même zip
+    doivent être ignorées (préfixe de chemin différent)."""
+    from candidate_profile import _build_organe_index
+
+    organe_entries = {
+        "PO59048": {
+            "uid": "PO59048",
+            "codeType": "COMPER",
+            "libelle": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "libelleAbrege": "Finances",
+        },
+        "PO845401": {
+            "uid": "PO845401",
+            "codeType": "GP",
+            "libelle": "Rassemblement National",
+            "libelleAbrege": "RN",
+        },
+        "PO393167": {
+            "uid": "PO393167",
+            "codeType": "GA",
+            "libelle": "France-Malaisie",
+            "libelleAbrege": "Malaisie",
+        },
+    }
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries, acteur_entries={"PA1": {"uid": "PA1"}}
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_organe_index()
+
+    assert index == {
+        "PO59048": {
+            "sigle": "Finances",
+            "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "type": "COMPER",
+        },
+        "PO845401": {"sigle": "RN", "nom": "Rassemblement National", "type": "GP"},
+        "PO393167": {"sigle": "Malaisie", "nom": "France-Malaisie", "type": "GA"},
+    }
+
+
+def test_build_organe_index_uses_disk_cache_without_download(tmp_path):
+    """Un index déjà présent sur disque (cache) est utilisé tel quel, sans
+    nouvel appel réseau."""
+    from candidate_profile import _build_organe_index
+
+    cached_index = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "index_organes.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        index = _build_organe_index()
+
+    mock_get.assert_not_called()
+    assert index == cached_index
+
+
+def test_build_organe_index_download_failure_returns_empty(tmp_path):
+    """Un échec réseau lors du téléchargement du zip bulk est non-fatal :
+    l'index retourné est {}, sans exception propagée."""
+    from candidate_profile import _build_organe_index
+    import requests as _requests_module
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests_module.RequestException("boom")),
+    ):
+        index = _build_organe_index()
+
+    assert index == {}
+
+
+def test_fetch_organe_resolves_known_ref_and_returns_none_otherwise(tmp_path):
+    """fetch_organe résout un organeRef connu vers {sigle, nom, type}, et
+    retourne None pour un organeRef vide/absent ou inconnu du référentiel."""
+    from candidate_profile import fetch_organe
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes({
+        "PO59048": {
+            "uid": "PO59048",
+            "codeType": "COMPER",
+            "libelle": "Commission des finances",
+            "libelleAbrege": "Finances",
+        },
+    })
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        assert fetch_organe("PO59048") == {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}
+        assert fetch_organe("PO_INCONNU") is None
+        assert fetch_organe(None) is None
+        assert fetch_organe("") is None
+
+
+def test_acteurs_historique_zip_downloaded_once_and_shared_across_indexes(tmp_path):
+    """_build_organe_index et _build_acteur_positions_hemicycle_index partagent
+    le même zip bulk (AN_ACTEURS_HISTORIQUE_ZIP_URL) via
+    _ensure_acteurs_historique_zip_downloaded : un seul téléchargement, même
+    si les deux index sont construits dans la même exécution (issue #353 —
+    "aucune dépendance amont — travail indépendant sur la même archive déjà
+    en cache")."""
+    from candidate_profile import _build_acteur_positions_hemicycle_index, _build_organe_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO845401": {
+                "uid": "PO845401",
+                "codeType": "GP",
+                "libelle": "Rassemblement National",
+                "libelleAbrege": "RN",
+                "positionPolitique": "Opposition",
+            },
+        },
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "GP",
+                            "organes": {"organeRef": "PO845401"},
+                            "legislature": "16",
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        }
+                    ]
+                },
+            }
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)) as mock_get,
+    ):
+        organe_index = _build_organe_index()
+        hemicycle_index = _build_acteur_positions_hemicycle_index()
+
+    assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
+    assert organe_index["PO845401"]["sigle"] == "RN"
+    assert hemicycle_index["PA1"][0]["groupe_sigle"] == "RN"
+
+
+# ---------------------------------------------------------------------------
+# Tests pour _build_acteur_identite_index / fetch_identite_officielle (issue
+# #354, sous-issue 3/6 de #351) : bascule de AMO10 (actifs uniquement) vers le
+# même zip bulk historique AMO30 que _build_organe_index /
+# _build_acteur_positions_hemicycle_index, pour couvrir les élu⋅e⋅s dont le
+# mandat est terminé.
+# ---------------------------------------------------------------------------
+
+def test_select_mandat_assemblee_courant_prefers_mandat_en_cours():
+    """Parmi plusieurs mandats ASSEMBLEE (réélections successives), celui sans
+    dateFin (en cours) doit toujours être préféré, quel que soit l'ordre."""
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    mandats = [
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2017-06-21", "dateFin": "2022-06-21", "legislature": "15"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-08", "dateFin": None, "legislature": "17"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2022-06-22", "dateFin": "2024-06-09", "legislature": "16"},
+    ]
+    best = _select_mandat_assemblee_courant(mandats)
+    assert best["legislature"] == "17"
+
+
+def test_select_mandat_assemblee_courant_falls_back_to_most_recent_dateDebut():
+    """Sans mandat en cours (élu dont le mandat est terminé), le mandat retenu
+    est celui dont dateDebut est le plus récent."""
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    mandats = [
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2012-06-20", "dateFin": "2017-06-20", "legislature": "14"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2017-06-21", "dateFin": "2022-06-21", "legislature": "15"},
+        {"typeOrgane": "GP", "dateDebut": "2017-06-21", "dateFin": None, "legislature": "15"},
+    ]
+    best = _select_mandat_assemblee_courant(mandats)
+    assert best["legislature"] == "15"
+
+
+def test_select_mandat_assemblee_courant_returns_none_without_assemblee_mandat():
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    assert _select_mandat_assemblee_courant([{"typeOrgane": "GP", "dateFin": None}]) is None
+    assert _select_mandat_assemblee_courant([]) is None
+
+
+def test_build_acteur_identite_index_covers_former_deputy(tmp_path):
+    """Contrairement à l'ancien jeu de données AMO10 (actifs uniquement), un
+    acteur dont le mandat est terminé (dateFin renseignée, absent de la
+    législature en cours) doit apparaître dans l'index — c'est l'objet même
+    de l'issue #354."""
+    from candidate_profile import _build_acteur_identite_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {
+                    "ident": {"civ": "M.", "prenom": "François", "nom": "Asensi"},
+                    "infoNaissance": {"dateNais": "1945-06-01", "villeNais": "Douai", "depNais": "59", "paysNais": "France"},
+                },
+                "profession": {"libelleCourant": "Dessinateur industriel"},
+                "uri_hatvp": None,
+                "adresses": {"adresse": []},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "14",
+                            "dateDebut": "2012-06-20",
+                            "dateFin": "2017-06-20",
+                            "election": {"lieu": {"numDepartement": "93", "numCirco": "4"}},
+                            "mandature": {"placeHemicycle": "123"},
+                        }
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index["PA295"]["nom_complet"] == "François Asensi"
+    assert index["PA295"]["numero_departement"] == "93"
+    assert index["PA295"]["numero_circo"] == "4"
+    assert index["PA295"]["place_hemicycle"] == "123"
+
+
+def test_build_acteur_identite_index_keeps_current_mandate_over_past_ones(tmp_path):
+    """Pour un acteur réélu sur plusieurs législatures, la circonscription/place
+    hémicycle retenue doit être celle du mandat en cours, pas un mandat
+    antérieur rencontré en premier dans la liste (voir
+    _select_mandat_assemblee_courant)."""
+    from candidate_profile import _build_acteur_identite_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "etatCivil": {"ident": {"prenom": "Jane", "nom": "Doe"}},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "16",
+                            "dateDebut": "2022-06-22",
+                            "dateFin": "2024-06-09",
+                            "election": {"lieu": {"numDepartement": "75", "numCirco": "1"}},
+                            "mandature": {"placeHemicycle": "old"},
+                        },
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "17",
+                            "dateDebut": "2024-07-08",
+                            "dateFin": None,
+                            "election": {"lieu": {"numDepartement": "75", "numCirco": "2"}},
+                            "mandature": {"placeHemicycle": "new"},
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index["PA1"]["numero_circo"] == "2"
+    assert index["PA1"]["place_hemicycle"] == "new"
+
+
+def test_build_acteur_identite_index_uses_disk_cache_without_download(tmp_path):
+    from candidate_profile import _build_acteur_identite_index
+
+    cached_index = {"PA1": {"nom_complet": "Jane Doe"}}
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "index_identite.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        index = _build_acteur_identite_index()
+
+    mock_get.assert_not_called()
+    assert index == cached_index
+
+
+def test_build_acteur_identite_index_download_failure_returns_empty(tmp_path):
+    from candidate_profile import _build_acteur_identite_index
+    import requests as _requests_module
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests_module.RequestException("boom")),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index == {}
+
+
+def test_fetch_identite_officielle_resolves_former_deputy(tmp_path):
+    from candidate_profile import fetch_identite_officielle
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {"ident": {"prenom": "François", "nom": "Asensi"}},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        assert fetch_identite_officielle("https://www.assemblee-nationale.fr/dyn/deputes/PA295")["nom_complet"] == "François Asensi"
+        assert fetch_identite_officielle(None) is None
+
+
+# ---------------------------------------------------------------------------
+# Tests pour la résolution acteur_ref par slug NosDéputés (bascule
+# fetch_identity vers l'AN comme source primaire pour les députés, #355) :
+# fetch_identite_officielle_par_slug ne dépend plus d'une URL AN obtenue via
+# un appel NosDéputés préalable.
+# ---------------------------------------------------------------------------
+
+
+def test_fetch_identite_officielle_par_slug_resolves_by_normalized_name(tmp_path):
+    from candidate_profile import fetch_identite_officielle_par_slug
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {"ident": {"prenom": "François", "nom": "Asensi"}},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        fiche, acteur_ref = fetch_identite_officielle_par_slug("francois-asensi")
+
+    assert acteur_ref == "PA295"
+    assert fiche["nom_complet"] == "François Asensi"
+
+
+def test_fetch_identite_officielle_par_slug_returns_none_when_absent(tmp_path):
+    from candidate_profile import fetch_identite_officielle_par_slug
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {"ident": {"prenom": "François", "nom": "Asensi"}},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        fiche, acteur_ref = fetch_identite_officielle_par_slug("candidat-inconnu")
+
+    assert fiche is None
+    assert acteur_ref is None
+
+
+def test_fetch_identite_officielle_par_slug_refuses_homonym_ambiguity(tmp_path):
+    """Deux acteurs distincts partageant le même nom normalisé (homonymie) ne
+    doivent jamais être résolus au hasard vers l'un des deux : la fonction
+    renonce plutôt que de risquer une mauvaise attribution d'identité."""
+    from candidate_profile import fetch_identite_officielle_par_slug
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA1": {"uid": {"#text": "PA1"}, "etatCivil": {"ident": {"prenom": "Jean", "nom": "Dupont"}}},
+            "PA2": {"uid": {"#text": "PA2"}, "etatCivil": {"ident": {"prenom": "Jean", "nom": "Dupont"}}},
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        fiche, acteur_ref = fetch_identite_officielle_par_slug("jean-dupont")
+
+    assert fiche is None
+    assert acteur_ref is None
+
+
+def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path):
+    """Bascule #355 : quand NosDéputés ne renvoie rien pour un slug (ex. élu
+    d'une législature ancienne, plus référencé sur nosdeputes.fr), l'identité
+    (infos biographiques) doit tout de même être renseignée depuis le
+    référentiel historique officiel AN, résolu par nom depuis le slug — plus
+    de dépendance à une URL AN fournie par NosDéputés."""
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {
+                    "ident": {"civ": "M.", "prenom": "François", "nom": "Asensi"},
+                    "infoNaissance": {"dateNais": "1945-06-01", "villeNais": "Douai", "depNais": "59", "paysNais": "France"},
+                },
+                "profession": {"libelleCourant": "Dessinateur industriel"},
+                "adresses": {"adresse": []},
+                "mandats": {"mandat": []},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        profile = build_profile("deputes", "francois-asensi")
+
+    assert profile["identite"]["nom_complet"] == "François Asensi"
+    assert profile["identite"]["profession"] == "Dessinateur industriel"
+    assert profile["identite"]["lieu_naissance"] is not None
+    assert "PA295" in profile["identite"]["url_an_ou_senat"]
+    # Mandats/groupe restent indisponibles (non sourcés depuis l'AN, voir #353) :
+    # le warning correspondant doit être émis, mais pas celui d'identité introuvable.
+    assert not any(w.startswith("identité introuvable") for w in profile["meta"]["warnings"])
+    assert any(w.startswith("mandats introuvables") for w in profile["meta"]["warnings"])
+    assert profile["mandats"] == []
+
+
+def test_identite_index_shares_historique_zip_download_with_organe_index(tmp_path):
+    """_build_acteur_identite_index doit réutiliser le même zip bulk que
+    _build_organe_index (_ensure_acteurs_historique_zip_downloaded) : un seul
+    téléchargement, pas un par index (issue #354, même refactor que #353)."""
+    from candidate_profile import _build_acteur_identite_index, _build_organe_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO1": {"uid": "PO1", "codeType": "COMPER", "libelle": "Commission", "libelleAbrege": "Com"},
+        },
+        acteur_entries={
+            "PA1": {"uid": {"#text": "PA1"}, "etatCivil": {"ident": {"prenom": "Jane", "nom": "Doe"}}},
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)) as mock_get,
+    ):
+        organe_index = _build_organe_index()
+        identite_index = _build_acteur_identite_index()
+
+    assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
+    assert organe_index["PO1"]["sigle"] == "Com"
+    assert identite_index["PA1"]["nom_complet"] == "Jane Doe"

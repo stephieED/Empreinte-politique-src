@@ -260,25 +260,28 @@ def _amendements_legislature_failed_this_run(legislature: str) -> bool:
 # (téléchargement/cache partagé avec la collecte des dossiers gouvernementaux,
 # voir issue #210 : un seul cache pour ce fichier ~10 Mo).
 
-# Acteurs (deputes actifs) + mandats + organes (Assemblee nationale) : un seul
-# fichier bulk, mais limite aux deputes ACTIFS de la legislature en cours (577
-# constates sur la 17e, contre 7126 organes historiques et 37 deports dans le
-# meme zip, non exploites ici). Utilise pour enrichir schema_pivot.identite
-# (profession/date_naissance/lieu_naissance/uri_hatvp) au-dela de ce que fournit
-# nosdeputes.fr : aucune couverture pour les elus dont le mandat est termine.
-AN_ACTEURS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip"
-ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
-
-# Acteurs/mandats/organes historique complet (Assemblee nationale) : contrairement
-# a AN_ACTEURS_ZIP_URL (limite aux deputes actifs de la legislature en cours), ce
-# fichier couvre TOUTES les legislatures depuis la XIe. Utilise uniquement pour
-# reconstituer l'historique dat\u00e9 d'appartenance a un groupe politique
-# (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
-# organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
-# Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois la
-# legislature terminee (toujours null sur la 17e, en cours, y compris pour les
-# groupes du socle commun) - cette source ne couvre donc que les legislatures
-# achevees (jusqu'a la 16e comprise).
+# Acteurs/mandats/organes historique complet (Assemblee nationale) : un seul
+# fichier bulk, couvrant TOUTES les legislatures depuis la XIe (3117 acteurs
+# constates, contre 577 deputes ACTIFS de la seule legislature en cours pour
+# l'ancien jeu de donnees AMO10 "deputes_actifs_mandats_actifs_organes", plus
+# utilise depuis l'issue #354 - voir docs/technical_decisions.md pour le choix
+# AMO30 plutot que combiner AMO20 par legislature comme envisage initialement).
+# Utilise pour :
+# - enrichir schema_pivot.identite (nom complet/profession/date+lieu de
+#   naissance/uri_hatvp/contact/circonscription/place hemicycle) au-dela de ce
+#   que fournit nosdeputes.fr, y compris pour les elus dont le mandat est
+#   termine (_build_acteur_identite_index, issue #354) ;
+# - reconstituer l'historique date d'appartenance a un groupe politique
+#   (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
+#   organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
+#   Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois
+#   la legislature terminee (toujours null sur la 17e, en cours, y compris
+#   pour les groupes du socle commun) - cette qualification ne couvre donc que
+#   les legislatures achevees (jusqu'a la 16e comprise) ;
+# - resoudre mandats[].organes.organeRef vers un nom lisible (_build_organe_index,
+#   issue #353), a partir des 7126+ organes historiques du meme zip
+#   (json/organe/*.json, tous codeType confondus : commissions, groupes
+#   d'amitie, engagements extra-parlementaires...).
 AN_ACTEURS_HISTORIQUE_ZIP_URL = (
     f"{AN_OPENDATA_BASE}/17/amo/tous_acteurs_mandats_organes_xi_legislature/"
     "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -338,12 +341,24 @@ _SYCERON_LOCKS_META = threading.Lock()
 _DOSSIERS_TITRE_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
-# decoupage par legislature).
+# decoupage par legislature), construit depuis le meme fichier bulk historique
+# que _ACTEURS_HEMICYCLE_LOCK/_ACTEURS_ORGANES_LOCK (issue #354).
 _ACTEURS_IDENTITE_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index des positions dans l'hemicycle (construit depuis
 # le fichier bulk historique des acteurs/mandats/organes).
 _ACTEURS_HEMICYCLE_LOCK = threading.Lock()
+
+# Verrou dedie au telechargement/cache disque de l'archive bulk historique
+# elle-meme (AN_ACTEURS_HISTORIQUE_ZIP_URL) : plusieurs index se construisent
+# a partir du meme zip (_build_acteur_identite_index, _build_acteur_positions_hemicycle_index,
+# _build_organe_index) sans se marcher dessus ni le retelecharger chacun de
+# leur cote (voir _ensure_acteurs_historique_zip_downloaded).
+_ACTEURS_HISTORIQUE_ZIP_LOCK = threading.Lock()
+
+# Un seul verrou pour l'index des organes (organeRef -> sigle/nom/type),
+# construit depuis le meme fichier bulk historique (issue #353).
+_ACTEURS_ORGANES_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
 # depuis le même fichier bulk que l'index titre (dossiers legislatifs).
@@ -603,31 +618,6 @@ def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Op
 def fetch_identity(base_urls: list[str], slug: str) -> tuple[Optional[Any], Optional[str]]:
     """Infos biographiques, mandats, contacts."""
     return _try_urls(base_urls, "Récupération de l'identité", slug)
-
-
-def fetch_activity_synthesis(base_url: str, slug: str) -> Optional[dict]:
-    """Récupère la synthèse d'activité globale via l'API NosDéputés."""
-    url = f"{base_url}/synthese/data/json"
-    print(f"-> Synthèse d'activité : {url}")
-    data = _get_payload(url)
-    if not isinstance(data, dict):
-        return None
-    deputes = [item.get("depute") or item for item in (data.get("deputes") or []) if isinstance(item, dict)]
-    deputes = [d for d in deputes if isinstance(d, dict)]
-
-    for depute in deputes:
-        if depute.get("slug") == slug:
-            return depute
-
-    # Repli si le slug ne correspond à aucune entrée : comparaison stricte (pas de
-    # sous-chaîne, qui matcherait faussement un homonyme partiel, ex. slug "guedj"
-    # dans le nom d'un autre député contenant "Guedjbaba") sur le nom désaccentué.
-    normalized_slug_name = _normalize_search_query(slug.replace("-", " "))
-    for depute in deputes:
-        nom = depute.get("nom")
-        if nom and _normalize_search_query(nom) == normalized_slug_name:
-            return depute
-    return None
 
 
 def fetch_dossiers(base_url: str, legislature: str) -> Optional[dict]:
@@ -1961,16 +1951,86 @@ def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pay
     return ville or complement or None
 
 
+_CONTACT_TYPE_LIBELLE_MAP: dict[str, str] = {
+    "Mèl": "email",
+    "Twitter": "twitter",
+    "Facebook": "facebook",
+    "Site internet": "site_web",
+}
+
+
+def _extract_contact(adresses: list[Any]) -> dict[str, Optional[str]]:
+    """Extrait les coordonnées de contact publiques (email, Twitter, Facebook,
+    site web) depuis `acteur.adresses.adresse[]`. Ignore volontairement les
+    autres types présents dans ce bloc (adresses postales, téléphone,
+    Instagram, Linkedin...) — hors périmètre de cette extraction."""
+    contact: dict[str, Optional[str]] = {key: None for key in _CONTACT_TYPE_LIBELLE_MAP.values()}
+    for adresse in adresses:
+        if not isinstance(adresse, dict):
+            continue
+        key = _CONTACT_TYPE_LIBELLE_MAP.get(adresse.get("typeLibelle"))
+        if key and not contact[key]:
+            contact[key] = adresse.get("valElec")
+    return contact
+
+
+def _format_nom_complet(prenom: Optional[str], nom: Optional[str]) -> Optional[str]:
+    """Formate prénom/nom (etatCivil.ident) en un nom complet lisible."""
+    if prenom and nom:
+        return f"{prenom} {nom}"
+    return prenom or nom or None
+
+
+def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, Any]]:
+    """Sélectionne, parmi les mandats `typeOrgane == "ASSEMBLEE"` d'un acteur,
+    celui correspondant à l'élection la plus pertinente pour la circonscription/
+    place hémicycle à afficher : le mandat en cours (`dateFin` absent) s'il en
+    existe un, sinon celui dont `dateDebut` est le plus récent (élu dont le
+    mandat est terminé). Nécessaire depuis le passage à `AN_ACTEURS_HISTORIQUE_ZIP_URL`
+    (issue #354) : contrairement à l'ancien jeu de données `AMO10` (limité aux
+    mandats actifs, un seul mandat ASSEMBLEE possible par acteur), un acteur
+    peut désormais avoir plusieurs mandats ASSEMBLEE successifs (réélections
+    sur plusieurs législatures)."""
+    best: Optional[dict[str, Any]] = None
+    for mandat in mandats:
+        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
+            continue
+        if best is None:
+            best = mandat
+            continue
+        best_en_cours = best.get("dateFin") is None
+        mandat_en_cours = mandat.get("dateFin") is None
+        if mandat_en_cours and not best_en_cours:
+            best = mandat
+        elif mandat_en_cours == best_en_cours and (mandat.get("dateDebut") or "") > (best.get("dateDebut") or ""):
+            best = mandat
+    return best
+
+
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
-    d'identité (profession, date/lieu de naissance, lien HATVP), à partir du
-    jeu de données des acteurs actifs de l'Assemblée nationale.
+    d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
+    contact, circonscription, place hémicycle), à partir du jeu de données
+    bulk historique des acteurs de l'Assemblée nationale
+    (`AN_ACTEURS_HISTORIQUE_ZIP_URL`, partagé avec `_build_organe_index` /
+    `_build_acteur_positions_hemicycle_index` via
+    `_ensure_acteurs_historique_zip_downloaded`).
 
-    Limitation connue : ce jeu de données ne couvre QUE les député⋅e⋅s actifs
-    de la législature en cours (~577 sur la 17e) — aucune entrée pour un élu
-    dont le mandat est terminé. Non-fatal en cas d'échec (retourne {})."""
+    Couvre tous les élu⋅e⋅s référencés depuis la XIe législature, actifs ou
+    non (issue #354) — contrairement à l'ancien jeu de données `AMO10`
+    ("deputes_actifs_mandats_actifs_organes"), limité aux ~577 député⋅e⋅s
+    actifs de la législature en cours. Voir docs/technical_decisions.md pour
+    le choix de réutiliser ce zip déjà exploité par #353 plutôt que combiner
+    les archives `AMO20` par législature comme envisagé initialement dans
+    l'issue.
+
+    Circonscription et place hémicycle proviennent du mandat le plus pertinent
+    parmi ceux `typeOrgane == "ASSEMBLEE"` (voir _select_mandat_assemblee_courant) :
+    `election.lieu.numDepartement/numCirco` et `mandature.placeHemicycle`.
+
+    Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_IDENTITE_LOCK:
-        index_path = ACTEURS_CACHE_DIR / "index_identite.json"
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -1978,18 +2038,8 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        print(f"-> Téléchargement des acteurs actifs (Assemblée nationale) : {AN_ACTEURS_ZIP_URL}")
-        zip_path = ACTEURS_CACHE_DIR / "acteurs.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_ACTEURS_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement des acteurs actifs : {exc}")
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
             return {}
 
         index: dict[str, dict[str, Any]] = {}
@@ -2011,10 +2061,31 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         continue
 
                     etat_civil = acteur.get("etatCivil") or {}
+                    ident = etat_civil.get("ident") or {}
                     info_naissance = etat_civil.get("infoNaissance") or {}
                     profession = (acteur.get("profession") or {}).get("libelleCourant")
 
+                    adresses = (acteur.get("adresses") or {}).get("adresse")
+                    if isinstance(adresses, dict):
+                        adresses = [adresses]
+                    contact = _extract_contact(adresses if isinstance(adresses, list) else [])
+
+                    mandats = (acteur.get("mandats") or {}).get("mandat")
+                    if isinstance(mandats, dict):
+                        mandats = [mandats]
+                    numero_departement = numero_circo = place_hemicycle = None
+                    mandat_assemblee = _select_mandat_assemblee_courant(mandats if isinstance(mandats, list) else [])
+                    if mandat_assemblee is not None:
+                        lieu = (mandat_assemblee.get("election") or {}).get("lieu") or {}
+                        numero_departement = lieu.get("numDepartement")
+                        numero_circo = lieu.get("numCirco")
+                        place_hemicycle = (mandat_assemblee.get("mandature") or {}).get("placeHemicycle")
+
                     index[acteur_ref] = {
+                        "civilite": ident.get("civ"),
+                        "prenom": ident.get("prenom"),
+                        "nom": ident.get("nom"),
+                        "nom_complet": _format_nom_complet(ident.get("prenom"), ident.get("nom")),
                         "profession": profession,
                         "date_naissance": info_naissance.get("dateNais"),
                         "lieu_naissance": _format_lieu_naissance(
@@ -2023,9 +2094,13 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                             info_naissance.get("paysNais"),
                         ),
                         "uri_hatvp": acteur.get("uri_hatvp"),
+                        "contact": contact,
+                        "numero_departement": numero_departement,
+                        "numero_circo": numero_circo,
+                        "place_hemicycle": place_hemicycle,
                     }
         except zipfile.BadZipFile as exc:
-            print(f"  [!] Archive des acteurs actifs invalide : {exc}")
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
             return {}
 
         try:
@@ -2040,14 +2115,71 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
 
 def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[str, Any]]:
     """Récupère les champs d'identité officiels (Assemblée nationale) pour un
-    député, si son acteurRef fait partie des député⋅e⋅s actifs référencés
-    (voir _build_acteur_identite_index). Retourne None si non trouvé/non
-    applicable (ex. sénateur, ancien député)."""
+    député, actif ou non (voir _build_acteur_identite_index, issue #354).
+    Retourne None si non trouvé/non applicable (ex. sénateur, ou acteur absent
+    du référentiel historique de l'AN)."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return None
     index = _build_acteur_identite_index()
     return index.get(acteur_ref)
+
+
+def _build_acteur_nom_index() -> dict[str, list[str]]:
+    """Index nom complet normalisé (sans accents/casse, voir
+    _normalize_search_query) -> liste des acteur_ref partageant ce nom, à
+    partir de `_build_acteur_identite_index`. Permet de résoudre un acteur_ref
+    depuis un slug NosDéputés.fr sans dépendre de l'URL AN renvoyée par
+    NosDéputés (voir fetch_identite_officielle_par_slug, issue #355). Une
+    liste de plus d'un acteur_ref pour une même clé signale une homonymie
+    dans le référentiel historique AN."""
+    index: dict[str, list[str]] = {}
+    for acteur_ref, fiche in _build_acteur_identite_index().items():
+        nom_complet = fiche.get("nom_complet")
+        if not nom_complet:
+            continue
+        index.setdefault(_normalize_search_query(nom_complet), []).append(acteur_ref)
+    return index
+
+
+def _resolve_acteur_ref_par_slug(slug: str) -> Optional[str]:
+    """Résout un acteur_ref AN (ex. "PA2150") directement depuis un slug
+    NosDéputés.fr (ex. "jean-luc-melenchon" -> nom normalisé "jean luc
+    melenchon"), par correspondance de nom sur `_build_acteur_nom_index` —
+    sans appel réseau préalable à NosDéputés pour en extraire l'URL AN.
+    Renvoie None si le slug ne correspond à aucun acteur du référentiel, ou à
+    plusieurs (homonymie : on renonce plutôt que de risquer une mauvaise
+    attribution)."""
+    nom_index = _build_acteur_nom_index()
+    matches = nom_index.get(_normalize_search_query(slug.replace("-", " ")))
+    if not matches or len(matches) != 1:
+        return None
+    return matches[0]
+
+
+def fetch_identite_officielle_par_slug(slug: str) -> tuple[Optional[dict[str, Any]], Optional[str]]:
+    """Résout l'identité officielle AN directement depuis le slug NosDéputés.fr,
+    sans appel réseau préalable à NosDéputés pour en extraire l'URL AN —
+    permet d'utiliser le référentiel historique AN comme source primaire de
+    `fetch_identity` pour les députés (issue #355). Renvoie (fiche, acteur_ref)
+    si trouvé, (None, None) sinon (absent du référentiel, ou homonymie — voir
+    _resolve_acteur_ref_par_slug)."""
+    acteur_ref = _resolve_acteur_ref_par_slug(slug)
+    if not acteur_ref:
+        return None, None
+    return _build_acteur_identite_index().get(acteur_ref), acteur_ref
+
+
+def _acteur_ref_to_pseudo_url(acteur_ref: str) -> str:
+    """Construit une URL de fiche AN synthétique à partir d'un acteur_ref
+    (ex. "PA2150"), au même format que le champ `url_an` renvoyé par
+    NosDéputés (ex. "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150").
+    Utilisée quand l'identité a été résolue via l'AN sans passer par
+    NosDéputés (voir fetch_identite_officielle_par_slug) : les autres appels
+    officiels AN (votes, amendements, textes, questions, positions hémicycle,
+    interventions) n'ont besoin que d'en extraire l'acteur_ref via
+    _extract_acteur_ref, peu importe la forme exacte de l'URL."""
+    return f"https://www2.assemblee-nationale.fr/deputes/fiche/OMC_{acteur_ref}"
 
 
 # Correspondance organe.positionPolitique (référentiel officiel Assemblée
@@ -2104,6 +2236,33 @@ def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, An
     return index
 
 
+def _ensure_acteurs_historique_zip_downloaded() -> Optional[Path]:
+    """Télécharge (si absente du cache disque) l'archive bulk historique des
+    acteurs/mandats/organes de l'Assemblée nationale (AN_ACTEURS_HISTORIQUE_ZIP_URL)
+    et retourne son chemin local. Partagée entre plusieurs index construits à
+    partir du même zip (_build_acteur_positions_hemicycle_index,
+    _build_organe_index) : un seul téléchargement, jamais deux en parallèle.
+    Retourne None en cas d'échec (non-fatal pour l'appelant)."""
+    with _ACTEURS_HISTORIQUE_ZIP_LOCK:
+        zip_path = ACTEURS_HISTORIQUE_CACHE_DIR / "acteurs_historique.zip"
+        if zip_path.is_file():
+            return zip_path
+
+        print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
+            return None
+        return zip_path
+
+
 def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste de
     périodes datées d'appartenance à un groupe politique qualifié majorité/
@@ -2126,18 +2285,8 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
-        zip_path = ACTEURS_HISTORIQUE_CACHE_DIR / "acteurs_historique.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -2210,6 +2359,84 @@ def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> lis
         return []
     index = _build_acteur_positions_hemicycle_index()
     return index.get(acteur_ref, [])
+
+
+def _build_organe_index() -> dict[str, dict[str, Any]]:
+    """Construit (et met en cache sur disque) un index organeRef -> {sigle,
+    nom, type} pour TOUS les organes (commissions permanentes/spéciales,
+    groupes politiques, groupes d'amitié, missions d'information, engagements
+    extra-parlementaires, gouvernements...) du référentiel historique de
+    l'Assemblée nationale, à partir du même zip que
+    _build_acteur_positions_hemicycle_index (json/organe/*.json).
+
+    Contrairement à _build_organe_positions_index (limité aux organes de type
+    "GP"/"GOUVERNEMENT" qualifiés majorité/opposition/minoritaire), cet index
+    couvre tous les codeType sans filtrage : prérequis générique pour
+    résoudre mandats[].organes.organeRef (ex. "PO59048" -> commission des
+    finances) vers un nom lisible, quel que soit le type d'organe (issue #353).
+
+    "sigle" = organe.libelleAbrege (nom court, ex. "Finances"), "nom" =
+    organe.libelle (nom complet, ex. "Commission des finances, de l'économie
+    générale et du contrôle budgétaire"), "type" = organe.codeType (ex.
+    "COMPER", "GP", "GA", "MISINFO", "GOUVERNEMENT"...). Non-fatal en cas
+    d'échec (retourne {})."""
+    with _ACTEURS_ORGANES_LOCK:
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_organes.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
+            return {}
+
+        index: dict[str, dict[str, Any]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/organe/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    organe = data.get("organe") if isinstance(data, dict) else None
+                    if not isinstance(organe, dict):
+                        continue
+                    organe_ref = organe.get("uid")
+                    if not isinstance(organe_ref, str) or not organe_ref:
+                        continue
+                    index[organe_ref] = {
+                        "sigle": organe.get("libelleAbrege"),
+                        "nom": organe.get("libelle"),
+                        "type": organe.get("codeType"),
+                    }
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
+    """Résout un organeRef (ex. mandats[].organes.organeRef, "PO59048") vers
+    {sigle, nom, type} via le référentiel historique de l'Assemblée nationale
+    (voir _build_organe_index). Retourne None si organe_ref est vide/absent
+    ou introuvable dans le référentiel."""
+    if not organe_ref:
+        return None
+    index = _build_organe_index()
+    return index.get(organe_ref)
 
 
 def fetch_amendements_officiels(
@@ -2984,7 +3211,13 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
 
 
 
-def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, skip_interventions: bool = False) -> dict:
+def build_profile(
+    chambre: str,
+    slug: str,
+    intervention_max_pages: int = 10,
+    skip_interventions: bool = False,
+    skip_dossiers_legislatifs: bool = False,
+) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
     sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
@@ -3000,6 +3233,11 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
             d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
             nécessitant une requête de détail supplémentaire : réduire ce nombre accélère
             fortement la génération d'un profil, au prix d'une couverture moins complète).
+        skip_dossiers_legislatifs: si True, ne fait aucun appel réseau pour les dossiers
+            législatifs (`profile["dossiers_legislatifs"]` reste vide) — ni le chemin
+            NosDéputés (sénateurs) ni `fetch_textes_portes_officiels` (députés). Voir mode
+            d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
+            amendements sont exploités en aval (agrégats de groupe, #349).
 
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
@@ -3009,9 +3247,13 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
 
     base_urls = BASE_URLS[chambre]
 
-    # --- 1. Identité brute (NosDéputés/NosSénateurs, source primaire pour toutes
-    # les législatures — fetch_identite_officielle en 5bis ne fait que compléter
-    # des champs manquants pour les député⋅e⋅s actifs, jamais un remplacement). ---
+    # --- 1. Identité brute NosDéputés/NosSénateurs. Depuis #355, ce n'est plus la
+    # source primaire des champs biographiques pour les députés (voir étape 5,
+    # bascule vers le référentiel historique officiel Assemblée nationale) : elle
+    # reste nécessaire pour les mandats/responsabilités et le groupe parlementaire
+    # déclaré (non encore sourcés depuis l'AN, voir #353), le nom de recherche
+    # d'interventions (étape 2), et en repli complet d'identité si le candidat
+    # n'est pas trouvé dans les archives AN combinées. ---
     identity_result = fetch_identity(base_urls, slug)
     if isinstance(identity_result, tuple):
         identity_raw, identity_base_url = identity_result
@@ -3051,16 +3293,13 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         else slug.replace("-", " ").title()
     )
 
-    # --- 3. Synthèse d'activité, dossiers législatifs, et recherche des interventions
-    # (sur le meilleur domaine/législature disponible). ---
-    synthesis_payload = None
+    # --- 3. Dossiers législatifs et recherche des interventions (sur le
+    # meilleur domaine/législature disponible). ---
     dossiers_payload = []
     interventions_payload = None
     interventions_base_url = base_urls[0]
     pre_profile_warnings: list[str] = []
     try:
-        synthesis_payload = fetch_activity_synthesis(base_urls[0], slug)
-        time.sleep(0.3)
         # Dossiers via NosDéputés : uniquement pour les sénateurs. Pour les
         # députés, ce résultat est de toute façon écrasé plus bas par l'étape
         # 8bis (fetch_textes_portes_officiels, source officielle AN, propre à
@@ -3068,7 +3307,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         # justement ce point d'appel (dossiers/nom/json) qui pendait
         # régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
         # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
-        if chambre != "deputes":
+        if chambre != "deputes" and not skip_dossiers_legislatifs:
             # Les dossiers doivent être demandés sur le domaine où l'identité a
             # réellement été trouvée (donc sa législature) : utiliser systématiquement
             # base_urls[0] (législature courante) renvoie une liste vide pour un
@@ -3105,7 +3344,6 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         "mandats": [],
         "votes": [],
         "votes_source": None,
-        "synthese_activite": None,
         "dossiers_legislatifs": [],
         "amendements": [],
         "interventions": [],
@@ -3127,80 +3365,106 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
     warnings = profile["meta"]["warnings"]
     warnings.extend(pre_profile_warnings)
 
-    # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes d'amitié...). ---
-    if _is_empty_payload(identity_raw):
-        warnings.append(f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : l'API ne renvoie pas de profil exploitable pour ce slug/chambre.")
-    else:
-        profile["meta"]["synchro_sources"]["nosdeputes"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        parlementaire = _extract_parlementaire(identity_raw)
+    # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes
+    # d'amitié...). Depuis #355, l'identité (infos biographiques) des députés est
+    # résolue en priorité depuis le référentiel historique officiel de
+    # l'Assemblée nationale, par correspondance de nom sur le slug (voir
+    # fetch_identite_officielle_par_slug) — indépendant d'un appel réseau
+    # NosDéputés préalable, contrairement à l'ancien enrichissement 5bis qui
+    # dépendait de l'URL AN renvoyée par NosDéputés. NosDéputés reste la seule
+    # source pour les mandats/responsabilités et le groupe parlementaire déclaré
+    # (organeRef résolu par #353 mais pas encore rattaché aux mandats du profil,
+    # voir docs/technical_decisions.md#identite-acteurs-amo30) : il n'est donc
+    # écarté que pour les champs biographiques, jamais totalement. Le repli
+    # NosDéputés total (identité comme mandats) ne s'applique que si le candidat
+    # est absent des archives AN combinées. ---
+    identite_an: Optional[dict[str, Any]] = None
+    acteur_ref_an: Optional[str] = None
+    if chambre == "deputes":
+        try:
+            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
+        except Exception as exc:
+            warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
 
-        if not isinstance(parlementaire, dict) or _is_empty_payload(parlementaire):
-            warnings.append(f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : la réponse API ne contient pas de données de parlementaire exploitables.")
-        else:
-            profile["identite"] = {
-                "nom_complet": parlementaire.get("nom"),
-                "groupe_sigle": parlementaire.get("groupe_sigle"),
-                "groupe_nom": parlementaire.get("nom_groupe_politique") or _groupe_label(parlementaire.get("groupe")),
-                "profession": parlementaire.get("profession"),
-                "date_naissance": parlementaire.get("date_naissance"),
-                "lieu_naissance": None,
-                "num_circo": parlementaire.get("num_circo") or parlementaire.get("num_deptt"),
-                "nb_mandats": parlementaire.get("nb_mandats"),
-                "uri_hatvp": None,
-                "url_an_ou_senat": parlementaire.get("url_an") or parlementaire.get("url_nosdeputes"),
-            }
+    parlementaire = _extract_parlementaire(identity_raw) if isinstance(identity_raw, dict) else None
+    parlementaire_valide = isinstance(parlementaire, dict) and not _is_empty_payload(parlementaire)
+
+    if identite_an is None and not parlementaire_valide:
+        warnings.append(
+            f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : ni le référentiel officiel Assemblée nationale ni "
+            "NosDéputés/NosSénateurs ne renvoient de profil exploitable pour ce slug/chambre."
+        )
+    else:
+        if identite_an is not None:
+            profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        if parlementaire_valide:
+            profile["meta"]["synchro_sources"]["nosdeputes"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+        profile["identite"] = {
+            "nom_complet": (identite_an or {}).get("nom_complet") or (parlementaire or {}).get("nom"),
+            "groupe_sigle": (parlementaire or {}).get("groupe_sigle"),
+            "groupe_nom": (parlementaire or {}).get("nom_groupe_politique") or _groupe_label((parlementaire or {}).get("groupe")),
+            "profession": (identite_an or {}).get("profession") or (parlementaire or {}).get("profession"),
+            "date_naissance": (identite_an or {}).get("date_naissance") or (parlementaire or {}).get("date_naissance"),
+            "lieu_naissance": (identite_an or {}).get("lieu_naissance"),
+            "num_circo": (
+                (parlementaire or {}).get("num_circo")
+                or (parlementaire or {}).get("num_deptt")
+                or (identite_an or {}).get("numero_circo")
+            ),
+            "nb_mandats": (parlementaire or {}).get("nb_mandats"),
+            "uri_hatvp": (identite_an or {}).get("uri_hatvp"),
+            "url_an_ou_senat": (
+                (parlementaire or {}).get("url_an")
+                or (parlementaire or {}).get("url_nosdeputes")
+                or (_acteur_ref_to_pseudo_url(acteur_ref_an) if acteur_ref_an else None)
+            ),
+        }
+
+        if parlementaire_valide:
             profile["mandats"] = _extract_mandats(parlementaire)
             if _is_empty_payload(profile["mandats"]):
                 warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
+        else:
+            warnings.append(
+                f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés/NosSénateurs (identité "
+                "résolue via le seul référentiel officiel Assemblée nationale, qui ne couvre pas encore les "
+                "mandats/responsabilités par candidat — voir #353)."
+            )
 
-            # --- 5bis. Enrichissement identité (Assemblée nationale, référentiel des
-            # député⋅e⋅s actifs uniquement — voir fetch_identite_officielle). Ne
-            # remplace jamais une valeur nosdeputes déjà renseignée (source secondaire). ---
-            if chambre == "deputes":
-                try:
-                    identite_an = fetch_identite_officielle(profile["identite"].get("url_an_ou_senat"))
-                except Exception as exc:
-                    warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
-                    identite_an = None
-                if identite_an:
-                    profile["identite"]["profession"] = profile["identite"]["profession"] or identite_an.get("profession")
-                    profile["identite"]["date_naissance"] = profile["identite"]["date_naissance"] or identite_an.get("date_naissance")
-                    profile["identite"]["lieu_naissance"] = identite_an.get("lieu_naissance")
-                    profile["identite"]["uri_hatvp"] = identite_an.get("uri_hatvp")
-
-            # --- 5ter. Positions dans l'hémicycle (Assemblée nationale, référentiel
-            # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
-            # couvre que les législatures achevées (positionPolitique jamais qualifié
-            # par l'AN pour la législature en cours) pour majorité/opposition/
-            # minoritaire : ajoute une entrée de mandat "groupe_politique" par période
-            # qualifiée, jamais sans source_url. Ajoute également une entrée de mandat
-            # "fonction_gouvernementale" par période d'appartenance à un gouvernement
-            # (position "gouvernement"), non limitée aux législatures achevées. ---
-            if chambre == "deputes":
-                try:
-                    positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
-                except Exception as exc:
-                    warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
-                    positions_hemicycle = []
-                for periode in positions_hemicycle:
-                    sigle = periode.get("groupe_sigle")
-                    position = periode.get("position")
-                    if position == "gouvernement":
-                        categorie = "fonction_gouvernementale"
-                        label = f"Gouvernement ({sigle})" if sigle else "Gouvernement"
-                    else:
-                        categorie = "groupe_politique"
-                        label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
-                    profile["mandats"].append({
-                        "categorie": categorie,
-                        "type": "membre",
-                        "label": label,
-                        "debut": periode.get("debut"),
-                        "fin": periode.get("fin"),
-                        "actif": not periode.get("fin"),
-                        "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
-                        "position_dans_hemicycle": position,
-                    })
+        # --- 5bis. Positions dans l'hémicycle (Assemblée nationale, référentiel
+        # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
+        # couvre que les législatures achevées (positionPolitique jamais qualifié
+        # par l'AN pour la législature en cours) pour majorité/opposition/
+        # minoritaire : ajoute une entrée de mandat "groupe_politique" par période
+        # qualifiée, jamais sans source_url. Ajoute également une entrée de mandat
+        # "fonction_gouvernementale" par période d'appartenance à un gouvernement
+        # (position "gouvernement"), non limitée aux législatures achevées. ---
+        if chambre == "deputes":
+            try:
+                positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
+            except Exception as exc:
+                warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
+                positions_hemicycle = []
+            for periode in positions_hemicycle:
+                sigle = periode.get("groupe_sigle")
+                position = periode.get("position")
+                if position == "gouvernement":
+                    categorie = "fonction_gouvernementale"
+                    label = f"Gouvernement ({sigle})" if sigle else "Gouvernement"
+                else:
+                    categorie = "groupe_politique"
+                    label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
+                profile["mandats"].append({
+                    "categorie": categorie,
+                    "type": "membre",
+                    "label": label,
+                    "debut": periode.get("debut"),
+                    "fin": periode.get("fin"),
+                    "actif": not periode.get("fin"),
+                    "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
+                    "position_dans_hemicycle": position,
+                })
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
     # (fiable et à jour) ; pour les sénateurs (pas de source officielle
@@ -3274,16 +3538,6 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         except Exception as exc:
             warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
-    if not _is_empty_payload(synthesis_payload):
-        # --- 7. Synthèse d'activité globale (indicateurs agrégés fournis par l'API). ---
-        profile["synthese_activite"] = {
-            "nom": synthesis_payload.get("nom"),
-            "groupe_sigle": synthesis_payload.get("groupe_sigle"),
-            "profession": synthesis_payload.get("profession"),
-            "nb_mandats": synthesis_payload.get("nb_mandats"),
-            "url_an_ou_senat": synthesis_payload.get("url_an") or synthesis_payload.get("url_nosdeputes"),
-        }
-
     if dossiers_payload:
         # --- 8. Dossiers législatifs (sénateurs uniquement, voir étape 3
         # ci-dessus — dossiers_payload reste [] pour les députés), triés du
@@ -3299,7 +3553,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
     # Seule source de dossiers législatifs pour les députés (étape 3 : plus
     # d'appel NosDéputés pour cette chambre, voir commentaire à l'appel de
     # fetch_dossiers_for_legislatures). ---
-    if chambre == "deputes" and profile.get("identite"):
+    if chambre == "deputes" and profile.get("identite") and not skip_dossiers_legislatifs:
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:

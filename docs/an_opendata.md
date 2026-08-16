@@ -113,10 +113,27 @@ Still useful confirmations:
 
 ## Actors / mandates / bodies (official identity + mandates)
 
-`.../17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip`
-(~4.9 MB, daily updates).
+Two datasets share the same JSON schema, at different scopes:
 
-Empirically documented structure:
+| Dataset | Path | Size | Scope |
+|---|---|---|---|
+| `AMO10` (**no longer used**, see below) | `.../17/amo/deputes_actifs_mandats_actifs_organes/AMO10_deputes_actifs_mandats_actifs_organes.json.zip` | ~4.9 MB, daily updates | Deputies with an active mandate in the current legislature only (~577 acteurs) |
+| `AMO30` (`AN_ACTEURS_HISTORIQUE_ZIP_URL`, in use) | `.../17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip` | ~13.6 MB, daily updates | All acteurs referenced since the 11th legislature, active or not (3117 acteurs) |
+
+`_build_acteur_identite_index` used `AMO10` until issue #354 (sub-issue 3/6 of
+#351): switched to `AMO30` to cover elected officials whose mandate has
+ended, invisible in `AMO10`. `AMO30` was already downloaded/cached by
+`_build_organe_index` / `_build_acteur_positions_hemicycle_index` (#353) —
+reusing it (via the shared `_ensure_acteurs_historique_zip_downloaded`) avoids
+an extra network round-trip per profile, on top of covering more legislatures
+than the `AMO20_dep_sen_min_tous_mandats_et_organes*` archives considered
+initially in the issue (confirmed to exist for legislatures 15/16/17 only,
+one file per legislature to combine) — see
+`docs/technical_decisions.md#identite-acteurs-amo30` for the full comparison.
+
+Empirically documented structure (identical on both datasets, `AMO30` verified
+directly by downloading the 13.6 MB archive and sampling `json/acteur/*.json`
+entries for deputies/senators from legislatures 12-17):
 
 - Mixed entity types in one ZIP:
   - `json/acteur/PA{id}.json`
@@ -125,8 +142,51 @@ Empirically documented structure:
 - `acteur.uri_hatvp`: link to HATVP declaration (not yet in current pivot schema).
 - `acteur.mandats.mandat[].typeOrgane`: wide set of observed types (`GP`,
   `COMPER`, `PARPOL`, `MISINFO*`, `DELEG`, `BUREAU`, `CMP`, `GOUVERNEMENT`,
-  `MINISTERE`, ...).
+  `MINISTERE`, `ASSEMBLEE`, ...).
 - `acteur.mandats.mandat[].infosQualite.codeQualite/libQualite`: free-text labels.
+- `acteur.mandats.mandat[].legislature`/`dateDebut`/`dateFin`: on `AMO30`, a
+  single acteur can have several `ASSEMBLEE` mandates (one per legislature
+  they were (re-)elected in) — `_select_mandat_assemblee_courant` picks the
+  ongoing one (`dateFin` absent) if any, else the one with the most recent
+  `dateDebut`. Not needed on `AMO10` (single active mandate per acteur, by
+  construction of that dataset's scope).
+- `acteur.etatCivil.ident.{civ,prenom,nom}`: full name (used by
+  `_build_acteur_identite_index` to build `nom_complet`).
+- `acteur.adresses.adresse[]` (single dict, not a list, when there is only
+  one entry — normalize like `mandats.mandat`): each entry has a
+  `typeLibelle` (`"Adresse officielle"`, `"Adresse publiée de
+  circonscription"`, `"Mèl"`, `"Twitter"`, `"Facebook"`, `"Instagram"`,
+  `"Linkedin"`, `"Site internet"`, `"Téléphone"`, `"Télécopie"`, `"Url
+  sénateur"` — observed on the full `AMO10` set, 577 acteurs) and a `valElec`
+  field for non-postal types. `_build_acteur_identite_index` only extracts
+  `Mèl`/`Twitter`/`Facebook`/`Site internet` into `contact`
+  (email/twitter/facebook/site_web) — the rest is out of scope for now.
+- Circonscription/place hémicycle: on the mandat selected by
+  `_select_mandat_assemblee_courant` (`typeOrgane == "ASSEMBLEE"`),
+  `election.lieu.{numDepartement,numCirco}` and `mandature.placeHemicycle` —
+  extracted by `_build_acteur_identite_index` into
+  `numero_departement`/`numero_circo`/`place_hemicycle`. Not yet wired into
+  the pivot schema (`identite` block) — see #352/#351 subtask 4.
+
+### `json/organe/*.json` structure (organeRef resolution, #353)
+
+`organe.uid` (ex. `"PO59048"`) is the target of `mandats[].organes.organeRef`.
+Confirmed fields on the historical bulk file (`AMO30`): `codeType` (33
+distinct values observed on `AMO30`, e.g. `COMPER` committee, `GP` political
+group, `GA` friendship group, `MISINFO*` info missions, `GOUVERNEMENT`,
+`ORGEXTPARL` extra-parliamentary body, `CMP`, `DELEG`...), `libelle` (full
+name, e.g. "Commission des finances, de l'économie générale et du contrôle
+budgétaire"), `libelleAbrege` (short name, e.g. "Finances"), `libelleAbrev`
+(very short code, e.g. "CION_FIN"), `organeParent` (nullable ref to a parent
+organe). `_build_organe_index` (`candidate_profile.py`) indexes
+`organeRef -> {sigle: libelleAbrege, nom: libelle, type: codeType}` for all
+`codeType` values (no filtering) — a prerequisite for resolving any
+`mandats[].organes.organeRef` to a readable name (committees with role,
+friendship groups, extra-parliamentary engagements, political group).
+`_build_organe_positions_index` is a narrower, pre-existing index limited to
+`GP`/`GOUVERNEMENT` for majority/opposition/government qualification (see
+`fetch_positions_hemicycle_officielles`) — the two are independent and do not
+replace each other.
 
 ## Legislative files (bulk, multi-legislature in one file)
 
