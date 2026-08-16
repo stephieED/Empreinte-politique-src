@@ -271,14 +271,18 @@ ACTEURS_CACHE_DIR = Path(".cache") / "acteurs_an"
 
 # Acteurs/mandats/organes historique complet (Assemblee nationale) : contrairement
 # a AN_ACTEURS_ZIP_URL (limite aux deputes actifs de la legislature en cours), ce
-# fichier couvre TOUTES les legislatures depuis la XIe. Utilise uniquement pour
-# reconstituer l'historique dat\u00e9 d'appartenance a un groupe politique
+# fichier couvre TOUTES les legislatures depuis la XIe. Utilise pour
+# reconstituer l'historique date d'appartenance a un groupe politique
 # (acteur.mandats.mandat[].typeOrgane == "GP") et sa qualification officielle
 # organe.positionPolitique ("Majoritaire"/"Minoritaire"/"Opposition"/null).
 # Constat empirique : positionPolitique n'est renseigne par l'AN qu'une fois la
 # legislature terminee (toujours null sur la 17e, en cours, y compris pour les
 # groupes du socle commun) - cette source ne couvre donc que les legislatures
-# achevees (jusqu'a la 16e comprise).
+# achevees (jusqu'a la 16e comprise). Les 7126+ organes historiques de ce meme
+# zip (json/organe/*.json, tous codeType confondus : commissions, groupes
+# d'amitie, engagements extra-parlementaires...) sont aussi exploites par
+# _build_organe_index (issue #353) pour resoudre mandats[].organes.organeRef
+# vers un nom lisible, au-dela du seul sous-ensemble GP/GOUVERNEMENT ci-dessus.
 AN_ACTEURS_HISTORIQUE_ZIP_URL = (
     f"{AN_OPENDATA_BASE}/17/amo/tous_acteurs_mandats_organes_xi_legislature/"
     "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -344,6 +348,17 @@ _ACTEURS_IDENTITE_LOCK = threading.Lock()
 # Un seul verrou pour l'index des positions dans l'hemicycle (construit depuis
 # le fichier bulk historique des acteurs/mandats/organes).
 _ACTEURS_HEMICYCLE_LOCK = threading.Lock()
+
+# Verrou dedie au telechargement/cache disque de l'archive bulk historique
+# elle-meme (AN_ACTEURS_HISTORIQUE_ZIP_URL) : plusieurs index se construisent
+# a partir du meme zip (_build_acteur_positions_hemicycle_index,
+# _build_organe_index) sans se marcher dessus ni le retelecharger chacun de
+# leur cote (voir _ensure_acteurs_historique_zip_downloaded).
+_ACTEURS_HISTORIQUE_ZIP_LOCK = threading.Lock()
+
+# Un seul verrou pour l'index des organes (organeRef -> sigle/nom/type),
+# construit depuis le meme fichier bulk historique (issue #353).
+_ACTEURS_ORGANES_LOCK = threading.Lock()
 
 # Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
 # depuis le même fichier bulk que l'index titre (dossiers legislatifs).
@@ -2104,6 +2119,33 @@ def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, An
     return index
 
 
+def _ensure_acteurs_historique_zip_downloaded() -> Optional[Path]:
+    """Télécharge (si absente du cache disque) l'archive bulk historique des
+    acteurs/mandats/organes de l'Assemblée nationale (AN_ACTEURS_HISTORIQUE_ZIP_URL)
+    et retourne son chemin local. Partagée entre plusieurs index construits à
+    partir du même zip (_build_acteur_positions_hemicycle_index,
+    _build_organe_index) : un seul téléchargement, jamais deux en parallèle.
+    Retourne None en cas d'échec (non-fatal pour l'appelant)."""
+    with _ACTEURS_HISTORIQUE_ZIP_LOCK:
+        zip_path = ACTEURS_HISTORIQUE_CACHE_DIR / "acteurs_historique.zip"
+        if zip_path.is_file():
+            return zip_path
+
+        print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
+        try:
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
+                resp.raise_for_status()
+                with open(zip_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+        except (requests.RequestException, OSError) as exc:
+            print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
+            return None
+        return zip_path
+
+
 def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste de
     périodes datées d'appartenance à un groupe politique qualifié majorité/
@@ -2126,18 +2168,8 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
-        zip_path = ACTEURS_HISTORIQUE_CACHE_DIR / "acteurs_historique.zip"
-        try:
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
@@ -2210,6 +2242,84 @@ def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> lis
         return []
     index = _build_acteur_positions_hemicycle_index()
     return index.get(acteur_ref, [])
+
+
+def _build_organe_index() -> dict[str, dict[str, Any]]:
+    """Construit (et met en cache sur disque) un index organeRef -> {sigle,
+    nom, type} pour TOUS les organes (commissions permanentes/spéciales,
+    groupes politiques, groupes d'amitié, missions d'information, engagements
+    extra-parlementaires, gouvernements...) du référentiel historique de
+    l'Assemblée nationale, à partir du même zip que
+    _build_acteur_positions_hemicycle_index (json/organe/*.json).
+
+    Contrairement à _build_organe_positions_index (limité aux organes de type
+    "GP"/"GOUVERNEMENT" qualifiés majorité/opposition/minoritaire), cet index
+    couvre tous les codeType sans filtrage : prérequis générique pour
+    résoudre mandats[].organes.organeRef (ex. "PO59048" -> commission des
+    finances) vers un nom lisible, quel que soit le type d'organe (issue #353).
+
+    "sigle" = organe.libelleAbrege (nom court, ex. "Finances"), "nom" =
+    organe.libelle (nom complet, ex. "Commission des finances, de l'économie
+    générale et du contrôle budgétaire"), "type" = organe.codeType (ex.
+    "COMPER", "GP", "GA", "MISINFO", "GOUVERNEMENT"...). Non-fatal en cas
+    d'échec (retourne {})."""
+    with _ACTEURS_ORGANES_LOCK:
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_organes.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
+            return {}
+
+        index: dict[str, dict[str, Any]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/organe/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    organe = data.get("organe") if isinstance(data, dict) else None
+                    if not isinstance(organe, dict):
+                        continue
+                    organe_ref = organe.get("uid")
+                    if not isinstance(organe_ref, str) or not organe_ref:
+                        continue
+                    index[organe_ref] = {
+                        "sigle": organe.get("libelleAbrege"),
+                        "nom": organe.get("libelle"),
+                        "type": organe.get("codeType"),
+                    }
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
+    """Résout un organeRef (ex. mandats[].organes.organeRef, "PO59048") vers
+    {sigle, nom, type} via le référentiel historique de l'Assemblée nationale
+    (voir _build_organe_index). Retourne None si organe_ref est vide/absent
+    ou introuvable dans le référentiel."""
+    if not organe_ref:
+        return None
+    index = _build_organe_index()
+    return index.get(organe_ref)
 
 
 def fetch_amendements_officiels(
