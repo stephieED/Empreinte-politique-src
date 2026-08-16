@@ -12,9 +12,21 @@ python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
   --workers <workers> \
   --skip-existing --resume \
-  [--limit <roster_extraction_limit>] [--max-pages <max_pages>] \
-  [--no-merge] [--skip-interventions]
+  --skip-interventions --skip-dossiers-legislatifs \
+  [--limit <roster_extraction_limit>] [--no-merge]
 ```
+
+**Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
+--skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
+l'input de workflow `extract_interventions` (qui ne pilote que `extract-an`) —
+un membre roster n'a besoin que d'identité minimale + mandats + votes +
+amendements, seules données consommées par les agrégats de groupe (§4,
+`build_groupe_profile()`, #349). `dossiers_legislatifs`/`interventions`/
+`questions_officielles` ne sont donc jamais extraits par ce job : ni
+consommés par les agrégats de groupe actuels, ni prévus. Voir
+`--skip-dossiers-legislatifs` dans `generate_all_profiles.py` (skip aussi bien
+le chemin NosDéputés pour les sénateurs que `fetch_textes_portes_officiels`
+pour les députés, `candidate_profile.build_profile`).
 
 Voir `.github/workflows/generate-data.yml` (job `extract-roster-groupes`).
 
@@ -106,9 +118,12 @@ flowchart TD
    `statut: "roster_groupe"`, `notes` référençant le groupe d'origine.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`/`extract-senat`
-   (`candidate_profile.py`, identité/mandats/votes/interventions via
+   (`candidate_profile.py`, identité/mandats/votes/amendements via
    NosDéputés/NosSénateurs + AN Open Data), candidat par candidat, chambre
-   déterminée par `roster_chambre` du groupe d'origine.
+   déterminée par `roster_chambre` du groupe d'origine — en mode léger
+   (`--skip-interventions --skip-dossiers-legislatifs`, #357) : dossiers
+   législatifs, interventions et questions officielles ne sont jamais
+   extraits ici (non consommés par les agrégats de groupe, #349).
 6. `--skip-existing --resume` évite de retraiter les profils déjà présents
    et permet la reprise après interruption ; `--limit` (piloté par
    `roster_extraction_limit`) borne le nombre de membres traités ce run.
@@ -133,7 +148,7 @@ flowchart TD
 | NosDéputés.fr / NosSénateurs.fr (`/deputes\|senateurs/json`) | Liste complète des parlementaires, filtrée côté client par `groupe_sigle` |
 | `src/group_roster.py` | Fetch mutualisé + filtrage roster par sigle |
 | `src/generate_roster_candidats.py` | Aplatissement du roster en liste de candidats (`raw_data/roster_candidats.json`) |
-| AN Open Data / NosDéputés / NosSénateurs (via `candidate_profile.py`) | Identité, mandats, votes, interventions — même chaîne que `extract-an`/`extract-senat` |
+| AN Open Data / NosDéputés / NosSénateurs (via `candidate_profile.py`) | Identité, mandats, votes, amendements — mode léger (#357) : dossiers législatifs/interventions/questions officielles jamais extraits ici |
 
 Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-profiles-groupes.md).
 
@@ -147,7 +162,7 @@ Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-prof
 | `extract-senat` | Sénat / NosSénateurs, liste éditoriale `candidats.json` |
 | `extract-ue-officiel` | Parlement européen, liste éditoriale `candidats.json` |
 | `extract-parltrack` | Téléchargement des dumps ParlTrack (`.zst`) |
-| **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_extraction_limit` |
+| **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_extraction_limit`, mode léger (#357) |
 | `merge-and-pivot` | Fusion inter-sources + normalisation pivot + profils groupes/partis |
 
 Tout est orchestré dans `.github/workflows/generate-data.yml`.

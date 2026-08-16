@@ -53,12 +53,19 @@ Extraction pilotée par roster (composition réelle des groupes parlementaires,
 cf. generate_roster_candidats.py et docs/technical_decisions.md#provenance-pivot)
 plutôt que par la liste éditoriale par défaut (raw_data/candidats.json) :
     python src/generate_roster_candidats.py
-    python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing
+    python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing \
+        --skip-interventions --skip-dossiers-legislatifs
 
 Avec --limit ET --skip-existing combinés (cas ci-dessus), la sélection est
 progressive et rafraîchissante plutôt que de reprendre systématiquement les N
 premiers candidats du fichier source (#224) : voir _select_candidats_couverture
 et --staleness-days.
+
+--skip-interventions + --skip-dossiers-legislatifs combinés forment le mode
+d'extraction léger (#357) : identité + mandats + votes + amendements
+uniquement, sans dossiers législatifs/interventions/questions officielles —
+utilisé par le job extract-roster-groupes de generate-data.yml, ces champs
+n'étant consommés par aucun agrégat de groupe (#349).
 """
 
 import argparse
@@ -241,7 +248,11 @@ def _select_candidats_couverture(
 
 
 def build_profile_any_chambre(
-    slug: str, max_pages: int, chambres: Optional[list[str]] = None, skip_interventions: bool = False
+    slug: str,
+    max_pages: int,
+    chambres: Optional[list[str]] = None,
+    skip_interventions: bool = False,
+    skip_dossiers_legislatifs: bool = False,
 ) -> tuple[Optional[dict], Optional[str]]:
     """Essaie les chambres indiquées (défaut : deputes puis senateurs) et renvoie
     le premier profil avec une identité exploitable."""
@@ -249,7 +260,13 @@ def build_profile_any_chambre(
         chambres = CHAMBRES
     for chambre in chambres:
         try:
-            profile = build_profile(chambre, slug, intervention_max_pages=max_pages, skip_interventions=skip_interventions)
+            profile = build_profile(
+                chambre,
+                slug,
+                intervention_max_pages=max_pages,
+                skip_interventions=skip_interventions,
+                skip_dossiers_legislatifs=skip_dossiers_legislatifs,
+            )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
             continue
@@ -460,7 +477,13 @@ def process_candidat(
         if not slug:
             _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés/NosSénateurs).")
             return None, None
-        result = build_profile_any_chambre(slug, args.max_pages, chambres=chambres_fr, skip_interventions=args.skip_interventions)
+        result = build_profile_any_chambre(
+            slug,
+            args.max_pages,
+            chambres=chambres_fr,
+            skip_interventions=args.skip_interventions,
+            skip_dossiers_legislatifs=args.skip_dossiers_legislatifs,
+        )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
         return result
@@ -616,6 +639,12 @@ def main() -> None:
     parser.add_argument("--skip-interventions", action="store_true",
                         help="Ne pas extraire les interventions (ni la recherche NosDéputés ni les questions officielles AN). "
                              "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
+    parser.add_argument("--skip-dossiers-legislatifs", action="store_true",
+                        help="Ne pas extraire les dossiers législatifs (ni la recherche NosDéputés pour les sénateurs, ni "
+                             "fetch_textes_portes_officiels pour les députés). Combiné à --skip-interventions, constitue le "
+                             "mode d'extraction léger identité+mandats+votes+amendements (#357) utilisé par "
+                             "extract-roster-groupes : les dossiers/interventions/questions officielles ne sont consommés "
+                             "par aucun agrégat de groupe (#349). Les dossiers existants restent intacts en mode fusion.")
     parser.add_argument("--workers", type=int, default=4, metavar="N",
                         help="Nombre de candidats traités en parallèle (niveau 2 ; défaut: 4). "
                              "Réduire si les API publiques commencent à renvoyer des erreurs 429.")
