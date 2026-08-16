@@ -17,7 +17,11 @@ Calculs produits :
      ventilé par type de déposant (par_type_deposant) — le total tous déposants
      confondus ne doit jamais servir de comparateur direct, seul le sous-total
      "depute" est de même nature que les amendements d'un⋅e élu⋅e.
-  5. Écarts de cohésion/participation individuels (compute_ecarts_cohesion_internes) :
+  5. Mandats agrégés (mandats_agreges) : agrégation catégorielle sur mandats[]
+     (commission, groupe_amitie, extra_parlementaire — voir
+     MANDATS_AGREGES_CATEGORIES), par (categorie, label). Éligibilité par
+     chevauchement d'intervalles avec les mandats électifs du membre.
+  6. Écarts de cohésion/participation individuels (compute_ecarts_cohesion_internes) :
      donnée de CONTRÔLE INTERNE uniquement, volontairement absente du schéma de
      groupe public — accessible via --rapport-interne, jamais via --out.
 
@@ -31,6 +35,9 @@ Cas limites gérés :
   - Scrutin sans quorum : quorum_atteint = False, cohésion toujours calculée.
   - tags_thematiques vides sur les profils individuels : fallback automatique
     sur les mots-clés des interventions (loggé dans meta.warnings).
+  - mandats_agreges : doublon (categorie, label) pour un même membre (ex.
+    réélu·e à la même commission) → une seule entrée retenue, priorité à
+    actif=true sinon la plus récente par date de fin.
 
 Usage (depuis la racine du dépôt) :
     python src/group_profile.py \\
@@ -128,6 +135,23 @@ def _is_eligible_at(intervals: Optional[list[tuple[Optional[date], Optional[date
             continue
         return True  # le membre était en mandat à cette date
     return False
+
+
+def _intervals_overlap(
+    a_debut: Optional[date],
+    a_fin: Optional[date],
+    b_debut: Optional[date],
+    b_fin: Optional[date],
+) -> bool:
+    """Teste le chevauchement de deux intervalles [a_debut, a_fin] et [b_debut, b_fin].
+
+    Bornes ``None`` traitées comme non bornées, même sémantique que ``_is_eligible_at``.
+    """
+    if a_debut is not None and b_fin is not None and a_debut > b_fin:
+        return False
+    if a_fin is not None and b_debut is not None and a_fin < b_debut:
+        return False
+    return True
 
 
 def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str]) -> bool:
@@ -449,6 +473,128 @@ def aggregate_tags_thematiques(
 
 
 # ---------------------------------------------------------------------------
+# Agrégation catégorielle des mandats (mandats_agreges)
+#
+# Périmètre v1 volontairement restreint : mandat_electif (définit déjà
+# l'appartenance au groupe — l'agréger serait circulaire), groupe_politique
+# (redondant avec groupe_id/periode dans un profil déjà scopé à un seul
+# groupe), fonction_gouvernementale (plus sensible éditorialement, recoupe
+# mandats[].suspendu_pour_fonction_gouvernementale — AGENTS.md §5) et autre
+# (filet de secours quasi jamais peuplé) sont exclus. Voir la conception
+# validée dans #349/#361.
+# ---------------------------------------------------------------------------
+
+MANDATS_AGREGES_CATEGORIES: tuple[str, ...] = ("commission", "groupe_amitie", "extra_parlementaire")
+
+
+def _select_mandat_entree_unique(mandats: list[dict[str, Any]]) -> dict[str, Any]:
+    """Sélectionne une entrée unique parmi des mandats en doublon pour un même
+    membre et un même (categorie, label) (ex. réélu·e à la même commission sur
+    deux périodes) : priorité à l'entrée ``actif=true``, sinon la plus récente
+    par date de fin. Même esprit que le tie-break de ``position_majoritaire``
+    en cas d'égalité (voir ``_compute_cohesion_votes``).
+    """
+    actifs = [m for m in mandats if m.get("actif")]
+    if actifs:
+        return actifs[0]
+    avec_fin = [m for m in mandats if _parse_date(m.get("fin")) is not None]
+    if avec_fin:
+        return max(avec_fin, key=lambda m: _parse_date(m.get("fin")))
+    return mandats[0]
+
+
+def _aggregate_mandats(
+    profils: list[dict[str, Any]],
+    membres: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Agrège les mandats catégoriels (``MANDATS_AGREGES_CATEGORIES``) de tous
+    les membres du groupe, par ``(categorie, label)``.
+
+    Éligibilité temporelle : un mandat catégoriel (commission/groupe_amitie/
+    extra_parlementaire) compte pour le groupe si sa période chevauche au
+    moins un intervalle de mandat électif du membre (``_intervals_overlap``).
+    Si le membre n'a aucun mandat électif renseigné, il est considéré éligible
+    par défaut (même approche conservatrice que ``_is_eligible_at``).
+
+    Args:
+        profils: liste de profils pivot v1 des membres du groupe.
+        membres: sortie de ``[_derive_membre_entry(p) for p in profils]``
+                 (même ordre que ``profils``), utilisée pour déterminer si un
+                 membre est actuellement actif dans le groupe.
+
+    Returns:
+        Liste de dicts conformes à la structure ``mandats_agreges`` du schéma
+        de groupe, triée par ``nb_membres`` décroissant puis
+        ``(categorie, label)`` croissant.
+    """
+    n = len(profils)
+    if n == 0:
+        return []
+
+    membre_actif_par_id = {m["membre_id"]: m["actif"] for m in membres}
+
+    buckets: dict[tuple[str, str], list[dict[str, Any]]] = {}
+
+    for profil in profils:
+        membre_id = profil.get("id") or ""
+        nom = profil.get("nom") or ""
+        mandats = profil.get("mandats") or []
+        eligibility_intervals = _member_eligibility_intervals(mandats)
+
+        # Regroupe les mandats catégoriels éligibles de CE membre par (categorie, label)
+        candidats_par_cle: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for m in mandats:
+            categorie = m.get("categorie")
+            if categorie not in MANDATS_AGREGES_CATEGORIES:
+                continue
+            label = m.get("label")
+            if not label:
+                continue
+
+            m_debut = _parse_date(m.get("debut"))
+            m_fin = _parse_date(m.get("fin"))
+            if eligibility_intervals is not None and not any(
+                _intervals_overlap(m_debut, m_fin, e_debut, e_fin)
+                for e_debut, e_fin in eligibility_intervals
+            ):
+                continue
+
+            candidats_par_cle.setdefault((categorie, label), []).append(m)
+
+        for cle, candidats in candidats_par_cle.items():
+            chosen = _select_mandat_entree_unique(candidats)
+            entree_actif = bool(chosen.get("actif")) and bool(membre_actif_par_id.get(membre_id))
+            buckets.setdefault(cle, []).append({
+                "membre_id": membre_id,
+                "nom": nom,
+                "fonction": chosen.get("fonction"),
+                "debut": chosen.get("debut"),
+                "fin": chosen.get("fin"),
+                "actif": entree_actif,
+            })
+
+    result: list[dict[str, Any]] = []
+    for (categorie, label), entries in buckets.items():
+        par_fonction: dict[str, int] = {}
+        for e in entries:
+            fonction = e.get("fonction") or "non_precise"
+            par_fonction[fonction] = par_fonction.get(fonction, 0) + 1
+
+        result.append({
+            "categorie": categorie,
+            "label": label,
+            "nb_membres": len(entries),
+            "nb_membres_actifs": sum(1 for e in entries if e["actif"]),
+            "poids_relatif": round(len(entries) / n, 4),
+            "par_fonction": par_fonction,
+            "membres": entries,
+        })
+
+    result.sort(key=lambda x: (-x["nb_membres"], x["categorie"], x["label"]))
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Agrégation des amendements (comparateur du taux d'adoption individuel)
 # ---------------------------------------------------------------------------
 
@@ -746,6 +892,9 @@ def build_groupe_profile(
                 seen_sources.add(key)
                 sources.append(s)
 
+    # --- Mandats agrégés (agrégation catégorielle sur mandats[]) ---
+    mandats_agreges = _aggregate_mandats(profils, membres)
+
     # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
     amendements_agreges = _aggregate_amendements(profils)
 
@@ -767,6 +916,7 @@ def build_groupe_profile(
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
     profil_groupe["tags_thematiques_agreges"] = tags_agreges
+    profil_groupe["mandats_agreges"] = mandats_agreges
     profil_groupe["amendements_agreges"] = amendements_agreges
     profil_groupe["sources"] = sources
 

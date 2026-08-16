@@ -11,6 +11,9 @@ from group_profile import (
     _build_vote_index,
     _compute_cohesion_votes,
     aggregate_tags_thematiques,
+    _intervals_overlap,
+    MANDATS_AGREGES_CATEGORIES,
+    _aggregate_mandats,
     _aggregate_amendements,
     compute_ecarts_cohesion_internes,
     build_groupe_profile,
@@ -87,6 +90,24 @@ def _mandat_electif(debut: str, fin: str = None, actif: bool = None) -> dict:
         "categorie": "mandat_electif",
         "label": "Mandat",
         "fonction": "mandat",
+        "debut": debut,
+        "fin": fin,
+        "actif": actif if actif is not None else (fin is None),
+    }
+
+
+def _mandat_categoriel(
+    categorie: str = "commission",
+    label: str = "Commission des affaires étrangères",
+    fonction: str = "membre",
+    debut: str = "2022-06-22",
+    fin: str = None,
+    actif: bool = None,
+) -> dict:
+    return {
+        "categorie": categorie,
+        "label": label,
+        "fonction": fonction,
         "debut": debut,
         "fin": fin,
         "actif": actif if actif is not None else (fin is None),
@@ -585,6 +606,199 @@ def test_build_groupe_profile_profils_vide():
     assert g["membres"] == []
     assert g["cohesion_votes"] == []
     assert g["effectif"]["actuel"] == 0
+
+
+# ---------------------------------------------------------------------------
+# _intervals_overlap
+# ---------------------------------------------------------------------------
+
+def test_intervals_overlap_true_when_overlapping():
+    from datetime import date
+    assert _intervals_overlap(date(2022, 1, 1), date(2022, 12, 31), date(2022, 6, 1), date(2023, 1, 1))
+
+
+def test_intervals_overlap_false_when_disjoint():
+    from datetime import date
+    assert not _intervals_overlap(date(2022, 1, 1), date(2022, 6, 1), date(2023, 1, 1), date(2023, 12, 31))
+
+
+def test_intervals_overlap_none_bounds_treated_as_unbounded():
+    from datetime import date
+    assert _intervals_overlap(None, None, date(2023, 1, 1), date(2023, 12, 31))
+    assert _intervals_overlap(date(2022, 1, 1), None, date(2023, 1, 1), None)
+
+
+def test_intervals_overlap_adjacent_boundaries_overlap():
+    from datetime import date
+    assert _intervals_overlap(date(2022, 1, 1), date(2022, 6, 1), date(2022, 6, 1), date(2022, 12, 31))
+
+
+# ---------------------------------------------------------------------------
+# _aggregate_mandats
+# ---------------------------------------------------------------------------
+
+def test_mandats_agreges_categories_perimetre_v1():
+    assert set(MANDATS_AGREGES_CATEGORIES) == {"commission", "groupe_amitie", "extra_parlementaire"}
+
+
+def test_mandats_agreges_compte_membres_par_categorie_label():
+    p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
+    p2 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
+    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+    result = _aggregate_mandats([p1, p2], membres)
+    assert len(result) == 1
+    entry = result[0]
+    assert entry["categorie"] == "commission"
+    assert entry["label"] == "Commission des affaires étrangères"
+    assert entry["nb_membres"] == 2
+
+
+def test_mandats_agreges_exclut_categories_hors_perimetre():
+    """mandat_electif, groupe_politique, fonction_gouvernementale, autre exclus (v1)."""
+    p1 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(categorie="groupe_politique", label="SOC"),
+        _mandat_categoriel(categorie="fonction_gouvernementale", label="Ministre"),
+        _mandat_categoriel(categorie="autre", label="Divers"),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert result == []
+
+
+def test_mandats_agreges_inclut_groupe_amitie_et_extra_parlementaire():
+    p1 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(categorie="groupe_amitie", label="France-Japon"),
+        _mandat_categoriel(categorie="extra_parlementaire", label="Conseil d'orientation"),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    categories = {r["categorie"] for r in result}
+    assert categories == {"groupe_amitie", "extra_parlementaire"}
+
+
+def test_mandats_agreges_exclut_mandat_hors_chevauchement_mandat_electif():
+    """Mandat catégoriel dont la période ne chevauche aucun mandat électif : exclu."""
+    p1 = _pivot(mandats=[
+        _mandat_electif("2012-06-20", fin="2017-06-20", actif=False),
+        _mandat_categoriel(debut="2022-06-22", fin=None, actif=True),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert result == []
+
+
+def test_mandats_agreges_inclut_mandat_chevauchant_mandat_electif():
+    p1 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(debut="2023-01-01", fin=None, actif=True),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert len(result) == 1
+    assert result[0]["nb_membres"] == 1
+
+
+def test_mandats_agreges_membre_sans_mandat_electif_est_eligible_par_defaut():
+    """Approche conservatrice : pas de mandat électif renseigné → non exclu."""
+    p1 = _pivot(mandats=[_mandat_categoriel(debut="2023-01-01", fin=None, actif=True)])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert len(result) == 1
+    assert result[0]["nb_membres"] == 1
+
+
+def test_mandats_agreges_tie_break_doublon_priorite_actif():
+    """Doublon (categorie, label) pour un même membre : priorité à actif=true."""
+    p1 = _pivot(mandats=[
+        _mandat_electif("2012-06-20"),
+        _mandat_categoriel(debut="2012-06-20", fin="2017-06-19", actif=False, fonction="membre"),
+        _mandat_categoriel(debut="2017-06-20", fin=None, actif=True, fonction="président"),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert len(result) == 1
+    assert result[0]["nb_membres"] == 1
+    assert result[0]["membres"][0]["fonction"] == "président"
+
+
+def test_mandats_agreges_tie_break_doublon_sans_actif_prend_fin_la_plus_recente():
+    p1 = _pivot(mandats=[
+        _mandat_electif("2007-06-20"),
+        _mandat_categoriel(debut="2007-06-20", fin="2012-06-19", actif=False, fonction="membre"),
+        _mandat_categoriel(debut="2012-06-20", fin="2017-06-19", actif=False, fonction="président"),
+    ])
+    membres = [_derive_membre_entry(p1)]
+    result = _aggregate_mandats([p1], membres)
+    assert result[0]["membres"][0]["fonction"] == "président"
+
+
+def test_mandats_agreges_par_fonction_distribution():
+    p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="membre")])
+    p2 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="président")])
+    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+    result = _aggregate_mandats([p1, p2], membres)
+    assert result[0]["par_fonction"] == {"membre": 1, "président": 1}
+
+
+def test_mandats_agreges_nb_membres_actifs_requiert_mandat_et_appartenance_actifs():
+    p1 = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(actif=True)])
+    p2 = _pivot("nosdeputes:bob", mandats=[
+        _mandat_electif("2012-06-20", fin="2017-06-19", actif=False),
+        _mandat_categoriel(debut="2012-06-20", fin="2017-06-19", actif=False),
+    ])
+    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+    result = _aggregate_mandats([p1, p2], membres)
+    assert result[0]["nb_membres"] == 2
+    assert result[0]["nb_membres_actifs"] == 1
+
+
+def test_mandats_agreges_poids_relatif_sur_couverture_disponible():
+    """poids_relatif = nb_membres / len(profils) -- couverture disponible, pas roster_total."""
+    p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
+    p2 = _pivot(mandats=[_mandat_electif("2022-06-22")])
+    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+    result = _aggregate_mandats([p1, p2], membres)
+    assert result[0]["poids_relatif"] == 0.5
+
+
+def test_mandats_agreges_vide_si_profils_vide():
+    assert _aggregate_mandats([], []) == []
+
+
+def test_mandats_agreges_trie_par_nb_membres_desc_puis_categorie_label():
+    p1 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(categorie="commission", label="Commission A"),
+    ])
+    p2 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(categorie="commission", label="Commission A"),
+    ])
+    p3 = _pivot(mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(categorie="commission", label="Commission B"),
+    ])
+    membres = [_derive_membre_entry(p) for p in (p1, p2, p3)]
+    result = _aggregate_mandats([p1, p2, p3], membres)
+    assert [(r["label"], r["nb_membres"]) for r in result] == [
+        ("Commission A", 2),
+        ("Commission B", 1),
+    ]
+
+
+def test_build_groupe_profile_inclut_mandats_agreges():
+    p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [p1])
+    assert len(g["mandats_agreges"]) == 1
+    assert g["mandats_agreges"][0]["categorie"] == "commission"
+    assert validate_profil_groupe(g) == []
+
+
+def test_build_groupe_profile_mandats_agreges_vide_si_profils_vide():
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [])
+    assert g["mandats_agreges"] == []
 
 
 # ---------------------------------------------------------------------------

@@ -280,6 +280,7 @@ group_profile.py agrège les faits:
   - membres et périodes,
   - cohésion de vote par scrutin,
   - tags thématiques agrégés,
+  - mandats agrégés (catégoriel, périmètre limité à commission/groupe_amitie/extra_parlementaire — voir MANDATS_AGREGES_CATEGORIES),
   - amendements agrégés (avec ventilation par type de déposant).
 Le JSON final est contraint par schema_groupe.py, puis contrôlé par check_quality_gate.py.
 

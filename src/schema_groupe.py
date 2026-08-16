@@ -82,6 +82,40 @@ Format d'un profil de groupe v1 :
         }
     ],
 
+    "mandats_agreges": [                # agrégation catégorielle des mandats[] (commission,
+                                         # groupe_amitie, extra_parlementaire — voir
+                                         # group_profile.MANDATS_AGREGES_CATEGORIES), liste plate
+                                         # triée nb_membres desc puis categorie/label asc.
+                                         # mandat_electif/groupe_politique/fonction_gouvernementale/
+                                         # autre volontairement exclus (voir group_profile.py).
+        {
+            "categorie": "commission",
+            "label": "Commission des affaires étrangères",
+            "nb_membres": 5,             # membres distincts (éligibles, cf. chevauchement
+                                         # mandat/appartenance) ayant occupé ce mandat
+            "nb_membres_actifs": 2,      # sous-ensemble encore actif (mandat + appartenance groupe)
+            "poids_relatif": 0.078,      # nb_membres / len(membres) — couverture disponible,
+                                         # jamais confondue avec meta.couverture_roster.roster_total
+            "par_fonction": {            # une entrée par membre (tie-break sur doublon
+                                         # (categorie, label) : actif=true prioritaire,
+                                         # sinon la plus récente par date de fin)
+                "membre": 3,
+                "président": 1,
+                "rapporteur": 1
+            },
+            "membres": [                 # traçabilité : qui, quelle fonction, quelle période
+                {
+                    "membre_id": "nosdeputes:jerome-guedj",
+                    "nom": "Jérôme Guedj",
+                    "fonction": "président",
+                    "debut": "2022-06-22",
+                    "fin": null,
+                    "actif": true
+                }
+            ]
+        }
+    ],
+
     "amendements_agreges": {            # tous types de déposants confondus — NE JAMAIS
                                          # comparer directement au taux d'un⋅e élu⋅e (voir
                                          # par_type_deposant ci-dessous)
@@ -146,12 +180,19 @@ Cas limites gérés :
 - amendements_agreges.par_type_deposant : un amendement sans type_deposant
   renseigné est classé sous "inconnu", jamais sous "depute" par défaut (une
   donnée manquante ne doit jamais se travestir en fait positif).
+- mandats_agreges : doublon (categorie, label) pour un même membre → une
+  seule entrée retenue par membre (priorité actif=true, sinon la plus
+  récente par date de fin) ; voir group_profile._select_mandat_entree_unique.
 
 Hors périmètre de ce schéma (volontairement) :
 - Le ratio individuel de cohérence/participation rapporté à la moyenne du
   groupe est une donnée de contrôle interne (voir
   group_profile.compute_ecarts_cohesion_internes) : il n'est PAS exposé dans
   ce document public tant qu'il n'a pas été validé comme sortie publique.
+- mandats_agreges se limite à MANDATS_AGREGES_CATEGORIES (commission,
+  groupe_amitie, extra_parlementaire) : mandat_electif, groupe_politique,
+  fonction_gouvernementale et autre sont volontairement exclus de la v1
+  (raisons détaillées dans group_profile.py et #349/#361).
 
 Usage :
     from schema_groupe import SCHEMA_GROUPE_VERSION, make_empty_profil_groupe, validate_profil_groupe
@@ -180,6 +221,7 @@ REQUIRED_TOP_LEVEL_KEYS: frozenset[str] = frozenset({
     "effectif",
     "cohesion_votes",
     "tags_thematiques_agreges",
+    "mandats_agreges",
     "amendements_agreges",
     "sources",
     "meta",
@@ -200,6 +242,7 @@ _LIST_KEYS: tuple[str, ...] = (
     "membres",
     "cohesion_votes",
     "tags_thematiques_agreges",
+    "mandats_agreges",
     "sources",
 )
 
@@ -263,6 +306,7 @@ def make_empty_profil_groupe(
         },
         "cohesion_votes": [],
         "tags_thematiques_agreges": [],
+        "mandats_agreges": [],
         "amendements_agreges": {
             **make_empty_amendements_stats(),
             "par_type_deposant": {
