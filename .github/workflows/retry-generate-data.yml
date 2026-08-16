@@ -128,6 +128,11 @@ jobs:
       # (threshold) / generate_all_profiles.py (roster_extraction_limit). En cas
       # d'échec d'extraction d'une valeur, retombe sur le défaut déclaré de
       # generate-data.yml pour cet input (dégradation documentée, pas un blocage).
+      # L'appel `gh api .../jobs` ci-dessous est toléré au même titre que
+      # job_log() (#336) : un hoquet API (ex. rate-limit transitoire après les
+      # téléchargements de logs du step de détection) dégrade vers une liste de
+      # jobs vide plutôt que de faire échouer tout le step best-effort. Le step
+      # suivant ne dépend plus non plus du succès de celui-ci (#336).
       - name: Reconstituer les inputs du run échoué (best-effort)
         id: inputs
         if: steps.signature.outputs.matched == 'true'
@@ -137,7 +142,10 @@ jobs:
           RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
           set -euo pipefail
-          jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate)
+          if ! jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/tmp/gh_jobs_err.log); then
+            echo "::warning::Échec de récupération de la liste des jobs pour la reconstruction des inputs (run ${RUN_ID}) : $(cat /tmp/gh_jobs_err.log)"
+            jobs_json='{"jobs": []}'
+          fi
 
           job_log() {
             local name="$1"
@@ -171,8 +179,17 @@ jobs:
           echo "max_pages=${max_pages:-5}" >> "$GITHUB_OUTPUT"
           echo "roster_extraction_limit=${roster_extraction_limit:-20}" >> "$GITHUB_OUTPUT"
 
+      # if: always() (#336) : ce step ne doit pas dépendre du succès du step
+      # best-effort précédent. Ce dernier est documenté comme dégradable (cf.
+      # commentaire ci-dessus) mais restait un point de défaillance unique tant
+      # que cette condition héritait implicitement de success() — un hoquet du
+      # step best-effort skippait alors le retry lui-même, alors même que la
+      # signature de préemption avait été identifiée avec certitude. Le
+      # fallback `|| '<défaut>'` côté expression GHA reprend les mêmes valeurs
+      # par défaut que celles déclarées dans generate-data.yml, pour rester
+      # sûr même si le step best-effort n'a pu écrire aucun de ses outputs.
       - name: Re-déclencher generate-data.yml
-        if: steps.signature.outputs.matched == 'true'
+        if: always() && steps.signature.outputs.matched == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -180,12 +197,12 @@ jobs:
           gh workflow run generate-data.yml \
             --repo "${REPO}" \
             --ref "${{ github.event.workflow_run.head_branch }}" \
-            -f fresh_run="${{ steps.inputs.outputs.fresh_run }}" \
-            -f threshold="${{ steps.inputs.outputs.threshold }}" \
-            -f workers="${{ steps.inputs.outputs.workers }}" \
-            -f extract_interventions="${{ steps.inputs.outputs.extract_interventions }}" \
-            -f max_pages="${{ steps.inputs.outputs.max_pages }}" \
-            -f roster_extraction_limit="${{ steps.inputs.outputs.roster_extraction_limit }}"
+            -f fresh_run="${{ steps.inputs.outputs.fresh_run || 'false' }}" \
+            -f threshold="${{ steps.inputs.outputs.threshold || '3' }}" \
+            -f workers="${{ steps.inputs.outputs.workers || '1' }}" \
+            -f extract_interventions="${{ steps.inputs.outputs.extract_interventions || 'true' }}" \
+            -f max_pages="${{ steps.inputs.outputs.max_pages || '5' }}" \
+            -f roster_extraction_limit="${{ steps.inputs.outputs.roster_extraction_limit || '20' }}"
 
       - name: Résumé — trace visible du résultat
         if: always()
