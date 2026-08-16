@@ -2881,3 +2881,203 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
         "Un échec de collecte des amendements officiels doit être tracé dans meta.warnings, "
         "pas avalé silencieusement"
     )
+
+
+# ---------------------------------------------------------------------------
+# Tests pour _build_organe_index / fetch_organe (issue #353) : index
+# organeRef -> {sigle, nom, type} construit depuis json/organe/*.json du zip
+# bulk historique des acteurs/mandats/organes, sans filtrage par codeType
+# (contrairement à _build_organe_positions_index, limité à GP/GOUVERNEMENT).
+# ---------------------------------------------------------------------------
+
+def _make_fake_acteurs_historique_zip_bytes(organe_entries, acteur_entries=None):
+    """Construit en mémoire un zip minimal imitant AN_ACTEURS_HISTORIQUE_ZIP_URL :
+    `organe_entries` est un mapping organeRef -> dict organe (ex. {"uid": ...,
+    "codeType": ..., "libelle": ..., "libelleAbrege": ...}), `acteur_entries`
+    un mapping acteurRef -> dict acteur, tous deux écrits sous
+    json/organe/{ref}.json et json/acteur/{ref}.json respectivement."""
+    import io
+    import zipfile as zipfile_module
+
+    buf = io.BytesIO()
+    with zipfile_module.ZipFile(buf, "w") as zf:
+        for organe_ref, organe in organe_entries.items():
+            zf.writestr(f"json/organe/{organe_ref}.json", json.dumps({"organe": organe}, ensure_ascii=False))
+        for acteur_ref, acteur in (acteur_entries or {}).items():
+            zf.writestr(f"json/acteur/{acteur_ref}.json", json.dumps({"acteur": acteur}, ensure_ascii=False))
+    return buf.getvalue()
+
+
+class _FakeActeursHistoriqueStreamResponse:
+    status_code = 200
+
+    def __init__(self, payload: bytes):
+        self._payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+    def raise_for_status(self):
+        pass
+
+    def iter_content(self, chunk_size=1024 * 1024):
+        yield self._payload
+
+
+def test_build_organe_index_parses_all_organe_types(tmp_path):
+    """L'index doit couvrir tous les codeType sans filtrage (commissions,
+    groupes politiques, groupes d'amitié...), contrairement à
+    _build_organe_positions_index limité à GP/GOUVERNEMENT — c'est tout
+    l'objet de l'issue #353. Les entrées json/acteur/*.json du même zip
+    doivent être ignorées (préfixe de chemin différent)."""
+    from candidate_profile import _build_organe_index
+
+    organe_entries = {
+        "PO59048": {
+            "uid": "PO59048",
+            "codeType": "COMPER",
+            "libelle": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "libelleAbrege": "Finances",
+        },
+        "PO845401": {
+            "uid": "PO845401",
+            "codeType": "GP",
+            "libelle": "Rassemblement National",
+            "libelleAbrege": "RN",
+        },
+        "PO393167": {
+            "uid": "PO393167",
+            "codeType": "GA",
+            "libelle": "France-Malaisie",
+            "libelleAbrege": "Malaisie",
+        },
+    }
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries, acteur_entries={"PA1": {"uid": "PA1"}}
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_organe_index()
+
+    assert index == {
+        "PO59048": {
+            "sigle": "Finances",
+            "nom": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "type": "COMPER",
+        },
+        "PO845401": {"sigle": "RN", "nom": "Rassemblement National", "type": "GP"},
+        "PO393167": {"sigle": "Malaisie", "nom": "France-Malaisie", "type": "GA"},
+    }
+
+
+def test_build_organe_index_uses_disk_cache_without_download(tmp_path):
+    """Un index déjà présent sur disque (cache) est utilisé tel quel, sans
+    nouvel appel réseau."""
+    from candidate_profile import _build_organe_index
+
+    cached_index = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "index_organes.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        index = _build_organe_index()
+
+    mock_get.assert_not_called()
+    assert index == cached_index
+
+
+def test_build_organe_index_download_failure_returns_empty(tmp_path):
+    """Un échec réseau lors du téléchargement du zip bulk est non-fatal :
+    l'index retourné est {}, sans exception propagée."""
+    from candidate_profile import _build_organe_index
+    import requests as _requests_module
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests_module.RequestException("boom")),
+    ):
+        index = _build_organe_index()
+
+    assert index == {}
+
+
+def test_fetch_organe_resolves_known_ref_and_returns_none_otherwise(tmp_path):
+    """fetch_organe résout un organeRef connu vers {sigle, nom, type}, et
+    retourne None pour un organeRef vide/absent ou inconnu du référentiel."""
+    from candidate_profile import fetch_organe
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes({
+        "PO59048": {
+            "uid": "PO59048",
+            "codeType": "COMPER",
+            "libelle": "Commission des finances",
+            "libelleAbrege": "Finances",
+        },
+    })
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        assert fetch_organe("PO59048") == {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}
+        assert fetch_organe("PO_INCONNU") is None
+        assert fetch_organe(None) is None
+        assert fetch_organe("") is None
+
+
+def test_acteurs_historique_zip_downloaded_once_and_shared_across_indexes(tmp_path):
+    """_build_organe_index et _build_acteur_positions_hemicycle_index partagent
+    le même zip bulk (AN_ACTEURS_HISTORIQUE_ZIP_URL) via
+    _ensure_acteurs_historique_zip_downloaded : un seul téléchargement, même
+    si les deux index sont construits dans la même exécution (issue #353 —
+    "aucune dépendance amont — travail indépendant sur la même archive déjà
+    en cache")."""
+    from candidate_profile import _build_acteur_positions_hemicycle_index, _build_organe_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO845401": {
+                "uid": "PO845401",
+                "codeType": "GP",
+                "libelle": "Rassemblement National",
+                "libelleAbrege": "RN",
+                "positionPolitique": "Opposition",
+            },
+        },
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "GP",
+                            "organes": {"organeRef": "PO845401"},
+                            "legislature": "16",
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        }
+                    ]
+                },
+            }
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)) as mock_get,
+    ):
+        organe_index = _build_organe_index()
+        hemicycle_index = _build_acteur_positions_hemicycle_index()
+
+    assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
+    assert organe_index["PO845401"]["sigle"] == "RN"
+    assert hemicycle_index["PA1"][0]["groupe_sigle"] == "RN"

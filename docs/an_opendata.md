@@ -145,6 +145,27 @@ Empirically documented structure:
   `place_hemicycle`. Not yet wired into the pivot schema (`identite` block) —
   see #352/#351 subtask 4.
 
+### `json/organe/*.json` structure (organeRef resolution, #353)
+
+`organe.uid` (ex. `"PO59048"`) is the target of `mandats[].organes.organeRef`.
+Confirmed fields on the historical bulk file (`AMO30`, see below — same
+structure on `AMO10`, just fewer entries): `codeType` (33 distinct values
+observed on `AMO30`, e.g. `COMPER` committee, `GP` political group, `GA`
+friendship group, `MISINFO*` info missions, `GOUVERNEMENT`, `ORGEXTPARL`
+extra-parliamentary body, `CMP`, `DELEG`...), `libelle` (full name, e.g.
+"Commission des finances, de l'économie générale et du contrôle
+budgétaire"), `libelleAbrege` (short name, e.g. "Finances"), `libelleAbrev`
+(very short code, e.g. "CION_FIN"), `organeParent` (nullable ref to a parent
+organe). `_build_organe_index` (`candidate_profile.py`) indexes
+`organeRef -> {sigle: libelleAbrege, nom: libelle, type: codeType}` for all
+`codeType` values (no filtering) — a prerequisite for resolving any
+`mandats[].organes.organeRef` to a readable name (committees with role,
+friendship groups, extra-parliamentary engagements, political group).
+`_build_organe_positions_index` is a narrower, pre-existing index limited to
+`GP`/`GOUVERNEMENT` for majority/opposition/government qualification (see
+`fetch_positions_hemicycle_officielles`) — the two are independent and do not
+replace each other.
+
 ## Legislative files (bulk, multi-legislature in one file)
 
 `.../17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip` (~10 MB,
