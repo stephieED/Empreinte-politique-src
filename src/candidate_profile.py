@@ -3236,7 +3236,13 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
 
 
 
-def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, skip_interventions: bool = False) -> dict:
+def build_profile(
+    chambre: str,
+    slug: str,
+    intervention_max_pages: int = 10,
+    skip_interventions: bool = False,
+    skip_dossiers_legislatifs: bool = False,
+) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
     sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
@@ -3252,6 +3258,11 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
             d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
             nécessitant une requête de détail supplémentaire : réduire ce nombre accélère
             fortement la génération d'un profil, au prix d'une couverture moins complète).
+        skip_dossiers_legislatifs: si True, ne fait aucun appel réseau pour les dossiers
+            législatifs (`profile["dossiers_legislatifs"]` reste vide) — ni le chemin
+            NosDéputés (sénateurs) ni `fetch_textes_portes_officiels` (députés). Voir mode
+            d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
+            amendements sont exploités en aval (agrégats de groupe, #349).
 
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
@@ -3324,7 +3335,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         # justement ce point d'appel (dossiers/nom/json) qui pendait
         # régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
         # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
-        if chambre != "deputes":
+        if chambre != "deputes" and not skip_dossiers_legislatifs:
             # Les dossiers doivent être demandés sur le domaine où l'identité a
             # réellement été trouvée (donc sa législature) : utiliser systématiquement
             # base_urls[0] (législature courante) renvoie une liste vide pour un
@@ -3581,7 +3592,7 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
     # Seule source de dossiers législatifs pour les députés (étape 3 : plus
     # d'appel NosDéputés pour cette chambre, voir commentaire à l'appel de
     # fetch_dossiers_for_legislatures). ---
-    if chambre == "deputes" and profile.get("identite"):
+    if chambre == "deputes" and profile.get("identite") and not skip_dossiers_legislatifs:
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:

@@ -1538,6 +1538,59 @@ def test_build_profile_no_syceron_for_senat():
     mock_syceron.assert_not_called()
 
 
+# ---------------------------------------------------------------------------
+# #357 — mode d'extraction léger (extract-roster-groupes) : skip_dossiers_legislatifs
+# ---------------------------------------------------------------------------
+
+def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_portes():
+    """skip_dossiers_legislatifs=True doit empêcher tout appel à
+    fetch_textes_portes_officiels (étape 8bis, députés) et laisser
+    dossiers_legislatifs vide."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels") as mock_textes_portes,
+    ):
+        profile = build_profile(
+            "deputes", "jean-dupont", skip_interventions=True, skip_dossiers_legislatifs=True
+        )
+
+    mock_textes_portes.assert_not_called()
+    assert profile["dossiers_legislatifs"] == []
+
+
+def test_build_profile_skip_dossiers_legislatifs_senateurs_never_calls_fetch_dossiers():
+    """skip_dossiers_legislatifs=True doit empêcher tout appel à
+    fetch_dossiers_for_legislatures (étape 3, sénateurs) et laisser
+    dossiers_legislatifs vide."""
+    fake_identity = {"senateur": {"id": "PA999", "nom": "Martin", "slug": "jean-martin"}}
+    with (
+        patch("candidate_profile.fetch_identity", return_value=fake_identity),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
+    ):
+        profile = build_profile(
+            "senateurs", "jean-martin", skip_interventions=True, skip_dossiers_legislatifs=True
+        )
+
+    mock_dossiers.assert_not_called()
+    assert profile["dossiers_legislatifs"] == []
+
+
 def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_dossiers():
     """Pour les députés, dossiers_legislatifs vient uniquement de la source
     officielle AN (fetch_textes_portes_officiels, étape 8bis) : l'appel réseau

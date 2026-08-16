@@ -53,6 +53,7 @@ def _make_args(**overrides) -> argparse.Namespace:
         skip_existing=False,
         max_pages=1,
         skip_interventions=True,
+        skip_dossiers_legislatifs=True,
         skip_ue=True,
         pivot=True,
         no_merge=False,

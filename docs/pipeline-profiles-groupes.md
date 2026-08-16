@@ -246,9 +246,11 @@ Commandes usuelles
 - Reprendre après interruption:
     `python src/generate_all_profiles.py --resume --pivot`
 - Générer la liste roster-driven puis les pivots pour la couverture de groupe
-  complète:
+  complète (mode d'extraction léger, #357 — voir
+  [`extract-roster-groupes.md`](./extract-roster-groupes.md)):
     `python src/generate_roster_candidats.py`
-    `python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing`
+    `python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing \`
+    `  --skip-interventions --skip-dossiers-legislatifs`
 
 Entrées / sorties de la pipeline candidats
 
