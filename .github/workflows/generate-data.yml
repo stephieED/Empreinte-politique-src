@@ -70,16 +70,17 @@ concurrency:
 # (des shards en parallèle entre eux, en plus de Sénat/UE/ParlTrack déjà
 # concurrents, dépasseraient ce pic) — voir
 # docs/technical_decisions.md#matrix-extract-an-par-candidat.
-# Timeouts : amendements-an 30 min / AN 20 min par shard, shards exécutés en
-# série (max-parallel 1) → ≈ 20 × nb_candidats_a_slug (8 actuellement, donc
-# ≈160 min pire cas — recalculer si raw_data/candidats.json change
-# significativement) / Sénat 90 min / UE 60 min / ParlTrack 30 min /
-# roster-groupes 60 min (needs: les jobs d'extraction précédents, #222 —
-# jamais parallèle à eux, contrairement à ce qu'un calcul purement parallèle
-# suggérerait) / merge-and-pivot 60 min (needs: roster-groupes entre autres).
-# Total mur (parallèle) ≈ max(30+20×8, 90, 60, 30) + 60 + 60 = 310 min pire cas
-# (8 shards, contre 270 min avant #344) — contre bien plus de 450 min si tout
-# s'enchaînait séquentiellement.
+# Timeouts : amendements-an 30 min / AN 5 min par shard (réduit de 20 min,
+# voir commentaire sur extract-an ci-dessous), shards exécutés en série
+# (max-parallel 1) → ≈ 5 × nb_candidats_a_slug (8 actuellement, donc ≈40 min
+# pire cas — recalculer si raw_data/candidats.json change significativement)
+# / Sénat 90 min / UE 60 min / ParlTrack 30 min / roster-groupes 60 min
+# (needs: les jobs d'extraction précédents, #222 — jamais parallèle à eux,
+# contrairement à ce qu'un calcul purement parallèle suggérerait) /
+# merge-and-pivot 60 min (needs: roster-groupes entre autres).
+# Total mur (parallèle) ≈ max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min pire cas
+# (8 shards, contre 310 min avec le timeout de 20 min par shard) — contre
+# bien plus de 450 min si tout s'enchaînait séquentiellement.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
@@ -131,7 +132,15 @@ jobs:
     needs: [extract-amendements-an, prepare-an-matrix]
     name: extract-an (${{ matrix.slug }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 5 min (pas 20) : tous les shards observés en pratique se terminent en
+    # 1m18s-2m10s, succès comme échec par shutdown signal (voir
+    # docs/technical_decisions.md#resilience-generate-data-shutdown-signal
+    # Décision 8) — sauf un cas anormal resté bloqué 20+ min sans signature
+    # reconnue (run du 16/08, jerome-guedj) qui a immobilisé tout le matrix
+    # séquentiel (max-parallel: 1) derrière lui. 5 min laisse une marge large
+    # (>2x le pire cas normal) tout en bornant les dégâts d'un futur blocage
+    # du même type à 5 min au lieu de 20+.
+    timeout-minutes: 5
     strategy:
       # fail-fast: false — un shard en échec/gelé (shutdown signal) ne doit
       # jamais annuler les shards restants : sinon le matrix n'apporte aucune

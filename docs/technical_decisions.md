@@ -89,6 +89,50 @@ irréaliste en pratique (liste éditoriale activement maintenue, 8/13 slugs
 résolvables aujourd'hui) et non traité pour éviter la validation
 prématurée que proscrit AGENTS.md.
 
+**Retour d'expérience sur le premier run réel, et correctif appliqué** : ce
+premier run s'est terminé `cancelled` après 44m55s, sans jamais atteindre
+`merge-and-pivot` (skipped). Sur 8 shards (`max-parallel: 1`, séquentiel) :
+2 succès (Bruno Retailleau, Jordan Bardella — tous deux *non* rattachés à
+l'Assemblée nationale, `Aucune identité trouvée`, shard fini en ~15-20s
+avant toute exposition réelle), 5 échecs par la signature `shutdown signal`
+habituelle (1m18s-2m10s chacun, cohérent avec tous les runs déjà observés
+avant ce chantier), et 1 blocage anormal (Jérôme Guedj, 20+ min, **sans**
+signature `shutdown signal` reconnaissable — logs expirés avant
+investigation possible, cause non identifiée) qui a immobilisé tous les
+shards suivants derrière lui (séquentiel, décision 2 ci-dessus).
+
+Proposition initiale d'augmenter `max-parallel` (pour réduire le temps mur
+et limiter l'impact d'un shard bloqué) — **écartée** sur retour d'expérience
+direct de l'utilisatrice : une parallélisation antérieure d'appels vers une
+même source de données s'était révélée peu robuste. Risque jugé réel : si
+une partie du phénomène `shutdown signal` est liée au volume/à la charge sur
+nosdeputes.fr plutôt qu'à un aléa runner pur (question non tranchée, voir le
+workflow de debug ci-dessous), plus de parallélisme pourrait aggraver la
+fréquence des gels plutôt que la réduire. `max-parallel` reste donc à `1`,
+la décision 2 ci-dessus n'est pas remise en cause.
+
+**Correctif retenu et implémenté à la place** : réduire `timeout-minutes`
+d'`extract-an` de 20 à 5 min. Preuve à l'appui : tous les shards observés à
+ce jour (succès et échecs confondus) se terminent en 1m18s-2m10s, sans
+exception sauf le cas anormal de Guedj — 5 min laisse une marge large (>2x
+le pire cas normal) tout en bornant à 5 min (au lieu de 20+) l'impact d'un
+futur blocage du même type sur le matrix séquentiel. Budget mur en tête de
+fichier recalculé en conséquence (décision 7 ci-dessus) :
+`max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min` pire cas (contre 310 min avec
+l'ancien timeout de 20 min/shard).
+
+**Piste de recherche ouverte en parallèle, non tranchée** : un workflow de
+debug dédié (`.github/workflows/debug-network-shutdown-signal.yml`), isolé
+de la production (aucun checkout de données, aucun commit, aucun artifact),
+compare à volume de requêtes identique un groupe test vers nosdeputes.fr et
+un groupe témoin vers `api.github.com` — objectif : déterminer si le
+`shutdown signal` est corrélé au volume/temps d'activité réseau soutenue
+depuis le runner (indépendamment de la destination) ou spécifique à
+nosdeputes.fr. Premier run (20 requêtes/groupe, délai 0,3s) : succès complet
+des deux côtés, aucun gel — attendu, le phénomène étant probabiliste ;
+plusieurs runs par palier de volume restent nécessaires avant de pouvoir
+conclure.
+
 <a id="pivot-freshness-timestamps-stables"></a>
 ## `genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)
 
