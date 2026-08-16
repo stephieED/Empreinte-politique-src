@@ -64,9 +64,13 @@ class DummyResponse:
 
 
 def test_build_profile_reports_empty_api_payloads():
-    with patch("candidate_profile.fetch_identity", return_value={}), patch(
-        "candidate_profile.fetch_votes", return_value={}
-    ), patch("candidate_profile.time.sleep", return_value=None):
+    with (
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+    ):
         profile = build_profile("deputes", "slug-inexistant")
 
     assert profile["identite"] is None
@@ -1211,6 +1215,8 @@ def test_build_profile_includes_official_questions_in_interventions():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
     ):
         profile = build_profile("deputes", "slug-test")
@@ -1246,8 +1252,9 @@ def test_get_payload_returns_terminal_failure_on_4xx():
 
 
 def test_get_payload_returns_none_on_5xx():
-    """Un HTTP 500 renvoie None (échec transitoire, pas terminal)."""
-    from candidate_profile import _get_payload, _TERMINAL_FAILURE
+    """Un HTTP 500 renvoie None (échec transitoire, pas terminal) après avoir
+    épuisé les tentatives de retry (_GET_PAYLOAD_MAX_ATTEMPTS)."""
+    from candidate_profile import _GET_PAYLOAD_MAX_ATTEMPTS, _get_payload, _TERMINAL_FAILURE
 
     class Resp500:
         status_code = 500
@@ -1257,11 +1264,15 @@ def test_get_payload_returns_none_on_5xx():
         def raise_for_status(self):
             raise _requests.HTTPError("500", response=self)
 
-    with patch("candidate_profile.requests.get", return_value=Resp500()):
+    with (
+        patch("candidate_profile.requests.get", return_value=Resp500()) as mock_get,
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
         result = _get_payload("https://example.test/error/json")
 
     assert result is None
     assert result is not _TERMINAL_FAILURE
+    assert mock_get.call_count == _GET_PAYLOAD_MAX_ATTEMPTS
 
 
 def test_get_payload_returns_terminal_failure_on_unsupported_format():
@@ -1305,7 +1316,8 @@ def test_get_payload_returns_terminal_failure_on_malformed_json():
 
 def test_get_payload_watchdog_aborts_hung_request():
     """Une requête qui pend au-delà de TIMEOUT + marge watchdog renvoie None
-    (échec transitoire) au lieu de bloquer indéfiniment le process appelant.
+    (échec transitoire, après épuisement des tentatives de retry) au lieu de
+    bloquer indéfiniment le process appelant.
 
     Reproduit le scenario CI observé (#voir historique) : requests.get() ne
     revient jamais (ni succès, ni exception) — un DNS/réseau bloqué n'est pas
@@ -1324,6 +1336,9 @@ def test_get_payload_watchdog_aborts_hung_request():
         patch("candidate_profile.requests.get", side_effect=hung_get),
         patch("candidate_profile.TIMEOUT", 0.1),
         patch("candidate_profile._WATCHDOG_MARGIN_SECONDS", 0.1),
+        # Backoff de retry mis à 0 : seul le budget watchdog (TIMEOUT + marge
+        # ci-dessus) est sous test ici, pas le délai entre tentatives.
+        patch("candidate_profile._GET_PAYLOAD_RETRY_BACKOFF_SECONDS", 0),
     ):
         start = _time.monotonic()
         result = _get_payload("https://example.test/hung/json")
@@ -1409,6 +1424,8 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
     ):
@@ -1426,6 +1443,8 @@ def test_build_profile_falls_back_to_nosdeputes_when_syceron_empty():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[{"id": "nosdeputes_1"}]),
@@ -1444,6 +1463,8 @@ def test_build_profile_syceron_exception_triggers_fallback_warning():
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[]),
@@ -1460,6 +1481,8 @@ def test_build_profile_no_syceron_for_senat():
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
         # Évite un vrai appel réseau : chambre="senateurs" ne prend jamais le
         # chemin Syceron, mais tombe dans la branche NosDéputés générique.
@@ -1508,6 +1531,7 @@ def test_build_profile_senateurs_appelle_toujours_nosdeputes_dossiers():
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]) as mock_dossiers,
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[]),
@@ -1515,6 +1539,54 @@ def test_build_profile_senateurs_appelle_toujours_nosdeputes_dossiers():
         build_profile("senateurs", "jean-dupont")
 
     mock_dossiers.assert_called_once()
+
+
+def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_votes():
+    """Pour les députés, fetch_votes (NosDéputés) ne doit plus être appelé :
+    fetch_votes_officiels (AN) est déjà préféré, et l'endpoint /votes de
+    NosDéputés.fr est en panne systématique pour cette chambre (documenté sur
+    fetch_votes_officiels) — la branche de repli sur votes_raw est donc
+    inatteignable en pratique, jusqu'à 8 requêtes (4 domaines x 2 formats)
+    faites pour rien à chaque profil."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
+        patch("candidate_profile.fetch_votes") as mock_votes,
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        build_profile("deputes", "jean-dupont")
+
+    mock_votes.assert_not_called()
+    mock_dossiers.assert_not_called()
+
+
+def test_build_profile_senateurs_appelle_toujours_nosdeputes_votes():
+    """Pour les sénateurs, l'archive NosSénateurs reste la seule source de
+    votes : aucun remplacement officiel n'est branché pour cette chambre,
+    l'appel doit donc être préservé."""
+    with (
+        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_votes", return_value={}) as mock_votes,
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+    ):
+        build_profile("senateurs", "jean-dupont")
+
+    mock_votes.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

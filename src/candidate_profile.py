@@ -501,6 +501,17 @@ def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
     raise payload
 
 
+# Retry léger sur échec transitoire (5xx, erreur réseau, timeout watchdog).
+# _get_payload est le chokepoint partagé par identité/votes/synthèse/dossiers-
+# Sénat (voir docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel
+# et issue #340) : un retry ici bénéficie à tous ces appelants sans dupliquer
+# la logique par fonction. N'aide pas contre un vrai gel du runner CI (déjà
+# constaté : même le thread du watchdog n'arrive alors pas à s'exécuter), mais
+# couvre les hoquets réseau/serveur transitoires réels, plus fréquents.
+_GET_PAYLOAD_MAX_ATTEMPTS = 3
+_GET_PAYLOAD_RETRY_BACKOFF_SECONDS = 1.5
+
+
 def _get_payload(url: str) -> Any:
     """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
 
@@ -508,40 +519,55 @@ def _get_payload(url: str) -> Any:
     - Un objet Python exploitable en cas de succès.
     - ``_TERMINAL_FAILURE`` pour les échecs déterministes (4xx, format non pris
       en charge) : aucun essai ultérieur sur d'autres formats ou miroirs ne
-      serait utile pour cette ressource.
-    - ``None`` pour les échecs transitoires (erreur réseau, timeout) : un
-      nouvel essai sur un autre miroir reste légitime.
+      serait utile pour cette ressource — jamais retenté ici non plus.
+    - ``None`` pour les échecs transitoires (erreur réseau, timeout, 5xx),
+      après épuisement de ``_GET_PAYLOAD_MAX_ATTEMPTS`` tentatives (backoff
+      fixe ``_GET_PAYLOAD_RETRY_BACKOFF_SECONDS`` entre chaque) : un nouvel
+      essai sur un autre miroir reste légitime côté appelant.
     """
-    try:
-        resp = _get_with_watchdog(url, timeout=TIMEOUT)
+    for attempt in range(1, _GET_PAYLOAD_MAX_ATTEMPTS + 1):
+        is_last_attempt = attempt == _GET_PAYLOAD_MAX_ATTEMPTS
         try:
-            resp.raise_for_status()
-        except requests.HTTPError as exc:
-            print(f"  [!] Échec HTTP {resp.status_code} depuis {url} : {exc}", file=sys.stderr)
-            # 4xx = erreur déterministe côté serveur (ressource absente, non
-            # autorisée...) : inutile de retenter sur un autre format.
-            # 5xx = erreur serveur potentiellement transitoire : on retourne
-            # None pour rester éligible à un essai sur un autre miroir.
-            return _TERMINAL_FAILURE if 400 <= resp.status_code < 500 else None
-        content_type = resp.headers.get("content-type", "")
-        if "json" in content_type.lower() or resp.text.lstrip().startswith("{"):
+            resp = _get_with_watchdog(url, timeout=TIMEOUT)
             try:
-                return resp.json()
-            except ValueError as exc:
-                print(f"  [!] Réponse JSON invalide depuis {url} : {exc}", file=sys.stderr)
-                # JSON malformé = réponse serveur incohérente, pas un vrai JSON :
-                # on traite comme terminal pour ne pas réessayer en XML.
-                return _TERMINAL_FAILURE
-        if "xml" in content_type.lower() or resp.text.lstrip().startswith("<"):
-            parsed = _xml_to_data(resp.text)
-            if parsed is not None:
-                return parsed
-        print(f"  [!] Format de réponse non pris en charge depuis {url}", file=sys.stderr)
-        # Format inconnu = réponse serveur non exploitable de façon déterministe.
-        return _TERMINAL_FAILURE
-    except requests.RequestException as exc:
-        print(f"  [!] Échec de requête sur {url} : {exc}", file=sys.stderr)
-        return None
+                resp.raise_for_status()
+            except requests.HTTPError as exc:
+                print(f"  [!] Échec HTTP {resp.status_code} depuis {url} : {exc}", file=sys.stderr)
+                # 4xx = erreur déterministe côté serveur (ressource absente, non
+                # autorisée...) : inutile de retenter, sur ce format ou un autre.
+                if 400 <= resp.status_code < 500:
+                    return _TERMINAL_FAILURE
+                # 5xx = erreur serveur potentiellement transitoire.
+                if not is_last_attempt:
+                    time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
+                    continue
+                return None
+            content_type = resp.headers.get("content-type", "")
+            if "json" in content_type.lower() or resp.text.lstrip().startswith("{"):
+                try:
+                    return resp.json()
+                except ValueError as exc:
+                    print(f"  [!] Réponse JSON invalide depuis {url} : {exc}", file=sys.stderr)
+                    # JSON malformé = réponse serveur incohérente, pas un vrai JSON :
+                    # on traite comme terminal pour ne pas réessayer en XML.
+                    return _TERMINAL_FAILURE
+            if "xml" in content_type.lower() or resp.text.lstrip().startswith("<"):
+                parsed = _xml_to_data(resp.text)
+                if parsed is not None:
+                    return parsed
+            print(f"  [!] Format de réponse non pris en charge depuis {url}", file=sys.stderr)
+            # Format inconnu = réponse serveur non exploitable de façon déterministe.
+            return _TERMINAL_FAILURE
+        except requests.RequestException as exc:
+            print(
+                f"  [!] Échec de requête sur {url} (tentative {attempt}/{_GET_PAYLOAD_MAX_ATTEMPTS}) : {exc}",
+                file=sys.stderr,
+            )
+            if not is_last_attempt:
+                time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
+                continue
+            return None
+    return None  # pragma: no cover - inatteignable, chaque branche ci-dessus retourne déjà
 
 
 def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Optional[str]]:
@@ -2983,8 +3009,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
 
     base_urls = BASE_URLS[chambre]
 
-    # --- 1. Identité brute + votes bruts (fallback nosdeputes.fr, souvent indisponible
-    # côté votes : cf. fetch_votes_officiels plus bas pour la source qui fonctionne). ---
+    # --- 1. Identité brute (NosDéputés/NosSénateurs, source primaire pour toutes
+    # les législatures — fetch_identite_officielle en 5bis ne fait que compléter
+    # des champs manquants pour les député⋅e⋅s actifs, jamais un remplacement). ---
     identity_result = fetch_identity(base_urls, slug)
     if isinstance(identity_result, tuple):
         identity_raw, identity_base_url = identity_result
@@ -2994,11 +3021,23 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
 
     time.sleep(0.5)  # on reste courtois avec l'API publique
 
-    votes_result = fetch_votes(base_urls, slug)
-    if isinstance(votes_result, tuple):
-        votes_raw, _ = votes_result
-    else:
-        votes_raw = votes_result
+    # Votes bruts NosDéputés : uniquement pour les sénateurs. Pour les députés,
+    # l'endpoint /votes de NosDéputés.fr est en panne de façon systématique
+    # (HTTP 500 sur tous les domaines/législatures, voir docstring de
+    # fetch_votes_officiels ci-dessous) : votes_raw y est donc TOUJOURS vide,
+    # rendant la branche de repli "else: utiliser votes_raw" (étape 6)
+    # inatteignable pour cette chambre. L'appel réseau ici (jusqu'à 8 requêtes :
+    # 4 domaines × 2 formats) ne fait donc que risquer un blocage pour un
+    # résultat qui ne sera jamais exploité — même logique que le retrait de
+    # fetch_dossiers_for_legislatures pour les députés, voir
+    # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel.
+    votes_raw: Any = None
+    if chambre != "deputes":
+        votes_result = fetch_votes(base_urls, slug)
+        if isinstance(votes_result, tuple):
+            votes_raw, _ = votes_result
+        else:
+            votes_raw = votes_result
 
     # --- 2. Nom de recherche fiable, dérivé de l'identité, pour l'API de recherche
     # d'interventions : un slug transformé en espaces (ex. "jean luc melenchon")
@@ -3164,9 +3203,9 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
                     })
 
     # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
-    # (fiable et à jour), et on ne retombe sur les champs bruts de nosdeputes.fr
-    # (souvent en erreur côté serveur, cf. fetch_votes) que s'il n'y a pas de
-    # correspondance officielle. ---
+    # (fiable et à jour) ; pour les sénateurs (pas de source officielle
+    # branchée), on retombe sur les champs bruts de NosSénateurs (votes_raw,
+    # non interrogé pour les députés — voir étape 1). ---
     official_votes: list[dict[str, Any]] = []
     if chambre == "deputes" and profile.get("identite"):
         try:
@@ -3195,11 +3234,17 @@ def build_profile(chambre: str, slug: str, intervention_max_pages: int = 10, ski
         )
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     elif _is_empty_payload(votes_raw):
-        warnings.append(
-            f"{WARNING_PREFIX_VOTES_INTROUVABLES} : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur "
-            "(fonctionnalité indisponible côté API), et aucune correspondance officielle "
-            "Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
-        )
+        if chambre == "deputes":
+            warnings.append(
+                f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle Assemblée nationale "
+                "n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour "
+                "les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
+            )
+        else:
+            warnings.append(
+                f"{WARNING_PREFIX_VOTES_INTROUVABLES} : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune "
+                "donnée exploitable pour ce parlementaire."
+            )
     else:
         # On garde uniquement les champs utiles à un affichage type "CV"
         cleaned_votes = []
