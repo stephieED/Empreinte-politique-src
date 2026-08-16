@@ -3081,3 +3081,218 @@ def test_acteurs_historique_zip_downloaded_once_and_shared_across_indexes(tmp_pa
     assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
     assert organe_index["PO845401"]["sigle"] == "RN"
     assert hemicycle_index["PA1"][0]["groupe_sigle"] == "RN"
+
+
+# ---------------------------------------------------------------------------
+# Tests pour _build_acteur_identite_index / fetch_identite_officielle (issue
+# #354, sous-issue 3/6 de #351) : bascule de AMO10 (actifs uniquement) vers le
+# même zip bulk historique AMO30 que _build_organe_index /
+# _build_acteur_positions_hemicycle_index, pour couvrir les élu⋅e⋅s dont le
+# mandat est terminé.
+# ---------------------------------------------------------------------------
+
+def test_select_mandat_assemblee_courant_prefers_mandat_en_cours():
+    """Parmi plusieurs mandats ASSEMBLEE (réélections successives), celui sans
+    dateFin (en cours) doit toujours être préféré, quel que soit l'ordre."""
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    mandats = [
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2017-06-21", "dateFin": "2022-06-21", "legislature": "15"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2024-07-08", "dateFin": None, "legislature": "17"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2022-06-22", "dateFin": "2024-06-09", "legislature": "16"},
+    ]
+    best = _select_mandat_assemblee_courant(mandats)
+    assert best["legislature"] == "17"
+
+
+def test_select_mandat_assemblee_courant_falls_back_to_most_recent_dateDebut():
+    """Sans mandat en cours (élu dont le mandat est terminé), le mandat retenu
+    est celui dont dateDebut est le plus récent."""
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    mandats = [
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2012-06-20", "dateFin": "2017-06-20", "legislature": "14"},
+        {"typeOrgane": "ASSEMBLEE", "dateDebut": "2017-06-21", "dateFin": "2022-06-21", "legislature": "15"},
+        {"typeOrgane": "GP", "dateDebut": "2017-06-21", "dateFin": None, "legislature": "15"},
+    ]
+    best = _select_mandat_assemblee_courant(mandats)
+    assert best["legislature"] == "15"
+
+
+def test_select_mandat_assemblee_courant_returns_none_without_assemblee_mandat():
+    from candidate_profile import _select_mandat_assemblee_courant
+
+    assert _select_mandat_assemblee_courant([{"typeOrgane": "GP", "dateFin": None}]) is None
+    assert _select_mandat_assemblee_courant([]) is None
+
+
+def test_build_acteur_identite_index_covers_former_deputy(tmp_path):
+    """Contrairement à l'ancien jeu de données AMO10 (actifs uniquement), un
+    acteur dont le mandat est terminé (dateFin renseignée, absent de la
+    législature en cours) doit apparaître dans l'index — c'est l'objet même
+    de l'issue #354."""
+    from candidate_profile import _build_acteur_identite_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {
+                    "ident": {"civ": "M.", "prenom": "François", "nom": "Asensi"},
+                    "infoNaissance": {"dateNais": "1945-06-01", "villeNais": "Douai", "depNais": "59", "paysNais": "France"},
+                },
+                "profession": {"libelleCourant": "Dessinateur industriel"},
+                "uri_hatvp": None,
+                "adresses": {"adresse": []},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "14",
+                            "dateDebut": "2012-06-20",
+                            "dateFin": "2017-06-20",
+                            "election": {"lieu": {"numDepartement": "93", "numCirco": "4"}},
+                            "mandature": {"placeHemicycle": "123"},
+                        }
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index["PA295"]["nom_complet"] == "François Asensi"
+    assert index["PA295"]["numero_departement"] == "93"
+    assert index["PA295"]["numero_circo"] == "4"
+    assert index["PA295"]["place_hemicycle"] == "123"
+
+
+def test_build_acteur_identite_index_keeps_current_mandate_over_past_ones(tmp_path):
+    """Pour un acteur réélu sur plusieurs législatures, la circonscription/place
+    hémicycle retenue doit être celle du mandat en cours, pas un mandat
+    antérieur rencontré en premier dans la liste (voir
+    _select_mandat_assemblee_courant)."""
+    from candidate_profile import _build_acteur_identite_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "etatCivil": {"ident": {"prenom": "Jane", "nom": "Doe"}},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "16",
+                            "dateDebut": "2022-06-22",
+                            "dateFin": "2024-06-09",
+                            "election": {"lieu": {"numDepartement": "75", "numCirco": "1"}},
+                            "mandature": {"placeHemicycle": "old"},
+                        },
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "17",
+                            "dateDebut": "2024-07-08",
+                            "dateFin": None,
+                            "election": {"lieu": {"numDepartement": "75", "numCirco": "2"}},
+                            "mandature": {"placeHemicycle": "new"},
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index["PA1"]["numero_circo"] == "2"
+    assert index["PA1"]["place_hemicycle"] == "new"
+
+
+def test_build_acteur_identite_index_uses_disk_cache_without_download(tmp_path):
+    from candidate_profile import _build_acteur_identite_index
+
+    cached_index = {"PA1": {"nom_complet": "Jane Doe"}}
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "index_identite.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        index = _build_acteur_identite_index()
+
+    mock_get.assert_not_called()
+    assert index == cached_index
+
+
+def test_build_acteur_identite_index_download_failure_returns_empty(tmp_path):
+    from candidate_profile import _build_acteur_identite_index
+    import requests as _requests_module
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests_module.RequestException("boom")),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index == {}
+
+
+def test_fetch_identite_officielle_resolves_former_deputy(tmp_path):
+    from candidate_profile import fetch_identite_officielle
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA295": {
+                "uid": {"#text": "PA295"},
+                "etatCivil": {"ident": {"prenom": "François", "nom": "Asensi"}},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        assert fetch_identite_officielle("https://www.assemblee-nationale.fr/dyn/deputes/PA295")["nom_complet"] == "François Asensi"
+        assert fetch_identite_officielle(None) is None
+
+
+def test_identite_index_shares_historique_zip_download_with_organe_index(tmp_path):
+    """_build_acteur_identite_index doit réutiliser le même zip bulk que
+    _build_organe_index (_ensure_acteurs_historique_zip_downloaded) : un seul
+    téléchargement, pas un par index (issue #354, même refactor que #353)."""
+    from candidate_profile import _build_acteur_identite_index, _build_organe_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO1": {"uid": "PO1", "codeType": "COMPER", "libelle": "Commission", "libelleAbrege": "Com"},
+        },
+        acteur_entries={
+            "PA1": {"uid": {"#text": "PA1"}, "etatCivil": {"ident": {"prenom": "Jane", "nom": "Doe"}}},
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)) as mock_get,
+    ):
+        organe_index = _build_organe_index()
+        identite_index = _build_acteur_identite_index()
+
+    assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
+    assert organe_index["PO1"]["sigle"] == "Com"
+    assert identite_index["PA1"]["nom_complet"] == "Jane Doe"
