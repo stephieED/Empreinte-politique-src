@@ -2,14 +2,19 @@
 """Quality gate pré-commit + résumé de run du pipeline de génération de données.
 
 Produit cinq sections de rapport :
-  1. Erreurs IncompleteRead dans meta.warnings[] de tous les JSON générés.
+  1. Erreurs IncompleteRead **non rattrapées** dans meta.warnings[] de tous
+     les JSON générés (une lecture reprise avec succès après retry n'y
+     figure pas — le log du run peut donc signaler une instabilité réseau
+     sans qu'aucune erreur ne soit comptée ici).
   2. Candidats générés vs attendus (d'après raw_data/candidats.json).
   3. Candidats avec un faible nombre d'interventions.
   4. Groupes parlementaires : hard fail sur structure cassée, soft fail sur
      qualité dégradée (couverture, signaux réseau).
   5. Gouvernements : hard fail sur structure cassée, soft fail sur qualité
-     dégradée (couverture ministérielle, textes vides, signaux réseau) —
-     miroir de la section 4, sur le modèle de #184.
+     dégradée (couverture ministérielle, textes vides sur une période
+     couverte par la source, signaux réseau) — miroir de la section 4, sur
+     le modèle de #184. Les gouvernements hors couverture des archives
+     ingérées sont listés à part, en information (#399).
 
 Codes de sortie :
   0  — aucune erreur bloquante (IncompleteRead dans seuil, groupes et
@@ -45,6 +50,17 @@ try:
     _SCHEMA_GOUVERNEMENT_AVAILABLE = True
 except ImportError:
     _SCHEMA_GOUVERNEMENT_AVAILABLE = False
+# Périmètre réellement couvert par les archives de dossiers ingérées (#399) :
+# stdlib pure, aucune I/O — importé pour ne pas signaler comme un défaut de
+# données ce qui n'est qu'une absence de source.
+from couverture_dossiers import (  # noqa: E402
+    COUVERTURE_COUVERTE,
+    COUVERTURE_HORS,
+    COUVERTURE_PARTIELLE,
+    LIBELLES_COUVERTURE,
+    libelle_couverture_textes,
+    statut_couverture_textes,
+)
 
 INCOMPLETE_READ_MARKER = "IncompleteRead"
 # Signaux réseau spécifiques aux groupes (hors IncompleteRead, déjà traité §1)
@@ -152,8 +168,10 @@ def _report_incomplete_reads(
     # ── Console ──────────────────────────────────────────────────────────────
     lines = [
         "",
-        "┌─ 1/4  Erreurs IncompleteRead ──────────────────────────────────────",
+        "┌─ 1/4  Erreurs IncompleteRead non rattrapées ───────────────────────",
         f"│  Seuil : {threshold}   Détectées : {count}   Statut : {gate_label}",
+        "│  (une lecture reprise avec succès n'apparaît pas ici : seuls les "
+        "échecs définitifs sont comptés)",
     ]
     if hits:
         lines.append("│")
@@ -171,12 +189,16 @@ def _report_incomplete_reads(
 
     # ── Markdown (GHA Step Summary) ───────────────────────────────────────
     md_lines = [
-        "### 1 · Erreurs IncompleteRead",
+        "### 1 · Erreurs IncompleteRead non rattrapées",
         "",
         f"| Métrique | Valeur |",
         f"|---|---|",
         f"| Détectées | {status_md} |",
         f"| Seuil configuré | {threshold} |",
+        "",
+        "> Ne compte que les lectures **définitivement** échouées : une "
+        "lecture reprise avec succès après retry est absente de ce total, "
+        "même quand le log du run signale l'instabilité réseau.",
         "",
     ]
     if hits:
@@ -1072,7 +1094,11 @@ def _report_gouvernements(
       - couverture ministérielle incomplète (aucun/peu de `portefeuille`
         confirmé par une source primaire — limitation connue documentée dans
         docs/technical_decisions.md, §"Ministerial function")
-      - `textes[]` vide alors que la période du gouvernement est renseignée
+      - `textes[]` vide alors que la période du gouvernement est **couverte**
+        par les archives de dossiers ingérées (`couverture_dossiers.py`) —
+        un gouvernement hors couverture n'est pas signalé comme un défaut,
+        mais porté en information : l'absence y vient de la source, pas des
+        données (#399, AGENTS.md §2.5)
       - IncompleteRead dans meta.warnings (signal réseau, propagé depuis
         `gouvernement_textes.py`)
     """
@@ -1091,6 +1117,9 @@ def _report_gouvernements(
 
     hard_errors: list[str] = []
     soft_warnings: list[str] = []
+    # Constats de couverture : affichés pour être lisibles, jamais comptés
+    # comme des avertissements qualité — ils ne diminueront jamais (#399).
+    infos: list[str] = []
 
     # ── Analyse par gouvernement attendu ──────────────────────────────────
     rows: list[dict] = []   # one row per expected gouvernement
@@ -1148,9 +1177,15 @@ def _report_gouvernements(
 
         # Soft 1 — couverture ministérielle incomplète (portefeuille non confirmé)
         if nb_membres > 0 and nb_portefeuille_connu < nb_membres:
+            # Formulation : « confirmés par une source primaire » — l'absence
+            # porte sur la confirmation, pas sur le portefeuille lui-même,
+            # que le ministre a bien exercé (#399). Le compteur disparaîtra
+            # avec #398, la formulation reste valable d'ici là.
             msg = (
                 f"{gouvernement_id}: couverture ministérielle incomplète "
-                f"({nb_portefeuille_connu}/{nb_membres} portefeuilles confirmés)"
+                f"({nb_portefeuille_connu}/{nb_membres} portefeuilles confirmés "
+                f"par une source primaire — absence de confirmation, pas "
+                f"absence de portefeuille)"
             )
             soft_warnings.append(msg)
             row_soft.append(f"portefeuilles {nb_portefeuille_connu}/{nb_membres}")
@@ -1165,12 +1200,35 @@ def _report_gouvernements(
                 row_soft.append(f"IncompleteRead ({endpoint})")
                 row_status = "soft"
 
-        # Soft 3 — textes[] vide alors que la période est renseignée
-        if periode.get("debut") is not None and nb_textes == 0:
-            msg = f"{gouvernement_id}: aucun texte porté malgré une période renseignée"
+        # Soft 3 — textes[] vide sur une période **couverte** par la source.
+        #
+        # Hors couverture (période antérieure aux archives ingérées, ou à
+        # cheval sur leur borne), l'absence de texte ne dit rien du
+        # gouvernement : elle dit que la source s'arrête là. La signaler
+        # comme un défaut de données afficherait une absence de source comme
+        # un fait mesuré (#399, AGENTS.md §2.5) et noierait les vrais
+        # signaux — ce qui avait masqué #397.
+        couverture = statut_couverture_textes(periode.get("debut"), periode.get("fin"))
+        if nb_textes == 0 and couverture == COUVERTURE_COUVERTE:
+            msg = (
+                f"{gouvernement_id}: aucun texte porté alors que la période est "
+                f"couverte par la source ({libelle_couverture_textes()})"
+            )
             soft_warnings.append(msg)
             row_soft.append("0 texte porté")
             row_status = "soft"
+        elif nb_textes == 0 and couverture in (COUVERTURE_HORS, COUVERTURE_PARTIELLE):
+            qualificatif = (
+                "hors de la couverture de la source"
+                if couverture == COUVERTURE_HORS
+                else "seulement partiellement couverte par la source"
+            )
+            infos.append(
+                f"{gouvernement_id}: aucun texte porté, période "
+                f"{periode.get('debut')} → {periode.get('fin') or 'en cours'} "
+                f"{qualificatif} — absence de source, pas un zéro constaté"
+            )
+            row_soft.append(f"textes {LIBELLES_COUVERTURE[couverture]}")
 
         rows.append({
             "gouvernement_id": gouvernement_id,
@@ -1193,10 +1251,16 @@ def _report_gouvernements(
         "┌─ 5/5  Gouvernements ───────────────────────────────────────────────",
         f"│  Attendus : {len(expected)}   OK : {n_ok}   "
         f"Échecs durs : {n_hard}   Avertissements : {n_soft}",
+        f"│  Couverture des textes : {libelle_couverture_textes()}",
         "│",
     ]
     if not _SCHEMA_GOUVERNEMENT_AVAILABLE:
         lines.append("│  [!] schema_gouvernement non disponible — validation de schéma ignorée.")
+        lines.append("│")
+    if infos:
+        lines.append("│  ℹ Hors couverture de la source (pas un défaut de données) :")
+        for i in infos:
+            lines.append(f"│    · {i}")
         lines.append("│")
     if hard_errors:
         lines.append("│  ✗ Erreurs dures (commit bloqué) :")
@@ -1242,10 +1306,28 @@ def _report_gouvernements(
         f"| ✅ Valides | {n_ok} |",
         f"| ❌ Échecs durs | {n_hard} |",
         f"| ⚠️ Avertissements qualité | {n_soft} |",
+        f"| ℹ️ Hors couverture de la source | {len(infos)} |",
+        "",
+        f"> Couverture des textes portés : **{libelle_couverture_textes()}**. "
+        "Hors de cette borne, un `textes[]` vide est une absence de source, "
+        "pas un zéro constaté — jamais compté comme un avertissement qualité "
+        "(#399, AGENTS.md §2.5).",
         "",
     ]
     if not _SCHEMA_GOUVERNEMENT_AVAILABLE:
         md_lines.append("> ⚠️ `schema_gouvernement` non importé — validation de schéma ignorée.\n")
+
+    if infos:
+        md_lines += [
+            "**Hors couverture de la source** _(pas un défaut de données)_",
+            "",
+            "| Gouvernement | Constat |",
+            "|---|---|",
+        ]
+        for i in infos:
+            gouvernement_id, _, detail = i.partition(": ")
+            md_lines.append(f"| `{gouvernement_id}` | {detail} |")
+        md_lines.append("")
 
     if hard_errors:
         md_lines += [

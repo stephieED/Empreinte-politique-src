@@ -49,6 +49,7 @@ CV_CandidatFR/
 |  |- schema_parti.py                # Party profile schema v1
 |  |- schema_gouvernement.py         # Government profile schema v1 (structure contract, no aggregation logic yet)
 |  |- gouvernement_textes.py         # AN legislative files (bulk dump): government-origin filter + statut extraction
+|  |- couverture_dossiers.py         # Ingested dossier archives (per legislature) + resulting coverage bound (stdlib only)
 |  |- mep_profile.py                 # Collect/normalize EP profiles (Parltrack)
 |  `- fetch_wikipedia_candidates.py  # Candidate monitoring via Wikipedia/Wikidata
 |- raw_data/                          # Declarative inputs + raw outputs (non-normalized)
@@ -582,8 +583,13 @@ aggregated across governments), completeness (`premier_ministre`,
 `membres[].portefeuille`, `meta`), consistency
 (`validate_profil_gouvernement` — already covers the 49.3 non-collapse
 invariant, `schema_version` divergence, duplicate `gouvernement_id`), source
-freshness and stale governments, and a per-government cross-tab of date
-ranges (`compute_plage_dates_gouvernements`): min/max of
+freshness and stale governments, source coverage of carried texts
+(`compute_couverture_textes`, #399: classifies each government against the
+legislature archives actually ingested — `src/couverture_dossiers.py` — so
+that "outside the source's coverage" is never read as "really zero"; the
+coverage bound is printed in the report header, and `nb_textes` stays `null`
+when the `textes` field is absent, never rendered as `0`), and a
+per-government cross-tab of date ranges (`compute_plage_dates_gouvernements`): min/max of
 `membres[].debut`/`.fin` (`mandats_membres`) and `textes[].date_depot`/
 `.date_dernier_evenement` (`textes`) — a `membres[].fin = null` (ongoing
 mandate) is excluded from the max without ever being substituted by today's
