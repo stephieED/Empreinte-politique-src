@@ -7437,7 +7437,6 @@
     }
   ],
   "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 15)",
-  "synthese_activite": null,
   "dossiers_legislatifs": [],
   "interventions": [
     {
@@ -7712,16 +7711,16 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-16T07:42:45+0000",
+    "genere_le": "2026-08-17T09:05:06+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
     ],
     "synchro_sources": {
-      "assemblee_nationale_syceron": null,
+      "nosdeputes": "2026-08-06T09:00:31+0000",
       "assemblee_nationale_questions": "2026-08-07T09:59:50+0000",
       "assemblee_nationale": "2026-08-06T09:00:48+0000",
-      "nosdeputes": "2026-08-06T09:00:31+0000"
+      "assemblee_nationale_syceron": null
     }
   },
   "mandat_europeen": {
@@ -7987,7 +7986,7 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-08-16T07:42:45+0000",
+      "genere_le": "2026-08-17T09:05:06+0000",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }

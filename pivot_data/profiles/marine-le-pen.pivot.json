@@ -20,7 +20,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-16T07:42:49+0000"
+      "synchro_le": "2026-08-17T09:05:09+0000"
     }
   ],
   "mandats": [
@@ -14075,7 +14075,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:27+0000",
+    "genere_le": "2026-08-17T09:30:08+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"

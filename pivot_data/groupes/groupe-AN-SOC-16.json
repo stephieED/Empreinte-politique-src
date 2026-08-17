@@ -15577,6 +15577,488 @@
       "poids_relatif": 1.0
     }
   ],
+  "mandats_agreges": [
+    {
+      "categorie": "commission",
+      "label": "Comité consultatif auprès du conseil d'administration de l'etablissement public de paris-saclay",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre titulaire",
+          "debut": "2023-01-25",
+          "fin": "2024-06-14",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission d'enquête relative à l'identification des défaillances de fonctionnement au sein des fédérations françaises de sport et des organismes de gouvernance du monde sportif en tant qu'elles ont délégation de service public",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-06-30",
+          "fin": "2024-01-07",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission d'enquête sur l'attribution, le contenu et le contrôle des autorisations de services de télévision à caractère national sur la télévision numérique terrestre",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-11-19",
+          "fin": "2024-05-15",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission de la défense nationale et des forces armées",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-01-31",
+          "fin": "2024-02-01",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des affaires culturelles et de l'éducation",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-03-22",
+          "fin": "2023-03-23",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des affaires sociales",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-06-07",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des affaires économiques",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-03-13",
+          "fin": "2024-03-31",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-10-27",
+          "fin": "2023-10-28",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-05-22",
+          "fin": "2024-05-24",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission du développement durable et de l'aménagement du territoire",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-06-05",
+          "fin": "2024-06-07",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission spéciale pour l'examen du projet de loi relatif à l'accompagnement des malades et de la fin de vie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2024-04-10",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Députés Non Inscrits",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2022-06-24",
+          "fin": "2022-06-29",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Groupe d'études antisémitisme",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-01-26",
+          "fin": "2023-02-21",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Groupe de travail longévité et autonomie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "co-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "co-président",
+          "debut": "2022-09-30",
+          "fin": "2023-04-01",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Mission d'évaluation de la loi du 2 février 2016 créant de nouveaux droits en faveur des malades et des personnes en fin de vie dite claeys-leonetti",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2022-11-26",
+          "fin": "2023-04-13",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Mission d'évaluation et de contrôle des lois de financement de la sécurité sociale",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "co-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "co-président",
+          "debut": "2023-01-25",
+          "fin": "2023-10-06",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'amitié france-algérie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2022-12-17",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'amitié france-espagne",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2023-01-26",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'amitié france-israël",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2022-12-17",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'amitié france-portugal",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2022-12-16",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'amitié france-tunisie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2022-12-17",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'études antisémitisme",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "vice-président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "vice-président",
+          "debut": "2023-02-21",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'études fin de vie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "membre",
+          "debut": "2023-01-29",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'études longévité et adaptation de la société au vieillissement",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "président",
+          "debut": "2023-01-25",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    }
+  ],
   "amendements_agreges": {
     "nb_amendements": 0,
     "nb_adoptes": 0,
@@ -15633,7 +16115,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:33+0000",
+    "genere_le": "2026-08-17T09:30:11+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:jerome-guedj"
