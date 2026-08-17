@@ -57,9 +57,10 @@ spike #207). Seule la décision de séance chronologiquement la plus récente
 détermine le statut courant du dossier : un dossier peut accumuler
 plusieurs décisions de séance au fil des lectures (ex. adopté en 1ère
 lecture puis modifié par la seconde chambre — la navette continue, ce n'est
-pas un statut final ; c'est le cas de `TSORTF05`, « modifié »). 7 `fam_code`
+pas un statut final ; c'est le cas de `TSORTF05`, « modifié »). 10 `fam_code`
 sont mappés : 4 confirmés par le spike #207, 3 ajoutés en #397 après
-constat que leur absence excluait 45 dossiers sur 106 du jeu de données.
+constat que leur absence excluait 45 dossiers sur 106 du jeu de données, 3
+ajoutés en #402 après l'ingestion des archives XV/XVI (#400).
 Tout autre `fam_code` rencontré sur la décision de séance la plus récente
 produit un warning explicite et `statut = None` — jamais un statut par
 défaut (règle AGENTS.md §2.5). Les décisions du Conseil
@@ -105,6 +106,32 @@ adoption, mais la voie procédurale est distincte et n'est pas fondue dans
 responsabilité relève de `TSORTF06`/`TSORTF24`, pas de `TSORTF18` : seule la
 décision de séance la plus récente compte, il n'y a donc pas de cumul
 possible entre `adopte_cmp` et les statuts 49.3.
+
+`TSORTF02` (« adopté avec modifications ») décrit le **même fait procédural**
+que `TSORTF05` (« modifié ») — une chambre adopte un texte qu'elle a modifié,
+donc la navette continue — et est mappé au même `navette_en_cours`. Ce n'est
+pas une supposition : sur les 53 occurrences des trois archives, les 29 qui ne
+sont pas la dernière décision du dossier sont **toutes** suivies d'une lecture
+dans l'autre chambre (« modifié » ×17, « adopté sans modification » ×8, CMP,
+rejet). Le libellé pouvait laisser croire à une adoption effective, mais parmi
+les 24 occurrences terminales, 7 ne sont jamais promulguées (ex. la réforme de
+l'audiovisuel public, `DLR5L16N47697`) : les traiter en `adopte` affirmerait
+une adoption que rien n'établit (§2.5). Les 17 autres portent un acte de
+promulgation, qui détermine alors le statut (`promulgue`) par le mécanisme
+de #400 — plus fort et plus vérifiable que la décision de séance elle-même.
+
+`TSORTF14` (« voté par les deux assemblées du Parlement en termes
+identiques ») est mappé à `adopte` : le vote conforme des deux chambres est
+une adoption parlementaire achevée. Unique occurrence : le projet de loi
+constitutionnelle sur le corps électoral calédonien (`DLR5L16N49373`, AN le
+14/05/2024), jamais promulgué faute de Congrès — d'où `adopte` et non
+`promulgue`, la distinction étant précisément ce que le statut doit préserver.
+
+`TSORTF13` (« rejeté définitivement ») est mappé à `rejete`, avec
+`sort_49_3 = False` : le rejet est prononcé par un vote, pas par le rejet
+d'un engagement de responsabilité (`TSORTF24`). Unique occurrence : le
+règlement du budget 2021 (`DLR5L16N45929`), rejeté en lecture définitive à
+l'AN le 03/08/2022 après deux rejets du Sénat.
 
 Rattachement à un gouvernement (hors périmètre de ce module, implémenté dans
 `gouvernement_profile.py` — #211) : par date de dépôt initial (`date_depot`,
@@ -214,6 +241,10 @@ _FAM_CODE_STATUT_MAP: dict[str, tuple[str, bool]] = {
     "TSORTF03": ("adopte", False),           # « adopté sans modification »
     "TSORTF18": ("adopte_cmp", False),       # « adopté […] art. 45 al. 3 » (texte de CMP)
     "TSORTF05": ("navette_en_cours", False), # « modifié » — la navette continue
+    # Ajoutés en #402, apparus avec l'ingestion des archives XV/XVI (#400).
+    "TSORTF02": ("navette_en_cours", False), # « adopté avec modifications » — idem TSORTF05
+    "TSORTF14": ("adopte", False),           # « voté par les deux assemblées […] termes identiques »
+    "TSORTF13": ("rejete", False),           # « rejeté définitivement »
 }
 
 # Sentinelle du dataset source : absence de statut réel, pas un fam_code
