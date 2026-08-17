@@ -432,7 +432,7 @@ legislature, an amendements index that was never built from one that is present 
 schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, empty
 `textes[]` with a non-null `periode`, or IncompleteRead network signals.
 
-### Running the full pipeline locally instead of CI
+## 9. Running the full pipeline locally instead of CI
 
 `scripts/generate_data_local.sh` runs the same sequence of stages as
 `generate-data.yml` (AN, Sénat, UE, ParlTrack, amendements index,
@@ -489,7 +489,7 @@ differences from the CI job graph (no per-candidate matrix, no
 artifact-based re-merge — both are CI-only orchestration concerns with no
 local equivalent needed).
 
-## 9. Open the web UI locally
+## 10. Open the web UI locally
 
 `web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes** ·
 **Gouvernement**, no Partis tab). Before running it, sync pivot data into `public/data/`:
@@ -509,7 +509,7 @@ current state of the roster-driven rollout.
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
 
-## 10. Audit the pivot dataset
+## 11. Audit the pivot dataset
 
 `src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
 volumetry (including a breakdown by `meta.provenance`, `candidat_declare` vs.
@@ -535,7 +535,7 @@ threshold beyond which a profile with only stale sources is flagged. See
 `docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_pivot/`.
 
-## 11. Audit the groupe dataset
+## 12. Audit the groupe dataset
 
 `src/audit_groupe_dataset.py` mirrors `audit_pivot_dataset.py` for
 `pivot_data/groupes` (`schema_groupe.py`): it scans a directory of group
@@ -565,7 +565,7 @@ a group with only stale sources is flagged — same option contract as
 `docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_groupe/`.
 
-## 12. Audit the gouvernement dataset
+## 13. Audit the gouvernement dataset
 
 `src/audit_gouvernement_dataset.py` mirrors `audit_groupe_dataset.py` for
 `pivot_data/gouvernements` (`schema_gouvernement.py`): it scans a directory
@@ -602,7 +602,7 @@ same option contract as the other audit scripts. See
 `docs/examples/audit_gouvernement_report_sample.json` / `.md` for a sample
 report generated on `tests/fixtures/audit_gouvernement/`.
 
-## 13. Combined audit pipeline (manual tool)
+## 14. Combined audit pipeline (manual tool)
 
 `src/audit_pipeline.py` is a **manual** entry point that runs all three audits
 above by calling their functions directly (no subprocess) and compiles an

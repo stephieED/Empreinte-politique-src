@@ -50,7 +50,11 @@ mkdir -p logs
 if [ "${BACKGROUND:-true}" = "true" ] && [ -z "${_GDL_CHILD:-}" ]; then
   LOG_FILE="logs/generate_data_local_$(date -u +%Y%m%dT%H%M%SZ).log"
   echo "Lancement en arrière-plan — logs : $LOG_FILE"
-  _GDL_CHILD=1 nohup "$0" "$@" > "$LOG_FILE" 2>&1 &
+  # < /dev/null explicite : un stdin hérité fermé/invalide (terminal non
+  # interactif, panneau IDE...) fait échouer bash au relancement ("error
+  # reading input file: Bad file descriptor") — nohup ne redirige stdin que
+  # s'il détecte un terminal, donc ne suffit pas seul dans ce cas.
+  _GDL_CHILD=1 nohup "$0" "$@" < /dev/null > "$LOG_FILE" 2>&1 &
   BG_PID=$!
   disown
   echo "PID : $BG_PID"
@@ -112,11 +116,17 @@ python3 src/generate_all_profiles.py --source ue --workers "$WORKERS" "${MERGE_F
   || echo "[!] extract-ue-officiel en échec (continue-on-error, comme en CI)"
 
 echo "=== [5/7] extract-parltrack : dumps ParlTrack (.zst) ==="
-python3 - <<EOF || echo "[!] extract-parltrack en échec (continue-on-error, comme en CI)"
+# Fichier temporaire plutôt qu'un heredoc (python3 - <<EOF) : un heredoc lit
+# depuis le flux du script lui-même, sensible aux mêmes soucis de descripteur
+# de fichier hérité qu'expliqué ci-dessus sur le relancement nohup — un
+# fichier réel sur disque n'en dépend pas du tout.
+PARLTRACK_SCRIPT="$(mktemp -t generate_data_local_parltrack.XXXXXX.py)"
+trap 'rm -f "$PARLTRACK_SCRIPT"' EXIT
+cat > "$PARLTRACK_SCRIPT" <<'PYEOF'
 import sys
 sys.path.insert(0, "src")
 from parltrack_dumps import ensure_dump, _DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS
-force = "$FRESH_RUN" == "true"
+force = sys.argv[1] == "true"
 ok = True
 for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS]:
     path = ensure_dump(dump, force_download=force)
@@ -124,7 +134,10 @@ for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENT
         print(f"[!] Échec téléchargement : {dump}", file=sys.stderr)
         ok = False
 sys.exit(0 if ok else 1)
-EOF
+PYEOF
+python3 "$PARLTRACK_SCRIPT" "$FRESH_RUN" || echo "[!] extract-parltrack en échec (continue-on-error, comme en CI)"
+rm -f "$PARLTRACK_SCRIPT"
+trap - EXIT
 
 echo "=== [6/7] extract-roster-groupes : membres de groupe (mode léger) ==="
 python3 src/generate_roster_candidats.py
