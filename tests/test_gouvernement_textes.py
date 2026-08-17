@@ -191,6 +191,81 @@ def test_statut_modifie_est_une_navette_en_cours():
     assert record["warnings"] == []
 
 
+# --- fam_code ajoutés en #402 -----------------------------------------------
+# Apparus avec l'ingestion des archives XV/XVI (#400). Le libellé de chaque cas
+# est celui porté par le dataset AN lui-même.
+
+def test_statut_adopte_avec_modifications_est_une_navette_en_cours():
+    """TSORTF02 : « adopté avec modifications » décrit le même fait que
+    TSORTF05 — une chambre adopte un texte qu'elle a modifié, donc la navette
+    continue. Vérifié sur données réelles : sur 53 occurrences, les 29 non
+    terminales sont toutes suivies d'une lecture dans l'autre chambre, et
+    7 des 24 terminales ne sont jamais promulguées (#402)."""
+    dossier = _dossier("TEST-AVEC-MODIF", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-DEBATS-DEC", "2024-03-01", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+        _acte("SN2-DEBATS-DEC", "2024-05-15",
+              {"fam_code": "TSORTF02", "libelle": "adopté avec modifications"}),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "navette_en_cours"
+    assert record["statut"] != "adopte", "sans promulgation, rien n'établit l'adoption (§2.5)"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
+def test_statut_adopte_avec_modifications_puis_promulgation():
+    """Cas réel `DLR5L16N48973` : TSORTF02 en 2e lecture au Sénat, puis
+    publication au JO 8 jours plus tard. La promulgation prime (#400) — c'est
+    elle, et non le libellé de la décision de séance, qui établit l'issue."""
+    dossier = _dossier("TEST-AVEC-MODIF-PROM", "Projet de loi ordinaire test", [
+        _acte("SN1-DEPOT", "2023-11-22"),
+        _acte("AN1-DEBATS-DEC", "2024-04-08", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+        _acte("SN2-DEBATS-DEC", "2024-05-15",
+              {"fam_code": "TSORTF02", "libelle": "adopté avec modifications"}),
+        _acte("PROM-PUB", "2024-05-23"),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "promulgue"
+    assert record["warnings"] == []
+
+
+def test_statut_vote_en_termes_identiques_est_une_adoption():
+    """TSORTF14 : le vote conforme des deux assemblées est une adoption
+    parlementaire achevée. Cas réel `DLR5L16N49373` (projet de loi
+    constitutionnelle sur le corps électoral calédonien) : jamais promulgué
+    faute de Congrès, d'où `adopte` et non `promulgue`."""
+    dossier = _dossier("TEST-TERMES-IDENTIQUES", "Projet de loi constitutionnelle test", [
+        _acte("SN1-DEPOT", "2024-01-29"),
+        _acte("SN1-DEBATS-DEC", "2024-04-02", {"fam_code": "TSORTF01", "libelle": "adopté"}),
+        _acte("AN1-DEBATS-DEC", "2024-05-14", {
+            "fam_code": "TSORTF14",
+            "libelle": "voté par les deux assemblées du Parlement en termes identiques",
+        }),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "adopte"
+    assert record["statut"] != "promulgue", "adoption parlementaire n'est pas promulgation"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
+def test_statut_rejete_definitivement():
+    """TSORTF13 : rejet prononcé par un vote en lecture définitive, distinct
+    du rejet consécutif à un 49.3 (`TSORTF24`), d'où `sort_49_3 = False`. Cas
+    réel `DLR5L16N45929` (règlement du budget 2021, 03/08/2022)."""
+    dossier = _dossier("TEST-REJETE-DEF", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2022-07-04"),
+        _acte("SNNLEC-DEBATS-DEC", "2022-08-02", {"fam_code": "TSORTF07", "libelle": "rejeté"}),
+        _acte("ANLDEF-DEBATS-DEC", "2022-08-03",
+              {"fam_code": "TSORTF13", "libelle": "rejeté définitivement"}),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "rejete"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
 def test_elargissement_du_mapping_ne_desactive_pas_la_protection_25():
     """L'ajout de trois codes ne doit pas transformer la nomenclature fermée
     en fourre-tout : un fam_code réellement inconnu produit toujours

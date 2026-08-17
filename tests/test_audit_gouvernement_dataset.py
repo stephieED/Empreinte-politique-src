@@ -11,6 +11,7 @@ from audit_gouvernement_dataset import (
     compute_agregation_warnings,
     compute_coherence_schema_version,
     compute_comptages_agreges,
+    compute_couverture_textes,
     compute_distribution_membres_textes,
     compute_doublons_gouvernement_id,
     compute_fraicheur_sources,
@@ -711,7 +712,7 @@ def test_build_report_structure_top_level_keys():
 
     assert set(rapport.keys()) == {
         "meta", "volumetrie", "completude", "coherence", "fraicheur",
-        "plage_dates_gouvernements", "warnings", "erreurs_lecture",
+        "couverture_textes", "plage_dates_gouvernements", "warnings", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
         "repartition_periode_actif", "distribution_membres_textes", "comptages_agreges",
@@ -820,6 +821,122 @@ def test_build_report_sur_les_fixtures_du_depot():
     assert rapport["meta"]["total_erreurs_lecture"] == 1
     # Le rapport doit rester intégralement sérialisable en JSON.
     json.dumps(rapport, ensure_ascii=False)
+
+
+# ---------------------------------------------------------------------------
+# compute_couverture_textes (#399)
+# ---------------------------------------------------------------------------
+
+def gouvernement_periode(gouvernement_id, debut, fin, textes=None, nom=None):
+    """Profil minimal : seuls `periode` et `textes` comptent pour la couverture."""
+    profil = {
+        "gouvernement_id": gouvernement_id,
+        "nom": nom or gouvernement_id,
+        "periode": {"debut": debut, "fin": fin, "actif": fin is None},
+    }
+    if textes is not None:
+        profil["textes"] = textes
+    return profil
+
+
+def test_compute_couverture_textes_liste_vide():
+    resultat = compute_couverture_textes([])
+
+    assert resultat["lignes"] == []
+    assert resultat["sans_texte_hors_couverture"] == []
+    assert resultat["sans_texte_dans_couverture"] == []
+    assert resultat["borne_couverture"] == "2017-06-21"
+
+
+def test_compute_couverture_textes_gouvernement_hors_couverture_sans_texte():
+    # Fillon II : période antérieure aux archives ingérées — l'absence de
+    # texte vient de la source, ce n'est pas un zéro constaté.
+    gouvernements = [gouvernement_periode("gouvernement:FILLON_2", "2007-06-19", "2010-11-13", [])]
+
+    resultat = compute_couverture_textes(gouvernements)
+
+    assert resultat["lignes"][0]["statut_couverture"] == "hors_couverture"
+    assert resultat["sans_texte_hors_couverture"] == ["gouvernement:FILLON_2"]
+    assert resultat["sans_texte_dans_couverture"] == []
+
+
+def test_compute_couverture_textes_gouvernement_couvert_sans_texte():
+    # Période couverte et pourtant vide : anomalie réelle, à signaler.
+    gouvernements = [gouvernement_periode("gouvernement:X", "2024-07-18", None, [])]
+
+    resultat = compute_couverture_textes(gouvernements)
+
+    assert resultat["lignes"][0]["statut_couverture"] == "couverte"
+    assert resultat["sans_texte_dans_couverture"] == ["gouvernement:X"]
+    assert resultat["sans_texte_hors_couverture"] == []
+
+
+def test_compute_couverture_textes_gouvernement_couvert_avec_textes_nest_pas_signale():
+    gouvernements = [
+        gouvernement_periode("gouvernement:X", "2024-07-18", None, [texte(date_depot="2024-09-01")])
+    ]
+
+    resultat = compute_couverture_textes(gouvernements)
+
+    assert resultat["sans_texte_dans_couverture"] == []
+    assert resultat["sans_texte_hors_couverture"] == []
+    assert resultat["lignes"][0]["nb_textes"] == 1
+
+
+def test_compute_couverture_textes_champ_textes_absent_reste_none_jamais_zero():
+    # AGENTS.md §2.5 : un champ absent est une donnée manquante, pas un 0.
+    gouvernements = [gouvernement_periode("gouvernement:X", "2024-07-18", None, textes=None)]
+
+    resultat = compute_couverture_textes(gouvernements)
+
+    assert resultat["lignes"][0]["nb_textes"] is None
+
+
+def test_compute_couverture_textes_liste_vide_est_bien_un_zero_observe():
+    gouvernements = [gouvernement_periode("gouvernement:X", "2024-07-18", None, [])]
+
+    assert compute_couverture_textes(gouvernements)["lignes"][0]["nb_textes"] == 0
+
+
+def test_compute_couverture_textes_repartition_par_statut():
+    gouvernements = [
+        gouvernement_periode("gouvernement:HORS", "2007-06-19", "2010-11-13", []),
+        gouvernement_periode("gouvernement:PARTIEL", "2017-06-20", "2020-07-06", []),
+        gouvernement_periode("gouvernement:COUVERT", "2024-07-18", None, []),
+        gouvernement_periode("gouvernement:INDETERMINE", None, None, []),
+    ]
+
+    par_statut = compute_couverture_textes(gouvernements)["par_statut"]
+
+    assert par_statut == {
+        "couverte": 1, "partielle": 1, "hors_couverture": 1, "indeterminee": 1,
+    }
+
+
+def test_compute_couverture_textes_periode_absente_est_indeterminee():
+    resultat = compute_couverture_textes([{"gouvernement_id": "gouvernement:X", "nom": "X"}])
+
+    assert resultat["lignes"][0]["statut_couverture"] == "indeterminee"
+    # Ni « à zéro » ni « hors couverture » : on n'affirme rien.
+    assert resultat["sans_texte_dans_couverture"] == []
+    assert resultat["sans_texte_hors_couverture"] == []
+
+
+def test_compute_couverture_textes_trie_par_nom_puis_id():
+    gouvernements = [
+        gouvernement_periode("gouvernement:B", "2024-07-18", None, [], nom="Gouvernement B"),
+        gouvernement_periode("gouvernement:A", "2024-07-18", None, [], nom="Gouvernement A"),
+    ]
+
+    lignes = compute_couverture_textes(gouvernements)["lignes"]
+
+    assert [ligne["gouvernement_id"] for ligne in lignes] == ["gouvernement:A", "gouvernement:B"]
+
+
+def test_compute_couverture_textes_est_serialisable_json():
+    gouvernements = [gouvernement_periode("gouvernement:X", "2024-07-18", None, [])]
+
+    json.dumps(compute_couverture_textes(gouvernements), ensure_ascii=False)
 
 
 # ---------------------------------------------------------------------------
@@ -954,6 +1071,7 @@ def test_generate_markdown_report_contient_toutes_les_sections():
 
     assert "# Rapport d'audit du jeu de données gouvernements" in markdown
     assert "## Volumétrie" in markdown
+    assert "## Couverture des textes portés" in markdown
     assert "## Tableau croisé des plages temporelles par gouvernement" in markdown
     assert "## Complétude" in markdown
     assert "## Cohérence" in markdown
@@ -975,6 +1093,52 @@ def test_generate_markdown_report_sections_vides_affichent_un_message_explicite(
     assert "Aucun warning." in markdown
     assert "Aucune erreur de lecture." in markdown
     assert "Aucune date invalide détectée." in markdown
+
+
+def test_generate_markdown_report_en_tete_expose_la_borne_de_couverture():
+    # Objectif de #399 : la borne doit être lisible sans lire le code.
+    rapport = build_report([], [], reference_date=REFERENCE)
+
+    markdown = generate_markdown_report(rapport)
+
+    assert "2017-06-21" in markdown.split("## Volumétrie")[0]
+
+
+def test_generate_markdown_report_distingue_hors_couverture_et_zero_constate():
+    gouvernements = [
+        gouvernement_periode(
+            "gouvernement:FILLON_2", "2007-06-19", "2010-11-13", [], nom="Gouvernement Fillon II",
+        ),
+        gouvernement_periode(
+            "gouvernement:X", "2024-07-18", None, [], nom="Gouvernement X",
+        ),
+    ]
+
+    markdown = generate_markdown_report(build_report(gouvernements, [], reference_date=REFERENCE))
+    section_couverture = markdown.split("## Couverture des textes portés")[1]
+    sans_texte_couverts, sans_texte_hors = section_couverture.split(
+        "### Sans texte, hors couverture"
+    )
+
+    # Le gouvernement couvert est le seul rangé parmi les zéros constatés…
+    assert "gouvernement:X" in sans_texte_couverts.split("### Sans texte, dans la couverture")[1]
+    # …et le gouvernement hors couverture parmi les absences de source.
+    assert "gouvernement:FILLON_2" in sans_texte_hors
+    assert "gouvernement:FILLON_2" not in sans_texte_couverts.split(
+        "### Sans texte, dans la couverture"
+    )[1]
+
+
+def test_generate_markdown_report_plage_dates_qualifie_le_nd_hors_couverture():
+    gouvernements = [
+        gouvernement_periode(
+            "gouvernement:FILLON_2", "2007-06-19", "2010-11-13", [], nom="Gouvernement Fillon II",
+        ),
+    ]
+
+    markdown = generate_markdown_report(build_report(gouvernements, [], reference_date=REFERENCE))
+
+    assert "N/D (hors couverture)" in markdown
 
 
 def test_generate_markdown_report_reflete_les_donnees_du_rapport():

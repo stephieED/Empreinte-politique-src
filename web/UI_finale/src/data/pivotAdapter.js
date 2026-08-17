@@ -116,6 +116,33 @@ const GOVERNMENT_TEXTE_STATUT_LABELS = {
   retire: 'Retiré',
 };
 
+// Périmètre réellement couvert par les archives de dossiers législatifs
+// ingérées (#399) : miroir de `src/couverture_dossiers.py` — législatures XV
+// à XVII, la borne étant la première séance de la XV. Les deux valeurs
+// doivent rester alignées ; `tests/test_couverture_dossiers.py` échoue si
+// elles divergent.
+//
+// Avant cette borne, un `textes[]` vide n'est pas « aucun texte porté » :
+// c'est une absence de source, qui ne doit jamais se lire comme un fait
+// mesuré (AGENTS.md §2.5).
+export const GOVERNMENT_TEXTS_COVERAGE_START = '2017-06-21';
+export const GOVERNMENT_TEXTS_COVERAGE_LABEL =
+  'législatures XV à XVII (dossiers déposés à partir du 21 juin 2017)';
+
+/** Classe la période d'un gouvernement face à la couverture des archives ingérées.
+ *  Retourne 'couverte' | 'partielle' | 'hors_couverture' | 'indeterminee',
+ *  mêmes valeurs que `couverture_dossiers.statut_couverture_textes`. */
+export function governmentTextsCoverage(periode = {}) {
+  const debut = periode?.debut;
+  const fin = periode?.fin;
+  if (!debut) return 'indeterminee';
+  if (debut >= GOVERNMENT_TEXTS_COVERAGE_START) return 'couverte';
+  // `fin` absente = gouvernement en cours : période ouverte, donc à cheval
+  // sur la borne — jamais remplacée par la date du jour (AGENTS.md §2.5).
+  if (!fin) return 'partielle';
+  return fin < GOVERNMENT_TEXTS_COVERAGE_START ? 'hors_couverture' : 'partielle';
+}
+
 function toDateMs(value) {
   if (!value) return 0;
   const t = Date.parse(value);
@@ -438,6 +465,10 @@ export function buildGovernmentView(gouvernement) {
     period: `${yearOf(m.debut) || '?'} → ${m.actif ? "aujourd'hui" : (yearOf(m.fin) || '?')}`,
   }));
 
+  // Couverture des archives de dossiers : une période antérieure à la borne
+  // n'autorise aucune conclusion sur les textes portés (#399).
+  const couvertureStatut = governmentTextsCoverage(periode);
+
   return {
     id: String(gouvernement.gouvernement_id || '').replace(/^gouvernement:/, ''),
     title: gouvernement.nom,
@@ -447,5 +478,10 @@ export function buildGovernmentView(gouvernement) {
     membres: membresView,
     textes: textesView,
     statutBadges,
+    textesCouverture: {
+      statut: couvertureStatut,
+      borne: GOVERNMENT_TEXTS_COVERAGE_START,
+      label: GOVERNMENT_TEXTS_COVERAGE_LABEL,
+    },
   };
 }

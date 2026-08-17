@@ -29,6 +29,16 @@ export default function GovernmentProfile({ government }) {
     statusClass: m.actif ? 'gvp-member-status-actif' : 'gvp-member-status-ancien',
   }));
 
+  // Couverture des archives de dossiers législatifs (#399). Hors couverture,
+  // l'absence de texte est une absence de source : elle ne doit jamais être
+  // présentée comme un « 0 texte porté » constaté (AGENTS.md §2.5).
+  const couverture = government.textesCouverture || {};
+  const horsCouverture = couverture.statut === 'hors_couverture';
+  const couvertureIncomplete = horsCouverture || couverture.statut === 'partielle';
+  const messageTextesVides = couvertureIncomplete
+    ? `Période non couverte par les archives ouvertes de l'Assemblée nationale (${couverture.label}) : le nombre de textes portés par ce gouvernement n'est pas mesurable ici. Ce n'est pas un « aucun texte porté ».`
+    : 'Aucune donnée de texte disponible pour ce gouvernement.';
+
   return (
     <main className="gvp-main">
       <div className="gvp-breadcrumb">
@@ -45,8 +55,22 @@ export default function GovernmentProfile({ government }) {
       </div>
 
       <p className="gvp-section-title">Textes portés — comptages par statut</p>
+      {couvertureIncomplete && (
+        <p className="gvp-coverage-note">
+          {horsCouverture
+            ? "Les archives ouvertes de l'Assemblée nationale ne couvrent pas cette période"
+            : "Les archives ouvertes de l'Assemblée nationale ne couvrent qu'une partie de cette période"}{' '}
+          ({couverture.label}). Les textes ci-dessous ne peuvent donc pas être
+          considérés comme la liste complète de ceux portés par ce gouvernement,
+          et une absence n'y vaut pas zéro.
+        </p>
+      )}
       {government.statutBadges.length === 0 ? (
-        <p className="gvp-empty">Aucune donnée de statut disponible pour ce gouvernement.</p>
+        <p className="gvp-empty">
+          {couvertureIncomplete
+            ? 'Aucun comptage par statut ne peut être établi sur cette période — voir la note ci-dessus.'
+            : 'Aucune donnée de statut disponible pour ce gouvernement.'}
+        </p>
       ) : (
         <div className="gvp-statut-badges">
           {government.statutBadges.map((badge) => (
@@ -59,7 +83,7 @@ export default function GovernmentProfile({ government }) {
 
       <p className="gvp-section-title">Textes suivis</p>
       {government.textes.length === 0 ? (
-        <p className="gvp-empty">Aucune donnée de texte disponible pour ce gouvernement.</p>
+        <p className="gvp-empty">{messageTextesVides}</p>
       ) : (
         <div className="gvp-textes-grid">
           {government.textes.map((texte) => (
