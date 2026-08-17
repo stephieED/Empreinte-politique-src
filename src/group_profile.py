@@ -230,15 +230,44 @@ def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
 # Index de votes par membre
 # ---------------------------------------------------------------------------
 
-def _build_vote_index(profil: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def _votes_de_legislature(
+    profil: dict[str, Any], legislature: Optional[str]
+) -> list[dict[str, Any]]:
+    """Votes d'un profil restreints à la législature du groupe.
+
+    Depuis #403, un profil individuel porte les votes de **toutes** les
+    législatures où l'élu a siégé (14 à 17), alors qu'un profil de groupe en
+    couvre exactement une. Sans ce filtre, la cohésion d'un groupe de la 16e
+    agrégerait les scrutins de la 17e dès qu'un membre y siège encore — un
+    scrutin serait attribué à un groupe qui n'existait pas au moment du vote.
+
+    Un vote sans `legislature` est conservé : c'est la forme des votes
+    collectés avant #403, qui ne pouvaient venir que de la seule législature
+    alors interrogée (règle 5 — une donnée absente n'est pas une donnée
+    contradictoire). Un groupe sans législature (Sénat) ne filtre rien.
+    """
+    votes = profil.get("votes") or []
+    if not legislature:
+        return list(votes)
+    return [v for v in votes if (v.get("legislature") or legislature) == str(legislature)]
+
+
+def _build_vote_index(
+    profil: dict[str, Any], legislature: Optional[str] = None
+) -> dict[str, dict[str, Any]]:
     """Construit un index {numero_scrutin → vote_dict} pour un profil individuel.
 
     Permet une recherche O(1) par numéro de scrutin lors du calcul de cohésion.
     Les numéros de scrutin sont normalisés en chaînes pour garantir une comparaison
     homogène.
+
+    L'index n'est unique par numéro qu'à législature donnée : le numéro de
+    scrutin AN repart de 1 à chaque législature (#403). `legislature` restreint
+    donc les votes retenus à celle du groupe — sans quoi le scrutin n° 1000 de
+    la 17e écraserait celui de la 16e, deux textes sans rapport.
     """
     index: dict[str, dict[str, Any]] = {}
-    for v in (profil.get("votes") or []):
+    for v in _votes_de_legislature(profil, legislature):
         num = v.get("numero_scrutin")
         if num is not None:
             index[str(num)] = v
@@ -252,6 +281,7 @@ def _build_vote_index(profil: dict[str, Any]) -> dict[str, dict[str, Any]]:
 def _compute_cohesion_votes(
     profils: list[dict[str, Any]],
     seuil_quorum: float = 0.5,
+    legislature: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Calcule la cohésion de vote pour chaque scrutin couvert par les membres.
 
@@ -269,16 +299,20 @@ def _compute_cohesion_votes(
         profils: liste de profils pivot v1 des membres du groupe.
         seuil_quorum: seuil de taux_participation au-delà duquel quorum_atteint
                       est True (défaut : 0.5).
+        legislature: législature du groupe (ex. "16"), qui restreint les
+                     scrutins retenus — voir ``_votes_de_legislature``. None
+                     (Sénat, ou groupe sans législature) ne filtre rien.
 
     Returns:
         Liste de dicts conformes à la structure cohesion_votes[], triée par date
         décroissante.
     """
     # --- 1. Collecte de tous les scrutins ---
-    # Clé : numero_scrutin (str) → méta du scrutin
+    # Clé : numero_scrutin (str) → méta du scrutin. Unique à législature
+    # donnée seulement, d'où le filtrage préalable (#403).
     scrutins: dict[str, dict[str, Any]] = {}
     for profil in profils:
-        for v in (profil.get("votes") or []):
+        for v in _votes_de_legislature(profil, legislature):
             num = v.get("numero_scrutin")
             if num is None:
                 continue
@@ -297,7 +331,7 @@ def _compute_cohesion_votes(
     # Précalculés une seule fois (au lieu de reparser les dates de mandat à chaque
     # scrutin) : un groupe de N membres et M scrutins ferait sinon O(M x N) reparsing
     # de dates au lieu de O(N) ici + une comparaison de dates déjà parsées par scrutin.
-    vote_indexes = [_build_vote_index(p) for p in profils]
+    vote_indexes = [_build_vote_index(p, legislature) for p in profils]
     eligibility_intervals = [_member_eligibility_intervals(p.get("mandats") or []) for p in profils]
 
     # --- 3. Calcul par scrutin ---
@@ -724,6 +758,7 @@ def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
 def compute_ecarts_cohesion_internes(
     profils: list[dict[str, Any]],
     cohesion_votes: list[dict[str, Any]],
+    legislature: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Calcule, pour chaque membre, son écart de participation/cohérence vs le groupe.
 
@@ -734,6 +769,9 @@ def compute_ecarts_cohesion_internes(
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
         cohesion_votes: sortie de ``_compute_cohesion_votes`` pour ce même groupe.
+        legislature: législature du groupe, à passer telle qu'utilisée pour
+                     ``_compute_cohesion_votes`` — les numéros de scrutin ne
+                     sont comparables qu'à législature égale (#403).
 
     Returns:
         Liste de dicts {membre_id, nom, nb_scrutins_eligibles,
@@ -755,7 +793,7 @@ def compute_ecarts_cohesion_internes(
     resultats: list[dict[str, Any]] = []
     for profil in profils:
         mandats = profil.get("mandats") or []
-        v_index = _build_vote_index(profil)
+        v_index = _build_vote_index(profil, legislature)
 
         n_eligible = 0
         n_present = 0
@@ -909,7 +947,9 @@ def build_groupe_profile(
         periode_fin = str(max(parsed_fins)) if parsed_fins else None
 
     # --- Cohésion de vote ---
-    cohesion_votes = _compute_cohesion_votes(profils, seuil_quorum=seuil_quorum)
+    cohesion_votes = _compute_cohesion_votes(
+        profils, seuil_quorum=seuil_quorum, legislature=legislature
+    )
 
     # --- Tags thématiques ---
     tags_agreges, tag_source = aggregate_tags_thematiques(profils)
@@ -1229,7 +1269,9 @@ def generate_groupe_profile_from_roster(
             print("  ✓ Profil de groupe valide selon le schéma.", file=sys.stderr)
 
     if rapport_interne_path:
-        rapport = compute_ecarts_cohesion_internes(profils, profil_groupe["cohesion_votes"])
+        rapport = compute_ecarts_cohesion_internes(
+            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature")
+        )
         rapport_interne_path.parent.mkdir(parents=True, exist_ok=True)
         rapport_interne_path.write_text(
             json.dumps(rapport, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -1333,7 +1375,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             print("  ✓ Profil de groupe valide selon le schéma.", file=sys.stderr)
 
     if args.rapport_interne:
-        rapport = compute_ecarts_cohesion_internes(profils, profil_groupe["cohesion_votes"])
+        rapport = compute_ecarts_cohesion_internes(
+            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature")
+        )
         rapport_path = Path(args.rapport_interne)
         rapport_path.parent.mkdir(parents=True, exist_ok=True)
         rapport_path.write_text(

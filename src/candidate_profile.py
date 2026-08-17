@@ -80,15 +80,73 @@ AN_SCRUTINS_ZIP_NAME = {
     # Pas de donnees ouvertes de scrutins disponibles pour la 13e legislature
     # (2007-2012) sur data.assemblee-nationale.fr.
 }
-# Association du domaine NosDeputes.fr (celui ou l'identite du parlementaire a
-# ete trouvee) a la legislature Assemblee nationale correspondante.
-LEGISLATURE_BY_BASE_URL = {
-    "https://www.nosdeputes.fr": "16",
-    "https://2017-2022.nosdeputes.fr": "15",
-    "https://2012-2017.nosdeputes.fr": "14",
-    "https://2007-2012.nosdeputes.fr": "13",
-}
+# Legislatures interrogees pour les votes nominatifs, dans l'ordre decroissant
+# (la plus recente d'abord). Remplace depuis #403 le mapping domaine
+# NosDeputes.fr -> legislature qui servait ici : il figeait chaque profil sur
+# UNE seule legislature, celle du domaine ou l'identite avait ete trouvee, donc
+# en pratique toujours la 16e depuis l'etape 4 de #369 (identity_base_url vaut
+# None pour tout depute resolu via l'AN, et le domaine principal de
+# NosDeputes.fr y etait code en dur comme "16"). Un depute peut sieger sur
+# plusieurs legislatures successives : ses votes sont desormais agreges sur
+# toutes celles disponibles, comme les amendements (AN_AMENDEMENTS_PATH) et les
+# dossiers legislatifs (#400).
+AN_SCRUTINS_LEGISLATURES: tuple[str, ...] = ("17", "16", "15", "14")
 SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
+# Legislatures dont les scrutins ne bougeront plus (dossier legislatif clos ;
+# Last-Modified verifie le 18/08/2026 : 2018-03-21 pour la 14e, 2022-06-09 pour
+# la 15e, 2024-06-28 pour la 16e). Leur index est construit une fois pour
+# toutes hors CI (build_scrutins_index_figes.py) et committe gzippe dans
+# AN_SCRUTINS_FIGES_DIR : la CI n'a donc plus a telecharger que la 17e
+# (legislature en cours). Meme remede que pour les amendements
+# (AN_AMENDEMENTS_LEGISLATURES_FIGEES), a une nuance pres : les archives de
+# scrutins sont petites (0,7 a 26 Mo, toutes "Cacheable" par le CDN AN) et ne
+# souffrent pas des IncompleteRead chroniques des archives d'amendements
+# (283-618 Mo) — le gel evite ici un cout repete inutilement par chaque shard
+# CI, pas un echec de telechargement. Voir
+# docs/technical_decisions.md#votes-multi-legislature.
+AN_SCRUTINS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"14", "15", "16"})
+AN_SCRUTINS_FIGES_DIR = Path("raw_data") / "scrutins_an_figes"
+# Forme dedupliquee du cache de votes (#403, remede repris de #377) : le meta
+# de chaque scrutin (titre surtout) est stocke UNE fois dans `scrutins.json`
+# (uid -> meta), et l'index par acteur ne porte que des references
+# [uid, position]. Mesure sur les 4 legislatures : 68 Mo au total contre 741 Mo
+# pour la forme plate ou le meta etait recopie pour chaque votant (x11), et
+# 138 Mio de RSS au pic de construction (17e, la plus lourde) contre ~660 Mio.
+SCRUTINS_CACHE_SCRUTINS_FILENAME = "scrutins.json"
+# Une tranche par acteurRef (#403, remede repris de #392) : `fetch_votes_officiels`
+# n'a besoin que de la tranche du candidat courant (~55 Ko) au lieu des 357 Mo
+# d'index complets de la 17e legislature, relus a chaque candidat.
+SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME = "index_par_acteur"
+# Ancien fichier unique (forme plate, avant #403), conserve pour pouvoir le
+# supprimer lors de la migration vers les tranches — il pesait a lui seul
+# 132 a 357 Mo par legislature.
+SCRUTINS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY = "index_par_acteur.json"
+# Fichiers committes pour une legislature figee (memes formats que le cache,
+# gzippes : 0,13 / 1,14 / 1,48 Mo pour les legislatures 14 / 15 / 16).
+SCRUTINS_FIGES_SCRUTINS_FILENAME = "scrutins.json.gz"
+SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
+# Memo process du store `uid -> scrutin` par legislature. Volontairement limite
+# au store dedupliqué (2,5 Mo au plus, pour la 17e) : memoiser les index par
+# acteur complets rouvrirait l'OOM traite par #377/#392.
+_SCRUTINS_STORE_MEMO: dict[str, Optional[dict[str, dict[str, Any]]]] = {}
+# Page publique d'un scrutin sur assemblee-nationale.fr, par legislature et
+# numero : source primaire de chaque vote (regle 2, tracabilite). Verifiee le
+# 18/08/2026 sur les legislatures 14, 15 et 17.
+AN_SCRUTIN_PAGE_URL = "https://www.assemblee-nationale.fr/dyn/{legislature}/scrutins/{numero}"
+# Prefixe d'uid des scrutins de l'Assemblee nationale proprement dits. Les
+# archives de scrutins AN contiennent aussi, marginalement, des scrutins du
+# CONGRES (prefixe VTCGR) : une seule occurrence sur les quatre legislatures,
+# le vote de constitutionnalisation de l'IVG du 04/03/2024 (VTCGR5L16V1).
+# Ils sont ecartes, faute de pouvoir les publier correctement : le Congres est
+# une assemblee distincte (Assemblee + Senat reunis a Versailles, d'ou les 24
+# senateurs qui apparaissent dans sa ventilation nominative), et sa numerotation
+# repart de 1 en partageant l'espace de numeros de l'AN — VTCGR5L16V1 porte le
+# numero 1, deja pris par la motion de censure du 11/07/2022. Le publier
+# donnerait donc une source primaire fausse (verifie le 18/08/2026 :
+# /dyn/16/scrutins/1 renvoie bien la motion de censure) et le confondrait avec
+# elle dans la cohesion de groupe, qui indexe par numero a legislature donnee.
+# Voir docs/technical_decisions.md#votes-multi-legislature et ROADMAP.
+AN_SCRUTIN_UID_PREFIXE = "VTANR"
 
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
 # sous-repertoire et du zip differe selon la legislature : "amendements_div_legis"
@@ -794,139 +852,446 @@ def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
     return match.group(0) if match else None
 
 
-def _scrutins_json_dir(legislature: str) -> Path:
-    return SCRUTINS_CACHE_DIR / legislature / "json"
+def _scrutins_shard_path_acteur(legislature: str, acteur_ref: str) -> Optional[Path]:
+    """Chemin de la tranche d'index de votes d'UN acteur (#403, reprise de #392).
+
+    Retourne `None` si `acteur_ref` n'a pas la forme attendue d'un identifiant
+    AN (`PA` suivi de chiffres) : le nom de fichier en étant dérivé, on refuse
+    tout ce qui pourrait sortir du répertoire de cache plutôt que d'assainir
+    approximativement."""
+    if not isinstance(acteur_ref, str) or not re.fullmatch(r"PA\d+", acteur_ref):
+        return None
+    return (
+        SCRUTINS_CACHE_DIR
+        / legislature
+        / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+        / f"{acteur_ref}.json"
+    )
 
 
-def _ensure_scrutins_downloaded(legislature: str) -> Optional[Path]:
-    """Télécharge (avec cache local) l'archive open data des scrutins d'une législature."""
-    json_dir = _scrutins_json_dir(legislature)
-    if json_dir.is_dir() and any(json_dir.iterdir()):
-        return json_dir
-
+def _scrutins_zip_url(legislature: str) -> Optional[str]:
+    """URL de l'archive open data des scrutins d'une législature, ou `None` si
+    l'Assemblée nationale n'en publie pas (13e et antérieures)."""
     zip_name = AN_SCRUTINS_ZIP_NAME.get(legislature)
     if not zip_name:
         return None
-
-    url = f"{AN_OPENDATA_BASE}/{legislature}/loi/scrutins/{zip_name}"
-    print(f"-> Téléchargement des scrutins officiels (Assemblée nationale) : {url}")
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=60)
-        resp.raise_for_status()
-    except requests.RequestException as exc:
-        print(f"  [!] Échec du téléchargement des scrutins officiels : {exc}")
-        return None
-
-    try:
-        with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-            for member in zf.namelist():
-                if member.endswith(".json"):
-                    zf.extract(member, path=SCRUTINS_CACHE_DIR / legislature)
-    except zipfile.BadZipFile as exc:
-        print(f"  [!] Archive de scrutins invalide : {exc}")
-        return None
-
-    return json_dir if json_dir.is_dir() else None
+    return f"{AN_OPENDATA_BASE}/{legislature}/loi/scrutins/{zip_name}"
 
 
-def _iter_votants(decompte_nominatif: dict, position: str, list_key: str):
-    """Parcourt la liste nominative des votants pour une position donnée (pour/contre/...)."""
-    block = decompte_nominatif.get(list_key)
-    if not isinstance(block, dict):
+def _iter_votants(decompte_nominatif: dict, position: str, list_keys: tuple[str, ...]):
+    """Parcourt la liste nominative des votants pour une position donnée.
+
+    `list_keys` énumère les noms de clé possibles pour cette position, les deux
+    schémas cohabitant dans les archives réelles (relevé exhaustif du
+    18/08/2026 sur les quatre législatures) :
+    - pluriel `pours`/`contres`/`abstentions`/`nonVotants` : schéma moderne,
+      toute la 15e/17e et 4 105 des 4 106 scrutins de la 16e ;
+    - singulier `pour`/`contre` : toute la 14e (avec `abstentions`/`nonVotants`
+      au pluriel) ;
+    - singulier `pour`/`contre`/`abstention`/`nonVotant` : le scrutin du
+      Congrès `VTCGR5L16V1` (4 mars 2024), seule occurrence.
+
+    Ce dernier cas n'est pas théorique : l'indexeur d'avant #403 n'acceptait
+    que le pluriel et perdait donc ce scrutin en silence pour tout le jeu de
+    données."""
+    for list_key in list_keys:
+        block = decompte_nominatif.get(list_key)
+        if not isinstance(block, dict):
+            continue
+        votants = block.get("votant")
+        if votants is None:
+            continue
+        if isinstance(votants, dict):
+            votants = [votants]
+        for v in votants:
+            if isinstance(v, dict) and v.get("acteurRef"):
+                yield v["acteurRef"], position
+
+
+# Position du schema pivot -> noms de cle possibles dans decompteNominatif
+# (voir `_iter_votants` pour la difference de schema entre la 14e et les
+# legislatures suivantes).
+_SCRUTINS_POSITION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("pour", ("pours", "pour")),
+    ("contre", ("contres", "contre")),
+    ("abstention", ("abstentions", "abstention")),
+    ("non_votant", ("nonVotants", "nonVotant")),
+)
+
+
+def _iter_scrutins_bruts(data: Any):
+    """Parcourt les scrutins d'une entrée d'archive, quel que soit son conditionnement.
+
+    Deux conditionnements coexistent chez l'Assemblée nationale (constaté le
+    18/08/2026 sur les archives réelles) :
+    - légis 15/16/17 : une arborescence `json/`, **un fichier par scrutin**,
+      racine `{"scrutin": {...}}` ;
+    - légis 14 : un JSON **monolithique** `Scrutins_XIV.json`, racine
+      `{"scrutins": {"scrutin": [...]}}`, avec la même structure de scrutin.
+
+    C'est le même changement d'architecture AN entre la 14e et la 15e que pour
+    les dossiers législatifs (#400) et les amendements — mais ici les données
+    de la 14e sont bien présentes, seul le conditionnement diffère : les
+    ignorer perdrait 1 354 scrutins réels. Le conditionnement est détecté par
+    la clé racine, jamais par le nom de fichier."""
+    if not isinstance(data, dict):
         return
-    votants = block.get("votant")
-    if votants is None:
+    unitaire = data.get("scrutin")
+    if isinstance(unitaire, dict):
+        yield unitaire
         return
-    if isinstance(votants, dict):
-        votants = [votants]
-    for v in votants:
-        if isinstance(v, dict) and v.get("acteurRef"):
-            yield v["acteurRef"], position
+    groupe = data.get("scrutins")
+    if isinstance(groupe, dict):
+        scrutins = groupe.get("scrutin")
+        if isinstance(scrutins, dict):
+            scrutins = [scrutins]
+        for scrutin in scrutins or []:
+            if isinstance(scrutin, dict):
+                yield scrutin
 
 
-def _build_acteur_vote_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Construit (et met en cache sur disque) un index acteurRef -> liste de votes.
+def _parse_scrutins_zip(
+    zip_path_or_bytes: Any, legislature: str
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[list[str]]]]:
+    """Parse une archive de scrutins AN en `(scrutins, index_par_acteur)` dédupliqués.
 
-    Thread-safe : un verrou par législature garantit qu'un seul thread à la fois
-    télécharge l'archive et écrit le cache disque pour une législature donnée.
-    Des législatures différentes sont traitées indépendamment sans blocage mutuel.
-    """
-    with _get_scrutins_lock(legislature):
-        index_path = SCRUTINS_CACHE_DIR / legislature / "index_par_acteur.json"
-        if index_path.is_file():
+    Lu directement depuis le zip, sans extraction sur disque : l'arborescence
+    décompressée pèse 64 à 182 Mo par législature alors que seul l'index en est
+    tiré (extrait de la construction pour être réutilisable par
+    `build_scrutins_index_figes.py`, qui parse une archive téléchargée hors CI).
+
+    - `scrutins` : `uid -> {numero, date, titre, sort, legislature}`, le meta
+      stocké UNE seule fois (forme dédupliquée, #377) ;
+    - `index_par_acteur` : `acteurRef -> [[uid, position], ...]`, référence
+      minimale par lien acteur/scrutin.
+
+    L'`uid` (ex. `VTANR5L17V1000`) porte la législature : il est unique toutes
+    législatures confondues, contrairement au `numero` qui repart de 1 à chaque
+    législature — c'est lui qui sert de clé de déduplication inter-législatures
+    dans `fetch_votes_officiels`.
+
+    Lève `zipfile.BadZipFile` si l'archive est invalide (laissé à l'appelant)."""
+    scrutins: dict[str, dict[str, Any]] = {}
+    index: dict[str, list[list[str]]] = {}
+    ignores_hors_an = 0
+
+    with zipfile.ZipFile(zip_path_or_bytes) as zf:
+        membres = [m for m in zf.namelist() if m.endswith(".json")]
+        for membre in membres:
             try:
-                with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, OSError):
-                pass  # cache corrompu : on reconstruit
+                with zf.open(membre) as f:
+                    data = json.load(io.TextIOWrapper(f, encoding="utf-8"))
+            except (json.JSONDecodeError, OSError, KeyError):
+                continue
+            for scrutin in _iter_scrutins_bruts(data):
+                uid = scrutin.get("uid")
+                organe = (scrutin.get("ventilationVotes") or {}).get("organe") or {}
+                groupes = (organe.get("groupes") or {}).get("groupe")
+                if not uid or groupes is None:
+                    continue
+                if not str(uid).startswith(AN_SCRUTIN_UID_PREFIXE):
+                    # Scrutin du Congrès : hors périmètre, voir AN_SCRUTIN_UID_PREFIXE.
+                    ignores_hors_an += 1
+                    continue
+                if isinstance(groupes, dict):
+                    groupes = [groupes]
+                scrutins[uid] = {
+                    "numero": scrutin.get("numero"),
+                    "date": scrutin.get("dateScrutin"),
+                    "titre": scrutin.get("titre"),
+                    "sort": (scrutin.get("sort") or {}).get("libelle"),
+                    "legislature": scrutin.get("legislature") or legislature,
+                }
+                for groupe in groupes:
+                    if not isinstance(groupe, dict):
+                        continue
+                    decompte = (groupe.get("vote") or {}).get("decompteNominatif") or {}
+                    for position, list_keys in _SCRUTINS_POSITION_KEYS:
+                        for acteur_ref, pos in _iter_votants(decompte, position, list_keys):
+                            index.setdefault(acteur_ref, []).append([uid, pos])
 
-        json_dir = _ensure_scrutins_downloaded(legislature)
-        if json_dir is None:
-            return {}
+    if ignores_hors_an:
+        print(
+            f"  [i] {ignores_hors_an} scrutin(s) hors Assemblée nationale (Congrès) "
+            f"écarté(s) pour la législature {legislature} — voir AN_SCRUTIN_UID_PREFIXE"
+        )
+    return scrutins, index
 
-        index: dict[str, list[dict[str, Any]]] = {}
-        fichiers = sorted(json_dir.glob("*.json"))
-        print(f"-> Indexation de {len(fichiers)} scrutins officiels (législature {legislature})...")
-        for path in fichiers:
+
+def _write_cached_scrutins(
+    legislature: str,
+    scrutins: dict[str, dict[str, Any]],
+    index_par_acteur: dict[str, list[list[str]]],
+) -> None:
+    """Écrit (best-effort) le cache disque d'une législature sous forme
+    dédupliquée et shardée : `scrutins.json` puis une tranche par acteur.
+
+    `scrutins.json` est écrit en premier et le répertoire de tranches n'est
+    considéré valide en lecture que s'il existe : une écriture interrompue
+    laisse donc un cache traité comme absent (reconstruit au run suivant),
+    jamais un couple incohérent. Écrase au passage l'`index_par_acteur.json`
+    plat hérité d'avant #403 et l'arborescence `json/` décompressée, qui
+    pesaient ensemble jusqu'à 538 Mo pour la seule 17e législature — la
+    migration d'un ancien cache libère donc cette place au premier run."""
+    cache_dir = SCRUTINS_CACHE_DIR / legislature
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with open(cache_dir / SCRUTINS_CACHE_SCRUTINS_FILENAME, "w", encoding="utf-8") as f:
+        json.dump(scrutins, f, ensure_ascii=False)
+
+    index_dir = cache_dir / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+    # Répertoire reconstruit de zéro : un acteur disparu d'une reconstruction
+    # ne doit pas laisser sa tranche périmée derrière lui.
+    shutil.rmtree(index_dir, ignore_errors=True)
+    index_dir.mkdir(parents=True, exist_ok=True)
+    for acteur_ref, refs in index_par_acteur.items():
+        shard = _scrutins_shard_path_acteur(legislature, acteur_ref)
+        if shard is None:
+            continue  # acteurRef hors forme attendue : ignoré plutôt qu'écrit
+        with open(shard, "w", encoding="utf-8") as f:
+            json.dump(refs, f, ensure_ascii=False)
+
+    (cache_dir / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY).unlink(missing_ok=True)
+    shutil.rmtree(cache_dir / "json", ignore_errors=True)
+
+
+def _read_cached_scrutins_store(legislature: str) -> Optional[dict[str, dict[str, Any]]]:
+    """Store dédupliqué `uid -> scrutin` d'une législature, mémoïsé en mémoire process.
+
+    Sûr à mémoïser, contrairement aux index par acteur complets : mesuré sur le
+    cache réel, les quatre stores réunis pèsent 5,5 Mo (2,5 Mo pour la 17e, la
+    plus lourde) là où les quatre index par acteur pèsent 68 Mo — et 741 Mo
+    une fois expansés en forme plate, ce qui est exactement le chemin qui a
+    déclenché deux OOM sur les amendements (#377, #392).
+
+    Le cache disque n'est jamais réécrit pendant la vie d'un process de collecte
+    au-delà de sa première matérialisation, donc mémoïser ne peut pas servir une
+    version périmée. La lecture prend le même verrou par législature que cette
+    matérialisation : sans lui, un thread pouvant mémoïser un `None` lu avant
+    l'écriture du cache juste après que le thread écrivain a purgé le mémo, la
+    législature resterait « indisponible » pour tout le reste du process."""
+    with _get_scrutins_lock(legislature):
+        if legislature in _SCRUTINS_STORE_MEMO:
+            return _SCRUTINS_STORE_MEMO[legislature]
+        path = SCRUTINS_CACHE_DIR / legislature / SCRUTINS_CACHE_SCRUTINS_FILENAME
+        store: Optional[dict[str, dict[str, Any]]] = None
+        if path.is_file():
             try:
                 with open(path, encoding="utf-8") as f:
-                    data = json.load(f)
+                    charge = json.load(f)
+                if isinstance(charge, dict):
+                    store = charge
             except (json.JSONDecodeError, OSError):
-                continue
-            scrutin = data.get("scrutin") or {}
-            organe = (scrutin.get("ventilationVotes") or {}).get("organe") or {}
-            groupes = (organe.get("groupes") or {}).get("groupe")
-            if groupes is None:
-                continue
-            if isinstance(groupes, dict):
-                groupes = [groupes]
-            meta = {
-                "numero": scrutin.get("numero"),
-                "date": scrutin.get("dateScrutin"),
-                "titre": scrutin.get("titre"),
-                "sort": (scrutin.get("sort") or {}).get("libelle"),
-            }
-            for groupe in groupes:
-                if not isinstance(groupe, dict):
-                    continue
-                decompte = (groupe.get("vote") or {}).get("decompteNominatif") or {}
-                for acteur_ref, position in [
-                    *_iter_votants(decompte, "pour", "pours"),
-                    *_iter_votants(decompte, "contre", "contres"),
-                    *_iter_votants(decompte, "abstention", "abstentions"),
-                    *_iter_votants(decompte, "non_votant", "nonVotants"),
-                ]:
-                    index.setdefault(acteur_ref, []).append({**meta, "position": position})
+                store = None  # cache corrompu : traité comme absent
+        _SCRUTINS_STORE_MEMO[legislature] = store
+        return store
+
+
+def _clear_scrutins_store_memo() -> None:
+    """Vide le mémo du store (tests uniquement : un process de collecte ne voit
+    jamais le cache disque changer sous lui après matérialisation)."""
+    _SCRUTINS_STORE_MEMO.clear()
+
+
+def _scrutins_cache_present(legislature: str) -> bool:
+    """True si le cache disque d'une législature est déjà matérialisé sous la
+    forme dédupliquée + shardée (#403). Un cache écrit avant #403 (fichier
+    unique, forme plate) est indiscernable d'un cache absent, donc reconstruit
+    — jamais relu en mémoire, ce qui est précisément ce qu'il fallait éviter."""
+    cache_dir = SCRUTINS_CACHE_DIR / legislature
+    return (
+        (cache_dir / SCRUTINS_CACHE_SCRUTINS_FILENAME).is_file()
+        and (cache_dir / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME).is_dir()
+    )
+
+
+def _load_frozen_scrutins_index(legislature: str) -> bool:
+    """Matérialise dans le cache disque l'index committé d'une législature figée
+    (`AN_SCRUTINS_LEGISLATURES_FIGEES`), construit hors CI par
+    `build_scrutins_index_figes.py` sous forme dédupliquée et gzippée.
+
+    Retourne False si le fallback committé est absent ou illisible : l'appelant
+    retombe alors sur le chemin réseau standard (l'archive reste téléchargeable,
+    le gel n'est ici qu'une économie de CI — voir
+    docs/technical_decisions.md#votes-multi-legislature)."""
+    frozen_dir = AN_SCRUTINS_FIGES_DIR / legislature
+    frozen_scrutins_path = frozen_dir / SCRUTINS_FIGES_SCRUTINS_FILENAME
+    frozen_index_path = frozen_dir / SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME
+    if not frozen_scrutins_path.is_file() or not frozen_index_path.is_file():
+        return False
+    try:
+        with gzip.open(frozen_scrutins_path, "rt", encoding="utf-8") as f:
+            scrutins = json.load(f)
+        with gzip.open(frozen_index_path, "rt", encoding="utf-8") as f:
+            index_par_acteur = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return False
+    if not isinstance(scrutins, dict) or not isinstance(index_par_acteur, dict):
+        return False
+
+    try:
+        _write_cached_scrutins(legislature, scrutins, index_par_acteur)
+    except OSError:
+        return False
+    return True
+
+
+def _ensure_scrutins_index(legislature: str) -> bool:
+    """Garantit la présence du cache d'index de votes d'une législature.
+
+    Ordre : cache déjà matérialisé → index committé si la législature est figée
+    → téléchargement + parsing de l'archive AN. Retourne False si aucune de ces
+    voies n'aboutit (législature sans open data, réseau indisponible, archive
+    invalide) — chaque législature étant tentée indépendamment, un échec ici
+    n'empêche jamais les autres d'être agrégées.
+
+    Thread-safe : un verrou par législature garantit qu'un seul thread à la fois
+    télécharge et écrit le cache d'une législature donnée ; des législatures
+    différentes sont traitées sans blocage mutuel."""
+    with _get_scrutins_lock(legislature):
+        if _scrutins_cache_present(legislature):
+            return True
+
+        if legislature in AN_SCRUTINS_LEGISLATURES_FIGEES and _load_frozen_scrutins_index(legislature):
+            print(f"-> Index de scrutins figé réutilisé (législature {legislature}, aucun téléchargement)")
+            return True
+
+        url = _scrutins_zip_url(legislature)
+        if not url:
+            return False
+
+        print(f"-> Téléchargement des scrutins officiels (Assemblée nationale) : {url}")
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=60)
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            print(f"  [!] Échec du téléchargement des scrutins officiels : {exc}")
+            return False
 
         try:
-            index_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(index_path, "w", encoding="utf-8") as f:
-                json.dump(index, f, ensure_ascii=False)
+            scrutins, index = _parse_scrutins_zip(io.BytesIO(resp.content), legislature)
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive de scrutins invalide : {exc}")
+            return False
+
+        if not scrutins:
+            return False
+
+        print(f"-> Indexation de {len(scrutins)} scrutins officiels (législature {legislature})...")
+        try:
+            _write_cached_scrutins(legislature, scrutins, index)
         except OSError:
-            pass
+            return False
+        _SCRUTINS_STORE_MEMO.pop(legislature, None)
+        return True
 
-        return index
+
+def _read_cached_votes_acteur(legislature: str, acteur_ref: str) -> Optional[list[dict[str, Any]]]:
+    """Votes d'UN acteur pour une législature, résolus depuis le cache dédupliqué
+    et shardé. Retourne `None` si le cache est absent/illisible, une liste
+    éventuellement vide si l'acteur n'y figure pas — distinguer « n'a pas voté
+    sous cette législature » de « index indisponible » est ce qui pilote le
+    warning côté `fetch_votes_officiels` (règle 5 : une donnée manquante n'est
+    jamais un 0).
+
+    Coût : une tranche d'acteur (~55 Ko) plus le store mémoïsé, au lieu des
+    132 à 357 Mo d'index complets que la forme d'avant #403 relisait pour
+    chaque candidat."""
+    store = _read_cached_scrutins_store(legislature)
+    if store is None:
+        return None
+
+    index_dir = SCRUTINS_CACHE_DIR / legislature / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+    if not index_dir.is_dir():
+        return None
+
+    shard_path = _scrutins_shard_path_acteur(legislature, acteur_ref)
+    if shard_path is None or not shard_path.is_file():
+        return []
+
+    try:
+        with open(shard_path, encoding="utf-8") as f:
+            refs = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(refs, list):
+        return None
+
+    votes: list[dict[str, Any]] = []
+    for ref in refs:
+        if not isinstance(ref, (list, tuple)) or len(ref) != 2:
+            continue
+        uid, position = ref
+        base = store.get(uid)
+        if base is None:
+            continue
+        votes.append({**base, "uid": uid, "position": position})
+    return votes
 
 
-def fetch_votes_officiels(base_url: str, url_an_ou_senat: Optional[str]) -> tuple[list[dict[str, Any]], Optional[str]]:
+def fetch_votes_officiels(
+    url_an_ou_senat: Optional[str], warnings: Optional[list[str]] = None
+) -> tuple[list[dict[str, Any]], list[str]]:
     """Récupère les votes nominatifs officiels d'un député via l'open data de l'Assemblée nationale.
 
-    L'endpoint /votes de NosDéputés.fr est en panne (HTTP 500 systématique,
-    y compris sur l'exemple officiel de leur propre documentation, testé sur
-    tous les domaines et législatures disponibles). On utilise donc directement
-    les données ouvertes de data.assemblee-nationale.fr, qui contiennent le
-    détail nominatif (pour/contre/abstention/non-votant) de chaque scrutin,
-    identifié par l'acteurRef (ex: PA2150) du parlementaire.
-    """
-    legislature = LEGISLATURE_BY_BASE_URL.get(base_url)
-    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
-    if not legislature or not acteur_ref:
-        return [], None
+    L'endpoint /votes de NosDéputés.fr est en panne (HTTP 500 systématique, y
+    compris sur l'exemple officiel de leur propre documentation, testé sur tous
+    les domaines et législatures disponibles). On utilise donc directement les
+    données ouvertes de data.assemblee-nationale.fr, qui contiennent le détail
+    nominatif (pour/contre/abstention/non-votant) de chaque scrutin, identifié
+    par l'acteurRef (ex: PA2150) du parlementaire.
 
-    index = _build_acteur_vote_index(legislature)
-    votes = index.get(acteur_ref, [])
-    votes_sorted = sorted(votes, key=lambda v: v.get("date") or "", reverse=True)
-    return votes_sorted, legislature
+    Agrège **toutes** les législatures publiées (`AN_SCRUTINS_LEGISLATURES`),
+    comme le font déjà les amendements et les dossiers législatifs : jusqu'à
+    #403, une seule législature était interrogée — celle déduite du domaine
+    NosDéputés où l'identité avait été trouvée, donc en pratique toujours la
+    16e, ce qui arrêtait les votes de tout le jeu de données en juin 2024 et en
+    perdait 2,7x.
+
+    Chaque législature est tentée indépendamment : une archive indisponible
+    n'interrompt jamais l'agrégation des autres (même précaution qu'en #241 sur
+    les amendements) ; si `warnings` est fourni, l'absence y est tracée par
+    législature.
+
+    Retourne `(votes, legislatures_couvertes)`, les votes triés du plus récent
+    au plus ancien et dédupliqués par `uid` de scrutin — jamais par `numero`,
+    qui repart de 1 à chaque législature (#400 : un fait ne doit jamais être
+    compté deux fois)."""
+    acteur_ref = _extract_acteur_ref(url_an_ou_senat)
+    if not acteur_ref:
+        return [], []
+
+    votes: list[dict[str, Any]] = []
+    vus: set[str] = set()
+    legislatures_couvertes: list[str] = []
+    for legislature in AN_SCRUTINS_LEGISLATURES:
+        if not _ensure_scrutins_index(legislature):
+            if warnings is not None:
+                warnings.append(
+                    f"{WARNING_PREFIX_VOTES_INTROUVABLES} (législature {legislature}) : "
+                    "index des scrutins indisponible (archive open data non téléchargée ou invalide)."
+                )
+            continue
+        records = _read_cached_votes_acteur(legislature, acteur_ref)
+        if records is None:
+            if warnings is not None:
+                warnings.append(
+                    f"{WARNING_PREFIX_VOTES_INTROUVABLES} (législature {legislature}) : "
+                    "cache d'index des scrutins illisible."
+                )
+            continue
+        retenus = 0
+        for record in records:
+            uid = record.get("uid")
+            if uid in vus:
+                continue
+            vus.add(uid)
+            votes.append(record)
+            retenus += 1
+        if retenus:
+            legislatures_couvertes.append(legislature)
+
+    votes.sort(key=lambda v: v.get("date") or "", reverse=True)
+    return votes, sorted(legislatures_couvertes)
 
 
 # Type d'auteur (open data amendements) -> type_deposant du schema pivot.
@@ -3846,12 +4211,11 @@ def build_profile(
             # base_urls[0] (législature courante) renvoie une liste vide pour un
             # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
             dossiers_base_url = identity_base_url or base_urls[0]
-            dossiers_legislatures = (
-                [LEGISLATURE_BY_BASE_URL[dossiers_base_url]]
-                if dossiers_base_url in LEGISLATURE_BY_BASE_URL
-                else ["15", "16"]
-            )
-            dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, dossiers_legislatures)
+            # Cette branche n'est atteinte que pour les sénateurs, dont les
+            # domaines (archive.nossenateurs.fr) n'ont jamais figuré dans le
+            # mapping domaine -> législature supprimé en #403 : le repli 15/16
+            # était donc déjà le seul chemin réellement emprunté ici.
+            dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, ["15", "16"])
             time.sleep(0.3)
         # Un parlementaire dont le mandat s'est terminé lors d'une législature
         # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
@@ -4030,16 +4394,14 @@ def build_profile(
     # branchée), on retombe sur les champs bruts de NosSénateurs (votes_raw,
     # non interrogé pour les députés — voir étape 1). ---
     official_votes: list[dict[str, Any]] = []
+    official_legislatures: list[str] = []
     if chambre == "deputes" and profile.get("identite"):
         try:
-            official_votes, official_legislature = fetch_votes_officiels(
-                identity_base_url or base_urls[0], profile["identite"].get("url_an_ou_senat")
+            official_votes, official_legislatures = fetch_votes_officiels(
+                profile["identite"].get("url_an_ou_senat"), warnings
             )
         except Exception as exc:
             warnings.append(f"votes officiels (Assemblée nationale) indisponibles : {exc}")
-            official_legislature = None
-    else:
-        official_legislature = None
 
     if official_votes:
         profile["votes"] = [
@@ -4049,11 +4411,31 @@ def build_profile(
                 "position": v.get("position"),
                 "numero_scrutin": v.get("numero"),
                 "sort": v.get("sort"),
+                "legislature": v.get("legislature"),
+                # Source primaire du scrutin (règle 2). Portée par le vote
+                # lui-même et non déduite de `votes_source` : celui-ci couvre
+                # désormais plusieurs législatures, dont aucune ne vaut pour
+                # tous les votes du profil.
+                "url_source": (
+                    AN_SCRUTIN_PAGE_URL.format(
+                        legislature=v.get("legislature"), numero=v.get("numero")
+                    )
+                    if v.get("legislature") and v.get("numero")
+                    else None
+                ),
             }
             for v in official_votes
         ]
+        # Reflète l'ENSEMBLE des législatures agrégées : afficher « législature 16 »
+        # au singulier alors que plusieurs sont couvertes rendrait la limite du
+        # jeu de données illisible (AGENTS.md §2.8).
+        libelle_legislatures = (
+            f"législature {official_legislatures[0]}"
+            if len(official_legislatures) == 1
+            else f"législatures {', '.join(official_legislatures)}"
+        )
         profile["votes_source"] = (
-            f"open data Assemblée nationale (data.assemblee-nationale.fr, législature {official_legislature})"
+            f"open data Assemblée nationale (data.assemblee-nationale.fr, {libelle_legislatures})"
         )
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     elif _is_empty_payload(votes_raw):
