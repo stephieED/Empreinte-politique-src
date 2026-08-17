@@ -1387,7 +1387,21 @@ def _read_cached_amendement_index(legislature: str) -> Optional[dict[str, list[d
     sans jamais déclencher de téléchargement. Retourne `None` (pas `{}`) si le
     fichier est absent ou illisible, pour rester distinguable d'un index vide
     légitime déjà mis en cache (issue #250, préparation à l'isolation du job
-    dédié de la sous-issue 3 de #248)."""
+    dédié de la sous-issue 3 de #248).
+
+    Volontairement PAS mémoïsée : une tentative (#376, revertée) mettait
+    `lru_cache` sur cette fonction pour éviter de recharger le même fichier à
+    chaque candidat — mais `fetch_amendements_officiels` boucle sur les 4
+    législatures de `AN_AMENDEMENTS_PATH` pour chaque candidat, donc un cache
+    non borné finit par garder les 3 index figés simultanément en mémoire
+    (mesuré : 1,46 + 2,04 + 4,35 Gio en clair sur disque, davantage une fois
+    désérialisé en objets Python) — pire que l'ancien comportement (un seul
+    index à la fois, libéré entre deux candidats) sur une machine dont la RAM
+    totale est du même ordre de grandeur. Voir
+    docs/technical_decisions.md#oom-lecture-amendements-par-candidat : le
+    vrai correctif (éviter de matérialiser l'index entier d'une législature
+    pour n'en lire qu'un seul acteur) nécessite de restructurer le format de
+    cache sur disque, hors périmètre ici — voir l'issue de suivi."""
     with _get_amendements_lock(legislature):
         index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
         if not index_path.is_file():

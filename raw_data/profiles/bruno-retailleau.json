@@ -94,13 +94,13 @@
   "amendements": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-17T14:25:28+0200",
+    "genere_le": "2026-08-17T15:11:49+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "assemblee_nationale": null,
-      "nosdeputes": "2026-08-17T14:25:28+0200",
       "assemblee_nationale_syceron": null,
-      "assemblee_nationale_questions": null
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale": null,
+      "nosdeputes": "2026-08-17T15:11:49+0200"
     },
     "warnings": [
       "votes introuvables : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune donnée exploitable pour ce parlementaire."

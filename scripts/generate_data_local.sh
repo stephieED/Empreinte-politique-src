@@ -104,7 +104,7 @@ echo "=== [1/7] extract-amendements-an : index amendements (17/16/15) ==="
 python3 src/build_amendements_index.py || echo "[!] extract-amendements-an en échec (continue-on-error, comme en CI)"
 
 echo "=== [2/7] extract-an : Assemblée nationale (tous les candidats) ==="
-python3 src/generate_all_profiles.py --source an "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" \
+python3 src/generate_all_profiles.py --source an --workers "$WORKERS" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" \
   || echo "[!] extract-an en échec (continue-on-error, comme en CI)"
 
 echo "=== [3/7] extract-senat : Sénat (NosSénateurs) ==="

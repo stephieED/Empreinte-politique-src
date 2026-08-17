@@ -1,17 +1,15 @@
 {
   "slug": "jean-luc-melenchon",
   "chambre": "senateurs",
-  "source": "https://archive.nossenateurs.fr/jean-luc-melenchon",
+  "source": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
   "identite": {
     "nom_complet": "Jean-Luc Mélenchon",
-    "groupe_sigle": "CRC-SPG",
-    "groupe_nom": "Communiste, Républicain, Citoyen et des Sénateurs du Parti de Gauche",
-    "profession": "Cadre administratif",
-    "date_naissance": "1951-08-19",
-    "lieu_naissance": null,
-    "num_circo": "non disponible",
-    "nb_mandats": 1,
-    "uri_hatvp": null,
+    "groupe_sigle": null,
+    "groupe_nom": "La France Insoumise (LFI)",
+    "profession": null,
+    "date_naissance": null,
+    "num_circo": null,
+    "nb_mandats": null,
     "url_an_ou_senat": null
   },
   "mandats": [
@@ -7440,7 +7438,6 @@
   ],
   "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 15)",
   "dossiers_legislatifs": [],
-  "amendements": [],
   "interventions": [
     {
       "id": "question_QANR5L15QOSD665",
@@ -7714,15 +7711,17 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-17T14:22:30+0200",
+    "genere_le": "2026-08-17T15:14:06+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
+    ],
     "synchro_sources": {
-      "assemblee_nationale": "2026-08-06T09:00:48+0000",
-      "nosdeputes": "2026-08-17T14:22:30+0200",
       "assemblee_nationale_syceron": null,
-      "assemblee_nationale_questions": "2026-08-07T09:59:50+0000"
-    },
-    "warnings": []
+      "assemblee_nationale_questions": "2026-08-07T09:59:50+0000",
+      "assemblee_nationale": "2026-08-06T09:00:48+0000",
+      "nosdeputes": "2026-08-17T15:09:01+0200"
+    }
   },
   "mandat_europeen": {
     "identifiant_pe": "96742",
@@ -7987,9 +7986,10 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-08-16T07:42:45+0000",
+      "genere_le": "2026-08-17T15:14:05+0200",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }
-  }
+  },
+  "amendements": []
 }

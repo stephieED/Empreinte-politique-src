@@ -11761,7 +11761,7 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-17T14:30:12+0200",
+    "genere_le": "2026-08-17T15:14:10+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"
@@ -12223,7 +12223,7 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-08-17T14:30:12+0200",
+      "genere_le": "2026-08-17T15:14:09+0200",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }

@@ -4,7 +4,7 @@
   "nom": "Jean-Luc Mélenchon",
   "chambre": "Senat",
   "parti": "La France Insoumise (LFI)",
-  "groupe": "Communiste, Républicain, Citoyen et des Sénateurs du Parti de Gauche",
+  "groupe": "La France Insoumise (LFI)",
   "identite": {
     "profession": "Cadre administratif",
     "date_naissance": "1951-08-19",
@@ -16,8 +16,8 @@
   "sources": [
     {
       "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/jean-luc-melenchon",
-      "synchro_le": "2026-08-17T14:22:30+0200"
+      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
+      "synchro_le": "2026-08-17T15:09:01+0200"
     },
     {
       "type": "assemblee_nationale",
@@ -27,7 +27,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-16T07:42:45+0000"
+      "synchro_le": "2026-08-17T15:14:05+0200"
     }
   ],
   "mandats": [
@@ -13166,9 +13166,10 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T14:31:14+0200",
+    "genere_le": "2026-08-17T15:14:27+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
+      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
       "ParlTrack: aucune donnée trouvée pour le MEP ID 96742. Vérifier la disponibilité des dumps ou la validité du MEP ID."
     ],
     "provenance": "candidat_declare"

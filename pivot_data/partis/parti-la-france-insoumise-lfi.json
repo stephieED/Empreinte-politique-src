@@ -16,8 +16,8 @@
   "sources": [
     {
       "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/jean-luc-melenchon",
-      "synchro_le": "2026-08-17T14:22:30+0200"
+      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
+      "synchro_le": "2026-08-17T15:09:01+0200"
     },
     {
       "type": "assemblee_nationale",
@@ -27,12 +27,12 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-16T07:42:45+0000"
+      "synchro_le": "2026-08-17T15:14:05+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T14:31:34+0200",
+    "genere_le": "2026-08-17T15:14:35+0200",
     "licence_donnees": "",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
