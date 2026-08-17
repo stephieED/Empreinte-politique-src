@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from group_profile import aggregate_tags_thematiques
+from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from schema_parti import SCHEMA_PARTI_VERSION, make_empty_profil_parti, validate_profil_parti
 from text_utils import slugify as _slugify
 
@@ -191,6 +192,13 @@ def main(argv: Optional[list[str]] = None) -> int:
                 print(f"  ✓ {profil['parti_id']} : profil valide selon le schéma.", file=sys.stderr)
 
         out_path = out_dir / f"parti-{profil['parti_id']}.json"
+        # #343 : ne pas faire avancer meta.genere_le / sources[].synchro_le
+        # quand le profil régénéré est identique en contenu. Ce script
+        # reconstruit sa sortie à chaque exécution sans comparer à la version
+        # précédente — sans ça, chaque run produit un diff sur les fichiers
+        # parti alors que rien n'a changé, ce qui bruite les commits et fausse
+        # toute lecture de fraîcheur (AGENTS.md §2).
+        profil = preserve_stable_freshness_timestamps(load_existing_document(out_path), profil)
         out_path.write_text(
             json.dumps(profil, ensure_ascii=False, indent=2), encoding="utf-8"
         )

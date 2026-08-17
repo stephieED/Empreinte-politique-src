@@ -38,6 +38,7 @@ from typing import Any, Optional
 from gouvernement_profile import build_gouvernement_profile
 from gouvernement_roster import load_profils_from_dir
 from gouvernement_textes import fetch_dossiers_gouvernementaux
+from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from schema_gouvernement import validate_profil_gouvernement
 
 
@@ -95,6 +96,13 @@ def generate_all(
 
         out_path = out_dir / gouvernement["fichier"]
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        # #343 : ne pas faire avancer meta.genere_le / sources[].synchro_le
+        # quand le profil régénéré est identique en contenu. Ce script
+        # reconstruit sa sortie à chaque exécution sans jamais comparer à la
+        # version précédente — sans ça, chaque run produit un diff sur les 10
+        # fichiers gouvernement alors que rien n'a changé, ce qui bruite les
+        # commits et fausse toute lecture de fraîcheur (AGENTS.md §2).
+        profil = preserve_stable_freshness_timestamps(load_existing_document(out_path), profil)
         out_path.write_text(json.dumps(profil, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ Profil de gouvernement écrit : {out_path}", file=sys.stderr)
 

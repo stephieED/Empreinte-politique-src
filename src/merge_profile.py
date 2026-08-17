@@ -381,19 +381,50 @@ def _pivot_content_fingerprint(pivot: Optional[dict[str, Any]]) -> Any:
     return json.dumps(stripped, sort_keys=True, ensure_ascii=False)
 
 
+def load_existing_document(path: Any) -> Optional[dict[str, Any]]:
+    """Relit un document JSON déjà écrit sur disque, ou `None` s'il est absent
+    ou illisible — pensé comme entrée de `preserve_stable_freshness_timestamps`
+    (#343) pour les générateurs qui reconstruisent leur sortie à chaque
+    exécution (groupes, gouvernements, partis).
+
+    Un fichier illisible est traité comme absent plutôt que comme une erreur :
+    la conséquence est seulement un re-tamponnage des horodatages, jamais une
+    perte de donnée — le document régénéré est écrit dans tous les cas."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def preserve_stable_freshness_timestamps(
     old_pivot: Optional[dict[str, Any]], new_pivot: dict[str, Any]
 ) -> dict[str, Any]:
     """Empêche `meta.genere_le`/`sources[].synchro_le` d'avancer quand le
-    pivot régénéré est identique à `old_pivot` en contenu (#343) :
-    `--pivot-only` re-dérive systématiquement le pivot depuis le profil brut
-    déjà présent (aucun appel réseau) et re-tamponnait ces deux champs à
-    chaque exécution, même quand la donnée sous-jacente n'avait pas bougé —
-    trompeur pour un audit de fraîcheur (règle de traçabilité, AGENTS.md §2).
+    document régénéré est identique à `old_pivot` en contenu (#343) : les
+    générateurs re-dérivent systématiquement leur sortie depuis les données
+    déjà présentes sur disque (aucun appel réseau pour `--pivot-only`) et
+    re-tamponnaient ces deux champs à chaque exécution, même quand la donnée
+    sous-jacente n'avait pas bougé — trompeur pour un audit de fraîcheur
+    (règle de traçabilité, AGENTS.md §2).
 
     Si le contenu (hors ces deux champs) est identique, restaure les anciens
     horodatages sur `new_pivot` ; sinon le laisse tel quel (changement réel =
     re-tamponnage légitime). Modifie et renvoie `new_pivot`.
+
+    S'applique à tout document portant la forme `meta.genere_le` +
+    `sources[].synchro_le` : pivots candidats, mais aussi profils de groupe,
+    de gouvernement et de parti, qui partagent exactement cette structure de
+    fraîcheur (extension du périmètre initial, #343).
+
+    Les sources sont appariées par `(type, url)` et non par `type` seul : un
+    profil de groupe/gouvernement/parti porte une source par membre, donc
+    plusieurs dizaines d'entrées partageant le même `type` (mesuré : 63
+    sources pour 3 types distincts sur un groupe) — une clé sur le seul
+    `type` les écraserait toutes sur la dernière. L'appariement reste
+    exact : `url` fait partie de l'empreinte comparée ci-dessus, donc si les
+    empreintes sont égales, les couples `(type, url)` le sont aussi.
     """
     if not isinstance(old_pivot, dict):
         return new_pivot
@@ -405,13 +436,15 @@ def preserve_stable_freshness_timestamps(
     if isinstance(old_meta, dict) and isinstance(new_meta, dict) and "genere_le" in old_meta:
         new_meta["genere_le"] = old_meta["genere_le"]
 
-    old_sources_by_type = {
-        s.get("type"): s for s in (old_pivot.get("sources") or []) if isinstance(s, dict)
+    old_sources_by_key = {
+        (s.get("type"), s.get("url")): s
+        for s in (old_pivot.get("sources") or [])
+        if isinstance(s, dict)
     }
     for s in new_pivot.get("sources") or []:
         if not isinstance(s, dict):
             continue
-        old_s = old_sources_by_type.get(s.get("type"))
+        old_s = old_sources_by_key.get((s.get("type"), s.get("url")))
         if old_s and "synchro_le" in old_s:
             s["synchro_le"] = old_s["synchro_le"]
 

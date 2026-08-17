@@ -89,6 +89,7 @@ from schema_groupe import (
     make_empty_amendements_stats,
     validate_profil_groupe,
 )
+from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_nosdeputes import normalize_nosdeputes
 
 
@@ -1189,6 +1190,15 @@ def generate_groupe_profile_from_roster(
 
     if out_path:
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        # #343 : ne pas faire avancer meta.genere_le / sources[].synchro_le
+        # quand le profil régénéré est identique en contenu. Ce script
+        # reconstruit sa sortie à chaque exécution sans comparer à la version
+        # précédente — sans ça, chaque run produit un diff sur les 7 fichiers
+        # groupe alors que rien n'a changé, ce qui bruite les commits et
+        # fausse toute lecture de fraîcheur (AGENTS.md §2).
+        profil_groupe = preserve_stable_freshness_timestamps(
+            load_existing_document(out_path), profil_groupe
+        )
         out_path.write_text(json.dumps(profil_groupe, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"  ✓ Profil de groupe écrit : {out_path}", file=sys.stderr)
 
