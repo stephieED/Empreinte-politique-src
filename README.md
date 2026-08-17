@@ -685,7 +685,12 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
     {"type": "nosdeputes", "url": "...", "synchro_le": "2026-07-29T..."},
     {"type": "assemblee_nationale", "url": "...", "synchro_le": "2026-07-29T..."}
   ],
-  "mandats": [ ... ],
+  "mandats": [ ... ],          // categorie ∈ mandat_electif | commission |
+                               // commission_enquete | mission_information |
+                               // groupe_etudes | delegation | groupe_amitie |
+                               // groupe_politique | extra_parlementaire |
+                               // fonction_gouvernementale | autre
+                               // (schema_pivot.KNOWN_CATEGORIES)
   "votes": [ ... ],
   "textes_portes": [ ... ],
   "amendements": [ ... ],
