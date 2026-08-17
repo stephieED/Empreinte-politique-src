@@ -40,6 +40,7 @@ from xml.etree import ElementTree as ET
 
 import requests
 from bs4 import BeautifulSoup
+from download_watchdog import download_with_watchdog
 from gouvernement_textes import DOSSIERS_CACHE_DIR, ensure_dossiers_zip_downloaded
 from parse_syceron import parse_syceron_xml
 from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
@@ -519,62 +520,6 @@ def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
     if ok:
         return payload
     raise payload
-
-
-# Budget mur pour _download_with_watchdog (#370) : les téléchargements bulk
-# ci-dessous (zips AN "acteurs historique", ~quelques Mo) devraient prendre
-# quelques secondes à quelques dizaines de secondes en bande passante CI
-# normale. 120s laisse une marge large sans reproduire l'exposition de
-# `timeout=(TIMEOUT, 600)` (10 min) déjà en place avant #370 — probable
-# cause du blocage silencieux observé sur le run #44 (voir #369/#370).
-_DOWNLOAD_WATCHDOG_HARD_TIMEOUT_SECONDS = 120
-
-
-def _download_with_watchdog(
-    url: str, dest_path: Path, *, timeout: int = TIMEOUT, hard_timeout_seconds: int = _DOWNLOAD_WATCHDOG_HARD_TIMEOUT_SECONDS
-) -> None:
-    """Télécharge `url` (streaming) vers `dest_path`, protégé par un budget mur
-    total indépendant du timeout `requests` — même principe que
-    `_get_with_watchdog` (#340/[[get-payload-retry]]), généralisé aux
-    téléchargements de fichier plutôt que dupliqué par appelant (#370).
-
-    Écrit d'abord dans un fichier temporaire (`dest_path` + `.part`), renommé
-    vers `dest_path` seulement en cas de succès complet : si le budget mur est
-    dépassé, le thread démon abandonné peut continuer d'écrire en arrière-plan
-    (impossible à interrompre depuis Python) sans jamais corrompre un
-    `dest_path` déjà considéré comme absent/en échec par l'appelant.
-
-    Lève l'exception rencontrée (`requests.RequestException`, `OSError`) ou
-    `TimeoutError` si le budget mur est dépassé — à l'appelant de catcher,
-    même pattern que les appels `requests.get` directs qu'elle remplace.
-    """
-    tmp_path = dest_path.with_name(dest_path.name + ".part")
-    outcome: "queue.Queue[tuple[bool, Any]]" = queue.Queue(maxsize=1)
-
-    def _worker() -> None:
-        try:
-            with requests.get(url, headers=HEADERS, timeout=timeout, stream=True) as resp:
-                resp.raise_for_status()
-                with open(tmp_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-            outcome.put((True, None))
-        except Exception as exc:  # relayé tel quel au thread appelant
-            outcome.put((False, exc))
-
-    threading.Thread(target=_worker, daemon=True).start()
-    try:
-        ok, err = outcome.get(timeout=hard_timeout_seconds)
-    except queue.Empty:
-        raise TimeoutError(
-            f"Aucune réponse de {url} après {hard_timeout_seconds}s "
-            "(budget mur du watchdog dépassé — probable blocage DNS/réseau non "
-            "couvert par timeout= de requests)"
-        ) from None
-    if not ok:
-        raise err
-    tmp_path.replace(dest_path)
 
 
 # Retry léger sur échec transitoire (5xx, erreur réseau, timeout watchdog).
@@ -2312,7 +2257,7 @@ def _ensure_acteurs_historique_zip_downloaded() -> Optional[Path]:
         print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
         try:
             zip_path.parent.mkdir(parents=True, exist_ok=True)
-            _download_with_watchdog(AN_ACTEURS_HISTORIQUE_ZIP_URL, zip_path)
+            download_with_watchdog(AN_ACTEURS_HISTORIQUE_ZIP_URL, zip_path, headers=HEADERS, timeout=TIMEOUT)
         except (requests.RequestException, OSError, TimeoutError) as exc:
             print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
             return None
@@ -2779,13 +2724,8 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
             zip_path = QUESTIONS_CACHE_DIR / legislature / f"{sous_type.lower()}.zip"
             try:
                 zip_path.parent.mkdir(parents=True, exist_ok=True)
-                with requests.get(url, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                    resp.raise_for_status()
-                    with open(zip_path, "wb") as out:
-                        for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                            if chunk:
-                                out.write(chunk)
-            except (requests.RequestException, OSError) as exc:
+                download_with_watchdog(url, zip_path, headers=HEADERS, timeout=TIMEOUT)
+            except (requests.RequestException, OSError, TimeoutError) as exc:
                 print(f"  [!] Questions {sous_type} législature {legislature} indisponibles : {exc}")
                 continue
 

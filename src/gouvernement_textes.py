@@ -91,6 +91,7 @@ from typing import Any, Optional
 
 import requests
 
+from download_watchdog import download_with_watchdog
 from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
 AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
@@ -165,19 +166,14 @@ def ensure_dossiers_zip_downloaded(*, force_download: bool = False) -> Optional[
             return zip_path
 
         print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
-        tmp_path = zip_path.with_suffix(".zip.part")
         try:
             zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_DOSSIERS_ZIP_URL, headers=HEADERS, timeout=TIMEOUT, stream=True) as resp:
-                resp.raise_for_status()
-                with open(tmp_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-            tmp_path.replace(zip_path)
-        except (requests.RequestException, OSError) as exc:
+            # download_with_watchdog (#370) gère déjà l'écriture atomique
+            # (fichier .part renommé seulement en cas de succès complet) et
+            # ajoute un budget mur indépendant du timeout requests.
+            download_with_watchdog(AN_DOSSIERS_ZIP_URL, zip_path, headers=HEADERS, timeout=TIMEOUT)
+        except (requests.RequestException, OSError, TimeoutError) as exc:
             print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
-            tmp_path.unlink(missing_ok=True)
             return None
         return zip_path
 

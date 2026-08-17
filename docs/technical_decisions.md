@@ -1,5 +1,5 @@
 <a id="mandats-officiels-an-369"></a>
-## Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN (#369), watchdog sur les téléchargements zip (#370) (2026-08-17)
+## Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN (#369, partiel), watchdog générique sur tous les téléchargements zip (#370, complet) (2026-08-17)
 
 **Contexte** : run `#44` de `generate-data.yml` — tous les shards `extract-an`
 en échec, y compris les candidats non-députés (finissaient auparavant en
@@ -16,17 +16,35 @@ avant de sauvegarder le cache, chaque shard suivant repartait à froid —
 effet boule de neige expliquant l'échec de tous les shards, pas seulement
 certains.
 
-**Décision 1 — `_download_with_watchdog` (#370, partiel)** : généralisation
+**Décision 1 — `download_with_watchdog` (#370, complet)** : généralisation
 de `_get_with_watchdog` aux téléchargements de fichier — thread démon +
-budget mur indépendant (120s, contre 600s avant), écriture d'abord dans un
-fichier temporaire (`.part`) renommé seulement en cas de succès complet
-(un thread abandonné continuant d'écrire en arrière-plan ne corrompt jamais
-`dest_path`). Appliqué à `_ensure_acteurs_historique_zip_downloaded`
-(priorité #1 de #370, cause confirmée du run #44). **Non appliqué** aux 5
-autres points d'appel listés dans #370 (questions officielles AN, dossiers
-gouvernementaux, ParlTrack, MEP, Syceron) — laissés pour une itération
-séparée, `_download_with_watchdog` est déjà réutilisable tel quel pour eux
-(même signature `(url, dest_path)`).
+budget mur indépendant, écriture d'abord dans un fichier temporaire (`.part`)
+renommé seulement en cas de succès complet (un thread abandonné continuant
+d'écrire en arrière-plan ne corrompt jamais `dest_path`). Extrait dans un
+module dédié `src/download_watchdog.py` (pas laissé dans `candidate_profile.py`) :
+`gouvernement_textes.py` est déjà importé par `candidate_profile.py`, un
+helper partagé y vivant aurait créé une dépendance circulaire. `headers`/
+`timeout` passés en paramètre plutôt que codés en dur — chaque module garde
+son réglage existant (`candidate_profile.py`/`gouvernement_textes.py`/
+`syceron_debates.py` : défaut 120s ; `parltrack_dumps.py`/`mep_profile.py` :
+900s, dumps de plusieurs centaines de Mo, budget mur dimensionné en
+conséquence via `hard_timeout_seconds` explicite plutôt que le défaut).
+
+Appliqué aux 6 points d'appel non protégés listés dans #370 :
+`_ensure_acteurs_historique_zip_downloaded` (priorité #1, cause confirmée du
+run #44), boucle questions officielles AN (`candidate_profile.py`),
+`ensure_dossiers_zip_downloaded` (`gouvernement_textes.py` — simplifie au
+passage : l'écriture atomique manuelle qui y existait déjà devient
+redondante avec celle du helper), `_download_dump` (`parltrack_dumps.py` et
+`mep_profile.py`, fonctions dupliquées à l'identique dans les deux fichiers),
+`_download_syceron_zip` (`syceron_debates.py`).
+
+Effet de bord découvert en testant : `unittest.mock.patch("module.requests.get",
+...)` patche l'objet module `requests` partagé (`sys.modules`), pas une copie
+par fichier — patcher `candidate_profile.requests.get` intercepte donc aussi
+les appels faits depuis `download_watchdog.py`. Les 54 tests existants qui
+patchaient déjà `candidate_profile.requests.get` pour les téléchargements
+zip AN ont continué à passer sans modification.
 
 **Décision 2 — mandats commission/groupe_amitie/extra_parlementaire sourcés
 depuis l'AN (#369, partiel)** : `_build_acteur_identite_index()` lisait déjà
@@ -56,15 +74,18 @@ l'appel NosDéputés fait *avant* la résolution AN à l'étape 5). Changement
 structurel plus risqué qu'un ajout localisé ; **`fetch_identity` reste donc
 appelé sans condition pour chaque candidat déclaré** — les 8 requêtes
 NosDéputés (identité) restent présentes dans les logs même une fois cette
-itération déployée. #369 reste ouverte pour ce réordonnancement. Les 5
-autres points d'appel non protégés de #370 restent également ouverts.
+itération déployée. #369 reste ouverte pour ce réordonnancement — seule
+partie non traitée de ce chantier ; #370 (durcissement des téléchargements)
+est en revanche complet.
 
-**Tests** : `_download_with_watchdog` (abandon après budget mur, écriture
-`dest_path` seulement en cas de succès), `_build_acteur_mandats_index`
-(mapping typeOrgane, exclusion `MISINFO`/`ASSEMBLEE`), `_extract_mandats_officiels`
-(résolution de label via `fetch_organe`, acteur inconnu → liste vide),
-`build_profile` (préférence AN sur les catégories partagées, conservation
-du mandat électif NosDéputés). Suite complète : 1126/1126.
+**Tests** : `download_with_watchdog` (`tests/test_download_watchdog.py`,
+nouveau — abandon après budget mur, écriture `dest_path` seulement en cas de
+succès, propagation d'une erreur réseau normale sans la transformer en
+`TimeoutError`), `_build_acteur_mandats_index` (mapping typeOrgane, exclusion
+`MISINFO`/`ASSEMBLEE`), `_extract_mandats_officiels` (résolution de label via
+`fetch_organe`, acteur inconnu → liste vide), `build_profile` (préférence AN
+sur les catégories partagées, conservation du mandat électif NosDéputés).
+Suite complète : 1127/1127.
 <a id="mandats-agreges-famille-1"></a>
 ## `mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)
 
