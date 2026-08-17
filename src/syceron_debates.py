@@ -18,6 +18,8 @@ from typing import Optional
 
 import requests
 
+from download_watchdog import download_with_watchdog
+
 AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
 SYCERON_ZIP_NAME = "syseron.xml.zip"
 SYCERON_CACHE_DIR = Path(".cache") / "syceron_an"
@@ -94,15 +96,10 @@ def _download_syceron_zip(legislature: str, dest: Path) -> bool:
 
     print(f"-> Téléchargement des débats Syceron (Assemblée nationale) : {url}")
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT, stream=True)
-        resp.raise_for_status()
         dest.parent.mkdir(parents=True, exist_ok=True)
-        with open(dest, "wb") as out:
-            for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                if chunk:
-                    out.write(chunk)
+        download_with_watchdog(url, dest, headers=HEADERS, timeout=TIMEOUT)
         return True
-    except (requests.RequestException, OSError) as exc:
+    except (requests.RequestException, OSError, TimeoutError) as exc:
         print(f"  [!] Débats Syceron législature {legislature} indisponibles : {exc}")
         return False
 

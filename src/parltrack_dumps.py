@@ -30,6 +30,8 @@ from typing import Any, Iterator, Optional
 import requests
 import zstandard as zstd
 
+from download_watchdog import download_with_watchdog
+
 PARLTRACK_DUMPS_BASE = "https://parltrack.org/dumps"
 
 PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
@@ -49,6 +51,14 @@ TIMEOUT = 120  # Les dumps font plusieurs centaines de Mo
 # ---------------------------------------------------------------------------
 
 
+# Budget mur généreux (#370) : ces dumps font plusieurs centaines de Mo
+# (contrairement au défaut de download_with_watchdog, dimensionné pour des
+# fichiers de quelques Mo) — 900s laisse la marge nécessaire à un
+# téléchargement légitimement long, tout en bornant un blocage silencieux
+# qui, avant #370, pouvait durer indéfiniment (aucune protection).
+_DUMP_DOWNLOAD_HARD_TIMEOUT_SECONDS = 900
+
+
 def _download_dump(dump_name: str, dest: Path) -> bool:
     """Télécharge un dump ParlTrack et le sauvegarde localement.
 
@@ -59,15 +69,14 @@ def _download_dump(dump_name: str, dest: Path) -> bool:
     print(f"→ Téléchargement du dump ParlTrack : {url}")
     print("  (peut prendre plusieurs minutes — plusieurs centaines de Mo)")
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT, stream=True)
-        resp.raise_for_status()
         dest.parent.mkdir(parents=True, exist_ok=True)
-        with open(dest, "wb") as f:
-            for chunk in resp.iter_content(chunk_size=1024 * 256):
-                f.write(chunk)
+        download_with_watchdog(
+            url, dest, headers=HEADERS, timeout=TIMEOUT,
+            hard_timeout_seconds=_DUMP_DOWNLOAD_HARD_TIMEOUT_SECONDS, chunk_size=1024 * 256,
+        )
         print(f"  ✓ Dump sauvegardé : {dest}")
         return True
-    except requests.RequestException as exc:
+    except (requests.RequestException, OSError, TimeoutError) as exc:
         print(f"  [!] Échec du téléchargement : {exc}", file=sys.stderr)
         return False
 

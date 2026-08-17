@@ -36,6 +36,13 @@ class DummyStreamResponse:
         for start in range(0, len(self.content), chunk_size):
             yield self.content[start:start + chunk_size]
 
+    # download_with_watchdog (#370) utilise `with requests.get(...) as resp:`.
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
 
 def test_ensure_syceron_downloaded_from_local_zip(tmp_path):
     local_zip = tmp_path / "local-syceron.zip"
