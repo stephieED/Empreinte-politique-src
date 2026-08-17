@@ -36,14 +36,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Mission d'information sur le rôle local et l'ancrage territorial des parlementaires",
       "debut": "2024-04-05",
@@ -60,121 +52,9 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-jordanie",
-      "debut": "2023-10-05",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études chrétiens d'orient",
-      "debut": "2023-09-07",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission du développement durable et de l'aménagement du territoire",
       "debut": "2023-09-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études alzheimer",
-      "debut": "2023-02-17",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études montagne",
-      "debut": "2023-02-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études gastronomie, métiers de bouche et arts de la table",
-      "debut": "2023-02-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études filière brassicole",
-      "debut": "2023-02-14",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études camargue",
-      "debut": "2023-02-09",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études tourisme et patrimoine",
-      "debut": "2023-02-04",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie du livre et du papier",
-      "debut": "2023-02-03",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie sociale et solidaire et responsabilité sociétale des entreprises",
-      "debut": "2023-02-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études ruralité",
-      "debut": "2023-02-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "président",
-      "label": "Groupe d'amitié france-liban",
-      "debut": "2022-12-09",
       "fin": "2024-06-09",
       "actif": false
     },
@@ -1220,6 +1100,798 @@
       "label": "Mandat parlementaire (Renaissance)",
       "debut": "2022-06-19",
       "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Délégation chargée des activités internationales",
+      "debut": "2014-10-01",
+      "fin": "2015-09-30",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Délégation chargée de la communication et de la presse",
+      "debut": "2014-10-01",
+      "fin": "2015-09-30",
+      "actif": false
+    },
+    {
+      "categorie": "autre",
+      "type": "Membre",
+      "label": "Conférence des présidents",
+      "debut": "2019-11-07",
+      "fin": "2022-05-20",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Mission d'information commune sur les coûts économiques, sociaux et budgétaires des blocages, violences et dégradations commis en marge du mouvement des « gilets jaunes »",
+      "debut": "2019-05-09",
+      "fin": "2019-08-05",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Mission d'information commune sur l'application de la loi du 17 août 2015 relative à la transition énergétique pour la croissance verte",
+      "debut": "2015-11-03",
+      "fin": "2016-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Mission d’information sur le rôle local et l’ancrage territorial des parlementaires",
+      "debut": "2024-04-04",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Mission d’information sur l’impact, la gestion et les conséquences dans toutes ses dimensions de l’épidémie de Coronavirus-Covid 19",
+      "debut": "2020-03-30",
+      "fin": "2021-01-27",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Délégation aux collectivités territoriales et à la décentralisation",
+      "debut": "2017-12-09",
+      "fin": "2021-01-06",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "Membre",
+      "label": "Commission des affaires européennes",
+      "debut": "2017-07-05",
+      "fin": "2021-02-11",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère des solidarités, de l'autonomie et des personnes handicapées",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Groupe d'études à vocation internationale sur les questions liées à l'expansion de l'économie taïwanaise",
+      "debut": "2012-11-21",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Groupe d'études à vocation internationale sur les questions liées à l'expansion de l'économie taïwanaise",
+      "debut": "2022-12-12",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Groupe d'études à vocation internationale sur les questions liées à l'expansion de l'économie taïwanaise",
+      "debut": "2017-10-10",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "debut": "2012-07-31",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2023-01-09",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre titulaire",
+      "label": "Délégation française à l'Assemblée parlementaire du Conseil de l'Europe",
+      "debut": "2017-08-02",
+      "fin": "2019-12-11",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Application de la loi n° 2014-344 du 17 mars 2014 relative à la consommation (phase 2)",
+      "debut": "2015-12-16",
+      "fin": "2016-10-19",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "mission d'information sur le rôle du pastoralisme dans l’aménagement du territoire, les causes de son déclin et les conséquences pour le développement durable des territoires ruraux",
+      "debut": "2024-01-24",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Rapporteur",
+      "label": "Application de la loi n° 2014-344 du 17 mars 2014 relative à la consommation (phase 2)",
+      "debut": "2015-12-16",
+      "fin": "2016-10-19",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Avenir des filières d'élevage",
+      "debut": "2015-07-22",
+      "fin": "2016-03-30",
+      "actif": false
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission spéciale pour l'examen du projet de loi relatif à la transition énergétique pour la croissance verte",
+      "debut": "2014-09-02",
+      "fin": "2015-08-18",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Filière bois",
+      "debut": "2014-11-18",
+      "fin": "2015-10-14",
+      "actif": false
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission d'enquête sur l'impact sociétal, social, économique et financier de la réduction progressive du temps de travail",
+      "debut": "2014-06-23",
+      "fin": "2015-01-06",
+      "actif": false
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission d'enquête sur la situation de la sidérurgie et de la métallurgie françaises et européennes dans la crise économique et financière et sur les conditions de leur sauvegarde et de leur développement",
+      "debut": "2013-01-30",
+      "fin": "2013-07-10",
+      "actif": false
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission d'enquête relative aux coûts passés, présents et futurs de la filière nucléaire, à la durée d'exploitation des réacteurs et à divers aspects économiques et financiers de la production et de la commercialisation de l'électricité nucléaire",
+      "debut": "2013-12-17",
+      "fin": "2014-10-30",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Président",
+      "label": "Mission d'information commune sur les coûts économiques, sociaux et budgétaires des blocages, violences et dégradations commis en marge du mouvement des « gilets jaunes »",
+      "debut": "2019-05-09",
+      "fin": "2019-08-05",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Vice-Président",
+      "label": "Mission d’information sur l’impact, la gestion et les conséquences dans toutes ses dimensions de l’épidémie de Coronavirus-Covid 19",
+      "debut": "2020-06-04",
+      "fin": "2021-01-27",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre suppléant",
+      "label": "Délégation française à l'Assemblée parlementaire du Conseil de l'Europe",
+      "debut": "2014-11-06",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Président",
+      "label": "Avenir des filières d'élevage",
+      "debut": "2015-07-22",
+      "fin": "2016-03-30",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Président",
+      "label": "Filière bois",
+      "debut": "2014-11-18",
+      "fin": "2015-10-14",
+      "actif": false
+    },
+    {
+      "categorie": "autre",
+      "type": "Secrétaire d'âge de l'Assemblée nationale",
+      "label": "Bureau d'âge de l'Assemblée nationale",
+      "debut": "2012-06-26",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "autre",
+      "type": "Secrétaire de l'Assemblée nationale",
+      "label": "Bureau de l'Assemblée nationale",
+      "debut": "2014-10-01",
+      "fin": "2015-09-30",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Forêt, bois, meuble et ameublement",
+      "debut": "2013-10-10",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Économie sociale et solidaire",
+      "debut": "2018-02-16",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Mineurs non accompagnés",
+      "debut": "2018-02-14",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Économie sociale et solidaire et responsabilité sociétale des entreprises",
+      "debut": "2023-01-31",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Alzheimer",
+      "debut": "2023-01-24",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Tauromachie",
+      "debut": "2013-03-21",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Chrétiens d'Orient",
+      "debut": "2014-07-23",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Gaz de schiste",
+      "debut": "2013-02-04",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "PME",
+      "debut": "2013-02-12",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Internet et société numérique",
+      "debut": "2013-01-18",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Patrimoine",
+      "debut": "2019-04-29",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Climatisme et thermalisme",
+      "debut": "2013-01-29",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Sapeurs-pompiers, sécurité civile et gestion des crises",
+      "debut": "2023-01-24",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Startup, PME et ETI",
+      "debut": "2018-03-06",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Économie du livre et du papier",
+      "debut": "2023-02-02",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Élevage",
+      "debut": "2013-01-17",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Secrétaire",
+      "label": "Attractivité de la France – export – investissement – compétitivité",
+      "debut": "2018-03-06",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Vigne, vin et œnologie",
+      "debut": "2023-01-24",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Cybersécurité et souveraineté numérique",
+      "debut": "2018-02-16",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Zones et travailleurs frontaliers",
+      "debut": "2013-03-01",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Forêt, bois, nouveaux usages et industrie du bois",
+      "debut": "2018-03-05",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Industrie chimique",
+      "debut": "2013-01-18",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Industrie de la défense",
+      "debut": "2018-02-01",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Artisanat et métiers d'art",
+      "debut": "2013-02-19",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Chasse, pêche et territoires",
+      "debut": "2018-02-22",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Gastronomie, métiers de bouche et arts de la table",
+      "debut": "2023-02-15",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Industrie aéronautique",
+      "debut": "2013-03-11",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Camargue",
+      "debut": "2023-02-07",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Montagne",
+      "debut": "2023-02-15",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Granit, pierres naturelles, carrières et matériaux de construction",
+      "debut": "2013-01-31",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Sapeurs-pompiers volontaires",
+      "debut": "2019-05-29",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Tourisme et patrimoine",
+      "debut": "2023-02-03",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Plasturgie",
+      "debut": "2012-12-13",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Tourisme",
+      "debut": "2013-01-25",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Commerce et artisanat",
+      "debut": "2013-01-17",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Formation alternée en milieu rural",
+      "debut": "2012-12-18",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Sport",
+      "debut": "2018-02-14",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "République et religions",
+      "debut": "2018-02-12",
+      "fin": "2020-01-15",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Cheval",
+      "debut": "2018-02-28",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Montagne",
+      "debut": "2013-01-29",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Soutien à la candidature de Paris aux Jeux Olympiques et Paralympiques de 2024",
+      "debut": "2016-05-03",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Ruralité",
+      "debut": "2023-01-24",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Industries agro-alimentaires et filière agricole",
+      "debut": "2013-01-23",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Energies",
+      "debut": "2013-02-28",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Attractivité de la France – export – investissement – compétitivité",
+      "debut": "2018-02-21",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Filière brassicole",
+      "debut": "2018-03-27",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Filière brassicole",
+      "debut": "2013-10-15",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Handicap Inclusion",
+      "debut": "2018-05-30",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Chrétiens d'Orient",
+      "debut": "2023-09-06",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Filière véhicules industriels",
+      "debut": "2013-03-19",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Alimentation et santé",
+      "debut": "2013-09-12",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Viticulture",
+      "debut": "2013-03-25",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Cheval",
+      "debut": "2013-02-08",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Déchets ménagers",
+      "debut": "2013-11-12",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Automobile",
+      "debut": "2013-01-16",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Vigne, vin et œnologie",
+      "debut": "2018-02-14",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Président",
+      "label": "Plasturgie",
+      "debut": "2012-12-13",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Montagne",
+      "debut": "2018-02-15",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Chrétiens d'orient",
+      "debut": "2021-10-21",
+      "fin": "2022-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Intégration des personnes handicapées",
+      "debut": "2013-02-01",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Oenologie et territoires",
+      "debut": "2013-09-18",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Filière brassicole",
+      "debut": "2023-02-13",
+      "fin": "2024-06-09",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Amiante",
+      "debut": "2013-01-23",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Politiques de la ruralité",
+      "debut": "2013-01-17",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Espace",
+      "debut": "2013-07-04",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Vice-Président",
+      "label": "Intégration des personnes handicapées",
+      "debut": "2013-02-01",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Co-Président",
+      "label": "Industrie de la défense",
+      "debut": "2018-02-01",
+      "fin": "2020-06-08",
       "actif": false
     }
   ],
@@ -545100,13 +545772,13 @@
   ],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-17T17:12:23+0200",
+    "genere_le": "2026-08-17T19:12:23+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "assemblee_nationale": "2026-08-17T17:12:28+0200",
+      "assemblee_nationale": "2026-08-17T19:12:29+0200",
+      "assemblee_nationale_questions": null,
       "nosdeputes": "2026-08-13T13:44:07+0000",
-      "assemblee_nationale_syceron": null,
-      "assemblee_nationale_questions": null
+      "assemblee_nationale_syceron": null
     },
     "warnings": []
   },
@@ -545263,7 +545935,7 @@
       }
     ],
     "meta": {
-      "genere_le": "2026-08-17T17:12:37+0200",
+      "genere_le": "2026-08-17T19:12:24+0200",
       "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
       "source_api": "https://data.europarl.europa.eu/api/v2"
     }

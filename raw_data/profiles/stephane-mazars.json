@@ -1,18 +1,18 @@
 {
   "slug": "stephane-mazars",
-  "chambre": "deputes",
-  "source": "https://www.nosdeputes.fr/stephane-mazars",
+  "chambre": "senateurs",
+  "source": "https://archive.nossenateurs.fr/stephane-mazars",
   "identite": {
     "nom_complet": "Stéphane Mazars",
-    "groupe_sigle": "REN",
-    "groupe_nom": "Renaissance",
-    "profession": "Avocat",
+    "groupe_sigle": "RDSE",
+    "groupe_nom": "Rassemblement Démocratique et Social européen",
+    "profession": null,
     "date_naissance": "1969-03-25",
     "lieu_naissance": null,
-    "num_circo": 1,
-    "nb_mandats": 0,
+    "num_circo": "non disponible",
+    "nb_mandats": 2,
     "uri_hatvp": null,
-    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA677483"
+    "url_an_ou_senat": null
   },
   "mandats": [
     {
@@ -234,6 +234,118 @@
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "position_dans_hemicycle": "majorite"
+    },
+    {
+      "categorie": "mandat_electif",
+      "type": "mandat",
+      "label": "Mandat parlementaire (Rassemblement Démocratique et Social européen)",
+      "debut": "2012-07-22",
+      "fin": "2014-05-02",
+      "actif": false
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Amendements",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Interventions",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "propositions",
+      "label": "Loi ou de résolution",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Questions",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Rapports",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "membre",
+      "label": "Vidéos",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "président délégué",
+      "label": "Groupe France-Arabie saoudite-Pays du Golfe",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Trufficulture",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études sur les pratiques sportives",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "groupe_amitie",
+      "type": "membre",
+      "label": "Groupe d'études sur l'économie agricole alimentaire",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "rapporteur",
+      "label": "Mission commune d'information sur le sport professionnel et les collectivités territoriales",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Commission nationale d'évaluation des politiques de l'État outre-mer",
+      "debut": null,
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "type": "membre",
+      "label": "Observatoire des territoires",
+      "debut": null,
+      "fin": null,
+      "actif": true
     }
   ],
   "votes": [
@@ -6413,13 +6525,6 @@
     }
   ],
   "votes_source": "open data Assemblée nationale (data.assemblee-nationale.fr, législature 16)",
-  "synthese_activite": {
-    "nom": "Stéphane Mazars",
-    "groupe_sigle": "REN",
-    "profession": "Avocat",
-    "nb_mandats": 0,
-    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA677483"
-  },
   "dossiers_legislatifs": [
     {
       "id": "DLR5L17N54012",
@@ -6491,18 +6596,14 @@
   "amendements": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-13T13:46:08+0000",
+    "genere_le": "2026-08-17T19:13:54+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-13T13:46:08+0000",
-      "assemblee_nationale_questions": null,
       "assemblee_nationale": "2026-08-13T13:46:09+0000",
+      "assemblee_nationale_questions": null,
+      "nosdeputes": "2026-08-17T19:13:54+0200",
       "assemblee_nationale_syceron": null
     },
-    "warnings": [
-      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
-      "amendements indisponibles (législature 16) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
-      "amendements indisponibles (législature 15) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
-    ]
+    "warnings": []
   }
 }

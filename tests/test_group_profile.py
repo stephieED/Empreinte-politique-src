@@ -637,8 +637,23 @@ def test_intervals_overlap_adjacent_boundaries_overlap():
 # _aggregate_mandats
 # ---------------------------------------------------------------------------
 
-def test_mandats_agreges_categories_perimetre_v1():
-    assert set(MANDATS_AGREGES_CATEGORIES) == {"commission", "groupe_amitie", "extra_parlementaire"}
+def test_mandats_agreges_categories_perimetre():
+    """Périmètre élargi par #382/#385 : les instances de travail collectives
+    sont agrégées, les catégories structurelles ou individuelles ne le sont
+    pas (voir le commentaire de MANDATS_AGREGES_CATEGORIES)."""
+    assert set(MANDATS_AGREGES_CATEGORIES) == {
+        "commission", "commission_enquete", "mission_information",
+        "groupe_etudes", "delegation", "groupe_amitie", "extra_parlementaire",
+    }
+
+
+def test_mandats_agreges_categories_exclut_structurel_et_individuel():
+    """Non-régression du périmètre : agréger `mandat_electif`/`groupe_politique`
+    (identiques pour tous les membres) ou `fonction_gouvernementale`
+    (individuelle) n'apprendrait rien au niveau groupe ; `autre` est un
+    fourre-tout sans unité éditoriale (AGENTS.md §2.8)."""
+    for categorie in ("mandat_electif", "groupe_politique", "fonction_gouvernementale", "autre"):
+        assert categorie not in MANDATS_AGREGES_CATEGORIES
 
 
 def test_mandats_agreges_compte_membres_par_categorie_label():

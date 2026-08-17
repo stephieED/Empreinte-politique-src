@@ -485,7 +485,29 @@ def aggregate_tags_thematiques(
 # validée dans #349/#361.
 # ---------------------------------------------------------------------------
 
-MANDATS_AGREGES_CATEGORIES: tuple[str, ...] = ("commission", "groupe_amitie", "extra_parlementaire")
+# Catégories de mandats agrégées au niveau groupe. Élargi par #382/#385 aux
+# 4 catégories introduites par la nouvelle taxonomie : ce sont des instances
+# de travail collectives auxquelles plusieurs membres d'un même groupe
+# appartiennent, donc exactement ce que l'agrégation cherche à montrer.
+#
+# Restent volontairement hors agrégat, comme avant :
+# - `mandat_electif`, `groupe_politique` : structurels, identiques pour tous
+#   les membres d'un groupe — agréger n'apprendrait rien.
+# - `fonction_gouvernementale` : individuelle par nature (et désormais
+#   enrichie du portefeuille précis, #383) ; sa place est sur la fiche
+#   individuelle, pas dans un agrégat de groupe.
+# - `autre` : fourre-tout (Bureau, Conférence des Présidents) sans unité
+#   éditoriale — agréger des natures hétérogènes sous une même étiquette
+#   irait contre AGENTS.md §2.8.
+MANDATS_AGREGES_CATEGORIES: tuple[str, ...] = (
+    "commission",
+    "commission_enquete",
+    "mission_information",
+    "groupe_etudes",
+    "delegation",
+    "groupe_amitie",
+    "extra_parlementaire",
+)
 
 
 def _normalize_fonction_mandat(fonction: Any) -> str:

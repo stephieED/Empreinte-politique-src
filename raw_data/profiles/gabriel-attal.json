@@ -33,105 +33,9 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale des valeurs locatives des locaux professionnels",
-      "debut": "2018-06-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'études cinéma et production audiovisuelle",
-      "debut": "2018-04-24",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études insertion économique et civique des jeunes",
-      "debut": "2018-03-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études trufficulture",
-      "debut": "2018-03-06",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études attractivité de la france – export – investissement – compétitivité",
-      "debut": "2018-02-22",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études enjeux de la ruralité",
-      "debut": "2018-02-20",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études déchets ménagers",
-      "debut": "2018-02-20",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie sociale et solidaire",
-      "debut": "2018-02-17",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Énergies vertes",
-      "debut": "2018-02-16",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vie associative et bénévolat",
-      "debut": "2018-02-16",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Groupe d'études enjeux de rénovation des quartiers et habitats dégradés ",
       "debut": "2018-02-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-maroc",
-      "debut": "2017-11-11",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe de travail sur les jeux olympiques et paralympiques de paris en 2024",
-      "debut": "2017-10-27",
       "fin": "2018-11-16",
       "actif": false
     },
@@ -149,30 +53,6 @@
       "label": "La République En Marche",
       "debut": "2017-06-28",
       "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur une nouvelle régulation de la communication audiovisuelle à l'ère numérique",
-      "debut": "2018-02-01",
-      "fin": "2018-11-15",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études cinéma et production audiovisuelle",
-      "debut": "2018-02-20",
-      "fin": "2018-04-24",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Comité stratégique de l'agence du service civique",
-      "debut": "2017-10-10",
-      "fin": "2017-11-16",
       "actif": false
     },
     {
@@ -262,14 +142,6 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Délégation aux outre-mer",
-      "debut": "2022-07-13",
-      "fin": "2022-07-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Renaissance",
       "debut": "2022-06-29",
       "fin": "2022-07-22",
@@ -281,14 +153,6 @@
       "label": "Gouvernement",
       "debut": "2022-06-24",
       "fin": "2022-07-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-07-12",
-      "fin": "2022-07-14",
       "actif": false
     },
     {
@@ -914,6 +778,190 @@
       "debut": "2024-07-07",
       "fin": null,
       "actif": true
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Délégation aux outre-mer",
+      "debut": "2022-07-13",
+      "fin": "2022-07-22",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère de l’éducation nationale et de la jeunesse",
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "debut": "2024-10-15",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission spéciale chargée d’examiner la proposition de loi organique portant réforme du financement de l’audiovisuel public",
+      "debut": "2024-11-14",
+      "fin": "2024-11-20",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Mission d'information sur une nouvelle régulation de la communication audiovisuelle à l'ère numérique",
+      "debut": "2018-01-31",
+      "fin": "2018-11-15",
+      "actif": false
+    },
+    {
+      "categorie": "mission_information",
+      "type": "Membre",
+      "label": "Groupe de travail sur les Jeux olympiques et paralympiques de Paris en 2024",
+      "debut": "2017-09-27",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "commission_enquete",
+      "type": "Membre",
+      "label": "Commission spéciale chargée d’examiner la proposition de loi organique portant réforme du financement de l’audiovisuel public",
+      "debut": "2024-10-24",
+      "fin": "2024-11-12",
+      "actif": false
+    },
+    {
+      "categorie": "autre",
+      "type": "Présidents des groupes politiques",
+      "label": "Conférence des Présidents",
+      "debut": "2024-07-20",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre délégué",
+      "label": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
+      "debut": "2022-05-21",
+      "fin": "2023-07-20",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Secrétaire d'État",
+      "label": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Secrétaire d'État",
+      "label": "Secrétariat d’État auprès du Premier ministre, porte-parole du Gouvernement",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Premier ministre",
+      "label": "Premier ministre",
+      "debut": "2024-01-10",
+      "fin": "2024-09-05",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Vie associative et bénévolat",
+      "debut": "2018-02-15",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Enjeux de rénovation des quartiers et habitats dégradés (logement)",
+      "debut": "2018-02-14",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Déchets ménagers",
+      "debut": "2018-02-19",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Trufficulture",
+      "debut": "2018-03-05",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Cinéma et production audiovisuelle",
+      "debut": "2018-02-19",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Énergies vertes",
+      "debut": "2018-02-12",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Attractivité de la France – export – investissement – compétitivité",
+      "debut": "2018-02-21",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Enjeux de la ruralité",
+      "debut": "2018-02-19",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Insertion économique et civique des jeunes",
+      "debut": "2018-03-14",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Économie sociale et solidaire",
+      "debut": "2018-02-16",
+      "fin": "2018-11-16",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Vice-Président",
+      "label": "Cinéma et production audiovisuelle",
+      "debut": "2018-04-23",
+      "fin": "2018-11-16",
+      "actif": false
     }
   ],
   "votes": [
@@ -90366,13 +90414,13 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-17T17:24:01+0200",
+    "genere_le": "2026-08-17T19:08:41+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:05:24+0000",
       "assemblee_nationale_questions": "2026-08-07T10:12:31+0000",
-      "assemblee_nationale": "2026-08-17T17:24:05+0200",
-      "assemblee_nationale_syceron": null
+      "assemblee_nationale_syceron": null,
+      "nosdeputes": "2026-08-06T09:05:24+0000",
+      "assemblee_nationale": "2026-08-17T19:09:36+0200"
     },
     "warnings": []
   }

@@ -2643,18 +2643,91 @@ def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
 
 
 # Mapping typeOrgane (AN, mandats[].typeOrgane) -> categorie du schema pivot
-# existant (_extract_mandats/_extract_responsabilite_entries), pour que
-# _extract_mandats_officiels produise la meme forme de sortie quelle que soit
-# la source (issue #369). Perimetre minimal-invasif, coherent avec #349/#361 :
-# seules les 3 categories deja couvertes par nosdeputes.fr sont mappees
-# explicitement ; le reste (MISINFO/CNPE/DELEG/GE/GEVI/PARPOL/CMP/API...)
-# tombe dans "autre" - jamais perdu, mais pas decompose plus finement pour
-# l'instant (memes categories exclues par #361 pour l'agregation de groupe).
+# (schema_pivot.KNOWN_CATEGORIES), pour que _extract_mandats_officiels
+# produise la meme forme de sortie quelle que soit la source (issue #369).
+#
+# Perimetre elargi par #382/#383 (option "mixte") : le perimetre initial de
+# #369 se limitait aux 3 categories deja couvertes par nosdeputes.fr, ce qui
+# laissait de cote ~3150 mandats sur 6423 mesures (65 profils resolus AN) -
+# presque la moitie du referentiel. Ces mandats existaient malgre tout dans
+# les profils, mais uniquement parce que la fusion additive preservait des
+# entrees heritees de l'ere NosDeputes, ou _extract_mandats les mappait
+# TOUTES en dur vers "commission" : d'ou 197 libelles sur 246 classes
+# "Commission" sans en etre (voir #379 et
+# docs/technical_decisions.md#taxonomie-mandats-typeorgane-an).
+#
+# Granularite retenue : une categorie par nature institutionnelle reellement
+# distincte pour le lecteur, pas une par typeOrgane - les variantes internes
+# sont regroupees (MISINFO/MISINFOCOM/MISINFOPRE, CNPE/CNPS, GE/GEVI,
+# DELEG/API/OFFPAR).
 _TYPE_ORGANE_TO_CATEGORIE: dict[str, str] = {
+    # Commissions permanentes et assimilees.
     "COMPER": "commission",
+    "COMNL": "commission",          # commissions non legislatives (affaires europeennes...)
+    # Commissions temporaires d'investigation : distinctes d'une commission
+    # permanente, c'est tout l'objet de la nouvelle categorie.
+    "CNPE": "commission_enquete",   # commissions d'enquete
+    "CNPS": "commission_enquete",   # commissions speciales
+    # Missions d'information (3 variantes AN, meme nature editoriale).
+    "MISINFO": "mission_information",
+    "MISINFOCOM": "mission_information",
+    "MISINFOPRE": "mission_information",
+    # Groupes d'etudes, thematiques (GE) et a vocation internationale (GEVI).
+    "GE": "groupe_etudes",
+    "GEVI": "groupe_etudes",
+    # Delegations permanentes de l'AN, delegations aux assemblees
+    # parlementaires internationales, offices parlementaires.
+    "DELEG": "delegation",
+    "DELEGBUREAU": "delegation",
+    "API": "delegation",
+    "OFFPAR": "delegation",
+    # Groupes d'amitie et organismes extra-parlementaires (perimetre #369).
     "GA": "groupe_amitie",
     "ORGEXTPARL": "extra_parlementaire",
+    # Instances de direction de l'assemblee : reelles mais sans categorie
+    # dediee justifiee par le volume (35 mandats), rangees dans "autre"
+    # plutot que de creer une categorie pour deux organes.
+    "BUREAU": "autre",
+    "CONFPT": "autre",
+    # Portefeuille ministeriel precis (#383) : "Ministere de la cohesion des
+    # territoires", "Secretariat d'Etat aupres du ministre de...", 52
+    # intitules distincts. Complete (sans le remplacer) le rattachement au
+    # gouvernement produit par fetch_positions_hemicycle_officielles, qui ne
+    # donne que le gouvernement d'appartenance ("Gouvernement (BORNE)").
+    # Leve la limitation documentee dans #hors-perimetre, qui affirmait
+    # qu'aucune source open data n'exposait ce niveau de detail.
+    "MINISTERE": "fonction_gouvernementale",
 }
+
+# typeOrgane volontairement NON mappes, avec la raison - explicites plutot
+# qu'omis, pour que ce perimetre reste reevaluable (le silence de #369 sur
+# ces types avait rendu son propre perimetre difficile a rediscuter) :
+#
+# - "ASSEMBLEE"    : c'est le mandat electif lui-meme, deja produit ailleurs
+#                    (voir _build_acteur_identite_index / mandat_electif).
+# - "GP"           : groupe politique parlementaire, deja collecte par
+#                    fetch_positions_hemicycle_officielles -> groupe_politique.
+# - "GOUVERNEMENT" : rattachement gouvernemental, deja collecte par la meme
+#                    fonction -> fonction_gouvernementale. Le mapper ici
+#                    creerait un doublon (MINISTERE ci-dessus apporte le
+#                    detail manquant, pas une redite).
+# - "CMP"          : commissions mixtes paritaires (616 mandats) - organe
+#                    temporaire cree par texte de loi, une entree par texte.
+#                    Les agreger au niveau groupe noierait les instances
+#                    permanentes sous des centaines d'entrees a membre unique
+#                    (#383).
+# - "PARPOL"       : partis politiques (222). Recoupe conceptuellement le
+#                    champ `parti` du pivot et la categorie groupe_politique ;
+#                    l'exposer comme mandat mele appartenance partisane et
+#                    mandat institutionnel. Arbitrage distinct, hors #382.
+# - types Senat    : DELEGSENAT/COMSENAT/GROUPESENAT/SENAT (4 mandats) -
+#                    volume negligeable, et le Senat n'a pas d'equivalent de
+#                    ce referentiel cote collecte.
+# - "CJR"          : Cour de justice de la Republique (1 mandat).
+_TYPE_ORGANE_NON_MAPPES: frozenset[str] = frozenset({
+    "ASSEMBLEE", "GP", "GOUVERNEMENT", "CMP", "PARPOL",
+    "DELEGSENAT", "COMSENAT", "GROUPESENAT", "SENAT", "CJR",
+})
 
 
 def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
@@ -2717,7 +2790,18 @@ def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
                         if type_organe not in _TYPE_ORGANE_TO_CATEGORIE:
                             continue
                         organe_ref = (mandat.get("organes") or {}).get("organeRef")
-                        if not organe_ref:
+                        # `organeRef` est parfois une LISTE dans le dataset AN
+                        # (un mandat rattaché à plusieurs organes) : cas absent
+                        # des 3 typeOrgane du périmètre initial (#369), révélé
+                        # par l'élargissement de #382. Sans ce garde-fou,
+                        # `fetch_organe` lève `TypeError: unhashable type` sur
+                        # un lookup de dict par liste. On retient le premier
+                        # organe : le libellé du mandat lui vient de toute
+                        # façon d'un seul organe, et un mandat sans organe
+                        # résolvable serait ignoré juste après.
+                        if isinstance(organe_ref, list):
+                            organe_ref = organe_ref[0] if organe_ref else None
+                        if not organe_ref or not isinstance(organe_ref, str):
                             continue
                         fin = mandat.get("dateFin")
                         entries.append({

@@ -14,7 +14,7 @@
   "historique_noms": [],
   "membres": [
     {
-      "membre_id": "nossenateurs:bruno-retailleau",
+      "membre_id": "nosdeputes:bruno-retailleau",
       "nom": "Bruno Retailleau",
       "debut_dans_groupe": "2004-09-26",
       "fin_dans_groupe": null,
@@ -40,7 +40,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -60,7 +60,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -80,7 +80,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -100,7 +100,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -120,7 +120,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "président",
           "debut": null,
@@ -140,7 +140,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "président",
           "debut": null,
@@ -160,7 +160,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -180,7 +180,7 @@
       },
       "membres": [
         {
-          "membre_id": "nossenateurs:bruno-retailleau",
+          "membre_id": "nosdeputes:bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -237,14 +237,19 @@
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/bruno-retailleau",
+      "synchro_le": "2026-08-17T17:28:34+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T18:00:44+0200",
+    "genere_le": "2026-08-17T19:14:55+0200",
     "licence_donnees": "",
     "profils_sources": [
-      "nossenateurs:bruno-retailleau"
+      "nosdeputes:bruno-retailleau"
     ],
     "seuil_quorum": 0.5,
     "warnings": [

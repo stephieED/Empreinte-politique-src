@@ -1,17 +1,17 @@
 {
   "schema_version": "1",
-  "id": "nosdeputes:stephane-mazars",
+  "id": "nossenateurs:stephane-mazars",
   "nom": "Stéphane Mazars",
-  "chambre": "AN",
+  "chambre": "Senat",
   "parti": null,
-  "groupe": "Renaissance",
+  "groupe": "Rassemblement Démocratique et Social européen",
   "identite": {
-    "profession": "Avocat",
+    "profession": null,
     "date_naissance": "1969-03-25",
     "lieu_naissance": null,
-    "num_circo": 1,
+    "num_circo": "non disponible",
     "uri_hatvp": null,
-    "source_url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA677483"
+    "source_url": "https://archive.nossenateurs.fr/stephane-mazars"
   },
   "sources": [
     {
@@ -23,6 +23,11 @@
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
       "synchro_le": "2026-08-13T13:46:09+0000"
+    },
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/stephane-mazars",
+      "synchro_le": "2026-08-17T19:13:54+0200"
     }
   ],
   "mandats": [
@@ -347,6 +352,174 @@
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "position_dans_hemicycle": "majorite",
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Mandat parlementaire (Rassemblement Démocratique et Social européen)",
+      "categorie": "mandat_electif",
+      "fonction": "mandat",
+      "debut": "2012-07-22",
+      "fin": "2014-05-02",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Amendements",
+      "categorie": "commission",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Interventions",
+      "categorie": "commission",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Loi ou de résolution",
+      "categorie": "commission",
+      "fonction": "propositions",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Questions",
+      "categorie": "commission",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Rapports",
+      "categorie": "commission",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Vidéos",
+      "categorie": "commission",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe France-Arabie saoudite-Pays du Golfe",
+      "categorie": "groupe_amitie",
+      "fonction": "président délégué",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Trufficulture",
+      "categorie": "groupe_amitie",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe d'études sur les pratiques sportives",
+      "categorie": "groupe_amitie",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe d'études sur l'économie agricole alimentaire",
+      "categorie": "groupe_amitie",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Mission commune d'information sur le sport professionnel et les collectivités territoriales",
+      "categorie": "extra_parlementaire",
+      "fonction": "rapporteur",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Commission nationale d'évaluation des politiques de l'État outre-mer",
+      "categorie": "extra_parlementaire",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Observatoire des territoires",
+      "categorie": "extra_parlementaire",
+      "fonction": "membre",
+      "debut": null,
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
       "mode_declenchement": null,
       "suspendu_pour_fonction_gouvernementale": null
     }
@@ -11004,13 +11177,9 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:26+0000",
+    "genere_le": "2026-08-17T19:13:54+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-    "warnings": [
-      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
-      "amendements indisponibles (législature 16) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
-      "amendements indisponibles (législature 15) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
-    ],
+    "warnings": [],
     "provenance": "roster_groupe"
   }
 }

@@ -25,14 +25,6 @@
     },
     {
       "categorie": "commission",
-      "type": "président",
-      "label": "Commission du développement durable et de l'aménagement du territoire",
-      "debut": "2022-07-01",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission d'enquête sur le montage juridique et financier du projet d'autoroute a",
       "debut": "2024-02-14",

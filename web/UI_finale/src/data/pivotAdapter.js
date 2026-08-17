@@ -54,12 +54,38 @@ const AMENDMENT_OUTCOME_LABELS = {
   tombé: 'Tombés', irrecevable: 'Irrecevables', non_soutenu: 'Non soutenus',
 };
 
-// Périmètre v1 de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES) : voir #349/#361.
+// Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
+// Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
+// d'enquête, missions d'information, groupes d'études et délégations
+// s'affichaient tous sous « Commission » — ce qui trompait le lecteur sur la
+// nature du mandat (AGENTS.md §2.8). Chaque catégorie produite par le backend
+// doit avoir son libellé ici ; le repli sur la clé technique en fin de fichier
+// n'est qu'un filet, jamais un affichage acceptable.
 const MANDAT_CATEGORY_LABELS = {
   commission: 'Commission',
+  commission_enquete: "Commission d'enquête",
+  mission_information: "Mission d'information",
+  groupe_etudes: "Groupe d'études",
+  delegation: 'Délégation',
   groupe_amitie: "Groupe d'amitié",
   extra_parlementaire: 'Engagement extra-parlementaire',
 };
+
+// Ordre d'affichage des catégories : les instances où l'appartenance est la
+// plus significative éditorialement d'abord. À volume élevé (mesuré : 430
+// agrégats pour un groupe de 61 membres, et davantage depuis #384), le tri
+// par nb_membres seul noyait les commissions permanentes sous les groupes
+// d'études ; ce rang sert de critère primaire, le nb_membres départageant
+// ensuite au sein d'une même catégorie.
+const MANDAT_CATEGORY_ORDER = [
+  'commission',
+  'commission_enquete',
+  'mission_information',
+  'delegation',
+  'groupe_etudes',
+  'groupe_amitie',
+  'extra_parlementaire',
+];
 
 // Ordre d'affichage + libellés (singulier/pluriel) des comptages par statut
 // d'un texte gouvernemental (schema_gouvernement.py). Entiers bruts
@@ -314,18 +340,34 @@ export function buildGroupView(groupe) {
     .slice(0, 20) // mots-clés bruts, non harmonisés (voir schema_pivot.py) : échantillon, pas une liste exhaustive
     .map((t) => ({ label: t.tag, count: t.nb_membres_porteurs }));
 
-  // mandats_agreges : déjà trié nb_membres desc puis categorie/label asc côté backend
-  // (group_profile._aggregate_mandats) — pas de re-tri ici.
-  const mandatsAgreges = (groupe.mandats_agreges || []).map((m) => ({
-    categorie: m.categorie,
-    categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
-    label: m.label,
-    nbMembres: m.nb_membres,
-    nbMembresActifs: m.nb_membres_actifs,
-    parFonction: Object.entries(m.par_fonction || {})
-      .sort((a, b) => b[1] - a[1])
-      .map(([fonction, count]) => ({ fonction, count })),
-  }));
+  // mandats_agreges : le backend trie par nb_membres desc puis categorie/label
+  // asc. Depuis #382/#386 le volume et la diversité de catégories ont
+  // fortement augmenté (7 catégories au lieu de 3) : on re-trie ici par rang
+  // de catégorie d'abord, pour que les commissions permanentes ne soient plus
+  // noyées sous les groupes d'études, bien plus nombreux. Le nb_membres reste
+  // le critère au sein d'une catégorie.
+  const mandatsAgreges = (groupe.mandats_agreges || [])
+    .map((m) => ({
+      categorie: m.categorie,
+      categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
+      label: m.label,
+      nbMembres: m.nb_membres,
+      nbMembresActifs: m.nb_membres_actifs,
+      parFonction: Object.entries(m.par_fonction || {})
+        .sort((a, b) => b[1] - a[1])
+        .map(([fonction, count]) => ({ fonction, count })),
+    }))
+    .sort((a, b) => {
+      const ra = MANDAT_CATEGORY_ORDER.indexOf(a.categorie);
+      const rb = MANDAT_CATEGORY_ORDER.indexOf(b.categorie);
+      // Une catégorie inconnue de l'ordre passe en dernier plutôt qu'en tête
+      // (indexOf renverrait -1), sans masquer les catégories connues.
+      const ka = ra === -1 ? MANDAT_CATEGORY_ORDER.length : ra;
+      const kb = rb === -1 ? MANDAT_CATEGORY_ORDER.length : rb;
+      if (ka !== kb) return ka - kb;
+      if (b.nbMembres !== a.nbMembres) return b.nbMembres - a.nbMembres;
+      return (a.label || '').localeCompare(b.label || '', 'fr');
+    });
 
   return {
     id: groupe.groupe_id,

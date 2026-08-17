@@ -3669,9 +3669,10 @@ def test_fetch_identite_officielle_resolves_former_deputy(tmp_path):
 
 
 def test_build_acteur_mandats_index_maps_type_organe_to_categorie(tmp_path):
-    """COMPER/GA/ORGEXTPARL doivent être classés commission/groupe_amitie/
-    extra_parlementaire ; un typeOrgane hors de ce périmètre (ex. MISINFO)
-    doit être ignoré (voir _TYPE_ORGANE_TO_CATEGORIE)."""
+    """Chaque typeOrgane du périmètre doit produire sa catégorie (voir
+    `_TYPE_ORGANE_TO_CATEGORIE`, élargi par #382/#383) ; un typeOrgane
+    volontairement exclu (`_TYPE_ORGANE_NON_MAPPES`) doit être ignoré — et
+    surtout PAS retomber dans une catégorie fourre-tout par défaut."""
     from candidate_profile import _build_acteur_mandats_index
 
     zip_bytes = _make_fake_acteurs_historique_zip_bytes(
@@ -3710,8 +3711,57 @@ def test_build_acteur_mandats_index_maps_type_organe_to_categorie(tmp_path):
                             "dateFin": None,
                         },
                         {
+                            "typeOrgane": "CNPE",
+                            "organes": {"organeRef": "PO444444"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "GE",
+                            "organes": {"organeRef": "PO555555"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "API",
+                            "organes": {"organeRef": "PO666666"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "MINISTERE",
+                            "organes": {"organeRef": "PO777777"},
+                            "infosQualite": {"libQualite": "Ministre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "BUREAU",
+                            "organes": {"organeRef": "PO888888"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
                             "typeOrgane": "ASSEMBLEE",
                             "organes": {"organeRef": "PO333333"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "CMP",
+                            "organes": {"organeRef": "PO999999"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "PARPOL",
+                            "organes": {"organeRef": "PO101010"},
+                            "infosQualite": {"libQualite": "Membre"},
                             "dateDebut": "2022-06-22",
                             "dateFin": None,
                         },
@@ -3732,9 +3782,32 @@ def test_build_acteur_mandats_index_maps_type_organe_to_categorie(tmp_path):
         "PO59048": "commission",
         "PO393167": "groupe_amitie",
         "PO111111": "extra_parlementaire",
+        "PO222222": "mission_information",
+        "PO444444": "commission_enquete",
+        "PO555555": "groupe_etudes",
+        "PO666666": "delegation",
+        "PO777777": "fonction_gouvernementale",
+        "PO888888": "autre",
     }
-    assert categories.get("PO222222") is None  # MISINFO exclu
-    assert categories.get("PO333333") is None  # ASSEMBLEE exclu (géré à part)
+    # Exclusions volontaires (`_TYPE_ORGANE_NON_MAPPES`) : aucune catégorie,
+    # pas même un fourre-tout — chacune a sa raison documentée.
+    assert categories.get("PO333333") is None  # ASSEMBLEE : c'est le mandat électif
+    assert categories.get("PO999999") is None  # CMP : organe temporaire par texte
+    assert categories.get("PO101010") is None  # PARPOL : recoupe `parti`/groupe_politique
+
+
+def test_type_organe_mapping_et_exclusions_sont_coherents():
+    """Garde-fou #382 : un `typeOrgane` ne peut pas être à la fois mappé et
+    déclaré exclu, et toute catégorie produite doit appartenir au vocabulaire
+    du schéma pivot — sinon `validate_profil` rejetterait les profils générés."""
+    from candidate_profile import _TYPE_ORGANE_NON_MAPPES, _TYPE_ORGANE_TO_CATEGORIE
+    from schema_pivot import KNOWN_CATEGORIES
+
+    chevauchement = set(_TYPE_ORGANE_TO_CATEGORIE) & set(_TYPE_ORGANE_NON_MAPPES)
+    assert not chevauchement, f"typeOrgane à la fois mappé et exclu : {chevauchement}"
+
+    inconnues = set(_TYPE_ORGANE_TO_CATEGORIE.values()) - KNOWN_CATEGORIES
+    assert not inconnues, f"catégories hors schema_pivot.KNOWN_CATEGORIES : {inconnues}"
 
 
 def test_extract_mandats_officiels_resolves_organe_labels(tmp_path):

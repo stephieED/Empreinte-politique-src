@@ -25,14 +25,6 @@
     },
     {
       "categorie": "commission",
-      "type": "président",
-      "label": "Commission des affaires européennes",
-      "debut": "2022-07-08",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission des affaires étrangères",
       "debut": "2023-09-01",
