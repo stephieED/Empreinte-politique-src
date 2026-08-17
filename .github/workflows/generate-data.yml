@@ -44,9 +44,13 @@ on:
           Déploiement progressif de l'extraction roster-driven (#190, job
           extract-roster-groupes) : ne traiter que les N premiers membres du
           roster (raw_data/roster_candidats.json, ordre déterministe --limit).
-          Défaut : 20 (rollout manuel à petite échelle, cf. #192 — pas de run
-          complet ~750+ membres tant que le budget de timeout n'a pas été
-          recalibré). 0 = pas de limite (déconseillé pour l'instant).
+          Défaut : 20 (rollout manuel à petite échelle, cf. #192). Budget
+          mesuré (#376/#392) : ~5 s par membre, soit 1,7 min à 20, 25 min à
+          300, 59 min à 700. Le timeout de 60 min couvre ~712 des 752 membres
+          du roster : une montée progressive jusqu'à ~700 est donc possible
+          sans rien changer d'autre. 0 = pas de limite : ~63 min, au-dessus du
+          timeout — exige le découpage en shards de #394 (et reste une
+          décision produit, #192).
         type: number
         default: 20
 
@@ -680,25 +684,31 @@ jobs:
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
   #
-  # TIMEOUT MESURÉ (#376) — n'est plus « provisoire ».
+  # TIMEOUT MESURÉ (#376, re-mesuré après #392) — n'est plus « provisoire ».
   #
   # Mesure en extraction légère (--skip-interventions --skip-dossiers-legislatifs,
-  # --workers 1, comme ce job), deux échantillons aléatoires du roster :
-  #   N=8  -> 137,9 s      N=16 -> 231,7 s
-  # Modèle linéaire : T(N) ≈ 44 s (coût fixe) + 11,7 s x N.
+  # --workers 1, comme ce job), échantillons aléatoires du roster :
+  #   avant #392 : N=8 -> 137,9 s ; N=16 -> 231,7 s  => 44 s + 11,7 s x N
+  #   après  #392 : N=8 ->  42,7 s ; N=16 ->  83,1 s  => 2,3 s + 5,05 s x N
+  # Le shardage de l'index amendements par acteur (#392) a divisé le coût
+  # marginal par 2,3.
   #
-  # Ce que couvre 60 min : (3600 - 44) / 11,7 ≈ **300 membres**, soit 15x la
-  # valeur par défaut de roster_extraction_limit (20, qui coûte ~5 min). La
-  # marge reste donc très large pour l'usage actuel — inutile de la modifier.
+  # Ce que couvre 60 min : (3600 - 2,3) / 5,05 ≈ **712 membres**, sur un
+  # roster de 752. Coût de la valeur par défaut (roster_extraction_limit=20) :
+  # ~1,7 min — marge très large, aucune raison de toucher au timeout pour
+  # l'usage actuel.
   #
-  # CE QUI BLOQUE LE PASSAGE À PLEINE ÉCHELLE : ce n'est pas le timeout, c'est
-  # le coût par membre. 752 membres coûteraient ≈ 148 min, et surtout **93 %
-  # de ce coût est la relecture de l'index amendements** (~10,9 s/membre,
-  # 673 Mo de JSON re-parsés à CHAQUE candidat par fetch_amendements_officiels,
-  # soit ~500 Go de parsing sur un run complet). Aucun timeout ne rend cela
-  # raisonnable : il faut d'abord supprimer cette relecture répétée. Augmenter
-  # ce timeout pour « faire tenir » un run complet ne ferait qu'entériner ce
-  # gaspillage — voir docs/technical_decisions.md#budget-roster-mesure.
+  # PASSAGE À PLEINE ÉCHELLE : 752 membres coûtent ≈ 63 min, soit **juste
+  # au-dessus** de ce timeout. Ce n'est donc plus un facteur 2,5 comme avant
+  # #392, mais ça ne tient toujours pas d'un seul tenant. Deux conséquences,
+  # tranchées dans #347 :
+  #   - un run complet exige soit un timeout > 63 min, soit un découpage ;
+  #   - une préemption runner fait perdre TOUT le job (l'upload d'artifact en
+  #     if: always() ne s'exécute pas, angle mort #228 ; le checkpoint
+  #     --resume est gitignoré donc inutile entre runs) — à 63 min la perte
+  #     devient coûteuse, là où elle était indolore à 1,7 min.
+  # Le découpage en shards (8 shards ≈ 94 membres ≈ 8 min chacun) traite les
+  # deux à la fois. Voir docs/technical_decisions.md#budget-roster-mesure.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
     needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
