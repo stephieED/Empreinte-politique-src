@@ -1030,6 +1030,248 @@ des deux côtés, aucun gel — attendu, le phénomène étant probabiliste ;
 plusieurs runs par palier de volume restent nécessaires avant de pouvoir
 conclure.
 
+<a id="index-amendements-sharde-par-acteur"></a>
+## Index amendements shardé par acteur (#392) (2026-08-17)
+
+**Contexte** : la mesure de [[budget-roster-mesure]] (#376) a montré que **93 %
+du coût d'extraction d'un membre du roster** (10,9 s sur 11,7 s) était la
+relecture des index amendements — 673 Mo de JSON reparsés à **chaque**
+candidat par `fetch_amendements_officiels`, soit ~500 Go sur un run complet,
+payés même pour les candidats sans aucun amendement.
+
+**Décision** : le cache runtime passe d'un `index_par_acteur.json` unique par
+législature à un **répertoire d'une tranche par acteurRef**
+(`index_par_acteur/PA1567.json`). Lire un candidat ne coûte plus que sa
+tranche (~285 Ko) au lieu de l'index entier.
+
+**Le store `amendements.json` est mémoïsé** — et cette fois c'est sûr, ce que
+les mesures tranchent :
+
+| Ce qui reste résident | RSS |
+|---|---|
+| Les 4 `index_par_acteur` complets (tentative #377, revertée) | **3,84 Go** |
+| Les 4 `amendements.json` seuls (retenu) | **426 Mo** |
+
+Le store est petit parce qu'il est dédupliqué (89 Mo sur disque, ~178 000
+amendements uniques) ; c'est `index_par_acteur` qui pesait (580 Mo), et il
+n'est plus jamais chargé en entier. La mémoïsation revertée en
+[[oom-lecture-amendements-par-candidat]] échouait précisément parce qu'elle
+gardait la mauvaise moitié.
+
+**Résultat mesuré** : **0,17 s par candidat** pour 3 législatures, contre
+~8,2 s auparavant — **gain ×49**, RSS 347 Mo. Le coût par membre du roster
+passe donc de ~11,7 s à ~1 s, ce qui ramène la projection d'un run complet
+(752 membres) de ~148 min à ~15 min, largement dans le timeout de 60 min.
+
+**Équivalence fonctionnelle vérifiée** contre la source figée committée
+(vérité terrain, indépendante du cache) : `_expand_aggregated_amendements_index`
+appliquée aux `.json.gz` committés, comparée entrée par entrée à la lecture
+shardée — **0 écart sur 360 acteurs** (120 par législature).
+
+*Piège évité au passage* : ma première comparaison opposait les références
+brutes lues au nombre d'amendements du profil committé, et affichait des
+écarts partout. C'était un artefact — le profil est dédupliqué par
+`merge_profile._amendement_key` sur `(numero, texte_vise, date)`, la lecture
+ne l'est pas. La bonne vérité terrain est la source figée, pas le profil.
+
+**Migration** : le répertoire de tranches est exigé en lecture ; un cache
+hérité (fichier unique de #377, ou forme plate d'avant) est indiscernable
+d'un cache absent et donc reconstruit. L'écriture supprime l'ancien fichier
+plat et reconstruit le répertoire **de zéro** — une tranche d'acteur disparu
+d'une reconstruction ne doit pas survivre.
+
+**Sécurité** : le nom de tranche dérivant de l'acteurRef, tout identifiant
+hors forme `PA<chiffres>` est refusé plutôt qu'assaini — un acteurRef
+malformé ne peut jamais désigner un chemin hors du cache.
+
+**Effet de bord sur `_download_and_build_amendement_index`** : sur cache-hit,
+la liste des acteurs indexés se déduit désormais des **noms** de tranches
+sans en ouvrir aucune. Son unique consommateur (`build_amendements_index.py`)
+n'en fait que `len()` ; matérialiser les valeurs coûterait des centaines de
+Mo pour une information dont personne ne se sert.
+
+**Tests** : lecture limitée à la tranche demandée (vérifié en corrompant la
+tranche d'un *autre* acteur — un parcours de l'index complet échouerait),
+refus des acteurRef hors forme, suppression de l'index plat hérité,
+reconstruction complète du répertoire, plus la mise à jour des fixtures
+existantes et du quality gate §3d (qui doit rendre le même verdict que le
+lecteur réel). Suite complète : 1179/1179.
+
+<a id="budget-roster-mesure"></a>
+## Budget CI de `extract-roster-groupes` : mesure réelle (#376) (2026-08-17)
+
+**Contexte** : le `timeout-minutes: 60` de ce job était marqué « provisoire »
+depuis sa création, sans aucune mesure de débit — contrairement aux
+amendements, qui avaient eu leur spike dédié
+([[amendements-index-budget-ci-cache-granularite]]).
+
+**Protocole** : extraction légère telle que la CI l'exécute
+(`--skip-interventions --skip-dossiers-legislatifs`, `--workers 1`), deux
+échantillons **aléatoires** du roster (`--sample`, pas `--limit` : les 20
+premiers déterministes auraient pu biaiser par l'ordre du fichier source).
+Volontairement **sans** `--skip-existing` : on mesure le coût de traitement
+réel d'un membre, c'est-à-dire le cas d'un run à pleine échelle où presque
+tout est à collecter.
+
+| Échantillon | Temps | RSS max |
+|---|---|---|
+| N=8 | 137,9 s | 1,54 Go |
+| N=16 | 231,7 s | 1,48 Go |
+
+**Modèle** : `T(N) ≈ 44 s + 11,7 s × N` (44 s de coût fixe, 11,7 s par membre).
+
+**Projections** : roster complet (752 membres) ≈ **148 min** ; restant à
+collecter (688) ≈ 135 min. Le timeout de 60 min couvre
+`(3600 − 44) / 11,7 ≈ **300 membres**`, soit 15× la valeur par défaut de
+`roster_extraction_limit` (20, qui coûte ~5 min).
+
+**Décision — timeout inchangé à 60 min**, mais le commentaire passe de
+« provisoire » à *mesuré*, avec ce que la valeur couvre réellement. L'inflater
+pour faire tenir un run complet aurait entériné le gaspillage décrit
+ci-dessous au lieu de le corriger.
+
+**Le vrai blocage n'est pas le timeout** : **93 % du coût par membre est la
+relecture de l'index amendements** (10,9 s sur 11,7 s). `fetch_amendements_officiels`
+relit 673 Mo de JSON à *chaque* candidat, soit ~500 Go de parsing sur un run
+complet — et ce coût est payé même pour les candidats sans aucun amendement
+(48 profils sur 90 en ont). Suivi dans #392, prérequis technique du passage à
+pleine échelle.
+
+**Point 4 de l'issue — `--skip-existing --resume` suffit-il à borner la perte
+en cas d'échec ?** Non, et c'est vérifiable : le fichier de point de
+sauvegarde (`raw_data/profiles/.generation_checkpoint.json`) est **gitignoré**,
+donc `--resume` ne sert qu'à l'intérieur d'un même run, jamais entre deux.
+Entre runs, la seule progression préservée est celle des profils effectivement
+committés par `merge-and-pivot`. Or si le job roster est préempté, son
+`Upload artifact` en `if: always()` ne s'exécute pas ([[resilience-generate-data-shutdown-signal]],
+angle mort #228) : rien n'atteint `merge-and-pivot`, rien n'est committé, et
+**toute la progression du run est perdue**. À 20 membres (~5 min) c'est
+indolore ; à 300 (~60 min) beaucoup moins. Le sharding (#347) garde donc sa
+justification — mais elle tient à la **résilience**, pas au coût CPU, que
+#392 traite séparément.
+
+**Point 5 — recalibrage de `--groupe-min-coverage-pct`** : impossible à ce
+stade, et pour la même raison qu'en 2026-08-12 ([[seuil-couverture-groupe]]) —
+il faudrait des taux de couverture issus d'un run à pleine échelle, qui reste
+bloqué par #392. Non traité plutôt que fixé dans le vide.
+
+**Limite de cette mesure, assumée** : réalisée en local, pas sur un runner
+GitHub hébergé — chemin réseau différent. Elle reste représentative sur le
+poste dominant (la relecture d'index est CPU/disque, pas réseau), mais les
+appels réseau résiduels (~0,8 s/membre) pourraient différer en CI. Même
+réserve que celle déjà consignée pour le spike amendements.
+
+<a id="ne-jamais-committer-un-build-perime"></a>
+## Ne jamais committer un build produit avec du code périmé (#390) (2026-08-17)
+
+**Contexte** : run `#266`. `merge-and-pivot` fait `actions/checkout` sans
+`ref`, donc sur le SHA de `main` figé au **déclenchement** du run — alors que
+le job ne démarre qu'après les 5 jobs d'extraction, ~18 min plus tard. La PR
+#381 (correctif #379) a été mergée dans cette fenêtre. Le job a donc
+régénéré `pivot_data/groupes/*.json` avec l'**ancien** `src/group_profile.py`
+et tenté de le committer. Seul un conflit de rebase a empêché d'écraser le
+correctif.
+
+**Le conflit était une chance, pas le problème.** Le cas dangereux est
+l'inverse : quand git parvient à merger proprement, la donnée périmée est
+publiée **en silence**.
+
+**Arbitrage (utilisatrice)** : ne rien committer, et relancer sur le `main` à
+jour. L'asymétrie le justifie — ne rien committer coûte un run et toute la
+donnée dérivée est régénérable ; committer un build périmé publie une erreur.
+Refuser de committer est donc le **défaut**, pas le cas d'échec.
+
+**Option écartée — `ref: main` au checkout** (ma recommandation initiale) :
+elle réduirait la fenêtre, mais le job dériverait avec du code neuf à partir
+d'artifacts extraits avec du code ancien — un état mixte, plus cohérent
+qu'aujourd'hui mais toujours pas cohérent. La relance sur un `main` à jour
+rend cette option **inutile** : tous les jobs du nouveau run partagent alors
+le même SHA, ce qui est correct par construction plutôt que « moins faux ».
+Un seul mécanisme au lieu de deux.
+
+*Autres options écartées* : rebase + régénération in situ (correcte mais
+nettement plus complexe à câbler ; gardée en réserve, et elle éviterait de
+jeter l'extraction — la partie coûteuse et fragile — si la fréquence des
+abandons le justifiait) ; discipline de branche (non outillable) ; toute
+résolution « la version du run gagne » (`-X theirs`, force-push), qui aurait
+ici réintroduit sciemment le bug #379.
+
+**Implémentation** :
+- Step `Vérifier que le code de génération n'a pas changé pendant le run`,
+  placé **juste avant** le commit — position choisie pour couvrir toute la
+  fenêtre (déclenchement → commit) ; une vérification en début de job n'en
+  couvrirait qu'une partie tout en donnant une fausse assurance.
+- Condition volontairement **étroite** : `src/` uniquement. Un commit de doc
+  ou de données ne déclenche rien — c'est le cas que la boucle de retry du
+  push sait traiter depuis [[retry-push-merge-and-pivot-bash-e]] (#389).
+- Marqueur `GENERATION_CODE_CHANGED_DURING_RUN` émis en `::error::`, détecté
+  par `retry-generate-data.yml` comme **second motif de relance**, distinct de
+  la signature de préemption runner — sinon le résumé attribuerait à tort une
+  préemption. Le plafond d'une seule tentative automatique préexistant
+  s'applique identiquement, ce qui borne le risque de boucle si `main` bouge
+  encore pendant la relance.
+
+**Vérifié sur dépôts git réels** (remote bare + clones), en exécutant le step
+tel quel :
+- *Commit concurrent sur `docs/` seulement* → `✓ src/ inchangé — commit sûr`,
+  exit 0. Aucun faux positif : c'est le cas nominal que le retry doit
+  absorber, pas abandonner.
+- *PR touchant `src/` mergée pendant le run* (scénario exact du run #266) →
+  fichiers modifiés listés, marqueur émis, exit 1, résumé explicite écrit
+  dans `$GITHUB_STEP_SUMMARY`.
+
+**Non résolu, assumé** : une relance jette le travail d'extraction déjà fait
+(~20 min, et c'est la partie exposée aux `IncompleteRead`). Acceptable tant
+que la condition d'abandon reste étroite ; à reconsidérer via l'option
+« rebase + régénération » si la fréquence réelle des abandons le justifie —
+donnée à mesurer, pas à supposer.
+
+<a id="retry-push-merge-and-pivot-bash-e"></a>
+## La boucle de retry du push ne rebouclait jamais (`bash -e`) (#389) (2026-08-17)
+
+**Contexte** : run `#266`. Toutes les étapes de données de `merge-and-pivot`
+ont réussi ; seul le push final a échoué, et le log ne montrait qu'une
+« tentative 1/3 » là où le step en promet 3.
+
+**Cause** : le workflow ne déclare aucun `defaults: shell`, donc GitHub
+Actions exécute chaque `run:` avec `bash -e {0}`. Le `git rebase` en conflit
+retournant un code non nul, le shell terminait immédiatement le step — les
+tentatives 2 et 3 n'existaient que sur le papier, et le
+`::error::Échec après 3 tentatives` en fin de boucle n'était **jamais**
+atteint. Le diagnostic affiché en cas d'échec réel était donc trompeur, ce
+qui a longtemps masqué le défaut : le retry paraissait fonctionner puisque
+personne ne voyait de message contredisant.
+
+Effet secondaire : le step se terminait avec le dépôt du runner **en rebase
+inachevé** (`.git/rebase-merge/` présent, index en conflit).
+
+**Correctif** : `set +e` sur la seule portée de la boucle (restauré ensuite),
+et sortie immédiate sur conflit — un conflit de rebase ne se résout jamais en
+rebouclant, les deux côtés ayant réécrit les mêmes fichiers générés. Ajout
+d'un `git rebase --abort` avant de sortir, pour laisser le dépôt propre. Le
+message final distingue désormais les deux causes : conflit de rebase (cas du
+run #266, cause traitée séparément dans #390) vs. rejet persistant après 3
+rebases réussis (concurrence soutenue) — la première ne se traite pas par un
+retry, la seconde si.
+
+**Vérifié sur dépôts git réels**, en exécutant le step sous `bash -e` comme
+le fait GitHub Actions :
+- *Ancien code, conflit* : une seule « tentative 1/3 », aucun message
+  d'erreur final, `.git/rebase-merge/` laissé en place — défaut reproduit à
+  l'identique.
+- *Nouveau code, conflit* : message explicite désignant la bonne cause, exit
+  1, dépôt propre.
+- *Nouveau code, commit concurrent sur un fichier disjoint* (le cas que le
+  retry vise depuis le run #29) : « tentative 2/3 », **push réussi**, les deux
+  commits préservés sur le remote. Ce scénario ne fonctionnait pas non plus
+  avant le correctif.
+
+**Périmètre** : uniquement la mécanique de retry. La raison pour laquelle un
+conflit survient — le job régénère des fichiers générés depuis un SHA figé et
+écrase le travail d'une PR mergée entre-temps — reste ouverte dans #390.
+Corriger la boucle seule ne rend pas le run #266 vert : elle transforme un
+échec confus en échec explicite.
+
 <a id="purge-mandats-dupliques-prudence"></a>
 ## Purge des mandats hérités dupliqués : appariement prudent (#387) (2026-08-17)
 

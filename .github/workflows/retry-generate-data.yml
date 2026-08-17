@@ -119,6 +119,43 @@ jobs:
           echo "inconclusive=$inconclusive" >> "$GITHUB_OUTPUT"
           echo "no_job_failure=$no_job_failure" >> "$GITHUB_OUTPUT"
 
+      # Second motif de relance (#390), distinct de la préemption runner :
+      # merge-and-pivot a refusé de committer parce que src/ avait changé sur
+      # origin/main pendant le run — les fichiers dérivés auraient été produits
+      # avec du code périmé. Contrairement à une préemption, ce n'est pas un
+      # aléa d'infrastructure mais une course entre le run et un merge sur
+      # main ; la relance est pertinente dans les deux cas (un nouveau run
+      # repart d'un SHA cohérent pour TOUS ses jobs), mais le diagnostic doit
+      # les distinguer, sinon le résumé attribue à tort une préemption.
+      #
+      # Le plafond de 1 tentative (step "cap" ci-dessus) s'applique
+      # identiquement : si main bouge encore pendant la relance, on s'arrête
+      # là plutôt que de boucler.
+      - name: Détecter un refus de commit pour code de génération périmé (#390)
+        id: code_change
+        if: steps.cap.outputs.already_retried == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          matched=false
+          if jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/dev/null); then
+            for job_id in $(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion=="failure") | .id'); do
+              # --allow-escape-sequences obligatoire sur tout gh api .../logs
+              # de ce fichier (#236) : sans lui, gh échoue dès que le log
+              # contient des couleurs ANSI, silencieusement.
+              if log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences 2>/dev/null); then
+                if echo "$log" | grep -q "GENERATION_CODE_CHANGED_DURING_RUN"; then
+                  matched=true
+                  break
+                fi
+              fi
+            done
+          fi
+          echo "matched=$matched" >> "$GITHUB_OUTPUT"
+
       # Best-effort : reconstruit les inputs du run échoué à partir des logs
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
       # fresh_run est lu de façon fiable via la conclusion du step conditionnel
@@ -223,7 +260,7 @@ jobs:
       # par défaut que celles déclarées dans generate-data.yml, pour rester
       # sûr même si le step best-effort n'a pu écrire aucun de ses outputs.
       - name: Re-déclencher generate-data.yml
-        if: always() && steps.signature.outputs.matched == 'true'
+        if: always() && (steps.signature.outputs.matched == 'true' || steps.code_change.outputs.matched == 'true')
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -249,6 +286,17 @@ jobs:
               echo ""
               echo "Le run (${RUN_URL}) était déjà lui-même une relance automatique."
               echo "Intervention manuelle requise si la préemption runner persiste."
+            elif [[ "${{ steps.code_change.outputs.matched }}" == "true" ]]; then
+              echo "### 🔁 Retry automatique déclenché — code de génération modifié pendant le run"
+              echo ""
+              echo "Le run (${RUN_URL}) a refusé de committer : \`src/\` a changé sur"
+              echo "\`origin/main\` pendant son exécution, donc les fichiers dérivés"
+              echo "auraient été produits avec du code périmé (#390)."
+              echo ""
+              echo "**Ce n'est pas une préemption runner** — c'est une course entre ce run"
+              echo "et un merge sur \`main\`. Aucune donnée n'est perdue : tout est"
+              echo "régénérable. Un nouveau \`workflow_dispatch\` a été déclenché, qui"
+              echo "repartira d'un SHA cohérent pour tous ses jobs."
             elif [[ "${{ steps.signature.outputs.matched }}" == "true" ]]; then
               echo "### 🔁 Retry automatique déclenché"
               echo ""

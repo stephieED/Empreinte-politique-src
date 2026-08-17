@@ -680,15 +680,30 @@ jobs:
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
   #
-  # TIMEOUT PROVISOIRE (60 min pour roster_extraction_limit=20, --source all
-  # implicite donc coût par membre comparable à extract-an) : à recalibrer
-  # après un premier run mesuré manuellement (workflow_dispatch, limite
-  # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
+  # TIMEOUT MESURÉ (#376) — n'est plus « provisoire ».
+  #
+  # Mesure en extraction légère (--skip-interventions --skip-dossiers-legislatifs,
+  # --workers 1, comme ce job), deux échantillons aléatoires du roster :
+  #   N=8  -> 137,9 s      N=16 -> 231,7 s
+  # Modèle linéaire : T(N) ≈ 44 s (coût fixe) + 11,7 s x N.
+  #
+  # Ce que couvre 60 min : (3600 - 44) / 11,7 ≈ **300 membres**, soit 15x la
+  # valeur par défaut de roster_extraction_limit (20, qui coûte ~5 min). La
+  # marge reste donc très large pour l'usage actuel — inutile de la modifier.
+  #
+  # CE QUI BLOQUE LE PASSAGE À PLEINE ÉCHELLE : ce n'est pas le timeout, c'est
+  # le coût par membre. 752 membres coûteraient ≈ 148 min, et surtout **93 %
+  # de ce coût est la relecture de l'index amendements** (~10,9 s/membre,
+  # 673 Mo de JSON re-parsés à CHAQUE candidat par fetch_amendements_officiels,
+  # soit ~500 Go de parsing sur un run complet). Aucun timeout ne rend cela
+  # raisonnable : il faut d'abord supprimer cette relecture répétée. Augmenter
+  # ce timeout pour « faire tenir » un run complet ne ferait qu'entériner ce
+  # gaspillage — voir docs/technical_decisions.md#budget-roster-mesure.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
     needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
+    timeout-minutes: 60   # mesuré : couvre ~300 membres (voir commentaire ci-dessus)
     continue-on-error: true
 
     steps:
@@ -1034,6 +1049,58 @@ jobs:
             --parltrack-status-file parltrack-status.json
             # --groupe-min-coverage-pct XX  # To be set after running and audit of workflow (cf. #193)
 
+      # Garde-fou #390 : ne JAMAIS committer un build produit avec du code
+      # périmé.
+      #
+      # actions/checkout fige le SHA de main au déclenchement du run, alors que
+      # ce job ne démarre qu'après les 5 jobs d'extraction (20+ min plus tard).
+      # Si une PR touchant src/ est mergée dans cette fenêtre, tout ce que ce
+      # job vient de dériver (pivots, partis, groupes, gouvernements) l'a été
+      # avec l'ANCIEN code de génération. Committer ce résultat publierait de
+      # la donnée fausse — et potentiellement en silence, si git parvient à
+      # merger sans conflit. Vécu sur le run #266, où seul un conflit de rebase
+      # a empêché d'écraser le correctif #379 par des groupes régénérés avec le
+      # code d'avant ce correctif.
+      #
+      # Asymétrie qui fonde ce choix : ne rien committer coûte un run, et toute
+      # la donnée dérivée est régénérable ; committer un build périmé publie
+      # une erreur. Refuser de committer est donc le défaut, pas le cas
+      # d'échec.
+      #
+      # Condition volontairement ÉTROITE (src/ seulement) : un commit de doc ou
+      # de données ne doit rien déclencher — c'est le cas que la boucle de
+      # retry du push sait traiter, depuis la correction de #389. La relance
+      # est prise en charge par retry-generate-data.yml, qui plafonne déjà à
+      # une seule tentative automatique.
+      - name: Vérifier que le code de génération n'a pas changé pendant le run
+        env:
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if git diff --quiet "$BASE_SHA" origin/main -- src/; then
+            echo "✓ src/ inchangé sur origin/main depuis le début du run — commit sûr."
+            exit 0
+          fi
+          echo "Fichiers de src/ modifiés sur origin/main pendant ce run :"
+          git diff --name-only "$BASE_SHA" origin/main -- src/ | sed 's/^/  - /'
+          {
+            echo "### ⛔ Commit annulé — code de génération modifié pendant le run"
+            echo ""
+            echo "\`src/\` a changé sur \`origin/main\` depuis le SHA sur lequel ce job"
+            echo "a été checkouté (\`$BASE_SHA\`). Les fichiers dérivés produits ici"
+            echo "l'ont donc été avec du code périmé : les committer publierait de la"
+            echo "donnée potentiellement fausse (voir #390)."
+            echo ""
+            echo "Aucune donnée n'est perdue — tout est régénérable. Un nouveau run"
+            echo "sur le \`main\` à jour produira un résultat cohérent."
+          } >> "$GITHUB_STEP_SUMMARY"
+          # Marqueur greppable par retry-generate-data.yml, distinct de la
+          # signature de préemption runner, pour que le diagnostic de la
+          # relance reste lisible.
+          echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ modifié sur origin/main pendant le run ; commit annulé pour ne pas publier un build périmé (#390)."
+          exit 1
+
       - name: Committer et pousser les données mises à jour
         run: |
           git config user.name "github-actions[bot]"
@@ -1054,6 +1121,15 @@ jobs:
           # vécu sur le run #29 (rejeté par un commit doc poussé pendant le run).
           # Rebase + retry au lieu d'échouer tout le job sur une donnée déjà
           # committée localement.
+          #
+          # `set +e` sur la portée de la boucle (#389) : ce step s'exécute avec
+          # `bash -e {0}` (aucun `defaults: shell` déclaré dans ce workflow), donc
+          # le premier `git rebase` en conflit terminait immédiatement le step —
+          # les tentatives 2 et 3 ne s'exécutaient jamais, et le message d'erreur
+          # final n'était jamais atteint. Constaté sur le run #266 : une seule
+          # ligne « tentative 1/3 » dans le log, puis sortie en échec.
+          set +e
+          push_status=""
           for attempt in 1 2 3; do
             if git push; then
               echo "Push réussi (tentative ${attempt}/3)."
@@ -1061,7 +1137,22 @@ jobs:
             fi
             echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
             git fetch origin main
-            git rebase --autostash origin/main
+            if ! git rebase --autostash origin/main; then
+              # Un conflit de rebase ne se résoudra jamais en rebouclant : les
+              # deux côtés ont réécrit les mêmes fichiers générés (cas du run
+              # #266, cause traitée dans #390). On sort tout de suite, après
+              # avoir rendu le dépôt propre — un rebase inachevé bloquerait
+              # toute logique ajoutée ensuite.
+              git rebase --abort || true
+              push_status="conflit"
+              break
+            fi
           done
-          echo "::error::Échec du push après 3 tentatives (rebase inclus) — intervention manuelle requise."
+          set -e
+
+          if [ "$push_status" = "conflit" ]; then
+            echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
+          else
+            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur main. Intervention manuelle requise."
+          fi
           exit 1
