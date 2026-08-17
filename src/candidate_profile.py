@@ -1987,19 +1987,18 @@ def _format_nom_complet(prenom: Optional[str], nom: Optional[str]) -> Optional[s
     return prenom or nom or None
 
 
-def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, Any]]:
-    """Sélectionne, parmi les mandats `typeOrgane == "ASSEMBLEE"` d'un acteur,
-    celui correspondant à l'élection la plus pertinente pour la circonscription/
-    place hémicycle à afficher : le mandat en cours (`dateFin` absent) s'il en
-    existe un, sinon celui dont `dateDebut` est le plus récent (élu dont le
-    mandat est terminé). Nécessaire depuis le passage à `AN_ACTEURS_HISTORIQUE_ZIP_URL`
-    (issue #354) : contrairement à l'ancien jeu de données `AMO10` (limité aux
-    mandats actifs, un seul mandat ASSEMBLEE possible par acteur), un acteur
-    peut désormais avoir plusieurs mandats ASSEMBLEE successifs (réélections
-    sur plusieurs législatures)."""
+def _select_mandat_par_type_courant(mandats: list[Any], type_organe: str) -> Optional[dict[str, Any]]:
+    """Sélectionne, parmi les mandats d'un acteur dont `typeOrgane ==
+    type_organe`, celui correspondant à la période la plus pertinente : le
+    mandat en cours (`dateFin` absent) s'il en existe un, sinon celui dont
+    `dateDebut` est le plus récent (mandat terminé). Généralisé (issue #369)
+    à partir de la logique déjà en place pour `typeOrgane == "ASSEMBLEE"`
+    (voir `_select_mandat_assemblee_courant`) — même besoin pour `"GP"`
+    (groupe politique actuel, quand plusieurs périodes d'appartenance
+    successives existent)."""
     best: Optional[dict[str, Any]] = None
     for mandat in mandats:
-        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
+        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != type_organe:
             continue
         if best is None:
             best = mandat
@@ -2013,14 +2012,32 @@ def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, A
     return best
 
 
+def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, Any]]:
+    """Sélectionne, parmi les mandats `typeOrgane == "ASSEMBLEE"` d'un acteur,
+    celui correspondant à l'élection la plus pertinente pour la circonscription/
+    place hémicycle à afficher. Nécessaire depuis le passage à
+    `AN_ACTEURS_HISTORIQUE_ZIP_URL` (issue #354) : contrairement à l'ancien
+    jeu de données `AMO10` (limité aux mandats actifs, un seul mandat
+    ASSEMBLEE possible par acteur), un acteur peut désormais avoir plusieurs
+    mandats ASSEMBLEE successifs (réélections sur plusieurs législatures).
+    Voir `_select_mandat_par_type_courant` pour la logique de sélection."""
+    return _select_mandat_par_type_courant(mandats, "ASSEMBLEE")
+
+
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
     d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
-    contact, circonscription, place hémicycle), à partir du jeu de données
-    bulk historique des acteurs de l'Assemblée nationale
-    (`AN_ACTEURS_HISTORIQUE_ZIP_URL`, partagé avec `_build_organe_index` /
-    `_build_acteur_positions_hemicycle_index` via
-    `_ensure_acteurs_historique_zip_downloaded`).
+    contact, circonscription, place hémicycle, groupe politique actuel,
+    dates/nombre de mandats), à partir du jeu de données bulk historique des
+    acteurs de l'Assemblée nationale (`AN_ACTEURS_HISTORIQUE_ZIP_URL`,
+    partagé avec `_build_organe_index` / `_build_acteur_positions_hemicycle_index`
+    via `_ensure_acteurs_historique_zip_downloaded`).
+
+    `groupe_sigle`/`groupe_nom` (issue #369) proviennent du mandat `typeOrgane
+    == "GP"` le plus actuel (voir `_select_mandat_par_type_courant`), résolu
+    en sigle/nom lisible via `_build_organe_index` (#353) — nécessaire pour
+    que ce référentiel puisse remplacer NosDéputés en source primaire
+    d'identité sans perdre le groupe politique déclaré.
 
     Couvre tous les élu⋅e⋅s référencés depuis la XIe législature, actifs ou
     non (issue #354) — contrairement à l'ancien jeu de données `AMO10`
@@ -2047,6 +2064,12 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
         zip_path = _ensure_acteurs_historique_zip_downloaded()
         if zip_path is None:
             return {}
+
+        # Résolution du groupe politique actuel (organeRef -> sigle/nom, #353)
+        # depuis le même zip déjà en cache disque après le premier appel —
+        # aucun nouveau téléchargement (issue #369, voir aussi
+        # _select_mandat_par_type_courant ci-dessus).
+        organe_index = _build_organe_index()
 
         index: dict[str, dict[str, Any]] = {}
         try:
@@ -2079,13 +2102,31 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     mandats = (acteur.get("mandats") or {}).get("mandat")
                     if isinstance(mandats, dict):
                         mandats = [mandats]
+                    mandats = mandats if isinstance(mandats, list) else []
+
                     numero_departement = numero_circo = place_hemicycle = None
-                    mandat_assemblee = _select_mandat_assemblee_courant(mandats if isinstance(mandats, list) else [])
+                    mandat_debut = mandat_fin = None
+                    mandat_assemblee = _select_mandat_assemblee_courant(mandats)
                     if mandat_assemblee is not None:
                         lieu = (mandat_assemblee.get("election") or {}).get("lieu") or {}
                         numero_departement = lieu.get("numDepartement")
                         numero_circo = lieu.get("numCirco")
                         place_hemicycle = (mandat_assemblee.get("mandature") or {}).get("placeHemicycle")
+                        mandat_debut = mandat_assemblee.get("dateDebut")
+                        mandat_fin = mandat_assemblee.get("dateFin")
+                    nb_mandats = sum(1 for m in mandats if isinstance(m, dict) and m.get("typeOrgane") == "ASSEMBLEE")
+
+                    # Groupe politique actuel (#369) : sans ça, le seul champ
+                    # groupe_sigle/groupe_nom du profil resterait NosDéputés
+                    # uniquement, empêchant de rendre fetch_identity
+                    # conditionnel (étape 4 de #369) sans perdre cette donnée.
+                    groupe_sigle = groupe_nom = None
+                    mandat_gp = _select_mandat_par_type_courant(mandats, "GP")
+                    if mandat_gp is not None:
+                        organe_gp = organe_index.get((mandat_gp.get("organes") or {}).get("organeRef") or "")
+                        if organe_gp:
+                            groupe_sigle = organe_gp.get("sigle")
+                            groupe_nom = organe_gp.get("nom")
 
                     index[acteur_ref] = {
                         "civilite": ident.get("civ"),
@@ -2093,6 +2134,11 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         "nom": ident.get("nom"),
                         "nom_complet": _format_nom_complet(ident.get("prenom"), ident.get("nom")),
                         "profession": profession,
+                        "groupe_sigle": groupe_sigle,
+                        "groupe_nom": groupe_nom,
+                        "mandat_debut": mandat_debut,
+                        "mandat_fin": mandat_fin,
+                        "nb_mandats": nb_mandats,
                         "date_naissance": info_naissance.get("dateNais"),
                         "lieu_naissance": _format_lieu_naissance(
                             info_naissance.get("villeNais"),
@@ -3372,21 +3418,37 @@ def build_profile(
 
     base_urls = BASE_URLS[chambre]
 
-    # --- 1. Identité brute NosDéputés/NosSénateurs. Depuis #355, ce n'est plus la
-    # source primaire des champs biographiques pour les députés (voir étape 5,
-    # bascule vers le référentiel historique officiel Assemblée nationale) : elle
-    # reste nécessaire pour les mandats/responsabilités et le groupe parlementaire
-    # déclaré (non encore sourcés depuis l'AN, voir #353), le nom de recherche
-    # d'interventions (étape 2), et en repli complet d'identité si le candidat
-    # n'est pas trouvé dans les archives AN combinées. ---
-    identity_result = fetch_identity(base_urls, slug)
-    if isinstance(identity_result, tuple):
-        identity_raw, identity_base_url = identity_result
-    else:
-        identity_raw = identity_result
-        identity_base_url = None
+    # --- 0. Identité/mandats officiels (Assemblée nationale), résolus en tout
+    # premier afin que l'étape 1 puisse sauter l'appel NosDéputés dès que
+    # l'acteur y est trouvé (#369, étape 4 — c'était jusqu'ici le point d'appel
+    # réseau le plus exposé à nosdeputes.fr : 8 requêtes systématiques par
+    # candidat, sur un domaine sujet à des ralentissements/gels observés en CI). ---
+    pre_profile_warnings: list[str] = []
+    identite_an: Optional[dict[str, Any]] = None
+    acteur_ref_an: Optional[str] = None
+    if chambre == "deputes":
+        try:
+            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
+        except Exception as exc:
+            pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
 
-    time.sleep(0.5)  # on reste courtois avec l'API publique
+    # --- 1. Identité brute NosDéputés/NosSénateurs. Depuis #369, cet appel est
+    # sauté pour les députés dès que l'étape 0 ci-dessus a trouvé l'acteur dans
+    # le référentiel officiel AN : reste nécessaire pour les sénateurs (non
+    # couverts par l'AN), le nom de recherche d'interventions (étape 2) quand
+    # l'AN n'a pas trouvé l'acteur, et en repli complet d'identité si le
+    # candidat n'est trouvé ni dans les archives AN ni via NosDéputés. ---
+    if chambre != "deputes" or acteur_ref_an is None:
+        identity_result = fetch_identity(base_urls, slug)
+        if isinstance(identity_result, tuple):
+            identity_raw, identity_base_url = identity_result
+        else:
+            identity_raw = identity_result
+            identity_base_url = None
+        time.sleep(0.5)  # on reste courtois avec l'API publique
+    else:
+        identity_raw = None
+        identity_base_url = None
 
     # Votes bruts NosDéputés : uniquement pour les sénateurs. Pour les députés,
     # l'endpoint /votes de NosDéputés.fr est en panne de façon systématique
@@ -3412,18 +3474,18 @@ def build_profile(
     parlementaire_for_search = None
     if isinstance(identity_raw, dict):
         parlementaire_for_search = _extract_parlementaire(identity_raw)
-    search_candidate_name = (
-        parlementaire_for_search.get("nom")
-        if isinstance(parlementaire_for_search, dict) and parlementaire_for_search.get("nom")
-        else slug.replace("-", " ").title()
-    )
+    if isinstance(parlementaire_for_search, dict) and parlementaire_for_search.get("nom"):
+        search_candidate_name = parlementaire_for_search.get("nom")
+    elif identite_an and identite_an.get("nom_complet"):
+        search_candidate_name = identite_an.get("nom_complet")
+    else:
+        search_candidate_name = slug.replace("-", " ").title()
 
     # --- 3. Dossiers législatifs et recherche des interventions (sur le
     # meilleur domaine/législature disponible). ---
     dossiers_payload = []
     interventions_payload = None
     interventions_base_url = base_urls[0]
-    pre_profile_warnings: list[str] = []
     try:
         # Dossiers via NosDéputés : uniquement pour les sénateurs. Pour les
         # députés, ce résultat est de toute façon écrasé plus bas par l'étape
@@ -3494,28 +3556,17 @@ def build_profile(
     # d'amitié...). Depuis #355, l'identité (infos biographiques) des députés est
     # résolue en priorité depuis le référentiel historique officiel de
     # l'Assemblée nationale, par correspondance de nom sur le slug (voir
-    # fetch_identite_officielle_par_slug) — indépendant d'un appel réseau
-    # NosDéputés préalable, contrairement à l'ancien enrichissement 5bis qui
-    # dépendait de l'URL AN renvoyée par NosDéputés. Depuis #369, les mandats
-    # commission/groupe_amitie/extra_parlementaire sont eux aussi sourcés en
-    # priorité depuis ce même référentiel AN (_extract_mandats_officiels,
-    # organeRef résolu par #353) quand l'acteur y est trouvé — NosDéputés ne
-    # reste utilisé pour les mandats que pour le mandat électif de base
-    # (jamais dupliqué par l'AN ici, voir étape 5 plus bas) et en repli complet
-    # si le candidat est absent des archives AN combinées. `fetch_identity`
-    # (NosDéputés) reste néanmoins appelé sans condition pour l'instant (étape
-    # 1) : la bascule vers un appel réellement conditionnel — n'appeler
-    # NosDéputés qu'en repli si l'AN ne trouve rien — nécessite de réordonner
-    # cette fonction (le nom de recherche d'interventions, étape 2, dépend
-    # aujourd'hui de `identity_raw`) ; laissé pour une itération séparée. ---
-    identite_an: Optional[dict[str, Any]] = None
-    acteur_ref_an: Optional[str] = None
-    if chambre == "deputes":
-        try:
-            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
-        except Exception as exc:
-            warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
-
+    # fetch_identite_officielle_par_slug, résolu dès l'étape 0). Depuis #369
+    # (étape 4), NosDéputés n'est plus appelé du tout pour un député dès que
+    # l'AN a trouvé l'acteur : les mandats commission/groupe_amitie/
+    # extra_parlementaire sont sourcés depuis l'AN (_extract_mandats_officiels,
+    # organeRef résolu par #353), et le mandat électif de base ainsi que le
+    # groupe parlementaire déclaré sont reconstruits ci-dessous depuis
+    # identite_an (groupe_sigle/groupe_nom/mandat_debut/mandat_fin/nb_mandats,
+    # voir _build_acteur_identite_index) faute d'être normalement sourcés par
+    # NosDéputés. NosDéputés reste la source pour les sénateurs (non couverts
+    # par l'AN) et en repli complet pour les députés absents des archives AN
+    # combinées. ---
     parlementaire = _extract_parlementaire(identity_raw) if isinstance(identity_raw, dict) else None
     parlementaire_valide = isinstance(parlementaire, dict) and not _is_empty_payload(parlementaire)
 
@@ -3532,8 +3583,12 @@ def build_profile(
 
         profile["identite"] = {
             "nom_complet": (identite_an or {}).get("nom_complet") or (parlementaire or {}).get("nom"),
-            "groupe_sigle": (parlementaire or {}).get("groupe_sigle"),
-            "groupe_nom": (parlementaire or {}).get("nom_groupe_politique") or _groupe_label((parlementaire or {}).get("groupe")),
+            "groupe_sigle": (parlementaire or {}).get("groupe_sigle") or (identite_an or {}).get("groupe_sigle"),
+            "groupe_nom": (
+                (parlementaire or {}).get("nom_groupe_politique")
+                or _groupe_label((parlementaire or {}).get("groupe"))
+                or (identite_an or {}).get("groupe_nom")
+            ),
             "profession": (identite_an or {}).get("profession") or (parlementaire or {}).get("profession"),
             "date_naissance": (identite_an or {}).get("date_naissance") or (parlementaire or {}).get("date_naissance"),
             "lieu_naissance": (identite_an or {}).get("lieu_naissance"),
@@ -3542,7 +3597,7 @@ def build_profile(
                 or (parlementaire or {}).get("num_deptt")
                 or (identite_an or {}).get("numero_circo")
             ),
-            "nb_mandats": (parlementaire or {}).get("nb_mandats"),
+            "nb_mandats": (parlementaire or {}).get("nb_mandats") or (identite_an or {}).get("nb_mandats"),
             "uri_hatvp": (identite_an or {}).get("uri_hatvp"),
             "url_an_ou_senat": (
                 (parlementaire or {}).get("url_an")
@@ -3553,10 +3608,25 @@ def build_profile(
 
         # Mandats commission/groupe_amitie/extra_parlementaire : sourcés en
         # priorité depuis l'AN (#369) quand l'acteur y est trouvé — NosDéputés
-        # ne complète alors que le mandat électif de base et les catégories non
-        # couvertes par l'AN (jamais les 3 catégories partagées, pour éviter un
-        # doublon du même organisme sous un libellé potentiellement différent).
+        # ne complète alors que les catégories non couvertes par l'AN (jamais
+        # les 3 catégories partagées, pour éviter un doublon du même organisme
+        # sous un libellé potentiellement différent).
         mandats_an = _extract_mandats_officiels(acteur_ref_an) if acteur_ref_an else []
+        # Depuis #369 (étape 4), NosDéputés n'étant plus appelé quand l'AN a
+        # trouvé l'acteur, le mandat électif de base — normalement produit par
+        # _extract_mandats(parlementaire) — doit être reconstruit depuis
+        # identite_an (mandat_debut/mandat_fin/groupe, voir
+        # _build_acteur_identite_index) pour ne pas le perdre silencieusement.
+        if not parlementaire_valide and identite_an and identite_an.get("mandat_debut"):
+            groupe_label_an = identite_an.get("groupe_nom") or identite_an.get("groupe_sigle")
+            mandats_an.append({
+                "categorie": "mandat_electif",
+                "type": "mandat",
+                "label": "Mandat parlementaire" + (f" ({groupe_label_an})" if groupe_label_an else ""),
+                "debut": identite_an.get("mandat_debut"),
+                "fin": identite_an.get("mandat_fin"),
+                "actif": not identite_an.get("mandat_fin"),
+            })
         mandats_nosdeputes = _extract_mandats(parlementaire) if parlementaire_valide else []
         if mandats_an:
             categories_an = set(_TYPE_ORGANE_TO_CATEGORIE.values())
