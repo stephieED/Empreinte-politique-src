@@ -1,0 +1,59 @@
+{
+  "slug": "claude-raynal",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/claude-raynal",
+  "identite": {
+    "nom_complet": "Claude Raynal",
+    "groupe_sigle": null,
+    "groupe_nom": null,
+    "profession": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "date_naissance": "1957-10-10",
+    "lieu_naissance": "{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'} ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "nb_mandats": 0,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703505"
+  },
+  "mandats": [
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "debut": "2014-10-01",
+      "fin": "2017-11-07",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "debut": "2023-10-26",
+      "fin": null,
+      "actif": true
+    }
+  ],
+  "votes": [],
+  "votes_source": null,
+  "dossiers_legislatifs": [],
+  "amendements": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-08-17T20:53:03+0200",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": null,
+      "assemblee_nationale": "2026-08-17T20:53:03+0200",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null
+    },
+    "warnings": [
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
+    ]
+  }
+}

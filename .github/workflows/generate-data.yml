@@ -680,15 +680,30 @@ jobs:
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
   #
-  # TIMEOUT PROVISOIRE (60 min pour roster_extraction_limit=20, --source all
-  # implicite donc coût par membre comparable à extract-an) : à recalibrer
-  # après un premier run mesuré manuellement (workflow_dispatch, limite
-  # réduite) avant d'envisager d'augmenter roster_extraction_limit par défaut.
+  # TIMEOUT MESURÉ (#376) — n'est plus « provisoire ».
+  #
+  # Mesure en extraction légère (--skip-interventions --skip-dossiers-legislatifs,
+  # --workers 1, comme ce job), deux échantillons aléatoires du roster :
+  #   N=8  -> 137,9 s      N=16 -> 231,7 s
+  # Modèle linéaire : T(N) ≈ 44 s (coût fixe) + 11,7 s x N.
+  #
+  # Ce que couvre 60 min : (3600 - 44) / 11,7 ≈ **300 membres**, soit 15x la
+  # valeur par défaut de roster_extraction_limit (20, qui coûte ~5 min). La
+  # marge reste donc très large pour l'usage actuel — inutile de la modifier.
+  #
+  # CE QUI BLOQUE LE PASSAGE À PLEINE ÉCHELLE : ce n'est pas le timeout, c'est
+  # le coût par membre. 752 membres coûteraient ≈ 148 min, et surtout **93 %
+  # de ce coût est la relecture de l'index amendements** (~10,9 s/membre,
+  # 673 Mo de JSON re-parsés à CHAQUE candidat par fetch_amendements_officiels,
+  # soit ~500 Go de parsing sur un run complet). Aucun timeout ne rend cela
+  # raisonnable : il faut d'abord supprimer cette relecture répétée. Augmenter
+  # ce timeout pour « faire tenir » un run complet ne ferait qu'entériner ce
+  # gaspillage — voir docs/technical_decisions.md#budget-roster-mesure.
   # ──────────────────────────────────────────────────────────────────────────
   extract-roster-groupes:
     needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # provisoire — voir commentaire ci-dessus
+    timeout-minutes: 60   # mesuré : couvre ~300 membres (voir commentaire ci-dessus)
     continue-on-error: true
 
     steps:
