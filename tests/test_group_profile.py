@@ -742,6 +742,47 @@ def test_mandats_agreges_par_fonction_distribution():
     assert result[0]["par_fonction"] == {"membre": 1, "président": 1}
 
 
+def test_mandats_agreges_par_fonction_normalise_la_casse():
+    """#379 : depuis #369 les mandats viennent de deux référentiels aux
+    conventions typographiques différentes — NosDéputés écrit `"membre"`,
+    l'Assemblée nationale `"Membre"`. Sans normalisation, le comptage éclatait
+    le même rôle en deux entrées (mesuré en production : `'membre': 521` et
+    `'Membre': 312`), donnant à lire deux rôles distincts."""
+    p1 = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="membre")])
+    p2 = _pivot("nosdeputes:bob", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="Membre")])
+    p3 = _pivot("nosdeputes:carol", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="  MEMBRE  ")])
+    membres = [_derive_membre_entry(p) for p in (p1, p2, p3)]
+
+    result = _aggregate_mandats([p1, p2, p3], membres)
+
+    assert result[0]["par_fonction"] == {"membre": 3}
+
+
+def test_mandats_agreges_par_fonction_preserve_les_variantes_genrees():
+    """Le genre n'est PAS normalisé : `président`/`présidente` sont des
+    libellés institutionnels réellement distincts, les fusionner effacerait
+    une information portée par la source."""
+    p1 = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="président")])
+    p2 = _pivot("nosdeputes:bob", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="présidente")])
+    membres = [_derive_membre_entry(p) for p in (p1, p2)]
+
+    result = _aggregate_mandats([p1, p2], membres)
+
+    assert result[0]["par_fonction"] == {"président": 1, "présidente": 1}
+
+
+def test_mandats_agreges_par_fonction_absente_reste_non_precise():
+    """Une fonction non renseignée reste distincte de « simple membre » :
+    donnée manquante ≠ valeur par défaut (AGENTS.md §2.5)."""
+    p1 = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction=None)])
+    p2 = _pivot("nosdeputes:bob", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(fonction="   ")])
+    membres = [_derive_membre_entry(p) for p in (p1, p2)]
+
+    result = _aggregate_mandats([p1, p2], membres)
+
+    assert result[0]["par_fonction"] == {"non_precise": 2}
+
+
 def test_mandats_agreges_nb_membres_actifs_requiert_mandat_et_appartenance_actifs():
     p1 = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel(actif=True)])
     p2 = _pivot("nosdeputes:bob", mandats=[
