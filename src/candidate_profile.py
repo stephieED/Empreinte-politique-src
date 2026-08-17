@@ -2801,9 +2801,24 @@ def fetch_amendements_officiels(
     Depuis #377, seules les entrées de `acteur_ref` sont matérialisées sous
     forme complète, à partir du cache dédupliqué — l'index entier de la
     législature n'est plus expansé en mémoire pour n'en lire qu'une fraction.
+
+    Un `url_an_ou_senat` absent ou non parsable produit une liste vide AVEC un
+    warning (#265, fix 5) : cet appel n'a lieu que pour `chambre ==
+    "deputes"` (voir `build_profile`), donc l'impossibilité d'en extraire un
+    acteurRef est toujours une anomalie — jamais le cas normal d'un sénateur
+    ou d'un MEP, qui n'atteignent pas ce chemin. Sans ce warning, le résultat
+    était un zéro parfaitement silencieux, indiscernable d'une absence
+    légitime d'amendements : constaté en pratique sur des profils dont
+    l'identité avait été écrite partiellement par un run interrompu.
     """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
+        if warnings is not None:
+            warnings.append(
+                f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : identifiant Assemblée nationale "
+                f"introuvable pour ce profil (url_an_ou_senat={url_an_ou_senat!r}) — "
+                "aucun amendement ne peut être collecté"
+            )
         return []
 
     amendements: list[dict[str, Any]] = []

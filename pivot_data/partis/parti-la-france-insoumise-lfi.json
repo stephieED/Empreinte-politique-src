@@ -17,22 +17,22 @@
     {
       "type": "nossenateurs",
       "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "synchro_le": "2026-08-17T15:09:01+0200"
+      "synchro_le": "2026-08-17T17:25:17+0200"
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-06T09:00:48+0000"
+      "synchro_le": "2026-08-17T17:23:20+0200"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-17T15:14:05+0200"
+      "synchro_le": "2026-08-17T17:31:03+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:35+0200",
+    "genere_le": "2026-08-17T17:36:15+0200",
     "licence_donnees": "",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

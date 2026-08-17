@@ -12,7 +12,7 @@
   "membres": [
     {
       "membre_id": "nosdeputes:edouard-philippe",
-      "nom": "Edouard Philippe",
+      "nom": "Édouard Philippe",
       "portefeuille": null,
       "debut": "2017-05-18",
       "fin": "2017-06-19",
@@ -41,7 +41,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:37+0200",
+    "genere_le": "2026-08-17T17:36:23+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

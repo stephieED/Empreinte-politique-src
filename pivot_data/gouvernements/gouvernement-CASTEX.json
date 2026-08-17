@@ -59,7 +59,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-06T09:05:25+0000"
+      "synchro_le": "2026-08-17T17:24:05+0200"
     },
     {
       "type": "nosdeputes",
@@ -74,7 +74,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:37+0200",
+    "genere_le": "2026-08-17T17:36:23+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

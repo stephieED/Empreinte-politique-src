@@ -3116,6 +3116,36 @@ def test_fetch_amendements_officiels_never_triggers_network_when_cache_absent(tm
     )
 
 
+def test_fetch_amendements_officiels_warns_when_acteur_ref_missing():
+    """#265 (fix 5) : un `url_an_ou_senat` absent ou non parsable ne doit plus
+    produire un zéro parfaitement silencieux, indiscernable d'une absence
+    légitime d'amendements. Cet appel n'ayant lieu que pour `chambre ==
+    "deputes"` (voir `build_profile`), l'impossibilité d'extraire un acteurRef
+    est toujours une anomalie — constatée en pratique sur des profils dont
+    l'identité avait été écrite partiellement par un run interrompu."""
+    from candidate_profile import (
+        WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+        fetch_amendements_officiels,
+    )
+
+    for url in (None, "https://example.org/pas-de-acteur-ref"):
+        warnings: list[str] = []
+        amendements = fetch_amendements_officiels(url, warnings)
+
+        assert amendements == []
+        assert any(w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) for w in warnings), (
+            f"Un zéro dû à un acteurRef introuvable doit être tracé (url={url!r})"
+        )
+
+
+def test_fetch_amendements_officiels_missing_acteur_ref_without_warnings_list_does_not_raise():
+    """`warnings` est optionnel : l'absence d'acteurRef ne doit pas lever quand
+    l'appelant ne fournit pas de liste (non-régression de la signature)."""
+    from candidate_profile import fetch_amendements_officiels
+
+    assert fetch_amendements_officiels(None) == []
+
+
 def test_fetch_amendements_officiels_returns_cached_amendements_when_index_present(tmp_path):
     """Quand l'index est présent en cache pour une législature, les amendements
     de l'acteur doivent être retournés — identique au comportement actuel,

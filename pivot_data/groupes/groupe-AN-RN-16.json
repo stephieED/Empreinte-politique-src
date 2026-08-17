@@ -8,8 +8,8 @@
   "legislature": "16",
   "periode": {
     "debut": "2004-07-20",
-    "fin": "2024-06-09",
-    "actif": false
+    "fin": null,
+    "actif": true
   },
   "historique_noms": [],
   "membres": [
@@ -17,12 +17,12 @@
       "membre_id": "nosdeputes:marine-le-pen",
       "nom": "Marine Le Pen",
       "debut_dans_groupe": "2004-07-20",
-      "fin_dans_groupe": "2024-06-09",
-      "actif": false
+      "fin_dans_groupe": null,
+      "actif": true
     }
   ],
   "effectif": {
-    "actuel": 0,
+    "actuel": 1,
     "min_historique": null,
     "max_historique": null
   },
@@ -11709,7 +11709,7 @@
       "categorie": "commission",
       "label": "Commission des affaires étrangères",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "membre": 1
@@ -11721,7 +11721,7 @@
           "fonction": "membre",
           "debut": "2022-06-30",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -11807,28 +11807,28 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 0,
-    "nb_adoptes": 0,
-    "nb_rejetes": 0,
-    "nb_irrecevables": 0,
-    "nb_retires_ou_tombes": 0,
-    "taux_adoption": null,
+    "nb_amendements": 8999,
+    "nb_adoptes": 402,
+    "nb_rejetes": 3386,
+    "nb_irrecevables": 1551,
+    "nb_retires_ou_tombes": 1672,
+    "taux_adoption": 0.0447,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
-        "nb_rejetes": 0,
-        "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "nb_amendements": 95,
+        "nb_adoptes": 24,
+        "nb_rejetes": 47,
+        "nb_irrecevables": 2,
+        "nb_retires_ou_tombes": 13,
+        "taux_adoption": 0.2526
       },
       "depute": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
-        "nb_rejetes": 0,
-        "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "nb_amendements": 8904,
+        "nb_adoptes": 378,
+        "nb_rejetes": 3339,
+        "nb_irrecevables": 1549,
+        "nb_retires_ou_tombes": 1659,
+        "taux_adoption": 0.0425
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -11857,17 +11857,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-06T09:14:22+0000"
+      "synchro_le": "2026-08-17T17:24:43+0200"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-17T15:14:09+0200"
+      "synchro_le": "2026-08-17T17:31:08+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:36+0200",
+    "genere_le": "2026-08-17T17:36:19+0200",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:marine-le-pen"

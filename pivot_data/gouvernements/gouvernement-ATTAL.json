@@ -38,6 +38,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:marie-guevenoux",
+      "nom": "Marie Guévenoux",
+      "portefeuille": null,
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:thomas-cazenave",
       "nom": "Thomas Cazenave",
       "portefeuille": null,
@@ -93,13 +102,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marie-guevenoux",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-cazenave",
       "synchro_le": "2026-08-13T13:43:13+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:37+0200",
+    "genere_le": "2026-08-17T17:36:23+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

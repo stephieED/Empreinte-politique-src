@@ -36,6 +36,15 @@
       "fin": null,
       "actif": true,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:maud-bregeon",
+      "nom": "Maud Bregeon",
+      "portefeuille": null,
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": null
     }
   ],
   "textes": [
@@ -521,11 +530,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-amiel",
       "synchro_le": "2026-08-13T13:44:48+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/maud-bregeon",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T15:14:37+0200",
+    "genere_le": "2026-08-17T17:36:23+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
