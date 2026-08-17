@@ -31,11 +31,11 @@
     {
       "membre_id": "nosdeputes:bruno-retailleau",
       "nom": "Bruno Retailleau",
-      "portefeuille": null,
+      "portefeuille": "Ministère de l'intérieur",
       "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
@@ -240,7 +240,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:34:19+0200",
+    "genere_le": "2026-08-18T01:51:32+0200",
     "licence_donnees": "",
     "warnings": []
   }
