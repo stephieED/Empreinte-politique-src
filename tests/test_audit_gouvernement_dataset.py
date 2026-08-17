@@ -25,6 +25,7 @@ from audit_gouvernement_dataset import (
     load_gouvernement_directory,
     main,
 )
+from schema_gouvernement import make_empty_comptages_statuts
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "audit_gouvernement"
@@ -113,10 +114,10 @@ def test_load_gouvernement_directory_est_pure(tmp_path):
 # ---------------------------------------------------------------------------
 
 def make_comptages(**overrides):
-    par_statut = {
-        "depose": 0, "navette_en_cours": 0, "adopte": 0, "adopte_49_3": 0,
-        "rejete": 0, "rejete_49_3": 0, "retire": 0,
-    }
+    # Dérivé de la nomenclature fermée plutôt qu'énuméré : un statut ajouté
+    # au schéma (ex. adopte_cmp en #397) rendait sinon ces fixtures invalides
+    # au schéma, faisant échouer des tests sans rapport avec le changement.
+    par_statut = make_empty_comptages_statuts()
     par_statut.update(overrides)
     return {"par_statut": par_statut}
 
@@ -205,10 +206,7 @@ def test_compute_distribution_membres_textes_champs_absents_comptent_zero():
 def test_compute_comptages_agreges_liste_vide():
     resultat = compute_comptages_agreges([])
 
-    assert resultat == {
-        "depose": 0, "navette_en_cours": 0, "adopte": 0, "adopte_49_3": 0,
-        "rejete": 0, "rejete_49_3": 0, "retire": 0,
-    }
+    assert resultat == make_empty_comptages_statuts()
 
 
 def test_compute_comptages_agreges_somme_tous_gouvernements():

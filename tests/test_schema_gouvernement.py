@@ -523,9 +523,46 @@ def test_validate_comptages_par_statut_negative():
 
 def test_known_statuts_texte_gouvernemental():
     assert KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL == frozenset({
-        "depose", "navette_en_cours", "adopte", "adopte_49_3",
+        "depose", "navette_en_cours", "adopte", "adopte_49_3", "adopte_cmp",
         "rejete", "rejete_49_3", "retire",
     })
+
+
+def _texte_adopte_cmp(sort_49_3) -> dict:
+    return {
+        "dossier_id": "X",
+        "titre": "Texte de CMP",
+        "statut": "adopte_cmp",
+        "chambre_depot_initial": "AN",
+        "date_depot": "2024-10-10",
+        "date_dernier_evenement": None,
+        "sort_49_3": sort_49_3,
+        "source_url": None,
+    }
+
+
+def test_adopte_cmp_nest_pas_un_statut_49_3():
+    """`adopte_cmp` (art. 45 al. 3, texte de CMP) est une voie procédurale
+    distincte du 49.3 : sort_49_3 = True doit être refusé, sous peine de
+    confondre deux faits procéduraux différents (AGENTS.md §2.4)."""
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_adopte_cmp(sort_49_3=True))
+    assert any("sort_49_3" in e for e in validate_profil_gouvernement(g))
+
+
+def test_adopte_cmp_accepte_sans_49_3():
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_adopte_cmp(sort_49_3=False))
+    g["comptages"]["par_statut"]["adopte_cmp"] += 1
+    assert validate_profil_gouvernement(g) == []
+
+
+def test_comptages_vides_derivent_de_la_nomenclature():
+    """`adopte_cmp` doit apparaître dans les comptages sans énumération
+    codée en dur : make_empty_comptages_statuts() dérive de la nomenclature,
+    donc tout futur statut se propage sans modification supplémentaire."""
+    assert set(make_empty_comptages_statuts()) == KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
+    assert make_empty_comptages_statuts()["adopte_cmp"] == 0
 
 
 def test_known_chambres_depot_texte():
