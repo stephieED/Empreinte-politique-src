@@ -45,10 +45,12 @@ spike #207). Seule la décision de séance chronologiquement la plus récente
 détermine le statut courant du dossier : un dossier peut accumuler
 plusieurs décisions de séance au fil des lectures (ex. adopté en 1ère
 lecture puis modifié par la seconde chambre — la navette continue, ce n'est
-pas un statut final). Seuls 4 `fam_code` sont mappés (confirmés par le
-spike #207) ; tout autre `fam_code` rencontré sur la décision de séance la
-plus récente produit un warning explicite et `statut = None` — jamais un
-statut par défaut (règle AGENTS.md §2.5). Les décisions du Conseil
+pas un statut final ; c'est le cas de `TSORTF05`, « modifié »). 7 `fam_code`
+sont mappés : 4 confirmés par le spike #207, 3 ajoutés en #397 après
+constat que leur absence excluait 45 dossiers sur 106 du jeu de données.
+Tout autre `fam_code` rencontré sur la décision de séance la plus récente
+produit un warning explicite et `statut = None` — jamais un statut par
+défaut (règle AGENTS.md §2.5). Les décisions du Conseil
 constitutionnel (`CC-CONCLUSION`) et les constats d'accord/désaccord de CMP
 (`CMP-DEC`) portent aussi un `statutConclusion` mais ne sont pas des
 décisions de séance sur le texte : ils sont volontairement exclus du calcul
@@ -68,6 +70,17 @@ AGENTS.md §2.4). `rejete_49_3` a été ajouté à la nomenclature fermée de #2
 après coup (docs/technical_decisions.md#gouvernement-textes-statut-49-3-rejete),
 donc cette combinaison est représentable par
 `schema_gouvernement.validate_profil_gouvernement` sans warning.
+
+`TSORTF18` (« adopté, dans les conditions prévues à l'article 45, alinéa 3,
+de la Constitution » : approbation du texte élaboré en commission mixte
+paritaire, sur demande du Gouvernement) suit la même logique et est mappé à
+un statut dédié `adopte_cmp`, avec `sort_49_3 = False`. L'issue est bien une
+adoption, mais la voie procédurale est distincte et n'est pas fondue dans
+`adopte` — arbitrage tranché en #397, symétrique de celui de #208 sur le
+49.3. Un texte de CMP sur lequel le Gouvernement engagerait ensuite sa
+responsabilité relève de `TSORTF06`/`TSORTF24`, pas de `TSORTF18` : seule la
+décision de séance la plus récente compte, il n'y a donc pas de cumul
+possible entre `adopte_cmp` et les statuts 49.3.
 
 Rattachement à un gouvernement (hors périmètre de ce module, implémenté dans
 `gouvernement_profile.py` — #211) : par date de dépôt initial (`date_depot`,
@@ -112,14 +125,24 @@ _ZIP_DOWNLOAD_LOCK = threading.Lock()
 _TITRE_PREFIX_GOUVERNEMENTAL = "projet de loi"
 _TITRE_PREFIX_PARLEMENTAIRE = "proposition de loi"
 
-# fam_code -> (statut, sort_49_3), confirmés par le spike #207
-# (docs/an_opendata.md). Toute autre valeur produit un warning (voir
-# docstring du module).
+# fam_code -> (statut, sort_49_3). Toute autre valeur produit un warning et
+# `statut = None` (voir docstring du module) : la nomenclature reste fermée.
+#
+# Le libellé cité en commentaire est celui porté par le dataset AN lui-même
+# (`statutConclusion.libelle`), pas une interprétation de notre part — c'est
+# la seule justification acceptable d'un mapping, et elle est vérifiable en
+# relisant l'archive.
 _FAM_CODE_STATUT_MAP: dict[str, tuple[str, bool]] = {
-    "TSORTF01": ("adopte", False),
-    "TSORTF07": ("rejete", False),
-    "TSORTF06": ("adopte_49_3", True),
-    "TSORTF24": ("rejete_49_3", True),
+    # Confirmés par le spike #207 (docs/an_opendata.md).
+    "TSORTF01": ("adopte", False),           # « adopté » / « adoptée »
+    "TSORTF07": ("rejete", False),           # « rejeté » / « rejetée »
+    "TSORTF06": ("adopte_49_3", True),       # « considéré comme adopté […] 49 al. 3 »
+    "TSORTF24": ("rejete_49_3", True),       # « considéré comme rejeté […] 49 al. 3 »
+    # Ajoutés en #397 : non mappés, ils excluaient 45 dossiers sur 106 du jeu
+    # de données (42 %), dont le PLF 2025.
+    "TSORTF03": ("adopte", False),           # « adopté sans modification »
+    "TSORTF18": ("adopte_cmp", False),       # « adopté […] art. 45 al. 3 » (texte de CMP)
+    "TSORTF05": ("navette_en_cours", False), # « modifié » — la navette continue
 }
 
 # Sentinelle du dataset source : absence de statut réel, pas un fam_code

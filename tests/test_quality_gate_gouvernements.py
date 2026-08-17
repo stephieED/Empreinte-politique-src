@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from check_quality_gate import _report_gouvernements
+from schema_gouvernement import make_empty_comptages_statuts
 
 
 def _write_gouvernement(
@@ -57,11 +58,11 @@ def _write_gouvernement(
             }
             for i in range(nb_textes)
         ],
+        # Dérivé de la nomenclature fermée plutôt qu'énuméré : un statut
+        # ajouté au schéma (ex. adopte_cmp en #397) ne doit pas faire échouer
+        # ces tests pour une raison sans rapport avec ce qu'ils vérifient.
         "comptages": {
-            "par_statut": {
-                "depose": nb_textes, "navette_en_cours": 0, "adopte": 0,
-                "adopte_49_3": 0, "rejete": 0, "rejete_49_3": 0, "retire": 0,
-            }
+            "par_statut": {**make_empty_comptages_statuts(), "depose": nb_textes}
         },
         "sources": [],
         "meta": {

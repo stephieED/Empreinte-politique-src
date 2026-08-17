@@ -165,8 +165,17 @@ SCHEMA_GOUVERNEMENT_VERSION = "1"
 # anticipé le 49.3 que comme voie d'adoption, pas de rejet — gap découvert
 # lors de la collecte réelle en #210, cf. docs/technical_decisions.md
 # #gouvernement-textes-statut.
+#
+# adopte_cmp (fam_code AN `TSORTF18` : « adopté, dans les conditions prévues à
+# l'article 45, alinéa 3, de la Constitution » — approbation du texte élaboré
+# en commission mixte paritaire, sur demande du Gouvernement) suit la même
+# logique que les statuts 49.3 : l'issue est bien une adoption, mais la voie
+# procédurale est distincte et ne doit pas être fondue dans `adopte`
+# (AGENTS.md §2.4). Ajouté en #397, où son absence excluait 16 textes du jeu
+# de données — dont le PLF 2025. Voir docs/technical_decisions.md
+# #gouvernement-textes-fam-codes-manquants.
 KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL: frozenset[str] = frozenset({
-    "depose", "navette_en_cours", "adopte", "adopte_49_3",
+    "depose", "navette_en_cours", "adopte", "adopte_49_3", "adopte_cmp",
     "rejete", "rejete_49_3", "retire",
 })
 

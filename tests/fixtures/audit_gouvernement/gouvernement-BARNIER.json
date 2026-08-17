@@ -34,10 +34,11 @@
   ],
   "comptages": {
     "par_statut": {
-      "depose": 0,
-      "navette_en_cours": 0,
       "adopte": 0,
       "adopte_49_3": 0,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
       "rejete": 0,
       "rejete_49_3": 1,
       "retire": 0
@@ -54,6 +55,8 @@
     "schema_version": "1",
     "genere_le": "2025-01-01T10:00:00+00:00",
     "licence_donnees": "",
-    "warnings": ["couverture_ministerielle : portefeuille non confirme."]
+    "warnings": [
+      "couverture_ministerielle : portefeuille non confirme."
+    ]
   }
 }

@@ -105,6 +105,72 @@ def test_statut_rejete():
     assert record["warnings"] == []
 
 
+# --- fam_code ajoutés en #397 -----------------------------------------------
+# Leur absence excluait 45 dossiers sur 106 (42 %) du jeu de données. Le
+# libellé de chaque cas est celui porté par le dataset AN lui-même.
+
+def test_statut_adopte_sans_modification():
+    """TSORTF03 : adoption définitive par la seconde chambre sans modifier le
+    texte — une adoption au même titre que TSORTF01."""
+    dossier = _dossier("TEST-SANS-MODIF", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("SN1-DEBATS-DEC", "2024-03-01",
+              {"fam_code": "TSORTF03", "libelle": "adopté sans modification"}),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "adopte"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
+def test_statut_adopte_cmp_est_distinct_dadopte():
+    """TSORTF18 : approbation du texte de CMP (art. 45 al. 3). L'issue est une
+    adoption, mais la voie procédurale reste distincte et n'est pas fondue
+    dans `adopte` — arbitrage #397, symétrique de celui de #208 sur le 49.3.
+    Cas réel : PLF 2025 (DLR5L17N50198)."""
+    dossier = _dossier("TEST-CMP", "Projet de loi de finances test", [
+        _acte("AN1-DEPOT", "2024-10-10"),
+        _acte("AN1-DEBATS-DEC", "2025-02-06", {
+            "fam_code": "TSORTF18",
+            "libelle": "adopté, dans les conditions prévues à l'article 45, "
+                       "alinéa 3, de la Constitution",
+        }),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "adopte_cmp"
+    assert record["statut"] != "adopte", "ne pas collapser vers adopte (§2.4)"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
+def test_statut_modifie_est_une_navette_en_cours():
+    """TSORTF05 : « modifié » n'est pas une issue mais la poursuite de la
+    navette."""
+    dossier = _dossier("TEST-MODIFIE", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("SN1-DEBATS-DEC", "2024-03-01", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "navette_en_cours"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
+
+
+def test_elargissement_du_mapping_ne_desactive_pas_la_protection_25():
+    """L'ajout de trois codes ne doit pas transformer la nomenclature fermée
+    en fourre-tout : un fam_code réellement inconnu produit toujours
+    statut = None et un warning, jamais un statut par défaut (§2.5)."""
+    dossier = _dossier("TEST-INCONNU-2", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-DEBATS-DEC", "2024-03-01",
+              {"fam_code": "TSORTF42", "libelle": "issue inédite"}),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] is None
+    assert len(record["warnings"]) == 1
+    assert "TSORTF42" in record["warnings"][0]
+
+
 def test_statut_retire():
     dossier = _dossier("TEST-RETIRE", "Projet de loi ordinaire test", [
         _acte("AN1-DEPOT", "2024-01-10"),
@@ -200,9 +266,12 @@ def test_derniere_decision_de_seance_chronologique_prevaut_sur_une_decision_ante
         _acte("SN1-DEBATS-DEC", "2024-04-01", {"fam_code": "TSORTF05", "libelle": "modifié"}),
     ])
     record = parse_dossier_gouvernemental(dossier)
-    assert record["statut"] is None
-    assert len(record["warnings"]) == 1
-    assert "TSORTF05" in record["warnings"][0]
+    # Avant #397, TSORTF05 n'était pas mappé : ce test assertait statut = None
+    # + warning, alors que sa propre docstring décrivait une navette en cours.
+    # Le mapping du code réaligne le résultat sur l'intention.
+    assert record["statut"] == "navette_en_cours"
+    assert record["sort_49_3"] is False
+    assert record["warnings"] == []
 
 
 # ---------------------------------------------------------------------------
