@@ -29,6 +29,14 @@ Indicateurs sous forme de fonctions pures (liste de profils de gouvernement
     à `audit_pipeline.py::compute_vue_ensemble` pour agréger les warnings des
     trois types de profil).
 
+  - couverture des textes portés (`compute_couverture_textes`, issue #399) :
+    classe chaque gouvernement selon que sa période tombe ou non dans le
+    périmètre des archives de dossiers réellement ingérées
+    (`couverture_dossiers.py`). Sépare « hors couverture de la source » de
+    « réellement à zéro » : un `textes[]` vide hors couverture est une
+    absence de source, jamais un fait mesuré (AGENTS.md §2.5) ; `nb_textes`
+    reste `null` quand le champ `textes` est absent, jamais rendu par `0`.
+
   - tableau croisé des plages temporelles par gouvernement
     (`compute_plage_dates_gouvernements`, issue #320, sous-issue 4/6 de
     #316) : une ligne par gouvernement, min/max de `membres[].debut`/`.fin`
@@ -55,6 +63,17 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from couverture_dossiers import (
+    COUVERTURE_COUVERTE,
+    COUVERTURE_HORS,
+    COUVERTURE_INDETERMINEE,
+    COUVERTURE_PARTIELLE,
+    LIBELLES_COUVERTURE,
+    borne_couverture_textes,
+    legislatures_ingerees,
+    libelle_couverture_textes,
+    statut_couverture_textes,
+)
 from schema_gouvernement import make_empty_comptages_statuts, validate_profil_gouvernement
 
 
@@ -348,6 +367,98 @@ def compute_doublons_gouvernement_id(gouvernements: list[dict[str, Any]]) -> dic
             for gouvernement_id, occurrences in sorted(occurrences_par_id.items())
             if occurrences > 1
         ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# Couverture des textes portés
+# ---------------------------------------------------------------------------
+
+def _nb_textes_ou_none(gouvernement: dict[str, Any]) -> int | None:
+    """Nombre de textes portés, `None` si le champ `textes` est absent ou `null`.
+
+    Distinction volontairement conservée jusque dans le rapport : `[]` est un
+    zéro observé, un champ absent est une donnée manquante — jamais rendue
+    par un `0` (AGENTS.md §2.5).
+    """
+    textes = gouvernement.get("textes")
+    if not isinstance(textes, list):
+        return None
+    return len(textes)
+
+
+def compute_couverture_textes(gouvernements: list[dict[str, Any]]) -> dict[str, Any]:
+    """Couverture de chaque gouvernement par les archives de dossiers ingérées.
+
+    Répond à #399 : un `textes[]` vide ne veut pas dire la même chose selon
+    que la période du gouvernement tombe ou non dans le périmètre
+    effectivement ingéré (`couverture_dossiers.AN_DOSSIERS_ARCHIVES`). Hors
+    couverture, c'est une absence de source ; dans la couverture, c'est un
+    zéro réellement constaté — et seul ce second cas mérite d'être signalé
+    comme un défaut de données.
+
+    La classification part des **législatures ingérées**, pas de la seule
+    présence de `periode` : c'est la borne réelle de la source.
+
+    Returns:
+        `{"borne_couverture": "YYYY-MM-DD"|None, "legislatures_ingerees": [...],
+        "libelle_couverture": str, "par_statut": {<statut>: n, ...},
+        "lignes": [{"gouvernement_id":..., "nom":..., "periode_debut":...,
+        "periode_fin":..., "statut_couverture":..., "nb_textes": int|None},
+        ...], "sans_texte_hors_couverture": [...],
+        "sans_texte_dans_couverture": [...]}`.
+
+        `nb_textes` vaut `None` (et non `0`) quand le champ `textes` est
+        absent ou `null`. `lignes` est trié par `nom` puis `gouvernement_id`,
+        comme `compute_plage_dates_gouvernements`.
+    """
+    par_statut: dict[str, int] = {
+        COUVERTURE_COUVERTE: 0,
+        COUVERTURE_PARTIELLE: 0,
+        COUVERTURE_HORS: 0,
+        COUVERTURE_INDETERMINEE: 0,
+    }
+    lignes: list[dict[str, Any]] = []
+    sans_texte_hors_couverture: list[str] = []
+    sans_texte_dans_couverture: list[str] = []
+
+    for gouvernement in gouvernements:
+        periode = gouvernement.get("periode")
+        periode = periode if isinstance(periode, dict) else {}
+        debut = periode.get("debut")
+        fin = periode.get("fin")
+
+        statut = statut_couverture_textes(debut, fin)
+        par_statut[statut] = par_statut.get(statut, 0) + 1
+
+        nb_textes = _nb_textes_ou_none(gouvernement)
+        gouvernement_id = gouvernement.get("gouvernement_id")
+
+        if not nb_textes:  # 0 texte observé, ou champ absent
+            if statut == COUVERTURE_COUVERTE:
+                sans_texte_dans_couverture.append(gouvernement_id)
+            elif statut in (COUVERTURE_HORS, COUVERTURE_PARTIELLE):
+                sans_texte_hors_couverture.append(gouvernement_id)
+
+        lignes.append({
+            "gouvernement_id": gouvernement_id,
+            "nom": gouvernement.get("nom"),
+            "periode_debut": debut,
+            "periode_fin": fin,
+            "statut_couverture": statut,
+            "nb_textes": nb_textes,
+        })
+
+    lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["gouvernement_id"] or ""))
+
+    return {
+        "borne_couverture": borne_couverture_textes(),
+        "legislatures_ingerees": list(legislatures_ingerees()),
+        "libelle_couverture": libelle_couverture_textes(),
+        "par_statut": par_statut,
+        "lignes": lignes,
+        "sans_texte_hors_couverture": sorted(i for i in sans_texte_hors_couverture if i),
+        "sans_texte_dans_couverture": sorted(i for i in sans_texte_dans_couverture if i),
     }
 
 
@@ -691,7 +802,8 @@ def build_report(
     Returns:
         Dict sérialisable JSON, une section par catégorie d'indicateur
         (`volumetrie`, `completude`, `coherence`, `fraicheur`, `warnings`)
-        plus `plage_dates_gouvernements`, `meta` et `erreurs_lecture`. Outil
+        plus `couverture_textes`, `plage_dates_gouvernements`, `meta` et
+        `erreurs_lecture`. Outil
         de qualité interne : ce rapport ne doit jamais introduire de
         jugement de valeur, de score ou de classement (AGENTS.md §2.1).
     """
@@ -725,6 +837,7 @@ def build_report(
                 gouvernements, staleness_days=staleness_days, reference_date=reference
             ),
         },
+        "couverture_textes": compute_couverture_textes(gouvernements),
         "plage_dates_gouvernements": compute_plage_dates_gouvernements(gouvernements),
         "warnings": compute_agregation_warnings(gouvernements),
         "erreurs_lecture": erreurs_lecture,
@@ -864,16 +977,94 @@ def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str
     )
 
 
-def _fmt_plage_cellule(cellule: dict[str, str] | None) -> str:
-    """`"min → max"` si la cellule est renseignée, `"N/D"` sinon (donnée manquante)."""
-    return "N/D" if cellule is None else f"{cellule['min']} → {cellule['max']}"
+def _fmt_couverture_cellule(statut: str | None) -> str:
+    """Libellé lisible d'un statut de couverture (`hors couverture`, ...)."""
+    return LIBELLES_COUVERTURE.get(statut or "", "indéterminée")
 
 
-def _md_section_plage_dates_gouvernements(plage: dict[str, Any]) -> str:
+def _md_section_couverture_textes(couverture: dict[str, Any]) -> str:
+    """Section « Couverture des textes portés » (#399).
+
+    Sépare explicitement « hors couverture de la source » de « réellement à
+    zéro » : sans cette distinction, un `textes[]` vide se lit comme un fait
+    mesuré alors qu'il peut n'être qu'une absence d'archive (AGENTS.md §2.5).
+    """
+    par_statut = couverture["par_statut"]
+
     lignes = [
         [
             ligne["gouvernement_id"], ligne["nom"],
-            _fmt_plage_cellule(ligne["mandats_membres"]), _fmt_plage_cellule(ligne["textes"]),
+            f"{ligne['periode_debut'] or 'N/D'} → {ligne['periode_fin'] or 'en cours'}",
+            _fmt_couverture_cellule(ligne["statut_couverture"]),
+            "N/D" if ligne["nb_textes"] is None else ligne["nb_textes"],
+        ]
+        for ligne in couverture["lignes"]
+    ]
+
+    sans_texte_hors = couverture["sans_texte_hors_couverture"]
+    sans_texte_dans = couverture["sans_texte_dans_couverture"]
+
+    return (
+        "## Couverture des textes portés\n\n"
+        f"Archives de dossiers ingérées : **{couverture['libelle_couverture']}**.\n\n"
+        "Un gouvernement dont la période est antérieure à cette borne n'a pas "
+        "« zéro texte porté » : la source ne le couvre pas. Les deux cas sont "
+        "distingués ci-dessous et ne doivent jamais être confondus "
+        "(AGENTS.md §2.5). `Textes = N/D` signale un champ `textes` absent ou "
+        "`null`, jamais transformé en `0`.\n\n"
+        f"Couverte : {par_statut[COUVERTURE_COUVERTE]} · "
+        f"partielle : {par_statut[COUVERTURE_PARTIELLE]} · "
+        f"hors couverture : {par_statut[COUVERTURE_HORS]} · "
+        f"indéterminée : {par_statut[COUVERTURE_INDETERMINEE]}\n\n"
+        + _md_table(
+            ["gouvernement_id", "Nom", "Période", "Couverture source", "Textes"],
+            lignes, "Aucun gouvernement.",
+        )
+        + f"\n### Sans texte, dans la couverture ({len(sans_texte_dans)})\n\n"
+        "Zéro réellement constaté : la source couvre la période et n'y "
+        "rattache aucun texte — anomalie à instruire.\n\n"
+        + _md_table(
+            ["gouvernement_id"], [[i] for i in sans_texte_dans],
+            "Aucun gouvernement sans texte dans la couverture.",
+        )
+        + f"\n### Sans texte, hors couverture ({len(sans_texte_hors)})\n\n"
+        "Absence de source, pas un fait mesuré : aucune conclusion ne peut "
+        "en être tirée, et rien ne doit être publié comme un zéro.\n\n"
+        + _md_table(
+            ["gouvernement_id"], [[i] for i in sans_texte_hors],
+            "Aucun gouvernement sans texte hors couverture.",
+        )
+    )
+
+
+def _fmt_plage_cellule(cellule: dict[str, str] | None, statut_couverture: str | None = None) -> str:
+    """`"min → max"` si la cellule est renseignée, sinon `"N/D"` (donnée manquante).
+
+    Quand l'absence s'explique par le périmètre de la source (`statut_couverture`
+    hors/partiel), le `N/D` est qualifié plutôt que laissé nu : sans cela, il se
+    lit comme un défaut de données (#399).
+    """
+    if cellule is not None:
+        return f"{cellule['min']} → {cellule['max']}"
+    if statut_couverture in (COUVERTURE_HORS, COUVERTURE_PARTIELLE):
+        return f"N/D ({LIBELLES_COUVERTURE[statut_couverture]})"
+    return "N/D"
+
+
+def _md_section_plage_dates_gouvernements(
+    plage: dict[str, Any], couverture: dict[str, Any]
+) -> str:
+    couverture_par_id = {
+        ligne["gouvernement_id"]: ligne["statut_couverture"] for ligne in couverture["lignes"]
+    }
+
+    lignes = [
+        [
+            ligne["gouvernement_id"], ligne["nom"],
+            _fmt_plage_cellule(ligne["mandats_membres"]),
+            _fmt_plage_cellule(
+                ligne["textes"], couverture_par_id.get(ligne["gouvernement_id"])
+            ),
         ]
         for ligne in plage["lignes"]
     ]
@@ -894,7 +1085,10 @@ def _md_section_plage_dates_gouvernements(plage: dict[str, Any]) -> str:
             ],
             lignes, "Aucun gouvernement.",
         )
-        + "\n> **`mandats_membres`** : calculée sur `membres[].debut`/`.fin`. "
+        + "\n> **`Textes`** : un `N/D (hors couverture)` signale une période "
+        "hors du périmètre des archives ingérées, pas une absence de texte "
+        "constatée — voir la section « Couverture des textes portés ».\n\n"
+        + "> **`mandats_membres`** : calculée sur `membres[].debut`/`.fin`. "
         "Un `fin = null` signale un mandat en cours — exclu du calcul sans "
         "jamais être remplacé par la date du jour (AGENTS.md §2.5).\n\n"
         + f"### Dates `membres[]`/`textes[]` invalides ignorées pour le calcul "
@@ -936,6 +1130,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
     bruts produits par les fonctions `compute_*` (AGENTS.md §2.1).
     """
     meta = rapport["meta"]
+    couverture = rapport["couverture_textes"]
 
     sections = [
         (
@@ -944,11 +1139,18 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             f"{meta['total_gouvernements']} gouvernement(s) analysé(s), "
             f"{meta['total_erreurs_lecture']} erreur(s) de lecture. "
             f"Seuil de péremption des sources : {meta['staleness_days']} jour(s).\n\n"
+            "Couverture des textes portés : "
+            f"**{couverture['libelle_couverture']}** — au-delà de cette borne, "
+            "un `textes[]` vide est une absence de source, pas un zéro "
+            "constaté (#399).\n\n"
             "Ce rapport est un outil de qualité interne : il présente des "
             "indicateurs bruts, sans jugement de valeur ni classement.\n"
         ),
         _md_section_volumetrie(rapport["volumetrie"]),
-        _md_section_plage_dates_gouvernements(rapport["plage_dates_gouvernements"]),
+        _md_section_couverture_textes(couverture),
+        _md_section_plage_dates_gouvernements(
+            rapport["plage_dates_gouvernements"], couverture
+        ),
         _md_section_completude(rapport["completude"]),
         _md_section_coherence(rapport["coherence"]),
         _md_section_fraicheur(rapport["fraicheur"], meta["staleness_days"]),

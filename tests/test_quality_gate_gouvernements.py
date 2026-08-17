@@ -24,6 +24,7 @@ def _write_gouvernement(
     nb_portefeuille_connu: int = 0,
     nb_textes: int = 0,
     periode_debut: str | None = "2024-07-18",
+    periode_fin: str | None = None,
     warnings: list | None = None,
 ) -> None:
     data = {
@@ -32,7 +33,7 @@ def _write_gouvernement(
         "gouvernement_id": gouvernement_id,
         "nom": f"Gouvernement {gouvernement_id}",
         "premier_ministre": None,
-        "periode": {"debut": periode_debut, "fin": None, "actif": True},
+        "periode": {"debut": periode_debut, "fin": periode_fin, "actif": periode_fin is None},
         "membres": [
             {
                 "membre_id": f"nosdeputes:membre-{i}",
@@ -178,7 +179,7 @@ def test_report_gouvernements_couverture_ministerielle_incomplete_est_un_soft_fa
 
 
 # ---------------------------------------------------------------------------
-# Soft fail — textes[] vide alors que la période est renseignée
+# Soft fail — textes[] vide sur une période couverte par la source (#399)
 # ---------------------------------------------------------------------------
 
 def test_report_gouvernements_textes_vides_avec_periode_renseignee_est_un_soft_fail(tmp_path):
@@ -196,6 +197,70 @@ def test_report_gouvernements_textes_vides_avec_periode_renseignee_est_un_soft_f
 
     assert hard == []
     assert any("aucun texte porté" in w for w in soft)
+
+
+def test_report_gouvernements_textes_vides_hors_couverture_nest_pas_un_soft_fail(tmp_path):
+    """Fillon II : période antérieure aux archives ingérées.
+
+    L'absence de texte y vient de la source, pas des données — la signaler
+    comme un défaut afficherait une absence de couverture comme un fait
+    mesuré (#399, AGENTS.md §2.5).
+    """
+    config_path = tmp_path / "gouvernements_reels.json"
+    gouvernements_dir = tmp_path / "gouvernements"
+    gouvernements_dir.mkdir()
+    _write_gouvernement(
+        gouvernements_dir, "x.json", "gouvernement:FILLON_2",
+        nb_membres=1, nb_portefeuille_connu=1, nb_textes=0,
+        periode_debut="2007-06-19", periode_fin="2010-11-13",
+    )
+    _write_config(
+        config_path,
+        [{"gouvernement_id": "gouvernement:FILLON_2", "nom": "Fillon II", "fichier": "x.json"}],
+    )
+
+    hard, soft, console, md = _report_gouvernements(config_path, gouvernements_dir)
+
+    assert hard == []
+    assert not any("aucun texte porté" in w for w in soft)
+    # Le constat reste lisible, en information et non en avertissement.
+    assert "hors de la couverture de la source" in console
+    assert "Hors couverture de la source" in md
+
+
+def test_report_gouvernements_textes_vides_couverture_partielle_nest_pas_un_soft_fail(tmp_path):
+    # Période à cheval sur la borne : un textes[] vide y reste ininterprétable.
+    config_path = tmp_path / "gouvernements_reels.json"
+    gouvernements_dir = tmp_path / "gouvernements"
+    gouvernements_dir.mkdir()
+    _write_gouvernement(
+        gouvernements_dir, "x.json", "gouvernement:X",
+        nb_membres=1, nb_portefeuille_connu=1, nb_textes=0,
+        periode_debut="2016-01-01", periode_fin="2018-01-01",
+    )
+    _write_config(config_path, [{"gouvernement_id": "gouvernement:X", "nom": "X", "fichier": "x.json"}])
+
+    hard, soft, console, md = _report_gouvernements(config_path, gouvernements_dir)
+
+    assert hard == []
+    assert not any("aucun texte porté" in w for w in soft)
+    assert "partiellement couverte par la source" in console
+
+
+def test_report_gouvernements_borne_de_couverture_est_affichee(tmp_path):
+    config_path = tmp_path / "gouvernements_reels.json"
+    gouvernements_dir = tmp_path / "gouvernements"
+    gouvernements_dir.mkdir()
+    _write_gouvernement(
+        gouvernements_dir, "x.json", "gouvernement:X",
+        nb_membres=1, nb_portefeuille_connu=1, nb_textes=1,
+    )
+    _write_config(config_path, [{"gouvernement_id": "gouvernement:X", "nom": "X", "fichier": "x.json"}])
+
+    _, _, console, md = _report_gouvernements(config_path, gouvernements_dir)
+
+    assert "2017-06-21" in console
+    assert "2017-06-21" in md
 
 
 def test_report_gouvernements_textes_vides_sans_periode_ne_declenche_rien(tmp_path):

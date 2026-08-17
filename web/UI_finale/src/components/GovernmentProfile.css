@@ -230,3 +230,17 @@
   color: var(--muted);
   margin: 0 0 32px;
 }
+
+/* Limite de couverture de la source (#399) : signalée comme un cadre de
+   lecture, pas comme une alerte — ce n'est pas un défaut de données. */
+.gvp-coverage-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--dark);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0 0 16px;
+}

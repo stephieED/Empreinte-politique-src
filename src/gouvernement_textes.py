@@ -21,8 +21,8 @@ façon dupliquée, dans `_build_texte_titre_index` et
 téléchargement — un seul cache, un seul verrou, pas de second téléchargement
 du même fichier ~10 Mo.
 
-Archives (#400) : `AN_DOSSIERS_ARCHIVES` liste une archive par législature
-(15, 16, 17). Chacune est déjà multi-législature mais ne garde des
+Archives (#400) : `AN_DOSSIERS_ARCHIVES` (défini dans `couverture_dossiers.py`
+depuis #399, ré-exporté ici) liste une archive par législature (15, 16, 17). Chacune est déjà multi-législature mais ne garde des
 précédentes qu'une traîne résiduelle — la seule archive 17 ne contient aucun
 projet de loi antérieur à la XVI. Les dossiers vus dans plusieurs archives
 sont dédupliqués par uid, la législature la plus élevée faisant foi (état le
@@ -159,27 +159,11 @@ import requests
 from download_watchdog import download_with_watchdog
 from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
-AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
-
-# Archives de dossiers législatifs, par législature (#400).
-#
-# Deux conventions de nommage coexistent chez l'AN — suffixe romain jusqu'à la
-# XV, sans suffixe ensuite. Vérifié par requêtes réelles sur les index 11 à 18
-# le 2026-08-18 : le listing de répertoire est désactivé (404 même sur les
-# chemins valides), donc l'inventaire ne peut pas être découvert dynamiquement
-# et doit être tenu à jour ici.
-#
-# La XIV et antérieures sont absentes volontairement : les XII/XIII ne sont pas
-# publiées, et la XIV a une structure incompatible (JSON monolithique
-# `export.textesLegislatifs.document[]`, aucun `dossierParlementaire`) —
-# changement d'architecture du jeu de données AN entre la XIV et la XV, déjà
-# constaté côté amendements. Les gouvernements Fillon II/III sont donc hors
-# d'atteinte définitivement.
-AN_DOSSIERS_ARCHIVES: dict[int, str] = {
-    15: f"{AN_OPENDATA_BASE}/15/loi/dossiers_legislatifs/Dossiers_Legislatifs_XV.json.zip",
-    16: f"{AN_OPENDATA_BASE}/16/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
-    17: f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
-}
+# Inventaire des archives ingérées : déplacé dans `couverture_dossiers.py`
+# (#399), qui n'a aucune dépendance réseau et peut donc être importé par
+# l'audit et le quality gate pour en déduire la borne de couverture
+# temporelle. Ré-exporté ici, où le reste du dépôt le référence déjà.
+from couverture_dossiers import AN_DOSSIERS_ARCHIVES, AN_OPENDATA_BASE  # noqa: F401
 
 # Législature dont l'archive garde le nom de cache historique `dossiers.zip` :
 # la renommer invaliderait le cache CI existant et forcerait un
