@@ -488,6 +488,32 @@ def aggregate_tags_thematiques(
 MANDATS_AGREGES_CATEGORIES: tuple[str, ...] = ("commission", "groupe_amitie", "extra_parlementaire")
 
 
+def _normalize_fonction_mandat(fonction: Any) -> str:
+    """Normalise un libellé de fonction pour le comptage `par_fonction` (#379).
+
+    Depuis #369, les mandats proviennent de deux référentiels aux conventions
+    typographiques différentes — NosDéputés écrit `"membre"`, l'Assemblée
+    nationale `"Membre"` — et le comptage brut éclatait le même rôle en deux
+    entrées (mesuré : `'membre': 521` **et** `'Membre': 312`), donnant à lire
+    deux rôles distincts là où il n'y en a qu'un.
+
+    Normalise la casse et les espaces superflus, **sans** toucher aux accents
+    ni au genre : `président` et `présidente` (comme `co-rapporteur`/
+    `co-rapporteure`) sont des libellés institutionnels réellement distincts,
+    les fusionner effacerait une information portée par la source. Un
+    dépliage accent-insensible n'apporterait rien ici et dégraderait
+    l'affichage.
+
+    Une fonction absente devient `"non_precise"` (inchangé) : distinguer
+    « rôle non renseigné par la source » de « simple membre » relève de la
+    règle « donnée manquante ≠ valeur par défaut » (AGENTS.md §2.5).
+    """
+    if not isinstance(fonction, str):
+        return "non_precise"
+    normalisee = " ".join(fonction.split()).lower()
+    return normalisee or "non_precise"
+
+
 def _select_mandat_entree_unique(mandats: list[dict[str, Any]]) -> dict[str, Any]:
     """Sélectionne une entrée unique parmi des mandats en doublon pour un même
     membre et un même (categorie, label) (ex. réélu·e à la même commission sur
@@ -578,7 +604,7 @@ def _aggregate_mandats(
     for (categorie, label), entries in buckets.items():
         par_fonction: dict[str, int] = {}
         for e in entries:
-            fonction = e.get("fonction") or "non_precise"
+            fonction = _normalize_fonction_mandat(e.get("fonction"))
             par_fonction[fonction] = par_fonction.get(fonction, 0) + 1
 
         result.append({
