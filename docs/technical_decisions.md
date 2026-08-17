@@ -1,3 +1,70 @@
+<a id="mandats-officiels-an-369"></a>
+## Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN (#369), watchdog sur les téléchargements zip (#370) (2026-08-17)
+
+**Contexte** : run `#44` de `generate-data.yml` — tous les shards `extract-an`
+en échec, y compris les candidats non-députés (finissaient auparavant en
+15-20s). Log de Bruno Retailleau : les 8 tentatives `fetch_identity`
+(NosDéputés) se terminent normalement, puis silence total (~31s, aucun
+print) avant `shutdown signal`. Diagnostic : `fetch_identite_officielle_par_slug`
+(#355) est appelée sans condition juste après, et déclenche
+`_ensure_acteurs_historique_zip_downloaded` — un `requests.get(...,
+timeout=(TIMEOUT, 600), stream=True)` en un seul essai, **non protégé** par
+le pattern watchdog déjà en place sur `_get_payload` (#340/[[get-payload-retry]]).
+Cache disque partagé entre shards via la même clé GitHub Actions : le
+premier shard à tenter ce téléchargement (Mélenchon) ayant lui-même échoué
+avant de sauvegarder le cache, chaque shard suivant repartait à froid —
+effet boule de neige expliquant l'échec de tous les shards, pas seulement
+certains.
+
+**Décision 1 — `_download_with_watchdog` (#370, partiel)** : généralisation
+de `_get_with_watchdog` aux téléchargements de fichier — thread démon +
+budget mur indépendant (120s, contre 600s avant), écriture d'abord dans un
+fichier temporaire (`.part`) renommé seulement en cas de succès complet
+(un thread abandonné continuant d'écrire en arrière-plan ne corrompt jamais
+`dest_path`). Appliqué à `_ensure_acteurs_historique_zip_downloaded`
+(priorité #1 de #370, cause confirmée du run #44). **Non appliqué** aux 5
+autres points d'appel listés dans #370 (questions officielles AN, dossiers
+gouvernementaux, ParlTrack, MEP, Syceron) — laissés pour une itération
+séparée, `_download_with_watchdog` est déjà réutilisable tel quel pour eux
+(même signature `(url, dest_path)`).
+
+**Décision 2 — mandats commission/groupe_amitie/extra_parlementaire sourcés
+depuis l'AN (#369, partiel)** : `_build_acteur_identite_index()` lisait déjà
+`acteur.mandats.mandat[]` en entier mais n'en extrayait que le mandat
+`ASSEMBLEE` (circonscription/place hémicycle) — les mandats `COMPER`/`GA`/
+`ORGEXTPARL` étaient lus puis jetés, sans passer par `_build_organe_index()`/
+`fetch_organe()` (#353) pourtant déjà disponible pour les résoudre en noms
+lisibles. Ajout de `_build_acteur_mandats_index()` (même zip déjà téléchargé
+et parsé pour l'identité/les organes, aucun coût réseau supplémentaire) et
+`_extract_mandats_officiels(acteur_ref)`, équivalents AN de `_extract_mandats`
+(NosDéputés). Dans `build_profile`, étape 5 : quand l'acteur est résolu côté
+AN, les mandats des 3 catégories partagées viennent désormais de l'AN
+(NosDéputés ne complète que le mandat électif de base et les catégories non
+couvertes) — évite un doublon du même organisme sous un libellé différent.
+
+*Mapping* : `COMPER` → `commission`, `GA` → `groupe_amitie`,
+`ORGEXTPARL` → `extra_parlementaire` (`_TYPE_ORGANE_TO_CATEGORIE`). Le reste
+(`MISINFO`/`CNPE`/`DELEG`/`GE`/`GEVI`/`PARPOL`/`CMP`/`API`...) n'est pas
+mappé — périmètre minimal-invasif, cohérent avec ce que #349/#361 excluent
+déjà de l'agrégation de groupe.
+
+**Non implémenté, périmètre volontairement réduit** : rendre `fetch_identity`
+(NosDéputés) réellement conditionnel — appelé seulement si l'AN ne trouve
+rien — nécessite de réordonner `build_profile` (le nom de recherche
+d'interventions, étape 2, dépend aujourd'hui de `identity_raw`, donc de
+l'appel NosDéputés fait *avant* la résolution AN à l'étape 5). Changement
+structurel plus risqué qu'un ajout localisé ; **`fetch_identity` reste donc
+appelé sans condition pour chaque candidat déclaré** — les 8 requêtes
+NosDéputés (identité) restent présentes dans les logs même une fois cette
+itération déployée. #369 reste ouverte pour ce réordonnancement. Les 5
+autres points d'appel non protégés de #370 restent également ouverts.
+
+**Tests** : `_download_with_watchdog` (abandon après budget mur, écriture
+`dest_path` seulement en cas de succès), `_build_acteur_mandats_index`
+(mapping typeOrgane, exclusion `MISINFO`/`ASSEMBLEE`), `_extract_mandats_officiels`
+(résolution de label via `fetch_organe`, acteur inconnu → liste vide),
+`build_profile` (préférence AN sur les catégories partagées, conservation
+du mandat électif NosDéputés). Suite complète : 1126/1126.
 <a id="mandats-agreges-famille-1"></a>
 ## `mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)
 
@@ -365,6 +432,50 @@ serait vide et `extract-an` ne produirait aucune exécution — scénario jugé
 irréaliste en pratique (liste éditoriale activement maintenue, 8/13 slugs
 résolvables aujourd'hui) et non traité pour éviter la validation
 prématurée que proscrit AGENTS.md.
+
+**Retour d'expérience sur le premier run réel, et correctif appliqué** : ce
+premier run s'est terminé `cancelled` après 44m55s, sans jamais atteindre
+`merge-and-pivot` (skipped). Sur 8 shards (`max-parallel: 1`, séquentiel) :
+2 succès (Bruno Retailleau, Jordan Bardella — tous deux *non* rattachés à
+l'Assemblée nationale, `Aucune identité trouvée`, shard fini en ~15-20s
+avant toute exposition réelle), 5 échecs par la signature `shutdown signal`
+habituelle (1m18s-2m10s chacun, cohérent avec tous les runs déjà observés
+avant ce chantier), et 1 blocage anormal (Jérôme Guedj, 20+ min, **sans**
+signature `shutdown signal` reconnaissable — logs expirés avant
+investigation possible, cause non identifiée) qui a immobilisé tous les
+shards suivants derrière lui (séquentiel, décision 2 ci-dessus).
+
+Proposition initiale d'augmenter `max-parallel` (pour réduire le temps mur
+et limiter l'impact d'un shard bloqué) — **écartée** sur retour d'expérience
+direct de l'utilisatrice : une parallélisation antérieure d'appels vers une
+même source de données s'était révélée peu robuste. Risque jugé réel : si
+une partie du phénomène `shutdown signal` est liée au volume/à la charge sur
+nosdeputes.fr plutôt qu'à un aléa runner pur (question non tranchée, voir le
+workflow de debug ci-dessous), plus de parallélisme pourrait aggraver la
+fréquence des gels plutôt que la réduire. `max-parallel` reste donc à `1`,
+la décision 2 ci-dessus n'est pas remise en cause.
+
+**Correctif retenu et implémenté à la place** : réduire `timeout-minutes`
+d'`extract-an` de 20 à 5 min. Preuve à l'appui : tous les shards observés à
+ce jour (succès et échecs confondus) se terminent en 1m18s-2m10s, sans
+exception sauf le cas anormal de Guedj — 5 min laisse une marge large (>2x
+le pire cas normal) tout en bornant à 5 min (au lieu de 20+) l'impact d'un
+futur blocage du même type sur le matrix séquentiel. Budget mur en tête de
+fichier recalculé en conséquence (décision 7 ci-dessus) :
+`max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min` pire cas (contre 310 min avec
+l'ancien timeout de 20 min/shard).
+
+**Piste de recherche ouverte en parallèle, non tranchée** : un workflow de
+debug dédié (`.github/workflows/debug-network-shutdown-signal.yml`), isolé
+de la production (aucun checkout de données, aucun commit, aucun artifact),
+compare à volume de requêtes identique un groupe test vers nosdeputes.fr et
+un groupe témoin vers `api.github.com` — objectif : déterminer si le
+`shutdown signal` est corrélé au volume/temps d'activité réseau soutenue
+depuis le runner (indépendamment de la destination) ou spécifique à
+nosdeputes.fr. Premier run (20 requêtes/groupe, délai 0,3s) : succès complet
+des deux côtés, aucun gel — attendu, le phénomène étant probabiliste ;
+plusieurs runs par palier de volume restent nécessaires avant de pouvoir
+conclure.
 
 <a id="pivot-freshness-timestamps-stables"></a>
 ## `genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)
