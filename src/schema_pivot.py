@@ -43,7 +43,10 @@ Format d'un profil pivot v1 :
             "label": "Commission des affaires étrangères",
             "categorie": "commission",       # "mandat_electif" | "commission" |
                                              # "groupe_amitie" | "groupe_politique" |
-                                             # "extra_parlementaire" | "autre"
+                                             # "extra_parlementaire" | "autre" |
+                                             # "commission_enquete" | "mission_information" |
+                                             # "groupe_etudes" | "delegation"
+                                             # (voir KNOWN_CATEGORIES)
             "fonction": "membre",            # ex. "membre", "président", "rapporteur"
             "debut": "2022-01-01",
             "fin": null,
@@ -218,9 +221,21 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 # "GOUVERNEMENT") ; distincte de mandats[].suspendu_pour_fonction_gouvernementale,
 # qui documente la suspension corrélative du mandat électif, pas la fonction
 # gouvernementale elle-même.
+# Les 4 dernières catégories sont issues de #382/#383 (option « mixte ») :
+# le référentiel officiel AN distingue une vingtaine de `typeOrgane`, dont
+# près de la moitié des mandats n'étaient jusque-là pas exploités faute de
+# catégorie pour les accueillir — commissions d'enquête, missions
+# d'information, groupes d'études et délégations se retrouvaient tous rangés
+# sous `commission` par l'ancien mapping NosDéputés, ce qui trompait sur leur
+# nature (voir docs/technical_decisions.md#taxonomie-mandats-typeorgane-an).
+# Choix de granularité : une catégorie par nature institutionnelle
+# réellement distincte pour l'utilisateur, pas une par `typeOrgane` — les
+# variantes internes (MISINFO/MISINFOCOM/MISINFOPRE, CNPE/CNPS, GE/GEVI,
+# DELEG/API/OFFPAR) sont regroupées.
 KNOWN_CATEGORIES: frozenset[str] = frozenset({
     "mandat_electif", "commission", "groupe_amitie", "groupe_politique",
     "extra_parlementaire", "fonction_gouvernementale", "autre",
+    "commission_enquete", "mission_information", "groupe_etudes", "delegation",
 })
 
 # Position dans l'hémicycle (majorité/opposition/minoritaire/gouvernement).

@@ -268,6 +268,94 @@
       "debut": "2024-07-07",
       "fin": null,
       "actif": true
+    },
+    {
+      "categorie": "autre",
+      "type": "Présidents des groupes politiques",
+      "label": "Conférence des Présidents",
+      "debut": "2024-07-20",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "commission",
+      "type": "Membre",
+      "label": "Commission spéciale chargée de vérifier et d'apurer les comptes",
+      "debut": "2005-10-04",
+      "fin": "2007-06-19",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère de l'enseignement supérieur et de la recherche",
+      "debut": "2011-06-29",
+      "fin": "2012-05-10",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère auprès du ministre d'État, ministre des affaires étrangères et européennes, chargé des affaires européennes",
+      "debut": "2011-02-27",
+      "fin": "2011-06-29",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère auprès de la ministre d'État, ministre des affaires étrangères et européennes, chargé des affaires européennes",
+      "debut": "2010-11-14",
+      "fin": "2011-02-27",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2025-02-14",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Secrétaire d'État",
+      "label": "Secrétaire d'Etat, porte-parole du Gouvernement",
+      "debut": "2007-06-19",
+      "fin": "2008-03-17",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Secrétaire d'État",
+      "label": "Secrétariat d'Etat à l'emploi, auprès de la ministre de l'économie, de l'industrie et de l'emploi",
+      "debut": "2008-03-18",
+      "fin": "2010-11-13",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Préparation de l'adoption d'un traité international relatif au commerce des armes légères et de petit calibre et la question des mines anti personnel",
+      "debut": "2006-06-20",
+      "fin": "2007-06-19",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Plasturgie",
+      "debut": "2013-02-14",
+      "fin": "2017-06-20",
+      "actif": false
+    },
+    {
+      "categorie": "groupe_etudes",
+      "type": "Membre",
+      "label": "Montagne",
+      "debut": "2013-02-05",
+      "fin": "2017-06-20",
+      "actif": false
     }
   ],
   "votes": [],
@@ -167317,13 +167405,13 @@
     }
   ],
   "meta": {
-    "genere_le": "2026-08-17T17:24:28+0200",
+    "genere_le": "2026-08-17T19:09:17+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-15T13:27:39+0000",
       "assemblee_nationale_questions": "2026-08-07T10:15:28+0000",
-      "assemblee_nationale": "2026-08-17T17:24:28+0200",
-      "assemblee_nationale_syceron": null
+      "assemblee_nationale_syceron": null,
+      "nosdeputes": "2026-08-15T13:27:39+0000",
+      "assemblee_nationale": "2026-08-17T19:09:17+0200"
     },
     "warnings": [
       "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."

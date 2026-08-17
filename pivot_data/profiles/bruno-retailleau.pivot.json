@@ -1,22 +1,30 @@
 {
   "schema_version": "1",
-  "id": "nossenateurs:bruno-retailleau",
+  "id": "nosdeputes:bruno-retailleau",
   "nom": "Bruno Retailleau",
-  "chambre": "Senat",
+  "chambre": "AN",
   "parti": "Les Républicains (LR)",
   "groupe": "Les Républicains",
   "identite": {
-    "profession": null,
+    "profession": "Cadre supérieur",
     "date_naissance": "1960-11-20",
-    "lieu_naissance": null,
-    "num_circo": "non disponible",
-    "uri_hatvp": null,
-    "source_url": "https://archive.nossenateurs.fr/bruno-retailleau"
+    "lieu_naissance": "Cholet ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "source_url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538"
   },
   "sources": [
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-17T17:28:34+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
     }
   ],
@@ -164,6 +172,42 @@
       "position_dans_hemicycle": "gouvernement",
       "mode_declenchement": null,
       "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Ministère de l'intérieur",
+      "categorie": "fonction_gouvernementale",
+      "fonction": "Ministre",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Ministère de l'intérieur",
+      "categorie": "fonction_gouvernementale",
+      "fonction": "Ministre d'État, ministre",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Ministère de l'intérieur",
+      "categorie": "fonction_gouvernementale",
+      "fonction": "Ministre d'État, ministre",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     }
   ],
   "votes": [],
@@ -294,10 +338,10 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T17:35:59+0200",
+    "genere_le": "2026-08-17T19:09:33+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
-      "votes introuvables : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune donnée exploitable pour ce parlementaire."
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
     ],
     "provenance": "candidat_declare"
   }

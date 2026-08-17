@@ -299,6 +299,102 @@
       "position_dans_hemicycle": null,
       "mode_declenchement": null,
       "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Commission chargée de l'application de l'article 26 de la Constitution",
+      "categorie": "commission",
+      "fonction": "Membre suppléant",
+      "debut": "2012-07-11",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Premier ministre",
+      "categorie": "fonction_gouvernementale",
+      "fonction": "Premier ministre",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Premier ministre",
+      "categorie": "fonction_gouvernementale",
+      "fonction": "Premier ministre",
+      "debut": "2017-06-20",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Villes et banlieues",
+      "categorie": "groupe_etudes",
+      "fonction": "Membre",
+      "debut": "2013-01-29",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Energies",
+      "categorie": "groupe_etudes",
+      "fonction": "Membre",
+      "debut": "2013-02-20",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Automobile",
+      "categorie": "groupe_etudes",
+      "fonction": "Membre",
+      "debut": "2013-01-16",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Mer, pêche et souveraineté maritime",
+      "categorie": "groupe_etudes",
+      "fonction": "Membre",
+      "debut": "2013-01-23",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Politique portuaire",
+      "categorie": "groupe_etudes",
+      "fonction": "Vice-Président",
+      "debut": "2013-04-10",
+      "fin": "2017-06-15",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
     }
   ],
   "votes": [],
@@ -96852,7 +96948,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T17:35:59+0200",
+    "genere_le": "2026-08-17T19:09:03+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
       "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."

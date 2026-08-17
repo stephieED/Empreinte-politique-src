@@ -1,18 +1,21 @@
 {
   "slug": "bruno-retailleau",
-  "chambre": "senateurs",
-  "source": "https://archive.nossenateurs.fr/bruno-retailleau",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/bruno-retailleau",
   "identite": {
     "nom_complet": "Bruno Retailleau",
-    "groupe_sigle": "LR",
-    "groupe_nom": "Les Républicains",
-    "profession": null,
+    "groupe_sigle": null,
+    "groupe_nom": null,
+    "profession": "Cadre supérieur",
     "date_naissance": "1960-11-20",
-    "lieu_naissance": null,
-    "num_circo": "non disponible",
-    "nb_mandats": 2,
-    "uri_hatvp": null,
-    "url_an_ou_senat": null
+    "lieu_naissance": "Cholet ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "nb_mandats": 0,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538"
   },
   "mandats": [
     {
@@ -116,6 +119,30 @@
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
       "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre",
+      "label": "Ministère de l'intérieur",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre d'État, ministre",
+      "label": "Ministère de l'intérieur",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "Ministre d'État, ministre",
+      "label": "Ministère de l'intérieur",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false
     }
   ],
   "votes": [],
@@ -257,16 +284,16 @@
   "amendements": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-17T17:28:34+0200",
+    "genere_le": "2026-08-17T19:09:16+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
+      "assemblee_nationale_questions": null,
       "assemblee_nationale_syceron": null,
       "nosdeputes": "2026-08-17T17:28:34+0200",
-      "assemblee_nationale": "2026-08-17T17:24:15+0200",
-      "assemblee_nationale_questions": null
+      "assemblee_nationale": "2026-08-17T19:09:16+0200"
     },
     "warnings": [
-      "votes introuvables : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune donnée exploitable pour ce parlementaire."
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
     ]
   }
 }
