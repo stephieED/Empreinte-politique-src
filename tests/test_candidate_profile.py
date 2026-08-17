@@ -3633,6 +3633,35 @@ def test_fetch_identite_officielle_par_slug_returns_none_when_absent(tmp_path):
     assert acteur_ref is None
 
 
+def test_fetch_identite_officielle_par_slug_resolves_hyphenated_prenom(tmp_path):
+    """Un prénom composé (ex. "Jean-Luc") conserve son tiret dans nom_complet,
+    alors que le slug NosDéputés.fr ("jean-luc-melenchon") remplace TOUS ses
+    tirets par des espaces : sans normalisation symétrique côté nom_complet,
+    la clé ne matche jamais ("jean-luc melenchon" vs "jean luc melenchon") et
+    la résolution échoue en silence pour tout prénom/nom composé (bug réel
+    observé en production sur jean-luc-melenchon, cf. run #47)."""
+    from candidate_profile import fetch_identite_officielle_par_slug
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA2150": {
+                "uid": {"#text": "PA2150"},
+                "etatCivil": {"ident": {"prenom": "Jean-Luc", "nom": "Mélenchon"}},
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        fiche, acteur_ref = fetch_identite_officielle_par_slug("jean-luc-melenchon")
+
+    assert acteur_ref == "PA2150"
+    assert fiche["nom_complet"] == "Jean-Luc Mélenchon"
+
+
 def test_fetch_identite_officielle_par_slug_refuses_homonym_ambiguity(tmp_path):
     """Deux acteurs distincts partageant le même nom normalisé (homonymie) ne
     doivent jamais être résolus au hasard vers l'un des deux : la fonction

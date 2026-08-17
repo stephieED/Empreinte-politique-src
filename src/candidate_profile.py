@@ -2184,13 +2184,23 @@ def _build_acteur_nom_index() -> dict[str, list[str]]:
     depuis un slug NosDéputés.fr sans dépendre de l'URL AN renvoyée par
     NosDéputés (voir fetch_identite_officielle_par_slug, issue #355). Une
     liste de plus d'un acteur_ref pour une même clé signale une homonymie
-    dans le référentiel historique AN."""
+    dans le référentiel historique AN.
+
+    Les tirets de `nom_complet` sont remplacés par des espaces avant
+    normalisation, au même titre que ceux du slug côté appelant
+    (`_resolve_acteur_ref_par_slug`) : un prénom composé (ex. "Jean-Luc"
+    Mélenchon) garde son tiret dans `nom_complet` mais le slug NosDéputés.fr
+    ("jean-luc-melenchon") le remplace par un espace au même titre que le
+    séparateur prénom/nom — sans ce traitement symétrique, la clé normalisée
+    ne matche jamais ("jean-luc melenchon" vs "jean luc melenchon"), et la
+    résolution échoue silencieusement pour tout prénom/nom composé."""
     index: dict[str, list[str]] = {}
     for acteur_ref, fiche in _build_acteur_identite_index().items():
         nom_complet = fiche.get("nom_complet")
         if not nom_complet:
             continue
-        index.setdefault(_normalize_search_query(nom_complet), []).append(acteur_ref)
+        cle = _normalize_search_query(nom_complet.replace("-", " "))
+        index.setdefault(cle, []).append(acteur_ref)
     return index
 
 
