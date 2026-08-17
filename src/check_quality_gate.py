@@ -674,7 +674,15 @@ def _report_amendements_freshness(
 
     for legislature in _AMENDEMENTS_LEGISLATURES:
         index_path = cache_dir / legislature / "index_par_acteur.json"
-        if not index_path.is_file():
+        # `amendements.json` exigé aussi (#377) : depuis le passage du cache à
+        # la forme dédupliquée, les deux fichiers vont toujours de pair et
+        # `candidate_profile._read_cached_amendements_agreges` traite comme
+        # absent un cache qui n'aurait que l'un des deux (cas d'un cache
+        # hérité d'avant #377, plat). Ce rapport doit refléter le même verdict
+        # que le lecteur réel, sinon il annoncerait « construit » un index que
+        # la collecte ignore.
+        amendements_path = cache_dir / legislature / "amendements.json"
+        if not index_path.is_file() or not amendements_path.is_file():
             jamais_construit.append(legislature)
             soft_warnings.append(
                 f"législature {legislature} : index jamais construit (aucun "

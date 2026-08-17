@@ -20,6 +20,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nossenateurs:bruno-retailleau",
+      "nom": "Bruno Retailleau",
+      "portefeuille": null,
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": null,
@@ -154,6 +163,11 @@
       "synchro_le": "2026-08-14T14:47:06+0000"
     },
     {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-17T17:28:34+0200"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
       "synchro_le": "2026-08-13T13:45:01+0000"
@@ -161,7 +175,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T09:30:13+0000",
+    "genere_le": "2026-08-17T18:13:05+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",

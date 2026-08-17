@@ -11,8 +11,26 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:anne-genetet",
+      "nom": "Anne Genetet",
+      "portefeuille": null,
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
+      "portefeuille": null,
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nossenateurs:bruno-retailleau",
+      "nom": "Bruno Retailleau",
       "portefeuille": null,
       "debut": "2024-09-22",
       "fin": "2024-12-13",
@@ -24,6 +42,15 @@
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": null,
       "debut": "2024-09-28",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:maud-bregeon",
+      "nom": "Maud Bregeon",
+      "portefeuille": null,
+      "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
       "source_url": null
@@ -95,23 +122,38 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/benjamin-haddad",
-      "synchro_le": "2026-08-14T14:47:05+0000"
+      "url": "https://www.nosdeputes.fr/anne-genetet",
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-14T14:47:06+0000"
+      "synchro_le": "2026-08-17T17:35:33+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/benjamin-haddad",
+      "synchro_le": "2026-08-14T14:47:05+0000"
+    },
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-17T17:28:34+0200"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
       "synchro_le": "2026-08-13T13:45:01+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/maud-bregeon",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T09:30:13+0000",
+    "genere_le": "2026-08-17T18:13:05+0200",
     "licence_donnees": "",
     "warnings": [
       "gouvernement_textes: dossier DLR5L17N51079 : fam_code inconnu 'TSORTF05' — statut non déterminé.",

@@ -86,25 +86,187 @@
       "debut": null,
       "fin": null,
       "actif": true
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (LECORNU)",
+      "debut": "2025-10-05",
+      "fin": "2025-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (BARNIER)",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
+    },
+    {
+      "categorie": "fonction_gouvernementale",
+      "type": "membre",
+      "label": "Gouvernement (BAYROU)",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "position_dans_hemicycle": "gouvernement"
     }
   ],
   "votes": [],
   "votes_source": null,
-  "synthese_activite": null,
-  "dossiers_legislatifs": [],
+  "dossiers_legislatifs": [
+    {
+      "id": "DLR5L17N53936",
+      "titre": "Proposition de loi visant à lutter contre l’entrisme islamiste en France",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2026-03-16",
+      "date_max": "2026-05-06",
+      "legislature": "17",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53936"
+    },
+    {
+      "id": "DLR5L16N49280",
+      "titre": "Proposition de loi portant création d'un statut de l'élu local",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "promulgue",
+      "date_min": "2024-01-18",
+      "date_max": "2025-12-22",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49280"
+    },
+    {
+      "id": "DLR5L17N50946",
+      "titre": "Ratification du traité sur la coopération dans le domaine de la défense entre la République française et le Royaume d’Espagne",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "promulgue",
+      "date_min": "2024-11-22",
+      "date_max": "2025-03-20",
+      "legislature": "17",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_traite_cooperation_domaine_defense_france_espagne"
+    },
+    {
+      "id": "DLR5L16N49843",
+      "titre": "Proposition de loi visant à permettre l'élection du maire d'une commune nouvelle en cas de conseil municipal incomplet",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "promulgue",
+      "date_min": "2024-04-25",
+      "date_max": "2025-02-14",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49843"
+    },
+    {
+      "id": "DLR5L15N36989",
+      "titre": "Répression des entraves à l'exercice des libertés",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2018-10-09",
+      "date_max": "2024-07-23",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/repression_entraves_libertes"
+    },
+    {
+      "id": "DLR5L15N45009",
+      "titre": "Proposition de loi visant à la consolidation et à la professionnalisation de la formation des internes en médecine générale afin de lutter contre « les déserts médicaux »",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2022-01-31",
+      "date_max": "2024-07-23",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45009"
+    },
+    {
+      "id": "DLR5L16N49383",
+      "titre": "Proposition de loi visant à garantir un mode de calcul juste et équitable des pensions de retraite de base des travailleurs non salariés des professions agricoles",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2024-01-31",
+      "date_max": "2024-07-23",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49383"
+    },
+    {
+      "id": "DLR5L13N27135",
+      "titre": "Gestion effective du risque de submersion marine",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2010-12-14",
+      "date_max": "2024-07-23",
+      "legislature": "13",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/13/dossiers/risque_submersion_marine"
+    },
+    {
+      "id": "DLR5L15N38353",
+      "titre": "Français établis hors de France",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2019-12-05",
+      "date_max": "2024-07-23",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/francais_etablis_hors_de_france"
+    },
+    {
+      "id": "DLR5L14N35595",
+      "titre": "Eau et «assainissement , compétences optionnelles des communautés de communes",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2017-01-11",
+      "date_max": "2024-07-23",
+      "legislature": "14",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/competences_communautes_communes_eau_assainissement"
+    },
+    {
+      "id": "DLR5L15N38344",
+      "titre": "Droits des usagers des transports en cas de grève",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2019-12-02",
+      "date_max": "2024-07-23",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/droits_usagers_transports_greve"
+    },
+    {
+      "id": "DLR5L17N50160",
+      "titre": "Proposition de loi portant diverses dispositions visant à améliorer le dialogue et les garanties des cotisants lors des contrôles URSSAF",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2024-06-19",
+      "date_max": "2024-06-19",
+      "legislature": "17",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50160"
+    }
+  ],
   "amendements": [],
   "interventions": [],
   "meta": {
-    "genere_le": "2026-08-06T09:20:03+0000",
+    "genere_le": "2026-08-17T17:28:34+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:20:03+0000",
-      "assemblee_nationale_questions": null,
-      "assemblee_nationale": null,
-      "assemblee_nationale_syceron": null
+      "assemblee_nationale_syceron": null,
+      "nosdeputes": "2026-08-17T17:28:34+0200",
+      "assemblee_nationale": "2026-08-17T17:24:15+0200",
+      "assemblee_nationale_questions": null
     },
     "warnings": [
-      "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
+      "votes introuvables : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune donnée exploitable pour ce parlementaire."
     ]
   }
 }

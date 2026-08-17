@@ -432,7 +432,64 @@ legislature, an amendements index that was never built from one that is present 
 schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, empty
 `textes[]` with a non-null `periode`, or IncompleteRead network signals.
 
-## 9. Open the web UI locally
+## 9. Running the full pipeline locally instead of CI
+
+`scripts/generate_data_local.sh` runs the same sequence of stages as
+`generate-data.yml` (AN, Sénat, UE, ParlTrack, amendements index,
+roster-driven group members, then pivots + party/group/government profiles +
+quality gate) directly on your machine, bypassing GitHub Actions entirely.
+Useful when the hosted runner is hitting transient infrastructure
+preemptions ("shutdown signal", see `docs/technical_decisions.md`) unrelated
+to the code itself — running locally sidesteps that class of failure
+completely, since it doesn't depend on GitHub's runner fleet at all.
+
+```bash
+./scripts/generate_data_local.sh
+```
+
+By default it launches itself in the background (`nohup`) and returns
+immediately, printing the PID and the log file to follow:
+
+```
+Lancement en arrière-plan — logs : logs/generate_data_local_20260817T104701Z.log
+PID : 12345
+Suivre : tail -f logs/generate_data_local_20260817T104701Z.log
+Arrêter : kill 12345
+```
+
+Every run's full output is saved under `logs/` (git-ignored, like `.cache/`),
+regardless of foreground/background mode. Run `BACKGROUND=false
+./scripts/generate_data_local.sh` to keep it attached to the terminal
+instead (output is still duplicated into the same log file via `tee`).
+
+Same tunables as the workflow's `workflow_dispatch` inputs, passed as
+environment variables:
+
+```bash
+WORKERS=4 ROSTER_EXTRACTION_LIMIT=0 EXTRACT_INTERVENTIONS=true ./scripts/generate_data_local.sh
+```
+
+| Variable | Default | Same as `workflow_dispatch` input |
+|---|---|---|
+| `FRESH_RUN` | `false` | `fresh_run` |
+| `THRESHOLD` | `3` | `threshold` |
+| `WORKERS` | `1` (sequential) | `workers` |
+| `EXTRACT_INTERVENTIONS` | `false` | `extract_interventions` |
+| `MAX_PAGES` | `5` | `max_pages` |
+| `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_extraction_limit` |
+| `BACKGROUND` | `true` | *(local-only, no CI equivalent)* |
+
+Each stage keeps the CI job's `continue-on-error` behavior: a failure in one
+source (e.g. ParlTrack down) doesn't stop the rest. Unlike CI, nothing is
+committed/pushed automatically at the end — review `git status`/`git diff`
+on `raw_data/profiles`, `pivot_data/profiles`, `pivot_data/partis`,
+`pivot_data/groupes`, `pivot_data/gouvernements`, then commit/push manually
+if the result looks right. See the script's header comment for the exact
+differences from the CI job graph (no per-candidate matrix, no
+artifact-based re-merge — both are CI-only orchestration concerns with no
+local equivalent needed).
+
+## 10. Open the web UI locally
 
 `web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes** ·
 **Gouvernement**, no Partis tab). Before running it, sync pivot data into `public/data/`:
@@ -452,7 +509,7 @@ current state of the roster-driven rollout.
 Archived design generations are in `web/old/` (v1–v7, atlas, interface-essentielle,
 studies) — static HTML, serve with `python -m http.server 8000` from the repo root.
 
-## 10. Audit the pivot dataset
+## 11. Audit the pivot dataset
 
 `src/audit_pivot_dataset.py` scans a directory of `*.pivot.json` files and reports
 volumetry (including a breakdown by `meta.provenance`, `candidat_declare` vs.
@@ -478,7 +535,15 @@ threshold beyond which a profile with only stale sources is flagged. See
 `docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_pivot/`.
 
-## 11. Audit the groupe dataset
+Instead of naming both files, `--output-dir DOSSIER` writes both under a
+timestamped name (`audit_pivot_<horodatage-UTC>.json`/`.md`) — incompatible
+with `--output-json`/`--output-md`:
+
+```bash
+python src/audit_pivot_dataset.py --input-dir pivot_data/profiles --output-dir audit_reports/
+```
+
+## 12. Audit the groupe dataset
 
 `src/audit_groupe_dataset.py` mirrors `audit_pivot_dataset.py` for
 `pivot_data/groupes` (`schema_groupe.py`): it scans a directory of group
@@ -504,11 +569,12 @@ python src/audit_groupe_dataset.py \
 default to unset (JSON prints to stdout, Markdown is skipped if `--output-md`
 is omitted). `--staleness-days` (default 30) sets the threshold beyond which
 a group with only stale sources is flagged — same option contract as
-`audit_pivot_dataset.py` for combined use. See
+`audit_pivot_dataset.py` for combined use, including `--output-dir DOSSIER`
+(timestamped `audit_groupe_<horodatage-UTC>.json`/`.md`). See
 `docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_groupe/`.
 
-## 12. Audit the gouvernement dataset
+## 13. Audit the gouvernement dataset
 
 `src/audit_gouvernement_dataset.py` mirrors `audit_groupe_dataset.py` for
 `pivot_data/gouvernements` (`schema_gouvernement.py`): it scans a directory
@@ -541,11 +607,12 @@ python src/audit_gouvernement_dataset.py \
 `--output-md` default to unset (JSON prints to stdout, Markdown is skipped
 if `--output-md` is omitted). `--staleness-days` (default 30) sets the
 threshold beyond which a government with only stale sources is flagged —
-same option contract as the other audit scripts. See
+same option contract as the other audit scripts, including `--output-dir
+DOSSIER` (timestamped `audit_gouvernement_<horodatage-UTC>.json`/`.md`). See
 `docs/examples/audit_gouvernement_report_sample.json` / `.md` for a sample
 report generated on `tests/fixtures/audit_gouvernement/`.
 
-## 13. Combined audit pipeline (manual tool)
+## 14. Combined audit pipeline (manual tool)
 
 `src/audit_pipeline.py` is a **manual** entry point that runs all three audits
 above by calling their functions directly (no subprocess) and compiles an
@@ -578,7 +645,10 @@ python src/audit_pipeline.py \
 Markdown is skipped if `--output-md` is omitted). `--staleness-days` (default
 30) is forwarded unchanged to all three underlying audits. A missing
 directory (any of the three) is a hard error (explicit message + exit code
-1, never a crash traceback), same behavior across all three.
+1, never a crash traceback), same behavior across all three. Same
+`--output-dir DOSSIER` convenience as the other audit scripts (timestamped
+`audit_pipeline_<horodatage-UTC>.json`/`.md`, incompatible with
+`--output-json`/`--output-md`).
 
 ## Raw profile content (Nos* format)
 

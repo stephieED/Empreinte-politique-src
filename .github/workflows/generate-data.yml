@@ -165,6 +165,20 @@ jobs:
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
+      # Mémoire disponible sur le runner au démarrage (diagnostic OOM, voir
+      # docs/technical_decisions.md#oom-lecture-amendements-par-candidat) :
+      # un runner ubuntu-latest standard n'a que ~7 Gio de RAM, le même ordre
+      # de grandeur que la législature amendements 16 une fois désérialisée
+      # (mesuré ~4,35 Gio en local) — un OOM côté runner hébergé n'apparaît
+      # jamais comme tel dans les logs GitHub Actions (pas de journalctl -k
+      # accessible), seulement comme un `shutdown signal` générique. Ce
+      # print ne capture que l'état de départ (rien ne s'exécute après un
+      # OOM qui tue le runner lui-même, angle mort déjà documenté en #228) —
+      # sert surtout à confirmer/infirmer la RAM totale réellement
+      # disponible sur ce runner.
+      - name: Diagnostic mémoire runner (OOM)
+        run: free -h
+
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -216,6 +230,10 @@ jobs:
       # (le parallélisme inter-candidats est désormais porté par le matrix).
       # fresh_run=true  → --no-merge : écrasement complet.
       # fresh_run=false → fusion additive : données existantes préservées.
+      # /usr/bin/time -v : trace le pic de RSS (diagnostic OOM, voir le step
+      # "Diagnostic mémoire runner" ci-dessus) — n'apparaît dans les logs que
+      # si le process Python se termine (normalement ou tué) sans que le
+      # runner entier ne disparaisse avec lui.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -226,7 +244,7 @@ jobs:
           [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
           [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
-          python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       # path scopé au seul fichier de ce candidat (pas tout raw_data/profiles/) :
       # les autres jobs d'extraction (Sénat/UE/roster) uploadent déjà la
@@ -679,6 +697,14 @@ jobs:
       - name: Horodatage de démarrage (diagnostic annulation/échec)
         run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
+      # Voir le commentaire équivalent sur extract-an — ce job n'est pas
+      # shardé par candidat (contrairement à extract-an, #344) et traite
+      # plusieurs membres roster dans le même process : exposition plus
+      # importante au même risque OOM (voir
+      # docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
+      - name: Diagnostic mémoire runner (OOM)
+        run: free -h
+
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -751,7 +777,7 @@ jobs:
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
-          python3 src/generate_all_profiles.py \
+          /usr/bin/time -v python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
             --skip-existing --resume \

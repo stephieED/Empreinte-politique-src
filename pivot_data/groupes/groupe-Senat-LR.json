@@ -236,12 +236,12 @@
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-06T09:20:03+0000"
+      "synchro_le": "2026-08-17T17:28:34+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T09:30:12+0000",
+    "genere_le": "2026-08-17T18:00:44+0200",
     "licence_donnees": "",
     "profils_sources": [
       "nossenateurs:bruno-retailleau"

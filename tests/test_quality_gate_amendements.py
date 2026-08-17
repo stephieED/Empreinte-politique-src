@@ -136,8 +136,14 @@ def _horodatage(dt: datetime) -> str:
 
 
 def _write_index(cache_dir: Path, legislature: str) -> None:
+    """Écrit un cache d'amendements au format dédupliqué (#377) : les deux
+    fichiers `amendements.json` + `index_par_acteur.json` vont toujours de
+    pair, et le rapport de fraîcheur exige désormais les deux (un cache
+    n'ayant que l'un des deux est un cache hérité d'avant #377, traité comme
+    absent aussi bien ici que par le lecteur réel)."""
     leg_dir = cache_dir / legislature
     leg_dir.mkdir(parents=True, exist_ok=True)
+    (leg_dir / "amendements.json").write_text(json.dumps({}), encoding="utf-8")
     (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
 
 
@@ -180,6 +186,25 @@ def test_report_amendements_freshness_fresh_index_no_warning(tmp_path):
 
     assert len(soft) == 0
     assert "✓" in console
+
+
+def test_report_amendements_freshness_legacy_flat_cache_reported_as_never_built(tmp_path):
+    """Cache hérité d'avant #377 (forme plate : `index_par_acteur.json` seul,
+    sans `amendements.json`) : doit être rapporté « jamais construit », le
+    même verdict que celui du lecteur réel
+    (`candidate_profile._read_cached_amendements_agreges`, qui exige les deux
+    fichiers et ne relit jamais l'ancien format en mémoire). Sans ça, le
+    rapport annoncerait « construit » un index que la collecte ignore."""
+    cache_dir = tmp_path / "amendements_an"
+    legislature = _AMENDEMENTS_LEGISLATURES[0]
+    leg_dir = cache_dir / legislature
+    leg_dir.mkdir(parents=True, exist_ok=True)
+    (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
+    _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE))
+
+    soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)
+
+    assert any(legislature in w and "jamais construit" in w for w in soft)
 
 
 def test_report_amendements_freshness_stale_successful_build_flagged(tmp_path):

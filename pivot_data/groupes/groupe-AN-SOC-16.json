@@ -8,8 +8,8 @@
   "legislature": "16",
   "periode": {
     "debut": "2022-06-22",
-    "fin": "2024-06-09",
-    "actif": false
+    "fin": null,
+    "actif": true
   },
   "historique_noms": [],
   "membres": [
@@ -17,12 +17,12 @@
       "membre_id": "nosdeputes:jerome-guedj",
       "nom": "Jérôme Guedj",
       "debut_dans_groupe": "2022-06-22",
-      "fin_dans_groupe": "2024-06-09",
-      "actif": false
+      "fin_dans_groupe": null,
+      "actif": true
     }
   ],
   "effectif": {
-    "actuel": 0,
+    "actuel": 1,
     "min_historique": null,
     "max_historique": null
   },
@@ -15645,15 +15645,15 @@
       "nb_membres_actifs": 0,
       "poids_relatif": 1.0,
       "par_fonction": {
-        "membre": 1
+        "Membre": 1
       },
       "membres": [
         {
           "membre_id": "nosdeputes:jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2024-01-31",
-          "fin": "2024-02-01",
+          "fonction": "Membre",
+          "debut": "2025-05-06",
+          "fin": "2025-05-09",
           "actif": false
         }
       ]
@@ -15665,15 +15665,15 @@
       "nb_membres_actifs": 0,
       "poids_relatif": 1.0,
       "par_fonction": {
-        "membre": 1
+        "Membre": 1
       },
       "membres": [
         {
           "membre_id": "nosdeputes:jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-03-22",
-          "fin": "2023-03-23",
+          "fonction": "Membre",
+          "debut": "2026-05-19",
+          "fin": "2026-05-20",
           "actif": false
         }
       ]
@@ -15682,7 +15682,7 @@
       "categorie": "commission",
       "label": "Commission des affaires sociales",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "membre": 1
@@ -15694,7 +15694,7 @@
           "fonction": "membre",
           "debut": "2024-06-07",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15705,15 +15705,15 @@
       "nb_membres_actifs": 0,
       "poids_relatif": 1.0,
       "par_fonction": {
-        "membre": 1
+        "Membre": 1
       },
       "membres": [
         {
           "membre_id": "nosdeputes:jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2024-03-13",
-          "fin": "2024-03-31",
+          "fonction": "Membre",
+          "debut": "2026-02-03",
+          "fin": "2026-02-03",
           "actif": false
         }
       ]
@@ -15725,15 +15725,35 @@
       "nb_membres_actifs": 0,
       "poids_relatif": 1.0,
       "par_fonction": {
-        "membre": 1
+        "Membre": 1
       },
       "membres": [
         {
           "membre_id": "nosdeputes:jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2023-10-27",
-          "fin": "2023-10-28",
+          "fonction": "Membre",
+          "debut": "2026-01-08",
+          "fin": "2026-01-08",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-12-10",
+          "fin": "2025-12-11",
           "actif": false
         }
       ]
@@ -15765,15 +15785,15 @@
       "nb_membres_actifs": 0,
       "poids_relatif": 1.0,
       "par_fonction": {
-        "membre": 1
+        "Membre": 1
       },
       "membres": [
         {
           "membre_id": "nosdeputes:jerome-guedj",
           "nom": "Jérôme Guedj",
-          "fonction": "membre",
-          "debut": "2024-06-05",
-          "fin": "2024-06-07",
+          "fonction": "Membre",
+          "debut": "2026-06-06",
+          "fin": "2026-06-11",
           "actif": false
         }
       ]
@@ -15782,7 +15802,7 @@
       "categorie": "commission",
       "label": "Commission spéciale pour l'examen du projet de loi relatif à l'accompagnement des malades et de la fin de vie",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "membre": 1
@@ -15794,7 +15814,7 @@
           "fonction": "membre",
           "debut": "2024-04-10",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15899,10 +15919,290 @@
       ]
     },
     {
+      "categorie": "extra_parlementaire",
+      "label": "Comité de surveillance de la Caisse d'amortissement de la dette sociale",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre titulaire",
+          "debut": "2024-11-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Commission départementale de coopération intercommunale",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre titulaire",
+          "debut": "2024-12-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Commission régionale du fonds pour le développement de la vie associative",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre suppléant": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre suppléant",
+          "debut": "2024-12-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Conseil d'administration du Centre national d'art et de culture Georges Pompidou",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre titulaire",
+          "debut": "2024-11-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Conseil de surveillance du Centre hospitalier national d’ophtalmologie des Quinze-Vingt",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre titulaire",
+          "debut": "2024-11-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Algérie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2022-12-13",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Argentine",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Chili",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Danemark",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2024-06-04",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Espagne",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Israël",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Palestine",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Portugal",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2022-12-15",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Tunisie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2022-12-13",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "groupe_amitie",
       "label": "Groupe d'amitié france-algérie",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -15914,7 +16214,7 @@
           "fonction": "vice-président",
           "debut": "2022-12-17",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15922,7 +16222,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'amitié france-espagne",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -15934,7 +16234,7 @@
           "fonction": "vice-président",
           "debut": "2023-01-26",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15942,7 +16242,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'amitié france-israël",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -15954,7 +16254,7 @@
           "fonction": "vice-président",
           "debut": "2022-12-17",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15962,7 +16262,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'amitié france-portugal",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -15974,7 +16274,7 @@
           "fonction": "vice-président",
           "debut": "2022-12-16",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -15982,7 +16282,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'amitié france-tunisie",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -15994,7 +16294,7 @@
           "fonction": "vice-président",
           "debut": "2022-12-17",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -16002,7 +16302,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'études antisémitisme",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "vice-président": 1
@@ -16014,7 +16314,7 @@
           "fonction": "vice-président",
           "debut": "2023-02-21",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -16022,7 +16322,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'études fin de vie",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "membre": 1
@@ -16034,7 +16334,7 @@
           "fonction": "membre",
           "debut": "2023-01-29",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     },
@@ -16042,7 +16342,7 @@
       "categorie": "groupe_amitie",
       "label": "Groupe d'études longévité et adaptation de la société au vieillissement",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 1.0,
       "par_fonction": {
         "président": 1
@@ -16054,34 +16354,34 @@
           "fonction": "président",
           "debut": "2023-01-25",
           "fin": null,
-          "actif": false
+          "actif": true
         }
       ]
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 0,
-    "nb_adoptes": 0,
-    "nb_rejetes": 0,
-    "nb_irrecevables": 0,
-    "nb_retires_ou_tombes": 0,
-    "taux_adoption": null,
+    "nb_amendements": 8993,
+    "nb_adoptes": 581,
+    "nb_rejetes": 2354,
+    "nb_irrecevables": 1378,
+    "nb_retires_ou_tombes": 1878,
+    "taux_adoption": 0.0646,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
-        "nb_rejetes": 0,
-        "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "nb_amendements": 101,
+        "nb_adoptes": 29,
+        "nb_rejetes": 16,
+        "nb_irrecevables": 4,
+        "nb_retires_ou_tombes": 26,
+        "taux_adoption": 0.2871
       },
       "depute": {
-        "nb_amendements": 0,
-        "nb_adoptes": 0,
-        "nb_rejetes": 0,
-        "nb_irrecevables": 0,
-        "nb_retires_ou_tombes": 0,
-        "taux_adoption": null
+        "nb_amendements": 8892,
+        "nb_adoptes": 552,
+        "nb_rejetes": 2338,
+        "nb_irrecevables": 1374,
+        "nb_retires_ou_tombes": 1852,
+        "taux_adoption": 0.0621
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -16110,12 +16410,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-06T09:01:26+0000"
+      "synchro_le": "2026-08-17T17:23:37+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T09:30:11+0000",
+    "genere_le": "2026-08-17T18:00:43+0200",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:jerome-guedj"

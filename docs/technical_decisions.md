@@ -1,3 +1,449 @@
+<a id="scission-cache-ci-ecartee"></a>
+## Scission du cache CI `.cache` par sous-répertoire : écartée (#374, fermée non planifiée) (2026-08-17)
+
+**Contexte** : #374 proposait de scinder le cache GitHub Actions partagé
+`public-data-cache-an-*` (`path: .cache`) en deux entrées — amendements d'un
+côté, le reste de l'autre — au motif que chaque shard `extract-an` restaurait
+~915 Mio alors qu'il n'avait besoin que de `.cache/acteurs_an/` à l'étape 0
+(résolution d'identité), sur un budget de 5 min/shard.
+
+**Réévaluation après [[cache-amendements-forme-dedupliquee]] (#377) et
+[[nettoyage-archive-brute-amendements]] (#264)** :
+
+1. *L'argument principal a disparu.* #374 chiffrait le gaspillage sur les
+   « 3 archives amendements ≈ 1,22 Gio ». #264 supprime `amendements.zip`
+   dès l'index construit : ces archives n'entrent plus jamais dans le cache.
+2. *Les index ont fondu.* #377 : législature 16 de 4,67 Go à 211 Mo. Clé AN
+   mesurée après coup : 965 Mo au total, dont 673 Mo d'amendements (69 %) —
+   mais des données désormais réellement utiles, plus des archives jetables.
+3. *Défaut logique de la proposition elle-même* : `extract-an` **consomme**
+   les amendements (`build_profile` appelle `fetch_amendements_officiels`
+   pour tout `chambre == "deputes"`, et ce job traite des députés), tout
+   comme `extract-roster-groupes`. Les deux jobs qui restaurent cette clé ont
+   donc besoin des 673 Mo **dans le même job** : scinder en deux entrées
+   restaurées au même endroit ne supprime aucun octet, il les déplace.
+
+**Décision : fermée non planifiée.** Le bénéfice ne se matérialiserait que
+via une restauration *différée* (un second `actions/cache/restore` placé plus
+bas dans le job), pas via la simple scission proposée — et il resterait
+limité au seul chemin d'erreur (un shard gelé avant d'atteindre les
+amendements aurait perdu moins de temps). Coût/bénéfice défavorable face à un
+changement structurel sur 3 jobs, avec un risque de course sur l'écriture du
+cache partagé déjà documenté (#248 sous-issue 4). À rouvrir en visant la
+restauration différée si le budget de 5 min/shard redevient contraignant
+après la recalibration de #376.
+
+**Note connexe** : la législature 17 dispose d'un index construit avec succès
+(`derniere_construction_reussie: true`, 193 Mo) — les `IncompleteRead` sur
+son archive ne sont donc pas systématiques, contrairement à ce que laissaient
+penser les runs précédents et à ce qui avait été affirmé dans les entrées
+antérieures de ce fichier.
+
+<a id="amendements-zero-silencieux-acteur-ref"></a>
+## Zéro amendement silencieux quand l'acteurRef est introuvable (#265, fix 5) (2026-08-17)
+
+**Contexte** : re-check de #265 (« Zero amendments according to audit ») après
+la résolution de [[cache-amendements-forme-dedupliquee]] (#377),
+[[nettoyage-archive-brute-amendements]] (#264) et
+[[verification-bout-en-bout-legislatures-figees]] (#273). Le fix 5 de son
+investigation restait ouvert : déterminer si le zéro-sans-warning observé sur
+les profils `candidat_declare` était une absence réelle ou un second bug
+indépendant.
+
+**Réponse : les deux à la fois.**
+- *Absence réelle* pour `bruno-retailleau` (sénateur) et `jordan-bardella`
+  (MEP) : `fetch_amendements_officiels` n'est jamais appelée pour eux, l'appel
+  étant gardé par `if chambre == "deputes"` dans `build_profile`. Zéro
+  correct, aucun warning attendu.
+- *Bug indépendant réel* : quand `url_an_ou_senat` est absent ou non parsable,
+  `fetch_amendements_officiels` retournait `[]` **sans aucun warning** — un
+  zéro parfaitement silencieux, indiscernable d'une absence légitime.
+
+**Ce n'était pas théorique** : `marine-le-pen` et `jean-luc-melenchon` avaient
+tous deux `url_an_ou_senat: None` dans leur profil brut, écrit partiellement
+par un run interrompu par l'OOM ([[oom-lecture-amendements-par-candidat]]),
+accompagné du warning trompeur « aucun mandat français connu ». Leurs
+amendements ne survivaient que par la fusion additive avec des runs
+antérieurs — un `--no-merge`/`fresh_run=true` les aurait effacés en silence.
+Régénération après correctifs : `url_an_ou_senat` correctement renseigné
+(`.../OMC_PA720614`), 8 999 amendements, zéro warning.
+
+**Décision** : émettre un warning `WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES`
+quand aucun acteurRef ne peut être extrait. Sans risque de bruit pour les
+sénateurs/MEP puisqu'ils n'atteignent jamais ce chemin — le garde
+`chambre == "deputes"` en amont fait que cette situation est *toujours* une
+anomalie, jamais un cas nominal.
+
+**État des 5 fixes de #265 après ce re-check** : fix 1 (séquencement
+`needs: [extract-amendements-an]`) appliqué ; fix 2 caduc (alternative au
+fix 1, explicitement conditionnée à « si le parallélisme doit être
+préservé ») ; fix 3 (escalade en hard failure du quality gate) **non fait**,
+sorti dans l'issue dédiée #378 — arbitrage produit (bloquer le commit vs.
+laisser passer la panne CDN chronique de la législature 17), à trancher
+séparément du symptôme ; fix 4 résolu par #268/#273 ; fix 5 tranché et
+corrigé ici. #265 close : symptôme initial résolu, 32 279 amendements sur les
+candidats déclarés contre 0 à son ouverture.
+
+**Tests** : deux formes d'URL invalide (`None` et URL sans acteurRef)
+produisent bien un warning ; non-régression quand `warnings` n'est pas
+fourni par l'appelant (paramètre optionnel). Suite complète : 1153/1153.
+
+<a id="verification-bout-en-bout-legislatures-figees"></a>
+## Vérification de bout en bout des législatures figées 15/16 (#273, clôture de l'epic #268) (2026-08-17)
+
+**Contexte** : sous-issue 5/5 de #268, débloquée une fois #269/#270/#271/#272
+fermées. Vérification uniquement, aucun changement de code attendu — et
+aucun n'a été nécessaire.
+
+**Constat préalable, non prévu par l'issue** : la vérification n'a pu
+aboutir qu'après la résolution de deux problèmes découverts entre-temps, qui
+empêchaient toute collecte d'amendements et auraient fait conclure à tort à
+un échec de l'epic #268 — [[cache-amendements-forme-dedupliquee]] (#377,
+l'ancienne forme plate déclenchait l'OOM killer avant collecte) et
+[[nettoyage-archive-brute-amendements]] (#264). Avant eux, l'audit
+rapportait encore 97,92 % des profils à 0 amendement alors que les index
+figés étaient déjà committés et corrects.
+
+**Critère 1 — quality gate §3d** (run local réel, exit code 0) : les
+législatures 14, 15 et 16 sont rapportées **❄️ figé (dossier clos, non
+reconstruit)**, jamais **❌ jamais construit**. Seule la 17 est en « jamais
+construit » — législature active, `IncompleteRead` répétés sur le CDN
+`data.assemblee-nationale.fr`, problème réseau distinct et préexistant
+([[amendements-legislatures-figees]]), explicitement hors périmètre.
+
+**Critère 2 — non-régression du symptôme « zero amendments »** (profils
+régénérés avec le pipeline réel, aucun appel réseau pour 14/15/16) :
+
+| Profil | L14 | L15 | L16 | Total pivot |
+|---|---|---|---|---|
+| `damien-abad` | 2 896 | 5 989 | 1 589 | 10 474 |
+| `jerome-guedj` | 288 | 0 | 5 827 | 6 115 |
+
+Deux points élucidés au passage, tous deux préexistants et **non** des
+pertes de données — consignés pour éviter qu'une future vérification ne les
+prenne pour des régressions :
+1. Le champ `legislature` n'existe pas dans le schéma pivot des
+   `amendements[]` (contrairement à `textes_portes[]`, qui le porte) : la
+   ventilation par législature ci-dessus provient des profils bruts, pas des
+   pivots. Choix de conception de `schema_pivot.py`, jamais remis en cause.
+2. L'index contient 9 217 *références* pour Guedj en L16 alors que son
+   profil n'affiche que 5 827 amendements : ce sont 5 827 numéros distincts,
+   dédupliqués par `merge_profile._amendement_key` sur `(numero,
+   texte_vise, date)`. Un même amendement peut légitimement être référencé
+   plusieurs fois pour un même élu (rôles de signature multiples).
+
+**Critère 3** : #265 commentée pour signaler la résolution de la piste
+légis 15/16 (fix 4 de son investigation), sans clore l'issue — ses fixes
+1/2/3/5 restent ouverts, hors périmètre de #268.
+
+**Reste attendu** : la section 3c (couverture amendements) affiche encore 39
+avertissements « collecte en échec » — ce sont des warnings *hérités* dans
+les pivots non régénérés depuis les runs cassés par l'OOM, pas un défaut
+actuel du pipeline. Ils se purgent d'eux-mêmes à la régénération
+(`merge_profile._prune_stale_warnings` retire ce warning dès qu'un profil
+porte des amendements), ce que confirment les deux profils régénérés
+ci-dessus : zéro warning amendements pour eux.
+
+**Tests** : suites demandées par l'issue au vert (`test_candidate_profile.py`,
+`test_quality_gate_amendements.py`, `test_build_amendements_index.py`, 182
+tests) ; suite complète 1151/1151.
+
+<a id="nettoyage-archive-brute-amendements"></a>
+## Suppression de l'archive brute `amendements.zip` après construction de l'index (#264) (2026-08-17)
+
+**Contexte** : `_download_and_build_amendement_index` téléchargeait
+`amendements.zip` (283-618 Mo selon la législature), le parsait, puis ne le
+supprimait jamais — ni après succès, ni après échec. Constaté sur le run #32
+de `generate-data.yml` : l'artifact `amendements-index-an` pesait 328 Mio
+alors que l'index utile ne représente que quelques Mo, la quasi-totalité
+étant le zip brut conservé sans raison.
+
+**Décision** : `try`/`finally` autour du téléchargement et du parsing, avec
+`zip_path.unlink(missing_ok=True)` en sortie — dans **tous** les cas (succès,
+échec réseau, `BadZipFile`). Justification du nettoyage même en échec : le
+fichier n'est jamais relu ensuite, ni par la lecture cache-only
+(`_read_cached_amendements_acteur` ne lit que l'index), ni pour reprendre un
+téléchargement entre deux tentatives (`_download_amendements_zip` réécrit
+toujours depuis zéro, en `wb`) — un fichier partiel ou invalide n'a donc pas
+plus d'utilité qu'une archive correctement parsée. Suppression best-effort
+(`except OSError: pass`), comme l'écriture du cache elle-même : un échec de
+nettoyage ne doit jamais masquer l'erreur métier en cours de propagation.
+
+**Portée** : `index_path` n'est jamais touché par ce nettoyage — la
+préservation d'un index existant en cas d'échec ([[amendements-index-quality-gate-fraicheur]],
+#253) et le cache d'échec inter-jobs (#246) sont inchangés, ce que la suite
+de tests existante vérifie toujours.
+
+**Mesure** (cache local, après nettoyage des zips résiduels) : 1,6 Go →
+480 Mo, soit **1,06 Go de zips morts** supprimés (99 + 619 + 347 Mo pour les
+législatures 14/15/16). Ce gain se cumule avec celui de
+[[cache-amendements-forme-dedupliquee]] : le cache amendements complet passe
+de 7,9 Go (forme plate + zips) à 480 Mo.
+
+**Hors périmètre** (repris tel quel de l'issue) : les autres archives zip du
+dépôt (`dossiers.zip`, `acteurs.zip`, `syseron.xml.zip`...) ne sont pas
+traitées ici — celles-ci sont, à l'inverse, réellement relues d'un run à
+l'autre comme cache de contenu, la comparaison ne tient donc pas telle
+quelle et mériterait sa propre évaluation.
+
+**Tests** : succès → zip absent et index présent ; échec de téléchargement →
+pas de fichier partiel résiduel ; `BadZipFile` → zip supprimé malgré
+l'échec. Les 3 tests ont été vérifiés comme réellement discriminants (ils
+échouent tous les 3 si l'on neutralise le `finally`). Suite complète :
+1151/1151.
+
+<a id="cache-amendements-forme-dedupliquee"></a>
+## Cache amendements stocké et lu sous forme dédupliquée (#377) (2026-08-17)
+
+**Contexte** : correctif de l'OOM diagnostiqué dans
+[[oom-lecture-amendements-par-candidat]]. Le mécanisme de déduplication
+existait déjà (`_aggregate_amendements_index`, écrit pour committer les
+législatures figées sous la limite GitHub de 100 Mo par blob) mais était
+défait juste avant l'usage qui posait problème : `_load_frozen_amendement_index`
+appelait `_expand_aggregated_amendements_index` pour matérialiser le cache
+sous forme plate, « pour que le reste du pipeline n'ait pas à distinguer les
+deux origines ». C'est ce compromis qui coûtait un facteur ~21.
+
+**Décision** : le cache disque (`AMENDEMENTS_CACHE_DIR/<legislature>/`)
+stocke désormais la MEME forme dédupliquée que le fallback committé, en clair
+plutôt que gzippée — `amendements.json` (chaque amendement une fois, clé
+`numero`) + `index_par_acteur.json` (acteurRef -> `[{numero,
+role_signataire}]`). Plus aucune expansion vers la forme plate n'a lieu :
+- Lecture : `_read_cached_amendements_agreges` (le couple) et
+  `_read_cached_amendements_acteur(legislature, acteur_ref)` qui ne
+  matérialise que les entrées de CET acteur. Remplace
+  `_read_cached_amendement_index`, qui renvoyait l'index entier expansé.
+- Écriture : `_write_cached_amendements_agreges`, partagée par le chemin
+  réseau (`_download_and_build_amendement_index`, qui agrège désormais avant
+  d'écrire) et le fallback figé.
+- `_expand_aggregated_amendements_index` n'est plus utilisée en production
+  (conservée : inverse exact, utile aux tests de round-trip).
+
+**Migration automatique** : les deux fichiers sont exigés ensemble pour
+qu'un cache soit valide. Un cache écrit avant #377 n'a qu'un
+`index_par_acteur.json` plat — il est donc indiscernable d'un cache absent
+(`_read_cached_amendements_acteur` renvoie `None`, `amendements_index_deja_figee`
+renvoie `False`, section 3d du quality gate rapporte « jamais construit »),
+ce qui force sa reconstruction au format compact au lieu de sa relecture en
+mémoire. L'écriture écrase le fichier plat au passage, libérant les Go qu'il
+occupait. Le rapport du quality gate a été aligné sur ce même verdict, sinon
+il aurait annoncé « construit » un index que la collecte ignore.
+
+**Mesures (machine locale, 7,6 Gio de RAM)** :
+
+| Indicateur | Avant | Après |
+|---|---|---|
+| Cache disque (législatures 14+15+16, hors zips) | 7,9 Go | **480 Mo** |
+| Législature 16 seule | 4,67 Go | 211 Mo |
+| Pic RSS, 7 candidats × 3 législatures | 6,83 Go (**OOM**) | **1,40 Go** |
+
+**Effet fonctionnel, au-delà de la mémoire** : la collecte d'amendements
+fonctionne à nouveau. Avant ce correctif, l'audit rapportait 97,92 % des
+profils à 0 amendement (seul Wauquiez en avait) — conséquence directe des
+OOM qui tuaient le job avant collecte. Après : Mélenchon 18 721, Guedj
+9 516, Le Pen 9 917, Wauquiez 2 702, Philippe 1 966, Attal 343 (vérifié via
+`fetch_amendements_officiels` sur le cache migré). À rapprocher de #265
+(« Zero amendments according to audit »), qui pourrait se refermer en
+grande partie de lui-même sur un prochain run complet.
+
+**Reste ouvert** :
+- La législature 17 (active, non figée) n'a toujours pas d'index : son
+  téléchargement échoue en `IncompleteRead` côté CDN AN, problème réseau
+  distinct et préexistant ([[amendements-legislatures-figees]]).
+- Coût CPU : ~8,6 s par candidat pour relire les 3 index compacts (480 Mo de
+  JSON reparsés à chaque candidat). Acceptable au volume actuel, mais à
+  reconsidérer avant un run à pleine échelle (#376) — une mémoïsation reste
+  écartée pour l'instant (l'expansion Python des `{numero, role_signataire}`
+  fait passer 480 Mo de JSON à ~3-4 Go résidents si les 3 législatures sont
+  gardées simultanément, cf. le pic de 1,40 Go pour une seule à la fois).
+- Le pic mémoire lors de la *construction* initiale (chemin réseau :
+  `_parse_amendements_zip` produit la forme plate avant agrégation) n'est
+  pas traité ici — il ne concerne que le job CI dédié, sur la seule
+  législature 17.
+
+**Tests** : `_read_cached_amendements_acteur` (résolution des références,
+acteur inconnu → `[]` vs cache absent → `None`, référence orpheline ignorée,
+cache hérité plat traité comme absent, cache corrompu), migration du fallback
+figé sans expansion, `amendements_index_deja_figee` sur cache hérité, et
+alignement du rapport 3d du quality gate. Suite complète : 1148/1148.
+
+<a id="parallele-oom-local-runner-ci"></a>
+## Parallèle RAM entre l'exécution locale et les runners GitHub Actions hébergés, diagnostic ajouté (2026-08-17)
+
+**Contexte** : suite à [[oom-lecture-amendements-par-candidat]] (ci-dessous) —
+plusieurs OOM réels confirmés en local (`journalctl -k`) sur `extract-an`/
+`extract-roster-groupes`, cause identifiée précisément (rechargement complet
+en mémoire de l'index amendements d'une législature, jusqu'à 4,35 Gio pour
+la 16e, par candidat). Question posée : ce même mécanisme peut-il expliquer
+(au moins une partie) des incidents `shutdown signal` observés en CI depuis
+le 12/08 (#217 et suivants), jusqu'ici attribués à une « préemption infra
+transitoire, indépendante » ?
+
+**Constat — le parallèle est plausible et n'a jamais été testé** :
+1. Les runners GitHub Actions hébergés standard (`ubuntu-latest`, 2 vCPU)
+   ont **~7 Gio de RAM** — spec publiée et stable de longue date, le même
+   ordre de grandeur que la machine locale où l'OOM a été confirmé
+   (7,6 Gio). Charger la seule législature 16 (4,35 Gio mesurés) y est donc
+   tout aussi risqué qu'en local.
+2. Le code concerné (`fetch_amendements_officiels` →
+   `_read_cached_amendement_index`) tourne à l'identique en CI, sans
+   protection supplémentaire : `extract-an` est shardé par candidat (#344)
+   mais un **seul** candidat suffit à charger la législature 16 en entier ;
+   `extract-roster-groupes` n'est pas shardé du tout et traite plusieurs
+   membres dans le même process — exposition au moins aussi importante
+   qu'en local, voire supérieure une fois #376 (passage à pleine échelle)
+   réalisé.
+3. **Point décisif** : GitHub Actions n'expose jamais les diagnostics
+   kernel (`journalctl -k`/`dmesg`) dans les logs de job. Si le runner
+   hébergé se fait tuer par OOM, le seul symptôme visible côté logs serait
+   `The runner has received a shutdown signal` — **exactement** la
+   signature déjà chassée dans ce fichier depuis le 12/08
+   ([[verification-billing-actions]], [[resilience-generate-data-shutdown-signal]]).
+   La conclusion du 12/08 (« préemption infra, indépendante ») a écarté
+   facturation/quota mais n'a jamais mesuré la mémoire réelle, faute
+   d'accès — absence de preuve d'OOM dans les logs, pas preuve d'absence
+   d'OOM.
+
+**Nuance** : les deux incidents CI diagnostiqués précisément cette session
+(runs #45/#47, voir [[resolution-an-prenom-compose-et-gel-runner-etape0]])
+se sont produits à l'étape de résolution d'identité (avant la collecte
+d'amendements dans `build_profile`), pas pendant `fetch_amendements_officiels`
+— ce parallèle n'explique donc pas *ces* deux incidents précis. Mais
+l'historique plus ancien du projet (#185/#199/#220/#225/#239/#241/#246,
+classés « réseau uniquement » dans [[amendements-index-budget-ci-cache-granularite]])
+n'a jamais pu être réévalué à la lumière de cette hypothèse, faute d'avoir
+identifié à l'époque que la collecte d'amendements par candidat pouvait à
+elle seule approcher la RAM totale d'un runner standard.
+
+**Décision — ajout d'un diagnostic, pas de conclusion prématurée** :
+plutôt que de réattribuer rétroactivement les incidents passés sans preuve,
+deux steps de diagnostic ajoutés à `extract-an` et `extract-roster-groupes`
+(`.github/workflows/generate-data.yml`), à évaluer sur le prochain run réel :
+- `free -h` en tout début de job (avant toute charge) — confirme/infirme la
+  RAM totale réellement disponible sur ce runner.
+- `/usr/bin/time -v` autour de l'appel Python principal de chaque job — trace
+  le pic de RSS atteint dans les logs, si le process Python se termine
+  (normalement ou tué) sans que le runner entier ne disparaisse avec lui.
+
+**Limite connue et acceptée** : si c'est bien le runner entier qui se fait
+tuer par OOM (pas seulement le process Python), rien ne s'exécute après —
+même angle mort déjà documenté que `if: always()` (#228). `/usr/bin/time -v`
+ne capture donc que le cas où le process Python meurt seul (OOM ciblé sur lui,
+ou `MemoryError` Python) sans emporter le runner — mais c'est déjà mieux que
+l'absence totale de signal actuelle, et `free -h` seul confirme au moins la
+RAM de départ sans dépendre de ce cas.
+
+<a id="oom-lecture-amendements-par-candidat"></a>
+## OOM persistant : lecture per-candidat de l'index amendements, tentative de mémoïsation revertée (2026-08-17)
+
+**Contexte** : après [[oom-reconstruction-amendements-figees]] (ci-dessous),
+`build_amendements_index.py` ne rechargeait plus les index déjà figés — mais
+l'OOM a persisté sur un run local suivant (`extract-an` puis
+`extract-roster-groupes` tués par le kernel, confirmé `journalctl -k`,
+anon-rss 4,2 à 5,7 Gio). Cause différente : `fetch_amendements_officiels`
+(appelée une fois par candidat) boucle sur les 4 législatures de
+`AN_AMENDEMENTS_PATH` et appelle `_read_cached_amendement_index` à chaque
+fois — cette fonction, elle, n'a **jamais** été protégée par la correction
+précédente (qui ne touchait que `build_amendements_index.py`) : elle
+recharge le fichier disque en JSON pur Python à **chaque candidat**, pas
+seulement au démarrage du job.
+
+**Tentative #1 (revertée)** : `@lru_cache(maxsize=None)` sur
+`_read_cached_amendement_index`, pour ne lire chaque législature qu'une
+seule fois par process. Mesuré après coup : tailles réelles sur disque des 3
+index figés — `14` 1,46 Gio, `15` 2,04 Gio, `16` 4,35 Gio (`ls -la
+.cache/amendements_an/*/index_par_acteur.json`), soit **7,85 Gio cumulés**
+rien qu'en JSON brut sur disque (davantage une fois désérialisé en objets
+Python — mesuré ~6,8 Gio de RSS rien que pour boucler sur 7 candidats
+factices touchant les 4 législatures). Un cache non borné garde les 3
+simultanément résidents pour le reste du run — sur une machine à 7,6 Gio de
+RAM totale, c'est **pire** que le comportement d'origine (un seul index à la
+fois, libéré entre deux candidats, jamais plus d'~4,35 Gio transitoire).
+Confirmé par de nouveaux kills OOM survenus *après* application du fix.
+**Reverté** : `_read_cached_amendement_index` reste sans mémoïsation.
+
+**Non résolu** : le comportement d'origine (rechargement complet à chaque
+candidat) reste risqué sur une machine dont la RAM est du même ordre de
+grandeur que la plus grosse législature figée (16 : 4,35 Gio) — chaque appel
+pour cette législature s'approche dangereusement du plafond physique, avec
+ou sans mémoïsation. Le correctif réel nécessite d'éviter de matérialiser
+l'index entier d'une législature pour n'en lire qu'un seul acteur (ex.
+restructurer le cache disque en un fichier par acteurRef plutôt qu'un seul
+gros `index_par_acteur.json` par législature) — changement de format
+cascadant (écriture réseau, fallback figé, quality gate section 3d, script
+CI dédié), hors périmètre d'une correction ponctuelle. Voir l'issue de suivi
+associée pour le chantier complet.
+
+**Différence CI vs local** : ce risque est spécifique à une exécution locale
+« tout-en-un-process » (`scripts/generate_data_local.sh`, qui traite tous
+les candidats dans le même process Python) — en CI, `extract-an` est déjà
+shardé en matrix par candidat (#344), donc chaque shard ne charge chaque
+législature qu'une fois avant que le runner (et sa mémoire) ne soit
+recyclé ; `extract-roster-groupes`, lui, n'est pas shardé et reste exposé au
+même risque une fois le volume de candidats augmenté (voir #376).
+
+**Tests** : le test de mémoïsation ajouté puis reverté a été retiré avec le
+code qu'il testait (`tests/test_candidate_profile.py`). Suite complète :
+1143/1143.
+
+<a id="oom-reconstruction-amendements-figees"></a>
+## OOM lors de la relecture d'un index amendements figé déjà en cache (exécution locale) (2026-08-17)
+
+**Contexte** : exécution locale via `scripts/generate_data_local.sh`.
+Symptôme rapporté : la section 3d de `check_quality_gate.py` signale la
+législature 15 comme « jamais construit », alors qu'elle est bien dans
+`AN_AMENDEMENTS_LEGISLATURES_FIGEES` et que le fallback committé
+(`raw_data/amendements_an_figes/15/`) est complet.
+
+**Diagnostic** (log complet relu, `logs/generate_data_local_*.log`) : le
+process `python3 src/build_amendements_index.py` s'arrête net avec
+`Processus arrêté` juste après avoir commencé la législature 16 — confirmé
+via `journalctl -k` comme un **OOM kill** du noyau (`Out of memory: Killed
+process ... python3 ... anon-rss:6061768kB` sur une machine à 7,6 Gio de
+RAM). Même symptôme un peu plus tard sur `generate_all_profiles.py`, et sur
+le process VS Code lui-même (`Killed process ... (code)`) — la fermeture de
+fenêtre perçue par l'utilisatrice n'était pas volontaire, c'est le kernel qui
+a tué VS Code par pression mémoire.
+
+Cause : `_download_and_build_amendement_index` (candidate_profile.py), sur
+cache-hit, `json.load()` **l'intégralité** de `index_par_acteur.json` — y
+compris pour une législature figée déjà validée, où ce rechargement ne sert
+qu'à re-confirmer une donnée qui, par construction, ne change plus jamais.
+Pour la législature 16, ce fichier pèse **4,7 Gio en clair** (forme plate
+non dédupliquée — voir [[amendements-legislatures-figees]] pour le choix de
+committer sous forme compressée/dédupliquée puis de l'étendre localement) :
+le charger en JSON pur Python consomme largement plus que sa taille sur
+disque, jusqu'à épuiser la RAM disponible. `build_amendements_index.py`
+itère les 4 législatures de `AN_AMENDEMENTS_PATH` dans l'ordre `17, 16, 15,
+14` : le kill sur la 16 empêche donc la 15 d'être ne serait-ce que tentée à
+chaque exécution — pas un incident isolé, un blocage systématique tant que
+le cache de la 16 reste présent sur cette machine.
+
+**Décision** : nouvelle fonction `amendements_index_deja_figee(legislature)`
+(candidate_profile.py) — vérifie la présence de `index_par_acteur.json` +
+`fraicheur.json["figee"] is True` en ne lisant **que** `fraicheur.json`
+(quelques dizaines d'octets), sans jamais toucher au gros index.
+`build_amendements_index.py` l'appelle en tête de boucle et saute
+entièrement une législature déjà figée en cache, au lieu de la refaire
+passer par `_download_and_build_amendement_index`. Mesuré après fix : pic
+mémoire de la commande complète 42 Mio (contre ~6 Gio avant, OOM).
+
+**Non touché** : `_download_and_build_amendement_index` elle-même garde son
+comportement (cache-hit = relecture complète) — c'est le seul appelant
+(`build_amendements_index.py`, confirmé par grep, seul point d'entrée réseau
+amendements depuis #252) qui évite maintenant de l'invoquer inutilement pour
+une législature figée, plutôt que de complexifier la fonction partagée.
+
+**Tests** : 4 nouveaux tests unitaires pour `amendements_index_deja_figee`
+(matérialisé+figé → True, législature active même si le cache y ressemble →
+False, non matérialisé → False, JSON invalide dans `index_par_acteur.json`
+n'affecte pas le résultat car jamais lu). `test_build_amendements_index.py` :
+les 5 tests existants patchent désormais aussi
+`amendements_index_deja_figee` (sinon ils dépendaient silencieusement de
+l'état réel du cache disque de la machine qui les exécute) + 1 nouveau test
+vérifiant qu'une législature figée est sautée sans appeler la fonction
+lourde. Suite complète : 1143/1143.
+
 <a id="resolution-an-prenom-compose-et-gel-runner-etape0"></a>
 ## Bug de résolution AN pour les prénoms composés, et gel runner déplacé sur l'étape 0 (run #47) (2026-08-17)
 
@@ -583,6 +1029,59 @@ nosdeputes.fr. Premier run (20 requêtes/groupe, délai 0,3s) : succès complet
 des deux côtés, aucun gel — attendu, le phénomène étant probabiliste ;
 plusieurs runs par palier de volume restent nécessaires avant de pouvoir
 conclure.
+
+<a id="freshness-timestamps-groupes-gouvernements-partis"></a>
+## Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)
+
+**Contexte** : [[pivot-freshness-timestamps-stables]] (ci-dessous) corrigeait
+le motif pour les seuls pivots candidats, en notant que
+`group_profile.py`/`gouvernement_profile.py`/`parti_profile.py` étaient
+« probablement » affectés du même défaut, mais sans repro confirmé — donc
+laissé en ROADMAP plutôt que corrigé à l'aveugle.
+
+**Repro obtenu** : deux exécutions successives de
+`generate_gouvernement_profiles.py` sans aucune modification des données
+sources donnent un contenu strictement identique (hors `meta`) mais un
+`meta.genere_le` qui avance (`17:36:23` → `18:13:05`). Le motif était donc
+bien présent, et sur les trois familles de documents.
+
+**Décision** : réutiliser `preserve_stable_freshness_timestamps` telle quelle
+plutôt que d'écrire une variante par script — les quatre types de documents
+partagent exactement la même forme de fraîcheur (`meta.genere_le` +
+`sources[].synchro_le`), vérifié sur les fichiers réellement produits.
+Appliquée au point d'écriture de chacun : `group_profile.generate_groupe_profile_from_roster`,
+`generate_gouvernement_profiles.generate_all`, `parti_profile` (boucle
+d'écriture). Helper partagé `load_existing_document` ajouté dans
+`merge_profile.py` pour relire le document précédent (illisible = traité
+comme absent : la seule conséquence est un re-tamponnage, jamais une perte —
+le document régénéré est écrit dans tous les cas).
+
+**Correctif nécessaire à la généralisation — appariement des sources** :
+la fonction indexait les anciennes sources par `type` seul. Ça suffisait pour
+un pivot candidat (quelques sources, chacune d'un type distinct), mais pas
+ici : un profil de groupe porte une source PAR MEMBRE, donc plusieurs
+dizaines d'entrées de même `type` (mesuré : 63 sources pour 3 types distincts
+sur `groupe-AN-REN-16`). Une clé sur le seul `type` les aurait toutes
+écrasées sur la dernière, attribuant à chaque membre l'horodatage d'un autre.
+Clé passée à `(type, url)`. L'appariement reste exact par construction :
+`url` fait partie de l'empreinte comparée, donc si les empreintes sont
+égales, les couples `(type, url)` le sont aussi.
+
+**Mesure** : re-génération des trois familles à données inchangées —
+**0 fichier modifié sur 27** (7 groupes + 10 partis + 10 gouvernements),
+contre 27 avant le correctif. Vérifié aussi octet-pour-octet sur
+`gouvernement-BAYROU.json`.
+
+**Effet attendu au-delà de la traçabilité** : les commits automatiques du
+pipeline ne porteront plus de diff sur ces 27 fichiers quand rien n'a changé,
+ce qui rend enfin lisible la question « qu'est-ce qui a réellement bougé ce
+run ? » — motif observé en pratique (123 fichiers modifiés pour zéro
+changement de contenu, cf. l'entrée ci-dessous).
+
+**Tests** : appariement `(type, url)` sur un document à sources multiples de
+même type (test vérifié comme discriminant : il échoue si l'on revient à une
+clé sur `type` seul), et `load_existing_document` (absent, corrompu, JSON
+non-objet, cas nominal). Suite complète : 1155/1155.
 
 <a id="pivot-freshness-timestamps-stables"></a>
 ## `genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)

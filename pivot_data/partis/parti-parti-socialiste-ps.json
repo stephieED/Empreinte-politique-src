@@ -925,12 +925,12 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-06T09:01:26+0000"
+      "synchro_le": "2026-08-17T17:23:37+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T09:30:09+0000",
+    "genere_le": "2026-08-17T17:36:15+0200",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 1,

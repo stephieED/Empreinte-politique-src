@@ -384,3 +384,31 @@ def test_main_out_dir_est_cree_si_absent(tmp_path):
 
     assert code == 0
     assert output_json.exists()
+
+
+def test_main_output_dir_ecrit_json_et_markdown_horodates(tmp_path):
+    code = main([
+        "--profiles-dir", str(FIXTURES_PROFILS_DIR),
+        "--groupes-dir", str(FIXTURES_GROUPES_DIR),
+        "--gouvernements-dir", str(FIXTURES_GOUVERNEMENTS_DIR),
+        "--output-dir", str(tmp_path),
+    ])
+
+    assert code == 0
+    json_files = list(tmp_path.glob("audit_pipeline_*.json"))
+    md_files = list(tmp_path.glob("audit_pipeline_*.md"))
+    assert len(json_files) == 1
+    assert len(md_files) == 1
+
+
+def test_main_output_dir_incompatible_avec_output_json(tmp_path):
+    code = main([
+        "--profiles-dir", str(FIXTURES_PROFILS_DIR),
+        "--groupes-dir", str(FIXTURES_GROUPES_DIR),
+        "--gouvernements-dir", str(FIXTURES_GOUVERNEMENTS_DIR),
+        "--output-dir", str(tmp_path),
+        "--output-json", str(tmp_path / "rapport.json"),
+    ])
+
+    assert code == 1
+    assert list(tmp_path.glob("*.json")) == []

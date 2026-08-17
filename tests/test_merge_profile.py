@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from merge_profile import (
     clean_stale_textes_portes,
+    load_existing_document,
     merge_lists_by_key,
     merge_pivot_profile,
     merge_raw_profile,
@@ -551,3 +552,56 @@ def test_preserve_stable_freshness_timestamps_laisse_avancer_si_contenu_change()
 def test_preserve_stable_freshness_timestamps_sans_ancien_pivot():
     new = _base_pivot({"genere_le": "2026-08-16T06:50:38+0000"})
     assert preserve_stable_freshness_timestamps(None, new) is new
+
+
+def test_preserve_stable_freshness_timestamps_apparie_les_sources_par_type_et_url():
+    """#343, extension aux profils groupe/gouvernement/parti : ces documents
+    portent une source PAR MEMBRE, donc plusieurs dizaines d'entrées partageant
+    le même `type` (mesuré : 63 sources pour 3 types distincts sur un groupe).
+    Un appariement sur le seul `type` les écraserait toutes sur la dernière —
+    chaque source doit retrouver SON horodatage, pas celui d'une autre."""
+    def _doc(genere_le, synchros):
+        return {
+            "schema_version": "1",
+            "type_document": "groupe",
+            "meta": {"genere_le": genere_le},
+            "sources": [
+                {"type": "nosdeputes", "url": f"u{i}", "synchro_le": s}
+                for i, s in enumerate(synchros)
+            ],
+        }
+
+    old = _doc("2026-08-13T00:00:00+0000", ["2026-08-01T00:00:00+0000",
+                                            "2026-08-02T00:00:00+0000",
+                                            "2026-08-03T00:00:00+0000"])
+    new = _doc("2026-08-17T00:00:00+0000", ["2026-08-17T00:00:00+0000",
+                                            "2026-08-17T00:00:00+0000",
+                                            "2026-08-17T00:00:00+0000"])
+
+    result = preserve_stable_freshness_timestamps(old, new)
+
+    assert result["meta"]["genere_le"] == "2026-08-13T00:00:00+0000"
+    assert [s["synchro_le"] for s in result["sources"]] == [
+        "2026-08-01T00:00:00+0000",
+        "2026-08-02T00:00:00+0000",
+        "2026-08-03T00:00:00+0000",
+    ], "Chaque source doit récupérer son propre horodatage, apparié par (type, url)"
+
+
+def test_load_existing_document_absent_ou_illisible_retourne_none(tmp_path):
+    """Un document absent ou corrompu est traité comme absent : la seule
+    conséquence est un re-tamponnage des horodatages, jamais une perte de
+    donnée (le document régénéré est écrit dans tous les cas)."""
+    assert load_existing_document(tmp_path / "n-existe-pas.json") is None
+
+    corrompu = tmp_path / "corrompu.json"
+    corrompu.write_text("{ceci n'est pas du JSON", encoding="utf-8")
+    assert load_existing_document(corrompu) is None
+
+    liste = tmp_path / "liste.json"
+    liste.write_text("[1, 2, 3]", encoding="utf-8")
+    assert load_existing_document(liste) is None, "Un JSON non-objet n'est pas un document exploitable"
+
+    valide = tmp_path / "valide.json"
+    valide.write_text('{"meta": {"genere_le": "2026-08-13T00:00:00+0000"}}', encoding="utf-8")
+    assert load_existing_document(valide) == {"meta": {"genere_le": "2026-08-13T00:00:00+0000"}}
