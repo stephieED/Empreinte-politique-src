@@ -1054,6 +1054,15 @@ jobs:
           # vécu sur le run #29 (rejeté par un commit doc poussé pendant le run).
           # Rebase + retry au lieu d'échouer tout le job sur une donnée déjà
           # committée localement.
+          #
+          # `set +e` sur la portée de la boucle (#389) : ce step s'exécute avec
+          # `bash -e {0}` (aucun `defaults: shell` déclaré dans ce workflow), donc
+          # le premier `git rebase` en conflit terminait immédiatement le step —
+          # les tentatives 2 et 3 ne s'exécutaient jamais, et le message d'erreur
+          # final n'était jamais atteint. Constaté sur le run #266 : une seule
+          # ligne « tentative 1/3 » dans le log, puis sortie en échec.
+          set +e
+          push_status=""
           for attempt in 1 2 3; do
             if git push; then
               echo "Push réussi (tentative ${attempt}/3)."
@@ -1061,7 +1070,22 @@ jobs:
             fi
             echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
             git fetch origin main
-            git rebase --autostash origin/main
+            if ! git rebase --autostash origin/main; then
+              # Un conflit de rebase ne se résoudra jamais en rebouclant : les
+              # deux côtés ont réécrit les mêmes fichiers générés (cas du run
+              # #266, cause traitée dans #390). On sort tout de suite, après
+              # avoir rendu le dépôt propre — un rebase inachevé bloquerait
+              # toute logique ajoutée ensuite.
+              git rebase --abort || true
+              push_status="conflit"
+              break
+            fi
           done
-          echo "::error::Échec du push après 3 tentatives (rebase inclus) — intervention manuelle requise."
+          set -e
+
+          if [ "$push_status" = "conflit" ]; then
+            echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
+          else
+            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur main. Intervention manuelle requise."
+          fi
           exit 1
