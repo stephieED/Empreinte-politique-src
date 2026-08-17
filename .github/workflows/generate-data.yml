@@ -710,10 +710,76 @@ jobs:
   # Le découpage en shards (8 shards ≈ 94 membres ≈ 8 min chacun) traite les
   # deux à la fois. Voir docs/technical_decisions.md#budget-roster-mesure.
   # ──────────────────────────────────────────────────────────────────────────
-  extract-roster-groupes:
-    needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack]
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB PRÉPARATOIRE — Calcul du matrix de shards roster (#394)
+  #
+  # Le nombre de shards dépend de roster_extraction_limit :
+  #   - limite > 0 (rollout progressif, cas par défaut) : UN seul shard. Le
+  #     coût est alors faible (~1,7 min à 20) et découper n'apporterait rien,
+  #     tout en changeant le sens de la limite (elle s'applique par appel de
+  #     generate_all_profiles.py, donc N shards multiplieraient le volume).
+  #   - limite = 0 (run complet, ~752 membres, ~63 min) : ROSTER_SHARDS
+  #     tranches. C'est le seul cas où le découpage est nécessaire — un run
+  #     d'un seul tenant dépasserait le timeout, et une préemption ferait
+  #     perdre l'intégralité du job (l'upload en if: always() ne s'exécute pas
+  #     sur shutdown signal, angle mort #228, et le checkpoint --resume est
+  #     gitignoré donc inutile entre runs).
+  #
+  # Ce job ne lit pas raw_data/roster_candidats.json : celui-ci est régénéré
+  # dans chaque shard (2 appels réseau, mutualisés par (chambre, législature)).
+  # Le partitionnement se fait par position modulo côté Python (--shard I/N,
+  # voir _select_shard), ce qui ne demande pas de connaître l'effectif ici.
+  # ──────────────────────────────────────────────────────────────────────────
+  prepare-roster-matrix:
     runs-on: ubuntu-latest
-    timeout-minutes: 60   # mesuré : couvre ~300 membres (voir commentaire ci-dessus)
+    timeout-minutes: 5
+    outputs:
+      shards: ${{ steps.shards.outputs.shards }}
+      shard_total: ${{ steps.shards.outputs.shard_total }}
+
+    steps:
+      - name: Liste des shards roster
+        id: shards
+        env:
+          ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
+          # Nombre de tranches pour un run complet. 8 -> ~94 membres/shard,
+          # ~8 min chacun (mesuré : 2,3 s + 5,05 s x N). Modifier ici suffit :
+          # le total est propagé au flag --shard, jamais codé en dur ailleurs.
+          ROSTER_SHARDS: "8"
+        run: |
+          set -euo pipefail
+          if [[ -z "${ROSTER_LIMIT}" || "${ROSTER_LIMIT}" == "0" ]]; then
+            TOTAL="${ROSTER_SHARDS}"
+            echo "Run complet (limite ${ROSTER_LIMIT:-0}) : ${TOTAL} shards."
+          else
+            TOTAL=1
+            echo "Rollout progressif (limite ${ROSTER_LIMIT}) : 1 seul shard."
+          fi
+          SHARDS=$(TOTAL="$TOTAL" python3 -c "import json,os; print(json.dumps(list(range(int(os.environ['TOTAL'])))))")
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "shard_total=${TOTAL}" >> "$GITHUB_OUTPUT"
+
+  extract-roster-groupes:
+    needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack, prepare-roster-matrix]
+    name: extract-roster-groupes (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    # 60 min PAR SHARD. Mesuré (#376/#392) : 2,3 s + 5,05 s x N membres.
+    #   - 1 shard, limite 20  -> ~1,7 min
+    #   - 8 shards, run complet -> ~94 membres/shard -> ~8 min
+    # La marge reste donc très large dans les deux configurations.
+    timeout-minutes: 60
+    strategy:
+      # fail-fast: false — un shard préempté ne doit jamais annuler les
+      # autres, sinon le découpage n'apporte aucune isolation (même
+      # raisonnement que #344 pour extract-an).
+      fail-fast: false
+      # max-parallel: 1 — préserve le pic de 4 jobs simultanés acté par #222
+      # ([[concurrence-ci-roster]]). Le temps mur total reste donc ~63 min
+      # pour un run complet ; ce qui change est la perte maximale sur
+      # préemption, qui passe de 63 min à ~8 min.
+      max-parallel: 1
+      matrix:
+        shard: ${{ fromJson(needs.prepare-roster-matrix.outputs.shards) }}
     continue-on-error: true
 
     steps:
@@ -802,18 +868,25 @@ jobs:
           [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
+          # --shard : partition déterministe par position modulo (#394). Avec
+          # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
+          # découpage.
           /usr/bin/time -v python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
+            --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total }}" \
             --skip-existing --resume \
             --skip-interventions --skip-dossiers-legislatifs \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
 
-      - name: Upload artifact roster-driven
+      # Un artifact PAR SHARD (#394) : merge-and-pivot les récupère tous via
+      # pattern + merge-multiple, comme il le fait déjà pour les shards
+      # extract-an (#344). Un shard préempté ne prive donc que de sa tranche.
+      - name: Upload artifact roster-driven — shard ${{ matrix.shard }}
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: raw-profiles-roster-groupes
+          name: raw-profiles-roster-groupes-${{ matrix.shard }}
           path: raw_data/profiles/
           if-no-files-found: warn
 
@@ -918,12 +991,17 @@ jobs:
 
       # Roster-driven : optionnel — continue-on-error si l'artifact est absent
       # (job extract-roster-groupes a échoué/timeout, rollout progressif #192).
-      - name: Download artifact roster-driven (optionnel)
+      # Depuis #394, extract-roster-groupes est un matrix : un artifact par
+      # shard, récupérés par pattern + merge-multiple (même mécanique que les
+      # shards extract-an ci-dessus). Un shard manquant (préempté) réduit la
+      # couverture du run sans faire échouer la fusion.
+      - name: Download artifacts roster-driven — tous les shards (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
         with:
-          name: raw-profiles-roster-groupes
+          pattern: raw-profiles-roster-groupes-*
           path: _artifacts/roster
+          merge-multiple: true
 
       # ── Fusion des profils bruts des 3 sources FR/UE ──────────────────────
       # merge_profile.py --dirs : fusionne additivement les profils de chaque
