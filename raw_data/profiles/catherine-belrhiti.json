@@ -1,0 +1,92 @@
+{
+  "slug": "catherine-belrhiti",
+  "chambre": "deputes",
+  "source": "https://www.nosdeputes.fr/catherine-belrhiti",
+  "identite": {
+    "nom_complet": "Catherine Belrhiti",
+    "groupe_sigle": null,
+    "groupe_nom": null,
+    "profession": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "date_naissance": "1962-08-10",
+    "lieu_naissance": "{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'} ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "nb_mandats": 0,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773891"
+  },
+  "mandats": [
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2023-10-02",
+      "fin": "2023-12-26",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2022-04-13",
+      "fin": "2023-10-01",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2023-12-27",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre du Bureau",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2024-02-08",
+      "fin": null,
+      "actif": true
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre du Bureau",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2023-10-02",
+      "fin": "2023-12-26",
+      "actif": false
+    },
+    {
+      "categorie": "delegation",
+      "type": "Membre du Bureau",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "debut": "2023-01-05",
+      "fin": "2023-10-01",
+      "actif": false
+    }
+  ],
+  "votes": [],
+  "votes_source": null,
+  "dossiers_legislatifs": [],
+  "amendements": [],
+  "interventions": [],
+  "meta": {
+    "genere_le": "2026-08-17T23:47:28+0200",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "synchro_sources": {
+      "nosdeputes": null,
+      "assemblee_nationale": "2026-08-17T23:47:28+0200",
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale_syceron": null
+    },
+    "warnings": [
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels).",
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
+    ]
+  }
+}
