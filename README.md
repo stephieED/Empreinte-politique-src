@@ -432,6 +432,63 @@ legislature, an amendements index that was never built from one that is present 
 schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, empty
 `textes[]` with a non-null `periode`, or IncompleteRead network signals.
 
+### Running the full pipeline locally instead of CI
+
+`scripts/generate_data_local.sh` runs the same sequence of stages as
+`generate-data.yml` (AN, Sénat, UE, ParlTrack, amendements index,
+roster-driven group members, then pivots + party/group/government profiles +
+quality gate) directly on your machine, bypassing GitHub Actions entirely.
+Useful when the hosted runner is hitting transient infrastructure
+preemptions ("shutdown signal", see `docs/technical_decisions.md`) unrelated
+to the code itself — running locally sidesteps that class of failure
+completely, since it doesn't depend on GitHub's runner fleet at all.
+
+```bash
+./scripts/generate_data_local.sh
+```
+
+By default it launches itself in the background (`nohup`) and returns
+immediately, printing the PID and the log file to follow:
+
+```
+Lancement en arrière-plan — logs : logs/generate_data_local_20260817T104701Z.log
+PID : 12345
+Suivre : tail -f logs/generate_data_local_20260817T104701Z.log
+Arrêter : kill 12345
+```
+
+Every run's full output is saved under `logs/` (git-ignored, like `.cache/`),
+regardless of foreground/background mode. Run `BACKGROUND=false
+./scripts/generate_data_local.sh` to keep it attached to the terminal
+instead (output is still duplicated into the same log file via `tee`).
+
+Same tunables as the workflow's `workflow_dispatch` inputs, passed as
+environment variables:
+
+```bash
+WORKERS=4 ROSTER_EXTRACTION_LIMIT=0 EXTRACT_INTERVENTIONS=true ./scripts/generate_data_local.sh
+```
+
+| Variable | Default | Same as `workflow_dispatch` input |
+|---|---|---|
+| `FRESH_RUN` | `false` | `fresh_run` |
+| `THRESHOLD` | `3` | `threshold` |
+| `WORKERS` | `1` (sequential) | `workers` |
+| `EXTRACT_INTERVENTIONS` | `false` | `extract_interventions` |
+| `MAX_PAGES` | `5` | `max_pages` |
+| `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_extraction_limit` |
+| `BACKGROUND` | `true` | *(local-only, no CI equivalent)* |
+
+Each stage keeps the CI job's `continue-on-error` behavior: a failure in one
+source (e.g. ParlTrack down) doesn't stop the rest. Unlike CI, nothing is
+committed/pushed automatically at the end — review `git status`/`git diff`
+on `raw_data/profiles`, `pivot_data/profiles`, `pivot_data/partis`,
+`pivot_data/groupes`, `pivot_data/gouvernements`, then commit/push manually
+if the result looks right. See the script's header comment for the exact
+differences from the CI job graph (no per-candidate matrix, no
+artifact-based re-merge — both are CI-only orchestration concerns with no
+local equivalent needed).
+
 ## 9. Open the web UI locally
 
 `web/UI_finale/` is the production interface (React 19 + Vite, **Candidats** · **Groupes** ·
