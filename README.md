@@ -105,8 +105,6 @@ CV_CandidatFR/
 
 See:
 
-- `docs/schema_donnees_transformations.md` - input schemas, transformed schemas,
-  and pipeline (including additive merge logic in `merge_profile.py`).
 - `docs/an_opendata.md` - practical AN Open Data references (dataset URLs,
   key fields).
 - `docs/pipeline-profiles-groupes.md` - end-to-end profiles/groups pipeline
@@ -700,8 +698,7 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
 }
 ```
 
-Sensitive institutional constraints are documented in `AGENTS.md` and in
-`docs/schema_donnees_transformations.md`.
+Sensitive institutional constraints are documented in `AGENTS.md`.
 
 ## Source taxonomy
 
