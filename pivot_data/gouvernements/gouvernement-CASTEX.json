@@ -38,14 +38,1966 @@
       "source_url": null
     }
   ],
-  "textes": [],
+  "textes": [
+    {
+      "dossier_id": "DLR5L15N45705",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-543 du 13 avril 2022 portant adaptation des dispositions relatives  à l'activité réduite pour le maintien en emploi",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-05-11",
+      "date_dernier_evenement": "2022-05-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45705"
+    },
+    {
+      "dossier_id": "DLR5L15N45666",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-544 du 13 avril 2022 relative à la déontologie et à la discipline des officiers ministériels",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-05-04",
+      "date_dernier_evenement": "2022-05-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45666"
+    },
+    {
+      "dossier_id": "DLR5L15N45654",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2022-408 du 23 mars 2022 relative au régime de  responsabilité financière des gestionnaires publics",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-28",
+      "date_dernier_evenement": "2022-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45654"
+    },
+    {
+      "dossier_id": "DLR5L15N45655",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-448 du 30 mars 2022 relative aux modalités d’organisation, de fonctionnement et d’exercice des missions du Conseil national des activités privées de sécurité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-28",
+      "date_dernier_evenement": "2022-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45655"
+    },
+    {
+      "dossier_id": "DLR5L15N45656",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-414 du 23 mars 2022 portant  adaptation des dispositions du code de la santé publique et du code rural et de la pêche maritime au droit de l'Union européenne dans le domaine des médicaments vétérinaires et aliments médicamenteux",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-28",
+      "date_dernier_evenement": "2022-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45656"
+    },
+    {
+      "dossier_id": "DLR5L15N45653",
+      "titre": "Projet de loi ratifiant les ordonnances prises sur le fondement des articles 3 et 4 de la loi n° 2021-1308 du 8 octobre 2021 portant diverses dispositions d'adaptation au droit de l'Union européenne dans le domaine des transports, de l'environnement, de l'économie et des finances",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-28",
+      "date_dernier_evenement": "2022-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45653"
+    },
+    {
+      "dossier_id": "DLR5L15N45610",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-492 du 6 avril 2022 renforçant l’autonomie des travailleurs indépendants des plateformes de mobilité, portant organisation du dialogue social de secteur et complétant les missions de l’Autorité des relations sociales des plateformes d’emploi",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-20",
+      "date_dernier_evenement": "2022-04-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45610"
+    },
+    {
+      "dossier_id": "DLR5L15N45609",
+      "titre": "Projet de loi ratifiant les ordonnances prises sur le fondement de l’article 4 de la loi n° 2019-1428 du 24 décembre 2019 d’orientation des mobilités",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-20",
+      "date_dernier_evenement": "2022-04-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45609"
+    },
+    {
+      "dossier_id": "DLR5L15N45611",
+      "titre": "Projet de loi ratifiant diverses ordonnances prises sur le fondement de l’article 81 de la loi n° 2021-1104 du 22 août 2021 portant lutte contre le dérèglement climatique et renforcement de la résilience face à ses effets et modifiant le code minier",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-20",
+      "date_dernier_evenement": "2022-04-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45611"
+    },
+    {
+      "dossier_id": "DLR5L15N45608",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2022-489 du 6 avril 2022 relative à l’aménagement durable des territoires littoraux exposés au recul du trait de côte",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-20",
+      "date_dernier_evenement": "2022-04-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45608"
+    },
+    {
+      "dossier_id": "DLR5L15N45528",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-68 du 26 janvier 2022 relative à la gestion du Fonds européen agricole pour le développement rural au titre de la programmation débutant en 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-06",
+      "date_dernier_evenement": "2022-04-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45528"
+    },
+    {
+      "dossier_id": "DLR5L15N45529",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-43 du 20 janvier 2022 relative à l'organisation du réseau des chambres d'agriculture à l'échelle régionale",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-06",
+      "date_dernier_evenement": "2022-04-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45529"
+    },
+    {
+      "dossier_id": "DLR5L15N45527",
+      "titre": "Projet de loi autorisant la ratification de la Convention du Conseil de l’Europe sur la manipulation de compétitions sportives",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-04-06",
+      "date_dernier_evenement": "2022-12-12",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45527"
+    },
+    {
+      "dossier_id": "DLR5L15N45407",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-232 du 23 février 2022 relative à la protection des intérêts de la défense nationale dans la conduite des opérations spatiales et l’exploitation des données d’origine spatiale",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-03-16",
+      "date_dernier_evenement": "2022-03-16",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45407"
+    },
+    {
+      "dossier_id": "DLR5L15N45387",
+      "titre": "Orientation et programmation du ministère de l'intérieur",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-03-16",
+      "date_dernier_evenement": "2022-03-16",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/orientationprogrammationinterieur"
+    },
+    {
+      "dossier_id": "DLR5L15N45347",
+      "titre": "Ratification de diverses ordonnances relatives à la sécurité sociale à Mayotte",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-03-09",
+      "date_dernier_evenement": "2022-03-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonannces_securite_sociale_mayotte"
+    },
+    {
+      "dossier_id": "DLR5L15N45348",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1659 du 15 décembre 2021 relative aux variétés rendues tolérantes aux herbicides",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-03-09",
+      "date_dernier_evenement": "2022-03-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45348"
+    },
+    {
+      "dossier_id": "DLR5L15N45328",
+      "titre": "Ratification de l'ordonnance n° 2021-1200 du 15 septembre 2021",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-03-07",
+      "date_dernier_evenement": "2022-03-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2021_1200"
+    },
+    {
+      "dossier_id": "DLR5L15N45293",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1843 du 22 décembre 2021 portant partie législative du code des impositions sur les biens et services et transposant diverses normes du droit de l'Union européenne",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-03-02",
+      "date_dernier_evenement": "2022-03-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45293"
+    },
+    {
+      "dossier_id": "DLR5L15N45222",
+      "titre": "Ratification de l’ordonnance n° 2021-1574 du 24 novembre 2021 portant partie législative du code général de la fonction publique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-02-23",
+      "date_dernier_evenement": "2022-02-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratif_ordonnance_partie_legislative_code_fct_pub"
+    },
+    {
+      "dossier_id": "DLR5L15N45227",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2021-1652 du 15 décembre 2021 portant diverses dispositions d'adaptation au droit de l'Union européenne dans le domaine des obligations d'information, de la gouvernance des produits financiers et des limites de position des investisseurs destinées à faciliter le financement des entreprises",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-23",
+      "date_dernier_evenement": "2022-02-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45227"
+    },
+    {
+      "dossier_id": "DLR5L15N45226",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1518 du 24 novembre 2021 complétant la transposition de la directive 2019/790 du Parlement européen et du Conseil du 17 avril 2019 sur le droit d'auteur et les droits voisins dans le marché unique numérique et modifiant les directives 96/9/CE et 2001/29/CE",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-23",
+      "date_dernier_evenement": "2022-02-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45226"
+    },
+    {
+      "dossier_id": "DLR5L15N45106",
+      "titre": "Approbation de l’amendement de la convention relative à la collecte, au dépôt et à la réception des déchets survenant en navigation rhénane et intérieure",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-15",
+      "date_dernier_evenement": "2023-03-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/approbation_amendement_convention_rhenane"
+    },
+    {
+      "dossier_id": "DLR5L15N45047",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1735 du 22 décembre 2021 modernisant le cadre relatif au financement participatif",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-09",
+      "date_dernier_evenement": "2022-02-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45047"
+    },
+    {
+      "dossier_id": "DLR5L15N45048",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2021-1734 du 22 décembre 2021 transposant la directive 2019/2161 du Parlement européen et du Conseil du 27 novembre 2019 et relative à une meilleure application et une modernisation des règles de l’Union en matière de protection des consommateurs",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-09",
+      "date_dernier_evenement": "2022-02-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45048"
+    },
+    {
+      "dossier_id": "DLR5L15N45012",
+      "titre": "Transposition de la directive (UE) 2019/1161 du Parlement européen et du Conseil du 20 juin 2019 modifiant la directive 2009/33/CE relative à la promotion de véhicules de transport routier propres et économes en énergie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-02-02",
+      "date_dernier_evenement": "2022-02-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/promotion_vehicules_routier_propres"
+    },
+    {
+      "dossier_id": "DLR5L15N45017",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1470 du 10 novembre 2021 relative à la mise en cohérence des codes et lois avec l'article 23 de la loi n° 2019-774 du 24 juillet 2019 relative à l'organisation et à la transformation du système de santé",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-02",
+      "date_dernier_evenement": "2022-02-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45017"
+    },
+    {
+      "dossier_id": "DLR5L15N45016",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2021-1658 du 15 décembre 2021 relative à la dévolution des droits de propriété intellectuelle sur les actifs obtenus par des auteurs de logiciels ou inventeurs non-salariés ni agents publics accueillis par une personne morale réalisant de la recherche",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-02-02",
+      "date_dernier_evenement": "2022-02-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45016"
+    },
+    {
+      "dossier_id": "DLR5L15N44963",
+      "titre": "Projet de loi autorisant l’approbation de l’accord pour la mise en place d’un mécanisme d’échange et de partage de l’information maritime dans l’océan Indien occidental et de l’accord régional sur la coordination des opérations en mer dans l’océan Indien occidental",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-26",
+      "date_dernier_evenement": "2023-02-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44963"
+    },
+    {
+      "dossier_id": "DLR5L15N44962",
+      "titre": "Projet de loi autorisant l’approbation de l’accord portant révision de l’accord général de coopération entre les États membres de la Commission de l’océan Indien",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-26",
+      "date_dernier_evenement": "2023-01-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44962"
+    },
+    {
+      "dossier_id": "DLR5L15N44928",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2021-1325 du 13 octobre 2021 réformant l'évaluation des biotechnologies et simplifiant la procédure applicable aux utilisations confinées d'organismes génétiquement modifiés présentant un risque nul ou négligeable",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-20",
+      "date_dernier_evenement": "2022-01-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44928"
+    },
+    {
+      "dossier_id": "DLR5L15N44752",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1605 du 8 décembre 2021 étendant et adaptant à la fonction publique des communes de Polynésie française certaines dispositions statutaires relatives à la fonction publique territoriale",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-12",
+      "date_dernier_evenement": "2022-08-10",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44752"
+    },
+    {
+      "dossier_id": "DLR5L15N44751",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1370 du 20 octobre 2021 relative aux mesures de surveillance, de prévention et de lutte contre les maladies animales transmissibles",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-12",
+      "date_dernier_evenement": "2022-01-12",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44751"
+    },
+    {
+      "dossier_id": "DLR5L15N44669",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1192 du 15 septembre 2021 portant réforme du droit des sûretés et l’ordonnance n° 2021-1193 du 15 septembre 2021 portant modification du livre VI du code de commerce",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-05",
+      "date_dernier_evenement": "2022-01-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44669"
+    },
+    {
+      "dossier_id": "DLR5L15N44670",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de l’État du Qatar établissant un partenariat relatif à la sécurité de la Coupe du Monde de football de 2022",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-01-05",
+      "date_dernier_evenement": "2022-08-09",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44670"
+    },
+    {
+      "dossier_id": "DLR5L15N44667",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et l’Autorité bancaire européenne relatif au siège de l’Autorité bancaire européenne et à ses privilèges et immunités sur le territoire français",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-01-05",
+      "date_dernier_evenement": "2022-07-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_france_abe_siege"
+    },
+    {
+      "dossier_id": "DLR5L15N44625",
+      "titre": "Projet de loi renforçant les outils de gestion de la crise sanitaire et modifiant le code de la santé publique",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-12-27",
+      "date_dernier_evenement": "2022-01-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/projetdeloirenforcantlesoutilsdegestiondelacrisesanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N44588",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2021-1247 du 29 septembre 2021 relative à la garantie légale de conformité pour les biens, les contenus numériques et les services numériques",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-12-15",
+      "date_dernier_evenement": "2021-12-15",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44588"
+    },
+    {
+      "dossier_id": "DLR5L15N44468",
+      "titre": "Ratification de la convention relative à la nationalité entre la République française et le Royaume d’Espagne",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-12-08",
+      "date_dernier_evenement": "2022-02-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_convention_nationalite_france_espagne"
+    },
+    {
+      "dossier_id": "DLR5L15N44471",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-860 du 30 juin 2021 portant changement d’appellation de l’armée de l’air",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-12-08",
+      "date_dernier_evenement": "2021-12-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44471"
+    },
+    {
+      "dossier_id": "DLR5L15N44470",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1310 du 7 octobre 2021 portant réforme des règles de publicité, d’entrée en vigueur et de conservation des actes pris par les collectivités territoriales et leurs groupements",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-12-08",
+      "date_dernier_evenement": "2021-12-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44470"
+    },
+    {
+      "dossier_id": "DLR5L15N44467",
+      "titre": "Adaptation de mesures d'urgence en matière d'activité partielle",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-12-08",
+      "date_dernier_evenement": "2021-12-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/adaptation_mesures_urgence_activite_partielle"
+    },
+    {
+      "dossier_id": "DLR5L15N44395",
+      "titre": "Réforme des outils de gestion des risques climatiques en agriculture",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-12-01",
+      "date_dernier_evenement": "2022-11-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reforme_outils_risques_climatiques_agriculture"
+    },
+    {
+      "dossier_id": "DLR5L15N44232",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1165 du 8 septembre 2021 portant transposition de la directive (UE) 2019/883 du Parlement européen et du Conseil du 17 avril 2019 relative aux installations de réception portuaires pour le dépôt des déchets des navires, modifiant la directive 2010/65/UE et abrogeant la directive 2000/59/CE",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-11-17",
+      "date_dernier_evenement": "2021-11-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44232"
+    },
+    {
+      "dossier_id": "DLR5L15N44265",
+      "titre": "Projet de loi ratifiant l'ordonnance n°2021-1330 du 13 octobre 2021 relative aux conditions de navigation des navires autonomes et des drones maritimes",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-11-17",
+      "date_dernier_evenement": "2021-11-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44265"
+    },
+    {
+      "dossier_id": "DLR5L15N44312",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2021-1159 du 8 septembre 2021 relative aux conditions de recrutement et d’emploi des personnes chargées d’encadrer les volontaires du service national universel",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-11-17",
+      "date_dernier_evenement": "2021-11-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44312"
+    },
+    {
+      "dossier_id": "DLR5L15N44231",
+      "titre": "Convention de coopération judiciaire internationale entre le Gouvernement de la République française et l'Organisation des Nations Unies, représentée par le Mécanisme international, impartial et indépendant pour la Syrie",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-11-17",
+      "date_dernier_evenement": "2022-07-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_france_onu"
+    },
+    {
+      "dossier_id": "DLR5L15N44192",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1189 du 15 septembre 2021 portant création du registre national des entreprises",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-11-10",
+      "date_dernier_evenement": "2021-11-10",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44192"
+    },
+    {
+      "dossier_id": "DLR5L15N44193",
+      "titre": "Projet de loi autorisant l'approbation de l'accord entre le Gouvernement de la République française et le Gouvernement de la Principauté d'Andorre relatif à l'exercice des activités professionnelles des membres de la famille du personnel diplomatique, consulaire, technique et administratif des missions officielles",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-11-10",
+      "date_dernier_evenement": "2023-06-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44193"
+    },
+    {
+      "dossier_id": "DLR5L15N44109",
+      "titre": "Restitution ou remise de certains biens culturels aux ayants droit de leurs propriétaires victimes de persécutions antisémites",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-11-03",
+      "date_dernier_evenement": "2022-02-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/restitution_biens_antisemites"
+    },
+    {
+      "dossier_id": "DLR5L15N44108",
+      "titre": "Reconnaissance de la Nation et réparation des préjudices subis par les harkis, par les autres personnes rapatriées d’Algérie anciennement de statut civil de droit local et par leurs familles du fait des conditions de leur accueil sur le territoire français",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-11-03",
+      "date_dernier_evenement": "2022-02-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reconnaissance_harkis"
+    },
+    {
+      "dossier_id": "DLR5L15N44111",
+      "titre": "Projet de loi de finances rectificative pour 2021",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-11-03",
+      "date_dernier_evenement": "2021-12-01",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2021_2"
+    },
+    {
+      "dossier_id": "DLR5L15N43910",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1013 du 31 juillet 2021 modifiant l'ordonnance n° 2020-324 du 25 mars 2020 portant mesures d'urgence en matière de revenus de remplacement mentionnés à l'article L. 5421-2 du code du travail",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-10-20",
+      "date_dernier_evenement": "2021-10-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43910"
+    },
+    {
+      "dossier_id": "DLR5L15N43813",
+      "titre": "Ratification de l’ordonnance n° 2021-798 du 23 juin 2021 portant transposition de la directive (UE) 2019/789 du Parlement européen et du Conseil du 17 avril 2019 établissant des règles sur l'exercice du droit d'auteur et des droits voisins",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-10-13",
+      "date_dernier_evenement": "2021-10-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratifordonnance2021798droitdauteurdroitsvoisins"
+    },
+    {
+      "dossier_id": "DLR5L15N43839",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République du Tadjikistan sur les services aériens",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-10-13",
+      "date_dernier_evenement": "2022-02-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43839"
+    },
+    {
+      "dossier_id": "DLR5L15N43812",
+      "titre": "Diverses dispositions de vigilance sanitaire",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-10-13",
+      "date_dernier_evenement": "2021-11-10",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/vigilancesanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N43810",
+      "titre": "Création de l'Organisation internationale pour les aides à la navigation maritime",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-10-13",
+      "date_dernier_evenement": "2022-10-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_internationale_navigation_maritime"
+    },
+    {
+      "dossier_id": "DLR5L15N43725",
+      "titre": "Projet de loi portant ratification de l’ordonnance n° 2021-958 du 19 juillet 2021 transposant la directive (UE) 2019/1153 du Parlement européen et du Conseil du 20 juin 2019 fixant les règles facilitant l'utilisation d'informations financières et d'une autre nature aux fins de la prévention ou de la détection de certaines infractions pénales, ou des enquêtes ou des poursuites en la matière",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-10-07",
+      "date_dernier_evenement": "2021-10-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43725"
+    },
+    {
+      "dossier_id": "DLR5L15N43709",
+      "titre": "Loi de financement de la sécurité sociale pour 2022",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-10-07",
+      "date_dernier_evenement": "2021-12-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_pour_2022"
+    },
+    {
+      "dossier_id": "DLR5L15N43708",
+      "titre": "Certification périodique de certains professionnels de santé",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-10-07",
+      "date_dernier_evenement": "2021-10-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/certification_periodique_professionnels_sante"
+    },
+    {
+      "dossier_id": "DLR5L15N43626",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-957 du 19 juillet 2021  modifiant le chapitre VII «Produits et équipements à risques » du titre V du livre V du code de l'environnement",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-09-29",
+      "date_dernier_evenement": "2021-09-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43626"
+    },
+    {
+      "dossier_id": "DLR5L15N43599",
+      "titre": "Projet de loi en faveur de l’activité professionnelle indépendante",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-09-29",
+      "date_dernier_evenement": "2022-02-14",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43599"
+    },
+    {
+      "dossier_id": "DLR5L15N42785",
+      "titre": "Projet de loi de finances pour 2022",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-09-22",
+      "date_dernier_evenement": "2021-12-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plf_2022"
+    },
+    {
+      "dossier_id": "DLR5L15N43487",
+      "titre": "Ratification de l'ordonnance relative au recouvrement des contributions des employeurs",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-09-15",
+      "date_dernier_evenement": "2021-09-15",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnnance_contributions_employeurs"
+    },
+    {
+      "dossier_id": "DLR5L15N43327",
+      "titre": "Ratification de l’ordonnance n° 2021-738 du 9 juin 2021 portant transposition de la directive (UE) 2020/1504 du Parlement européen et du Conseil du 7 octobre 2020 concernant les marchés d’instruments financiers",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-09-01",
+      "date_dernier_evenement": "2021-09-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratificationordonnancemarchesfinanciers"
+    },
+    {
+      "dossier_id": "DLR5L15N43328",
+      "titre": "Ratifiant l’ordonnance du 30 juin 2021 relative aux pratiques commerciales déloyales dans les relations interentreprises au sein de la chaîne d'approvisionnement agricole et alimentaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-09-01",
+      "date_dernier_evenement": "2021-09-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratificationordonnancepratiquescommercialesdeloyales"
+    },
+    {
+      "dossier_id": "DLR5L15N43388",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2021-796 du 23 juin 2021 portant transposition de la directive (UE) 2019/2034 du Parlement européen et du Conseil du 27 novembre 2019 concernant la surveillance prudentielle des entreprises d'investissement et l’ordonnance n° 2021-858 du 30 juin 2021 portant transposition de la directive (UE) 2019/2162 du Parlement européen et du Conseil du 27 novembre 2019 concernant l'émission d'obligations garanties et la surveillance publique des obligations garanties",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-09-01",
+      "date_dernier_evenement": "2021-09-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43388"
+    },
+    {
+      "dossier_id": "DLR5L15N43326",
+      "titre": "Projet de loi autorisant la prorogation de l’état d’urgence sanitaire dans les outre-mer",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-09-01",
+      "date_dernier_evenement": "2021-09-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogationetaturgencesanitaireoutre-mer"
+    },
+    {
+      "dossier_id": "DLR5L15N43286",
+      "titre": "Ratifiant l’ordonnance n° 2021-580 du 12 mai 2021 sur le droit d’auteur et les droits voisins dans le marché unique numérique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-08-25",
+      "date_dernier_evenement": "2021-08-25",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance2021-580"
+    },
+    {
+      "dossier_id": "DLR5L15N43285",
+      "titre": "Approbation de la convention d'entraide judiciaire en matière pénale entre le Gouvernement de la République française et le Gouvernement de la République de Singapour",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-08-25",
+      "date_dernier_evenement": "2022-11-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventionentraidejudiciaireSingapour"
+    },
+    {
+      "dossier_id": "DLR5L15N43126",
+      "titre": "Ratification de l'ordonnance n° 2021-702 du 2 juin 2021 portant réforme de l'encadrement supérieur de la fonction publique de l'Etat",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-29",
+      "date_dernier_evenement": "2021-07-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reforme_encadrement_fonction_publique"
+    },
+    {
+      "dossier_id": "DLR5L15N43125",
+      "titre": "Ratification de l'ordonnance n° 2021-649 du 26 mai 2021 relative à la transposition de la directive (UE) 2019/1 du Parlement européen et du Conseil du 11 décembre 2018",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-29",
+      "date_dernier_evenement": "2021-07-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratif_ordonnance_2021649"
+    },
+    {
+      "dossier_id": "DLR5L15N43127",
+      "titre": "Projet de loi autorisant la ratification de l’accord modifiant le traité instituant le Mécanisme européen de stabilité",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-07-28",
+      "date_dernier_evenement": "2021-12-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43127"
+    },
+    {
+      "dossier_id": "DLR5L15N43025",
+      "titre": "Responsabilité pénale et sécurité intérieure",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-20",
+      "date_dernier_evenement": "2022-01-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reponsabilite_penale_securite_interieure"
+    },
+    {
+      "dossier_id": "DLR5L15N43026",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-658 du 26 mai 2021 renforçant la formation de certains agents publics afin de favoriser leur évolution professionnelle",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-20",
+      "date_dernier_evenement": "2021-07-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_agents_publics"
+    },
+    {
+      "dossier_id": "DLR5L15N43005",
+      "titre": "Gestion de la crise sanitaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-20",
+      "date_dernier_evenement": "2021-08-05",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/gestion_crise_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N42927",
+      "titre": "Ratification de la convention du Conseil de l'Europe contre le trafic d'organes humains",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-13",
+      "date_dernier_evenement": "2022-07-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratif_convention_trafic_organes_humains"
+    },
+    {
+      "dossier_id": "DLR5L15N42930",
+      "titre": "Ratification de l'ordonnance relative aux modalités de représentation des travailleurs indépendants recourant pour leur activité aux plateformes",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-13",
+      "date_dernier_evenement": "2022-02-07",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_representation_travailleurs_independants"
+    },
+    {
+      "dossier_id": "DLR5L15N42929",
+      "titre": "Ratification de l'ordonnance portant actualisation et adaptation des dispositions du code de l’éducation relatives à l’outre-mer",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-13",
+      "date_dernier_evenement": "2021-07-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/actualisation_et_adaptation_code_de_leducation_outre_mer"
+    },
+    {
+      "dossier_id": "DLR5L15N42928",
+      "titre": "Ratification de diverses ordonnances dans les domaines des solidarités et de la santé",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-13",
+      "date_dernier_evenement": "2021-07-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_diverses_ordonnances_domaine_de_la_sante"
+    },
+    {
+      "dossier_id": "DLR5L15N42931",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-650 du 26 mai 2021 portant transposition de la directive (UE) 2018/1972 du Parlement européen et du Conseil du 11 décembre 2018 établissant le code des communications électroniques européen et relative aux mesures d’adaptation des pouvoirs de l’Autorité de régulation des communications électroniques, des postes et de la distribution de la presse",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-07-13",
+      "date_dernier_evenement": "2021-07-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42931"
+    },
+    {
+      "dossier_id": "DLR5L15N42833",
+      "titre": "Ratification de l’ordonnance relative aux mesures relevant du domaine de la loi nécessaires pour assurer la conformité du droit interne aux principes du code mondial antidopage et renforcer l’efficacité de la lutte contre le dopage",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-07",
+      "date_dernier_evenement": "2021-07-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratif_ordonnance_code_mondial_dopage"
+    },
+    {
+      "dossier_id": "DLR5L15N42831",
+      "titre": "Ratification de l'ordonnance n° 2021-485 du 21 avril 2021 relative à la reproduction, à l'amélioration et à la préservation du patrimoine génétique des animaux d'élevage",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-07",
+      "date_dernier_evenement": "2021-07-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_patrimoine_genetique_animaux_elevage"
+    },
+    {
+      "dossier_id": "DLR5L15N42841",
+      "titre": "Projet de loi ratifiant les ordonnances prises sur le fondement de l'article 13 de la loi n°2019-816 du 2 août 2019 relative aux compétences de la Collectivité européenne d'Alsace",
+      "statut": "promulgue",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-07-07",
+      "date_dernier_evenement": "2022-02-28",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42841"
+    },
+    {
+      "dossier_id": "DLR5L15N42834",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et l’Agence de l’Union européenne pour les chemins de fer relatif au siège de l’Agence de l’Union européenne pour les chemins de fer et à ses privilèges et immunités sur le territoire",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-07",
+      "date_dernier_evenement": "2022-01-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_aeucf"
+    },
+    {
+      "dossier_id": "DLR5L15N42835",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de l’Etat du Qatar relatif au statut de leurs forces",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-07-07",
+      "date_dernier_evenement": "2022-07-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_qatar"
+    },
+    {
+      "dossier_id": "DLR5L15N42749",
+      "titre": "Dispositions relatives aux gens de mer exerçant à bord de navires immatriculés dans les îles Wallis et Futuna et dans les Terres australes et antarctiques françaises",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-30",
+      "date_dernier_evenement": "2021-06-30",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_droit_de_la_mer"
+    },
+    {
+      "dossier_id": "DLR5L15N42673",
+      "titre": "Projet de loi ratifiant diverses ordonnances prises sur le fondement de la loi n° 2019-1428 du 24 décembre 2019 d’orientation des mobilités",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-06-23",
+      "date_dernier_evenement": "2021-06-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42673"
+    },
+    {
+      "dossier_id": "DLR5L15N42608",
+      "titre": "Protection des enfants",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-16",
+      "date_dernier_evenement": "2022-02-07",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_protection_enfants"
+    },
+    {
+      "dossier_id": "DLR5L15N42609",
+      "titre": "Approbation de la Mesure 1 (2005) annexe VI au Protocole au Traité sur l’Antarctique relatif à la protection de l’environnement, responsabilité découlant de situations critiques pour l’environnement",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-16",
+      "date_dernier_evenement": "2021-11-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/approbation_mesure_1"
+    },
+    {
+      "dossier_id": "DLR5L15N42572",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République du Kosovo relatif à l’emploi des membres des familles des agents des missions officielles de chaque État dans l’autre",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-06-09",
+      "date_dernier_evenement": "2023-02-01",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42572"
+    },
+    {
+      "dossier_id": "DLR5L15N42569",
+      "titre": "Approbation de l’accord avec l’Ouzbékistan relatif aux transports routiers internationaux de voyageurs et de marchandises et de l'accord avec la Tunisie sur le transport international routier de personnes",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-09",
+      "date_dernier_evenement": "2023-02-01",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_ouzbekistan_tunisie_transports_routiers"
+    },
+    {
+      "dossier_id": "DLR5L15N42527",
+      "titre": "Ratification de la Convention n° 190 de l'Organisation internationale du Travail relative à l'élimination de la violence et du harcèlement dans le monde du travail",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-02",
+      "date_dernier_evenement": "2021-11-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_convention_oit_violence_harcelement"
+    },
+    {
+      "dossier_id": "DLR5L15N42529",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-291 du 17 mars 2021 relative aux groupements hospitaliers de territoire et à la médicalisation des décisions à l'hôpital et l’ordonnance n° 2021-292 du 17 mars 2021 visant à favoriser l'attractivité des carrières médicales hospitalières",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-06-02",
+      "date_dernier_evenement": "2021-06-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42529"
+    },
+    {
+      "dossier_id": "DLR5L15N42528",
+      "titre": "Projet de loi ratifiant diverses ordonnances relatives à la navigation et aux transports maritimes prises sur le fondement de la loi n° 2019-1428 du 24 décembre 2019 d’orientation des mobilités",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-06-02",
+      "date_dernier_evenement": "2021-06-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42528"
+    },
+    {
+      "dossier_id": "DLR5L15N42526",
+      "titre": "Projet de loi de finances rectificative pour 2021",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-06-02",
+      "date_dernier_evenement": "2021-07-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2021"
+    },
+    {
+      "dossier_id": "DLR5L15N42494",
+      "titre": "Projet de loi ratifiant diverses ordonnances de transposition du paquet « une énergie propre pour tous les européens »",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-05-26",
+      "date_dernier_evenement": "2021-05-26",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42494"
+    },
+    {
+      "dossier_id": "DLR5L15N42488",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République de Maurice relatif à la coopération en matière de défense et au statut des forces",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-05-26",
+      "date_dernier_evenement": "2022-02-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/apporbation_accord_maurice_defense"
+    },
+    {
+      "dossier_id": "DLR5L15N42412",
+      "titre": "Projet de loi relatif à la différenciation, la décentralisation, la déconcentration et portant diverses mesures de simplification de l'action publique locale",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-05-12",
+      "date_dernier_evenement": "2022-02-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42412"
+    },
+    {
+      "dossier_id": "DLR5L15N42368",
+      "titre": "Projet de loi autorisant la ratification du Protocole d’amendement à la Convention pour la protection des personnes à l’égard du traitement automatisé des données à caractère personnel",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-05-05",
+      "date_dernier_evenement": "2022-11-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42368"
+    },
+    {
+      "dossier_id": "DLR5L15N42365",
+      "titre": "Ordonnance n° 2021-167 du 17 février 2021 relative à l'hydrogène",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-05-05",
+      "date_dernier_evenement": "2021-05-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_relative_a_lhydrogene"
+    },
+    {
+      "dossier_id": "DLR5L15N42325",
+      "titre": "Projet de loi relatif à la prévention d’actes de terrorisme et au renseignement",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-28",
+      "date_dernier_evenement": "2021-07-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prevention-actes-terrorisme-et-renseignement"
+    },
+    {
+      "dossier_id": "DLR5L15N42328",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-206 du 24 février 2021 relative aux installations à câbles prise en application de l'article 128 de la loi n° 2019-1428 du 24 décembre 2019 d'orientation des mobilités",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-04-28",
+      "date_dernier_evenement": "2021-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42328"
+    },
+    {
+      "dossier_id": "DLR5L15N42327",
+      "titre": "Projet de loi ratifiant deux ordonnances relatives à la négociation et aux accords collectifs dans la fonction publique et à la protection sociale complémentaire dans la fonction publique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-28",
+      "date_dernier_evenement": "2021-04-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification-deux-ordonnances-17-fevrier-2021"
+    },
+    {
+      "dossier_id": "DLR5L15N42326",
+      "titre": "Gestion  de  la  sortie  de  crise  sanitaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-28",
+      "date_dernier_evenement": "2021-05-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/gestion_sortie_crise_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N42286",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1342 du 4 novembre 2020 renforçant le dispositif de gel des avoirs et d’interdiction de mise à disposition et l’ordonnance n° 2020-1544 du 9 décembre 2020 renforçant le cadre de la lutte contre le blanchiment de capitaux et le financement du terrorisme applicable aux actifs numériques",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-04-21",
+      "date_dernier_evenement": "2021-04-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42286"
+    },
+    {
+      "dossier_id": "DLR5L15N42238",
+      "titre": "Projet de loi portant diverses dispositions d’adaptation au droit de l’Union européenne dans le domaine des transports, de l’environnement, de l’économie et des finances",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-04-14",
+      "date_dernier_evenement": "2022-10-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42238"
+    },
+    {
+      "dossier_id": "DLR5L15N42235",
+      "titre": "Loi de règlement 2020",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-14",
+      "date_dernier_evenement": "2021-08-05",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_budget_2020"
+    },
+    {
+      "dossier_id": "DLR5L15N42237",
+      "titre": "Confiance dans l'institution judiciaire (loi organique)",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-14",
+      "date_dernier_evenement": "2021-12-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/confiance_institution_judiciaire_organique"
+    },
+    {
+      "dossier_id": "DLR5L15N42236",
+      "titre": "Confiance dans l'institution judiciaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-04-14",
+      "date_dernier_evenement": "2021-12-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/confiance_institution_judiciaire"
+    },
+    {
+      "dossier_id": "DLR5L15N42194",
+      "titre": "Projet de loi relatif à la régulation et à la protection de l’accès aux œuvres culturelles à l’ère numérique",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-04-08",
+      "date_dernier_evenement": "2021-10-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42194"
+    },
+    {
+      "dossier_id": "DLR5L15N42195",
+      "titre": "Projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l'application du cinquième alinéa de l'article 13 de la Constitution",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-04-08",
+      "date_dernier_evenement": "2021-10-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42195"
+    },
+    {
+      "dossier_id": "DLR5L15N42147",
+      "titre": "Ratification des ordonnances n° 2020-1636 relative au régime de résolution dans le secteur bancaire et n° 2020-1635 portant diverses dispositions d'adaptation de la législation au droit de l'Union européenne en matière financière",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-31",
+      "date_dernier_evenement": "2021-03-31",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratif_ordonnances_secteur_bancaire_ue_financiere"
+    },
+    {
+      "dossier_id": "DLR5L15N42093",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1642 du 21 décembre 2020 portant transposition de la directive (UE) 2018/1808 du Parlement européen et du Conseil du 14 novembre 2018 modifiant la directive 2010/13/UE visant à la coordination de certaines dispositions législatives, réglementaires et administratives des Etats membres relatives à la fourniture de services de médias audiovisuels, compte tenu de l’évolution des réalités du marché, et modifiant la loi du 30 septembre 1986 relative à la liberté de communication, le code du cinéma et de l’image animée, ainsi que les délais relatifs à l’exploitation des œuvres cinématographiques",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-03-24",
+      "date_dernier_evenement": "2021-03-24",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42093"
+    },
+    {
+      "dossier_id": "DLR5L15N42086",
+      "titre": "Projet de loi favorisant l'égalité des chances pour l'accès à certaines écoles de service public",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-24",
+      "date_dernier_evenement": "2021-03-24",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acces_certaines_ecoles_service_public"
+    },
+    {
+      "dossier_id": "DLR5L15N42090",
+      "titre": "Projet de loi autorisant l’approbation de l’accord de partenariat entre le Gouvernement de la République française et le Gouvernement de la République du Kenya relatif à la promotion et à l’échange des compétences et talents",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-03-24",
+      "date_dernier_evenement": "2021-12-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42090"
+    },
+    {
+      "dossier_id": "DLR5L15N42012",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-77 du 27 janvier 2021 modifiant les dispositions du code des transports relatives aux services privés de recrutement et de placement des gens de mer",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-03-17",
+      "date_dernier_evenement": "2021-03-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42012"
+    },
+    {
+      "dossier_id": "DLR5L15N42011",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1733 du 16 décembre 2020 portant partie législative du code de l’entrée et du séjour des étrangers et du droit d’asile",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-17",
+      "date_dernier_evenement": "2021-03-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_ratif_ordonnance_ceseda"
+    },
+    {
+      "dossier_id": "DLR5L15N41946",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-49 du 20 janvier 2021 relative aux classifications et rémunérations au sein de la branche ferroviaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-10",
+      "date_dernier_evenement": "2021-03-10",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_ordonnances_remunerations_classifications_ferroviaire"
+    },
+    {
+      "dossier_id": "DLR5L15N41886",
+      "titre": "Ratification de l'ordonnance n° 2021-135 du 10 février 2021 portant diverses mesures d’urgence dans les domaines du travail et de l’emploi et l’ordonnance n° 2021-136 du 10 février 2021 portant adaptation des mesures d'urgence en matière d'activité partiel",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-03",
+      "date_dernier_evenement": "2021-03-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_travail_partiel"
+    },
+    {
+      "dossier_id": "DLR5L15N41896",
+      "titre": "Ratification de diverses ordonnances sur l'état d'urgence sanitaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-03-03",
+      "date_dernier_evenement": "2021-03-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_diverses_ordonnances_eus"
+    },
+    {
+      "dossier_id": "DLR5L15N41889",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-137 du 10 février 2021 modifiant l’ordonnance n° 2020 1599 du 16 décembre 2020 relative aux aides exceptionnelles à destination des auteurs et titulaires de droits voisins touchés par les conséquences économiques, financières et sociales de la propagation du virus covid-19 et aux conditions financières de résolution de certains contrats dans les secteurs de la culture et du sport",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-03-03",
+      "date_dernier_evenement": "2021-03-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41889"
+    },
+    {
+      "dossier_id": "DLR5L15N41830",
+      "titre": "Ratification de trois ordonnances visant à préserver les effectifs et les compétences et à assurer les recrutements au sein de la fonction publique civile et militaire pendant la crise sanitaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-24",
+      "date_dernier_evenement": "2021-02-24",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_fp_crise"
+    },
+    {
+      "dossier_id": "DLR5L15N41827",
+      "titre": "Approbation de l’amendement au protocole de Göteborg du 1er décembre 1999, relatif à la réduction de l’acidification, de l’eutrophisation et de l’ozone troposphérique",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-24",
+      "date_dernier_evenement": "2021-11-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_approbation_goteborg"
+    },
+    {
+      "dossier_id": "DLR5L15N41726",
+      "titre": "Ratification de l’ordonnance n° 2020-1496 du 2 décembre 2020 relative à la centralisation des disponibilités de certains organismes au Trésor",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-17",
+      "date_dernier_evenement": "2021-02-17",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_organismes_tresor"
+    },
+    {
+      "dossier_id": "DLR5L15N41730",
+      "titre": "Projet de loi ratifiant les ordonnances n° 2021-45 du 20 janvier 2021 et n° 2021-71 du 27 janvier 2021 portant réforme de la formation des élus locaux",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-02-17",
+      "date_dernier_evenement": "2021-06-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41730"
+    },
+    {
+      "dossier_id": "DLR5L15N41668",
+      "titre": "Lutte contre le dérèglement climatique",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-10",
+      "date_dernier_evenement": "2023-01-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_contre_le_dereglement_climatique"
+    },
+    {
+      "dossier_id": "DLR5L15N41588",
+      "titre": "Ratification ordonnances retrait du Royaume-Uni",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-03",
+      "date_dernier_evenement": "2021-04-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnances_royaume_uni"
+    },
+    {
+      "dossier_id": "DLR5L15N41639",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1395 du 18 novembre 2020 dispensant d'obligation de compatibilité avec les schémas régionaux des carrières les décisions d'exploitation de carrières justifiées par les besoins de la restauration de la cathédrale Notre-Dame de Paris",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-02-03",
+      "date_dernier_evenement": "2021-02-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41639"
+    },
+    {
+      "dossier_id": "DLR5L15N41585",
+      "titre": "Missions des agences régionales de santé et mise en oeuvre de la prescription électronique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-02-03",
+      "date_dernier_evenement": "2021-02-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_ars"
+    },
+    {
+      "dossier_id": "DLR5L15N41505",
+      "titre": "Approbation de la convention d’entraide judiciaire en matière pénale entre le Gouvernement de la République française et le Gouvernement de la République du Mali et de la convention d’extradition entre le Gouvernement de la République française et le Gouve",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-27",
+      "date_dernier_evenement": "2021-05-19",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_mali_entraide_extradition"
+    },
+    {
+      "dossier_id": "DLR5L15N41424",
+      "titre": "Ratification l’ordonnance n° 2020-934 du 29 juillet 2020 portant réorganisation des dispositions du code des transports relatives à la sûreté dans les transports",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-20",
+      "date_dernier_evenement": "2021-01-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_transports"
+    },
+    {
+      "dossier_id": "DLR5L15N41428",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-1504 du 2 décembre 2020 prorogeant et adaptant les conditions de gestion des programmes européens de la politique de cohésion et des affaires maritimes et de la pêche",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-20",
+      "date_dernier_evenement": "2021-01-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41428"
+    },
+    {
+      "dossier_id": "DLR5L15N41425",
+      "titre": "Compléter l’article 1er de la Constitution et relatif à la préservation de l’environnement",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-20",
+      "date_dernier_evenement": "2021-07-05",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjlc_environnement"
+    },
+    {
+      "dossier_id": "DLR5L15N41313",
+      "titre": "Ratification ordonnance relative à l'organisation des examens et concours pendant la crise sanitaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-01-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_examens_et_concours"
+    },
+    {
+      "dossier_id": "DLR5L15N41311",
+      "titre": "Ratification ordonnance portant mesures d'urgence en matière de congés payés et de jours de repos",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-01-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_jours_de_repos"
+    },
+    {
+      "dossier_id": "DLR5L15N41308",
+      "titre": "Prorogation de l'état d'urgence sanitaire",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-02-15",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_de_letat_durgence_sanitaire1"
+    },
+    {
+      "dossier_id": "DLR5L15N41352",
+      "titre": "Projet de loi ratifiant l’ordonnance n°2020-1602 du 16 décembre 2020 relative au régulateur des redevances aéroportuaires",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-01-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41352"
+    },
+    {
+      "dossier_id": "DLR5L15N41353",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1599 du 16 décembre 2020 relative aux aides exceptionnelles à destination des auteurs et titulaires de droits voisins touchés par les conséquences économiques, financières et sociales de la propagation du virus covid-19 et aux conditions financières de résolution de certains contrats dans les secteurs de la culture et du sport",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-01-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41353"
+    },
+    {
+      "dossier_id": "DLR5L15N41350",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1304 du 28 octobre 2020 portant diverses mesures institutionnelles relatives à la création de la Collectivité européenne d’Alsace  et l’ordonnance n° 2020-1305 du 28 octobre 2020 complétant et précisantles règles budgétaires, financières, fiscales et comptables applicables à la Collectivité européenne d’Alsace",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-01-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41350"
+    },
+    {
+      "dossier_id": "DLR5L15N41351",
+      "titre": "Projet de loi autorisant la ratification de l’accord portant extinction des traités bilatéraux d’investissement entre Etats membres de l’Union européenne",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-06-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41351"
+    },
+    {
+      "dossier_id": "DLR5L15N41310",
+      "titre": "Approbation de la décision UE, Euratom 2020/2053",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-13",
+      "date_dernier_evenement": "2021-02-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/approbation_decision_ue_euratom"
+    },
+    {
+      "dossier_id": "DLR5L15N41249",
+      "titre": "Ratification de l'ordonnance n° 2020-1142 portant création, au sein du code de commerce, d'un chapitre relatif aux sociétés dont les titres sont admis aux négociations sur un marché réglementé ou sur un système multilatéral de négociation",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-06",
+      "date_dernier_evenement": "2021-01-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratificationordonnancecodedecommerce"
+    },
+    {
+      "dossier_id": "DLR5L15N41252",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-1256 du 14 octobre 2020 étendant et adaptant en Polynésie française et en Nouvelle-Calédonie les dispositions de la loi n° 2019-1461 du 27 décembre 2019 relative à l'engagement dans la vie locale et à la proximité de l'action publique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2021-01-06",
+      "date_dernier_evenement": "2021-01-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41252"
+    },
+    {
+      "dossier_id": "DLR5L15N41250",
+      "titre": "DOSSIER : projet de loi ratifiant l'ordonnance n° 2020-1447 du 25 novembre 2020 portant diverses mesures en matière de santé et de famille dans la fonction publique",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2021-01-06",
+      "date_dernier_evenement": "2021-01-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratificationordonnancefonctionpublique"
+    },
+    {
+      "dossier_id": "DLR5L15N41207",
+      "titre": "Élection du Président de la République",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-21",
+      "date_dernier_evenement": "2021-03-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/election_president_republique"
+    },
+    {
+      "dossier_id": "DLR5L15N41208",
+      "titre": "Régime pérenne de gestion des urgences sanitaires",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-21",
+      "date_dernier_evenement": "2020-12-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/regime_perenne_gestion_urgences_sanitaires"
+    },
+    {
+      "dossier_id": "DLR5L15N41206",
+      "titre": "Ratification diverses ordonnances dans les domaines du travail, de l’emploi et de la formation professionnelle, de l’action sociale et de la santé",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-21",
+      "date_dernier_evenement": "2020-12-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_travail_emploi_formation_action_sociale_sante"
+    },
+    {
+      "dossier_id": "DLR5L15N41211",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-1507 du 2 décembre 2020 adaptant le droit applicable au fonctionnement des établissements publics et des instances collégiales administratives pendant l'état d'urgence sanitaire",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-21",
+      "date_dernier_evenement": "2020-12-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41211"
+    },
+    {
+      "dossier_id": "DLR5L15N41210",
+      "titre": "Projet de loi portant report du renouvellement général des conseils départementaux, des conseils régionaux et des assemblées de Corse, de Guyane et de Martinique",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-21",
+      "date_dernier_evenement": "2021-02-16",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41210"
+    },
+    {
+      "dossier_id": "DLR5L15N41186",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1497 du 2 décembre 2020 portant prorogation et modification de l'ordonnance n° 2020-321 du 25 mars 2020 portant adaptation des règles de réunion et de délibération des assemblées et organes dirigeants des personnes morales et entités dépourvues de personnalité morale de droit privé en raison de l'épidémie de covid-19",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-16",
+      "date_dernier_evenement": "2020-12-16",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41186"
+    },
+    {
+      "dossier_id": "DLR5L15N41185",
+      "titre": "Projet de loi ratifiant diverses ordonnances prises pour faire face à l’épidémie de covid-19 en matière de procédures civile, pénale et administrative et portant adaptation des règles relatives aux difficultés des entreprises aux conséquences de cette épidémie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-16",
+      "date_dernier_evenement": "2020-12-16",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41185"
+    },
+    {
+      "dossier_id": "DLR5L15N41162",
+      "titre": "Programmation relative au développement solidaire et à la lutte contre les inégalités mondiales",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-16",
+      "date_dernier_evenement": "2021-08-04",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_inegalites_mondiales"
+    },
+    {
+      "dossier_id": "DLR5L15N41074",
+      "titre": "Respect des principes de la République",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-09",
+      "date_dernier_evenement": "2021-08-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/respects_principes_republique"
+    },
+    {
+      "dossier_id": "DLR5L15N41080",
+      "titre": "Ratifiant l’ordonnance n°2020-232 du 11 mars 2020 relative au régime des décisions prises en matière de santé, de prise en charge ou d'accompagnement social ou médico-social",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-09",
+      "date_dernier_evenement": "2020-12-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_decisions_sante"
+    },
+    {
+      "dossier_id": "DLR5L15N41081",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-1162 du 23 septembre 2020 relative aux conditions de travail des jeunes travailleurs de moins de dix-huit ans à bord des navires et à l'embarquement de personnes autres que gens de mer à des fins d'observation ou de mise en situation en milieu professionnel",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-09",
+      "date_dernier_evenement": "2020-12-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41081"
+    },
+    {
+      "dossier_id": "DLR5L15N41047",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-1144 du 16 septembre 2020 relative à l'harmonisation et à la simplification des polices des immeubles, locaux et installations",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-12-02",
+      "date_dernier_evenement": "2020-12-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41047"
+    },
+    {
+      "dossier_id": "DLR5L15N41033",
+      "titre": "Ordonnance adaptation de l'allocation et de l'indemnité d'activité partielle",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-12-02",
+      "date_dernier_evenement": "2020-12-02",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_activite_partielle"
+    },
+    {
+      "dossier_id": "DLR5L15N40985",
+      "titre": "Partenariat stratégique entre l’Union européenne et le Japon",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-11-25",
+      "date_dernier_evenement": "2021-07-05",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/partenariat_ue_japon"
+    },
+    {
+      "dossier_id": "DLR5L15N40984",
+      "titre": "Exploitation de lanceurs au Centre spatial guyanais",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-11-25",
+      "date_dernier_evenement": "2022-11-28",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lanceurs_centre_spatial_guyanais"
+    },
+    {
+      "dossier_id": "DLR5L15N40950",
+      "titre": "Projet de loi relatif aux délais d’organisation des élections municipales partielles et des élections des membres des commissions syndicales",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-11-18",
+      "date_dernier_evenement": "2020-12-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_delais_elections"
+    },
+    {
+      "dossier_id": "DLR5L15N40949",
+      "titre": "Projet de loi organique relatif aux délais d’organisation des élections législatives et sénatoriales",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-11-18",
+      "date_dernier_evenement": "2020-12-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjlo_delais_elections"
+    },
+    {
+      "dossier_id": "DLR5L15N40849",
+      "titre": "Loi de finances rectificative 2020 (4)",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-11-04",
+      "date_dernier_evenement": "2020-11-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_de_finances_rectificative_2020_4"
+    },
+    {
+      "dossier_id": "DLR5L15N40796",
+      "titre": "Approbation de l’avenant à l’accord de sécurité sociale entre le Gouvernement de la République française et l’Organisation internationale pour l’énergie de fusion en vue de la mise en œuvre du projet ITER",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-10-28",
+      "date_dernier_evenement": "2021-11-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/avenant_accord_iter"
+    },
+    {
+      "dossier_id": "DLR5L15N40751",
+      "titre": "Prorogation de l’état d’urgence sanitaire",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-10-21",
+      "date_dernier_evenement": "2020-11-14",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_de_letat_durgence_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N40767",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-933 du 29 juillet 2020 relative aux conditions d'exercice d'activités maritimes accessoires et à l'adaptation des conditions d'exercice de certaines activités maritimes aux voyages à proximité du littoral",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-10-21",
+      "date_dernier_evenement": "2020-10-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40767"
+    },
+    {
+      "dossier_id": "DLR5L15N40766",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-192 du 4 mars 2020 portant réforme des modalités de délivrance de la légalisation et de l’apostille",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-10-21",
+      "date_dernier_evenement": "2020-10-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40766"
+    },
+    {
+      "dossier_id": "DLR5L15N40750",
+      "titre": "Accompagnement des salariés des centrales à charbon",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-10-21",
+      "date_dernier_evenement": "2020-10-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accompagnement_des_salaries_des_centrales_a_charbon"
+    },
+    {
+      "dossier_id": "DLR5L15N40691",
+      "titre": "Ratification ordonnance renforçant le dispositif national de lutte contre le blanchiment de capitaux et le financement du terrorisme",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-10-14",
+      "date_dernier_evenement": "2020-10-14",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_blanchiment_capitaux_terrorisme"
+    },
+    {
+      "dossier_id": "DLR5L15N40694",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-920 du 29 juillet 2020 relative à la prévention et à la gestion des déchets",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-10-14",
+      "date_dernier_evenement": "2020-10-14",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40694"
+    },
+    {
+      "dossier_id": "DLR5L15N40633",
+      "titre": "Projet de loi de financement de la sécurité sociale pour 2021",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-10-07",
+      "date_dernier_evenement": "2020-12-14",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2021"
+    },
+    {
+      "dossier_id": "DLR5L15N40635",
+      "titre": "Projet de loi Projet de loi ratifiant l’ordonnance n° 2020-891 du 22 juillet 2020 relative aux procédures du comité de règlement des différends et des sanctions de la Commission de régulation de l’énergie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-10-07",
+      "date_dernier_evenement": "2020-10-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40635"
+    },
+    {
+      "dossier_id": "DLR5L15N40616",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-866 du 15 juillet 2020 portant diverses dispositions d'adaptation au droit de l'Union européenne dans le domaine de l'énergie et du climat",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-28",
+      "date_dernier_evenement": "2020-09-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40616"
+    },
+    {
+      "dossier_id": "DLR5L15N40245",
+      "titre": "Projet de loi de finances pour 2021",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-09-28",
+      "date_dernier_evenement": "2020-12-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_de_finances_pour_2021"
+    },
+    {
+      "dossier_id": "DLR5L15N40567",
+      "titre": "Reconnaissance des permis de conduire entre la France, le Qatar et la Chine",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-23",
+      "date_dernier_evenement": "2021-04-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reconnaissance_des_permis_de_conduire_entre_la_france_le_qatar_et_la_chine"
+    },
+    {
+      "dossier_id": "DLR5L15N40525",
+      "titre": "Prorogation du régime transitoire institué à la sortie de l’état d’urgence sanitaire",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-09-16",
+      "date_dernier_evenement": "2020-10-07",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_urgence_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N40530",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-773 du 24 juin 2020 relative aux fourrières automobiles",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-16",
+      "date_dernier_evenement": "2020-09-16",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40530"
+    },
+    {
+      "dossier_id": "DLR5L15N40483",
+      "titre": "Projet de loi autorisant l’approbation de l’avenant à la convention entre le Gouvernement de la République française et le Gouvernement de la République argentine du 4 avril 1979, en vue d’éviter les doubles impositions et de prévenir l’évasion fiscale en matière d’impôts sur le revenu et sur la fortune",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-09",
+      "date_dernier_evenement": "2022-01-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40483"
+    },
+    {
+      "dossier_id": "DLR5L15N40485",
+      "titre": "Projet de loi Projet de loi ratifiant l’ordonnance n° 2020-744 du 17 juin 2020 relative à la modernisation des schémas de cohérence territoriale et l’ordonnance n° 2020-745 du 17 juin 2020 relative à la rationalisation de la hiérarchie des normes applicable aux documents d’urbanisme",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-09",
+      "date_dernier_evenement": "2020-09-09",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40485"
+    },
+    {
+      "dossier_id": "DLR5L15N40455",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2019-1169 du 13 novembre 2019 relative aux marques de produits ou de services et l’ordonnance n° 2020-116 du 12 février 2020 portant création d’un droit d’opposition aux brevets d’invention",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-03",
+      "date_dernier_evenement": "2020-09-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40455"
+    },
+    {
+      "dossier_id": "DLR5L15N40451",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-701 du 10 juin 2020 relative à la surveillance du marché des véhicules à moteur et l'ordonnance n° 2020-700 du 10 juin 2020 relative à la surveillance des émissions des gaz polluants et des particules polluantes des moteurs à combustion interne destinés aux engins mobiles non routiers",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-03",
+      "date_dernier_evenement": "2020-09-03",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40451"
+    },
+    {
+      "dossier_id": "DLR5L15N40452",
+      "titre": "Projet de loi autorisant l’approbation de l’accord sous forme d’échange de lettres entre le Gouvernement de la République française et l’Organisation mondiale de la santé relatif à l’octroi du statut diplomatique aux fonctionnaires de l’Organisation mondiale de la santé de grade P5 et supérieur du bureau de l'OMS",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-09-03",
+      "date_dernier_evenement": "2021-06-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40452"
+    },
+    {
+      "dossier_id": "DLR5L15N40450",
+      "titre": "Mise sur le marché de certains produits phytopharmaceutiques en cas de danger sanitaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-09-03",
+      "date_dernier_evenement": "2021-07-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/mise_sur_le_marche_de_certains_produits_phytopharmaceutiques_en_cas_de_danger_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L15N40427",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la Principauté de Monaco relatif au régime fiscal des dons et legs faits aux personnes publiques et aux organismes à but désintéressé",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-08-26",
+      "date_dernier_evenement": "2021-06-11",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40427"
+    },
+    {
+      "dossier_id": "DLR5L15N40253",
+      "titre": "Projet de loi organique relatif à la simplification des expérimentations mises en œuvre sur le fondement du quatrième alinéa de l’article 72 de la Constitution",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-29",
+      "date_dernier_evenement": "2021-04-19",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40253"
+    },
+    {
+      "dossier_id": "DLR5L15N40173",
+      "titre": "Ratification de l'ordonnance relative à la réécriture des règles de construction",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2020-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_regles_construction"
+    },
+    {
+      "dossier_id": "DLR5L15N40174",
+      "titre": "Ratification de diverses ordonnances pour lutter contre l'épidémie de covid-19",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2021-02-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_de_diverses_ordonnances_pour_lutter_contre_lepidemie_de_covid_19"
+    },
+    {
+      "dossier_id": "DLR5L15N40183",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-770 du 24 juin 2020 relative à l'adaptation du taux horaire de l'allocation d'activité partielle",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2020-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40183"
+    },
+    {
+      "dossier_id": "DLR5L15N40191",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-599 du 20 mai 2020 portant mise en œuvre de la convention sur le travail dans la pêche et d'amendements à la convention du travail maritime",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2020-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40191"
+    },
+    {
+      "dossier_id": "DLR5L15N40184",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2020-777 du 24 juin 2020 relative à l'adaptation, pour la saison 2019/2020, du régime applicable aux contrats des sportifs et entraîneurs professionnels salariés",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2020-07-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40184"
+    },
+    {
+      "dossier_id": "DLR5L15N40171",
+      "titre": "Programmation de la recherche pour les années 2021 à 2027",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-07-22",
+      "date_dernier_evenement": "2020-12-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_recherche_2021_2030"
+    },
+    {
+      "dossier_id": "DLR5L15N40129",
+      "titre": "Restitution de biens culturels au Bénin et au Sénégal",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-07-16",
+      "date_dernier_evenement": "2020-12-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/restitution_biens_culturels_Benin_Senegal"
+    },
+    {
+      "dossier_id": "DLR5L15N40130",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2020-638 du 27 mai 2020 portant diverses dispositions sociales pour faire face à l'épidémie de covid-19 et l’ordonnance n° 2020-737 du 17 juin 2020 modifiant les délais applicables à diverses procédures en matière sociale et sanitaire afin de faire face aux conséquences de la propagation de l'épidémie de covid-19",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-15",
+      "date_dernier_evenement": "2020-07-15",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40130"
+    },
+    {
+      "dossier_id": "DLR5L15N40096",
+      "titre": "Prorogation du mandat des membres du Conseil économique, social et environnemental",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2020-07-07",
+      "date_dernier_evenement": "2020-08-10",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_mandat_membres_cese"
+    },
+    {
+      "dossier_id": "DLR5L15N40073",
+      "titre": "Conseil économique, social et environnemental",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2020-07-07",
+      "date_dernier_evenement": "2021-01-15",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/Conseil_economique_social_environnemental"
+    }
+  ],
   "comptages": {
     "par_statut": {
-      "adopte": 0,
+      "adopte": 33,
       "adopte_49_3": 0,
-      "adopte_cmp": 0,
+      "adopte_cmp": 25,
       "depose": 0,
-      "navette_en_cours": 0,
+      "navette_en_cours": 115,
+      "promulgue": 22,
       "rejete": 0,
       "rejete_49_3": 0,
       "retire": 0
@@ -75,8 +2027,14 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:51:05+0200",
+    "genere_le": "2026-08-18T01:12:05+0200",
     "licence_donnees": "",
-    "warnings": []
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
+    ]
   }
 }

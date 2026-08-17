@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 from gouvernement_textes import (
     collect_dossiers_gouvernementaux,
+    collect_dossiers_gouvernementaux_multi,
     ensure_dossiers_zip_downloaded,
     fetch_dossiers_gouvernementaux,
     parse_dossier_gouvernemental,
@@ -23,23 +24,57 @@ from gouvernement_textes import (
 # Dossiers_Legislatifs.json.zip, voir docs/an_opendata.md)
 # ---------------------------------------------------------------------------
 
-def _acte(code_acte, date_acte=None, statut_conclusion=None, enfants=None):
+def _acte(code_acte, date_acte=None, statut_conclusion=None, enfants=None,
+          texte_associe=None):
     return {
         "codeActe": code_acte,
         "dateActe": date_acte,
         "statutConclusion": statut_conclusion,
+        "texteAssocie": texte_associe,
         "actesLegislatifs": {"acteLegislatif": enfants} if enfants else None,
     }
 
 
-def _dossier(uid, titre, actes, *, legislature="17", titre_chemin="titre-chemin"):
-    return {
+# Préfixe du document réellement déposé — signal d'origine primaire depuis
+# #400 (PRJL = projet de loi, PION = proposition, PNRE = résolution).
+_PREFIXE_DOC_PAR_TITRE = {
+    "projet de loi": "PRJL",
+    "proposition de loi": "PION",
+}
+
+
+def _document_par_defaut(titre: str) -> str:
+    titre_normalise = (titre or "").strip().lower()
+    for prefixe_titre, prefixe_doc in _PREFIXE_DOC_PAR_TITRE.items():
+        if titre_normalise.startswith(prefixe_titre):
+            return f"{prefixe_doc}ANR5L17B0001"
+    return "PNREANR5L17B0001"
+
+
+def _dossier(uid, titre, actes, *, legislature="17", titre_chemin="titre-chemin",
+             procedure_code=None):
+    """Dossier de test. Les actes `*-DEPOT` sans `texteAssocie` explicite en
+    reçoivent un, déduit du titre : dans les données réelles un dépôt porte
+    toujours le document déposé, et c'est ce document qui détermine l'origine
+    depuis #400. Passer `texte_associe=` à `_acte` pour outrepasser."""
+    actes_completes = []
+    for acte in actes:
+        if (
+            str(acte.get("codeActe") or "").endswith("-DEPOT")
+            and not acte.get("texteAssocie")
+        ):
+            acte = {**acte, "texteAssocie": _document_par_defaut(titre)}
+        actes_completes.append(acte)
+    dossier = {
         "uid": uid,
         "legislature": legislature,
         "titreDossier": {"titre": titre, "titreChemin": titre_chemin, "senatChemin": None},
         "initiateur": {"acteurs": {"acteur": [{"acteurRef": "PA643210", "mandatRef": "PM873637"}]}},
-        "actesLegislatifs": {"acteLegislatif": actes},
+        "actesLegislatifs": {"acteLegislatif": actes_completes},
     }
+    if procedure_code is not None:
+        dossier["procedureParlementaire"] = {"code": procedure_code, "libelle": "test"}
+    return dossier
 
 
 def _make_zip(dossiers: dict[str, dict], *, extra_files: dict[str, str] | None = None) -> bytes:
@@ -501,3 +536,249 @@ def test_fetch_dossiers_gouvernementaux_delegates_to_collect(tmp_path):
         result = fetch_dossiers_gouvernementaux()
 
     assert [d["dossier_id"] for d in result["dossiers"]] == ["TEST"]
+
+
+# ---------------------------------------------------------------------------
+# Origine : signal document (#400)
+# ---------------------------------------------------------------------------
+
+def test_origine_titre_descriptif_reconnue_par_le_document():
+    """Cas central de #400 : sur la XV les titres sont descriptifs. Le filtre
+    par préfixe de titre y retenait ZÉRO projet de loi déposé entre 2017 et
+    2019. C'est le document déposé (PRJL) qui porte l'origine.
+
+    Cas réel : « Taxe sur les services numériques […] (taxe GAFA) ».
+    """
+    dossier = _dossier(
+        "DLR5L15N38010",
+        "Taxe sur les services numériques et impôt sur les sociétés (taxe GAFA)",
+        [_acte("AN1-DEPOT", "2019-03-06", texte_associe="PRJLANR5L15B1737")],
+        legislature="15",
+    )
+    record = parse_dossier_gouvernemental(dossier)
+    assert record is not None, "un titre descriptif ne doit plus exclure le dossier"
+    assert record["statut"] == "depose"
+
+
+def test_origine_document_pion_exclue_malgre_titre_ambigu():
+    dossier = _dossier(
+        "TEST-PION", "Démocratie plus représentative",
+        [_acte("AN1-DEPOT", "2018-05-09", texte_associe="PIONANR5L15B0911")],
+        legislature="15",
+    )
+    assert parse_dossier_gouvernemental(dossier) is None
+
+
+def test_origine_document_pnre_resolution_exclue():
+    """PNRE = proposition de résolution : ni gouvernemental, ni parlementaire
+    au sens des textes de loi."""
+    dossier = _dossier(
+        "TEST-PNRE", "Résolution sur un sujet quelconque",
+        [_acte("AN1-DEPOT", "2024-01-10", texte_associe="PNREANR5L17B0123")],
+    )
+    assert parse_dossier_gouvernemental(dossier) is None
+
+
+def test_origine_document_prime_sur_la_procedure_contradictoire():
+    """8 dossiers de règlement du budget sont typés « Proposition de loi
+    ordinaire » (code 2) à la source alors que le document déposé est un PRJL.
+    Le document réellement déposé fait foi.
+
+    Cas réel : « Règlement du budget 2016 » (DLR5L15N35837).
+    """
+    dossier = _dossier(
+        "DLR5L15N35837", "Règlement du budget 2016",
+        [_acte("AN1-DEPOT", "2017-06-28", texte_associe="PRJLANR5L15B0005")],
+        legislature="15", procedure_code="2",
+    )
+    record = parse_dossier_gouvernemental(dossier)
+    assert record is not None
+    assert record["dossier_id"] == "DLR5L15N35837"
+
+
+def test_origine_repli_sur_procedure_quand_aucun_document():
+    """Sans document de dépôt résolvable, la procédure sert de repli — mais
+    seulement pour les codes dont l'origine est univoque."""
+    gouvernemental = _dossier(
+        "TEST-REPLI-G", "Un intitulé descriptif", [_acte("AN1-DEBATS-DEC", "2024-03-01")],
+        procedure_code="1",  # Projet de loi ordinaire
+    )
+    assert parse_dossier_gouvernemental(gouvernemental) is not None
+
+    parlementaire = _dossier(
+        "TEST-REPLI-P", "Un intitulé descriptif", [_acte("AN1-DEBATS-DEC", "2024-03-01")],
+        procedure_code="2",  # Proposition de loi ordinaire
+    )
+    assert parse_dossier_gouvernemental(parlementaire) is None
+
+
+def test_origine_procedure_ambigue_jamais_devinee():
+    """Codes 5 et 7 (« Projet OU proposition de loi organique/constitutionnelle ») :
+    le libellé ne tranche pas. Sans document, le dossier est exclu plutôt que
+    classé par défaut (AGENTS.md §2.5)."""
+    for code in ("5", "7"):
+        dossier = _dossier(
+            f"TEST-AMBIGU-{code}", "Un intitulé descriptif",
+            [_acte("AN1-DEBATS-DEC", "2024-03-01")], procedure_code=code,
+        )
+        assert parse_dossier_gouvernemental(dossier) is None, f"code {code} deviné"
+
+
+# ---------------------------------------------------------------------------
+# Multi-archives : déduplication par uid (#400)
+# ---------------------------------------------------------------------------
+
+def _ecrire_zip(tmp_path, nom, dossiers):
+    chemin = tmp_path / nom
+    chemin.write_bytes(_make_zip(dossiers))
+    return chemin
+
+
+def test_multi_archives_dedupliqué_par_uid(tmp_path):
+    """Un dossier présent dans deux archives ne doit apparaître qu'une fois :
+    sans déduplication il serait compté deux fois dans textes[] et dans les
+    textes portés de chaque acteur."""
+    commun = _dossier("DLR-COMMUN", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    a16 = _ecrire_zip(tmp_path, "d16.zip", {"DLR-COMMUN": commun, "DLR-16": _dossier(
+        "DLR-16", "Projet de loi ordinaire seize", [_acte("AN1-DEPOT", "2023-01-10")])})
+    a17 = _ecrire_zip(tmp_path, "d17.zip", {"DLR-COMMUN": commun, "DLR-17": _dossier(
+        "DLR-17", "Projet de loi ordinaire dix-sept", [_acte("AN1-DEPOT", "2025-01-10")])})
+
+    resultat = collect_dossiers_gouvernementaux_multi([(16, a16), (17, a17)])
+    ids = [d["dossier_id"] for d in resultat["dossiers"]]
+
+    assert sorted(ids) == ["DLR-16", "DLR-17", "DLR-COMMUN"]
+    assert len(ids) == len(set(ids)), "aucun doublon inter-archives"
+
+
+def test_multi_archives_la_legislature_la_plus_elevee_fait_foi(tmp_path):
+    """L'archive la plus récente porte l'état le plus à jour des actes, donc du
+    statut. Lire d'abord la plus ancienne figerait un statut périmé : un texte
+    « en navette » dans la XVI peut être « adopté » dans la XVII."""
+    en_navette = _dossier("DLR-X", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("SN1-DEBATS-DEC", "2024-04-01", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+    ])
+    adopte = _dossier("DLR-X", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("SN1-DEBATS-DEC", "2024-04-01", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+        _acte("AN1-DEBATS-DEC", "2025-06-01", {"fam_code": "TSORTF01", "libelle": "adoptée"}),
+    ])
+    a16 = _ecrire_zip(tmp_path, "d16.zip", {"DLR-X": en_navette})
+    a17 = _ecrire_zip(tmp_path, "d17.zip", {"DLR-X": adopte})
+
+    resultat = collect_dossiers_gouvernementaux_multi([(16, a16), (17, a17)])
+    assert [d["statut"] for d in resultat["dossiers"]] == ["adopte"]
+
+    # Ordre d'appel inversé : le résultat ne doit pas en dépendre.
+    resultat_inverse = collect_dossiers_gouvernementaux_multi([(17, a17), (16, a16)])
+    assert [d["statut"] for d in resultat_inverse["dossiers"]] == ["adopte"]
+
+
+def test_multi_archives_archive_illisible_nempeche_pas_les_autres(tmp_path):
+    valide = _ecrire_zip(tmp_path, "ok.zip", {"DLR-OK": _dossier(
+        "DLR-OK", "Projet de loi ordinaire test", [_acte("AN1-DEPOT", "2024-01-10")])})
+    corrompue = tmp_path / "ko.zip"
+    corrompue.write_bytes(b"ceci n'est pas un zip")
+
+    resultat = collect_dossiers_gouvernementaux_multi([(16, corrompue), (17, valide)])
+    assert [d["dossier_id"] for d in resultat["dossiers"]] == ["DLR-OK"]
+
+
+def test_fetch_signale_une_archive_manquante(tmp_path):
+    """Une archive absente réduit la couverture : cela doit être signalé, pas
+    se lire comme « ce gouvernement n'a porté aucun texte » (§2.8)."""
+    valide = _ecrire_zip(tmp_path, "ok.zip", {"DLR-OK": _dossier(
+        "DLR-OK", "Projet de loi ordinaire test", [_acte("AN1-DEPOT", "2024-01-10")])})
+
+    with patch("gouvernement_textes.ensure_dossiers_zips_downloaded",
+               return_value=[(17, valide)]):
+        resultat = fetch_dossiers_gouvernementaux()
+
+    assert [d["dossier_id"] for d in resultat["dossiers"]] == ["DLR-OK"]
+    assert any("indisponible" in w for w in resultat["warnings"])
+    assert any("15" in w and "16" in w for w in resultat["warnings"])
+
+
+# ---------------------------------------------------------------------------
+# Promulgation (#400)
+# ---------------------------------------------------------------------------
+
+def test_promulgation_corrige_une_navette_factuellement_fausse():
+    """Cas réel DLR5L15N38367 : dernière décision de séance « modifié » au
+    Sénat le 2021-01-28, donc `navette_en_cours` — mais le texte a été
+    promulgué le 2021-02-03. Publier « en navette » en 2026 serait faux."""
+    dossier = _dossier("DLR5L15N38367", "Convention relative aux infractions à bord des aéronefs", [
+        # Titre descriptif + document PRJL : le cas typique de la XV.
+        _acte("AN1-DEPOT", "2019-11-27", texte_associe="PRJLANR5L15B2451"),
+        _acte("AN1-DEBATS-DEC", "2020-12-10", {"fam_code": "TSORTF01", "libelle": "adopté"}),
+        _acte("SN1-DEBATS-DEC", "2021-01-28", {"fam_code": "TSORTF05", "libelle": "modifié"}),
+        _acte("PROM-PUB", "2021-02-03"),
+    ], legislature="15")
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "promulgue"
+    assert record["sort_49_3"] is False
+
+
+def test_promulgation_corrige_un_rejet_infirme_ensuite():
+    dossier = _dossier("TEST-PROM-REJET", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2019-01-10"),
+        _acte("AN1-DEBATS-DEC", "2019-03-01", {"fam_code": "TSORTF07", "libelle": "rejetée"}),
+        _acte("PROM", "2019-08-01"),
+    ])
+    assert parse_dossier_gouvernemental(dossier)["statut"] == "promulgue"
+
+
+def test_promulgation_necrase_jamais_adopte_cmp_ni_49_3():
+    """Point sensible §2.4 : `promulgue` ne dit pas PAR QUELLE VOIE le texte a
+    été adopté. L'écrasement ferait disparaître le fait CMP ou 49.3."""
+    cmp_ = _dossier("TEST-PROM-CMP", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-10-10"),
+        _acte("AN1-DEBATS-DEC", "2025-02-06", {"fam_code": "TSORTF18", "libelle": "art. 45 al. 3"}),
+        _acte("PROM-PUB", "2025-02-15"),
+    ])
+    assert parse_dossier_gouvernemental(cmp_)["statut"] == "adopte_cmp"
+
+    art49 = _dossier("TEST-PROM-493", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-10-10"),
+        _acte("AN1-DEBATS-DEC", "2024-12-04", {"fam_code": "TSORTF06", "libelle": "49 al. 3"}),
+        _acte("PROM-PUB", "2024-12-20"),
+    ])
+    record = parse_dossier_gouvernemental(art49)
+    assert record["statut"] == "adopte_49_3"
+    assert record["sort_49_3"] is True
+
+
+def test_promulgation_necrase_pas_un_retrait():
+    """Retrait + promulgation serait contradictoire : ne pas trancher."""
+    dossier = _dossier("TEST-PROM-RETIRE", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-RTRINI", "2024-05-01"),
+        _acte("PROM-PUB", "2024-06-01"),
+    ])
+    assert parse_dossier_gouvernemental(dossier)["statut"] == "retire"
+
+
+def test_promulgation_conserve_le_warning_fam_code_inconnu():
+    """Le statut devient connu, mais le fam_code reste non mappé : le signal
+    doit rester visible pour un mapping futur."""
+    dossier = _dossier("TEST-PROM-INCONNU", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-DEBATS-DEC", "2024-03-01", {"fam_code": "TSORTF99", "libelle": "?"}),
+        _acte("PROM-PUB", "2024-06-01"),
+    ])
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["statut"] == "promulgue"
+    assert len(record["warnings"]) == 1
+    assert "TSORTF99" in record["warnings"][0]
+
+
+def test_promulgation_sans_decision_de_seance():
+    dossier = _dossier("TEST-PROM-SEUL", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+        _acte("AN1-COM-FOND-RAPPORT", "2024-02-01"),
+        _acte("PROM-PUB", "2024-06-01"),
+    ])
+    assert parse_dossier_gouvernemental(dossier)["statut"] == "promulgue"

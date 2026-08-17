@@ -174,9 +174,22 @@ SCHEMA_GOUVERNEMENT_VERSION = "1"
 # (AGENTS.md §2.4). Ajouté en #397, où son absence excluait 16 textes du jeu
 # de données — dont le PLF 2025. Voir docs/technical_decisions.md
 # #gouvernement-textes-fam-codes-manquants.
+#
+# promulgue (acte AN `PROM`/`PROM-PUB` : publication au Journal officiel) est
+# le fait le plus avancé et le plus vérifiable du parcours d'un texte. Ajouté
+# en #400 : l'ingestion des archives XV/XVI a fait remonter 62 textes dont la
+# dernière décision de séance était « modifié » (donc `navette_en_cours`) et 3
+# marqués `rejete`, alors qu'ils étaient promulgués — des statuts
+# factuellement faux (ex. convention sur les infractions à bord des aéronefs,
+# « modifié » au Sénat le 2021-01-28, promulguée le 2021-02-03).
+#
+# La promulgation ne remplace JAMAIS `adopte_cmp`/`adopte_49_3` : ces statuts
+# portent la voie procédurale, que `promulgue` ne dit pas. L'écrasement ferait
+# disparaître le fait 49.3 ou CMP de 116 textes, exactement le collapse que
+# refuse AGENTS.md §2.4.
 KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL: frozenset[str] = frozenset({
     "depose", "navette_en_cours", "adopte", "adopte_49_3", "adopte_cmp",
-    "rejete", "rejete_49_3", "retire",
+    "promulgue", "rejete", "rejete_49_3", "retire",
 })
 
 # Chambre de dépôt initial d'un texte gouvernemental : un gouvernement n'est
