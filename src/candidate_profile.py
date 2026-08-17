@@ -164,7 +164,24 @@ AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
 # indiscernable d'un cache absent et force sa reconstruction — jamais sa
 # relecture en memoire.
 AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME = "amendements.json"
-AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json"
+# Depuis #392, l'index par acteur du CACHE RUNTIME est un RÉPERTOIRE d'une
+# tranche par acteurRef (`index_par_acteur/PA1567.json`) et non plus un fichier
+# unique : `fetch_amendements_officiels` n'a besoin que de la tranche du
+# candidat courant, et relire les 673 Mo d'index complets à chaque candidat
+# représentait 93 % du coût d'extraction du roster (mesuré en #376).
+# Le format COMMITTÉ des législatures figées (AN_AMENDEMENTS_FIGEES_DIR,
+# gzippé, fichier unique) est inchangé — il n'est lu qu'une fois, à la
+# matérialisation du cache.
+AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME = "index_par_acteur"
+# Nom du fichier unique hérité de #377, conservé pour pouvoir le supprimer
+# lors de la migration vers les tranches.
+AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY = "index_par_acteur.json"
+
+# Mémo process du store `numero -> amendement` par législature (#392).
+# Volontairement limité au store dédupliqué (426 Mo résidents pour les 4
+# législatures, mesuré) : mémoïser les index par acteur complets coûterait
+# 3,84 Go et rouvrirait l'OOM traité par #377.
+_AMENDEMENTS_STORE_MEMO: dict[str, Optional[dict[str, dict[str, Any]]]] = {}
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -1399,60 +1416,111 @@ def _download_amendements_zip(
         )
 
 
-def _read_cached_amendements_agreges(
-    legislature: str,
-) -> Optional[tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]]:
-    """Lecture seule du cache disque d'une législature, sous forme dédupliquée
-    (`amendements.json` + `index_par_acteur.json`, voir
-    `AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME`), sans jamais déclencher de
-    téléchargement. Retourne `(amendements, index_par_acteur)`, ou `None` (pas
-    un couple vide) si le cache est absent, incomplet ou illisible — pour
-    rester distinguable d'un index vide légitime déjà mis en cache (issue
-    #250).
+def _shard_path_acteur(legislature: str, acteur_ref: str) -> Optional[Path]:
+    """Chemin de la tranche d'index d'UN acteur (#392).
 
-    Les deux fichiers sont exigés ensemble : un cache écrit avant #377 ne
-    contient qu'un `index_par_acteur.json` sous forme plate (jusqu'à 4,67 Go
-    pour la législature 16), qu'il ne faut surtout pas charger en mémoire —
-    son absence d'`amendements.json` le rend indiscernable d'un cache absent
-    ici, donc il est reconstruit au format compact plutôt que relu."""
+    Retourne `None` si `acteur_ref` n'a pas la forme attendue d'un
+    identifiant AN (`PA` suivi de chiffres) : le nom de fichier étant dérivé
+    de cette valeur, on refuse tout ce qui pourrait sortir du répertoire de
+    cache plutôt que d'assainir approximativement."""
+    if not isinstance(acteur_ref, str) or not re.fullmatch(r"PA\d+", acteur_ref):
+        return None
+    return (
+        AMENDEMENTS_CACHE_DIR
+        / legislature
+        / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+        / f"{acteur_ref}.json"
+    )
+
+
+def _read_cached_amendements_store(legislature: str) -> Optional[dict[str, dict[str, Any]]]:
+    """Store dédupliqué `numero -> amendement` d'une législature, mémoïsé en
+    mémoire process (#392).
+
+    Cette mémoïsation-ci est sûre, contrairement à celle tentée puis revertée
+    en #377 — la différence tient à ce qui est gardé résident. Mesuré sur le
+    cache réel :
+    - les 4 `index_par_acteur` complets résidents : **3,84 Go** (rejeté, c'est
+      ce qui avait provoqué l'OOM) ;
+    - les 4 `amendements.json` seuls résidents : **426 Mo** (retenu).
+
+    Le store est petit parce qu'il est dédupliqué (89 Mo sur disque pour les 4
+    législatures, ~178 000 amendements uniques) ; c'est `index_par_acteur` qui
+    pèse (580 Mo), et lui n'est plus jamais chargé en entier depuis #392 —
+    seule la tranche de l'acteur demandé est lue.
+
+    Le cache disque n'est jamais réécrit pendant la vie d'un process de
+    collecte (seul `build_amendements_index.py`, exécuté avant, le produit),
+    donc mémoïser ne peut pas servir une version périmée."""
     with _get_amendements_lock(legislature):
-        cache_dir = AMENDEMENTS_CACHE_DIR / legislature
-        amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
-        index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
-        if not amendements_path.is_file() or not index_path.is_file():
-            return None
-        try:
-            with open(amendements_path, encoding="utf-8") as f:
-                amendements = json.load(f)
-            with open(index_path, encoding="utf-8") as f:
-                index_par_acteur = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            return None  # cache corrompu : traité comme absent, l'appelant reconstruit
-        if not isinstance(amendements, dict) or not isinstance(index_par_acteur, dict):
-            return None
-        return amendements, index_par_acteur
+        if legislature in _AMENDEMENTS_STORE_MEMO:
+            return _AMENDEMENTS_STORE_MEMO[legislature]
+        path = AMENDEMENTS_CACHE_DIR / legislature / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
+        store: Optional[dict[str, dict[str, Any]]] = None
+        if path.is_file():
+            try:
+                with open(path, encoding="utf-8") as f:
+                    charge = json.load(f)
+                if isinstance(charge, dict):
+                    store = charge
+            except (json.JSONDecodeError, OSError):
+                store = None  # cache corrompu : traité comme absent
+        _AMENDEMENTS_STORE_MEMO[legislature] = store
+        return store
+
+
+def _clear_amendements_store_memo() -> None:
+    """Vide le mémo du store (tests uniquement : un process de collecte ne voit
+    jamais le cache disque changer sous lui)."""
+    _AMENDEMENTS_STORE_MEMO.clear()
 
 
 def _read_cached_amendements_acteur(
     legislature: str, acteur_ref: str
 ) -> Optional[list[dict[str, Any]]]:
     """Amendements d'UN acteur pour une législature, résolus depuis le cache
-    dédupliqué (`_read_cached_amendements_agreges`). Retourne `None` si le
-    cache est absent/illisible (l'appelant trace alors un warning), une liste
+    dédupliqué et **shardé par acteur** (#392). Retourne `None` si le cache
+    est absent/illisible (l'appelant trace alors un warning), une liste
     éventuellement vide si l'acteur n'y figure pas.
 
-    Seules les entrées de cet acteur sont matérialisées sous forme complète :
-    c'est tout l'intérêt de conserver le cache dédupliqué (#377) plutôt que de
-    l'expanser intégralement pour n'en lire qu'une fraction."""
-    agreges = _read_cached_amendements_agreges(legislature)
-    if agreges is None:
+    Coût : une tranche d'acteur (~285 Ko) au lieu des 673 Mo d'index complets
+    que la version #377 relisait à chaque candidat — 93 % du temps
+    d'extraction du roster y passait (mesuré en #376, ~10,9 s sur 11,7 s par
+    membre, soit ~500 Go de JSON reparsé sur un run complet).
+
+    Le store `amendements.json` est mémoïsé (voir
+    `_read_cached_amendements_store`) : c'est lui qui rend la résolution des
+    références possible sans relire quoi que ce soit après le premier appel."""
+    store = _read_cached_amendements_store(legislature)
+    if store is None:
         return None
-    amendements, index_par_acteur = agreges
+
+    shard_path = _shard_path_acteur(legislature, acteur_ref)
+    # Répertoire de tranches absent = cache hérité (#377, fichier unique) ou
+    # jamais construit : indiscernables, et dans les deux cas il faut le
+    # reconstruire plutôt que relire l'ancien format.
+    index_dir = AMENDEMENTS_CACHE_DIR / legislature / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+    if not index_dir.is_dir():
+        return None
+    if shard_path is None or not shard_path.is_file():
+        # Acteur simplement absent de cette législature : liste vide, pas None
+        # — distinguer « pas d'amendement » de « index indisponible » est ce
+        # qui pilote le warning côté fetch_amendements_officiels.
+        return []
+
+    try:
+        with open(shard_path, encoding="utf-8") as f:
+            refs = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(refs, list):
+        return None
+
     entries: list[dict[str, Any]] = []
-    for ref in index_par_acteur.get(acteur_ref, []):
+    for ref in refs:
         if not isinstance(ref, dict):
             continue
-        base = amendements.get(ref.get("numero"))
+        base = store.get(ref.get("numero"))
         if base is None:
             continue
         entries.append({**base, "role_signataire": ref.get("role_signataire")})
@@ -1498,12 +1566,13 @@ def amendements_index_deja_figee(legislature: str) -> bool:
         return False
     cache_dir = AMENDEMENTS_CACHE_DIR / legislature
     amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
-    index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
+    index_dir = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
     fraicheur_path = cache_dir / AMENDEMENTS_FRAICHEUR_FILENAME
-    # `amendements.json` exigé aussi (#377) : un cache écrit avant ce format
-    # n'a que `index_par_acteur.json`, sous forme plate — le considérer comme
-    # déjà figé le laisserait en place indéfiniment, sans jamais le migrer.
-    if not amendements_path.is_file() or not index_path.is_file() or not fraicheur_path.is_file():
+    # `amendements.json` exigé aussi (#377), et le répertoire de tranches
+    # depuis #392 : un cache écrit avant l'un ou l'autre de ces formats doit
+    # être reconstruit, pas considéré comme déjà figé — sinon il resterait en
+    # place indéfiniment sans jamais migrer.
+    if not amendements_path.is_file() or not index_dir.is_dir() or not fraicheur_path.is_file():
         return False
     try:
         with open(fraicheur_path, encoding="utf-8") as f:
@@ -1532,8 +1601,25 @@ def _write_cached_amendements_agreges(
     cache_dir.mkdir(parents=True, exist_ok=True)
     with open(cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME, "w", encoding="utf-8") as f:
         json.dump(amendements, f, ensure_ascii=False)
-    with open(cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME, "w", encoding="utf-8") as f:
-        json.dump(index_par_acteur, f, ensure_ascii=False)
+
+    # Une tranche par acteur (#392). Le répertoire est reconstruit de zéro :
+    # un acteur disparu d'une reconstruction ne doit pas laisser sa tranche
+    # périmée derrière lui. Écrit APRÈS amendements.json, et le répertoire
+    # n'est considéré valide en lecture que s'il existe — une écriture
+    # interrompue laisse donc un cache traité comme absent, jamais un cache
+    # incohérent.
+    index_dir = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
+    shutil.rmtree(index_dir, ignore_errors=True)
+    index_dir.mkdir(parents=True, exist_ok=True)
+    for acteur_ref, refs in index_par_acteur.items():
+        shard = _shard_path_acteur(legislature, acteur_ref)
+        if shard is None:
+            continue  # acteurRef hors forme attendue : ignoré plutôt qu'écrit
+        with open(shard, "w", encoding="utf-8") as f:
+            json.dump(refs, f, ensure_ascii=False)
+    # Ancien fichier unique hérité (#377) : supprimé une fois les tranches en
+    # place, pour libérer les centaines de Mo qu'il occupait.
+    (cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY).unlink(missing_ok=True)
 
 
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
@@ -1742,18 +1828,19 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     """
     with _get_amendements_lock(legislature):
         cache_dir = AMENDEMENTS_CACHE_DIR / legislature
-        index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
+        index_dir = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
         amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
-        # Cache-hit : seul `index_par_acteur.json` (forme compacte, #377) est
-        # relu — `amendements.json` ne sert qu'à résoudre les références pour
-        # un acteur donné (`_read_cached_amendements_acteur`), inutile ici où
-        # seule la liste des acteurs indexés est renvoyée.
-        if amendements_path.is_file() and index_path.is_file():
+        index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY
+        # Cache-hit : la liste des acteurs indexés se déduit des NOMS des
+        # tranches, sans en ouvrir aucune (#392). Le seul consommateur de
+        # cette valeur de retour en fait `len()` (build_amendements_index.py),
+        # d'où des listes vides en valeurs : matérialiser le contenu coûterait
+        # des centaines de Mo pour une information dont personne ne se sert.
+        if amendements_path.is_file() and index_dir.is_dir():
             try:
-                with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, OSError):
-                pass  # cache corrompu : on reconstruit
+                return {p.stem: [] for p in index_dir.glob("*.json")}
+            except OSError:
+                pass  # cache illisible : on reconstruit
 
         if legislature in AN_AMENDEMENTS_LEGISLATURES_FIGEES:
             frozen_index = _load_frozen_amendement_index(legislature)

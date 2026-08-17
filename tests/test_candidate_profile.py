@@ -41,6 +41,20 @@ from normalize_nosdeputes import normalize_nosdeputes
 
 
 @pytest.fixture(autouse=True)
+def _purge_memo_store_amendements():
+    """Le mémo du store amendements (#392) est indexé par législature seule,
+    pas par `AMENDEMENTS_CACHE_DIR` — sûr en production (la constante n'y est
+    jamais réassignée), mais piégeux en test où chaque cas patche ce répertoire
+    vers un `tmp_path` différent : sans purge, un test lirait le store mémoïsé
+    du test précédent. Même piège que celui qui avait fait reverter la
+    mémoïsation de #377."""
+    from candidate_profile import _clear_amendements_store_memo
+    _clear_amendements_store_memo()
+    yield
+    _clear_amendements_store_memo()
+
+
+@pytest.fixture(autouse=True)
 def _reset_amendements_failed_legislatures_cache():
     """Le cache d'échec inter-candidats (`_amendements_failed_legislatures`, issue
     #239) est un état module-level : sans réinitialisation, un test qui fait
@@ -1886,13 +1900,15 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 # ---------------------------------------------------------------------------
 
 def _write_cache_amendements(cache_dir: Path, legislature: str, amendements: dict, index_par_acteur: dict) -> None:
-    """Écrit un cache d'amendements au format dédupliqué attendu depuis #377."""
+    """Écrit un cache d'amendements au format attendu : store dédupliqué (#377)
+    + index shardé par acteur (#392, un fichier par acteurRef)."""
     leg_dir = cache_dir / legislature
     leg_dir.mkdir(parents=True, exist_ok=True)
     (leg_dir / "amendements.json").write_text(json.dumps(amendements, ensure_ascii=False), encoding="utf-8")
-    (leg_dir / "index_par_acteur.json").write_text(
-        json.dumps(index_par_acteur, ensure_ascii=False), encoding="utf-8"
-    )
+    shards = leg_dir / "index_par_acteur"
+    shards.mkdir(exist_ok=True)
+    for acteur_ref, refs in index_par_acteur.items():
+        (shards / f"{acteur_ref}.json").write_text(json.dumps(refs, ensure_ascii=False), encoding="utf-8")
 
 
 def test_read_cached_amendements_acteur_returns_none_when_absent(tmp_path):
@@ -1973,6 +1989,74 @@ def test_read_cached_amendements_acteur_ignores_dangling_reference(tmp_path):
         result = _read_cached_amendements_acteur("17", "PA1")
 
     assert result == [{"numero": "A1", "role_signataire": None}]
+
+
+def test_read_cached_amendements_acteur_ne_lit_que_la_tranche_demandee(tmp_path):
+    """#392 : la lecture ne doit toucher QUE la tranche de l'acteur demandé.
+
+    Vérifié en rendant illisible la tranche d'un AUTRE acteur : si la lecture
+    parcourait encore l'index complet, elle échouerait. C'est tout l'objet du
+    shardage — relire les 673 Mo d'index à chaque candidat représentait 93 %
+    du coût d'extraction du roster (#376)."""
+    from candidate_profile import _read_cached_amendements_acteur
+
+    _write_cache_amendements(
+        tmp_path, "17",
+        amendements={"A1": {"numero": "A1", "date": "2024-01-01"}},
+        index_par_acteur={"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]},
+    )
+    # Tranche d'un autre acteur, volontairement corrompue.
+    (tmp_path / "17" / "index_par_acteur" / "PA999.json").write_text("{pas du JSON", encoding="utf-8")
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        result = _read_cached_amendements_acteur("17", "PA1")
+
+    assert result == [
+        {"numero": "A1", "date": "2024-01-01", "role_signataire": "auteur_principal"}
+    ]
+
+
+def test_read_cached_amendements_acteur_refuse_un_acteur_ref_hors_forme(tmp_path):
+    """Le nom de tranche dérive de l'acteurRef : tout ce qui n'a pas la forme
+    `PA<chiffres>` est refusé plutôt qu'assaini approximativement, pour qu'un
+    identifiant malformé ne puisse jamais désigner un chemin hors du cache."""
+    from candidate_profile import _read_cached_amendements_acteur
+
+    _write_cache_amendements(tmp_path, "17", amendements={}, index_par_acteur={"PA1": []})
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        for mauvais in ("../../etc/passwd", "PA1/../PA2", "", "NOTAREF"):
+            assert _read_cached_amendements_acteur("17", mauvais) == []
+
+
+def test_write_cached_amendements_supprime_l_index_plat_herite(tmp_path):
+    """Migration : l'écriture au format shardé supprime le fichier unique
+    hérité de #377, pour libérer les centaines de Mo qu'il occupait."""
+    from candidate_profile import _write_cached_amendements_agreges
+
+    leg_dir = tmp_path / "17"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json").write_text('{"PA1": []}', encoding="utf-8")
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        _write_cached_amendements_agreges("17", {"A1": {"numero": "A1"}}, {"PA1": [{"numero": "A1"}]})
+
+    assert not (leg_dir / "index_par_acteur.json").exists(), "L'index plat hérité doit être supprimé"
+    assert (leg_dir / "index_par_acteur" / "PA1.json").is_file()
+
+
+def test_write_cached_amendements_reconstruit_le_repertoire_de_tranches(tmp_path):
+    """Une tranche d'un acteur disparu d'une reconstruction ne doit pas
+    survivre : le répertoire est reconstruit de zéro, pas complété."""
+    from candidate_profile import _write_cached_amendements_agreges
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        _write_cached_amendements_agreges("17", {}, {"PA1": [], "PA2": []})
+        assert (tmp_path / "17" / "index_par_acteur" / "PA2.json").is_file()
+        _write_cached_amendements_agreges("17", {}, {"PA1": []})
+
+    assert (tmp_path / "17" / "index_par_acteur" / "PA1.json").is_file()
+    assert not (tmp_path / "17" / "index_par_acteur" / "PA2.json").exists()
 
 
 def test_read_cached_amendements_acteur_returns_none_on_legacy_flat_cache(tmp_path):
@@ -2138,7 +2222,7 @@ def test_download_and_build_amendement_index_success_removes_raw_zip(tmp_path):
         _download_and_build_amendement_index("17")
 
     assert not (tmp_path / "17" / "amendements.zip").exists(), "L'archive brute doit être supprimée après succès"
-    assert (tmp_path / "17" / "index_par_acteur.json").is_file()
+    assert (tmp_path / "17" / "index_par_acteur").is_dir(), "Index shardé par acteur (#392)"
     assert (tmp_path / "17" / "amendements.json").is_file()
 
 
@@ -2295,7 +2379,12 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
     ):
         result = _download_and_build_amendement_index("17")
 
-    assert result == cached_index
+    # Depuis #392 le cache-hit ne renvoie que les acteurs indexés (déduits des
+    # noms de tranches), pas leur contenu : le seul consommateur en fait
+    # `len()`, et matérialiser les références coûterait des centaines de Mo
+    # pour une information dont personne ne se sert.
+    assert set(result) == set(cached_index)
+    assert result == {"PA1": []}
     mock_get.assert_not_called()
 
 
@@ -2355,10 +2444,10 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     # clair : même contenu que le fallback committé, seule la compression
     # change — plus aucune expansion vers la forme plate.
     assert json.loads((cache_dir / "15" / "amendements.json").read_text(encoding="utf-8")) == frozen_amendements
-    assert (
-        json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8"))
-        == frozen_index_par_acteur
-    )
+    # Index matérialisé en tranches par acteur (#392), pas en fichier unique.
+    shard = cache_dir / "15" / "index_par_acteur" / "PA1.json"
+    assert shard.is_file()
+    assert json.loads(shard.read_text(encoding="utf-8")) == frozen_index_par_acteur["PA1"]
     assert json.loads((cache_dir / "15" / "fraicheur.json").read_text(encoding="utf-8"))["figee"] is True
 
     # Et la lecture par acteur reconstitue bien l'enregistrement complet.

@@ -144,7 +144,9 @@ def _write_index(cache_dir: Path, legislature: str) -> None:
     leg_dir = cache_dir / legislature
     leg_dir.mkdir(parents=True, exist_ok=True)
     (leg_dir / "amendements.json").write_text(json.dumps({}), encoding="utf-8")
-    (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
+    shards = leg_dir / "index_par_acteur"
+    shards.mkdir(exist_ok=True)
+    (shards / "PA123.json").write_text(json.dumps([]), encoding="utf-8")
 
 
 def _write_fraicheur(cache_dir: Path, legislature: str, reussi: bool, horodatage: str, figee: bool = False) -> None:
@@ -189,8 +191,9 @@ def test_report_amendements_freshness_fresh_index_no_warning(tmp_path):
 
 
 def test_report_amendements_freshness_legacy_flat_cache_reported_as_never_built(tmp_path):
-    """Cache hérité d'avant #377 (forme plate : `index_par_acteur.json` seul,
-    sans `amendements.json`) : doit être rapporté « jamais construit », le
+    """Cache hérité d'un format précédent (ici #377 : `index_par_acteur.json`
+    en fichier unique, sans le répertoire de tranches de #392) : doit être
+    rapporté « jamais construit », le
     même verdict que celui du lecteur réel
     (`candidate_profile._read_cached_amendements_agreges`, qui exige les deux
     fichiers et ne relit jamais l'ancien format en mémoire). Sans ça, le
@@ -200,6 +203,7 @@ def test_report_amendements_freshness_legacy_flat_cache_reported_as_never_built(
     leg_dir = cache_dir / legislature
     leg_dir.mkdir(parents=True, exist_ok=True)
     (leg_dir / "index_par_acteur.json").write_text(json.dumps({"PA123": []}), encoding="utf-8")
+    (leg_dir / "amendements.json").write_text(json.dumps({}), encoding="utf-8")
     _write_fraicheur(cache_dir, legislature, reussi=True, horodatage=_horodatage(REFERENCE))
 
     soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=7, reference_date=REFERENCE)

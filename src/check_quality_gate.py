@@ -673,16 +673,16 @@ def _report_amendements_freshness(
     frais: list[str] = []
 
     for legislature in _AMENDEMENTS_LEGISLATURES:
-        index_path = cache_dir / legislature / "index_par_acteur.json"
-        # `amendements.json` exigé aussi (#377) : depuis le passage du cache à
-        # la forme dédupliquée, les deux fichiers vont toujours de pair et
-        # `candidate_profile._read_cached_amendements_agreges` traite comme
-        # absent un cache qui n'aurait que l'un des deux (cas d'un cache
-        # hérité d'avant #377, plat). Ce rapport doit refléter le même verdict
-        # que le lecteur réel, sinon il annoncerait « construit » un index que
-        # la collecte ignore.
+        # `amendements.json` + le RÉPERTOIRE de tranches par acteur (#392,
+        # ex-fichier unique de #377). Ce rapport doit refléter le même verdict
+        # que le lecteur réel (`candidate_profile._read_cached_amendements_acteur`,
+        # qui exige les deux) : sinon il annoncerait « construit » un index
+        # que la collecte ignore. Un cache hérité de l'un ou l'autre des
+        # formats précédents est donc rapporté « jamais construit » — ce qui
+        # est le comportement voulu, il sera reconstruit.
+        index_path = cache_dir / legislature / "index_par_acteur"
         amendements_path = cache_dir / legislature / "amendements.json"
-        if not index_path.is_file() or not amendements_path.is_file():
+        if not index_path.is_dir() or not amendements_path.is_file():
             jamais_construit.append(legislature)
             soft_warnings.append(
                 f"législature {legislature} : index jamais construit (aucun "
