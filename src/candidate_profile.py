@@ -148,6 +148,23 @@ AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # contenu JSON est identique, seule la compression change.
 AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json.gz"
 AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
+# Noms des fichiers du cache disque (`AMENDEMENTS_CACHE_DIR/<legislature>/`),
+# depuis #377 : le cache stocke la MEME forme dedupliquee que le fallback
+# committe ci-dessus (simplement non compressee), au lieu de la forme plate
+# ou chaque amendement etait recopie integralement pour chacun de ses
+# signataires. Mesure sur la legislature 16 : 210 Mo (34 + 176) contre
+# 4,67 Go pour la forme plate, soit ~21x — la forme plate approchait a elle
+# seule la RAM totale d'un runner GitHub Actions standard (~7 Gio) comme
+# d'une machine de developpement modeste, et a declenche l'OOM killer en
+# pratique (voir docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
+# Un cache ecrit avant #377 ne contient que `index_par_acteur.json` sous
+# forme plate, sans `amendements.json` : les deux fichiers sont donc exiges
+# ensemble pour qu'un cache soit considere valide (voir
+# `_read_cached_amendements_agreges`), ce qui rend l'ancien format
+# indiscernable d'un cache absent et force sa reconstruction — jamais sa
+# relecture en memoire.
+AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME = "amendements.json"
+AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json"
 # Le fichier Amendements.json.zip pese 283-618 Mo selon la legislature : un
 # alea reseau transitoire sur un telechargement de cette taille (deja observe
 # en pratique : IncompleteRead en cours de stream) ne doit pas declencher un
@@ -1382,35 +1399,64 @@ def _download_amendements_zip(
         )
 
 
-def _read_cached_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
-    """Lecture seule du cache disque `index_par_acteur.json` pour une législature,
-    sans jamais déclencher de téléchargement. Retourne `None` (pas `{}`) si le
-    fichier est absent ou illisible, pour rester distinguable d'un index vide
-    légitime déjà mis en cache (issue #250, préparation à l'isolation du job
-    dédié de la sous-issue 3 de #248).
+def _read_cached_amendements_agreges(
+    legislature: str,
+) -> Optional[tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]]:
+    """Lecture seule du cache disque d'une législature, sous forme dédupliquée
+    (`amendements.json` + `index_par_acteur.json`, voir
+    `AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME`), sans jamais déclencher de
+    téléchargement. Retourne `(amendements, index_par_acteur)`, ou `None` (pas
+    un couple vide) si le cache est absent, incomplet ou illisible — pour
+    rester distinguable d'un index vide légitime déjà mis en cache (issue
+    #250).
 
-    Volontairement PAS mémoïsée : une tentative (#376, revertée) mettait
-    `lru_cache` sur cette fonction pour éviter de recharger le même fichier à
-    chaque candidat — mais `fetch_amendements_officiels` boucle sur les 4
-    législatures de `AN_AMENDEMENTS_PATH` pour chaque candidat, donc un cache
-    non borné finit par garder les 3 index figés simultanément en mémoire
-    (mesuré : 1,46 + 2,04 + 4,35 Gio en clair sur disque, davantage une fois
-    désérialisé en objets Python) — pire que l'ancien comportement (un seul
-    index à la fois, libéré entre deux candidats) sur une machine dont la RAM
-    totale est du même ordre de grandeur. Voir
-    docs/technical_decisions.md#oom-lecture-amendements-par-candidat : le
-    vrai correctif (éviter de matérialiser l'index entier d'une législature
-    pour n'en lire qu'un seul acteur) nécessite de restructurer le format de
-    cache sur disque, hors périmètre ici — voir l'issue de suivi."""
+    Les deux fichiers sont exigés ensemble : un cache écrit avant #377 ne
+    contient qu'un `index_par_acteur.json` sous forme plate (jusqu'à 4,67 Go
+    pour la législature 16), qu'il ne faut surtout pas charger en mémoire —
+    son absence d'`amendements.json` le rend indiscernable d'un cache absent
+    ici, donc il est reconstruit au format compact plutôt que relu."""
     with _get_amendements_lock(legislature):
-        index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
-        if not index_path.is_file():
+        cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+        amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
+        index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
+        if not amendements_path.is_file() or not index_path.is_file():
             return None
         try:
+            with open(amendements_path, encoding="utf-8") as f:
+                amendements = json.load(f)
             with open(index_path, encoding="utf-8") as f:
-                return json.load(f)
+                index_par_acteur = json.load(f)
         except (json.JSONDecodeError, OSError):
             return None  # cache corrompu : traité comme absent, l'appelant reconstruit
+        if not isinstance(amendements, dict) or not isinstance(index_par_acteur, dict):
+            return None
+        return amendements, index_par_acteur
+
+
+def _read_cached_amendements_acteur(
+    legislature: str, acteur_ref: str
+) -> Optional[list[dict[str, Any]]]:
+    """Amendements d'UN acteur pour une législature, résolus depuis le cache
+    dédupliqué (`_read_cached_amendements_agreges`). Retourne `None` si le
+    cache est absent/illisible (l'appelant trace alors un warning), une liste
+    éventuellement vide si l'acteur n'y figure pas.
+
+    Seules les entrées de cet acteur sont matérialisées sous forme complète :
+    c'est tout l'intérêt de conserver le cache dédupliqué (#377) plutôt que de
+    l'expanser intégralement pour n'en lire qu'une fraction."""
+    agreges = _read_cached_amendements_agreges(legislature)
+    if agreges is None:
+        return None
+    amendements, index_par_acteur = agreges
+    entries: list[dict[str, Any]] = []
+    for ref in index_par_acteur.get(acteur_ref, []):
+        if not isinstance(ref, dict):
+            continue
+        base = amendements.get(ref.get("numero"))
+        if base is None:
+            continue
+        entries.append({**base, "role_signataire": ref.get("role_signataire")})
+    return entries
 
 
 def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
@@ -1450,9 +1496,14 @@ def amendements_index_deja_figee(legislature: str) -> bool:
     #amendements-legislatures-figees)."""
     if legislature not in AN_AMENDEMENTS_LEGISLATURES_FIGEES:
         return False
-    index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
-    fraicheur_path = AMENDEMENTS_CACHE_DIR / legislature / AMENDEMENTS_FRAICHEUR_FILENAME
-    if not index_path.is_file() or not fraicheur_path.is_file():
+    cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+    amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
+    index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
+    fraicheur_path = cache_dir / AMENDEMENTS_FRAICHEUR_FILENAME
+    # `amendements.json` exigé aussi (#377) : un cache écrit avant ce format
+    # n'a que `index_par_acteur.json`, sous forme plate — le considérer comme
+    # déjà figé le laisserait en place indéfiniment, sans jamais le migrer.
+    if not amendements_path.is_file() or not index_path.is_file() or not fraicheur_path.is_file():
         return False
     try:
         with open(fraicheur_path, encoding="utf-8") as f:
@@ -1462,6 +1513,29 @@ def amendements_index_deja_figee(legislature: str) -> bool:
     return bool(isinstance(fraicheur, dict) and fraicheur.get("figee"))
 
 
+def _write_cached_amendements_agreges(
+    legislature: str,
+    amendements: dict[str, dict[str, Any]],
+    index_par_acteur: dict[str, list[dict[str, Any]]],
+) -> None:
+    """Écrit (best-effort) le cache disque d'une législature sous forme
+    dédupliquée : `amendements.json` + `index_par_acteur.json` (#377).
+
+    Les deux fichiers sont écrits ensemble, `amendements.json` en premier :
+    `_read_cached_amendements_agreges` exige les deux, donc une écriture
+    interrompue entre les deux laisse un cache considéré comme absent
+    (reconstruit au prochain run) plutôt qu'un couple incohérent. Écrase au
+    passage un éventuel `index_par_acteur.json` plat hérité d'avant #377 —
+    la migration d'un ancien cache est donc automatique et libère les
+    plusieurs Go qu'il occupait."""
+    cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with open(cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME, "w", encoding="utf-8") as f:
+        json.dump(amendements, f, ensure_ascii=False)
+    with open(cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME, "w", encoding="utf-8") as f:
+        json.dump(index_par_acteur, f, ensure_ascii=False)
+
+
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
     """Charge l'index amendements committé pour une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour
@@ -1469,15 +1543,16 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     compressée gzip (`amendements.json.gz` + `index_par_acteur.json.gz`
     allégé, voir `_aggregate_amendements_index` — nécessaire pour rester sous
     la limite GitHub de 100 Mo par blob, voir la révision du 15/08/2026 de
-    docs/technical_decisions.md#amendements-legislatures-figees), la
-    reconstruit sous la forme plate standard
-    (`_expand_aggregated_amendements_index`) et la matérialise dans le cache
-    disque (`AMENDEMENTS_CACHE_DIR`), en clair, au même format qu'une
-    construction réseau réussie (`index_par_acteur.json` + `fraicheur.json`,
-    ce dernier copié tel quel avec son marqueur `figee: true`) — pour que le
-    reste du pipeline (quality gate section 3d comprise, `fetch_amendements_officiels`)
-    n'ait pas à distinguer les deux origines ni à connaître la compression du
-    fallback committé. Retourne `None` si le fallback committé est absent ou
+    docs/technical_decisions.md#amendements-legislatures-figees), et le
+    matérialise dans le cache disque (`AMENDEMENTS_CACHE_DIR`) en clair, sous
+    la MEME forme dédupliquée (`amendements.json` + `index_par_acteur.json`,
+    seule la compression change) — depuis #377, plus aucune expansion vers la
+    forme plate n'a lieu ici : c'est elle qui faisait passer la législature 16
+    de 210 Mo à 4,67 Go et déclenchait l'OOM killer. `fraicheur.json` est
+    copié tel quel avec son marqueur `figee: true`.
+
+    Retourne l'index compact acteurRef -> références (`{numero,
+    role_signataire}`), ou `None` si le fallback committé est absent ou
     incomplet (ne devrait pas arriver pour une législature figée, mais ne
     lève jamais : l'appelant retombe alors sur le chemin réseau standard)."""
     frozen_dir = AN_AMENDEMENTS_FIGEES_DIR / legislature
@@ -1493,20 +1568,18 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     except (json.JSONDecodeError, OSError):
         return None
 
-    index = _expand_aggregated_amendements_index(amendements, index_par_acteur)
-
-    cache_index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
     try:
-        cache_index_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(cache_index_path, "w", encoding="utf-8") as f:
-            json.dump(index, f, ensure_ascii=False)
+        _write_cached_amendements_agreges(legislature, amendements, index_par_acteur)
         frozen_fraicheur_path = frozen_dir / AMENDEMENTS_FRAICHEUR_FILENAME
         if frozen_fraicheur_path.is_file():
-            shutil.copyfile(frozen_fraicheur_path, cache_index_path.with_name(AMENDEMENTS_FRAICHEUR_FILENAME))
+            shutil.copyfile(
+                frozen_fraicheur_path,
+                AMENDEMENTS_CACHE_DIR / legislature / AMENDEMENTS_FRAICHEUR_FILENAME,
+            )
     except OSError:
         pass
 
-    return index
+    return index_par_acteur
 
 
 def _parse_amendements_zip(zip_path: Path) -> dict[str, list[dict[str, Any]]]:
@@ -1630,7 +1703,7 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     exclusivement par le job CI dédié `extract-amendements-an`
     (`src/build_amendements_index.py`, #251) : `fetch_amendements_officiels`
     ne l'appelle plus depuis #252 (sous-issue 4/6 de #248), elle lit
-    uniquement `_read_cached_amendement_index`.
+    uniquement `_read_cached_amendements_acteur`.
 
     Pour une législature figée (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), aucun
     appel réseau n'a lieu : l'index committé est chargé par
@@ -1665,8 +1738,14 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     distinguer les deux.
     """
     with _get_amendements_lock(legislature):
-        index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
-        if index_path.is_file():
+        cache_dir = AMENDEMENTS_CACHE_DIR / legislature
+        index_path = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME
+        amendements_path = cache_dir / AMENDEMENTS_CACHE_AMENDEMENTS_FILENAME
+        # Cache-hit : seul `index_par_acteur.json` (forme compacte, #377) est
+        # relu — `amendements.json` ne sert qu'à résoudre les références pour
+        # un acteur donné (`_read_cached_amendements_acteur`), inutile ici où
+        # seule la liste des acteurs indexés est renvoyée.
+        if amendements_path.is_file() and index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
                     return json.load(f)
@@ -1709,15 +1788,20 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
                 _write_amendements_fraicheur(index_path, reussi=False)
             raise AmendementsIndexError(f"archive invalide ({exc})") from exc
 
+        # Déduplication avant écriture (#377) : `_parse_amendements_zip`
+        # produit un enregistrement complet par signataire, donc N+1 copies du
+        # même amendement pour N cosignataires. Écrire cette forme plate telle
+        # quelle produisait un cache de plusieurs Go, relu intégralement par
+        # candidat côté `fetch_amendements_officiels` — cause de l'OOM
+        # documenté dans #oom-lecture-amendements-par-candidat.
+        amendements_dedup, index_par_acteur = _aggregate_amendements_index(index)
         try:
-            index_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(index_path, "w", encoding="utf-8") as f:
-                json.dump(index, f, ensure_ascii=False)
+            _write_cached_amendements_agreges(legislature, amendements_dedup, index_par_acteur)
             _write_amendements_fraicheur(index_path, reussi=True)
         except OSError:
             pass
 
-        return index
+        return index_par_acteur
 
 
 def _collect_texte_codes(node: Any, codes: set[str]) -> None:
@@ -2686,13 +2770,17 @@ def fetch_amendements_officiels(
     précisant la législature concernée y est ajouté pour chaque absence, au
     lieu d'un échec binaire global.
 
-    Lecture cache-only exclusivement (`_read_cached_amendement_index`, #250) :
+    Lecture cache-only exclusivement (`_read_cached_amendements_acteur`, #250) :
     ne déclenche jamais de téléchargement depuis ce chemin. La construction de
     l'index (téléchargement + parsing de l'archive AN) est désormais la seule
     responsabilité du job CI dédié `extract-amendements-an`
     (`src/build_amendements_index.py`, #251) — sous-issue 4/6 de #248, pour
     que le coût réseau ne soit plus payé indépendamment par chaque job
     consommateur (`extract-an`/`extract-roster-groupes`, issues #239/#245/#246).
+
+    Depuis #377, seules les entrées de `acteur_ref` sont matérialisées sous
+    forme complète, à partir du cache dédupliqué — l'index entier de la
+    législature n'est plus expansé en mémoire pour n'en lire qu'une fraction.
     """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
@@ -2700,15 +2788,15 @@ def fetch_amendements_officiels(
 
     amendements: list[dict[str, Any]] = []
     for legislature in AN_AMENDEMENTS_PATH:
-        index = _read_cached_amendement_index(legislature)
-        if index is None:
+        records = _read_cached_amendements_acteur(legislature, acteur_ref)
+        if records is None:
             if warnings is not None:
                 warnings.append(
                     f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : "
                     "index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
                 )
             continue
-        for record in index.get(acteur_ref, []):
+        for record in records:
             amendements.append({**record, "legislature": legislature})
 
     if amendements:

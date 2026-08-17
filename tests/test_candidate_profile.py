@@ -1873,66 +1873,142 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 
 # ---------------------------------------------------------------------------
 # Tests pour la séparation téléchargement/construction vs lecture cache-only
-# (issue #250, sous-issue 2/6 de #248) : `_read_cached_amendement_index` ne
-# doit jamais déclencher d'appel réseau ; `_download_and_build_amendement_index`
-# reprend telle quelle la logique réseau (téléchargement/retry/cache d'échec),
+# (issue #250, sous-issue 2/6 de #248) : la lecture du cache ne doit jamais
+# déclencher d'appel réseau ; `_download_and_build_amendement_index` reprend
+# telle quelle la logique réseau (téléchargement/retry/cache d'échec),
 # désormais appelée uniquement par le job dédié `extract-amendements-an`
 # (`src/build_amendements_index.py`, #251) — plus par `fetch_amendements_officiels`,
 # qui lit exclusivement le cache depuis #252 (sous-issue 4/6 de #248).
+#
+# Depuis #377, le cache est stocké sous forme dédupliquée (`amendements.json`
+# + `index_par_acteur.json` compact) et la lecture se fait par acteur
+# (`_read_cached_amendements_acteur`) au lieu d'expanser tout l'index.
 # ---------------------------------------------------------------------------
 
-def test_read_cached_amendement_index_returns_none_when_absent(tmp_path):
-    """Aucun fichier `index_par_acteur.json` en cache : `None` (pas `{}`, pour
-    rester distinguable d'un index vide légitime déjà mis en cache), et aucun
-    appel réseau ne doit être déclenché."""
-    from candidate_profile import _read_cached_amendement_index
+def _write_cache_amendements(cache_dir: Path, legislature: str, amendements: dict, index_par_acteur: dict) -> None:
+    """Écrit un cache d'amendements au format dédupliqué attendu depuis #377."""
+    leg_dir = cache_dir / legislature
+    leg_dir.mkdir(parents=True, exist_ok=True)
+    (leg_dir / "amendements.json").write_text(json.dumps(amendements, ensure_ascii=False), encoding="utf-8")
+    (leg_dir / "index_par_acteur.json").write_text(
+        json.dumps(index_par_acteur, ensure_ascii=False), encoding="utf-8"
+    )
+
+
+def test_read_cached_amendements_acteur_returns_none_when_absent(tmp_path):
+    """Aucun cache pour cette législature : `None` (pas `[]`, pour rester
+    distinguable d'un acteur sans amendement dans un index bien présent), et
+    aucun appel réseau ne doit être déclenché."""
+    from candidate_profile import _read_cached_amendements_acteur
 
     with (
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
     ):
-        result = _read_cached_amendement_index("17")
+        result = _read_cached_amendements_acteur("17", "PA1")
 
     assert result is None
     mock_get.assert_not_called()
 
 
-def test_read_cached_amendement_index_returns_cached_content(tmp_path):
-    """Fichier de cache présent : son contenu est retourné tel quel, sans appel
-    réseau."""
-    from candidate_profile import _read_cached_amendement_index
+def test_read_cached_amendements_acteur_resolves_references(tmp_path):
+    """Les références compactes `{numero, role_signataire}` de l'acteur sont
+    résolues en enregistrements complets via `amendements.json`, sans appel
+    réseau — et seules celles de cet acteur le sont."""
+    from candidate_profile import _read_cached_amendements_acteur
 
-    cached_index = {"PA1": [{"uid": "AMANR5L17PO123456B0001P0D1N001"}]}
-    index_dir = tmp_path / "17"
-    index_dir.mkdir(parents=True)
-    (index_dir / "index_par_acteur.json").write_text(
-        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    _write_cache_amendements(
+        tmp_path,
+        "17",
+        amendements={
+            "A1": {"numero": "A1", "date": "2024-01-01", "texte_vise": "T1"},
+            "A2": {"numero": "A2", "date": "2024-02-01", "texte_vise": "T2"},
+        },
+        index_par_acteur={
+            "PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}],
+            "PA2": [{"numero": "A2", "role_signataire": "co_signataire"}],
+        },
     )
 
     with (
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
     ):
-        result = _read_cached_amendement_index("17")
+        result = _read_cached_amendements_acteur("17", "PA1")
 
-    assert result == cached_index
+    assert result == [
+        {"numero": "A1", "date": "2024-01-01", "texte_vise": "T1", "role_signataire": "auteur_principal"}
+    ]
     mock_get.assert_not_called()
 
 
-def test_read_cached_amendement_index_returns_none_on_corrupted_cache(tmp_path):
-    """Fichier de cache présent mais illisible (JSON corrompu) : traité comme
-    absent (`None`), pas d'exception propagée, aucun appel réseau."""
-    from candidate_profile import _read_cached_amendement_index
+def test_read_cached_amendements_acteur_returns_empty_list_for_unknown_acteur(tmp_path):
+    """Cache présent mais acteur absent de l'index : liste vide (pas `None`) —
+    distinguer « pas d'amendement pour cet élu » de « index indisponible »
+    est ce qui pilote le warning côté `fetch_amendements_officiels`."""
+    from candidate_profile import _read_cached_amendements_acteur
 
-    index_dir = tmp_path / "17"
-    index_dir.mkdir(parents=True)
-    (index_dir / "index_par_acteur.json").write_text("{not valid json", encoding="utf-8")
+    _write_cache_amendements(tmp_path, "17", amendements={}, index_par_acteur={"PA1": []})
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        result = _read_cached_amendements_acteur("17", "PA_INCONNU")
+
+    assert result == []
+
+
+def test_read_cached_amendements_acteur_ignores_dangling_reference(tmp_path):
+    """Une référence dont le `numero` est absent de `amendements.json` est
+    ignorée plutôt que de lever (cohérent avec
+    `_expand_aggregated_amendements_index`)."""
+    from candidate_profile import _read_cached_amendements_acteur
+
+    _write_cache_amendements(
+        tmp_path,
+        "17",
+        amendements={"A1": {"numero": "A1"}},
+        index_par_acteur={"PA1": [{"numero": "A1"}, {"numero": "INCONNU"}]},
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        result = _read_cached_amendements_acteur("17", "PA1")
+
+    assert result == [{"numero": "A1", "role_signataire": None}]
+
+
+def test_read_cached_amendements_acteur_returns_none_on_legacy_flat_cache(tmp_path):
+    """Cache hérité d'avant #377 (`index_par_acteur.json` plat, sans
+    `amendements.json`) : traité comme absent, JAMAIS relu en mémoire — c'est
+    tout l'objet du correctif, cette forme pesant jusqu'à 4,67 Go pour la
+    législature 16. Le cache sera reconstruit au format compact."""
+    from candidate_profile import _read_cached_amendements_acteur
+
+    leg_dir = tmp_path / "17"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json").write_text(
+        json.dumps({"PA1": [{"numero": "A1", "date": "2024-01-01"}]}), encoding="utf-8"
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        result = _read_cached_amendements_acteur("17", "PA1")
+
+    assert result is None
+
+
+def test_read_cached_amendements_acteur_returns_none_on_corrupted_cache(tmp_path):
+    """Cache présent mais illisible (JSON corrompu) : traité comme absent
+    (`None`), pas d'exception propagée, aucun appel réseau."""
+    from candidate_profile import _read_cached_amendements_acteur
+
+    leg_dir = tmp_path / "17"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "amendements.json").write_text("{not valid json", encoding="utf-8")
+    (leg_dir / "index_par_acteur.json").write_text("{not valid json", encoding="utf-8")
 
     with (
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
     ):
-        result = _read_cached_amendement_index("17")
+        result = _read_cached_amendements_acteur("17", "PA1")
 
     assert result is None
     mock_get.assert_not_called()
@@ -2116,11 +2192,9 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
     téléchargement."""
     from candidate_profile import _download_and_build_amendement_index
 
-    cached_index = {"PA1": [{"uid": "AMANR5L17PO123456B0001P0D1N001"}]}
-    index_dir = tmp_path / "17"
-    index_dir.mkdir(parents=True)
-    (index_dir / "index_par_acteur.json").write_text(
-        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    cached_index = {"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]}
+    _write_cache_amendements(
+        tmp_path, "17", amendements={"A1": {"numero": "A1"}}, index_par_acteur=cached_index
     )
 
     with (
@@ -2143,8 +2217,9 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     committé (`AN_AMENDEMENTS_FIGEES_DIR`, sous forme dédupliquée et compressée
     gzip — `amendements.json.gz` + `index_par_acteur.json.gz` allégé, voir
     `_aggregate_amendements_index`) est utilisé sans jamais toucher le réseau,
-    même en l'absence de tout cache disque préexistant, et reconstruit sous la
-    forme plate standard (en clair) avant matérialisation dans le cache."""
+    même en l'absence de tout cache disque préexistant, et matérialisé dans le
+    cache sous la MEME forme dédupliquée (en clair) — depuis #377, plus aucune
+    expansion vers la forme plate n'a lieu ici."""
     from candidate_profile import _download_and_build_amendement_index
 
     frozen_amendements = {
@@ -2162,14 +2237,6 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     }
     frozen_index_par_acteur = {
         "PA1": [{"numero": "AMANR5L15PO123456B0001P0D1N001", "role_signataire": "auteur_principal"}]
-    }
-    expected_index = {
-        "PA1": [
-            {
-                **frozen_amendements["AMANR5L15PO123456B0001P0D1N001"],
-                "role_signataire": "auteur_principal",
-            }
-        ]
     }
     frozen_dir = tmp_path / "figees" / "15"
     frozen_dir.mkdir(parents=True)
@@ -2190,15 +2257,50 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     ):
         result = _download_and_build_amendement_index("15")
 
-    assert result == expected_index
+    assert result == frozen_index_par_acteur
     mock_get.assert_not_called()
-    # Matérialisé dans le cache disque standard, sous forme plate (même format
-    # qu'une construction réseau), pas la forme dédupliquée committée.
-    assert json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8")) == expected_index
+    # Matérialisé dans le cache disque sous la forme dédupliquée (#377), en
+    # clair : même contenu que le fallback committé, seule la compression
+    # change — plus aucune expansion vers la forme plate.
+    assert json.loads((cache_dir / "15" / "amendements.json").read_text(encoding="utf-8")) == frozen_amendements
+    assert (
+        json.loads((cache_dir / "15" / "index_par_acteur.json").read_text(encoding="utf-8"))
+        == frozen_index_par_acteur
+    )
     assert json.loads((cache_dir / "15" / "fraicheur.json").read_text(encoding="utf-8"))["figee"] is True
+
+    # Et la lecture par acteur reconstitue bien l'enregistrement complet.
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        from candidate_profile import _read_cached_amendements_acteur
+
+        assert _read_cached_amendements_acteur("15", "PA1") == [
+            {
+                **frozen_amendements["AMANR5L15PO123456B0001P0D1N001"],
+                "role_signataire": "auteur_principal",
+            }
+        ]
 
 
 def test_amendements_index_deja_figee_true_when_materialized_and_figee(tmp_path):
+    from candidate_profile import amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(cache_dir, "15", amendements={}, index_par_acteur={})
+    (cache_dir / "15" / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        assert amendements_index_deja_figee("15") is True
+
+
+def test_amendements_index_deja_figee_false_on_legacy_flat_cache(tmp_path):
+    """Cache hérité d'avant #377 (`index_par_acteur.json` seul, forme plate) :
+    ne doit PAS être considéré comme déjà figé, sinon il resterait en place
+    indéfiniment sans jamais être migré vers le format compact — et resterait
+    illisible pour `_read_cached_amendements_acteur`, qui exige les deux
+    fichiers."""
     from candidate_profile import amendements_index_deja_figee
 
     cache_dir = tmp_path / "cache"
@@ -2211,7 +2313,7 @@ def test_amendements_index_deja_figee_true_when_materialized_and_figee(tmp_path)
     )
 
     with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
-        assert amendements_index_deja_figee("15") is True
+        assert amendements_index_deja_figee("15") is False
 
 
 def test_amendements_index_deja_figee_false_for_non_frozen_legislature(tmp_path):
@@ -2249,10 +2351,11 @@ def test_amendements_index_deja_figee_does_not_read_index_par_acteur(tmp_path):
     from candidate_profile import amendements_index_deja_figee
 
     cache_dir = tmp_path / "cache"
-    leg_dir = cache_dir / "16"
-    leg_dir.mkdir(parents=True)
-    (leg_dir / "index_par_acteur.json").write_text("{ceci n'est pas du JSON valide", encoding="utf-8")
-    (leg_dir / "fraicheur.json").write_text(
+    _write_cache_amendements(cache_dir, "16", amendements={}, index_par_acteur={})
+    (cache_dir / "16" / "index_par_acteur.json").write_text(
+        "{ceci n'est pas du JSON valide", encoding="utf-8"
+    )
+    (cache_dir / "16" / "fraicheur.json").write_text(
         json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
         encoding="utf-8",
     )
@@ -2870,14 +2973,14 @@ def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others()
         fetch_amendements_officiels,
     )
 
-    def fake_index(legislature):
+    def fake_records(legislature, acteur_ref):
         if legislature == "17":
-            return {"PA1": [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}]}
+            return [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}]
         return None
 
     warnings: list[str] = []
     with (
-        patch("candidate_profile._read_cached_amendement_index", side_effect=fake_index),
+        patch("candidate_profile._read_cached_amendements_acteur", side_effect=fake_records),
         patch("candidate_profile._build_texte_titre_index", return_value={}),
         patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
     ):
@@ -2929,13 +3032,11 @@ def test_fetch_amendements_officiels_returns_cached_amendements_when_index_prese
     from candidate_profile import fetch_amendements_officiels
 
     legislature = next(iter(_LEGISLATURES))
-    cached_index = {
-        "PA1": [{"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}],
-    }
-    index_dir = tmp_path / legislature
-    index_dir.mkdir(parents=True)
-    (index_dir / "index_par_acteur.json").write_text(
-        json.dumps(cached_index, ensure_ascii=False), encoding="utf-8"
+    _write_cache_amendements(
+        tmp_path,
+        legislature,
+        amendements={"1": {"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}},
+        index_par_acteur={"PA1": [{"numero": "1", "role_signataire": "auteur_principal"}]},
     )
 
     warnings: list[str] = []
