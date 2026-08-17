@@ -71,6 +71,7 @@ n'étant consommés par aucun agrégat de groupe (#349).
 import argparse
 import json
 import random
+import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -142,6 +143,43 @@ def load_candidats(path: str) -> list[dict[str, Any]]:
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("candidats", [])
+
+
+def _parse_shard(valeur: str) -> tuple[int, int]:
+    """Parse `--shard I/N` (ex. `0/8`). Lève `ValueError` sur toute forme
+    invalide plutôt que de deviner : un shard mal interprété traiterait
+    silencieusement les mauvais candidats."""
+    match = re.fullmatch(r"\s*(\d+)\s*/\s*(\d+)\s*", valeur or "")
+    if not match:
+        raise ValueError(f"--shard attend la forme I/N (ex. 0/8), reçu : {valeur!r}")
+    index, total = int(match.group(1)), int(match.group(2))
+    if total < 1:
+        raise ValueError(f"--shard : N doit valoir au moins 1, reçu {total}")
+    if not 0 <= index < total:
+        raise ValueError(f"--shard : I doit être dans [0, {total - 1}], reçu {index}")
+    return index, total
+
+
+def _select_shard(
+    candidats: list[dict[str, Any]], index: int, total: int
+) -> list[dict[str, Any]]:
+    """Partitionne la liste en `total` tranches et retourne la `index`-ième
+    (#394).
+
+    Découpage par **position modulo**, pas par blocs contigus : le fichier
+    roster est ordonné par groupe parlementaire, donc des blocs contigus
+    donneraient des tranches très inégales en coût (un groupe de 190 membres
+    contre un de 15). Le modulo répartit les groupes uniformément.
+
+    Déterministe à liste source constante — condition nécessaire pour que
+    `--skip-existing` garde son sens d'un run à l'autre : un membre doit
+    toujours retomber dans le même shard, sinon un shard sauterait des
+    profils déjà collectés par un autre.
+
+    Appliqué AVANT `--limit`/`--sample`/`--skip-existing` : l'appartenance à
+    un shard ne doit pas dépendre de l'état de couverture, qui évolue.
+    """
+    return [c for i, c in enumerate(candidats) if i % total == index]
 
 
 def _select_candidats(
@@ -657,6 +695,11 @@ def main() -> None:
     parser.add_argument("--no-checkpoint", action="store_true",
                         help="Désactiver l'écriture du point de sauvegarde intermédiaire.")
     limit_group = parser.add_mutually_exclusive_group()
+    parser.add_argument("--shard", default=None, metavar="I/N",
+                        help="Ne traiter que la tranche I sur N du fichier de candidats "
+                             "(ex. --shard 0/8). Découpage par position modulo, déterministe : "
+                             "un candidat retombe toujours dans le même shard. Appliqué avant "
+                             "--limit/--sample/--skip-existing (#394).")
     limit_group.add_argument("--limit", type=int, default=None, metavar="N",
                         help="Ne traiter que les N premiers candidats de la liste (déploiement progressif "
                              "contrôlé, ex. avant d'ouvrir l'extraction à un roster complet). "
@@ -688,6 +731,19 @@ def main() -> None:
         if not candidats:
             print(f"Aucun candidat avec le slug '{args.only}' dans {args.candidats}.")
             return
+
+    # Partitionnement en shards (#394), AVANT toute autre sélection : voir
+    # _select_shard pour pourquoi l'ordre compte.
+    if args.shard:
+        try:
+            shard_index, shard_total = _parse_shard(args.shard)
+        except ValueError as exc:
+            # Pas de sys importé dans ce module : on échoue franchement plutôt
+            # que de traiter silencieusement la mauvaise tranche.
+            raise SystemExit(f"[!] {exc}")
+        avant_shard = len(candidats)
+        candidats = _select_shard(candidats, shard_index, shard_total)
+        print(f"Shard {shard_index}/{shard_total} : {len(candidats)}/{avant_shard} candidat(s) dans cette tranche.")
 
     refresh_slugs: set[str] = set()
     if args.limit is not None or args.sample is not None:

@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -10,7 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import generate_all_profiles
 from generate_all_profiles import (
+    _parse_shard,
     _select_candidats,
+    _select_shard,
     _select_candidats_couverture,
     load_candidats,
     process_candidat,
@@ -463,3 +466,93 @@ def test_integration_progressive_selection_advances_across_two_runs(tmp_path, mo
     monkeypatch.setattr(sys, "argv", argv_base)
     generate_all_profiles.main()
     assert set(call_log) == {"m2", "m3"}
+
+
+# ---------------------------------------------------------------------------
+# Partitionnement en shards (#394) — permet un run roster complet et borne la
+# perte en cas de préemption runner.
+# ---------------------------------------------------------------------------
+
+def _membres(n: int) -> list[dict]:
+    return [{"slug": f"m{i}"} for i in range(n)]
+
+
+def test_select_shard_partitionne_sans_perte_ni_doublon():
+    """Les N tranches doivent recouvrir exactement la liste : un membre perdu
+    ne serait jamais collecté, un membre dupliqué serait extrait deux fois."""
+    candidats = _membres(752)
+    shards = [_select_shard(candidats, i, 8) for i in range(8)]
+
+    reunis = [c["slug"] for s in shards for c in s]
+    assert sorted(reunis) == sorted(c["slug"] for c in candidats)
+    assert len(reunis) == len(set(reunis)), "aucun doublon entre shards"
+
+
+def test_select_shard_tranches_equilibrees():
+    """Découpage par modulo, pas par blocs contigus : le roster étant ordonné
+    par groupe parlementaire, des blocs contigus donneraient des tranches très
+    inégales en coût (un groupe de 190 membres contre un de 15)."""
+    tailles = [len(_select_shard(_membres(752), i, 8)) for i in range(8)]
+    assert tailles == [94] * 8
+
+
+def test_select_shard_repartit_les_groupes_contigus():
+    """Un découpage en blocs contigus passerait les assertions de taille
+    ci-dessus tout en concentrant un groupe entier dans un seul shard.
+
+    Le fichier roster réel est trié par groupe (7 blocs contigus, du plus
+    gros au plus petit). Ce qui rend le coût prévisible, ce n'est pas que les
+    tranches aient la même taille, c'est que chacune voie *tous* les groupes :
+    un shard ne doit jamais hériter des 190 membres du plus gros groupe.
+    """
+    # Roster ordonné par groupe, tailles inégales comme dans la réalité.
+    tailles_groupes = {"REN": 190, "RN": 140, "LFI": 120, "SOC": 100,
+                       "LR": 80, "ECO": 60, "GDR": 62}
+    candidats = [
+        {"slug": f"{groupe}-{i}", "groupe": groupe}
+        for groupe, taille in tailles_groupes.items()
+        for i in range(taille)
+    ]
+
+    for index in range(8):
+        groupes = Counter(c["groupe"] for c in _select_shard(candidats, index, 8))
+        assert set(groupes) == set(tailles_groupes), (
+            f"shard {index} ne voit pas tous les groupes : {sorted(groupes)}"
+        )
+        # Aucun groupe ne pèse plus que sa part attendue (+1 pour l'arrondi).
+        for groupe, taille in tailles_groupes.items():
+            assert groupes[groupe] <= taille // 8 + 1
+
+
+def test_select_shard_est_deterministe():
+    """Condition nécessaire pour que --skip-existing garde son sens d'un run à
+    l'autre : un membre doit toujours retomber dans le même shard."""
+    candidats = _membres(100)
+    assert _select_shard(candidats, 3, 8) == _select_shard(candidats, 3, 8)
+
+
+def test_select_shard_total_1_retourne_tout():
+    """N=1 : comportement identique à l'absence de shardage — c'est ce que la
+    CI utilise tant que roster_extraction_limit n'est pas à 0."""
+    candidats = _membres(50)
+    assert _select_shard(candidats, 0, 1) == candidats
+
+
+def test_select_shard_plus_de_shards_que_de_membres():
+    """Cas limite : certaines tranches sont vides, aucune ne doit lever."""
+    shards = [_select_shard(_membres(3), i, 8) for i in range(8)]
+    assert sum(len(s) for s in shards) == 3
+    assert [len(s) for s in shards] == [1, 1, 1, 0, 0, 0, 0, 0]
+
+
+@pytest.mark.parametrize("valeur", ["", "8", "0/0", "8/8", "-1/8", "a/b", "0/", "/8"])
+def test_parse_shard_rejette_les_formes_invalides(valeur):
+    """Un shard mal interprété traiterait silencieusement les mauvais
+    candidats : toute forme douteuse doit lever, jamais être devinée."""
+    with pytest.raises(ValueError):
+        _parse_shard(valeur)
+
+
+@pytest.mark.parametrize("valeur,attendu", [("0/8", (0, 8)), ("7/8", (7, 8)), (" 3 / 4 ", (3, 4)), ("0/1", (0, 1))])
+def test_parse_shard_accepte_les_formes_valides(valeur, attendu):
+    assert _parse_shard(valeur) == attendu
