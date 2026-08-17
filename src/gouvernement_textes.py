@@ -21,18 +21,30 @@ façon dupliquée, dans `_build_texte_titre_index` et
 téléchargement — un seul cache, un seul verrou, pas de second téléchargement
 du même fichier ~10 Mo.
 
-Origine gouvernementale (art. 39 de la Constitution) — signal retenu :
-préfixe de `titreDossier.titre` (« Projet de loi » = gouvernemental,
-« Proposition de loi » = parlementaire). Spike #207 (docs/an_opendata.md,
-section « Spike : origine ... ») : couvre 689/3044 dossiers sans jointure ni
-faux positif, contre ~15 % de faux positifs pour la chaîne alternative
-`initiateur.acteurs.acteur[] -> mandat GOUVERNEMENT -> organeRef` (dataset
-`AMO30`, historique complet) sans filtrage par date de mandat vs date de
-dépôt. Cette chaîne AMO30 n'est PAS implémentée ici (repli volontairement
-laissé pour un futur complément) : seul le préfixe de titre est utilisé, donc
-les 2355 dossiers sans préfixe standard (motions, résolutions, textes
-transmis du Sénat sans préfixe, etc.) sont exclus du résultat plutôt que mal
-classés.
+Archives (#400) : `AN_DOSSIERS_ARCHIVES` liste une archive par législature
+(15, 16, 17). Chacune est déjà multi-législature mais ne garde des
+précédentes qu'une traîne résiduelle — la seule archive 17 ne contient aucun
+projet de loi antérieur à la XVI. Les dossiers vus dans plusieurs archives
+sont dédupliqués par uid, la législature la plus élevée faisant foi (état le
+plus à jour des actes, donc du statut) : voir `iter_dossiers_bruts`.
+
+Origine gouvernementale (art. 39 de la Constitution) — signal primaire depuis
+#400 : le **type du document déposé**, préfixe de l'uid du `texteAssocie` de
+l'acte `*-DEPOT` le plus ancien (`PRJL` = projet de loi, `PION` = proposition,
+`PNRE` = résolution, donc hors champ). Le préfixe de `titreDossier.titre`
+retenu jusque-là (spike #207) ne fonctionne que sur les XVI/XVII : sur la XV
+les titres sont descriptifs (« Taxe sur les services numériques »,
+« Démocratie plus représentative, responsable, efficace ») et le filtre y
+retenait **zéro** projet de loi déposé entre 2017 et 2019. Sur le corpus
+complet, il ne voyait que 271 des 726 dossiers gouvernementaux.
+
+`procedureParlementaire.code` sert de repli quand aucun document de dépôt
+n'est résolvable, et seulement pour les codes univoques : les codes 5 et 7
+(« Projet **ou** proposition de loi organique/constitutionnelle ») sont exclus
+du repli, car deviner violerait AGENTS.md §2.5. Le document prime sur la
+procédure quand les deux divergent — 8 dossiers de règlement du budget sont
+typés « Proposition de loi ordinaire » à la source alors que le document
+déposé est bien un `PRJL`.
 
 Statut (nomenclature fermée `schema_gouvernement.KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`) :
 porté par `statutConclusion.fam_code` d'un acte de décision de séance
@@ -61,6 +73,18 @@ inconnu à signaler.
 
 Retrait : `codeActe` dédié (`AN1-RTRINI`/`ANLUNI-RTRINI`), sans
 `statutConclusion` associé (spike #207).
+
+Promulgation (#400) : un `codeActe` `PROM`/`PROM-PUB` (publication au Journal
+officiel) est le fait le plus avancé et le plus vérifiable du parcours. Il
+corrige les statuts qu'il rend factuellement faux — `navette_en_cours`,
+`depose`, `rejete`, `rejete_49_3`, ou statut indéterminé — en `promulgue`. Il
+n'écrase JAMAIS `adopte_cmp`/`adopte_49_3` : ces statuts portent la voie
+procédurale suivie, que `promulgue` ne dit pas, et les écraser ferait
+disparaître le fait CMP ou 49.3 de 116 textes (collapse interdit par §2.4).
+`retire` n'est pas écrasé non plus : retrait puis promulgation est
+contradictoire, et trancher n'est pas notre rôle. Le warning d'un `fam_code`
+non mappé est conservé même quand la promulgation détermine le statut : le
+code reste inconnu et mérite d'être signalé.
 
 `TSORTF24` (« rejeté via 49.3, motion de censure adoptée », ex. le budget
 2025 sous le gouvernement Barnier) est mappé à `statut = "rejete_49_3"` avec
@@ -100,6 +124,7 @@ import json
 import threading
 import zipfile
 from pathlib import Path
+from collections.abc import Iterator
 from typing import Any, Optional
 
 import requests
@@ -108,7 +133,32 @@ from download_watchdog import download_with_watchdog
 from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
 AN_OPENDATA_BASE = "https://data.assemblee-nationale.fr/static/openData/repository"
-AN_DOSSIERS_ZIP_URL = f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
+
+# Archives de dossiers législatifs, par législature (#400).
+#
+# Deux conventions de nommage coexistent chez l'AN — suffixe romain jusqu'à la
+# XV, sans suffixe ensuite. Vérifié par requêtes réelles sur les index 11 à 18
+# le 2026-08-18 : le listing de répertoire est désactivé (404 même sur les
+# chemins valides), donc l'inventaire ne peut pas être découvert dynamiquement
+# et doit être tenu à jour ici.
+#
+# La XIV et antérieures sont absentes volontairement : les XII/XIII ne sont pas
+# publiées, et la XIV a une structure incompatible (JSON monolithique
+# `export.textesLegislatifs.document[]`, aucun `dossierParlementaire`) —
+# changement d'architecture du jeu de données AN entre la XIV et la XV, déjà
+# constaté côté amendements. Les gouvernements Fillon II/III sont donc hors
+# d'atteinte définitivement.
+AN_DOSSIERS_ARCHIVES: dict[int, str] = {
+    15: f"{AN_OPENDATA_BASE}/15/loi/dossiers_legislatifs/Dossiers_Legislatifs_XV.json.zip",
+    16: f"{AN_OPENDATA_BASE}/16/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
+    17: f"{AN_OPENDATA_BASE}/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip",
+}
+
+# Législature dont l'archive garde le nom de cache historique `dossiers.zip` :
+# la renommer invaliderait le cache CI existant et forcerait un
+# re-téléchargement de ~10 Mo sans bénéfice.
+_LEGISLATURE_CACHE_HISTORIQUE = 17
+
 DOSSIERS_CACHE_DIR = Path(".cache") / "dossiers_an"
 
 HEADERS = {
@@ -118,12 +168,33 @@ TIMEOUT = (15, 600)
 
 _ZIP_DOWNLOAD_LOCK = threading.Lock()
 
-# Préfixes de titre signalant l'origine gouvernementale/parlementaire d'un
-# dossier (art. 39 de la Constitution) — voir docstring du module. Couvre
-# aussi "Projet de loi organique"/"Projet de loi constitutionnelle" (même
-# préfixe). Comparaison insensible à la casse.
-_TITRE_PREFIX_GOUVERNEMENTAL = "projet de loi"
-_TITRE_PREFIX_PARLEMENTAIRE = "proposition de loi"
+# Origine (art. 39 de la Constitution) — voir docstring du module.
+#
+# Signal primaire : préfixe de l'uid du document déposé en premier
+# (`texteAssocie` de l'acte `*-DEPOT` le plus ancien). C'est le type du texte
+# réellement déposé, encodé par l'AN elle-même.
+_DOC_PREFIX_GOUVERNEMENTAL = "PRJL"   # projet de loi
+_DOC_PREFIX_PARLEMENTAIRE = "PION"    # proposition de loi
+# PNRE (proposition de résolution) et les dossiers sans document de dépôt ne
+# sont pas des textes de loi : ni gouvernementaux, ni parlementaires.
+
+# Signal de repli : `procedureParlementaire.code`, quand aucun document de
+# dépôt n'est résolvable. Ne couvre que les procédures législatives dont
+# l'origine est univoque — les codes 5 et 7 (« Projet **ou** proposition de loi
+# organique/constitutionnelle ») sont volontairement absents : leur libellé ne
+# tranche pas, et deviner violerait AGENTS.md §2.5.
+_PROCEDURE_CODES_GOUVERNEMENTAUX = frozenset({
+    "1",   # Projet de loi ordinaire
+    "3",   # Projet de loi de finances de l'année
+    "4",   # Projet de loi de financement de la sécurité sociale
+    "6",   # Projet de ratification des traités et conventions
+    "21",  # Projet de loi de finances rectificative
+    "33",  # Projet de loi relative aux résultats de la gestion et au budget
+})
+_PROCEDURE_CODES_PARLEMENTAIRES = frozenset({
+    "2",   # Proposition de loi ordinaire
+    "23",  # Proposition de loi présentée en application de l'article 11
+})
 
 # fam_code -> (statut, sort_49_3). Toute autre valeur produit un warning et
 # `statut = None` (voir docstring du module) : la nomenclature reste fermée.
@@ -152,6 +223,23 @@ _FAM_CODE_SENTINEL_VIDE = "TSORTFnull"
 # codeActe dédiés au retrait, sans statutConclusion associé (spike #207).
 _CODE_ACTE_RETRAIT = frozenset({"AN1-RTRINI", "ANLUNI-RTRINI"})
 
+# Promulgation (publication au Journal officiel) : `PROM` et `PROM-PUB`.
+_CODE_ACTE_PROMULGATION_PREFIXE = "PROM"
+
+# Statuts qu'un acte de promulgation corrige (#400). La promulgation est le
+# fait le plus avancé du parcours, donc ces statuts sont factuellement faux
+# dès qu'elle existe : un texte promulgué n'est ni en navette, ni rejeté.
+#
+# `adopte`, `adopte_cmp` et `adopte_49_3` sont volontairement ABSENTS : ils
+# portent la voie procédurale suivie, que `promulgue` ne dit pas. Les écraser
+# ferait disparaître le fait CMP ou 49.3 de 116 textes — le collapse
+# qu'interdit AGENTS.md §2.4. `retire` l'est aussi : un texte retiré puis
+# promulgué serait contradictoire, et deviner lequel des deux actes fait foi
+# n'est pas notre rôle.
+_STATUTS_CORRIGES_PAR_PROMULGATION = frozenset({
+    None, "depose", "navette_en_cours", "rejete", "rejete_49_3",
+})
+
 
 def _est_decision_de_seance(code_acte: str) -> bool:
     """Décision de séance sur le texte lui-même (adoption/rejet/49.3), par
@@ -169,46 +257,193 @@ def _est_decision_de_seance(code_acte: str) -> bool:
 assert set(statut for statut, _ in _FAM_CODE_STATUT_MAP.values()) <= KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL
 
 
-def ensure_dossiers_zip_downloaded(*, force_download: bool = False) -> Optional[Path]:
-    """Télécharge (si nécessaire) et met en cache `Dossiers_Legislatifs.json.zip`.
+def _chemin_cache_archive(legislature: int) -> Path:
+    nom = (
+        "dossiers.zip"
+        if legislature == _LEGISLATURE_CACHE_HISTORIQUE
+        else f"dossiers_{legislature}.zip"
+    )
+    return DOSSIERS_CACHE_DIR / nom
 
-    Fonction réseau canonique pour ce dump : réutilisée par
+
+def ensure_dossiers_zip_downloaded(
+    legislature: int = _LEGISLATURE_CACHE_HISTORIQUE, *, force_download: bool = False
+) -> Optional[Path]:
+    """Télécharge (si nécessaire) et met en cache l'archive d'une législature.
+
+    Fonction réseau canonique pour ces dumps : réutilisée par
     `candidate_profile.py` (index titre/acteur) et par la collecte des
     dossiers gouvernementaux de ce module, pour éviter un second
-    téléchargement/cache indépendant du même fichier ~10 Mo (voir issue #210).
-    Écriture atomique (fichier temporaire puis renommage) pour ne jamais
-    laisser un cache partiellement écrit en cas d'échec réseau en cours de
-    téléchargement.
+    téléchargement/cache indépendant des mêmes fichiers (voir issue #210).
+    `download_with_watchdog` (#370) assure l'écriture atomique, pour ne jamais
+    laisser un cache partiellement écrit en cas d'échec réseau.
 
     Returns:
         Chemin local de l'archive, ou None si le téléchargement échoue.
     """
+    url = AN_DOSSIERS_ARCHIVES.get(legislature)
+    if url is None:
+        return None
+
     with _ZIP_DOWNLOAD_LOCK:
-        zip_path = DOSSIERS_CACHE_DIR / "dossiers.zip"
+        zip_path = _chemin_cache_archive(legislature)
         if not force_download and zip_path.is_file():
             return zip_path
 
-        print(f"-> Téléchargement des dossiers législatifs (Assemblée nationale) : {AN_DOSSIERS_ZIP_URL}")
+        print(f"-> Téléchargement des dossiers législatifs (législature {legislature}) : {url}")
         try:
             zip_path.parent.mkdir(parents=True, exist_ok=True)
-            # download_with_watchdog (#370) gère déjà l'écriture atomique
-            # (fichier .part renommé seulement en cas de succès complet) et
-            # ajoute un budget mur indépendant du timeout requests.
-            download_with_watchdog(AN_DOSSIERS_ZIP_URL, zip_path, headers=HEADERS, timeout=TIMEOUT)
+            download_with_watchdog(url, zip_path, headers=HEADERS, timeout=TIMEOUT)
         except (requests.RequestException, OSError, TimeoutError) as exc:
-            print(f"  [!] Échec du téléchargement des dossiers législatifs : {exc}")
+            print(f"  [!] Échec du téléchargement des dossiers législatifs "
+                  f"(législature {legislature}) : {exc}")
             return None
         return zip_path
 
 
-def _origine(titre: str) -> Optional[str]:
-    """Classe un dossier en `"gouvernemental"`/`"parlementaire"`/`None` (non
-    déterminable) à partir du préfixe de son titre. Voir docstring du module :
-    seul signal utilisé ici (chaîne AMO30 non implémentée)."""
-    titre_normalise = (titre or "").strip().lower()
-    if titre_normalise.startswith(_TITRE_PREFIX_GOUVERNEMENTAL):
+def ensure_dossiers_zips_downloaded(
+    *, force_download: bool = False
+) -> list[tuple[int, Path]]:
+    """Télécharge toutes les archives connues, retournées par législature
+    **croissante** (l'ordre dont dépend l'arbitrage de `iter_dossiers_bruts`).
+
+    Non-fatal par archive : celles qui échouent sont omises, les autres restent
+    exploitables. Un échec total donne une liste vide, que les appelants
+    traitent comme l'ancien `None`.
+    """
+    resultats: list[tuple[int, Path]] = []
+    for legislature in sorted(AN_DOSSIERS_ARCHIVES):
+        chemin = ensure_dossiers_zip_downloaded(
+            legislature, force_download=force_download
+        )
+        if chemin is not None:
+            resultats.append((legislature, chemin))
+    return resultats
+
+
+def _uid_depuis_nom(nom: str) -> str:
+    """`json/dossierParlementaire/DLR5L17N52956.json` -> `DLR5L17N52956`.
+
+    Le nom de fichier porte l'uid du dossier — vérifié sans exception sur les
+    10 967 dossiers des trois archives. C'est ce qui permet d'arbitrer les
+    doublons inter-archives à partir des seuls `namelist()`, sans désérialiser
+    quoi que ce soit : charger les trois archives en mémoire pour comparer
+    coûterait plusieurs centaines de Mo, sur un pipeline qui a déjà connu deux
+    OOM (#377, #392).
+    """
+    return nom.rsplit("/", 1)[-1][: -len(".json")]
+
+
+def iter_dossiers_bruts(
+    archives: list[tuple[int, Path]],
+) -> Iterator[tuple[int, dict[str, Any]]]:
+    """Itère `(legislature_archive, dossierParlementaire)` sur plusieurs
+    archives, **dédupliqué par uid**.
+
+    Un même dossier figure dans plusieurs archives (traîne résiduelle des
+    législatures antérieures). L'archive de législature la plus élevée fait
+    foi : elle porte l'état le plus à jour des `actesLegislatifs`, donc du
+    statut. Lire d'abord la plus ancienne donnerait un statut périmé — un texte
+    « en navette » dans l'archive XVI peut être « adopté » dans la XVII.
+
+    Générateur : un seul dossier est désérialisé à la fois.
+    """
+    proprietaire: dict[str, int] = {}
+    noms_par_archive: dict[int, list[str]] = {}
+    for legislature, chemin in archives:
+        try:
+            with zipfile.ZipFile(chemin) as zf:
+                noms = [
+                    n for n in zf.namelist()
+                    if n.startswith("json/dossierParlementaire/") and n.endswith(".json")
+                ]
+        except (zipfile.BadZipFile, OSError):
+            continue
+        noms_par_archive[legislature] = noms
+        for nom in noms:
+            uid = _uid_depuis_nom(nom)
+            # max() explicite plutôt qu'écrasement dans l'ordre de parcours :
+            # l'arbitrage ne doit pas dépendre de l'ordre d'appel.
+            precedente = proprietaire.get(uid)
+            if precedente is None or legislature > precedente:
+                proprietaire[uid] = legislature
+
+    for legislature, chemin in archives:
+        noms = noms_par_archive.get(legislature)
+        if not noms:
+            continue
+        try:
+            with zipfile.ZipFile(chemin) as zf:
+                for nom in noms:
+                    if proprietaire.get(_uid_depuis_nom(nom)) != legislature:
+                        continue
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (OSError, ValueError):
+                        continue
+                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
+                    if isinstance(dossier, dict):
+                        yield legislature, dossier
+        except (zipfile.BadZipFile, OSError):
+            continue
+
+
+def _document_depot_initial(actes_legislatifs: Any) -> Optional[str]:
+    """uid du document associé à l'acte de dépôt le plus ancien, ou None."""
+    depots: list[tuple[str, str]] = []
+
+    def parcours(noeud: Any) -> None:
+        if isinstance(noeud, dict):
+            code_acte = noeud.get("codeActe")
+            texte_associe = noeud.get("texteAssocie")
+            if (
+                isinstance(code_acte, str)
+                and code_acte.endswith("-DEPOT")
+                and isinstance(texte_associe, str)
+            ):
+                depots.append((noeud.get("dateActe") or "", texte_associe))
+            for valeur in noeud.values():
+                parcours(valeur)
+        elif isinstance(noeud, list):
+            for valeur in noeud:
+                parcours(valeur)
+
+    parcours(actes_legislatifs)
+    return min(depots)[1] if depots else None
+
+
+def _origine(dossier: dict[str, Any]) -> Optional[str]:
+    """Classe un dossier en `"gouvernemental"` / `"parlementaire"` / `None`
+    (non déterminable, donc exclu plutôt que deviné — AGENTS.md §2.5).
+
+    Le signal primaire est le **type du document déposé** (`PRJL`/`PION`), pas
+    le préfixe du titre. Le titre ne porte l'origine que sur les XVI/XVII : sur
+    la XV les titres sont descriptifs (« Taxe sur les services numériques »,
+    « Démocratie plus représentative, responsable, efficace »), et le filtre par
+    préfixe y retenait **zéro** projet de loi déposé entre 2017 et 2019 alors
+    que le corpus en contient plusieurs centaines (#400).
+
+    Le préfixe de document est aussi plus juste que `procedureParlementaire`
+    là où les deux divergent : 8 dossiers de règlement du budget sont typés
+    « Proposition de loi ordinaire » à la source alors que le document déposé
+    est bien un `PRJL`. Le type du document réellement déposé fait donc foi, et
+    la procédure ne sert que de repli quand aucun document n'est résolvable.
+    """
+    document = _document_depot_initial(dossier.get("actesLegislatifs"))
+    if document:
+        if document.startswith(_DOC_PREFIX_GOUVERNEMENTAL):
+            return "gouvernemental"
+        if document.startswith(_DOC_PREFIX_PARLEMENTAIRE):
+            return "parlementaire"
+        return None  # PNRE (résolution) et autres : pas un texte de loi
+
+    procedure = dossier.get("procedureParlementaire") or {}
+    code = procedure.get("code")
+    code = str(code) if code is not None else None
+    if code in _PROCEDURE_CODES_GOUVERNEMENTAUX:
         return "gouvernemental"
-    if titre_normalise.startswith(_TITRE_PREFIX_PARLEMENTAIRE):
+    if code in _PROCEDURE_CODES_PARLEMENTAIRES:
         return "parlementaire"
     return None
 
@@ -286,6 +521,7 @@ def _determine_statut(
     """
     candidats: list[tuple[str, str, Optional[str]]] = []  # (date, kind, fam_code)
     a_acte_hors_depot = False
+    a_promulgation = False
     for acte in _iter_actes(actes_legislatifs):
         code_acte = acte.get("codeActe")
         date_acte = acte.get("dateActe")
@@ -293,6 +529,8 @@ def _determine_statut(
             continue
         if not code_acte.endswith("-DEPOT"):
             a_acte_hors_depot = True
+        if code_acte.startswith(_CODE_ACTE_PROMULGATION_PREFIXE):
+            a_promulgation = True
 
         if code_acte in _CODE_ACTE_RETRAIT and isinstance(date_acte, str) and date_acte:
             candidats.append((date_acte, "retrait", None))
@@ -310,9 +548,27 @@ def _determine_statut(
             continue
         candidats.append((date_acte, "statut", fam_code))
 
+    statut, sort_49_3, warning = _statut_depuis_candidats(
+        dossier_id, candidats, a_acte_hors_depot
+    )
+
+    # La promulgation prime sur une décision de séance non finale ou infirmée
+    # par la suite : elle est postérieure et définitive. Le warning éventuel
+    # (fam_code non mappé) est conservé — le code reste inconnu et mérite
+    # toujours d'être signalé pour un mapping futur.
+    if a_promulgation and statut in _STATUTS_CORRIGES_PAR_PROMULGATION:
+        return "promulgue", False, warning
+
+    return statut, sort_49_3, warning
+
+
+def _statut_depuis_candidats(
+    dossier_id: str,
+    candidats: list[tuple[str, str, Optional[str]]],
+    a_acte_hors_depot: bool,
+) -> tuple[Optional[str], Optional[bool], Optional[str]]:
     if not candidats:
-        statut = "navette_en_cours" if a_acte_hors_depot else "depose"
-        return statut, None, None
+        return ("navette_en_cours" if a_acte_hors_depot else "depose"), None, None
 
     _date, kind, fam_code = max(candidats, key=lambda c: c[0])
     if kind == "retrait":
@@ -347,7 +603,7 @@ def parse_dossier_gouvernemental(dossier: dict[str, Any]) -> Optional[dict[str, 
     """
     titre_dossier = dossier.get("titreDossier") or {}
     titre = titre_dossier.get("titre")
-    if not titre or _origine(titre) != "gouvernemental":
+    if not titre or _origine(dossier) != "gouvernemental":
         return None
 
     dossier_id = dossier.get("uid")
@@ -404,22 +660,45 @@ def collect_dossiers_gouvernementaux(zf: zipfile.ZipFile) -> dict[str, Any]:
     return {"dossiers": dossiers, "warnings": warnings}
 
 
+def collect_dossiers_gouvernementaux_multi(
+    archives: list[tuple[int, Path]],
+) -> dict[str, Any]:
+    """Équivalent de `collect_dossiers_gouvernementaux` sur plusieurs archives,
+    dédupliquées par uid (voir `iter_dossiers_bruts`). Pure hors lecture
+    disque : c'est la fonction testée par des fixtures ZIP locales."""
+    dossiers: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    for _legislature, dossier in iter_dossiers_bruts(archives):
+        record = parse_dossier_gouvernemental(dossier)
+        if record is None:
+            continue
+        warnings.extend(record["warnings"])
+        dossiers.append(record)
+
+    dossiers.sort(key=lambda d: (d.get("date_depot") or "", d.get("titre") or ""), reverse=True)
+    return {"dossiers": dossiers, "warnings": warnings}
+
+
 def fetch_dossiers_gouvernementaux() -> dict[str, Any]:
-    """Point d'entrée réseau : télécharge (si nécessaire) le dump, puis
-    collecte les dossiers d'origine gouvernementale. Retourne
-    `{"dossiers": [], "warnings": [...]}` si le téléchargement échoue
+    """Point d'entrée réseau : télécharge (si nécessaire) les archives connues,
+    puis collecte les dossiers d'origine gouvernementale. Retourne
+    `{"dossiers": [], "warnings": [...]}` si aucune archive n'est disponible
     (non-fatal, comme les autres index bulk de `candidate_profile.py`)."""
-    zip_path = ensure_dossiers_zip_downloaded()
-    if zip_path is None:
+    archives = ensure_dossiers_zips_downloaded()
+    if not archives:
         return {
             "dossiers": [],
-            "warnings": ["gouvernement_textes: téléchargement de Dossiers_Legislatifs.json.zip impossible."],
+            "warnings": ["gouvernement_textes: téléchargement des dossiers législatifs impossible."],
         }
-    try:
-        with zipfile.ZipFile(zip_path) as zf:
-            return collect_dossiers_gouvernementaux(zf)
-    except zipfile.BadZipFile as exc:
-        return {
-            "dossiers": [],
-            "warnings": [f"gouvernement_textes: archive des dossiers législatifs invalide : {exc}"],
-        }
+
+    resultat = collect_dossiers_gouvernementaux_multi(archives)
+    manquantes = sorted(set(AN_DOSSIERS_ARCHIVES) - {leg for leg, _ in archives})
+    if manquantes:
+        # Signalé explicitement : une archive absente réduit silencieusement la
+        # couverture, ce qui se lirait comme « ce gouvernement n'a porté aucun
+        # texte » (AGENTS.md §2.8).
+        resultat["warnings"].append(
+            "gouvernement_textes: archive(s) indisponible(s) pour la ou les "
+            f"législature(s) {manquantes} — couverture réduite."
+        )
+    return resultat

@@ -58,6 +58,26 @@
   ],
   "textes": [
     {
+      "dossier_id": "DLR5L17N50172",
+      "titre": "Résultats de la gestion et approbation des comptes de l'année 2023",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-07-19",
+      "date_dernier_evenement": "2024-10-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plr_pour_2023"
+    },
+    {
+      "dossier_id": "DLR5L17N50173",
+      "titre": "Approbation des comptes de la sécurité sociale pour l'année 2023",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-07-19",
+      "date_dernier_evenement": "2025-02-19",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_secu_sociale_2023"
+    },
+    {
       "dossier_id": "DLR5L17N51362",
       "titre": "Projet de loi autorisant la ratification de la résolution LP.3(4) portant amendement de l’article 6 du Protocole de Londres de 1996 à la Convention de 1972 sur la prévention de la pollution des mers résultant de l’immersion de déchets et autres matières",
       "statut": "adopte_cmp",
@@ -88,6 +108,46 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N50115"
     },
     {
+      "dossier_id": "DLR5L16N50064",
+      "titre": "Approbation des comptes de la sécurité sociale de l’année 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-05-31",
+      "date_dernier_evenement": "2024-06-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_secsoc_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N49995",
+      "titre": "Ratification de l’ordonnance n° 2024-153 du 28 février 2024 relative à la gestion du risque climatique en agriculture en outre-mer",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-05-21",
+      "date_dernier_evenement": "2024-05-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2024-153"
+    },
+    {
+      "dossier_id": "DLR5L16N49957",
+      "titre": "Convention des Nations unies sur la mer et conservation et utilisation durable de la diversité biologique marine des zones ne relevant pas de la juridiction nationale",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-05-16",
+      "date_dernier_evenement": "2024-11-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/convention_nations_unies_droit_mer_conservation_utilisation_durable"
+    },
+    {
+      "dossier_id": "DLR5L16N49943",
+      "titre": "Projet de loi relatif au développement de l’offre de logements abordables",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2024-05-06",
+      "date_dernier_evenement": "2024-06-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49943"
+    },
+    {
       "dossier_id": "DLR5L16N49868",
       "titre": "Projet de loi de simplification de la vie économique",
       "statut": "adopte_cmp",
@@ -96,6 +156,16 @@
       "date_dernier_evenement": "2026-05-26",
       "sort_49_3": false,
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49868"
+    },
+    {
+      "dossier_id": "DLR5L16N49804",
+      "titre": "Résultats de la gestion et approbation des comptes de l’année 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-04-17",
+      "date_dernier_evenement": "2024-05-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/resultats_gestion_approbation_comptes_2023"
     },
     {
       "dossier_id": "DLR5L16N49806",
@@ -118,6 +188,26 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49807"
     },
     {
+      "dossier_id": "DLR5L16N49744",
+      "titre": "Accompagnement des malades et fin de vie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-04-10",
+      "date_dernier_evenement": "2024-06-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accompagnement_malades_fin_vie"
+    },
+    {
+      "dossier_id": "DLR5L16N49726",
+      "titre": "Souveraineté en matière agricole et renouvellement des générations en agriculture",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-04-03",
+      "date_dernier_evenement": "2025-03-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/souverainete_agricole_renouvellement_generations"
+    },
+    {
       "dossier_id": "DLR5L16N49615",
       "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République fédérale d’Allemagne relatif à l’apprentissage transfrontalier",
       "statut": "adopte",
@@ -126,6 +216,76 @@
       "date_dernier_evenement": "2025-02-17",
       "sort_49_3": false,
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49615"
+    },
+    {
+      "dossier_id": "DLR5L16N49539",
+      "titre": "Ratification de l’ordonnance n° 2023-1210 du 20 décembre 2023 portant création du titre V du livre IV du code des impositions sur les biens et services et portant diverses autres mesures de recodification de mesures non fiscales",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-03-06",
+      "date_dernier_evenement": "2024-03-06",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-1210"
+    },
+    {
+      "dossier_id": "DLR5L16N49485",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2023-1142 du 6 décembre 2023 relative à la publication et à la certification d'informations en matière de durabilité et aux obligations environnementales, sociales et de gouvernement d'entreprise des sociétés commerciales",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2024-02-28",
+      "date_dernier_evenement": "2024-02-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49485"
+    },
+    {
+      "dossier_id": "DLR5L16N49476",
+      "titre": "Ordonnance n° 2023-1139 du 6 décembre 2023 relative aux gestionnaires de crédits et aux acheteurs de crédits",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-02-28",
+      "date_dernier_evenement": "2024-02-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_gestionnaires_credits_acheteurs_credits"
+    },
+    {
+      "dossier_id": "DLR5L16N49463",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2023-1138 du 6 décembre 2023 concernant l'assurance de la responsabilité civile résultant de la circulation de véhicules automoteurs et le contrôle d'assurer cette responsabilité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-02-21",
+      "date_dernier_evenement": "2024-02-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_directive_assurance_responsabilite_civile_vehicules"
+    },
+    {
+      "dossier_id": "DLR5L16N49392",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de l’Etat indépendant de Papouasie-Nouvelle-Guinée relatif à la coopération en matière de défense et au statut des forces",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-02-07",
+      "date_dernier_evenement": "2024-11-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_PNG_defense"
+    },
+    {
+      "dossier_id": "DLR5L16N49374",
+      "titre": "Projet de loi organique portant report du renouvellement général des membres du congrès et des assemblées de province de la Nouvelle-Calédonie",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2024-01-29",
+      "date_dernier_evenement": "2024-04-15",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49374"
+    },
+    {
+      "dossier_id": "DLR5L16N49320",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2023-389 du 24 mai 2023 modifiant les dispositions du code général de la propriété des personnes publiques relatives à la Polynésie française",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2024-01-24",
+      "date_dernier_evenement": "2024-04-15",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49320"
     },
     {
       "dossier_id": "DLR5L16N49273",
@@ -140,12 +300,13 @@
   ],
   "comptages": {
     "par_statut": {
-      "adopte": 6,
+      "adopte": 8,
       "adopte_49_3": 0,
-      "adopte_cmp": 2,
+      "adopte_cmp": 3,
       "depose": 0,
-      "navette_en_cours": 0,
-      "rejete": 0,
+      "navette_en_cours": 9,
+      "promulgue": 2,
+      "rejete": 2,
       "rejete_49_3": 0,
       "retire": 0
     }
@@ -184,8 +345,15 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:51:05+0200",
+    "genere_le": "2026-08-18T01:12:05+0200",
     "licence_donnees": "",
-    "warnings": []
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L16N49373' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
+    ]
   }
 }

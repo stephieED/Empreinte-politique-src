@@ -92,15 +92,1117 @@
       "source_url": null
     }
   ],
-  "textes": [],
+  "textes": [
+    {
+      "dossier_id": "DLR5L16N49124",
+      "titre": "Projet de loi relatif à l’organisation de la gouvernance de la sûreté nucléaire et de la radioprotection pour répondre au défi de la relance de la filière nucléaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-12-20",
+      "date_dernier_evenement": "2024-05-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49124"
+    },
+    {
+      "dossier_id": "DLR5L16N49123",
+      "titre": "Projet de loi organique modifiant la loi organique n° 2010-837 du 23 juillet 2010 relative à l’application du cinquième alinéa de l’article 13 de la Constitution",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-12-20",
+      "date_dernier_evenement": "2024-05-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49123"
+    },
+    {
+      "dossier_id": "DLR5L16N49095",
+      "titre": "Liberté de recourir à l’interruption volontaire de grossesse",
+      "statut": "adopte",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-12-12",
+      "date_dernier_evenement": "2024-03-08",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/liberte_interruption_grossesse"
+    },
+    {
+      "dossier_id": "DLR5L16N49096",
+      "titre": "Accélération et à la simplification de la rénovation de l'habitat dégradé et des grandes opérations d'aménagement",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-12-12",
+      "date_dernier_evenement": "2024-04-09",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/renovation_habitat_degrade"
+    },
+    {
+      "dossier_id": "DLR5L16N49049",
+      "titre": "Projet de loi autorisant l’approbation de l’accord global dans le domaine du transport aérien entre les États membres de l’association des nations de l’Asie du sud-est, et l’Union européenne et ses États membres",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-12-06",
+      "date_dernier_evenement": "2024-04-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49049"
+    },
+    {
+      "dossier_id": "DLR5L16N48971",
+      "titre": "Ratification de l’ordonnance n° 2023-857 du 6 septembre 2023 relative à l’accessibilité des personnes sourdes, malentendantes, sourdaveugles et aphasiques aux services téléphoniques",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-11-22",
+      "date_dernier_evenement": "2023-11-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue_aveugles"
+    },
+    {
+      "dossier_id": "DLR5L16N48970",
+      "titre": "Ratification de l'ordonnance du 6 septembre 2023 prise en application du 1° du VII de l'article 16 de la loi n° 2023-171 du 9 mars 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-11-22",
+      "date_dernier_evenement": "2023-11-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue"
+    },
+    {
+      "dossier_id": "DLR5L16N48973",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2023-285 du 19 avril 2023 portant extension et adaptation à la Polynésie française, à la Nouvelle-Calédonie et aux îles Wallis et Futuna de diverses dispositions législatives relatives à la santé",
+      "statut": "promulgue",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-11-22",
+      "date_dernier_evenement": "2024-05-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48973"
+    },
+    {
+      "dossier_id": "DLR5L16N48909",
+      "titre": "Projet de loi visant à renforcer la lutte contre les dérives sectaires",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-11-15",
+      "date_dernier_evenement": "2024-05-10",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48909"
+    },
+    {
+      "dossier_id": "DLR5L16N48908",
+      "titre": "Projet de loi portant diverses dispositions d’adaptation au droit de l’Union européenne en matière d’économie, de finances, de transition écologique, de droit pénal, de droit social et en matière agricole",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-11-15",
+      "date_dernier_evenement": "2024-04-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48908"
+    },
+    {
+      "dossier_id": "DLR5L16N48913",
+      "titre": "Ordonnance n° 2023-836 du 30 août 2023 portant adaptation du droit français au règlement (UE) 2021/23 du Parlement européen et du Conseil du 16 décembre 2020 relatif à un cadre pour le redressement et la résolution des contreparties centrales",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-11-15",
+      "date_dernier_evenement": "2023-11-15",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_30_aout_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N48872",
+      "titre": "Ratification de l’ordonnance n° 2023-816 du 23 août 2023 relative au raccordement et à l'accès aux réseaux publics d'électricité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-11-08",
+      "date_dernier_evenement": "2023-11-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-816"
+    },
+    {
+      "dossier_id": "DLR5L16N48839",
+      "titre": "Projet de loi de finances de fin de gestion pour 2023",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-10-31",
+      "date_dernier_evenement": "2023-11-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PJL_finances_gestion_fin_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N48838",
+      "titre": "Approbation de la convention entre la République française et la République de Moldavie pour l’élimination de la double imposition en matière d’impôts sur le revenu et pour la prévention de l’évasion et de la fraude fiscale",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-10-31",
+      "date_dernier_evenement": "2024-03-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_convention_fiscal_moldavie"
+    },
+    {
+      "dossier_id": "DLR5L16N48779",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et  le Gouvernement du Land du Bade-Wurtemberg relatif à la création d’une compagnie de gendarmerie fluviale franco-allemande sur le Rhin",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-10-18",
+      "date_dernier_evenement": "2024-04-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48779"
+    },
+    {
+      "dossier_id": "DLR5L16N48719",
+      "titre": "Faciliter le financement de la reconstruction et de la réfection des bâtiments dégradés ou détruits au cours des violences urbaines survenues du 27 juin au 5 juillet 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-10-11",
+      "date_dernier_evenement": "2023-10-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/faciliter_financement_reconstruction_batiments"
+    },
+    {
+      "dossier_id": "DLR5L16N48721",
+      "titre": "Diverses adaptations et dérogations temporaires en matière de commande publique nécessaires à l’accélération de la reconstruction et de la réfection des équipements publics et des bâtiments dégradés ou détruits au cours des violences urbaines survenues du",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-10-11",
+      "date_dernier_evenement": "2023-10-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/derogations_code_commande_publique_emeutes"
+    },
+    {
+      "dossier_id": "DLR5L16N48720",
+      "titre": "Accélération de la délivrance et la mise en œuvre des autorisations d'urbanisme permettant la reconstruction et la réfection des bâtiments dégradés au cours des violences urbaines survenues du 27 juin au 5 juillet 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-10-11",
+      "date_dernier_evenement": "2023-10-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acceleration_delivrance_urbanisme_emeute"
+    },
+    {
+      "dossier_id": "DLR5L16N48397",
+      "titre": "Projet de loi de finances pour 2024",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-09-27",
+      "date_dernier_evenement": "2023-12-29",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLF_2024"
+    },
+    {
+      "dossier_id": "DLR5L16N48683",
+      "titre": "Projet de loi de financement de la sécurité sociale pour 2024",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-09-27",
+      "date_dernier_evenement": "2023-12-26",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLFSS2024"
+    },
+    {
+      "dossier_id": "DLR5L16N48681",
+      "titre": "Mesures d’urgence pour adapter les dispositions du code de commerce relatives aux négociations commerciales dans la grande distribution",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-09-27",
+      "date_dernier_evenement": "2023-11-17",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/urgence_nego_grd_distrib"
+    },
+    {
+      "dossier_id": "DLR5L16N48654",
+      "titre": "Ratification de l’ordonnance n° 2023-661 du 26 juillet 2023 prise en application des dispositions de l’article 137 de la loi du 22 août 2021",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-09-20",
+      "date_dernier_evenement": "2023-09-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-661"
+    },
+    {
+      "dossier_id": "DLR5L16N48652",
+      "titre": "Ratification de l’ordonnance n° 2023-483 du 21 juin 2023",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-09-20",
+      "date_dernier_evenement": "2023-09-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2003-483"
+    },
+    {
+      "dossier_id": "DLR5L16N48541",
+      "titre": "Approbation de la convention d’entraide judiciaire en matière pénale entre la France et la République de Maurice et de la convention d’extradition entre la France et la République de Maurice",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-08-23",
+      "date_dernier_evenement": "2024-02-06",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_Maurice_France"
+    },
+    {
+      "dossier_id": "DLR5L16N48481",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2023-393 du 24 mai 2023 portant réforme du régime des fusions, scissions, apports partiels d'actifs et opérations transfrontalières des sociétés commerciales",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-07-21",
+      "date_dernier_evenement": "2023-07-21",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48481"
+    },
+    {
+      "dossier_id": "DLR5L16N48392",
+      "titre": "Projet de loi relatif à l’accélération de la reconstruction et de la réfection des bâtiments dégradés ou détruits au cours des violences urbaines survenues du 27 juin au 5 juillet 2023",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-07-13",
+      "date_dernier_evenement": "2023-07-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48392"
+    },
+    {
+      "dossier_id": "DLR5L16N48390",
+      "titre": "Ordonnance du 16 mai 2023 relative à la formation aux activités privées de sécurité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-07-13",
+      "date_dernier_evenement": "2023-07-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/fomation_activites_privees_securite"
+    },
+    {
+      "dossier_id": "DLR5L16N48347",
+      "titre": "Règlement des différends relatifs aux investissements",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-07-05",
+      "date_dernier_evenement": "2023-12-27",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_differends_investissements"
+    },
+    {
+      "dossier_id": "DLR5L16N48350",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2023-77 du 8 février 2023 relative à l'exercice en société des professions libérales réglementées",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-07-05",
+      "date_dernier_evenement": "2023-07-05",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48350"
+    },
+    {
+      "dossier_id": "DLR5L16N48255",
+      "titre": "Approbation de l’accord entre la France et Andorre concernant la démarcation et l’entretien de la frontière",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-06-21",
+      "date_dernier_evenement": "2024-03-06",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_andorre_demarcation"
+    },
+    {
+      "dossier_id": "DLR5L16N48212",
+      "titre": "Ratification de l’ordonnance n° 2023-208 du 28 mars 2023 portant partie législative du code de l'artisanat",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-06-14",
+      "date_dernier_evenement": "2023-06-14",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_2023208"
+    },
+    {
+      "dossier_id": "DLR5L16N48165",
+      "titre": "Ratification de l’ordonnance n°2022-887 du 14 juin 2022 portant prise en charge partielle par l’Etat, dans les zones non interconnectées au réseau métropolitain continental, des coûts associés à la conversion des usages des réseaux de gaz de pétrole liquéf",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-06-08",
+      "date_dernier_evenement": "2023-06-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_2022887"
+    },
+    {
+      "dossier_id": "DLR5L16N48163",
+      "titre": "Pour le plein emploi",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-06-07",
+      "date_dernier_evenement": "2023-12-18",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48163"
+    },
+    {
+      "dossier_id": "DLR5L16N48040",
+      "titre": "Ratification du Traité d’entraide judiciaire en matière pénale entre la République française et la République du Kazakhstan",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-05-30",
+      "date_dernier_evenement": "2024-04-09",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_kazakhstan"
+    },
+    {
+      "dossier_id": "DLR5L16N47979",
+      "titre": "Transposition de l’accord national interprofessionnel relatif au partage de la valeur au sein de l’entreprise",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-05-24",
+      "date_dernier_evenement": "2023-11-29",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/partage_valeur_accord"
+    },
+    {
+      "dossier_id": "DLR5L16N47978",
+      "titre": "Approbation des comptes de la sécurité sociale pour l'année 2022",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-05-24",
+      "date_dernier_evenement": "2023-07-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_ss_2022"
+    },
+    {
+      "dossier_id": "DLR5L16N47917",
+      "titre": "L'industrie verte",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-05-16",
+      "date_dernier_evenement": "2023-10-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47917"
+    },
+    {
+      "dossier_id": "DLR5L16N47859",
+      "titre": "Proposition de résolution autorisant l’approbation de l’accord sur la création d’un espace aérien commun entre l’Union européenne et ses États membres, d’une part, et la République d’Arménie, d’autre part, de l’accord sur la création d’un espace aérien commun entre l’Union européenne et ses États membres, d’une part, et l’Ukraine, d’autre part, et de l’accord sur le transport aérien entre l’Union européenne et ses États membres, d’une part, et l’État du Qatar, d’autre part",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-05-10",
+      "date_dernier_evenement": "2023-05-10",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47859"
+    },
+    {
+      "dossier_id": "DLR5L16N47884",
+      "titre": "Projet de loi visant à sécuriser et réguler l’espace numérique",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-05-10",
+      "date_dernier_evenement": "2024-05-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47884"
+    },
+    {
+      "dossier_id": "DLR5L16N47858",
+      "titre": "Approbation de l’accord entre la France et le Canada relatif au déploiement d’agents de sûreté en vol",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-05-10",
+      "date_dernier_evenement": "2024-03-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_canada_vol"
+    },
+    {
+      "dossier_id": "DLR5L16N47779",
+      "titre": "Orientation et programmation du ministère de la justice 2023-2027",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-05-03",
+      "date_dernier_evenement": "2023-11-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47779"
+    },
+    {
+      "dossier_id": "DLR5L16N47780",
+      "titre": "L'ouverture, la modernisation et la responsabilité du corps judiciaire",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-05-03",
+      "date_dernier_evenement": "2023-11-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47780"
+    },
+    {
+      "dossier_id": "DLR5L16N47778",
+      "titre": "Avenant entre la France et le Luxembourg au protocole d’accord relatif au renforcement de la coopération en matière de transports transfrontaliers et à la convention relative au financement d’aménagements visant à renforcer la desserte ferroviaire",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-05-03",
+      "date_dernier_evenement": "2023-12-27",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_France_Luxembourg_transports_transfrontaliers"
+    },
+    {
+      "dossier_id": "DLR5L16N47698",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2023-80 du 8 février 2023 relative au bail réel solidaire d’activité",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-04-26",
+      "date_dernier_evenement": "2023-04-26",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47698"
+    },
+    {
+      "dossier_id": "DLR5L16N47696",
+      "titre": "Ordonnance n° 2023-78 du 8 février 2023 relative à la prise en charge des conséquences des désordres causés par le phénomène de mouvements de terrain différentiels consécutifs à la sécheresse et à la réhydratation des sols",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-04-26",
+      "date_dernier_evenement": "2023-04-26",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_secheresse_rehydratation"
+    },
+    {
+      "dossier_id": "DLR5L16N47719",
+      "titre": "Approbation des conventions entre la France et le Danemark et entre la France et la Grèce pour l’élimination de la double imposition en matière d’impôts sur le revenu et la prévention de l’évasion et de la fraude fiscales",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-04-26",
+      "date_dernier_evenement": "2023-12-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47719"
+    },
+    {
+      "dossier_id": "DLR5L16N47616",
+      "titre": "Restitution des biens culturels ayant fait l’objet de spoliations dans le contexte des persécutions antisémites perpétrées entre 1933 et 1945",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-04-19",
+      "date_dernier_evenement": "2023-07-22",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47616"
+    },
+    {
+      "dossier_id": "DLR5L16N47614",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2023-53 du 1er février 2023 portant extension et adaptation aux îles Wallis et Futuna, à la Nouvelle-Calédonie et à la Polynésie française des dispositions de la loi n° 2021-1017 du 2 août 2021 relative à la bioéthiq",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-04-19",
+      "date_dernier_evenement": "2023-04-19",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratifiantordonnance2023-53du1erfevrier2023"
+    },
+    {
+      "dossier_id": "DLR5L16N47615",
+      "titre": "Projet de loi  ratifiant les ordonnances relatives à la partie législative du livre VII du code monétaire et financier et portant diverses dispositions relatives à l’outre-mer",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-04-19",
+      "date_dernier_evenement": "2023-07-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47615"
+    },
+    {
+      "dossier_id": "DLR5L16N47569",
+      "titre": "Règlement du budget et approbation des comptes de l'année 2022",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-04-13",
+      "date_dernier_evenement": "2023-07-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR2022"
+    },
+    {
+      "dossier_id": "DLR5L16N47568",
+      "titre": "Règlement du budget et approbation des comptes de l'année 2021",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-04-13",
+      "date_dernier_evenement": "2023-07-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR_2021"
+    },
+    {
+      "dossier_id": "DLR5L16N47571",
+      "titre": "Donner à la douane les moyens de faire face aux nouvelles menaces",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-04-13",
+      "date_dernier_evenement": "2023-07-18",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/douanes_moyens_nouvelles_menaces"
+    },
+    {
+      "dossier_id": "DLR5L16N47509",
+      "titre": "Programmation militaire pour les années 2024 à 2030 et diverses dispositions intéressant la défense",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-04-04",
+      "date_dernier_evenement": "2025-09-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_militaire_2024_2030"
+    },
+    {
+      "dossier_id": "DLR5L16N47463",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2023-15 du 18 janvier 2023 portant extension outre-mer de certaines dispositions de la loi n° 2022-52 du 24 janvier 2022 relative à la responsabilité pénale et à la sécurité intérieure",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-03-28",
+      "date_dernier_evenement": "2023-03-28",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47463"
+    },
+    {
+      "dossier_id": "DLR5L16N47439",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement de la République du Panama relatif à l’exercice d’activités professionnelles rémunérées par les membres des familles des agents des missions officielles de chaque État dans l’autre",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-03-22",
+      "date_dernier_evenement": "2023-12-27",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47439"
+    },
+    {
+      "dossier_id": "DLR5L16N47436",
+      "titre": "Ordonnance du 5 octobre 2022 prise en application de l'article 18 de la loi n° 2022-219 du 21 février 2022 visant à réformer l'adoption",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-03-22",
+      "date_dernier_evenement": "2023-03-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_reforme_adoption"
+    },
+    {
+      "dossier_id": "DLR5L16N47335",
+      "titre": "Apprentissage transfrontalier",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-03-08",
+      "date_dernier_evenement": "2023-03-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_apprentissage_transfrontalier"
+    },
+    {
+      "dossier_id": "DLR5L16N47299",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1521 du 7 décembre 2022 étendant aux collectivités relevant de l’article 74 de la Constitution et à la Nouvelle-Calédonie les dispositions de la loi n° 2022-217 du 21 février 2022 relative à la différenciation, la décentralisation, la déconcentration et portant diverses mesures de simplification de l’action publique locale",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-03-01",
+      "date_dernier_evenement": "2023-03-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47299"
+    },
+    {
+      "dossier_id": "DLR5L16N47305",
+      "titre": "Accès et qualité des eaux destinées à la consommation humaine",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-03-01",
+      "date_dernier_evenement": "2023-03-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acces_qualite_eaux_consommationhumaine"
+    },
+    {
+      "dossier_id": "DLR5L16N47268",
+      "titre": "Ratification de l’ordonnance n° 2022-1524 du 7 décembre 2022 relative au casier judiciaire national automatisé",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-02-22",
+      "date_dernier_evenement": "2023-02-22",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_casierjudiciairenationalautomatise"
+    },
+    {
+      "dossier_id": "DLR5L16N47267",
+      "titre": "Approbation du protocole entre le Gouvernement de la République française et le Gouvernement de la République de Macédoine du Nord portant application de l’accord du 18 septembre 2007 concernant la réadmission des personnes en séjour irrégulier",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-02-22",
+      "date_dernier_evenement": "2023-11-06",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/protocole_France_MacedoineduNord_sejourirregulier"
+    },
+    {
+      "dossier_id": "DLR5L16N47271",
+      "titre": "Accords entre la France et le Sénégal du 7 septembre 2021 et entre la France et le Sri Lanka du 23 février 2022",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-02-22",
+      "date_dernier_evenement": "2023-07-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47271"
+    },
+    {
+      "dossier_id": "DLR5L16N47211",
+      "titre": "Accord entre la France et la Principauté d’Andorre concernant l’amélioration de la résilience climatique et de la viabilité des routes nationales 116, 20, 320 et 22",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-02-15",
+      "date_dernier_evenement": "2023-06-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_france_andorre_routes_nationales"
+    },
+    {
+      "dossier_id": "DLR5L16N47118",
+      "titre": "Projet de loi pour contrôler l’immigration, améliorer l’intégration",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-02-01",
+      "date_dernier_evenement": "2024-01-26",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47118"
+    },
+    {
+      "dossier_id": "DLR5L16N47066",
+      "titre": "Projet de loi de financement rectificative de la sécurité sociale pour 2023",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-23",
+      "date_dernier_evenement": "2023-04-14",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plrfss_pour_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N47054",
+      "titre": "Ratification de l’ordonnance n° 2022-1421 du 10 novembre 2022 relative au régime budgétaire et comptable de l'établissement public local Paris La Défense",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-18",
+      "date_dernier_evenement": "2023-01-18",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_orodnnance_20221421_ladefense"
+    },
+    {
+      "dossier_id": "DLR5L16N47052",
+      "titre": "Ratification de l’ordonnance n° 2022-1203 du 31 août 2022 prolongeant l’application des dispositions adaptant les conditions de versement de l’indemnité complémentaire à l’allocation journalière au contexte de l’épidémie de covid-19",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-18",
+      "date_dernier_evenement": "2023-01-18",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance20221203"
+    },
+    {
+      "dossier_id": "DLR5L16N46989",
+      "titre": "Ratification de l’ordonnance du 23 novembre 2022 portant dispositions de contrôles et de sanctions dans le cadre de la réforme des outils de gestion des risques climatiques en agriculture",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-11",
+      "date_dernier_evenement": "2023-01-11",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_dispositions_controles_sanctions_reforme_outil_gestion_agriculture"
+    },
+    {
+      "dossier_id": "DLR5L16N46988",
+      "titre": "Ratification de la résolution A.1152 (32) relative aux amendements à la Convention du 6 mars 1948 portant création de l’Organisation maritime internationale",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-11",
+      "date_dernier_evenement": "2023-07-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_resolution_convention_1948_creation_omi"
+    },
+    {
+      "dossier_id": "DLR5L16N46947",
+      "titre": "Ratification de l’ordonnance n° 2022-1336 du 19 octobre 2022 relative aux droits sociaux des personnes détenues et portant diverses mesures complémentaires",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2023-01-04",
+      "date_dernier_evenement": "2023-01-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_droits_sociaux_detenus"
+    },
+    {
+      "dossier_id": "DLR5L16N46948",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2022-1423 du 10 novembre 2022 portant diverses dispositions relatives au code minier",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2023-01-04",
+      "date_dernier_evenement": "2023-01-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46948"
+    },
+    {
+      "dossier_id": "DLR5L16N46920",
+      "titre": "Ratification de l’ordonnance n° 2022-1293 du 5 octobre 2022 relative au détachement de salariés roulants ou navigants dans le domaine des transports",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-12-23",
+      "date_dernier_evenement": "2022-12-23",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_detachement_salaries_transports"
+    },
+    {
+      "dossier_id": "DLR5L16N46918",
+      "titre": "Projet de loi relatif aux jeux Olympiques et Paralympiques de 2024",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-12-22",
+      "date_dernier_evenement": "2023-05-19",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46918"
+    },
+    {
+      "dossier_id": "DLR5L16N46919",
+      "titre": "Projet de loi autorisant la ratification du Protocole du 30 avril 2010 à la Convention internationale de 1996 sur la responsabilité et l’indemnisation pour les dommages liés au transport par mer de substances nocives et potentiellement dangereuses",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-12-22",
+      "date_dernier_evenement": "2023-07-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46919"
+    },
+    {
+      "dossier_id": "DLR5L16N46828",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1229 du 14 septembre 2022 modifiant l'ordonnance n° 2021-1735 du 22 décembre 2021 modernisant le cadre relatif au financement participatif et l'ordonnance n° 2022-230 du 15 février 2022 relative aux titres III à VIII de la partie législative du livre VII du code monétaire et financier",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-12-07",
+      "date_dernier_evenement": "2022-12-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46828"
+    },
+    {
+      "dossier_id": "DLR5L16N46825",
+      "titre": "Approbation du premier amendement et du protocole à la convention d'Espoo",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-12-07",
+      "date_dernier_evenement": "2023-07-23",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_premier_amendement_protocole_convention_espoo"
+    },
+    {
+      "dossier_id": "DLR5L16N46734",
+      "titre": "Projet de loi portant diverses dispositions d'adaptation au droit de l'Union européenne dans les domaines de l’économie, de la santé, du travail, des transports et de l’agriculture",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-11-23",
+      "date_dernier_evenement": "2023-03-09",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46734"
+    },
+    {
+      "dossier_id": "DLR5L16N46617",
+      "titre": "Projet de loi de finances rectificative pour 2022",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-11-02",
+      "date_dernier_evenement": "2022-12-01",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plfr_2022"
+    },
+    {
+      "dossier_id": "DLR5L16N46622",
+      "titre": "Projet de loi  relatif à l’accélération des procédures liées à la construction de nouvelles installations nucléaires à proximité de sites nucléaires existants et au fonctionnement des installations existantes",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-11-02",
+      "date_dernier_evenement": "2024-02-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46622"
+    },
+    {
+      "dossier_id": "DLR5L16N46537",
+      "titre": "Projet de loi autorisant l’approbation de l’accord de sécurité sociale du 6 novembre 2014 entre le Gouvernement de la République française et le Gouvernement de la République de Serbie",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-10-26",
+      "date_dernier_evenement": "2023-07-07",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46537"
+    },
+    {
+      "dossier_id": "DLR5L16N46495",
+      "titre": "Ratification de l'ordonnance n° 2022-1086 du 29 juillet 2022 portant adaptation du droit français du règlement européen relatif aux dispositifs médicaux de diagnostic in vitro",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-10-19",
+      "date_dernier_evenement": "2022-10-19",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_20221086"
+    },
+    {
+      "dossier_id": "DLR5L16N46447",
+      "titre": "Ratification de l’ordonnance n° 2022-1076 du 29 juillet 2022 visant à renforcer le contrôle des règles de construction",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-10-12",
+      "date_dernier_evenement": "2022-10-12",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_regles_construction2"
+    },
+    {
+      "dossier_id": "DLR5L16N46539",
+      "titre": "Projet de loi relatif à l’accélération de la production d’énergies renouvelables",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-09-26",
+      "date_dernier_evenement": "2024-02-13",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46539"
+    },
+    {
+      "dossier_id": "DLR5L16N45988",
+      "titre": "Projet de loi de finances pour 2023",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-26",
+      "date_dernier_evenement": "2022-12-30",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plf_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N46346",
+      "titre": "Programmation des finances publiques pour les années 2023 à 2027",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-26",
+      "date_dernier_evenement": "2023-12-18",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_finances_publiques_2023_2027"
+    },
+    {
+      "dossier_id": "DLR5L16N46347",
+      "titre": "Financement de la sécurité sociale pour 2023",
+      "statut": "adopte_49_3",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-26",
+      "date_dernier_evenement": "2022-12-23",
+      "sort_49_3": true,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/securite_sociale_2023"
+    },
+    {
+      "dossier_id": "DLR5L16N46292",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-1075 du 29 juillet 2022 portant développement des outils de gestion des risques climatiques en agriculture",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-14",
+      "date_dernier_evenement": "2022-09-14",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/pjlratifiantordonnance2022-1075developpementoutilsgestionrisquesclimatiquesenagriculture"
+    },
+    {
+      "dossier_id": "DLR5L16N46267",
+      "titre": "Transfert à la direction générale des finances publiques de la gestion de la taxe d’aménagement et de la part logement de la redevance d’archéologie préventive",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-07",
+      "date_dernier_evenement": "2022-09-07",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/transfert_dgfip_ta_partlogement"
+    },
+    {
+      "dossier_id": "DLR5L16N46269",
+      "titre": "Projet de loi d’orientation et de programmation du ministère de l’intérieur",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-09-07",
+      "date_dernier_evenement": "2023-01-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46269"
+    },
+    {
+      "dossier_id": "DLR5L16N46266",
+      "titre": "Mesures d’urgence relatives au fonctionnement du marché du travail en vue du plein emploi",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-09-07",
+      "date_dernier_evenement": "2022-12-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_fonctionnement_marche_travail"
+    },
+    {
+      "dossier_id": "DLR5L16N46205",
+      "titre": "Convention d’entraide judiciaire en matière pénale entre le Gouvernement de la République française et le Gouvernement de la République du Sénégal, et de la convention d’extradition entre le Gouvernement de la République du Sénégal",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-08-24",
+      "date_dernier_evenement": "2023-06-02",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbationconventionentraidejudiciaireenmatierepenaleFranceSenegal"
+    },
+    {
+      "dossier_id": "DLR5L16N46206",
+      "titre": "Accord entre le Gouvernement de la République française et le Gouvernement du Royaume-Uni de Grande-Bretagne et d’Irlande du Nord relatif à la coopération sur les questions de sûreté maritime et portuaire",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-08-24",
+      "date_dernier_evenement": "2023-02-01",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accordFranceRoyaumeUnisecuritemaritime"
+    },
+    {
+      "dossier_id": "DLR5L16N46063",
+      "titre": "Restructuration de la plate-forme douanière de Saint-Louis - Bâle sur l’autoroute A35",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-29",
+      "date_dernier_evenement": "2022-11-24",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/restructuration_plateforme_douaniere_bale_saintlouis"
+    },
+    {
+      "dossier_id": "DLR5L16N46009",
+      "titre": "Projet de loi ratifiant les ordonnances prises sur le fondement des articles 1er et 12 de la loi n° 2021-1308 du 8 octobre 2021 portant diverses dispositions d'adaptation au droit de l'Union européenne dans le domaine des transports, de l'environnement, de l'économie et des finances",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-07-20",
+      "date_dernier_evenement": "2022-07-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46009"
+    },
+    {
+      "dossier_id": "DLR5L16N46008",
+      "titre": "Projet de loi ratifiant l'ordonnance n° 2022-839 du 1er juin 2022 relative aux agents de l'Office national des forêts",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-07-20",
+      "date_dernier_evenement": "2022-07-20",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46008"
+    },
+    {
+      "dossier_id": "DLR5L16N45972",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-582 du 20 avril 2022 portant adaptation du droit français au règlement (UE) 2017/745 du Parlement européen et du Conseil du 5 avril 2017 relatif aux dispositifs médicaux et modifiant le code de la santé publique.",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-07-13",
+      "date_dernier_evenement": "2022-07-13",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45972"
+    },
+    {
+      "dossier_id": "DLR5L16N45973",
+      "titre": "Projet de loi autorisant la ratification du protocole au Traité de l’Atlantique Nord sur l’accession de la République de Finlande et la ratification du protocole au Traité de l’Atlantique Nord sur l’accession du Royaume de Suède",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-07-13",
+      "date_dernier_evenement": "2022-08-05",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45973"
+    },
+    {
+      "dossier_id": "DLR5L16N45971",
+      "titre": "Approbation de l’accord entre le Gouvernement de la République française et la Cour pénale internationale sur l’exécution des peines prononcées par la Cour",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-13",
+      "date_dernier_evenement": "2023-02-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_cour_penale_internationale"
+    },
+    {
+      "dossier_id": "DLR5L16N45942",
+      "titre": "Mesures d’urgence pour la protection du pouvoir d’achat",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-07",
+      "date_dernier_evenement": "2022-08-16",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_pouvoir_achat"
+    },
+    {
+      "dossier_id": "DLR5L16N45943",
+      "titre": "Loi de finances rectificative pour 2022",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-07",
+      "date_dernier_evenement": "2022-08-16",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/loi_finances_rectificative_2022"
+    },
+    {
+      "dossier_id": "DLR5L16N45944",
+      "titre": "Approbation de l’accord de siège entre la France et la Banque des règlements internationaux relatif au statut et aux activités de la Banque des règlements internationaux en France, et de l’accord de sécurité sociale entre  la France et la BRI",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-07",
+      "date_dernier_evenement": "2022-10-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_banque_reglements_internationaux"
+    },
+    {
+      "dossier_id": "DLR5L16N45931",
+      "titre": "Ratification du traité entre la République française et la République italienne pour une coopération bilatérale renforcée",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-04",
+      "date_dernier_evenement": "2022-10-31",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_traite_coop_france_italie"
+    },
+    {
+      "dossier_id": "DLR5L16N45930",
+      "titre": "Ratification de l’ordonnance n° 2022-478 du 30 mars 2022 portant partie législative du code pénitentiaire et modifiant certaines dispositions d’autres codes",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-04",
+      "date_dernier_evenement": "2022-07-04",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_partie_legislative_code_penitentiaire"
+    },
+    {
+      "dossier_id": "DLR5L16N45927",
+      "titre": "Maintien provisoire d'un dispositif de veille et de sécurité sanitaire en matière de lutte contre la covid-19",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-04",
+      "date_dernier_evenement": "2022-07-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/maintien_dispositif_veille_securite_sanitaire"
+    },
+    {
+      "dossier_id": "DLR5L16N45914",
+      "titre": "Accord entre la France et les Pays-Bas relatif à la coopération en matière de défense et au statut de leurs forces sur les territoires caribéens et sud-américain de la France et des Pays-Bas",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-06-30",
+      "date_dernier_evenement": "2023-03-27",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_statut_force_france_paysbas"
+    },
+    {
+      "dossier_id": "DLR5L15N49541",
+      "titre": "Convention d'extradition avec le Cambodge",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-06-15",
+      "date_dernier_evenement": "2025-03-25",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_avec_le_cambodge"
+    },
+    {
+      "dossier_id": "DLR5L15N45831",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-583 du 20 avril 2022 relative aux missions et compétences de l’établissement « Chambres d’agriculture France »  et l’ordonnance n° 2022-584 du 20 avril 2022 relative à la chambre de l’agriculture, de la pêche et de l’aquaculture de Mayotte",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-06-08",
+      "date_dernier_evenement": "2022-06-08",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45831"
+    },
+    {
+      "dossier_id": "DLR5L15N45830",
+      "titre": "Projet de loi autorisant l’approbation de l’accord entre le Gouvernement de la République française et le Gouvernement du Royaume des Pays-Bas relatif à la coopération en matière de défense et au statut de leurs forces sur les territoires caribéens et sud-américain de la République française et du Royaume des Pays-Bas",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-06-08",
+      "date_dernier_evenement": "2022-06-29",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45830"
+    },
+    {
+      "dossier_id": "DLR5L15N45798",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2022-533 du 13 avril 2022 définissant la nature, les conditions et les modalités d'octroi par le Gouvernement de privilèges, immunités et facilités à des organisations internationales, des agences décentralisées de l'Union européenne et à certaines associations ou fondations",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-06-01",
+      "date_dernier_evenement": "2022-06-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45798"
+    },
+    {
+      "dossier_id": "DLR5L15N45806",
+      "titre": "Projet de loi ratifiant l’ordonnance n° 2021-1554 du 1er décembre 2021 relative à la mise en œuvre de la création de la cinquième branche du régime général de la sécurité sociale relative à l’autonomie",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2022-06-01",
+      "date_dernier_evenement": "2022-06-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45806"
+    }
+  ],
   "comptages": {
     "par_statut": {
-      "adopte": 0,
-      "adopte_49_3": 0,
-      "adopte_cmp": 0,
+      "adopte": 12,
+      "adopte_49_3": 6,
+      "adopte_cmp": 27,
       "depose": 0,
-      "navette_en_cours": 0,
-      "rejete": 0,
+      "navette_en_cours": 43,
+      "promulgue": 19,
+      "rejete": 3,
       "rejete_49_3": 0,
       "retire": 0
     }
@@ -164,8 +1266,16 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:51:05+0200",
+    "genere_le": "2026-08-18T01:12:05+0200",
     "licence_donnees": "",
-    "warnings": []
+    "warnings": [
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_profile: dossier 'DLR5L16N45929' exclu de textes[] : statut indéterminé ou inconnu (None).",
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
+    ]
   }
 }

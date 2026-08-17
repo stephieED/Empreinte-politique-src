@@ -91,9 +91,10 @@ const MANDAT_CATEGORY_ORDER = [
 // d'un texte gouvernemental (schema_gouvernement.py). Entiers bruts
 // uniquement : jamais de jauge, donut ou pourcentage (AGENTS.md règle 2.1).
 const GOVERNMENT_STATUT_ORDER = [
-  'adopte', 'adopte_cmp', 'rejete', 'retire', 'adopte_49_3', 'rejete_49_3', 'navette_en_cours', 'depose',
+  'promulgue', 'adopte', 'adopte_cmp', 'rejete', 'retire', 'adopte_49_3', 'rejete_49_3', 'navette_en_cours', 'depose',
 ];
 const GOVERNMENT_STATUT_LABELS = {
+  promulgue: { singular: 'promulgué', plural: 'promulgués' },
   adopte: { singular: 'adopté', plural: 'adoptés' },
   rejete: { singular: 'rejeté', plural: 'rejetés' },
   retire: { singular: 'retiré', plural: 'retirés' },
@@ -106,6 +107,7 @@ const GOVERNMENT_STATUT_LABELS = {
 const GOVERNMENT_TEXTE_STATUT_LABELS = {
   depose: 'Déposé',
   navette_en_cours: 'Navette en cours',
+  promulgue: 'Promulgué (publié au Journal officiel)',
   adopte: 'Adopté',
   adopte_cmp: 'Adopté (texte de commission mixte paritaire)',
   adopte_49_3: 'Adopté via 49.3',

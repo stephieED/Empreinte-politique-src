@@ -524,7 +524,7 @@ def test_validate_comptages_par_statut_negative():
 def test_known_statuts_texte_gouvernemental():
     assert KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL == frozenset({
         "depose", "navette_en_cours", "adopte", "adopte_49_3", "adopte_cmp",
-        "rejete", "rejete_49_3", "retire",
+        "promulgue", "rejete", "rejete_49_3", "retire",
     })
 
 

@@ -119,6 +119,16 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54616"
     },
     {
+      "dossier_id": "DLR5L17N54608",
+      "titre": "La relance et la décentralisation du logement",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2026-06-25",
+      "date_dernier_evenement": "2026-09-16",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement_2"
+    },
+    {
       "dossier_id": "DLR5L17N54573",
       "titre": "Projet de loi portant ratification de l’ordonnance n° 2026-255 du 8 avril 2026 relative à la transposition de la directive (UE) 2024/1619 du Parlement européen et du Conseil du 31 mai 2024 modifiant la directive 2013/36/UE en ce qui concerne les pouvoirs de surveillance, les sanctions, les succursales de pays tiers et les risques environnementaux, sociaux et de gouvernance",
       "statut": "navette_en_cours",
@@ -137,6 +147,16 @@
       "date_dernier_evenement": "2026-07-08",
       "sort_49_3": null,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N54567"
+    },
+    {
+      "dossier_id": "DLR5L17N54566",
+      "titre": "La relance et la décentralisation du logement",
+      "statut": "retire",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2026-06-24",
+      "date_dernier_evenement": "2026-07-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement"
     },
     {
       "dossier_id": "DLR5L17N54372",
@@ -529,6 +549,16 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N53299"
     },
     {
+      "dossier_id": "DLR5L17N53259",
+      "titre": "L’approbation de l’accord entre le Gouvernement de la République française et l’Agence spatiale européenne concernant les installations de l’Agence spatiale européenne en France",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2025-12-02",
+      "date_dernier_evenement": "2026-04-21",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_accord_Gouvernement_Agence_spatiale_europeenne_installations_France"
+    },
+    {
       "dossier_id": "DLR5L17N53230",
       "titre": "Projet de loi ratifiant l’ordonnance n°2025-521 du 12 juin 2025 relative aux personnels enseignants du premier degré des îles Wallis et Futuna",
       "statut": "navette_en_cours",
@@ -651,14 +681,15 @@
   ],
   "comptages": {
     "par_statut": {
-      "adopte": 23,
+      "adopte": 24,
       "adopte_49_3": 1,
       "adopte_cmp": 7,
       "depose": 0,
       "navette_en_cours": 28,
+      "promulgue": 1,
       "rejete": 1,
       "rejete_49_3": 0,
-      "retire": 0
+      "retire": 1
     }
   },
   "sources": [
@@ -690,10 +721,13 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:51:05+0200",
+    "genere_le": "2026-08-18T01:12:05+0200",
     "licence_donnees": "",
     "warnings": [
-      "gouvernement_profile: dossier 'DLR5L17N53195' exclu de textes[] : chambre_depot_initial indéterminée (None)."
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
     ]
   }
 }

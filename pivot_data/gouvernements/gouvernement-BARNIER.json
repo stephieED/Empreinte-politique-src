@@ -60,7 +60,7 @@
     {
       "dossier_id": "DLR5L17N51079",
       "titre": "Projet de loi spéciale prévue par l’article 45 de la loi organique du 1er août 2001 relative aux lois de finances",
-      "statut": "navette_en_cours",
+      "statut": "promulgue",
       "chambre_depot_initial": "AN",
       "date_depot": "2024-12-11",
       "date_dernier_evenement": "2024-12-20",
@@ -88,6 +88,16 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50957"
     },
     {
+      "dossier_id": "DLR5L17N50946",
+      "titre": "Ratification du traité sur la coopération dans le domaine de la défense entre la République française et le Royaume d’Espagne",
+      "statut": "promulgue",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-11-22",
+      "date_dernier_evenement": "2025-03-20",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_traite_cooperation_domaine_defense_france_espagne"
+    },
+    {
       "dossier_id": "DLR5L17N50838",
       "titre": "Projet de loi de finances de fin de gestion pour 2024",
       "statut": "adopte_cmp",
@@ -106,6 +116,16 @@
       "date_dernier_evenement": "2026-01-29",
       "sort_49_3": false,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50794"
+    },
+    {
+      "dossier_id": "DLR5L17N50796",
+      "titre": "Diverses dispositions d’adaptation au droit de l’Union européenne en matière économique, financière, environnementale, énergétique, de transport, de santé et de circulation des personnes",
+      "statut": "adopte_cmp",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-10-31",
+      "date_dernier_evenement": "2025-04-30",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/diverses_dispositions_adaptation_due_2024_eco_finances_environnement"
     },
     {
       "dossier_id": "DLR5L17N50744",
@@ -156,15 +176,26 @@
       "date_dernier_evenement": "2025-02-28",
       "sort_49_3": true,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plfss_pour_2025"
+    },
+    {
+      "dossier_id": "DLR5L17N50538",
+      "titre": "Ratification de l’ordonnance n° 2024-662 du 3 juillet 2024 portant modernisation du régime des fonds d'investissement alternatifs",
+      "statut": "navette_en_cours",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2024-10-01",
+      "date_dernier_evenement": "2024-10-01",
+      "sort_49_3": null,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_ordonnance_juillet_2024_modernisation"
     }
   ],
   "comptages": {
     "par_statut": {
       "adopte": 3,
       "adopte_49_3": 1,
-      "adopte_cmp": 2,
+      "adopte_cmp": 3,
       "depose": 0,
       "navette_en_cours": 4,
+      "promulgue": 2,
       "rejete": 0,
       "rejete_49_3": 0,
       "retire": 0
@@ -209,10 +240,13 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:51:05+0200",
+    "genere_le": "2026-08-18T01:12:05+0200",
     "licence_donnees": "",
     "warnings": [
-      "gouvernement_profile: dossier 'DLR5L17N50840' exclu de textes[] : chambre_depot_initial indéterminée (None)."
+      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
+      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
     ]
   }
 }
