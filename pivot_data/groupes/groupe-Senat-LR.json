@@ -28,6 +28,168 @@
   },
   "cohesion_votes": [],
   "tags_thematiques_agreges": [],
+  "mandats_agreges": [
+    {
+      "categorie": "commission",
+      "label": "Commission de la culture, de l'éducation et de la communication",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Collège consultatif de la commission du fonds pour le développement de la vie associative",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Commission départementale de la coopération intercommunale",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe Chrétiens d'Orient",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "président",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'information internationale sur le Haut-Karabagh",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "président": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "président",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'études Agriculture et alimentation",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "Groupe d'études Statut, rôle et place des Français établis hors de France",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nossenateurs:bruno-retailleau",
+          "nom": "Bruno Retailleau",
+          "fonction": "membre",
+          "debut": null,
+          "fin": null,
+          "actif": true
+        }
+      ]
+    }
+  ],
   "amendements_agreges": {
     "nb_amendements": 0,
     "nb_adoptes": 0,
@@ -74,12 +236,12 @@
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-06T09:20:03+0000"
+      "synchro_le": "2026-08-17T14:25:28+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:37+0000",
+    "genere_le": "2026-08-17T14:31:35+0200",
     "licence_donnees": "",
     "profils_sources": [
       "nossenateurs:bruno-retailleau"

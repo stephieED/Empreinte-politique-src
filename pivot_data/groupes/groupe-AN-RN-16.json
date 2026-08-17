@@ -11664,6 +11664,148 @@
       "poids_relatif": 1.0
     }
   ],
+  "mandats_agreges": [
+    {
+      "categorie": "commission",
+      "label": "Commission de l'emploi et des affaires sociales",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "Membre",
+          "debut": "2012-01-19",
+          "fin": "2014-06-30",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission de la culture et de l'éducation",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "Membre",
+          "debut": "2007-01-15",
+          "fin": "2007-01-30",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des affaires étrangères",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "membre",
+          "debut": "2022-06-30",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission des libertés civiles, de la justice et des affaires intérieures",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre suppléant(e)": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "Membre suppléant(e)",
+          "debut": "2017-01-19",
+          "fin": "2017-06-18",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission du commerce international",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "Membre",
+          "debut": "2017-01-19",
+          "fin": "2017-06-18",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Commission du marché intérieur et de la protection des consommateurs",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "Membre suppléant(e)": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "Membre suppléant(e)",
+          "debut": "2007-01-31",
+          "fin": "2009-07-13",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission",
+      "label": "Députés Non Inscrits",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:marine-le-pen",
+          "nom": "Marine Le Pen",
+          "fonction": "membre",
+          "debut": "2022-06-24",
+          "fin": "2022-06-29",
+          "actif": false
+        }
+      ]
+    }
+  ],
   "amendements_agreges": {
     "nb_amendements": 0,
     "nb_adoptes": 0,
@@ -11720,12 +11862,12 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-16T07:42:49+0000"
+      "synchro_le": "2026-08-17T14:30:12+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:33+0000",
+    "genere_le": "2026-08-17T14:31:35+0200",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:marine-le-pen"

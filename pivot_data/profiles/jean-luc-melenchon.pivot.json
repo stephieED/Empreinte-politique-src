@@ -4,13 +4,20 @@
   "nom": "Jean-Luc Mélenchon",
   "chambre": "Senat",
   "parti": "La France Insoumise (LFI)",
-  "groupe": "La France Insoumise (LFI)",
-  "identite": null,
+  "groupe": "Communiste, Républicain, Citoyen et des Sénateurs du Parti de Gauche",
+  "identite": {
+    "profession": "Cadre administratif",
+    "date_naissance": "1951-08-19",
+    "lieu_naissance": null,
+    "num_circo": "non disponible",
+    "uri_hatvp": null,
+    "source_url": "https://archive.nossenateurs.fr/jean-luc-melenchon"
+  },
   "sources": [
     {
       "type": "nossenateurs",
-      "url": "https://lcp.fr/actualites/presidentielle-2027-la-liste-des-candidats-deja-en-lice-et-des-pretendants-436373",
-      "synchro_le": "2026-08-06T09:00:31+0000"
+      "url": "https://archive.nossenateurs.fr/jean-luc-melenchon",
+      "synchro_le": "2026-08-17T14:22:30+0200"
     },
     {
       "type": "assemblee_nationale",
@@ -13159,10 +13166,9 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:04+0000",
+    "genere_le": "2026-08-17T14:31:14+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
-      "aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)",
       "ParlTrack: aucune donnée trouvée pour le MEP ID 96742. Vérifier la disponibilité des dumps ou la validité du MEP ID."
     ],
     "provenance": "candidat_declare"

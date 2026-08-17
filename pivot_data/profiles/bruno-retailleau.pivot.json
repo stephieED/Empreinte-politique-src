@@ -17,7 +17,7 @@
     {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-06T09:20:03+0000"
+      "synchro_le": "2026-08-17T14:25:28+0200"
     }
   ],
   "mandats": [
@@ -137,10 +137,10 @@
   "tags_thematiques": [],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-16T07:54:27+0000",
+    "genere_le": "2026-08-17T14:31:28+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": [
-      "votes introuvables : l'endpoint /votes de NosDéputés.fr renvoie une erreur serveur (fonctionnalité indisponible côté API), et aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature."
+      "votes introuvables : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune donnée exploitable pour ce parlementaire."
     ],
     "provenance": "candidat_declare"
   }

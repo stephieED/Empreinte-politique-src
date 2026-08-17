@@ -535,6 +535,14 @@ threshold beyond which a profile with only stale sources is flagged. See
 `docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_pivot/`.
 
+Instead of naming both files, `--output-dir DOSSIER` writes both under a
+timestamped name (`audit_pivot_<horodatage-UTC>.json`/`.md`) — incompatible
+with `--output-json`/`--output-md`:
+
+```bash
+python src/audit_pivot_dataset.py --input-dir pivot_data/profiles --output-dir audit_reports/
+```
+
 ## 12. Audit the groupe dataset
 
 `src/audit_groupe_dataset.py` mirrors `audit_pivot_dataset.py` for
@@ -561,7 +569,8 @@ python src/audit_groupe_dataset.py \
 default to unset (JSON prints to stdout, Markdown is skipped if `--output-md`
 is omitted). `--staleness-days` (default 30) sets the threshold beyond which
 a group with only stale sources is flagged — same option contract as
-`audit_pivot_dataset.py` for combined use. See
+`audit_pivot_dataset.py` for combined use, including `--output-dir DOSSIER`
+(timestamped `audit_groupe_<horodatage-UTC>.json`/`.md`). See
 `docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
 generated on `tests/fixtures/audit_groupe/`.
 
@@ -598,7 +607,8 @@ python src/audit_gouvernement_dataset.py \
 `--output-md` default to unset (JSON prints to stdout, Markdown is skipped
 if `--output-md` is omitted). `--staleness-days` (default 30) sets the
 threshold beyond which a government with only stale sources is flagged —
-same option contract as the other audit scripts. See
+same option contract as the other audit scripts, including `--output-dir
+DOSSIER` (timestamped `audit_gouvernement_<horodatage-UTC>.json`/`.md`). See
 `docs/examples/audit_gouvernement_report_sample.json` / `.md` for a sample
 report generated on `tests/fixtures/audit_gouvernement/`.
 
@@ -635,7 +645,10 @@ python src/audit_pipeline.py \
 Markdown is skipped if `--output-md` is omitted). `--staleness-days` (default
 30) is forwarded unchanged to all three underlying audits. A missing
 directory (any of the three) is a hard error (explicit message + exit code
-1, never a crash traceback), same behavior across all three.
+1, never a crash traceback), same behavior across all three. Same
+`--output-dir DOSSIER` convenience as the other audit scripts (timestamped
+`audit_pipeline_<horodatage-UTC>.json`/`.md`, incompatible with
+`--output-json`/`--output-md`).
 
 ## Raw profile content (Nos* format)
 

@@ -281,6 +281,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Chemin du rapport Markdown combiné (défaut : non généré).",
     )
     parser.add_argument(
+        "--output-dir",
+        default=None,
+        metavar="DOSSIER",
+        help=(
+            "Écrit JSON et Markdown sous ce dossier avec un nom horodaté "
+            "(audit_pipeline_<horodatage-UTC>.json/.md) au lieu de nommer "
+            "chaque fichier — incompatible avec --output-json/--output-md."
+        ),
+    )
+    parser.add_argument(
         "--staleness-days",
         type=int,
         default=30,
@@ -297,6 +307,20 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+
+    if args.output_dir and (args.output_json or args.output_md):
+        print(
+            "[!] --output-dir est incompatible avec --output-json/--output-md.",
+            file=sys.stderr,
+        )
+        return 1
+
+    output_json_path = args.output_json
+    output_md_path = args.output_md
+    if args.output_dir:
+        horodatage = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        output_json_path = str(Path(args.output_dir) / f"audit_pipeline_{horodatage}.json")
+        output_md_path = str(Path(args.output_dir) / f"audit_pipeline_{horodatage}.md")
 
     profiles_dir = Path(args.profiles_dir)
     groupes_dir = Path(args.groupes_dir)
@@ -348,16 +372,16 @@ def main(argv: list[str] | None = None) -> int:
     rapport = build_report(rapport_profils, rapport_groupes, rapport_gouvernements)
     output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
 
-    if args.output_json:
-        out_path = Path(args.output_json)
+    if output_json_path:
+        out_path = Path(output_json_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(output_json, encoding="utf-8")
         print(f"  ✓ Rapport JSON écrit : {out_path}", file=sys.stderr)
     else:
         print(output_json)
 
-    if args.output_md:
-        md_path = Path(args.output_md)
+    if output_md_path:
+        md_path = Path(output_md_path)
         md_path.parent.mkdir(parents=True, exist_ok=True)
         md_path.write_text(generate_markdown_report(rapport), encoding="utf-8")
         print(f"  ✓ Rapport Markdown écrit : {md_path}", file=sys.stderr)

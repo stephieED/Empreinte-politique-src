@@ -1420,6 +1420,34 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
         pass
 
 
+def amendements_index_deja_figee(legislature: str) -> bool:
+    """True si le cache disque d'une législature figée
+    (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`) est déjà matérialisé
+    (`index_par_acteur.json` présent + `fraicheur.json` portant `figee: true`),
+    sans jamais charger `index_par_acteur.json` en mémoire pour le vérifier —
+    seul `fraicheur.json` (quelques dizaines d'octets) est lu. Une législature
+    figée ne change plus jamais une fois matérialisée : un appelant qui
+    boucle sur plusieurs législatures (`build_amendements_index.py`) doit
+    pouvoir sauter celles déjà figées sans recharger un index potentiellement
+    volumineux (mesuré : 4,7 Go en clair pour la législature 16) juste pour
+    confirmer sa présence — un run réel a déclenché l'OOM killer du système
+    sur cette seule relecture, empêchant toute législature suivante d'être
+    ne serait-ce que tentée (voir docs/technical_decisions.md
+    #amendements-legislatures-figees)."""
+    if legislature not in AN_AMENDEMENTS_LEGISLATURES_FIGEES:
+        return False
+    index_path = AMENDEMENTS_CACHE_DIR / legislature / "index_par_acteur.json"
+    fraicheur_path = AMENDEMENTS_CACHE_DIR / legislature / AMENDEMENTS_FRAICHEUR_FILENAME
+    if not index_path.is_file() or not fraicheur_path.is_file():
+        return False
+    try:
+        with open(fraicheur_path, encoding="utf-8") as f:
+            fraicheur = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return False
+    return bool(isinstance(fraicheur, dict) and fraicheur.get("figee"))
+
+
 def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[dict[str, Any]]]]:
     """Charge l'index amendements committé pour une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), construit hors CI une fois pour

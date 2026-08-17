@@ -2198,6 +2198,69 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
     assert json.loads((cache_dir / "15" / "fraicheur.json").read_text(encoding="utf-8"))["figee"] is True
 
 
+def test_amendements_index_deja_figee_true_when_materialized_and_figee(tmp_path):
+    from candidate_profile import amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    leg_dir = cache_dir / "15"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json").write_text("{}", encoding="utf-8")
+    (leg_dir / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        assert amendements_index_deja_figee("15") is True
+
+
+def test_amendements_index_deja_figee_false_for_non_frozen_legislature(tmp_path):
+    """La législature 17 (active) n'est jamais figée, même avec un index et
+    un fraicheur.json présents en cache — le code n'écrit jamais figee: true
+    pour elle en pratique, mais la fonction ne doit pas en dépendre : elle
+    exclut la 17 par sa seule appartenance à AN_AMENDEMENTS_LEGISLATURES_FIGEES."""
+    from candidate_profile import amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    leg_dir = cache_dir / "17"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json").write_text("{}", encoding="utf-8")
+    (leg_dir / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        assert amendements_index_deja_figee("17") is False
+
+
+def test_amendements_index_deja_figee_false_when_not_yet_materialized(tmp_path):
+    from candidate_profile import amendements_index_deja_figee
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path / "cache"):
+        assert amendements_index_deja_figee("15") is False
+
+
+def test_amendements_index_deja_figee_does_not_read_index_par_acteur(tmp_path):
+    """Ne doit jamais charger index_par_acteur.json en mémoire (c'est tout le
+    point : éviter l'OOM constaté en pratique sur un gros index déjà figé) —
+    un fichier JSON invalide à cet emplacement ne doit donc jamais faire
+    échouer la fonction, tant que fraicheur.json est valide."""
+    from candidate_profile import amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    leg_dir = cache_dir / "16"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json").write_text("{ceci n'est pas du JSON valide", encoding="utf-8")
+    (leg_dir / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-13T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        assert amendements_index_deja_figee("16") is True
+
+
 def test_download_and_build_amendement_index_frozen_legislature_falls_back_to_network_if_no_committed_index(tmp_path):
     """Une législature figée sans fallback committé (ne devrait pas arriver en
     pratique) ne doit pas lever : elle retombe simplement sur le chemin réseau
