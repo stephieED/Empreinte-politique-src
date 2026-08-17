@@ -3216,6 +3216,66 @@ def test_build_acteur_identite_index_covers_former_deputy(tmp_path):
     assert index["PA295"]["place_hemicycle"] == "123"
 
 
+def test_build_acteur_identite_index_resolves_groupe_politique_and_mandat_dates(tmp_path):
+    """groupe_sigle/groupe_nom (mandat GP le plus actuel, organeRef résolu),
+    mandat_debut/mandat_fin (mandat ASSEMBLEE sélectionné) et nb_mandats
+    (compte des mandats ASSEMBLEE) doivent être renseignés (#369, étape 4 :
+    nécessaires pour rendre fetch_identity conditionnel sans perdre ces
+    champs, jusque-là NosDéputés uniquement)."""
+    from candidate_profile import _build_acteur_identite_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO845401": {
+                "uid": "PO845401",
+                "codeType": "GP",
+                "libelle": "Rassemblement National",
+                "libelleAbrege": "RN",
+            },
+        },
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "etatCivil": {"ident": {"prenom": "Jane", "nom": "Doe"}},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "16",
+                            "dateDebut": "2022-06-22",
+                            "dateFin": "2024-06-09",
+                        },
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "legislature": "17",
+                            "dateDebut": "2024-07-08",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "GP",
+                            "organes": {"organeRef": "PO845401"},
+                            "dateDebut": "2024-07-08",
+                            "dateFin": None,
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_identite_index()
+
+    assert index["PA1"]["groupe_sigle"] == "RN"
+    assert index["PA1"]["groupe_nom"] == "Rassemblement National"
+    assert index["PA1"]["mandat_debut"] == "2024-07-08"
+    assert index["PA1"]["mandat_fin"] is None
+    assert index["PA1"]["nb_mandats"] == 2
+
+
 def test_build_acteur_identite_index_keeps_current_mandate_over_past_ones(tmp_path):
     """Pour un acteur réélu sur plusieurs législatures, la circonscription/place
     hémicycle retenue doit être celle du mandat en cours, pas un mandat
@@ -3451,18 +3511,14 @@ def test_extract_mandats_officiels_unknown_acteur_returns_empty():
 def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories():
     """Quand l'acteur est résolu côté AN, les mandats commission/groupe_amitie/
     extra_parlementaire doivent venir de l'AN (pas de doublon avec NosDéputés
-    sous un libellé différent) ; le mandat électif NosDéputés reste conservé."""
-    identity = {
-        "depute": {
-            "id": "PA123456",
-            "nom": "Dupont",
-            "mandat_debut": "2022-06-22",
-            "mandat_fin": None,
-            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
-            "responsabilites": [
-                {"organisme": "Commission des finances (libellé NosDéputés)", "fonction": "membre"}
-            ],
-        }
+    sous un libellé différent) ; le mandat électif est reconstruit depuis l'AN
+    (identite_an) puisque NosDéputés n'est plus appelé du tout (#369, étape 4)."""
+    identite_an = {
+        "nom_complet": "Jean Dupont",
+        "mandat_debut": "2022-06-22",
+        "mandat_fin": None,
+        "groupe_sigle": "RE",
+        "groupe_nom": "Renaissance",
     }
     mandats_officiels = [
         {
@@ -3476,14 +3532,14 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
     ]
 
     with (
-        patch("candidate_profile.fetch_identity", return_value=identity),
+        patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile._extract_search_results", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=({"nom_complet": "Jean Dupont"}, "PA123456")),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(identite_an, "PA123456")),
         patch("candidate_profile.fetch_identite_officielle", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
@@ -3492,6 +3548,9 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
         patch("candidate_profile._extract_mandats_officiels", return_value=mandats_officiels),
     ):
         profile = build_profile("deputes", "jean-dupont")
+
+    # NosDéputés n'est plus appelé du tout : l'AN a déjà résolu l'acteur (#369, étape 4).
+    mock_fetch_identity.assert_not_called()
 
     commission_entries = [m for m in profile["mandats"] if m["categorie"] == "commission"]
     assert commission_entries == [
@@ -3504,8 +3563,20 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
             "actif": True,
         }
     ]
-    # Mandat électif NosDéputés conservé (catégorie non couverte par l'AN ici).
-    assert any(m["categorie"] == "mandat_electif" for m in profile["mandats"])
+    # Mandat électif reconstruit depuis identite_an (AN), NosDéputés n'étant plus appelé.
+    mandat_electif_entries = [m for m in profile["mandats"] if m["categorie"] == "mandat_electif"]
+    assert mandat_electif_entries == [
+        {
+            "categorie": "mandat_electif",
+            "type": "mandat",
+            "label": "Mandat parlementaire (Renaissance)",
+            "debut": "2022-06-22",
+            "fin": None,
+            "actif": True,
+        }
+    ]
+    assert profile["identite"]["groupe_sigle"] == "RE"
+    assert profile["identite"]["groupe_nom"] == "Renaissance"
 
 
 # ---------------------------------------------------------------------------
@@ -3611,7 +3682,7 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
     with (
         patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
-        patch("candidate_profile.fetch_identity", return_value={}),
+        patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
@@ -3626,15 +3697,57 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
     ):
         profile = build_profile("deputes", "francois-asensi")
 
+    # #369, étape 4 : NosDéputés n'est plus appelé du tout quand l'AN a trouvé l'acteur.
+    mock_fetch_identity.assert_not_called()
     assert profile["identite"]["nom_complet"] == "François Asensi"
     assert profile["identite"]["profession"] == "Dessinateur industriel"
     assert profile["identite"]["lieu_naissance"] is not None
     assert "PA295" in profile["identite"]["url_an_ou_senat"]
-    # Mandats/groupe restent indisponibles (non sourcés depuis l'AN, voir #353) :
-    # le warning correspondant doit être émis, mais pas celui d'identité introuvable.
+    # Cet acteur factice n'a aucun mandat AN (mandats.mandat vide) et NosDéputés
+    # n'est pas appelé : le warning mandats introuvables doit être émis, mais
+    # pas celui d'identité introuvable (l'AN a bien trouvé l'acteur).
     assert not any(w.startswith("identité introuvable") for w in profile["meta"]["warnings"])
     assert any(w.startswith("mandats introuvables") for w in profile["meta"]["warnings"])
     assert profile["mandats"] == []
+
+
+def test_build_profile_calls_nosdeputes_when_an_does_not_find_deputy():
+    """#369, étape 4 : quand le référentiel officiel AN ne trouve pas l'acteur
+    (candidat absent des archives combinées), NosDéputés reste appelé en repli
+    complet — le comportement historique de repli doit être préservé."""
+    identity = {
+        "depute": {
+            "id": "PA999999",
+            "nom": "Dupont",
+            "mandat_debut": "2022-06-22",
+            "mandat_fin": None,
+            "groupe_sigle": "RE",
+            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
+        }
+    }
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=identity) as mock_fetch_identity,
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+    ):
+        profile = build_profile("deputes", "jean-dupont")
+
+    mock_fetch_identity.assert_called_once()
+    assert profile["identite"]["nom_complet"] == "Dupont"
+    assert profile["identite"]["groupe_sigle"] == "RE"
+    assert any(m["categorie"] == "mandat_electif" for m in profile["mandats"])
 
 
 def test_identite_index_shares_historique_zip_download_with_organe_index(tmp_path):
