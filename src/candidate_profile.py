@@ -360,6 +360,11 @@ _ACTEURS_HISTORIQUE_ZIP_LOCK = threading.Lock()
 # construit depuis le meme fichier bulk historique (issue #353).
 _ACTEURS_ORGANES_LOCK = threading.Lock()
 
+# Un seul verrou pour l'index des mandats (commissions/groupes d'amitie/
+# engagements extra-parlementaires), construit depuis le meme fichier bulk
+# historique (issue #369 - complete #353 pour peupler profile["mandats"]).
+_ACTEURS_MANDATS_LOCK = threading.Lock()
+
 # Un seul verrou pour l'index des textes portés (auteur/rapporteur), construit
 # depuis le même fichier bulk que l'index titre (dossiers legislatifs).
 _DOSSIERS_TEXTES_PORTES_LOCK = threading.Lock()
@@ -514,6 +519,62 @@ def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
     if ok:
         return payload
     raise payload
+
+
+# Budget mur pour _download_with_watchdog (#370) : les téléchargements bulk
+# ci-dessous (zips AN "acteurs historique", ~quelques Mo) devraient prendre
+# quelques secondes à quelques dizaines de secondes en bande passante CI
+# normale. 120s laisse une marge large sans reproduire l'exposition de
+# `timeout=(TIMEOUT, 600)` (10 min) déjà en place avant #370 — probable
+# cause du blocage silencieux observé sur le run #44 (voir #369/#370).
+_DOWNLOAD_WATCHDOG_HARD_TIMEOUT_SECONDS = 120
+
+
+def _download_with_watchdog(
+    url: str, dest_path: Path, *, timeout: int = TIMEOUT, hard_timeout_seconds: int = _DOWNLOAD_WATCHDOG_HARD_TIMEOUT_SECONDS
+) -> None:
+    """Télécharge `url` (streaming) vers `dest_path`, protégé par un budget mur
+    total indépendant du timeout `requests` — même principe que
+    `_get_with_watchdog` (#340/[[get-payload-retry]]), généralisé aux
+    téléchargements de fichier plutôt que dupliqué par appelant (#370).
+
+    Écrit d'abord dans un fichier temporaire (`dest_path` + `.part`), renommé
+    vers `dest_path` seulement en cas de succès complet : si le budget mur est
+    dépassé, le thread démon abandonné peut continuer d'écrire en arrière-plan
+    (impossible à interrompre depuis Python) sans jamais corrompre un
+    `dest_path` déjà considéré comme absent/en échec par l'appelant.
+
+    Lève l'exception rencontrée (`requests.RequestException`, `OSError`) ou
+    `TimeoutError` si le budget mur est dépassé — à l'appelant de catcher,
+    même pattern que les appels `requests.get` directs qu'elle remplace.
+    """
+    tmp_path = dest_path.with_name(dest_path.name + ".part")
+    outcome: "queue.Queue[tuple[bool, Any]]" = queue.Queue(maxsize=1)
+
+    def _worker() -> None:
+        try:
+            with requests.get(url, headers=HEADERS, timeout=timeout, stream=True) as resp:
+                resp.raise_for_status()
+                with open(tmp_path, "wb") as out:
+                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                        if chunk:
+                            out.write(chunk)
+            outcome.put((True, None))
+        except Exception as exc:  # relayé tel quel au thread appelant
+            outcome.put((False, exc))
+
+    threading.Thread(target=_worker, daemon=True).start()
+    try:
+        ok, err = outcome.get(timeout=hard_timeout_seconds)
+    except queue.Empty:
+        raise TimeoutError(
+            f"Aucune réponse de {url} après {hard_timeout_seconds}s "
+            "(budget mur du watchdog dépassé — probable blocage DNS/réseau non "
+            "couvert par timeout= de requests)"
+        ) from None
+    if not ok:
+        raise err
+    tmp_path.replace(dest_path)
 
 
 # Retry léger sur échec transitoire (5xx, erreur réseau, timeout watchdog).
@@ -2251,13 +2312,8 @@ def _ensure_acteurs_historique_zip_downloaded() -> Optional[Path]:
         print(f"-> Téléchargement de l'historique des acteurs (Assemblée nationale) : {AN_ACTEURS_HISTORIQUE_ZIP_URL}")
         try:
             zip_path.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(AN_ACTEURS_HISTORIQUE_ZIP_URL, headers=HEADERS, timeout=(TIMEOUT, 600), stream=True) as resp:
-                resp.raise_for_status()
-                with open(zip_path, "wb") as out:
-                    for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                        if chunk:
-                            out.write(chunk)
-        except (requests.RequestException, OSError) as exc:
+            _download_with_watchdog(AN_ACTEURS_HISTORIQUE_ZIP_URL, zip_path)
+        except (requests.RequestException, OSError, TimeoutError) as exc:
             print(f"  [!] Échec du téléchargement de l'historique des acteurs : {exc}")
             return None
         return zip_path
@@ -2437,6 +2493,135 @@ def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
         return None
     index = _build_organe_index()
     return index.get(organe_ref)
+
+
+# Mapping typeOrgane (AN, mandats[].typeOrgane) -> categorie du schema pivot
+# existant (_extract_mandats/_extract_responsabilite_entries), pour que
+# _extract_mandats_officiels produise la meme forme de sortie quelle que soit
+# la source (issue #369). Perimetre minimal-invasif, coherent avec #349/#361 :
+# seules les 3 categories deja couvertes par nosdeputes.fr sont mappees
+# explicitement ; le reste (MISINFO/CNPE/DELEG/GE/GEVI/PARPOL/CMP/API...)
+# tombe dans "autre" - jamais perdu, mais pas decompose plus finement pour
+# l'instant (memes categories exclues par #361 pour l'agregation de groupe).
+_TYPE_ORGANE_TO_CATEGORIE: dict[str, str] = {
+    "COMPER": "commission",
+    "GA": "groupe_amitie",
+    "ORGEXTPARL": "extra_parlementaire",
+}
+
+
+def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
+    """Construit (et met en cache sur disque) un index acteurRef -> liste de
+    mandats (commissions, groupes d'amitié, engagements extra-parlementaires),
+    à partir du même zip que `_build_acteur_identite_index`/`_build_organe_index`
+    (issue #369 — complète #353 : l'organeRef de chaque mandat était déjà
+    résolvable en nom lisible via `fetch_organe`, mais rien ne l'exploitait
+    encore pour peupler `profile["mandats"]`, qui restait entièrement sourcé
+    depuis NosDéputés).
+
+    Périmètre : `typeOrgane` ∈ `_TYPE_ORGANE_TO_CATEGORIE` uniquement — le
+    mandat électif de base (`ASSEMBLEE`) et le groupe politique/fonction
+    gouvernementale (`GP`/`GOUVERNEMENT`) restent gérés séparément (étapes 5
+    et 5bis de `build_profile`), pas dupliqués ici.
+
+    Non-fatal en cas d'échec (retourne {})."""
+    with _ACTEURS_MANDATS_LOCK:
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_mandats.json"
+        if index_path.is_file():
+            try:
+                with open(index_path, encoding="utf-8") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass  # cache corrompu : on reconstruit
+
+        zip_path = _ensure_acteurs_historique_zip_downloaded()
+        if zip_path is None:
+            return {}
+
+        index: dict[str, list[dict[str, Any]]] = {}
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                noms = [n for n in zf.namelist() if n.startswith("json/acteur/") and n.endswith(".json")]
+                for nom in noms:
+                    try:
+                        with zf.open(nom) as f:
+                            data = json.load(f)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+                    acteur = data.get("acteur") if isinstance(data, dict) else None
+                    if not isinstance(acteur, dict):
+                        continue
+                    uid = acteur.get("uid")
+                    acteur_ref = uid.get("#text") if isinstance(uid, dict) else uid
+                    if not isinstance(acteur_ref, str) or not acteur_ref:
+                        continue
+
+                    mandats = (acteur.get("mandats") or {}).get("mandat")
+                    if isinstance(mandats, dict):
+                        mandats = [mandats]
+                    if not isinstance(mandats, list):
+                        continue
+
+                    entries: list[dict[str, Any]] = []
+                    for mandat in mandats:
+                        if not isinstance(mandat, dict):
+                            continue
+                        type_organe = mandat.get("typeOrgane")
+                        if type_organe not in _TYPE_ORGANE_TO_CATEGORIE:
+                            continue
+                        organe_ref = (mandat.get("organes") or {}).get("organeRef")
+                        if not organe_ref:
+                            continue
+                        fin = mandat.get("dateFin")
+                        entries.append({
+                            "categorie": _TYPE_ORGANE_TO_CATEGORIE[type_organe],
+                            "organe_ref": organe_ref,
+                            "fonction": (mandat.get("infosQualite") or {}).get("libQualite"),
+                            "debut": mandat.get("dateDebut"),
+                            "fin": fin,
+                            "actif": not fin,
+                        })
+                    if entries:
+                        index[acteur_ref] = entries
+        except zipfile.BadZipFile as exc:
+            print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
+            return {}
+
+        try:
+            index_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(index_path, "w", encoding="utf-8") as f:
+                json.dump(index, f, ensure_ascii=False)
+        except OSError:
+            pass
+
+        return index
+
+
+def _extract_mandats_officiels(acteur_ref: str) -> list[dict[str, Any]]:
+    """Équivalent de `_extract_mandats`, sourcé depuis le référentiel officiel
+    de l'Assemblée nationale plutôt que NosDéputés (issue #369) : commissions,
+    groupes d'amitié, engagements extra-parlementaires, avec `organeRef`
+    résolu en nom lisible via `fetch_organe` (#353).
+
+    Ne couvre pas le mandat électif de base ni le groupe politique/fonction
+    gouvernementale — traités séparément (étapes 5/5bis de `build_profile`),
+    pour rester équivalent à `_extract_mandats` qui construit son mandat
+    électif à part des responsabilités."""
+    mandats: list[dict[str, Any]] = []
+    for entry in _build_acteur_mandats_index().get(acteur_ref, []):
+        organe = fetch_organe(entry.get("organe_ref"))
+        label = (organe or {}).get("nom") or (organe or {}).get("sigle")
+        if not label:
+            continue
+        mandats.append({
+            "categorie": entry["categorie"],
+            "type": entry.get("fonction") or "membre",
+            "label": label,
+            "debut": entry.get("debut"),
+            "fin": entry.get("fin"),
+            "actif": entry.get("actif", False),
+        })
+    return mandats
 
 
 def fetch_amendements_officiels(
@@ -3371,13 +3556,18 @@ def build_profile(
     # l'Assemblée nationale, par correspondance de nom sur le slug (voir
     # fetch_identite_officielle_par_slug) — indépendant d'un appel réseau
     # NosDéputés préalable, contrairement à l'ancien enrichissement 5bis qui
-    # dépendait de l'URL AN renvoyée par NosDéputés. NosDéputés reste la seule
-    # source pour les mandats/responsabilités et le groupe parlementaire déclaré
-    # (organeRef résolu par #353 mais pas encore rattaché aux mandats du profil,
-    # voir docs/technical_decisions.md#identite-acteurs-amo30) : il n'est donc
-    # écarté que pour les champs biographiques, jamais totalement. Le repli
-    # NosDéputés total (identité comme mandats) ne s'applique que si le candidat
-    # est absent des archives AN combinées. ---
+    # dépendait de l'URL AN renvoyée par NosDéputés. Depuis #369, les mandats
+    # commission/groupe_amitie/extra_parlementaire sont eux aussi sourcés en
+    # priorité depuis ce même référentiel AN (_extract_mandats_officiels,
+    # organeRef résolu par #353) quand l'acteur y est trouvé — NosDéputés ne
+    # reste utilisé pour les mandats que pour le mandat électif de base
+    # (jamais dupliqué par l'AN ici, voir étape 5 plus bas) et en repli complet
+    # si le candidat est absent des archives AN combinées. `fetch_identity`
+    # (NosDéputés) reste néanmoins appelé sans condition pour l'instant (étape
+    # 1) : la bascule vers un appel réellement conditionnel — n'appeler
+    # NosDéputés qu'en repli si l'AN ne trouve rien — nécessite de réordonner
+    # cette fonction (le nom de recherche d'interventions, étape 2, dépend
+    # aujourd'hui de `identity_raw`) ; laissé pour une itération séparée. ---
     identite_an: Optional[dict[str, Any]] = None
     acteur_ref_an: Optional[str] = None
     if chambre == "deputes":
@@ -3421,16 +3611,29 @@ def build_profile(
             ),
         }
 
-        if parlementaire_valide:
-            profile["mandats"] = _extract_mandats(parlementaire)
-            if _is_empty_payload(profile["mandats"]):
-                warnings.append(f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : l'API ne renvoie pas de mandats pour ce profil.")
-        else:
-            warnings.append(
-                f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés/NosSénateurs (identité "
-                "résolue via le seul référentiel officiel Assemblée nationale, qui ne couvre pas encore les "
-                "mandats/responsabilités par candidat — voir #353)."
-            )
+        # Mandats commission/groupe_amitie/extra_parlementaire : sourcés en
+        # priorité depuis l'AN (#369) quand l'acteur y est trouvé — NosDéputés
+        # ne complète alors que le mandat électif de base et les catégories non
+        # couvertes par l'AN (jamais les 3 catégories partagées, pour éviter un
+        # doublon du même organisme sous un libellé potentiellement différent).
+        mandats_an = _extract_mandats_officiels(acteur_ref_an) if acteur_ref_an else []
+        mandats_nosdeputes = _extract_mandats(parlementaire) if parlementaire_valide else []
+        if mandats_an:
+            categories_an = set(_TYPE_ORGANE_TO_CATEGORIE.values())
+            mandats_nosdeputes = [m for m in mandats_nosdeputes if m.get("categorie") not in categories_an]
+        profile["mandats"] = mandats_an + mandats_nosdeputes
+
+        if _is_empty_payload(profile["mandats"]):
+            if parlementaire_valide or acteur_ref_an:
+                warnings.append(
+                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité trouvé (NosDéputés/"
+                    "NosSénateurs et référentiel officiel Assemblée nationale confondus)."
+                )
+            else:
+                warnings.append(
+                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés/NosSénateurs et du "
+                    "référentiel officiel Assemblée nationale."
+                )
 
         # --- 5bis. Positions dans l'hémicycle (Assemblée nationale, référentiel
         # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne

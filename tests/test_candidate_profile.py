@@ -1388,6 +1388,62 @@ def test_get_payload_watchdog_aborts_hung_request():
     assert elapsed < 5
 
 
+def test_download_with_watchdog_aborts_hung_request(tmp_path):
+    """Un téléchargement qui pend au-delà du budget mur lève TimeoutError au
+    lieu de bloquer indéfiniment, et n'écrit jamais dest_path (#370 — même
+    principe que le watchdog de _get_payload, généralisé aux téléchargements
+    de fichier)."""
+    import time as _time
+
+    from candidate_profile import _download_with_watchdog
+
+    def hung_get(*args, **kwargs):
+        _time.sleep(5)
+        raise AssertionError("ne devrait jamais retourner : le watchdog doit abandonner avant")
+
+    dest = tmp_path / "acteurs_historique.zip"
+
+    with patch("candidate_profile.requests.get", side_effect=hung_get):
+        start = _time.monotonic()
+        with pytest.raises(TimeoutError):
+            _download_with_watchdog(
+                "https://example.test/hung.zip", dest, timeout=0.1, hard_timeout_seconds=0.2
+            )
+        elapsed = _time.monotonic() - start
+
+    assert elapsed < 5
+    assert not dest.exists()
+
+
+def test_download_with_watchdog_writes_dest_path_on_success(tmp_path):
+    """En cas de succès, le fichier temporaire est renommé vers dest_path
+    (pas de fichier .part résiduel, contenu complet écrit)."""
+    from candidate_profile import _download_with_watchdog
+
+    class FakeResp:
+        status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size):
+            yield b"contenu-du-zip"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    dest = tmp_path / "acteurs_historique.zip"
+
+    with patch("candidate_profile.requests.get", return_value=FakeResp()):
+        _download_with_watchdog("https://example.test/ok.zip", dest)
+
+    assert dest.read_bytes() == b"contenu-du-zip"
+    assert not dest.with_name(dest.name + ".part").exists()
+
+
 def test_try_urls_skips_xml_after_json_terminal_failure():
     """Si /json renvoie _TERMINAL_FAILURE, /xml ne doit pas être essayé pour ce base_url."""
     from candidate_profile import _try_urls, _TERMINAL_FAILURE
@@ -1544,7 +1600,6 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
@@ -1572,7 +1627,6 @@ def test_build_profile_skip_dossiers_legislatifs_senateurs_never_calls_fetch_dos
         patch("candidate_profile.fetch_identity", return_value=fake_identity),
         patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_activity_synthesis", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
@@ -3314,6 +3368,200 @@ def test_fetch_identite_officielle_resolves_former_deputy(tmp_path):
     ):
         assert fetch_identite_officielle("https://www.assemblee-nationale.fr/dyn/deputes/PA295")["nom_complet"] == "François Asensi"
         assert fetch_identite_officielle(None) is None
+
+
+# ---------------------------------------------------------------------------
+# Tests pour _build_acteur_mandats_index / _extract_mandats_officiels (#369) :
+# commissions/groupes d'amitié/engagements extra-parlementaires sourcés
+# depuis le référentiel officiel AN plutôt que NosDéputés, avec organeRef
+# résolu via fetch_organe (#353).
+# ---------------------------------------------------------------------------
+
+
+def test_build_acteur_mandats_index_maps_type_organe_to_categorie(tmp_path):
+    """COMPER/GA/ORGEXTPARL doivent être classés commission/groupe_amitie/
+    extra_parlementaire ; un typeOrgane hors de ce périmètre (ex. MISINFO)
+    doit être ignoré (voir _TYPE_ORGANE_TO_CATEGORIE)."""
+    from candidate_profile import _build_acteur_mandats_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={},
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "COMPER",
+                            "organes": {"organeRef": "PO59048"},
+                            "infosQualite": {"libQualite": "Président"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "GA",
+                            "organes": {"organeRef": "PO393167"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": "2024-06-09",
+                        },
+                        {
+                            "typeOrgane": "ORGEXTPARL",
+                            "organes": {"organeRef": "PO111111"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "MISINFO",
+                            "organes": {"organeRef": "PO222222"},
+                            "infosQualite": {"libQualite": "Membre"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                        {
+                            "typeOrgane": "ASSEMBLEE",
+                            "organes": {"organeRef": "PO333333"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        index = _build_acteur_mandats_index()
+
+    categories = {e["organe_ref"]: e["categorie"] for e in index["PA1"]}
+    assert categories == {
+        "PO59048": "commission",
+        "PO393167": "groupe_amitie",
+        "PO111111": "extra_parlementaire",
+    }
+    assert categories.get("PO222222") is None  # MISINFO exclu
+    assert categories.get("PO333333") is None  # ASSEMBLEE exclu (géré à part)
+
+
+def test_extract_mandats_officiels_resolves_organe_labels(tmp_path):
+    """Le label doit venir de fetch_organe (nom, ou sigle en repli) — pas
+    juste l'organeRef brut."""
+    from candidate_profile import _extract_mandats_officiels
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes(
+        organe_entries={
+            "PO59048": {
+                "uid": "PO59048",
+                "codeType": "COMPER",
+                "libelle": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+                "libelleAbrege": "Finances",
+            },
+        },
+        acteur_entries={
+            "PA1": {
+                "uid": {"#text": "PA1"},
+                "mandats": {
+                    "mandat": [
+                        {
+                            "typeOrgane": "COMPER",
+                            "organes": {"organeRef": "PO59048"},
+                            "infosQualite": {"libQualite": "Président"},
+                            "dateDebut": "2022-06-22",
+                            "dateFin": None,
+                        },
+                    ]
+                },
+            },
+        },
+    )
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        mandats = _extract_mandats_officiels("PA1")
+
+    assert mandats == [
+        {
+            "categorie": "commission",
+            "type": "Président",
+            "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "debut": "2022-06-22",
+            "fin": None,
+            "actif": True,
+        }
+    ]
+
+
+def test_extract_mandats_officiels_unknown_acteur_returns_empty():
+    from candidate_profile import _extract_mandats_officiels
+
+    with patch("candidate_profile._build_acteur_mandats_index", return_value={}):
+        assert _extract_mandats_officiels("PA_INCONNU") == []
+
+
+def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories():
+    """Quand l'acteur est résolu côté AN, les mandats commission/groupe_amitie/
+    extra_parlementaire doivent venir de l'AN (pas de doublon avec NosDéputés
+    sous un libellé différent) ; le mandat électif NosDéputés reste conservé."""
+    identity = {
+        "depute": {
+            "id": "PA123456",
+            "nom": "Dupont",
+            "mandat_debut": "2022-06-22",
+            "mandat_fin": None,
+            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
+            "responsabilites": [
+                {"organisme": "Commission des finances (libellé NosDéputés)", "fonction": "membre"}
+            ],
+        }
+    }
+    mandats_officiels = [
+        {
+            "categorie": "commission",
+            "type": "Président",
+            "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "debut": "2022-06-22",
+            "fin": None,
+            "actif": True,
+        }
+    ]
+
+    with (
+        patch("candidate_profile.fetch_identity", return_value=identity),
+        patch("candidate_profile.fetch_votes", return_value={}),
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+        patch("candidate_profile._extract_search_results", return_value=[]),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=({"nom_complet": "Jean Dupont"}, "PA123456")),
+        patch("candidate_profile.fetch_identite_officielle", return_value=None),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile._extract_mandats_officiels", return_value=mandats_officiels),
+    ):
+        profile = build_profile("deputes", "jean-dupont")
+
+    commission_entries = [m for m in profile["mandats"] if m["categorie"] == "commission"]
+    assert commission_entries == [
+        {
+            "categorie": "commission",
+            "type": "Président",
+            "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
+            "debut": "2022-06-22",
+            "fin": None,
+            "actif": True,
+        }
+    ]
+    # Mandat électif NosDéputés conservé (catégorie non couverte par l'AN ici).
+    assert any(m["categorie"] == "mandat_electif" for m in profile["mandats"])
 
 
 # ---------------------------------------------------------------------------

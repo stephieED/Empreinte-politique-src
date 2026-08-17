@@ -1,3 +1,70 @@
+<a id="mandats-officiels-an-369"></a>
+## Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN (#369), watchdog sur les téléchargements zip (#370) (2026-08-17)
+
+**Contexte** : run `#44` de `generate-data.yml` — tous les shards `extract-an`
+en échec, y compris les candidats non-députés (finissaient auparavant en
+15-20s). Log de Bruno Retailleau : les 8 tentatives `fetch_identity`
+(NosDéputés) se terminent normalement, puis silence total (~31s, aucun
+print) avant `shutdown signal`. Diagnostic : `fetch_identite_officielle_par_slug`
+(#355) est appelée sans condition juste après, et déclenche
+`_ensure_acteurs_historique_zip_downloaded` — un `requests.get(...,
+timeout=(TIMEOUT, 600), stream=True)` en un seul essai, **non protégé** par
+le pattern watchdog déjà en place sur `_get_payload` (#340/[[get-payload-retry]]).
+Cache disque partagé entre shards via la même clé GitHub Actions : le
+premier shard à tenter ce téléchargement (Mélenchon) ayant lui-même échoué
+avant de sauvegarder le cache, chaque shard suivant repartait à froid —
+effet boule de neige expliquant l'échec de tous les shards, pas seulement
+certains.
+
+**Décision 1 — `_download_with_watchdog` (#370, partiel)** : généralisation
+de `_get_with_watchdog` aux téléchargements de fichier — thread démon +
+budget mur indépendant (120s, contre 600s avant), écriture d'abord dans un
+fichier temporaire (`.part`) renommé seulement en cas de succès complet
+(un thread abandonné continuant d'écrire en arrière-plan ne corrompt jamais
+`dest_path`). Appliqué à `_ensure_acteurs_historique_zip_downloaded`
+(priorité #1 de #370, cause confirmée du run #44). **Non appliqué** aux 5
+autres points d'appel listés dans #370 (questions officielles AN, dossiers
+gouvernementaux, ParlTrack, MEP, Syceron) — laissés pour une itération
+séparée, `_download_with_watchdog` est déjà réutilisable tel quel pour eux
+(même signature `(url, dest_path)`).
+
+**Décision 2 — mandats commission/groupe_amitie/extra_parlementaire sourcés
+depuis l'AN (#369, partiel)** : `_build_acteur_identite_index()` lisait déjà
+`acteur.mandats.mandat[]` en entier mais n'en extrayait que le mandat
+`ASSEMBLEE` (circonscription/place hémicycle) — les mandats `COMPER`/`GA`/
+`ORGEXTPARL` étaient lus puis jetés, sans passer par `_build_organe_index()`/
+`fetch_organe()` (#353) pourtant déjà disponible pour les résoudre en noms
+lisibles. Ajout de `_build_acteur_mandats_index()` (même zip déjà téléchargé
+et parsé pour l'identité/les organes, aucun coût réseau supplémentaire) et
+`_extract_mandats_officiels(acteur_ref)`, équivalents AN de `_extract_mandats`
+(NosDéputés). Dans `build_profile`, étape 5 : quand l'acteur est résolu côté
+AN, les mandats des 3 catégories partagées viennent désormais de l'AN
+(NosDéputés ne complète que le mandat électif de base et les catégories non
+couvertes) — évite un doublon du même organisme sous un libellé différent.
+
+*Mapping* : `COMPER` → `commission`, `GA` → `groupe_amitie`,
+`ORGEXTPARL` → `extra_parlementaire` (`_TYPE_ORGANE_TO_CATEGORIE`). Le reste
+(`MISINFO`/`CNPE`/`DELEG`/`GE`/`GEVI`/`PARPOL`/`CMP`/`API`...) n'est pas
+mappé — périmètre minimal-invasif, cohérent avec ce que #349/#361 excluent
+déjà de l'agrégation de groupe.
+
+**Non implémenté, périmètre volontairement réduit** : rendre `fetch_identity`
+(NosDéputés) réellement conditionnel — appelé seulement si l'AN ne trouve
+rien — nécessite de réordonner `build_profile` (le nom de recherche
+d'interventions, étape 2, dépend aujourd'hui de `identity_raw`, donc de
+l'appel NosDéputés fait *avant* la résolution AN à l'étape 5). Changement
+structurel plus risqué qu'un ajout localisé ; **`fetch_identity` reste donc
+appelé sans condition pour chaque candidat déclaré** — les 8 requêtes
+NosDéputés (identité) restent présentes dans les logs même une fois cette
+itération déployée. #369 reste ouverte pour ce réordonnancement. Les 5
+autres points d'appel non protégés de #370 restent également ouverts.
+
+**Tests** : `_download_with_watchdog` (abandon après budget mur, écriture
+`dest_path` seulement en cas de succès), `_build_acteur_mandats_index`
+(mapping typeOrgane, exclusion `MISINFO`/`ASSEMBLEE`), `_extract_mandats_officiels`
+(résolution de label via `fetch_organe`, acteur inconnu → liste vide),
+`build_profile` (préférence AN sur les catégories partagées, conservation
+du mandat électif NosDéputés). Suite complète : 1126/1126.
 <a id="mandats-agreges-famille-1"></a>
 ## `mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)
 
