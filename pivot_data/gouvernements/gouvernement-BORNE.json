@@ -1104,6 +1104,16 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_banque_reglements_internationaux"
     },
     {
+      "dossier_id": "DLR5L16N45929",
+      "titre": "Règlement du budget et d'approbation des comptes de l'année 2021",
+      "statut": "rejete",
+      "chambre_depot_initial": "AN",
+      "date_depot": "2022-07-04",
+      "date_dernier_evenement": "2022-08-03",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_budget_2021"
+    },
+    {
       "dossier_id": "DLR5L16N45931",
       "titre": "Ratification du traité entre la République française et la République italienne pour une coopération bilatérale renforcée",
       "statut": "promulgue",
@@ -1202,7 +1212,7 @@
       "depose": 0,
       "navette_en_cours": 43,
       "promulgue": 19,
-      "rejete": 3,
+      "rejete": 4,
       "rejete_49_3": 0,
       "retire": 0
     }
@@ -1266,16 +1276,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:12:05+0200",
+    "genere_le": "2026-08-18T01:34:19+0200",
     "licence_donnees": "",
-    "warnings": [
-      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
-      "gouvernement_profile: dossier 'DLR5L16N45929' exclu de textes[] : statut indéterminé ou inconnu (None).",
-      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
-    ]
+    "warnings": []
   }
 }

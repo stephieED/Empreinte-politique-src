@@ -278,6 +278,16 @@
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49374"
     },
     {
+      "dossier_id": "DLR5L16N49373",
+      "titre": "Projet de loi constitutionnelle portant modification du corps électoral pour les élections au congrès et aux assemblées de province de la Nouvelle-Calédonie",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2024-01-29",
+      "date_dernier_evenement": "2024-05-14",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49373"
+    },
+    {
       "dossier_id": "DLR5L16N49320",
       "titre": "Projet de loi ratifiant l'ordonnance n° 2023-389 du 24 mai 2023 modifiant les dispositions du code général de la propriété des personnes publiques relatives à la Polynésie française",
       "statut": "adopte",
@@ -300,7 +310,7 @@
   ],
   "comptages": {
     "par_statut": {
-      "adopte": 8,
+      "adopte": 9,
       "adopte_49_3": 0,
       "adopte_cmp": 3,
       "depose": 0,
@@ -345,15 +355,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:12:05+0200",
+    "genere_le": "2026-08-18T01:34:19+0200",
     "licence_donnees": "",
-    "warnings": [
-      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
-      "gouvernement_profile: dossier 'DLR5L16N49373' exclu de textes[] : statut indéterminé ou inconnu (None).",
-      "gouvernement_textes: dossier DLR5L15N42841 : fam_code inconnu 'TSORTF02' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N45929 : fam_code inconnu 'TSORTF13' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49373 : fam_code inconnu 'TSORTF14' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N48973 : fam_code inconnu 'TSORTF02' — statut non déterminé."
-    ]
+    "warnings": []
   }
 }
