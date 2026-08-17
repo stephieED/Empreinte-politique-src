@@ -66,22 +66,6 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-05-22",
-      "fin": "2024-05-24",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des affaires sociales",
-      "debut": "2024-03-31",
-      "fin": "2024-05-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission d'enquête sur l'attribution, le contenu et le contrôle des autorisations de services de télévision à caractère national sur la télévision numérique terrestre",
       "debut": "2023-11-19",
       "fin": "2024-05-15",
@@ -101,14 +85,6 @@
       "label": "Commission des affaires sociales",
       "debut": "2024-03-01",
       "fin": "2024-03-13",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission du développement durable et de l'aménagement du territoire",
-      "debut": "2024-02-14",
-      "fin": "2024-03-01",
       "actif": false
     },
     {
@@ -233,49 +209,9 @@
     },
     {
       "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-portugal",
-      "debut": "2022-12-16",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-tunisie",
-      "debut": "2022-12-17",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-israël",
-      "debut": "2022-12-17",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-algérie",
-      "debut": "2022-12-17",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
       "type": "président",
       "label": "Groupe d'études longévité et adaptation de la société au vieillissement",
       "debut": "2023-01-25",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-espagne",
-      "debut": "2023-01-26",
       "fin": null,
       "actif": true
     },

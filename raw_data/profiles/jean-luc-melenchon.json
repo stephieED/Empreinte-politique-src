@@ -69,14 +69,6 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2021-05-06",
-      "fin": "2021-05-06",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission des affaires étrangères",
       "debut": "2021-04-15",
       "fin": "2021-05-05",
@@ -85,25 +77,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2021-04-14",
-      "fin": "2021-04-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission des affaires étrangères",
       "debut": "2021-04-01",
       "fin": "2021-04-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2021-03-31",
-      "fin": "2021-04-01",
       "actif": false
     },
     {
@@ -172,22 +148,6 @@
     },
     {
       "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Mission d'information sur l'avenir institutionnel de la nouvelle-calédonie",
-      "debut": "2017-10-04",
-      "fin": "2017-10-10",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur l'avenir institutionnel de la nouvelle-calédonie",
-      "debut": "2017-09-21",
-      "fin": "2017-10-04",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Députés Non Inscrits",
       "debut": "2017-06-21",
@@ -195,66 +155,10 @@
       "actif": false
     },
     {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-sénégal",
-      "debut": "2017-10-19",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-chine",
-      "debut": "2017-10-25",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-vietnam",
-      "debut": "2017-11-09",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-mexique",
-      "debut": "2017-11-17",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "co-président",
-      "label": "Groupe d'études arctique, antarctique et terres australes et antarctiques françaises – droit des grands fonds",
-      "debut": "2018-02-02",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-ethiopie",
-      "debut": "2018-12-07",
-      "fin": null,
-      "actif": true
-    },
-    {
       "categorie": "extra_parlementaire",
       "type": "membre",
       "label": "Section française de l'assemblée parlementaire de la francophonie a.p.f",
       "debut": "2017-10-28",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "extra_parlementaire",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2020-01-21",
       "fin": null,
       "actif": true
     },

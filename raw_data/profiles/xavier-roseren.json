@@ -50,57 +50,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Délégation aux collectivités territoriales et à la décentralisation",
-      "debut": "2024-05-23",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur les dysfonctionnements dans la gestion des impôts locaux et leurs conséquences",
-      "debut": "2024-01-31",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Comité de massif des alpes",
-      "debut": "2023-01-25",
-      "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Dysfonctionnements dans la gestion des impôts locaux et leurs conséquences",
       "debut": "2024-01-27",
       "fin": "2024-01-31",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur la fiscalité du patrimoine",
-      "debut": "2022-12-09",
-      "fin": "2023-12-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-11-28",
-      "fin": "2023-11-29",
       "actif": false
     },
     {
@@ -130,90 +82,10 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Groupe d'études air et santé",
-      "debut": "2023-02-07",
-      "fin": "2023-02-08",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Députés Non Inscrits",
       "debut": "2022-06-24",
       "fin": "2022-06-29",
       "actif": false
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "co-président",
-      "label": "Groupe d'études montagne",
-      "debut": "2023-01-25",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études tourisme et patrimoine",
-      "debut": "2023-01-31",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études déserts médicaux et accès aux soins",
-      "debut": "2023-02-07",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études pastoralisme",
-      "debut": "2023-02-08",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "secrétaire",
-      "label": "Groupe d'études air et santé",
-      "debut": "2023-02-08",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études commerce, artisanat et métiers d'art",
-      "debut": "2023-02-09",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études forêt et filière bois",
-      "debut": "2023-02-16",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études Énergies durables et hydrogène",
-      "debut": "2023-04-21",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études logement et écoconstruction",
-      "debut": "2023-09-24",
-      "fin": null,
-      "actif": true
     },
     {
       "categorie": "groupe_politique",

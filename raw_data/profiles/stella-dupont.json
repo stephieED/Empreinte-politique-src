@@ -25,73 +25,9 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
-      "debut": "2024-05-06",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur les dysfonctionnements dans la gestion des impôts locaux et leurs conséquences",
-      "debut": "2024-01-31",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "apparentée",
       "label": "Renaissance",
       "debut": "2023-04-14",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'études insertion des jeunes, stagiaires et alternants",
-      "debut": "2023-03-22",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'amitié france-sénégal",
-      "debut": "2023-03-08",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'études villes et banlieues",
-      "debut": "2023-03-02",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'amitié france-turquie",
-      "debut": "2023-02-18",
       "fin": "2024-06-09",
       "actif": false
     },
@@ -106,56 +42,8 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Groupe d'études prisons et conditions carcérales",
-      "debut": "2023-02-10",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'amitié france-république démocratique du congo",
-      "debut": "2023-02-08",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études pauvreté, précarité, non-recours aux droits et sans-abri",
-      "debut": "2023-02-08",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-01-29",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Groupe de travail sur le suivi des finances locales et des compensations financières de l'etat",
       "debut": "2022-09-29",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Délégation aux collectivités territoriales et à la décentralisation",
-      "debut": "2022-07-20",
       "fin": "2024-06-09",
       "actif": false
     },
@@ -193,14 +81,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur les différentiels de fiscalité entre entreprises",
-      "debut": "2022-12-09",
-      "fin": "2023-12-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "co-rapporteure",
       "label": "Mission flash sur les communes nouvelles",
       "debut": "2023-04-15",
@@ -218,33 +98,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Groupe d'études insertion des jeunes, stagiaires et alternants",
-      "debut": "2023-03-03",
-      "fin": "2023-03-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études villes et banlieues",
-      "debut": "2023-02-07",
-      "fin": "2023-03-02",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Groupe d'études conditions d'accueil des migrants et mineurs non accompagnés",
       "debut": "2023-01-25",
       "fin": "2023-02-17",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Délégation aux collectivités territoriales et à la décentralisation",
-      "debut": "2022-07-13",
-      "fin": "2022-07-20",
       "actif": false
     },
     {

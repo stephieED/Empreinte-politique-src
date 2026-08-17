@@ -36,14 +36,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Mission d'information sur le rôle local et l'ancrage territorial des parlementaires",
       "debut": "2024-04-05",
@@ -60,121 +52,9 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-jordanie",
-      "debut": "2023-10-05",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études chrétiens d'orient",
-      "debut": "2023-09-07",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission du développement durable et de l'aménagement du territoire",
       "debut": "2023-09-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études alzheimer",
-      "debut": "2023-02-17",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études montagne",
-      "debut": "2023-02-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études gastronomie, métiers de bouche et arts de la table",
-      "debut": "2023-02-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études filière brassicole",
-      "debut": "2023-02-14",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études camargue",
-      "debut": "2023-02-09",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études tourisme et patrimoine",
-      "debut": "2023-02-04",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie du livre et du papier",
-      "debut": "2023-02-03",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie sociale et solidaire et responsabilité sociétale des entreprises",
-      "debut": "2023-02-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études ruralité",
-      "debut": "2023-02-01",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "président",
-      "label": "Groupe d'amitié france-liban",
-      "debut": "2022-12-09",
       "fin": "2024-06-09",
       "actif": false
     },

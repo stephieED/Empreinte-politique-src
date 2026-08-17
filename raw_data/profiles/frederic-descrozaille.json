@@ -36,14 +36,6 @@
     },
     {
       "categorie": "commission",
-      "type": "président",
-      "label": "Groupe d'études grande consommation et pratiques commerciales dans la distribution",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Renaissance",
       "debut": "2022-06-29",
@@ -80,14 +72,6 @@
       "label": "Commission d'enquête sur les causes de l'incapacité de la france à atteindre les objectifs des plans successifs de maîtrise des impacts des produits phytosanitaires sur la santé humaine et environnementale et notamment sur les conditions de l'exercice des missions des autorités publiques en charge de la sécurité sanitaire",
       "debut": "2023-06-29",
       "fin": "2023-07-10",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "co-rapporteur",
-      "label": "Mission d'application de la loi n°2022-298 du 02 mars 2022 d'orientation relative à une meilleure diffusion de l'assurance récolte en agriculture et portant réforme des outils de gestion des risques climatiques en agriculture",
-      "debut": "2022-09-22",
-      "fin": "2023-04-08",
       "actif": false
     },
     {

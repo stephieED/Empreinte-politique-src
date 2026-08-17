@@ -273,14 +273,6 @@
     },
     {
       "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Commission des affaires culturelles et de l'éducation",
-      "debut": "2022-07-01",
-      "fin": "2023-05-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission des affaires européennes",
       "debut": "2022-12-07",

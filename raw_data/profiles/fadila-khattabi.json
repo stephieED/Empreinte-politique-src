@@ -28,14 +28,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-07-27",
-      "fin": "2023-08-23",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "Ministre auprès de la ministre des solidarités et des familles, chargé des personnes handicapées",
       "label": "Gouvernement",
       "debut": "2023-07-25",
@@ -44,34 +36,10 @@
     },
     {
       "categorie": "commission",
-      "type": "présidente",
-      "label": "Groupe d'amitié france-algérie",
-      "debut": "2022-12-09",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Commission des affaires sociales",
-      "debut": "2022-07-01",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Renaissance",
       "debut": "2022-06-29",
       "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-01-25",
-      "fin": "2023-07-25",
       "actif": false
     },
     {

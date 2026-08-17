@@ -29,22 +29,6 @@
     {
       "categorie": "commission",
       "type": "membre titulaire",
-      "label": "Comité des finances locales",
-      "debut": "2023-07-27",
-      "fin": "2023-08-23",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-07-27",
-      "fin": "2023-08-23",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
       "label": "Comité national d'orientation et de suivi du fods de soutien mentionné à l'article 92 de la loi du 29 décembre 2013 de finances pour",
       "debut": "2023-07-27",
       "fin": "2023-08-23",
@@ -68,57 +52,9 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'études gestion des déchets, économie circulaire et économie verte",
-      "debut": "2023-02-16",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'études aéronautique et espace",
-      "debut": "2023-02-08",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études condition et bien-être des animaux",
-      "debut": "2023-02-01",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "président",
       "label": "Groupe de travail sur la décentralisation",
       "debut": "2023-01-27",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-01-26",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-québec",
-      "debut": "2022-12-20",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur la fiscalité du patrimoine",
-      "debut": "2022-12-09",
       "fin": "2023-08-20",
       "actif": false
     },
@@ -140,14 +76,6 @@
     },
     {
       "categorie": "commission",
-      "type": "président",
-      "label": "Délégation aux collectivités territoriales et à la décentralisation",
-      "debut": "2022-07-20",
-      "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Comité d'évaluation et de contrôle des politiques publiques",
       "debut": "2022-07-13",
@@ -160,22 +88,6 @@
       "label": "Renaissance",
       "debut": "2022-06-29",
       "fin": "2023-08-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-01-25",
-      "fin": "2023-07-25",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Comité des finances locales",
-      "debut": "2022-08-06",
-      "fin": "2023-07-25",
       "actif": false
     },
     {
@@ -221,57 +133,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-03-22",
-      "fin": "2023-03-23",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
-      "debut": "2023-01-29",
-      "fin": "2023-03-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études gestion des déchets, économie circulaire et économie verte",
-      "debut": "2023-02-08",
-      "fin": "2023-02-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études aéronautique et espace",
-      "debut": "2023-02-04",
-      "fin": "2023-02-08",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-01-27",
-      "fin": "2023-01-29",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
       "debut": "2022-12-15",
       "fin": "2023-01-27",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-12-14",
-      "fin": "2022-12-15",
       "actif": false
     },
     {
@@ -312,14 +176,6 @@
       "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
       "debut": "2022-06-30",
       "fin": "2022-10-04",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Délégation aux collectivités territoriales et à la décentralisation",
-      "debut": "2022-07-13",
-      "fin": "2022-07-20",
       "actif": false
     },
     {

@@ -52,49 +52,9 @@
     },
     {
       "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-03-21",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "rapporteur",
       "label": "Hausse du nombre de refus d'obtempérer et les conditions d'usage de leurs armes par les forces de l'ordre",
       "debut": "2023-10-12",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-08-31",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'études gastronomie, métiers de bouche et arts de la table",
-      "debut": "2023-02-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études condition et bien-être des animaux",
-      "debut": "2023-01-25",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "président",
-      "label": "Groupe d'amitié france-guinée",
-      "debut": "2022-12-09",
       "fin": "2024-06-09",
       "actif": false
     },
@@ -117,25 +77,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-01-13",
-      "fin": "2024-03-20",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission du développement durable et de l'aménagement du territoire",
       "debut": "2024-01-10",
       "fin": "2024-01-13",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-11-29",
-      "fin": "2024-01-10",
       "actif": false
     },
     {
@@ -149,25 +93,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-09-28",
-      "fin": "2023-11-28",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Commission des affaires culturelles et de l'éducation",
       "debut": "2023-09-27",
       "fin": "2023-09-28",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-12-15",
-      "fin": "2023-09-27",
       "actif": false
     },
     {
@@ -192,14 +120,6 @@
       "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
       "debut": "2022-12-14",
       "fin": "2022-12-15",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-06-30",
-      "fin": "2022-12-14",
       "actif": false
     },
     {

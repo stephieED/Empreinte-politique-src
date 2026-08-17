@@ -33,105 +33,9 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale des valeurs locatives des locaux professionnels",
-      "debut": "2018-06-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'études cinéma et production audiovisuelle",
-      "debut": "2018-04-24",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études insertion économique et civique des jeunes",
-      "debut": "2018-03-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études trufficulture",
-      "debut": "2018-03-06",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études attractivité de la france – export – investissement – compétitivité",
-      "debut": "2018-02-22",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études enjeux de la ruralité",
-      "debut": "2018-02-20",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études déchets ménagers",
-      "debut": "2018-02-20",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Économie sociale et solidaire",
-      "debut": "2018-02-17",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études Énergies vertes",
-      "debut": "2018-02-16",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vie associative et bénévolat",
-      "debut": "2018-02-16",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Groupe d'études enjeux de rénovation des quartiers et habitats dégradés ",
       "debut": "2018-02-15",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-maroc",
-      "debut": "2017-11-11",
-      "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe de travail sur les jeux olympiques et paralympiques de paris en 2024",
-      "debut": "2017-10-27",
       "fin": "2018-11-16",
       "actif": false
     },
@@ -149,30 +53,6 @@
       "label": "La République En Marche",
       "debut": "2017-06-28",
       "fin": "2018-11-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur une nouvelle régulation de la communication audiovisuelle à l'ère numérique",
-      "debut": "2018-02-01",
-      "fin": "2018-11-15",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études cinéma et production audiovisuelle",
-      "debut": "2018-02-20",
-      "fin": "2018-04-24",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Comité stratégique de l'agence du service civique",
-      "debut": "2017-10-10",
-      "fin": "2017-11-16",
       "actif": false
     },
     {
@@ -262,14 +142,6 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Délégation aux outre-mer",
-      "debut": "2022-07-13",
-      "fin": "2022-07-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Renaissance",
       "debut": "2022-06-29",
       "fin": "2022-07-22",
@@ -281,14 +153,6 @@
       "label": "Gouvernement",
       "debut": "2022-06-24",
       "fin": "2022-07-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-07-12",
-      "fin": "2022-07-14",
       "actif": false
     },
     {

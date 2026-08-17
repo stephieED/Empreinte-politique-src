@@ -2790,7 +2790,18 @@ def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
                         if type_organe not in _TYPE_ORGANE_TO_CATEGORIE:
                             continue
                         organe_ref = (mandat.get("organes") or {}).get("organeRef")
-                        if not organe_ref:
+                        # `organeRef` est parfois une LISTE dans le dataset AN
+                        # (un mandat rattaché à plusieurs organes) : cas absent
+                        # des 3 typeOrgane du périmètre initial (#369), révélé
+                        # par l'élargissement de #382. Sans ce garde-fou,
+                        # `fetch_organe` lève `TypeError: unhashable type` sur
+                        # un lookup de dict par liste. On retient le premier
+                        # organe : le libellé du mandat lui vient de toute
+                        # façon d'un seul organe, et un mandat sans organe
+                        # résolvable serait ignoré juste après.
+                        if isinstance(organe_ref, list):
+                            organe_ref = organe_ref[0] if organe_ref else None
+                        if not organe_ref or not isinstance(organe_ref, str):
                             continue
                         fin = mandat.get("dateFin")
                         entries.append({

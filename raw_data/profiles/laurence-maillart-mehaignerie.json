@@ -28,30 +28,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale de coopération intercommunale",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Conseil national de l'alimentation",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "rapporteure thématique",
       "label": "Commission spéciale pour l'examen du projet de loi relatif à l'accompagnement des malades et de la fin de vie",
       "debut": "2024-04-12",
@@ -63,54 +39,6 @@
       "type": "membre",
       "label": "Commission d'enquête visant à établir les raisons de la perte de souveraineté alimentaire de la france",
       "debut": "2024-03-14",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études eau et biodiversité",
-      "debut": "2023-03-07",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission du développement durable et de l'aménagement du territoire",
-      "debut": "2023-03-02",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "secrétaire",
-      "label": "Groupe d'amitié france-etats-unis",
-      "debut": "2023-01-29",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-01-29",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Groupe d'amitié france-chili",
-      "debut": "2022-12-16",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Groupe d'amitié france-bolivie",
-      "debut": "2022-12-09",
       "fin": "2024-06-09",
       "actif": false
     },

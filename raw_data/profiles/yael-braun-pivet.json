@@ -25,14 +25,6 @@
     },
     {
       "categorie": "commission",
-      "type": "présidente",
-      "label": "Bureau de l'assemblée nationale",
-      "debut": "2024-03-02",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission de la défense nationale et des forces armées",
       "debut": "2023-05-13",
@@ -61,38 +53,6 @@
       "label": "Groupe français de l'union interparlementaire u.i.p",
       "debut": "2022-09-09",
       "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Comité d'évaluation et de contrôle des politiques publiques",
-      "debut": "2022-07-14",
-      "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Bureau de l'assemblée nationale",
-      "debut": "2024-02-23",
-      "fin": "2024-03-01",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Bureau de l'assemblée nationale",
-      "debut": "2023-09-16",
-      "fin": "2024-02-22",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "présidente",
-      "label": "Bureau de l'assemblée nationale",
-      "debut": "2022-06-29",
-      "fin": "2023-09-15",
       "actif": false
     },
     {

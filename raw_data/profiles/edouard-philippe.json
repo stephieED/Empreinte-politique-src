@@ -78,62 +78,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
-      "type": "membre suppléant",
-      "label": "Commission chargée de l'application de l'article 26 de la constitution",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'études politique portuaire",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études villes et banlieues",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études automobile",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études energies",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études mer, pêche et souveraineté maritime",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
       "type": "Membre",
       "label": "Commission du développement durable et de l'aménagement du territoire",
       "debut": "2012-06-28",

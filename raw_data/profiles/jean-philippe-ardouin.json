@@ -36,22 +36,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Conseil d'administration de l'office national des anciens combattants et victimes de guerre",
-      "debut": "2022-11-09",
-      "fin": "2024-06-14",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Groupe français de l'union interparlementaire u.i.p",
       "debut": "2022-09-09",
@@ -64,14 +48,6 @@
       "label": "Commission des affaires culturelles et de l'éducation",
       "debut": "2024-05-14",
       "fin": "2024-05-15",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission de la défense nationale et des forces armées",
-      "debut": "2024-03-29",
-      "fin": "2024-05-14",
       "actif": false
     },
     {
@@ -109,146 +85,10 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
-      "debut": "2023-01-31",
-      "fin": "2023-03-15",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études filière brassicole",
-      "debut": "2023-01-25",
-      "fin": "2023-02-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Députés Non Inscrits",
       "debut": "2022-06-24",
       "fin": "2022-06-29",
       "actif": false
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "président",
-      "label": "Groupe d'amitié france-kosovo",
-      "debut": "2022-12-16",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-maroc",
-      "debut": "2022-12-20",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-djibouti",
-      "debut": "2023-01-04",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-malte",
-      "debut": "2023-01-05",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'amitié france-république dominicaine",
-      "debut": "2023-01-05",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études condition et bien-être des animaux",
-      "debut": "2023-01-25",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-01-29",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études tourisme et patrimoine",
-      "debut": "2023-02-01",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études prostitution",
-      "debut": "2023-02-08",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'études filière brassicole",
-      "debut": "2023-02-09",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études vie associative et bénévolat",
-      "debut": "2023-02-10",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "secrétaire",
-      "label": "Groupe d'études gastronomie, métiers de bouche et arts de la table",
-      "debut": "2023-02-16",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-président",
-      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
-      "debut": "2023-03-15",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-06-23",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "secrétaire",
-      "label": "Groupe d'études aéronautique et espace",
-      "debut": "2023-10-06",
-      "fin": null,
-      "actif": true
     },
     {
       "categorie": "groupe_politique",

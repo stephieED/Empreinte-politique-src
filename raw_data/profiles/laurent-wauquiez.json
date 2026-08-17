@@ -24,30 +24,6 @@
       "actif": false
     },
     {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Commission des finances, de l'économie générale et du contrôle budgétaire",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études plasturgie",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études montagne",
-      "debut": null,
-      "fin": null,
-      "actif": true
-    },
-    {
       "categorie": "fonction_gouvernementale",
       "type": "membre",
       "label": "Gouvernement (FILLON 2)",

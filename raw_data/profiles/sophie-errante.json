@@ -25,14 +25,6 @@
     },
     {
       "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission départementale prévue à l'article l. 2334-37 du code général des collectivités territoriales",
-      "debut": "2023-01-25",
-      "fin": "2024-06-11",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission spéciale chargée d'examiner la proposition de loi organique relative à l'extension des prélèvements sur les recettes de l'État au profit des organismes du secteur audiovisuel public",
       "debut": "2024-05-18",
@@ -66,57 +58,9 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Groupe d'études prisons et conditions carcérales",
-      "debut": "2023-02-10",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-01-29",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études vigne, vin et œnologie",
-      "debut": "2023-01-27",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Groupe d'amitié france-cambodge",
-      "debut": "2023-01-05",
-      "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Renaissance",
       "debut": "2022-06-29",
       "fin": "2024-06-09",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Délégation aux droits des enfants",
-      "debut": "2022-09-23",
-      "fin": "2024-05-06",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Mission d'information sur les différentiels de fiscalité entre entreprises",
-      "debut": "2022-12-09",
-      "fin": "2023-12-22",
       "actif": false
     },
     {

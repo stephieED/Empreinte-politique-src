@@ -28,25 +28,9 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-05-08",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
       "type": "co-rapporteure",
       "label": "Mission flash sur les transfèrements et extractions",
       "debut": "2024-05-23",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "commission",
-      "type": "membre titulaire",
-      "label": "Commission chargée de l'application de l'article 26 de la constitution",
-      "debut": "2022-07-13",
       "fin": null,
       "actif": true
     },
@@ -76,26 +60,10 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-02-01",
-      "fin": "2024-05-07",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission des affaires culturelles et de l'éducation",
       "debut": "2024-01-31",
       "fin": "2024-02-01",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2024-01-11",
-      "fin": "2024-01-31",
       "actif": false
     },
     {
@@ -108,14 +76,6 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-10-31",
-      "fin": "2024-01-10",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission des affaires économiques",
       "debut": "2023-10-28",
@@ -124,34 +84,10 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-10-05",
-      "fin": "2023-10-28",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission des affaires sociales",
       "debut": "2023-10-04",
       "fin": "2023-10-05",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2023-03-02",
-      "fin": "2023-10-04",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "co-rapporteure",
-      "label": "Mission d'information sur les alternatives à la détention et l'éventuelle création d'un mécanisme de régulation carcérale",
-      "debut": "2023-02-09",
-      "fin": "2023-07-20",
       "actif": false
     },
     {
@@ -172,22 +108,6 @@
     },
     {
       "categorie": "commission",
-      "type": "vice-présidente",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-07-01",
-      "fin": "2023-02-28",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
-      "label": "Groupe d'études prisons et conditions carcérales",
-      "debut": "2023-02-07",
-      "fin": "2023-02-16",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
       "type": "membre",
       "label": "Commission d'enquête chargée de faire la lumière sur les dysfonctionnements au sein de l'administration pénitentiaire et de l'appareil judiciaire ayant conduit à l'assassinat d'un détenu le 2 mars 2022 à la maison centrale d'arles",
       "debut": "2022-12-08",
@@ -197,58 +117,10 @@
     {
       "categorie": "commission",
       "type": "membre",
-      "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la république",
-      "debut": "2022-06-30",
-      "fin": "2022-07-01",
-      "actif": false
-    },
-    {
-      "categorie": "commission",
-      "type": "membre",
       "label": "Députés Non Inscrits",
       "debut": "2022-06-24",
       "fin": "2022-06-29",
       "actif": false
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études fin de vie",
-      "debut": "2023-01-29",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études eau et biodiversité",
-      "debut": "2023-01-31",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études sapeurs-pompiers, sécurité civile et gestion des crises",
-      "debut": "2023-01-31",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "membre",
-      "label": "Groupe d'études violences intrafamiliales",
-      "debut": "2023-02-07",
-      "fin": null,
-      "actif": true
-    },
-    {
-      "categorie": "groupe_amitie",
-      "type": "vice-présidente",
-      "label": "Groupe d'études prisons et conditions carcérales",
-      "debut": "2023-02-16",
-      "fin": null,
-      "actif": true
     },
     {
       "categorie": "groupe_politique",
