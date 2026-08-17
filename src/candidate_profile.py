@@ -1714,6 +1714,9 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
     un depuis le zip) : seul l'index final (acteurRef -> amendements) est mis en
     cache, pour éviter d'écrire des dizaines de milliers de petits fichiers.
+    L'archive téléchargée elle-même est supprimée en fin de tentative, succès
+    comme échec (#264) : elle n'est jamais relue ensuite, et la conserver
+    gonflait l'artifact et le cache partagé de 283-618 Mo par législature.
     Thread-safe (verrou par législature), même principe que pour les scrutins.
 
     Lève `AmendementsIndexError` en cas d'échec de téléchargement ou de parsing de
@@ -1770,23 +1773,40 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
 
         print(f"-> Téléchargement des amendements officiels (Assemblée nationale) : {url}")
         zip_path = AMENDEMENTS_CACHE_DIR / legislature / "amendements.zip"
+        # try/finally (#264) : l'archive brute (283-618 Mo selon la
+        # législature) n'a plus aucune utilité une fois l'index construit —
+        # elle n'est jamais relue, ni par la lecture cache-only
+        # (`_read_cached_amendements_acteur`), ni pour reprendre un
+        # téléchargement entre deux tentatives (`_download_amendements_zip`
+        # réécrit toujours depuis zéro). La conserver gonflait l'artifact
+        # `amendements-index-an` et le cache hebdomadaire partagé
+        # `public-data-cache-an-*` d'autant, pour rien. Supprimée dans TOUS
+        # les cas (succès, échec réseau, archive invalide) : un fichier
+        # partiel ou invalide n'a pas plus d'utilité qu'une archive
+        # correctement parsée.
         try:
-            _download_amendements_zip(url, zip_path, legislature)
-        except (requests.RequestException, OSError) as exc:
-            print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
-            _mark_amendements_legislature_failed(legislature)
-            if index_path.is_file():
-                _write_amendements_fraicheur(index_path, reussi=False)
-            raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
+            try:
+                _download_amendements_zip(url, zip_path, legislature)
+            except (requests.RequestException, OSError) as exc:
+                print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
+                _mark_amendements_legislature_failed(legislature)
+                if index_path.is_file():
+                    _write_amendements_fraicheur(index_path, reussi=False)
+                raise AmendementsIndexError(f"échec du téléchargement ({exc})") from exc
 
-        try:
-            index = _parse_amendements_zip(zip_path)
-        except zipfile.BadZipFile as exc:
-            print(f"  [!] Archive d'amendements invalide : {exc}")
-            _mark_amendements_legislature_failed(legislature)
-            if index_path.is_file():
-                _write_amendements_fraicheur(index_path, reussi=False)
-            raise AmendementsIndexError(f"archive invalide ({exc})") from exc
+            try:
+                index = _parse_amendements_zip(zip_path)
+            except zipfile.BadZipFile as exc:
+                print(f"  [!] Archive d'amendements invalide : {exc}")
+                _mark_amendements_legislature_failed(legislature)
+                if index_path.is_file():
+                    _write_amendements_fraicheur(index_path, reussi=False)
+                raise AmendementsIndexError(f"archive invalide ({exc})") from exc
+        finally:
+            try:
+                zip_path.unlink(missing_ok=True)
+            except OSError:
+                pass  # best-effort, comme l'écriture du cache elle-même
 
         # Déduplication avant écriture (#377) : `_parse_amendements_zip`
         # produit un enregistrement complet par signataire, donc N+1 copies du

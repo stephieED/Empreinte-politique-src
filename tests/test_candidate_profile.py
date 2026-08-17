@@ -2091,6 +2091,98 @@ def test_download_and_build_amendement_index_success_writes_fraicheur(tmp_path):
     }
 
 
+# ---------------------------------------------------------------------------
+# Nettoyage de l'archive brute `amendements.zip` (issue #264) : 283-618 Mo par
+# législature, jamais relus une fois l'index construit — ni par la lecture
+# cache-only, ni pour reprendre un téléchargement (toujours réécrit depuis
+# zéro). Doivent disparaître dans TOUS les cas, sinon ils gonflent l'artifact
+# `amendements-index-an` et le cache partagé `public-data-cache-an-*`.
+# ---------------------------------------------------------------------------
+
+def _fake_amendements_zip_response(zip_bytes: bytes):
+    """Réponse de streaming factice servant `zip_bytes` en un seul segment."""
+
+    class FakeStreamResponse:
+        status_code = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc_info):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1024 * 1024):
+            yield zip_bytes
+
+    return FakeStreamResponse()
+
+
+def test_download_and_build_amendement_index_success_removes_raw_zip(tmp_path):
+    """Succès : l'archive brute est supprimée, l'index utile reste."""
+    import io
+    import zipfile as zipfile_module
+
+    from candidate_profile import _download_and_build_amendement_index
+
+    buf = io.BytesIO()
+    with zipfile_module.ZipFile(buf, "w") as zf:
+        pass  # zip valide mais vide : ce test porte sur le nettoyage, pas le contenu
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", return_value=_fake_amendements_zip_response(buf.getvalue())),
+    ):
+        _download_and_build_amendement_index("17")
+
+    assert not (tmp_path / "17" / "amendements.zip").exists(), "L'archive brute doit être supprimée après succès"
+    assert (tmp_path / "17" / "index_par_acteur.json").is_file()
+    assert (tmp_path / "17" / "amendements.json").is_file()
+
+
+def test_download_and_build_amendement_index_download_failure_removes_partial_zip(tmp_path):
+    """Échec de téléchargement (tentatives épuisées) : aucun fichier partiel
+    résiduel ne doit rester sur disque."""
+    from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get", side_effect=_requests.RequestException("boom")),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    assert not (tmp_path / "17" / "amendements.zip").exists()
+
+
+def test_download_and_build_amendement_index_bad_zip_removes_raw_zip(tmp_path):
+    """Archive invalide (`BadZipFile`) : l'archive téléchargée est supprimée
+    malgré l'échec — un fichier invalide n'a pas plus d'utilité qu'un valide."""
+    from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch(
+            "candidate_profile.requests.get",
+            return_value=_fake_amendements_zip_response(b"ceci n'est pas une archive zip"),
+        ),
+        patch("candidate_profile.time.sleep", return_value=None),
+    ):
+        try:
+            _download_and_build_amendement_index("17")
+            assert False, "AmendementsIndexError attendue"
+        except AmendementsIndexError:
+            pass
+
+    assert not (tmp_path / "17" / "amendements.zip").exists()
+
+
 def test_download_and_build_amendement_index_failure_preserves_existing_index(tmp_path):
     """Échec définitif sur une législature dont un index existait déjà (ici
     corrompu — seul cas où une reconstruction est réellement retentée malgré
