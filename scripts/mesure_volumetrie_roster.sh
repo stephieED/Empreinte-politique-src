@@ -66,10 +66,20 @@ export PYTHONUNBUFFERED=1
 
 # Garde-fou : refuser une sortie DANS le dépôt, ce que ce script existe
 # précisément pour éviter.
-if [ -z "${OUT_DIR##"$PWD"*}" ]; then
-  echo "[!] OUT_DIR ($OUT_DIR) est dans le dépôt. Choisir un chemin externe." >&2
+#
+# La comparaison se fait sur le chemin ABSOLU RÉSOLU : une première version
+# comparait la chaîne brute à "$PWD", et laissait donc passer tout chemin
+# relatif — `OUT_DIR=pivot_data/mesure` était accepté et aurait écrit ~6 Go
+# dans l'arbre versionné. `realpath -m` résout aussi les `..` et les liens
+# symboliques, sans exiger que le répertoire existe déjà.
+OUT_DIR_ABS="$(realpath -m "$OUT_DIR")"
+DEPOT_ABS="$(realpath -m "$PWD")"
+if [ "$OUT_DIR_ABS" = "$DEPOT_ABS" ] || [ -z "${OUT_DIR_ABS##"$DEPOT_ABS"/*}" ]; then
+  echo "[!] OUT_DIR ($OUT_DIR -> $OUT_DIR_ABS) est dans le dépôt." >&2
+  echo "    Ce script écrit ~6 Go : choisir un chemin externe." >&2
   exit 1
 fi
+OUT_DIR="$OUT_DIR_ABS"
 mkdir -p "$OUT_DIR"
 
 echo "=== Mesure de volumétrie du roster ==="
