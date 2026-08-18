@@ -3,7 +3,11 @@
   "type_document": "profil_gouvernement",
   "gouvernement_id": "gouvernement:PHILIPPE_2",
   "nom": "Gouvernement Philippe II",
-  "premier_ministre": null,
+  "premier_ministre": {
+    "nom": "Édouard Philippe",
+    "acteur_ref": "PA345619",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
   "periode": {
     "debut": "2017-06-20",
     "fin": "2020-07-06",
@@ -13,20 +17,20 @@
     {
       "membre_id": "nosdeputes:edouard-philippe",
       "nom": "Édouard Philippe",
-      "portefeuille": null,
+      "portefeuille": "Premier ministre",
       "debut": "2017-06-20",
       "fin": "2020-07-06",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
-      "portefeuille": null,
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
       "debut": "2018-10-17",
       "fin": "2020-07-06",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:olivier-dussopt",
@@ -40,11 +44,11 @@
     {
       "membre_id": "nosdeputes:olivier-veran",
       "nom": "Olivier Véran",
-      "portefeuille": null,
+      "portefeuille": "Ministère des solidarités et de la santé",
       "debut": "2020-02-17",
       "fin": "2020-07-06",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -2911,7 +2915,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:34:19+0200",
+    "genere_le": "2026-08-18T01:51:32+0200",
     "licence_donnees": "",
     "warnings": []
   }

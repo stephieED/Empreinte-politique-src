@@ -1273,3 +1273,135 @@ def test_from_roster_deputes_pas_de_warning_couverture_roster_senat(tmp_path):
     )
 
     assert not any("couverture_roster_senat" in w for w in profil_groupe["meta"]["warnings"])
+
+
+# ---------------------------------------------------------------------------
+# #403 — cohésion et multi-législature : le numéro de scrutin n'identifie un
+# scrutin qu'à législature donnée (il repart de 1 à chaque législature).
+# ---------------------------------------------------------------------------
+
+def _vote_legis(numero: str, position: str, legislature: str, date: str, texte: str = "PLF") -> dict:
+    vote = _vote(numero, position, date=date, texte=texte)
+    vote["legislature"] = legislature
+    return vote
+
+
+def test_cohesion_ne_melange_pas_deux_legislatures_sous_un_meme_numero():
+    """Deux scrutins n° 1000 (16e et 17e) sont deux textes sans rapport : la
+    cohésion d'un groupe de la 16e ne doit retenir que le sien, jamais fusionner
+    les deux décomptes sous un numéro unique."""
+    membre = _pivot(
+        "nosdeputes:alice",
+        mandats=[_mandat_electif("2022-06-22")],
+        votes=[
+            _vote_legis("1000", "pour", "16", "2023-01-15"),
+            _vote_legis("1000", "contre", "17", "2025-03-13"),
+        ],
+    )
+
+    cohesion = _compute_cohesion_votes([membre], legislature="16")
+
+    assert len(cohesion) == 1, "Un seul scrutin retenu : celui de la législature du groupe"
+    assert cohesion[0]["date"] == "2023-01-15"
+    assert cohesion[0]["pour"] == 1
+    assert cohesion[0]["contre"] == 0
+
+
+def test_cohesion_ecarte_les_scrutins_d_une_autre_legislature():
+    """Un membre encore en mandat sous la 17e ne doit pas apporter ses scrutins
+    de la 17e à un profil de groupe de la 16e : le groupe n'existait pas au
+    moment de ces votes."""
+    membre = _pivot(
+        "nosdeputes:alice",
+        mandats=[_mandat_electif("2022-06-22")],
+        votes=[
+            _vote_legis("10", "pour", "16", "2023-01-15"),
+            _vote_legis("20", "pour", "17", "2025-03-13"),
+        ],
+    )
+
+    cohesion = _compute_cohesion_votes([membre], legislature="16")
+
+    assert {r["numero_scrutin"] for r in cohesion} == {"10"}
+
+
+def test_cohesion_conserve_les_votes_sans_legislature():
+    """Les votes collectés avant #403 n'ont pas de législature : ils sont
+    conservés (règle 5 — une donnée absente n'est pas une donnée contradictoire),
+    sans quoi une regénération partielle viderait la cohésion existante."""
+    membre = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")], votes=[_vote("42", "pour")])
+
+    cohesion = _compute_cohesion_votes([membre], legislature="16")
+
+    assert [r["numero_scrutin"] for r in cohesion] == ["42"]
+
+
+def test_cohesion_sans_legislature_de_groupe_ne_filtre_rien():
+    """Un groupe sans législature (Sénat) agrège tous ses votes."""
+    membre = _pivot(
+        "nosdeputes:alice",
+        mandats=[_mandat_electif("2022-06-22")],
+        votes=[_vote_legis("10", "pour", "16", "2023-01-15"), _vote_legis("20", "pour", "17", "2025-03-13")],
+    )
+
+    cohesion = _compute_cohesion_votes([membre], legislature=None)
+
+    assert {r["numero_scrutin"] for r in cohesion} == {"10", "20"}
+
+
+def test_build_vote_index_restreint_a_la_legislature():
+    membre = _pivot(
+        "nosdeputes:alice",
+        votes=[_vote_legis("1000", "pour", "16", "2023-01-15"), _vote_legis("1000", "contre", "17", "2025-03-13")],
+    )
+
+    index = _build_vote_index(membre, "17")
+
+    assert index["1000"]["position"] == "contre", "La tranche de la 17e ne doit pas être écrasée par celle de la 16e"
+
+
+def test_ecarts_internes_utilisent_la_meme_legislature_que_la_cohesion():
+    """Le rapport interne compare membre et groupe scrutin par scrutin : s'il
+    indexait les votes toutes législatures confondues, le n° 1000 de la 17e
+    d'un membre serait comparé à la position majoritaire du n° 1000 de la 16e."""
+    membres = [
+        _pivot(
+            f"nosdeputes:m{i}",
+            mandats=[_mandat_electif("2022-06-22")],
+            votes=[
+                _vote_legis("1000", "pour", "16", "2023-01-15"),
+                _vote_legis("1000", "contre", "17", "2025-03-13"),
+            ],
+        )
+        for i in range(2)
+    ]
+    cohesion = _compute_cohesion_votes(membres, legislature="16")
+
+    rapport = compute_ecarts_cohesion_internes(membres, cohesion, "16")
+
+    assert all(r["nb_scrutins_eligibles"] == 1 for r in rapport)
+    assert all(r["taux_coherence_individuel"] == 1.0 for r in rapport), (
+        "Chaque membre est aligné sur la position majoritaire du scrutin de la 16e"
+    )
+
+
+def test_build_groupe_profile_transmet_sa_legislature_a_la_cohesion():
+    """Bout en bout : un profil de groupe de la 16e ne publie que des scrutins
+    de la 16e, quand bien même ses membres portent désormais ceux de la 17e."""
+    membres = [
+        _pivot(
+            "nosdeputes:alice",
+            mandats=[_mandat_electif("2022-06-22")],
+            votes=[
+                _vote_legis("10", "pour", "16", "2023-01-15"),
+                _vote_legis("11", "pour", "17", "2025-03-13"),
+            ],
+        )
+    ]
+
+    profil = build_groupe_profile(
+        groupe_id="AN:SOC", groupe_sigle="SOC", groupe_nom="Socialistes",
+        chambre="AN", legislature="16", profils=membres,
+    )
+
+    assert [c["numero_scrutin"] for c in profil["cohesion_votes"]] == ["10"]

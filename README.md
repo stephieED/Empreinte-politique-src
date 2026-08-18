@@ -292,8 +292,14 @@ present in local pivots — no network call. Disambiguates homonymous
 successive governments via `raw_data/gouvernements_reels.json`'s manually
 validated `libelle_an` (exact match on `mandats[].label`, `organe.libelleAbrege`
 from the AN referential) combined with a period-overlap check. `portefeuille`
-stays `null` (see [`docs/technical_decisions.md#hors-perimetre`](docs/technical_decisions.md#hors-perimetre),
-§ "Ministerial function"). Produces only the roster, not a full
+carries the precise ministerial title, sourced from the `MINISTERE` mandates of
+the same AMO30 bulk dataset (#398) — a minister who changes portfolio mid-government
+yields one `membres[]` entry per period, never an arbitrary pick. It stays `null`
+when no such mandate overlaps. `build_premier_ministre` derives `premier_ministre`
+from the same material (a member of *this* government whose `MINISTERE` mandate is
+labelled "Premier ministre"), and returns `null` — never a value inferred from the
+government's name — when no local pivot carries it. Produces only the roster and
+that entry, not a full
 `pivot_data/gouvernements/*.json` profile (`schema_gouvernement.py`) — see
 `gouvernement_profile.py` below for that combination with sponsored texts.
 
@@ -386,6 +392,19 @@ undeduplicated form is multiple GB uncompressed (measured on legislature 16)
 and can't be committed. `candidate_profile.py` reads that fallback (expanding
 it back to the standard flat shape) instead of hitting the network for those
 two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
+
+Nominal votes follow the same shape since #403. `fetch_votes_officiels()`
+aggregates **all four AN legislatures** (14 to 17, `AN_SCRUTINS_LEGISLATURES`)
+instead of the single one previously derived from the NosDéputés domain, which
+froze every profile on legislature 16 and stopped the dataset in June 2024.
+Legislatures 14/15/16 are closed: their index is built offline via
+`src/build_scrutins_index_figes.py --legislature {14,15,16}` (or `--toutes`)
+and committed under `raw_data/scrutins_an_figes/` (2.8 MB gzipped total), so CI
+only downloads the active 17th (26 MB). Both the on-disk cache and the
+committed fallback store the deduplicated form — scrutin metadata once in
+`scrutins.json`, one `[uid, position]` reference per voter, sharded per
+`acteurRef` — which keeps the four legislatures at 68 MB instead of 741 MB
+flat. See `docs/technical_decisions.md#votes-multi-legislature`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0. Before that step, the `merge-and-pivot` job also
@@ -661,8 +680,10 @@ Each `raw_data/profiles/<slug>.json` includes:
 - `identite`: name, political group, profession, constituency, ...
 - `mandats`: base elected mandate + real responsibilities with role, dates,
   and `actif` flag
-- `votes`: voting positions + source (`votes_source`), prioritizing official AN
-  open data, with Nos* fallback
+- `votes`: voting positions + source (`votes_source`, listing **every** covered
+  legislature), prioritizing official AN open data, with Nos* fallback. Each vote
+  carries its own `legislature` and `url_source` (the AN scrutin page), since a
+  profile now spans several legislatures
 - `dossiers_legislatifs`: chamber legislative files
 - `interventions`: speech records with date, topic, text, role at the time,
   and basic length-based format
@@ -734,8 +755,12 @@ pytest -q
 - **Government scope**: profile generation only covers the governments
   declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
   Fillon II through Lecornu II) — not every government in the Fifth
-  Republic. `membres[].portefeuille` is `null` until confirmed by a primary
-  source (never a placeholder like "Ministre"), and `textes[]` can be empty
+  Republic. `membres[].portefeuille` and `premier_ministre` are filled from the
+  AN `MINISTERE` mandates when a member has a local pivot carrying one (24/41
+  members and 3/10 governments as of this writing), and stay `null` otherwise —
+  never a placeholder like "Ministre" nor a name inferred from the government's
+  own label; the 7 remaining Prime Ministers simply have no local pivot, a figure
+  that grows mechanically with the full-scale roster rollout. `textes[]` can be empty
   for a recent government; `web/UI_finale` shows an explicit "no data" state
   in both cases (rule 5, `AGENTS.md`).
 - **Roster-driven candidate/member coverage**: `generate_roster_candidats.py`

@@ -3,7 +3,11 @@
   "type_document": "profil_gouvernement",
   "gouvernement_id": "gouvernement:ATTAL",
   "nom": "Gouvernement Attal",
-  "premier_ministre": null,
+  "premier_ministre": {
+    "nom": "Gabriel Attal",
+    "acteur_ref": "PA722190",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
   "periode": {
     "debut": "2024-01-10",
     "fin": "2024-09-05",
@@ -22,20 +26,20 @@
     {
       "membre_id": "nosdeputes:fadila-khattabi",
       "nom": "Fadila Khattabi",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès de la ministre du travail, de la santé et des solidarités, chargé des personnes âgées et des personnes handicapées",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
-      "portefeuille": null,
+      "portefeuille": "Premier ministre",
       "debut": "2024-01-10",
       "fin": "2024-09-05",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:marie-guevenoux",
@@ -49,11 +53,11 @@
     {
       "membre_id": "nosdeputes:thomas-cazenave",
       "nom": "Thomas Cazenave",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -355,7 +359,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:34:19+0200",
+    "genere_le": "2026-08-18T01:51:32+0200",
     "licence_donnees": "",
     "warnings": []
   }
