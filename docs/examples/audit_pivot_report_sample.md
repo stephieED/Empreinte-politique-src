@@ -33,36 +33,47 @@ Total profils : 3
 | roster_groupe | 1 |
 | null | 0 |
 
-### Distribution des listes métier (par profil)
-
-| Champ | Min | Max | Médiane | Moyenne | % profils à 0 |
-| --- | --- | --- | --- | --- | --- |
-| votes | 0 | 0 | 0 | 0 | 100.0 |
-| textes_portes | 0 | 0 | 0 | 0 | 100.0 |
-| amendements | 0 | 0 | 0 | 0 | 100.0 |
-| interventions | 0 | 0 | 0 | 0 | 100.0 |
-
-### Sources déclarées
-
-| Moyenne de sources par profil | % profils à une seule source |
-| --- | --- |
-| 0 | 0.0 |
-
 ## Tableau croisé des volumes par candidat
+
+Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).
 
 | id | Nom | Chambre | Votes | Textes portés | Amendements | Interventions |
 | --- | --- | --- | --- | --- | --- | --- |
-| nosdeputes:jean-dupont | Jean Dupont | AN | 0 | 0 | 0 | 0 |
 | nosdeputes:marie-martin | Marie Martin | AN | 0 | 0 | 0 | 0 |
 | nossenateurs:paul-durand | Paul Durand | Senat | 0 | 0 | 0 | 0 |
 
+### Membres de groupe non candidats (agrégé par groupe)
+
+1 profil(s) issus des rosters de groupes (`meta.provenance` = `roster_groupe`) : volumes agrégés, sans détail par membre.
+
+| Groupe | Profils | Champ | Min | Max | Médiane | Moyenne |
+| --- | --- | --- | --- | --- | --- | --- |
+| Socialistes et apparentés | 1 | votes | 0 | 0 | 0 | 0 |
+| Socialistes et apparentés | 1 | textes_portes | 0 | 0 | 0 | 0 |
+| Socialistes et apparentés | 1 | amendements | 0 | 0 | 0 | 0 |
+| Socialistes et apparentés | 1 | interventions | 0 | 0 | 0 | 0 |
+| Ensemble | 1 | votes | 0 | 0 | 0 | 0 |
+| Ensemble | 1 | textes_portes | 0 | 0 | 0 | 0 |
+| Ensemble | 1 | amendements | 0 | 0 | 0 | 0 |
+| Ensemble | 1 | interventions | 0 | 0 | 0 | 0 |
+
 ## Plages temporelles par candidat
+
+Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).
 
 | id | Nom | Chambre | Votes | Textes portés | Amendements | Interventions |
 | --- | --- | --- | --- | --- | --- | --- |
-| nosdeputes:jean-dupont | Jean Dupont | AN | — | — | — | — |
 | nosdeputes:marie-martin | Marie Martin | AN | — | — | — | — |
 | nossenateurs:paul-durand | Paul Durand | Senat | — | — | — | — |
+
+### Membres de groupe non candidats (agrégé par groupe)
+
+1 profil(s) issus des rosters de groupes (`meta.provenance` = `roster_groupe`) : plage englobante du groupe, sans détail par membre.
+
+| Groupe | Profils | Votes | Textes portés | Amendements | Interventions |
+| --- | --- | --- | --- | --- | --- |
+| Socialistes et apparentés | 1 | — | — | — | — |
+| Ensemble | 1 | — | — | — | — |
 
 ### Dates ignorées (invalides ou non parseables)
 

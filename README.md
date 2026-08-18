@@ -536,8 +536,12 @@ volumetry (including a breakdown by `meta.provenance`, `candidat_declare` vs.
 `textes_portes` / `amendements` / `interventions`: counts, and date range
 (min/max, `textes_portes` aggregating `date_min`/`date_max` across entries;
 unparseable dates are ignored and tallied per field, never silently
-defaulted) — an internal quality tool, not an end-user report (no score, no
-ranking, see `AGENTS.md` §2).
+defaulted). Both cross-tabs list **declared candidates only**
+(`meta.provenance` = `candidat_declare`); roster-sourced profiles
+(`roster_groupe`) appear aggregated per `groupe` (min/max/median/mean for
+counts, enclosing range for dates), never member by member — an internal
+quality tool, not an end-user report (no score, no ranking, see
+`AGENTS.md` §2).
 
 ```bash
 python src/audit_pivot_dataset.py \
