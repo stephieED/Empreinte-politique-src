@@ -54,9 +54,13 @@ on:
         type: number
         default: 20
 
-# Nécessaire pour que le job puisse pousser la mise à jour des données.
+# Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
+# `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
+# jobs d'extraction exécutent du code réseau contre des sources tierces (AN
+# Open Data, NosDéputés, Sénat, Parlement européen, ParlTrack) — leur donner un
+# token en écriture sur le dépôt était un privilège sans usage.
 permissions:
-  contents: write
+  contents: read
 
 # Évite deux exécutions qui écriraient/committeraient en même temps.
 concurrency:
@@ -70,21 +74,54 @@ concurrency:
 # (raw_data/candidats.json, calculé par le job prepare-an-matrix) — isole la
 # perte en cas de shutdown signal runner (#228, angle mort de if: always()) à
 # un seul candidat au lieu de tout le job. max-parallel: 1 sur ce matrix :
-# préserve le pic de jobs simultanés à 4 déjà acté par #222/[[concurrence-ci-roster]]
-# (des shards en parallèle entre eux, en plus de Sénat/UE/ParlTrack déjà
-# concurrents, dépasseraient ce pic) — voir
-# docs/technical_decisions.md#matrix-extract-an-par-candidat.
-# Timeouts : amendements-an 30 min / AN 5 min par shard (réduit de 20 min,
-# voir commentaire sur extract-an ci-dessous), shards exécutés en série
-# (max-parallel 1) → ≈ 5 × nb_candidats_a_slug (8 actuellement, donc ≈40 min
-# pire cas — recalculer si raw_data/candidats.json change significativement)
-# / Sénat 90 min / UE 60 min / ParlTrack 30 min / roster-groupes 60 min
-# (needs: les jobs d'extraction précédents, #222 — jamais parallèle à eux,
-# contrairement à ce qu'un calcul purement parallèle suggérerait) /
-# merge-and-pivot 60 min (needs: roster-groupes entre autres).
-# Total mur (parallèle) ≈ max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min pire cas
-# (8 shards, contre 310 min avec le timeout de 20 min par shard) — contre
-# bien plus de 450 min si tout s'enchaînait séquentiellement.
+# conservé par #412, mais PLUS pour la raison écrite jusqu'ici — voir
+# docs/technical_decisions.md#concurrence-shards-extraction-412 et
+# #matrix-extract-an-par-candidat. En deux lignes : le pic de jobs simultanés
+# n'est plus 4 mais 6 (six jobs démarrent sans needs: depuis #344/#394), et
+# l'hypothèse de plafond de dépense Actions qui fondait #222 a été infirmée
+# ([[verification-billing-actions]]) ; ce qui reste valide de #222 est
+# l'argument *cache* — des shards en parallèle retéléchargeraient chacun les
+# dumps AN Open Data au lieu de se passer un cache déjà chaud.
+#
+# ── LES 9 JOBS ──────────────────────────────────────────────────────────────
+# 2 préparatoires (prepare-an-matrix, prepare-roster-matrix), 6 d'extraction
+# (extract-amendements-an, extract-an, extract-senat, extract-ue-officiel,
+# extract-parltrack, extract-roster-groupes — dont 2 shardés), 1 de fusion
+# (merge-and-pivot). Les en-têtes de job ne sont plus numérotés : la
+# numérotation « JOB n/4 » était périmée depuis #344/#394 et l'était redevenue
+# à chaque ajout (#413).
+#
+# ── BUDGET DE TEMPS MUR ─────────────────────────────────────────────────────
+# ATTENTION, deux grandeurs à ne pas confondre :
+#   - la SOMME DES TIMEOUTS ci-dessous = pire cas théorique, ce que le workflow
+#     s'autorise à consommer avant que GitHub ne le coupe ;
+#   - le TEMPS MUR OBSERVÉ, très inférieur : ~1m18–2m10 par shard AN (mesuré,
+#     voir le commentaire de timeout d'extract-an), 2,3 s + 5,05 s × N membres
+#     pour le roster ([[budget-roster-mesure]]).
+# Le chiffre publié ici jusqu'à #413 (« 190 min ») était faux deux fois : il
+# oubliait extract-senat du max() (90, pas 70) et traitait extract-roster-groupes
+# comme un job unique alors que c'est un matrix en série depuis #394.
+#
+# Timeouts déclarés : prepare-* 5 min / amendements-an 30 / AN 5 PAR SHARD
+# (réduit de 20, voir le commentaire d'extract-an ; nb de shards = candidats à
+# slug résolvable, 8 aujourd'hui, alerte automatique au-delà de AN_SHARDS_WARN
+# depuis #412) / Sénat 90 / UE 60 / ParlTrack 30 / roster-groupes 60 PAR SHARD
+# (S = 1 en rollout progressif, 8 en run complet) / merge-and-pivot 60.
+#
+# Chaîne la plus longue, en sommant ces timeouts :
+#
+#   | Étape                         | Début au + tôt | Durée max | Fin au + tard |
+#   |-------------------------------|----------------|-----------|---------------|
+#   | les 6 jobs sans needs:        | 0              | 5…90      | 90 (Sénat)    |
+#   | extract-an (8 shards × 5)     | 30             | 40        | 70            |
+#   | extract-roster-groupes (S×60) | 90             | 60·S      | 150 / 570     |
+#   | merge-and-pivot               | 150 / 570      | 60        | 210 / 630     |
+#
+# → **210 min** en configuration par défaut (roster_extraction_limit=20, donc
+#   S=1) et **630 min (10 h 30)** en run complet (roster_extraction_limit=0,
+#   S=8). Aucune limite GitHub n'est atteinte (6 h par JOB — le plus long ici
+#   est à 90 min —, 35 j par RUN), mais un run complet doit être dimensionné
+#   avec 630 min en tête, pas 190.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
@@ -117,9 +154,24 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # set -euo pipefail (#412 §2.1) : sans lui, un python3 en échec
+      # (candidats.json illisible/malformé) laissait SLUGS_JSON vide, écrivait
+      # `slugs=` dans $GITHUB_OUTPUT et faisait échouer l'évaluation de
+      # `fromJson('')` côté extract-an — un job *skipped*, pas *failed*, que
+      # continue-on-error: ne rattrape pas. Mieux vaut échouer ici, lisiblement.
       - name: Slugs résolvables (raw_data/candidats.json)
         id: slugs
+        env:
+          # Nombre de shards au-delà duquel le temps mur d'extract-an devient un
+          # problème silencieux : les shards s'exécutent en série (max-parallel:
+          # 1) à 5 min chacun, donc 16 shards = 80 min de temps mur pour ce seul
+          # job. Modifier ici suffit — aucune autre occurrence de cette valeur.
+          # Répond au « recalculer si raw_data/candidats.json change
+          # significativement » de l'en-tête de ce fichier, jusqu'ici non
+          # outillé (#412 §2.7).
+          AN_SHARDS_WARN: "16"
         run: |
+          set -euo pipefail
           SLUGS_JSON=$(python3 - <<'EOF'
           import json
           data = json.load(open("raw_data/candidats.json", encoding="utf-8"))
@@ -127,10 +179,37 @@ jobs:
           print(json.dumps(slugs))
           EOF
           )
+          COUNT=$(SLUGS_JSON="$SLUGS_JSON" python3 -c 'import json, os; print(len(json.loads(os.environ["SLUGS_JSON"])))')
           echo "slugs=$SLUGS_JSON" >> "$GITHUB_OUTPUT"
+          echo "${COUNT} candidat(s) à slug résolvable → ${COUNT} shard(s) extract-an."
+
+          # Matrix vide : GitHub Actions *skippe* extract-an (et non l'échoue).
+          # Depuis #412, la chaîne aval survit à ce skip (if: !cancelled() sur
+          # extract-roster-groupes et merge-and-pivot), mais le run ne produira
+          # aucune donnée AN — il faut que ce soit visible, pas déduit.
+          if [[ "$COUNT" -eq 0 ]]; then
+            echo "::warning::Aucun candidat à slug résolvable dans raw_data/candidats.json — extract-an sera skippé (matrix vide). Le reste du run continue sur les autres sources."
+            {
+              echo "### ⚠️ Matrix extract-an vide"
+              echo ""
+              echo "Aucun candidat de \`raw_data/candidats.json\` n'a de \`slug\` :"
+              echo "\`extract-an\` est skippé et ce run ne collectera rien côté"
+              echo "Assemblée nationale. Les autres sources (Sénat, UE, ParlTrack,"
+              echo "roster) et la fusion finale s'exécutent normalement."
+            } >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$COUNT" -gt "$AN_SHARDS_WARN" ]]; then
+            echo "::warning::${COUNT} shards extract-an (> ${AN_SHARDS_WARN}) — shards exécutés en série à 5 min chacun, soit ~$((COUNT * 5)) min de temps mur. Revoir max-parallel/timeout ou le volume de raw_data/candidats.json."
+            {
+              echo "### ⚠️ Budget de temps mur d'extract-an"
+              echo ""
+              echo "${COUNT} shards (seuil d'alerte : ${AN_SHARDS_WARN}), exécutés en série"
+              echo "(\`max-parallel: 1\`) à 5 min de timeout chacun → jusqu'à ~$((COUNT * 5)) min"
+              echo "de temps mur pour ce seul job."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 1/4 — Extraction Assemblée nationale (matrix par candidat, #344)
+  # JOB D'EXTRACTION — Assemblée nationale (matrix par candidat, #344)
   # ──────────────────────────────────────────────────────────────────────────
   extract-an:
     needs: [extract-amendements-an, prepare-an-matrix]
@@ -150,11 +229,19 @@ jobs:
       # jamais annuler les shards restants : sinon le matrix n'apporte aucune
       # isolation, contrairement à l'objectif de #344.
       fail-fast: false
-      # max-parallel: 1 — voir le commentaire de budget mur en tête de ce
-      # fichier : préserve le pic de 4 jobs simultanés déjà acté par #222.
+      # max-parallel: 1 — CONSERVÉ par #412, sur l'argument *cache* de #222 et
+      # lui seul : les shards se passent le cache AN chaud de proche en proche,
+      # là où des shards parallèles retéléchargeraient chacun les dumps AN Open
+      # Data. L'argument *concurrence* de #222 (« préserve le pic de 4 jobs »)
+      # est mort deux fois : le pic réel est 6 depuis #344/#394, et l'hypothèse
+      # de plafond de dépense qui le motivait a été infirmée. Voir
+      # docs/technical_decisions.md#concurrence-shards-extraction-412.
       max-parallel: 1
       matrix:
-        slug: ${{ fromJson(needs.prepare-an-matrix.outputs.slugs) }}
+        # `|| '[]'` : garde-fou de forme (#412 §2.1). Un prepare-an-matrix en
+        # échec skippe déjà ce job — le repli évite en plus une erreur
+        # d'évaluation `fromJson('')` illisible dans l'interface Actions.
+        slug: ${{ fromJson(needs.prepare-an-matrix.outputs.slugs || '[]') }}
     # continue-on-error: true — même pattern que extract-parltrack/
     # extract-amendements-an : l'échec d'un shard ne doit pas empêcher
     # merge-and-pivot de fusionner les autres shards/sources qui ont réussi
@@ -166,28 +253,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      # Mémoire disponible sur le runner au démarrage (diagnostic OOM, voir
-      # docs/technical_decisions.md#oom-lecture-amendements-par-candidat) :
-      # un runner ubuntu-latest standard n'a que ~7 Gio de RAM, le même ordre
-      # de grandeur que la législature amendements 16 une fois désérialisée
-      # (mesuré ~4,35 Gio en local) — un OOM côté runner hébergé n'apparaît
-      # jamais comme tel dans les logs GitHub Actions (pas de journalctl -k
-      # accessible), seulement comme un `shutdown signal` générique. Ce
-      # print ne capture que l'état de départ (rien ne s'exécute après un
-      # OOM qui tue le runner lui-même, angle mort déjà documenté en #228) —
-      # sert surtout à confirmer/infirmer la RAM totale réellement
-      # disponible sur ce runner.
-      - name: Diagnostic mémoire runner (OOM)
-        run: free -h
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3.
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache AN)
         id: week
@@ -196,10 +264,21 @@ jobs:
       # fresh_run=true  → pas de restore (on repart de zéro).
       # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
       # Clé partagée entre tous les shards (comme avant #344, et avec
-      # extract-roster-groupes) : la course déjà documentée en #248
-      # sous-issue 4 n'est pas aggravée (chaque shard restaure la même clé
-      # séquentiellement, max-parallel: 1, donc pas de nouvelle concurrence
-      # d'écriture introduite par le matrix lui-même).
+      # extract-amendements-an/extract-roster-groupes). La course d'écriture
+      # laissée ouverte par #248 sous-issue 4 n'existe plus (#412 §2.2) : les
+      # trois jobs qui écrivent public-data-cache-an-* sont strictement
+      # séquencés (extract-amendements-an → extract-an → extract-roster-groupes)
+      # et les deux consommateurs sont en lecture cache-only depuis #252.
+      #
+      # RÉSERVE, à valider sur un run réel avant tout correctif (#412 §2.3) :
+      # extract-amendements-an écrit la clé EXACTE de la semaine, donc les jobs
+      # suivants font un exact key hit — et actions/cache saute alors la
+      # sauvegarde post-job (« Cache hit occurred on the primary key, not saving
+      # cache »). Si le log post-job de ce job le confirme, ce que télécharge
+      # extract-an (acteurs/scrutins/dossiers AN, ~290 Mo) n'est jamais persisté
+      # dans la clé de la semaine. Correctif envisagé alors : une clé propre à
+      # extract-amendements-an (public-data-cache-amendements-*, path
+      # .cache/amendements_an) laissant …-an-* à extract-an.
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
@@ -215,13 +294,15 @@ jobs:
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
 
-      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
-      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
-      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
-      # ce job s'appuie sur ce que la restauration du cache partagé
-      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
-      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
-      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251),
+      # qui est bien en `needs:` de ce job (le commentaire disait l'inverse
+      # jusqu'à #412 §2.2). continue-on-error: true quand même : ce job a
+      # continue-on-error: true, donc il peut « réussir » sans avoir produit
+      # d'artifact — en cas d'absence, on s'appuie sur ce que la restauration du
+      # cache partagé public-data-cache-an-* contient déjà (#252). Placé après
+      # le nettoyage fresh_run (pas avant) : la lecture cache-only s'applique
+      # aussi en mode fresh_run, donc ne doit pas être effacée par le
+      # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
@@ -235,9 +316,17 @@ jobs:
       # fresh_run=true  → --no-merge : écrasement complet.
       # fresh_run=false → fusion additive : données existantes préservées.
       # /usr/bin/time -v : trace le pic de RSS (diagnostic OOM, voir le step
-      # "Diagnostic mémoire runner" ci-dessus) — n'apparaît dans les logs que
-      # si le process Python se termine (normalement ou tué) sans que le
-      # runner entier ne disparaisse avec lui.
+      # "Diagnostic mémoire runner" de ./.github/actions/bootstrap-extraction)
+      # — n'apparaît dans les logs que si le process Python se termine
+      # (normalement ou tué) sans que le runner entier ne disparaisse avec lui.
+      #
+      # NE PAS déplacer les MERGE_FLAG/INTERV_FLAG/MAX_PAGES_FLAG ci-dessous
+      # dans une action composite (verdict #412 §3) : retry-generate-data.yml
+      # reconstruit les inputs du run échoué en grepant le TEXTE BASH SUBSTITUÉ
+      # de ce step dans les logs (`--source an --workers \K[0-9]+`,
+      # `INTERV_FLAG`, `--max-pages \K[0-9]+`). Les factoriser casserait ce
+      # mécanisme. Même remarque pour les steps homonymes de extract-senat,
+      # extract-ue-officiel et extract-roster-groupes.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -263,36 +352,26 @@ jobs:
           path: raw_data/profiles/${{ matrix.slug }}.json
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe (${{ matrix.slug }})"
-            echo ""
-            echo "Ce shard (candidat \`${{ matrix.slug }}\`) a été annulé de façon"
-            echo "externe (signal \`cancelled()\` reçu, pas un timeout ni une erreur"
-            echo "applicative) après ~${ELAPSED_MIN} min. Grâce au matrix (#344), les"
-            echo "autres shards/candidats ne sont pas affectés."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
+          scope: 'candidat `${{ matrix.slug }}`'
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec (${{ matrix.slug }})"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
+          scope: 'candidat `${{ matrix.slug }}`'
 
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 2/4 — Extraction Sénat
+  # JOB D'EXTRACTION — Sénat
   # ──────────────────────────────────────────────────────────────────────────
   extract-senat:
     runs-on: ubuntu-latest
@@ -303,14 +382,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3.
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache Sénat)
         id: week
@@ -347,34 +421,24 @@ jobs:
           path: raw_data/profiles/
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
-            echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
 
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 3/4 — Extraction API officielle Parlement européen
+  # JOB D'EXTRACTION — API officielle Parlement européen
   # ──────────────────────────────────────────────────────────────────────────
   extract-ue-officiel:
     runs-on: ubuntu-latest
@@ -385,14 +449,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3.
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache UE)
         id: week
@@ -429,33 +488,23 @@ jobs:
           path: raw_data/profiles/
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
-            echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 4/4 — Extraction ParlTrack (fragile — tierce source non officielle)
+  # JOB D'EXTRACTION — ParlTrack (fragile — tierce source non officielle)
   #
   # continue-on-error: true → son échec ou timeout ne bloque pas merge-and-pivot.
   # Timeout court (env.PARLTRACK_TIMEOUT_MINUTES, défaut 30 min).
@@ -470,14 +519,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3.
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache ParlTrack)
         id: week
@@ -516,41 +560,35 @@ jobs:
           sys.exit(0 if ok else 1)
           EOF
 
+      # Nom hors de la famille raw-profiles-* (#412 §4) : cet artifact ne
+      # contient pas de profils bruts mais les dumps .zst ParlTrack, consommés
+      # par merge-and-pivot dans .cache/parltrack. Aucun consommateur hors du
+      # run courant, donc renommage sans effet de bord.
       - name: Upload artifact ParlTrack (dumps .zst)
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: raw-profiles-parltrack
+          name: parltrack-dumps
           path: .cache/parltrack/
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
-            echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB SUPPLÉMENTAIRE — Construction dédiée des index amendements AN (#251,
+  # JOB D'EXTRACTION — Construction dédiée des index amendements AN (#251,
   # sous-issue 3/6 du plan d'architecture #248)
   #
   # Construit sans condition les 3 index de législature (17/16/15,
@@ -561,14 +599,18 @@ jobs:
   # que paresseusement, au niveau candidat. Objectif : pré-chauffer le cache
   # partagé .cache/amendements_an/ une seule fois par run.
   #
-  # Pas de needs: — tourne en parallèle des autres jobs d'extraction, y
-  # compris extract-an/extract-roster-groupes qui restent, pour l'instant,
-  # susceptibles de déclencher leur propre téléchargement paresseux des mêmes
-  # archives si un candidat les sollicite avant la sauvegarde du cache de ce
-  # job (course possible sur la clé de cache partagée ci-dessous). Accepté
-  # explicitement par l'issue #251 : la bascule des jobs consommateurs vers
-  # une lecture cache-only de ce cache pré-chaud (ce qui éliminerait cette
-  # course) est hors périmètre ici, réservée à la sous-issue 4 de #248.
+  # Pas de needs: sur ce job — il démarre à t=0, en parallèle des autres jobs
+  # sans dépendance. Mais extract-an et extract-roster-groupes l'ont, EUX, en
+  # `needs:` : les trois jobs qui écrivent la clé de cache partagée
+  # public-data-cache-an-* sont donc strictement séquencés
+  # (extract-amendements-an → extract-an → extract-roster-groupes), et les deux
+  # consommateurs sont en lecture cache-only depuis #252.
+  #
+  # La course d'écriture décrite ici jusqu'à #412 §2.2, et laissée ouverte par
+  # #248 sous-issue 4, n'existe donc plus : elle a été éteinte par effet de bord
+  # du séquencement de #344, sans avoir jamais été actée. Réserve corollaire à
+  # valider sur un run réel : voir le commentaire de cache d'extract-an (#412
+  # §2.3, sauvegarde post-job sautée sur exact key hit).
   #
   # Clé de cache réutilisée : la même clé hebdomadaire partagée
   # public-data-cache-an-* que extract-an/extract-roster-groupes, pas de clé
@@ -596,14 +638,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3.
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
         id: week
@@ -635,33 +672,23 @@ jobs:
           path: .cache/amendements_an/
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
-            echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB SUPPLÉMENTAIRE — Extraction roster-driven (rollout progressif, #192)
+  # JOB D'EXTRACTION — Roster-driven (rollout progressif, #192)
   #
   # Déploiement progressif de l'extraction pilotée par la composition réelle
   # des groupes parlementaires (#188/#190), en alternative à la liste
@@ -672,14 +699,18 @@ jobs:
   # périmètre : l'activation d'un run complet planifié est une décision
   # ultérieure distincte, schedule: cron toujours commenté ci-dessus).
   #
-  # Séquencé après les 4 jobs d'extraction existants (needs: ci-dessous, #222)
-  # : réduit le pic de jobs Actions simultanés de 5 à 4 — mitigation du
-  # plafond de dépense Actions suspecté en cause du run #24 (cf. #221), au
-  # prix d'un temps mur total plus long. Requis conjointement à la clé de
-  # cache AN partagée (step "Semaine ISO courante" ci-dessous) : ce
-  # séquencement garantit que ce cache est déjà chaud (écrit par extract-an)
-  # au moment de sa restauration ici, évitant que les deux jobs se disputent
-  # le même téléchargement des dumps AN Open Data en concurrence.
+  # Séquencé après les autres jobs d'extraction (needs: ci-dessous, #222). Ce
+  # séquencement avait deux justifications ; une seule tient encore (#412 §2.5,
+  # docs/technical_decisions.md#concurrence-shards-extraction-412) :
+  #   - CACHE (valide) : il garantit que la clé public-data-cache-an-* est déjà
+  #     chaude (écrite en amont) au moment de sa restauration ici, évitant que
+  #     les jobs se disputent le même téléchargement des dumps AN Open Data.
+  #   - CONCURRENCE (périmée) : « réduit le pic de 5 à 4 jobs simultanés » en
+  #     mitigation d'un plafond de dépense Actions suspecté (#221). Le pic réel
+  #     est de 6 depuis #344/#394 (six jobs démarrent sans needs:) et
+  #     l'hypothèse #221 a été explicitement infirmée
+  #     ([[verification-billing-actions]] : quota non atteint, $0 facturé,
+  #     cause retenue = préemption d'infrastructure).
   #
   # continue-on-error: true, comme extract-parltrack : un échec ou
   # dépassement de ce job ne bloque pas merge-and-pivot.
@@ -761,6 +792,13 @@ jobs:
 
   extract-roster-groupes:
     needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack, prepare-roster-matrix]
+    # if: !cancelled() (#412 §2.1) — continue-on-error: transforme un ÉCHEC en
+    # non-bloquant, mais ne fait rien contre un job *skipped* : un maillon amont
+    # skippé (matrix vide, prepare-* en échec) skippait toute la suite, donc le
+    # run entier ne produisait rien. Ce garde-fou rétablit le comportement
+    # documenté (« on traite/fusionne ce qui a réussi ») ; seule une annulation
+    # externe arrête encore la chaîne.
+    if: ${{ !cancelled() }}
     name: extract-roster-groupes (shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
     # 60 min PAR SHARD. Mesuré (#376/#392) : 2,3 s + 5,05 s x N membres.
@@ -773,34 +811,33 @@ jobs:
       # autres, sinon le découpage n'apporte aucune isolation (même
       # raisonnement que #344 pour extract-an).
       fail-fast: false
-      # max-parallel: 1 — préserve le pic de 4 jobs simultanés acté par #222
-      # ([[concurrence-ci-roster]]). Le temps mur total reste donc ~63 min
-      # pour un run complet ; ce qui change est la perte maximale sur
-      # préemption, qui passe de 63 min à ~8 min.
+      # max-parallel: 1 — RE-TRANCHÉ et conservé par #412 §2.5, sur l'argument
+      # cache de #222 et sur la prudence réseau (8 shards parallèles
+      # solliciteraient en parallèle les mêmes sources AN/NosDéputés), PAS sur
+      # l'argument concurrence, périmé — voir l'en-tête de ce job et
+      # docs/technical_decisions.md#concurrence-shards-extraction-412. Coût
+      # assumé : ~63 min de temps mur en run complet contre ~8 min en parallèle
+      # ([[budget-roster-mesure]]) ; ce que le shardage apporte à max-parallel 1
+      # est la borne de perte sur préemption (63 min → ~8 min), pas la vitesse.
       max-parallel: 1
       matrix:
-        shard: ${{ fromJson(needs.prepare-roster-matrix.outputs.shards) }}
+        # `|| '[0]'` : repli sur un shard unique si prepare-roster-matrix a
+        # échoué (#412 §2.1). Combiné au if: !cancelled() ci-dessus, ce job
+        # tourne alors en mode non shardé plutôt que d'échouer sur
+        # `fromJson('')` — le pendant de shard_total plus bas.
+        shard: ${{ fromJson(needs.prepare-roster-matrix.outputs.shards || '[0]') }}
     continue-on-error: true
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: Horodatage de démarrage (diagnostic annulation/échec)
-        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
-
-      # Voir le commentaire équivalent sur extract-an — ce job n'est pas
-      # shardé par candidat (contrairement à extract-an, #344) et traite
-      # plusieurs membres roster dans le même process : exposition plus
-      # importante au même risque OOM (voir
-      # docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
-      - name: Diagnostic mémoire runner (OOM)
-        run: free -h
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - run: pip install -r requirements.txt
+      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
+      # pip install, factorisés par #412 §3. Le relevé mémoire compte
+      # particulièrement ici : ce job est shardé par tranche de roster, pas par
+      # candidat, donc plusieurs membres sont traités dans le même process —
+      # exposition plus forte au risque OOM que extract-an
+      # (docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
+      - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
         id: week
@@ -828,13 +865,15 @@ jobs:
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
 
-      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
-      # continue-on-error: true — pas de needs: sur extract-amendements-an (voir
-      # sa justification dans ce job) : en cas d'échec/absence de l'artifact,
-      # ce job s'appuie sur ce que la restauration du cache partagé
-      # public-data-cache-an-* contient déjà (#252). Placé après le nettoyage
-      # fresh_run (pas avant) : la lecture cache-only s'applique aussi en mode
-      # fresh_run, donc ne doit pas être effacée par le `rm -rf .cache` ci-dessus.
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251),
+      # qui est bien en `needs:` de ce job (le commentaire disait l'inverse
+      # jusqu'à #412 §2.2). continue-on-error: true quand même : ce job a
+      # continue-on-error: true, donc il peut « réussir » sans avoir produit
+      # d'artifact — en cas d'absence, on s'appuie sur ce que la restauration du
+      # cache partagé public-data-cache-an-* contient déjà (#252). Placé après
+      # le nettoyage fresh_run (pas avant) : la lecture cache-only s'applique
+      # aussi en mode fresh_run, donc ne doit pas être effacée par le
+      # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
         uses: actions/download-artifact@v7
         continue-on-error: true
@@ -844,7 +883,10 @@ jobs:
 
       # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
       # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
-      # n'est pas committé : régénéré à chaque run (source de vérité = groupes_reels.json).
+      # n'est pas committé : régénéré à chaque run (source de vérité =
+      # groupes_reels.json). Ce n'était vrai que sur le papier jusqu'à #413 §5 —
+      # le fichier était tracké et dérivait silencieusement ; il est désormais
+      # gitignoré et désindexé, comme parltrack-status.json.
       - name: Construction de la liste roster-driven
         run: python3 src/generate_roster_candidats.py
 
@@ -859,6 +901,10 @@ jobs:
       # de groupe (#349) ; dossiers_legislatifs/interventions/questions_officielles
       # ne sont consommés par aucun agrégat actuel ni prévu, les extraire ici serait
       # du travail réseau pour rien (~750+ membres à terme, cf. rollout #192).
+      #
+      # MERGE_FLAG/LIMIT_FLAG non factorisables : cf. le commentaire équivalent
+      # sur le step d'extraction d'extract-an (#412 §3, grep de logs de
+      # retry-generate-data.yml).
       - name: Extraction roster-driven (mode léger)
         env:
           FRESH: ${{ inputs.fresh_run }}
@@ -874,7 +920,7 @@ jobs:
           /usr/bin/time -v python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
-            --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total }}" \
+            --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             --skip-existing --resume \
             --skip-interventions --skip-dossiers-legislatifs \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
@@ -890,48 +936,49 @@ jobs:
           path: raw_data/profiles/
           if-no-files-found: warn
 
+      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
+      # le step appelant : cancelled()/failure() évalués à l'intérieur de
+      # l'action porteraient sur ses propres steps, pas sur l'état du job.
       - name: Diagnostic — job annulé (signal externe)
         if: cancelled()
-        run: |
-          ELAPSED_MIN=$(( ($(date +%s) - ${JOB_START_EPOCH:-$(date +%s)}) / 60 ))
-          {
-            echo "### ⚠️ Job annulé — signal d'annulation externe"
-            echo ""
-            echo "Ce job a été annulé de façon externe (signal \`cancelled()\` reçu,"
-            echo "pas un timeout ni une erreur applicative) après ~${ELAPSED_MIN} min."
-            echo ""
-            echo "Piste de diagnostic : vérifier les quotas/limites GitHub Actions du"
-            echo "compte plutôt que les logs applicatifs de ce job (cf. #221)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: cancelled
+          scope: 'shard ${{ matrix.shard }}'
 
       - name: Diagnostic — job en échec
         if: failure()
-        run: |
-          {
-            echo "### ❌ Job en échec"
-            echo ""
-            echo "Voir la checklist de diagnostic dans #217 (ou la section"
-            echo "correspondante de \`docs/technical_decisions.md\` si archivée"
-            echo "depuis)."
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/job-diagnostics
+        with:
+          kind: failure
+          scope: 'shard ${{ matrix.shard }}'
 
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB FUSION — merge-and-pivot
   #
-  # Fusionne les artifacts des 4 jobs d'extraction, génère les pivots, les
+  # Fusionne les artifacts des jobs d'extraction, génère les pivots, les
   # profils de parti et de groupe, lance la quality gate, et committe.
-  # Tourne même si un ou plusieurs des 5 jobs `needs` ci-dessous ont échoué :
-  # chacun a continue-on-error: true (extract-an/extract-senat/
-  # extract-ue-officiel/extract-parltrack/extract-roster-groupes), donc leur
-  # échec individuel ne bloque jamais ce job — seule une annulation externe
-  # (cancelled()) le ferait. La résilience aux sources partiellement en échec
-  # est déléguée à la quality gate (check_quality_gate.py) plutôt qu'à needs:.
+  # Tourne même si un ou plusieurs des 5 jobs `needs` ci-dessous ont échoué OU
+  # ONT ÉTÉ SKIPPÉS : leur continue-on-error: true couvre le premier cas, le
+  # `if: ${{ !cancelled() }}` ci-dessous couvre le second (#412 §2.1 — un job
+  # skippé, par ex. parce que prepare-an-matrix a échoué ou que le matrix est
+  # vide, skippait jusqu'ici toute la chaîne aval, à rebours de ce que cet
+  # en-tête a toujours affirmé). Seule une annulation externe (cancelled())
+  # arrête encore ce job. La résilience aux sources partiellement en échec est
+  # déléguée à la quality gate (check_quality_gate.py) plutôt qu'à needs:.
   # ──────────────────────────────────────────────────────────────────────────
   merge-and-pivot:
     needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # actions: write — requis par le `gh workflow run deploy-pages.yml` de la
+    # dernière étape (#416). Déclaré au niveau du job et non du workflow : les
+    # jobs d'extraction n'ont aucune raison de pouvoir déclencher un workflow.
+    permissions:
+      contents: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v5
@@ -986,7 +1033,7 @@ jobs:
         uses: actions/download-artifact@v7
         continue-on-error: true
         with:
-          name: raw-profiles-parltrack
+          name: parltrack-dumps
           path: .cache/parltrack
 
       # Roster-driven : optionnel — continue-on-error si l'artifact est absent
@@ -1036,6 +1083,11 @@ jobs:
             --workers ${{ inputs.workers }} \
             "${MERGE_FLAG[@]}"
 
+      # Pas de --enrich-parltrack sur ce second passage, contrairement au
+      # premier (#413 §4) : ParlTrack est une source UE (eurodéputé·es), et le
+      # roster ne contient que des membres AN/Sénat — l'enrichissement n'aurait
+      # aucun pivot à enrichir ici. Asymétrie voulue, pas un oubli.
+      #
       # Pivots roster-driven (#192) : repasse --pivot-only explicitement sur
       # raw_data/roster_candidats.json (régénéré ici — fetch réseau bon marché,
       # 2 appels — plutôt que transitée par artifact) pour normaliser aussi les
@@ -1098,7 +1150,15 @@ jobs:
             --out-dir pivot_data/gouvernements \
             --validate
 
-      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251),
+      # qui n'est PAS dans le `needs:` de ce job (#413 §4) : le téléchargement ne
+      # fonctionne que parce que extract-roster-groupes, lui, en dépend, et que
+      # ce job dépend de extract-roster-groupes. Dépendance transitive, donc
+      # fragile si un `needs:` bouge — l'artifact étant optionnel
+      # (continue-on-error + dégradation gracieuse ci-dessous), la casse serait
+      # silencieuse. Documenté plutôt que corrigé : ajouter le `needs:` direct
+      # changerait le graphe de dépendances pour un gain nul tant que la chaîne
+      # tient.
       # continue-on-error: true — même pattern que l'étape homonyme d'extract-an/
       # extract-roster-groupes (#252) : en cas d'échec/absence, la section 3d du
       # quality gate signale simplement chaque législature "jamais construite"
@@ -1135,7 +1195,17 @@ jobs:
             --low-interventions 10 \
             --groupe-min-members 1 \
             --parltrack-status-file parltrack-status.json
-            # --groupe-min-coverage-pct XX  # To be set after running and audit of workflow (cf. #193)
+          # --groupe-min-coverage-pct : seuil de couverture RELATIF, optionnel,
+          # défaut 0 = désactivé. Volontairement non passé ici (#413 §7). #193
+          # (close) demandait de le calibrer « en fonction des résultats réels » ;
+          # la décision prise en réponse est [[seuil-couverture-groupe]] :
+          # conserver --groupe-min-members 1 et n'activer le seuil relatif QUE
+          # lorsqu'un run à pleine échelle (roster_extraction_limit=0, ~750
+          # membres) aura fourni des taux de couverture représentatifs. Les
+          # chiffres à regarder pour trancher : taux_couverture_pct dans
+          # coherence.ecart_couverture_roster (audit_groupe_dataset.py). Ce
+          # n'est donc pas un réglage en attente d'arbitrage, mais une activation
+          # en attente d'une donnée précise.
 
       # Garde-fou #390 : ne JAMAIS committer un build produit avec du code
       # périmé.
@@ -1155,60 +1225,106 @@ jobs:
       # une erreur. Refuser de committer est donc le défaut, pas le cas
       # d'échec.
       #
-      # Condition volontairement ÉTROITE (src/ seulement) : un commit de doc ou
-      # de données ne doit rien déclencher — c'est le cas que la boucle de
-      # retry du push sait traiter, depuis la correction de #389. La relance
-      # est prise en charge par retry-generate-data.yml, qui plafonne déjà à
-      # une seule tentative automatique.
+      # PÉRIMÈTRE (#413 §3) : le code de génération (`src/`) ET les fichiers de
+      # CONFIGURATION qui sont des ENTRÉES du build (raw_data/*.json hors
+      # raw_data/profiles/ : candidats, groupes_reels, gouvernements_reels).
+      # La condition ne couvrait que `src/`, au motif qu'« un commit de doc ou
+      # de données ne doit rien déclencher » — ce qui confondait deux natures de
+      # données : les données DÉRIVÉES (raw_data/profiles/, pivot_data/),
+      # régénérées par ce job et dont le conflit est traité par la boucle de
+      # rebase du push (#389), et les données de CONFIGURATION, qui pilotent la
+      # génération. Un merge modifiant groupes_reels.json pendant le run faisait
+      # committer des groupes générés avec l'ANCIENNE config, sans alerte —
+      # exactement le défaut que #390 veut empêcher.
+      #
+      # `:(exclude)raw_data/profiles/` est indispensable : dans un pathspec git,
+      # `*` traverse les répertoires, donc `raw_data/*.json` seul matcherait les
+      # ~750 profils bruts régénérés à chaque run et le garde-fou se
+      # déclencherait sur tout commit de données.
+      #
+      # BRANCHE COMPARÉE (#413 §2) : celle du run (`github.ref_name`), pas
+      # `main` en dur. Ce workflow est déclenchable par workflow_dispatch sur
+      # n'importe quelle ref, et retry-generate-data.yml propage explicitement
+      # `--ref "${{ github.event.workflow_run.head_branch }}"`. Sur un run lancé
+      # depuis dev ou une branche de worktree, `$BASE_SHA` est le HEAD de CETTE
+      # branche : le diff contre origin/main remontait alors TOUTES les
+      # différences entre la branche et main, pas les commits arrivés pendant le
+      # run. Conséquence observable : commit toujours annulé, retry automatique
+      # déclenché, qui échouait à l'identique — un run hors main ne pouvait
+      # jamais committer, pour une raison étrangère au motif de #390.
       - name: Vérifier que le code de génération n'a pas changé pendant le run
         env:
           BASE_SHA: ${{ github.sha }}
+          # Via env: et pas en substitution directe dans le script — le nom de
+          # branche est une donnée contrôlable par qui déclenche le run.
+          RUN_REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          git fetch origin main --quiet
-          if git diff --quiet "$BASE_SHA" origin/main -- src/; then
-            echo "✓ src/ inchangé sur origin/main depuis le début du run — commit sûr."
+          # Entrées du build surveillées. Modifier cette liste suffit : elle
+          # n'est dupliquée nulle part ailleurs.
+          BUILD_INPUTS=(src/ 'raw_data/*.json' ':(exclude)raw_data/profiles/')
+
+          git fetch origin "$RUN_REF" --quiet
+          if git diff --quiet "$BASE_SHA" "origin/$RUN_REF" -- "${BUILD_INPUTS[@]}"; then
+            echo "✓ Entrées du build inchangées sur origin/$RUN_REF depuis le début du run — commit sûr."
             exit 0
           fi
-          echo "Fichiers de src/ modifiés sur origin/main pendant ce run :"
-          git diff --name-only "$BASE_SHA" origin/main -- src/ | sed 's/^/  - /'
+          echo "Entrées du build modifiées sur origin/$RUN_REF pendant ce run :"
+          git diff --name-only "$BASE_SHA" "origin/$RUN_REF" -- "${BUILD_INPUTS[@]}" | sed 's/^/  - /'
           {
-            echo "### ⛔ Commit annulé — code de génération modifié pendant le run"
+            echo "### ⛔ Commit annulé — entrées du build modifiées pendant le run"
             echo ""
-            echo "\`src/\` a changé sur \`origin/main\` depuis le SHA sur lequel ce job"
-            echo "a été checkouté (\`$BASE_SHA\`). Les fichiers dérivés produits ici"
-            echo "l'ont donc été avec du code périmé : les committer publierait de la"
-            echo "donnée potentiellement fausse (voir #390)."
+            echo "\`src/\` ou un fichier de configuration (\`raw_data/*.json\`) a changé"
+            echo "sur \`origin/$RUN_REF\` depuis le SHA sur lequel ce job a été checkouté"
+            echo "(\`$BASE_SHA\`). Les fichiers dérivés produits ici l'ont donc été avec"
+            echo "du code ou une configuration périmés : les committer publierait de la"
+            echo "donnée potentiellement fausse (voir #390, périmètre étendu en #413)."
             echo ""
             echo "Aucune donnée n'est perdue — tout est régénérable. Un nouveau run"
-            echo "sur le \`main\` à jour produira un résultat cohérent."
+            echo "sur \`$RUN_REF\` à jour produira un résultat cohérent."
           } >> "$GITHUB_STEP_SUMMARY"
           # Marqueur greppable par retry-generate-data.yml, distinct de la
           # signature de préemption runner, pour que le diagnostic de la
-          # relance reste lisible.
-          echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ modifié sur origin/main pendant le run ; commit annulé pour ne pas publier un build périmé (#390)."
+          # relance reste lisible. Texte conservé à l'identique : le retry le
+          # cherche littéralement.
+          echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ ou configuration raw_data/*.json modifié sur origin/$RUN_REF pendant le run ; commit annulé pour ne pas publier un build périmé (#390/#413)."
           exit 1
 
+      # `pushed` (output) : consommé par l'étape de déploiement ci-dessous, qui
+      # ne doit partir que si des données ont réellement atterri sur main.
+      # Écrit avant chaque `exit 0` — un `exit` termine le step immédiatement,
+      # un output posé après ne serait jamais écrit.
       - name: Committer et pousser les données mises à jour
+        id: commit
+        env:
+          # Même raison que sur le garde-fou ci-dessus (#413 §2) : le rebase de
+          # la boucle de retry doit viser la branche du run, pas main en dur.
+          RUN_REF: ${{ github.ref_name }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
 
-          # actions/checkout sur workflow_dispatch fige le SHA de main au moment du
-          # déclenchement du run, pas au démarrage de ce job — et ce job ne démarre
-          # qu'après les 5 jobs d'extraction (needs), qui peuvent prendre 20+ min
-          # (extraction séquentielle, cf. #222). Tout commit humain ou automatisé
-          # atterrissant sur main dans cette fenêtre fait échouer un simple `git
-          # push` (non fast-forward) alors que la donnée collectée est valide —
-          # vécu sur le run #29 (rejeté par un commit doc poussé pendant le run).
-          # Rebase + retry au lieu d'échouer tout le job sur une donnée déjà
-          # committée localement.
+          # actions/checkout sur workflow_dispatch fige le SHA de la ref au moment
+          # du déclenchement du run, pas au démarrage de ce job — et ce job ne
+          # démarre qu'après les 5 jobs d'extraction (needs), qui peuvent prendre
+          # 20+ min (extraction séquentielle, cf. #222). Tout commit humain ou
+          # automatisé atterrissant sur cette branche dans la fenêtre fait échouer
+          # un simple `git push` (non fast-forward) alors que la donnée collectée
+          # est valide — vécu sur le run #29 (rejeté par un commit doc poussé
+          # pendant le run). Rebase + retry au lieu d'échouer tout le job sur une
+          # donnée déjà committée localement.
+          #
+          # Rebase sur la BRANCHE DU RUN (#413 §2), pas sur main en dur : même
+          # défaut que le garde-fou ci-dessus, en plus grave ici — sur un run
+          # lancé hors main, `git rebase origin/main` rejouait le commit de
+          # données par-dessus main au lieu de la branche poussée.
           #
           # `set +e` sur la portée de la boucle (#389) : ce step s'exécute avec
           # `bash -e {0}` (aucun `defaults: shell` déclaré dans ce workflow), donc
@@ -1221,11 +1337,12 @@ jobs:
           for attempt in 1 2 3; do
             if git push; then
               echo "Push réussi (tentative ${attempt}/3)."
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
-            git fetch origin main
-            if ! git rebase --autostash origin/main; then
+            echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/${RUN_REF} et nouvel essai."
+            git fetch origin "$RUN_REF"
+            if ! git rebase --autostash "origin/$RUN_REF"; then
               # Un conflit de rebase ne se résoudra jamais en rebouclant : les
               # deux côtés ont réécrit les mêmes fichiers générés (cas du run
               # #266, cause traitée dans #390). On sort tout de suite, après
@@ -1241,6 +1358,40 @@ jobs:
           if [ "$push_status" = "conflit" ]; then
             echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
           else
-            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur main. Intervention manuelle requise."
+            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur ${RUN_REF}. Intervention manuelle requise."
           fi
           exit 1
+
+      # ── Publication du site avec les données fraîches (#416) ──────────────
+      # Le push ci-dessus est fait avec le GITHUB_TOKEN par défaut : GitHub
+      # n'émet alors AUCUN événement `push` (protection anti-boucle des
+      # workflows). deploy-pages.yml ne peut donc pas se déclencher sur ce
+      # commit, quels que soient ses `paths:` — vérifié sur l'historique des
+      # runs : aucun workflow n'a jamais été déclenché par un commit
+      # « chore: mise à jour automatique des données ». Sans ce déclenchement
+      # explicite, le site publié servait les données du dernier build en
+      # date, déclenché par une modification d'interface sans rapport.
+      #
+      # workflow_dispatch est l'exception documentée à la règle anti-boucle
+      # (comme repository_dispatch) : un `gh workflow run` avec le
+      # GITHUB_TOKEN démarre bien un run. Même mécanique que le
+      # re-déclenchement de generate-data.yml par retry-generate-data.yml.
+      #
+      # Garde sur main : deploy-pages.yml publie le site de production. Un run
+      # de génération lancé depuis une branche de travail ne doit jamais
+      # publier — il committe sur sa branche, pas sur main.
+      - name: Déclencher le déploiement du site (données mises à jour)
+        if: steps.commit.outputs.pushed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run deploy-pages.yml --repo "${REPO}" --ref main
+          {
+            echo "### 🚀 Déploiement du site déclenché"
+            echo ""
+            echo "Les données mises à jour ont été poussées sur \`main\` ; un run de"
+            echo "\`deploy-pages.yml\` a été déclenché pour les publier (le commit du bot"
+            echo "n'émet pas d'événement \`push\`, cf. #416)."
+          } >> "$GITHUB_STEP_SUMMARY"

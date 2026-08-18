@@ -1,3 +1,669 @@
+<a id="merge-and-pivot-budget-permissions-413"></a>
+## `merge-and-pivot` : garde-fou #390 hors `main`, entrées de configuration, budget de temps mur, permissions (#413) (2026-08-18)
+
+**Contexte** : sous-issue 2/6 de [[revue-workflows-ci-342]], sur le job de fusion
+de `generate-data.yml`, le budget annoncé en tête de fichier et le scoping des
+permissions. Suite directe de [[concurrence-shards-extraction-412]].
+
+### 1. Le garde-fou #390 empêchait tout commit hors `main`
+
+`git diff "$BASE_SHA" origin/main -- src/` compare **toujours** à `main`, alors
+que le workflow est déclenchable par `workflow_dispatch` sur n'importe quelle
+ref — et que `retry-generate-data.yml` propage explicitement
+`--ref "${{ github.event.workflow_run.head_branch }}"`. Sur un run lancé depuis
+`dev` ou une branche de worktree, `$BASE_SHA` est le HEAD de cette branche : le
+diff remontait **toutes** les différences entre la branche et `main`, pas les
+commits arrivés *pendant* le run. Conséquence : commit annulé,
+`GENERATION_CODE_CHANGED_DURING_RUN` émis, retry automatique déclenché qui
+échouait à l'identique puis s'arrêtait sur le plafond d'une tentative — un run
+hors `main` **ne pouvait jamais committer**, pour une raison étrangère au motif
+de #390.
+
+Corrigé en comparant à `origin/${{ github.ref_name }}` (passé par `env:`, jamais
+substitué directement dans le script : un nom de branche est contrôlable par qui
+déclenche le run).
+
+**Corollaire trouvé au passage** : la boucle de retry du push avait le même
+`main` en dur — `git rebase --autostash origin/main` rejouait le commit de
+données par-dessus `main` au lieu de la branche poussée. Plus grave que le
+garde-fou, puisque celui-ci se contente de refuser. Corrigé de la même façon.
+
+### 2. Le garde-fou ne couvrait pas les entrées de configuration
+
+La condition « volontairement ÉTROITE (`src/` seulement) » se justifiait par
+« un commit de doc ou de données ne doit rien déclencher ». Cette phrase
+confondait deux natures de données :
+
+- les **dérivées** (`raw_data/profiles/`, `pivot_data/`), régénérées par ce job,
+  dont le conflit est traité par la boucle de rebase du push ([[retry-push-merge-and-pivot-bash-e]]) ;
+- les **configurations**, qui sont des *entrées* du build :
+  `raw_data/candidats.json`, `raw_data/groupes_reels.json`,
+  `raw_data/gouvernements_reels.json`. Un merge modifiant `groupes_reels.json`
+  pendant le run faisait committer des groupes générés avec l'**ancienne**
+  config — exactement le défaut que #390 veut empêcher, et sans aucune alerte.
+
+Périmètre étendu à `src/` **+** `raw_data/*.json` **hors** `raw_data/profiles/`.
+
+**Piège à ne pas re-découvrir** : dans un pathspec git, `*` traverse les
+répertoires (pas de `FNM_PATHNAME`). `raw_data/*.json` seul matche donc les ~750
+profils bruts, et le garde-fou se déclencherait sur n'importe quel commit de
+données. L'exclusion explicite `:(exclude)raw_data/profiles/` n'est pas
+cosmétique, elle est ce qui rend la règle utilisable.
+
+*Alternative rejetée* : lister les trois fichiers de configuration en dur. Un
+quatrième fichier de config ajouté plus tard échapperait silencieusement au
+garde-fou ; le glob + exclusion couvre le cas par construction.
+
+### 3. Le budget de temps mur annoncé était faux (190 min → 210 / 630)
+
+L'en-tête publiait `max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min`. Deux erreurs :
+`max(70, 90, 60, 30)` vaut **90** (`extract-senat` était oublié du `max`), et le
+terme « 60 » du roster n'est le budget que d'**un** shard depuis #394, exécutés
+en série (`max-parallel: 1`, conservé en #412).
+
+Chaîne réelle, en sommant les `timeout-minutes` : les 6 jobs sans `needs:`
+finissent au plus tard à 90 (Sénat) ; `extract-an` démarre à 30 et finit à 70 ;
+`extract-roster-groupes` démarre à 90 et finit à 90 + 60·S ; `merge-and-pivot`
+ajoute 60. Soit **210 min** en configuration par défaut (S=1, rollout) et
+**630 min (10 h 30)** en run complet (S=8). Aucune limite GitHub n'est atteinte
+(6 h par *job* — le plus long est à 90 min —, 35 j par *run*) : ce n'était pas un
+blocage, c'était une documentation trompeuse pour qui dimensionne un run complet.
+
+Le commentaire distingue désormais explicitement la **somme des timeouts** (pire
+cas théorique) du **temps mur observé**, bien inférieur ([[budget-roster-mesure]],
+1m18–2m10 par shard AN). Les libellés `JOB 1/4`…`JOB 4/4` sont remplacés par des
+rôles (`JOB PRÉPARATOIRE` / `JOB D'EXTRACTION` / `JOB FUSION`) : la numérotation
+était périmée depuis #344/#394 et le redevenait à chaque ajout de job.
+
+### 4. `contents: write` accordé aux 9 jobs
+
+Déclaré au niveau du workflow, donc hérité partout : les 6 jobs d'extraction
+exécutaient du code réseau contre des sources tierces (AN Open Data, NosDéputés,
+Sénat, Parlement européen, ParlTrack) avec un token en écriture sur le dépôt dont
+ils n'avaient aucun usage. Passé à `contents: read` au niveau du workflow, la
+surcharge `contents: write` restant sur `merge-and-pivot` — seul job qui pousse,
+et qui portait déjà une surcharge `actions: write` depuis #416.
+
+### 5. Deux fichiers générés étaient trackés, contre ce qu'affirmait la doc
+
+`raw_data/roster_candidats.json` et `parltrack-status.json` sont régénérés à
+chaque run, et trois documents l'écrivaient noir sur blanc — mais `git ls-files`
+les listait, et le step de commit ne les ajoute pas. Ils laissaient donc l'arbre
+de travail sale au moment du `git rebase --autostash` du push, et la version
+committée dérivait silencieusement de ce que le run venait de produire.
+
+Décision : les **gitignorer et désindexer**, plutôt que les inclure au commit —
+c'est le sens que toute la documentation leur donnait déjà, et aucun consommateur
+ne les lit depuis le dépôt (`sync-data.mjs` ne copie que `raw_data/candidats.json` ;
+le README et les jobs CI régénèrent le roster avant de s'en servir).
+
+*Alternative rejetée* : les committer. Ce sont des sorties de run, pas des
+sources ; les publier ajouterait du bruit de diff à chaque run et deux fichiers
+générés de plus à arbitrer en cas de conflit de rebase.
+
+### 6. Revue de l'ordre des étapes de pivot : conservé, deux points documentés
+
+L'ordre (fusion brute → pivot candidats déclarés → pivot roster → partis →
+groupes → gouvernements → quality gate → garde-fou → commit) est **conservé**.
+Deux choses qui n'étaient pas écrites le sont maintenant, dans le YAML :
+
+- **`--enrich-parltrack` seulement au premier passage** : ParlTrack est une
+  source UE et le roster ne contient que des membres AN/Sénat — l'enrichissement
+  n'aurait aucun pivot à enrichir au second passage. Asymétrie voulue, pas un
+  oubli.
+- **`merge-and-pivot` télécharge `amendements-index-an` sans `needs:
+  extract-amendements-an`** : cela ne marche que par transitivité
+  (`extract-roster-groupes` en dépend). Fragile si un `needs:` bouge, et la
+  casse serait silencieuse puisque l'artifact est optionnel. Documenté plutôt
+  que corrigé : ajouter le `needs:` direct changerait le graphe pour un gain nul
+  tant que la chaîne tient.
+
+Restent conservés sans changement, déjà commentés : candidats déclarés avant
+roster (neutre grâce à la protection de provenance de `merge_pivot_profile`,
+[[provenance-pivot]]) et le double appel de `generate_roster_candidats.py`.
+
+### 7. `--groupe-min-coverage-pct` : pas un réglage en attente d'arbitrage
+
+Le commentaire `# To be set after running and audit of workflow (cf. #193)`
+pointait vers une issue **close**, laissant croire qu'un réglage traînait. #193 a
+été tranchée par [[seuil-couverture-groupe]] : garder `--groupe-min-members 1`,
+et n'activer le seuil relatif que lorsqu'un run à pleine échelle
+(`roster_extraction_limit=0`) aura fourni des taux représentatifs — les chiffres
+à regarder étant `taux_couverture_pct` dans `coherence.ecart_couverture_roster`
+(`audit_groupe_dataset.py`). Le commentaire renvoie désormais à cette décision et
+à la donnée qui la débloquera, au lieu d'un chantier terminé.
+
+<a id="concurrence-shards-extraction-412"></a>
+## Jobs d'extraction de `generate-data.yml` : résilience au *skip*, concurrence des shards, factorisation (#412) (2026-08-18)
+
+**Contexte** : première sous-issue d'application de la revue transversale
+[[revue-workflows-ci-342]] — les 9 jobs de `.github/workflows/generate-data.yml`
+relus job par job. Contrairement à l'epic, ce ticket **modifie le YAML**.
+
+### 1. `continue-on-error:` ne protège pas d'un job *skipped*
+
+Erreur de raisonnement partagée par tout l'historique du fichier (#222, #251,
+#344, #394) : `continue-on-error: true` transforme un **échec** en non-bloquant,
+mais un job *skipped* skippe ses dépendants quoi qu'il arrive. Or les deux jobs
+préparatoires de matrix (`prepare-an-matrix`, `prepare-roster-matrix`) n'avaient
+ni `continue-on-error:` ni repli : leur échec — ou un matrix simplement **vide**
+— skippait `extract-an`, donc `extract-roster-groupes`, donc `merge-and-pivot`.
+**Le run entier ne produisait rien**, exactement l'inverse de ce que l'en-tête
+de `merge-and-pivot` affirmait depuis #222.
+
+Correctif, en trois pièces qui ne valent qu'ensemble :
+
+- `if: ${{ !cancelled() }}` sur `extract-roster-groupes` et `merge-and-pivot` :
+  seule une annulation externe arrête encore la chaîne. C'est la formulation qui
+  rend enfin vrai le « on fusionne ce qui a réussi » du fichier.
+- Repli de forme sur les matrix : `fromJson(… || '[]')` pour `extract-an`,
+  `fromJson(… || '[0]')` (et `shard_total || '1'`) pour `extract-roster-groupes`
+  — sans quoi `fromJson('')` échoue à l'évaluation, avec un message que
+  l'interface Actions ne rattache à rien.
+- `set -euo pipefail` dans le step de calcul de `prepare-an-matrix` (celui de
+  `prepare-roster-matrix` l'avait déjà) : un `python3` en échec y écrivait
+  silencieusement `slugs=` dans `$GITHUB_OUTPUT`. Mieux vaut échouer là où la
+  cause est lisible.
+
+Un matrix vide reste possible (aucun candidat à slug résolvable) : il est
+désormais **annoncé** — `::warning::` + bloc de résumé — au lieu de se déduire
+d'un job grisé.
+
+*Alternative rejetée* : donner `continue-on-error: true` aux jobs préparatoires.
+Ça ne traite rien — c'est précisément le mécanisme qui ne couvre pas le skip.
+
+### 2. `max-parallel: 1` : conservé, mais la justification écrite était fausse
+
+Question laissée ouverte par #342, tranchée ici. Le plafond venait de #222, en
+mitigation d'un **plafond de dépense Actions suspecté** (#221) —
+[[verification-billing-actions]] a infirmé cette hypothèse (quota non atteint,
+$0 facturé, cause retenue = préemption d'infrastructure). Et le « pic de 4 jobs
+simultanés » qu'il prétendait préserver est **6** depuis #344/#394.
+
+Décision : **conserver `max-parallel: 1`** sur les deux matrix, sur les deux
+arguments qui tiennent encore, et eux seuls —
+
+1. **Cache** (l'argument réellement valide de #222) : les shards se passent le
+   cache AN chaud de proche en proche ; en parallèle, chacun retéléchargerait
+   les dumps AN Open Data.
+2. **Prudence réseau** : 8 shards parallèles frapperaient simultanément les
+   mêmes sources AN/NosDéputés.
+
+Coût assumé et chiffré : ~63 min de temps mur en run complet du roster contre
+~8 min en parallèle ([[budget-roster-mesure]]). Ce que le shardage apporte à
+`max-parallel: 1` est la **borne de perte sur préemption** (63 min → ~8 min),
+pas la vitesse — c'est aussi ce que #394 achetait réellement.
+
+*Alternative rejetée* : ouvrir le parallélisme maintenant. Le gain (55 min de
+temps mur sur un run complet qui n'est pas encore la configuration par défaut,
+`roster_extraction_limit=20`) ne justifie pas d'engager en même temps un
+changement de profil de charge réseau et une hypothèse de cache **non validée**
+(§3). À rouvrir si §3 se confirme et que le run complet devient la norme.
+
+### 3. Réserve non tranchée : le cache AN est-il encore réécrit ?
+
+`extract-amendements-an` s'exécute en premier et écrit la **clé exacte**
+`public-data-cache-an-<semaine>`. Les jobs suivants restaurent donc cette clé
+exacte — et `actions/cache` **saute la sauvegarde post-job dès qu'il y a eu
+exact key hit**. Si c'est bien le cas ici, ce que télécharge `extract-an`
+(`acteurs_an`, `scrutins_an`, `dossiers_an`, ~290 Mo) n'est jamais persisté dans
+la clé de la semaine, et chaque shard de chaque run le re-télécharge.
+
+**Aucun correctif appliqué** : la conclusion dépend d'un log de post-job réel
+(« Cache hit occurred on the primary key, not saving cache »), qu'aucun run
+n'a encore fourni. La réserve est écrite dans le YAML, à l'endroit exact
+(commentaire du `actions/cache` d'`extract-an`), avec le correctif envisagé :
+clé propre à `extract-amendements-an` (`public-data-cache-amendements-*`, path
+`.cache/amendements_an`), en laissant `…-an-*` à `extract-an`. C'est presque la
+proposition fermée en #374, mais pour une raison différente — là-bas réduire le
+volume restauré, ici restaurer la capacité d'écriture.
+
+### 4. Deux actions composites locales, et pas une de plus
+
+`.github/actions/bootstrap-extraction` (horodatage + relevé mémoire OOM +
+`setup-python` + `pip install`) et `.github/actions/job-diagnostics` (blocs de
+résumé « job annulé » / « job en échec »), appliquées aux 6 jobs d'extraction :
+~145 lignes de duplication en moins pour une indirection d'un seul niveau.
+
+Deux points de sémantique, faciles à casser dans une reprise :
+
+- Les `if: cancelled()` / `if: failure()` restent portés par le **step
+  appelant**. Évalués dans l'action, ils porteraient sur l'état de ses propres
+  steps — ce n'est pas le même test.
+- Une action locale suppose le `actions/checkout` du job déjà fait : un job
+  annulé avant la fin de son checkout n'aura pas son résumé. Angle mort
+  résiduel assumé (le cas majoritaire, préemption en cours d'extraction #228,
+  reste couvert).
+
+Le relevé mémoire `free -h` est du coup appliqué aux **6** jobs, et plus
+seulement à `extract-an`/`extract-roster-groupes` : `extract-amendements-an`
+manipule les plus gros volumes (archives ~1,2 Gio) et en était le seul dépourvu.
+
+*Alternative rejetée* : factoriser aussi `MERGE_FLAG`/`INTERV_FLAG`/
+`MAX_PAGES_FLAG`. `retry-generate-data.yml` reconstruit les inputs du run échoué
+en **grepant le texte bash substitué** de ces steps dans les logs ; les déplacer
+casserait ce couplage. Contrainte non évidente, désormais écrite en commentaire
+dans le YAML (et dans l'action composite, pour qui viendrait l'y ajouter).
+
+*Alternative rejetée* : factoriser « Semaine ISO courante », « Nettoyage
+complet (fresh_run) » et `actions/cache` — 3 à 4 lignes chacun, corps déjà
+divergents, clé de cache différente par job. La variabilité y domine la
+duplication.
+
+### 5. Garde-fou de volume sur `extract-an`
+
+Le commentaire « recalculer si `raw_data/candidats.json` change
+significativement » n'était outillé par rien : à 5 min par shard en série, un
+passage à 40 candidats porterait ce seul job à 200 min sans aucun signal.
+`prepare-an-matrix` émet désormais un `::warning::` au-delà de `AN_SHARDS_WARN`
+(16, soit ~80 min), valeur unique et modifiable en place.
+
+### 6. Nommage : `raw-profiles-parltrack` → `parltrack-dumps`
+
+Seul écart de la famille `raw-profiles-*` : cet artifact ne contient pas de
+profils bruts mais les dumps `.zst` ParlTrack, consommés dans `.cache/parltrack`
+par `merge-and-pivot`. Aucun consommateur hors du run courant (le retry ne
+manipule pas d'artifacts) → renommé.
+
+**Hors périmètre, traité ailleurs** : budget de temps mur et libellés « JOB n/4 »
+périmés, garde-fou #390, permissions par job (#413) ; reconstruction des inputs
+du retry (#414).
+<a id="retry-inputs-appariement-prefixe"></a>
+## `retry-generate-data.yml` : reconstruction des inputs réparée par appariement de préfixe, collecte de jobs unifiée (#414) (2026-08-18)
+
+**Contexte** : le shardage d'`extract-an` (#344) et d'`extract-roster-groupes`
+(#394) a donné à ces jobs un `name:` explicite — `extract-an (<slug>)`,
+`extract-roster-groupes (shard N)`. Or le step « Reconstituer les inputs du run
+échoué » les identifiait **par nom exact**
+(`jq 'select(.name=="extract-an")'`) : plus aucun job ne portant ces noms, la
+reconstruction retombait sur les défauts pour cinq des six inputs, sans rien
+signaler. Ce que le fichier documentait comme une « dégradation documentée, pas
+un blocage » était devenu le **chemin nominal** : un run `fresh_run=true` était
+relancé en incrémental, un run `roster_extraction_limit=0` (run complet) relancé
+à 20. Seul `threshold` survivait (lu sur `merge-and-pivot`, non shardé).
+`workers` était doublement cassé : le matrix a aussi supprimé `--workers` de la
+ligne de commande d'`extract-an` (`--only "<slug>"` remplace le parallélisme
+inter-candidats), donc le motif n'existait plus, nom de job correct ou non.
+
+**Décision** :
+- **Appariement par préfixe** : `job_log()` matche `<préfixe>` ou
+  `<préfixe> (…)`, et privilégie un shard dont la `conclusion` est `success` —
+  le log d'un shard préempté peut être tronqué avant même la ligne `Run ...`.
+  Même règle pour la lecture de `fresh_run` (conclusion du step « Nettoyage
+  complet ») sur l'ensemble des shards `extract-an`.
+- **`workers` est lu sur `extract-senat`**, seul job non shardé portant encore
+  `--source senat --workers N`.
+- **`roster_extraction_limit` est lu dans le bloc `env:` résolu**
+  (`ROSTER_LIMIT: <valeur>`) plutôt que dans le stdout « Sélection … », qui ne
+  rapporte que le nombre de candidats *retenus* (`min(limite, restants)`) et
+  n'est pas émis du tout quand la limite vaut 0 — le cas « run complet » était
+  donc irrécupérable. Le grep « Sélection » reste en repli.
+- **Un seul step de collecte** (`collect`) remplace les trois listings
+  `gh api .../jobs --paginate` et classe les deux motifs de relance
+  (préemption runner, refus de commit pour code périmé #390) en **un seul
+  passage** sur les jobs en échec, avec **un seul téléchargement par log**. La
+  liste des jobs et les logs sont mis en cache dans `$RUNNER_TEMP` et réutilisés
+  par la reconstruction des inputs. Le rate-limit transitoire diagnostiqué en
+  #336 était un risque réel, aggravé par le shardage (8 + 8 jobs).
+- Les issues `api_error` / `inconclusive` (#237) **couvrent désormais les deux
+  motifs** : la détection #390 redirigeait ses erreurs vers `/dev/null` et
+  n'exposait que `matched`, si bien qu'un hoquet de l'API s'y présentait comme
+  « pas de #390 » plutôt que « indéterminé ».
+- La reconstruction des inputs est conditionnée aux **deux** motifs, comme le
+  re-déclenchement : une relance déclenchée par #390 repartait des défauts par
+  construction.
+- `jq -s '{jobs: [.[].jobs[]]}'` normalise la sortie de `--paginate` : au-delà
+  de 100 jobs (atteignable avec le shardage), gh émet plusieurs objets JSON
+  concaténés et un comptage `jq` direct produisait une valeur *par page*,
+  cassant les comparaisons numériques.
+
+*Alternative rejetée* : publier les inputs en artifact depuis
+`generate-data.yml` (`echo '${{ toJson(inputs) }}' > run-inputs.json`) et les
+relire via `gh run download`. Exact, insensible aux renommages de jobs et de
+flags, et cela supprimerait la contrainte de ne pas factoriser les motifs
+`MERGE_FLAG`/`INTERV_FLAG` sous peine de casser les greps. Écarté ici pour ne
+pas modifier `generate-data.yml`, qui est le fichier le plus chargé du dépôt et
+dont chaque run coûte du temps mur : le correctif reste confiné au workflow de
+retry. Le couplage à la mise en forme du YAML et des `print()` Python subsiste
+et reste le point faible connu de ce mécanisme.
+
+*Alternative rejetée* : lire `workers` sur `extract-roster-groupes` ou
+`merge-and-pivot`, qui portent aussi `--workers`. `extract-senat` est préféré
+car non shardé (pas de sélection de shard) et non `continue-on-error` sur le
+chemin critique de la relance.
+<a id="deploy-pages-declencheur-donnees"></a>
+## Publication du site après un run de données : le commit du bot n'émet aucun événement `push` (#416) (2026-08-18)
+
+**Contexte** : les données du site sont figées **au build**. `npm run build`
+= `npm run sync-data && vite build`, et `web/UI_finale/scripts/sync-data.mjs`
+copie `pivot_data/` + `raw_data/candidats.json` vers
+`web/UI_finale/public/data/` (dossier gitignoré) que Vite embarque dans
+`dist/` ; le front les lit ensuite à l'exécution via
+`fetch('/data/manifest.json')`. Un run de génération qui met à jour les
+données n'est donc visible en ligne qu'après un **nouveau build**.
+
+`deploy-pages.yml` ne se déclenchait que sur un `push` sur `main` touchant
+`web/UI_finale/**` ou son propre fichier. Le commit produit par
+`merge-and-pivot` (`chore: mise à jour automatique des données (…)`) ne touche
+que `raw_data/profiles` et
+`pivot_data/{profiles,partis,groupes,gouvernements}` — aucun chemin
+déclencheur. Constaté le 18/08/2026 : `main` portait un commit de données du
+jour, le dernier run `deploy-pages.yml` datait du 2026-08-17T23:53. Les
+données finissaient par arriver en production, mais **par coïncidence**, à la
+prochaine modification de `web/UI_finale/`.
+
+**Le point non évident** : élargir les `paths:` ne suffit pas. Le push de
+`merge-and-pivot` est fait avec le `GITHUB_TOKEN` par défaut (credentials
+persistées par `actions/checkout`), et GitHub n'émet **aucun** événement
+déclencheur pour une action effectuée avec ce token — protection anti-boucle.
+Le commit du bot ne peut donc structurellement pas déclencher un workflow
+`on: push`, quels que soient ses `paths:`. Vérifié sur l'historique des runs :
+**zéro** run, tous workflows confondus, n'a jamais eu pour déclencheur un
+commit `chore: mise à jour automatique des données`. Une correction limitée
+aux `paths:` aurait été livrée, mergée, et n'aurait rien changé — sans signal
+visible d'échec.
+
+**Décision** — les deux moitiés, complémentaires :
+
+1. `deploy-pages.yml` : ajout de `pivot_data/**` et `raw_data/candidats.json`
+   aux `paths:`. Couvre les pushs **humains** (merge de PR) qui touchent les
+   données — un cas réel, distinct du commit du bot.
+2. `generate-data.yml` (job `merge-and-pivot`) : après un push de données
+   réussi, une étape déclenche explicitement
+   `gh workflow run deploy-pages.yml --ref main`. `workflow_dispatch` (comme
+   `repository_dispatch`) est l'exception documentée à la règle anti-boucle :
+   un dispatch émis avec le `GITHUB_TOKEN` démarre bien un run. Même mécanique
+   que le re-déclenchement de `generate-data.yml` par
+   `retry-generate-data.yml` (voir [[retry-generate-data-preemption]]).
+
+   L'étape est gardée par un output `pushed` du step de commit (`true`
+   uniquement si `git push` a réussi ; `false` s'il n'y avait rien à
+   committer) **et** par `github.ref == 'refs/heads/main'` — un run de
+   génération lancé depuis une branche de travail ne doit jamais publier le
+   site de production. L'output est écrit **avant** chaque `exit 0` du step :
+   `exit` termine le step immédiatement, une écriture placée après ne serait
+   jamais faite.
+
+**Permissions** : `pages: write` et `id-token: write` étaient déclarés au
+niveau workflow dans `deploy-pages.yml`, donc hérités par `build`, qui ne fait
+que `npm ci && npm run build` + `upload-pages-artifact`. Un job qui exécute
+`npm ci` sur des dépendances tierces ne doit pas porter `id-token: write`.
+Désormais : `contents: read` au niveau workflow, `contents: read` +
+`pages: read` sur `build` (`actions/configure-pages` lit la configuration
+Pages du dépôt via l'API — la lecture seule suffit), `pages: write` +
+`id-token: write` sur le seul job `deploy` (qui ne checkoute pas, donc pas de
+`contents:`). De même, `actions: write` (requis par le `gh workflow run`) est
+déclaré sur le seul job `merge-and-pivot` de `generate-data.yml`, pas au
+niveau workflow : les jobs d'extraction n'ont aucune raison de pouvoir
+déclencher un workflow.
+
+*Question tranchée — pas de `concurrency` distinct pour les runs de données* :
+le groupe `pages` avec `cancel-in-progress: false` **sérialise déjà** un
+déploiement déclenché par les données et un déploiement déclenché par un
+changement d'UI ; ils ne peuvent pas se marcher dessus. Deux groupes séparés
+feraient exactement l'inverse — ils autoriseraient deux déploiements
+concurrents vers le même site. Conservé tel quel.
+
+*Alternative rejetée* : déclencher `deploy-pages.yml` sur
+`workflow_run: [Génération des données]`, comme `retry-generate-data.yml`.
+Rejeté : `workflow_run` se déclenche sur la **conclusion du run**, pas sur le
+fait qu'un commit de données ait été poussé. Un run réussi sans changement de
+données (« Aucun changement de données à committer »), ou dont le commit a été
+refusé par la garde de code périmé (#390), lancerait un déploiement inutile.
+Le dispatch depuis le step de push est conditionné à ce qui compte réellement :
+un push effectif.
+
+*Alternative rejetée* : un PAT à la place du `GITHUB_TOKEN` pour le push, afin
+que l'événement `push` soit bien émis. Rejeté : introduit un secret à gérer et
+à faire tourner, et rouvre le risque de boucle que la règle GitHub prévient,
+pour un gain nul par rapport au dispatch explicite.
+
+`timeout-minutes: 10` ajouté sur les deux jobs de `deploy-pages.yml`
+(auparavant le défaut de 360 min), par cohérence avec `generate-data.yml` —
+`build` tourne en ~35 s et `deploy` en ~11 s sur les runs récents, la marge
+couvre la croissance du volume de `pivot_data` copié dans `dist/`.
+
+**Relu sans changement** : `debug-network-shutdown-signal.yml`, hors de
+l'inventaire de #342 (rédigé quand le dossier comptait 5 workflows). Workflow
+de diagnostic isolé — `workflow_dispatch` seul, aucune donnée touchée, aucun
+commit, aucun `needs` vers le pipeline de production. Rien à corriger.
+
+**À valider par un run réel** : le prochain `generate-data.yml` sur `main` qui
+pousse des données doit faire apparaître, dans la foulée, un run
+`deploy-pages.yml` déclenché par `workflow_dispatch`.
+<a id="workflows-claude-securite"></a>
+## Workflows Claude : garde d'auteur, asymétrie de sandbox levée, marketplace non épinglé (#415) (2026-08-18)
+
+**Contexte** : le dépôt est public et `claude.yml` / `claude-code-review.yml`
+se déclenchent tous deux sur `issue_comment`, event qui s'exécute toujours dans
+le contexte du dépôt de base, avec accès aux secrets. Ni l'un ni l'autre ne
+filtrait l'auteur du commentaire, et les deux fichiers avaient divergé sans
+qu'aucune ligne n'écrive pourquoi (cf. [[revue-workflows-ci-342]], qui laissait
+la question ouverte).
+
+**Premier constat, qui corrige la prémisse de l'issue** : l'absence de garde
+d'auteur n'ouvre **pas** l'usage du `CLAUDE_CODE_OAUTH_TOKEN` à n'importe qui.
+`anthropics/claude-code-action` vérifie elle-même que l'acteur déclencheur a le
+droit d'**écriture** sur le dépôt — pour les events issue, pull request,
+comment et review — et s'arrête avant d'appeler Claude sinon
+(`docs/security.md` de l'action). Le seul contournement documenté est
+`allowed_non_write_users`, resté à sa valeur par défaut (vide) ici. Le risque
+réel n'était donc pas l'exécution d'un prompt hostile, mais la **consommation
+de minutes Actions** : un commentaire d'un inconnu démarrait un runner,
+installait bubblewrap et les dépendances de l'action avant de se faire refuser.
+
+**Décisions** :
+
+- **Garde d'auteur ajoutée dans les deux `if:`**
+  (`contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), …author_association)`),
+  assumée comme **pré-filtre** et non comme mécanisme de sécurité : elle évite
+  le démarrage du runner, la vérification qui fait foi reste celle de l'action.
+  Elle est répétée sur chacune des quatre branches de `claude.yml` plutôt que
+  factorisée en fin d'expression, parce que `author_association` vit dans
+  `.comment`, `.review` ou `.issue` selon l'event : une forme factorisée
+  (`a || b || c`) reposerait sur le déréférencement d'objets absents.
+  `COLLABORATOR` inclut un invité en lecture seule — accepté, puisque ce n'est
+  pas cette garde qui décide.
+- **L'asymétrie de `github_token` / `permissions` / `--allowed-tools` est
+  confirmée volontaire**, et désormais écrite en en-tête des deux fichiers :
+  `claude.yml` reçoit un prompt arbitraire *et* un `WORKFLOW_PAT` en écriture,
+  donc défense en profondeur proportionnée ; `claude-code-review.yml` tourne un
+  prompt fixe avec un token en lecture seule, donc surface d'écriture nulle et
+  aucune raison de brider les outils du plugin de review.
+- **L'asymétrie de sandbox, elle, est supprimée.** `claude-code-review.yml`
+  reçoit les mêmes deux étapes de préparation (bubblewrap/socat, contournement
+  AppArmor d'Ubuntu 24.04+) et le **même** bloc `settings.sandbox` que
+  `claude.yml`, allowlist réseau comprise. Raison : le token OAuth Claude est
+  présent dans les deux workflows, et celui de review lit du contenu de PR
+  potentiellement hostile (diff, titre, description d'une PR de fork) — la
+  garde d'auteur n'y change rien, un mainteneur peut légitimement lancer
+  `/claude-review` sur une PR externe. Sans isolation réseau, une injection
+  réussie exfiltrait ce secret vers un domaine arbitraire. Coût accepté :
+  ~20-30 s d'`apt-get` par run de review, et un échec dur si bubblewrap ne
+  démarre pas (`failIfUnavailable: true`, même choix que `claude.yml`).
+  L'installation du marketplace et du plugin a lieu dans les étapes de l'action,
+  avant Claude, donc hors sandbox : elle n'est pas affectée.
+
+*Réserve non levée, refus argumenté* : **`plugin_marketplaces` reste non
+épinglé**. Aucune syntaxe de révision n'existe — l'input de l'action valide
+l'entrée contre `^https://…\.git$` et se contente de lancer
+`claude plugin marketplace add <url>`, qui clone la branche par défaut ; il n'y
+a ni argument `--ref` ni forme `url#sha`. Les deux seuls contournements
+seraient de vendorer une copie du marketplace dans ce dépôt ou d'en maintenir
+un fork, c'est-à-dire déplacer la confiance de « la branche `main`
+d'Anthropic » vers « une copie locale à resynchroniser à la main », avec le
+risque de la laisser pourrir. Or ce marketplace est le dépôt de l'éditeur de
+l'action elle-même, référencée ici par le tag flottant
+`anthropics/claude-code-action@v1` : épingler le marketplace en laissant
+l'action flotter ne réduirait aucune surface réelle. **Condition de
+réouverture** : si `claude-code-action` est un jour épinglée sur un SHA, épingler
+le marketplace dans la foulée — sinon la décision devient incohérente.
+
+*Divergences mineures corrigées dans la foulée* :
+
+- `claude-code-review.yml` reçoit `timeout-minutes: 45` (il tournait avec le
+  défaut de 360) et un `concurrency` par PR — N commentaires `/claude-review`
+  produisaient N runs parallèles sur le même diff. `cancel-in-progress: true`,
+  contrairement à `claude.yml` qui sérialise : une review n'écrit rien qu'une
+  annulation perdrait, et un second `/claude-review` veut l'état le plus récent
+  de la PR, pas deux fois la même review.
+- `actions/checkout@v4` → `@v5` dans les deux, alignement sur les quatre autres
+  workflows.
+- `--allowed-tools` de `claude.yml` nettoyé : une entrée était précédée d'une
+  espace parasite (`Bash(python3 -m unittest), Bash(python3:*)`) qui pouvait
+  faire échouer son matching, `Bash(pytest:*)` apparaissait deux fois, et les
+  quatre variantes `Bash(python3 -m pytest…)` / `Bash(python3 -m unittest)`
+  étaient toutes couvertes par `Bash(python3:*)`. Liste ramenée à six entrées
+  Bash, couverture inchangée.
+- `--model` : le pin est **reconfirmé** (sans lui, le modèle dépend du défaut
+  du CLI et de l'abonnement au moment du run, qui peut basculer sur un modèle
+  plus petit sans que rien ne le signale dans ce fichier) et **mis à jour** —
+  il était resté sur `claude-opus-4-8`, une génération en retard, ce qui est
+  précisément la contrepartie du pin. Rendez-vous de revalidation : chaque
+  revue de ce fichier.
+
+*Point vérifié, acté tel quel* : le `--append-system-prompt` interdit à Claude
+de modifier `claude.yml` et `claude-code-review.yml` — les deux fichiers qui
+définissent ses propres privilèges, dont la modification depuis un run Claude
+serait une auto-élévation. `generate-data.yml`, `retry-generate-data.yml`,
+`deploy-pages.yml` et `debug-network-shutdown-signal.yml` ne sont
+volontairement **pas** couverts : workflows de données/déploiement, sans secret
+d'élévation, dont toute modification passe de toute façon par une PR relue. La
+justification est maintenant écrite à côté du garde-fou pour que la question ne
+se repose pas.
+
+<a id="revue-workflows-ci-342"></a>
+## Revue transversale des workflows GitHub Actions : ce qui est gardé, ce qui est corrigé (#342) (2026-08-18)
+
+**Contexte** : `.github/workflows/` a grossi par ajouts successifs, chacun
+justifié localement dans sa propre issue (#192, #215, #222, #245, #248, #251,
+#344, #390, #394…), sans qu'aucune passe transversale n'ait jamais revérifié la
+cohérence de l'ensemble une fois tous les jobs en place. #342 est cette passe :
+revue documentaire, job par job et fichier par fichier, **sans modification de
+comportement CI** — chaque correction retenue part en sous-issue dédiée, pour
+qu'un run de validation puisse être attribué à un changement et un seul.
+
+**Périmètre réellement relu : 6 workflows, pas 5.**
+`debug-network-shutdown-signal.yml` a été ajouté après la rédaction de #342 et
+n'avait jamais été relu ; il entre dans le périmètre (#416).
+`generate-data.yml` compte désormais **9 jobs** (dont 2 jobs préparatoires de
+matrix et 2 jobs shardés), pas les 7 que décrit #342.
+
+### Ce qui est gardé tel quel, et pourquoi
+
+- **Les motifs `MERGE_FLAG` / `INTERV_FLAG` / `MAX_PAGES_FLAG` restent
+  dupliqués** dans les jobs d'extraction. Raison principale, non évidente et
+  jamais écrite jusqu'ici : `retry-generate-data.yml` reconstruit les inputs du
+  run échoué en **grepant le texte bash substitué de ces steps** ; les déplacer
+  dans une action composite casserait ce couplage. La contrainte doit rester
+  visible en commentaire dans le YAML tant que le mécanisme de reconstruction
+  n'est pas remplacé (#414).
+- **Les steps « Semaine ISO courante » et « Nettoyage complet (fresh_run) »
+  restent dupliqués** : 3 à 4 lignes par job, et la seule alternative
+  (les exposer depuis un job partagé) ajouterait une arête `needs:` à des jobs
+  volontairement indépendants — c'est-à-dire exactement le mode de défaillance
+  décrit plus bas pour les jobs préparatoires.
+- **Les blocs de diagnostic annulation/échec, eux, sont factorisables** en
+  action composite locale : les `if: cancelled()` / `if: failure()` restent
+  portés par le step appelant, la sémantique est donc préservée. ~145 lignes de
+  duplication pour une indirection d'un seul niveau — retenu (#412), à la
+  différence des motifs ci-dessus.
+- **L'ordre des étapes de pivot de `merge-and-pivot`** (candidats déclarés
+  avant roster) est conservé : il n'est neutre que grâce à la protection de
+  provenance de `merge_pivot_profile` ([[provenance-pivot]]), déjà commentée.
+  Le double appel de `generate_roster_candidats.py` (une fois par shard, une
+  fois au pivot) est également conservé : 2 appels réseau mutualisés, moins
+  cher qu'un transit par artifact.
+- **Le plafond d'une seule tentative de retry** ([[retry-preemption-logs]])
+  reste basé sur `triggering_actor == github-actions[bot]`. Corollaire à
+  écrire : une relance **manuelle** après un retry automatique repart avec un
+  plafond neuf — comportement voulu, aujourd'hui implicite.
+- **L'asymétrie de sandbox entre `claude.yml` et `claude-code-review.yml` est
+  volontaire**, contrairement à ce que #342 laissait ouvert : le premier reçoit
+  un prompt arbitraire *et* un `WORKFLOW_PAT` en écriture (sandbox bubblewrap +
+  allowlist réseau + `--allowed-tools` proportionnés) ; le second tourne un
+  prompt fixe avec le token par défaut en lecture seule. Défendable — mais à
+  écrire dans les deux fichiers, et sous réserve des deux points traités en
+  #415 (le token OAuth Claude est exposé dans les deux, et le marketplace de
+  plugins n'est pas épinglé). **Suite donnée en #415**
+  ([[workflows-claude-securite]]) : l'asymétrie de `github_token` /
+  `permissions` / `--allowed-tools` est confirmée et écrite en en-tête des deux
+  fichiers, mais celle du **sandbox est supprimée** — le workflow de review
+  reçoit la même isolation réseau, parce qu'il lit du contenu de PR hostile avec
+  le token OAuth en mémoire. Le marketplace reste non épinglé, refus argumenté
+  (aucune syntaxe de révision n'existe côté action).
+- **Le `schedule:` cron reste commenté.** Hors périmètre de #342 (décision
+  produit/coût) : la revue constate seulement que rien depuis #192 ne l'a
+  reconfirmé, et que la désactivation n'a jamais été justifiée par écrit.
+
+### Ce qui est corrigé, et dans quelle sous-issue
+
+| Constat | Sous-issue |
+|---|---|
+| `prepare-an-matrix` / `prepare-roster-matrix` sont des SPOF : leur échec *skippe* toute la chaîne jusqu'à `merge-and-pivot`, que `continue-on-error:` ne protège pas (il couvre l'échec, pas le skip) | #412 |
+| Trois commentaires affirment le contraire du YAML (« pas de `needs:` sur `extract-amendements-an` ») | #412 |
+| Seul `extract-amendements-an` écrit encore le cache AN hebdomadaire (exact key hit → pas de sauvegarde post-job chez les consommateurs) | #412 |
+| Budget de temps mur faux : 210 min réels en rollout, 630 min en run complet, contre 190 annoncés ; libellés « JOB n/4 » périmés | #413 |
+| Le garde-fou #390 compare toujours à `origin/main`, donc bloque tout run lancé hors `main` | #413 |
+| Le garde-fou #390 ne couvre pas les fichiers de configuration (`groupes_reels.json`…), qui sont pourtant des entrées du build | #413 |
+| `raw_data/roster_candidats.json` et `parltrack-status.json` sont trackés alors que le YAML affirme le contraire | #413 |
+| `contents: write` accordé aux 9 jobs, alors que seul `merge-and-pivot` en a besoin | #413 |
+| La reconstruction best-effort des inputs du retry est morte depuis le shardage (noms de jobs `extract-an (<slug>)`) | #414 |
+| Dans la branche #390, la reconstruction des inputs n'est même pas tentée | #414 |
+| Aucune garde sur l'auteur du commentaire : sur un dépôt **public**, le commentaire de n'importe qui démarre un runner (l'action refuse ensuite les acteurs sans droit d'écriture — voir [[workflows-claude-securite]]) | #415 |
+| Le site Pages ne se redéploie jamais sur un commit de données | #416 |
+| `debug-network-shutdown-signal.yml` sans bloc `permissions:` | #416 |
+
+### Questions de #342 refermées sans travail
+
+- **Le fallback `extract_interventions`** cité en exemple par l'epic est déjà
+  corrigé (`7debd61`) ; les **six** fallbacks du retry sont alignés sur les
+  défauts déclarés dans `generate-data.yml`.
+- **Les « 3 blocs de résumé » de `retry-generate-data.yml`** n'existent plus :
+  c'est un bloc `if/elif` unique à 6 branches depuis #245/#336.
+- **La course d'écriture sur le cache AN partagé**, actée hors périmètre en
+  #248 sous-issue 4 ([[amendements-index-budget-ci-cache-granularite]]), est
+  **éteinte** : les trois jobs qui écrivent `public-data-cache-an-*` sont
+  strictement séquencés depuis #344, et les deux consommateurs sont en lecture
+  cache-only depuis #252. Résolue par effet de bord, jamais actée jusqu'ici.
+- **Les noms et chemins d'artifacts** sont cohérents, à une exception près
+  (`raw-profiles-parltrack` contient des dumps `.zst`, pas des profils).
+
+### Trois conclusions non évidentes, à ne pas re-dériver
+
+1. **Le pic de jobs simultanés n'est plus 4 mais 6.** Six jobs démarrent sans
+   `needs:` depuis l'ajout des deux jobs préparatoires de matrix (#344/#394).
+   Les commentaires « `max-parallel: 1` préserve le pic de 4 jobs acté par
+   #222 » ([[concurrence-ci-roster]]) sont faux depuis.
+2. **La justification du plafond de concurrence repose sur une hypothèse
+   infirmée.** #222 a réduit le pic en mitigation d'un plafond de dépense
+   Actions suspecté — hypothèse explicitement démentie depuis
+   ([[verification-billing-actions]]). Ce qui reste valide de #222 est
+   l'argument *cache* (ne pas télécharger deux fois les dumps AN), pas
+   l'argument *concurrence*. Conséquence concrète : `max-parallel: 1` sur
+   `extract-roster-groupes` coûte ~63 min de temps mur en run complet contre
+   ~8 min en parallèle ([[budget-roster-mesure]]), pour une contrainte à
+   re-trancher (#412).
+3. **Les données du site sont figées au build.** `npm run build` exécute
+   `sync-data.mjs`, qui copie `pivot_data/` dans `public/data/` (gitignoré) ;
+   le front les lit ensuite par `fetch('/data/…')`. Comme `deploy-pages.yml` ne
+   se déclenche que sur `web/UI_finale/**`, le commit de données de
+   `merge-and-pivot` ne redéploie rien — vérifié le 18/08/2026 : commit de
+   données du 18/08 sur `main`, dernier déploiement du 17/08. Les données
+   n'atteignent la production qu'à la faveur d'une modification d'interface
+   ultérieure (#416).
+
+*Alternative rejetée* : appliquer les correctifs directement dans cette epic —
+rejetée par #342 lui-même, et confirmée par la revue : treize corrections
+touchant 5 fichiers dans un seul diff CI seraient inattribuables en cas de
+régression, alors que chacune demande son propre run de validation
+(`workflow_dispatch`).
+
+*Alternative rejetée* : produire la revue sous forme d'un document séparé
+(`docs/ci_review.md`) — rejetée pour éviter une deuxième autorité concurrente
+de ce fichier ; le détail par fichier vit dans les sous-issues #412-#417, seules
+les décisions durables sont ici.
+
 <a id="audit-rapport-perimetre-candidats"></a>
 ## Rapport d'audit pivot : détail réservé aux candidats déclarés, indicateurs de distribution retirés (2026-08-18)
 

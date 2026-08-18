@@ -14,6 +14,12 @@ something is pending, not *why*.
   `technical_decisions.md#matrix-extract-an-par-candidat`) — the same
   mitigation for `extract-roster-groupes` (~750 members) remains deferred to
   the full-scale roster rollout, see `technical_decisions.md#seuil-couverture-groupe`.
+- `generate-data.yml`: the weekly AN cache key may no longer be written back by
+  `extract-an` / `extract-roster-groupes`. `extract-amendements-an` writes the
+  exact key first, and `actions/cache` skips its post-job save after an exact
+  key hit — so the ~290 MB of AN dumps each shard downloads would never be
+  persisted. Needs one real run's post-job log to confirm before any fix
+  (#412 §2.3, `technical_decisions.md#concurrence-shards-extraction-412`).
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.
@@ -30,11 +36,6 @@ something is pending, not *why*.
   scrutin n° 1 in group cohesion. Publishing it needs its own identifier and
   source URL, see `technical_decisions.md#votes-multi-legislature`.
 
-- `retry-generate-data.yml`: reduce redundant job-log downloads between the
-  signature-detection step and the best-effort inputs-reconstruction step
-  (up to 3-4 extra full log downloads in the same second, a likely
-  contributor to the transient rate-limit diagnosed in #336) — see
-  `technical_decisions.md#retry-generate-data-best-effort-non-bloquant`.
 - Refine thematic classifier: handle cross-theme items (e.g. tagged both
   `budget` and `sante`), add an explicit "non classifié" bucket instead of
   silently dropping low-confidence items.
