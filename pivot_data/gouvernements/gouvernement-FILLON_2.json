@@ -11,6 +11,33 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:eric-woerth",
+      "nom": "Éric Woerth",
+      "portefeuille": "Ministère du budget, des comptes publics et de la fonction publique",
+      "debut": "2007-06-19",
+      "fin": "2009-06-23",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:eric-woerth",
+      "nom": "Éric Woerth",
+      "portefeuille": "Ministère du budget, des comptes publics, de la fonction publique et de la réforme de l'Etat",
+      "debut": "2009-06-23",
+      "fin": "2010-03-22",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:eric-woerth",
+      "nom": "Éric Woerth",
+      "portefeuille": "Ministère du travail, de la solidarité et de la fonction publique",
+      "debut": "2010-03-22",
+      "fin": "2010-11-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:laurent-wauquiez",
       "nom": "Laurent Wauquiez",
       "portefeuille": "Secrétaire d'Etat, porte-parole du Gouvernement",
@@ -46,18 +73,23 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://2012-2017.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": "2026-08-15T13:27:39+0000"
+      "url": "https://www.nosdeputes.fr/eric-woerth",
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T19:09:17+0200"
+      "synchro_le": "2026-08-18T15:05:12+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://2012-2017.nosdeputes.fr/laurent-wauquiez",
+      "synchro_le": "2026-08-15T13:27:39+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -549,13 +549,25 @@ _AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
 # reconstruit : la fraîcheur n'a pas de sens pour elles (voir
 # docs/technical_decisions.md#amendements-legislatures-figees).
 _AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"14", "15", "16"})
+# Décision #378 : le signal global « aucun candidat AN n'a d'amendements » reste
+# un soft warning — jamais un échec dur, dans aucun mode (y compris fresh_run).
+# Il est en revanche remonté à part par `_report_amendements_coverage` pour être
+# affiché en tête de rapport plutôt que noyé dans la liste des avertissements
+# de la §3c : détecté et affiché, mais ignoré, était précisément le mode d'échec
+# de #265. Voir docs/technical_decisions.md#amendements-zero-pas-de-hard-fail.
+_AMENDEMENTS_ZERO_ICONE = "🚨"
+_AMENDEMENTS_ZERO_DECISION_REF = (
+    "docs/technical_decisions.md#amendements-zero-pas-de-hard-fail"
+)
 
 
-def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, str]:
+def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | None, str, str]:
     """Détecte les régressions silencieuses sur amendements[] pour les député·e·s AN.
 
-    Retourne (soft_warnings, console_text, markdown_text). Soft fail uniquement
-    (n'empêche pas le commit).
+    Retourne (soft_warnings, regression_globale, console_text, markdown_text).
+    Soft fail uniquement (n'empêche pas le commit) — y compris pour le signal
+    global, cf. décision #378
+    (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail).
 
     Deux signaux distincts :
       - par candidat : un warning `amendements indisponibles` est présent dans
@@ -564,6 +576,12 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, st
         d'amendements) n'a la moindre entrée dans amendements[], alors que
         plusieurs candidats sont analysés — signal d'une régression touchant
         toute la chaîne, y compris silencieuse (cf. issue #185).
+
+    `regression_globale` porte le message du second signal (ou `None`). Il est
+    aussi présent dans `soft_warnings` — il n'est pas d'une autre nature, il est
+    seulement retourné à part pour que l'appelant puisse l'afficher en tête de
+    rapport (#378) au lieu de le laisser en dernière ligne d'une liste
+    d'avertissements par candidat.
     """
     rows: list[dict] = []
     if profiles_dir.exists():
@@ -596,11 +614,17 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, st
             soft_warnings.append(f"{r['slug']}: collecte des amendements officiels en échec (voir meta.warnings)")
 
     n_avec_amendements = sum(1 for r in rows if r["n_amendements"] > 0)
+    regression_globale: str | None = None
     if rows and n_avec_amendements == 0:
-        soft_warnings.append(
+        regression_globale = (
             f"aucun candidat AN sur {len(rows)} n'a d'amendements collectés (amendements[] vide partout) "
             "— possible régression de collecte (candidate_profile.fetch_amendements_officiels)"
         )
+        soft_warnings.append(regression_globale)
+
+    # Avertissements par candidat : le signal global est affiché à part
+    # ci-dessous, ne pas le répéter dans la liste.
+    warnings_par_candidat = [w for w in soft_warnings if w != regression_globale]
 
     icon = "✓" if not soft_warnings else "⚠"
     lines = [
@@ -610,11 +634,18 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, st
         f"   Avertissements : {len(soft_warnings)}",
         "│",
     ]
-    if soft_warnings:
+    if regression_globale is not None:
+        lines += [
+            f"│  {_AMENDEMENTS_ZERO_ICONE} RÉGRESSION PROBABLE DE COLLECTE — {regression_globale}",
+            f"│    Signal volontairement NON bloquant ({_AMENDEMENTS_ZERO_DECISION_REF}) :",
+            "│    à vérifier avant de se fier aux amendements de ce run.",
+            "│",
+        ]
+    if warnings_par_candidat:
         lines.append("│  ⚠ Avertissements qualité :")
-        for w in soft_warnings:
+        for w in warnings_par_candidat:
             lines.append(f"│    · {w}")
-    else:
+    elif not soft_warnings:
         lines.append(f"│  {icon} Couverture amendements cohérente.")
     lines.append("└" + "─" * 67)
     console = "\n".join(lines)
@@ -630,15 +661,25 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str, st
         f"| Avertissements | {len(soft_warnings)} |",
         "",
     ]
-    if soft_warnings:
+    if regression_globale is not None:
+        md_lines += [
+            f"> {_AMENDEMENTS_ZERO_ICONE} **Régression probable de collecte des amendements** — "
+            f"{regression_globale}",
+            ">",
+            "> Signal volontairement **non bloquant** "
+            f"(`{_AMENDEMENTS_ZERO_DECISION_REF}`) : il n'échoue pas le run, mais les "
+            "amendements de ce run ne sont pas fiables tant qu'il n'a pas été vérifié.",
+            "",
+        ]
+    if warnings_par_candidat:
         md_lines += ["**Avertissements**", ""]
-        for w in soft_warnings:
+        for w in warnings_par_candidat:
             md_lines.append(f"- {w}")
         md_lines.append("")
-    else:
+    elif not soft_warnings:
         md_lines.append("_Couverture amendements cohérente._\n")
 
-    return soft_warnings, console, "\n".join(md_lines)
+    return soft_warnings, regression_globale, console, "\n".join(md_lines)
 
 
 def _parse_amendements_horodatage(valeur: object) -> datetime | None:
@@ -1236,9 +1277,34 @@ def _report_gouvernements(
             "nb_membres": nb_membres,
             "nb_portefeuille_connu": nb_portefeuille_connu,
             "nb_textes": nb_textes,
+            "couverture": couverture,
             "status": row_status,
             "soft_flags": ", ".join(row_soft) if row_soft else "—",
         })
+
+    # ── Hard — signature d'un écrasement massif (#427) ────────────────────
+    #
+    # `generate_gouvernement_profiles.py` refuse désormais de réécrire sur une
+    # collecte incomplète, ce qui supprime la cause connue. Ce contrôle est le
+    # filet : il attrape la MÊME signature quelle qu'en soit l'origine — bug de
+    # collecte, régression de parsing, mauvaise fusion.
+    #
+    # Le critère porte sur la SIMULTANÉITÉ, pas sur un gouvernement isolé : un
+    # gouvernement couvert peut légitimement n'avoir porté aucun texte
+    # (Philippe I n'en a qu'un). En revanche, tous les gouvernements couverts
+    # tombant à zéro au même instant n'est pas un état plausible du monde —
+    # c'est la trace d'une collecte échouée en silence. D'où un hard, là où le
+    # cas individuel reste un soft.
+    couverts = [
+        r for r in rows
+        if r.get("couverture") == COUVERTURE_COUVERTE and r.get("nb_membres", 0) > 0
+    ]
+    if len(couverts) >= 2 and all(r["nb_textes"] == 0 for r in couverts):
+        hard_errors.append(
+            f"tous les gouvernements couverts par la source ({len(couverts)}) ont "
+            "textes[] vide simultanément — signature d'une collecte échouée, pas "
+            "d'un zéro constaté (#427)"
+        )
 
     # ── Résumé global ─────────────────────────────────────────────────────
     n_hard = len(hard_errors)
@@ -1603,7 +1669,7 @@ def main() -> int:
         )
 
     # ── Section 3c : Couverture amendements (AN) ───────────────────────────
-    amd_soft, amd_console, amd_md = _report_amendements_coverage(args.profiles_dir)
+    amd_soft, amd_regression, amd_console, amd_md = _report_amendements_coverage(args.profiles_dir)
 
     # ── Section 3d : Fraîcheur index amendements (AN) ──────────────────────
     amdf_soft: list[str] = []
@@ -1633,6 +1699,10 @@ def main() -> int:
     if args.parltrack_status_file is not None:
         pt_console, pt_md = _report_parltrack_status(args.parltrack_status_file)
 
+    # Les sections 3c/3d n'entrent PAS dans exit_code : « 0 amendement collecté »
+    # et « index jamais construit » restent des signaux non bloquants, décision
+    # #378 (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Le
+    # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (ir_exit == 1 or grp_exit == 1 or gouv_exit == 1) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
@@ -1640,6 +1710,9 @@ def main() -> int:
     print(f"\n{'═'*69}")
     print(f"  RÉSUMÉ DU RUN  —  {run_date}")
     print(f"  Quality gate : {gate_label}")
+    if amd_regression is not None:
+        print(f"  {_AMENDEMENTS_ZERO_ICONE} Amendements — {amd_regression}")
+        print(f"     Signal non bloquant ({_AMENDEMENTS_ZERO_DECISION_REF}).")
     print(f"{'═'*69}")
     print(ir_console)
     print(cov_console)
@@ -1657,11 +1730,21 @@ def main() -> int:
 
     # ── GitHub Step Summary (Markdown) ────────────────────────────────────
     gate_badge = "✅ Commit autorisé" if exit_code == 0 else "❌ Commit bloqué"
+    banniere_md = (
+        [
+            f"> {_AMENDEMENTS_ZERO_ICONE} **Amendements** : {amd_regression} "
+            f"— signal non bloquant (`{_AMENDEMENTS_ZERO_DECISION_REF}`), voir §3c.",
+            "",
+        ]
+        if amd_regression is not None
+        else []
+    )
     md = "\n".join([
         f"## 📊 Résumé du run pipeline — {run_date}",
         "",
         f"> **Quality gate** : {gate_badge}",
         "",
+        *banniere_md,
         ir_md,
         cov_md,
         low_md,
@@ -1698,7 +1781,14 @@ def main() -> int:
     for warn in syc_soft:
         _gha_annotation("warning", f"Syceron — couverture faible : {warn}")
     for warn in amd_soft:
-        _gha_annotation("warning", f"Amendements — {warn}")
+        if warn == amd_regression:
+            _gha_annotation(
+                "warning",
+                f"Amendements — {_AMENDEMENTS_ZERO_ICONE} RÉGRESSION PROBABLE DE COLLECTE "
+                f"(non bloquant, {_AMENDEMENTS_ZERO_DECISION_REF}) : {warn}",
+            )
+        else:
+            _gha_annotation("warning", f"Amendements — {warn}")
     for warn in amdf_soft:
         _gha_annotation("warning", f"Amendements fraîcheur — {warn}")
 

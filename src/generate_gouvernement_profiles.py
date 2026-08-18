@@ -37,9 +37,22 @@ from typing import Any, Optional
 
 from gouvernement_profile import build_gouvernement_profile
 from gouvernement_roster import load_profils_from_dir
-from gouvernement_textes import fetch_dossiers_gouvernementaux
+from gouvernement_textes import AN_DOSSIERS_ARCHIVES, fetch_dossiers_gouvernementaux
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from schema_gouvernement import validate_profil_gouvernement
+
+
+# Code de retour distinct d'un échec de génération ordinaire (1) : la collecte
+# réseau est incomplète, aucun profil n'a été touché. Permet au workflow de
+# traiter ce cas comme dégradé-mais-sûr plutôt que comme une régression du
+# code (#427).
+EXIT_COLLECTE_INCOMPLETE = 2
+
+# Sentinelle retournée par generate_all() quand la collecte est incomplète.
+# Un objet dédié, et non l'entier 2 : `generate_all` retourne un COMPTE
+# d'échecs, et exactement deux gouvernements en échec aurait été confondu avec
+# ce cas.
+COLLECTE_INCOMPLETE = object()
 
 
 def generate_all(
@@ -47,11 +60,13 @@ def generate_all(
     profiles_dir: Path,
     out_dir: Path,
     validate: bool = False,
-) -> int:
+) -> Any:
     """Génère tous les profils de gouvernement de `gouvernements`, un seul
     chargement des profils pivot et un seul fetch des dossiers législatifs
     gouvernementaux, partagés entre tous les gouvernements. Retourne le
-    nombre d'échecs."""
+    nombre d'échecs, ou la sentinelle `COLLECTE_INCOMPLETE` si les archives
+    de dossiers n'ont pas toutes pu être lues — auquel cas AUCUN profil n'est
+    réécrit (#427)."""
     profils = load_profils_from_dir(profiles_dir)
     print(f"→ {len(profils)} profil(s) pivot chargé(s).", file=sys.stderr)
 
@@ -59,6 +74,38 @@ def generate_all(
     dossiers_result = fetch_dossiers_gouvernementaux()
     dossiers = dossiers_result["dossiers"]
     print(f"→ {len(dossiers)} dossier(s) d'origine gouvernementale récupéré(s).", file=sys.stderr)
+
+    # PROTECTION #427 — ne jamais réécrire les profils sur une collecte
+    # incomplète.
+    #
+    # Ce script ÉCRASE les profils (`write_text` plus bas), il ne les fusionne
+    # pas comme `merge_profile.py` le fait pour les profils individuels. Or
+    # `fetch_dossiers_gouvernementaux()` est non-fatal en cas de coupure réseau
+    # : il rend `dossiers = []` avec un warning. Sans ce garde-fou,
+    # `data.assemblee-nationale.fr` indisponible une minute suffisait à
+    # réécrire les 10 gouvernements avec `textes: []`, à faire passer le
+    # quality gate (qui ne traite ce cas qu'en avertissement), puis à committer
+    # et publier la perte — 725 textes au moment de l'écriture de ce garde-fou.
+    #
+    # Un zéro qui n'a pas été mesuré n'est pas une donnée (AGENTS.md §2.5) : on
+    # préfère ne rien réécrire. Les profils déjà committés restent alors en
+    # place, intacts, et le run continue pour tout le reste.
+    legislatures_attendues = set(AN_DOSSIERS_ARCHIVES)
+    legislatures_ingerees = set(dossiers_result.get("legislatures_ingerees") or [])
+    manquantes = sorted(legislatures_attendues - legislatures_ingerees)
+    if manquantes:
+        print(
+            f"  [!] Collecte incomplète : archive(s) de dossiers manquante(s) pour "
+            f"la ou les législature(s) {manquantes}.",
+            file=sys.stderr,
+        )
+        print(
+            "  [!] Aucun profil de gouvernement réécrit — les profils existants "
+            "sont conservés tels quels (#427). Relancer une fois la source "
+            "de nouveau disponible.",
+            file=sys.stderr,
+        )
+        return COLLECTE_INCOMPLETE
 
     echecs = 0
     for gouvernement in gouvernements:
@@ -162,6 +209,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         out_dir=out_dir,
         validate=args.validate,
     )
+
+    # Collecte incomplète : aucun profil n'a été écrit, le compteur d'échecs
+    # par gouvernement n'a donc aucun sens ici (#427).
+    if echecs is COLLECTE_INCOMPLETE:
+        print("→ 0 profil de gouvernement réécrit (collecte incomplète).", file=sys.stderr)
+        return EXIT_COLLECTE_INCOMPLETE
 
     print(f"→ {len(gouvernements) - echecs}/{len(gouvernements)} profil(s) de gouvernement généré(s).", file=sys.stderr)
     return 1 if echecs else 0

@@ -22,6 +22,24 @@
       "fin": "2017-06-19",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère chargé des transports auprès du ministre d’État, ministre de la transition écologique et solidaire",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l’action et des comptes publics",
+      "debut": "2017-05-18",
+      "fin": "2017-06-19",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -59,11 +77,21 @@
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
       "synchro_le": "2026-08-17T19:08:41+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

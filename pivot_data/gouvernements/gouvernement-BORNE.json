@@ -11,6 +11,33 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:aurore-berge",
+      "nom": "Aurore Bergé",
+      "portefeuille": "Ministère des solidarités et des familles",
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:berangere-couillard",
+      "nom": "Bérangère Couillard",
+      "portefeuille": "Secrétariat d’État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de l’écologie",
+      "debut": "2022-07-12",
+      "fin": "2023-07-20",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:berangere-couillard",
+      "nom": "Bérangère Couillard",
+      "portefeuille": "Ministère auprès de la Première ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:carole-grandjean",
       "nom": "Carole Grandjean",
       "portefeuille": null,
@@ -18,6 +45,24 @@
       "fin": "2024-01-09",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:clement-beaune",
+      "nom": "Clément Beaune",
+      "portefeuille": "Ministère auprès de la ministre de l’Europe et des affaires étrangères, chargé de l’Europe",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:clement-beaune",
+      "nom": "Clément Beaune",
+      "portefeuille": "Ministère auprès du ministre de la transition écologique et de la cohésion des territoires, chargé des transports",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:damien-abad",
@@ -36,6 +81,15 @@
       "fin": "2024-01-09",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Première ministre",
+      "debut": "2022-05-17",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:fadila-khattabi",
@@ -83,9 +137,54 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l’intérieur",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l’intérieur et des outre-mer",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:herve-berville",
       "nom": "Hervé Berville",
       "portefeuille": "Secrétariat d’État auprès de la Première ministre, chargé de la mer",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:olivia-gregoire",
+      "nom": "Olivia Grégoire",
+      "portefeuille": "Secrétariat d’État auprès de la Première ministre, porte-parole du Gouvernement",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:olivia-gregoire",
+      "nom": "Olivia Grégoire",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des petites et moyennes entreprises, du commerce, de l’artisanat et du tourisme",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:olivier-becht",
+      "nom": "Olivier Becht",
+      "portefeuille": "Ministère auprès de la ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur, de l'attractivité et des Français de l'étranger",
       "debut": "2022-07-05",
       "fin": "2024-01-09",
       "actif": false,
@@ -119,6 +218,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:patricia-miralles",
+      "nom": "Patricia Mirallès",
+      "portefeuille": "Secrétariat d’État auprès du ministre des armées, chargé des anciens combattants et de la mémoire",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:prisca-thevenot",
       "nom": "Prisca Thevenot",
       "portefeuille": "Secrétariat d’État auprès du ministre des armées et du ministre de l’éducation nationale et de la jeunesse, chargé de la jeunesse et du service national universel",
@@ -132,6 +240,15 @@
       "nom": "Roland Lescure",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie",
       "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:stanislas-guerini",
+      "nom": "Stanislas Guerini",
+      "portefeuille": "Ministère de la transformation et de la fonction publiques",
+      "debut": "2022-05-21",
       "fin": "2024-01-09",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -1283,13 +1400,28 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/carole-grandjean",
+      "url": "https://www.nosdeputes.fr/aurore-berge",
       "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T17:32:32+0200"
+      "synchro_le": "2026-08-18T15:04:38+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/berangere-couillard",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/carole-grandjean",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/clement-beaune",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -1308,6 +1440,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/fadila-khattabi",
       "synchro_le": "2026-08-13T13:45:39+0000"
     },
@@ -1323,7 +1460,22 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/herve-berville",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivia-gregoire",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivier-becht",
       "synchro_le": null
     },
     {
@@ -1338,12 +1490,22 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/patricia-miralles",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/prisca-thevenot",
       "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/roland-lescure",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/stanislas-guerini",
       "synchro_le": null
     },
     {
@@ -1359,7 +1521,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -15,6 +15,15 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:aurore-berge",
+      "nom": "Aurore Bergé",
+      "portefeuille": "Ministère auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
+      "debut": "2024-01-12",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:dominique-faure",
       "nom": "Dominique Faure",
       "portefeuille": null,
@@ -51,6 +60,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l’intérieur et des outre-mer",
+      "debut": "2024-01-12",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:herve-berville",
       "nom": "Hervé Berville",
       "portefeuille": "Secrétariat d’État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de la mer et de la biodiversité",
@@ -69,6 +87,33 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:marie-lebec",
+      "nom": "Marie Lebec",
+      "portefeuille": "Ministère auprès du Premier ministre, chargé des relations avec le Parlement",
+      "debut": "2024-01-12",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:olivia-gregoire",
+      "nom": "Olivia Grégoire",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des entreprises, du tourisme et de la consommation",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:patricia-miralles",
+      "nom": "Patricia Mirallès",
+      "portefeuille": "Secrétariat d’État auprès du ministre des armées, chargé des anciens combattants et de la mémoire",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:prisca-thevenot",
       "nom": "Prisca Thevenot",
       "portefeuille": "Ministère auprès du Premier ministre, chargé du renouveau démocratique, porte-parole du Gouvernement",
@@ -81,6 +126,15 @@
       "membre_id": "nosdeputes:roland-lescure",
       "nom": "Roland Lescure",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
+      "debut": "2024-02-09",
+      "fin": "2024-09-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:stanislas-guerini",
+      "nom": "Stanislas Guerini",
+      "portefeuille": "Ministère de la transformation et fonction publiques",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
@@ -364,13 +418,18 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/dominique-faure",
-      "synchro_le": "2026-08-14T14:47:51+0000"
+      "url": "https://www.nosdeputes.fr/aurore-berge",
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-14T14:47:53+0000"
+      "synchro_le": "2026-08-18T15:04:38+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/dominique-faure",
+      "synchro_le": "2026-08-14T14:47:51+0000"
     },
     {
       "type": "nosdeputes",
@@ -389,12 +448,32 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/herve-berville",
       "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marie-guevenoux",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marie-lebec",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivia-gregoire",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/patricia-miralles",
       "synchro_le": null
     },
     {
@@ -409,13 +488,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/stanislas-guerini",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-cazenave",
       "synchro_le": "2026-08-13T13:43:13+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

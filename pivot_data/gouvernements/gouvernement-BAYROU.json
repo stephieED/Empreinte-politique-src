@@ -11,6 +11,42 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
+      "nom": "Astrid Panosyan-Bouvet",
+      "portefeuille": "Ministère auprès de la ministre du travail, de la santé, de la solidarité et des familles, chargé du travail et de l’emploi",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
+      "nom": "Astrid Panosyan-Bouvet",
+      "portefeuille": "Ministère auprès de la ministre du travail, de la santé, de la solidarité et des familles, chargé du travail et de l’emploi",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
+      "nom": "Astrid Panosyan-Bouvet",
+      "portefeuille": "Ministère de l’économie, des finances et de la souveraineté industrielle, énergétique et numérique",
+      "debut": "2026-02-04",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:aurore-berge",
+      "nom": "Aurore Bergé",
+      "portefeuille": "Ministère délégué auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": null,
@@ -36,6 +72,51 @@
       "fin": "2025-09-09",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère de l’éducation nationale, de l’enseignement supérieur et de la recherche",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:marc-ferracci",
+      "nom": "Marc Ferracci",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:marc-ferracci",
+      "nom": "Marc Ferracci",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:patricia-miralles",
+      "nom": "Patricia Mirallès",
+      "portefeuille": "Ministère délégué auprès du ministre des armées, chargé de la mémoire et des anciens combattants",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -406,13 +487,23 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/benjamin-haddad",
-      "synchro_le": "2026-08-14T14:47:05+0000"
+      "url": "https://www.nosdeputes.fr/astrid-panosyan-bouvet",
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-14T14:47:06+0000"
+      "synchro_le": "2026-08-18T15:05:09+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/aurore-berge",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/benjamin-haddad",
+      "synchro_le": "2026-08-14T14:47:05+0000"
     },
     {
       "type": "nossenateurs",
@@ -428,11 +519,31 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
       "synchro_le": "2026-08-13T13:45:01+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marc-ferracci",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/patricia-miralles",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:51:32+0200",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

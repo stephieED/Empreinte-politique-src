@@ -1,3 +1,276 @@
+<a id="gouvernement-textes-non-ecrasement"></a>
+## Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)
+
+**Contexte** : `merge-and-pivot` était le seul job de `generate-data.yml` sans
+aucun `actions/cache`. Il re-téléchargeait les trois archives de dossiers
+(~33 Mo) à chaque run — repéré en validant [[cache-cle-amendements-separee]]
+(#424), qui avait supprimé les 438 Mo des jobs d'extraction et rendu ce résidu
+visible.
+
+**Mais le coût réseau n'était pas le problème.** `generate_gouvernement_profiles.py`
+**écrase** les profils (`out_path.write_text`) ; `preserve_stable_freshness_timestamps`
+(#343) ne préserve que les horodatages. Or `fetch_dossiers_gouvernementaux()`
+est non-fatal : en cas de coupure réseau il rend `{"dossiers": []}` avec un
+warning. L'enchaînement complet était donc :
+
+1. coupure réseau sur `data.assemblee-nationale.fr` — observée 5 fois sur la
+   seule archive XV lors du run `32136438841` ;
+2. les 10 profils réécrits avec `textes: []` ;
+3. le quality gate ne traitant ce cas qu'en **avertissement**, le commit reste
+   autorisé ;
+4. commit, push, puis publication par le déploiement automatique de #416.
+
+**725 textes** auraient été perdus et mis en ligne — dont les 282 de Philippe II
+et les 195 de Castex, que #400 venait de faire apparaître. Aucun incident ne
+s'était produit (vérifié sur l'historique de `gouvernement-CASTEX.json` : les
+`textes=0` antérieurs au 18/08 datent d'avant #400), mais les deux conditions
+coexistaient.
+
+### Correctif 1 — refus de réécrire (le vrai)
+
+`fetch_dossiers_gouvernementaux()` retourne désormais `legislatures_ingerees`.
+Ce n'est pas une information d'affichage : c'est **le seul moyen pour l'appelant
+de distinguer « zéro dossier constaté » de « collecte incomplète »**. Sans elle,
+les deux cas sont indiscernables.
+
+`generate_all()` abandonne alors toute écriture si une archive manque, et rend
+la sentinelle `COLLECTE_INCOMPLETE`. Les profils déjà committés restent en
+place, intacts. Un zéro non mesuré n'est pas une donnée (AGENTS.md §2.5).
+
+Le contrôle porte sur **toute** archive manquante, pas seulement sur l'échec
+total : perdre la seule XV, c'est perdre les 282 textes de Philippe II.
+
+Deux pièges rencontrés :
+
+- **Sentinelle, pas code de retour.** `generate_all()` retourne un *compte*
+  d'échecs. Une première version signalait la collecte incomplète par la valeur
+  `2` — exactement deux gouvernements en échec l'aurait alors déclenchée à tort.
+  D'où un objet dédié, converti en code de sortie `2` seulement dans `main()`.
+- **Un test existant assertait le comportement dangereux.**
+  `test_generate_all_dossier_fetch_failure_reported_via_warnings` vérifiait que
+  le profil ÉTAIT écrit avec `textes == []`. Il fallait le réécrire, pas
+  l'adapter.
+
+Côté workflow, le step est `continue-on-error: true` : faire échouer tout le
+job priverait le run du commit des profils de candidats et de groupes, qui eux
+sont corrects. L'échec reste visible dans la liste des steps.
+
+### Correctif 2 — filet du quality gate
+
+Le refus de réécrire supprime la cause connue. Le gate attrape la **signature**,
+quelle qu'en soit l'origine — bug de collecte, régression de parsing, fusion
+fautive : **tous** les gouvernements couverts à `textes[] == 0` simultanément
+devient un échec **dur**.
+
+Le critère porte sur la simultanéité, jamais sur un gouvernement isolé : un
+gouvernement couvert peut légitimement n'avoir porté aucun texte — Philippe I
+n'en a qu'un. Et il exige au moins deux gouvernements couverts, faute de quoi
+« tous à zéro » ne distingue plus rien.
+
+C'est un contrôle **sans accès à l'historique git** : le gate ne compare rien à
+l'état précédent, et lui ajouter cette plomberie pour ce seul besoin n'était pas
+justifié.
+
+### Correctif 3 — clé de cache dédiée aux dossiers
+
+`.cache/dossiers_an` sort de `public-data-cache-an-*` et reçoit
+`public-data-cache-dossiers-<semaine>`, partagée par `extract-an`,
+`extract-roster-groupes` et `merge-and-pivot` (qui gagne au passage le step
+`week` qui lui manquait).
+
+Restaurer `public-data-cache-an-*` depuis `merge-and-pivot` aurait embarqué
+`scrutins_an` : plusieurs centaines de Mo pour en utiliser 46.
+
+Contrairement au défaut de #424, il n'y a ici **aucune dissociation** entre
+producteur de contenu et écrivain de clé — les trois jobs téléchargent et
+consomment les mêmes archives, donc le premier qui sauvegarde suffit.
+
+`tests/test_ci_cache_paths.py` s'étend en conséquence : les jobs lisant les
+dossiers doivent tous les cacher, et la clé dédiée ne doit pas retomber sous la
+clé AN.
+
+**Vérification** : les trois protections ont été neutralisées une à une, chacune
+fait échouer ses tests. 1310 tests verts.
+
+---
+
+<a id="cache-cle-amendements-separee"></a>
+## Cache CI : clé propre aux amendements, et chemins énumérés pour les jobs AN (#424) (2026-08-18)
+
+**Contexte** : `extract-amendements-an`, `extract-an` et `extract-roster-groupes`
+partageaient la clé `public-data-cache-an-<semaine>` avec `path: .cache`. Le
+premier étant séquencé en tête, il écrivait la **clé exacte** de la semaine ;
+les deux autres faisaient alors un *exact key hit*, et `actions/cache` saute sa
+sauvegarde post-job dans ce cas.
+
+#412 §2.3 avait posé l'hypothèse sans la corriger, faute de preuve — décision
+qui s'est révélée juste, puisqu'elle a produit un critère d'acceptation net.
+Le run `32136438841` a fourni la preuve :
+
+```
+extract-an (gabriel-attal) | Post Run actions/cache@v5
+  Cache hit occurred on the primary key public-data-cache-an-2026-W34, not saving cache.
+```
+
+sur **les 8 shards `extract-an` et le shard `extract-roster-groupes`**.
+
+**Coût mesuré sur ce seul run** (rollout progressif, 1 shard roster) : 11
+téléchargements de l'archive dossiers XV (14,5 Mo), 9 de la XVI (8,7 Mo) et 8
+des scrutins XVII (25,1 Mo), soit **~438 Mo re-téléchargés**. À pleine échelle
+du roster, 16 jobs seraient concernés, donc **~780 Mo par run**.
+
+Le coût avait **augmenté après** la rédaction de la réserve : [[dossiers-multi-archives-origine-document]]
+(#400) a ajouté les dossiers XV/XVI et #403 les scrutins XIV–XVII à `.cache`.
+Une réserve laissée en l'état vieillit mal quand d'autres chantiers alimentent
+le répertoire qu'elle concerne.
+
+**Décision** :
+
+- `extract-amendements-an` reçoit sa propre clé `public-data-cache-amendements-*`,
+  avec `path: .cache/amendements_an` — le seul répertoire qu'il produise.
+- `extract-an` et `extract-roster-groupes` gardent `public-data-cache-an-*` mais
+  **énumèrent explicitement** leurs répertoires (`acteurs_historique_an`,
+  `dossiers_an`, `scrutins_an`, `questions_an`, `syceron_an`).
+
+**Pourquoi énumérer plutôt que garder `path: .cache`** : `.cache` englobe
+`amendements_an`. Conserver le chemin large aurait fait ré-embarquer les
+amendements par les jobs AN, déplaçant le problème au lieu de le résoudre —
+c'est le piège principal de ce correctif.
+
+**Le revers, et son garde-fou** : un nouveau `.cache/<quelque_chose>` ajouté
+côté Python ne serait pas caché, **sans qu'aucun signal ne l'indique** — le
+pipeline continuerait de tourner, simplement plus lentement. `tests/test_ci_cache_paths.py`
+vérifie donc que tout répertoire `.cache/*` déclaré dans `src/` est couvert par
+un `actions/cache`, et que les deux jobs AN cachent **exactement le même
+ensemble** (une divergence signifierait que l'un re-télécharge ce que l'autre a
+persisté).
+
+Sa première version comparait les répertoires au fichier entier : retirer un
+chemin d'**un seul** job passait inaperçu, puisque l'autre le mentionnait
+encore. Vérifié par sabotage, corrigé en analyse par job.
+
+**Repli sur l'artifact** : `extract-an` et `extract-roster-groupes` reçoivent
+les amendements par l'artifact `amendements-index-an` (#251) et s'appuyaient,
+en cas d'absence, sur le cache partagé — qui ne les contient plus. Un
+`actions/cache/restore` (lecture seule) a donc été ajouté, **conditionné à
+l'échec du téléchargement de l'artifact** : restaurer 676 Mo dans chaque shard
+pour un cas rare recréerait le coût que cette issue supprime.
+
+**Effet de bord traité** : `extract-ue-officiel` cachait aussi `.cache` en bloc
+sous sa propre clé, y embarquant les données AN et amendements présentes. Le
+quota de cache d'un dépôt étant partagé, une entrée surdimensionnée provoque
+l'éviction LRU des autres — dont la clé AN que ce correctif vient de réparer.
+Son `path` est resserré sur `.cache/europarl`.
+
+`extract-senat` garde `path: .cache` : ce job n'écrit **rien** sous `.cache`,
+son entrée ne recopie donc que ce que la restauration y a placé. Laissé en
+l'état plutôt que supprimé — retirer une entrée de cache est une décision de
+comportement, pas un effet de bord de cette issue.
+
+**Critère d'acceptation** : le post-job de `extract-an` doit afficher
+`Cache saved with key: …` et non `not saving cache`. L'hypothèse ayant déjà
+survécu une fois à l'analyse statique seule, seul un run réel tranche.
+
+---
+
+<a id="amendements-zero-pas-de-hard-fail"></a>
+## Quality gate : « 0 amendement collecté » reste non bloquant, mais cesse d'être discret (#378) (2026-08-18)
+
+**Contexte** : dernier des 5 fixes de l'investigation de #265 encore ouvert
+(les 4 autres tranchés lors du re-check du 2026-08-17, voir
+[[amendements-zero-silencieux-acteur-ref]]), sorti en issue dédiée parce qu'il
+demandait un arbitrage produit et non un correctif. Les sections 3c (couverture
+amendements) et 3d (fraîcheur des index, [[amendements-index-quality-gate-fraicheur]])
+de `check_quality_gate.py` ne produisent que des avertissements souples ;
+`exit_code` ne vaut 1 que sur `IncompleteRead` au-delà du seuil, structure de
+groupe cassée ou structure de gouvernement cassée. Un run avait ainsi committé
+28 profils avec `amendements[]` vide **partout** sans que rien ne bloque, alors
+que la §3c avait bien détecté et affiché le signal.
+
+**Décision : pas d'escalade en échec dur, dans aucun mode — y compris
+`fresh_run=true`.** Aucun flag `--amendements-hard-fail` n'est ajouté. En
+revanche le signal global de la §3c est rendu impossible à manquer.
+
+### Pourquoi ne pas bloquer
+
+1. **Le mode d'échec de #265 n'était pas l'absence de blocage, c'était l'absence
+   de lecture.** Le signal existait, correct, mais en dernière ligne d'une
+   section sur six d'un rapport qui en fait plusieurs centaines. Le rendre
+   visible traite la cause ; bloquer traite le symptôme en faisant payer le
+   coût à tous les runs suivants.
+2. **La collecte dépend d'une source réseau chroniquement défaillante.** La
+   législature 17 (active) échoue de façon répétée au téléchargement
+   (`IncompleteRead` sur le CDN `data.assemblee-nationale.fr` —
+   [[amendements-retry-blocage-legislature]],
+   [[amendements-range-download-legislature-isolation]]), problème préexistant
+   et hors de notre contrôle. Un run dont l'index n'a pas pu être construit
+   produit légitimement zéro amendement : bloquer le commit y ferait perdre
+   **tout le reste** du run (mandats, votes, interventions, groupes,
+   gouvernements) pour une donnée dont l'absence est déjà tracée. On
+   échangerait une donnée manquante contre aucune donnée.
+3. **Cohérence avec la dégradation gracieuse déjà tranchée sur toute cette
+   chaîne** : `continue-on-error: true` sur le job `extract-amendements-an`
+   ([[amendements-index-job-dedie-ci]]), artefact d'index téléchargé en
+   optionnel par les consommateurs ([[amendements-index-cache-only-consumers]]),
+   retry global qui n'échoue pas sur une extraction partielle
+   ([[retry-generate-data-continue-on-error]]). Un échec dur du gate
+   contredirait frontalement ces trois décisions pour la même donnée.
+4. **Le risque spécifiquement redouté est déjà couvert ailleurs, à la source.**
+   Ce qui rendait #265 dangereux, c'est qu'un zéro pouvait être *silencieux*
+   (acteurRef introuvable → `[]` sans warning), et qu'un
+   `fresh_run=true`/`--no-merge` aurait effacé des amendements ne survivant que
+   par la fusion additive. Depuis [[amendements-zero-silencieux-acteur-ref]], ce
+   cas émet un warning par candidat : le zéro n'est plus indiscernable d'une
+   absence légitime, ce qui était le vrai défaut.
+
+### Ce qui change quand même — la moitié « make it loud » du fix 3
+
+- `_report_amendements_coverage` retourne désormais le signal global à part
+  (`regression_globale`), en plus de le laisser dans `soft_warnings` : même
+  nature, affichage différent.
+- **Affiché en tête de rapport**, avant les six sections : bandeau console juste
+  sous la ligne `Quality gate : ✓ COMMIT AUTORISÉ`, et bandeau Markdown juste
+  sous le badge dans le GitHub Step Summary.
+- Dans la §3c : bloc dédié `🚨 RÉGRESSION PROBABLE DE COLLECTE`, disant
+  explicitement que le caractère non bloquant est une **décision** (avec le
+  lien vers cette section) et non un oubli. Le message n'est plus répété dans
+  la liste des avertissements par candidat, où il se noyait.
+- Annotation GHA : conservée au niveau `warning`, préfixée. *Alternative
+  rejetée* : `::error::`, qui afficherait une annotation rouge sur un job vert.
+  Dans ce script, `error` est réservé aux erreurs qui font effectivement
+  `exit 1` (structures de groupe/gouvernement cassées) — le niveau doit rester
+  lisible comme « ce run a échoué ».
+
+### Alternatives rejetées
+
+- **Flag `--amendements-hard-fail` désactivé par défaut** (la piste de
+  compromis de #378). Rejeté parce qu'il resterait non câblé : le workflow ne
+  le passerait jamais, et aucune donnée future ne viendrait changer
+  l'arbitrage. C'est la différence avec `--groupe-min-coverage-pct`
+  ([[seuil-couverture-groupe]]), option elle aussi désactivée par défaut mais
+  qui attend un chiffre précis pour être activée. Une option que rien
+  n'activera jamais est du code mort, pas une souplesse.
+- **Escalader uniquement en `fresh_run=true`** (« quality gate à tolérance
+  zéro » selon la description de l'input). Rejeté : c'est précisément le mode
+  où aucun cache n'est restauré et où les trois archives sont retéléchargées —
+  donc celui où un zéro d'origine réseau est le **plus** probable. On ferait
+  échouer en priorité les runs les plus propres.
+- **Escalader le signal par législature de la §3d** (« index jamais
+  construit »). Jamais : c'est l'aléa réseau chronique de la 17, il rendrait le
+  pipeline définitivement rouge pour une raison étrangère à toute régression.
+
+### Ce qui ferait rouvrir la décision
+
+Que la construction d'index cesse d'échouer de façon chronique — concrètement,
+la 17 rapportée « frais » sur une série de runs consécutifs. Un zéro
+deviendrait alors une anomalie franche plutôt qu'un état de fait de la source,
+et l'escalade redeviendrait discutable.
+
+**Tests** : `tests/test_quality_gate_amendements.py` verrouille les deux
+moitiés — la visibilité (signal retourné à part, affiché en tête, non dupliqué)
+et l'absence d'échec dur bout en bout (`main()` sort 0 avec `amendements[]` vide
+partout, et sort 0 avec un index jamais construit). Suite complète : 1298/1298.
+
 <a id="merge-and-pivot-budget-permissions-413"></a>
 ## `merge-and-pivot` : garde-fou #390 hors `main`, entrées de configuration, budget de temps mur, permissions (#413) (2026-08-18)
 
@@ -200,7 +473,17 @@ temps mur sur un run complet qui n'est pas encore la configuration par défaut,
 changement de profil de charge réseau et une hypothèse de cache **non validée**
 (§3). À rouvrir si §3 se confirme et que le run complet devient la norme.
 
-### 3. Réserve non tranchée : le cache AN est-il encore réécrit ?
+### 3. Réserve tranchée depuis : le cache AN n'était effectivement plus réécrit
+
+> **Confirmée et corrigée par #424** (run `32136438841`, 2026-08-18). Le log de
+> post-job attendu ci-dessous a été obtenu, sur les 8 shards `extract-an` et le
+> shard roster. Coût mesuré : **~438 Mo re-téléchargés par run**. Voir
+> [[cache-cle-amendements-separee]]. Le texte d'origine est conservé tel quel
+> ci-dessous : la démarche — ne pas corriger sur une hypothèse d'analyse
+> statique, exiger un log réel — reste la bonne, et c'est elle qui a produit le
+> critère d'acceptation du correctif.
+
+#### Texte d'origine
 
 `extract-amendements-an` s'exécute en premier et écrit la **clé exacte**
 `public-data-cache-an-<semaine>`. Les jobs suivants restaurent donc cette clé
@@ -1464,10 +1747,11 @@ anomalie, jamais un cas nominal.
 **État des 5 fixes de #265 après ce re-check** : fix 1 (séquencement
 `needs: [extract-amendements-an]`) appliqué ; fix 2 caduc (alternative au
 fix 1, explicitement conditionnée à « si le parallélisme doit être
-préservé ») ; fix 3 (escalade en hard failure du quality gate) **non fait**,
-sorti dans l'issue dédiée #378 — arbitrage produit (bloquer le commit vs.
-laisser passer la panne CDN chronique de la législature 17), à trancher
-séparément du symptôme ; fix 4 résolu par #268/#273 ; fix 5 tranché et
+préservé ») ; fix 3 (escalade en hard failure du quality gate) sorti dans
+l'issue dédiée #378 — arbitrage produit (bloquer le commit vs. laisser passer
+la panne CDN chronique de la législature 17), tranché depuis :
+[[amendements-zero-pas-de-hard-fail]] (pas de blocage, mais signal affiché en
+tête de rapport) ; fix 4 résolu par #268/#273 ; fix 5 tranché et
 corrigé ici. #265 close : symptôme initial résolu, 32 279 amendements sur les
 candidats déclarés contre 0 à son ouverture.
 
