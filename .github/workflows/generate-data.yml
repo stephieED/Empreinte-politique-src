@@ -937,6 +937,12 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # actions: write — requis par le `gh workflow run deploy-pages.yml` de la
+    # dernière étape (#416). Déclaré au niveau du job et non du workflow : les
+    # jobs d'extraction n'ont aucune raison de pouvoir déclencher un workflow.
+    permissions:
+      contents: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v5
@@ -1194,13 +1200,19 @@ jobs:
           echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ modifié sur origin/main pendant le run ; commit annulé pour ne pas publier un build périmé (#390)."
           exit 1
 
+      # `pushed` (output) : consommé par l'étape de déploiement ci-dessous, qui
+      # ne doit partir que si des données ont réellement atterri sur main.
+      # Écrit avant chaque `exit 0` — un `exit` termine le step immédiatement,
+      # un output posé après ne serait jamais écrit.
       - name: Committer et pousser les données mises à jour
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
@@ -1226,6 +1238,7 @@ jobs:
           for attempt in 1 2 3; do
             if git push; then
               echo "Push réussi (tentative ${attempt}/3)."
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
@@ -1249,3 +1262,37 @@ jobs:
             echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur main. Intervention manuelle requise."
           fi
           exit 1
+
+      # ── Publication du site avec les données fraîches (#416) ──────────────
+      # Le push ci-dessus est fait avec le GITHUB_TOKEN par défaut : GitHub
+      # n'émet alors AUCUN événement `push` (protection anti-boucle des
+      # workflows). deploy-pages.yml ne peut donc pas se déclencher sur ce
+      # commit, quels que soient ses `paths:` — vérifié sur l'historique des
+      # runs : aucun workflow n'a jamais été déclenché par un commit
+      # « chore: mise à jour automatique des données ». Sans ce déclenchement
+      # explicite, le site publié servait les données du dernier build en
+      # date, déclenché par une modification d'interface sans rapport.
+      #
+      # workflow_dispatch est l'exception documentée à la règle anti-boucle
+      # (comme repository_dispatch) : un `gh workflow run` avec le
+      # GITHUB_TOKEN démarre bien un run. Même mécanique que le
+      # re-déclenchement de generate-data.yml par retry-generate-data.yml.
+      #
+      # Garde sur main : deploy-pages.yml publie le site de production. Un run
+      # de génération lancé depuis une branche de travail ne doit jamais
+      # publier — il committe sur sa branche, pas sur main.
+      - name: Déclencher le déploiement du site (données mises à jour)
+        if: steps.commit.outputs.pushed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh workflow run deploy-pages.yml --repo "${REPO}" --ref main
+          {
+            echo "### 🚀 Déploiement du site déclenché"
+            echo ""
+            echo "Les données mises à jour ont été poussées sur \`main\` ; un run de"
+            echo "\`deploy-pages.yml\` a été déclenché pour les publier (le commit du bot"
+            echo "n'émet pas d'événement \`push\`, cf. #416)."
+          } >> "$GITHUB_STEP_SUMMARY"

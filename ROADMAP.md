@@ -36,11 +36,6 @@ something is pending, not *why*.
   scrutin n° 1 in group cohesion. Publishing it needs its own identifier and
   source URL, see `technical_decisions.md#votes-multi-legislature`.
 
-- `retry-generate-data.yml`: reduce redundant job-log downloads between the
-  signature-detection step and the best-effort inputs-reconstruction step
-  (up to 3-4 extra full log downloads in the same second, a likely
-  contributor to the transient rate-limit diagnosed in #336) — see
-  `technical_decisions.md#retry-generate-data-best-effort-non-bloquant`.
 - Refine thematic classifier: handle cross-theme items (e.g. tagged both
   `budget` and `sante`), add an explicit "non classifié" bucket instead of
   silently dropping low-confidence items.
