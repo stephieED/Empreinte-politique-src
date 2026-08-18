@@ -205,7 +205,7 @@ AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # mesuré le 15/08/2026 sur la législature 16, `index_par_acteur.json` allégé
 # pèse malgré tout 177 Mo en clair — au-delà de la limite GitHub de 100 Mo par
 # blob — contre 10,4 Mo une fois gzippé, la structure très répétitive
-# {numero, role_signataire} compressant très bien). `amendements.json`
+# {uid, role_signataire} compressant très bien). `amendements.json`
 # regroupe les enregistrements dédupliqués (voir `_aggregate_amendements_index`
 # et docs/technical_decisions.md#amendements-legislatures-figees) ; le
 # contenu JSON est identique, seule la compression change.
@@ -1414,6 +1414,14 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
     sort, base_juridique = _derive_amendement_sort(etat_libelle, sousetat_libelle)
 
     record_base = {
+        # Identifiant AN de l'amendement (ex. "AMANR5L17PO59047BTC1376P0D1N000012").
+        # C'est la SEULE cle unique : `numero`/`numeroLong` repart a chaque texte
+        # (mesure du 18/08/2026 sur l'archive legis 17 : 121 805 amendements pour
+        # 30 616 numeroLong distincts, "AE12" porte par 7 textes), et keyer un
+        # store par numero ecrase 74,9 % des amendements. Meme role que l'uid de
+        # scrutin, unique toutes legislatures confondues — voir
+        # docs/technical_decisions.md#amendements-cle-uid.
+        "uid": amendement.get("uid"),
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
         # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
@@ -1495,6 +1503,12 @@ def _parse_amendement_legacy_single(
     )
 
     record_base = {
+        # Identifiant AN, present aussi dans le schema legacy (ex.
+        # "AMANR5L14SEA644420B0013P0D1N7") : verifie sur l'archive XIV du
+        # 18/08/2026, 167 420 amendements pour 167 420 uid distincts — mais
+        # seulement 22 159 `numeroLong` distincts. Meme cle que le schema
+        # moderne, voir `_parse_amendement_entry`.
+        "uid": amendement.get("uid"),
         "texte_vise": texte_ref,
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
@@ -1890,11 +1904,19 @@ def _read_cached_amendements_acteur(
     if not isinstance(refs, list):
         return None
 
+    # Tranche héritée du format `{numero, role_signataire}` (avant la
+    # correction du 18/08/2026) : traitée comme un cache absent, jamais relue.
+    # Ses références résolvent vers un autre amendement que le leur dans 40,5 %
+    # des cas — voir `_aggregate_amendements_index` et
+    # docs/technical_decisions.md#amendements-cle-uid.
+    if not _index_par_acteur_au_format_uid({acteur_ref: refs}):
+        return None
+
     entries: list[dict[str, Any]] = []
     for ref in refs:
         if not isinstance(ref, dict):
             continue
-        base = store.get(ref.get("numero"))
+        base = store.get(ref.get("uid"))
         if base is None:
             continue
         entries.append({**base, "role_signataire": ref.get("role_signataire")})
@@ -2028,6 +2050,22 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     except (json.JSONDecodeError, OSError):
         return None
 
+    # Index figé hérité (références par `numero`) : refusé plutôt que
+    # matérialisé dans le cache. L'appelant retombe sur le chemin réseau, qui
+    # reconstruit un index correct — mieux vaut re-télécharger une archive que
+    # servir des amendements attribués au mauvais texte (voir
+    # `_aggregate_amendements_index` et
+    # docs/technical_decisions.md#amendements-cle-uid).
+    if not _index_par_acteur_au_format_uid(index_par_acteur):
+        print(
+            f"  [!] Index figé législature {legislature} au format hérité "
+            "(références par 'numero') : ignoré, reconstruction requise "
+            "(python src/build_amendements_index_figees.py --legislature "
+            f"{legislature})",
+            file=sys.stderr,
+        )
+        return None
+
     try:
         _write_cached_amendements_agreges(legislature, amendements, index_par_acteur)
         frozen_fraicheur_path = frozen_dir / AMENDEMENTS_FRAICHEUR_FILENAME
@@ -2101,33 +2139,69 @@ def _aggregate_amendements_index(
 
     Retourne (amendements, index_par_acteur) :
     - `amendements` : chaque amendement stocké une seule fois, sous la clé
-      `numero` (identifiant stable, partagé par toutes les copies d'un même
-      amendement en entrée puisqu'elles dérivent du même `record_base`).
-    - `index_par_acteur` : acteurRef -> liste de `{numero, role_signataire}`,
+      `uid` (identifiant AN, partagé par toutes les copies d'un même amendement
+      en entrée puisqu'elles dérivent du même `record_base`).
+    - `index_par_acteur` : acteurRef -> liste de `{uid, role_signataire}`,
       une référence légère vers `amendements` au lieu d'une copie complète.
 
-    Les enregistrements sans `numero` (non observés en pratique, mais pas
-    exclus par le schéma AN) reçoivent une clé synthétique non partagée pour
-    ne jamais être perdus ni dédupliqués à tort avec un autre amendement.
-    Inverse : `_expand_aggregated_amendements_index`.
+    **La clé est l'`uid`, jamais le `numero`** (corrigé le 18/08/2026, voir
+    docs/technical_decisions.md#amendements-cle-uid). Le `numeroLong` de l'AN
+    repart à chaque texte : sur l'archive de la législature 17, 121 805
+    amendements ne portent que 30 616 `numeroLong` distincts (`AE12` est porté
+    par 7 textes sans rapport). Keyer par `numero` écrasait donc 74,9 % des
+    amendements et faisait résoudre 40,5 % des paires (acteur, amendement) vers
+    un AUTRE amendement que le leur — un fait faux, pas seulement une perte.
+    L'`uid` est unique toutes législatures confondues, comme celui des scrutins
+    (voir `_build_scrutins_index`), et présent dans les deux schémas AN
+    (moderne et legacy XIV).
+
+    Les enregistrements sans `uid` (non observés : les archives XIV à XVII en
+    portent un sur chaque amendement) reçoivent une clé synthétique non
+    partagée, pour ne jamais être perdus ni dédupliqués à tort avec un autre
+    amendement. Inverse : `_expand_aggregated_amendements_index`.
     """
     amendements: dict[str, dict[str, Any]] = {}
     index_par_acteur: dict[str, list[dict[str, Any]]] = {}
-    sans_numero_compteur = 0
+    sans_uid_compteur = 0
 
     for acteur_ref, records in index.items():
         refs: list[dict[str, Any]] = []
         for record in records:
-            numero = record.get("numero")
-            if not numero:
-                numero = f"_sans_numero_{sans_numero_compteur}"
-                sans_numero_compteur += 1
-            refs.append({"numero": numero, "role_signataire": record.get("role_signataire")})
-            if numero not in amendements:
-                amendements[numero] = {k: v for k, v in record.items() if k != "role_signataire"}
+            uid = record.get("uid")
+            if not uid:
+                uid = f"_sans_uid_{sans_uid_compteur}"
+                sans_uid_compteur += 1
+            refs.append({"uid": uid, "role_signataire": record.get("role_signataire")})
+            if uid not in amendements:
+                amendements[uid] = {k: v for k, v in record.items() if k != "role_signataire"}
         index_par_acteur[acteur_ref] = refs
 
     return amendements, index_par_acteur
+
+
+def _index_par_acteur_au_format_uid(index_par_acteur: Any) -> bool:
+    """Un `index_par_acteur` est-il au format `{uid, role_signataire}` (et non
+    au format `{numero, role_signataire}` d'avant la correction du 18/08/2026) ?
+
+    Sert de garde-fou à la lecture des caches et des index figés : un index
+    hérité doit être reconstruit, jamais relu — ses références par `numero`
+    résolvent vers le mauvais amendement une fois sur deux et sont
+    indistinguables de références correctes à l'usage. Vérifié sur la première
+    référence rencontrée : les deux formats ne se mélangent pas, un index étant
+    toujours écrit d'un bloc par `_aggregate_amendements_index`.
+    """
+    if not isinstance(index_par_acteur, dict):
+        return False
+    for refs in index_par_acteur.values():
+        if not isinstance(refs, list):
+            return False
+        for ref in refs:
+            if not isinstance(ref, dict):
+                return False
+            return bool(ref.get("uid"))
+    # Index vide (aucun acteur, ou aucun amendement) : rien à reconstruire,
+    # aucune référence périmée ne peut en sortir.
+    return True
 
 
 def _expand_aggregated_amendements_index(
@@ -2139,14 +2213,14 @@ def _expand_aggregated_amendements_index(
     dupliqué par entrée, `role_signataire` réinjecté) attendue par le reste du
     pipeline — `fetch_amendements_officiels` lit exclusivement cette forme
     depuis le cache disque standard, quelle que soit l'origine (réseau ou
-    fallback figé). Une référence dont le `numero` est absent de `amendements`
+    fallback figé). Une référence dont l'`uid` est absent de `amendements`
     (ne devrait pas arriver, les deux fichiers étant committés ensemble) est
     ignorée plutôt que de lever."""
     expanded: dict[str, list[dict[str, Any]]] = {}
     for acteur_ref, refs in index_par_acteur.items():
         entries: list[dict[str, Any]] = []
         for ref in refs:
-            base = amendements.get(ref.get("numero"))
+            base = amendements.get(ref.get("uid"))
             if base is None:
                 continue
             entries.append({**base, "role_signataire": ref.get("role_signataire")})

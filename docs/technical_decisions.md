@@ -1,3 +1,91 @@
+<a id="amendements-cle-uid"></a>
+## Amendements : la clé du store est l'`uid`, jamais le `numero` (préalable à #431) (2026-08-18)
+
+**Contexte** : #431 (sous-issue de l'épic volumétrie #429) prescrivait de
+normaliser `amendements[]` en écrivant dans chaque profil un mapping
+`{numero, role_signataire}` pointant vers une liste dédupliquée, en réutilisant
+`_aggregate_amendements_index` — le mécanisme qui produit déjà les index des
+législatures figées. En vérifiant le point de vigilance noté dans l'issue
+(« le `numero` doit rester unique dans la portée choisie »), il s'est avéré
+que **la clé était déjà fausse, et l'est dans les données committées**.
+
+**Mesure — archive AN de la législature 17, 18/08/2026** :
+
+| | Valeur |
+| --- | --- |
+| Amendements dans l'archive (uid distincts) | 121 805 |
+| `numeroLong` distincts | 30 616 |
+| Amendements perdus par un store keyé `numero` | 91 189 (74,9 %) |
+| Paires (acteur, amendement) réelles | 3 216 366 |
+| Paires résolues vers un AUTRE amendement que le leur | 1 302 198 (40,5 %) |
+
+Le `numeroLong` de l'AN **repart à chaque texte** : `AE12` est porté par 7
+textes sans rapport, `1` et `10 (Rect)` par des dizaines. La législature 14 est
+pire encore : 167 420 amendements pour 22 159 `numeroLong` distincts.
+
+Ce n'est pas une simple perte de volume. Un store `numero -> amendement` garde
+le premier amendement rencontré ; toutes les références des autres résolvent
+alors vers lui, et le profil affiche un amendement **attribué au mauvais
+texte, à la mauvaise date, avec le mauvais sort** — un fait faux, indiscernable
+d'un fait correct à la lecture (AGENTS.md §2.2, §2.5). Constaté sur les profils
+committés : pour les trois membres dont la législature 17 a été collectée
+fraîchement, le nombre d'amendements du profil est **exactement** leur nombre de
+`numero` distincts, pas leur nombre d'amendements (christophe-bentz : 4 066 dans
+le profil, 7 261 dans l'archive).
+
+**Décision** : la clé du store dédupliqué et des références par acteur devient
+l'`uid` AN de l'amendement (`AMANR5L17PO59047BTC1376P0D1N000012`), présent sur
+chaque amendement des deux schémas AN — moderne (XV/XVI/XVII) et legacy XIV
+(vérifié : 167 420 amendements, 167 420 uid distincts). C'est exactement le
+choix déjà fait pour les scrutins (`_build_scrutins_index` : store `uid ->
+scrutin`, index `acteurRef -> [[uid, position]]`), dont l'uid porte lui aussi la
+législature et reste unique toutes législatures confondues. La leçon était donc
+**déjà écrite dans ce fichier** — « Déduplication par `uid`, jamais par
+`numero` : le numéro de scrutin AN repart de 1 à chaque législature » (voir
+[[votes-multi-legislature]]) — mais n'avait pas été transposée aux
+amendements, où la collision est pourtant plus large encore : le numéro d'un
+amendement ne repart pas seulement à chaque législature, il repart à chaque
+texte. `numero` reste
+collecté — il est affichable — mais n'identifie plus rien.
+
+**Décision 2 — un index hérité est refusé, jamais relu.** `_load_frozen_amendement_index`
+et `_read_cached_amendements_acteur` vérifient que les références portent un
+`uid` (`_index_par_acteur_au_format_uid`) et traitent un index au format
+`{numero, ...}` comme un cache absent : le pipeline reconstruit. Servir un tel
+index serait pire que ne rien servir, puisque rien à l'usage ne distinguerait
+ses enregistrements d'enregistrements corrects.
+
+**Index figés reconstruits** (`build_amendements_index_figees.py`) :
+
+| Législature | Amendements avant (clé `numero`) | Après (clé `uid`) | Liens acteur/amendement |
+| --- | --- | --- | --- |
+| 14 | 21 624 | **154 296** | 1 338 262 (inchangé) |
+
+Le nombre de liens ne bouge pas — ce sont les mêmes signatures — mais ils
+pointent désormais chacun vers le bon amendement. Poids committé : 4,4 Mo +
+4,1 Mo gzippés pour la XIV, très en deçà de la limite GitHub de 100 Mo par
+blob.
+
+**Conséquence pour #431** : son constat de départ (4 246 026 paires pour 67 058
+amendements distincts, facteur 63,3 ×) est mesuré sur des données écrasées, et
+son critère d'acceptation (« `amendements` sous 200 Mo sur 752 profils ») doit
+être redérivé une fois les données correctes — corriger la clé **augmente** le
+nombre réel de paires. La normalisation elle-même reste à faire, sur cette base
+saine, et le mapping y référencera l'`uid`.
+
+**Alternative rejetée** : garder `numero` en le qualifiant par le texte
+(`(legislature, texte_vise, numero)`). Trois défauts : `texte_vise` est tantôt
+un code source (`PIONANR5L15B4852`), tantôt un titre résolu selon l'état de
+l'index des dossiers au moment de la collecte — la clé changerait donc d'un run
+à l'autre pour le même amendement ; le triplet reste non unique (396 collisions
+mesurées sur la seule législature 17) ; et il pèse plus lourd que l'uid qu'il
+cherche à éviter.
+
+**Alternative rejetée** : un identifiant synthétique compact (entier de
+position) pour alléger le mapping de #431. Non stable d'une reconstruction à
+l'autre, donc incompatible avec la fusion additive et `--skip-existing`, qui
+doivent pouvoir rapprocher deux collectes successives.
+
 <a id="profils-json-compact"></a>
 ## Profils écrits en JSON compact, groupes et gouvernements indentés (#433) (2026-08-18)
 
@@ -4510,6 +4598,13 @@ structurellement impossible (pas seulement indésirable). La législature 15
 (archive source plus grosse) aurait vraisemblablement heurté la même limite,
 y compris compressée (marge insuffisante par simple extrapolation du ratio
 observé sur la 16).
+
+> **Révisé le 18/08/2026** — la clé de déduplication décrite ci-dessous
+> (`numero`) était fausse : elle écrasait 74,9 % des amendements et en
+> attribuait 40,5 % au mauvais texte. Le store est désormais keyé par l'`uid`
+> AN et les index figés ont été reconstruits ; voir
+> [[amendements-cle-uid]]. Le reste de cette entrée (pourquoi dédupliquer,
+> pourquoi gzip, pourquoi hors CI) reste valable.
 
 Plutôt que de committer le `.json.gz` compressé tel quel (alternative
 initialement envisagée, pariant sur le ratio de compression ~60:1 pour rester
