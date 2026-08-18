@@ -18,8 +18,9 @@ something is pending, not *why*.
   `extract-an` / `extract-roster-groupes`. `extract-amendements-an` writes the
   exact key first, and `actions/cache` skips its post-job save after an exact
   key hit — so the ~290 MB of AN dumps each shard downloads would never be
-  persisted. Needs one real run's post-job log to confirm before any fix
-  (#412 §2.3, `technical_decisions.md#concurrence-shards-extraction-412`).
+  persisted. **Confirmed by run 32136438841 and fixed in #424**: amendements
+  moved to their own `public-data-cache-amendements-*` key, AN jobs now list
+  their cached directories explicitly (`technical_decisions.md#cache-cle-amendements-separee`).
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.
