@@ -82,6 +82,7 @@ from typing import Any, Optional
 from audit_pivot_dataset import compute_profils_perimes
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
+from json_io import ecrire_profil_json
 from merge_profile import merge_pivot_profile, merge_raw_profile, preserve_stable_freshness_timestamps
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
@@ -126,7 +127,11 @@ def _load_checkpoint(path: Path) -> dict[str, Any]:
 
 def _save_checkpoint(path: Path, resultats: list[dict[str, Any]]) -> None:
     """Écrit le point de sauvegarde de façon atomique (fichier temporaire puis remplacement),
-    pour ne jamais laisser un fichier tronqué si le process est interrompu pendant l'écriture."""
+    pour ne jamais laisser un fichier tronqué si le process est interrompu pendant l'écriture.
+
+    Reste indenté malgré #433 : ce fichier n'est pas versionné (aide à la
+    reprise, quelques centaines de lignes) et sert justement à être relu à la
+    main quand une exécution s'est interrompue."""
     with _CHECKPOINT_LOCK:
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = path.with_suffix(path.suffix + ".tmp")
@@ -480,8 +485,7 @@ def process_candidat(
         # #343 : ne pas ré-avancer genere_le/synchro_le quand --pivot-only re-dérive
         # un contenu strictement identique au pivot déjà commité (pas d'appel réseau).
         pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
-        with open(pivot_path, "w", encoding="utf-8") as f:
-            json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
+        ecrire_profil_json(pivot_path, pivot_profile)
         _tprint(f"  ✓ pivot-only → {pivot_path}")
         return {
             "nom": nom, "slug": effective_slug, "statut": "ok_pivot_only", "parltrack": parltrack_statut,
@@ -565,8 +569,7 @@ def process_candidat(
         except (json.JSONDecodeError, OSError) as exc:
             _tprint(f"  [!] Fusion impossible avec le profil existant ({json_path}), écrasement : {exc}")
 
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(profile, f, ensure_ascii=False, indent=2)
+    ecrire_profil_json(json_path, profile)
 
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
@@ -597,8 +600,7 @@ def process_candidat(
             # #343 : ne pas ré-avancer genere_le/synchro_le si le contenu régénéré
             # est strictement identique au pivot déjà commité.
             pivot_profile = preserve_stable_freshness_timestamps(existing_pivot, pivot_profile)
-            with open(pivot_path, "w", encoding="utf-8") as f:
-                json.dump(pivot_profile, f, ensure_ascii=False, indent=2)
+            ecrire_profil_json(pivot_path, pivot_profile)
             _tprint(f"  ✓ pivot → {pivot_path}")
 
     nb_interventions = len(profile.get("interventions") or [])

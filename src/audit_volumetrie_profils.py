@@ -1,0 +1,458 @@
+#!/usr/bin/env python3
+"""
+audit_volumetrie_profils.py — Volumétrie des profils et gain de chaque levier
+d'allègement (#429).
+
+Répond à une question précise : **le passage à pleine échelle du roster (#192)
+est bloqué par le volume de données versionnées, pas par le budget CI**. À 189
+profils le dépôt porte 2,2 Go ; la projection à 752 dépasse les seuils GitHub
+(pushs refusés au-delà de 2 Go, dépôt déconseillé au-delà de 5 Go).
+
+Ce script mesure, sur un échantillon réel de profils, ce que rapporterait
+chaque levier — afin d'arbitrer #429 sur des chiffres et non sur une
+extrapolation.
+
+**Principe : mesurer des leviers qui DÉPLACENT la donnée, pas qui la
+suppriment.** L'UI actuelle n'exploite qu'une fraction des champs, mais elle
+n'est pas définitive : la refonte analytics/visualisation (#324) aura besoin de
+données que l'interface d'aujourd'hui ignore. Un champ « non lu » n'est pas un
+champ inutile. Les leviers sont donc classés en deux familles, et le rapport
+distingue explicitement celle qui ne perd rien.
+
+Leviers mesurés :
+  - `compact`      : JSON sans indentation (aucune perte, gain immédiat) ;
+  - `gzip`         : fichier gzippé (aucune perte, mais blob binaire — voir la
+                     réserve sur `.git` dans le rapport) ;
+  - `externalise:<champ>` : poids d'un champ qu'on sortirait du profil vers un
+                     index dédié, sur le modèle de l'index amendements shardé
+                     par acteur (#392). La donnée reste disponible.
+
+Fonctions pures (liste de chemins -> dict sérialisable) séparées de l'I/O,
+comme `audit_pivot_dataset.py` et ses jumeaux : un fichier illisible ne doit
+jamais interrompre le scan.
+
+Aucune dépendance hors bibliothèque standard (`requirements.txt` ne porte ni
+PyYAML ni pandas) : le script doit tourner sur une machine de développement
+comme dans un runner.
+
+Usage :
+    python3 src/audit_volumetrie_profils.py \\
+        --profils-dir pivot_data/profiles \\
+        --profils-bruts-dir raw_data/profiles \\
+        --cible 752 \\
+        --out audit/volumetrie.md
+"""
+
+import argparse
+import gzip
+import json
+import sys
+from pathlib import Path
+from typing import Any, Optional
+
+# Champs dont on mesure l'externalisation. `co_signataires` est imbriqué dans
+# chaque amendement, d'où un chemin en deux segments.
+CHAMPS_EXTERNALISABLES: tuple[tuple[str, ...], ...] = (
+    ("amendements", "co_signataires"),
+    ("amendements",),
+    ("votes",),
+    ("interventions",),
+)
+
+# Seuils GitHub, pour situer la projection (documentation GitHub, 2026-08).
+SEUIL_PUSH_GO = 2.0
+SEUIL_DEPOT_RECOMMANDE_GO = 5.0
+
+_OCTETS_PAR_GO = 1024 ** 3
+_OCTETS_PAR_MO = 1024 ** 2
+
+
+def _dumps(valeur: Any) -> bytes:
+    """JSON compact, encodage UTF-8 réel — pas d'échappement \\uXXXX, qui
+    gonflerait artificiellement le poids des accents."""
+    return json.dumps(valeur, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+
+def _poids_champ(profil: dict[str, Any], chemin: tuple[str, ...]) -> int:
+    """Octets occupés par un champ, éventuellement imbriqué dans une liste.
+
+    `("amendements", "co_signataires")` additionne le champ `co_signataires` de
+    chaque entrée de `amendements`.
+    """
+    if not chemin:
+        return 0
+    tete, *reste = chemin
+    valeur = profil.get(tete)
+    if valeur is None:
+        return 0
+    if not reste:
+        return len(_dumps(valeur))
+    if not isinstance(valeur, list):
+        return 0
+    return sum(
+        len(_dumps(entree[reste[0]]))
+        for entree in valeur
+        if isinstance(entree, dict) and reste[0] in entree
+    )
+
+
+def analyser_profil(chemin: Path) -> Optional[dict[str, Any]]:
+    """Mesures d'un profil. `None` si le fichier est illisible — un JSON
+    malformé ne doit pas interrompre le scan."""
+    try:
+        brut = chemin.read_bytes()
+        profil = json.loads(brut)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(profil, dict):
+        return None
+
+    compact = _dumps(profil)
+    return {
+        "fichier": chemin.name,
+        "octets": len(brut),
+        "octets_compact": len(compact),
+        "octets_gzip": len(gzip.compress(brut, 6)),
+        "champs": {
+            ":".join(c): _poids_champ(profil, c) for c in CHAMPS_EXTERNALISABLES
+        },
+    }
+
+
+def compute_volumetrie(
+    mesures: list[dict[str, Any]], exact: Optional[dict[str, Any]] = None
+) -> dict[str, Any]:
+    """Agrège les mesures. Fonction pure.
+
+    `exact` porte les chiffres relevés sur TOUS les fichiers (passe 1). Les
+    ratios de l'échantillon y sont appliqués pour extrapoler compact/gzip/champs
+    au total réel — plutôt que de rapporter le poids de l'échantillon, qui ne
+    représenterait rien.
+    """
+    if not mesures:
+        return {"nb_profils": (exact or {}).get("nb_profils", 0)}
+
+    octets_ech = sum(m["octets"] for m in mesures)
+    champs: dict[str, int] = {}
+    for mesure in mesures:
+        for nom, poids in mesure["champs"].items():
+            champs[nom] = champs.get(nom, 0) + poids
+
+    if exact and exact.get("octets_total"):
+        total = exact["octets_total"]
+        facteur = total / octets_ech if octets_ech else 0
+        nb = exact["nb_profils"]
+        median, maximum, f_max = exact["octets_median"], exact["octets_max"], exact["fichier_max"]
+    else:
+        total = octets_ech
+        facteur = 1.0
+        nb = len(mesures)
+        tries = sorted(m["octets"] for m in mesures)
+        median, maximum = tries[len(tries) // 2], tries[-1]
+        f_max = max(mesures, key=lambda m: m["octets"])["fichier"]
+
+    return {
+        "nb_profils": nb,
+        "nb_echantillon": len(mesures),
+        "extrapole": facteur != 1.0,
+        "octets_total": total,
+        "octets_median": median,
+        "octets_moyen": total // nb if nb else 0,
+        "octets_max": maximum,
+        "fichier_max": f_max,
+        "octets_compact_total": int(sum(m["octets_compact"] for m in mesures) * facteur),
+        "octets_gzip_total": int(sum(m["octets_gzip"] for m in mesures) * facteur),
+        "poids_par_champ": {k: int(v * facteur) for k, v in champs.items()},
+    }
+
+
+def compute_leviers(volumetrie: dict[str, Any]) -> list[dict[str, Any]]:
+    """Gain de chaque levier, en octets et en pourcentage. Fonction pure.
+
+    `perte` distingue ce qui déplace la donnée de ce qui la supprimerait — la
+    distinction qui structure l'arbitrage de #429.
+    """
+    total = volumetrie.get("octets_total") or 0
+    if not total:
+        return []
+
+    leviers = [
+        {
+            "nom": "JSON compact (sans indentation)",
+            "gain_octets": total - volumetrie["octets_compact_total"],
+            "perte": False,
+            "note": "aucune décision éditoriale, aucun champ touché",
+        },
+        {
+            "nom": "Fichiers gzippés (.json.gz)",
+            "gain_octets": total - volumetrie["octets_gzip_total"],
+            "perte": False,
+            "note": "blob binaire : git ne peut plus déltifier, mesurer l'effet sur .git",
+        },
+    ]
+    for nom, poids in sorted(
+        volumetrie["poids_par_champ"].items(), key=lambda kv: -kv[1]
+    ):
+        leviers.append({
+            "nom": f"Externaliser `{nom}` hors du profil",
+            "gain_octets": poids,
+            "perte": False,
+            "note": "la donnée reste disponible dans un index dédié (modèle #392)",
+        })
+    return sorted(leviers, key=lambda l: -l["gain_octets"])
+
+
+def compute_projection(
+    volumetrie: dict[str, Any], cible: int, facteur_duplication: float
+) -> dict[str, Any]:
+    """Projection à `cible` profils. Fonction pure.
+
+    `facteur_duplication` vaut 2,0 quand `raw_data/profiles` et
+    `pivot_data/profiles` sont tous deux versionnés — ils portent des volumes
+    comparables, et c'est un levier à part entière.
+    """
+    nb = volumetrie.get("nb_profils") or 0
+    if not nb:
+        return {}
+    par_profil = volumetrie["octets_total"] / nb
+    projete = par_profil * cible * facteur_duplication
+    return {
+        "cible": cible,
+        "facteur_duplication": facteur_duplication,
+        "octets_projetes": int(projete),
+        "go_projetes": round(projete / _OCTETS_PAR_GO, 2),
+        "depasse_seuil_push": projete / _OCTETS_PAR_GO > SEUIL_PUSH_GO,
+        "depasse_seuil_depot": projete / _OCTETS_PAR_GO > SEUIL_DEPOT_RECOMMANDE_GO,
+        "profils_avant_seuil_depot": (
+            int(SEUIL_DEPOT_RECOMMANDE_GO * _OCTETS_PAR_GO / (par_profil * facteur_duplication))
+            if par_profil else None
+        ),
+    }
+
+
+def _mo(octets: int) -> str:
+    return f"{octets / _OCTETS_PAR_MO:,.1f} Mo".replace(",", " ")
+
+
+def _avertissement_representativite(vol: dict[str, Any], proj: dict[str, Any]) -> str:
+    """Mise en garde sur la représentativité — mais **seulement quand elle
+    s'applique**.
+
+    Quand la population mesurée atteint déjà la cible, il n'y a plus de
+    projection : le total est un fait. Laisser l'avertissement dans ce cas
+    inviterait à douter d'un chiffre certain, ce qui est aussi trompeur que
+    d'omettre la réserve dans le cas inverse.
+    """
+    if vol["nb_profils"] >= proj["cible"]:
+        return (
+            f"> Population **complète** ({vol['nb_profils']} profils pour une "
+            f"cible de {proj['cible']}) : le total est mesuré, pas extrapolé."
+        )
+    return (
+        "> La projection suppose la population représentative. Si elle ne porte "
+        "que des profils déjà générés, elle peut être biaisée — les profils "
+        "générés en premier ne sont pas forcément de poids médian."
+    )
+
+
+def generate_markdown_report(rapport: dict[str, Any]) -> str:
+    """Rapport prêt à coller dans #429."""
+    vol = rapport["volumetrie"]
+    if not vol.get("nb_profils"):
+        return "# Volumétrie des profils\n\nAucun profil analysé.\n"
+
+    total = vol["octets_total"]
+    lignes = [
+        "# Volumétrie des profils et leviers d'allègement",
+        "",
+        f"Population : **{vol['nb_profils']} profils**, **{_mo(total)}** au "
+        f"total — mesuré sur tous les fichiers.",
+        "",
+        f"Ratios (compact, gzip, poids par champ) calculés sur "
+        f"**{vol.get('nb_echantillon', vol['nb_profils'])} profils** "
+        f"échantillonnés à intervalle régulier sur la distribution des tailles.",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Profil médian | {_mo(vol['octets_median'])} |",
+        f"| Profil moyen | {_mo(vol['octets_moyen'])} |",
+        f"| Profil le plus lourd | {_mo(vol['octets_max'])} (`{vol['fichier_max']}`) |",
+        "",
+    ]
+
+    proj = rapport.get("projection") or {}
+    if proj:
+        lignes += [
+            "## Projection",
+            "",
+            f"À **{proj['cible']} profils**, facteur de duplication "
+            f"`raw`/`pivot` = {proj['facteur_duplication']} :",
+            "",
+            f"- **{proj['go_projetes']} Go** de données versionnées ;",
+            f"- seuil de push GitHub ({SEUIL_PUSH_GO} Go) : "
+            f"{'**dépassé**' if proj['depasse_seuil_push'] else 'respecté'} ;",
+            f"- seuil de dépôt recommandé ({SEUIL_DEPOT_RECOMMANDE_GO} Go) : "
+            f"{'**dépassé**' if proj['depasse_seuil_depot'] else 'respecté'} ;",
+            f"- seuil atteint vers **{proj['profils_avant_seuil_depot']} profils**.",
+            "",
+            _avertissement_representativite(vol, proj),
+            "",
+        ]
+
+    lignes += [
+        "## Leviers, tous sans perte d'information",
+        "",
+        "| Levier | Gain | Part | Remarque |",
+        "| --- | --- | --- | --- |",
+    ]
+    for levier in rapport["leviers"]:
+        part = 100 * levier["gain_octets"] / total if total else 0
+        lignes.append(
+            f"| {levier['nom']} | {_mo(levier['gain_octets'])} | "
+            f"**{part:.1f} %** | {levier['note']} |"
+        )
+
+    lignes += [
+        "",
+        "> Aucun levier listé ici ne supprime de donnée : ils la compressent ou "
+        "la déplacent hors du fichier de profil. C'est délibéré — l'UI n'est pas "
+        "définitive, et la refonte analytics (#324) aura besoin de champs que "
+        "l'interface actuelle n'exploite pas encore (#429).",
+        "",
+    ]
+    if rapport.get("erreurs_lecture"):
+        lignes += [
+            "## Fichiers illisibles",
+            "",
+            *(f"- `{f}`" for f in rapport["erreurs_lecture"]),
+            "",
+        ]
+    return "\n".join(lignes)
+
+
+def analyser_repertoires(
+    repertoires: list[Path], echantillon: int
+) -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+    """I/O en deux passes, pour rester utilisable à pleine échelle.
+
+    Passe 1 — `stat` sur TOUS les fichiers : total, médiane et maximum sont donc
+    exacts, jamais extrapolés.
+
+    Passe 2 — analyse profonde (parsing, ré-encodage compact, gzip, poids par
+    champ) sur un échantillon seulement. Gzipper 1,1 Go prend plusieurs minutes,
+    et ce serait quatre fois pire sur le roster complet : un script de mesure
+    qui ne finit pas ne sert à rien.
+
+    L'échantillon est pris à intervalle régulier sur les fichiers **triés par
+    taille**, et non au hasard : il couvre ainsi toute la distribution, des
+    profils légers aux gros déposants d'amendements. Un tirage aléatoire
+    donnerait des ratios instables d'une exécution à l'autre.
+    """
+    tous: list[Path] = []
+    for repertoire in repertoires:
+        if not repertoire.is_dir():
+            print(f"  [!] Répertoire absent, ignoré : {repertoire}", file=sys.stderr)
+            continue
+        tous.extend(sorted(repertoire.glob("*.json")))
+
+    tailles = [(c, c.stat().st_size) for c in tous]
+    tailles.sort(key=lambda ct: ct[1])
+    exact = {
+        "nb_profils": len(tailles),
+        "octets_total": sum(t for _c, t in tailles),
+        "octets_median": tailles[len(tailles) // 2][1] if tailles else 0,
+        "octets_max": tailles[-1][1] if tailles else 0,
+        "fichier_max": tailles[-1][0].name if tailles else None,
+    }
+
+    if echantillon > 1 and len(tailles) > echantillon:
+        # Indices répartis de 0 à len-1 INCLUS. Un simple `int(i * len/n)`
+        # s'arrête avant le dernier élément et manque donc systématiquement le
+        # profil le plus lourd — précisément celui où les amendements pèsent le
+        # plus. Les ratios en sortaient sous-estimés.
+        dernier = len(tailles) - 1
+        choisis = [
+            tailles[round(i * dernier / (echantillon - 1))][0]
+            for i in range(echantillon)
+        ]
+    elif echantillon == 1 and tailles:
+        choisis = [tailles[-1][0]]
+    else:
+        choisis = [c for c, _t in tailles]
+
+    mesures: list[dict[str, Any]] = []
+    erreurs: list[str] = []
+    for chemin in choisis:
+        mesure = analyser_profil(chemin)
+        if mesure is None:
+            erreurs.append(str(chemin))
+        else:
+            mesures.append(mesure)
+    exact["nb_echantillon"] = len(mesures)
+    return mesures, erreurs, exact
+
+
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--profils-dir", action="append", default=None, metavar="REP",
+        help="Répertoire de profils à analyser (répétable). "
+             "Défaut : pivot_data/profiles.",
+    )
+    parser.add_argument(
+        "--cible", type=int, default=752, metavar="N",
+        help="Effectif projeté (défaut : 752, le roster complet).",
+    )
+    parser.add_argument(
+        "--facteur-duplication", type=float, default=2.0, metavar="F",
+        help="2.0 si raw_data ET pivot_data sont versionnés (défaut), "
+             "1.0 si un seul l'est.",
+    )
+    parser.add_argument(
+        "--echantillon", type=int, default=40, metavar="N",
+        help="Nombre de profils analysés en profondeur (défaut : 40, 0 = tous). "
+             "Le total, la médiane et le maximum restent mesurés sur TOUS les "
+             "fichiers ; seuls les ratios compact/gzip/champs sont échantillonnés.",
+    )
+    parser.add_argument("--out", metavar="FICHIER", help="Rapport Markdown.")
+    parser.add_argument("--out-json", metavar="FICHIER", help="Rapport JSON.")
+    return parser
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    args = _build_arg_parser().parse_args(argv)
+    repertoires = [Path(d) for d in (args.profils_dir or ["pivot_data/profiles"])]
+
+    mesures, erreurs, exact = analyser_repertoires(repertoires, args.echantillon)
+    if not mesures:
+        print("[!] Aucun profil analysable.", file=sys.stderr)
+        return 1
+
+    volumetrie = compute_volumetrie(mesures, exact)
+    rapport = {
+        "volumetrie": volumetrie,
+        "leviers": compute_leviers(volumetrie),
+        "projection": compute_projection(volumetrie, args.cible, args.facteur_duplication),
+        "erreurs_lecture": erreurs,
+    }
+
+    markdown = generate_markdown_report(rapport)
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(markdown, encoding="utf-8")
+        print(f"→ Rapport écrit : {args.out}", file=sys.stderr)
+    else:
+        print(markdown)
+    if args.out_json:
+        Path(args.out_json).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out_json).write_text(
+            json.dumps(rapport, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        print(f"→ Rapport JSON écrit : {args.out_json}", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

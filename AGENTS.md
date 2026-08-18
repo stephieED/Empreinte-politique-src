@@ -51,6 +51,10 @@ graph TD
 ```
 
 - `raw_data/` = source-near; `pivot_data/` = only layer `web/` reads.
+- **JSON write format**: individual profiles (`raw_data/profiles/`, `pivot_data/profiles/`)
+  are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
+  alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
+  Never read a profile line by line; the format carries no meaning.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`.
 - Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
   from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
@@ -177,7 +181,8 @@ don't restate it in the chat.
 - `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
 - `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
-- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`).
+- `src/json_io.py`: profile JSON write format (compact vs indented, #433).
+- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
   automatically — consult on request). Rationale for deferred items lives
   in `docs/technical_decisions.md#hors-perimetre`, not duplicated here.

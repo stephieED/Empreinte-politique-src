@@ -59,6 +59,7 @@ from candidate_profile import (
     _extract_acteur_ref,
     _extract_mandats_officiels,
 )
+from json_io import ecrire_profil_json
 
 DEFAULT_PROFILES_DIR = Path("raw_data") / "profiles"
 
@@ -280,7 +281,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"      … et {len(retires) - 3} autre(s)")
 
         if args.apply:
-            chemin.write_text(json.dumps(profil, ensure_ascii=False, indent=2), encoding="utf-8")
+            ecrire_profil_json(chemin, profil)
 
     mode = "APPLIQUÉ" if args.apply else "SIMULATION (--apply pour écrire)"
     print(f"\n=== {mode} ===")

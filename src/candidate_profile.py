@@ -46,6 +46,7 @@ from gouvernement_textes import (
     ensure_dossiers_zips_downloaded,
     iter_dossiers_bruts,
 )
+from json_io import ecrire_profil_json
 from parse_syceron import parse_syceron_xml
 from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
 
@@ -4560,9 +4561,7 @@ def main():
     profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
     out_path = Path(args.out) if args.out else Path("raw_data/profiles") / f"{args.slug}.json"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(profile, f, ensure_ascii=False, indent=2)
+    ecrire_profil_json(out_path, profile)
 
     nb_votes = len(profile["votes"])
     print(f"\n✓ Profil écrit dans {out_path}")

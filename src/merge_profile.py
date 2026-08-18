@@ -39,6 +39,7 @@ from candidate_profile import (
     WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
 )
+from json_io import ecrire_profil_json
 
 Key = Any
 
@@ -492,9 +493,7 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
                 continue
             merged = merge_raw_profile(merged, profile)
         if merged is not None:
-            dest = out_dir / filename
-            with open(dest, "w", encoding="utf-8") as f:
-                json.dump(merged, f, ensure_ascii=False, indent=2)
+            ecrire_profil_json(out_dir / filename, merged)
             n_written += 1
 
     return n_written
