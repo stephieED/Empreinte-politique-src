@@ -226,3 +226,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Worktrees Claude Code (jamais versionnés)
+.claude/worktrees/
