@@ -51,6 +51,12 @@
       "date_depot": "2017-06-14",
       "date_dernier_evenement": "2017-09-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA345619",
+          "membre_id": "nosdeputes:edouard-philippe"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique"
     }
   ],
@@ -91,7 +97,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T15:10:20+0000",
+    "genere_le": "2026-08-18T20:02:03+0200",
     "licence_donnees": "",
     "warnings": []
   }

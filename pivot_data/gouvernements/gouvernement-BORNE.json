@@ -281,6 +281,12 @@
       "date_depot": "2023-12-20",
       "date_dernier_evenement": "2024-05-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49124"
     },
     {
@@ -291,6 +297,12 @@
       "date_depot": "2023-12-20",
       "date_dernier_evenement": "2024-05-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49123"
     },
     {
@@ -301,6 +313,16 @@
       "date_depot": "2023-12-12",
       "date_dernier_evenement": "2024-03-08",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA702992",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/liberte_interruption_grossesse"
     },
     {
@@ -311,6 +333,20 @@
       "date_depot": "2023-12-12",
       "date_dernier_evenement": "2024-04-09",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA793788",
+          "membre_id": "nosdeputes:dominique-faure"
+        },
+        {
+          "acteur_ref": "PA774109",
+          "membre_id": "nosdeputes:clement-beaune"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/renovation_habitat_degrade"
     },
     {
@@ -321,6 +357,12 @@
       "date_depot": "2023-12-06",
       "date_dernier_evenement": "2024-04-17",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49049"
     },
     {
@@ -331,6 +373,16 @@
       "date_depot": "2023-11-22",
       "date_dernier_evenement": "2023-11-22",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue_aveugles"
     },
     {
@@ -341,6 +393,16 @@
       "date_depot": "2023-11-22",
       "date_dernier_evenement": "2023-11-22",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA721498",
+          "membre_id": "nosdeputes:stanislas-guerini"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_ddaddue"
     },
     {
@@ -351,6 +413,12 @@
       "date_depot": "2023-11-22",
       "date_dernier_evenement": "2024-05-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48973"
     },
     {
@@ -361,6 +429,12 @@
       "date_depot": "2023-11-15",
       "date_dernier_evenement": "2024-05-10",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48909"
     },
     {
@@ -371,6 +445,12 @@
       "date_depot": "2023-11-15",
       "date_dernier_evenement": "2024-04-22",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48908"
     },
     {
@@ -381,6 +461,16 @@
       "date_depot": "2023-11-15",
       "date_dernier_evenement": "2023-11-15",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_30_aout_2023"
     },
     {
@@ -391,6 +481,16 @@
       "date_depot": "2023-11-08",
       "date_dernier_evenement": "2023-11-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA759832",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-816"
     },
     {
@@ -401,6 +501,20 @@
       "date_depot": "2023-10-31",
       "date_dernier_evenement": "2023-11-30",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PJL_finances_gestion_fin_2023"
     },
     {
@@ -411,6 +525,16 @@
       "date_depot": "2023-10-31",
       "date_dernier_evenement": "2024-03-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_convention_fiscal_moldavie"
     },
     {
@@ -421,6 +545,12 @@
       "date_depot": "2023-10-18",
       "date_dernier_evenement": "2024-04-02",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48779"
     },
     {
@@ -431,6 +561,16 @@
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/faciliter_financement_reconstruction_batiments"
     },
     {
@@ -441,6 +581,16 @@
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/derogations_code_commande_publique_emeutes"
     },
     {
@@ -451,6 +601,16 @@
       "date_depot": "2023-10-11",
       "date_dernier_evenement": "2023-10-11",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acceleration_delivrance_urbanisme_emeute"
     },
     {
@@ -461,6 +621,20 @@
       "date_depot": "2023-09-27",
       "date_dernier_evenement": "2023-12-29",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLF_2024"
     },
     {
@@ -471,6 +645,24 @@
       "date_depot": "2023-09-27",
       "date_dernier_evenement": "2023-12-26",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA826635",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLFSS2024"
     },
     {
@@ -481,6 +673,20 @@
       "date_depot": "2023-09-27",
       "date_dernier_evenement": "2023-11-17",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721764",
+          "membre_id": "nosdeputes:olivia-gregoire"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/urgence_nego_grd_distrib"
     },
     {
@@ -491,6 +697,24 @@
       "date_depot": "2023-09-20",
       "date_dernier_evenement": "2023-09-20",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA774109",
+          "membre_id": "nosdeputes:clement-beaune"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-661"
     },
     {
@@ -501,6 +725,16 @@
       "date_depot": "2023-09-20",
       "date_dernier_evenement": "2023-09-20",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2003-483"
     },
     {
@@ -511,6 +745,16 @@
       "date_depot": "2023-08-23",
       "date_dernier_evenement": "2024-02-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_Maurice_France"
     },
     {
@@ -521,6 +765,12 @@
       "date_depot": "2023-07-21",
       "date_dernier_evenement": "2023-07-21",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48481"
     },
     {
@@ -531,6 +781,12 @@
       "date_depot": "2023-07-13",
       "date_dernier_evenement": "2023-07-25",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48392"
     },
     {
@@ -541,6 +797,16 @@
       "date_depot": "2023-07-13",
       "date_dernier_evenement": "2023-07-13",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA607846",
+          "membre_id": "nosdeputes:gerald-darmanin"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/fomation_activites_privees_securite"
     },
     {
@@ -551,6 +817,16 @@
       "date_depot": "2023-07-05",
       "date_dernier_evenement": "2023-12-27",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_differends_investissements"
     },
     {
@@ -561,6 +837,12 @@
       "date_depot": "2023-07-05",
       "date_dernier_evenement": "2023-07-05",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48350"
     },
     {
@@ -571,6 +853,16 @@
       "date_depot": "2023-06-21",
       "date_dernier_evenement": "2024-03-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_andorre_demarcation"
     },
     {
@@ -581,6 +873,16 @@
       "date_depot": "2023-06-14",
       "date_dernier_evenement": "2023-06-14",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_2023208"
     },
     {
@@ -591,6 +893,16 @@
       "date_depot": "2023-06-08",
       "date_dernier_evenement": "2023-06-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA759832",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_2022887"
     },
     {
@@ -601,6 +913,12 @@
       "date_depot": "2023-06-07",
       "date_dernier_evenement": "2023-12-18",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48163"
     },
     {
@@ -611,6 +929,16 @@
       "date_depot": "2023-05-30",
       "date_dernier_evenement": "2024-04-09",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/entraide_kazakhstan"
     },
     {
@@ -621,6 +949,20 @@
       "date_depot": "2023-05-24",
       "date_dernier_evenement": "2023-11-29",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/partage_valeur_accord"
     },
     {
@@ -631,6 +973,20 @@
       "date_depot": "2023-05-24",
       "date_dernier_evenement": "2023-07-03",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_ss_2022"
     },
     {
@@ -641,6 +997,12 @@
       "date_depot": "2023-05-16",
       "date_dernier_evenement": "2023-10-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47917"
     },
     {
@@ -651,6 +1013,12 @@
       "date_depot": "2023-05-10",
       "date_dernier_evenement": "2023-05-10",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47859"
     },
     {
@@ -661,6 +1029,12 @@
       "date_depot": "2023-05-10",
       "date_dernier_evenement": "2024-05-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47884"
     },
     {
@@ -671,6 +1045,16 @@
       "date_depot": "2023-05-10",
       "date_dernier_evenement": "2024-03-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_accord_france_canada_vol"
     },
     {
@@ -681,6 +1065,12 @@
       "date_depot": "2023-05-03",
       "date_dernier_evenement": "2023-11-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47779"
     },
     {
@@ -691,6 +1081,12 @@
       "date_depot": "2023-05-03",
       "date_dernier_evenement": "2023-11-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47780"
     },
     {
@@ -701,6 +1097,16 @@
       "date_depot": "2023-05-03",
       "date_dernier_evenement": "2023-12-27",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_France_Luxembourg_transports_transfrontaliers"
     },
     {
@@ -711,6 +1117,12 @@
       "date_depot": "2023-04-26",
       "date_dernier_evenement": "2023-04-26",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47698"
     },
     {
@@ -721,6 +1133,16 @@
       "date_depot": "2023-04-26",
       "date_dernier_evenement": "2023-04-26",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_secheresse_rehydratation"
     },
     {
@@ -731,6 +1153,12 @@
       "date_depot": "2023-04-26",
       "date_dernier_evenement": "2023-12-22",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47719"
     },
     {
@@ -741,6 +1169,12 @@
       "date_depot": "2023-04-19",
       "date_dernier_evenement": "2023-07-22",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47616"
     },
     {
@@ -751,6 +1185,16 @@
       "date_depot": "2023-04-19",
       "date_dernier_evenement": "2023-04-19",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratifiantordonnance2023-53du1erfevrier2023"
     },
     {
@@ -761,6 +1205,12 @@
       "date_depot": "2023-04-19",
       "date_dernier_evenement": "2023-07-13",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47615"
     },
     {
@@ -771,6 +1221,20 @@
       "date_depot": "2023-04-13",
       "date_dernier_evenement": "2023-07-03",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR2022"
     },
     {
@@ -781,6 +1245,20 @@
       "date_depot": "2023-04-13",
       "date_dernier_evenement": "2023-07-03",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR_2021"
     },
     {
@@ -791,6 +1269,12 @@
       "date_depot": "2023-04-13",
       "date_dernier_evenement": "2023-07-18",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/douanes_moyens_nouvelles_menaces"
     },
     {
@@ -801,6 +1285,16 @@
       "date_depot": "2023-04-04",
       "date_dernier_evenement": "2025-09-30",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA643210",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_militaire_2024_2030"
     },
     {
@@ -811,6 +1305,12 @@
       "date_depot": "2023-03-28",
       "date_dernier_evenement": "2023-03-28",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47463"
     },
     {
@@ -821,6 +1321,12 @@
       "date_depot": "2023-03-22",
       "date_dernier_evenement": "2023-12-27",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47439"
     },
     {
@@ -831,6 +1337,16 @@
       "date_depot": "2023-03-22",
       "date_dernier_evenement": "2023-03-22",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_reforme_adoption"
     },
     {
@@ -841,6 +1357,16 @@
       "date_depot": "2023-03-08",
       "date_dernier_evenement": "2023-03-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_apprentissage_transfrontalier"
     },
     {
@@ -851,6 +1377,12 @@
       "date_depot": "2023-03-01",
       "date_dernier_evenement": "2023-03-01",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47299"
     },
     {
@@ -861,6 +1393,16 @@
       "date_depot": "2023-03-01",
       "date_dernier_evenement": "2023-03-01",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/acces_qualite_eaux_consommationhumaine"
     },
     {
@@ -871,6 +1413,16 @@
       "date_depot": "2023-02-22",
       "date_dernier_evenement": "2023-02-22",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_casierjudiciairenationalautomatise"
     },
     {
@@ -881,6 +1433,16 @@
       "date_depot": "2023-02-22",
       "date_dernier_evenement": "2023-11-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/protocole_France_MacedoineduNord_sejourirregulier"
     },
     {
@@ -891,6 +1453,12 @@
       "date_depot": "2023-02-22",
       "date_dernier_evenement": "2023-07-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47271"
     },
     {
@@ -901,6 +1469,16 @@
       "date_depot": "2023-02-15",
       "date_dernier_evenement": "2023-06-02",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_france_andorre_routes_nationales"
     },
     {
@@ -911,6 +1489,12 @@
       "date_depot": "2023-02-01",
       "date_dernier_evenement": "2024-01-26",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47118"
     },
     {
@@ -921,6 +1505,28 @@
       "date_depot": "2023-01-23",
       "date_dernier_evenement": "2023-04-14",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plrfss_pour_2023"
     },
     {
@@ -931,6 +1537,20 @@
       "date_depot": "2023-01-18",
       "date_dernier_evenement": "2023-01-18",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_orodnnance_20221421_ladefense"
     },
     {
@@ -941,6 +1561,16 @@
       "date_depot": "2023-01-18",
       "date_dernier_evenement": "2023-01-18",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance20221203"
     },
     {
@@ -951,6 +1581,20 @@
       "date_depot": "2023-01-11",
       "date_dernier_evenement": "2023-01-11",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA719938",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_dispositions_controles_sanctions_reforme_outil_gestion_agriculture"
     },
     {
@@ -961,6 +1605,16 @@
       "date_depot": "2023-01-11",
       "date_dernier_evenement": "2023-07-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_resolution_convention_1948_creation_omi"
     },
     {
@@ -971,6 +1625,16 @@
       "date_depot": "2023-01-04",
       "date_dernier_evenement": "2023-01-04",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_ordonnance_droits_sociaux_detenus"
     },
     {
@@ -981,6 +1645,12 @@
       "date_depot": "2023-01-04",
       "date_dernier_evenement": "2023-01-04",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46948"
     },
     {
@@ -991,6 +1661,20 @@
       "date_depot": "2022-12-23",
       "date_dernier_evenement": "2022-12-23",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_detachement_salaries_transports"
     },
     {
@@ -1001,6 +1685,12 @@
       "date_depot": "2022-12-22",
       "date_dernier_evenement": "2023-05-19",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46918"
     },
     {
@@ -1011,6 +1701,12 @@
       "date_depot": "2022-12-22",
       "date_dernier_evenement": "2023-07-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46919"
     },
     {
@@ -1021,6 +1717,12 @@
       "date_depot": "2022-12-07",
       "date_dernier_evenement": "2022-12-07",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46828"
     },
     {
@@ -1031,6 +1733,16 @@
       "date_depot": "2022-12-07",
       "date_dernier_evenement": "2023-07-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_premier_amendement_protocole_convention_espoo"
     },
     {
@@ -1041,6 +1753,12 @@
       "date_depot": "2022-11-23",
       "date_dernier_evenement": "2023-03-09",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46734"
     },
     {
@@ -1051,6 +1769,20 @@
       "date_depot": "2022-11-02",
       "date_dernier_evenement": "2022-12-01",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plfr_2022"
     },
     {
@@ -1061,6 +1793,12 @@
       "date_depot": "2022-11-02",
       "date_dernier_evenement": "2024-02-13",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46622"
     },
     {
@@ -1071,6 +1809,12 @@
       "date_depot": "2022-10-26",
       "date_dernier_evenement": "2023-07-07",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46537"
     },
     {
@@ -1081,6 +1825,16 @@
       "date_depot": "2022-10-19",
       "date_dernier_evenement": "2022-10-19",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_20221086"
     },
     {
@@ -1091,6 +1845,20 @@
       "date_depot": "2022-10-12",
       "date_dernier_evenement": "2022-10-12",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA801870",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA429846",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_regles_construction2"
     },
     {
@@ -1101,6 +1869,12 @@
       "date_depot": "2022-09-26",
       "date_dernier_evenement": "2024-02-13",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46539"
     },
     {
@@ -1111,6 +1885,20 @@
       "date_depot": "2022-09-26",
       "date_dernier_evenement": "2022-12-30",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plf_2023"
     },
     {
@@ -1121,6 +1909,20 @@
       "date_depot": "2022-09-26",
       "date_dernier_evenement": "2023-12-18",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_finances_publiques_2023_2027"
     },
     {
@@ -1131,6 +1933,24 @@
       "date_depot": "2022-09-26",
       "date_dernier_evenement": "2022-12-23",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA801862",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/securite_sociale_2023"
     },
     {
@@ -1141,6 +1961,16 @@
       "date_depot": "2022-09-14",
       "date_dernier_evenement": "2022-09-14",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA719938",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/pjlratifiantordonnance2022-1075developpementoutilsgestionrisquesclimatiquesenagriculture"
     },
     {
@@ -1151,6 +1981,16 @@
       "date_depot": "2022-09-07",
       "date_dernier_evenement": "2022-09-07",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/transfert_dgfip_ta_partlogement"
     },
     {
@@ -1161,6 +2001,12 @@
       "date_depot": "2022-09-07",
       "date_dernier_evenement": "2023-01-24",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46269"
     },
     {
@@ -1171,6 +2017,16 @@
       "date_depot": "2022-09-07",
       "date_dernier_evenement": "2022-12-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_fonctionnement_marche_travail"
     },
     {
@@ -1181,6 +2037,20 @@
       "date_depot": "2022-08-24",
       "date_dernier_evenement": "2023-06-02",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbationconventionentraidejudiciaireenmatierepenaleFranceSenegal"
     },
     {
@@ -1191,6 +2061,20 @@
       "date_depot": "2022-08-24",
       "date_dernier_evenement": "2023-02-01",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accordFranceRoyaumeUnisecuritemaritime"
     },
     {
@@ -1201,6 +2085,16 @@
       "date_depot": "2022-07-29",
       "date_dernier_evenement": "2022-11-24",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/restructuration_plateforme_douaniere_bale_saintlouis"
     },
     {
@@ -1211,6 +2105,12 @@
       "date_depot": "2022-07-20",
       "date_dernier_evenement": "2022-07-20",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46009"
     },
     {
@@ -1221,6 +2121,12 @@
       "date_depot": "2022-07-20",
       "date_dernier_evenement": "2022-07-20",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46008"
     },
     {
@@ -1231,6 +2137,12 @@
       "date_depot": "2022-07-13",
       "date_dernier_evenement": "2022-07-13",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45972"
     },
     {
@@ -1241,6 +2153,12 @@
       "date_depot": "2022-07-13",
       "date_dernier_evenement": "2022-08-05",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N45973"
     },
     {
@@ -1251,6 +2169,16 @@
       "date_depot": "2022-07-13",
       "date_dernier_evenement": "2023-02-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_cour_penale_internationale"
     },
     {
@@ -1261,6 +2189,28 @@
       "date_depot": "2022-07-07",
       "date_dernier_evenement": "2022-08-16",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA721134",
+          "membre_id": "nosdeputes:roland-lescure"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA330357",
+          "membre_id": "nosdeputes:olivier-dussopt"
+        },
+        {
+          "acteur_ref": "PA759832",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/mesures_urgence_pouvoir_achat"
     },
     {
@@ -1271,6 +2221,20 @@
       "date_depot": "2022-07-07",
       "date_dernier_evenement": "2022-08-16",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/loi_finances_rectificative_2022"
     },
     {
@@ -1281,6 +2245,20 @@
       "date_depot": "2022-07-07",
       "date_dernier_evenement": "2022-10-31",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_banque_reglements_internationaux"
     },
     {
@@ -1291,6 +2269,20 @@
       "date_depot": "2022-07-04",
       "date_dernier_evenement": "2022-08-03",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_budget_2021"
     },
     {
@@ -1301,6 +2293,16 @@
       "date_depot": "2022-07-04",
       "date_dernier_evenement": "2022-10-31",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA312976",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratif_traite_coop_france_italie"
     },
     {
@@ -1311,6 +2313,16 @@
       "date_depot": "2022-07-04",
       "date_dernier_evenement": "2022-07-04",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA773443",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_partie_legislative_code_penitentiaire"
     },
     {
@@ -1321,6 +2333,12 @@
       "date_depot": "2022-07-04",
       "date_dernier_evenement": "2022-07-30",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/maintien_dispositif_veille_securite_sanitaire"
     },
     {
@@ -1331,6 +2349,12 @@
       "date_depot": "2022-06-30",
       "date_dernier_evenement": "2023-03-27",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_statut_force_france_paysbas"
     },
     {
@@ -1341,6 +2365,12 @@
       "date_depot": "2022-06-15",
       "date_dernier_evenement": "2025-03-25",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_extradition_avec_le_cambodge"
     },
     {
@@ -1351,6 +2381,12 @@
       "date_depot": "2022-06-08",
       "date_dernier_evenement": "2022-06-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45831"
     },
     {
@@ -1361,6 +2397,12 @@
       "date_depot": "2022-06-08",
       "date_dernier_evenement": "2022-06-29",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45830"
     },
     {
@@ -1371,6 +2413,12 @@
       "date_depot": "2022-06-01",
       "date_dernier_evenement": "2022-06-01",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45798"
     },
     {
@@ -1381,6 +2429,12 @@
       "date_depot": "2022-06-01",
       "date_dernier_evenement": "2022-06-01",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45806"
     }
   ],
@@ -1521,7 +2575,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T15:10:20+0000",
+    "genere_le": "2026-08-18T20:02:03+0200",
     "licence_donnees": "",
     "warnings": []
   }

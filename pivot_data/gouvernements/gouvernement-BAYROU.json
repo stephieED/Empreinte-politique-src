@@ -128,6 +128,12 @@
       "date_depot": "2025-08-27",
       "date_dernier_evenement": "2025-08-27",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52677"
     },
     {
@@ -138,6 +144,20 @@
       "date_depot": "2025-07-30",
       "date_dernier_evenement": "2026-01-28",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA717161",
+          "membre_id": "nosdeputes:elisabeth-borne"
+        },
+        {
+          "acteur_ref": "PA855049",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_regulation_enseignement_superieur_prive"
     },
     {
@@ -148,6 +168,12 @@
       "date_depot": "2025-07-30",
       "date_dernier_evenement": "2026-05-09",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52635"
     },
     {
@@ -158,6 +184,12 @@
       "date_depot": "2025-07-30",
       "date_dernier_evenement": "2025-10-29",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52600"
     },
     {
@@ -168,6 +200,12 @@
       "date_depot": "2025-07-30",
       "date_dernier_evenement": "2025-07-30",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52599"
     },
     {
@@ -178,6 +216,12 @@
       "date_depot": "2025-07-16",
       "date_dernier_evenement": "2026-03-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52561"
     },
     {
@@ -188,6 +232,12 @@
       "date_depot": "2025-07-11",
       "date_dernier_evenement": "2026-06-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52549"
     },
     {
@@ -198,6 +248,12 @@
       "date_depot": "2025-07-02",
       "date_dernier_evenement": "2025-07-02",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52433"
     },
     {
@@ -208,6 +264,16 @@
       "date_depot": "2025-07-02",
       "date_dernier_evenement": "2026-04-07",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/cooperation_judiciaire_France_Myanmar"
     },
     {
@@ -218,6 +284,12 @@
       "date_depot": "2025-06-19",
       "date_dernier_evenement": "2026-01-28",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52354"
     },
     {
@@ -228,6 +300,12 @@
       "date_depot": "2025-06-04",
       "date_dernier_evenement": "2025-06-04",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52247"
     },
     {
@@ -238,6 +316,16 @@
       "date_depot": "2025-06-04",
       "date_dernier_evenement": "2025-11-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/accord_coop_def_macnord"
     },
     {
@@ -248,6 +336,12 @@
       "date_depot": "2025-05-23",
       "date_dernier_evenement": "2025-05-23",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52135"
     },
     {
@@ -258,6 +352,24 @@
       "date_depot": "2025-05-23",
       "date_dernier_evenement": "2025-06-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA267797",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA855045",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721670",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_comptes_securite_sociale_2024"
     },
     {
@@ -268,6 +380,12 @@
       "date_depot": "2025-05-15",
       "date_dernier_evenement": "2026-03-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52100"
     },
     {
@@ -278,6 +396,12 @@
       "date_depot": "2025-05-15",
       "date_dernier_evenement": "2026-03-03",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52103"
     },
     {
@@ -288,6 +412,16 @@
       "date_depot": "2025-05-15",
       "date_dernier_evenement": "2026-03-02",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/creations_fonds_africain_dev"
     },
     {
@@ -298,6 +432,12 @@
       "date_depot": "2025-05-07",
       "date_dernier_evenement": "2025-10-24",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52040"
     },
     {
@@ -308,6 +448,12 @@
       "date_depot": "2025-04-28",
       "date_dernier_evenement": "2025-07-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52002"
     },
     {
@@ -318,6 +464,12 @@
       "date_depot": "2025-04-28",
       "date_dernier_evenement": "2026-07-01",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N52000"
     },
     {
@@ -328,6 +480,12 @@
       "date_depot": "2025-04-22",
       "date_dernier_evenement": "2025-06-02",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51986"
     },
     {
@@ -338,6 +496,12 @@
       "date_depot": "2025-04-22",
       "date_dernier_evenement": "2025-08-11",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51985"
     },
     {
@@ -348,6 +512,12 @@
       "date_depot": "2025-04-22",
       "date_dernier_evenement": "2025-08-11",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51984"
     },
     {
@@ -358,6 +528,12 @@
       "date_depot": "2025-04-16",
       "date_dernier_evenement": "2025-06-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/Projetdeloirelatifauxresultatsdelagestionetportantapprobationdescomptesdelannee2024"
     },
     {
@@ -368,6 +544,12 @@
       "date_depot": "2025-03-26",
       "date_dernier_evenement": "2025-06-27",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51789"
     },
     {
@@ -378,6 +560,16 @@
       "date_depot": "2025-03-19",
       "date_dernier_evenement": "2025-05-23",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/accord_cadre_france_onu_privileges_immunites"
     },
     {
@@ -388,6 +580,16 @@
       "date_depot": "2025-03-05",
       "date_dernier_evenement": "2025-07-21",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/convention_panama_jud"
     },
     {
@@ -398,6 +600,12 @@
       "date_depot": "2025-02-13",
       "date_dernier_evenement": "2025-12-26",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51519"
     },
     {
@@ -408,6 +616,12 @@
       "date_depot": "2025-01-29",
       "date_dernier_evenement": "2025-01-29",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51420"
     },
     {
@@ -418,6 +632,16 @@
       "date_depot": "2025-01-22",
       "date_dernier_evenement": "2025-12-16",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_plusieurs_conventions_cadres_bureaux_controles"
     },
     {
@@ -428,6 +652,16 @@
       "date_depot": "2025-01-15",
       "date_dernier_evenement": "2025-01-15",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA855045",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratif_ordo_influence"
     },
     {
@@ -438,6 +672,16 @@
       "date_depot": "2025-01-08",
       "date_dernier_evenement": "2025-01-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA607846",
+          "membre_id": "nosdeputes:gerald-darmanin"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/transpo_directive_ue_20222381"
     },
     {
@@ -448,6 +692,12 @@
       "date_depot": "2025-01-08",
       "date_dernier_evenement": "2025-01-08",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51236"
     },
     {
@@ -458,6 +708,16 @@
       "date_depot": "2025-01-08",
       "date_dernier_evenement": "2025-02-24",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA267622",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/urgenceMayotte"
     },
     {
@@ -468,6 +728,12 @@
       "date_depot": "2025-01-08",
       "date_dernier_evenement": "2025-04-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA410",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51237"
     }
   ],
@@ -543,7 +809,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T15:10:20+0000",
+    "genere_le": "2026-08-18T20:02:03+0200",
     "licence_donnees": "",
     "warnings": []
   }
