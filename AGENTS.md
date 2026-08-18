@@ -85,7 +85,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |
 | `mandats[]` | Elections, committees... + sensitive fields (Section 5) |
-| `votes[]` | One record per vote |
+| `votes[]` | One record per vote, `legislature` included (AN legislatures 14-17 aggregated, `#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
 | `amendements[]` | Outcome + inadmissibility/rejection distinction |
 | `interventions[]` | Speeches, questions (`type_detail`) |
@@ -100,6 +100,9 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
 - `mandats[].position_dans_hemicycle`: requires `source_url` (rule 6).
 - `mandats[].suspendu_pour_fonction_gouvernementale`: never confuse with completed mandate.
 - `votes[].type_vote == "motion_censure"` requires `texte_lie_id`; 49.3 → `sort = "adopte_sans_vote_49_3"`, no position (rule 4).
+- `votes[].numero_scrutin` restarts at 1 in each legislature: never a key on its own.
+  Dedupe by AN `uid`, key group cohesion by `(legislature, numero)` — see
+  `docs/technical_decisions.md#votes-multi-legislature`.
 - `amendements[].sort == "irrecevable"` requires `base_juridique_irrecevabilite` (`"art. 40"` or `"art. 45"`).
 - `amendements[].type_deposant`: never aggregate adoption rates across depositor types (rule, Section 6).
 Edge-case history: `docs/technical_decisions.md#cas-limites`.

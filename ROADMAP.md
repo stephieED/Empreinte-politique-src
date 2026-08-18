@@ -23,6 +23,13 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
+- Congrès scrutins (AN + Sénat at Versailles) are excluded from `votes[]`
+  (`AN_SCRUTIN_UID_PREFIXE`): their numbering restarts at 1 inside the AN
+  number space, so the only one published to date — the 2024-03-04 IVG
+  constitutional vote — would cite the wrong source page and collide with AN
+  scrutin n° 1 in group cohesion. Publishing it needs its own identifier and
+  source URL, see `technical_decisions.md#votes-multi-legislature`.
+
 - `retry-generate-data.yml`: reduce redundant job-log downloads between the
   signature-detection step and the best-effort inputs-reconstruction step
   (up to 3-4 extra full log downloads in the same second, a likely

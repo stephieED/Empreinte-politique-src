@@ -54,6 +54,11 @@ def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
         "texte": v.get("titre") or None,
         "position": v.get("position") or None,
         "numero_scrutin": str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None,
+        # Législature du scrutin (#403) : le numéro de scrutin repart de 1 à
+        # chaque législature, donc lui seul n'identifie pas un scrutin dès lors
+        # que plusieurs législatures sont agrégées. `null` pour les votes
+        # collectés avant #403 et pour les sources qui ne la fournissent pas.
+        "legislature": str(v["legislature"]) if v.get("legislature") is not None else None,
         "sort": v.get("sort"),
         "type_scrutin": v.get("type_scrutin"),
         "type_vote": v.get("type_vote") or "vote_texte",

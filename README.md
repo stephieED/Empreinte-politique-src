@@ -387,6 +387,19 @@ and can't be committed. `candidate_profile.py` reads that fallback (expanding
 it back to the standard flat shape) instead of hitting the network for those
 two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
 
+Nominal votes follow the same shape since #403. `fetch_votes_officiels()`
+aggregates **all four AN legislatures** (14 to 17, `AN_SCRUTINS_LEGISLATURES`)
+instead of the single one previously derived from the NosDéputés domain, which
+froze every profile on legislature 16 and stopped the dataset in June 2024.
+Legislatures 14/15/16 are closed: their index is built offline via
+`src/build_scrutins_index_figes.py --legislature {14,15,16}` (or `--toutes`)
+and committed under `raw_data/scrutins_an_figes/` (2.8 MB gzipped total), so CI
+only downloads the active 17th (26 MB). Both the on-disk cache and the
+committed fallback store the deduplicated form — scrutin metadata once in
+`scrutins.json`, one `[uid, position]` reference per voter, sharded per
+`acteurRef` — which keeps the four legislatures at 68 MB instead of 741 MB
+flat. See `docs/technical_decisions.md#votes-multi-legislature`.
+
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0. Before that step, the `merge-and-pivot` job also
 downloads the `amendements-index-an` artifact into `.cache/amendements_an`
@@ -661,8 +674,10 @@ Each `raw_data/profiles/<slug>.json` includes:
 - `identite`: name, political group, profession, constituency, ...
 - `mandats`: base elected mandate + real responsibilities with role, dates,
   and `actif` flag
-- `votes`: voting positions + source (`votes_source`), prioritizing official AN
-  open data, with Nos* fallback
+- `votes`: voting positions + source (`votes_source`, listing **every** covered
+  legislature), prioritizing official AN open data, with Nos* fallback. Each vote
+  carries its own `legislature` and `url_source` (the AN scrutin page), since a
+  profile now spans several legislatures
 - `dossiers_legislatifs`: chamber legislative files
 - `interventions`: speech records with date, topic, text, role at the time,
   and basic length-based format

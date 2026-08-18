@@ -79,7 +79,12 @@ Format d'un profil pivot v1 :
                                              # | "absent" | "excuse"
                                              # "absent" : aucune trace de vote (implicite ou explicite)
                                              # "excuse" : absence justifiée/notifiée à la source
-            "numero_scrutin": "1234",
+            "numero_scrutin": "1234",        # numéro AN du scrutin ; il repart de 1 à chaque
+                                             # législature, donc jamais identifiant à lui seul
+                                             # (voir "legislature" ci-dessous)
+            "legislature": "17",             # législature du scrutin ; null pour les votes
+                                             # collectés avant #403 (mono-législature) et pour
+                                             # les sources sans législature (Sénat)
             "sort": "adopté",                # résultat du scrutin : "adopté" | "rejeté" |
                                              # "adopte_sans_vote_49_3" (engagement de la
                                              # responsabilité du gouvernement, art. 49.3 :

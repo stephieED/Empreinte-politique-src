@@ -26,12 +26,27 @@ from typing import Any, Optional
 
 import requests
 
-from candidate_profile import BASE_URLS, HEADERS, LEGISLATURE_BY_BASE_URL, TIMEOUT
+from candidate_profile import BASE_URLS, HEADERS, TIMEOUT
 
-# Association legislature AN -> domaine NosDeputes.fr (inverse de
-# candidate_profile.LEGISLATURE_BY_BASE_URL). Ne couvre que l'Assemblée : le
-# Sénat n'a plus qu'un seul domaine d'archive, quelle que soit la période
-# (voir BASE_URLS["senateurs"]).
+# Association domaine NosDeputes.fr -> legislature AN. Definie ici depuis #403 :
+# candidate_profile ne l'utilisait plus que pour les votes, ou elle figeait
+# chaque profil sur une seule legislature (voir AN_SCRUTINS_LEGISLATURES) ; ce
+# module en reste le seul utilisateur legitime, car les rosters de groupes sont
+# bien servis par un domaine NosDeputes different par legislature. Verifie le
+# 18/08/2026 : www.nosdeputes.fr sert toujours la 16e (618 deputes, mandats
+# 2022-06-22 -> 2024-06-09), le site n'ayant pas ete etendu a la 17e — d'ou
+# l'absence de cette derniere ici, contrairement aux votes qui viennent
+# desormais directement de l'open data AN.
+LEGISLATURE_BY_BASE_URL: dict[str, str] = {
+    "https://www.nosdeputes.fr": "16",
+    "https://2017-2022.nosdeputes.fr": "15",
+    "https://2012-2017.nosdeputes.fr": "14",
+    "https://2007-2012.nosdeputes.fr": "13",
+}
+
+# Association legislature AN -> domaine NosDeputes.fr (inverse du mapping
+# ci-dessus). Ne couvre que l'Assemblée : le Sénat n'a plus qu'un seul domaine
+# d'archive, quelle que soit la période (voir BASE_URLS["senateurs"]).
 _BASE_URL_BY_LEGISLATURE_AN: dict[str, str] = {
     legislature: base_url for base_url, legislature in LEGISLATURE_BY_BASE_URL.items()
 }

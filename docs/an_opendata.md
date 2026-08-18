@@ -21,15 +21,34 @@ https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/loi
 
 ## Votes (roll-call records)
 
-| Legislature | Dataset | File |
-|---|---|---|
-| 17, 16 | `scrutins` | `Scrutins.json.zip` |
-| 15 | `scrutins` | `Scrutins_XV.json.zip` |
-| 14 | `scrutins` | `Scrutins_XIV.json.zip` |
-| 13 | - | no equivalent dataset available |
+| Legislature | Dataset | File | Size (zip) | Packaging |
+|---|---|---|---|---|
+| 17 (ongoing) | `scrutins` | `Scrutins.json.zip` | ~26 MB | `json/` tree, one file per scrutin |
+| 16 (archived) | `scrutins` | `Scrutins.json.zip` | ~10 MB | `json/` tree, one file per scrutin |
+| 15 (archived) | `scrutins` | `Scrutins_XV.json.zip` | ~9 MB | `json/` tree, one file per scrutin |
+| 14 (archived) | `scrutins` | `Scrutins_XIV.json.zip` | ~0.7 MB | **monolithic** `Scrutins_XIV.json` (`scrutins.scrutin[]`) |
+| 13 | - | no equivalent dataset available | | |
 
-See `AN_SCRUTINS_ZIP_NAME` / `fetch_votes_officiels` in
-`src/candidate_profile.py`.
+All four are aggregated per profile (`AN_SCRUTINS_LEGISLATURES`); 14/15/16 are
+closed and their index is committed under `raw_data/scrutins_an_figes/`.
+
+Three `decompteNominatif` key schemes coexist (exhaustive survey, 2026-08-18) —
+a reader accepting only the plural form silently drops legislature 14 in full:
+
+| Positions | Where |
+|---|---|
+| `pours` / `contres` / `abstentions` / `nonVotants` | legislatures 15, 17, and 4 105 of the 4 106 scrutins of 16 |
+| `pour` / `contre` + `abstentions` / `nonVotants` | all of legislature 14 |
+| `pour` / `contre` / `abstention` / `nonVotant` | `VTCGR5L16V1` only (Congrès, 2024-03-04) |
+
+Scrutin `uid` (e.g. `VTANR5L17V1000`) is unique across legislatures and is the
+deduplication key; `numero` restarts at 1 in each legislature and never
+identifies a scrutin on its own. Congrès scrutins (`VTCGR…` prefix) share the
+AN number space and are excluded — see `AN_SCRUTIN_UID_PREFIXE`.
+
+See `AN_SCRUTINS_ZIP_NAME` / `_parse_scrutins_zip` / `fetch_votes_officiels` in
+`src/candidate_profile.py`, and
+`docs/technical_decisions.md#votes-multi-legislature`.
 
 ## Amendments
 
