@@ -37,6 +37,12 @@ jobs:
       # déclenché par ce workflow (identité github-actions[bot] via GITHUB_TOKEN),
       # ne pas re-retenter — évite une boucle coûteuse en cas de préemptions
       # répétées ou de faux positif de détection de signature.
+      #
+      # Le plafond est porté par l'identité du déclencheur, pas par un compteur :
+      # une relance MANUELLE (workflow_dispatch lancé par un humain) qui suit un
+      # retry automatique repart donc avec un plafond neuf, et pourra elle-même
+      # être relancée une fois. Comportement voulu — le plafond protège d'une
+      # boucle automatique, pas d'une décision humaine (#414 §6).
       - name: Vérifier le plafond de retry (1 tentative max)
         id: cap
         env:
@@ -48,32 +54,68 @@ jobs:
             echo "already_retried=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # Signature de préemption runner (observée sur les runs #24/#25) :
-      # au moins un job en échec dont les steps if: always()/if: failure()
-      # (Upload artifact *, Diagnostic — job en échec) sont skipped ET dont
-      # les logs contiennent le message d'arrêt runner GitHub. Une erreur
-      # applicative (exception Python, Quality Gate en échec réel) laisse
-      # toujours ces steps s'exécuter normalement (always()/failure() sont
-      # évalués), donc ne matche jamais cette signature.
-      # Distingue quatre issues : signature confirmée (matched=true),
-      # détection impossible faute d'avoir pu interroger l'API Actions
-      # (api_error / inconclusive=true — jamais à confondre avec une
+      # Collecte unique (#414 §5) : un seul `gh api .../jobs --paginate` pour
+      # tout le workflow, et UN SEUL téléchargement par log de job en échec,
+      # au lieu de trois listings et jusqu'à deux téléchargements du même log
+      # (un par motif de détection). Avec 8 shards extract-an + 8 shards
+      # roster (#344/#394), plusieurs jobs peuvent échouer sur un même run :
+      # la redondance multipliait les appels API alors que le rate-limit
+      # transitoire est un risque déjà identifié (#336). La liste des jobs est
+      # écrite dans $RUNNER_TEMP/jobs.json et les logs téléchargés dans
+      # $RUNNER_TEMP/job-<id>.log, réutilisés tels quels par le step de
+      # reconstruction des inputs.
+      #
+      # `jq -s '{jobs: [.[].jobs[]]}'` normalise la sortie de --paginate :
+      # au-delà de 100 jobs (plafond atteignable avec le shardage), gh émet
+      # PLUSIEURS objets JSON concaténés, et un `jq '.jobs[] | ...'` direct
+      # produisait alors une valeur par page (ex. "3\n0" pour un comptage,
+      # cassant les comparaisons numériques). La normalisation en un objet
+      # unique rend le reste du step insensible à la pagination.
+      #
+      # Deux motifs de relance sont classés en un seul passage :
+      #
+      # 1. Préemption runner (observée sur les runs #24/#25) : au moins un job
+      #    en échec dont les steps if: always()/if: failure() (Upload artifact *,
+      #    Diagnostic — job en échec) sont skipped ET dont les logs contiennent
+      #    le message d'arrêt runner GitHub. Une erreur applicative (exception
+      #    Python, Quality Gate en échec réel) laisse toujours ces steps
+      #    s'exécuter (always()/failure() sont évalués), donc ne matche jamais.
+      #    Le filtre porte sur des *noms de steps*, inchangés par le shardage.
+      # 2. Refus de commit pour code de génération périmé (#390) : merge-and-pivot
+      #    a refusé de committer parce que src/ avait changé sur origin/main
+      #    pendant le run — les fichiers dérivés auraient été produits avec du
+      #    code périmé. Ce n'est pas un aléa d'infrastructure mais une course
+      #    entre le run et un merge sur main ; la relance est pertinente dans
+      #    les deux cas (un nouveau run repart d'un SHA cohérent pour TOUS ses
+      #    jobs), mais le diagnostic doit les distinguer, sinon le résumé
+      #    attribue à tort une préemption. Le plafond de 1 tentative (step
+      #    "cap" ci-dessus) s'applique identiquement : si main bouge encore
+      #    pendant la relance, on s'arrête là plutôt que de boucler.
+      #
+      # Distingue les mêmes issues qu'avant (#237/#245), désormais partagées
+      # par les DEUX motifs (#414 §4) : signature confirmée (matched /
+      # code_change), détection impossible faute d'avoir pu interroger l'API
+      # Actions (api_error / inconclusive=true — jamais à confondre avec une
       # signature absente), signature réellement absente sur des logs
-      # effectivement lus (matched=false, api_error=false, inconclusive=false,
-      # no_job_failure=false — #237), et run réussi sans aucun job en échec
+      # effectivement lus (tout à false), et run réussi sans aucun job en échec
       # (no_job_failure=true — #245). Ce dernier cas ne peut survenir que
       # lorsque la garde de haut niveau du job est ouverte sur conclusion ==
       # 'success' (ci-dessus) : sans lui, un run 100% vert (aucun job en
       # échec, y compris les jobs continue-on-error) retomberait à tort dans
       # la branche « signature non reconnue » du résumé, qui suggère un bug
       # applicatif à investiguer alors qu'il n'y a eu aucun échec de job.
+      # Avant #414, la détection #390 renvoyait ses erreurs vers /dev/null et
+      # n'exposait que `matched` : un hoquet de l'API s'y présentait comme
+      # « pas de #390 » au lieu de « indéterminé » — exactement la confusion
+      # que #237 avait corrigée sur la détection de préemption.
+      #
       # --allow-escape-sequences est requis sur tout appel gh api .../logs
       # de ce fichier (#236) : sans ce flag, gh api échoue silencieusement
       # dès que le log contient des couleurs ANSI (quasi systématique),
       # ce qui a rendu ce mécanisme inopérant sur les runs #26-28 sans
       # jamais le signaler — cf. docs/technical_decisions.md#retry-preemption-logs.
-      - name: Détecter la signature de préemption runner
-        id: signature
+      - name: Collecter les jobs du run et classer les échecs
+        id: collect
         if: steps.cap.outputs.already_retried == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -83,88 +125,88 @@ jobs:
         run: |
           set -euo pipefail
           matched=false
+          code_change=false
           api_error=false
           inconclusive=false
           no_job_failure=false
 
-          if ! jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/tmp/gh_jobs_err.log); then
-            echo "::warning::Échec de récupération de la liste des jobs (run ${RUN_ID}) : $(cat /tmp/gh_jobs_err.log)"
+          jobs_json="${RUNNER_TEMP}/jobs.json"
+          if ! gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate \
+                 2>"${RUNNER_TEMP}/gh_jobs_err.log" \
+               | jq -s '{jobs: [.[].jobs[]]}' > "$jobs_json"; then
+            echo "::warning::Échec de récupération de la liste des jobs (run ${RUN_ID}) : $(cat "${RUNNER_TEMP}/gh_jobs_err.log")"
             api_error=true
+            rm -f "$jobs_json"
           else
-            failed_job_count=$(echo "$jobs_json" | jq -r '[.jobs[] | select(.conclusion=="failure")] | length')
+            failed_job_count=$(jq -r '[.jobs[] | select(.conclusion=="failure")] | length' "$jobs_json")
             if [[ "$WORKFLOW_CONCLUSION" == "success" && "$failed_job_count" -eq 0 ]]; then
               no_job_failure=true
             else
-              for job_id in $(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion=="failure") | .id'); do
-                skipped_diag=$(echo "$jobs_json" | jq -r --arg jid "$job_id" '
+              for job_id in $(jq -r '.jobs[] | select(.conclusion=="failure") | .id' "$jobs_json"); do
+                # Les deux motifs sont identifiés : inutile de télécharger les
+                # logs des jobs en échec restants.
+                if [[ "$matched" == "true" && "$code_change" == "true" ]]; then
+                  break
+                fi
+
+                job_log="${RUNNER_TEMP}/job-${job_id}.log"
+                if ! gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences \
+                       > "$job_log" 2>"${RUNNER_TEMP}/gh_log_err.log"; then
+                  echo "::warning::Échec de récupération du log du job ${job_id} : $(cat "${RUNNER_TEMP}/gh_log_err.log")"
+                  inconclusive=true
+                  rm -f "$job_log"
+                  continue
+                fi
+
+                if grep -q "GENERATION_CODE_CHANGED_DURING_RUN" "$job_log"; then
+                  code_change=true
+                fi
+
+                skipped_diag=$(jq -r --arg jid "$job_id" '
                   [.jobs[] | select(.id==($jid|tonumber)) | .steps[]
-                   | select(.name | test("Upload artifact|Diagnostic")) | select(.conclusion=="skipped")] | length')
-                if [[ "$skipped_diag" -gt 0 ]]; then
-                  if ! log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences 2>/tmp/gh_log_err.log); then
-                    echo "::warning::Échec de récupération du log du job ${job_id} : $(cat /tmp/gh_log_err.log)"
-                    inconclusive=true
-                    continue
-                  fi
-                  if echo "$log" | grep -qE "shutdown signal|The operation was canceled\."; then
-                    matched=true
-                    break
-                  fi
+                   | select(.name | test("Upload artifact|Diagnostic")) | select(.conclusion=="skipped")] | length' "$jobs_json")
+                if [[ "$skipped_diag" -gt 0 ]] \
+                   && grep -qE "shutdown signal|The operation was canceled\." "$job_log"; then
+                  matched=true
                 fi
               done
             fi
           fi
 
           echo "matched=$matched" >> "$GITHUB_OUTPUT"
+          echo "code_change=$code_change" >> "$GITHUB_OUTPUT"
           echo "api_error=$api_error" >> "$GITHUB_OUTPUT"
           echo "inconclusive=$inconclusive" >> "$GITHUB_OUTPUT"
           echo "no_job_failure=$no_job_failure" >> "$GITHUB_OUTPUT"
-
-      # Second motif de relance (#390), distinct de la préemption runner :
-      # merge-and-pivot a refusé de committer parce que src/ avait changé sur
-      # origin/main pendant le run — les fichiers dérivés auraient été produits
-      # avec du code périmé. Contrairement à une préemption, ce n'est pas un
-      # aléa d'infrastructure mais une course entre le run et un merge sur
-      # main ; la relance est pertinente dans les deux cas (un nouveau run
-      # repart d'un SHA cohérent pour TOUS ses jobs), mais le diagnostic doit
-      # les distinguer, sinon le résumé attribue à tort une préemption.
-      #
-      # Le plafond de 1 tentative (step "cap" ci-dessus) s'applique
-      # identiquement : si main bouge encore pendant la relance, on s'arrête
-      # là plutôt que de boucler.
-      - name: Détecter un refus de commit pour code de génération périmé (#390)
-        id: code_change
-        if: steps.cap.outputs.already_retried == 'false'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          set -euo pipefail
-          matched=false
-          if jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/dev/null); then
-            for job_id in $(echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion=="failure") | .id'); do
-              # --allow-escape-sequences obligatoire sur tout gh api .../logs
-              # de ce fichier (#236) : sans lui, gh échoue dès que le log
-              # contient des couleurs ANSI, silencieusement.
-              if log=$(gh api "repos/${REPO}/actions/jobs/${job_id}/logs" --allow-escape-sequences 2>/dev/null); then
-                if echo "$log" | grep -q "GENERATION_CODE_CHANGED_DURING_RUN"; then
-                  matched=true
-                  break
-                fi
-              fi
-            done
-          fi
-          echo "matched=$matched" >> "$GITHUB_OUTPUT"
 
       # Best-effort : reconstruit les inputs du run échoué à partir des logs
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
       # fresh_run est lu de façon fiable via la conclusion du step conditionnel
       # dédié ; les autres valeurs sont extraites du texte résolu des steps
-      # (workers/extract_interventions/max_pages, substitués directement par
-      # ${{ inputs.* }} dans le script) ou du rapport stdout de check_quality_gate.py
-      # (threshold) / generate_all_profiles.py (roster_extraction_limit). En cas
-      # d'échec d'extraction d'une valeur, retombe sur le défaut déclaré de
-      # generate-data.yml pour cet input (dégradation documentée, pas un blocage).
+      # (workers/extract_interventions/max_pages/roster_extraction_limit,
+      # substitués directement par ${{ inputs.* }} dans le script ou dans son
+      # bloc env:) ou du rapport stdout de check_quality_gate.py (threshold).
+      # En cas d'échec d'extraction d'une valeur, retombe sur le défaut déclaré
+      # de generate-data.yml pour cet input (dégradation documentée, pas un
+      # blocage).
+      #
+      # APPARIEMENT PAR PRÉFIXE (#414 §2) — depuis le shardage #344/#394, les
+      # jobs matrix s'appellent `extract-an (<slug>)` et
+      # `extract-roster-groupes (shard N)` (name: explicite sur le matrix) :
+      # AUCUN job ne portait plus les noms recherchés par l'égalité stricte
+      # `select(.name==$n)`. Toute la reconstruction retombait donc
+      # silencieusement sur les défauts — la « dégradation documentée » était
+      # devenue systématique (un run fresh_run=true était relancé en
+      # incrémental, un run roster_extraction_limit=0 relancé à 20). job_log()
+      # matche désormais `<préfixe>` OU `<préfixe> (…)`, et privilégie un shard
+      # ayant réussi (son log est complet ; celui d'un shard préempté peut être
+      # tronqué avant même la ligne `Run ...`).
+      #
+      # workers est lu sur extract-senat et non sur extract-an : le matrix a
+      # supprimé --workers de la ligne de commande d'extract-an (--only "<slug>"
+      # remplace le parallélisme inter-candidats), le motif n'y existe donc
+      # plus. extract-senat porte toujours `--source senat --workers N` et
+      # n'est pas shardé.
       #
       # job_log() exclut les lignes ##[debug] : ce dépôt tourne avec le
       # logging de debug activé, et le log brut d'un step contenant plusieurs
@@ -175,43 +217,58 @@ jobs:
       # placeholder au lieu de la vraie valeur — régression constatée sur un
       # run réel : "{3}"/"{2})" transmis tels quels au workflow_dispatch de
       # relance, faisant planter extract-senat/extract-ue-officiel avec
-      # "invalid int value: '{3}'". Inoffensif pour gate_log/roster_log (leurs
-      # motifs ne visent que du stdout applicatif, jamais préfixé ##[debug]).
-      # L'appel `gh api .../jobs` ci-dessous est toléré au même titre que
-      # job_log() (#336) : un hoquet API (ex. rate-limit transitoire après les
-      # téléchargements de logs du step de détection) dégrade vers une liste de
-      # jobs vide plutôt que de faire échouer tout le step best-effort. Le step
-      # suivant ne dépend plus non plus du succès de celui-ci (#336).
+      # "invalid int value: '{3}'". Inoffensif pour gate_log (son motif ne vise
+      # que du stdout applicatif, jamais préfixé ##[debug]).
+      #
+      # La liste des jobs vient du step de collecte (aucun appel API
+      # supplémentaire) ; les logs déjà téléchargés y sont réutilisés, seuls
+      # ceux des jobs *réussis* (extract-senat, merge-and-pivot…) restent à
+      # récupérer. Une absence de jobs.json (api_error côté collecte) dégrade
+      # vers une liste vide plutôt que de faire échouer ce step best-effort
+      # (#336), et le step suivant ne dépend pas de son succès (#336).
+      #
+      # Condition alignée sur celle du re-déclenchement (#414 §3) : elle ne
+      # couvrait que la préemption, si bien qu'une relance déclenchée par le
+      # motif #390 repartait des défauts par construction.
       - name: Reconstituer les inputs du run échoué (best-effort)
         id: inputs
-        if: steps.signature.outputs.matched == 'true'
+        if: steps.collect.outputs.matched == 'true' || steps.collect.outputs.code_change == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
           set -euo pipefail
-          if ! jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/jobs" --paginate 2>/tmp/gh_jobs_err.log); then
-            echo "::warning::Échec de récupération de la liste des jobs pour la reconstruction des inputs (run ${RUN_ID}) : $(cat /tmp/gh_jobs_err.log)"
-            jobs_json='{"jobs": []}'
+          jobs_json="${RUNNER_TEMP}/jobs.json"
+          if [[ ! -s "$jobs_json" ]]; then
+            echo "::warning::Liste des jobs indisponible : reconstruction des inputs dégradée vers les défauts."
+            echo '{"jobs": []}' > "$jobs_json"
           fi
 
           job_log() {
-            local name="$1"
-            local id
-            id=$(echo "$jobs_json" | jq -r --arg n "$name" '.jobs[] | select(.name==$n) | .id' | head -1)
+            local prefix="$1" id cached
+            id=$(jq -r --arg p "$prefix" '
+              [.jobs[] | select(.name == $p or (.name | startswith($p + " (")))]
+              | (map(select(.conclusion == "success")) + .)
+              | .[0].id // empty' "$jobs_json")
             [[ -n "$id" ]] || return 0
-            gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences 2>/dev/null | grep -v '##\[debug\]' || true
+            cached="${RUNNER_TEMP}/job-${id}.log"
+            if [[ ! -s "$cached" ]]; then
+              gh api "repos/${REPO}/actions/jobs/${id}/logs" --allow-escape-sequences \
+                > "$cached" 2>/dev/null || return 0
+            fi
+            grep -v '##\[debug\]' "$cached" || true
           }
 
           fresh_run=false
-          if echo "$jobs_json" | jq -e '.jobs[] | select(.name=="extract-an") | .steps[]
-              | select(.name=="Nettoyage complet (fresh_run uniquement)") | select(.conclusion=="success")' >/dev/null 2>&1; then
+          if jq -e '[.jobs[]
+              | select(.name == "extract-an" or (.name | startswith("extract-an (")))
+              | .steps[]
+              | select(.name == "Nettoyage complet (fresh_run uniquement)")
+              | select(.conclusion == "success")] | length > 0' "$jobs_json" >/dev/null 2>&1; then
             fresh_run=true
           fi
 
-          an_log=$(job_log "extract-an")
-          # Ancré sur la ligne de commande finale ("--source an --workers N")
+          # Ancré sur la ligne de commande finale ("--source senat --workers N")
           # pour éviter tout autre match fortuit, et restreint à [0-9]+ (pas
           # \S+) pour qu'une valeur inattendue échoue la validation ci-dessous
           # plutôt que d'être transmise telle quelle. `|| true` : sous
@@ -219,9 +276,11 @@ jobs:
           # absent) ferait sinon avorter tout le step ici — perdant du même
           # coup les valeurs suivantes, correctement extractibles, plutôt que
           # de dégrader uniquement celle en cause vers son défaut.
-          workers=$(echo "$an_log" | grep -oP -- '--source an --workers \K[0-9]+' | head -1) || true
+          senat_log=$(job_log "extract-senat")
+          workers=$(echo "$senat_log" | grep -oP -- '--source senat --workers \K[0-9]+' | head -1) || true
           [[ "$workers" =~ ^[0-9]+$ ]] || workers=""
 
+          an_log=$(job_log "extract-an")
           # Le texte source "--skip-interventions" est toujours présent dans
           # le script échoué, que la condition ait été vraie ou non à
           # l'exécution (GitHub échoue le SOURCE bash substitué, pas la trace
@@ -239,8 +298,19 @@ jobs:
           threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1) || true
           [[ "$threshold" =~ ^[0-9]+$ ]] || threshold=""
 
+          # Lu d'abord dans le bloc env: résolu du step d'extraction roster
+          # ("ROSTER_LIMIT: <valeur>"), seule source EXACTE de l'input : le
+          # stdout "Sélection …" ne rapporte que le nombre de candidats
+          # effectivement retenus (min(limite, restants)), et surtout n'est pas
+          # émis du tout quand roster_extraction_limit=0 (run complet, aucun
+          # --limit) — ce cas retombait donc toujours à 20, relançant un run
+          # complet en run échantillonné. Le grep "Sélection" reste en repli si
+          # le bloc env: est absent du log.
           roster_log=$(job_log "extract-roster-groupes")
-          roster_extraction_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
+          roster_extraction_limit=$(echo "$roster_log" | grep -oP 'ROSTER_LIMIT: \K[0-9]+' | head -1) || true
+          if [[ ! "$roster_extraction_limit" =~ ^[0-9]+$ ]]; then
+            roster_extraction_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
+          fi
           [[ "$roster_extraction_limit" =~ ^[0-9]+$ ]] || roster_extraction_limit=""
 
           echo "fresh_run=${fresh_run}" >> "$GITHUB_OUTPUT"
@@ -260,7 +330,7 @@ jobs:
       # par défaut que celles déclarées dans generate-data.yml, pour rester
       # sûr même si le step best-effort n'a pu écrire aucun de ses outputs.
       - name: Re-déclencher generate-data.yml
-        if: always() && (steps.signature.outputs.matched == 'true' || steps.code_change.outputs.matched == 'true')
+        if: always() && (steps.collect.outputs.matched == 'true' || steps.collect.outputs.code_change == 'true')
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -286,7 +356,7 @@ jobs:
               echo ""
               echo "Le run (${RUN_URL}) était déjà lui-même une relance automatique."
               echo "Intervention manuelle requise si la préemption runner persiste."
-            elif [[ "${{ steps.code_change.outputs.matched }}" == "true" ]]; then
+            elif [[ "${{ steps.collect.outputs.code_change }}" == "true" ]]; then
               echo "### 🔁 Retry automatique déclenché — code de génération modifié pendant le run"
               echo ""
               echo "Le run (${RUN_URL}) a refusé de committer : \`src/\` a changé sur"
@@ -297,7 +367,7 @@ jobs:
               echo "et un merge sur \`main\`. Aucune donnée n'est perdue : tout est"
               echo "régénérable. Un nouveau \`workflow_dispatch\` a été déclenché, qui"
               echo "repartira d'un SHA cohérent pour tous ses jobs."
-            elif [[ "${{ steps.signature.outputs.matched }}" == "true" ]]; then
+            elif [[ "${{ steps.collect.outputs.matched }}" == "true" ]]; then
               echo "### 🔁 Retry automatique déclenché"
               echo ""
               echo "Le run (${RUN_URL}) a un job en échec (\`conclusion: failure\`,"
@@ -305,17 +375,18 @@ jobs:
               echo "globale) qui correspond à la signature de préemption runner (shutdown"
               echo "signal + steps de diagnostic skipped). Un nouveau \`workflow_dispatch\`"
               echo "de \`generate-data.yml\` a été déclenché automatiquement."
-            elif [[ "${{ steps.signature.outputs.no_job_failure }}" == "true" ]]; then
+            elif [[ "${{ steps.collect.outputs.no_job_failure }}" == "true" ]]; then
               echo "### ✅ Run réussi sans échec de job — rien à signaler"
               echo ""
               echo "Le run (${RUN_URL}) s'est terminé avec la conclusion \`success\` et"
               echo "aucun job ne rapporte \`conclusion: failure\` (y compris les jobs en"
               echo "\`continue-on-error\` comme \`extract-roster-groupes\`/\`extract-parltrack\`)."
               echo "Aucune action nécessaire."
-            elif [[ "${{ steps.signature.outputs.api_error }}" == "true" || "${{ steps.signature.outputs.inconclusive }}" == "true" || "${{ steps.signature.outcome }}" == "failure" ]]; then
+            elif [[ "${{ steps.collect.outputs.api_error }}" == "true" || "${{ steps.collect.outputs.inconclusive }}" == "true" || "${{ steps.collect.outcome }}" == "failure" ]]; then
               echo "### ⚠️ Détection impossible — erreur API, vérifier manuellement le run"
               echo ""
-              echo "La détection de la signature de préemption sur le run"
+              echo "La détection des motifs de relance (préemption runner, refus de commit"
+              echo "pour code périmé #390) sur le run"
               echo "(${RUN_URL}) n'a pas pu être menée à terme : erreur lors de l'appel à"
               echo "l'API GitHub Actions (listing des jobs et/ou récupération d'un log)."
               echo "Ce n'est **pas** un signal de bug applicatif — voir les"
@@ -326,7 +397,8 @@ jobs:
               echo ""
               echo "Le run (${RUN_URL}) a au moins un job en échec (\`conclusion: failure\`,"
               echo "éventuellement un job \`continue-on-error\` sans impact sur la conclusion"
-              echo "globale) qui ne correspond pas à la signature de préemption runner :"
+              echo "globale) qui ne correspond ni à la signature de préemption runner, ni au"
+              echo "refus de commit pour code de génération périmé (#390) :"
               echo "probablement un échec applicatif réel (bug de code, Quality Gate)."
               echo "Pas de retry automatique — investigation manuelle nécessaire (cf. #217)."
             fi
