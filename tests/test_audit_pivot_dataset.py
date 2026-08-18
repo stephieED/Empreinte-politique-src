@@ -9,15 +9,11 @@ from audit_pivot_dataset import (
     _build_arg_parser,
     build_report,
     compute_agregation_warnings,
-    compute_distribution_listes,
     compute_fraicheur_sources,
-    compute_nombre_sources,
     compute_profils_perimes,
     compute_coherence_chambre_sources,
     compute_coherence_schema_version,
-    compute_distribution_listes,
     compute_doublons_id,
-    compute_nombre_sources,
     compute_plage_dates_candidats,
     compute_presence_meta,
     compute_profils_sans_activite,
@@ -244,97 +240,6 @@ def test_compute_repartition_provenance_meta_invalide_compte_candidat_declare():
     resultat = compute_repartition_provenance([{"id": "a", "meta": "pas un dict"}])
 
     assert resultat["par_provenance"]["candidat_declare"] == 1
-
-
-# ---------------------------------------------------------------------------
-# compute_distribution_listes
-# ---------------------------------------------------------------------------
-
-def test_compute_distribution_listes_liste_vide():
-    resultat = compute_distribution_listes([])
-
-    for champ in ("votes", "textes_portes", "amendements", "interventions"):
-        assert resultat[champ] == {
-            "min": None, "max": None, "mediane": None,
-            "moyenne": None, "pct_profils_a_zero": 0.0,
-        }
-
-
-def test_compute_distribution_listes_0_1_plusieurs_elements():
-    profils = [
-        profil(nb_votes=0),
-        profil(nb_votes=1),
-        profil(nb_votes=5),
-        profil(nb_votes=6),
-    ]
-
-    resultat = compute_distribution_listes(profils)
-    votes = resultat["votes"]
-
-    assert votes["min"] == 0
-    assert votes["max"] == 6
-    assert votes["mediane"] == 3
-    assert votes["moyenne"] == 3.0
-    assert votes["pct_profils_a_zero"] == 25.0
-
-
-def test_compute_distribution_listes_champ_absent_ou_null_compte_comme_zero():
-    profils = [
-        {"id": "a"},                 # champ "votes" absent
-        {"id": "b", "votes": None},  # champ "votes" explicitement null
-        {"id": "c", "votes": [{"id": 1}]},
-    ]
-
-    resultat = compute_distribution_listes(profils)
-    votes = resultat["votes"]
-
-    assert votes["min"] == 0
-    assert votes["max"] == 1
-    assert votes["pct_profils_a_zero"] == round(200 / 3, 2)
-
-
-def test_compute_distribution_listes_couvre_les_quatre_champs_independamment():
-    profils = [
-        profil(nb_votes=2, nb_textes=0, nb_amendements=1, nb_interventions=3),
-    ]
-
-    resultat = compute_distribution_listes(profils)
-
-    assert resultat["votes"]["max"] == 2
-    assert resultat["textes_portes"]["max"] == 0
-    assert resultat["amendements"]["max"] == 1
-    assert resultat["interventions"]["max"] == 3
-
-
-# ---------------------------------------------------------------------------
-# compute_nombre_sources
-# ---------------------------------------------------------------------------
-
-def test_compute_nombre_sources_liste_vide():
-    resultat = compute_nombre_sources([])
-
-    assert resultat == {"moyenne_sources": None, "pct_profils_une_source": 0.0}
-
-
-def test_compute_nombre_sources_moyenne_et_pourcentage_une_source():
-    profils = [
-        profil(nb_sources=0),
-        profil(nb_sources=1),
-        profil(nb_sources=1),
-        profil(nb_sources=3),
-    ]
-
-    resultat = compute_nombre_sources(profils)
-
-    assert resultat["moyenne_sources"] == 1.25
-    assert resultat["pct_profils_une_source"] == 50.0
-
-
-def test_compute_nombre_sources_champ_absent_compte_comme_zero():
-    resultat = compute_nombre_sources([{"id": "a"}, {"id": "b", "sources": [{"type": "x"}]}])
-
-    assert resultat["moyenne_sources"] == 0.5
-    assert resultat["pct_profils_une_source"] == 50.0
 
 
 # ---------------------------------------------------------------------------
@@ -878,7 +783,17 @@ def test_compute_profils_sans_activite_un_seul_champ_actif_suffit():
 def test_compute_tableau_croise_candidats_liste_vide():
     resultat = compute_tableau_croise_candidats([])
 
-    assert resultat == {"lignes": []}
+    assert resultat == {
+        "lignes": [],
+        "non_candidats": {
+            "total_profils": 0,
+            "par_groupe": [],
+            "ensemble": {
+                champ: {"min": None, "max": None, "mediane": None, "moyenne": None}
+                for champ in ("votes", "textes_portes", "amendements", "interventions")
+            },
+        },
+    }
 
 
 def test_compute_tableau_croise_candidats_candidat_toutes_categories_renseignees():
@@ -947,6 +862,77 @@ def test_compute_tableau_croise_candidats_nom_absent_tri_deterministe_par_id():
     assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a", "x:b"]
 
 
+def roster(id_, nom, groupe, **listes):
+    """Profil issu du roster d'un groupe (donc non candidat)."""
+    return {
+        "id": id_, "nom": nom, "chambre": "AN", "groupe": groupe,
+        "meta": {"provenance": "roster_groupe"},
+        **listes,
+    }
+
+
+def test_compute_tableau_croise_candidats_exclut_les_profils_roster_du_detail():
+    profils = [
+        {"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [{"id": 1}]},
+        roster("x:r", "Robert", "GDR", votes=[{"id": 1}, {"id": 2}]),
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a"]
+    assert resultat["non_candidats"]["total_profils"] == 1
+    # Aucun identifiant ni nom de membre non candidat n'apparaît dans l'agrégat.
+    assert "x:r" not in json.dumps(resultat["non_candidats"], ensure_ascii=False)
+    assert "Robert" not in json.dumps(resultat["non_candidats"], ensure_ascii=False)
+
+
+def test_compute_tableau_croise_candidats_provenance_absente_reste_un_candidat():
+    profils = [
+        {"id": "x:a", "nom": "Alice", "chambre": "AN"},
+        {"id": "x:b", "nom": "Bob", "chambre": "AN", "meta": {"provenance": "candidat_declare"}},
+        {"id": "x:c", "nom": "Chloé", "chambre": "AN", "meta": "pas un dict"},
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a", "x:b", "x:c"]
+    assert resultat["non_candidats"]["total_profils"] == 0
+
+
+def test_compute_tableau_croise_candidats_agregat_non_candidats_par_groupe():
+    profils = [
+        roster("x:r1", "R1", "GDR", votes=[{"id": 1}]),
+        roster("x:r2", "R2", "GDR", votes=[{"id": 1}, {"id": 2}, {"id": 3}]),
+        roster("x:r3", "R3", "LFI", votes=[{"id": 1}, {"id": 2}]),
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+    par_groupe = {ligne["groupe"]: ligne for ligne in resultat["non_candidats"]["par_groupe"]}
+
+    assert [ligne["groupe"] for ligne in resultat["non_candidats"]["par_groupe"]] == ["GDR", "LFI"]
+    assert par_groupe["GDR"]["nb_profils"] == 2
+    assert par_groupe["GDR"]["votes"] == {"min": 1, "max": 3, "mediane": 2, "moyenne": 2.0}
+    assert par_groupe["GDR"]["amendements"] == {
+        "min": 0, "max": 0, "mediane": 0, "moyenne": 0.0,
+    }
+    assert par_groupe["LFI"]["votes"] == {"min": 2, "max": 2, "mediane": 2, "moyenne": 2.0}
+    assert resultat["non_candidats"]["ensemble"]["votes"] == {
+        "min": 1, "max": 3, "mediane": 2, "moyenne": 2.0,
+    }
+
+
+def test_compute_tableau_croise_candidats_non_candidat_sans_groupe_regroupe_sous_null():
+    profils = [
+        roster("x:r1", "R1", None, votes=[{"id": 1}]),
+        roster("x:r2", "R2", "  ", votes=[{"id": 1}]),
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert [ligne["groupe"] for ligne in resultat["non_candidats"]["par_groupe"]] == ["null"]
+    assert resultat["non_candidats"]["par_groupe"][0]["nb_profils"] == 2
+
+
 # ---------------------------------------------------------------------------
 # compute_plage_dates_candidats
 # ---------------------------------------------------------------------------
@@ -956,6 +942,14 @@ def test_compute_plage_dates_candidats_liste_vide():
 
     assert resultat == {
         "lignes": [],
+        "non_candidats": {
+            "total_profils": 0,
+            "par_groupe": [],
+            "ensemble": {
+                champ: {"min": None, "max": None}
+                for champ in ("votes", "textes_portes", "amendements", "interventions")
+            },
+        },
         "dates_ignorees": {
             "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
         },
@@ -1067,6 +1061,48 @@ def test_compute_plage_dates_candidats_trie_par_nom():
     assert [ligne["nom"] for ligne in resultat["lignes"]] == ["Alban", "Zoé"]
 
 
+def test_compute_plage_dates_candidats_exclut_les_profils_roster_du_detail():
+    profils = [
+        {"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [{"date": "2024-01-01"}]},
+        roster("x:r", "Robert", "GDR", votes=[{"date": "2020-01-01"}]),
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a"]
+    assert resultat["non_candidats"]["total_profils"] == 1
+    assert "Robert" not in json.dumps(resultat["non_candidats"], ensure_ascii=False)
+
+
+def test_compute_plage_dates_candidats_agregat_non_candidats_par_groupe():
+    profils = [
+        roster("x:r1", "R1", "GDR", votes=[{"date": "2021-06-01"}, {"date": "2022-01-01"}]),
+        roster("x:r2", "R2", "GDR", votes=[{"date": "2019-03-15"}]),
+        roster("x:r3", "R3", "LFI", interventions=[{"date": "2023-09-09"}]),
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+    par_groupe = {ligne["groupe"]: ligne for ligne in resultat["non_candidats"]["par_groupe"]}
+
+    assert par_groupe["GDR"]["nb_profils"] == 2
+    assert par_groupe["GDR"]["votes"] == {"min": "2019-03-15", "max": "2022-01-01"}
+    assert par_groupe["GDR"]["interventions"] == {"min": None, "max": None}
+    assert par_groupe["LFI"]["interventions"] == {"min": "2023-09-09", "max": "2023-09-09"}
+    assert resultat["non_candidats"]["ensemble"]["votes"] == {
+        "min": "2019-03-15", "max": "2022-01-01",
+    }
+
+
+def test_compute_plage_dates_candidats_dates_ignorees_couvrent_aussi_les_non_candidats():
+    profils = [
+        roster("x:r1", "R1", "GDR", votes=[{"date": "pas-une-date"}]),
+    ]
+
+    resultat = compute_plage_dates_candidats(profils)
+
+    assert resultat["dates_ignorees"]["votes"] == 1
+
+
 # ---------------------------------------------------------------------------
 # compute_presence_meta
 # ---------------------------------------------------------------------------
@@ -1125,7 +1161,7 @@ def test_build_report_structure_top_level_keys():
         "warnings", "tableau_croise_candidats", "plage_dates_candidats", "erreurs_lecture",
     }
     assert set(rapport["volumetrie"].keys()) == {
-        "repartition_chambre", "repartition_provenance", "distribution_listes", "nombre_sources",
+        "repartition_chambre", "repartition_provenance",
     }
     assert set(rapport["completude"].keys()) == {
         "taux_remplissage", "profils_sans_activite", "presence_meta",
@@ -1170,8 +1206,6 @@ def test_build_report_delegue_aux_fonctions_compute():
 
     assert rapport["volumetrie"]["repartition_chambre"] == compute_repartition_chambre(profils)
     assert rapport["volumetrie"]["repartition_provenance"] == compute_repartition_provenance(profils)
-    assert rapport["volumetrie"]["distribution_listes"] == compute_distribution_listes(profils)
-    assert rapport["volumetrie"]["nombre_sources"] == compute_nombre_sources(profils)
     assert rapport["completude"]["taux_remplissage"] == compute_taux_remplissage(profils)
     assert rapport["completude"]["profils_sans_activite"] == compute_profils_sans_activite(profils)
     assert rapport["completude"]["presence_meta"] == compute_presence_meta(profils)

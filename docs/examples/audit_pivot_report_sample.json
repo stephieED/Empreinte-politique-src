@@ -23,21 +23,30 @@
         "roster_groupe": 1,
         "null": 0
       }
-    },
-    "distribution_listes": {
-      "votes": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0},
-      "textes_portes": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0},
-      "amendements": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0},
-      "interventions": {"min": 0, "max": 0, "mediane": 0, "moyenne": 0, "pct_profils_a_zero": 100.0}
-    },
-    "nombre_sources": {"moyenne_sources": 0, "pct_profils_une_source": 0.0}
+    }
   },
   "completude": {
     "taux_remplissage": {
-      "parti": {"renseignes": 0, "total": 3, "taux_pct": 0.0},
-      "groupe": {"renseignes": 3, "total": 3, "taux_pct": 100.0},
-      "tags_thematiques": {"renseignes": 0, "total": 3, "taux_pct": 0.0},
-      "mandats": {"renseignes": 0, "total": 3, "taux_pct": 0.0}
+      "parti": {
+        "renseignes": 0,
+        "total": 3,
+        "taux_pct": 0.0
+      },
+      "groupe": {
+        "renseignes": 3,
+        "total": 3,
+        "taux_pct": 100.0
+      },
+      "tags_thematiques": {
+        "renseignes": 0,
+        "total": 3,
+        "taux_pct": 0.0
+      },
+      "mandats": {
+        "renseignes": 0,
+        "total": 3,
+        "taux_pct": 0.0
+      }
     },
     "profils_sans_activite": {
       "total_profils": 3,
@@ -60,33 +69,48 @@
     }
   },
   "coherence": {
-    "doublons_id": {"doublons": []},
-    "coherence_schema_version": {"profils_incoherents": []},
-    "validite_dates": {"dates_invalides": []},
+    "doublons_id": {
+      "doublons": []
+    },
+    "coherence_schema_version": {
+      "profils_incoherents": []
+    },
+    "validite_dates": {
+      "dates_invalides": []
+    },
     "coherence_chambre_sources": {
       "profils_incoherents": [
-        {"id": "nosdeputes:jean-dupont", "chambre": "AN", "types_sources": []},
-        {"id": "nosdeputes:marie-martin", "chambre": "AN", "types_sources": []},
-        {"id": "nossenateurs:paul-durand", "chambre": "Senat", "types_sources": []}
+        {
+          "id": "nosdeputes:jean-dupont",
+          "chambre": "AN",
+          "types_sources": []
+        },
+        {
+          "id": "nosdeputes:marie-martin",
+          "chambre": "AN",
+          "types_sources": []
+        },
+        {
+          "id": "nossenateurs:paul-durand",
+          "chambre": "Senat",
+          "types_sources": []
+        }
       ]
     }
   },
   "fraicheur": {
-    "fraicheur_sources": {"total_sources_datees": 0, "par_type_source": {}},
+    "fraicheur_sources": {
+      "total_sources_datees": 0,
+      "par_type_source": {}
+    },
     "profils_perimes": []
   },
-  "warnings": {"total_warnings": 0, "par_type": {}},
+  "warnings": {
+    "total_warnings": 0,
+    "par_type": {}
+  },
   "tableau_croise_candidats": {
     "lignes": [
-      {
-        "id": "nosdeputes:jean-dupont",
-        "nom": "Jean Dupont",
-        "chambre": "AN",
-        "votes": 0,
-        "textes_portes": 0,
-        "amendements": 0,
-        "interventions": 0
-      },
       {
         "id": "nosdeputes:marie-martin",
         "nom": "Marie Martin",
@@ -105,39 +129,161 @@
         "amendements": 0,
         "interventions": 0
       }
-    ]
+    ],
+    "non_candidats": {
+      "total_profils": 1,
+      "par_groupe": [
+        {
+          "groupe": "Socialistes et apparentés",
+          "nb_profils": 1,
+          "votes": {
+            "min": 0,
+            "max": 0,
+            "mediane": 0,
+            "moyenne": 0
+          },
+          "textes_portes": {
+            "min": 0,
+            "max": 0,
+            "mediane": 0,
+            "moyenne": 0
+          },
+          "amendements": {
+            "min": 0,
+            "max": 0,
+            "mediane": 0,
+            "moyenne": 0
+          },
+          "interventions": {
+            "min": 0,
+            "max": 0,
+            "mediane": 0,
+            "moyenne": 0
+          }
+        }
+      ],
+      "ensemble": {
+        "votes": {
+          "min": 0,
+          "max": 0,
+          "mediane": 0,
+          "moyenne": 0
+        },
+        "textes_portes": {
+          "min": 0,
+          "max": 0,
+          "mediane": 0,
+          "moyenne": 0
+        },
+        "amendements": {
+          "min": 0,
+          "max": 0,
+          "mediane": 0,
+          "moyenne": 0
+        },
+        "interventions": {
+          "min": 0,
+          "max": 0,
+          "mediane": 0,
+          "moyenne": 0
+        }
+      }
+    }
   },
   "plage_dates_candidats": {
     "lignes": [
       {
-        "id": "nosdeputes:jean-dupont",
-        "nom": "Jean Dupont",
-        "chambre": "AN",
-        "votes": {"min": null, "max": null},
-        "textes_portes": {"min": null, "max": null},
-        "amendements": {"min": null, "max": null},
-        "interventions": {"min": null, "max": null}
-      },
-      {
         "id": "nosdeputes:marie-martin",
         "nom": "Marie Martin",
         "chambre": "AN",
-        "votes": {"min": null, "max": null},
-        "textes_portes": {"min": null, "max": null},
-        "amendements": {"min": null, "max": null},
-        "interventions": {"min": null, "max": null}
+        "votes": {
+          "min": null,
+          "max": null
+        },
+        "textes_portes": {
+          "min": null,
+          "max": null
+        },
+        "amendements": {
+          "min": null,
+          "max": null
+        },
+        "interventions": {
+          "min": null,
+          "max": null
+        }
       },
       {
         "id": "nossenateurs:paul-durand",
         "nom": "Paul Durand",
         "chambre": "Senat",
-        "votes": {"min": null, "max": null},
-        "textes_portes": {"min": null, "max": null},
-        "amendements": {"min": null, "max": null},
-        "interventions": {"min": null, "max": null}
+        "votes": {
+          "min": null,
+          "max": null
+        },
+        "textes_portes": {
+          "min": null,
+          "max": null
+        },
+        "amendements": {
+          "min": null,
+          "max": null
+        },
+        "interventions": {
+          "min": null,
+          "max": null
+        }
       }
     ],
-    "dates_ignorees": {"votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0}
+    "non_candidats": {
+      "total_profils": 1,
+      "par_groupe": [
+        {
+          "groupe": "Socialistes et apparentés",
+          "nb_profils": 1,
+          "votes": {
+            "min": null,
+            "max": null
+          },
+          "textes_portes": {
+            "min": null,
+            "max": null
+          },
+          "amendements": {
+            "min": null,
+            "max": null
+          },
+          "interventions": {
+            "min": null,
+            "max": null
+          }
+        }
+      ],
+      "ensemble": {
+        "votes": {
+          "min": null,
+          "max": null
+        },
+        "textes_portes": {
+          "min": null,
+          "max": null
+        },
+        "amendements": {
+          "min": null,
+          "max": null
+        },
+        "interventions": {
+          "min": null,
+          "max": null
+        }
+      }
+    },
+    "dates_ignorees": {
+      "votes": 0,
+      "textes_portes": 0,
+      "amendements": 0,
+      "interventions": 0
+    }
   },
   "erreurs_lecture": [
     {
