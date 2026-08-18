@@ -65,6 +65,33 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:nadia-hai",
+      "nom": "Nadia Hai",
+      "portefeuille": "Ministère auprès de la ministre de la cohésion des territoires et des relations avec les collectivités territoriales, chargé de la ville",
+      "debut": "2020-07-07",
+      "fin": "2022-03-05",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:nadia-hai",
+      "nom": "Nadia Hai",
+      "portefeuille": "Ministère auprès du ministre de la cohésion des territoires et des relations avec les collectivités territoriales - ville",
+      "debut": "2022-03-06",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:olivia-gregoire",
+      "nom": "Olivia Grégoire",
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'économie, des finances et de la relance, chargé de l'économie sociale, solidaire et responsable",
+      "debut": "2020-07-27",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:olivier-dussopt",
       "nom": "Olivier Dussopt",
       "portefeuille": null,
@@ -2081,6 +2108,16 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/nadia-hai",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olivia-gregoire",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-dussopt",
       "synchro_le": "2026-08-14T14:48:31+0000"
     },
@@ -2092,7 +2129,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T12:50:12+0000",
+    "genere_le": "2026-08-18T14:03:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

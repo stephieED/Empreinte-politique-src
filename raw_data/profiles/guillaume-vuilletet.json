@@ -3979,10 +3979,10 @@
     "genere_le": "2026-08-14T14:49:10+0000",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "assemblee_nationale_questions": null,
-      "assemblee_nationale_syceron": null,
       "nosdeputes": "2026-08-14T14:49:10+0000",
-      "assemblee_nationale": "2026-08-14T14:49:11+0000"
+      "assemblee_nationale_syceron": null,
+      "assemblee_nationale": "2026-08-14T14:49:11+0000",
+      "assemblee_nationale_questions": null
     },
     "warnings": [
       "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",

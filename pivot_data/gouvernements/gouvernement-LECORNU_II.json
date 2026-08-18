@@ -341,7 +341,7 @@
       "statut": "adopte_cmp",
       "chambre_depot_initial": "AN",
       "date_depot": "2026-04-08",
-      "date_dernier_evenement": "2026-08-16",
+      "date_dernier_evenement": "2026-08-06",
       "sort_49_3": false,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_actualisation_loi_programmation_militaire_annees_2024_2030_diverses_dispositions_defense"
     },
@@ -763,7 +763,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T12:50:12+0000",
+    "genere_le": "2026-08-18T14:03:17+0000",
     "licence_donnees": "",
     "warnings": []
   }
