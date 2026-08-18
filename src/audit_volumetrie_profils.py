@@ -234,6 +234,27 @@ def _mo(octets: int) -> str:
     return f"{octets / _OCTETS_PAR_MO:,.1f} Mo".replace(",", " ")
 
 
+def _avertissement_representativite(vol: dict[str, Any], proj: dict[str, Any]) -> str:
+    """Mise en garde sur la représentativité — mais **seulement quand elle
+    s'applique**.
+
+    Quand la population mesurée atteint déjà la cible, il n'y a plus de
+    projection : le total est un fait. Laisser l'avertissement dans ce cas
+    inviterait à douter d'un chiffre certain, ce qui est aussi trompeur que
+    d'omettre la réserve dans le cas inverse.
+    """
+    if vol["nb_profils"] >= proj["cible"]:
+        return (
+            f"> Population **complète** ({vol['nb_profils']} profils pour une "
+            f"cible de {proj['cible']}) : le total est mesuré, pas extrapolé."
+        )
+    return (
+        "> La projection suppose la population représentative. Si elle ne porte "
+        "que des profils déjà générés, elle peut être biaisée — les profils "
+        "générés en premier ne sont pas forcément de poids médian."
+    )
+
+
 def generate_markdown_report(rapport: dict[str, Any]) -> str:
     """Rapport prêt à coller dans #429."""
     vol = rapport["volumetrie"]
@@ -244,8 +265,12 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
     lignes = [
         "# Volumétrie des profils et leviers d'allègement",
         "",
-        f"Échantillon : **{vol['nb_profils']} profils**, "
-        f"**{_mo(total)}** au total.",
+        f"Population : **{vol['nb_profils']} profils**, **{_mo(total)}** au "
+        f"total — mesuré sur tous les fichiers.",
+        "",
+        f"Ratios (compact, gzip, poids par champ) calculés sur "
+        f"**{vol.get('nb_echantillon', vol['nb_profils'])} profils** "
+        f"échantillonnés à intervalle régulier sur la distribution des tailles.",
         "",
         "| Indicateur | Valeur |",
         "| --- | --- |",
@@ -270,10 +295,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             f"{'**dépassé**' if proj['depasse_seuil_depot'] else 'respecté'} ;",
             f"- seuil atteint vers **{proj['profils_avant_seuil_depot']} profils**.",
             "",
-            "> La projection suppose l'échantillon représentatif. S'il ne porte "
-            "que des profils déjà générés, il est **biaisé vers les figures de "
-            "premier plan** (gros déposants d'amendements) et surestime "
-            "probablement le total.",
+            _avertissement_representativite(vol, proj),
             "",
         ]
 

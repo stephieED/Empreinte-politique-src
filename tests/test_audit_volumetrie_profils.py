@@ -219,3 +219,40 @@ def test_rapport_markdown_mentionne_le_biais_dechantillon(tmp_path):
 
 def test_rapport_markdown_sans_profil():
     assert "Aucun profil" in generate_markdown_report({"volumetrie": {"nb_profils": 0}})
+
+
+# ---------------------------------------------------------------------------
+# Avertissement de représentativité (conditionnel)
+# ---------------------------------------------------------------------------
+
+def _rapport(nb_profils: int, cible: int) -> dict:
+    vol = compute_volumetrie(
+        [{"fichier": "a.json", "octets": 100, "octets_compact": 60,
+          "octets_gzip": 10, "champs": {"amendements": 50}}],
+        {"nb_profils": nb_profils, "octets_total": nb_profils * 100,
+         "octets_median": 100, "octets_max": 100, "fichier_max": "a.json"},
+    )
+    return {"volumetrie": vol, "leviers": compute_leviers(vol),
+            "projection": compute_projection(vol, cible, 1.0), "erreurs_lecture": []}
+
+
+def test_avertissement_absent_quand_la_population_est_complete():
+    """Douter d'un chiffre mesuré est aussi trompeur qu'omettre la réserve sur
+    un chiffre extrapolé : l'avertissement doit disparaître à population
+    complète."""
+    md = generate_markdown_report(_rapport(nb_profils=752, cible=752))
+    assert "complète" in md
+    assert "biaisé" not in md
+
+
+def test_avertissement_present_quand_la_population_est_partielle():
+    md = generate_markdown_report(_rapport(nb_profils=40, cible=752))
+    assert "biaisé" in md
+
+
+def test_entete_distingue_population_et_echantillon():
+    """La population porte le total exact, l'échantillon les seuls ratios :
+    confondre les deux ferait passer une mesure pour une extrapolation."""
+    md = generate_markdown_report(_rapport(nb_profils=752, cible=752))
+    assert "Population : **752 profils**" in md
+    assert "Ratios" in md and "**1 profils**" in md
