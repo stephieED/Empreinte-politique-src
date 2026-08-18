@@ -352,7 +352,8 @@ def test_compute_validation_schema_detecte_le_collapse_du_49_3():
     profil["textes"] = [{
         "dossier_id": "d1", "titre": "t", "statut": "adopte",
         "chambre_depot_initial": "AN", "date_depot": "2025-01-01",
-        "date_dernier_evenement": "2025-01-02", "sort_49_3": True, "source_url": None,
+        "date_dernier_evenement": "2025-01-02", "sort_49_3": True,
+            "initiateurs": None, "source_url": None,
     }]
 
     resultat = compute_validation_schema([profil])

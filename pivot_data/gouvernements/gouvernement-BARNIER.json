@@ -92,6 +92,20 @@
       "date_depot": "2024-12-11",
       "date_dernier_evenement": "2024-12-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795144",
+          "membre_id": "nosdeputes:antoine-armand"
+        },
+        {
+          "acteur_ref": "PA720878",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/pjl_speciale_article45lolf_2025"
     },
     {
@@ -102,6 +116,12 @@
       "date_depot": "2024-12-11",
       "date_dernier_evenement": "2024-12-11",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51096"
     },
     {
@@ -112,6 +132,12 @@
       "date_depot": "2024-11-27",
       "date_dernier_evenement": "2025-05-30",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50957"
     },
     {
@@ -122,6 +148,20 @@
       "date_depot": "2024-11-22",
       "date_dernier_evenement": "2025-03-20",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA2538",
+          "membre_id": "nosdeputes:bruno-retailleau"
+        },
+        {
+          "acteur_ref": "PA721836",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_traite_cooperation_domaine_defense_france_espagne"
     },
     {
@@ -132,6 +172,20 @@
       "date_depot": "2024-11-06",
       "date_dernier_evenement": "2024-12-06",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795144",
+          "membre_id": "nosdeputes:antoine-armand"
+        },
+        {
+          "acteur_ref": "PA720878",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plffg2024"
     },
     {
@@ -142,6 +196,12 @@
       "date_depot": "2024-10-31",
       "date_dernier_evenement": "2026-01-29",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50794"
     },
     {
@@ -152,6 +212,16 @@
       "date_depot": "2024-10-31",
       "date_dernier_evenement": "2025-04-30",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795144",
+          "membre_id": "nosdeputes:antoine-armand"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/diverses_dispositions_adaptation_due_2024_eco_finances_environnement"
     },
     {
@@ -162,6 +232,12 @@
       "date_depot": "2024-10-23",
       "date_dernier_evenement": "2024-10-23",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50744"
     },
     {
@@ -172,6 +248,12 @@
       "date_depot": "2024-10-23",
       "date_dernier_evenement": "2024-10-23",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50745"
     },
     {
@@ -182,6 +264,12 @@
       "date_depot": "2024-10-15",
       "date_dernier_evenement": "2025-09-10",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50731"
     },
     {
@@ -192,6 +280,20 @@
       "date_depot": "2024-10-10",
       "date_dernier_evenement": "2025-02-14",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795144",
+          "membre_id": "nosdeputes:antoine-armand"
+        },
+        {
+          "acteur_ref": "PA720878",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PLF2025"
     },
     {
@@ -202,6 +304,24 @@
       "date_depot": "2024-10-10",
       "date_dernier_evenement": "2025-02-28",
       "sort_49_3": true,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA719914",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA642868",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA720878",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plfss_pour_2025"
     },
     {
@@ -212,6 +332,16 @@
       "date_depot": "2024-10-01",
       "date_dernier_evenement": "2024-10-01",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA368",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795144",
+          "membre_id": "nosdeputes:antoine-armand"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_ordonnance_juillet_2024_modernisation"
     }
   ],
@@ -282,7 +412,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T15:10:20+0000",
+    "genere_le": "2026-08-18T20:02:03+0200",
     "licence_donnees": "",
     "warnings": []
   }

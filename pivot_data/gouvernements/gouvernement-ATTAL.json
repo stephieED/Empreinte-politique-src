@@ -159,6 +159,20 @@
       "date_depot": "2024-07-19",
       "date_dernier_evenement": "2024-10-22",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plr_pour_2023"
     },
     {
@@ -169,6 +183,20 @@
       "date_depot": "2024-07-19",
       "date_dernier_evenement": "2025-02-19",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/approbation_secu_sociale_2023"
     },
     {
@@ -179,6 +207,7 @@
       "date_depot": "2024-07-03",
       "date_dernier_evenement": "2025-06-23",
       "sort_49_3": false,
+      "initiateurs": null,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51362"
     },
     {
@@ -189,6 +218,7 @@
       "date_depot": "2024-06-26",
       "date_dernier_evenement": "2025-06-23",
       "sort_49_3": false,
+      "initiateurs": null,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N51783"
     },
     {
@@ -199,6 +229,12 @@
       "date_depot": "2024-06-12",
       "date_dernier_evenement": "2025-10-22",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N50115"
     },
     {
@@ -209,6 +245,24 @@
       "date_depot": "2024-05-31",
       "date_dernier_evenement": "2024-06-05",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA267797",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_secsoc_2023"
     },
     {
@@ -219,6 +273,16 @@
       "date_depot": "2024-05-21",
       "date_dernier_evenement": "2024-05-21",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA607846",
+          "membre_id": "nosdeputes:gerald-darmanin"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2024-153"
     },
     {
@@ -229,6 +293,16 @@
       "date_depot": "2024-05-16",
       "date_dernier_evenement": "2024-11-13",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA842137",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/convention_nations_unies_droit_mer_conservation_utilisation_durable"
     },
     {
@@ -239,6 +313,12 @@
       "date_depot": "2024-05-06",
       "date_dernier_evenement": "2024-06-05",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49943"
     },
     {
@@ -249,6 +329,12 @@
       "date_depot": "2024-04-24",
       "date_dernier_evenement": "2026-05-26",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49868"
     },
     {
@@ -259,6 +345,20 @@
       "date_depot": "2024-04-17",
       "date_dernier_evenement": "2024-05-29",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/resultats_gestion_approbation_comptes_2023"
     },
     {
@@ -269,6 +369,12 @@
       "date_depot": "2024-04-17",
       "date_dernier_evenement": "2025-03-25",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49806"
     },
     {
@@ -279,6 +385,12 @@
       "date_depot": "2024-04-17",
       "date_dernier_evenement": "2025-03-25",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49807"
     },
     {
@@ -289,6 +401,20 @@
       "date_depot": "2024-04-10",
       "date_dernier_evenement": "2024-06-07",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA267797",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA795350",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accompagnement_malades_fin_vie"
     },
     {
@@ -299,6 +425,16 @@
       "date_depot": "2024-04-03",
       "date_dernier_evenement": "2025-03-24",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA719938",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/souverainete_agricole_renouvellement_generations"
     },
     {
@@ -309,6 +445,12 @@
       "date_depot": "2024-03-13",
       "date_dernier_evenement": "2025-02-17",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49615"
     },
     {
@@ -319,6 +461,16 @@
       "date_depot": "2024-03-06",
       "date_dernier_evenement": "2024-03-06",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2023-1210"
     },
     {
@@ -329,6 +481,12 @@
       "date_depot": "2024-02-28",
       "date_dernier_evenement": "2024-02-28",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49485"
     },
     {
@@ -339,6 +497,20 @@
       "date_depot": "2024-02-28",
       "date_dernier_evenement": "2024-02-28",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        },
+        {
+          "acteur_ref": "PA793940",
+          "membre_id": "nosdeputes:thomas-cazenave"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_gestionnaires_credits_acheteurs_credits"
     },
     {
@@ -349,6 +521,16 @@
       "date_depot": "2024-02-21",
       "date_dernier_evenement": "2024-02-21",
       "sort_49_3": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_directive_assurance_responsabilite_civile_vehicules"
     },
     {
@@ -359,6 +541,16 @@
       "date_depot": "2024-02-07",
       "date_dernier_evenement": "2024-11-13",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        },
+        {
+          "acteur_ref": "PA842137",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/accord_PNG_defense"
     },
     {
@@ -369,6 +561,12 @@
       "date_depot": "2024-01-29",
       "date_dernier_evenement": "2024-04-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49374"
     },
     {
@@ -379,6 +577,12 @@
       "date_depot": "2024-01-29",
       "date_dernier_evenement": "2024-05-14",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA722190",
+          "membre_id": "nosdeputes:gabriel-attal"
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49373"
     },
     {
@@ -389,6 +593,12 @@
       "date_depot": "2024-01-24",
       "date_dernier_evenement": "2024-04-15",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA331481",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49320"
     },
     {
@@ -399,6 +609,12 @@
       "date_depot": "2024-01-17",
       "date_dernier_evenement": "2025-02-17",
       "sort_49_3": false,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA842137",
+          "membre_id": null
+        }
+      ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49273"
     }
   ],
@@ -499,7 +715,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T15:10:20+0000",
+    "genere_le": "2026-08-18T20:02:03+0200",
     "licence_donnees": "",
     "warnings": []
   }

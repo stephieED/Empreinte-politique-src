@@ -333,7 +333,7 @@ def build_gouvernement_roster(
 LABEL_PORTEFEUILLE_PREMIER_MINISTRE = "Premier ministre"
 
 
-def _acteur_ref_depuis_profil(profil: dict[str, Any]) -> Optional[str]:
+def acteur_ref_depuis_profil(profil: dict[str, Any]) -> Optional[str]:
     """Extrait l'`acteurRef` AN (ex. `PA722190`) de l'URL de fiche du profil.
 
     `schema_pivot` n'expose pas l'identifiant du référentiel AN en tant que
@@ -386,7 +386,7 @@ def build_premier_ministre(
                     continue
                 candidats.append({
                     "nom": profil.get("nom") or "",
-                    "acteur_ref": _acteur_ref_depuis_profil(profil),
+                    "acteur_ref": acteur_ref_depuis_profil(profil),
                     "source_url": _source_url_portefeuille(portefeuille, mandat),
                 })
 
