@@ -34,6 +34,12 @@ Sous-issue 1/6 de #316 : `compute_plage_dates_candidats`, symétrique de
 `compute_tableau_croise_candidats` (#175) mais pour la plage temporelle
 (min/max) de chaque type de donnée plutôt que son volume.
 
+Allègement du rapport (2026-08-18) : les deux tableaux croisés ne détaillent
+que les candidats déclarés et n'exposent les profils de roster qu'agrégés par
+groupe ; les indicateurs « distribution des listes métier » et « sources
+déclarées », qui mélangeaient ces deux populations, ont été retirés — voir
+`docs/technical_decisions.md#audit-rapport-perimetre-candidats`.
+
 Aucune dépendance lourde : stdlib uniquement.
 """
 
@@ -171,58 +177,21 @@ def compute_repartition_provenance(profils: list[dict[str, Any]]) -> dict[str, A
     }
 
 
-def compute_distribution_listes(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """Distribution du nombre d'éléments par profil pour chaque liste métier.
+def _stats_volumes(tailles: list[int]) -> dict[str, Any]:
+    """Min/max/médiane/moyenne d'une série de volumes.
 
-    Pour `votes`, `textes_portes`, `amendements` et `interventions` : min,
-    max, médiane, moyenne du nombre d'éléments par profil, et pourcentage
-    de profils à 0 élément. Sur une liste de profils vide, toutes les
-    statistiques valent `null` (rien à mesurer) sauf `pct_profils_a_zero`
-    qui vaut `0.0`.
+    Sur une série vide, toutes les statistiques valent `null` : il n'y a
+    rien à mesurer, et on ne substitue jamais 0 à une statistique absente
+    (AGENTS.md §2.5).
     """
-    distribution: dict[str, Any] = {}
-
-    for champ in CHAMPS_LISTES_VOLUMETRIE:
-        tailles = [_taille_liste(profil, champ) for profil in profils]
-
-        if tailles:
-            distribution[champ] = {
-                "min": min(tailles),
-                "max": max(tailles),
-                "mediane": statistics.median(tailles),
-                "moyenne": round(statistics.mean(tailles), 2),
-                "pct_profils_a_zero": round(
-                    100 * sum(1 for taille in tailles if taille == 0) / len(tailles), 2
-                ),
-            }
-        else:
-            distribution[champ] = {
-                "min": None,
-                "max": None,
-                "mediane": None,
-                "moyenne": None,
-                "pct_profils_a_zero": 0.0,
-            }
-
-    return distribution
-
-
-def compute_nombre_sources(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """Volumétrie du nombre de `sources[]` déclarées par profil.
-
-    Moyenne du nombre de sources par profil, et pourcentage de profils
-    n'ayant déclaré qu'une seule source.
-    """
-    if not profils:
-        return {"moyenne_sources": None, "pct_profils_une_source": 0.0}
-
-    nombres_sources = [_taille_liste(profil, "sources") for profil in profils]
+    if not tailles:
+        return {"min": None, "max": None, "mediane": None, "moyenne": None}
 
     return {
-        "moyenne_sources": round(statistics.mean(nombres_sources), 2),
-        "pct_profils_une_source": round(
-            100 * sum(1 for n in nombres_sources if n == 1) / len(nombres_sources), 2
-        ),
+        "min": min(tailles),
+        "max": max(tailles),
+        "mediane": statistics.median(tailles),
+        "moyenne": round(statistics.mean(tailles), 2),
     }
 
 
@@ -609,20 +578,48 @@ def compute_profils_sans_activite(profils: list[dict[str, Any]]) -> dict[str, An
     }
 
 
+def _est_candidat(profil: dict[str, Any]) -> bool:
+    """Vrai si le profil est un candidat déclaré, faux pour un membre de roster.
+
+    `meta.provenance` absente vaut `"candidat_declare"` (rétro-compatibilité,
+    voir `compute_repartition_provenance`). Toute autre valeur — `"roster_groupe"`
+    comme une provenance inconnue — désigne un profil collecté via le roster
+    d'un groupe parlementaire, qui n'est pas un candidat déclaré.
+    """
+    meta = profil.get("meta")
+    provenance = meta.get("provenance") if isinstance(meta, dict) else None
+    return provenance is None or provenance == "candidat_declare"
+
+
+def _cle_groupe(profil: dict[str, Any]) -> str:
+    """Clé de regroupement des profils non candidats : `groupe` ou `"null"` si absent."""
+    groupe = profil.get("groupe")
+    return groupe if isinstance(groupe, str) and groupe.strip() else "null"
+
+
 def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Tableau croisé du volume d'entrées par candidat et par type d'activité.
 
-    Une ligne par candidat : `id`, `nom`, `chambre`, et le nombre d'éléments
-    dans chacune des listes de `CHAMPS_LISTES_VOLUMETRIE` (votes,
-    textes_portes, amendements, interventions). Un champ absent ou `null`
-    compte pour 0, comme dans `compute_distribution_listes`.
+    Le détail ligne à ligne est réservé aux **candidats déclarés**
+    (`_est_candidat`) : c'est le périmètre éditorial du produit. Les profils
+    issus des rosters de groupes (`meta.provenance == "roster_groupe"`) sont
+    présents pour la cohésion de groupe, pas pour un affichage individuel ;
+    ils ne sont donc restitués qu'agrégés par groupe (min/max/médiane/moyenne),
+    jamais membre par membre.
+
+    Un champ absent ou `null` compte pour 0 élément.
 
     Returns:
-        {"lignes": [{"id":..., "nom":..., "chambre":..., "votes": int,
-                      "textes_portes": int, "amendements": int,
-                      "interventions": int}, ...]}, trié par `nom` puis `id`
-        (ordre déterministe en cas d'égalité ou de `nom` absent).
+        `{"lignes": [{"id":..., "nom":..., "chambre":..., "votes": int,
+        "textes_portes": int, "amendements": int, "interventions": int}, ...],
+        "non_candidats": {"total_profils": int, "par_groupe": [{"groupe":...,
+        "nb_profils": int, <champ>: {"min","max","mediane","moyenne"}}, ...],
+        "ensemble": {<champ>: {...}}}}`. `lignes` est triée par `nom` puis
+        `id`, `par_groupe` par nom de groupe (ordre déterministe).
     """
+    candidats = [profil for profil in profils if _est_candidat(profil)]
+    non_candidats = [profil for profil in profils if not _est_candidat(profil)]
+
     lignes = [
         {
             "id": profil.get("id"),
@@ -630,12 +627,39 @@ def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str,
             "chambre": profil.get("chambre"),
             **{champ: _taille_liste(profil, champ) for champ in CHAMPS_LISTES_VOLUMETRIE},
         }
-        for profil in profils
+        for profil in candidats
     ]
-
     lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["id"] or ""))
 
-    return {"lignes": lignes}
+    par_groupe: dict[str, list[dict[str, Any]]] = {}
+    for profil in non_candidats:
+        par_groupe.setdefault(_cle_groupe(profil), []).append(profil)
+
+    lignes_groupes = [
+        {
+            "groupe": groupe,
+            "nb_profils": len(membres),
+            **{
+                champ: _stats_volumes([_taille_liste(membre, champ) for membre in membres])
+                for champ in CHAMPS_LISTES_VOLUMETRIE
+            },
+        }
+        for groupe, membres in sorted(par_groupe.items())
+    ]
+
+    return {
+        "lignes": lignes,
+        "non_candidats": {
+            "total_profils": len(non_candidats),
+            "par_groupe": lignes_groupes,
+            "ensemble": {
+                champ: _stats_volumes(
+                    [_taille_liste(profil, champ) for profil in non_candidats]
+                )
+                for champ in CHAMPS_LISTES_VOLUMETRIE
+            },
+        },
+    }
 
 
 def _parse_date_seule(valeur: Any) -> date | None:
@@ -727,48 +751,105 @@ def _plage_dates_textes_portes(
     }
 
 
-def compute_plage_dates_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """Tableau croisé de la plage temporelle par candidat et par type d'activité.
+def _fusionne_plages(plages: list[dict[str, str | None]]) -> dict[str, str | None]:
+    """Plage englobante d'une liste de cellules `{"min":..., "max":...}`.
 
-    Symétrique de `compute_tableau_croise_candidats` (volumes) : une ligne
-    par candidat avec `id`, `nom`, `chambre`, et pour chacune des listes de
-    `CHAMPS_LISTES_VOLUMETRIE` une cellule `{"min": ..., "max": ...}` (dates
-    ISO-8601, `null` si la liste est vide ou sans aucune date exploitable —
-    jamais de date par défaut, AGENTS.md §2.5). `votes`/`amendements`/
-    `interventions` utilisent le champ `date` de chaque entrée ;
-    `textes_portes` agrège `date_min`/`date_max` (voir
-    `_plage_dates_textes_portes`).
+    `min` = plus petite borne basse non nulle, `max` = plus grande borne
+    haute non nulle ; `null` si aucune borne exploitable (jamais de date par
+    défaut, AGENTS.md §2.5).
+    """
+    debuts = [plage["min"] for plage in plages if plage["min"] is not None]
+    fins = [plage["max"] for plage in plages if plage["max"] is not None]
+
+    return {
+        "min": min(debuts) if debuts else None,
+        "max": max(fins) if fins else None,
+    }
+
+
+def compute_plage_dates_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
+    """Plage temporelle par candidat et par type d'activité.
+
+    Symétrique de `compute_tableau_croise_candidats` (volumes) : détail ligne
+    à ligne pour les **candidats déclarés** uniquement, et agrégat par groupe
+    pour les profils issus des rosters (`_est_candidat`), jamais membre par
+    membre.
+
+    Chaque cellule est un `{"min": ..., "max": ...}` de dates ISO-8601, `null`
+    si la liste est vide ou sans aucune date exploitable — jamais de date par
+    défaut (AGENTS.md §2.5). `votes`/`amendements`/`interventions` utilisent le
+    champ `date` de chaque entrée ; `textes_portes` agrège `date_min`/`date_max`
+    (voir `_plage_dates_textes_portes`). L'agrégat non candidats fusionne les
+    plages des membres d'un même groupe (plus petit `min`, plus grand `max`).
 
     Returns:
-        {"lignes": [{"id":..., "nom":..., "chambre":..., "votes": {...},
-                      "textes_portes": {...}, "amendements": {...},
-                      "interventions": {...}}, ...], trié comme
-        `compute_tableau_croise_candidats`, "dates_ignorees": {champ: int,
-        ...}} — compte, par champ, les dates présentes mais non parseables,
-        ignorées silencieusement du calcul mais jamais masquées sans
-        indicateur.
+        `{"lignes": [{"id":..., "nom":..., "chambre":..., <champ>: {"min","max"}},
+        ...], "non_candidats": {"total_profils": int, "par_groupe":
+        [{"groupe":..., "nb_profils": int, <champ>: {"min","max"}}, ...],
+        "ensemble": {<champ>: {"min","max"}}}, "dates_ignorees": {champ: int}}`.
+        `dates_ignorees` compte, par champ et sur l'ensemble des profils, les
+        dates présentes mais non parseables : ignorées du calcul, jamais
+        masquées sans indicateur.
     """
     dates_ignorees = {champ: 0 for champ in CHAMPS_LISTES_VOLUMETRIE}
+
+    def plages_profil(profil: dict[str, Any]) -> dict[str, dict[str, str | None]]:
+        return {
+            champ: (
+                _plage_dates_textes_portes(profil, dates_ignorees)
+                if champ == "textes_portes"
+                else _plage_dates_champ_simple(profil, champ, dates_ignorees)
+            )
+            for champ in CHAMPS_LISTES_VOLUMETRIE
+        }
+
     lignes = []
+    plages_non_candidats: list[tuple[str, dict[str, dict[str, str | None]]]] = []
 
     for profil in profils:
-        lignes.append({
-            "id": profil.get("id"),
-            "nom": profil.get("nom"),
-            "chambre": profil.get("chambre"),
-            **{
-                champ: (
-                    _plage_dates_textes_portes(profil, dates_ignorees)
-                    if champ == "textes_portes"
-                    else _plage_dates_champ_simple(profil, champ, dates_ignorees)
-                )
-                for champ in CHAMPS_LISTES_VOLUMETRIE
-            },
-        })
+        plages = plages_profil(profil)
+        if _est_candidat(profil):
+            lignes.append({
+                "id": profil.get("id"),
+                "nom": profil.get("nom"),
+                "chambre": profil.get("chambre"),
+                **plages,
+            })
+        else:
+            plages_non_candidats.append((_cle_groupe(profil), plages))
 
     lignes.sort(key=lambda ligne: (ligne["nom"] or "", ligne["id"] or ""))
 
-    return {"lignes": lignes, "dates_ignorees": dates_ignorees}
+    par_groupe: dict[str, list[dict[str, dict[str, str | None]]]] = {}
+    for groupe, plages in plages_non_candidats:
+        par_groupe.setdefault(groupe, []).append(plages)
+
+    lignes_groupes = [
+        {
+            "groupe": groupe,
+            "nb_profils": len(membres),
+            **{
+                champ: _fusionne_plages([plages[champ] for plages in membres])
+                for champ in CHAMPS_LISTES_VOLUMETRIE
+            },
+        }
+        for groupe, membres in sorted(par_groupe.items())
+    ]
+
+    return {
+        "lignes": lignes,
+        "non_candidats": {
+            "total_profils": len(plages_non_candidats),
+            "par_groupe": lignes_groupes,
+            "ensemble": {
+                champ: _fusionne_plages(
+                    [plages[champ] for _, plages in plages_non_candidats]
+                )
+                for champ in CHAMPS_LISTES_VOLUMETRIE
+            },
+        },
+        "dates_ignorees": dates_ignorees,
+    }
 
 
 def compute_presence_meta(profils: list[dict[str, Any]]) -> dict[str, Any]:
@@ -847,8 +928,6 @@ def build_report(
         "volumetrie": {
             "repartition_chambre": compute_repartition_chambre(profils),
             "repartition_provenance": compute_repartition_provenance(profils),
-            "distribution_listes": compute_distribution_listes(profils),
-            "nombre_sources": compute_nombre_sources(profils),
         },
         "completude": {
             "taux_remplissage": compute_taux_remplissage(profils),
@@ -904,17 +983,6 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
     par_provenance = volumetrie["repartition_provenance"]["par_provenance"]
     lignes_provenance = [[provenance, effectif] for provenance, effectif in par_provenance.items()]
 
-    lignes_listes = [
-        [
-            champ,
-            stats["min"], stats["max"], stats["mediane"], stats["moyenne"],
-            stats["pct_profils_a_zero"],
-        ]
-        for champ, stats in volumetrie["distribution_listes"].items()
-    ]
-
-    sources = volumetrie["nombre_sources"]
-
     return (
         "## Volumétrie\n\n"
         f"Total profils : {volumetrie['repartition_chambre']['total_profils']}\n\n"
@@ -922,17 +990,6 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
         + _md_table(["Chambre", "Profils"], lignes_chambre, "Aucun profil.")
         + "\n### Répartition par provenance (`meta.provenance`)\n\n"
         + _md_table(["Provenance", "Profils"], lignes_provenance, "Aucun profil.")
-        + "\n### Distribution des listes métier (par profil)\n\n"
-        + _md_table(
-            ["Champ", "Min", "Max", "Médiane", "Moyenne", "% profils à 0"],
-            lignes_listes, "Aucun profil.",
-        )
-        + "\n### Sources déclarées\n\n"
-        + _md_table(
-            ["Moyenne de sources par profil", "% profils à une seule source"],
-            [[sources["moyenne_sources"], sources["pct_profils_une_source"]]],
-            "Aucun profil.",
-        )
     )
 
 
@@ -1036,11 +1093,36 @@ def _md_section_tableau_croise_candidats(tableau: dict[str, Any]) -> str:
         for ligne in tableau["lignes"]
     ]
 
+    non_candidats = tableau["non_candidats"]
+    lignes_non_candidats = [
+        [
+            ligne["groupe"], ligne["nb_profils"], champ,
+            ligne[champ]["min"], ligne[champ]["max"],
+            ligne[champ]["mediane"], ligne[champ]["moyenne"],
+        ]
+        for ligne in non_candidats["par_groupe"]
+        for champ in CHAMPS_LISTES_VOLUMETRIE
+    ] + [
+        [
+            "Ensemble", non_candidats["total_profils"], champ,
+            stats["min"], stats["max"], stats["mediane"], stats["moyenne"],
+        ]
+        for champ, stats in non_candidats["ensemble"].items()
+    ]
+
     return (
         "## Tableau croisé des volumes par candidat\n\n"
+        "Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).\n\n"
         + _md_table(
             ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
             lignes, "Aucun profil.",
+        )
+        + "\n### Membres de groupe non candidats (agrégé par groupe)\n\n"
+        f"{non_candidats['total_profils']} profil(s) issus des rosters de groupes "
+        "(`meta.provenance` = `roster_groupe`) : volumes agrégés, sans détail par membre.\n\n"
+        + _md_table(
+            ["Groupe", "Profils", "Champ", "Min", "Max", "Médiane", "Moyenne"],
+            lignes_non_candidats, "Aucun profil non candidat.",
         )
     )
 
@@ -1062,15 +1144,42 @@ def _md_section_plage_dates_candidats(plage_dates: dict[str, Any]) -> str:
         for ligne in plage_dates["lignes"]
     ]
 
+    non_candidats = plage_dates["non_candidats"]
+    lignes_non_candidats = [
+        [
+            ligne["groupe"], ligne["nb_profils"],
+            _md_format_plage(ligne["votes"]), _md_format_plage(ligne["textes_portes"]),
+            _md_format_plage(ligne["amendements"]), _md_format_plage(ligne["interventions"]),
+        ]
+        for ligne in non_candidats["par_groupe"]
+    ] + [
+        [
+            "Ensemble", non_candidats["total_profils"],
+            _md_format_plage(non_candidats["ensemble"]["votes"]),
+            _md_format_plage(non_candidats["ensemble"]["textes_portes"]),
+            _md_format_plage(non_candidats["ensemble"]["amendements"]),
+            _md_format_plage(non_candidats["ensemble"]["interventions"]),
+        ]
+    ]
+
     lignes_ignorees = [
         [champ, nombre] for champ, nombre in plage_dates["dates_ignorees"].items() if nombre > 0
     ]
 
     return (
         "## Plages temporelles par candidat\n\n"
+        "Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).\n\n"
         + _md_table(
             ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
             lignes, "Aucun profil.",
+        )
+        + "\n### Membres de groupe non candidats (agrégé par groupe)\n\n"
+        f"{non_candidats['total_profils']} profil(s) issus des rosters de groupes "
+        "(`meta.provenance` = `roster_groupe`) : plage englobante du groupe, "
+        "sans détail par membre.\n\n"
+        + _md_table(
+            ["Groupe", "Profils", "Votes", "Textes portés", "Amendements", "Interventions"],
+            lignes_non_candidats, "Aucun profil non candidat.",
         )
         + "\n### Dates ignorées (invalides ou non parseables)\n\n"
         + _md_table(["Champ", "Dates ignorées"], lignes_ignorees, "Aucune date ignorée.")
