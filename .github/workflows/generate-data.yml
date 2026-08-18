@@ -54,9 +54,13 @@ on:
         type: number
         default: 20
 
-# Nécessaire pour que le job puisse pousser la mise à jour des données.
+# Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
+# `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
+# jobs d'extraction exécutent du code réseau contre des sources tierces (AN
+# Open Data, NosDéputés, Sénat, Parlement européen, ParlTrack) — leur donner un
+# token en écriture sur le dépôt était un privilège sans usage.
 permissions:
-  contents: write
+  contents: read
 
 # Évite deux exécutions qui écriraient/committeraient en même temps.
 concurrency:
@@ -78,17 +82,46 @@ concurrency:
 # ([[verification-billing-actions]]) ; ce qui reste valide de #222 est
 # l'argument *cache* — des shards en parallèle retéléchargeraient chacun les
 # dumps AN Open Data au lieu de se passer un cache déjà chaud.
-# Timeouts : amendements-an 30 min / AN 5 min par shard (réduit de 20 min,
-# voir commentaire sur extract-an ci-dessous), shards exécutés en série
-# (max-parallel 1) → ≈ 5 × nb_candidats_a_slug (8 actuellement, donc ≈40 min
-# pire cas — recalculer si raw_data/candidats.json change significativement)
-# / Sénat 90 min / UE 60 min / ParlTrack 30 min / roster-groupes 60 min
-# (needs: les jobs d'extraction précédents, #222 — jamais parallèle à eux,
-# contrairement à ce qu'un calcul purement parallèle suggérerait) /
-# merge-and-pivot 60 min (needs: roster-groupes entre autres).
-# Total mur (parallèle) ≈ max(30+5×8, 90, 60, 30) + 60 + 60 = 190 min pire cas
-# (8 shards, contre 310 min avec le timeout de 20 min par shard) — contre
-# bien plus de 450 min si tout s'enchaînait séquentiellement.
+#
+# ── LES 9 JOBS ──────────────────────────────────────────────────────────────
+# 2 préparatoires (prepare-an-matrix, prepare-roster-matrix), 6 d'extraction
+# (extract-amendements-an, extract-an, extract-senat, extract-ue-officiel,
+# extract-parltrack, extract-roster-groupes — dont 2 shardés), 1 de fusion
+# (merge-and-pivot). Les en-têtes de job ne sont plus numérotés : la
+# numérotation « JOB n/4 » était périmée depuis #344/#394 et l'était redevenue
+# à chaque ajout (#413).
+#
+# ── BUDGET DE TEMPS MUR ─────────────────────────────────────────────────────
+# ATTENTION, deux grandeurs à ne pas confondre :
+#   - la SOMME DES TIMEOUTS ci-dessous = pire cas théorique, ce que le workflow
+#     s'autorise à consommer avant que GitHub ne le coupe ;
+#   - le TEMPS MUR OBSERVÉ, très inférieur : ~1m18–2m10 par shard AN (mesuré,
+#     voir le commentaire de timeout d'extract-an), 2,3 s + 5,05 s × N membres
+#     pour le roster ([[budget-roster-mesure]]).
+# Le chiffre publié ici jusqu'à #413 (« 190 min ») était faux deux fois : il
+# oubliait extract-senat du max() (90, pas 70) et traitait extract-roster-groupes
+# comme un job unique alors que c'est un matrix en série depuis #394.
+#
+# Timeouts déclarés : prepare-* 5 min / amendements-an 30 / AN 5 PAR SHARD
+# (réduit de 20, voir le commentaire d'extract-an ; nb de shards = candidats à
+# slug résolvable, 8 aujourd'hui, alerte automatique au-delà de AN_SHARDS_WARN
+# depuis #412) / Sénat 90 / UE 60 / ParlTrack 30 / roster-groupes 60 PAR SHARD
+# (S = 1 en rollout progressif, 8 en run complet) / merge-and-pivot 60.
+#
+# Chaîne la plus longue, en sommant ces timeouts :
+#
+#   | Étape                         | Début au + tôt | Durée max | Fin au + tard |
+#   |-------------------------------|----------------|-----------|---------------|
+#   | les 6 jobs sans needs:        | 0              | 5…90      | 90 (Sénat)    |
+#   | extract-an (8 shards × 5)     | 30             | 40        | 70            |
+#   | extract-roster-groupes (S×60) | 90             | 60·S      | 150 / 570     |
+#   | merge-and-pivot               | 150 / 570      | 60        | 210 / 630     |
+#
+# → **210 min** en configuration par défaut (roster_extraction_limit=20, donc
+#   S=1) et **630 min (10 h 30)** en run complet (roster_extraction_limit=0,
+#   S=8). Aucune limite GitHub n'est atteinte (6 h par JOB — le plus long ici
+#   est à 90 min —, 35 j par RUN), mais un run complet doit être dimensionné
+#   avec 630 min en tête, pas 190.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
   PARLTRACK_TIMEOUT_MINUTES: 30   # <── modifier ici si besoin (ne requiert pas de rewrite du YAML)
@@ -176,7 +209,7 @@ jobs:
           fi
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 1/4 — Extraction Assemblée nationale (matrix par candidat, #344)
+  # JOB D'EXTRACTION — Assemblée nationale (matrix par candidat, #344)
   # ──────────────────────────────────────────────────────────────────────────
   extract-an:
     needs: [extract-amendements-an, prepare-an-matrix]
@@ -338,7 +371,7 @@ jobs:
 
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 2/4 — Extraction Sénat
+  # JOB D'EXTRACTION — Sénat
   # ──────────────────────────────────────────────────────────────────────────
   extract-senat:
     runs-on: ubuntu-latest
@@ -405,7 +438,7 @@ jobs:
 
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 3/4 — Extraction API officielle Parlement européen
+  # JOB D'EXTRACTION — API officielle Parlement européen
   # ──────────────────────────────────────────────────────────────────────────
   extract-ue-officiel:
     runs-on: ubuntu-latest
@@ -471,7 +504,7 @@ jobs:
           kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB 4/4 — Extraction ParlTrack (fragile — tierce source non officielle)
+  # JOB D'EXTRACTION — ParlTrack (fragile — tierce source non officielle)
   #
   # continue-on-error: true → son échec ou timeout ne bloque pas merge-and-pivot.
   # Timeout court (env.PARLTRACK_TIMEOUT_MINUTES, défaut 30 min).
@@ -555,7 +588,7 @@ jobs:
           kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB SUPPLÉMENTAIRE — Construction dédiée des index amendements AN (#251,
+  # JOB D'EXTRACTION — Construction dédiée des index amendements AN (#251,
   # sous-issue 3/6 du plan d'architecture #248)
   #
   # Construit sans condition les 3 index de législature (17/16/15,
@@ -655,7 +688,7 @@ jobs:
           kind: failure
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JOB SUPPLÉMENTAIRE — Extraction roster-driven (rollout progressif, #192)
+  # JOB D'EXTRACTION — Roster-driven (rollout progressif, #192)
   #
   # Déploiement progressif de l'extraction pilotée par la composition réelle
   # des groupes parlementaires (#188/#190), en alternative à la liste
@@ -850,7 +883,10 @@ jobs:
 
       # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
       # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
-      # n'est pas committé : régénéré à chaque run (source de vérité = groupes_reels.json).
+      # n'est pas committé : régénéré à chaque run (source de vérité =
+      # groupes_reels.json). Ce n'était vrai que sur le papier jusqu'à #413 §5 —
+      # le fichier était tracké et dérivait silencieusement ; il est désormais
+      # gitignoré et désindexé, comme parltrack-status.json.
       - name: Construction de la liste roster-driven
         run: python3 src/generate_roster_candidats.py
 
@@ -1047,6 +1083,11 @@ jobs:
             --workers ${{ inputs.workers }} \
             "${MERGE_FLAG[@]}"
 
+      # Pas de --enrich-parltrack sur ce second passage, contrairement au
+      # premier (#413 §4) : ParlTrack est une source UE (eurodéputé·es), et le
+      # roster ne contient que des membres AN/Sénat — l'enrichissement n'aurait
+      # aucun pivot à enrichir ici. Asymétrie voulue, pas un oubli.
+      #
       # Pivots roster-driven (#192) : repasse --pivot-only explicitement sur
       # raw_data/roster_candidats.json (régénéré ici — fetch réseau bon marché,
       # 2 appels — plutôt que transitée par artifact) pour normaliser aussi les
@@ -1109,7 +1150,15 @@ jobs:
             --out-dir pivot_data/gouvernements \
             --validate
 
-      # Cache-only : cet artifact provient du job extract-amendements-an (#251).
+      # Cache-only : cet artifact provient du job extract-amendements-an (#251),
+      # qui n'est PAS dans le `needs:` de ce job (#413 §4) : le téléchargement ne
+      # fonctionne que parce que extract-roster-groupes, lui, en dépend, et que
+      # ce job dépend de extract-roster-groupes. Dépendance transitive, donc
+      # fragile si un `needs:` bouge — l'artifact étant optionnel
+      # (continue-on-error + dégradation gracieuse ci-dessous), la casse serait
+      # silencieuse. Documenté plutôt que corrigé : ajouter le `needs:` direct
+      # changerait le graphe de dépendances pour un gain nul tant que la chaîne
+      # tient.
       # continue-on-error: true — même pattern que l'étape homonyme d'extract-an/
       # extract-roster-groupes (#252) : en cas d'échec/absence, la section 3d du
       # quality gate signale simplement chaque législature "jamais construite"
@@ -1146,7 +1195,17 @@ jobs:
             --low-interventions 10 \
             --groupe-min-members 1 \
             --parltrack-status-file parltrack-status.json
-            # --groupe-min-coverage-pct XX  # To be set after running and audit of workflow (cf. #193)
+          # --groupe-min-coverage-pct : seuil de couverture RELATIF, optionnel,
+          # défaut 0 = désactivé. Volontairement non passé ici (#413 §7). #193
+          # (close) demandait de le calibrer « en fonction des résultats réels » ;
+          # la décision prise en réponse est [[seuil-couverture-groupe]] :
+          # conserver --groupe-min-members 1 et n'activer le seuil relatif QUE
+          # lorsqu'un run à pleine échelle (roster_extraction_limit=0, ~750
+          # membres) aura fourni des taux de couverture représentatifs. Les
+          # chiffres à regarder pour trancher : taux_couverture_pct dans
+          # coherence.ecart_couverture_roster (audit_groupe_dataset.py). Ce
+          # n'est donc pas un réglage en attente d'arbitrage, mais une activation
+          # en attente d'une donnée précise.
 
       # Garde-fou #390 : ne JAMAIS committer un build produit avec du code
       # périmé.
@@ -1166,38 +1225,69 @@ jobs:
       # une erreur. Refuser de committer est donc le défaut, pas le cas
       # d'échec.
       #
-      # Condition volontairement ÉTROITE (src/ seulement) : un commit de doc ou
-      # de données ne doit rien déclencher — c'est le cas que la boucle de
-      # retry du push sait traiter, depuis la correction de #389. La relance
-      # est prise en charge par retry-generate-data.yml, qui plafonne déjà à
-      # une seule tentative automatique.
+      # PÉRIMÈTRE (#413 §3) : le code de génération (`src/`) ET les fichiers de
+      # CONFIGURATION qui sont des ENTRÉES du build (raw_data/*.json hors
+      # raw_data/profiles/ : candidats, groupes_reels, gouvernements_reels).
+      # La condition ne couvrait que `src/`, au motif qu'« un commit de doc ou
+      # de données ne doit rien déclencher » — ce qui confondait deux natures de
+      # données : les données DÉRIVÉES (raw_data/profiles/, pivot_data/),
+      # régénérées par ce job et dont le conflit est traité par la boucle de
+      # rebase du push (#389), et les données de CONFIGURATION, qui pilotent la
+      # génération. Un merge modifiant groupes_reels.json pendant le run faisait
+      # committer des groupes générés avec l'ANCIENNE config, sans alerte —
+      # exactement le défaut que #390 veut empêcher.
+      #
+      # `:(exclude)raw_data/profiles/` est indispensable : dans un pathspec git,
+      # `*` traverse les répertoires, donc `raw_data/*.json` seul matcherait les
+      # ~750 profils bruts régénérés à chaque run et le garde-fou se
+      # déclencherait sur tout commit de données.
+      #
+      # BRANCHE COMPARÉE (#413 §2) : celle du run (`github.ref_name`), pas
+      # `main` en dur. Ce workflow est déclenchable par workflow_dispatch sur
+      # n'importe quelle ref, et retry-generate-data.yml propage explicitement
+      # `--ref "${{ github.event.workflow_run.head_branch }}"`. Sur un run lancé
+      # depuis dev ou une branche de worktree, `$BASE_SHA` est le HEAD de CETTE
+      # branche : le diff contre origin/main remontait alors TOUTES les
+      # différences entre la branche et main, pas les commits arrivés pendant le
+      # run. Conséquence observable : commit toujours annulé, retry automatique
+      # déclenché, qui échouait à l'identique — un run hors main ne pouvait
+      # jamais committer, pour une raison étrangère au motif de #390.
       - name: Vérifier que le code de génération n'a pas changé pendant le run
         env:
           BASE_SHA: ${{ github.sha }}
+          # Via env: et pas en substitution directe dans le script — le nom de
+          # branche est une donnée contrôlable par qui déclenche le run.
+          RUN_REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          git fetch origin main --quiet
-          if git diff --quiet "$BASE_SHA" origin/main -- src/; then
-            echo "✓ src/ inchangé sur origin/main depuis le début du run — commit sûr."
+          # Entrées du build surveillées. Modifier cette liste suffit : elle
+          # n'est dupliquée nulle part ailleurs.
+          BUILD_INPUTS=(src/ 'raw_data/*.json' ':(exclude)raw_data/profiles/')
+
+          git fetch origin "$RUN_REF" --quiet
+          if git diff --quiet "$BASE_SHA" "origin/$RUN_REF" -- "${BUILD_INPUTS[@]}"; then
+            echo "✓ Entrées du build inchangées sur origin/$RUN_REF depuis le début du run — commit sûr."
             exit 0
           fi
-          echo "Fichiers de src/ modifiés sur origin/main pendant ce run :"
-          git diff --name-only "$BASE_SHA" origin/main -- src/ | sed 's/^/  - /'
+          echo "Entrées du build modifiées sur origin/$RUN_REF pendant ce run :"
+          git diff --name-only "$BASE_SHA" "origin/$RUN_REF" -- "${BUILD_INPUTS[@]}" | sed 's/^/  - /'
           {
-            echo "### ⛔ Commit annulé — code de génération modifié pendant le run"
+            echo "### ⛔ Commit annulé — entrées du build modifiées pendant le run"
             echo ""
-            echo "\`src/\` a changé sur \`origin/main\` depuis le SHA sur lequel ce job"
-            echo "a été checkouté (\`$BASE_SHA\`). Les fichiers dérivés produits ici"
-            echo "l'ont donc été avec du code périmé : les committer publierait de la"
-            echo "donnée potentiellement fausse (voir #390)."
+            echo "\`src/\` ou un fichier de configuration (\`raw_data/*.json\`) a changé"
+            echo "sur \`origin/$RUN_REF\` depuis le SHA sur lequel ce job a été checkouté"
+            echo "(\`$BASE_SHA\`). Les fichiers dérivés produits ici l'ont donc été avec"
+            echo "du code ou une configuration périmés : les committer publierait de la"
+            echo "donnée potentiellement fausse (voir #390, périmètre étendu en #413)."
             echo ""
             echo "Aucune donnée n'est perdue — tout est régénérable. Un nouveau run"
-            echo "sur le \`main\` à jour produira un résultat cohérent."
+            echo "sur \`$RUN_REF\` à jour produira un résultat cohérent."
           } >> "$GITHUB_STEP_SUMMARY"
           # Marqueur greppable par retry-generate-data.yml, distinct de la
           # signature de préemption runner, pour que le diagnostic de la
-          # relance reste lisible.
-          echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ modifié sur origin/main pendant le run ; commit annulé pour ne pas publier un build périmé (#390)."
+          # relance reste lisible. Texte conservé à l'identique : le retry le
+          # cherche littéralement.
+          echo "::error::GENERATION_CODE_CHANGED_DURING_RUN — src/ ou configuration raw_data/*.json modifié sur origin/$RUN_REF pendant le run ; commit annulé pour ne pas publier un build périmé (#390/#413)."
           exit 1
 
       # `pushed` (output) : consommé par l'étape de déploiement ci-dessous, qui
@@ -1206,6 +1296,10 @@ jobs:
       # un output posé après ne serait jamais écrit.
       - name: Committer et pousser les données mises à jour
         id: commit
+        env:
+          # Même raison que sur le garde-fou ci-dessus (#413 §2) : le rebase de
+          # la boucle de retry doit viser la branche du run, pas main en dur.
+          RUN_REF: ${{ github.ref_name }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -1217,15 +1311,20 @@ jobs:
           fi
           git commit -m "chore: mise à jour automatique des données ($(date -u +%Y-%m-%d))"
 
-          # actions/checkout sur workflow_dispatch fige le SHA de main au moment du
-          # déclenchement du run, pas au démarrage de ce job — et ce job ne démarre
-          # qu'après les 5 jobs d'extraction (needs), qui peuvent prendre 20+ min
-          # (extraction séquentielle, cf. #222). Tout commit humain ou automatisé
-          # atterrissant sur main dans cette fenêtre fait échouer un simple `git
-          # push` (non fast-forward) alors que la donnée collectée est valide —
-          # vécu sur le run #29 (rejeté par un commit doc poussé pendant le run).
-          # Rebase + retry au lieu d'échouer tout le job sur une donnée déjà
-          # committée localement.
+          # actions/checkout sur workflow_dispatch fige le SHA de la ref au moment
+          # du déclenchement du run, pas au démarrage de ce job — et ce job ne
+          # démarre qu'après les 5 jobs d'extraction (needs), qui peuvent prendre
+          # 20+ min (extraction séquentielle, cf. #222). Tout commit humain ou
+          # automatisé atterrissant sur cette branche dans la fenêtre fait échouer
+          # un simple `git push` (non fast-forward) alors que la donnée collectée
+          # est valide — vécu sur le run #29 (rejeté par un commit doc poussé
+          # pendant le run). Rebase + retry au lieu d'échouer tout le job sur une
+          # donnée déjà committée localement.
+          #
+          # Rebase sur la BRANCHE DU RUN (#413 §2), pas sur main en dur : même
+          # défaut que le garde-fou ci-dessus, en plus grave ici — sur un run
+          # lancé hors main, `git rebase origin/main` rejouait le commit de
+          # données par-dessus main au lieu de la branche poussée.
           #
           # `set +e` sur la portée de la boucle (#389) : ce step s'exécute avec
           # `bash -e {0}` (aucun `defaults: shell` déclaré dans ce workflow), donc
@@ -1241,9 +1340,9 @@ jobs:
               echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/main et nouvel essai."
-            git fetch origin main
-            if ! git rebase --autostash origin/main; then
+            echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/${RUN_REF} et nouvel essai."
+            git fetch origin "$RUN_REF"
+            if ! git rebase --autostash "origin/$RUN_REF"; then
               # Un conflit de rebase ne se résoudra jamais en rebouclant : les
               # deux côtés ont réécrit les mêmes fichiers générés (cas du run
               # #266, cause traitée dans #390). On sort tout de suite, après
@@ -1259,7 +1358,7 @@ jobs:
           if [ "$push_status" = "conflit" ]; then
             echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
           else
-            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur main. Intervention manuelle requise."
+            echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur ${RUN_REF}. Intervention manuelle requise."
           fi
           exit 1
 

@@ -61,6 +61,17 @@ cover/
 # Point de sauvegarde intermédiaire de generate_all_profiles.py (progression, pas une donnée publiée)
 raw_data/profiles/.generation_checkpoint.json
 
+# Sorties régénérées à chaque run de generate-data.yml, jamais committées (#413).
+# raw_data/roster_candidats.json : aplatissement du roster, source de vérité =
+# raw_data/groupes_reels.json (generate_roster_candidats.py).
+# parltrack-status.json : état enrichi/fallback ParlTrack d'un run, lu par
+# check_quality_gate.py §5 dans le même job.
+# Les deux étaient trackés malgré la documentation qui affirmait l'inverse : ils
+# salissaient l'arbre de travail au moment du `git rebase --autostash` du push,
+# et la version committée dérivait silencieusement de ce que le run produisait.
+raw_data/roster_candidats.json
+parltrack-status.json
+
 # Translations
 *.mo
 *.pot
