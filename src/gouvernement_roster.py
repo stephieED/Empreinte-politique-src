@@ -32,19 +32,31 @@ membre si son mandat a été scindé en plusieurs périodes (changement de
 portefeuille en cours de gouvernement) — cf. `schema_gouvernement.py`, qui
 documente ce même principe pour `membres[]`.
 
-`portefeuille` reste toujours `null` : aucune source fiable du titre précis
-du portefeuille n'est disponible sans risque de faux positifs (déduction du
-libellé ou recherche texte libre), gap documenté dans
-`docs/technical_decisions.md#hors-perimetre` § "Ministerial function" — même
-décision que pour `extra_parlementaire`. `source_url` reste donc également
-`null` (obligatoire uniquement quand `portefeuille` est renseigné, cf.
-`schema_gouvernement.validate_profil_gouvernement`).
+`portefeuille` (#398) vient des mandats `typeOrgane == "MINISTERE"` exposés
+par le même zip AMO30 et mappés en `fonction_gouvernementale` depuis #382/#383
+(« Ministère de l'éducation nationale et de la jeunesse », « Secrétariat
+d'État auprès du Premier ministre… »). La catégorie mélange donc deux natures
+de mandats, que seul le label distingue — voir
+`_est_mandat_appartenance_gouvernement`. Un portefeuille n'est retenu que s'il
+chevauche le mandat d'appartenance du membre, et **tous** les portefeuilles
+chevauchants le sont : un ministre qui change de portefeuille en cours de
+gouvernement produit une entrée `membres[]` par période, jamais un
+portefeuille choisi arbitrairement parmi les siens. `portefeuille` retombe à
+`null` (avec un warning) si aucune `source_url` n'est traçable, le schéma
+l'exigeant dès que l'intitulé est renseigné. La limite inverse est levée :
+`docs/technical_decisions.md#hors-perimetre` § "Ministerial function" est
+marquée RÉSOLU.
+
+`premier_ministre` (#398, `build_premier_ministre`) se dérive du même
+matériau : le membre du gouvernement dont un mandat `MINISTERE` porte le label
+« Premier ministre ». Aucun appariement par la seule période, aucune déduction
+depuis le nom du gouvernement — voir la docstring de la fonction.
 
 Hors périmètre de ce module (sous-issue #5 de #184) :
   - Collecte des textes législatifs portés par le gouvernement.
   - Écriture d'un fichier `pivot_data/gouvernements/*.json` conforme au
-    schéma complet `schema_gouvernement.py` (premier_ministre, textes,
-    comptages...) : ce module ne produit que la liste `membres[]`.
+    schéma complet `schema_gouvernement.py` (textes, comptages...) : ce module
+    ne produit que `membres[]` et l'entrée `premier_ministre`.
 
 Usage (depuis la racine du dépôt) :
     python src/gouvernement_roster.py \\
@@ -55,6 +67,7 @@ Usage (depuis la racine du dépôt) :
 
 import argparse
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -109,6 +122,61 @@ def _expected_label(libelle_an: str) -> str:
     return f"Gouvernement ({libelle_an})" if libelle_an else "Gouvernement"
 
 
+def _est_mandat_appartenance_gouvernement(label: str) -> bool:
+    """Distingue les deux natures de mandats `fonction_gouvernementale`.
+
+    La catégorie en mélange deux, issues du même zip AMO30 mais de deux
+    `typeOrgane` différents (voir `candidate_profile._TYPE_ORGANE_TO_CATEGORIE`) :
+      - `GOUVERNEMENT` : l'appartenance au gouvernement, label « Gouvernement
+        (<libelleAbrege>) » — c'est le mandat qui rattache un membre à CE
+        gouvernement (`_mandate_matches_gouvernement`) ;
+      - `MINISTERE` : le portefeuille précis, label « Ministère de… »,
+        « Secrétariat d'État… », « Premier ministre » (#382/#383).
+
+    Le label est le seul discriminant : `categorie` est identique pour les
+    deux, et `position_dans_hemicycle` n'est renseigné que sur les premiers.
+    """
+    return label == "Gouvernement" or (
+        label.startswith("Gouvernement (") and label.endswith(")")
+    )
+
+
+def _mandats_portefeuille(profil: dict[str, Any]) -> list[dict[str, Any]]:
+    """Mandats `MINISTERE` d'un profil : les mandats `fonction_gouvernementale`
+    qui portent un intitulé de portefeuille plutôt qu'une appartenance."""
+    return [
+        mandat
+        for mandat in (profil.get("mandats") or [])
+        if mandat.get("categorie") == "fonction_gouvernementale"
+        and not _est_mandat_appartenance_gouvernement(mandat.get("label") or "")
+    ]
+
+
+def _portefeuilles_du_mandat(
+    profil: dict[str, Any], mandat_gouvernemental: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Mandats de portefeuille chevauchant un mandat d'appartenance donné,
+    triés par date de début (l'ordre chronologique de la source).
+
+    Le chevauchement se teste contre la période du **mandat** du membre, pas
+    contre celle du gouvernement : un ministre entré en cours de mandature ne
+    doit pas se voir attribuer le portefeuille qu'il occupait avant.
+    """
+    m_debut = _parse_date(mandat_gouvernemental.get("debut"))
+    m_fin = _parse_date(mandat_gouvernemental.get("fin"))
+    chevauchants = [
+        portefeuille
+        for portefeuille in _mandats_portefeuille(profil)
+        if _periods_overlap(
+            _parse_date(portefeuille.get("debut")),
+            _parse_date(portefeuille.get("fin")),
+            m_debut,
+            m_fin,
+        )
+    ]
+    return sorted(chevauchants, key=lambda p: p.get("debut") or "")
+
+
 def _mandate_matches_gouvernement(
     mandat: dict[str, Any],
     libelle_an: str,
@@ -137,18 +205,56 @@ def _mandate_matches_gouvernement(
 # Construction du roster
 # ---------------------------------------------------------------------------
 
-def _derive_membre_entry(profil: dict[str, Any], mandat: dict[str, Any]) -> dict[str, Any]:
+def _source_url_portefeuille(
+    portefeuille: dict[str, Any], mandat_gouvernemental: dict[str, Any]
+) -> Optional[str]:
+    """URL traçant l'intitulé du portefeuille, ou None si aucune n'est
+    disponible — auquel cas le portefeuille n'est pas renseigné du tout.
+
+    Les mandats `MINISTERE` sortent de `candidate_profile._extract_mandats_officiels`
+    sans `source_url` (aucun mandat de ce chemin n'en porte). Le repli est le
+    `source_url` du mandat d'appartenance du même membre : les deux mandats
+    proviennent du **même** zip AMO30 (`AN_ACTEURS_HISTORIQUE_ZIP_URL`), le
+    second se contentant de le porter explicitement. Ce n'est donc pas une URL
+    inventée pour satisfaire le validateur, c'est la source réelle de l'intitulé.
+    """
+    return portefeuille.get("source_url") or mandat_gouvernemental.get("source_url")
+
+
+def _derive_membre_entry(
+    profil: dict[str, Any],
+    mandat: dict[str, Any],
+    portefeuille: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     """Dérive une entrée `membres[]` (schéma `schema_gouvernement.py`) à partir
     d'un profil pivot et d'un mandat `fonction_gouvernementale` déjà sélectionné.
+
+    Avec un `portefeuille` (mandat `MINISTERE` chevauchant, #398), l'entrée
+    porte l'intitulé précis et **les dates du portefeuille**, pas celles du
+    mandat d'appartenance : c'est ce que décrit `schema_gouvernement.py` par
+    « un enregistrement par ministre et par période si changement de
+    portefeuille ». Sans portefeuille, le comportement d'origine est conservé
+    (dates du mandat d'appartenance, `portefeuille`/`source_url` à `null`).
     """
+    if portefeuille is None:
+        return {
+            "membre_id": profil.get("id") or "",
+            "nom": profil.get("nom") or "",
+            "portefeuille": None,
+            "debut": mandat.get("debut"),
+            "fin": mandat.get("fin"),
+            "actif": bool(mandat.get("actif")),
+            "source_url": None,
+        }
+
     return {
         "membre_id": profil.get("id") or "",
         "nom": profil.get("nom") or "",
-        "portefeuille": None,
-        "debut": mandat.get("debut"),
-        "fin": mandat.get("fin"),
-        "actif": bool(mandat.get("actif")),
-        "source_url": None,
+        "portefeuille": portefeuille.get("label"),
+        "debut": portefeuille.get("debut"),
+        "fin": portefeuille.get("fin"),
+        "actif": bool(portefeuille.get("actif")),
+        "source_url": _source_url_portefeuille(portefeuille, mandat),
     }
 
 
@@ -157,6 +263,7 @@ def build_gouvernement_roster(
     periode_debut: Optional[str],
     periode_fin: Optional[str],
     profils: list[dict[str, Any]],
+    warnings: Optional[list[str]] = None,
 ) -> list[dict[str, Any]]:
     """Construit la liste `membres[]` d'un gouvernement à partir de profils pivot.
 
@@ -169,12 +276,16 @@ def build_gouvernement_roster(
                      si le gouvernement est toujours en fonction.
         profils: liste de profils pivot v1 (déjà chargés depuis
                  `pivot_data/profiles/*.pivot.json`).
+        warnings: liste optionnelle où consigner les anomalies (portefeuille
+                  trouvé mais non traçable). Même motif que
+                  `candidate_profile.fetch_amendements_officiels`.
 
     Returns:
         Liste de dicts conformes à la structure `membres[]` de
-        `schema_gouvernement.py`, un enregistrement par mandat correspondant
-        (potentiellement plusieurs par membre si son mandat a été scindé en
-        plusieurs périodes).
+        `schema_gouvernement.py`, un enregistrement par mandat correspondant —
+        et, depuis #398, un enregistrement par **période de portefeuille** dès
+        qu'un mandat d'appartenance en chevauche plusieurs (un ministre qui
+        change de portefeuille en cours de gouvernement).
     """
     g_debut = _parse_date(periode_debut)
     g_fin = _parse_date(periode_fin)
@@ -182,10 +293,122 @@ def build_gouvernement_roster(
     membres: list[dict[str, Any]] = []
     for profil in profils:
         for mandat in profil.get("mandats") or []:
-            if _mandate_matches_gouvernement(mandat, libelle_an, g_debut, g_fin):
+            if not _mandate_matches_gouvernement(mandat, libelle_an, g_debut, g_fin):
+                continue
+
+            # Tous les portefeuilles chevauchants sont retenus, jamais un seul
+            # choisi arbitrairement (#398) : quand un ministre en change en
+            # cours de gouvernement, les périodes se succèdent et pavent le
+            # mandat d'appartenance — les fondre en une entrée effacerait un
+            # des deux portefeuilles réellement occupés.
+            portefeuilles: list[dict[str, Any]] = []
+            for portefeuille in _portefeuilles_du_mandat(profil, mandat):
+                if _source_url_portefeuille(portefeuille, mandat):
+                    portefeuilles.append(portefeuille)
+                elif warnings is not None:
+                    # Le schéma exige `source_url` dès que `portefeuille` est
+                    # renseigné : sans traçabilité, on retombe sur `null`
+                    # plutôt que de publier un intitulé invérifiable (§2.3).
+                    warnings.append(
+                        f"gouvernement_roster: {profil.get('nom') or profil.get('id')} : "
+                        f"portefeuille {portefeuille.get('label')!r} sans source_url "
+                        f"traçable — portefeuille non renseigné."
+                    )
+
+            if not portefeuilles:
                 membres.append(_derive_membre_entry(profil, mandat))
+                continue
+            for portefeuille in portefeuilles:
+                membres.append(_derive_membre_entry(profil, mandat, portefeuille))
 
     return membres
+
+
+# ---------------------------------------------------------------------------
+# Premier ministre
+# ---------------------------------------------------------------------------
+
+# Intitulé exact du mandat `MINISTERE` correspondant au chef du gouvernement.
+# C'est un libellé d'organe de la source AN, pas une convention de notre part.
+LABEL_PORTEFEUILLE_PREMIER_MINISTRE = "Premier ministre"
+
+
+def _acteur_ref_depuis_profil(profil: dict[str, Any]) -> Optional[str]:
+    """Extrait l'`acteurRef` AN (ex. `PA722190`) de l'URL de fiche du profil.
+
+    `schema_pivot` n'expose pas l'identifiant du référentiel AN en tant que
+    champ : il n'est présent que dans `identite.source_url`
+    (`.../deputes/fiche/OMC_PA722190`). L'extraction est un simple motif, pas
+    une déduction — absent ou d'une autre forme (fiche Sénat), on retourne
+    None plutôt qu'un identifiant reconstruit.
+    """
+    source_url = (profil.get("identite") or {}).get("source_url") or ""
+    correspondance = re.search(r"(PA\d+)", source_url)
+    return correspondance.group(1) if correspondance else None
+
+
+def build_premier_ministre(
+    libelle_an: str,
+    periode_debut: Optional[str],
+    periode_fin: Optional[str],
+    profils: list[dict[str, Any]],
+    warnings: Optional[list[str]] = None,
+) -> Optional[dict[str, Any]]:
+    """Détermine le `premier_ministre` d'un gouvernement, ou None (#398).
+
+    Le critère est le **cumul** de deux faits, jamais l'un des deux seul :
+      1. être membre de CE gouvernement — même sélection désambiguïsée que
+         `build_gouvernement_roster` (libellé exact + chevauchement) ;
+      2. porter un mandat `MINISTERE` de label « Premier ministre »
+         chevauchant ce mandat d'appartenance.
+
+    Le seul appariement de période serait insuffisant : deux gouvernements
+    successifs se suivent d'un jour, et un même Premier ministre peut en
+    diriger deux (Philippe I et II). Passer par le mandat d'appartenance
+    hérite de la désambiguïsation déjà éprouvée du roster.
+
+    Retourne None — jamais une valeur déduite du nom du gouvernement — si
+    aucun profil ne remplit les deux conditions (cas attendu : le Premier
+    ministre n'a pas de profil pivot local), et None **avec un warning** si
+    plusieurs les remplissent : trancher entre deux candidats serait un choix
+    arbitraire (AGENTS.md §2.5).
+    """
+    g_debut = _parse_date(periode_debut)
+    g_fin = _parse_date(periode_fin)
+
+    candidats: list[dict[str, Any]] = []
+    for profil in profils:
+        for mandat in profil.get("mandats") or []:
+            if not _mandate_matches_gouvernement(mandat, libelle_an, g_debut, g_fin):
+                continue
+            for portefeuille in _portefeuilles_du_mandat(profil, mandat):
+                if (portefeuille.get("label") or "") != LABEL_PORTEFEUILLE_PREMIER_MINISTRE:
+                    continue
+                candidats.append({
+                    "nom": profil.get("nom") or "",
+                    "acteur_ref": _acteur_ref_depuis_profil(profil),
+                    "source_url": _source_url_portefeuille(portefeuille, mandat),
+                })
+
+    # Un même profil peut porter plusieurs mandats d'appartenance au même
+    # gouvernement (mandat scindé) : ce sont des doublons, pas une ambiguïté.
+    uniques: list[dict[str, Any]] = []
+    for candidat in candidats:
+        if candidat not in uniques:
+            uniques.append(candidat)
+
+    if not uniques:
+        return None
+    if len(uniques) > 1:
+        if warnings is not None:
+            noms = sorted(candidat["nom"] for candidat in uniques)
+            warnings.append(
+                f"gouvernement_roster: {len(uniques)} Premiers ministres possibles "
+                f"pour le gouvernement {libelle_an!r} ({', '.join(noms)}) — "
+                f"premier_ministre non renseigné."
+            )
+        return None
+    return uniques[0]
 
 
 # ---------------------------------------------------------------------------

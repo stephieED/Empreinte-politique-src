@@ -13,11 +13,29 @@
     {
       "membre_id": "nosdeputes:laurent-wauquiez",
       "nom": "Laurent Wauquiez",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès de la ministre d'État, ministre des affaires étrangères et européennes, chargé des affaires européennes",
       "debut": "2010-11-14",
+      "fin": "2011-02-27",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:laurent-wauquiez",
+      "nom": "Laurent Wauquiez",
+      "portefeuille": "Ministère auprès du ministre d'État, ministre des affaires étrangères et européennes, chargé des affaires européennes",
+      "debut": "2011-02-27",
+      "fin": "2011-06-29",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:laurent-wauquiez",
+      "nom": "Laurent Wauquiez",
+      "portefeuille": "Ministère de l'enseignement supérieur et de la recherche",
+      "debut": "2011-06-29",
       "fin": "2012-05-10",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [],
@@ -43,7 +61,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:34:19+0200",
+    "genere_le": "2026-08-18T01:51:32+0200",
     "licence_donnees": "",
     "warnings": []
   }

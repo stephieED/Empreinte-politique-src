@@ -12,7 +12,13 @@ législatifs) en un objet conforme à `schema_gouvernement.py`.
 Sources en entrée :
   - `profils` : l'ensemble des profils pivot individuels déjà collectés
     (`pivot_data/profiles/*.pivot.json`) — passés à
-    `gouvernement_roster.build_gouvernement_roster` pour dériver `membres[]`.
+    `gouvernement_roster.build_gouvernement_roster` pour dériver `membres[]`
+    (portefeuille ministériel compris, #398) et à
+    `gouvernement_roster.build_premier_ministre` pour `premier_ministre`.
+    Ces deux champs restent `null` quand aucun profil local ne porte le
+    mandat correspondant — jamais une valeur déduite du nom du gouvernement
+    (règle AGENTS.md §2.5) ; c'est le cas des 7 Premiers ministres qui n'ont
+    pas de profil pivot dans le dépôt.
   - `dossiers_gouvernementaux` : la sortie *non filtrée* de
     `gouvernement_textes.collect_dossiers_gouvernementaux`/
     `fetch_dossiers_gouvernementaux` (tous les dossiers d'origine
@@ -80,7 +86,12 @@ from schema_gouvernement import (
     make_empty_profil_gouvernement,
     validate_profil_gouvernement,
 )
-from gouvernement_roster import build_gouvernement_roster, load_gouvernement_config, load_profils_from_dir
+from gouvernement_roster import (
+    build_gouvernement_roster,
+    build_premier_ministre,
+    load_gouvernement_config,
+    load_profils_from_dir,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -224,6 +235,14 @@ def build_gouvernement_profile(
         periode_debut=periode_debut,
         periode_fin=periode_fin,
         profils=profils,
+        warnings=warnings,
+    )
+    premier_ministre = build_premier_ministre(
+        libelle_an=libelle_an,
+        periode_debut=periode_debut,
+        periode_fin=periode_fin,
+        profils=profils,
+        warnings=warnings,
     )
 
     g_debut = _parse_date(periode_debut)
@@ -254,6 +273,7 @@ def build_gouvernement_profile(
         "fin": periode_fin,
         "actif": periode_fin is None,
     }
+    profil_gouvernement["premier_ministre"] = premier_ministre
     profil_gouvernement["membres"] = membres
     profil_gouvernement["textes"] = textes
     profil_gouvernement["comptages"]["par_statut"] = par_statut

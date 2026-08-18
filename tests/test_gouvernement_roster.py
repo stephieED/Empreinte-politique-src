@@ -8,14 +8,16 @@ from gouvernement_roster import (
     _parse_date,
     _periods_overlap,
     _expected_label,
+    _est_mandat_appartenance_gouvernement,
     _mandate_matches_gouvernement,
     _derive_membre_entry,
     build_gouvernement_roster,
+    build_premier_ministre,
     load_profils_from_dir,
     load_gouvernement_config,
     main as gouvernement_roster_main,
 )
-from schema_gouvernement import REQUIRED_MEMBRE_KEYS
+from schema_gouvernement import REQUIRED_MEMBRE_KEYS, REQUIRED_PREMIER_MINISTRE_KEYS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,6 +60,23 @@ def _mandat_gouv(label: str, debut: str, fin: str = None, actif: bool = False) -
         "actif": actif,
         "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/...",
         "position_dans_hemicycle": "gouvernement",
+    }
+
+
+def _mandat_portefeuille(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
+    """Mandat `typeOrgane == "MINISTERE"` tel qu'il sort de
+    `candidate_profile._extract_mandats_officiels` : même catégorie que le
+    mandat d'appartenance, mais label de portefeuille, et **sans**
+    `source_url` (aucun mandat de ce chemin n'en porte)."""
+    return {
+        "categorie": "fonction_gouvernementale",
+        "type": "Ministre",
+        "label": label,
+        "debut": debut,
+        "fin": fin,
+        "actif": actif,
+        "source_url": None,
+        "position_dans_hemicycle": None,
     }
 
 
@@ -285,6 +304,204 @@ def test_real_pivot_david_amiel_lecornu_ii_still_active():
     assert len(membres) == 1
     assert membres[0]["actif"] is True
     assert membres[0]["fin"] is None
+
+
+# ---------------------------------------------------------------------------
+# portefeuille ministériel (#398)
+# ---------------------------------------------------------------------------
+
+def test_est_mandat_appartenance_gouvernement_distingue_les_deux_natures():
+    """La catégorie `fonction_gouvernementale` mélange l'appartenance
+    (typeOrgane GOUVERNEMENT) et le portefeuille (MINISTERE) : seul le label
+    les distingue."""
+    assert _est_mandat_appartenance_gouvernement("Gouvernement (BORNE)") is True
+    assert _est_mandat_appartenance_gouvernement("Gouvernement") is True
+    assert _est_mandat_appartenance_gouvernement("Premier ministre") is False
+    assert _est_mandat_appartenance_gouvernement(
+        "Ministère de l'éducation nationale et de la jeunesse"
+    ) is False
+
+
+def test_build_roster_portefeuille_renseigne_avec_sa_source():
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Ministère de l'intérieur", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils)
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] == "Ministère de l'intérieur"
+    # Le schéma exige une source dès que le portefeuille est renseigné : elle
+    # est reprise du mandat d'appartenance, issu du même zip AMO30.
+    assert membres[0]["source_url"]
+
+
+def test_build_roster_portefeuille_hors_periode_du_mandat_ignore():
+    """Le portefeuille occupé dans un gouvernement antérieur ne doit pas être
+    recopié sur le mandat courant."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Ministère de la culture", "2020-07-07", "2022-05-16"),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils)
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+    assert membres[0]["source_url"] is None
+
+
+def test_build_roster_deux_portefeuilles_donnent_deux_entrees():
+    """Chevauchements multiples : tous retenus, un enregistrement par période
+    (§2.5 — ne jamais choisir arbitrairement l'un des deux)."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BORNE)", "2022-05-21", "2024-01-09"),
+            _mandat_portefeuille("Ministère des comptes publics", "2022-05-21", "2023-07-20"),
+            _mandat_portefeuille("Ministère de l'éducation nationale", "2023-07-21", "2024-01-09"),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BORNE", "2022-05-16", "2024-01-09", profils)
+    assert len(membres) == 2
+    assert [m["portefeuille"] for m in membres] == [
+        "Ministère des comptes publics",
+        "Ministère de l'éducation nationale",
+    ]
+    # Les dates sont celles de chaque portefeuille, pas celles du mandat
+    # d'appartenance : c'est ce qui distingue les deux entrées.
+    assert [(m["debut"], m["fin"]) for m in membres] == [
+        ("2022-05-21", "2023-07-20"),
+        ("2023-07-21", "2024-01-09"),
+    ]
+    assert all(set(m.keys()) == REQUIRED_MEMBRE_KEYS for m in membres)
+
+
+def test_build_roster_portefeuille_sans_source_tracable_reste_null_avec_warning():
+    """Sans source, l'intitulé n'est pas publiable (§2.3) : `portefeuille`
+    retombe à null plutôt que d'être renseigné sans traçabilité."""
+    mandat_sans_source = _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09")
+    mandat_sans_source["source_url"] = None
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            mandat_sans_source,
+            _mandat_portefeuille("Ministère de l'intérieur", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    warnings = []
+    membres = build_gouvernement_roster(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    )
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+    assert len(warnings) == 1
+    assert "Ministère de l'intérieur" in warnings[0]
+
+
+def test_real_pivot_gabriel_attal_deux_portefeuilles_sous_borne():
+    """Cas réel : Gabriel Attal a changé de portefeuille en cours de
+    gouvernement Borne (comptes publics, puis éducation nationale)."""
+    profil = _load_real_pivot("gabriel-attal")
+    membres = build_gouvernement_roster("BORNE", "2022-05-16", "2024-01-09", [profil])
+    assert len(membres) == 2
+    portefeuilles = [m["portefeuille"] for m in membres]
+    assert any("comptes publics" in p for p in portefeuilles)
+    assert any("éducation nationale" in p for p in portefeuilles)
+    assert all(m["source_url"] for m in membres)
+
+
+# ---------------------------------------------------------------------------
+# build_premier_ministre (#398)
+# ---------------------------------------------------------------------------
+
+def test_build_premier_ministre_nominal():
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    pm = build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", profils)
+    assert pm is not None
+    assert pm["nom"] == "X"
+    assert set(pm.keys()) == REQUIRED_PREMIER_MINISTRE_KEYS
+
+
+def test_build_premier_ministre_aucun_candidat_reste_none():
+    """Cas attendu et majoritaire : le Premier ministre n'a pas de profil
+    pivot local. Aucune valeur déduite du nom du gouvernement (§2.5)."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Ministère de l'intérieur", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    warnings = []
+    assert build_premier_ministre(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    ) is None
+    assert warnings == []
+
+
+def test_build_premier_ministre_ambigu_reste_none_avec_warning():
+    """Deux candidats : trancher serait arbitraire — None + warning."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+        ]),
+        _pivot("nosdeputes:y", "Y", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    warnings = []
+    assert build_premier_ministre(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    ) is None
+    assert len(warnings) == 1
+    assert "Premiers ministres possibles" in warnings[0]
+
+
+def test_build_premier_ministre_dun_autre_gouvernement_non_retenu():
+    """Le mandat d'appartenance désambiguïse : un Premier ministre d'un autre
+    gouvernement n'est jamais capté par simple proximité de période."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (ATTAL)", "2024-01-10", "2024-09-05"),
+            _mandat_portefeuille("Premier ministre", "2024-01-10", "2024-09-05"),
+        ]),
+    ]
+    assert build_premier_ministre("BARNIER", "2024-09-21", "2024-12-13", profils) is None
+
+
+def test_real_pivot_premier_ministre_attal_et_philippe():
+    """Cas réels : les seuls Premiers ministres ayant un profil pivot local."""
+    attal = _load_real_pivot("gabriel-attal")
+    pm_attal = build_premier_ministre("ATTAL", "2024-01-10", "2024-09-05", [attal])
+    assert pm_attal["nom"] == "Gabriel Attal"
+    assert pm_attal["acteur_ref"] == "PA722190"
+    assert pm_attal["source_url"]
+
+    philippe = _load_real_pivot("edouard-philippe")
+    pm_philippe = build_premier_ministre("PHILIPPE 2", "2017-06-20", "2020-07-06", [philippe])
+    assert pm_philippe["nom"] == "Édouard Philippe"
+
+    # Le même profil ne doit pas devenir Premier ministre d'un gouvernement
+    # auquel il n'a pas appartenu.
+    assert build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", [attal]) is None
+
+
+def test_acteur_ref_absent_si_url_non_reconnue():
+    """Fiche Sénat ou identité absente : `acteur_ref` reste None plutôt que
+    d'être reconstruit."""
+    profil = _pivot("nosdeputes:x", "X", mandats=[
+        _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+        _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+    ])
+    profil["identite"] = {"source_url": "https://archive.nossenateurs.fr/stephane-mazars"}
+    pm = build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", [profil])
+    assert pm["acteur_ref"] is None
 
 
 # ---------------------------------------------------------------------------

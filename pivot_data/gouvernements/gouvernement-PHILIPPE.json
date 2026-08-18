@@ -3,7 +3,11 @@
   "type_document": "profil_gouvernement",
   "gouvernement_id": "gouvernement:PHILIPPE",
   "nom": "Gouvernement Philippe I",
-  "premier_ministre": null,
+  "premier_ministre": {
+    "nom": "Édouard Philippe",
+    "acteur_ref": "PA345619",
+    "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+  },
   "periode": {
     "debut": "2017-05-18",
     "fin": "2017-06-19",
@@ -13,11 +17,11 @@
     {
       "membre_id": "nosdeputes:edouard-philippe",
       "nom": "Édouard Philippe",
-      "portefeuille": null,
+      "portefeuille": "Premier ministre",
       "debut": "2017-05-18",
       "fin": "2017-06-19",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -54,7 +58,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:34:19+0200",
+    "genere_le": "2026-08-18T01:51:32+0200",
     "licence_donnees": "",
     "warnings": []
   }

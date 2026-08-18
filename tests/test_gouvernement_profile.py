@@ -342,6 +342,82 @@ def test_build_profile_real_pivot_gabriel_attal():
 
 
 # ---------------------------------------------------------------------------
+# premier_ministre et portefeuille (#398)
+# ---------------------------------------------------------------------------
+
+def _mandat_portefeuille(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
+    """Mandat `MINISTERE` tel qu'il sort de la collecte : sans `source_url`."""
+    return {
+        "categorie": "fonction_gouvernementale",
+        "type": "Ministre",
+        "label": label,
+        "debut": debut,
+        "fin": fin,
+        "actif": actif,
+        "source_url": None,
+        "position_dans_hemicycle": None,
+    }
+
+
+def test_build_profile_premier_ministre_cable_et_valide():
+    profils = [
+        _pivot("nosdeputes:pm", "Première Ministre", mandats=[
+            _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+        ]),
+    ]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:TEST", nom="Gouvernement Test", libelle_an="TEST",
+        periode_debut="2025-01-01", periode_fin="2025-06-30",
+        profils=profils, dossiers_gouvernementaux=[],
+    )
+    assert profil["premier_ministre"]["nom"] == "Première Ministre"
+    assert profil["membres"][0]["portefeuille"] == "Premier ministre"
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_build_profile_sans_premier_ministre_reste_null():
+    """Aucun profil pivot ne porte le mandat : `premier_ministre` reste null,
+    jamais une valeur déduite du nom du gouvernement (§2.5)."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
+        ]),
+    ]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:TEST", nom="Gouvernement Test", libelle_an="TEST",
+        periode_debut="2025-01-01", periode_fin="2025-06-30",
+        profils=profils, dossiers_gouvernementaux=[],
+    )
+    assert profil["premier_ministre"] is None
+    assert profil["membres"][0]["portefeuille"] is None
+    assert profil["meta"]["warnings"] == []
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_build_profile_premier_ministre_ambigu_warning_dans_meta():
+    """Le warning du roster remonte bien dans `meta.warnings` du profil."""
+    profils = [
+        _pivot("nosdeputes:a", "A", mandats=[
+            _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+        ]),
+        _pivot("nosdeputes:b", "B", mandats=[
+            _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+        ]),
+    ]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:TEST", nom="Gouvernement Test", libelle_an="TEST",
+        periode_debut="2025-01-01", periode_fin="2025-06-30",
+        profils=profils, dossiers_gouvernementaux=[],
+    )
+    assert profil["premier_ministre"] is None
+    assert any("Premiers ministres possibles" in w for w in profil["meta"]["warnings"])
+    assert validate_profil_gouvernement(profil) == []
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
