@@ -73,6 +73,18 @@ son critère d'acceptation (« `amendements` sous 200 Mo sur 752 profils ») doi
 nombre réel de paires. La normalisation elle-même reste à faire, sur cette base
 saine, et le mapping y référencera l'`uid`.
 
+**Et cette correction alourdit les profils, elle ne les allège pas.** Un profil
+ne contenait qu'une entrée par `numero` distinct (les références en doublon
+résolvaient vers le même enregistrement, que la fusion dédoublonnait ensuite) ;
+il en contient désormais une par signature réelle. Le facteur mesuré va de
+1,7 × (législature 17 : 3 216 366 paires réelles contre 1 914 168 distinguables
+par `numero`) à 3,2 × (PA608416 en législature 14 : 12 216 amendements contre
+3 871 numéros). Les `amendements[]` pesant déjà 81 % du volume d'un profil,
+c'est l'ensemble du jeu de profils qui croît d'autant à la prochaine
+régénération complète. #431 n'en devient que plus urgent : c'est lui qui rend
+ce volume tenable, et il travaille maintenant sur des faits corrects plutôt que
+sur un échantillon écrasé.
+
 **Alternative rejetée** : garder `numero` en le qualifiant par le texte
 (`(legislature, texte_vise, numero)`). Trois défauts : `texte_vise` est tantôt
 un code source (`PIONANR5L15B4852`), tantôt un titre résolu selon l'état de
