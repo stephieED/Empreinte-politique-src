@@ -4,7 +4,14 @@ candidats AN n'était détectée par aucune section du quality gate) et pour le
 signal de fraîcheur des index de législature (issue #254, sous-issue 6/6 de
 #248 : distinguer un index jamais construit d'un index présent mais périmé,
 en s'appuyant sur `fraicheur.json` écrit par `_write_amendements_fraicheur`,
-candidate_profile.py, issue #253)."""
+candidate_profile.py, issue #253).
+
+Le signal global de la §3c (« aucun candidat AN n'a d'amendements ») reste un
+avertissement non bloquant : il n'entre jamais dans le code de sortie, mais est
+remonté à part et affiché en tête de rapport (décision #378, voir
+docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Les tests
+ci-dessous verrouillent les deux moitiés de cette décision : la visibilité du
+signal, et l'absence d'échec dur."""
 
 import json
 import sys
@@ -16,8 +23,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from check_quality_gate import (
     _AMENDEMENTS_LEGISLATURES,
     _AMENDEMENTS_LEGISLATURES_FIGEES,
+    _AMENDEMENTS_ZERO_ICONE,
     _report_amendements_coverage,
     _report_amendements_freshness,
+    main,
 )
 
 
@@ -45,12 +54,18 @@ def test_report_amendements_coverage_flags_global_regression_when_all_empty(tmp_
     _write_pivot(tmp_path, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"}, amendements=[], warnings=[])
     _write_pivot(tmp_path, "marie-martin", "AN", {"nom_complet": "Marie Martin"}, amendements=[], warnings=[])
 
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert len(soft) == 1
     assert "2" in soft[0]
-    assert "⚠" in console
-    assert "⚠️" in md
+    # Retourné à part pour l'affichage en tête de rapport (#378), tout en
+    # restant présent dans soft_warnings (même nature : non bloquant).
+    assert regression == soft[0]
+    assert _AMENDEMENTS_ZERO_ICONE in console
+    assert "RÉGRESSION PROBABLE DE COLLECTE" in console
+    assert "NON bloquant" in console
+    assert _AMENDEMENTS_ZERO_ICONE in md
+    assert "non bloquant" in md
 
 
 def test_report_amendements_coverage_no_warning_when_some_have_amendements(tmp_path):
@@ -65,10 +80,12 @@ def test_report_amendements_coverage_no_warning_when_some_have_amendements(tmp_p
     )
     _write_pivot(tmp_path, "marie-martin", "AN", {"nom_complet": "Marie Martin"}, amendements=[], warnings=[])
 
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert len(soft) == 0
+    assert regression is None
     assert "✓" in console
+    assert _AMENDEMENTS_ZERO_ICONE not in console
 
 
 def test_report_amendements_coverage_flags_per_candidate_fetch_failure(tmp_path):
@@ -91,7 +108,7 @@ def test_report_amendements_coverage_flags_per_candidate_fetch_failure(tmp_path)
         warnings=[],
     )
 
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert any("jean-dupont" in w for w in soft)
     # Pas de régression globale puisque marie-martin a bien des amendements.
@@ -103,7 +120,7 @@ def test_report_amendements_coverage_ignores_candidates_without_identite(tmp_pat
     officiels côté candidate_profile.py) ne doit pas être compté."""
     _write_pivot(tmp_path, "sans-identite", "AN", None, amendements=[], warnings=[])
 
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert len(soft) == 0
     assert "0" in console
@@ -113,15 +130,103 @@ def test_report_amendements_coverage_ignores_non_an_candidates(tmp_path):
     """Les candidats non-AN (Sénat...) ne doivent pas être comptés dans la couverture."""
     _write_pivot(tmp_path, "senateur-x", "Senat", {"nom_complet": "Senateur X"}, amendements=[], warnings=[])
 
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
     assert len(soft) == 0
 
 
 def test_report_amendements_coverage_empty_dir_returns_no_warning(tmp_path):
     """Aucun profil AN analysé : pas de faux positif sur régression globale."""
-    soft, console, md = _report_amendements_coverage(tmp_path)
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
     assert len(soft) == 0
+
+
+def test_report_amendements_coverage_signal_global_non_duplique(tmp_path):
+    """Le signal global est affiché en bandeau, pas répété dans la liste des
+    avertissements par candidat — sinon il apparaîtrait deux fois pour un même
+    fait, en tête et en queue de section (#378)."""
+    _write_pivot(
+        tmp_path,
+        "jean-dupont",
+        "AN",
+        {"nom_complet": "Jean Dupont"},
+        amendements=[],
+        warnings=["amendements indisponibles : échec du téléchargement (boom)"],
+    )
+    _write_pivot(tmp_path, "marie-martin", "AN", {"nom_complet": "Marie Martin"}, amendements=[], warnings=[])
+
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
+
+    assert regression is not None
+    # Deux avertissements (un par candidat en échec + le global), mais le
+    # global n'est listé qu'une fois, dans le bandeau.
+    assert len(soft) == 2
+    assert console.count("aucun candidat AN") == 1
+    assert md.count("aucun candidat AN") == 1
+    # L'avertissement par candidat reste listé normalement.
+    assert "jean-dupont" in console
+
+
+def _write_config_vide(path: Path, cle: str) -> None:
+    path.write_text(json.dumps({cle: []}), encoding="utf-8")
+
+
+def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None) -> int:
+    """Exécute le quality gate complet sur une arborescence minimale, avec les
+    seules sections amendements susceptibles de signaler quelque chose."""
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    _write_pivot(profiles_dir, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"}, amendements=[], warnings=[])
+    _write_pivot(profiles_dir, "marie-martin", "AN", {"nom_complet": "Marie Martin"}, amendements=[], warnings=[])
+
+    for sous_dossier in ("groupes", "partis", "gouvernements", "raw"):
+        (tmp_path / sous_dossier).mkdir()
+    _write_config_vide(tmp_path / "groupes_reels.json", "groupes")
+    _write_config_vide(tmp_path / "gouvernements_reels.json", "gouvernements")
+    _write_config_vide(tmp_path / "candidats.json", "candidats")
+
+    argv = [
+        "check_quality_gate.py",
+        "--profiles-dir", str(profiles_dir),
+        "--groupes-dir", str(tmp_path / "groupes"),
+        "--partis-dir", str(tmp_path / "partis"),
+        "--gouvernements-dir", str(tmp_path / "gouvernements"),
+        "--raw-dir", str(tmp_path / "raw"),
+        "--candidats", str(tmp_path / "candidats.json"),
+        "--groupes-config", str(tmp_path / "groupes_reels.json"),
+        "--gouvernements-config", str(tmp_path / "gouvernements_reels.json"),
+        "--amendements-cache-dir", str(cache_dir if cache_dir is not None else tmp_path / "cache_absent"),
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    return main()
+
+
+def test_main_zero_amendement_ne_bloque_pas_le_commit(tmp_path, monkeypatch, capsys):
+    """Décision #378 : « 0 amendement collecté partout » est un signal fort,
+    affiché en tête de rapport, mais **jamais** un échec dur — le commit reste
+    autorisé (exit 0)."""
+    code = _run_main(monkeypatch, tmp_path, cache_dir=None)
+    sortie = capsys.readouterr().out
+
+    assert code == 0
+    assert "COMMIT AUTORISÉ" in sortie
+    # Affiché en tête (bandeau), avant même la section 3c.
+    entete, _, corps = sortie.partition("┌─ 1/4")
+    assert _AMENDEMENTS_ZERO_ICONE in entete
+    assert "aucun candidat AN sur 2" in entete
+    assert "non bloquant" in entete.lower()
+
+
+def test_main_index_jamais_construit_ne_bloque_pas_le_commit(tmp_path, monkeypatch, capsys):
+    """Aucune régression sur le fil #239→#254 : une législature dont l'index
+    n'a jamais pu être construit (échec chronique de téléchargement de la 17)
+    ne doit jamais bloquer un run — c'est un aléa réseau, pas une régression."""
+    code = _run_main(monkeypatch, tmp_path, cache_dir=tmp_path / "amendements_an_absent")
+    sortie = capsys.readouterr().out
+
+    assert code == 0
+    assert "jamais construit" in sortie
 
 
 # ---------------------------------------------------------------------------

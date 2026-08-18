@@ -1206,6 +1206,15 @@ jobs:
           # coherence.ecart_couverture_roster (audit_groupe_dataset.py). Ce
           # n'est donc pas un réglage en attente d'arbitrage, mais une activation
           # en attente d'une donnée précise.
+          #
+          # Amendements (§3c/§3d) : aucun flag d'escalade n'est passé — il n'en
+          # existe pas. « 0 amendement collecté » et « index jamais construit »
+          # restent des signaux NON bloquants dans tous les modes, y compris
+          # fresh_run=true, et sont affichés en tête du rapport plutôt que
+          # d'échouer le run (#378, arbitrage tranché dans
+          # docs/technical_decisions.md#amendements-zero-pas-de-hard-fail :
+          # la collecte dépend d'un CDN AN chroniquement défaillant sur la
+          # législature 17, bloquer ferait perdre tout le reste du run).
 
       # Garde-fou #390 : ne JAMAIS committer un build produit avec du code
       # périmé.
