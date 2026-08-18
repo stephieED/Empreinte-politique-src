@@ -20,13 +20,26 @@
       "source_url": null
     }
   ],
-  "textes": [],
+  "textes": [
+    {
+      "dossier_id": "DLR5L15N35824",
+      "titre": "Confiance dans la vie politique (loi organique)",
+      "statut": "adopte",
+      "chambre_depot_initial": "Senat",
+      "date_depot": "2017-06-14",
+      "date_dernier_evenement": "2017-09-15",
+      "sort_49_3": false,
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique"
+    }
+  ],
   "comptages": {
     "par_statut": {
-      "adopte": 0,
+      "adopte": 1,
       "adopte_49_3": 0,
+      "adopte_cmp": 0,
       "depose": 0,
       "navette_en_cours": 0,
+      "promulgue": 0,
       "rejete": 0,
       "rejete_49_3": 0,
       "retire": 0
@@ -41,52 +54,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T18:13:05+0200",
+    "genere_le": "2026-08-18T01:34:19+0200",
     "licence_donnees": "",
-    "warnings": [
-      "gouvernement_textes: dossier DLR5L17N53940 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N50957 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52002 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52635 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52103 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N54085 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N54196 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49807 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53600 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52100 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53942 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51789 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N54373 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52000 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51783 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52985 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53730 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52040 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52549 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51986 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51222 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53844 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51079 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53135 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49273 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51237 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N50198 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52429 : fam_code inconnu 'TSORTF05' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N54083 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N50838 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52354 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N50794 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53980 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49868 : fam_code inconnu 'TSORTF18' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N52561 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51519 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49615 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53848 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53981 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N53235 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L16N49806 : fam_code inconnu 'TSORTF03' — statut non déterminé.",
-      "gouvernement_textes: dossier DLR5L17N51362 : fam_code inconnu 'TSORTF18' — statut non déterminé."
-    ]
+    "warnings": []
   }
 }

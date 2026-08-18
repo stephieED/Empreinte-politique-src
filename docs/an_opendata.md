@@ -266,6 +266,17 @@ Valeurs observées (comptage exhaustif sur les 3044 dossiers) :
 | `TSORTF19` | définitive art. 151-7 RAN | 27 | `DLR5L17N51596` |
 | `TSORTF02` | adoptée avec modifications | 14 | `DLR5L15N45886` |
 
+Ce comptage porte sur **tous** les dossiers d'une seule archive, toutes
+origines confondues. `gouvernement_textes.py` ne mappe que les codes portés par
+une **décision de séance** d'un dossier **gouvernemental** : 10 codes
+(`TSORTF01/02/03/05/06/07/13/14/18/24`), tous mappés depuis #402 — dont
+`TSORTF13` (« rejeté définitivement ») et `TSORTF14` (« voté par les deux
+assemblées du Parlement en termes identiques »), absents de cette archive et
+apparus avec les XV/XVI. `TSORTF19` n'apparaît sur aucune décision de séance de
+dossier gouvernemental et n'est donc pas mappé. Les arbitrages — en particulier
+`TSORTF02`, tranché en `navette_en_cours` sur données réelles — sont dans
+`docs/technical_decisions.md#gouvernement-textes-fam-codes-archives`.
+
 Le retrait a son propre `codeActe` dédié, sans `statutConclusion` associé :
 `AN1-RTRINI` (53 occurrences, ex. `DLR5L17N51314`) / `ANLUNI-RTRINI`
 (29 occurrences, ex. `DLR5L17N52157`).

@@ -41,7 +41,11 @@ from xml.etree import ElementTree as ET
 import requests
 from bs4 import BeautifulSoup
 from download_watchdog import download_with_watchdog
-from gouvernement_textes import DOSSIERS_CACHE_DIR, ensure_dossiers_zip_downloaded
+from gouvernement_textes import (
+    DOSSIERS_CACHE_DIR,
+    ensure_dossiers_zips_downloaded,
+    iter_dossiers_bruts,
+)
 from parse_syceron import parse_syceron_xml
 from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
 
@@ -344,14 +348,18 @@ def _amendements_legislature_failed_this_run(legislature: str) -> bool:
     _amendements_failed_legislatures.add(legislature)  # raccourci pour les prochains appels intra-process
     return True
 
-# Dossiers legislatifs (Assemblee nationale) : un seul fichier bulk, deja
-# multi-legislatures (constate : legislatures 8 a 17 confondues), utilise ici
-# uniquement pour resoudre le code source d'un texte (texteLegislatifRef d'un
-# amendement, ex. "PIONANR5L17B0904") vers son titre lisible (titreDossier.titre).
-# DOSSIERS_CACHE_DIR/ensure_dossiers_zip_downloaded (URL incluse) sont
+# Dossiers legislatifs (Assemblee nationale) : plusieurs archives bulk, une par
+# legislature (15/16/17 — voir AN_DOSSIERS_ARCHIVES), chacune deja
+# multi-legislatures mais ne gardant des precedentes qu'une traine residuelle,
+# d'ou l'ingestion des trois (#400). Utilise ici pour resoudre le code source
+# d'un texte (texteLegislatifRef d'un amendement, ex. "PIONANR5L17B0904") vers
+# son titre lisible, et pour construire l'index acteur -> textes portes.
+# DOSSIERS_CACHE_DIR/ensure_dossiers_zips_downloaded/iter_dossiers_bruts sont
 # importés depuis gouvernement_textes.py, qui en est la source canonique
 # (téléchargement/cache partagé avec la collecte des dossiers gouvernementaux,
-# voir issue #210 : un seul cache pour ce fichier ~10 Mo).
+# voir issue #210 : un seul cache pour ces archives).
+# iter_dossiers_bruts deduplique par uid entre archives : sans cela un dossier
+# present dans deux archives serait compte deux fois.
 
 # Acteurs/mandats/organes historique complet (Assemblee nationale) : un seul
 # fichier bulk, couvrant TOUTES les legislatures depuis la XIe (3117 acteurs
@@ -2299,7 +2307,11 @@ def _build_texte_titre_index() -> dict[str, str]:
     résoudre `texte_vise` des amendements (sinon un simple code source, ex.
     "PIONANR5L17B0904"). Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TITRE_LOCK:
-        index_path = DOSSIERS_CACHE_DIR / "index_texte_titre.json"
+        # Suffixe de version (#400) : le passage au multi-archives change le
+        # contenu de l'index. Sans nouveau nom, un cache CI ou local existant
+        # servirait silencieusement l'ancien index mono-archive, et le gain
+        # serait invisible sans que rien ne le signale.
+        index_path = DOSSIERS_CACHE_DIR / "index_texte_titre_v2.json"
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -2307,33 +2319,21 @@ def _build_texte_titre_index() -> dict[str, str]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        zip_path = ensure_dossiers_zip_downloaded()
-        if zip_path is None:
+        archives = ensure_dossiers_zips_downloaded()
+        if not archives:
             return {}
 
         index: dict[str, str] = {}
-        try:
-            with zipfile.ZipFile(zip_path) as zf:
-                noms = [n for n in zf.namelist() if n.startswith("json/dossierParlementaire/") and n.endswith(".json")]
-                for nom in noms:
-                    try:
-                        with zf.open(nom) as f:
-                            data = json.load(f)
-                    except (json.JSONDecodeError, KeyError):
-                        continue
-                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
-                    if not isinstance(dossier, dict):
-                        continue
-                    titre = (dossier.get("titreDossier") or {}).get("titre")
-                    if not titre:
-                        continue
-                    codes: set[str] = set()
-                    _collect_texte_codes(dossier, codes)
-                    for code in codes:
-                        index[code] = titre
-        except zipfile.BadZipFile as exc:
-            print(f"  [!] Archive des dossiers législatifs invalide : {exc}")
-            return {}
+        # Multi-archives dédupliqué par uid (#400) : la législature la plus
+        # élevée fait foi pour un dossier présent dans plusieurs archives.
+        for _legislature, dossier in iter_dossiers_bruts(archives):
+            titre = (dossier.get("titreDossier") or {}).get("titre")
+            if not titre:
+                continue
+            codes: set[str] = set()
+            _collect_texte_codes(dossier, codes)
+            for code in codes:
+                index[code] = titre
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2462,7 +2462,7 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     tous les élus (role toujours null, voir docs/an_opendata.md), cet index est
     réellement propre à chaque acteur. Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TEXTES_PORTES_LOCK:
-        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes.json"
+        index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v2.json"  # cf. #400
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -2470,51 +2470,40 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
-        zip_path = ensure_dossiers_zip_downloaded()
-        if zip_path is None:
+        archives = ensure_dossiers_zips_downloaded()
+        if not archives:
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
-        try:
-            with zipfile.ZipFile(zip_path) as zf:
-                noms = [n for n in zf.namelist() if n.startswith("json/dossierParlementaire/") and n.endswith(".json")]
-                for nom in noms:
-                    try:
-                        with zf.open(nom) as f:
-                            data = json.load(f)
-                    except (json.JSONDecodeError, KeyError):
-                        continue
-                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
-                    if not isinstance(dossier, dict):
-                        continue
-                    titre_dossier = dossier.get("titreDossier") or {}
-                    titre = titre_dossier.get("titre")
-                    titre_chemin = titre_dossier.get("titreChemin")
-                    if not titre:
-                        continue
-                    acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
-                    if not acteur_roles:
-                        continue
-                    legislature = dossier.get("legislature")
-                    source_url = (
-                        f"https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titre_chemin}"
-                        if legislature and titre_chemin else None
-                    )
-                    for acteur_ref, (role, type_rapport) in acteur_roles.items():
-                        index.setdefault(acteur_ref, []).append({
-                            "id": dossier.get("uid"),
-                            "titre": titre,
-                            "role": role,
-                            "type_rapport": type_rapport,
-                            "stade_procedural": stade,
-                            "date_min": date_min,
-                            "date_max": date_max,
-                            "legislature": legislature,
-                            "source_url": source_url,
-                        })
-        except zipfile.BadZipFile as exc:
-            print(f"  [!] Archive des dossiers législatifs invalide : {exc}")
-            return {}
+        # Multi-archives dédupliqué par uid (#400) : sans déduplication, un
+        # dossier présent dans deux archives serait compté deux fois dans les
+        # textes portés de chaque acteur.
+        for _legislature, dossier in iter_dossiers_bruts(archives):
+            titre_dossier = dossier.get("titreDossier") or {}
+            titre = titre_dossier.get("titre")
+            titre_chemin = titre_dossier.get("titreChemin")
+            if not titre:
+                continue
+            acteur_roles, stade, date_min, date_max = _collect_acteur_roles(dossier)
+            if not acteur_roles:
+                continue
+            legislature = dossier.get("legislature")
+            source_url = (
+                f"https://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{titre_chemin}"
+                if legislature and titre_chemin else None
+            )
+            for acteur_ref, (role, type_rapport) in acteur_roles.items():
+                index.setdefault(acteur_ref, []).append({
+                    "id": dossier.get("uid"),
+                    "titre": titre,
+                    "role": role,
+                    "type_rapport": type_rapport,
+                    "stade_procedural": stade,
+                    "date_min": date_min,
+                    "date_max": date_max,
+                    "legislature": legislature,
+                    "source_url": source_url,
+                })
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)

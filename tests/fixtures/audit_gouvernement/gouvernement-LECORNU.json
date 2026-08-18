@@ -47,10 +47,12 @@
   ],
   "comptages": {
     "par_statut": {
-      "depose": 0,
-      "navette_en_cours": 0,
       "adopte": 0,
       "adopte_49_3": 1,
+      "adopte_cmp": 0,
+      "depose": 0,
+      "navette_en_cours": 0,
+      "promulgue": 0,
       "rejete": 0,
       "rejete_49_3": 0,
       "retire": 0

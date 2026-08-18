@@ -139,6 +139,384 @@ CI dédié, comme les amendements ([[amendements-index-job-dedie-ci]]). Justifi�
 là-bas par des archives de 283-618 Mo dont le téléchargement échouait ; ici, une
 seule archive active de 26 Mo reste à charge du chemin paresseux, pour un job CI
 et un artifact en moins.
+<a id="couverture-dossiers-hors-couverture-vs-zero"></a>
+## Couverture des dossiers : « hors couverture de la source » ≠ « réellement à zéro » (#399) (2026-08-18)
+
+**Contexte** : le quality gate signalait « aucun texte porté malgré une
+période renseignée » pour tout gouvernement dont `textes[]` était vide. Après
+#400, il ne restait que Fillon II/III — dont la XIII<sup>e</sup> législature
+n'a **aucune archive publiée**. Le warning affirmait donc un défaut de
+données là où il n'y a qu'une limite de source : un « 0 texte porté » se lit
+comme un fait mesuré (§2.5), et ces warnings, qui ne diminueront jamais,
+diluent les signaux réels — c'est exactement ce qui avait masqué #397 (473
+warnings noyant 45 exclusions bien réelles).
+
+### Décision : dériver la borne des législatures ingérées
+
+Nouveau module `src/couverture_dossiers.py`, **stdlib pure, sans I/O** :
+
+- il porte désormais `AN_DOSSIERS_ARCHIVES` (déplacé depuis
+  `gouvernement_textes.py`, qui le ré-exporte — un seul inventaire) ;
+- il y adjoint `LEGISLATURES_DEBUT` (date de première séance) ;
+- `borne_couverture_textes()` = début de la plus ancienne législature
+  ingérée, soit **2017-06-21** avec les archives XV/XVI/XVII ;
+- `statut_couverture_textes(debut, fin)` classe une période en
+  `couverte` / `partielle` / `hors_couverture` / `indeterminee`.
+
+Le module est stdlib pure **parce que** ses deux consommateurs de rapport
+(`audit_gouvernement_dataset.py`, `check_quality_gate.py`) ne doivent jamais
+importer `requests` ni toucher au réseau : c'est ce qui interdisait de lire
+l'inventaire directement dans `gouvernement_textes.py`.
+
+Conséquences :
+
+- **quality gate** : un `textes[]` vide n'est un avertissement que si la
+  période est `couverte`. Hors couverture (ou à cheval), le constat passe
+  dans un bloc **information** distinct, non compté dans les avertissements
+  qualité. Les deux gouvernements Fillon quittent ainsi le compteur.
+- **audit** : nouvelle section « Couverture des textes portés », borne
+  affichée dans l'en-tête, et `N/D (hors couverture)` au lieu d'un `N/D` nu
+  dans le tableau des plages. `nb_textes` reste `null` quand le champ
+  `textes` est absent — `[]` (zéro observé) et champ absent (donnée
+  manquante) ne sont pas fondus.
+- **UI** (`GovernmentProfile.jsx`) : une note explicite le périmètre quand la
+  couverture est partielle ou nulle, et le vide affiche « période non
+  couverte […] ce n'est pas un “aucun texte porté” » au lieu du message
+  générique.
+
+### Alternative écartée : porter la couverture dans `meta` du profil
+
+Inscrire `meta.couverture_textes` à la génération aurait été plus traçable
+(la donnée dirait elle-même ce qu'elle couvre), mais aurait imposé un
+changement de schéma **et** une régénération complète de `pivot_data` pour
+que l'information apparaisse — les fichiers déjà committés seraient restés
+muets, obligeant de toute façon à un repli calculé. La dérivation à la
+lecture donne le bon résultat immédiatement, sur les données existantes.
+
+### Duplication assumée côté UI
+
+`pivotAdapter.js` redéfinit la borne (`GOVERNMENT_TEXTS_COVERAGE_START`) :
+l'UI lit les JSON pivot, pas le code Python. La divergence est verrouillée
+par un test (`tests/test_couverture_dossiers.py`) qui relit la constante dans
+le fichier JS et la compare à `borne_couverture_textes()` — ajouter une
+archive sans mettre l'UI à jour fait échouer la suite.
+
+### Note connexe : libellé IncompleteRead
+
+Le gate affichait « Erreurs IncompleteRead — Détectées : 0 » alors que le log
+du même run montrait 5/9 segments repris en retry. Le comptage
+(échecs **non rattrapés**) est le bon ; seul le libellé prêtait à confusion.
+Renommé « Erreurs IncompleteRead non rattrapées », avec une ligne explicite
+en console et en Markdown. Seuil inchangé.
+
+Le warning « couverture ministérielle incomplète » (qui disparaîtra avec
+#398) est reformulé dans le même esprit : « portefeuilles confirmés **par une
+source primaire** — absence de confirmation, pas absence de portefeuille ».
+<a id="gouvernement-textes-fam-codes-archives"></a>
+## `gouvernement_textes` : 3 derniers `fam_code` mappés ; `TSORTF02` tranché sur données réelles (#402) (2026-08-18)
+
+**Contexte** : l'ingestion des archives XV/XVI (#400) a fait apparaître 3
+`fam_code` absents de `_FAM_CODE_STATUT_MAP`. Suite directe de #397, même
+nature — mais l'enjeu n'était plus le volume, il était de **ne pas deviner le
+sens d'un libellé ambigu**.
+
+**Impact réel** : sur les 726 dossiers gouvernementaux des 3 archives, le
+module n'émettait que **4 warnings distincts** et n'excluait que **2 dossiers**
+de `textes[]` — pour les autres, la promulgation détermine déjà le statut
+(#400). Les « 46 warnings » relevés dans l'audit sont le même constat vu depuis
+les profils : chaque profil de gouvernement porte la liste consolidée des
+warnings de la collecte, donc les 4 warnings se répliquent sur les 10 profils
+(44 warnings `gouvernement_textes` + 2 warnings d'exclusion
+`gouvernement_profile`). Les 53 occurrences de `TSORTF02` du dataset, elles,
+comptent tous les dossiers : seules 6 sont sur un dossier gouvernemental, et
+seules 2 sont en position terminale, donc susceptibles de produire un warning.
+
+| `fam_code` | Libellé AN | Décision |
+| --- | --- | --- |
+| `TSORTF02` | « adopté avec modifications » | `navette_en_cours` |
+| `TSORTF14` | « voté par les deux assemblées du Parlement en termes identiques » | `adopte` |
+| `TSORTF13` | « rejeté définitivement » | `rejete` |
+
+### `TSORTF02` : le point à trancher, résolu par les données
+
+L'issue posait la question : « adopté avec modifications » décrit-il une
+adoption effective par la chambre, ou la poursuite de la navette comme
+`TSORTF05` (« modifié ») ? Le libellé seul ne tranche pas — il commence par
+« adopté ». Relevé sur les 53 occurrences des trois archives :
+
+| Position de la décision `TSORTF02` | Cas | Ce qui suit |
+| --- | --- | --- |
+| Non terminale | 29 | **Toujours** une lecture dans l'autre chambre : « modifié » ×17, « adopté sans modification » ×8, CMP, rejet |
+| Terminale, dossier promulgué | 17 | Publication au JO |
+| Terminale, jamais promulgué | 7 | Rien — le texte n'est pas devenu loi |
+
+Les 29 cas non terminaux établissent le sens : une chambre adopte un texte
+**qu'elle a modifié**, donc l'autre chambre doit le réexaminer. C'est le même
+fait procédural que `TSORTF05`, d'où le même statut. Les 7 cas terminaux non
+promulgués le confirment *a contrario* : `DLR5L16N47697` (réforme de
+l'audiovisuel public, Sénat le 11/07/2025) ou `DLR5L16N49849` ne sont jamais
+devenus lois. Les mapper à `adopte` affirmerait une adoption que rien
+n'établit — exactement ce qu'interdit §2.5.
+
+Les deux codes restent **mappés séparément** plutôt que fusionnés : le
+`fam_code` source est conservé tel quel dans le commentaire du mapping, avec
+son libellé propre, de sorte que la relecture de l'archive vérifie la décision.
+
+**Le mapping ne change rien à la sortie actuelle** : les 2 dossiers
+gouvernementaux dont la décision terminale est `TSORTF02` portent tous deux un
+acte de promulgation (`DLR5L15N42841`, `DLR5L16N48973`), donc la correction de
+#400 leur donnait déjà `promulgue`. Le mapping supprime le warning et fixe le
+comportement pour les données futures, sans rien réécrire.
+
+### `TSORTF14` : adoption parlementaire ≠ promulgation
+
+Unique occurrence : `DLR5L16N49373`, projet de loi constitutionnelle portant
+modification du corps électoral calédonien — Sénat « adopté » le 02/04/2024,
+puis AN « voté par les deux assemblées du Parlement en termes identiques » le
+14/05/2024. Le vote conforme des deux chambres est une adoption parlementaire
+achevée : `adopte`. Le texte n'a jamais été promulgué (Congrès jamais réuni,
+dissolution de juin 2024) — c'est précisément la distinction que le statut doit
+préserver, et la raison pour laquelle `adopte` n'est pas écrasé par la
+promulgation dans `_STATUTS_CORRIGES_PAR_PROMULGATION`.
+
+### `TSORTF13` : un rejet par vote, pas par 49.3
+
+Unique occurrence : `DLR5L16N45929`, règlement du budget 2021 — adopté à l'AN
+(13/07/2022), rejeté au Sénat, adopté en nouvelle lecture, rejeté à nouveau au
+Sénat, puis **rejeté en lecture définitive** à l'AN le 03/08/2022. Jamais
+promulgué. `rejete` avec `sort_49_3 = False` : le rejet est prononcé par un
+vote, à la différence de `TSORTF24` (rejet consécutif à l'adoption d'une motion
+de censure), qui reste seul à porter `rejete_49_3`.
+
+### Résultat mesuré (726 dossiers gouvernementaux, 3 archives)
+
+| Indicateur | Avant | Après |
+| --- | --- | --- |
+| Warnings distincts à la collecte | 4 | **0** |
+| Warnings cumulés sur les 10 profils de gouvernement | 46 | **0** |
+| Dossiers à `statut = None` (exclus de `textes[]`) | 2 | **0** |
+| `adopte` | 187 | 188 |
+| `rejete` | 8 | 9 |
+
+Les deux textes réintégrés : le règlement du budget 2021 sous Borne
+(`rejete`) et le projet de loi constitutionnelle calédonien sous Attal
+(`adopte`). Les autres statuts sont inchangés — le mapping de `TSORTF02` ne
+réécrit rien, il ferme le trou.
+
+Les 10 `fam_code` observés sur une décision de séance de dossier
+gouvernemental (`TSORTF01/02/03/05/06/07/13/14/18/24`) sont désormais tous
+mappés, et **aucun code non mappé ne subsiste en position terminale**. La
+protection §2.5 reste active et testée : un `fam_code` réellement inconnu
+produit toujours `statut = None` et un warning.
+
+---
+
+<a id="dossiers-multi-archives-origine-document"></a>
+## Dossiers législatifs : ingestion multi-archives, origine par document déposé, statut `promulgue` (#400) (2026-08-18)
+
+**Contexte** : `gouvernement_textes.py` ne lisait qu'une archive, celle de la
+XVII législature. Elle est multi-législature mais ne garde des précédentes
+qu'une **traîne résiduelle** : aucun projet de loi antérieur à la XVI. Les
+gouvernements Borne, Castex et Philippe I/II étaient donc à zéro texte.
+
+### Inventaire des archives
+
+Deux conventions de nommage coexistent chez l'AN — c'est ce qui rend
+l'inventaire non évident, et ce qui m'avait fait conclure à tort dans une
+première version de #400 que seules les XVI/XVII existaient.
+
+| Législature | Nom de fichier | Taille | Exploitable |
+| --- | --- | --- | --- |
+| 12, 13 | *(aucune des deux formes)* | — | non, 404 |
+| 14 | `Dossiers_Legislatifs_XIV.json.zip` | 2,5 Mo | **non** |
+| 15 | `Dossiers_Legislatifs_XV.json.zip` | 15,2 Mo | oui |
+| 16 | `Dossiers_Legislatifs.json.zip` | 9,1 Mo | oui |
+| 17 | `Dossiers_Legislatifs.json.zip` | 10,25 Mo | oui |
+
+Le listing de répertoire est désactivé (404 même sur les chemins valides) :
+l'inventaire ne peut pas être découvert dynamiquement et doit être tenu à jour
+dans `AN_DOSSIERS_ARCHIVES`.
+
+**La XIV est inexploitable** : changement d'architecture du jeu de données AN
+entre la XIV et la XV (déjà constaté côté amendements). Son archive contient
+un JSON monolithique de 36 Mo décompressés, structuré en
+`export.textesLegislatifs.document[]` — 7120 `document`, **aucun
+`dossierParlementaire`**. Fillon II/III (XIII) sont hors d'atteinte
+définitivement.
+
+### Origine : le document déposé, pas le titre
+
+Le signal historique était le préfixe de `titreDossier.titre` (spike #207). Il
+ne fonctionne que sur les XVI/XVII : **sur la XV les titres sont descriptifs**
+(« Taxe sur les services numériques », « Démocratie plus représentative,
+responsable, efficace ») et le filtre y retenait **zéro** projet de loi déposé
+entre 2017 et 2019.
+
+Le signal retenu est le **type du document réellement déposé** — préfixe de
+l'uid du `texteAssocie` de l'acte `*-DEPOT` le plus ancien : `PRJL` (projet de
+loi), `PION` (proposition), `PNRE` (résolution, hors champ). Sur le corpus
+complet, le filtre par titre ne voyait que **271 des 726** dossiers
+gouvernementaux.
+
+`procedureParlementaire.code` sert de repli quand aucun document n'est
+résolvable, et **seulement pour les codes univoques** : les codes 5 et 7
+(« Projet **ou** proposition de loi organique/constitutionnelle ») en sont
+exclus, car deviner violerait §2.5.
+
+Le document **prime sur la procédure** quand les deux divergent : 8 dossiers de
+règlement du budget sont typés « Proposition de loi ordinaire » à la source
+alors que le document déposé est bien un `PRJL`. Le type du texte réellement
+déposé fait foi.
+
+### Déduplication inter-archives
+
+Un dossier figure dans plusieurs archives. L'arbitrage se fait **par uid, la
+législature la plus élevée l'emportant** : elle porte l'état le plus à jour des
+`actesLegislatifs`, donc du statut — un texte « en navette » dans la XVI peut
+être « adopté » dans la XVII.
+
+Deux points d'implémentation non évidents :
+
+- **Le nom de fichier dans le zip porte l'uid** (vérifié sans exception sur les
+  10 967 dossiers). L'arbitrage se fait donc sur les seuls `namelist()`, sans
+  rien désérialiser. Charger les trois archives en mémoire pour comparer
+  coûterait plusieurs centaines de Mo, sur un pipeline qui a déjà connu deux
+  OOM (#377, #392). `iter_dossiers_bruts` est un générateur : un seul dossier
+  vivant à la fois.
+- **L'arbitrage utilise `max()` explicite**, pas l'écrasement dans l'ordre de
+  parcours. Ma première version dépendait de l'ordre d'appel — un test
+  vérifiant l'invariance à l'ordre l'a attrapée.
+
+### Statut `promulgue`
+
+L'ingestion des archives anciennes a fait remonter **62 textes marqués
+`navette_en_cours` et 3 marqués `rejete` qui portaient un acte de promulgation**
+(`PROM`/`PROM-PUB`, publication au Journal officiel). Exemple : la convention
+sur les infractions à bord des aéronefs, dernière décision de séance
+« modifié » au Sénat le 2021-01-28, **promulguée le 2021-02-03** — publier
+« en navette » en 2026 serait faux.
+
+Décision (arbitrage humain, comme pour `adopte_cmp` en #397) : **statut dédié
+`promulgue`**, appliqué comme correctif ciblé.
+
+Il ne remplace **jamais** `adopte_cmp` ni `adopte_49_3` : ces statuts portent
+la voie procédurale suivie, que `promulgue` ne dit pas. Les écraser ferait
+disparaître le fait CMP ou 49.3 de 116 textes — exactement le collapse
+qu'interdit §2.4. `retire` n'est pas écrasé non plus : retrait puis
+promulgation est contradictoire, et trancher n'est pas notre rôle. Le warning
+d'un `fam_code` non mappé est conservé même quand la promulgation détermine le
+statut : le code reste inconnu et mérite d'être signalé.
+
+### Résultat mesuré
+
+| Gouvernement | Avant #400 | Après |
+| --- | --- | --- |
+| PHILIPPE_2 | 0 | **282** |
+| CASTEX | 0 | **195** |
+| BORNE | 0 | **110** |
+| LECORNU_II | 60 | 63 |
+| BAYROU | 26 | 35 |
+| ATTAL | 8 | 24 |
+| BARNIER | 10 | 13 |
+| PHILIPPE | 0 | 1 |
+| FILLON_2 / FILLON_3 | 0 | 0 (hors couverture définitive) |
+| **Total** | **104** | **723** |
+
+Sur les profils individuels — le gain le plus large, car la même archive
+alimente `candidate_profile.py` (lignes 1945 et 2108) : index acteur→textes
+portés de **1 076 → 1 643 acteurs** et **8 351 → 24 333 associations** (×2,9).
+
+**Budget CI** : cache 14 → 46 Mo, index construit en 2,3 s pour **55 Mo de RSS**
+— sans risque d'OOM grâce au générateur.
+
+**Invalidation des index** : `index_texte_titre.json` et
+`index_acteur_textes.json` sont renommés en `*_v2.json`. Sans nouveau nom, un
+cache CI ou local existant aurait servi silencieusement l'ancien index
+mono-archive, et le gain aurait été invisible sans que rien ne le signale.
+
+**Reste à traiter** : 3 `fam_code` apparaissent dans les archives anciennes et
+ne sont pas mappés — `TSORTF02` (« adoptée avec modifications », 53),
+`TSORTF14` (« voté par les deux assemblées en termes identiques »), `TSORTF13`
+(« rejeté définitivement »). Ils ne coûtent que 2 exclusions, la promulgation
+déterminant le statut des autres. Même nature que #397.
+*Traité en #402 — voir [la section dédiée](#gouvernement-textes-fam-codes-archives) :
+les 3 codes sont mappés, `TSORTF02` tranché sur données réelles.*
+
+---
+
+<a id="gouvernement-textes-fam-codes-manquants"></a>
+## `gouvernement_textes` : 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature (#397) (2026-08-18)
+
+**Contexte** : la revue de l'audit `audit_pipeline_20260817T153911Z` a montré
+518 warnings sur les profils de gouvernement, dont **473 du seul type
+`gouvernement_textes`**. Dépliés, ils provenaient de **3 `fam_code` distincts
+seulement**, absents de `_FAM_CODE_STATUT_MAP`.
+
+Le comportement en place était correct au regard d'AGENTS.md §2.5 — un code
+inconnu donne `statut = None`, jamais un statut par défaut — mais
+`gouvernement_profile.py` exclut alors le dossier de `textes[]`. Résultat :
+**45 dossiers exclus contre 61 retenus, soit 42 % des textes gouvernementaux
+absents du jeu de données**, dont le *Projet de loi de finances pour 2025*.
+
+**Sens des trois codes, relevé dans le dataset source** (`statutConclusion.libelle`
+du dump AN), donc sans interprétation de notre part :
+
+| `fam_code` | Libellé AN | Décision |
+| --- | --- | --- |
+| `TSORTF03` | « adopté sans modification » | `adopte` |
+| `TSORTF18` | « adopté, dans les conditions prévues à l'art. 45 al. 3 » | `adopte_cmp` (nouveau) |
+| `TSORTF05` | « modifié » | `navette_en_cours` |
+
+**Arbitrage sur `TSORTF18` (décision humaine, option B retenue)** : l'issue est
+une adoption, mais par une voie procédurale distincte — approbation du texte
+élaboré en commission mixte paritaire, sur demande du Gouvernement. Deux
+options étaient ouvertes : fondre dans `adopte`, ou créer un statut dédié. Le
+statut dédié `adopte_cmp` a été retenu, par symétrie explicite avec le
+traitement du 49.3 en #208 : le fait procédural n'est jamais fusionné avec
+l'issue du vote (AGENTS.md §2.4). `sort_49_3` reste `False` — `adopte_cmp`
+n'est pas un statut 49.3, et le validateur refuse la combinaison
+`adopte_cmp` + `sort_49_3 = True`. Il n'y a pas de cumul possible : si le
+Gouvernement engage sa responsabilité sur le texte de CMP, la décision de
+séance la plus récente porte `TSORTF06`/`TSORTF24`, pas `TSORTF18`.
+
+**`TSORTF05` réaligne un test sur sa propre intention** :
+`test_derniere_decision_de_seance_chronologique_prevaut_sur_une_decision_anterieure`
+décrivait dans sa docstring un dossier « toujours en navette », mais assertait
+`statut is None` — parce que le code ne savait pas encore l'exprimer. La
+docstring du module anticipait déjà ce cas sans l'avoir encodé.
+
+**Résultat mesuré après régénération des 10 gouvernements** :
+
+| Indicateur | Avant | Après |
+| --- | --- | --- |
+| Textes retenus | 61 | **104** |
+| Warnings gouvernement | 518 | **2** |
+| `adopte` | 20 | 43 |
+| `adopte_cmp` | — | 16 |
+| `navette_en_cours` | 36 | 40 |
+
+Les 2 warnings restants relèvent d'une autre cause (`chambre_depot_initial`
+indéterminée sur `DLR5L17N50840` et `DLR5L17N53195`).
+
+**La nomenclature reste fermée.** L'élargissement du mapping ne l'affaiblit
+pas : un `fam_code` réellement inconnu produit toujours `statut = None` et un
+warning. Un test dédié le vérifie, précisément parce qu'un tel élargissement
+est le moment où cette protection risque d'être perdue de vue.
+
+**Propagation** : `make_empty_comptages_statuts()` dérive de
+`KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`, donc `adopte_cmp` s'est propagé sans
+modification supplémentaire côté schéma et audit. En revanche, **trois jeux de
+fixtures de tests énuméraient les statuts en dur** et sont devenus invalides —
+ils dérivent désormais de la nomenclature. Seule l'UI
+(`web/UI_finale/src/data/pivotAdapter.js`) exige une entrée manuelle, pour
+l'ordre d'affichage et les libellés : « adopté (texte de CMP) ».
+
+**Suites** : #400 (ingérer les archives `/15/` et `/16/`, qui débloqueront
+Borne et Castex, aujourd'hui à 0), #399 (bruit d'audit — ce sont ces 473
+warnings qui avaient masqué le présent défaut), #398 (`premier_ministre` et
+`portefeuille`).
+
+---
 
 <a id="shardage-extract-roster-groupes"></a>
 ## Shardage de `extract-roster-groupes` en 8 tranches, découpées par modulo (#394) (2026-08-18)
