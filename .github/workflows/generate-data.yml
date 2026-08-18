@@ -284,13 +284,29 @@ jobs:
         with:
           path: |
             .cache/acteurs_historique_an
-            .cache/dossiers_an
             .cache/scrutins_an
             .cache/questions_an
             .cache/syceron_an
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
+
+      # Clé DÉDIÉE aux dossiers législatifs (#427), séparée de la clé AN.
+      # merge-and-pivot en a besoin pour générer les profils de gouvernement,
+      # mais restaurer `public-data-cache-an-*` depuis là-bas embarquerait
+      # aussi `scrutins_an` — plusieurs centaines de Mo pour en utiliser 46.
+      #
+      # Contrairement au défaut corrigé en #424, il n'y a ici aucune
+      # dissociation entre producteur de contenu et écrivain de clé : les trois
+      # jobs téléchargent et consomment les mêmes archives, donc le premier qui
+      # sauvegarde suffit et les suivants font un exact key hit sans perte.
+      - uses: actions/cache@v5
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache/dossiers_an
+          key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-dossiers-
 
       # fresh_run=true → purge des profils bruts et du cache avant extraction.
       - name: Nettoyage complet (fresh_run uniquement)
@@ -902,13 +918,29 @@ jobs:
         with:
           path: |
             .cache/acteurs_historique_an
-            .cache/dossiers_an
             .cache/scrutins_an
             .cache/questions_an
             .cache/syceron_an
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
+
+      # Clé DÉDIÉE aux dossiers législatifs (#427), séparée de la clé AN.
+      # merge-and-pivot en a besoin pour générer les profils de gouvernement,
+      # mais restaurer `public-data-cache-an-*` depuis là-bas embarquerait
+      # aussi `scrutins_an` — plusieurs centaines de Mo pour en utiliser 46.
+      #
+      # Contrairement au défaut corrigé en #424, il n'y a ici aucune
+      # dissociation entre producteur de contenu et écrivain de clé : les trois
+      # jobs téléchargent et consomment les mêmes archives, donc le premier qui
+      # sauvegarde suffit et les suivants font un exact key hit sans perte.
+      - uses: actions/cache@v5
+        if: ${{ !inputs.fresh_run }}
+        with:
+          path: .cache/dossiers_an
+          key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-dossiers-
 
       - name: Nettoyage complet (fresh_run uniquement)
         if: ${{ inputs.fresh_run }}
@@ -1061,6 +1093,28 @@ jobs:
           python-version: '3.12'
 
       - run: pip install -r requirements.txt
+
+      # Step `week` + cache dossiers (#427). Ce job était le seul de
+      # generate-data.yml SANS aucun actions/cache : il re-téléchargeait les
+      # trois archives de dossiers (~33 Mo) à chaque run pour générer les
+      # profils de gouvernement, `generate_gouvernement_profiles.py` appelant
+      # directement `fetch_dossiers_gouvernementaux()`.
+      #
+      # Ce n'était pas qu'un gaspillage : ce script ÉCRASE les profils, et la
+      # collecte est non-fatale. Un échec réseau ici réécrivait les 10
+      # gouvernements avec `textes: []` — 725 textes perdus, committés et
+      # publiés. Le garde-fou principal est côté Python (refus de réécrire sur
+      # collecte incomplète) ; ce cache réduit la fréquence d'exposition.
+      - name: Semaine ISO courante (clé de cache dossiers)
+        id: week
+        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v5
+        with:
+          path: .cache/dossiers_an
+          key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-dossiers-
 
       # ── Téléchargement des artifacts d'extraction ─────────────────────────
       # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
@@ -1215,7 +1269,13 @@ jobs:
       # les gouvernements du batch. Coût mesuré négligeable au regard du
       # budget de 60 min de ce job (#215) — pas de job dédié nécessaire, voir
       # docs/technical_decisions.md#gouvernement-ci-integration.
+      # continue-on-error : le code de sortie 2 signale une collecte incomplète
+      # — aucun profil n'a été touché, les versions committées restent en
+      # place. Faire échouer tout le job priverait le run du commit des
+      # profils de candidats et de groupes, qui eux sont corrects. L'échec
+      # reste visible dans la liste des steps et dans le résumé (#427).
       - name: Générer les profils de gouvernement
+        continue-on-error: true
         run: |
           python3 src/generate_gouvernement_profiles.py \
             --config raw_data/gouvernements_reels.json \
