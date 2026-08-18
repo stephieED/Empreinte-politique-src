@@ -29,6 +29,17 @@ Sources en entrée :
     déposé sous un gouvernement A puis conclu sous un gouvernement B reste
     crédité à A.
 
+Lien ministre → texte (#435) : `textes[].initiateurs` porte les initiateurs
+déclarés par la source (`initiateur.acteurs.acteur[].acteurRef`, extraits par
+`gouvernement_textes.py`), résolus vers un `membre_id` quand l'`acteurRef`
+correspond à un membre retenu dans `membres[]` — c'est ce module qui peut le
+faire, lui seul connaissant la composition du gouvernement. La couverture est
+partielle par construction (un initiateur peut n'avoir aucun profil pivot dans
+le dépôt, cas des 7 Premiers ministres sans profil) : l'`acteurRef` brut est
+alors conservé avec `membre_id = null`, jamais rattaché à un profil approchant
+(AGENTS.md §2.5). Un texte sans initiateur déclaré porte `initiateurs = null`,
+pas `[]` — voir `_initiateurs_texte`.
+
 Comptages (`comptages.par_statut`) : simple dénombrement des `textes[]`
 retenus par statut, aucun taux ni pourcentage calculé nulle part dans ce
 module (règle AGENTS.md §2.1) — voir `_select_textes_gouvernement`.
@@ -87,6 +98,7 @@ from schema_gouvernement import (
     validate_profil_gouvernement,
 )
 from gouvernement_roster import (
+    acteur_ref_depuis_profil,
     build_gouvernement_roster,
     build_premier_ministre,
     load_gouvernement_config,
@@ -125,6 +137,74 @@ def _texte_dans_periode(date_depot: Optional[date], g_debut: Optional[date], g_f
 
 
 # ---------------------------------------------------------------------------
+# Résolution des initiateurs de texte vers les membres du gouvernement (#435)
+# ---------------------------------------------------------------------------
+
+def _index_acteur_ref_vers_membre(
+    profils: list[dict[str, Any]],
+    membre_ids: set[str],
+    warnings: list[str],
+) -> dict[str, str]:
+    """Index `acteurRef` AN -> `membre_id` pivot, restreint aux membres retenus
+    dans `membres[]`.
+
+    Restreint volontairement aux membres de CE gouvernement : la source déclare
+    les initiateurs d'un texte par référence nue, et un `acteurRef` peut
+    désigner quelqu'un qui n'est pas membre du gouvernement auquel le texte est
+    rattaché (co-signataire, ex-ministre — 15 % de faux positifs mesurés par le
+    spike #207 quand cette chaîne servait de signal d'origine, voir
+    `gouvernement_textes.py`). Hors de `membres[]`, l'`acteurRef` brut est
+    conservé sans `membre_id` plutôt que rattaché à un profil quelconque.
+
+    Deux profils différents portant le même `acteurRef` sont un conflit
+    d'identité que ce module ne tranche pas : aucun des deux n'est indexé et un
+    warning est émis (AGENTS.md §2.5).
+    """
+    refs_vers_ids: dict[str, set[str]] = {}
+    for profil in profils:
+        profil_id = profil.get("id")
+        if not profil_id or profil_id not in membre_ids:
+            continue
+        acteur_ref = acteur_ref_depuis_profil(profil)
+        if acteur_ref:
+            refs_vers_ids.setdefault(acteur_ref, set()).add(profil_id)
+
+    index: dict[str, str] = {}
+    for acteur_ref, ids in refs_vers_ids.items():
+        if len(ids) > 1:
+            warnings.append(
+                f"gouvernement_profile: acteurRef {acteur_ref!r} porté par plusieurs "
+                f"profils ({sorted(ids)}) — aucun membre_id résolu pour cet initiateur."
+            )
+            continue
+        index[acteur_ref] = next(iter(ids))
+    return index
+
+
+def _initiateurs_texte(
+    acteur_refs: Optional[list[str]],
+    acteur_ref_vers_membre: dict[str, str],
+) -> Optional[list[dict[str, Any]]]:
+    """Normalise les `acteurRef` d'un dossier en entrées
+    `textes[].initiateurs` (#435), ou `None` si la source n'en déclare aucun.
+
+    `None` et non `[]` : une liste vide affirmerait qu'aucun ministre n'a porté
+    le texte, alors que le fait constaté est que la source ne le dit pas
+    (AGENTS.md §2.5). `membre_id` reste `null` quand l'`acteurRef` n'est pas
+    résolvable — la référence brute, elle, est toujours conservée.
+    """
+    if not acteur_refs:
+        return None
+    return [
+        {
+            "acteur_ref": acteur_ref,
+            "membre_id": acteur_ref_vers_membre.get(acteur_ref),
+        }
+        for acteur_ref in acteur_refs
+    ]
+
+
+# ---------------------------------------------------------------------------
 # Sélection et normalisation des textes du gouvernement
 # ---------------------------------------------------------------------------
 
@@ -132,16 +212,23 @@ def _select_textes_gouvernement(
     dossiers_gouvernementaux: list[dict[str, Any]],
     g_debut: Optional[date],
     g_fin: Optional[date],
+    acteur_ref_vers_membre: Optional[dict[str, str]] = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[str]]:
     """Filtre `dossiers_gouvernementaux` (sortie non filtrée de
     `gouvernement_textes`) sur la période du gouvernement, normalise chaque
     dossier retenu en entrée `textes[]` du schéma, et dénombre les statuts.
+
+    `acteur_ref_vers_membre` (voir `_index_acteur_ref_vers_membre`) résout les
+    initiateurs déclarés par la source vers un `membre_id`. Absent, les
+    initiateurs sont conservés avec leur seul `acteurRef` : c'est une couverture
+    réduite, jamais un lien deviné.
 
     Returns:
         Tuple (textes retenus, comptages.par_statut, warnings). Aucun taux
         calculé : `comptages` ne contient que des entiers bruts (règle
         AGENTS.md §2.1).
     """
+    acteur_ref_vers_membre = acteur_ref_vers_membre or {}
     seen_ids: set[str] = set()
     textes: list[dict[str, Any]] = []
     par_statut = make_empty_comptages_statuts()
@@ -185,6 +272,9 @@ def _select_textes_gouvernement(
             "date_depot": dossier.get("date_depot"),
             "date_dernier_evenement": dossier.get("date_dernier_evenement"),
             "sort_49_3": dossier.get("sort_49_3"),
+            "initiateurs": _initiateurs_texte(
+                dossier.get("initiateurs_acteur_refs"), acteur_ref_vers_membre
+            ),
             "source_url": dossier.get("source_url"),
         })
         par_statut[statut] += 1
@@ -245,17 +335,19 @@ def build_gouvernement_profile(
         warnings=warnings,
     )
 
+    membre_ids = {m["membre_id"] for m in membres if m.get("membre_id")}
+
     g_debut = _parse_date(periode_debut)
     g_fin = _parse_date(periode_fin)
+    acteur_ref_vers_membre = _index_acteur_ref_vers_membre(profils, membre_ids, warnings)
     textes, par_statut, textes_warnings = _select_textes_gouvernement(
-        dossiers_gouvernementaux, g_debut, g_fin
+        dossiers_gouvernementaux, g_debut, g_fin, acteur_ref_vers_membre
     )
     warnings.extend(textes_warnings)
 
     # --- Sources (dédoublonnées) : uniquement celles des profils des membres
     # effectivement retenus dans membres[], pas de tous les profils passés en
     # entrée (qui couvrent potentiellement l'ensemble du dépôt).
-    membre_ids = {m["membre_id"] for m in membres if m.get("membre_id")}
     seen_sources: set[tuple[str, str]] = set()
     sources: list[dict[str, Any]] = []
     for p in profils:

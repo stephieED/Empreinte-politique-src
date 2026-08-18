@@ -69,6 +69,13 @@ Format d'un profil de gouvernement v1 :
             "sort_49_3": True,               # engagement de la responsabilité du gouvernement
                                               # (art. 49.3) : bool, jamais fusionné avec une
                                               # position de vote (règle AGENTS.md §2.4)
+            "initiateurs": [                 # ministre(s) ayant déposé le texte, tels que
+                {                            # déclarés par `initiateur.acteurs.acteur[]` du
+                                              # dump AN — un texte en porte souvent plusieurs
+                    "acteur_ref": "PA643210",  # référence AN brute, toujours conservée
+                    "membre_id": "nosdeputes:sebastien-lecornu",  # null si l'acteur ne figure
+                },                             # pas dans membres[] (couverture partielle)
+            ],                               # null (jamais []) si la source n'en déclare aucun
             "source_url": None,
         }
     ],
@@ -118,6 +125,16 @@ Cas limites gérés :
   symétrique, avec `statut = "rejete_49_3"` — `sort_49_3 = True` est exigé
   avec ce statut, et interdit de le renseigner avec `statut = "rejete"`
   (même collapse silencieux interdit que pour `adopte`).
+- Texte dont la source ne déclare aucun initiateur : `initiateurs = null`,
+  jamais `[]` ni un membre choisi par défaut (règle AGENTS.md §2.5) — une
+  liste vide affirmerait qu'aucun ministre n'a porté le texte, ce que la
+  source ne dit pas. Constaté sur 2 des 725 textes rattachés à un
+  gouvernement (#435).
+- Initiateur absent de `membres[]` : `acteur_ref` est conservé et
+  `membre_id` reste `null` — la couverture des profils pivot est partielle
+  (7 Premiers ministres n'en ont aucun), et un `membre_id` reconstruit serait
+  une invention. Un `membre_id` renseigné doit correspondre à une entrée de
+  `membres[]` (vérifié par `validate_profil_gouvernement`).
 - Gouvernement encore en fonction : `periode.fin = null`, `periode.actif = true`.
 
 Hors périmètre de ce schéma (volontairement) :
@@ -234,7 +251,15 @@ REQUIRED_MEMBRE_KEYS: frozenset[str] = frozenset({
 # Clés obligatoires d'une entrée textes[].
 REQUIRED_TEXTE_KEYS: frozenset[str] = frozenset({
     "dossier_id", "titre", "statut", "chambre_depot_initial",
-    "date_depot", "date_dernier_evenement", "sort_49_3", "source_url",
+    "date_depot", "date_dernier_evenement", "sort_49_3", "initiateurs",
+    "source_url",
+})
+
+# Clés obligatoires d'une entrée textes[].initiateurs[] (#435). `acteur_ref` est
+# la référence AN brute (toujours présente) ; `membre_id` est sa résolution vers
+# un membre du gouvernement, `null` quand elle n'est pas possible.
+REQUIRED_INITIATEUR_TEXTE_KEYS: frozenset[str] = frozenset({
+    "acteur_ref", "membre_id",
 })
 
 # Champs dont la valeur doit être une liste.
@@ -284,13 +309,83 @@ def make_empty_profil_gouvernement(gouvernement_id: str, nom: str) -> dict[str, 
     }
 
 
+def _erreurs_initiateurs(
+    index_texte: int,
+    initiateurs: Any,
+    membres_connus: set[Any],
+) -> list[str]:
+    """Valide `textes[].initiateurs` (#435) : `null` ou liste **non vide**
+    d'entrées `{acteur_ref, membre_id}`.
+
+    Trois invariants, tous des cas de traçabilité (AGENTS.md §2.2/§2.5) :
+      - `[]` est refusé : l'absence d'initiateur déclaré se dit `null`, une
+        liste vide affirmerait qu'aucun ministre n'a porté le texte.
+      - `acteur_ref` est obligatoire et non vide, même quand la résolution vers
+        un membre échoue : c'est la référence brute qui rend le lien vérifiable
+        dans la source.
+      - un `membre_id` renseigné doit désigner une entrée de `membres[]` — un
+        identifiant qui ne correspond à aucun membre du profil serait un lien
+        inventé.
+    """
+    if initiateurs is None:
+        return []
+
+    if not isinstance(initiateurs, list):
+        return [
+            f"textes[{index_texte}].initiateurs doit être une liste ou null, "
+            f"reçu : {type(initiateurs).__name__}."
+        ]
+    if not initiateurs:
+        return [
+            f"textes[{index_texte}].initiateurs est une liste vide — utiliser null "
+            f"quand la source ne déclare aucun initiateur (règle AGENTS.md §2.5)."
+        ]
+
+    errors: list[str] = []
+    for j, initiateur in enumerate(initiateurs):
+        prefixe = f"textes[{index_texte}].initiateurs[{j}]"
+        if not isinstance(initiateur, dict):
+            errors.append(f"{prefixe} doit être un dict.")
+            continue
+        missing = REQUIRED_INITIATEUR_TEXTE_KEYS - set(initiateur.keys())
+        if missing:
+            errors.append(f"{prefixe} : clés manquantes : {sorted(missing)}.")
+            continue
+
+        acteur_ref = initiateur["acteur_ref"]
+        if not isinstance(acteur_ref, str) or not acteur_ref:
+            errors.append(
+                f"{prefixe}.acteur_ref doit être une chaîne non vide "
+                f"(reçu : {acteur_ref!r}) : la référence AN brute est conservée "
+                f"même quand aucun membre_id n'est résolu."
+            )
+
+        membre_id = initiateur["membre_id"]
+        if membre_id is None:
+            continue
+        if not isinstance(membre_id, str) or not membre_id:
+            errors.append(
+                f"{prefixe}.membre_id doit être une chaîne non vide ou null "
+                f"(reçu : {membre_id!r})."
+            )
+        elif membre_id not in membres_connus:
+            errors.append(
+                f"{prefixe}.membre_id {membre_id!r} ne correspond à aucune entrée "
+                f"de membres[] — un lien membre → texte doit pointer vers un "
+                f"membre du profil."
+            )
+
+    return errors
+
+
 def validate_profil_gouvernement(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma de gouvernement v1.
 
     Validation structurelle : présence des clés obligatoires, types, valeur
     de schema_version et type_document, invariants de chaque entrée
-    membres[]/textes[], nomenclature fermée des statuts, et non-collapse du
-    49.3 (règle AGENTS.md §2.4).
+    membres[]/textes[], nomenclature fermée des statuts, non-collapse du
+    49.3 (règle AGENTS.md §2.4), et traçabilité des liens
+    `textes[].initiateurs` (voir `_erreurs_initiateurs`).
 
     Args:
         profil: dict à valider.
@@ -364,6 +459,12 @@ def validate_profil_gouvernement(profil: dict[str, Any]) -> list[str]:
             if not isinstance(membre["actif"], bool):
                 errors.append(f"membres[{i}].actif doit être un booléen.")
 
+    membres_connus = {
+        membre.get("membre_id")
+        for membre in (profil.get("membres") or [])
+        if isinstance(membre, dict) and membre.get("membre_id")
+    }
+
     textes = profil.get("textes")
     if isinstance(textes, list):
         for i, texte in enumerate(textes):
@@ -403,6 +504,8 @@ def validate_profil_gouvernement(profil: dict[str, Any]) -> list[str]:
                     f"textes[{i}] : sort_49_3 = True mais statut = {statut!r} — "
                     f"le 49.3 ne doit jamais être collapsé vers 'adopte'/'rejete' ou tout autre statut."
                 )
+
+            errors.extend(_erreurs_initiateurs(i, texte["initiateurs"], membres_connus))
 
     comptages = profil.get("comptages")
     if comptages is not None and not isinstance(comptages, dict):

@@ -420,6 +420,75 @@ def test_source_url_construite_depuis_legislature_et_titre_chemin():
 
 
 # ---------------------------------------------------------------------------
+# parse_dossier_gouvernemental — initiateurs (#435) : le lien membre -> texte,
+# porté par `initiateur.acteurs.acteur[].acteurRef` dans le dump AN.
+# ---------------------------------------------------------------------------
+
+def test_initiateur_unique_en_objet_extrait():
+    """Forme majoritaire du dump : `acteur` est un objet, pas une liste."""
+    dossier = _dossier("TEST-INIT-1", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    dossier["initiateur"] = {"acteurs": {"acteur": {"acteurRef": "PA796090", "mandatRef": "PM840372"}}}
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["initiateurs_acteur_refs"] == ["PA796090"]
+
+
+def test_initiateurs_multiples_tous_conserves_dans_lordre_de_la_source():
+    """365 des 725 textes rattachés à un gouvernement portent plusieurs
+    initiateurs : aucun n'est arbitrairement élu « le » déposant."""
+    dossier = _dossier("TEST-INIT-N", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    dossier["initiateur"] = {"acteurs": {"acteur": [
+        {"acteurRef": "PA643210", "mandatRef": "PM873637"},
+        {"acteurRef": "PA721836", "mandatRef": "PM873664"},
+    ]}}
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["initiateurs_acteur_refs"] == ["PA643210", "PA721836"]
+
+
+def test_initiateur_absent_donne_none_jamais_une_liste_vide():
+    """Constaté sur 2 des 725 textes : la source ne déclare aucun initiateur.
+    `[]` se lirait comme « aucun ministre n'a porté ce texte » (AGENTS.md §2.5)."""
+    dossier = _dossier("TEST-INIT-0", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    dossier["initiateur"] = None
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["initiateurs_acteur_refs"] is None
+
+    del dossier["initiateur"]
+    assert parse_dossier_gouvernemental(dossier)["initiateurs_acteur_refs"] is None
+
+
+def test_initiateur_organe_seul_sans_acteur_nomme_donne_none():
+    """25 dossiers de l'archive XVII ne portent qu'un `organes` : une initiative
+    d'organe n'est pas un lien vers un membre, et ne s'invente pas."""
+    dossier = _dossier("TEST-INIT-ORGANE", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    dossier["initiateur"] = {"organes": {"organe": {"organeRef": {"uid": "PO866403"}}}, "acteurs": None}
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["initiateurs_acteur_refs"] is None
+
+
+def test_initiateurs_dedoublonnes_et_entrees_illisibles_ignorees():
+    dossier = _dossier("TEST-INIT-DEDUP", "Projet de loi ordinaire test", [
+        _acte("AN1-DEPOT", "2024-01-10"),
+    ])
+    dossier["initiateur"] = {"acteurs": {"acteur": [
+        {"acteurRef": "PA643210"},
+        {"acteurRef": "PA643210"},   # doublon de la source
+        {"mandatRef": "PM873664"},   # pas d'acteurRef : aucun lien à en tirer
+        {"acteurRef": ""},           # référence vide : idem
+        "PA000000",                  # entrée non structurée
+    ]}}
+    record = parse_dossier_gouvernemental(dossier)
+    assert record["initiateurs_acteur_refs"] == ["PA643210"]
+
+
+# ---------------------------------------------------------------------------
 # Texte réel vérifié manuellement (PLFSS 2025, DLR5L17N50588 — structure et
 # dates constatées en direct sur data.assemblee-nationale.fr le 2026-08-14,
 # voir docs/an_opendata.md) : engagement de responsabilité rejeté en 1ère

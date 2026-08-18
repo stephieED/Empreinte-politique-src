@@ -65,6 +65,11 @@ something is pending, not *why*.
   (2355/3044 dossiers, mostly motions/résolutions/rapports) — needs mandate-date
   vs. deposit-date filtering to avoid the ~15% false-positive rate measured
   in #207 (ex-minister co-signatories). See `technical_decisions.md#gouvernement-textes-statut`.
+- Surface `textes[].initiateurs` (minister → bill link, #435) in the
+  gouvernement view: the data layer carries it, `web/` does not display it yet.
+  Also unmeasured by `audit_gouvernement_dataset.py`/`check_quality_gate.py`
+  (no coverage indicator for resolved vs. raw-`acteurRef` links, 556/1213
+  today). See `technical_decisions.md#gouvernement-textes-initiateurs`.
 - Audit temporal-range cross-tables (`compute_plage_dates_*`, #316): no
   alerting on threshold yet (e.g. "profile doesn't cover the current
   legislature") — raw min/max indicator only. See

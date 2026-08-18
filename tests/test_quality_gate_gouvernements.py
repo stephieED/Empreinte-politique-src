@@ -55,6 +55,7 @@ def _write_gouvernement(
                 "date_depot": "2024-08-01",
                 "date_dernier_evenement": "2024-08-01",
                 "sort_49_3": None,
+                "initiateurs": None,
                 "source_url": None,
             }
             for i in range(nb_textes)
