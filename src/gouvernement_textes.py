@@ -72,6 +72,16 @@ l'absence de statut réel (constaté sur un acte de « décision » sans issue
 tranchée) : traité comme absence d'événement, jamais comme un `fam_code`
 inconnu à signaler.
 
+Initiateurs (#435) : `initiateur.acteurs.acteur[].acteurRef` est extrait tel
+quel dans `initiateurs_acteur_refs` — le lien membre → texte, pendant de
+`role_signataire` pour les amendements. Aucune résolution vers un `membre_id`
+ici : elle demande la composition du gouvernement, connue de
+`gouvernement_profile.py` seulement. `acteurRef` n'est PAS utilisé comme
+signal d'origine (la chaîne `acteurRef -> mandat GOUVERNEMENT -> organeRef` a
+été écartée pour cela, ~15 % de faux positifs mesurés par le spike #207, voir
+docs/technical_decisions.md#gouvernement-textes-statut) : ici la source dit
+qui a déposé, pas de quelle origine est le texte.
+
 Retrait : `codeActe` dédié (`AN1-RTRINI`/`ANLUNI-RTRINI`), sans
 `statutConclusion` associé (spike #207).
 
@@ -428,6 +438,48 @@ def _document_depot_initial(actes_legislatifs: Any) -> Optional[str]:
     return min(depots)[1] if depots else None
 
 
+def _initiateurs_acteur_refs(dossier: dict[str, Any]) -> Optional[list[str]]:
+    """`acteurRef` de chaque initiateur déclaré par la source
+    (`initiateur.acteurs.acteur[]`), dans l'ordre du dump et dédoublonnés, ou
+    `None` si le dossier n'en porte aucun (#435).
+
+    `acteur` est un objet quand le dossier a un seul initiateur et une liste
+    quand il en a plusieurs — les deux formes coexistent dans les trois
+    archives (2482 dossiers en objet, 293 en liste sur l'archive XVII), les
+    deux sont donc acceptées. Sur les 725 textes rattachés à un gouvernement,
+    723 portent au moins un `acteurRef` et 365 en portent plusieurs : le
+    multi-initiateur est le cas courant, pas une bizarrerie à écarter.
+
+    Retourne `None`, jamais `[]`, quand aucun `acteurRef` n'est lisible — y
+    compris pour les dossiers dont `initiateur` ne porte qu'un `organes`
+    (initiative d'un organe, sans acteur nommé) : une liste vide se lirait
+    comme « aucun ministre n'a porté ce texte », alors que le fait constaté
+    est « la source ne le dit pas » (AGENTS.md §2.5). La résolution vers un
+    `membre_id` n'est pas faite ici : elle demande la composition du
+    gouvernement, donc `gouvernement_profile.py`.
+    """
+    initiateur = dossier.get("initiateur")
+    if not isinstance(initiateur, dict):
+        return None
+    acteurs = initiateur.get("acteurs")
+    if not isinstance(acteurs, dict):
+        return None
+    acteur = acteurs.get("acteur")
+    if isinstance(acteur, dict):
+        acteur = [acteur]
+    if not isinstance(acteur, list):
+        return None
+
+    refs: list[str] = []
+    for entree in acteur:
+        if not isinstance(entree, dict):
+            continue
+        ref = entree.get("acteurRef")
+        if isinstance(ref, str) and ref and ref not in refs:
+            refs.append(ref)
+    return refs or None
+
+
 def _origine(dossier: dict[str, Any]) -> Optional[str]:
     """Classe un dossier en `"gouvernemental"` / `"parlementaire"` / `None`
     (non déterminable, donc exclu plutôt que deviné — AGENTS.md §2.5).
@@ -626,6 +678,7 @@ def parse_dossier_gouvernemental(dossier: dict[str, Any]) -> Optional[dict[str, 
     date_depot, date_dernier_evenement = _acte_dates(actes_legislatifs)
     chambre_depot_initial = _chambre_depot_initial(actes_legislatifs)
     statut, sort_49_3, warning = _determine_statut(dossier_id, actes_legislatifs)
+    initiateurs_acteur_refs = _initiateurs_acteur_refs(dossier)
     legislature = dossier.get("legislature")
 
     return {
@@ -636,6 +689,7 @@ def parse_dossier_gouvernemental(dossier: dict[str, Any]) -> Optional[dict[str, 
         "chambre_depot_initial": chambre_depot_initial,
         "date_depot": date_depot,
         "date_dernier_evenement": date_dernier_evenement,
+        "initiateurs_acteur_refs": initiateurs_acteur_refs,
         "legislature": legislature,
         "source_url": _source_url(legislature, titre_dossier.get("titreChemin")),
         "warnings": [warning] if warning else [],

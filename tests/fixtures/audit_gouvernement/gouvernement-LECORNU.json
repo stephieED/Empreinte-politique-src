@@ -42,7 +42,13 @@
       "date_depot": "2024-10-10",
       "date_dernier_evenement": "2024-12-04",
       "sort_49_3": true,
-      "source_url": null
+      "source_url": null,
+      "initiateurs": [
+        {
+          "acteur_ref": "PA643210",
+          "membre_id": "nosdeputes:bruno-le-maire"
+        }
+      ]
     }
   ],
   "comptages": {

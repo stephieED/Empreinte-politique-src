@@ -218,7 +218,11 @@ Empirical findings:
   in a single file.
 - `titreDossier.titre`: full human-readable title.
 - `procedureParlementaire.{code,libelle}`: closed set of observed values.
-- `initiateur.acteurs.acteur[]`: actor-level bill initiators.
+- `initiateur.acteurs.acteur[]`: actor-level bill initiators. `acteur` is an
+  object for a single initiator and a list for several (2482 vs 293 dossiers in
+  the legislature-XVII archive); each entry carries `acteurRef` + `mandatRef`,
+  never an inline type. 25 dossiers carry only `initiateur.organes` (body-level
+  initiative, no named actor).
 - `actesLegislatifs` is a recursive tree, including official reporters and
   procedural milestones.
 
@@ -229,6 +233,11 @@ Implemented path:
   factual roles (`auteur`, `rapporteur`, `co-rapporteur`) and inferred
   procedural stage.
 - This replaces legacy Nos* dossier lists for deputies.
+- `gouvernement_textes.py` extracts the same `acteurRef`s per dossier
+  (`initiateurs_acteur_refs`); `gouvernement_profile.py` resolves them against
+  the government's own `membres[]` to fill `textes[].initiateurs` — the
+  minister → bill link (723/725 government bills carry one, 1213 links, 556
+  resolved). See `technical_decisions.md#gouvernement-textes-initiateurs`.
 - `merge_profile.py` drops `dossiers_legislatifs`/`textes_portes` entries that
   have no factual `role` during migration/merge.
 

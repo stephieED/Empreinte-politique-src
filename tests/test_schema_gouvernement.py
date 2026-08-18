@@ -134,6 +134,7 @@ def test_validate_valid_gouvernement_with_texte():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": "2024-12-04",
         "sort_49_3": True,
+        "initiateurs": None,
         "source_url": "https://www.assemblee-nationale.fr/dyn/exemple",
     })
     assert validate_profil_gouvernement(g) == []
@@ -149,9 +150,110 @@ def test_validate_valid_gouvernement_texte_senat():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": None,
+        "initiateurs": None,
         "source_url": None,
     })
     assert validate_profil_gouvernement(g) == []
+
+
+# ---------------------------------------------------------------------------
+# validate_profil_gouvernement — textes[].initiateurs (#435)
+# ---------------------------------------------------------------------------
+
+def _membre(membre_id: str = "nosdeputes:bruno-le-maire") -> dict:
+    return {
+        "membre_id": membre_id,
+        "nom": "Bruno Le Maire",
+        "portefeuille": None,
+        "debut": "2025-09-09",
+        "fin": None,
+        "actif": True,
+        "source_url": None,
+    }
+
+
+def _texte_avec_initiateurs(initiateurs) -> dict:
+    return {
+        "dossier_id": "DLR5L17N50588",
+        "titre": "Projet de loi test",
+        "statut": "depose",
+        "chambre_depot_initial": "AN",
+        "date_depot": "2024-10-10",
+        "date_dernier_evenement": None,
+        "sort_49_3": None,
+        "initiateurs": initiateurs,
+        "source_url": None,
+    }
+
+
+def test_validate_initiateurs_resolus_et_non_resolus_acceptes():
+    """Un initiateur peut être résolu vers un membre ou rester une référence AN
+    brute (couverture partielle des profils pivot)."""
+    g = _valid_gouvernement()
+    g["membres"].append(_membre())
+    g["textes"].append(_texte_avec_initiateurs([
+        {"acteur_ref": "PA643210", "membre_id": "nosdeputes:bruno-le-maire"},
+        {"acteur_ref": "PA999999", "membre_id": None},
+    ]))
+    assert validate_profil_gouvernement(g) == []
+
+
+def test_validate_initiateurs_null_accepte():
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_avec_initiateurs(None))
+    assert validate_profil_gouvernement(g) == []
+
+
+def test_validate_initiateurs_liste_vide_refusee():
+    """`[]` affirmerait qu'aucun ministre n'a porté le texte : l'absence se dit
+    `null` (règle AGENTS.md §2.5)."""
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_avec_initiateurs([]))
+    errors = validate_profil_gouvernement(g)
+    assert any("initiateurs" in e and "vide" in e for e in errors)
+
+
+def test_validate_initiateurs_membre_id_inconnu_de_membres_refuse():
+    g = _valid_gouvernement()
+    g["membres"].append(_membre())
+    g["textes"].append(_texte_avec_initiateurs([
+        {"acteur_ref": "PA643210", "membre_id": "nosdeputes:jamais-membre"},
+    ]))
+    errors = validate_profil_gouvernement(g)
+    assert any("nosdeputes:jamais-membre" in e and "membres[]" in e for e in errors)
+
+
+def test_validate_initiateurs_acteur_ref_vide_refuse():
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_avec_initiateurs([{"acteur_ref": "", "membre_id": None}]))
+    errors = validate_profil_gouvernement(g)
+    assert any("acteur_ref" in e for e in errors)
+
+
+def test_validate_initiateurs_cles_manquantes_refusees():
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_avec_initiateurs([{"acteur_ref": "PA643210"}]))
+    errors = validate_profil_gouvernement(g)
+    assert any("initiateurs[0]" in e and "membre_id" in e for e in errors)
+
+
+def test_validate_initiateurs_non_liste_refusee():
+    g = _valid_gouvernement()
+    g["textes"].append(_texte_avec_initiateurs("PA643210"))
+    errors = validate_profil_gouvernement(g)
+    assert any("initiateurs" in e and "liste" in e for e in errors)
+
+
+def test_validate_texte_sans_cle_initiateurs_refuse():
+    """`initiateurs` est une clé obligatoire de textes[] depuis #435 : un texte
+    généré par une version antérieure du pipeline doit être signalé, pas
+    silencieusement accepté sans lien membre → texte."""
+    g = _valid_gouvernement()
+    texte = _texte_avec_initiateurs(None)
+    del texte["initiateurs"]
+    g["textes"].append(texte)
+    errors = validate_profil_gouvernement(g)
+    assert any("initiateurs" in e and "manquantes" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------
@@ -341,6 +443,7 @@ def test_validate_texte_unknown_statut():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": None,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -357,6 +460,7 @@ def test_validate_texte_unknown_chambre_depot():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": None,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -373,6 +477,7 @@ def test_validate_texte_sort_49_3_not_a_bool():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": "oui",
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -389,6 +494,7 @@ def test_validate_texte_adopte_49_3_requires_sort_49_3_true():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": None,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -407,6 +513,7 @@ def test_validate_texte_sort_49_3_true_collapsed_into_adopte_rejected():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": True,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -423,6 +530,7 @@ def test_validate_texte_rejete_49_3_requires_sort_49_3_true():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": None,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -441,6 +549,7 @@ def test_validate_texte_rejete_49_3_with_sort_49_3_true_is_valid():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": True,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -459,6 +568,7 @@ def test_validate_texte_sort_49_3_true_collapsed_into_rejete_rejected():
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": True,
+        "initiateurs": None,
         "source_url": None,
     })
     errors = validate_profil_gouvernement(g)
@@ -537,6 +647,7 @@ def _texte_adopte_cmp(sort_49_3) -> dict:
         "date_depot": "2024-10-10",
         "date_dernier_evenement": None,
         "sort_49_3": sort_49_3,
+        "initiateurs": None,
         "source_url": None,
     }
 

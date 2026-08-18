@@ -60,7 +60,14 @@ def _dossier(
     sort_49_3=False,
     warnings=None,
     titre: str = "Projet de loi test",
+    initiateurs_acteur_refs=None,
 ) -> dict:
+    """Sortie de `gouvernement_textes.parse_dossier_gouvernemental` (entrée de
+    ce module), pas une entrée `textes[]` du schéma.
+
+    `initiateurs_acteur_refs` reste `None` par défaut : c'est ce que le parseur
+    produit pour un dossier dont la source ne déclare aucun initiateur (#435).
+    """
     return {
         "dossier_id": dossier_id,
         "titre": titre,
@@ -69,6 +76,7 @@ def _dossier(
         "chambre_depot_initial": chambre,
         "date_depot": date_depot,
         "date_dernier_evenement": date_depot,
+        "initiateurs_acteur_refs": initiateurs_acteur_refs,
         "legislature": "17",
         "source_url": f"https://www.assemblee-nationale.fr/dyn/17/dossiers/{dossier_id}",
         "warnings": warnings if warnings is not None else [],
@@ -159,6 +167,136 @@ def test_select_textes_49_3_preserve():
     textes, par_statut, _ = _select_textes_gouvernement(dossiers, g_debut, None)
     assert textes[0]["sort_49_3"] is True
     assert par_statut["adopte_49_3"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Initiateurs de texte (#435) : résolution acteurRef -> membre_id
+# ---------------------------------------------------------------------------
+
+def _pivot_ministre(id_: str, nom: str, acteur_ref: str, libelle_an: str = "BAYROU",
+                    debut: str = "2024-12-24", fin: str = "2025-09-09") -> dict:
+    """Profil pivot d'un membre du gouvernement dont l'`acteurRef` AN est
+    résolvable : il n'existe que dans `identite.source_url` (voir
+    `gouvernement_roster.acteur_ref_depuis_profil`)."""
+    profil = _pivot(id_, nom, mandats=[_mandat_gouv(f"Gouvernement ({libelle_an})", debut, fin)])
+    profil["identite"] = {
+        "source_url": f"https://www.assemblee-nationale.fr/dyn/deputes/fiche/OMC_{acteur_ref}"
+    }
+    return profil
+
+
+def test_initiateur_resolu_vers_le_membre_id_du_gouvernement():
+    profils = [_pivot_ministre("nosdeputes:a", "A", "PA643210")]
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=["PA643210"])]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert profil["textes"][0]["initiateurs"] == [
+        {"acteur_ref": "PA643210", "membre_id": "nosdeputes:a"}
+    ]
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_initiateur_hors_membres_conserve_lacteur_ref_sans_membre_id():
+    """Couverture partielle assumée : 7 Premiers ministres n'ont aucun profil
+    pivot. La référence brute est conservée, le lien n'est pas inventé."""
+    profils = [_pivot_ministre("nosdeputes:a", "A", "PA643210")]
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=["PA999999"])]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert profil["textes"][0]["initiateurs"] == [
+        {"acteur_ref": "PA999999", "membre_id": None}
+    ]
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_initiateurs_multiples_resolution_partielle():
+    """Cas courant (365 textes sur 725) : plusieurs initiateurs, dont certains
+    seulement ont un profil pivot dans le dépôt."""
+    profils = [
+        _pivot_ministre("nosdeputes:a", "A", "PA643210"),
+        _pivot_ministre("nosdeputes:b", "B", "PA721836"),
+    ]
+    dossiers = [_dossier(
+        "D1", date_depot="2025-01-10",
+        initiateurs_acteur_refs=["PA643210", "PA999999", "PA721836"],
+    )]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert profil["textes"][0]["initiateurs"] == [
+        {"acteur_ref": "PA643210", "membre_id": "nosdeputes:a"},
+        {"acteur_ref": "PA999999", "membre_id": None},
+        {"acteur_ref": "PA721836", "membre_id": "nosdeputes:b"},
+    ]
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_texte_sans_initiateur_porte_null_jamais_une_liste_vide():
+    profils = [_pivot_ministre("nosdeputes:a", "A", "PA643210")]
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=None)]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert profil["textes"][0]["initiateurs"] is None
+    assert validate_profil_gouvernement(profil) == []
+
+
+def test_initiateur_dun_profil_non_membre_du_gouvernement_non_resolu():
+    """Un `acteurRef` peut désigner un co-signataire ou un ex-ministre qui a un
+    profil pivot sans être membre de CE gouvernement : pas de rattachement."""
+    profils = [
+        _pivot_ministre("nosdeputes:a", "A", "PA643210"),
+        _pivot_ministre("nosdeputes:z", "Z", "PA111111", libelle_an="ATTAL",
+                        debut="2024-01-10", fin="2024-09-05"),
+    ]
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=["PA111111"])]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert {m["membre_id"] for m in profil["membres"]} == {"nosdeputes:a"}
+    assert profil["textes"][0]["initiateurs"] == [
+        {"acteur_ref": "PA111111", "membre_id": None}
+    ]
+
+
+def test_acteur_ref_partage_par_deux_profils_nest_pas_tranche():
+    """Conflit d'identité : aucun `membre_id` résolu, warning explicite."""
+    profils = [
+        _pivot_ministre("nosdeputes:a", "A", "PA643210"),
+        _pivot_ministre("nosdeputes:a-bis", "A bis", "PA643210"),
+    ]
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=["PA643210"])]
+    profil = build_gouvernement_profile(
+        gouvernement_id="gouvernement:BAYROU", nom="Gouvernement Bayrou", libelle_an="BAYROU",
+        periode_debut="2024-12-24", periode_fin="2025-09-09",
+        profils=profils, dossiers_gouvernementaux=dossiers,
+    )
+    assert profil["textes"][0]["initiateurs"] == [
+        {"acteur_ref": "PA643210", "membre_id": None}
+    ]
+    assert any(
+        "PA643210" in w and "aucun membre_id" in w for w in profil["meta"]["warnings"]
+    )
+
+
+def test_select_textes_sans_index_ne_devine_aucun_membre():
+    """Sans index de résolution, l'`acteurRef` est conservé seul — couverture
+    réduite, jamais un lien deviné."""
+    dossiers = [_dossier("D1", date_depot="2025-01-10", initiateurs_acteur_refs=["PA643210"])]
+    textes, _, _ = _select_textes_gouvernement(dossiers, _parse_date("2024-12-24"), None)
+    assert textes[0]["initiateurs"] == [{"acteur_ref": "PA643210", "membre_id": None}]
 
 
 # ---------------------------------------------------------------------------
