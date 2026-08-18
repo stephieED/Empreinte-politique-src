@@ -20,6 +20,24 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:clement-beaune",
+      "nom": "Clément Beaune",
+      "portefeuille": "Ministère auprès de la ministre de l’Europe et des affaires étrangères, chargé de l’Europe",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:clement-beaune",
+      "nom": "Clément Beaune",
+      "portefeuille": "Ministère auprès du ministre de la transition écologique et de la cohésion des territoires, chargé des transports",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:damien-abad",
       "nom": "Damien Abad",
       "portefeuille": "Ministère des solidarités, de l'autonomie et des personnes handicapées",
@@ -1293,6 +1311,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/clement-beaune",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/damien-abad",
       "synchro_le": "2026-08-13T13:44:07+0000"
     },
@@ -1359,7 +1382,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T12:50:12+0000",
     "licence_donnees": "",
     "warnings": []
   }

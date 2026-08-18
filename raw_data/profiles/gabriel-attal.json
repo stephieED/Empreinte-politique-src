@@ -137810,10 +137810,10 @@
     "genere_le": "2026-08-17T19:08:41+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": "2026-08-06T09:05:24+0000",
       "assemblee_nationale_questions": "2026-08-07T10:12:31+0000",
-      "assemblee_nationale": "2026-08-17T19:09:36+0200",
-      "assemblee_nationale_syceron": null
+      "assemblee_nationale_syceron": null,
+      "nosdeputes": "2026-08-06T09:05:24+0000",
+      "assemblee_nationale": "2026-08-17T19:09:36+0200"
     },
     "warnings": []
   }

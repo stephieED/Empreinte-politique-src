@@ -36,6 +36,24 @@
       "fin": "2025-09-09",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:marc-ferracci",
+      "nom": "Marc Ferracci",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:marc-ferracci",
+      "nom": "Marc Ferracci",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
+      "debut": "2024-12-24",
+      "fin": "2025-09-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -428,11 +446,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
       "synchro_le": "2026-08-13T13:45:01+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marc-ferracci",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:51:32+0200",
+    "genere_le": "2026-08-18T12:50:12+0000",
     "licence_donnees": "",
     "warnings": []
   }

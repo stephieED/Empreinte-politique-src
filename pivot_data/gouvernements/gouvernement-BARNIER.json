@@ -20,6 +20,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:antoine-armand",
+      "nom": "Antoine Armand",
+      "portefeuille": "Ministère de l’économie, des finances et de l’industrie",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": null,
@@ -45,6 +54,15 @@
       "fin": "2024-12-13",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:marc-ferracci",
+      "nom": "Marc Ferracci",
+      "portefeuille": "Ministère délégué auprès du ministre de l'économie, des finances et de l'industrie, chargé de l’industrie",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:maud-bregeon",
@@ -214,6 +232,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/antoine-armand",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
       "synchro_le": "2026-08-14T14:47:05+0000"
     },
@@ -234,13 +257,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marc-ferracci",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/maud-bregeon",
       "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:51:32+0200",
+    "genere_le": "2026-08-18T12:50:12+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -559973,10 +559973,10 @@
     "genere_le": "2026-08-17T23:46:21+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "nosdeputes": null,
       "assemblee_nationale_questions": null,
-      "assemblee_nationale": "2026-08-17T23:46:25+0200",
-      "assemblee_nationale_syceron": null
+      "assemblee_nationale_syceron": null,
+      "nosdeputes": null,
+      "assemblee_nationale": "2026-08-17T23:46:25+0200"
     },
     "warnings": []
   }
