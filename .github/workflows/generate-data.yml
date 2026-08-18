@@ -263,26 +263,31 @@ jobs:
 
       # fresh_run=true  → pas de restore (on repart de zéro).
       # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
-      # Clé partagée entre tous les shards (comme avant #344, et avec
-      # extract-amendements-an/extract-roster-groupes). La course d'écriture
-      # laissée ouverte par #248 sous-issue 4 n'existe plus (#412 §2.2) : les
-      # trois jobs qui écrivent public-data-cache-an-* sont strictement
-      # séquencés (extract-amendements-an → extract-an → extract-roster-groupes)
-      # et les deux consommateurs sont en lecture cache-only depuis #252.
+      # Clé partagée entre les shards de ce job et extract-roster-groupes, qui
+      # consomment le même jeu de données source.
       #
-      # RÉSERVE, à valider sur un run réel avant tout correctif (#412 §2.3) :
-      # extract-amendements-an écrit la clé EXACTE de la semaine, donc les jobs
-      # suivants font un exact key hit — et actions/cache saute alors la
+      # `path` liste les sous-répertoires UN PAR UN, et n'inclut PAS
+      # .cache/amendements_an (#424). La réserve de #412 §2.3 a été confirmée
+      # par le run 32136438841 : quand extract-amendements-an écrivait cette
+      # même clé, ce job faisait un *exact key hit* et actions/cache sautait sa
       # sauvegarde post-job (« Cache hit occurred on the primary key, not saving
-      # cache »). Si le log post-job de ce job le confirme, ce que télécharge
-      # extract-an (acteurs/scrutins/dossiers AN, ~290 Mo) n'est jamais persisté
-      # dans la clé de la semaine. Correctif envisagé alors : une clé propre à
-      # extract-amendements-an (public-data-cache-amendements-*, path
-      # .cache/amendements_an) laissant …-an-* à extract-an.
+      # cache ») — les ~48 Mo d'archives AN qu'il télécharge n'étaient donc
+      # jamais persistés, et étaient re-téléchargés par chacun des 9 jobs,
+      # ~438 Mo par run. Les amendements ont désormais leur propre clé.
+      #
+      # Cacher `.cache` en bloc ré-embarquerait amendements_an et déplacerait le
+      # problème au lieu de le résoudre. L'énumération explicite est donc
+      # délibérée : son revers est qu'un nouveau sous-répertoire de .cache ne
+      # serait pas caché silencieusement, d'où le garde-fou ci-dessous.
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
-          path: .cache
+          path: |
+            .cache/acteurs_historique_an
+            .cache/dossiers_an
+            .cache/scrutins_an
+            .cache/questions_an
+            .cache/syceron_an
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
@@ -304,11 +309,33 @@ jobs:
       # aussi en mode fresh_run, donc ne doit pas être effacée par le
       # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
+        id: amendements_artifact
         uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           name: amendements-index-an
           path: .cache/amendements_an
+
+      # Repli #424 : avant la scission des clés, l'absence d'artifact était
+      # rattrapée par le cache partagé, qui contenait alors les amendements.
+      # Ce n'est plus le cas — d'où cette restauration explicite, en lecture
+      # seule (`cache/restore`, jamais de sauvegarde : ce job ne produit pas
+      # d'amendements) et UNIQUEMENT si l'artifact a manqué. La conditionner
+      # évite de restaurer ~676 Mo dans chaque shard pour un cas rare, ce qui
+      # recréerait le coût que cette issue supprime.
+      #
+      # Non repris dans merge-and-pivot : ce job n'a ni step `week` ni cache, et
+      # l'absence d'amendements y est déjà une dégradation gracieuse documentée
+      # (section 3d du quality gate signale « jamais construite »).
+      - name: Repli — cache amendements si l'artifact manque
+        if: ${{ steps.amendements_artifact.outcome == 'failure' }}
+        uses: actions/cache/restore@v5
+        continue-on-error: true
+        with:
+          path: .cache/amendements_an
+          key: public-data-cache-amendements-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-amendements-
 
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
       # --only : un seul candidat par shard, donc --workers n'a plus d'effet
@@ -390,6 +417,12 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # OBSERVATION (#424) : ce job n'écrit RIEN sous .cache — NosSénateurs n'a
+      # pas de répertoire de cache (aucune constante `.cache/...` côté Sénat,
+      # cf. l'inventaire dans src/). Cette entrée ne sert donc qu'à recopier ce
+      # que la restauration a placé là. Laissée en l'état plutôt que supprimée :
+      # retirer une entrée de cache est une décision de comportement qui mérite
+      # son propre arbitrage, pas un effet de bord de #424.
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
@@ -457,10 +490,16 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # `path` resserré sur ce que ce job produit réellement (#424) : cacher
+      # `.cache` en bloc lui faisait ré-embarquer les données AN et amendements
+      # présentes dans le répertoire, gonflant une entrée qui n'en a pas besoin.
+      # Le quota de cache du dépôt étant partagé, une entrée surdimensionnée
+      # provoque l'éviction LRU des autres — dont la clé AN que #424 vient de
+      # réparer.
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
-          path: .cache
+          path: .cache/europarl
           key: public-data-cache-ue-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-ue-
@@ -646,20 +685,24 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      # Clé de cache partagée avec extract-an/extract-roster-groupes
-      # (public-data-cache-an-*) — voir
-      # docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite.
+      # Clé PROPRE à ce job depuis #424 (public-data-cache-amendements-*), et
+      # non plus public-data-cache-an-* partagée avec extract-an/
+      # extract-roster-groupes. Ce job étant séquencé en premier, il écrivait la
+      # clé exacte de la semaine avant les autres, qui faisaient alors un exact
+      # key hit et ne sauvegardaient jamais la leur (#412 §2.3, confirmé par le
+      # run 32136438841). Le `path` est restreint à ce que ce job produit
+      # réellement — il n'écrit que sous .cache/amendements_an/.
+      #
       # fresh_run=true → pas de restore : le job repart de zéro et retélécharge
-      # les 3 archives, sans étape de purge dédiée (ce job n'écrit que sous
-      # .cache/amendements_an/, absent par construction sur un checkout neuf
-      # quand aucun cache n'est restauré).
+      # les 3 archives, sans étape de purge dédiée (ce répertoire est absent par
+      # construction sur un checkout neuf quand aucun cache n'est restauré).
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
-          path: .cache
-          key: public-data-cache-an-${{ steps.week.outputs.week }}
+          path: .cache/amendements_an
+          key: public-data-cache-amendements-${{ steps.week.outputs.week }}
           restore-keys: |
-            public-data-cache-an-
+            public-data-cache-amendements-
 
       - name: Construction des index amendements (législatures 17/16/15)
         run: python3 src/build_amendements_index.py
@@ -851,10 +894,18 @@ jobs:
       # "deputes", indépendamment de la liste de candidats/membres traitée.
       # Le séquencement (needs: ci-dessus, #222) garantit que ce cache est
       # déjà chaud au moment de cette restauration.
+      #
+      # Même `path` explicite que extract-an, amendements_an exclu (#424) : voir
+      # le commentaire détaillé sur le cache de extract-an.
       - uses: actions/cache@v5
         if: ${{ !inputs.fresh_run }}
         with:
-          path: .cache
+          path: |
+            .cache/acteurs_historique_an
+            .cache/dossiers_an
+            .cache/scrutins_an
+            .cache/questions_an
+            .cache/syceron_an
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
@@ -875,11 +926,33 @@ jobs:
       # aussi en mode fresh_run, donc ne doit pas être effacée par le
       # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
+        id: amendements_artifact
         uses: actions/download-artifact@v7
         continue-on-error: true
         with:
           name: amendements-index-an
           path: .cache/amendements_an
+
+      # Repli #424 : avant la scission des clés, l'absence d'artifact était
+      # rattrapée par le cache partagé, qui contenait alors les amendements.
+      # Ce n'est plus le cas — d'où cette restauration explicite, en lecture
+      # seule (`cache/restore`, jamais de sauvegarde : ce job ne produit pas
+      # d'amendements) et UNIQUEMENT si l'artifact a manqué. La conditionner
+      # évite de restaurer ~676 Mo dans chaque shard pour un cas rare, ce qui
+      # recréerait le coût que cette issue supprime.
+      #
+      # Non repris dans merge-and-pivot : ce job n'a ni step `week` ni cache, et
+      # l'absence d'amendements y est déjà une dégradation gracieuse documentée
+      # (section 3d du quality gate signale « jamais construite »).
+      - name: Repli — cache amendements si l'artifact manque
+        if: ${{ steps.amendements_artifact.outcome == 'failure' }}
+        uses: actions/cache/restore@v5
+        continue-on-error: true
+        with:
+          path: .cache/amendements_an
+          key: public-data-cache-amendements-${{ steps.week.outputs.week }}
+          restore-keys: |
+            public-data-cache-amendements-
 
       # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
       # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json

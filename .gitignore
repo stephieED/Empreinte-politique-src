@@ -237,3 +237,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Worktrees et état local de Claude Code (jamais versionnés — #424)
+.claude/
