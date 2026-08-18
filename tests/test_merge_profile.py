@@ -1,5 +1,6 @@
 """Tests pour merge_profile.py (fusion additive des profils bruts et pivot)."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from merge_profile import (
     load_existing_document,
     merge_lists_by_key,
     merge_pivot_profile,
+    merge_raw_dirs,
     merge_raw_profile,
     preserve_stable_freshness_timestamps,
 )
@@ -605,3 +607,37 @@ def test_load_existing_document_absent_ou_illisible_retourne_none(tmp_path):
     valide = tmp_path / "valide.json"
     valide.write_text('{"meta": {"genere_le": "2026-08-13T00:00:00+0000"}}', encoding="utf-8")
     assert load_existing_document(valide) == {"meta": {"genere_le": "2026-08-13T00:00:00+0000"}}
+
+
+# ---------------------------------------------------------------------------
+# merge_raw_dirs : sortie compacte (#433)
+# ---------------------------------------------------------------------------
+
+def test_merge_raw_dirs_ecrit_compact_a_partir_de_sources_indentees(tmp_path):
+    """La fusion des répertoires d'extraction parallèles (jobs AN / Sénat / UE)
+    relit indifféremment des sources indentées ou compactes et écrit compact
+    (#433) — sans rien perdre de la fusion additive."""
+    dir_an = tmp_path / "an"
+    dir_ue = tmp_path / "ue"
+    dir_an.mkdir()
+    dir_ue.mkdir()
+
+    vote_an = {"numero_scrutin": 1, "date": "2026-01-05", "position": "pour"}
+    vote_ue = {"numero_scrutin": 2, "date": "2026-02-09", "position": "contre"}
+    (dir_an / "alice.json").write_text(
+        json.dumps({"slug": "alice", "votes": [vote_an]}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    (dir_ue / "alice.json").write_text(
+        json.dumps({"slug": "alice", "votes": [vote_ue]}, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+
+    out_dir = tmp_path / "out"
+    assert merge_raw_dirs([dir_an, dir_ue], out_dir) == 1
+
+    contenu = (out_dir / "alice.json").read_text(encoding="utf-8")
+    assert len(contenu.splitlines()) == 1
+    assert '": ' not in contenu
+    fusionne = json.loads(contenu)
+    assert sorted(v["numero_scrutin"] for v in fusionne["votes"]) == [1, 2]

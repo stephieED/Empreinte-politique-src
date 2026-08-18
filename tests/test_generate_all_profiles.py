@@ -279,6 +279,61 @@ def test_process_candidat_default_statut_sets_candidat_declare_provenance(tmp_pa
 
 
 # ---------------------------------------------------------------------------
+# #433 : profils brut et pivot écrits en JSON compact
+# ---------------------------------------------------------------------------
+
+def test_process_candidat_ecrit_brut_et_pivot_en_json_compact(tmp_path, monkeypatch):
+    # 35 % du volume des profils n'était que de l'indentation (#429/#433). Le
+    # test porte sur le résultat sur disque, pas sur l'appel : c'est le nombre
+    # de lignes du fichier qui matérialise le gain.
+    monkeypatch.setattr(generate_all_profiles, "build_profile", lambda *a, **k: _fake_raw_profile("diane"))
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    pivot_dir = tmp_path / "pivots"
+    out_dir.mkdir()
+    pivot_dir.mkdir()
+
+    candidat = {"nom": "Diane", "slug": "diane", "parti": None, "statut": "roster_groupe"}
+    assert process_candidat(candidat, _make_args(), out_dir, pivot_dir)["statut"] == "ok"
+
+    for chemin in (out_dir / "diane.json", pivot_dir / "diane.pivot.json"):
+        contenu = chemin.read_text(encoding="utf-8")
+        assert len(contenu.splitlines()) == 1, chemin
+        assert '": ' not in contenu, chemin
+        # Relecture sémantique : le format change, la donnée non.
+        assert isinstance(json.loads(contenu), dict)
+
+    assert json.loads((pivot_dir / "diane.pivot.json").read_text(encoding="utf-8"))["nom"] == "Diane"
+
+
+def test_process_candidat_fusionne_un_profil_existant_ecrit_en_indente(tmp_path, monkeypatch):
+    # Les profils déjà commités sont indentés : la première régénération après
+    # #433 doit les relire normalement, fusionner, puis réécrire compact.
+    monkeypatch.setattr(generate_all_profiles, "build_profile", lambda *a, **k: _fake_raw_profile("elise"))
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    pivot_dir = tmp_path / "pivots"
+    out_dir.mkdir()
+    pivot_dir.mkdir()
+
+    ancien = _fake_raw_profile("elise")
+    ancien["votes"] = [{"uid": "VTANR5L17V1", "position": "pour"}]
+    (out_dir / "elise.json").write_text(
+        json.dumps(ancien, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    candidat = {"nom": "Elise", "slug": "elise", "parti": None, "statut": "roster_groupe"}
+    assert process_candidat(candidat, _make_args(), out_dir, pivot_dir)["statut"] == "ok"
+
+    contenu = (out_dir / "elise.json").read_text(encoding="utf-8")
+    assert len(contenu.splitlines()) == 1
+    # Fusion additive préservée : le vote déjà collecté n'a pas disparu.
+    assert json.loads(contenu)["votes"] == [{"uid": "VTANR5L17V1", "position": "pour"}]
+
+
+# ---------------------------------------------------------------------------
 # process_candidat : --skip-existing sur un candidat issu du roster
 # ---------------------------------------------------------------------------
 
