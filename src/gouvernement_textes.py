@@ -696,17 +696,27 @@ def collect_dossiers_gouvernementaux_multi(
 
 def fetch_dossiers_gouvernementaux() -> dict[str, Any]:
     """Point d'entrée réseau : télécharge (si nécessaire) les archives connues,
-    puis collecte les dossiers d'origine gouvernementale. Retourne
-    `{"dossiers": [], "warnings": [...]}` si aucune archive n'est disponible
-    (non-fatal, comme les autres index bulk de `candidate_profile.py`)."""
+    puis collecte les dossiers d'origine gouvernementale.
+
+    Retourne `{"dossiers": [...], "warnings": [...], "legislatures_ingerees": [...]}`.
+
+    `legislatures_ingerees` est la liste des législatures dont l'archive a
+    réellement pu être lue. **Elle n'est pas informative : elle sert à
+    distinguer « zéro dossier constaté » de « collecte incomplète »** (#427).
+    Sans elle, l'appelant ne peut pas faire la différence entre les deux, et
+    `generate_gouvernement_profiles.py` écraserait des profils avec un
+    `textes: []` qui n'a jamais été mesuré — AGENTS.md §2.5.
+    """
     archives = ensure_dossiers_zips_downloaded()
     if not archives:
         return {
             "dossiers": [],
             "warnings": ["gouvernement_textes: téléchargement des dossiers législatifs impossible."],
+            "legislatures_ingerees": [],
         }
 
     resultat = collect_dossiers_gouvernementaux_multi(archives)
+    resultat["legislatures_ingerees"] = sorted(leg for leg, _ in archives)
     manquantes = sorted(set(AN_DOSSIERS_ARCHIVES) - {leg for leg, _ in archives})
     if manquantes:
         # Signalé explicitement : une archive absente réduit silencieusement la

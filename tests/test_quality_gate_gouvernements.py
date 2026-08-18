@@ -319,3 +319,59 @@ def test_report_gouvernements_markdown_affiche_le_detail(tmp_path):
 
     assert "Portefeuilles confirmés" in md
     assert "0/2" in md
+
+
+# ---------------------------------------------------------------------------
+# Filet #427 : signature d'un écrasement massif de textes[]
+# ---------------------------------------------------------------------------
+
+def _config(*ids: str) -> list[dict]:
+    return [{"gouvernement_id": i, "fichier": f"{i.replace(':', '-')}.json"} for i in ids]
+
+
+def _ecrire_couverts(tmp_path: Path, nb_textes_par_gouv: list[int]) -> tuple[Path, Path]:
+    """N gouvernements dont la période est couverte par les archives ingérées."""
+    gouvernements_dir = tmp_path / "gouvernements"
+    gouvernements_dir.mkdir(exist_ok=True)
+    ids = []
+    for rang, nb_textes in enumerate(nb_textes_par_gouv):
+        gid = f"gouvernement:G{rang}"
+        ids.append(gid)
+        _write_gouvernement(
+            gouvernements_dir,
+            f"{gid.replace(':', '-')}.json",
+            gid,
+            nb_membres=3,
+            nb_textes=nb_textes,
+            # Période postérieure à la borne de couverture (2017-06-21).
+            periode_debut="2024-01-10",
+            periode_fin="2024-09-05",
+        )
+    config_path = tmp_path / "gouvernements.json"
+    _write_config(config_path, _config(*ids))
+    return gouvernements_dir, config_path
+
+
+def test_tous_les_gouvernements_couverts_a_zero_est_un_echec_dur(tmp_path):
+    """L'écrasement des 725 textes par une collecte échouée passait en simple
+    avertissement, donc était committé et publié (#427)."""
+    gouvernements_dir, config_path = _ecrire_couverts(tmp_path, [0, 0, 0])
+    hard, _soft, _console, _md = _report_gouvernements(config_path, gouvernements_dir)
+    assert any("simultanément" in e for e in hard)
+
+
+def test_un_seul_gouvernement_couvert_a_zero_reste_un_avertissement(tmp_path):
+    """Un gouvernement couvert peut légitimement n'avoir porté aucun texte —
+    Philippe I n'en a qu'un. Seule la simultanéité est anormale."""
+    gouvernements_dir, config_path = _ecrire_couverts(tmp_path, [0, 12, 30])
+    hard, soft, _console, _md = _report_gouvernements(config_path, gouvernements_dir)
+    assert not any("simultanément" in e for e in hard)
+    assert any("aucun texte porté" in w for w in soft)
+
+
+def test_un_seul_gouvernement_couvert_au_total_ne_declenche_pas_le_filet(tmp_path):
+    """Avec un seul gouvernement couvert, « tous à zéro » ne distingue plus un
+    écrasement d'un zéro légitime : ne pas bloquer sur cette base."""
+    gouvernements_dir, config_path = _ecrire_couverts(tmp_path, [0])
+    hard, _soft, _console, _md = _report_gouvernements(config_path, gouvernements_dir)
+    assert not any("simultanément" in e for e in hard)

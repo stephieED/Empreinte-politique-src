@@ -4,7 +4,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from generate_gouvernement_profiles import generate_all, main as generate_gouvernement_profiles_main
+from generate_gouvernement_profiles import (
+    COLLECTE_INCOMPLETE,
+    EXIT_COLLECTE_INCOMPLETE,
+    generate_all,
+    main as generate_gouvernement_profiles_main,
+)
 from schema_gouvernement import validate_profil_gouvernement
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +45,17 @@ def _mandat_gouv(label: str, debut: str, fin: str = None, actif: bool = False) -
         "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/...",
         "position_dans_hemicycle": "gouvernement",
     }
+
+
+# `legislatures_ingerees` fait partie du contrat de
+# `fetch_dossiers_gouvernementaux` depuis #427 : sans elle, l'appelant ne peut
+# pas distinguer « zéro dossier constaté » de « collecte incomplète ». Les
+# doubles doivent donc la renvoyer, sous peine de déclencher le garde-fou pour
+# une raison sans rapport avec ce qu'ils testent.
+def _toutes_legislatures() -> list[int]:
+    from gouvernement_textes import AN_DOSSIERS_ARCHIVES
+
+    return sorted(AN_DOSSIERS_ARCHIVES)
 
 
 def _dossier(dossier_id: str, statut: str, date_depot: str, chambre: str = "AN") -> dict:
@@ -84,6 +100,7 @@ def test_generate_all_fetches_dossiers_once_for_all_gouvernements(tmp_path, monk
                 _dossier("D-ATTAL", "rejete", "2024-03-01"),
             ],
             "warnings": [],
+            "legislatures_ingerees": _toutes_legislatures(),
         }
 
     monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch_dossiers_gouvernementaux)
@@ -117,28 +134,94 @@ def test_generate_all_fetches_dossiers_once_for_all_gouvernements(tmp_path, monk
     assert validate_profil_gouvernement(attal) == []
 
 
-def test_generate_all_dossier_fetch_failure_reported_via_warnings(tmp_path, monkeypatch):
+def _gouvernement_bayrou() -> dict:
+    return {
+        "gouvernement_id": "gouvernement:BAYROU", "nom": "Gouvernement Bayrou",
+        "libelle_an": "BAYROU", "periode": {"debut": "2024-12-24", "fin": "2025-09-09"},
+        "fichier": "gouvernement-BAYROU.json",
+    }
+
+
+def test_collecte_totalement_echouee_nreecrit_aucun_profil(tmp_path, monkeypatch):
+    """#427 : ce script ÉCRASE les profils. Une coupure réseau rendait
+    `dossiers = []`, ce qui réécrivait les 10 gouvernements avec `textes: []`
+    — 725 textes perdus, committés et publiés, sans que le quality gate ne
+    bloque. Un zéro non mesuré n'est pas une donnée (AGENTS.md §2.5).
+
+    Avant ce correctif, ce test assertait l'inverse : que le profil ÉTAIT
+    écrit avec `textes == []`.
+    """
     profiles_dir = tmp_path / "profiles"
     profiles_dir.mkdir()
     out_dir = tmp_path / "gouvernements"
     out_dir.mkdir()
 
-    def fake_fetch_dossiers_gouvernementaux():
-        return {"dossiers": [], "warnings": ["gouvernement_textes: téléchargement impossible."]}
+    # Profil déjà committé, avec des textes : il ne doit pas être touché.
+    existant = out_dir / "gouvernement-BAYROU.json"
+    existant.write_text(json.dumps({"textes": [{"dossier_id": "DEJA-LA"}]}), encoding="utf-8")
 
-    monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch_dossiers_gouvernementaux)
+    def fake_fetch():
+        return {
+            "dossiers": [],
+            "warnings": ["gouvernement_textes: téléchargement impossible."],
+            "legislatures_ingerees": [],
+        }
 
-    gouvernements = [
-        {"gouvernement_id": "gouvernement:BAYROU", "nom": "Gouvernement Bayrou", "libelle_an": "BAYROU",
-         "periode": {"debut": "2024-12-24", "fin": "2025-09-09"}, "fichier": "gouvernement-BAYROU.json"},
-    ]
+    monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch)
 
-    echecs = generate_all(gouvernements, profiles_dir=profiles_dir, out_dir=out_dir)
-    assert echecs == 0
+    resultat = generate_all([_gouvernement_bayrou()], profiles_dir=profiles_dir, out_dir=out_dir)
 
-    bayrou = json.loads((out_dir / "gouvernement-BAYROU.json").read_text(encoding="utf-8"))
-    assert bayrou["textes"] == []
-    assert any("téléchargement" in w for w in bayrou["meta"]["warnings"])
+    assert resultat is COLLECTE_INCOMPLETE
+    conserve = json.loads(existant.read_text(encoding="utf-8"))
+    assert conserve["textes"] == [{"dossier_id": "DEJA-LA"}], "le profil existant a été écrasé"
+
+
+def test_collecte_partielle_nreecrit_aucun_profil(tmp_path, monkeypatch):
+    """Une seule archive manquante suffit : perdre la XV, c'est perdre les 282
+    textes de Philippe II. Le garde-fou ne se limite donc pas à l'échec total.
+    """
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    out_dir = tmp_path / "gouvernements"
+    out_dir.mkdir()
+
+    partielles = _toutes_legislatures()[1:]  # une archive en moins
+    assert partielles, "le test suppose au moins deux archives connues"
+
+    def fake_fetch():
+        return {"dossiers": [], "warnings": [], "legislatures_ingerees": partielles}
+
+    monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch)
+
+    resultat = generate_all([_gouvernement_bayrou()], profiles_dir=profiles_dir, out_dir=out_dir)
+
+    assert resultat is COLLECTE_INCOMPLETE
+    assert not (out_dir / "gouvernement-BAYROU.json").exists()
+
+
+def test_main_retourne_un_code_distinct_sur_collecte_incomplete(tmp_path, monkeypatch):
+    """Le code 2 distingue « collecte incomplète, rien touché » d'un échec de
+    génération ordinaire (1) — le workflow peut ainsi traiter le premier comme
+    dégradé-mais-sûr sans masquer le second."""
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    out_dir = tmp_path / "gouvernements"
+    out_dir.mkdir()
+    config_path = tmp_path / "gouvernements.json"
+    config_path.write_text(json.dumps({"gouvernements": [_gouvernement_bayrou()]}), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "generate_gouvernement_profiles.fetch_dossiers_gouvernementaux",
+        lambda: {"dossiers": [], "warnings": [], "legislatures_ingerees": []},
+    )
+
+    rc = generate_gouvernement_profiles_main([
+        "--config", str(config_path),
+        "--profiles-dir", str(profiles_dir),
+        "--out-dir", str(out_dir),
+    ])
+    assert rc == EXIT_COLLECTE_INCOMPLETE
+    assert rc != 1, "ne doit pas être confondu avec un échec de génération"
 
 
 def test_generate_all_echec_sur_un_gouvernement_n_arrete_pas_les_autres(tmp_path, monkeypatch):
@@ -148,7 +231,7 @@ def test_generate_all_echec_sur_un_gouvernement_n_arrete_pas_les_autres(tmp_path
     out_dir.mkdir()
 
     def fake_fetch_dossiers_gouvernementaux():
-        return {"dossiers": [], "warnings": []}
+        return {"dossiers": [], "warnings": [], "legislatures_ingerees": _toutes_legislatures()}
 
     monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch_dossiers_gouvernementaux)
 
@@ -187,7 +270,7 @@ def test_main_reads_config_and_generates(tmp_path, monkeypatch):
     }), encoding="utf-8")
 
     def fake_fetch_dossiers_gouvernementaux():
-        return {"dossiers": [], "warnings": []}
+        return {"dossiers": [], "warnings": [], "legislatures_ingerees": _toutes_legislatures()}
 
     monkeypatch.setattr("generate_gouvernement_profiles.fetch_dossiers_gouvernementaux", fake_fetch_dossiers_gouvernementaux)
 

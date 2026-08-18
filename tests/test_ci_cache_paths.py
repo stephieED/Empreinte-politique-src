@@ -78,6 +78,13 @@ def _chemins_caches_par_job() -> dict[str, set[str]]:
 # rester identiques, sinon l'un d'eux re-télécharge ce que l'autre a persisté.
 JOBS_AN = ("extract-an", "extract-roster-groupes")
 
+# Jobs qui lisent les dossiers législatifs. merge-and-pivot en fait partie
+# depuis #427 : `generate_gouvernement_profiles.py` appelle directement
+# `fetch_dossiers_gouvernementaux()`, et sans cache ce job re-téléchargeait les
+# 3 archives à chaque run — avec, à la clé, l'écrasement des textes de
+# gouvernement en cas d'échec réseau.
+JOBS_DOSSIERS = ("extract-an", "extract-roster-groupes", "merge-and-pivot")
+
 
 def test_les_deux_jobs_an_cachent_exactement_les_memes_repertoires():
     par_job = _chemins_caches_par_job()
@@ -141,3 +148,31 @@ def test_pas_de_cache_large_non_declare():
         f"Jobs cachant `.cache` en bloc sans justification : "
         f"{sorted(jobs_larges - JOBS_CACHE_LARGE_TOLERES)}."
     )
+
+
+def test_les_jobs_lisant_les_dossiers_les_cachent_tous():
+    """#427 : merge-and-pivot était le seul job sans aucun actions/cache."""
+    par_job = _chemins_caches_par_job()
+    sans_cache = sorted(j for j in JOBS_DOSSIERS if "dossiers_an" not in par_job.get(j, set()))
+    assert not sans_cache, (
+        f"Jobs lisant les dossiers législatifs sans les cacher : {sans_cache}. "
+        "Ils re-téléchargent ~33 Mo par run et s'exposent à un échec réseau "
+        "dont la conséquence, côté merge-and-pivot, est l'écrasement des "
+        "textes de gouvernement (#427)."
+    )
+
+
+def test_les_dossiers_ont_leur_propre_cle():
+    """Restaurer `public-data-cache-an-*` pour obtenir les dossiers
+    embarquerait aussi `scrutins_an` : plusieurs centaines de Mo pour en
+    utiliser 46."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "public-data-cache-dossiers-" in workflow
+
+    for bloc in re.split(r"\n      - (?:uses|name):", workflow):
+        if ".cache/dossiers_an" not in bloc or "cache@" not in bloc:
+            continue
+        assert "public-data-cache-an-" not in bloc, (
+            "Un actions/cache couvre .cache/dossiers_an sous la clé AN : les "
+            "dossiers doivent garder leur clé dédiée (#427)."
+        )

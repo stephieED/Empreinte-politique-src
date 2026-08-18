@@ -1277,9 +1277,34 @@ def _report_gouvernements(
             "nb_membres": nb_membres,
             "nb_portefeuille_connu": nb_portefeuille_connu,
             "nb_textes": nb_textes,
+            "couverture": couverture,
             "status": row_status,
             "soft_flags": ", ".join(row_soft) if row_soft else "—",
         })
+
+    # ── Hard — signature d'un écrasement massif (#427) ────────────────────
+    #
+    # `generate_gouvernement_profiles.py` refuse désormais de réécrire sur une
+    # collecte incomplète, ce qui supprime la cause connue. Ce contrôle est le
+    # filet : il attrape la MÊME signature quelle qu'en soit l'origine — bug de
+    # collecte, régression de parsing, mauvaise fusion.
+    #
+    # Le critère porte sur la SIMULTANÉITÉ, pas sur un gouvernement isolé : un
+    # gouvernement couvert peut légitimement n'avoir porté aucun texte
+    # (Philippe I n'en a qu'un). En revanche, tous les gouvernements couverts
+    # tombant à zéro au même instant n'est pas un état plausible du monde —
+    # c'est la trace d'une collecte échouée en silence. D'où un hard, là où le
+    # cas individuel reste un soft.
+    couverts = [
+        r for r in rows
+        if r.get("couverture") == COUVERTURE_COUVERTE and r.get("nb_membres", 0) > 0
+    ]
+    if len(couverts) >= 2 and all(r["nb_textes"] == 0 for r in couverts):
+        hard_errors.append(
+            f"tous les gouvernements couverts par la source ({len(couverts)}) ont "
+            "textes[] vide simultanément — signature d'une collecte échouée, pas "
+            "d'un zéro constaté (#427)"
+        )
 
     # ── Résumé global ─────────────────────────────────────────────────────
     n_hard = len(hard_errors)
