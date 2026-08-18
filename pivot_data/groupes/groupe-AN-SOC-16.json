@@ -15919,6 +15919,106 @@
       ]
     },
     {
+      "categorie": "commission_enquete",
+      "label": "Commission d'enquête visant à lever les incertitudes budgétaires en matière de sécurité sociale",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-12-17",
+          "fin": "2026-06-02",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission_enquete",
+      "label": "Commission d’enquête relative à l’identification des défaillances de fonctionnement au sein des fédérations françaises de sport, du mouvement sportif et des organismes de gouvernance du monde sportif en tant qu’elles ont délégation de service public",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2023-06-27",
+          "fin": "2023-12-19",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission_enquete",
+      "label": "Commission d’enquête sur l’attribution, le contenu et le contrôle des autorisations de services de télévision à caractère national sur la télévision numérique terrestre",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2023-11-15",
+          "fin": "2024-05-07",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission_enquete",
+      "label": "Commission spéciale chargée d’examiner la proposition de loi organique portant réforme du financement de l’audiovisuel public",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2024-10-24",
+          "fin": "2024-11-20",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "commission_enquete",
+      "label": "Commission spéciale pour l’examen du projet de loi relatif à l’accompagnement des malades et de la fin de vie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2024-04-10",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "extra_parlementaire",
       "label": "Comité de surveillance de la Caisse d'amortissement de la dette sociale",
       "nb_membres": 1,
@@ -16357,31 +16457,151 @@
           "actif": true
         }
       ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Alzheimer et maladies neurodégénératives",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Antisémitisme",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Fin de vie",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2023-01-25",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Groupe d'études à vocation internationale France-Palestine",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2024-05-15",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Longévité et adaptation de la société au vieillissement",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Racisme et discriminations raciales ou religieuses",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 1.0,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:jerome-guedj",
+          "nom": "Jérôme Guedj",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 8993,
-    "nb_adoptes": 581,
-    "nb_rejetes": 2354,
-    "nb_irrecevables": 1378,
-    "nb_retires_ou_tombes": 1878,
-    "taux_adoption": 0.0646,
+    "nb_amendements": 13477,
+    "nb_adoptes": 677,
+    "nb_rejetes": 3079,
+    "nb_irrecevables": 2162,
+    "nb_retires_ou_tombes": 2825,
+    "taux_adoption": 0.0502,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 101,
-        "nb_adoptes": 29,
-        "nb_rejetes": 16,
-        "nb_irrecevables": 4,
-        "nb_retires_ou_tombes": 26,
-        "taux_adoption": 0.2871
+        "nb_amendements": 140,
+        "nb_adoptes": 38,
+        "nb_rejetes": 22,
+        "nb_irrecevables": 5,
+        "nb_retires_ou_tombes": 28,
+        "taux_adoption": 0.2714
       },
       "depute": {
-        "nb_amendements": 8892,
-        "nb_adoptes": 552,
-        "nb_rejetes": 2338,
-        "nb_irrecevables": 1374,
-        "nb_retires_ou_tombes": 1852,
-        "taux_adoption": 0.0621
+        "nb_amendements": 13337,
+        "nb_adoptes": 639,
+        "nb_rejetes": 3057,
+        "nb_irrecevables": 2157,
+        "nb_retires_ou_tombes": 2797,
+        "taux_adoption": 0.0479
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -16415,7 +16635,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T18:30:44+0200",
+    "genere_le": "2026-08-18T00:26:56+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:jerome-guedj"

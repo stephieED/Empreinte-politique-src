@@ -769,11 +769,16 @@
       "type": "nosdeputes",
       "url": "https://2012-2017.nosdeputes.fr/edouard-philippe",
       "synchro_le": "2026-08-06T09:02:12+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-17T19:08:41+0200"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T17:36:15+0200",
+    "genere_le": "2026-08-18T00:26:50+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,

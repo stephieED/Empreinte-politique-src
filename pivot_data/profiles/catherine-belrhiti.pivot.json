@@ -1,0 +1,119 @@
+{
+  "schema_version": "1",
+  "id": "nosdeputes:catherine-belrhiti",
+  "nom": "Catherine Belrhiti",
+  "chambre": "AN",
+  "parti": null,
+  "groupe": null,
+  "identite": {
+    "profession": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "date_naissance": "1962-08-10",
+    "lieu_naissance": "{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'} ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "source_url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA773891"
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/catherine-belrhiti",
+      "synchro_le": null
+    }
+  ],
+  "mandats": [
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2023-10-02",
+      "fin": "2023-12-26",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2022-04-13",
+      "fin": "2023-10-01",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2023-12-27",
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre du Bureau",
+      "debut": "2024-02-08",
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre du Bureau",
+      "debut": "2023-10-02",
+      "fin": "2023-12-26",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre du Bureau",
+      "debut": "2023-01-05",
+      "fin": "2023-10-01",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    }
+  ],
+  "votes": [],
+  "textes_portes": [],
+  "interventions": [],
+  "amendements": [],
+  "tags_thematiques": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-18T00:26:49+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels).",
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+    ],
+    "provenance": "roster_groupe"
+  }
+}

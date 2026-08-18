@@ -14,11 +14,109 @@
   "historique_noms": [],
   "membres": [
     {
+      "membre_id": "nosdeputes:catherine-deroche",
+      "nom": "Catherine Deroche",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:eric-dolige",
+      "nom": "Éric Doligé",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:catherine-dumas",
+      "nom": "Catherine Dumas",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:dominique-de-legge",
+      "nom": "Dominique de Legge",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:catherine-procaccia",
+      "nom": "Catherine Procaccia",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:charles-guene",
+      "nom": "Charles Guené",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:gerard-larcher",
+      "nom": "Gérard Larcher",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
       "membre_id": "nosdeputes:bruno-retailleau",
       "nom": "Bruno Retailleau",
       "debut_dans_groupe": "2004-09-26",
       "fin_dans_groupe": null,
       "actif": true
+    },
+    {
+      "membre_id": "nosdeputes:jean-jacques-panunzi",
+      "nom": "Jean-Jacques Panunzi",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:evelyne-renaud-garabedian",
+      "nom": "Évelyne Renaud-Garabedian",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:marie-christine-chauvin",
+      "nom": "Marie-Christine Chauvin",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:jean-raymond-hugonet",
+      "nom": "Jean-Raymond Hugonet",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:viviane-malet",
+      "nom": "Viviane Malet",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:jean-pierre-bansard",
+      "nom": "Jean-Pierre Bansard",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
+    },
+    {
+      "membre_id": "nosdeputes:catherine-belrhiti",
+      "nom": "Catherine Belrhiti",
+      "debut_dans_groupe": null,
+      "fin_dans_groupe": null,
+      "actif": false
     }
   ],
   "effectif": {
@@ -30,11 +128,120 @@
   "tags_thematiques_agreges": [],
   "mandats_agreges": [
     {
+      "categorie": "delegation",
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "nb_membres": 4,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.2667,
+      "par_fonction": {
+        "membre": 4
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:catherine-deroche",
+          "nom": "Catherine Deroche",
+          "fonction": "Membre",
+          "debut": "2018-01-26",
+          "fin": "2023-10-01",
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:dominique-de-legge",
+          "nom": "Dominique de Legge",
+          "fonction": "Membre",
+          "debut": "2021-01-28",
+          "fin": "2023-12-27",
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:catherine-procaccia",
+          "nom": "Catherine Procaccia",
+          "fonction": "Membre",
+          "debut": "2018-01-26",
+          "fin": "2023-09-30",
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:catherine-belrhiti",
+          "nom": "Catherine Belrhiti",
+          "fonction": "Membre",
+          "debut": "2023-12-27",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "delegation",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "nb_membres": 3,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.2,
+      "par_fonction": {
+        "membre": 2,
+        "secrétaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:catherine-deroche",
+          "nom": "Catherine Deroche",
+          "fonction": "Membre",
+          "debut": "2014-10-01",
+          "fin": "2017-10-01",
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:catherine-dumas",
+          "nom": "Catherine Dumas",
+          "fonction": "Secrétaire",
+          "debut": "2022-10-10",
+          "fin": "2023-10-26",
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:gerard-larcher",
+          "nom": "Gérard Larcher",
+          "fonction": "Membre",
+          "debut": "2023-10-02",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "delegation",
+      "label": "Délégation française à l'Assemblée parlementaire de l'OTAN",
+      "nb_membres": 2,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.1333,
+      "par_fonction": {
+        "membre suppléant": 2
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:catherine-dumas",
+          "nom": "Catherine Dumas",
+          "fonction": "Membre suppléant",
+          "debut": "2023-10-26",
+          "fin": null,
+          "actif": false
+        },
+        {
+          "membre_id": "nosdeputes:dominique-de-legge",
+          "nom": "Dominique de Legge",
+          "fonction": "Membre suppléant",
+          "debut": "2020-10-01",
+          "fin": null,
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "commission",
       "label": "Commission de la culture, de l'éducation et de la communication",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -50,11 +257,31 @@
       ]
     },
     {
+      "categorie": "delegation",
+      "label": "Office parlementaire d'évaluation des choix scientifiques et technologiques",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0667,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "nosdeputes:catherine-procaccia",
+          "nom": "Catherine Procaccia",
+          "fonction": "Membre",
+          "debut": "2017-11-09",
+          "fin": "2023-09-30",
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "extra_parlementaire",
       "label": "Collège consultatif de la commission du fonds pour le développement de la vie associative",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -74,7 +301,7 @@
       "label": "Commission départementale de la coopération intercommunale",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -94,7 +321,7 @@
       "label": "Commission départementale de répartition des crédits de la dotation d'équipement des territoires ruraux",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -114,7 +341,7 @@
       "label": "Groupe Chrétiens d'Orient",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "président": 1
       },
@@ -134,7 +361,7 @@
       "label": "Groupe d'information internationale sur le Haut-Karabagh",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "président": 1
       },
@@ -154,7 +381,7 @@
       "label": "Groupe d'études Agriculture et alimentation",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -174,7 +401,7 @@
       "label": "Groupe d'études Statut, rôle et place des Français établis hors de France",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
-      "poids_relatif": 1.0,
+      "poids_relatif": 0.0667,
       "par_fonction": {
         "membre": 1
       },
@@ -234,6 +461,41 @@
   },
   "sources": [
     {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/catherine-deroche",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/eric-dolige",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/catherine-dumas",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/dominique-de-legge",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/catherine-procaccia",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/charles-guene",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerard-larcher",
+      "synchro_le": null
+    },
+    {
       "type": "nossenateurs",
       "url": "https://archive.nossenateurs.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
@@ -242,14 +504,63 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/jean-jacques-panunzi",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/evelyne-renaud-garabedian",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/marie-christine-chauvin",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/jean-raymond-hugonet",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/viviane-malet",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/jean-pierre-bansard",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/catherine-belrhiti",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T19:14:55+0200",
+    "genere_le": "2026-08-18T00:27:00+0000",
     "licence_donnees": "",
     "profils_sources": [
-      "nosdeputes:bruno-retailleau"
+      "nosdeputes:catherine-deroche",
+      "nosdeputes:eric-dolige",
+      "nosdeputes:catherine-dumas",
+      "nosdeputes:dominique-de-legge",
+      "nosdeputes:catherine-procaccia",
+      "nosdeputes:charles-guene",
+      "nosdeputes:gerard-larcher",
+      "nosdeputes:bruno-retailleau",
+      "nosdeputes:jean-jacques-panunzi",
+      "nosdeputes:evelyne-renaud-garabedian",
+      "nosdeputes:marie-christine-chauvin",
+      "nosdeputes:jean-raymond-hugonet",
+      "nosdeputes:viviane-malet",
+      "nosdeputes:jean-pierre-bansard",
+      "nosdeputes:catherine-belrhiti"
     ],
     "seuil_quorum": 0.5,
     "warnings": [
@@ -258,7 +569,7 @@
     ],
     "couverture_roster": {
       "roster_total": 235,
-      "profils_disponibles": 1
+      "profils_disponibles": 15
     }
   }
 }

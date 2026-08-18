@@ -24,6 +24,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:franck-riester",
+      "nom": "Franck Riester",
+      "portefeuille": "Ministère de la culture",
+      "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
@@ -47,6 +56,15 @@
       "portefeuille": "Ministère des solidarités et de la santé",
       "debut": "2020-02-17",
       "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:stephane-travert",
+      "nom": "Stéphane Travert",
+      "portefeuille": "Ministère de l'agriculture et de l'alimentation",
+      "debut": "2017-06-22",
+      "fin": "2018-10-16",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
@@ -2893,14 +2911,19 @@
       "synchro_le": "2026-08-06T09:02:12+0000"
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-17T19:08:41+0200"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/franck-riester",
+      "synchro_le": null
+    },
+    {
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
-    },
-    {
-      "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T19:09:36+0200"
     },
     {
       "type": "nosdeputes",
@@ -2911,11 +2934,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
       "synchro_le": "2026-08-13T13:42:46+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/stephane-travert",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:51:32+0200",
+    "genere_le": "2026-08-18T00:27:11+0000",
     "licence_donnees": "",
     "warnings": []
   }

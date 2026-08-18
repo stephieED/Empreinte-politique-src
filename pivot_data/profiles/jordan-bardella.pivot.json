@@ -222,7 +222,9 @@
     "schema_version": "1",
     "genere_le": "2026-08-17T17:31:09+0200",
     "licence_donnees": "CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
-    "warnings": [],
+    "warnings": [
+      "ParlTrack: aucune donnée trouvée pour le MEP ID 131580. Vérifier la disponibilité des dumps ou la validité du MEP ID."
+    ],
     "provenance": "candidat_declare"
   }
 }

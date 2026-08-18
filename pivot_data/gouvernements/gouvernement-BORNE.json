@@ -47,6 +47,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:franck-riester",
+      "nom": "Franck Riester",
+      "portefeuille": "Ministère auprès de la ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur et de l'attractivité",
+      "debut": "2022-05-21",
+      "fin": "2022-07-04",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:franck-riester",
+      "nom": "Franck Riester",
+      "portefeuille": "Ministère auprès de la Première ministre, chargé des relations avec le Parlement",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
@@ -60,6 +78,15 @@
       "nom": "Gabriel Attal",
       "portefeuille": "Ministère de l’éducation nationale et de la jeunesse",
       "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:herve-berville",
+      "nom": "Hervé Berville",
+      "portefeuille": "Secrétariat d’État auprès de la Première ministre, chargé de la mer",
+      "debut": "2022-07-05",
       "fin": "2024-01-09",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -86,6 +113,24 @@
       "membre_id": "nosdeputes:olivier-veran",
       "nom": "Olivier Véran",
       "portefeuille": "Ministère auprès de la Première ministre, chargé du renouveau démocratique, porte-parole du Gouvernement",
+      "debut": "2022-07-05",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:prisca-thevenot",
+      "nom": "Prisca Thevenot",
+      "portefeuille": "Secrétariat d’État auprès du ministre des armées et du ministre de l’éducation nationale et de la jeunesse, chargé de la jeunesse et du service national universel",
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:roland-lescure",
+      "nom": "Roland Lescure",
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie",
       "debut": "2022-07-05",
       "fin": "2024-01-09",
       "actif": false,
@@ -1268,8 +1313,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/franck-riester",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/herve-berville",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -1280,6 +1335,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
       "synchro_le": "2026-08-13T13:42:46+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/prisca-thevenot",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/roland-lescure",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -1294,7 +1359,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T01:51:32+0200",
+    "genere_le": "2026-08-18T00:27:11+0000",
     "licence_donnees": "",
     "warnings": []
   }

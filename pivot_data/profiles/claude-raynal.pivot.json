@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "id": "nosdeputes:claude-raynal",
+  "nom": "Claude Raynal",
+  "chambre": "AN",
+  "parti": null,
+  "groupe": null,
+  "identite": {
+    "profession": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "date_naissance": "1957-10-10",
+    "lieu_naissance": "{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'} ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "source_url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA703505"
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/claude-raynal",
+      "synchro_le": null
+    }
+  ],
+  "mandats": [
+    {
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2014-10-01",
+      "fin": "2017-11-07",
+      "actif": false,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2023-10-26",
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    }
+  ],
+  "votes": [],
+  "textes_portes": [],
+  "interventions": [],
+  "amendements": [],
+  "tags_thematiques": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-18T00:26:49+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels).",
+      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+    ],
+    "provenance": "roster_groupe"
+  }
+}

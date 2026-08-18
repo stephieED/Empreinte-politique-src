@@ -279,6 +279,270 @@
       "date_max": "2024-06-19",
       "legislature": "17",
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/DLR5L17N50160"
+    },
+    {
+      "id": "DLR5L16N48018",
+      "titre": "Proposition de loi renforçant la sécurité des élus locaux et la protection des maires",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "promulgue",
+      "date_min": "2023-05-26",
+      "date_max": "2024-03-21",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48018"
+    },
+    {
+      "id": "DLR5L16N48006",
+      "titre": "Proposition de loi constitutionnelle relative à la souveraineté de la France, à la nationalité, à l'immigration et à l'asile",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2023-05-25",
+      "date_max": "2023-12-06",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48006"
+    },
+    {
+      "id": "DLR5L16N48125",
+      "titre": "Proposition de loi pour reprendre le contrôle de la politique d'immigration, d'intégration et d'asile",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2023-06-01",
+      "date_max": "2023-06-01",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N48125"
+    },
+    {
+      "id": "DLR5L16N47537",
+      "titre": "Proposition de loi visant à soutenir l'investissement local face à la crise inflationniste",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2023-04-07",
+      "date_max": "2023-04-07",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N47537"
+    },
+    {
+      "id": "DLR5L16N46087",
+      "titre": "Proposition de loi relative aux travailleurs en situation de dépendance économique vis-à-vis des plateformes numériques",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2022-08-02",
+      "date_max": "2022-08-02",
+      "legislature": "16",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N46087"
+    },
+    {
+      "id": "DLR5L14N36251",
+      "titre": "Responsabilité des gestionnaires de sites naturels ouverts au public",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2017-02-22",
+      "date_max": "2022-07-12",
+      "legislature": "14",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/14/dossiers/droit_responsabilite_sites_naturels_ouverts_public"
+    },
+    {
+      "id": "DLR5L15N40794",
+      "titre": "Proposition de loi tendant à garantir le respect de la propriété immobilière contre le squat",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2020-10-27",
+      "date_max": "2022-07-12",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40794"
+    },
+    {
+      "id": "DLR5L15N42306",
+      "titre": "Proposition de loi tendant à créer un droit de visite pour les malades, les personnes âgées et handicapées qui séjournent en établissements",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2021-04-23",
+      "date_max": "2022-07-12",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42306"
+    },
+    {
+      "id": "DLR5L15N45228",
+      "titre": "Proposition de loi relative à la reconnaissance du génocide des Assyro-Chaldéens de 1915",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2022-02-21",
+      "date_max": "2022-02-21",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N45228"
+    },
+    {
+      "id": "DLR5L15N44469",
+      "titre": "Proposition de loi visant à assurer le respect des principes de la laïcité dans le sport",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2021-12-08",
+      "date_max": "2021-12-08",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N44469"
+    },
+    {
+      "id": "DLR5L15N43167",
+      "titre": "Proposition de loi tendant à permettre l'examen par le Parlement de la ratification de l'ordonnance n° 2021-702 du 2 juin 2021 portant réforme de l'encadrement supérieur de la fonction publique de l'État",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2021-08-02",
+      "date_max": "2021-09-29",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N43167"
+    },
+    {
+      "id": "DLR5L15N42109",
+      "titre": "Proposition de loi relative aux causes de l'irresponsabilité pénale et aux conditions de réalisation de l'expertise en matière pénale",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2021-03-25",
+      "date_max": "2021-05-26",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N42109"
+    },
+    {
+      "id": "DLR5L15N41758",
+      "titre": "Proposition de loi visant à accorder aux enfants des sauveteurs en mer décédés lors d'une opération de sauvetage la qualité de pupille de la Nation",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2021-02-18",
+      "date_max": "2021-02-18",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41758"
+    },
+    {
+      "id": "DLR5L15N41754",
+      "titre": "Proposition de loi tendant à assurer un partage équilibré des bénéfices imprévus générés par les concessions d'autoroutes entre les usagers, les autorités concédantes et les concessionnaires",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2021-02-17",
+      "date_max": "2021-02-17",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N41754"
+    },
+    {
+      "id": "DLR5L15N38644",
+      "titre": "Garantir la prééminence des lois de la République",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2020-02-03",
+      "date_max": "2020-12-03",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/preeminence_lois_republique"
+    },
+    {
+      "id": "DLR5L15N37897",
+      "titre": "Carte Vitale biométrique",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "adopte",
+      "date_min": "2019-05-21",
+      "date_max": "2020-12-03",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/carte_vitale_biometrique"
+    },
+    {
+      "id": "DLR5L15N40069",
+      "titre": "Proposition de loi tendant à adapter les règles de passation des marchés publics locaux aux conséquences de la crise sanitaire",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2020-07-03",
+      "date_max": "2020-11-10",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N40069"
+    },
+    {
+      "id": "DLR5L15N39766",
+      "titre": "Proposition de loi visant à mieux protéger les électeurs et les candidats pour le second tour des élections municipales de juin 2020",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2020-05-22",
+      "date_max": "2020-05-22",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N39766"
+    },
+    {
+      "id": "DLR5L15N37948",
+      "titre": "Proposition de loi tendant à assurer le respect des valeurs de la République face aux menaces communautaristes",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2019-11-08",
+      "date_max": "2019-11-08",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N37948"
+    },
+    {
+      "id": "DLR5L15N37782",
+      "titre": "Proposition de loi pour le renforcement des libertés locales",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2019-10-01",
+      "date_max": "2019-10-01",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N37782"
+    },
+    {
+      "id": "DLR5L15N37781",
+      "titre": "Proposition de loi organique pour le renforcement des libertés locales",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2019-10-01",
+      "date_max": "2019-10-01",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N37781"
+    },
+    {
+      "id": "DLR5L15N37779",
+      "titre": "Proposition de loi constitutionnelle pour le renforcement des libertés locales",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2019-10-01",
+      "date_max": "2019-10-01",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N37779"
+    },
+    {
+      "id": "DLR5L15N38263",
+      "titre": "Proposition de loi relative à la souscription nationale au profit de la restauration de la cathédrale Notre-Dame de Paris",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "examine_commission",
+      "date_min": "2019-04-16",
+      "date_max": "2019-04-16",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/DLR5L15N38263"
+    },
+    {
+      "id": "DLR5L15N36884",
+      "titre": "Maintien de l'ordre public lors des manifestations",
+      "role": "auteur",
+      "type_rapport": null,
+      "stade_procedural": "promulgue",
+      "date_min": "2018-06-14",
+      "date_max": "2019-04-10",
+      "legislature": "15",
+      "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prevention_sanction_violences_manifestations"
     }
   ],
   "amendements": [],
@@ -287,10 +551,10 @@
     "genere_le": "2026-08-17T19:09:16+0200",
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
-      "assemblee_nationale_questions": null,
-      "assemblee_nationale_syceron": null,
       "nosdeputes": "2026-08-17T17:28:34+0200",
-      "assemblee_nationale": "2026-08-17T19:09:16+0200"
+      "assemblee_nationale_questions": null,
+      "assemblee_nationale": "2026-08-17T19:09:16+0200",
+      "assemblee_nationale_syceron": null
     },
     "warnings": [
       "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels)."

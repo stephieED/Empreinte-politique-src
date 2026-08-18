@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "id": "nosdeputes:hussein-bourgi",
+  "nom": "Hussein Bourgi",
+  "chambre": "AN",
+  "parti": null,
+  "groupe": null,
+  "identite": {
+    "profession": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "date_naissance": "1973-10-05",
+    "lieu_naissance": "{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'} ({'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', '@xsi:nil': 'true'})",
+    "num_circo": null,
+    "uri_hatvp": {
+      "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "@xsi:nil": "true"
+    },
+    "source_url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA775196"
+  },
+  "sources": [
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/hussein-bourgi",
+      "synchro_le": null
+    }
+  ],
+  "mandats": [
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Membre",
+      "debut": "2023-12-27",
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    },
+    {
+      "label": "Section française de l'Assemblée parlementaire de la francophonie (A.P.F.)",
+      "categorie": "delegation",
+      "fonction": "Vice-Président",
+      "debut": "2024-02-08",
+      "fin": null,
+      "actif": true,
+      "source_url": null,
+      "position_dans_hemicycle": null,
+      "mode_declenchement": null,
+      "suspendu_pour_fonction_gouvernementale": null
+    }
+  ],
+  "votes": [],
+  "textes_portes": [],
+  "interventions": [],
+  "amendements": [],
+  "tags_thematiques": [],
+  "meta": {
+    "schema_version": "1",
+    "genere_le": "2026-08-18T00:26:49+0000",
+    "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+    "warnings": [
+      "votes introuvables : aucune correspondance officielle Assemblée nationale n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour les votes, endpoint en panne systématique — voir fetch_votes_officiels).",
+      "amendements indisponibles (législature 17) : index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+      "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+    ],
+    "provenance": "roster_groupe"
+  }
+}
