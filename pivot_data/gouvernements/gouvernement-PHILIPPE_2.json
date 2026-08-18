@@ -24,6 +24,24 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère auprès du ministre d'État, ministre de la transition écologique et solidaire, chargé des transports",
+      "debut": "2017-06-22",
+      "fin": "2019-07-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère de la transition écologique et solidaire",
+      "debut": "2019-07-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère de la culture",
@@ -37,6 +55,15 @@
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
       "debut": "2018-10-17",
+      "fin": "2020-07-06",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l'action et des comptes publics",
+      "debut": "2017-06-22",
       "fin": "2020-07-06",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
@@ -2917,6 +2944,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/franck-riester",
       "synchro_le": null
     },
@@ -2924,6 +2956,11 @@
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2943,7 +2980,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:11+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

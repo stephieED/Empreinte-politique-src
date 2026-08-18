@@ -11,6 +11,15 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:barbara-pompili",
+      "nom": "Barbara Pompili",
+      "portefeuille": "Ministère de la transition écologique",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:brigitte-klinkert",
       "nom": "Brigitte Klinkert",
       "portefeuille": "Ministère auprès de la ministre du travail, de l’emploi et de l’insertion, chargé de l'insertion",
@@ -29,6 +38,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:elisabeth-borne",
+      "nom": "Élisabeth Borne",
+      "portefeuille": "Ministère du travail, de l’emploi et de l’insertion",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère auprès du ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur et de l'attractivité",
@@ -41,6 +59,15 @@
       "membre_id": "nosdeputes:gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d’État auprès du Premier ministre, porte-parole du Gouvernement",
+      "debut": "2020-07-07",
+      "fin": "2022-05-16",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de l’intérieur",
       "debut": "2020-07-07",
       "fin": "2022-05-16",
       "actif": false,
@@ -2078,17 +2105,27 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/brigitte-klinkert",
+      "url": "https://www.nosdeputes.fr/barbara-pompili",
       "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T00:24:32+0000"
+      "synchro_le": "2026-08-18T15:05:05+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/brigitte-klinkert",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/clement-beaune",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/elisabeth-borne",
       "synchro_le": null
     },
     {
@@ -2100,6 +2137,11 @@
       "type": "nosdeputes",
       "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2129,7 +2171,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T14:03:17+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -11,6 +11,15 @@
   },
   "membres": [
     {
+      "membre_id": "nosdeputes:aurore-berge",
+      "nom": "Aurore Bergé",
+      "portefeuille": "Ministère délégué auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": null,
@@ -36,6 +45,15 @@
       "fin": null,
       "actif": true,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:gerald-darmanin",
+      "nom": "Gérald Darmanin",
+      "portefeuille": "Ministère de la justice",
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:mathieu-lefevre",
@@ -341,7 +359,7 @@
       "statut": "adopte_cmp",
       "chambre_depot_initial": "AN",
       "date_depot": "2026-04-08",
-      "date_dernier_evenement": "2026-08-06",
+      "date_dernier_evenement": "2026-08-16",
       "sort_49_3": false,
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_actualisation_loi_programmation_militaire_annees_2024_2030_diverses_dispositions_defense"
     },
@@ -722,13 +740,18 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/benjamin-haddad",
-      "synchro_le": "2026-08-14T14:47:05+0000"
+      "url": "https://www.nosdeputes.fr/aurore-berge",
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-14T14:47:06+0000"
+      "synchro_le": "2026-08-18T15:04:38+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/benjamin-haddad",
+      "synchro_le": "2026-08-14T14:47:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -739,6 +762,11 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-amiel",
       "synchro_le": "2026-08-13T13:44:48+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/gerald-darmanin",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -763,7 +791,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T14:03:17+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }

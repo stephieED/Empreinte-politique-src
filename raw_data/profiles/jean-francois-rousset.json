@@ -287667,8 +287667,8 @@
     "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "synchro_sources": {
       "nosdeputes": null,
-      "assemblee_nationale_syceron": null,
       "assemblee_nationale": "2026-08-18T00:24:36+0000",
+      "assemblee_nationale_syceron": null,
       "assemblee_nationale_questions": null
     },
     "warnings": []

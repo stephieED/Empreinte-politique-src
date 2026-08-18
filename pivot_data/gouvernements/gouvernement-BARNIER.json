@@ -29,6 +29,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
+      "nom": "Astrid Panosyan-Bouvet",
+      "portefeuille": "Ministère du travail et de l’emploi",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": null,
@@ -237,6 +246,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/astrid-panosyan-bouvet",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
       "synchro_le": "2026-08-14T14:47:05+0000"
     },
@@ -268,7 +282,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T12:50:12+0000",
+    "genere_le": "2026-08-18T15:10:20+0000",
     "licence_donnees": "",
     "warnings": []
   }
