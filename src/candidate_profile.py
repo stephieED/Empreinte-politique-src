@@ -2179,6 +2179,26 @@ def _aggregate_amendements_index(
     return amendements, index_par_acteur
 
 
+def _cache_amendements_au_format_uid(tranches: list[Path]) -> bool:
+    """Le cache disque shardé est-il au format `uid` ? Décidé sur la PREMIÈRE
+    tranche lisible (~285 Ko), pas sur l'index entier : les tranches sont
+    toutes écrites d'un bloc par `_write_cached_amendements_agreges`, donc
+    toujours dans le même format.
+
+    Un cache sans aucune tranche lisible est déclaré conforme : il n'en sortira
+    aucune référence périmée, et c'est le contrôle d'existence appelant qui
+    décide de le reconstruire ou non.
+    """
+    for tranche in tranches:
+        try:
+            with open(tranche, encoding="utf-8") as f:
+                refs = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+        return _index_par_acteur_au_format_uid({"_": refs})
+    return True
+
+
 def _index_par_acteur_au_format_uid(index_par_acteur: Any) -> bool:
     """Un `index_par_acteur` est-il au format `{uid, role_signataire}` (et non
     au format `{numero, role_signataire}` d'avant la correction du 18/08/2026) ?
@@ -2285,8 +2305,23 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
         # d'où des listes vides en valeurs : matérialiser le contenu coûterait
         # des centaines de Mo pour une information dont personne ne se sert.
         if amendements_path.is_file() and index_dir.is_dir():
+            # Mais seulement si ce cache est au format `uid` : un cache hérité
+            # (références par `numero`) doit être RECONSTRUIT, pas servi. Sans
+            # ce contrôle, un cache CI restauré à l'ancien format serait
+            # considéré comme un hit ici — donc jamais reconstruit — pendant que
+            # `_read_cached_amendements_acteur` le refuserait à la lecture : les
+            # amendements de la législature disparaîtraient silencieusement
+            # jusqu'à expiration du cache. Coût : l'ouverture d'UNE tranche
+            # (~285 Ko), pas des centaines de Mo d'index.
             try:
-                return {p.stem: [] for p in index_dir.glob("*.json")}
+                tranches = list(index_dir.glob("*.json"))
+                if _cache_amendements_au_format_uid(tranches):
+                    return {p.stem: [] for p in tranches}
+                print(
+                    f"  [!] Cache amendements législature {legislature} au format hérité "
+                    "(références par 'numero') : reconstruction depuis l'archive AN.",
+                    file=sys.stderr,
+                )
             except OSError:
                 pass  # cache illisible : on reconstruit
 

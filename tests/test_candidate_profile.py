@@ -2158,6 +2158,55 @@ def test_read_cached_amendements_acteur_ne_lit_que_la_tranche_demandee(tmp_path)
     ]
 
 
+def test_download_and_build_amendement_index_reconstruit_un_cache_au_format_herite(tmp_path):
+    """Un cache disque hérité (références par `numero`) ne doit PAS être
+    considéré comme un cache-hit : sans ce contrôle, il ne serait jamais
+    reconstruit ici, pendant que `_read_cached_amendements_acteur` le
+    refuserait à la lecture — les amendements de la législature
+    disparaîtraient silencieusement jusqu'à expiration du cache CI."""
+    from candidate_profile import _download_and_build_amendement_index
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(
+        cache_dir,
+        "17",
+        amendements={"A1": {"numero": "A1", "texte_vise": "T1"}},
+        index_par_acteur={"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]},
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile._amendements_zip_url", return_value=None),
+    ):
+        resultat = _download_and_build_amendement_index("17")
+
+    # `_amendements_zip_url` à None court-circuite le téléchargement : ce qui
+    # compte ici est que le cache hérité n'ait PAS été rendu tel quel.
+    assert resultat == {}
+
+
+def test_download_and_build_amendement_index_sert_un_cache_au_format_uid(tmp_path):
+    """Symétrique : un cache au format `uid` reste un cache-hit, sans réseau."""
+    from candidate_profile import _download_and_build_amendement_index
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(
+        cache_dir,
+        "17",
+        amendements={"U1": {"uid": "U1", "numero": "A1"}},
+        index_par_acteur={"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]},
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        resultat = _download_and_build_amendement_index("17")
+
+    assert set(resultat) == {"PA1"}
+    mock_get.assert_not_called()
+
+
 def test_read_cached_amendements_acteur_refuse_un_acteur_ref_hors_forme(tmp_path):
     """Le nom de tranche dérive de l'acteurRef : tout ce qui n'a pas la forme
     `PA<chiffres>` est refusé plutôt qu'assaini approximativement, pour qu'un
@@ -2510,9 +2559,10 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
     téléchargement."""
     from candidate_profile import _download_and_build_amendement_index
 
-    cached_index = {"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]}
+    cached_index = {"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]}
     _write_cache_amendements(
-        tmp_path, "17", amendements={"A1": {"numero": "A1"}}, index_par_acteur=cached_index
+        tmp_path, "17", amendements={"U1": {"uid": "U1", "numero": "A1"}},
+        index_par_acteur=cached_index,
     )
 
     with (
