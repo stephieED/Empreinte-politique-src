@@ -237,3 +237,32 @@ def test_le_retry_deduit_overwrite_apres_avoir_lu_le_log():
     rendrait toujours fausse, silencieusement."""
     retry = RETRY.read_text(encoding="utf-8")
     assert retry.index("an_log=$(job_log") < retry.index("overwrite_profiles=false")
+
+
+def test_skip_existing_est_leve_par_overwrite_profiles():
+    """`--skip-existing` s'applique AVANT `--no-merge` : tant qu'il est posé en
+    dur, un run `overwrite_profiles=true` saute les profils déjà committés,
+    c'est-à-dire exactement ceux qu'une correction de fond doit atteindre
+    (#445). Le remettre en dur rendrait la clé corrigée de #440 non
+    propageable, sans qu'aucun log ne le signale."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "--skip-existing --resume" not in workflow, (
+        "--skip-existing est de nouveau posé en dur sur le job roster : "
+        "aucune combinaison d'inputs ne peut plus régénérer l'existant."
+    )
+    lignes = [l for l in workflow.split("\n") if "SKIP_FLAG=()" in l]
+    assert lignes, "aucune levée de SKIP_FLAG trouvée — le test ne vérifie plus rien"
+    for ligne in lignes:
+        assert "$FRESH" in ligne and "$OVERWRITE" in ligne, (
+            f"condition incomplète : {ligne.strip()}"
+        )
+
+
+def test_le_job_roster_pose_skip_existing_par_defaut():
+    """Le rollout progressif (#224) repose dessus : sans `--skip-existing` par
+    défaut, chaque run repaierait le réseau pour tous les profils déjà écrits."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "SKIP_FLAG=(--skip-existing)" in workflow
+    assert '"${SKIP_FLAG[@]}" --resume' in workflow, (
+        "SKIP_FLAG est calculé mais pas transmis à generate_all_profiles.py"
+    )

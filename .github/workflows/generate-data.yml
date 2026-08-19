@@ -20,6 +20,11 @@ on:
           fois la même entrée — mais qu'il n'y a aucune raison de re-télécharger
           les archives sources. fresh_run=true implique déjà ce comportement,
           en y ajoutant la purge du cache.
+          Lève aussi --skip-existing sur extract-roster-groupes (#445) : sans
+          cela, les profils de roster déjà committés étaient sautés avant même
+          que --no-merge s'applique, et restaient donc indéfiniment sur
+          l'ancienne clé. Combiner avec roster_extraction_limit pour borner le
+          nombre de profils repris par shard.
         type: boolean
         default: false
       threshold:
@@ -1045,6 +1050,23 @@ jobs:
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
+          # --skip-existing pilotable (#445). En rollout normal il porte le
+          # déploiement progressif (#224) : ne pas repayer le réseau pour un
+          # profil déjà écrit. Mais il s'applique AVANT MERGE_FLAG, donc un run
+          # `overwrite_profiles=true` sautait quand même tous les profils déjà
+          # committés — c'est-à-dire précisément ceux qu'une correction de fond
+          # doit atteindre. Aucune combinaison d'inputs ne pouvait alors
+          # propager la clé corrigée de #440 aux ~181 profils de roster déjà
+          # écrits sur la clé écrasée.
+          #
+          # Ne pas compter sur `roster_extraction_limit=0` pour y suppléer :
+          # sans --limit, le chemin de rafraîchissement de #224
+          # (_select_candidats_couverture) n'est pas emprunté du tout, et
+          # --skip-existing saute alors chaque profil existant. Un run à pleine
+          # échelle ne corrige donc RIEN de l'existant — il ne fait qu'étendre
+          # la frontière.
+          SKIP_FLAG=(--skip-existing)
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && SKIP_FLAG=()
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
@@ -1052,7 +1074,7 @@ jobs:
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
-            --skip-existing --resume \
+            "${SKIP_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
 
