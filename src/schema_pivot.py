@@ -122,6 +122,12 @@ Format d'un profil pivot v1 :
     ],
     "amendements": [                         # amendements liés à l'élu (auteur principal ou cosignataire)
         {
+            "uid": "AMANR5L17PO59047BTC1376P0D1N000012",  # identifiant AN de l'amendement :
+                                             # seule clé unique (le `numero` repart à chaque
+                                             # texte — 121 805 amendements pour 30 616 numéros
+                                             # distincts en législature 17). Absent des entrées
+                                             # collectées avant le 18/08/2026, voir
+                                             # docs/technical_decisions.md#amendements-cle-uid
             "texte_vise": "Projet de loi de finances 2025",
             "sort": "irrecevable",           # "adopté" | "rejeté" | "retiré" | "tombé" |
                                              # "non_soutenu" | "irrecevable" (statut distinct

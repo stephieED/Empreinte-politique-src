@@ -8,6 +8,13 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- Profiles collected before 2026-08-18 carry amendements resolved through the
+  old `numero`-keyed store: ~75% of a legislature's amendements are missing and
+  ~40% of the remaining (member, amendement) links point at the wrong text/date/
+  sort. The key is fixed and the frozen indexes rebuilt, but **the profiles
+  themselves need a full regeneration** to be correct — no in-place migration is
+  possible (the lost amendements were never written). See
+  `technical_decisions.md#amendements-cle-uid`.
 - `generate-data.yml`: `if: always()` upload/cache steps still don't survive
   a runner infrastructure `shutdown signal` (#228) for jobs that aren't
   matrix-sharded. `extract-an` is now sharded per-candidate (#344, see
@@ -70,6 +77,13 @@ something is pending, not *why*.
   Also unmeasured by `audit_gouvernement_dataset.py`/`check_quality_gate.py`
   (no coverage indicator for resolved vs. raw-`acteurRef` links, 556/1213
   today). See `technical_decisions.md#gouvernement-textes-initiateurs`.
+- #431 (normalising `amendements[]` in profiles) is unblocked now that the store
+  is keyed by `uid`, but its baseline must be re-measured: its 4 246 026 pairs /
+  67 058 distinct amendements were counted on collapsed data. The shared
+  deduplicated list is to be a single global file (arbitrated 2026-08-18); it
+  will exceed GitHub's 100 MB blob limit, so it needs the same treatment already
+  applied twice in this repo — per-actor sharding (#392) or gzip as for the
+  frozen legislatures. See `technical_decisions.md#amendements-cle-uid`.
 - Audit temporal-range cross-tables (`compute_plage_dates_*`, #316): no
   alerting on threshold yet (e.g. "profile doesn't cover the current
   legislature") — raw min/max indicator only. See

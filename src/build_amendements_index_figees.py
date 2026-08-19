@@ -35,13 +35,20 @@ amendement à N cosignataires. Committer cette forme brute est infaisable —
 mesuré à 3,86 Go décompressés pour la seule législature 16, très au-delà de
 la limite GitHub de 100 Mo par blob. `_aggregate_amendements_index` compacte
 donc le résultat avant écriture : chaque amendement une seule fois
-(`amendements.json`, clé `numero`), `index_par_acteur.json` réduit à une
-référence légère (`numero` + `role_signataire`) par lien acteur/amendement.
+(`amendements.json`, clé `uid`), `index_par_acteur.json` réduit à une
+référence légère (`uid` + `role_signataire`) par lien acteur/amendement.
 Même dédupliqué, `index_par_acteur.json` mesure encore 177 Mo en clair pour
 la législature 16 — toujours au-delà de la limite de 100 Mo — d'où l'écriture
-gzip (10,4 Mo mesurés, la structure très répétitive {numero, role_signataire}
+gzip (10,4 Mo mesurés, la structure très répétitive {uid, role_signataire}
 compressant très bien). Voir la révision de
 docs/technical_decisions.md#amendements-legislatures-figees.
+
+**Un index construit avant le 18/08/2026 doit être reconstruit** : il référence
+les amendements par `numero`, qui n'est pas unique (le `numeroLong` repart à
+chaque texte), ce qui écrasait 74,9 % des amendements et attribuait les autres
+au mauvais texte. `_load_frozen_amendement_index` refuse désormais ces index
+hérités plutôt que de les servir — voir
+docs/technical_decisions.md#amendements-cle-uid.
 
 `fraicheur.json` porte un marqueur `figee: true`, lu par `check_quality_gate.py`
 (section 3d) pour ne jamais signaler ces législatures comme périmées :

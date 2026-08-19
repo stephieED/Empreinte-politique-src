@@ -169,6 +169,11 @@ def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
         premier_signataire = own_id
 
     return {
+        # Identifiant AN de l'amendement : seule clé unique, propagée telle
+        # quelle du brut au pivot (voir
+        # docs/technical_decisions.md#amendements-cle-uid). `None` pour les
+        # entrées collectées avant son extraction.
+        "uid": a.get("uid"),
         "texte_vise": a.get("texte_vise"),
         "sort": a.get("sort"),
         "base_juridique_irrecevabilite": a.get("base_juridique_irrecevabilite"),

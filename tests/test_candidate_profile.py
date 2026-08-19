@@ -409,6 +409,68 @@ def test_parse_amendement_entry_keeps_cosignataire_from_nested_acteur_dict():
     assert by_acteur["PA842001"]["co_signataires"] == ["an:PA842001"]
 
 
+def test_parse_amendement_entry_extrait_luid_pour_chaque_signataire():
+    """L'`uid` AN est extrait et porté par CHAQUE signataire : c'est la seule
+    clé qui identifie l'amendement de façon unique (le `numeroLong` repart à
+    chaque texte, voir `_aggregate_amendements_index`)."""
+    raw = {
+        "amendement": {
+            "uid": "AMANR5L17PO59047BTC1376P0D1N000012",
+            "identification": {"numeroLong": "AE12"},
+            "texteLegislatifRef": "PNREANR5L17BTC1376",
+            "signataires": {
+                "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+                "cosignataires": {"acteur": {"acteurRef": "PA842001"}},
+            },
+            "cycleDeVie": {"dateDepot": "2025-02-18"},
+        }
+    }
+
+    result = _parse_amendement_entry(raw)
+
+    assert result is not None
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+    assert by_acteur["PA1567"]["uid"] == "AMANR5L17PO59047BTC1376P0D1N000012"
+    assert by_acteur["PA842001"]["uid"] == "AMANR5L17PO59047BTC1376P0D1N000012"
+    # Le numéro reste collecté : il est affichable, simplement pas identifiant.
+    assert by_acteur["PA1567"]["numero"] == "AE12"
+
+
+def test_parse_amendement_entry_legacy_extrait_luid():
+    """Le schéma legacy de la XIVe porte lui aussi un `uid` sur chaque
+    amendement (vérifié sur l'archive réelle : 167 420 amendements, 167 420
+    uid distincts, mais seulement 22 159 `numeroLong` distincts)."""
+    raw = {
+        "textesEtAmendements": {
+            "texteleg": {
+                "refTexteLegislatif": "PIONANR5L14B0013",
+                "amendements": {
+                    "amendement": {
+                        "uid": "AMANR5L14SEA644420B0013P0D1N7",
+                        "identifiant": {"numero": "7"},
+                        "numeroLong": "7 (Rect)",
+                        "etat": "Discuté",
+                        "sort": {"sortEnSeance": "Adopté"},
+                        "dateDepot": "2013-01-01",
+                        "signataires": {
+                            "auteur": {"typeAuteur": "Député", "acteurRef": "PA1567"},
+                            "cosignataires": {"acteur": {"acteurRef": "PA842001"}},
+                        },
+                    }
+                },
+            }
+        }
+    }
+
+    result = _parse_amendement_entry_legacy(raw)
+
+    assert result is not None
+    by_acteur = {acteur_ref: record for acteur_ref, record in result}
+    assert by_acteur["PA1567"]["uid"] == "AMANR5L14SEA644420B0013P0D1N7"
+    assert by_acteur["PA842001"]["uid"] == "AMANR5L14SEA644420B0013P0D1N7"
+    assert by_acteur["PA1567"]["numero"] == "7 (Rect)"
+
+
 def test_parse_amendement_entry_keeps_cosignataires_from_nested_acteur_list():
     raw = {
         "amendement": {
@@ -654,17 +716,23 @@ def test_parse_amendements_zip_warns_explicitly_on_unknown_schema(tmp_path, caps
 # l'intégralité de chaque amendement (dont `co_signataires`) une fois par
 # signataire — mesuré à 3,86 Go décompressés pour la législature 16,
 # impossible à committer. `_aggregate_amendements_index` compacte ce résultat
-# (chaque amendement une seule fois, référencé par `numero`) avant écriture
+# (chaque amendement une seule fois, référencé par son `uid` AN) avant écriture
 # par `build_amendements_index_figees.py` ; `_expand_aggregated_amendements_index`
 # est l'inverse, utilisé par `_load_frozen_amendement_index` pour reconstruire
 # la forme plate attendue par le reste du pipeline.
+#
+# La clé est l'`uid`, jamais le `numero` (corrigé le 18/08/2026, voir
+# docs/technical_decisions.md#amendements-cle-uid) : le `numeroLong` repart à
+# chaque texte, et keyer par lui écrasait 74,9 % des amendements de la
+# législature 17.
 # ---------------------------------------------------------------------------
 
 def test_aggregate_amendements_index_deduplicates_shared_amendment():
     """Un amendement à 2 cosignataires (3 entrées dupliquées en entrée) ne doit
-    apparaître qu'une seule fois dans `amendements`, sous sa clé `numero` ; les
+    apparaître qu'une seule fois dans `amendements`, sous sa clé `uid` ; les
     3 signataires ne conservent chacun qu'une référence légère."""
     shared_record = {
+        "uid": "AMANR5L17PO59047B0904P0D1N000001",
         "texte_vise": "PIONANR5L17B0904",
         "sort": None,
         "base_juridique_irrecevabilite": None,
@@ -683,23 +751,70 @@ def test_aggregate_amendements_index_deduplicates_shared_amendment():
 
     amendements, index_par_acteur = _aggregate_amendements_index(index)
 
-    assert list(amendements.keys()) == ["AS1"]
-    assert amendements["AS1"] == shared_record
-    assert "role_signataire" not in amendements["AS1"]
+    uid = shared_record["uid"]
+    assert list(amendements.keys()) == [uid]
+    assert amendements[uid] == shared_record
+    assert "role_signataire" not in amendements[uid]
     assert index_par_acteur == {
-        "PA1567": [{"numero": "AS1", "role_signataire": "auteur_principal"}],
-        "PA842001": [{"numero": "AS1", "role_signataire": "cosignataire"}],
-        "PA793182": [{"numero": "AS1", "role_signataire": "cosignataire"}],
+        "PA1567": [{"uid": uid, "role_signataire": "auteur_principal"}],
+        "PA842001": [{"uid": uid, "role_signataire": "cosignataire"}],
+        "PA793182": [{"uid": uid, "role_signataire": "cosignataire"}],
     }
 
 
-def test_aggregate_amendements_index_assigns_synthetic_key_without_dropping_records_missing_numero():
-    """Un enregistrement sans `numero` (non observé en pratique) ne doit jamais
-    être perdu ni fusionné à tort avec un autre : il reçoit une clé
-    synthétique qui lui est propre."""
+def test_aggregate_amendements_index_ne_confond_pas_deux_amendements_de_meme_numero():
+    """Régression du 18/08/2026 : deux amendements DIFFÉRENTS portant le même
+    `numero` sur des textes différents doivent rester deux amendements.
+
+    Le `numeroLong` de l'AN repart à chaque texte : mesuré sur l'archive de la
+    législature 17, 121 805 amendements pour 30 616 `numeroLong` distincts
+    (« AE12 » est porté par 7 textes sans rapport). Le store keyé par `numero`
+    n'en gardait qu'un et faisait résoudre les références de l'autre vers lui —
+    40,5 % des paires (acteur, amendement) pointaient vers un amendement qui
+    n'était pas le leur. Un fait faux, pas seulement une perte de volume.
+    """
+    premier = {
+        "uid": "AMANR5L17PO59047BTC1376P0D1N000012",
+        "texte_vise": "PNREANR5L17BTC1376",
+        "numero": "AE12",
+        "date": "2025-01-10",
+        "premier_signataire": "an:PA1567",
+        "co_signataires": [],
+    }
+    second = {
+        "uid": "AMANR5L17PO59047B0118P0D1N000012",
+        "texte_vise": "PIONANR5L17B0118",
+        "numero": "AE12",  # même numéro, autre texte, autre amendement
+        "date": "2025-03-04",
+        "premier_signataire": "an:PA842001",
+        "co_signataires": [],
+    }
     index = {
-        "PA1": [{"numero": None, "texte_vise": "A"}],
-        "PA2": [{"numero": None, "texte_vise": "B"}],
+        "PA1567": [{**premier, "role_signataire": "auteur_principal"}],
+        "PA842001": [{**second, "role_signataire": "auteur_principal"}],
+    }
+
+    amendements, index_par_acteur = _aggregate_amendements_index(index)
+
+    assert len(amendements) == 2, "deux amendements distincts ne doivent pas fusionner"
+    assert amendements[premier["uid"]]["texte_vise"] == "PNREANR5L17BTC1376"
+    assert amendements[second["uid"]]["texte_vise"] == "PIONANR5L17B0118"
+
+    # Et chaque signataire retrouve le SIEN, pas celui de l'autre.
+    reconstruit = _expand_aggregated_amendements_index(amendements, index_par_acteur)
+    assert reconstruit["PA1567"][0]["texte_vise"] == "PNREANR5L17BTC1376"
+    assert reconstruit["PA1567"][0]["date"] == "2025-01-10"
+    assert reconstruit["PA842001"][0]["texte_vise"] == "PIONANR5L17B0118"
+    assert reconstruit["PA842001"][0]["date"] == "2025-03-04"
+
+
+def test_aggregate_amendements_index_assigns_synthetic_key_without_dropping_records_missing_uid():
+    """Un enregistrement sans `uid` (non observé : les archives XIV à XVII en
+    portent un sur chaque amendement) ne doit jamais être perdu ni fusionné à
+    tort avec un autre : il reçoit une clé synthétique qui lui est propre."""
+    index = {
+        "PA1": [{"uid": None, "texte_vise": "A"}],
+        "PA2": [{"uid": None, "texte_vise": "B"}],
     }
 
     amendements, index_par_acteur = _aggregate_amendements_index(index)
@@ -711,8 +826,10 @@ def test_aggregate_amendements_index_assigns_synthetic_key_without_dropping_reco
 
 
 def test_expand_aggregated_amendements_index_reconstructs_flat_form():
+    uid = "AMANR5L17PO59047B0904P0D1N000001"
     amendements = {
-        "AS1": {
+        uid: {
+            "uid": uid,
             "texte_vise": "PIONANR5L17B0904",
             "premier_signataire": "an:PA1567",
             "co_signataires": ["an:PA842001"],
@@ -720,24 +837,24 @@ def test_expand_aggregated_amendements_index_reconstructs_flat_form():
         }
     }
     index_par_acteur = {
-        "PA1567": [{"numero": "AS1", "role_signataire": "auteur_principal"}],
-        "PA842001": [{"numero": "AS1", "role_signataire": "cosignataire"}],
+        "PA1567": [{"uid": uid, "role_signataire": "auteur_principal"}],
+        "PA842001": [{"uid": uid, "role_signataire": "cosignataire"}],
     }
 
     expanded = _expand_aggregated_amendements_index(amendements, index_par_acteur)
 
     assert expanded == {
-        "PA1567": [{**amendements["AS1"], "role_signataire": "auteur_principal"}],
-        "PA842001": [{**amendements["AS1"], "role_signataire": "cosignataire"}],
+        "PA1567": [{**amendements[uid], "role_signataire": "auteur_principal"}],
+        "PA842001": [{**amendements[uid], "role_signataire": "cosignataire"}],
     }
 
 
 def test_expand_aggregated_amendements_index_ignores_dangling_reference():
-    """Une référence dont le `numero` est absent de `amendements` (ne devrait
+    """Une référence dont l'`uid` est absent de `amendements` (ne devrait
     pas arriver, les deux fichiers étant committés ensemble) est ignorée sans
     lever."""
     expanded = _expand_aggregated_amendements_index(
-        {}, {"PA1": [{"numero": "INTROUVABLE", "role_signataire": "auteur_principal"}]}
+        {}, {"PA1": [{"uid": "INTROUVABLE", "role_signataire": "auteur_principal"}]}
     )
     assert expanded == {"PA1": []}
 
@@ -746,6 +863,7 @@ def test_aggregate_then_expand_amendements_index_round_trips():
     """L'aller-retour agrégation -> expansion doit reproduire exactement
     l'index plat d'origine — invariant central de la compaction committée."""
     shared_record = {
+        "uid": "AMANR5L17PO59047B0904P0D1N000001",
         "texte_vise": "PIONANR5L17B0904",
         "premier_signataire": "an:PA1567",
         "co_signataires": ["an:PA842001"],
@@ -1928,7 +2046,7 @@ def test_read_cached_amendements_acteur_returns_none_when_absent(tmp_path):
 
 
 def test_read_cached_amendements_acteur_resolves_references(tmp_path):
-    """Les références compactes `{numero, role_signataire}` de l'acteur sont
+    """Les références compactes `{uid, role_signataire}` de l'acteur sont
     résolues en enregistrements complets via `amendements.json`, sans appel
     réseau — et seules celles de cet acteur le sont."""
     from candidate_profile import _read_cached_amendements_acteur
@@ -1937,12 +2055,12 @@ def test_read_cached_amendements_acteur_resolves_references(tmp_path):
         tmp_path,
         "17",
         amendements={
-            "A1": {"numero": "A1", "date": "2024-01-01", "texte_vise": "T1"},
-            "A2": {"numero": "A2", "date": "2024-02-01", "texte_vise": "T2"},
+            "U1": {"uid": "U1", "numero": "A1", "date": "2024-01-01", "texte_vise": "T1"},
+            "U2": {"uid": "U2", "numero": "A2", "date": "2024-02-01", "texte_vise": "T2"},
         },
         index_par_acteur={
-            "PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}],
-            "PA2": [{"numero": "A2", "role_signataire": "co_signataire"}],
+            "PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}],
+            "PA2": [{"uid": "U2", "role_signataire": "co_signataire"}],
         },
     )
 
@@ -1953,9 +2071,33 @@ def test_read_cached_amendements_acteur_resolves_references(tmp_path):
         result = _read_cached_amendements_acteur("17", "PA1")
 
     assert result == [
-        {"numero": "A1", "date": "2024-01-01", "texte_vise": "T1", "role_signataire": "auteur_principal"}
+        {"uid": "U1", "numero": "A1", "date": "2024-01-01", "texte_vise": "T1",
+         "role_signataire": "auteur_principal"}
     ]
     mock_get.assert_not_called()
+
+
+def test_read_cached_amendements_acteur_refuse_une_tranche_au_format_herite(tmp_path):
+    """Une tranche héritée (`{numero, role_signataire}`, avant la correction de
+    clé du 18/08/2026) doit être traitée comme un cache absent — donc
+    reconstruite — jamais relue.
+
+    La relire résoudrait vers le mauvais amendement dans 40,5 % des cas, et
+    rien à l'usage ne distinguerait ces enregistrements de références
+    correctes : mieux vaut un warning « index indisponible » qu'un amendement
+    attribué au mauvais texte (AGENTS.md §2.5).
+    """
+    from candidate_profile import _read_cached_amendements_acteur
+
+    _write_cache_amendements(
+        tmp_path,
+        "17",
+        amendements={"A1": {"numero": "A1", "texte_vise": "T1"}},
+        index_par_acteur={"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]},
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
+        assert _read_cached_amendements_acteur("17", "PA1") is None
 
 
 def test_read_cached_amendements_acteur_returns_empty_list_for_unknown_acteur(tmp_path):
@@ -1973,7 +2115,7 @@ def test_read_cached_amendements_acteur_returns_empty_list_for_unknown_acteur(tm
 
 
 def test_read_cached_amendements_acteur_ignores_dangling_reference(tmp_path):
-    """Une référence dont le `numero` est absent de `amendements.json` est
+    """Une référence dont l'`uid` est absent de `amendements.json` est
     ignorée plutôt que de lever (cohérent avec
     `_expand_aggregated_amendements_index`)."""
     from candidate_profile import _read_cached_amendements_acteur
@@ -1981,14 +2123,14 @@ def test_read_cached_amendements_acteur_ignores_dangling_reference(tmp_path):
     _write_cache_amendements(
         tmp_path,
         "17",
-        amendements={"A1": {"numero": "A1"}},
-        index_par_acteur={"PA1": [{"numero": "A1"}, {"numero": "INCONNU"}]},
+        amendements={"U1": {"uid": "U1", "numero": "A1"}},
+        index_par_acteur={"PA1": [{"uid": "U1"}, {"uid": "INCONNU"}]},
     )
 
     with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path):
         result = _read_cached_amendements_acteur("17", "PA1")
 
-    assert result == [{"numero": "A1", "role_signataire": None}]
+    assert result == [{"uid": "U1", "numero": "A1", "role_signataire": None}]
 
 
 def test_read_cached_amendements_acteur_ne_lit_que_la_tranche_demandee(tmp_path):
@@ -2002,8 +2144,8 @@ def test_read_cached_amendements_acteur_ne_lit_que_la_tranche_demandee(tmp_path)
 
     _write_cache_amendements(
         tmp_path, "17",
-        amendements={"A1": {"numero": "A1", "date": "2024-01-01"}},
-        index_par_acteur={"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]},
+        amendements={"U1": {"uid": "U1", "numero": "A1", "date": "2024-01-01"}},
+        index_par_acteur={"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]},
     )
     # Tranche d'un autre acteur, volontairement corrompue.
     (tmp_path / "17" / "index_par_acteur" / "PA999.json").write_text("{pas du JSON", encoding="utf-8")
@@ -2012,8 +2154,57 @@ def test_read_cached_amendements_acteur_ne_lit_que_la_tranche_demandee(tmp_path)
         result = _read_cached_amendements_acteur("17", "PA1")
 
     assert result == [
-        {"numero": "A1", "date": "2024-01-01", "role_signataire": "auteur_principal"}
+        {"uid": "U1", "numero": "A1", "date": "2024-01-01", "role_signataire": "auteur_principal"}
     ]
+
+
+def test_download_and_build_amendement_index_reconstruit_un_cache_au_format_herite(tmp_path):
+    """Un cache disque hérité (références par `numero`) ne doit PAS être
+    considéré comme un cache-hit : sans ce contrôle, il ne serait jamais
+    reconstruit ici, pendant que `_read_cached_amendements_acteur` le
+    refuserait à la lecture — les amendements de la législature
+    disparaîtraient silencieusement jusqu'à expiration du cache CI."""
+    from candidate_profile import _download_and_build_amendement_index
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(
+        cache_dir,
+        "17",
+        amendements={"A1": {"numero": "A1", "texte_vise": "T1"}},
+        index_par_acteur={"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]},
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile._amendements_zip_url", return_value=None),
+    ):
+        resultat = _download_and_build_amendement_index("17")
+
+    # `_amendements_zip_url` à None court-circuite le téléchargement : ce qui
+    # compte ici est que le cache hérité n'ait PAS été rendu tel quel.
+    assert resultat == {}
+
+
+def test_download_and_build_amendement_index_sert_un_cache_au_format_uid(tmp_path):
+    """Symétrique : un cache au format `uid` reste un cache-hit, sans réseau."""
+    from candidate_profile import _download_and_build_amendement_index
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(
+        cache_dir,
+        "17",
+        amendements={"U1": {"uid": "U1", "numero": "A1"}},
+        index_par_acteur={"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]},
+    )
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        resultat = _download_and_build_amendement_index("17")
+
+    assert set(resultat) == {"PA1"}
+    mock_get.assert_not_called()
 
 
 def test_read_cached_amendements_acteur_refuse_un_acteur_ref_hors_forme(tmp_path):
@@ -2368,9 +2559,10 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
     téléchargement."""
     from candidate_profile import _download_and_build_amendement_index
 
-    cached_index = {"PA1": [{"numero": "A1", "role_signataire": "auteur_principal"}]}
+    cached_index = {"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]}
     _write_cache_amendements(
-        tmp_path, "17", amendements={"A1": {"numero": "A1"}}, index_par_acteur=cached_index
+        tmp_path, "17", amendements={"U1": {"uid": "U1", "numero": "A1"}},
+        index_par_acteur=cached_index,
     )
 
     with (
@@ -2405,6 +2597,7 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
 
     frozen_amendements = {
         "AMANR5L15PO123456B0001P0D1N001": {
+            "uid": "AMANR5L15PO123456B0001P0D1N001",
             "texte_vise": "PRJLANR5L15B0001",
             "sort": None,
             "base_juridique_irrecevabilite": None,
@@ -2417,7 +2610,7 @@ def test_download_and_build_amendement_index_uses_frozen_fallback_without_downlo
         }
     }
     frozen_index_par_acteur = {
-        "PA1": [{"numero": "AMANR5L15PO123456B0001P0D1N001", "role_signataire": "auteur_principal"}]
+        "PA1": [{"uid": "AMANR5L15PO123456B0001P0D1N001", "role_signataire": "auteur_principal"}]
     }
     frozen_dir = tmp_path / "figees" / "15"
     frozen_dir.mkdir(parents=True)
@@ -3246,8 +3439,9 @@ def test_fetch_amendements_officiels_returns_cached_amendements_when_index_prese
     _write_cache_amendements(
         tmp_path,
         legislature,
-        amendements={"1": {"numero": "1", "date": "2024-01-01", "texte_vise": "T1", "sort": None}},
-        index_par_acteur={"PA1": [{"numero": "1", "role_signataire": "auteur_principal"}]},
+        amendements={"U1": {"uid": "U1", "numero": "1", "date": "2024-01-01",
+                            "texte_vise": "T1", "sort": None}},
+        index_par_acteur={"PA1": [{"uid": "U1", "role_signataire": "auteur_principal"}]},
     )
 
     warnings: list[str] = []

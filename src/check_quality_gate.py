@@ -31,6 +31,7 @@ Sorties :
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import os
 import sys
@@ -549,6 +550,27 @@ _AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
 # reconstruit : la fraîcheur n'a pas de sens pour elles (voir
 # docs/technical_decisions.md#amendements-legislatures-figees).
 _AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"14", "15", "16"})
+# Répertoire des index figés committés (AN_AMENDEMENTS_FIGEES_DIR côté
+# candidate_profile.py) — même duplication délibérée que les constantes
+# ci-dessus : ce script ne doit importer que du code sans dépendance réseau.
+_AMENDEMENTS_FIGEES_DIR_DEFAUT = Path("raw_data") / "amendements_an_figes"
+
+
+def _index_par_acteur_au_format_uid(index_par_acteur: object) -> bool:
+    """Les références d'un index amendements portent-elles un `uid` (et non un
+    `numero`) ? Réplique volontaire de
+    `candidate_profile._index_par_acteur_au_format_uid` — ce script n'importe
+    pas `candidate_profile`, qui tire les dépendances réseau."""
+    if not isinstance(index_par_acteur, dict):
+        return False
+    for refs in index_par_acteur.values():
+        if not isinstance(refs, list):
+            return False
+        for ref in refs:
+            if not isinstance(ref, dict):
+                return False
+            return bool(ref.get("uid"))
+    return True
 # Décision #378 : le signal global « aucun candidat AN n'a d'amendements » reste
 # un soft warning — jamais un échec dur, dans aucun mode (y compris fresh_run).
 # Il est en revanche remonté à part par `_report_amendements_coverage` pour être
@@ -695,6 +717,92 @@ def _parse_amendements_horodatage(valeur: object) -> datetime | None:
     except ValueError:
         return None
     return horodatage if horodatage.tzinfo is not None else horodatage.replace(tzinfo=timezone.utc)
+
+
+def _report_amendements_figes_format(figees_dir: Path) -> tuple[list[str], str, str]:
+    """Vérifie que les index amendements committés référencent les amendements
+    par `uid` et non par `numero` (correction du 18/08/2026, voir
+    docs/technical_decisions.md#amendements-cle-uid).
+
+    **Hard fail**, contrairement au reste de la section 3d : un index au format
+    hérité n'est pas une donnée périmée mais une donnée fausse. Le `numeroLong`
+    de l'AN repart à chaque texte, si bien qu'un store keyé par `numero` écrase
+    75 % des amendements et attribue 40 % des liens restants au mauvais texte —
+    et rien, à la lecture, ne distingue ces enregistrements d'enregistrements
+    corrects. Ces index étant committés dans le dépôt, seul un contrôle
+    exécutable empêche de re-committer la régression ; une note de
+    documentation ne l'empêcherait pas.
+
+    Même ligne de conduite que le garde-fou de #427 (refuser de réécrire des
+    profils sur une collecte incomplète plutôt que publier un zéro non mesuré) :
+    échec bruyant plutôt que dégradation muette.
+
+    Retourne (hard_errors, console_text, markdown_text).
+    """
+    hard_errors: list[str] = []
+    conformes: list[str] = []
+    absents: list[str] = []
+
+    for legislature in sorted(_AMENDEMENTS_LEGISLATURES_FIGEES):
+        index_path = figees_dir / legislature / "index_par_acteur.json.gz"
+        if not index_path.is_file():
+            # Absence traitée ailleurs (section 3d, « jamais construit ») : ce
+            # contrôle-ci ne se prononce que sur le FORMAT de ce qui existe.
+            absents.append(legislature)
+            continue
+        try:
+            with gzip.open(index_path, "rt", encoding="utf-8") as f:
+                index_par_acteur = json.load(f)
+        except (OSError, ValueError) as exc:
+            hard_errors.append(
+                f"législature {legislature} : index figé illisible ({index_path}) — {exc}"
+            )
+            continue
+
+        if _index_par_acteur_au_format_uid(index_par_acteur):
+            conformes.append(legislature)
+        else:
+            hard_errors.append(
+                f"législature {legislature} : index figé au format hérité (références par "
+                f"'numero' et non 'uid') — 75 % des amendements y sont écrasés. "
+                f"Reconstruire : python3 src/build_amendements_index_figees.py "
+                f"--legislature {legislature} --download"
+            )
+
+    lignes = [
+        "┌─ 3e/4  Format des index amendements figés ─────────────────────────",
+        f"│  Conformes (clé uid) : {len(conformes)}   Absents : {len(absents)}   "
+        f"Au format hérité : {len(hard_errors)}",
+    ]
+    for e in hard_errors:
+        lignes.append(f"│  ✗ {e}")
+    if not hard_errors:
+        lignes.append("│  ✓ Tous les index figés présents référencent les amendements par uid.")
+    lignes.append("└" + "─" * 68)
+
+    md_lines = [
+        "### 3e · Format des index amendements figés",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Index conformes (clé `uid`) | {len(conformes)} |",
+        f"| Index absents | {len(absents)} |",
+        f"| Index au format hérité (clé `numero`) | {len(hard_errors)} |",
+        "",
+    ]
+    if hard_errors:
+        md_lines.append(
+            "> ✗ **Index au format hérité** — les références par `numero` écrasent "
+            "75 % des amendements et en attribuent 40 % au mauvais texte "
+            "(`technical_decisions.md#amendements-cle-uid`). À reconstruire avant commit.\n"
+        )
+        for e in hard_errors:
+            md_lines.append(f"> - {e}")
+        md_lines.append("")
+    else:
+        md_lines.append("_Tous les index figés présents référencent les amendements par `uid`._\n")
+
+    return hard_errors, "\n".join(lignes), "\n".join(md_lines)
 
 
 def _report_amendements_freshness(
@@ -1611,6 +1719,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--amendements-figes-dir",
+        type=Path,
+        default=_AMENDEMENTS_FIGEES_DIR_DEFAUT,
+        dest="amendements_figes_dir",
+        help=(
+            "Répertoire des index amendements committés des législatures figées "
+            "(défaut : raw_data/amendements_an_figes). Leur format de clé est "
+            "vérifié en échec dur, voir section 3e."
+        ),
+    )
+    parser.add_argument(
         "--amendements-staleness-days",
         type=int,
         default=_AMENDEMENTS_STALENESS_DAYS_DEFAULT,
@@ -1680,6 +1799,15 @@ def main() -> int:
             args.amendements_cache_dir, args.amendements_staleness_days
         )
 
+    # ── Section 3e : Format des index amendements figés ────────────────────
+    # Échec dur, contrairement à 3c/3d : un index keyé par `numero` porte des
+    # amendements attribués au mauvais texte, pas des données simplement
+    # périmées (docs/technical_decisions.md#amendements-cle-uid).
+    amdfmt_hard, amdfmt_console, amdfmt_md = _report_amendements_figes_format(
+        args.amendements_figes_dir
+    )
+    amdfmt_exit = 1 if amdfmt_hard else 0
+
     # ── Section 4 : Groupes parlementaires ────────────────────────────────
     grp_hard, grp_soft, grp_console, grp_md = _report_groupes(
         args.groupes_config, args.groupes_dir, args.groupe_min_members,
@@ -1703,7 +1831,9 @@ def main() -> int:
     # et « index jamais construit » restent des signaux non bloquants, décision
     # #378 (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Le
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
-    exit_code = 1 if (ir_exit == 1 or grp_exit == 1 or gouv_exit == 1) else 0
+    exit_code = 1 if (
+        ir_exit == 1 or grp_exit == 1 or gouv_exit == 1 or amdfmt_exit == 1
+    ) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
     gate_label = "✓ COMMIT AUTORISÉ" if exit_code == 0 else "✗ COMMIT BLOQUÉ"
@@ -1722,6 +1852,7 @@ def main() -> int:
     print(amd_console)
     if amdf_console:
         print(amdf_console)
+    print(amdfmt_console)
     print(grp_console)
     print(gouv_console)
     if pt_console:
@@ -1751,6 +1882,7 @@ def main() -> int:
         syc_md,
         amd_md,
         amdf_md,
+        amdfmt_md,
         grp_md,
         gouv_md,
         pt_md,

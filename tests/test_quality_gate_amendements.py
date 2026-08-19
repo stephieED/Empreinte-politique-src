@@ -13,6 +13,7 @@ docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Les tests
 ci-dessous verrouillent les deux moitiés de cette décision : la visibilité du
 signal, et l'absence d'échec dur."""
 
+import gzip
 import json
 import sys
 from datetime import datetime, timedelta, timezone
@@ -25,6 +26,7 @@ from check_quality_gate import (
     _AMENDEMENTS_LEGISLATURES_FIGEES,
     _AMENDEMENTS_ZERO_ICONE,
     _report_amendements_coverage,
+    _report_amendements_figes_format,
     _report_amendements_freshness,
     main,
 )
@@ -196,6 +198,11 @@ def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None) -> int:
         "--groupes-config", str(tmp_path / "groupes_reels.json"),
         "--gouvernements-config", str(tmp_path / "gouvernements_reels.json"),
         "--amendements-cache-dir", str(cache_dir if cache_dir is not None else tmp_path / "cache_absent"),
+        # Répertoire d'index figés vide : la §3e ne se prononce que sur le
+        # format de ce qui existe, et ces tests-ci portent sur les sections
+        # 3c/3d. Sans cet argument, ils liraient les index réels du dépôt et
+        # dépendraient de leur état.
+        "--amendements-figes-dir", str(tmp_path / "figes_absent"),
     ]
     monkeypatch.setattr(sys, "argv", argv)
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
@@ -433,3 +440,63 @@ def test_report_amendements_freshness_disabled_via_zero_threshold_is_caller_resp
     soft, console, md = _report_amendements_freshness(cache_dir, staleness_days=0, reference_date=REFERENCE)
 
     assert any(legislature in w and "périmé" in w and "seuil 0" in w for w in soft)
+
+
+# ---------------------------------------------------------------------------
+# §3e — format de clé des index figés committés (correction du 18/08/2026,
+# docs/technical_decisions.md#amendements-cle-uid). Échec DUR, contrairement au
+# reste de la section : un index keyé par `numero` ne porte pas des données
+# périmées mais des amendements attribués au mauvais texte.
+# ---------------------------------------------------------------------------
+
+def _ecrire_index_fige(dossier: Path, legislature: str, refs: list) -> None:
+    leg_dir = dossier / legislature
+    leg_dir.mkdir(parents=True, exist_ok=True)
+    with gzip.open(leg_dir / "index_par_acteur.json.gz", "wt", encoding="utf-8") as f:
+        json.dump({"PA1": refs}, f)
+
+
+def test_report_amendements_figes_format_accepte_un_index_keye_par_uid(tmp_path):
+    for legislature in _AMENDEMENTS_LEGISLATURES_FIGEES:
+        _ecrire_index_fige(
+            tmp_path, legislature,
+            [{"uid": "AMANR5L16PO1B0001P0D1N1", "role_signataire": "auteur_principal"}],
+        )
+
+    hard, console, md = _report_amendements_figes_format(tmp_path)
+
+    assert hard == []
+    assert "uid" in console
+
+
+def test_report_amendements_figes_format_bloque_un_index_keye_par_numero(tmp_path):
+    """Régression : un index hérité doit faire échouer le gate, pas passer avec
+    un avertissement — c'est ce qui empêche de re-committer la donnée fausse."""
+    _ecrire_index_fige(tmp_path, "16", [{"numero": "1", "role_signataire": "auteur_principal"}])
+
+    hard, console, md = _report_amendements_figes_format(tmp_path)
+
+    assert len(hard) == 1
+    assert "16" in hard[0] and "hérité" in hard[0]
+    # Le message doit porter la commande de reconstruction : sans elle, le
+    # blocage ne dit pas quoi faire.
+    assert "build_amendements_index_figees.py" in hard[0]
+
+
+def test_report_amendements_figes_format_ignore_un_index_absent(tmp_path):
+    """L'absence d'index est traitée par la §3d (« jamais construit ») : cette
+    section-ci ne se prononce que sur le format de ce qui existe."""
+    hard, _console, _md = _report_amendements_figes_format(tmp_path)
+
+    assert hard == []
+
+
+def test_report_amendements_figes_format_signale_un_index_illisible(tmp_path):
+    leg_dir = tmp_path / "16"
+    leg_dir.mkdir(parents=True)
+    (leg_dir / "index_par_acteur.json.gz").write_bytes(b"pas du gzip")
+
+    hard, _console, _md = _report_amendements_figes_format(tmp_path)
+
+    assert len(hard) == 1
+    assert "illisible" in hard[0]
