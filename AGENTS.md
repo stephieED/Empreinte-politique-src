@@ -110,6 +110,17 @@ collide under `merge-multiple` so only one shard's work survived. The baseline n
 artifact: `merge-and-pivot` checks out the repo and `merge_raw_dirs` only rewrites slugs
 present in the artifacts. See `docs/technical_decisions.md#publication-scopee-artifacts`.
 
+**Loss check before commit (#460)**: `merge-and-pivot` runs `src/audit_diff_profils.py
+--ref HEAD` **before** the commit step, and a loss on a stable field (`votes`, `mandats`,
+`textes_portes`, `interventions`, `dossiers_legislatifs`) **aborts the commit**. A run may
+legitimately lose entries — declare it with the `tolerer_pertes_profils` input, never by
+removing the check. Guarded by `tests/test_ci_controle_perte_profils.py`.
+Why it exists: `extract_interventions=false` (skip collection, intended) combined with
+`overwrite_profiles=true` (rewrite without what wasn't collected, also intended) erased the
+corpus's 789 interventions — and with them 647 `tags_thematiques` and 497 aggregated tags,
+all **published** fields. The quality gate could not catch it: it measures a *level*, not a
+*variation*. See `docs/technical_decisions.md#controle-de-perte-avant-commit`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

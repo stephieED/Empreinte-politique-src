@@ -50,6 +50,17 @@ on:
           (candidats traités simultanément). Défaut : 1 (séquentiel).
         type: number
         default: 1
+      tolerer_pertes_profils:
+        description: >
+          Autoriser le commit malgré une perte d'entrées sur un champ stable
+          (votes, mandats, textes portés, interventions, dossiers législatifs).
+          false (défaut) = une perte non déclarée annule le commit (#460).
+          À n'employer qu'après avoir élucidé CHAQUE perte : c'est la
+          combinaison overwrite_profiles=true + extract_interventions=false qui
+          a effacé les 789 interventions du corpus le 19/08/2026, sans que rien
+          ne le signale.
+        type: boolean
+        default: false
       extract_interventions:
         description: >
           Extraire les interventions dans extract-an (débats officiels Syceron en
@@ -1542,6 +1553,77 @@ jobs:
       # `*` traverse les répertoires, donc `raw_data/*.json` seul matcherait les
       # ~750 profils bruts régénérés à chaque run et le garde-fou se
       # déclencherait sur tout commit de données.
+      # ── Contrôle de perte avant commit (#460) ─────────────────────────────
+      # Le 19/08/2026, le run 32288588518 a effacé les 789 interventions du
+      # corpus, et avec elles 647 tags_thematiques et 497 tags agrégés — des
+      # champs PUBLIÉS. Personne ne l'a vu.
+      #
+      # Ce n'est pas un défaut de collecte : `extract_interventions=false` a
+      # sauté la collecte (voulu, mode rapide) et `overwrite_profiles=true` a
+      # réécrit les profils sans elles (voulu aussi, c'est ce qui propage une
+      # correction de clé). Deux comportements corrects dont la combinaison
+      # détruit une donnée acquise — et qui ne se voit qu'en comparant l'avant
+      # et l'après.
+      #
+      # La quality gate ne pouvait pas l'attraper : elle mesure un NIVEAU, pas
+      # une VARIATION. Sa §3 a bien affiché « 209 profils sous le seuil » — sur
+      # 209 profils. Un signal qui se déclenche sur tout le corpus ne dit rien
+      # de ce qui a changé, et un profil à 0 intervention est indiscernable,
+      # pour elle, selon qu'il n'en a jamais eu ou qu'il vient d'en perdre 789.
+      #
+      # `audit_diff_profils.py` mesure la variation, profil par profil et champ
+      # par champ. Il existait, il était documenté « indispensable avant tout
+      # commit de régénération » (#429) — et il n'était appelé par aucun
+      # workflow ni aucun script. C'est cet appel manquant.
+      #
+      # `--ref HEAD` et non `origin/main` : HEAD est le commit que ce job a
+      # checkouté, donc exactement l'état d'AVANT ce run. C'est aussi le seul
+      # qui marche avec le `fetch-depth: 1` par défaut d'actions/checkout, et le
+      # seul juste sur un run lancé hors main (même raison qu'au garde-fou
+      # ci-dessous, #413 §2).
+      #
+      # Échec DUR par défaut : le step suivant ne s'exécute pas, donc rien n'est
+      # committé ni déployé. Une perte doit être déclarée, jamais subie —
+      # `tolerer_pertes_profils` existe pour la déclarer explicitement, et son
+      # emploi laisse une trace dans les inputs du run.
+      - name: Contrôle de perte sur les profils (avant commit)
+        env:
+          TOLERER: ${{ inputs.tolerer_pertes_profils }}
+        run: |
+          TOLERANCE=()
+          if [[ "$TOLERER" == "true" ]]; then
+            echo "::warning::tolerer_pertes_profils=true — une perte sur un champ stable ne bloquera pas le commit. À n'employer qu'après avoir élucidé chaque perte (#460)."
+            TOLERANCE=(--tolerer-pertes)
+          fi
+          python3 src/audit_diff_profils.py \
+            --ref HEAD \
+            --profils-dir pivot_data/profiles \
+            --out diff-profils.md \
+            --out-json diff-profils.json \
+            "${TOLERANCE[@]}" || CODE=$?
+          # Le rapport est joint au résumé de job DANS TOUS LES CAS : c'est en
+          # échec qu'on en a le plus besoin, et un artifact qu'il faut aller
+          # télécharger ne serait pas lu.
+          {
+            echo "### Contrôle de perte sur les profils (#460)"
+            echo ""
+            cat diff-profils.md
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${CODE:-0}" -ne 0 ]]; then
+            echo "::error::PERTE_PROFILS_NON_DECLAREE — au moins un profil a perdu des entrées sur un champ stable (votes, mandats, textes portés, interventions, dossiers législatifs). Commit annulé. Voir le résumé de job. Si la perte est voulue, relancer avec tolerer_pertes_profils=true (#460)."
+            exit 1
+          fi
+
+      - name: Rapport de perte — artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: diff-profils
+          path: |
+            diff-profils.md
+            diff-profils.json
+          if-no-files-found: ignore
+
       #
       # BRANCHE COMPARÉE (#413 §2) : celle du run (`github.ref_name`), pas
       # `main` en dur. Ce workflow est déclenchable par workflow_dispatch sur

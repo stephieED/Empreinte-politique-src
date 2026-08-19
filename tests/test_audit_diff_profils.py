@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_diff_profils import (
+    lire_profils_git,
     CHAMPS_HAUSSE_ATTENDUE,
     CHAMPS_STABLES,
     comparer,
@@ -134,3 +135,110 @@ def test_rapport_avertit_que_les_totaux_ne_suffisent_pas():
     md = generate_markdown_report(
         comparer({"a.json": _releve(votes=5)}, {"a.json": _releve(votes=5)}), "origin/main")
     assert "Les totaux ne suffisent pas" in md
+
+
+# ---------------------------------------------------------------------------
+# lire_profils_git — lecture EN FLUX (#460)
+#
+# `git cat-file --batch` était lu avec `capture_output=True`, donc la totalité
+# des profils était bufferisée avant qu'une seule entrée ne soit comptée :
+# 3,2 Gio de RSS sur les 209 profils du 19/08/2026, et un process tué par
+# l'OOM killer. À 752 profils ce serait ~11 Go — un échec certain en CI, pour
+# un script dont tout l'intérêt est de tourner AVANT le commit.
+#
+# En flux : 236 Mio, soit −93 %. La mémoire ne dépend plus que du plus gros
+# blob, pas du corpus.
+# ---------------------------------------------------------------------------
+
+def _depot_avec_profils(tmp_path: Path, profils: dict) -> Path:
+    import subprocess
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp_path, check=True)
+    rep = tmp_path / "pivot_data" / "profiles"
+    rep.mkdir(parents=True)
+    for nom, contenu in profils.items():
+        (rep / nom).write_text(json.dumps(contenu, ensure_ascii=False), encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "profils"], cwd=tmp_path, check=True)
+    return tmp_path
+
+
+def test_lecture_git_compte_chaque_profil(tmp_path, monkeypatch):
+    depot = _depot_avec_profils(tmp_path, {
+        "alice.pivot.json": {"votes": [1, 2, 3], "amendements": [1]},
+        "bob.pivot.json": {"votes": [1], "mandats": [1, 2]},
+    })
+    monkeypatch.chdir(depot)
+
+    releve = lire_profils_git("HEAD", "pivot_data/profiles")
+
+    assert releve["alice.pivot.json"]["votes"] == 3
+    assert releve["alice.pivot.json"]["amendements"] == 1
+    assert releve["bob.pivot.json"]["mandats"] == 2
+    assert releve["bob.pivot.json"]["interventions"] == 0
+
+
+def test_lecture_git_reste_correcte_sur_un_grand_nombre_de_profils(tmp_path, monkeypatch):
+    """La lecture en flux entrelace écriture des requêtes et lecture des blobs :
+    un décalage d'un octet dans le protocole `--batch` décalerait TOUS les
+    profils suivants, et le contrôle rendrait des comptes faux sans rien
+    signaler. C'est le risque propre à cette réécriture."""
+    profils = {
+        f"membre-{i:03d}.pivot.json": {"votes": list(range(i)), "mandats": [1]}
+        for i in range(60)
+    }
+    depot = _depot_avec_profils(tmp_path, profils)
+    monkeypatch.chdir(depot)
+
+    releve = lire_profils_git("HEAD", "pivot_data/profiles")
+
+    assert len(releve) == 60
+    for i in range(60):
+        assert releve[f"membre-{i:03d}.pivot.json"]["votes"] == i, i
+
+
+def test_lecture_git_supporte_des_profils_de_tailles_tres_inegales(tmp_path, monkeypatch):
+    """Le corpus réel va de quelques Ko à 26 Mo. Un blob volumineux ne doit ni
+    tronquer la lecture, ni désynchroniser les suivants."""
+    depot = _depot_avec_profils(tmp_path, {
+        "petit.pivot.json": {"votes": [1]},
+        "gros.pivot.json": {"votes": [{"x": "y" * 200} for _ in range(2000)]},
+        "apres.pivot.json": {"votes": [1, 2]},
+    })
+    monkeypatch.chdir(depot)
+
+    releve = lire_profils_git("HEAD", "pivot_data/profiles")
+
+    assert releve["petit.pivot.json"]["votes"] == 1
+    assert releve["gros.pivot.json"]["votes"] == 2000
+    assert releve["apres.pivot.json"]["votes"] == 2
+
+
+def test_lecture_git_ignore_un_json_illisible_sans_desynchroniser(tmp_path, monkeypatch):
+    """Un profil corrompu doit être sauté, et les suivants rester justes."""
+    depot = _depot_avec_profils(tmp_path, {"alice.pivot.json": {"votes": [1]}})
+    (depot / "pivot_data" / "profiles" / "casse.pivot.json").write_text("{ pas du json", encoding="utf-8")
+    (depot / "pivot_data" / "profiles" / "zoe.pivot.json").write_text(
+        json.dumps({"votes": [1, 2, 3]}), encoding="utf-8"
+    )
+    import subprocess
+    subprocess.run(["git", "add", "-A"], cwd=depot, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "ajout"], cwd=depot, check=True)
+    monkeypatch.chdir(depot)
+
+    releve = lire_profils_git("HEAD", "pivot_data/profiles")
+
+    assert "casse.pivot.json" not in releve
+    assert releve["zoe.pivot.json"]["votes"] == 3
+
+
+def test_lecture_git_chemin_absent_de_la_reference_echoue_clairement(tmp_path, monkeypatch):
+    import pytest
+    depot = _depot_avec_profils(tmp_path, {"alice.pivot.json": {"votes": [1]}})
+    monkeypatch.chdir(depot)
+
+    with pytest.raises(SystemExit) as exc:
+        lire_profils_git("HEAD", "pivot_data/inexistant")
+
+    assert "--ref-dir" in str(exc.value)
