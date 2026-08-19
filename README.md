@@ -385,7 +385,11 @@ archive (recurring `IncompleteRead`, reproduced outside CI too). Their index
 is built once, offline, via `src/build_amendements_index_figees.py --legislature
 {15,16} (--zip <local archive> | --download)` (`--download` reuses the same
 segmented/retried fetch as the CI job, writing into gitignored
-`.cache/amendements_an/`) and committed under `raw_data/amendements_an_figes/`
+`.cache/amendements_an/`; `--stall-cycles` / `--stall-wait-seconds` widen the
+wait when the source serves nothing at all — offline, waiting is the only
+remedy that works, see
+`docs/technical_decisions.md#telechargement-an-trois-modes-defaillance`) and
+committed under `raw_data/amendements_an_figes/`
 — the script deduplicates the raw per-signataire index into
 `amendements.json` + a slim `index_par_acteur.json` before writing, since the
 undeduplicated form is multiple GB uncompressed (measured on legislature 16)

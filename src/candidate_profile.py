@@ -34,11 +34,12 @@ import time
 import unicodedata
 import zipfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
 
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 from download_watchdog import download_with_watchdog
 from gouvernement_textes import (
@@ -284,6 +285,26 @@ AMENDEMENTS_DOWNLOAD_CHUNK_BYTES = 32 * 1024 * 1024
 # signal de qualite de flux, pas un echec de collecte) — permet de distinguer
 # en CI un alea reseau ponctuel absorbe d'une degradation plus large.
 AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD = 3
+
+# Etat 3 de #443 : ni les plages Range ni le GET sequentiel ne delivrent le
+# moindre octet nouveau. Aucun repli reseau ne fonctionne alors — seule
+# l'attente le peut. On attend donc entre deux cycles au lieu de marteler la
+# source (relancer immediatement ne fait que consommer du budget CI et de la
+# bande passante chez l'AN pour zero octet), puis on abandonne en signalant la
+# SOURCE indisponible et non le telechargement en echec. Bornes volontairement
+# basses ici, calees sur le budget du job CI extract-amendements-an ; l'outil
+# manuel build_amendements_index_figees.py les expose en CLI, car hors CI
+# l'attente longue est precisement le seul remede qui marche.
+# Granularite de lecture socket des telechargements d'archives. Lue sur
+# `resp.raw` et non via `resp.iter_content()` : mesure du 19/08/2026 sur un
+# corps tronque a 40 000 octets pour 100 000 annonces, `iter_content` rend 0
+# octet des 64 Kio de granularite (le tampon de decodage d'urllib3 est jete
+# quand la lecture suivante leve IncompleteRead) la ou `raw.read` rend les
+# 40 000. Voir `_telecharger_flux`.
+AMENDEMENTS_DOWNLOAD_READ_BUFFER_BYTES = 1024 * 1024
+
+AMENDEMENTS_SOURCE_STALL_MAX_CYCLES = 3
+AMENDEMENTS_SOURCE_STALL_WAIT_SECONDS = 30
 
 # Legislatures dont le telechargement de l'archive amendements a echoue de
 # facon definitive (toutes les tentatives de _download_and_build_amendement_index
@@ -1614,70 +1635,312 @@ def _probe_amendements_total_size(url: str) -> Optional[int]:
         return None
 
 
+class SourceAmendementsIndisponibleError(OSError):
+    """Levée quand la source AN ne délivre plus **aucun octet nouveau**, par
+    aucun des deux modes de transfert (plages `Range` et GET séquentiel) — #443.
+
+    Distincte d'un échec de téléchargement, et le mot compte : la personne qui
+    lit le log n'en fait pas la même chose. « Téléchargement en échec » invite à
+    relancer ; or dans cet état relancer ne change rien, aucun repli réseau ne
+    fonctionne. Seule l'attente fonctionne, ou le recours à un index déjà figé.
+
+    Sous-classe d'`OSError` pour rester attrapée par les appelants existants
+    (`except (requests.RequestException, OSError)`), qui n'ont donc pas à
+    connaître ce type pour rester corrects.
+    """
+
+
+class _ResultatFlux(NamedTuple):
+    """Issue d'une tentative de transfert.
+
+    `octets_ecrits` prime sur `erreur` : un flux coupé en cours de route laisse
+    malgré tout sur disque un préfixe valide du même fichier, qu'il ne faut
+    jamais jeter (#443).
+    """
+
+    octets_ecrits: int
+    status_code: Optional[int]
+    total_distant: Optional[int]
+    erreur: Optional[Exception]
+
+
+def _content_length_total(resp: "requests.Response") -> Optional[int]:
+    """Taille totale annoncée par `Content-Length` sur une réponse HTTP 200.
+    `None` si l'en-tête est absent ou illisible — jamais de valeur devinée."""
+    try:
+        return int(resp.headers.get("Content-Length"))  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+
+
+def _telecharger_flux(url: str, headers: dict[str, str], dest: Path, mode: str) -> _ResultatFlux:
+    """Écrit le corps de la réponse dans `dest` **au fil de l'eau**, et rend ce
+    qui a réellement été écrit — y compris quand le flux se coupe en cours.
+
+    C'est le correctif central de #443. Le code d'origine faisait
+    `b"".join(resp.iter_content(...))` : tout le segment était matérialisé avant
+    d'être écrit, si bien qu'une coupure en cours propageait l'exception depuis
+    `iter_content` et que l'intégralité des octets déjà reçus était perdue, le
+    segment étant relancé depuis son offset de départ. Sous un mode de
+    défaillance où la coupure tombe à un point aléatoire — le cas réel sur ces
+    archives — cela annulait l'essentiel de ce qui arrivait.
+
+    La lecture se fait sur `resp.raw` et non via `resp.iter_content()`, pour la
+    même raison. Mesuré le 19/08/2026 sur un corps tronqué à 40 000 octets pour
+    100 000 annoncés : `iter_content(chunk_size=N)` rend 0 octet dès que
+    N >= 64 Kio et 39 936 octets pour N = 1 Kio, tandis que `raw.read()` rend
+    les 40 000. En cause, le tampon de décodage d'urllib3 : `read(amt,
+    decode_content=True)` accumule jusqu'à `amt` octets avant de rendre, et
+    `_raw_read` lève `IncompleteRead` sur la lecture *suivante* — celle qui rend
+    zéro octet — ce qui jette le tampon partiel. `raw.read(amt,
+    decode_content=False)` rend au contraire chaque lecture courte telle quelle.
+    Le corps devant donc rester non décodé, la requête demande explicitement
+    `Accept-Encoding: identity` et un `Content-Encoding` autre est refusé
+    bruyamment plutôt qu'écrit tel quel (une archive silencieusement compressée
+    serait indétectable jusqu'au parsing).
+
+    Ne lève pas : l'exception rencontrée est rendue à l'appelant avec le nombre
+    d'octets écrits, pour qu'il reprenne à l'octet réellement obtenu et non au
+    début du segment.
+    """
+    octets = 0
+    status_code: Optional[int] = None
+    total_distant: Optional[int] = None
+    erreur: Optional[Exception] = None
+    headers = {**headers, "Accept-Encoding": "identity"}
+    try:
+        with requests.get(
+            url, headers=headers,
+            timeout=(TIMEOUT, AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS),
+            stream=True,
+        ) as resp:
+            resp.raise_for_status()
+            status_code = resp.status_code
+            total_distant = (
+                _content_range_total(resp) if status_code == 206 else _content_length_total(resp)
+            )
+            if status_code == 200 and mode == "ab":
+                # Le serveur a ignoré l'en-tête Range alors qu'une reprise à un
+                # offset non nul était attendue : écrire ce flux à la suite
+                # dupliquerait le début du fichier. On rend la main sans rien
+                # écrire, l'appelant décide (et lève).
+                return _ResultatFlux(0, status_code, total_distant, None)
+            encodage = (resp.headers.get("Content-Encoding") or "identity").strip().lower()
+            if encodage != "identity":
+                raise OSError(
+                    f"corps compressé ({encodage}) alors que `Accept-Encoding: identity` "
+                    "a été demandé : écriture annulée pour ne pas déposer des octets "
+                    "compressés dans l'archive"
+                )
+            with open(dest, mode) as out:
+                while True:
+                    morceau = resp.raw.read(
+                        AMENDEMENTS_DOWNLOAD_READ_BUFFER_BYTES, decode_content=False
+                    )
+                    if not morceau:
+                        break
+                    out.write(morceau)
+                    octets += len(morceau)
+    except (requests.RequestException, urllib3.exceptions.HTTPError, OSError) as exc:
+        erreur = exc
+    return _ResultatFlux(octets, status_code, total_distant, erreur)
+
+
+def _est_erreur_http_definitive(exc: Optional[Exception]) -> bool:
+    """Vrai pour une réponse HTTP qui ne changera pas en réessayant : 4xx hors
+    408/429 (URL fausse, ressource retirée, accès refusé, plage invalide).
+
+    Sert à ne pas confondre ce cas avec une source indisponible. Les deux ne
+    rendent aucun octet, mais annoncer « la source est indisponible » sur un 404
+    enverrait la personne qui lit le log attendre un rétablissement qui
+    n'arrivera jamais — exactement la confusion que #443 cherche à supprimer.
+    """
+    reponse = getattr(exc, "response", None)
+    code = getattr(reponse, "status_code", None)
+    return isinstance(code, int) and 400 <= code < 500 and code not in (408, 429)
+
+
+def _tenter_segments_range(
+    url: str, zip_path: Path, legislature: str, offset: int, chunk_bytes: int,
+    max_attempts: int,
+) -> tuple[int, Optional[int], int, Optional[Exception], bool]:
+    """Un segment par plage `Range` à partir de `offset`, retenté jusqu'à
+    `max_attempts` fois.
+
+    Retourne `(octets_gagnés, total_distant, tentatives, dernière_erreur,
+    fichier_entier_delivre)` — ce dernier drapeau signalant une réponse 200
+    terminée proprement, c'est-à-dire un serveur qui a ignoré l'en-tête `Range`
+    et délivré le fichier complet en une fois.
+    Ne lève **pas** sur épuisement des tentatives : rendre 0 octet est
+    précisément le signal qui fait basculer l'appelant sur le mode suivant —
+    dans les fenêtres où le `Range` est mort, insister sur la taille de segment
+    ne sert à rien (8 Kio échouent autant que 32 Mio, mesuré le 18/08/2026).
+    """
+    gagne = 0
+    total: Optional[int] = None
+    derniere_erreur: Optional[Exception] = None
+    tentatives = 0
+    fichier_entier = False
+    for tentative in range(1, max_attempts + 1):
+        tentatives = tentative
+        debut = offset + gagne
+        fin = debut + chunk_bytes - 1
+        entetes = {**HEADERS, "Range": f"bytes={debut}-{fin}"}
+        res = _telecharger_flux(url, entetes, zip_path, "wb" if debut == 0 else "ab")
+        if res.total_distant is not None:
+            # Renseigné même quand le corps est vide : dans l'état où le CDN
+            # annonce un 206 correct puis ne délivre rien, l'en-tête reste la
+            # seule source fiable de la taille totale.
+            total = res.total_distant
+        if res.status_code == 200 and debut != 0:
+            raise OSError(
+                f"réponse HTTP 200 inattendue (en-tête Range ignoré) pour le segment "
+                f"amendements législature {legislature} à l'offset {debut} : écriture "
+                "annulée pour ne pas corrompre l'archive déjà partiellement écrite"
+            )
+        gagne += res.octets_ecrits
+        if res.erreur is None:
+            derniere_erreur = None
+            # Réponse 200 achevée sans erreur : le serveur a ignoré l'en-tête
+            # Range et rendu le fichier entier. Le flux s'est terminé
+            # proprement, ce n'est donc pas une supposition — un corps tronqué
+            # aurait levé et laissé `erreur` renseignée.
+            fichier_entier = res.status_code == 200
+            break
+        derniere_erreur = res.erreur
+        if tentative < max_attempts:
+            recu = (
+                f" ({res.octets_ecrits} octets reçus et conservés)" if res.octets_ecrits else ""
+            )
+            print(
+                f"  [!] Échec du téléchargement du segment amendements législature "
+                f"{legislature} (offset {debut}, tentative "
+                f"{tentative}/{max_attempts}) : {res.erreur}{recu} — nouvel essai du segment seul"
+            )
+            time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
+    return gagne, total, tentatives, derniere_erreur, fichier_entier
+
+
+def _tenter_get_sequentiel(
+    url: str, zip_path: Path, legislature: str, prefixe_courant: int,
+) -> tuple[int, Optional[int], bool]:
+    """Repli GET séquentiel (sans en-tête `Range`), conservé comme préfixe.
+
+    Retourne `(taille_du_préfixe_retenu, total_distant, flux_acheve)`, ce
+    dernier drapeau indiquant un flux terminé sans erreur — donc un fichier
+    complet, et non un préfixe de plus.
+
+    Le flux est écrit dans un fichier voisin `.seq`, adopté **seulement s'il est
+    plus long** que le préfixe déjà détenu. C'est l'application du principe de
+    #241 au flux plutôt qu'au segment : un `Range` partiel, un GET séquentiel
+    interrompu et une reprise réussie produisent tous des préfixes du *même*
+    fichier, le plus long doit gagner quelle que soit sa provenance. Adopter le
+    fichier entier plutôt que d'en recoller la fin sur le préfixe existant évite
+    par construction tout risque de raccord entre deux versions distinctes de
+    l'archive distante.
+
+    Ce repli redémarre à l'octet 0 : quand le `Range` est mort, aucune reprise
+    n'est possible, donc son utilité décroît à mesure que le préfixe grandit.
+    C'est la raison de fond pour laquelle l'état 3 (les deux modes morts) reste
+    sans remède réseau sur une archive de plusieurs centaines de Mo.
+    """
+    seq_path = zip_path.with_name(zip_path.name + ".seq")
+    try:
+        res = _telecharger_flux(url, dict(HEADERS), seq_path, "wb")
+        obtenu = res.octets_ecrits
+        if res.erreur is not None:
+            print(
+                f"  [!] Législature {legislature} : GET séquentiel interrompu après "
+                f"{obtenu} octets ({res.erreur})"
+            )
+        if obtenu > prefixe_courant:
+            os.replace(seq_path, zip_path)
+            print(
+                f"  -> Législature {legislature} : préfixe séquentiel de {obtenu} octets "
+                f"retenu (plus long que les {prefixe_courant} octets déjà obtenus)"
+            )
+            return obtenu, res.total_distant, res.erreur is None
+        if obtenu:
+            print(
+                f"  -> Législature {legislature} : préfixe séquentiel de {obtenu} octets "
+                f"écarté (le préfixe déjà obtenu, {prefixe_courant} octets, est plus long)"
+            )
+        return prefixe_courant, res.total_distant, False
+    finally:
+        try:
+            seq_path.unlink(missing_ok=True)
+        except OSError:
+            pass  # best-effort, comme le reste du nettoyage de cache
+
+
 def _download_amendements_zip(
     url: str, zip_path: Path, legislature: str, chunk_bytes: Optional[int] = None,
-    max_attempts: Optional[int] = None,
+    max_attempts: Optional[int] = None, stall_max_cycles: Optional[int] = None,
+    stall_wait_seconds: Optional[int] = None,
 ) -> None:
-    """Télécharge l'archive zip des amendements par segments (requêtes HTTP Range),
-    pour ne retenter que le segment en échec au lieu de tout le fichier sur une
-    coupure mi-flux (`IncompleteRead` déjà observé en pratique sur ces archives de
-    283-618 Mo — voir issue #241). Le support Range du CDN devant
-    data.assemblee-nationale.fr a été vérifié fonctionnellement (réponse 206 +
-    Content-Range) le 13/08/2026.
+    """Télécharge l'archive zip des amendements en arbitrant **à l'exécution**
+    entre deux modes de transfert, sans jamais jeter un préfixe valide.
 
-    Écrit séquentiellement dans `zip_path` (jamais en accès aléatoire) : un segment
-    n'est écrit qu'une fois intégralement reçu, pour ne jamais laisser de segment
-    partiel sur disque. Si le serveur ignore l'en-tête Range (réponse 200 au lieu
-    de 206, cas non observé mais possible), bascule sur un téléchargement classique
-    en un seul segment.
+    `data.assemblee-nationale.fr` ne tombe pas en panne : il change de mode de
+    défaillance, et assez vite pour qu'une mesure de quelques minutes induise en
+    erreur (relevé du 18/08/2026, confirmé le 19/08). Trois états observés, qui
+    appellent trois réponses différentes — d'où un arbitrage en cours de
+    téléchargement plutôt qu'un réglage par configuration :
 
-    Reprend un téléchargement interrompu **entre deux invocations** du script (pas
-    seulement entre deux segments d'une même invocation) : si `zip_path` existe déjà
-    avec un contenu non vide, une sonde `_probe_amendements_total_size` détermine la
-    taille distante avant de décider — fichier déjà complet -> aucune requête envoyée ;
-    fichier partiel plus petit que la taille distante -> reprise en mode ajout à partir
-    de l'octet déjà présent ; sonde en échec ou taille locale incohérente (plus grande
-    que la taille distante) -> redémarrage prudent depuis le début plutôt que de risquer
-    une archive corrompue. Le CDN AN étant instable sur ces deux archives (coupures
-    aléatoires en cours de segment, pas seulement à la fin), cette reprise évite de
-    reperdre à chaque nouvelle invocation les dizaines/centaines de Mo déjà reçus.
+    1. `Range` fonctionne -> reprise par segments, le mode nominal (#241).
+    2. `Range` ne rend rien quelle que soit la taille de segment -> repli sur un
+       GET séquentiel, dont le résultat est conservé comme préfixe.
+    3. `Range` mort **et** GET séquentiel coupé à quelques dizaines de Mo ->
+       aucun repli réseau ne fonctionne : on attend entre deux cycles au lieu de
+       marteler la source, puis on échoue en disant que la **source est
+       indisponible** (`SourceAmendementsIndisponibleError`), pas que le
+       téléchargement a échoué.
 
-    Réutilise `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`/`AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS`
-    (#225), désormais appliqués par segment plutôt qu'au fichier entier. Lève la
-    dernière `requests.RequestException`/`OSError` rencontrée si un segment échoue
-    après épuisement des tentatives — l'appelant convertit en `AmendementsIndexError`.
+    Le serveur annonce `Accept-Ranges: bytes` et un `Content-Length` correct
+    dans les trois états : aucune sonde `HEAD` ne permet de les distinguer, seul
+    le transfert lui-même le peut. L'arbitrage porte de plus sur le décalage
+    courant et non sur le fichier : mesuré le 19/08/2026, une plage à l'octet 0
+    ou à 4 Mio est servie normalement pendant que la même plage à 64 Mio ne rend
+    rien — sonder le `Range` en tête de fichier conclurait donc à tort qu'il
+    fonctionne.
 
-    `chunk_bytes` permet de réduire ponctuellement la taille de segment (défaut
-    `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`, 32 Mo) sans toucher au chemin réseau
-    partagé de la législature 17 : observé le 14/08/2026, le CDN AN peut
-    traverser des fenêtres où même une requête de quelques Ko au-delà des tout
-    premiers Mo du fichier échoue systématiquement (`IncompleteRead(0 bytes
-    read, ...)`) — un segment de 32 Mo n'a alors quasiment aucune chance
-    d'aboutir intégralement, alors que de petits segments (1-2 Mo) ont une
-    fenêtre de succès bien plus large à saisir, et la reprise entre
-    invocations (ci-dessus) garantit qu'aucun de ces petits gains n'est perdu.
+    Principe directeur, valable pour les trois modes : **ne jamais jeter un
+    préfixe valide, d'où qu'il vienne.** Les octets reçus sont écrits au fil de
+    l'eau (`_telecharger_flux`), une coupure en cours de segment reprend à
+    l'octet réellement obtenu, et un préfixe séquentiel ne remplace l'existant
+    que s'il est plus long (`_tenter_get_sequentiel`).
 
-    Affiche une ligne de progression après chaque segment écrit avec succès
-    (octets/total, pourcentage) — pas seulement en cas d'échec/retry : avec de
-    petits `chunk_bytes`, une invocation peut compter des centaines de segments
-    et rester silencieuse plusieurs minutes sans ce retour, au point de
-    ressembler à un blocage (observé le 15/08/2026).
+    Reprend aussi un téléchargement interrompu **entre deux invocations** du
+    script : si `zip_path` existe déjà non vide, `_probe_amendements_total_size`
+    détermine la taille distante avant de décider — fichier déjà complet ->
+    aucune requête ; fichier partiel -> reprise en mode ajout ; sonde en échec
+    ou taille locale incohérente -> redémarrage depuis le début plutôt que de
+    deviner un offset.
 
-    `max_attempts` permet d'augmenter ponctuellement le nombre de tentatives
-    par segment (défaut `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, 3) sans toucher au
-    chemin réseau partagé de la législature 17, où cette valeur est
-    volontairement basse pour rester dans le budget CI. Reprise entre
-    invocations oblige, la reprendre à une valeur plus haute ici ne coûte rien
-    au-delà du temps d'attente : chaque tentative supplémentaire ne retente que
-    le segment en échec, jamais le fichier entier.
+    `chunk_bytes` / `max_attempts` (défauts `AMENDEMENTS_DOWNLOAD_CHUNK_BYTES`,
+    32 Mo, et `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`, 3) restent réglables pour ne
+    pas toucher au chemin réseau partagé de la législature 17 ; ils ne sont plus
+    le levier principal, la taille de segment n'étant pas la dimension en cause
+    dans les états 2 et 3. `stall_max_cycles` / `stall_wait_seconds` (défauts
+    `AMENDEMENTS_SOURCE_STALL_MAX_CYCLES` / `_WAIT_SECONDS`) bornent l'attente de
+    l'état 3, volontairement courte en CI et augmentable hors CI, où attendre est
+    le seul remède qui fonctionne.
+
+    Lève `SourceAmendementsIndisponibleError` (sous-classe d'`OSError`) quand
+    plus aucun octet nouveau n'est obtenu, ou `OSError` si la taille finale ne
+    correspond pas à la taille annoncée — jamais d'archive tronquée rendue
+    silencieusement pour complète.
     """
     chunk_bytes = chunk_bytes or AMENDEMENTS_DOWNLOAD_CHUNK_BYTES
     max_attempts = max_attempts or AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+    stall_max_cycles = stall_max_cycles or AMENDEMENTS_SOURCE_STALL_MAX_CYCLES
+    stall_wait_seconds = (
+        AMENDEMENTS_SOURCE_STALL_WAIT_SECONDS if stall_wait_seconds is None else stall_wait_seconds
+    )
     zip_path.parent.mkdir(parents=True, exist_ok=True)
 
     offset = 0
     total_size: Optional[int] = None
-    file_mode = "wb"
 
     existing_size = zip_path.stat().st_size if zip_path.is_file() else 0
     if existing_size > 0:
@@ -1702,7 +1965,6 @@ def _download_amendements_zip(
         else:
             offset = existing_size
             total_size = remote_total_size
-            file_mode = "ab"
             print(
                 f"  -> Législature {legislature} : reprise du téléchargement à partir de "
                 f"l'octet {offset}/{total_size} (tentative précédente interrompue)."
@@ -1710,72 +1972,28 @@ def _download_amendements_zip(
 
     segments_total = 0
     segments_retried = 0
+    cycles_sans_progres = 0
 
-    with open(zip_path, file_mode) as out:
-        while total_size is None or offset < total_size:
-            range_end = offset + chunk_bytes - 1
-            segments_total += 1
-            last_exc: Optional[Exception] = None
-            chunk = b""
-            status_code: Optional[int] = None
-            content_range_total: Optional[int] = None
-            for attempt in range(1, max_attempts + 1):
-                try:
-                    headers = {**HEADERS, "Range": f"bytes={offset}-{range_end}"}
-                    with requests.get(
-                        url, headers=headers,
-                        timeout=(TIMEOUT, AMENDEMENTS_DOWNLOAD_READ_TIMEOUT_SECONDS),
-                        stream=True,
-                    ) as resp:
-                        resp.raise_for_status()
-                        chunk = b"".join(resp.iter_content(chunk_size=1024 * 1024))
-                        status_code = resp.status_code
-                        if status_code == 206:
-                            content_range_total = _content_range_total(resp)
-                    last_exc = None
-                    break
-                except (requests.RequestException, OSError) as exc:
-                    last_exc = exc
-                    if attempt < max_attempts:
-                        print(
-                            f"  [!] Échec du téléchargement du segment amendements législature "
-                            f"{legislature} (offset {offset}, tentative "
-                            f"{attempt}/{max_attempts}) : {exc} — nouvel essai du segment seul"
-                        )
-                        time.sleep(AMENDEMENTS_DOWNLOAD_BACKOFF_SECONDS)
-            if last_exc is not None:
-                print(
-                    f"  [!] Segment amendements législature {legislature} (offset {offset}) en échec "
-                    f"définitif après {max_attempts} tentatives : {last_exc}"
-                )
-                raise last_exc
-            if attempt > 1:
-                segments_retried += 1
+    while total_size is None or offset < total_size:
+        offset_debut_cycle = offset
 
-            if status_code == 200 and offset != 0:
-                # Le serveur a ignoré l'en-tête Range et renvoyé le fichier entier alors
-                # qu'un segment/une reprise à un offset non nul était attendu : l'écrire
-                # corromprait l'archive (contenu dupliqué/décalé) — jamais observé en
-                # pratique sur ce CDN, mais ne doit jamais être écrit silencieusement.
-                raise OSError(
-                    f"réponse HTTP 200 inattendue (en-tête Range ignoré) pour le segment "
-                    f"amendements législature {legislature} à l'offset {offset} : écriture "
-                    "annulée pour ne pas corrompre l'archive déjà partiellement écrite"
-                )
+        # --- Mode 1 : reprise par segments (HTTP Range) ---
+        segments_total += 1
+        gagne, total_annonce, tentatives, derniere_erreur, fichier_entier = _tenter_segments_range(
+            url, zip_path, legislature, offset, chunk_bytes, max_attempts,
+        )
+        if total_annonce is not None and total_size is None:
+            total_size = total_annonce
+        offset += gagne
+        if gagne and tentatives > 1:
+            segments_retried += 1
+        if fichier_entier and total_size is None:
+            # Fichier entier délivré et flux achevé proprement, sans
+            # Content-Length exploitable : la taille obtenue *est* la taille
+            # totale. Rien n'est deviné — un corps tronqué aurait levé.
+            total_size = offset
 
-            out.write(chunk)
-            if status_code == 200:
-                # Le serveur a ignoré l'en-tête Range et renvoyé le fichier entier.
-                total_size = len(chunk)
-                offset = total_size
-                break
-
-            if total_size is None:
-                total_size = content_range_total or (offset + len(chunk))
-            offset += len(chunk)
-            if not chunk:
-                break  # évite une boucle infinie sur un flux qui ne progresse plus
-
+        if gagne:
             if total_size:
                 percent = offset / total_size * 100
                 print(
@@ -1787,6 +2005,54 @@ def _download_amendements_zip(
                     f"  -> Législature {legislature} : {offset} octets — segment "
                     f"{segments_total} écrit"
                 )
+            cycles_sans_progres = 0
+            continue
+
+        if _est_erreur_http_definitive(derniere_erreur):
+            # Ni un mode de transfert en cause, ni une source indisponible :
+            # réessayer ou attendre ne changerait rien. Remonte tel quel.
+            raise derniere_erreur  # type: ignore[misc]
+
+        # --- Mode 2 : repli GET séquentiel, conservé comme préfixe ---
+        # Atteint uniquement quand le `Range` n'a rien rendu du tout après
+        # épuisement des tentatives : ni exception, ni corps vide (le CDN AN
+        # répond alors 206 + Content-Range correct puis ne délivre rien).
+        motif = f" ({derniere_erreur})" if derniere_erreur is not None else " (corps vide)"
+        print(
+            f"  [!] Législature {legislature} : plage à l'offset {offset} sans effet après "
+            f"{max_attempts} tentative(s){motif} — repli sur un GET séquentiel"
+        )
+        offset, total_annonce, flux_acheve = _tenter_get_sequentiel(
+            url, zip_path, legislature, offset,
+        )
+        if total_annonce is not None and total_size is None:
+            total_size = total_annonce
+        if flux_acheve and total_size is None:
+            total_size = offset
+        if offset > offset_debut_cycle:
+            cycles_sans_progres = 0
+            continue
+
+        # --- Mode 3 : aucun des deux modes ne délivre quoi que ce soit ---
+        cycles_sans_progres += 1
+        if cycles_sans_progres >= stall_max_cycles:
+            attendu = f"/{total_size}" if total_size is not None else ""
+            raise SourceAmendementsIndisponibleError(
+                f"source data.assemblee-nationale.fr indisponible pour l'archive amendements "
+                f"législature {legislature} : aucun octet nouveau obtenu en "
+                f"{cycles_sans_progres} cycle(s), ni par plages HTTP Range ni par GET "
+                f"séquentiel ({offset}{attendu} octets obtenus). Ce n'est pas un échec de "
+                "téléchargement à relancer : les deux modes de transfert sont sans effet "
+                "tant que la source ne redevient pas disponible — attendre et réessayer "
+                "plus tard, ou utiliser un index figé déjà committé."
+            )
+        print(
+            f"  [!] Législature {legislature} : aucun octet obtenu par aucun mode "
+            f"(cycle {cycles_sans_progres}/{stall_max_cycles}) — la source semble "
+            f"indisponible, attente de {stall_wait_seconds}s avant un nouveau cycle "
+            "(inutile de marteler : aucun repli réseau ne fonctionne dans cet état)"
+        )
+        time.sleep(stall_wait_seconds)
 
     if segments_retried >= AMENDEMENTS_SEGMENT_RETRY_WARNING_THRESHOLD:
         print(
@@ -2357,6 +2623,16 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
         try:
             try:
                 _download_amendements_zip(url, zip_path, legislature)
+            except SourceAmendementsIndisponibleError as exc:
+                # Journalisé distinctement d'un échec de téléchargement (#443) :
+                # ici, relancer le job ne sert à rien tant que la source ne
+                # revient pas. Le log doit le dire, sinon la personne qui le lit
+                # relance en boucle un traitement qui ne peut pas aboutir.
+                print(f"  [!] Source AN indisponible pour les amendements : {exc}")
+                _mark_amendements_legislature_failed(legislature)
+                if index_path.is_file():
+                    _write_amendements_fraicheur(index_path, reussi=False)
+                raise AmendementsIndexError(f"source indisponible ({exc})") from exc
             except (requests.RequestException, OSError) as exc:
                 print(f"  [!] Échec du téléchargement des amendements officiels : {exc}")
                 _mark_amendements_legislature_failed(legislature)

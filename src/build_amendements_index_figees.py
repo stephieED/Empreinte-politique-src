@@ -74,6 +74,7 @@ from candidate_profile import (  # noqa: E402
     AMENDEMENTS_FRAICHEUR_FILENAME,
     AN_AMENDEMENTS_FIGEES_DIR,
     AN_AMENDEMENTS_LEGISLATURES_FIGEES,
+    SourceAmendementsIndisponibleError,
     _aggregate_amendements_index,
     _amendements_zip_url,
     _download_amendements_zip,
@@ -134,6 +135,29 @@ def main() -> int:
             "route."
         ),
     )
+    parser.add_argument(
+        "--stall-cycles",
+        type=int,
+        default=None,
+        help=(
+            "Nombre de cycles « rien ne passe » avant d'abandonner pour --download "
+            "(défaut : 3, voir AMENDEMENTS_SOURCE_STALL_MAX_CYCLES). Un cycle = les "
+            "tentatives par plage HTTP Range, puis un GET séquentiel de repli. À "
+            "augmenter ici : hors CI, attendre est le seul remède qui fonctionne "
+            "quand les deux modes de transfert sont morts (#443)."
+        ),
+    )
+    parser.add_argument(
+        "--stall-wait-seconds",
+        type=int,
+        default=None,
+        help=(
+            "Attente entre deux cycles sans le moindre octet obtenu, pour --download "
+            "(défaut : 30, voir AMENDEMENTS_SOURCE_STALL_WAIT_SECONDS). Attendre "
+            "plutôt que marteler : dans cet état la source ne délivre rien, et les "
+            "fenêtres de rétablissement observées se comptent en dizaines de minutes."
+        ),
+    )
     args = parser.parse_args()
 
     if args.download:
@@ -154,7 +178,21 @@ def main() -> int:
             _download_amendements_zip(
                 url, zip_path, args.legislature,
                 chunk_bytes=chunk_bytes, max_attempts=args.max_attempts,
+                stall_max_cycles=args.stall_cycles,
+                stall_wait_seconds=args.stall_wait_seconds,
             )
+        except SourceAmendementsIndisponibleError as exc:
+            # Distinct d'un échec de téléchargement (#443) : relancer la commande
+            # tout de suite ne changera rien. Le préfixe déjà obtenu reste dans
+            # zip_path et sera repris tel quel au prochain essai — c'est
+            # précisément ce qui rend l'attente payante ici.
+            print(f"Source AN indisponible : {exc}", file=sys.stderr)
+            print(
+                f"Le préfixe obtenu est conservé dans {zip_path} : relancer la même "
+                "commande plus tard reprendra à cet octet.",
+                file=sys.stderr,
+            )
+            return 1
         except (requests.RequestException, OSError) as exc:
             print(f"Échec du téléchargement : {exc}", file=sys.stderr)
             return 1
