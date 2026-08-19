@@ -227,6 +227,22 @@ def _charger_pivot_existant(pivot_dir: Path, slug: str) -> Optional[dict[str, An
         return None
 
 
+def _select_existants(candidats: list[dict[str, Any]], out_dir: Path) -> list[dict[str, Any]]:
+    """Ne retient que les candidats dont le profil brut existe déjà (#445).
+
+    Sélection strictement inverse de la frontière de conquête de
+    `_select_candidats_couverture` : une correction de fond (ex. la clé uid de
+    #440) ne concerne que les profils DÉJÀ écrits.
+
+    Les atteindre par `--limit` est impossible : l'ordre de
+    `raw_data/roster_candidats.json` n'est pas stable dans le temps — le
+    fichier est régénéré — donc les profils couverts y sont dispersés, pas
+    groupés en tête (mesuré : dernier couvert à l'index 93 sur 94 dans un
+    shard de 8, pour 24 couverts).
+    """
+    return [c for c in candidats if (out_dir / f"{_effective_slug(c)}.json").exists()]
+
+
 def _select_candidats_couverture(
     candidats: list[dict[str, Any]],
     pivot_dir: Path,
@@ -627,6 +643,12 @@ def main() -> None:
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
+    parser.add_argument("--refresh-existing", action="store_true",
+                        help="Ne traiter QUE les candidats dont le profil JSON existe déjà (#445) : "
+                             "l'inverse exact de --skip-existing. Sert à propager une correction de "
+                             "fond à l'existant sans étendre la couverture. À combiner avec --no-merge "
+                             "quand la correction porte sur une clé (sinon la fusion additive conserve "
+                             "les entrées erronées à côté des corrigées).")
     parser.add_argument("--skip-ue", action="store_true", help="Ne pas interroger l'Open Data Portal du Parlement européen (mandat européen)")
     parser.add_argument(
         "--source",
@@ -717,6 +739,14 @@ def main() -> None:
                              "défaut que audit_pivot_dataset.py --staleness-days (défaut: 30).")
     args = parser.parse_args()
 
+    # --refresh-existing sélectionne exactement ce que --skip-existing écarte :
+    # combinés, ils ne traitent personne. Échouer franchement plutôt que
+    # laisser un job tourner 8 minutes pour n'écrire aucun profil (#445).
+    if args.refresh_existing and args.skip_existing:
+        raise SystemExit("[!] --refresh-existing et --skip-existing s'annulent : "
+                         "le premier ne retient que les profils existants, le second "
+                         "les saute tous. Aucun candidat ne serait traité.")
+
     # --pivot-only implique --pivot (normalisation pivot activée)
     if args.pivot_only:
         args.pivot = True
@@ -746,6 +776,25 @@ def main() -> None:
         avant_shard = len(candidats)
         candidats = _select_shard(candidats, shard_index, shard_total)
         print(f"Shard {shard_index}/{shard_total} : {len(candidats)}/{avant_shard} candidat(s) dans cette tranche.")
+
+    # Régénération de l'existant (#445) : sélection strictement inverse de la
+    # frontière de conquête de #224. Une correction de fond (ex. la clé uid de
+    # #440) ne concerne que les profils DÉJÀ écrits ; les atteindre par --limit
+    # est impossible, car l'ordre de raw_data/roster_candidats.json n'est pas
+    # stable dans le temps — le fichier est régénéré — et les profils couverts
+    # y sont donc dispersés, pas groupés en tête (mesuré : dernier couvert à
+    # l'index 93 sur 94 dans un shard de 8).
+    #
+    # Appliqué APRÈS --shard (chaque shard régénère sa propre tranche) et AVANT
+    # --limit (qui peut encore borner le lot, pour un run d'essai).
+    if getattr(args, "refresh_existing", False):
+        avant = len(candidats)
+        candidats = _select_existants(candidats, out_dir)
+        print(f"Régénération de l'existant (--refresh-existing, #445) : "
+              f"{len(candidats)}/{avant} candidat(s) déjà couvert(s) retenu(s).")
+        if not candidats:
+            print("Aucun profil existant dans cette tranche : rien à régénérer.")
+            return
 
     refresh_slugs: set[str] = set()
     if args.limit is not None or args.sample is not None:

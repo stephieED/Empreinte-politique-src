@@ -14,6 +14,7 @@ from generate_all_profiles import (
     _parse_shard,
     _select_candidats,
     _select_shard,
+    _select_existants,
     _select_candidats_couverture,
     load_candidats,
     process_candidat,
@@ -611,3 +612,48 @@ def test_parse_shard_rejette_les_formes_invalides(valeur):
 @pytest.mark.parametrize("valeur,attendu", [("0/8", (0, 8)), ("7/8", (7, 8)), (" 3 / 4 ", (3, 4)), ("0/1", (0, 1))])
 def test_parse_shard_accepte_les_formes_valides(valeur, attendu):
     assert _parse_shard(valeur) == attendu
+
+
+# ── --refresh-existing : propager une correction de fond à l'existant (#445) ──
+
+def _c(slug):
+    return {"nom": slug.replace("-", " ").title(), "slug": slug}
+
+
+def test_select_existants_ne_retient_que_les_profils_deja_ecrits(tmp_path):
+    (tmp_path / "alice-martin.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "carla-nunez.json").write_text("{}", encoding="utf-8")
+    candidats = [_c("alice-martin"), _c("bob-durand"), _c("carla-nunez")]
+
+    retenus = _select_existants(candidats, tmp_path)
+
+    assert [c["slug"] for c in retenus] == ["alice-martin", "carla-nunez"]
+
+
+def test_select_existants_ignore_la_position_dans_la_liste(tmp_path):
+    """L'ordre de roster_candidats.json n'est pas stable : le fichier est
+    régénéré. Une sélection par position (--limit) manquerait les couverts
+    dispersés en fin de liste — mesuré : dernier couvert à l'index 93/94."""
+    candidats = [_c(f"membre-{i}") for i in range(100)]
+    (tmp_path / "membre-93.json").write_text("{}", encoding="utf-8")
+
+    retenus = _select_existants(candidats, tmp_path)
+
+    assert [c["slug"] for c in retenus] == ["membre-93"]
+
+
+def test_select_existants_sans_aucun_profil_ne_retient_personne(tmp_path):
+    assert _select_existants([_c("alice-martin")], tmp_path) == []
+
+
+def test_refresh_existing_et_skip_existing_sont_refuses(monkeypatch, tmp_path):
+    """Combinés, ils s'annulent : le premier ne retient que les profils
+    existants, le second les saute tous. Un job tournerait alors sans jamais
+    écrire un seul profil, sans erreur."""
+    monkeypatch.setattr(sys, "argv", [
+        "generate_all_profiles.py", "--refresh-existing", "--skip-existing",
+        "--out-dir", str(tmp_path),
+    ])
+    with pytest.raises(SystemExit) as exc:
+        generate_all_profiles.main()
+    assert "s'annulent" in str(exc.value)
