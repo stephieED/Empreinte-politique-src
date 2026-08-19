@@ -238,5 +238,11 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Worktrees Claude Code (jamais versionnés)
+# Claude Code — artefacts locaux, jamais versionnés.
+# Les worktrees d'agents sont des copies complètes du dépôt : 23 Go mesurés au
+# 19/08/2026 pour 14 worktrees. `settings.local.json` et `RESUME.md` n'étaient
+# jusqu'ici couverts que par des mécanismes propres à une machine
+# (.git/info/exclude, ignore global) — donc absents de tout autre clone.
 .claude/worktrees/
+.claude/settings.local.json
+.claude/RESUME.md

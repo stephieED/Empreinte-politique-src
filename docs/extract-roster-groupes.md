@@ -11,10 +11,15 @@ python3 src/generate_roster_candidats.py
 python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
   --workers <workers> \
-  --skip-existing --resume \
+  [--skip-existing | --refresh-existing] --resume \
   --skip-interventions --skip-dossiers-legislatifs \
   [--limit <roster_extraction_limit>] [--no-merge]
 ```
+
+**`--skip-existing` n'est plus posé en dur (#445).** Il reste le défaut — le
+rollout progressif en dépend — mais il est levé par `fresh_run` ou par
+`overwrite_profiles`, et remplacé par `--refresh-existing` quand l'input
+`roster_refresh_existing` est actif. Voir §*Régénérer l'existant* ci-dessous.
 
 **Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
 --skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
@@ -41,13 +46,60 @@ membres), pas seulement les candidats déclarés/pressentis. Voir
 
 ## Rollout progressif (#188/#190/#192)
 
+## Régénérer l'existant (#445)
+
+Une correction de fond — la clé `uid` de #440, par exemple — ne concerne que
+les profils **déjà écrits**. Or `--skip-existing` s'applique *avant*
+`--no-merge` : tant qu'il est posé, un run `overwrite_profiles=true` saute
+précisément les profils qu'il faudrait corriger.
+
+Deux pièges vérifiés, tous deux contre-intuitifs :
+
+- **`roster_extraction_limit=0` n'y supplée pas.** Sans `--limit`, le chemin de
+  rafraîchissement de #224 (`_select_candidats_couverture`) n'est pas emprunté
+  du tout, et `--skip-existing` saute chaque profil existant. Un run à pleine
+  échelle n'aurait rien corrigé — il aurait seulement étendu la frontière.
+- **Lever `--skip-existing` ne suffit pas non plus.** Avec `--limit`, la
+  sélection retombe sur les N premiers du shard, et les profils couverts ne
+  forment pas un préfixe : mesuré au 19/08/2026, le dernier couvert se trouvait
+  à l'index 93 sur 94 dans deux des huit shards, pour ~26 couverts chacun.
+
+D'où `--refresh-existing` : sélection strictement inverse de `--skip-existing`,
+il ne retient que les candidats dont le profil JSON existe déjà. La combinaison
+des deux flags est **refusée** (`SystemExit`) plutôt que de laisser un job
+tourner sans écrire un seul profil.
+
+Le run correspondant :
+
+| input | valeur |
+| --- | --- |
+| `overwrite_profiles` | `true` |
+| `roster_refresh_existing` | `true` |
+| `roster_extraction_limit` | `0` |
+
+`roster_refresh_existing` sans `overwrite_profiles` déclenche un `::warning::` :
+la fusion additive conserverait alors les entrées de l'ancienne clé **à côté**
+des corrigées, ce qui est pire que de n'avoir rien fait.
+
+Contrôle après coup : `src/audit_diff_profils.py`, qui compare une ref git au
+disque champ par champ et sort en erreur sur toute perte dans les champs
+stables (votes, mandats, textes portés).
+
+## Déploiement progressif
+
 Ce job est un **déploiement progressif**, pas encore un run complet :
 
 - `continue-on-error: true` — un échec ou dépassement de ce job ne bloque pas
   `merge-and-pivot` (même traitement que `extract-parltrack`).
 - `roster_extraction_limit` (input du workflow, défaut `20`) borne le nombre
-  de membres traités par run (`--limit`, ordre déterministe) pour rester dans
-  un budget CI raisonnable pendant le rollout. `0` = pas de limite
+  de membres traités par run (`--limit`) pour rester dans un budget CI
+  raisonnable pendant le rollout. **`--limit` est déterministe pour un fichier
+  donné, mais l'ordre de `roster_candidats.json` ne l'est pas dans le temps :
+  le fichier est régénéré par `generate_roster_candidats.py`.** Une borne
+  positionnelle ne désigne donc pas le même sous-ensemble d'un run à l'autre —
+  d'où le fait que la sélection utile ne s'appuie jamais sur la position, mais
+  sur la couverture (`_select_candidats_couverture`, #224) ou sur l'existence
+  du profil (`--refresh-existing`, #445). `0` = pas de limite
   (déconseillé tant que le timeout n'a pas été recalibré sur un run complet).
 - `timeout-minutes: 60` est provisoire, calibré pour
   `roster_extraction_limit=20` avec `--source` implicite (coût par membre
@@ -127,6 +179,8 @@ flowchart TD
 6. `--skip-existing --resume` évite de retraiter les profils déjà présents
    et permet la reprise après interruption ; `--limit` (piloté par
    `roster_extraction_limit`) borne le nombre de membres traités ce run.
+   `--skip-existing` s'applique **avant** `--no-merge` : voir §*Régénérer
+   l'existant* pour la conséquence.
 7. Les données sont écrites dans `raw_data/profiles/<slug>.json` puis
    publiées en artifact `raw-profiles-roster-groupes` (`if-no-files-found:
    warn` — ce job peut légitimement ne produire aucun fichier si le fetch
