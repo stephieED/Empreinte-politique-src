@@ -82,8 +82,12 @@ artifact: `merge-and-pivot` checks out the repo and `merge_raw_dirs` only rewrit
 present in the artifacts. See `docs/technical_decisions.md#publication-scopee-artifacts`.
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
-gouvernement file; soft warnings on low interventions, low coverage, network signals, and
-amendements index freshness (§3d: distinguishes "never built" from "present but stale
+gouvernement file; soft warnings on low interventions, low coverage, network signals,
+partial `uid` coverage inside a profile's `amendements[]` (§3c — two versions of the same
+amendment cohabiting, so the entry is counted twice and the published denominators are
+wrong; #447, cause #450 — soft on purpose: mixed profiles are expected during the
+remediation window, and failing the gate would block the very runs meant to fix them),
+and amendements index freshness (§3d: distinguishes "never built" from "present but stale
 beyond N days without a successful rebuild" from "frozen" — légis 15/16 are closed
 dossiers, their index is committed under `raw_data/amendements_an_figes/` and never
 re-fetched, see `docs/technical_decisions.md#amendements-legislatures-figees`). Gouvernement

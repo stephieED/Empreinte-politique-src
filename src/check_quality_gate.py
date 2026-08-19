@@ -582,6 +582,23 @@ _AMENDEMENTS_ZERO_DECISION_REF = (
     "docs/technical_decisions.md#amendements-zero-pas-de-hard-fail"
 )
 
+# Couverture `uid` partielle dans un même profil (#447). Rien ne signalait ce
+# cas : ni les logs d'extraction, ni cette gate. Il est passé pour une
+# instabilité de collecte pendant deux jours, alors qu'il matérialise la
+# cohabitation de deux versions d'un même amendement — celle résolue sur la clé
+# écrasée d'avant #440, et celle résolue sur `uid`. Un amendement compté deux
+# fois n'est pas une donnée incomplète, c'est un fait faux, et les
+# dénominateurs publiés en dépendent (AGENTS.md §2.7).
+#
+# Soft, comme tout le reste de la §3c (#378) : pendant la fenêtre de remise en
+# état de #450 les profils mixtes SONT attendus, et faire échouer la gate
+# bloquerait précisément les runs censés les corriger. Ce qui manquait n'était
+# pas un verrou, c'était un signal.
+_AMENDEMENTS_UID_MIXTE_ICONE = "🔀"
+_AMENDEMENTS_UID_DECISION_REF = (
+    "docs/technical_decisions.md#publication-scopee-artifacts"
+)
+
 
 def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | None, str, str]:
     """Détecte les régressions silencieuses sur amendements[] pour les député·e·s AN.
@@ -618,7 +635,9 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
                 continue
             slug = _slug_from_stem(path.stem)
             nom = data.get("nom") or slug
-            n_amendements = len(data.get("amendements") or [])
+            amendements = data.get("amendements") or []
+            n_amendements = len(amendements)
+            n_uid = sum(1 for a in amendements if isinstance(a, dict) and a.get("uid"))
             warnings_list: list[str] = (data.get("meta") or {}).get("warnings") or []
             has_fetch_error = any(w.startswith(_AMENDEMENTS_INDISPONIBLES_PREFIX) for w in warnings_list)
             rows.append(
@@ -626,6 +645,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
                     "slug": slug,
                     "nom": nom,
                     "n_amendements": n_amendements,
+                    "n_uid": n_uid,
                     "has_fetch_error": has_fetch_error,
                 }
             )
@@ -635,6 +655,21 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
         if r["has_fetch_error"]:
             soft_warnings.append(f"{r['slug']}: collecte des amendements officiels en échec (voir meta.warnings)")
 
+    # Un profil est « mixte » quand ses amendements portent un `uid` en partie
+    # seulement. Les profils à 0 % ne sont PAS signalés ici : ils sont
+    # entièrement sur l'ancienne clé, donc en retard de correction (#440) mais
+    # pas dupliqués — c'est une frontière de conquête, pas un fait faux.
+    rows_mixtes = [r for r in rows if 0 < r["n_uid"] < r["n_amendements"]]
+    for r in sorted(rows_mixtes, key=lambda r: r["n_uid"] / r["n_amendements"]):
+        sans_uid = r["n_amendements"] - r["n_uid"]
+        soft_warnings.append(
+            f"{r['slug']}: {sans_uid}/{r['n_amendements']} amendements sans uid "
+            f"({100 * r['n_uid'] / r['n_amendements']:.1f} % couverts) — deux versions du "
+            f"même amendement cohabitent probablement, dénominateurs faussés (#447/#450)"
+        )
+
+    n_amendements_total = sum(r["n_amendements"] for r in rows)
+    n_uid_total = sum(r["n_uid"] for r in rows)
     n_avec_amendements = sum(1 for r in rows if r["n_amendements"] > 0)
     regression_globale: str | None = None
     if rows and n_avec_amendements == 0:
@@ -649,13 +684,24 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     warnings_par_candidat = [w for w in soft_warnings if w != regression_globale]
 
     icon = "✓" if not soft_warnings else "⚠"
+    pct_uid = f"{100 * n_uid_total / n_amendements_total:.1f} %" if n_amendements_total else "N/D"
     lines = [
         "",
         "┌─ 3c/4  Couverture amendements (AN) ────────────────────────────────",
         f"│  Candidats AN avec identité : {len(rows)}   Avec amendements : {n_avec_amendements}"
         f"   Avertissements : {len(soft_warnings)}",
+        f"│  Amendements : {n_amendements_total}   dont uid : {n_uid_total} ({pct_uid})"
+        f"   Profils mixtes : {len(rows_mixtes)}",
         "│",
     ]
+    if rows_mixtes:
+        lines += [
+            f"│  {_AMENDEMENTS_UID_MIXTE_ICONE} {len(rows_mixtes)} profil(s) à couverture uid PARTIELLE —",
+            "│    signature d'une version périmée réinjectée à côté de la version",
+            "│    corrigée : les entrées concernées sont comptées deux fois.",
+            f"│    À régénérer, pas à refusionner ({_AMENDEMENTS_UID_DECISION_REF}).",
+            "│",
+        ]
     if regression_globale is not None:
         lines += [
             f"│  {_AMENDEMENTS_ZERO_ICONE} RÉGRESSION PROBABLE DE COLLECTE — {regression_globale}",
@@ -680,9 +726,24 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
         "|---|---|",
         f"| {ok_icon} Candidats AN avec identité | {len(rows)} |",
         f"| Avec ≥ 1 amendement | {n_avec_amendements} |",
+        f"| Amendements | {n_amendements_total} |",
+        f"| dont portant un `uid` | {n_uid_total} ({pct_uid}) |",
+        f"| Profils à couverture `uid` partielle | {len(rows_mixtes)} |",
         f"| Avertissements | {len(soft_warnings)} |",
         "",
     ]
+    if rows_mixtes:
+        md_lines += [
+            f"> {_AMENDEMENTS_UID_MIXTE_ICONE} **{len(rows_mixtes)} profil(s) à couverture `uid` partielle** — "
+            "signature d'une version périmée réinjectée à côté de la version corrigée. "
+            "Les entrées concernées sont comptées deux fois, ce qui fausse les dénominateurs "
+            "publiés (AGENTS.md §2.7).",
+            ">",
+            "> Ces profils sont à **régénérer**, pas à refusionner : `src/audit_diff_profils.py` "
+            "signalera une baisse sur `amendements`, qui est ici le résultat attendu "
+            f"(`{_AMENDEMENTS_UID_DECISION_REF}`).",
+            "",
+        ]
     if regression_globale is not None:
         md_lines += [
             f"> {_AMENDEMENTS_ZERO_ICONE} **Régression probable de collecte des amendements** — "
