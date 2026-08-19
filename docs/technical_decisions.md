@@ -57,14 +57,28 @@ ses enregistrements d'enregistrements corrects.
 
 **Index figés reconstruits** (`build_amendements_index_figees.py`) :
 
-| Législature | Amendements avant (clé `numero`) | Après (clé `uid`) | Liens acteur/amendement |
-| --- | --- | --- | --- |
-| 14 | 21 624 | **154 296** | 1 338 262 (inchangé) |
+| Législature | Amendements avant (clé `numero`) | Après (clé `uid`) | Facteur | Liens acteur/amendement | Poids committé |
+| --- | --- | --- | --- | --- | --- |
+| 14 | 21 624 | **154 296** | × 7,1 | 1 338 262 (inchangé) | 4,4 + 4,1 Mo gz |
+| 15 | 68 030 | **307 644** | × 4,5 | 3 098 642 (inchangé) | 5,7 + 10,6 Mo gz |
+| 16 | 58 305 | **162 240** | × 2,8 | 3 310 514 (inchangé) | 3,2 + 11,1 Mo gz |
 
 Le nombre de liens ne bouge pas — ce sont les mêmes signatures — mais ils
-pointent désormais chacun vers le bon amendement. Poids committé : 4,4 Mo +
-4,1 Mo gzippés pour la XIV, très en deçà de la limite GitHub de 100 Mo par
-blob.
+pointent désormais chacun vers le bon amendement. Tous restent très en deçà de
+la limite GitHub de 100 Mo par blob. Le facteur d'écrasement varie fortement
+d'une législature à l'autre (× 2,8 à × 7,1) : il dépend du nombre de textes sur
+lesquels les numéros se réutilisent, pas d'un taux fixe — citer une moyenne
+serait trompeur.
+
+Contrôle de non-régression, via le vrai chemin de lecture
+(`_load_frozen_amendement_index` -> cache -> `_read_cached_amendements_acteur`),
+sur le plus gros signataire de chaque législature :
+
+| Législature | Acteur | Amendements résolus | `numero` distincts | Exemple de collision |
+| --- | --- | --- | --- | --- |
+| 14 | PA608416 | 12 216 | 3 871 | n° 8 porté par 57 textes |
+| 15 | PA719318 | 25 116 | 9 358 | n° 185 porté par 24 textes |
+| 16 | PA722142 | 17 272 | 11 438 | n° AE1 porté par 2 textes |
 
 **Conséquence pour #431** : son constat de départ (4 246 026 paires pour 67 058
 amendements distincts, facteur 63,3 ×) est mesuré sur des données écrasées, et
