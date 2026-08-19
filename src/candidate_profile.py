@@ -2213,9 +2213,10 @@ def _write_amendements_fraicheur(index_path: Path, reussi: bool) -> None:
 def amendements_index_deja_figee(legislature: str) -> bool:
     """True si le cache disque d'une législature figée
     (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`) est déjà matérialisé
-    (`index_par_acteur.json` présent + `fraicheur.json` portant `figee: true`),
-    sans jamais charger `index_par_acteur.json` en mémoire pour le vérifier —
-    seul `fraicheur.json` (quelques dizaines d'octets) est lu. Une législature
+    (`amendements.json` + répertoire de tranches présents, `fraicheur.json`
+    portant `figee: true`, et tranches au format `uid`), sans jamais charger
+    l'index entier en mémoire pour le vérifier — seuls `fraicheur.json`
+    (quelques dizaines d'octets) et UNE tranche d'acteur (~285 Ko) sont lus. Une législature
     figée ne change plus jamais une fois matérialisée : un appelant qui
     boucle sur plusieurs législatures (`build_amendements_index.py`) doit
     pouvoir sauter celles déjà figées sans recharger un index potentiellement
@@ -2241,7 +2242,29 @@ def amendements_index_deja_figee(legislature: str) -> bool:
             fraicheur = json.load(f)
     except (json.JSONDecodeError, OSError):
         return False
-    return bool(isinstance(fraicheur, dict) and fraicheur.get("figee"))
+    if not (isinstance(fraicheur, dict) and fraicheur.get("figee")):
+        return False
+
+    # Et le format de l'index doit être celui de la clé `uid` (#447). Sans ce
+    # contrôle, un cache figé écrit AVANT la correction du 18/08/2026
+    # (références par `numero`) est déclaré « déjà matérialisé » et jamais
+    # reconstruit par build_amendements_index.py, pendant que
+    # `_read_cached_amendements_acteur` le REFUSE à la lecture — la législature
+    # n'est alors ni reconstruite ni lue, et ses amendements disparaissent
+    # entièrement, avec pour seul signe un warning soft « index en cache
+    # absent ». Constaté sur le cache local du 19/08/2026 : les législatures
+    # 14, 15 et 16 étaient simultanément `deja_figee=True` et illisibles.
+    # Coût : l'ouverture d'UNE tranche (~285 Ko) — la contrainte qui a fait
+    # naître cette fonction (ne jamais charger l'index entier, plusieurs Go en
+    # clair, sous peine d'OOM) reste respectée.
+    if not _cache_amendements_au_format_uid(sorted(index_dir.glob("*.json"))):
+        print(
+            f"  [!] Cache figé législature {legislature} au format hérité "
+            "(références par 'numero') : non considéré comme figé, reconstruction requise.",
+            file=sys.stderr,
+        )
+        return False
+    return True
 
 
 def _write_cached_amendements_agreges(
@@ -2266,19 +2289,34 @@ def _write_cached_amendements_agreges(
 
     # Une tranche par acteur (#392). Le répertoire est reconstruit de zéro :
     # un acteur disparu d'une reconstruction ne doit pas laisser sa tranche
-    # périmée derrière lui. Écrit APRÈS amendements.json, et le répertoire
-    # n'est considéré valide en lecture que s'il existe — une écriture
-    # interrompue laisse donc un cache traité comme absent, jamais un cache
-    # incohérent.
+    # périmée derrière lui. Écrit APRÈS amendements.json, et publié d'un seul
+    # `os.replace` depuis un répertoire temporaire — une écriture interrompue
+    # laisse donc un cache traité comme absent, jamais un cache incohérent.
+    # C'est cette propriété, et elle seule, qui rend légitime le contrôle sur
+    # une tranche unique de `_cache_amendements_au_format_uid`.
     index_dir = cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME
-    shutil.rmtree(index_dir, ignore_errors=True)
-    index_dir.mkdir(parents=True, exist_ok=True)
+    # Écrit dans un répertoire temporaire, puis basculé d'un seul `os.replace`
+    # (#447). Remplir `index_par_acteur/` en place laissait, pendant toute la
+    # boucle, un répertoire qui EXISTE et qui est INCOMPLET : le contrôle de
+    # cache-hit de `_download_and_build_amendement_index` (`index_dir.is_dir()`)
+    # l'accepte, donc il n'est jamais reconstruit, et chaque acteur dont la
+    # tranche manque encore est lu comme « aucun amendement » (liste vide) au
+    # lieu de « index indisponible » (None) — un zéro silencieux, exactement ce
+    # que ce dépôt traite comme un défaut à part entière. Le cas est atteignable :
+    # le step `Upload artifact amendements AN` de generate-data.yml est en
+    # `if: always()`, donc un job interrompu publie l'état partiel du disque, que
+    # les jobs consommateurs téléchargent ensuite.
+    tmp_dir = cache_dir / f"{AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_DIRNAME}.partiel"
+    shutil.rmtree(tmp_dir, ignore_errors=True)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
     for acteur_ref, refs in index_par_acteur.items():
         shard = _shard_path_acteur(legislature, acteur_ref)
         if shard is None:
             continue  # acteurRef hors forme attendue : ignoré plutôt qu'écrit
-        with open(shard, "w", encoding="utf-8") as f:
+        with open(tmp_dir / shard.name, "w", encoding="utf-8") as f:
             json.dump(refs, f, ensure_ascii=False)
+    shutil.rmtree(index_dir, ignore_errors=True)
+    os.replace(tmp_dir, index_dir)
     # Ancien fichier unique hérité (#377) : supprimé une fois les tranches en
     # place, pour libérer les centaines de Mo qu'il occupait.
     (cache_dir / AMENDEMENTS_CACHE_INDEX_PAR_ACTEUR_FILENAME_LEGACY).unlink(missing_ok=True)
