@@ -641,3 +641,135 @@ def test_merge_raw_dirs_ecrit_compact_a_partir_de_sources_indentees(tmp_path):
     assert '": ' not in contenu
     fusionne = json.loads(contenu)
     assert sorted(v["numero_scrutin"] for v in fusionne["votes"]) == [1, 2]
+
+
+# ---------------------------------------------------------------------------
+# #450 — acceptance : la portée de publication décide de la correction de clé
+#
+# `merge_raw_dirs` est identique avant et après #450 : c'est ce qu'on lui donne
+# à fusionner qui change. Les deux tests ci-dessous sont donc écrits en miroir,
+# sur le même scénario (2 shards régénérant chacun sa tranche sur la clé `uid`
+# corrigée de #440, à partir d'une baseline committée sans `uid`), et ne
+# diffèrent QUE par le contenu des répertoires publiés.
+# ---------------------------------------------------------------------------
+
+def _amendement(uid=None, numero=None):
+    """Même entrée logique selon les deux clés : avec `uid` (corrigée, #440) ou
+    sans (périmée). `_amendement_key` les voit comme deux entrées distinctes —
+    c'est précisément pourquoi la réinjection double les volumes au lieu de
+    remplacer."""
+    if uid:
+        return {"uid": uid, "numero": numero, "texte_vise": "PLF 2026", "sort": "adopté"}
+    return {"numero": numero, "texte_vise": "Projet de loi de finances pour 2026", "sort": None}
+
+
+def _profil(slug, amendements):
+    return {"slug": slug, "chambre": "deputes", "amendements": amendements}
+
+
+def _ecrire(dossier, slug, profil):
+    dossier.mkdir(parents=True, exist_ok=True)
+    (dossier / f"{slug}.json").write_text(json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+
+def _scenario_deux_shards(tmp_path):
+    """Baseline committée (périmée, sans `uid`) + 2 shards régénérant chacun un
+    slug distinct sur la clé corrigée. Renvoie `(baseline, frais_par_shard)`."""
+    baseline = {
+        "alice": _profil("alice", [_amendement(numero=1), _amendement(numero=2)]),
+        "bob": _profil("bob", [_amendement(numero=3)]),
+    }
+    frais = {
+        0: ("alice", _profil("alice", [_amendement("AMANR5L17-1", 1), _amendement("AMANR5L17-2", 2)])),
+        1: ("bob", _profil("bob", [_amendement("AMANR5L17-3", 3)])),
+    }
+    return baseline, frais
+
+
+def test_publication_du_repertoire_entier_reinjecte_les_donnees_perimees(tmp_path):
+    """Reproduction du bug #450, conservée pour que la correction reste lisible
+    comme un choix et non comme un détail de configuration.
+
+    Chaque shard publiait tout `raw_data/profiles/` : sa tranche fraîche PLUS la
+    baseline que son checkout venait d'y déposer. La fusion additive réunit
+    alors les deux versions de chaque amendement au lieu de remplacer, et
+    `--no-merge`, correctement appliqué côté extraction, est défait ici.
+    Mesuré sur `antoine-armand` au run 32277443716 : 3 335 = 1 289 + 2 046.
+    """
+    baseline, frais = _scenario_deux_shards(tmp_path)
+
+    dirs = []
+    for shard, (slug_frais, profil_frais) in frais.items():
+        d = tmp_path / f"artifact-shard-{shard}"
+        for slug, profil in baseline.items():          # ← la baseline republiée
+            _ecrire(d, slug, profil)
+        _ecrire(d, slug_frais, profil_frais)           # ← écrasée par la tranche fraîche
+        dirs.append(d)
+
+    out = tmp_path / "out"
+    merge_raw_dirs(dirs, out)
+
+    alice = json.loads((out / "alice.json").read_text(encoding="utf-8"))
+    assert len(alice["amendements"]) == 4, "attendu : 2 périmés + 2 corrigés, l'union"
+    assert sum(1 for a in alice["amendements"] if not a.get("uid")) == 2
+
+
+def test_publication_scopee_laisse_aboutir_la_correction_de_cle(tmp_path):
+    """Critère d'acceptation de #450. Mêmes shards, même fusion : seuls les
+    répertoires publiés changent. Chaque shard ne publiant que ce qu'il a
+    écrit, les jeux de fichiers sont disjoints — il ne reste ni version périmée
+    à réunir à la version corrigée, ni nom en collision entre shards."""
+    baseline, frais = _scenario_deux_shards(tmp_path)
+
+    dirs = []
+    for shard, (slug_frais, profil_frais) in frais.items():
+        d = tmp_path / f"staging-shard-{shard}"
+        _ecrire(d, slug_frais, profil_frais)           # ← uniquement sa tranche
+        dirs.append(d)
+
+    out = tmp_path / "out"
+    # La baseline vit dans le checkout de merge-and-pivot, pas dans un artifact.
+    for slug, profil in baseline.items():
+        _ecrire(out, slug, profil)
+
+    merge_raw_dirs(dirs, out)
+
+    for slug in ("alice", "bob"):
+        profil = json.loads((out / f"{slug}.json").read_text(encoding="utf-8"))
+        assert all(a.get("uid") for a in profil["amendements"]), (
+            f"{slug} porte encore des entrées sans uid : la version périmée a été réinjectée."
+        )
+    assert len(json.loads((out / "alice.json").read_text(encoding="utf-8"))["amendements"]) == 2
+
+
+def test_publication_scopee_preserve_un_profil_qu_aucun_job_n_a_touche(tmp_path):
+    """Corollaire : ne plus transporter la baseline ne la perd pas.
+    `merge_raw_dirs` boucle sur les fichiers SOURCES et ne réécrit que ceux-là ;
+    un slug absent de tout artifact garde sa version committée."""
+    out = tmp_path / "out"
+    _ecrire(out, "carla", _profil("carla", [_amendement(numero=9)]))
+
+    staging = tmp_path / "staging"
+    _ecrire(staging, "alice", _profil("alice", [_amendement("AMANR5L17-1", 1)]))
+
+    merge_raw_dirs([staging], out)
+
+    carla = json.loads((out / "carla.json").read_text(encoding="utf-8"))
+    assert carla["amendements"] == [_amendement(numero=9)]
+
+
+def test_publication_scopee_conserve_l_union_entre_sources_differentes(tmp_path):
+    """Ce que la correction ne doit PAS casser : un slug couvert par deux jobs
+    (un candidat déclaré présent aussi dans le roster) reste l'union de leurs
+    contributions — les deux sont fraîches, la fusion additive joue ici son
+    rôle légitime."""
+    dir_an = tmp_path / "an"
+    dir_roster = tmp_path / "roster"
+    _ecrire(dir_an, "alice", _profil("alice", [_amendement("AMANR5L17-1", 1)]))
+    _ecrire(dir_roster, "alice", _profil("alice", [_amendement("AMANR5L17-2", 2)]))
+
+    out = tmp_path / "out"
+    merge_raw_dirs([dir_an, dir_roster], out)
+
+    alice = json.loads((out / "alice.json").read_text(encoding="utf-8"))
+    assert sorted(a["uid"] for a in alice["amendements"]) == ["AMANR5L17-1", "AMANR5L17-2"]

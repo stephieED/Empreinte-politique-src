@@ -410,19 +410,32 @@ jobs:
           [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
           [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
-          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
-      # path scopé au seul fichier de ce candidat (pas tout raw_data/profiles/) :
-      # les autres jobs d'extraction (Sénat/UE/roster) uploadent déjà la
-      # totalité du dossier (baseline committée + leur propre mise à jour),
-      # donc merge-and-pivot reçoit toujours la baseline complète via eux —
-      # inutile de la dupliquer dans chacun des N shards AN (#344).
+      # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
+      # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
+      # qui contient aussi la baseline committée issue du checkout — c'est elle
+      # qui, republiée par chaque job, réinjectait des données périmées à la
+      # fusion et faisait entrer les shards en collision. Rationale complète
+      # dans ./.github/actions/publish-written-profiles.
+      - name: Profils écrits par ce job — ${{ matrix.slug }}
+        if: always()
+        uses: ./.github/actions/publish-written-profiles
+        with:
+          manifest: _manifest/profils-ecrits.txt
+
+      # Le `path:` était déjà scopé au seul fichier de ce candidat (#344), mais
+      # sur le CHEMIN attendu et non sur une écriture constatée : une extraction
+      # qui ne trouvait aucune identité (statut "introuvable", aucun profil
+      # écrit) republiait quand même la copie périmée laissée par le checkout.
+      # Le staging du manifeste ferme ce cas — un job qui n'écrit rien ne
+      # publie rien.
       - name: Upload artifact AN — ${{ matrix.slug }}
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-an-${{ matrix.slug }}
-          path: raw_data/profiles/${{ matrix.slug }}.json
+          path: _publish/profiles/
           if-no-files-found: warn
 
       # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
@@ -494,14 +507,26 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+
+      # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
+      # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
+      # qui contient aussi la baseline committée issue du checkout — c'est elle
+      # qui, republiée par chaque job, réinjectait des données périmées à la
+      # fusion et faisait entrer les shards en collision. Rationale complète
+      # dans ./.github/actions/publish-written-profiles.
+      - name: Profils écrits par ce job
+        if: always()
+        uses: ./.github/actions/publish-written-profiles
+        with:
+          manifest: _manifest/profils-ecrits.txt
 
       - name: Upload artifact Sénat
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-senat
-          path: raw_data/profiles/
+          path: _publish/profiles/
           if-no-files-found: warn
 
       # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
@@ -571,14 +596,26 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+
+      # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
+      # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
+      # qui contient aussi la baseline committée issue du checkout — c'est elle
+      # qui, republiée par chaque job, réinjectait des données périmées à la
+      # fusion et faisait entrer les shards en collision. Rationale complète
+      # dans ./.github/actions/publish-written-profiles.
+      - name: Profils écrits par ce job
+        if: always()
+        uses: ./.github/actions/publish-written-profiles
+        with:
+          manifest: _manifest/profils-ecrits.txt
 
       - name: Upload artifact UE
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-ue-officiel
-          path: raw_data/profiles/
+          path: _publish/profiles/
           if-no-files-found: warn
 
       # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
@@ -1099,17 +1136,39 @@ jobs:
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             "${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
+            --manifest-out _manifest/profils-ecrits.txt \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
+
+      # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
+      # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
+      # qui contient aussi la baseline committée issue du checkout — c'est elle
+      # qui, republiée par chaque job, réinjectait des données périmées à la
+      # fusion et faisait entrer les shards en collision. Rationale complète
+      # dans ./.github/actions/publish-written-profiles.
+      - name: Profils écrits par ce job — shard ${{ matrix.shard }}
+        if: always()
+        uses: ./.github/actions/publish-written-profiles
+        with:
+          manifest: _manifest/profils-ecrits.txt
 
       # Un artifact PAR SHARD (#394) : merge-and-pivot les récupère tous via
       # pattern + merge-multiple, comme il le fait déjà pour les shards
       # extract-an (#344). Un shard préempté ne prive donc que de sa tranche.
+      #
+      # merge-multiple aplatit les 8 artifacts dans un seul dossier : à nom de
+      # fichier égal, un seul survit. Tant que chaque shard publiait TOUT
+      # raw_data/profiles/, les 8 se disputaient chacun des 752 noms et seule
+      # la tranche d'un shard atteignait la fusion — sur le run 32277443716,
+      # 205 profils régénérés par les 8 shards, et les seuls à porter trace
+      # d'une régénération dans le commit venaient tous du shard 6. Ne publier
+      # que sa propre tranche rend les 8 jeux de fichiers disjoints : plus rien
+      # à départager (#450).
       - name: Upload artifact roster-driven — shard ${{ matrix.shard }}
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: raw-profiles-roster-groupes-${{ matrix.shard }}
-          path: raw_data/profiles/
+          path: _publish/profiles/
           if-no-files-found: warn
 
       # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
@@ -1251,10 +1310,26 @@ jobs:
       # ── Fusion des profils bruts des 3 sources FR/UE ──────────────────────
       # merge_profile.py --dirs : fusionne additivement les profils de chaque
       # source vers raw_data/profiles/ (même logique que --no-merge=false).
-      # fresh_run=true  → on fusionne quand même les 3 artifacts (aucune donnée
-      #                   repo n'est présente car les jobs extract ont purgé).
-      # fresh_run=false → les artifacts contiennent déjà la fusion avec les
-      #                   données repo (merge additif dans chaque job extract).
+      #
+      # Depuis #450, chaque artifact ne contient QUE les profils que son job a
+      # écrits. Ce que cela change ici :
+      # - un slug touché par plusieurs sources (ex. un candidat déclaré présent
+      #   aussi dans le roster) est bien l'union de contributions FRAÎCHES —
+      #   c'est le seul cas où la fusion additive doit encore jouer entre
+      #   artifacts ;
+      # - un slug qu'aucun job n'a touché n'apparaît dans aucun artifact, et
+      #   conserve donc sa version committée : `merge_raw_dirs` boucle sur les
+      #   fichiers SOURCES et ne réécrit que ceux-là. La baseline n'a jamais eu
+      #   besoin de transiter par un artifact, ce job faisant son propre
+      #   checkout ;
+      # - `overwrite_profiles` n'est donc plus défait à cette étape : la version
+      #   périmée d'un profil régénéré n'est plus présente pour être réunie à la
+      #   version corrigée.
+      #
+      # Attention en lisant `fresh_run` : la purge de `raw_data/profiles/` que
+      # fait ce mode a lieu sur les runners d'EXTRACTION, pas ici. Un profil
+      # qu'aucun job d'extraction ne couvre survit donc à un `fresh_run` par le
+      # checkout de ce job — c'était déjà le cas avant #450.
       - name: Fusion des profils bruts (AN + Sénat + UE + roster)
         run: |
           python3 src/merge_profile.py \

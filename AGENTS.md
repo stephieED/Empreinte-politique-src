@@ -71,6 +71,16 @@ Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
+**One artifact = one job's contribution (#450)**: an extraction job publishes only the
+profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also
+filled with the committed baseline. Enforced by `generate_all_profiles.py --manifest-out`
++ `.github/actions/publish-written-profiles`; guarded by `tests/test_ci_publication_profils.py`.
+Republishing the baseline made the additive merge reunite a profile's stale and corrected
+versions, defeating `--no-merge` and inflating volumes every run, and made sharded jobs
+collide under `merge-multiple` so only one shard's work survived. The baseline needs no
+artifact: `merge-and-pivot` checks out the repo and `merge_raw_dirs` only rewrites slugs
+present in the artifacts. See `docs/technical_decisions.md#publication-scopee-artifacts`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals, and
 amendements index freshness (§3d: distinguishes "never built" from "present but stale

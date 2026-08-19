@@ -183,7 +183,18 @@ python src/generate_all_profiles.py --out-dir /tmp/profiles
 python src/generate_all_profiles.py --pivot-dir /tmp/pivots
 python src/generate_all_profiles.py --limit 20    # premiers N candidats (déploiement progressif)
 python src/generate_all_profiles.py --sample 20   # échantillon aléatoire de N candidats
+python src/generate_all_profiles.py --manifest-out _manifest/profils-ecrits.txt  # cf. ci-dessous (#450)
 ```
+
+`--manifest-out` consigne, une ligne par nom de fichier, les profils bruts que
+CE run a réellement écrits — ni ceux qu'il a sautés, ni ceux qui étaient déjà
+dans `--out-dir`. C'est ce qui permet à un job d'extraction CI de ne publier que
+sa propre contribution : `raw_data/profiles/` contient aussi la baseline
+committée déposée par son `actions/checkout`, et la republier réinjectait des
+données périmées à la fusion (#450, voir
+[`docs/technical_decisions.md#publication-scopee-artifacts`](docs/technical_decisions.md#publication-scopee-artifacts)).
+Le fichier est écrit au fil de l'eau et tronqué au démarrage : il décrit une
+exécution, pas un répertoire.
 
 Extraction pilotée par roster (composition réelle des groupes parlementaires,
 au lieu de la liste éditoriale `raw_data/candidats.json`, voir
