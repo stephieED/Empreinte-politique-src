@@ -96,7 +96,13 @@ def _intervention_key(i: dict[str, Any]) -> Key:
 
 
 def _amendement_key(a: dict[str, Any]) -> Key:
-    return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
+    # `uid` d'abord : c'est le seul identifiant unique d'un amendement AN. Les
+    # replis restent pour les entrées collectées avant son extraction (#431,
+    # correction de clé du 18/08/2026) — `numero` seul ne distingue pas deux
+    # amendements de textes différents, et `texte_vise` est tantôt un code
+    # source, tantôt un titre résolu, ce qui fait passer le même amendement pour
+    # deux entrées distinctes à la fusion.
+    return a.get("uid") or a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
 
 def _mandat_ue_key(m: dict[str, Any]) -> Key:
@@ -267,7 +273,9 @@ def clean_stale_textes_portes(textes: Optional[list[dict[str, Any]]]) -> list[di
 
 
 def _pivot_amendement_key(a: dict[str, Any]) -> Key:
-    return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
+    # Même clé que côté brut (`_amendement_key`) : l'`uid` AN d'abord, replis
+    # ensuite pour les entrées antérieures à son extraction.
+    return a.get("uid") or a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
 
 def _pivot_intervention_key(i: dict[str, Any]) -> Key:
