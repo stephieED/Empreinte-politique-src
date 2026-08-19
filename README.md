@@ -175,6 +175,7 @@ python src/generate_all_profiles.py
 python src/generate_all_profiles.py --only jean-luc-melenchon
 python src/generate_all_profiles.py --max-pages 5
 python src/generate_all_profiles.py --skip-existing
+python src/generate_all_profiles.py --refresh-existing --no-merge  # l'inverse : ne régénère QUE l'existant (#445)
 python src/generate_all_profiles.py --pivot
 python src/generate_all_profiles.py --skip-ue
 python src/generate_all_profiles.py --workers 8
