@@ -65561,28 +65561,28 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 76548,
-    "nb_adoptes": 2775,
-    "nb_rejetes": 29185,
-    "nb_irrecevables": 13633,
-    "nb_retires_ou_tombes": 14005,
-    "taux_adoption": 0.0363,
+    "nb_amendements": 120016,
+    "nb_adoptes": 3887,
+    "nb_rejetes": 46781,
+    "nb_irrecevables": 20885,
+    "nb_retires_ou_tombes": 22539,
+    "taux_adoption": 0.0324,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 659,
-        "nb_adoptes": 146,
-        "nb_rejetes": 334,
-        "nb_irrecevables": 10,
-        "nb_retires_ou_tombes": 79,
-        "taux_adoption": 0.2215
+        "nb_amendements": 923,
+        "nb_adoptes": 195,
+        "nb_rejetes": 488,
+        "nb_irrecevables": 17,
+        "nb_retires_ou_tombes": 103,
+        "taux_adoption": 0.2113
       },
       "depute": {
-        "nb_amendements": 75889,
-        "nb_adoptes": 2629,
-        "nb_rejetes": 28851,
-        "nb_irrecevables": 13623,
-        "nb_retires_ou_tombes": 13926,
-        "taux_adoption": 0.0346
+        "nb_amendements": 119093,
+        "nb_adoptes": 3692,
+        "nb_rejetes": 46293,
+        "nb_irrecevables": 20868,
+        "nb_retires_ou_tombes": 22436,
+        "taux_adoption": 0.031
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -65666,7 +65666,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:02+0000",
+    "genere_le": "2026-08-19T17:08:42+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:michael-taverne",

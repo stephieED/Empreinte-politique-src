@@ -42720,28 +42720,28 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 42820,
-    "nb_adoptes": 3608,
-    "nb_rejetes": 15450,
-    "nb_irrecevables": 7993,
-    "nb_retires_ou_tombes": 10884,
-    "taux_adoption": 0.0843,
+    "nb_amendements": 50749,
+    "nb_adoptes": 3898,
+    "nb_rejetes": 19019,
+    "nb_irrecevables": 9520,
+    "nb_retires_ou_tombes": 12619,
+    "taux_adoption": 0.0768,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 1008,
-        "nb_adoptes": 567,
-        "nb_rejetes": 187,
+        "nb_amendements": 1032,
+        "nb_adoptes": 575,
+        "nb_rejetes": 194,
         "nb_irrecevables": 12,
-        "nb_retires_ou_tombes": 160,
-        "taux_adoption": 0.5625
+        "nb_retires_ou_tombes": 166,
+        "taux_adoption": 0.5572
       },
       "depute": {
-        "nb_amendements": 41812,
-        "nb_adoptes": 3041,
-        "nb_rejetes": 15263,
-        "nb_irrecevables": 7981,
-        "nb_retires_ou_tombes": 10724,
-        "taux_adoption": 0.0727
+        "nb_amendements": 49717,
+        "nb_adoptes": 3323,
+        "nb_rejetes": 18825,
+        "nb_irrecevables": 9508,
+        "nb_retires_ou_tombes": 12453,
+        "taux_adoption": 0.0668
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -42795,7 +42795,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96884",
-      "synchro_le": "2026-08-17T20:56:11+0200"
+      "synchro_le": "2026-08-19T17:03:41+0000"
     },
     {
       "type": "nosdeputes",
@@ -42805,7 +42805,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:26:58+0000",
+    "genere_le": "2026-08-19T17:08:43+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:fabien-di-filippo",
