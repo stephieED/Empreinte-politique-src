@@ -12,6 +12,16 @@ on:
           false = mode incrémental résilient (fusion additive, cache restauré, seuil souple).
         type: boolean
         default: false
+      overwrite_profiles:
+        description: >
+          Écraser les profils au lieu de les fusionner, SANS purger le cache
+          (--no-merge seul). À utiliser quand une correction de schéma rend la
+          fusion incorrecte — ex. un changement de clé qui ferait compter deux
+          fois la même entrée — mais qu'il n'y a aucune raison de re-télécharger
+          les archives sources. fresh_run=true implique déjà ce comportement,
+          en y ajoutant la purge du cache.
+        type: boolean
+        default: false
       threshold:
         description: >
           Seuil IncompleteRead (soft fail). Appliqué dans tous les modes,
@@ -373,9 +383,13 @@ jobs:
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           INTERV_FLAG=()
           [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
@@ -457,9 +471,13 @@ jobs:
       - name: Extraction Sénat (NosSénateurs)
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact Sénat
@@ -530,9 +548,13 @@ jobs:
       - name: Extraction UE (Open Data Portal EP)
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} "${MERGE_FLAG[@]}"
 
       - name: Upload artifact UE
@@ -1013,10 +1035,14 @@ jobs:
       - name: Extraction roster-driven (mode léger)
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
           ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
           # --shard : partition déterministe par position modulo (#394). Avec
@@ -1200,9 +1226,13 @@ jobs:
       - name: Normalisation pivot + enrichissement ParlTrack
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           python3 src/generate_all_profiles.py \
             --pivot-only \
             --enrich-parltrack \
@@ -1228,9 +1258,13 @@ jobs:
       - name: Normalisation pivot roster-driven
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
+          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
+          # dont l'indisponibilité a déjà bloqué trois chantiers.
+          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           python3 src/generate_roster_candidats.py
           python3 src/generate_all_profiles.py \
             --pivot-only \
@@ -1245,15 +1279,20 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/partis
 
-      # fresh_run=true  → recréation complète des groupes.
-      # fresh_run=false → --merge-existing : membres absents du roster live
-      #                   réintégrés depuis le fichier précédent (résilience réseau).
+      # fresh_run / overwrite_profiles → recréation complète des groupes.
+      # Sinon → --merge-existing : membres absents du roster live réintégrés
+      #         depuis le fichier précédent (résilience réseau).
+      #
+      # `overwrite_profiles` agit ici comme `fresh_run` (#440) : réintégrer des
+      # membres depuis un fichier de groupe produit avec l'ancien schéma
+      # ramènerait précisément les données que l'écrasement vise à remplacer.
       - name: Générer les profils de groupe parlementaire réel
         env:
           FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" != "true" ]] && MERGE_FLAG=(--merge-existing)
+          [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]] && MERGE_FLAG=(--merge-existing)
           python3 src/generate_group_profiles.py \
             --config raw_data/groupes_reels.json \
             --profiles-dir pivot_data/profiles \
