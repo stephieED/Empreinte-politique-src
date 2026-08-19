@@ -4506,3 +4506,120 @@ def test_identite_index_shares_historique_zip_download_with_organe_index(tmp_pat
     assert mock_get.call_count == 1, "Le zip bulk ne doit être téléchargé qu'une seule fois, partagé entre les deux index"
     assert organe_index["PO1"]["sigle"] == "Com"
     assert identite_index["PA1"]["nom_complet"] == "Jane Doe"
+
+
+def test_amendements_index_deja_figee_false_on_legacy_uid_shards(tmp_path):
+    """Impasse mesurée sur le cache local du 19/08/2026 (#447) : un cache figé
+    matérialisé AVANT la correction de clé du 18/08 (références par `numero`)
+    était déclaré « déjà figé » — donc jamais reconstruit par
+    `build_amendements_index.py` — pendant que `_read_cached_amendements_acteur`
+    le REFUSAIT à la lecture. Ni reconstruit, ni lu : la législature perd la
+    totalité de ses amendements, avec pour seul signe un warning soft « index en
+    cache absent ».
+
+    Les deux moitiés de l'impasse sont vérifiées ici, pour que le test dise
+    pourquoi le format compte et pas seulement qu'il est contrôlé."""
+    from candidate_profile import _read_cached_amendements_acteur, amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    _write_cache_amendements(
+        cache_dir,
+        "15",
+        amendements={"12": {"numero": "12", "texte_vise": "PIONANR5L15B4852"}},
+        index_par_acteur={"PA1": [{"numero": "12", "role_signataire": "auteur_principal"}]},
+    )
+    (cache_dir / "15" / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-15T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        # Moitié lecture : l'index hérité est refusé (comportement déjà acquis).
+        assert _read_cached_amendements_acteur("15", "PA1") is None
+        # Moitié reconstruction : il ne doit donc PAS être considéré comme figé.
+        assert amendements_index_deja_figee("15") is False
+
+
+def test_amendements_index_deja_figee_true_on_uid_shards(tmp_path):
+    """Contrepartie : le même cache, au format `uid`, reste bien « déjà figé »
+    — le contrôle de format ne doit pas faire retélécharger une législature
+    figée correctement matérialisée."""
+    from candidate_profile import amendements_index_deja_figee
+
+    cache_dir = tmp_path / "cache"
+    uid = "AMANR5L15PO123456B0001P0D1N001"
+    _write_cache_amendements(
+        cache_dir,
+        "15",
+        amendements={uid: {"uid": uid, "numero": "12"}},
+        index_par_acteur={"PA1": [{"uid": uid, "role_signataire": "auteur_principal"}]},
+    )
+    (cache_dir / "15" / "fraicheur.json").write_text(
+        json.dumps({"derniere_construction_reussie": True, "horodatage": "2026-08-15T00:00:00+0000", "figee": True}),
+        encoding="utf-8",
+    )
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        assert amendements_index_deja_figee("15") is True
+
+
+def test_write_cached_amendements_agreges_publie_le_repertoire_dun_seul_coup(tmp_path):
+    """Une écriture interrompue ne doit JAMAIS laisser un répertoire de tranches
+    qui existe et qui est incomplet (#447).
+
+    C'est ce que la docstring de `_write_cached_amendements_agreges` promettait
+    déjà, mais que le code ne tenait pas : il faisait `mkdir` puis remplissait en
+    place, donc pendant toute la boucle le répertoire existait à moitié rempli.
+    Un tel répertoire est accepté comme cache-hit par
+    `_download_and_build_amendement_index` (`index_dir.is_dir()`), donc jamais
+    reconstruit, et chaque acteur dont la tranche manque est lu comme « aucun
+    amendement » au lieu de « index indisponible » — un zéro silencieux.
+    Atteignable en CI : le step d'upload de l'artifact amendements est en
+    `if: always()`, donc un job interrompu publie l'état partiel du disque."""
+    from candidate_profile import _write_cached_amendements_agreges
+
+    cache_dir = tmp_path / "cache"
+    uid = "AMANR5L17PO1B1P0D1N1"
+    index = {f"PA{i}": [{"uid": uid, "role_signataire": "auteur_principal"}] for i in range(1, 6)}
+
+    vrai_dump = json.dump
+    appels = {"n": 0}
+
+    def dump_qui_echoue(obj, fp, **kwargs):
+        # Laisse passer amendements.json puis les 2 premières tranches, et
+        # interrompt : le répertoire est alors à moitié écrit.
+        appels["n"] += 1
+        if appels["n"] > 3:
+            raise OSError("interruption simulée en cours d'écriture des tranches")
+        return vrai_dump(obj, fp, **kwargs)
+
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir),
+        patch("candidate_profile.json.dump", side_effect=dump_qui_echoue),
+        pytest.raises(OSError),
+    ):
+        _write_cached_amendements_agreges("17", {uid: {"uid": uid}}, index)
+
+    # Le répertoire officiel ne doit pas exister : un cache traité comme absent,
+    # jamais un cache incohérent.
+    assert not (cache_dir / "17" / "index_par_acteur").exists()
+
+
+def test_write_cached_amendements_agreges_ecrit_bien_toutes_les_tranches(tmp_path):
+    """Contrepartie : une écriture qui va au bout publie le répertoire complet,
+    et ne laisse derrière elle aucun répertoire temporaire."""
+    from candidate_profile import _read_cached_amendements_acteur, _write_cached_amendements_agreges
+
+    cache_dir = tmp_path / "cache"
+    uid = "AMANR5L17PO1B1P0D1N1"
+    index = {f"PA{i}": [{"uid": uid, "role_signataire": "auteur_principal"}] for i in range(1, 6)}
+
+    with patch("candidate_profile.AMENDEMENTS_CACHE_DIR", cache_dir):
+        _write_cached_amendements_agreges("17", {uid: {"uid": uid, "numero": "12"}}, index)
+
+        index_dir = cache_dir / "17" / "index_par_acteur"
+        assert sorted(p.name for p in index_dir.glob("*.json")) == [f"PA{i}.json" for i in range(1, 6)]
+        assert not (cache_dir / "17" / "index_par_acteur.partiel").exists()
+        assert _read_cached_amendements_acteur("17", "PA3") == [
+            {"uid": uid, "numero": "12", "role_signataire": "auteur_principal"}
+        ]

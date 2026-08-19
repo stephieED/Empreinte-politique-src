@@ -629,13 +629,27 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
             if data is None:
                 continue
             chambre = data.get("chambre") or ""
-            if chambre not in ("AN", "deputes"):
-                continue
-            if not data.get("identite"):
+            amendements = data.get("amendements") or []
+            # Deux populations distinctes, délibérément (#447) :
+            #
+            # - `population_an` — les députés identifiés — porte les compteurs
+            #   « candidats AN » et le signal de régression « amendements[] vide
+            #   partout » : ce sont les profils dont on ATTEND des amendements ;
+            # - la mesure de couverture `uid`, elle, porte sur tout profil qui
+            #   PUBLIE des amendements, quelle que soit sa `chambre`.
+            #
+            # Filtrer la mesure `uid` sur `chambre == "AN"` laissait un angle
+            # mort mesuré le 19/08/2026 : `jean-luc-melenchon`, 18 721
+            # amendements AN publiés, est sorti du champ de la §3c en passant à
+            # `chambre: "Senat"` avec `identite` vide — soit 2,3 % du corpus
+            # invisibles au signal même qui doit les surveiller, sur le profil
+            # que #447 cite. Un profil peut cesser d'être compté sans cesser
+            # d'être publié : la §3c doit suivre les amendements, pas la fiche.
+            population_an = bool(chambre in ("AN", "deputes") and data.get("identite"))
+            if not population_an and not amendements:
                 continue
             slug = _slug_from_stem(path.stem)
             nom = data.get("nom") or slug
-            amendements = data.get("amendements") or []
             n_amendements = len(amendements)
             n_uid = sum(1 for a in amendements if isinstance(a, dict) and a.get("uid"))
             warnings_list: list[str] = (data.get("meta") or {}).get("warnings") or []
@@ -647,6 +661,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
                     "n_amendements": n_amendements,
                     "n_uid": n_uid,
                     "has_fetch_error": has_fetch_error,
+                    "population_an": population_an,
                 }
             )
 
@@ -670,11 +685,18 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
 
     n_amendements_total = sum(r["n_amendements"] for r in rows)
     n_uid_total = sum(r["n_uid"] for r in rows)
-    n_avec_amendements = sum(1 for r in rows if r["n_amendements"] > 0)
+    rows_hors_an = [r for r in rows if not r["population_an"]]
+    n_hors_an_amendements = sum(r["n_amendements"] for r in rows_hors_an)
+    # Le signal de régression porte sur la population AN attendue, pas sur les
+    # lignes ajoutées pour leurs seuls amendements (voir plus haut) : un profil
+    # hors population AN n'entre dans `rows` que s'il a des amendements, il ne
+    # peut donc jamais faire basculer un « vide partout ».
+    rows_an = [r for r in rows if r["population_an"]]
+    n_avec_amendements = sum(1 for r in rows_an if r["n_amendements"] > 0)
     regression_globale: str | None = None
-    if rows and n_avec_amendements == 0:
+    if rows_an and not any(r["n_amendements"] > 0 for r in rows_an):
         regression_globale = (
-            f"aucun candidat AN sur {len(rows)} n'a d'amendements collectés (amendements[] vide partout) "
+            f"aucun candidat AN sur {len(rows_an)} n'a d'amendements collectés (amendements[] vide partout) "
             "— possible régression de collecte (candidate_profile.fetch_amendements_officiels)"
         )
         soft_warnings.append(regression_globale)
@@ -688,12 +710,20 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     lines = [
         "",
         "┌─ 3c/4  Couverture amendements (AN) ────────────────────────────────",
-        f"│  Candidats AN avec identité : {len(rows)}   Avec amendements : {n_avec_amendements}"
+        f"│  Candidats AN avec identité : {len(rows_an)}   Avec amendements : {n_avec_amendements}"
         f"   Avertissements : {len(soft_warnings)}",
         f"│  Amendements : {n_amendements_total}   dont uid : {n_uid_total} ({pct_uid})"
         f"   Profils mixtes : {len(rows_mixtes)}",
-        "│",
     ]
+    if rows_hors_an:
+        # Rendu explicite plutôt que fondu dans les compteurs AN : ces profils
+        # publient des amendements sans appartenir à la population dont on en
+        # attend, et c'est justement ce décalage qui les rendait invisibles.
+        lines.append(
+            f"│  Dont hors population AN : {len(rows_hors_an)} profil(s), "
+            f"{n_hors_an_amendements} amendement(s) — publiés, donc mesurés"
+        )
+    lines.append("│")
     if rows_mixtes:
         lines += [
             f"│  {_AMENDEMENTS_UID_MIXTE_ICONE} {len(rows_mixtes)} profil(s) à couverture uid PARTIELLE —",
@@ -724,7 +754,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
         "",
         "| Métrique | Valeur |",
         "|---|---|",
-        f"| {ok_icon} Candidats AN avec identité | {len(rows)} |",
+        f"| {ok_icon} Candidats AN avec identité | {len(rows_an)} |",
         f"| Avec ≥ 1 amendement | {n_avec_amendements} |",
         f"| Amendements | {n_amendements_total} |",
         f"| dont portant un `uid` | {n_uid_total} ({pct_uid}) |",
@@ -732,6 +762,12 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
         f"| Avertissements | {len(soft_warnings)} |",
         "",
     ]
+    if rows_hors_an:
+        md_lines.insert(
+            -1,
+            f"| Dont hors population AN | {len(rows_hors_an)} profil(s), "
+            f"{n_hors_an_amendements} amendement(s) |",
+        )
     if rows_mixtes:
         md_lines += [
             f"> {_AMENDEMENTS_UID_MIXTE_ICONE} **{len(rows_mixtes)} profil(s) à couverture `uid` partielle** — "

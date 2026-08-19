@@ -608,3 +608,55 @@ def test_couverture_uid_partielle_ne_bloque_jamais_le_commit(tmp_path, monkeypat
     assert code == 0
     assert "COMMIT AUTORISÉ" in sortie
     assert _AMENDEMENTS_UID_MIXTE_ICONE in sortie
+
+
+def test_report_amendements_coverage_couvre_les_amendements_hors_population_an(tmp_path):
+    """Angle mort mesuré le 19/08/2026 (#447) : un profil peut PUBLIER des
+    amendements AN sans appartenir à la population « candidat AN avec identité »
+    de la §3c. `jean-luc-melenchon` — 18 721 amendements AN — est sorti du champ
+    de la section en passant à `chambre: "Senat"` avec `identite` vide, soit
+    2,3 % du corpus rendus invisibles au signal même qui doit les surveiller.
+
+    La mesure de couverture `uid` doit donc suivre les amendements publiés, pas
+    la fiche : un tel profil, s'il est mixte, doit être signalé."""
+    _write_pivot(
+        tmp_path,
+        "jean-luc-melenchon",
+        "Senat",
+        None,
+        amendements=[{"uid": "AMANR5L17PO1B1P0D1N1"}, {"numero": "12"}],
+        warnings=[],
+    )
+
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
+
+    assert any("jean-luc-melenchon" in w and "sans uid" in w for w in soft), soft
+    assert _AMENDEMENTS_UID_MIXTE_ICONE in console
+    # Ses amendements entrent bien dans le dénominateur global.
+    assert "| Amendements | 2 |" in md
+
+
+def test_report_amendements_coverage_hors_population_an_ne_fausse_pas_les_compteurs(tmp_path):
+    """Contrepartie du test précédent : les lignes ajoutées pour leurs seuls
+    amendements ne doivent ni gonfler « Candidats AN avec identité », ni
+    éteindre le signal de régression globale « amendements[] vide partout »,
+    qui porte sur la population dont on ATTEND des amendements."""
+    _write_pivot(tmp_path, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"}, amendements=[], warnings=[])
+    _write_pivot(
+        tmp_path,
+        "senateur-x",
+        "Senat",
+        None,
+        amendements=[{"uid": "AMANR5L17PO1B1P0D1N1"}],
+        warnings=[],
+    )
+
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
+
+    assert regression is not None and "aucun candidat AN sur 1" in regression
+    assert "| ⚠️ Candidats AN avec identité | 1 |" in md
+    # Chaque compteur garde un sens unique : l'apport hors population AN est
+    # rendu explicite au lieu d'être fondu dans les compteurs « candidats AN ».
+    assert "| Avec ≥ 1 amendement | 0 |" in md
+    assert "| Dont hors population AN | 1 profil(s), 1 amendement(s) |" in md
+    assert "Dont hors population AN : 1 profil(s), 1 amendement(s)" in console

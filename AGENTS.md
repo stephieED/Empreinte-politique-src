@@ -95,10 +95,17 @@ present in the artifacts. See `docs/technical_decisions.md#publication-scopee-ar
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial `uid` coverage inside a profile's `amendements[]` (§3c — two versions of the same
 amendment cohabiting, so the entry is counted twice and the published denominators are
-wrong; #447, cause #450 — soft on purpose: mixed profiles are expected during the
-remediation window, and failing the gate would block the very runs meant to fix them),
+wrong; #447, cause #450 — soft on purpose: mixed profiles were expected during the
+remediation window, and failing the gate would have blocked the very runs meant to fix
+them. The window is closed: 179 AN profiles at 100 % `uid`, 0 mixed, at `a125e9e`.
+**The `uid` measurement follows the amendments, not the record**: it covers every profile
+that *publishes* `amendements[]`, whatever its `chambre` — a profile can stop being
+counted without stopping being published, and 18 721 published amendments were invisible
+to it until then. The "AN candidates" counters and the "empty everywhere" regression
+signal keep the narrower population, the one amendments are *expected* from. See
+`docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`),
 and amendements index freshness (§3d: distinguishes "never built" from "present but stale
-beyond N days without a successful rebuild" from "frozen" — légis 15/16 are closed
+beyond N days without a successful rebuild" from "frozen" — légis 14/15/16 are closed
 dossiers, their index is committed under `raw_data/amendements_an_figes/` and never
 re-fetched, see `docs/technical_decisions.md#amendements-legislatures-figees`). Gouvernement
 section (§5) mirrors groupes (§4): couverture ministérielle (portefeuille attribution),
@@ -139,6 +146,15 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
   (`docs/technical_decisions.md#resolution-legislature-votes`).
 - `amendements[].sort == "irrecevable"` requires `base_juridique_irrecevabilite` (`"art. 40"` or `"art. 45"`).
 - `amendements[].type_deposant`: never aggregate adoption rates across depositor types (rule, Section 6).
+- Amendements cache (`.cache/amendements_an/<leg>/`): **a directory that exists is not
+  evidence of what it holds.** Presence checks must also check the key format — a frozen
+  cache written before the `uid` correction is skipped by `build_amendements_index.py` and
+  refused by `_read_cached_amendements_acteur` at once, losing the whole legislature in
+  silence. And the shard directory is published by a single `os.replace` from a temp dir,
+  never filled in place: a half-written directory reads as "this member has no amendments"
+  instead of "index unavailable". That atomicity is what makes the single-shard format
+  check legitimate — do not fill in place.
+  See `docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`.
 Edge-case history: `docs/technical_decisions.md#cas-limites`.
 
 ## 6. Metrics: public vs internal
