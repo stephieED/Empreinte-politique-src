@@ -121,11 +121,11 @@
     {
       "membre_id": "nosdeputes:olivier-dussopt",
       "nom": "Olivier Dussopt",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la relance, chargé des comptes publics",
       "debut": "2020-07-07",
       "fin": "2022-05-16",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:olivier-veran",
@@ -3797,7 +3797,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T15:05:05+0000"
+      "synchro_le": "2026-08-19T19:03:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -3822,7 +3822,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-08-06T09:05:24+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -3847,17 +3847,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-dussopt",
-      "synchro_le": "2026-08-14T14:48:31+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
-      "synchro_le": "2026-08-13T13:42:46+0000"
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:27+0000",
     "licence_donnees": "",
     "warnings": []
   }

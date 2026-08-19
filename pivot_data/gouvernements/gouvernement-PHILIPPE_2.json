@@ -71,11 +71,11 @@
     {
       "membre_id": "nosdeputes:olivier-dussopt",
       "nom": "Olivier Dussopt",
-      "portefeuille": null,
+      "portefeuille": "Secrétariat d'État auprès du ministre de l'action et des comptes publics",
       "debut": "2017-11-25",
       "fin": "2020-07-06",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:olivier-veran",
@@ -5431,7 +5431,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-08-06T09:05:24+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -5441,12 +5441,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-dussopt",
-      "synchro_le": "2026-08-14T14:48:31+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
-      "synchro_le": "2026-08-13T13:42:46+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -5456,7 +5456,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:27+0000",
     "licence_donnees": "",
     "warnings": []
   }

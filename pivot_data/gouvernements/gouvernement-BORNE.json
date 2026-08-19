@@ -40,11 +40,11 @@
     {
       "membre_id": "nosdeputes:carole-grandjean",
       "nom": "Carole Grandjean",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès du ministre du travail, du plein emploi et de l’insertion et du ministre de l’éducation nationale et de la jeunesse, chargé de l’enseignement et de la formation professionnels",
       "debut": "2022-07-05",
       "fin": "2024-01-09",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:clement-beaune",
@@ -76,11 +76,20 @@
     {
       "membre_id": "nosdeputes:dominique-faure",
       "nom": "Dominique Faure",
-      "portefeuille": null,
+      "portefeuille": "Secrétariat d’État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de la ruralité",
       "debut": "2022-07-05",
+      "fin": "2022-11-28",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:dominique-faure",
+      "nom": "Dominique Faure",
+      "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargé des collectivités territoriales et de la ruralité",
+      "debut": "2022-11-29",
       "fin": "2024-01-09",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:elisabeth-borne",
@@ -193,11 +202,11 @@
     {
       "membre_id": "nosdeputes:olivier-dussopt",
       "nom": "Olivier Dussopt",
-      "portefeuille": null,
+      "portefeuille": "Ministère du travail, du plein emploi et de l’insertion",
       "debut": "2022-05-21",
       "fin": "2024-01-09",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:olivier-veran",
@@ -2469,7 +2478,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T15:04:38+0000"
+      "synchro_le": "2026-08-19T19:19:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -2489,17 +2498,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/damien-abad",
-      "synchro_le": "2026-08-13T13:44:07+0000"
+      "synchro_le": null
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96850",
-      "synchro_le": "2026-08-17T19:12:24+0200"
+      "synchro_le": "2026-08-19T19:02:42+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/dominique-faure",
-      "synchro_le": "2026-08-14T14:47:51+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2509,7 +2518,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/fadila-khattabi",
-      "synchro_le": "2026-08-13T13:45:39+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2519,7 +2528,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-08-06T09:05:24+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2544,12 +2553,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-dussopt",
-      "synchro_le": "2026-08-14T14:48:31+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
-      "synchro_le": "2026-08-13T13:42:46+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -2579,17 +2588,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-cazenave",
-      "synchro_le": "2026-08-13T13:43:13+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/yael-braun-pivet",
-      "synchro_le": "2026-08-13T13:45:14+0000"
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:27+0000",
     "licence_donnees": "",
     "warnings": []
   }

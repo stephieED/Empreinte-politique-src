@@ -26,11 +26,11 @@
     {
       "membre_id": "nosdeputes:dominique-faure",
       "nom": "Dominique Faure",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargé des collectivités territoriales et de la ruralité",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:fadila-khattabi",
@@ -89,11 +89,11 @@
     {
       "membre_id": "nosdeputes:marie-guevenoux",
       "nom": "Marie Guévenoux",
-      "portefeuille": null,
+      "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer, chargé des outre-mer",
       "debut": "2024-02-09",
       "fin": "2024-09-05",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:marie-lebec",
@@ -658,17 +658,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T15:04:38+0000"
+      "synchro_le": "2026-08-19T19:19:31+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/dominique-faure",
-      "synchro_le": "2026-08-14T14:47:51+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/fadila-khattabi",
-      "synchro_le": "2026-08-13T13:45:39+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -678,7 +678,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-attal",
-      "synchro_le": "2026-08-06T09:05:24+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -738,12 +738,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-cazenave",
-      "synchro_le": "2026-08-13T13:43:13+0000"
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:27+0000",
     "licence_donnees": "",
     "warnings": []
   }

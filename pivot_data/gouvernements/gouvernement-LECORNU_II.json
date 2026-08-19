@@ -22,29 +22,38 @@
     {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès du ministre de l’Europe et des affaires étrangères, chargé de l'Europe",
       "debut": "2025-10-13",
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès de la ministre de la santé, des familles, de l’autonomie et des personnes handicapées, chargé de  l’autonomie et des personnes handicapées",
       "debut": "2025-10-13",
       "fin": "2026-02-26",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:david-amiel",
       "nom": "David Amiel",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès de la ministre de l'action et des comptes publics, chargé de la fonction publique et de la réforme de l'État",
       "debut": "2025-10-13",
+      "fin": "2026-02-21",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:david-amiel",
+      "nom": "David Amiel",
+      "portefeuille": "Ministère de l'action et des comptes publics",
+      "debut": "2026-02-22",
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:gerald-darmanin",
@@ -67,11 +76,20 @@
     {
       "membre_id": "nosdeputes:maud-bregeon",
       "nom": "Maud Bregeon",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès du Premier ministre, porte-parole du Gouvernement",
       "debut": "2025-10-13",
+      "fin": "2026-02-26",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "nosdeputes:maud-bregeon",
+      "nom": "Maud Bregeon",
+      "portefeuille": "Ministère délégué, porte-parole du Gouvernement auprès du Premier ministre, et ministère délégué, chargé de l'énergie auprès du ministre de l’économie, des finances et de la souveraineté industrielle, énergétique et numérique",
+      "debut": "2026-02-27",
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:roland-lescure",
@@ -1221,22 +1239,22 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T15:04:38+0000"
+      "synchro_le": "2026-08-19T19:19:31+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
-      "synchro_le": "2026-08-14T14:47:05+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
-      "synchro_le": "2026-08-13T13:45:01+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-amiel",
-      "synchro_le": "2026-08-13T13:44:48+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -1271,7 +1289,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:28+0000",
     "licence_donnees": "",
     "warnings": []
   }

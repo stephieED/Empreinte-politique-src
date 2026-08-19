@@ -13,11 +13,11 @@
     {
       "membre_id": "nosdeputes:anne-genetet",
       "nom": "Anne Genetet",
-      "portefeuille": null,
+      "portefeuille": "Ministère de l’éducation nationale",
       "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:antoine-armand",
@@ -40,11 +40,11 @@
     {
       "membre_id": "nosdeputes:benjamin-haddad",
       "nom": "Benjamin Haddad",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès du Premier ministre et du ministre de l’Europe et des affaires étrangères, chargé de l’Europe",
       "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:bruno-retailleau",
@@ -58,11 +58,11 @@
     {
       "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès du ministre des solidarités, de l'autonomie et de l'égalité entre les femmes et les hommes, chargé des personnes en situation de handicap",
       "debut": "2024-09-28",
       "fin": "2024-12-13",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:guillaume-kasbarian",
@@ -85,11 +85,11 @@
     {
       "membre_id": "nosdeputes:maud-bregeon",
       "nom": "Maud Bregeon",
-      "portefeuille": null,
+      "portefeuille": "Ministère délégué auprès du Premier ministre, porte-parole du Gouvernement",
       "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "nosdeputes:olga-givernet",
@@ -385,7 +385,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T17:35:33+0200"
+      "synchro_le": "2026-08-19T19:13:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -400,17 +400,17 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
-      "synchro_le": "2026-08-14T14:47:05+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-17T17:28:34+0200"
+      "synchro_le": "2026-08-19T18:43:44+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-parmentier-lecocq",
-      "synchro_le": "2026-08-13T13:45:01+0000"
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -435,7 +435,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-19T19:31:27+0000",
     "licence_donnees": "",
     "warnings": []
   }
