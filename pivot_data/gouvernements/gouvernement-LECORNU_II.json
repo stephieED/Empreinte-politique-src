@@ -83,6 +83,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:sabrina-agresti-roubache",
+      "nom": "Sabrina Agresti-Roubache",
+      "portefeuille": null,
+      "debut": "2026-02-27",
+      "fin": null,
+      "actif": true,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:stephanie-rist",
       "nom": "Stéphanie Rist",
       "portefeuille": "Ministère de la santé, des familles, de l’autonomie et des personnes handicapées",
@@ -1251,13 +1260,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
+      "synchro_le": "2026-08-19T09:18:50+0000"
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/stephanie-rist",
       "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T20:02:03+0200",
+    "genere_le": "2026-08-19T09:24:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -772,11 +772,6 @@
       "synchro_le": "2026-08-14T14:47:05+0000"
     },
     {
-      "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-17T17:28:34+0200"
-    },
-    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
@@ -809,7 +804,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T20:02:03+0200",
+    "genere_le": "2026-08-19T09:24:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

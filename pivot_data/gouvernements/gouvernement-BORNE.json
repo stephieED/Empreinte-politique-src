@@ -245,6 +245,15 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
+      "membre_id": "nosdeputes:sabrina-agresti-roubache",
+      "nom": "Sabrina Agresti-Roubache",
+      "portefeuille": null,
+      "debut": "2023-07-21",
+      "fin": "2024-01-09",
+      "actif": false,
+      "source_url": null
+    },
+    {
       "membre_id": "nosdeputes:stanislas-guerini",
       "nom": "Stanislas Guerini",
       "portefeuille": "Ministère de la transformation et de la fonction publiques",
@@ -2509,7 +2518,7 @@
     },
     {
       "type": "nosdeputes",
-      "url": "https://2017-2022.nosdeputes.fr/gabriel-attal",
+      "url": "https://www.nosdeputes.fr/gabriel-attal",
       "synchro_le": "2026-08-06T09:05:24+0000"
     },
     {
@@ -2559,6 +2568,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
+      "synchro_le": "2026-08-19T09:18:50+0000"
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/stanislas-guerini",
       "synchro_le": null
     },
@@ -2575,7 +2589,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T20:02:03+0200",
+    "genere_le": "2026-08-19T09:24:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

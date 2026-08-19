@@ -76,7 +76,7 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://2012-2017.nosdeputes.fr/edouard-philippe",
+      "url": "https://www.nosdeputes.fr/edouard-philippe",
       "synchro_le": "2026-08-06T09:02:12+0000"
     },
     {
@@ -97,7 +97,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T20:02:03+0200",
+    "genere_le": "2026-08-19T09:24:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

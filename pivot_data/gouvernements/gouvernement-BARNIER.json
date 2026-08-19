@@ -65,6 +65,15 @@
       "source_url": null
     },
     {
+      "membre_id": "nosdeputes:guillaume-kasbarian",
+      "nom": "Guillaume Kasbarian",
+      "portefeuille": "Ministère de la fonction publique, de la simplification et de la transformation de l’action publique",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
       "membre_id": "nosdeputes:marc-ferracci",
       "nom": "Marc Ferracci",
       "portefeuille": "Ministère délégué auprès du ministre de l'économie, des finances et de l'industrie, chargé de l’industrie",
@@ -81,6 +90,15 @@
       "fin": "2024-12-13",
       "actif": false,
       "source_url": null
+    },
+    {
+      "membre_id": "nosdeputes:olga-givernet",
+      "nom": "Olga Givernet",
+      "portefeuille": "Ministère délégué auprès de la ministre de la transition écologique, de l'énergie, du climat et de la prévention des risques, chargé de l’énergie",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [
@@ -385,11 +403,6 @@
       "synchro_le": "2026-08-14T14:47:05+0000"
     },
     {
-      "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-17T17:28:34+0200"
-    },
-    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
@@ -401,6 +414,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/guillaume-kasbarian",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marc-ferracci",
       "synchro_le": null
     },
@@ -408,11 +426,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/maud-bregeon",
       "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/olga-givernet",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T20:02:03+0200",
+    "genere_le": "2026-08-19T09:24:17+0000",
     "licence_donnees": "",
     "warnings": []
   }

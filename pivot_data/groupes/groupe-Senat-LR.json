@@ -496,11 +496,6 @@
       "synchro_le": null
     },
     {
-      "type": "nossenateurs",
-      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
-      "synchro_le": "2026-08-17T17:28:34+0200"
-    },
-    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
       "synchro_le": "2026-08-17T17:28:34+0200"
@@ -543,7 +538,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-18T00:27:00+0000",
+    "genere_le": "2026-08-19T09:24:04+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:catherine-deroche",
