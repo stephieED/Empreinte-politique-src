@@ -308,8 +308,61 @@ function joinVotes(votes, scrutinsIndex) {
     .filter(Boolean);
 }
 
+/**
+ * Législature portée par un identifiant d'amendement (`an:AMANR5L17…` → `'17'`).
+ *
+ * Lecture structurelle de l'identifiant, pas une déduction depuis la date :
+ * c'est l'AN qui l'y écrit. `null` si la forme n'est pas reconnue — on ne
+ * devine pas une législature pour aller chercher le mauvais fichier.
+ */
+export function legislatureDeAmendementId(amendementId) {
+  const m = /^an:AMANR5L(\d+)/.exec(amendementId || '');
+  return m ? m[1] : null;
+}
+
+/**
+ * Index des amendements (#431) : `{ '17': { 'an:AMANR5L17…': { sort, date, … } } }`.
+ *
+ * Indexé **par législature** parce que c'est ainsi qu'il est stocké et chargé :
+ * un fichier global pèserait 128,8 Mo, au-delà de la limite GitHub de 100 Mo
+ * par blob, et l'UI n'a besoin que des législatures que le profil affiché
+ * référence. La résolution reste en O(1) : la législature se lit dans
+ * l'identifiant.
+ */
+function resolveAmendement(amendementsIndex, amendementId) {
+  if (!amendementsIndex || !amendementId) return null;
+  const legislature = legislatureDeAmendementId(amendementId);
+  const parLegislature = legislature != null ? amendementsIndex[legislature] : null;
+  return (parLegislature && parLegislature[amendementId]) || null;
+}
+
+/**
+ * Itère les amendements d'un profil joints à l'index — **un générateur**.
+ *
+ * Volontairement paresseux : rendre un tableau de la forme jointe
+ * reconstruirait exactement la forme plate que #431 supprime (810 552
+ * enregistrements complets là où il y en a 207 238 distincts), avec le facteur
+ * ~21 et l'OOM de #377.
+ *
+ * Un amendement introuvable rend `null` : la vue en fait une donnée manquante,
+ * jamais une valeur inventée.
+ */
+function* joinAmendements(amendements, amendementsIndex) {
+  for (const a of amendements || []) {
+    // Repli sur l'entrée elle-même pour les pivots d'AVANT #431, qui portaient
+    // encore le méta de l'amendement. Le code est déployé avant que les données
+    // ne soient régénérées : sans ce repli, tous les amendements disparaîtraient
+    // des vues entre les deux, sans erreur visible. À retirer une fois la
+    // régénération committée.
+    const amendement = resolveAmendement(amendementsIndex, a.amendement_id)
+      || a.amendement_non_resolu
+      || (a.sort || a.date ? a : null);
+    if (amendement) yield amendement;
+  }
+}
+
 /** Construit l'objet consommé par CandidateProfile.jsx à partir d'un profil pivot v1. */
-export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null) {
+export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null, amendementsIndex = null) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
   const amendements = pivot.amendements || [];
@@ -338,7 +391,7 @@ export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null) {
   const dominantTheme = Object.entries(themeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
   const outcomeCounts = Object.fromEntries(AMENDMENT_OUTCOME_KEYS.map((k) => [k, 0]));
-  for (const a of amendements) {
+  for (const a of joinAmendements(amendements, amendementsIndex)) {
     if (Object.hasOwn(outcomeCounts, a.sort)) outcomeCounts[a.sort] += 1;
   }
   const outcomes = AMENDMENT_OUTCOME_KEYS.map((key) => ({
@@ -355,7 +408,9 @@ export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null) {
   const scopeCounts = { majorite: { textes: 0, amend: 0 }, opposition: { textes: 0, amend: 0 }, non_distingue: { textes: 0, amend: 0 } };
   const mergeBucket = (b) => (b === 'majorite' || b === 'opposition' ? b : 'non_distingue');
   for (const t of publicTextes) scopeCounts[mergeBucket(classifyTexteInHemicycle(t, periods))].textes += 1;
-  for (const a of amendements) scopeCounts[mergeBucket(classifyDateInHemicycle(a.date, periods))].amend += 1;
+  for (const a of joinAmendements(amendements, amendementsIndex)) {
+    scopeCounts[mergeBucket(classifyDateInHemicycle(a.date, periods))].amend += 1;
+  }
   const scopeBuckets = [
     { label: 'Majorité', textes: scopeCounts.majorite.textes, amend: scopeCounts.majorite.amend },
     { label: 'Opposition', textes: scopeCounts.opposition.textes, amend: scopeCounts.opposition.amend },

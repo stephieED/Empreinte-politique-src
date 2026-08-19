@@ -651,7 +651,17 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
             slug = _slug_from_stem(path.stem)
             nom = data.get("nom") or slug
             n_amendements = len(amendements)
-            n_uid = sum(1 for a in amendements if isinstance(a, dict) and a.get("uid"))
+            # La mesure suit le champ (#431) : depuis la normalisation, l'`uid`
+            # d'un amendement vit dans l'index partagé et le profil n'en garde
+            # que `amendement_id` (`an:<uid>`) — la même donnée, préfixée. Un
+            # profil normalisé serait sinon compté à 0 % de couverture et
+            # signalé comme cassé alors qu'il est corrigé. `uid` reste lu pour
+            # les profils d'avant la normalisation, que la fusion additive fait
+            # cohabiter avec les nouveaux le temps d'une régénération.
+            n_uid = sum(
+                1 for a in amendements
+                if isinstance(a, dict) and (a.get("amendement_id") or a.get("uid"))
+            )
             warnings_list: list[str] = (data.get("meta") or {}).get("warnings") or []
             has_fetch_error = any(w.startswith(_AMENDEMENTS_INDISPONIBLES_PREFIX) for w in warnings_list)
             rows.append(

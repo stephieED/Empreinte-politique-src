@@ -1,4 +1,9 @@
-import { buildCandidateView, buildGroupView, buildGovernmentView } from './pivotAdapter';
+import {
+  buildCandidateView,
+  buildGroupView,
+  buildGovernmentView,
+  legislatureDeAmendementId,
+} from './pivotAdapter';
 
 export const DEFAULT_CANDIDATE_ID = 'jean-luc-melenchon';
 export const DEFAULT_GROUP_ID = 'AN-SOC-16';
@@ -6,6 +11,7 @@ export const DEFAULT_GOVERNMENT_ID = 'LECORNU_II';
 
 let manifestPromise = null;
 let scrutinsPromise = null;
+const amendementsPromises = new Map();
 
 function loadManifest() {
   if (!manifestPromise) {
@@ -41,6 +47,55 @@ function loadScrutins() {
   return scrutinsPromise;
 }
 
+/**
+ * Index des amendements d'UNE législature (#431), mémoïsé.
+ *
+ * Contrairement aux scrutins, l'index des amendements n'est pas un fichier
+ * unique : il en pèserait 128,8 Mo, au-delà de la limite GitHub de 100 Mo par
+ * blob. Il est découpé par législature, et l'UI ne charge que celles que le
+ * profil affiché référence — un⋅e élu⋅e de la seule XVIIe ne télécharge pas les
+ * trois autres.
+ *
+ * Les cosignatures vivent dans un fichier compagnon jamais chargé ici : elles
+ * pèsent 59 % de l'index et aucune vue ne les affiche.
+ *
+ * Non bloquant : un échec de chargement rend un index vide plutôt que de faire
+ * échouer la page. Les vues affichent alors une donnée manquante — jamais une
+ * donnée inventée.
+ */
+function loadAmendementsLegislature(legislature) {
+  if (!amendementsPromises.has(legislature)) {
+    amendementsPromises.set(
+      legislature,
+      fetch(`/data/amendements/${legislature}.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d?.amendements || {})
+        .catch(() => ({})),
+    );
+  }
+  return amendementsPromises.get(legislature);
+}
+
+/**
+ * Charge les seules législatures que le mapping du profil référence, et rend
+ * `{ legislature: { id: amendement } }`.
+ *
+ * Les index par législature ne sont pas fusionnés en un seul objet : la
+ * résolution se fait par législature, lue dans l'identifiant, donc la fusion ne
+ * servirait qu'à recopier jusqu'à 207 238 entrées pour rien.
+ */
+async function loadAmendementsPour(pivot) {
+  const legislatures = [
+    ...new Set(
+      (pivot?.amendements || [])
+        .map((a) => legislatureDeAmendementId(a.amendement_id))
+        .filter(Boolean),
+    ),
+  ];
+  const parts = await Promise.all(legislatures.map(loadAmendementsLegislature));
+  return Object.fromEntries(legislatures.map((l, i) => [l, parts[i]]));
+}
+
 function fetchJson(url) {
   return fetch(url).then((r) => (r.ok ? r.json() : null));
 }
@@ -73,7 +128,10 @@ export async function getCandidateProfile(id) {
     loadScrutins(),
   ]);
   if (!pivot) return null;
-  return buildCandidateView(pivot, entry, scrutins);
+  // L'index des amendements se charge APRÈS le profil : ce sont les
+  // identifiants du mapping qui disent quelles législatures aller chercher.
+  const amendements = await loadAmendementsPour(pivot);
+  return buildCandidateView(pivot, entry, scrutins, amendements);
 }
 
 export async function getGroupProfile(id) {

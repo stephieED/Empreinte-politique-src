@@ -285,8 +285,21 @@ def clean_stale_textes_portes(textes: Optional[list[dict[str, Any]]]) -> list[di
 
 
 def _pivot_amendement_key(a: dict[str, Any]) -> Key:
-    # Même clé que côté brut (`_amendement_key`) : l'`uid` AN d'abord, replis
-    # ensuite pour les entrées antérieures à son extraction.
+    # Depuis #431 le pivot ne porte plus que le mapping : `amendement_id`
+    # (`an:<uid>`) EST la clé, et elle est la même donnée que l'`uid` du brut,
+    # préfixée. Les replis suivants ne servent qu'aux entrées écrites avant la
+    # normalisation, que la fusion additive fait cohabiter avec les nouvelles
+    # le temps d'une régénération.
+    #
+    # Pour une entrée non résolue (`amendement_id` à null), la clé est lue dans
+    # `amendement_non_resolu` : sans cela, toutes les entrées non résolues d'un
+    # profil se réduiraient à une seule à la fusion.
+    amendement_id = a.get("amendement_id")
+    if amendement_id:
+        return amendement_id
+    non_resolu = a.get("amendement_non_resolu")
+    if isinstance(non_resolu, dict):
+        a = non_resolu
     return a.get("uid") or a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
 

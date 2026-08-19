@@ -22,6 +22,8 @@ from schema_pivot import (
     KNOWN_PROVENANCES,
     make_empty_profil,
     validate_profil,
+    validate_amendements_index,
+    validate_amendements_cosignatures,
 )
 
 
@@ -247,20 +249,13 @@ def test_validate_amendements_not_a_list():
     assert any("amendements" in e for e in errors)
 
 
-def test_validate_amendements_valid_list_no_error():
+def test_validate_amendements_mapping_valide():
+    """#431 : le profil ne porte plus que `{amendement_id, role_signataire}`."""
     p = _valid_profil()
     p["amendements"] = [
         {
-            "texte_vise": "PLF 2025",
-            "sort": "irrecevable",
-            "base_juridique_irrecevabilite": "art. 40",
+            "amendement_id": "an:AMANR5L17PO59047BTC1376P0D1N000012",
             "role_signataire": "auteur_principal",
-            "premier_signataire": "nosdeputes:test",
-            "co_signataires": [],
-            "type_deposant": "depute",
-            "date": "2024-10-15",
-            "numero": "CL42",
-            "source_url": None,
         }
     ]
     assert validate_profil(p) == []
@@ -270,20 +265,55 @@ def test_validate_amendement_role_signataire_inconnu():
     p = _valid_profil()
     p["amendements"] = [
         {
-            "texte_vise": "PLF 2025",
-            "sort": "adopté",
-            "base_juridique_irrecevabilite": None,
+            "amendement_id": "an:AMANR5L17PO59047BTC1376P0D1N000012",
             "role_signataire": "inconnu",
-            "premier_signataire": "nosdeputes:test",
-            "co_signataires": [],
-            "type_deposant": "depute",
-            "date": "2024-10-15",
-            "numero": "CL42",
-            "source_url": None,
         }
     ]
     errors = validate_profil(p)
     assert any("role_signataire" in e for e in errors)
+
+
+def test_validate_amendement_id_mal_forme_est_une_erreur():
+    p = _valid_profil()
+    p["amendements"] = [
+        {"amendement_id": "AMANR5L17PO59047BTC1376P0D1N000012",
+         "role_signataire": "auteur_principal"}
+    ]
+    errors = validate_profil(p)
+    assert any("mal formé" in e for e in errors)
+
+
+def test_validate_amendement_sans_id_exige_enregistrement_non_resolu():
+    """Un amendement qu'on ne sait pas rattacher n'est ni supprimé ni deviné."""
+    p = _valid_profil()
+    p["amendements"] = [{"amendement_id": None, "role_signataire": "cosignataire"}]
+    errors = validate_profil(p)
+    assert any("amendement_non_resolu" in e for e in errors)
+
+    p["amendements"] = [{
+        "amendement_id": None,
+        "role_signataire": "cosignataire",
+        "amendement_non_resolu": {"texte_vise": "PLF 2025", "sort": "rejeté"},
+    }]
+    assert validate_profil(p) == []
+
+
+def test_validate_amendement_id_absent_de_lindex_est_une_erreur():
+    """Invariant devenu jointure : vérifié SI l'index est fourni."""
+    from amendements_index import AmendementsIndex
+
+    p = _valid_profil()
+    p["amendements"] = [
+        {"amendement_id": "an:AMANR5L17PO0P0D1N000001", "role_signataire": "auteur_principal"}
+    ]
+    # Sans index : sauté, jamais déclaré valide par défaut par une autre voie.
+    assert validate_profil(p) == []
+    index = AmendementsIndex({"an:AMANR5L17PO0P0D1N000002": {"sort": "adopté"}})
+    errors = validate_profil(p, amendements_index=index)
+    assert any("introuvable dans l'index des amendements" in e for e in errors)
+
+    index = AmendementsIndex({"an:AMANR5L17PO0P0D1N000001": {"sort": "adopté"}})
+    assert validate_profil(p, amendements_index=index) == []
 
 
 # ---------------------------------------------------------------------------
@@ -586,54 +616,108 @@ def test_validate_role_texte_inconnu_est_une_erreur():
 
 
 # ---------------------------------------------------------------------------
-# validate_profil — amendements[].type_deposant / sort / base_juridique_irrecevabilite
+# validate_amendements_index — type_deposant / sort / base_juridique_irrecevabilite
+#
+# Ces invariants portaient sur `amendements[]` des profils. Depuis #431 les
+# champs vivent dans l'index partagé, et **la validation a suivi les champs** :
+# elle s'exécute une fois par amendement au lieu d'une fois par signataire.
 # ---------------------------------------------------------------------------
 
-def test_validate_type_deposant_inconnu_est_une_erreur():
-    p = _valid_profil()
-    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": "senateur"}]
-    errors = validate_profil(p)
+_UID = "an:AMANR5L17PO59047BTC1376P0D1N000012"
+
+
+def _index_fichier(amendement: dict) -> dict:
+    return {
+        "schema_version": "amendements-v1",
+        "legislature": "17",
+        "amendements": {_UID: amendement},
+    }
+
+
+def test_index_amendements_valide():
+    assert validate_amendements_index(_index_fichier({
+        "texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": "depute",
+    })) == []
+
+
+def test_index_validate_type_deposant_inconnu_est_une_erreur():
+    errors = validate_amendements_index(_index_fichier({
+        "texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": "senateur",
+    }))
     assert any("type_deposant" in e for e in errors)
 
 
-def test_validate_type_deposant_connu_est_valide():
-    p = _valid_profil()
+def test_index_validate_type_deposant_connu_est_valide():
     for type_deposant in KNOWN_TYPES_DEPOSANT:
-        p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": type_deposant}]
-        assert validate_profil(p) == []
+        assert validate_amendements_index(_index_fichier({
+            "texte_vise": "PLF 2025", "sort": "rejeté", "type_deposant": type_deposant,
+        })) == []
 
 
-def test_validate_irrecevable_sans_base_juridique_est_une_erreur():
-    p = _valid_profil()
-    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "irrecevable"}]
-    errors = validate_profil(p)
+def test_index_validate_irrecevable_sans_base_juridique_est_une_erreur():
+    errors = validate_amendements_index(_index_fichier({
+        "texte_vise": "PLF 2025", "sort": "irrecevable",
+    }))
     assert any("base_juridique_irrecevabilite" in e for e in errors)
 
 
-def test_validate_irrecevable_avec_base_juridique_inconnue_est_une_erreur():
-    p = _valid_profil()
-    p["amendements"] = [{
+def test_index_validate_irrecevable_avec_base_juridique_inconnue_est_une_erreur():
+    errors = validate_amendements_index(_index_fichier({
         "texte_vise": "PLF 2025", "sort": "irrecevable",
         "base_juridique_irrecevabilite": "art. 41",
-    }]
-    errors = validate_profil(p)
+    }))
     assert any("base_juridique_irrecevabilite" in e for e in errors)
 
 
-def test_validate_irrecevable_avec_base_juridique_connue_est_valide():
-    p = _valid_profil()
+def test_index_validate_irrecevable_avec_base_juridique_connue_est_valide():
     for base in KNOWN_BASES_IRRECEVABILITE:
-        p["amendements"] = [{
+        assert validate_amendements_index(_index_fichier({
             "texte_vise": "PLF 2025", "sort": "irrecevable",
             "base_juridique_irrecevabilite": base,
-        }]
-        assert validate_profil(p) == []
+        })) == []
 
 
-def test_validate_sort_non_irrecevable_ne_requiert_pas_de_base_juridique():
-    p = _valid_profil()
-    p["amendements"] = [{"texte_vise": "PLF 2025", "sort": "rejeté"}]
-    assert validate_profil(p) == []
+def test_index_validate_sort_non_irrecevable_ne_requiert_pas_de_base_juridique():
+    assert validate_amendements_index(_index_fichier({
+        "texte_vise": "PLF 2025", "sort": "rejeté",
+    })) == []
+
+
+def test_index_validate_legislature_incoherente_est_une_erreur():
+    """Un fichier porte UNE législature : une entrée d'une autre y serait
+    invisible pour un consommateur qui ne charge que la sienne."""
+    index = _index_fichier({"texte_vise": "PLF 2025", "sort": "rejeté"})
+    index["legislature"] = "16"
+    errors = validate_amendements_index(index)
+    assert any("mais le fichier déclare" in e for e in errors)
+
+
+def test_index_validate_cosignataires_dans_le_meta_est_une_erreur():
+    """Les cosignatures vivent dans le fichier compagnon : 59 % du poids."""
+    errors = validate_amendements_index(_index_fichier({
+        "texte_vise": "PLF 2025", "sort": "rejeté", "co_signataires": ["an:PA1"],
+    }))
+    assert any("co_signataires" in e for e in errors)
+
+
+def test_index_cosignatures_valide():
+    assert validate_amendements_cosignatures({
+        "schema_version": "amendements-cosignatures-v1",
+        "legislature": "17",
+        "co_signataires": {_UID: ["an:PA1", "an:PA2"]},
+    }) == []
+
+
+def test_index_cosignatures_liste_vide_est_une_erreur():
+    """Un amendement sans cosignataire est ABSENT du fichier, il n'y figure pas
+    avec une liste vide — sans quoi « aucun cosignataire » et « non renseigné »
+    deviendraient indiscernables."""
+    errors = validate_amendements_cosignatures({
+        "schema_version": "amendements-cosignatures-v1",
+        "legislature": "17",
+        "co_signataires": {_UID: []},
+    })
+    assert any("liste vide" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------

@@ -170,6 +170,47 @@ def test_report_amendements_coverage_signal_global_non_duplique(tmp_path):
     assert "jean-dupont" in console
 
 
+def test_report_amendements_coverage_mesure_suit_le_champ_apres_431(tmp_path):
+    """#431 : l'identifiant a migré d'`uid` vers `amendement_id`, la mesure suit.
+
+    Sans cette bascule, un profil normalisé serait lu à 0 % de couverture et
+    signalé comme cassé alors qu'il vient d'être corrigé — la §3c annoncerait
+    une régression là où il y a une correction.
+    """
+    _write_pivot(
+        tmp_path, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"},
+        amendements=[
+            {"amendement_id": "an:AMANR5L17PO0B0000P0D1N000001",
+             "role_signataire": "auteur_principal"},
+            {"amendement_id": "an:AMANR5L17PO0B0000P0D1N000002",
+             "role_signataire": "cosignataire"},
+        ],
+        warnings=[],
+    )
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
+    assert regression is None
+    assert soft == []
+    assert "dont uid : 2 (100.0 %)" in console
+
+
+def test_report_amendements_coverage_profil_ancien_et_normalise_cohabitent(tmp_path):
+    """La fusion additive fait cohabiter les deux formes le temps d'une
+    régénération : les deux doivent compter."""
+    _write_pivot(
+        tmp_path, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"},
+        amendements=[
+            {"amendement_id": "an:AMANR5L17PO0B0000P0D1N000001",
+             "role_signataire": "auteur_principal"},
+            {"uid": "AMANR5L17PO0B0000P0D1N000002", "sort": "rejeté"},
+            {"numero": "CL9", "sort": "rejeté"},  # ni l'un ni l'autre
+        ],
+        warnings=[],
+    )
+    soft, regression, console, md = _report_amendements_coverage(tmp_path)
+    assert "dont uid : 2 (66.7 %)" in console
+    assert any("1/3 amendements sans uid" in w for w in soft)
+
+
 def _write_config_vide(path: Path, cle: str) -> None:
     path.write_text(json.dumps({cle: []}), encoding="utf-8")
 

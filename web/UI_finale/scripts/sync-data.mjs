@@ -17,6 +17,7 @@ const pivotGroupesDir = path.join(repoRoot, 'pivot_data', 'groupes');
 const pivotGouvernementsDir = path.join(repoRoot, 'pivot_data', 'gouvernements');
 const candidatsPath = path.join(repoRoot, 'raw_data', 'candidats.json');
 const scrutinsPath = path.join(repoRoot, 'pivot_data', 'scrutins.json');
+const amendementsDir = path.join(repoRoot, 'pivot_data', 'amendements');
 
 mkdirSync(path.join(outDir, 'profiles'), { recursive: true });
 mkdirSync(path.join(outDir, 'groupes'), { recursive: true });
@@ -34,6 +35,28 @@ if (existsSync(scrutinsPath)) {
   console.warn(
     `sync-data : ${scrutinsPath} absent — les votes s'afficheront vides (#432). ` +
     'Construire l\'index : python3 src/build_scrutins_index.py',
+  );
+}
+
+// --- amendements/ (index partagé, #431) ---
+// Un fichier de méta par législature. Les fichiers `.cosignatures.json` ne sont
+// PAS copiés : ils pèsent 59 % de l'index et aucune vue ne les lit — les y
+// copier ferait porter au site 75,7 Mo d'un contenu jamais affiché. Ils restent
+// dans le dépôt, accessibles pour l'analyse (#324).
+if (existsSync(amendementsDir)) {
+  mkdirSync(path.join(outDir, 'amendements'), { recursive: true });
+  const metaFiles = readdirSync(amendementsDir)
+    .filter((f) => f.endsWith('.json') && !f.endsWith('.cosignatures.json'));
+  for (const file of metaFiles) {
+    cpSync(path.join(amendementsDir, file), path.join(outDir, 'amendements', file));
+  }
+  if (metaFiles.length === 0) {
+    console.warn(`sync-data : ${amendementsDir} vide — les amendements s'afficheront vides (#431).`);
+  }
+} else {
+  console.warn(
+    `sync-data : ${amendementsDir} absent — les amendements s'afficheront vides (#431). ` +
+    'Construire l\'index : python3 src/build_amendements_index_pivot.py',
   );
 }
 

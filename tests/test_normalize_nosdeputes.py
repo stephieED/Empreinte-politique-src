@@ -399,13 +399,21 @@ def test_pivot_amendements_vides_si_absent():
     assert pivot["amendements"] == []
 
 
-def test_pivot_amendement_champs():
+def test_pivot_amendement_est_un_mapping_seul():
+    """#431 : le profil ne garde que `{amendement_id, role_signataire}`.
+
+    Le méta de l'amendement — identique pour tous ses signataires — vit dans
+    l'index partagé. Le voir réapparaître ici, c'est la duplication qui pesait
+    1 342,4 Mo.
+    """
     raw = _raw_depute()
     raw["amendements"] = [
         {
+            "uid": "AMANR5L17PO59047BTC1376P0D1N000012",
             "texte_vise": "PIONANR5L17B0904",
             "sort": "adopté",
             "base_juridique_irrecevabilite": None,
+            "role_signataire": "auteur_principal",
             "co_signataires": ["an:PA842001"],
             "type_deposant": "depute",
             "date": "2025-02-17",
@@ -416,18 +424,18 @@ def test_pivot_amendement_champs():
     pivot = normalize_nosdeputes(raw)
     assert len(pivot["amendements"]) == 1
     a = pivot["amendements"][0]
-    assert a["texte_vise"] == "PIONANR5L17B0904"
-    assert a["sort"] == "adopté"
-    assert a["premier_signataire"] == pivot["id"]
-    assert a["co_signataires"] == ["an:PA842001"]
-    assert a["type_deposant"] == "depute"
-    assert a["numero"] == "AS1"
+    assert a == {
+        "amendement_id": "an:AMANR5L17PO59047BTC1376P0D1N000012",
+        "role_signataire": "auteur_principal",
+    }
 
 
-def test_pivot_amendement_cosignataire_preserve_premier_signataire():
+def test_pivot_amendement_role_signataire_reste_dans_le_mapping():
+    """`role_signataire` est le SEUL champ propre au membre : il reste."""
     raw = _raw_depute()
     raw["amendements"] = [
         {
+            "uid": "AMANR5L17PO59047BTC1376P0D1N000012",
             "texte_vise": "PIONANR5L17B0904",
             "sort": "adopté",
             "base_juridique_irrecevabilite": None,
@@ -443,7 +451,41 @@ def test_pivot_amendement_cosignataire_preserve_premier_signataire():
     pivot = normalize_nosdeputes(raw)
     a = pivot["amendements"][0]
     assert a["role_signataire"] == "cosignataire"
-    assert a["premier_signataire"] == "an:PA111111"
+    assert a["amendement_id"] == "an:AMANR5L17PO59047BTC1376P0D1N000012"
+    assert "premier_signataire" not in a
+    assert "co_signataires" not in a
+
+
+def test_pivot_amendement_sans_uid_garde_son_enregistrement():
+    """Sans `uid`, pas de clé — et pas de clé inventée (AGENTS.md §2.5).
+
+    L'enregistrement complet est conservé sous `amendement_non_resolu` : ni
+    supprimé, ni deviné. Le `premier_signataire` d'un⋅e auteur⋅rice y garde son
+    identifiant pivot, comportement d'avant #431 préservé pour ces seules
+    entrées.
+    """
+    raw = _raw_depute()
+    raw["amendements"] = [
+        {
+            "texte_vise": "PIONANR5L17B0904",
+            "sort": "adopté",
+            "base_juridique_irrecevabilite": None,
+            "co_signataires": ["an:PA842001"],
+            "type_deposant": "depute",
+            "date": "2025-02-17",
+            "numero": "AS1",
+            "source_url": None,
+        }
+    ]
+    pivot = normalize_nosdeputes(raw)
+    a = pivot["amendements"][0]
+    assert a["amendement_id"] is None
+    non_resolu = a["amendement_non_resolu"]
+    assert non_resolu["texte_vise"] == "PIONANR5L17B0904"
+    assert non_resolu["sort"] == "adopté"
+    assert non_resolu["premier_signataire"] == pivot["id"]
+    assert non_resolu["co_signataires"] == ["an:PA842001"]
+    assert non_resolu["numero"] == "AS1"
 
 
 # ---------------------------------------------------------------------------

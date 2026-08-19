@@ -91,6 +91,12 @@ from schema_groupe import (
 )
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_nosdeputes import normalize_nosdeputes
+from amendements_index import (
+    AmendementsIndex,
+    DEFAULT_AMENDEMENTS_DIR,
+    charger as charger_amendements,
+    joindre as joindre_amendements,
+)
 from scrutins_index import ScrutinsIndex, charger as charger_scrutins, decomposer_id, DEFAULT_SCRUTINS_PATH
 
 
@@ -742,7 +748,10 @@ _SORTS_REJETES = frozenset({"rejete"})
 _SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non soutenu"})
 
 
-def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
+def _aggregate_amendements(
+    profils: list[dict[str, Any]],
+    amendements_index: Optional[AmendementsIndex] = None,
+) -> tuple[dict[str, Any], int]:
     """Agrège les amendements de tous les profils membres pour servir de comparateur.
 
     Le total (tous types de déposants confondus) sert de vue d'ensemble mais ne
@@ -753,20 +762,46 @@ def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
     ``par_type_deposant["depute"]``, seule catégorie de même nature que les
     amendements qu'un⋅e député⋅e dépose en son nom propre.
 
+    Depuis #431, `sort` et `type_deposant` vivent dans l'index partagé et non
+    dans le profil : l'agrégation est une **jointure**, faite entrée par entrée
+    via `joindre_amendements`, un générateur. Ne jamais matérialiser la liste
+    jointe : ce serait reconstruire la forme plate que la normalisation vient de
+    supprimer, avec le facteur ~21 et l'OOM de #377.
+
+    Repli de lecture transitoire : une entrée d'avant #431 porte encore ses
+    champs, une entrée non résolue les porte sous `amendement_non_resolu`. Les
+    deux sont lues sur place — sans quoi tout l'agrégat tomberait à zéro entre le
+    déploiement du code et la régénération des données.
+
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
+        amendements_index: index partagé (#431). Sans lui, seuls les
+            enregistrements encore portés par le profil sont exploitables.
 
     Returns:
-        Dict conforme à la structure ``amendements_agreges`` du schéma de groupe,
-        avec sa clé ``par_type_deposant`` (voir schema_groupe.AMENDEMENTS_TYPES_DEPOSANT).
+        `(amendements_agreges, nb_non_resolus)`. `nb_non_resolus` compte les
+        entrées qu'aucune source ne renseigne : elles sont **exclues** des
+        décomptes, et ce nombre est remonté en `meta.warnings` — une exclusion
+        muette transformerait un dénominateur en donnée fausse (AGENTS.md §2.7).
     """
     total = make_empty_amendements_stats()
     par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    non_resolus = 0
 
     for profil in profils:
-        for a in (profil.get("amendements") or []):
-            sort_norm = _normalize_sort_amendement(a.get("sort"))
-            type_deposant = a.get("type_deposant")
+        for entree, amendement in joindre_amendements(
+            profil.get("amendements"), amendements_index
+        ):
+            if amendement is None:
+                amendement = entree.get("amendement_non_resolu")
+            if amendement is None and "sort" in entree:
+                # Entrée d'avant #431, encore autoportante.
+                amendement = entree
+            if not isinstance(amendement, dict):
+                non_resolus += 1
+                continue
+            sort_norm = _normalize_sort_amendement(amendement.get("sort"))
+            type_deposant = amendement.get("type_deposant")
             bucket = par_type[type_deposant] if type_deposant in par_type else par_type["inconnu"]
             for stats in (total, bucket):
                 stats["nb_amendements"] += 1
@@ -786,7 +821,7 @@ def _aggregate_amendements(profils: list[dict[str, Any]]) -> dict[str, Any]:
         )
 
     total["par_type_deposant"] = par_type
-    return total
+    return total, non_resolus
 
 
 # ---------------------------------------------------------------------------
@@ -954,6 +989,7 @@ def build_groupe_profile(
     seuil_quorum: float = 0.5,
     licence_donnees: str = "",
     scrutins_index: Optional[ScrutinsIndex] = None,
+    amendements_index: Optional[AmendementsIndex] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -970,6 +1006,12 @@ def build_groupe_profile(
                     de cohésion : la date d'un scrutin, qui détermine quels
                     membres étaient éligibles, n'est plus dans les profils.
                     Absent, la cohésion est vide plutôt que fausse.
+        amendements_index: index partagé des amendements (#431). Le `sort` et le
+                    `type_deposant` d'un amendement n'étant plus dans les
+                    profils, l'agrégat est une jointure : sans index, les seules
+                    entrées exploitables sont celles qui portent encore leur
+                    enregistrement, et les autres sont comptées puis remontées
+                    en `meta.warnings` plutôt qu'ignorées en silence.
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
@@ -1048,7 +1090,15 @@ def build_groupe_profile(
     mandats_agreges = _aggregate_mandats(profils, membres)
 
     # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
-    amendements_agreges = _aggregate_amendements(profils)
+    amendements_agreges, n_amendements_non_resolus = _aggregate_amendements(
+        profils, amendements_index
+    )
+    if n_amendements_non_resolus:
+        warnings.append(
+            f"amendements_agreges : {n_amendements_non_resolus} amendement(s) "
+            "introuvable(s) dans l'index partagé et sans enregistrement de repli, "
+            "écarté(s) (#431). Le dénominateur publié ne les compte pas."
+        )
 
     # --- Assemblage ---
     profil_groupe = make_empty_profil_groupe(
@@ -1155,6 +1205,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--amendements", default=str(DEFAULT_AMENDEMENTS_DIR), metavar="DOSSIER",
+        help=(
+            "Index partagé des amendements (#431, défaut : "
+            f"{DEFAULT_AMENDEMENTS_DIR}). `amendements_agreges` en dépend : le "
+            "`sort` et le `type_deposant` d'un amendement ne sont plus dans les profils."
+        ),
+    )
+    parser.add_argument(
         "--seuil-quorum",
         type=float,
         default=0.5,
@@ -1208,6 +1266,7 @@ def generate_groupe_profile_from_roster(
     validate: bool = False,
     rapport_interne_path: Optional[Path] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
+    amendements_index: Optional[AmendementsIndex] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
@@ -1289,6 +1348,7 @@ def generate_groupe_profile_from_roster(
         seuil_quorum=seuil_quorum,
         licence_donnees=licence_donnees,
         scrutins_index=scrutins_index,
+        amendements_index=amendements_index,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
@@ -1441,6 +1501,22 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         print(f"→ Index des scrutins : {len(scrutins_index)} scrutin(s).", file=sys.stderr)
 
+    # `avec_cosignatures=False` : l'agrégat ne lit que `sort` et `type_deposant`.
+    # Charger les cosignatures coûterait 59 % de l'index pour rien (#431).
+    amendements_index = charger_amendements(
+        Path(args.amendements), avec_cosignatures=False
+    )
+    if len(amendements_index) == 0:
+        print(
+            f"  [!] Index des amendements vide ou absent ({args.amendements}) : "
+            "`amendements_agreges` ne comptera que les entrées portant encore leur "
+            "enregistrement (#431). Construire l'index avec "
+            "`python3 src/build_amendements_index_pivot.py`.",
+            file=sys.stderr,
+        )
+    else:
+        print(f"→ Index des amendements : {len(amendements_index)} amendement(s).", file=sys.stderr)
+
     profil_groupe = build_groupe_profile(
         groupe_id=args.groupe_id,
         groupe_sigle=args.groupe_sigle,
@@ -1451,6 +1527,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         seuil_quorum=args.seuil_quorum,
         licence_donnees=args.licence,
         scrutins_index=scrutins_index,
+        amendements_index=amendements_index,
     )
 
     if args.validate:

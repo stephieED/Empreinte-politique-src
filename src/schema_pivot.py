@@ -115,28 +115,42 @@ Format d'un profil pivot v1 :
             "source_url": null
         }
     ],
-    "amendements": [                         # amendements liés à l'élu (auteur principal ou cosignataire)
+    "amendements": [                         # MAPPING seul (#431). Le méta de l'amendement —
+                                             # texte_vise, sort, date, numero, type_deposant,
+                                             # premier_signataire, co_signataires — vit une
+                                             # seule fois dans pivot_data/amendements/<legis>.json
+                                             # (+ .cosignatures.json), pas une fois par
+                                             # signataire : 810 552 paires pour 207 238
+                                             # amendements distincts, et 77,7 M entrées de
+                                             # cosignatures pour 4,96 M distinctes.
+                                             # Voir docs/technical_decisions.md#normalisation-amendements
         {
-            "uid": "AMANR5L17PO59047BTC1376P0D1N000012",  # identifiant AN de l'amendement :
-                                             # seule clé unique (le `numero` repart à chaque
-                                             # texte — 121 805 amendements pour 30 616 numéros
-                                             # distincts en législature 17). Absent des entrées
-                                             # collectées avant le 18/08/2026, voir
+            "amendement_id": "an:AMANR5L17PO59047BTC1376P0D1N000012",  # <source>:<uid AN>.
+                                             # L'uid est la seule clé unique : le `numero`
+                                             # repart à chaque texte (121 805 amendements pour
+                                             # 30 616 numéros distincts en législature 17) —
                                              # docs/technical_decisions.md#amendements-cle-uid
-            "texte_vise": "Projet de loi de finances 2025",
-            "sort": "irrecevable",           # "adopté" | "rejeté" | "retiré" | "tombé" |
+            "role_signataire": "auteur_principal"  # SEUL champ propre au membre :
+                                             # "auteur_principal" | "cosignataire"
+        },
+        {                                    # amendement qu'aucun uid ne rattache : ni supprimé,
+                                             # ni doté d'une clé inventée (AGENTS.md §2.5)
+            "amendement_id": null,
+            "role_signataire": "cosignataire",
+            "amendement_non_resolu": {       # enregistrement complet, conservé tel quel
+                "texte_vise": "Projet de loi de finances 2025",
+                "sort": "irrecevable",       # "adopté" | "rejeté" | "retiré" | "tombé" |
                                              # "non_soutenu" | "irrecevable" (statut distinct
                                              # de "rejeté" — voir base_juridique_irrecevabilite)
-            "base_juridique_irrecevabilite": "art. 40",  # "art. 40" | "art. 45" | null ;
+                "base_juridique_irrecevabilite": "art. 40",  # "art. 40" | "art. 45" | null ;
                                              # renseigné uniquement si sort == "irrecevable"
-            "role_signataire": "auteur_principal",  # rôle de l'élu sur l'amendement :
-                                             # "auteur_principal" | "cosignataire"
-            "premier_signataire": "nosdeputes:jean-dupont",
-            "co_signataires": [],            # liste d'identifiants pivot des co-signataires
-            "type_deposant": "depute",       # "gouvernement" | "commission_rapporteur" | "depute"
-            "date": "2024-10-15",
-            "numero": "CL42",
-            "source_url": null
+                "premier_signataire": "nosdeputes:jean-dupont",
+                "co_signataires": [],        # liste d'identifiants AN des co-signataires
+                "type_deposant": "depute",   # "gouvernement" | "commission_rapporteur" | "depute"
+                "date": "2024-10-15",
+                "numero": "CL42",
+                "source_url": null
+            }
         }
     ],
     "interventions": [
@@ -179,6 +193,12 @@ Usage :
 
 import time
 from typing import Any
+from amendements_index import (
+    SCHEMA_VERSION as AMENDEMENTS_SCHEMA_VERSION,
+    COSIGNATURES_SCHEMA_VERSION as AMENDEMENTS_COSIGNATURES_SCHEMA_VERSION,
+    decomposer_id as decomposer_id_amendement,
+    legislature_de_id as legislature_amendement,
+)
 from scrutins_index import decomposer_id
 
 # Version du schéma ; à incrémenter si une rupture de compatibilité est introduite.
@@ -363,7 +383,9 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
     }
 
 
-def validate_profil(profil: dict[str, Any], scrutins_index: Any = None) -> list[str]:
+def validate_profil(
+    profil: dict[str, Any], scrutins_index: Any = None, amendements_index: Any = None
+) -> list[str]:
     """Vérifie les invariants de base du schéma pivot v1.
 
     `scrutins_index` (facultatif, un `ScrutinsIndex`) : depuis #432, le méta
@@ -373,11 +395,17 @@ def validate_profil(profil: dict[str, Any], scrutins_index: Any = None) -> list[
     la règle 4 (un 49.3 ne porte jamais de position). Sans index, ils sont
     sautés — jamais déclarés valides par défaut.
 
+    `amendements_index` (facultatif, un `AmendementsIndex`) : même mécanique
+    depuis #431. `type_deposant`, `sort` et `base_juridique_irrecevabilite` ont
+    migré vers l'index et sont validés par `validate_amendements_index` ; ne
+    reste ici qu'un invariant devenu jointure — qu'un `amendement_id` référencé
+    existe — vérifié seulement si l'index est fourni, sauté sinon.
+
     Validation structurelle de premier niveau (clés obligatoires, types,
     schema_version) plus les invariants de contenu des champs sensibles :
     position_dans_hemicycle/source_url, mode_declenchement, forme du
-    scrutin_id, type_rapport, stade_procedural,
-    type_deposant, sort/base_juridique_irrecevabilite des amendements, et
+    scrutin_id et de l'amendement_id, type_rapport, stade_procedural,
+    role_signataire des amendements, et
     structure des champs optionnels de débats officiels dans interventions[]
     (theme_officiel, seance, dossier, source).
 
@@ -521,9 +549,15 @@ def validate_profil(profil: dict[str, Any], scrutins_index: Any = None) -> list[
                     f"Valeurs connues : {sorted(KNOWN_STADES_PROCEDURAUX)}."
                 )
 
-    # base_juridique_irrecevabilite est obligatoire dès que sort == "irrecevable" :
-    # l'irrecevabilité est un statut distinct d'un simple rejet sur le fond.
+    # Depuis #431, `type_deposant`, `sort` et `base_juridique_irrecevabilite` ont
+    # migré vers l'index des amendements : leur validation a suivi les champs et
+    # vit dans `validate_amendements_index`. Ne restent ici que les invariants du
+    # mapping — plus l'existence de la cible, qui est une jointure et n'est donc
+    # vérifiable qu'avec l'index.
     amendements = profil.get("amendements")
+    index_amendements = (
+        amendements_index.par_id if amendements_index is not None else None
+    )
     if isinstance(amendements, list):
         for i, a in enumerate(amendements):
             if not isinstance(a, dict):
@@ -534,23 +568,28 @@ def validate_profil(profil: dict[str, Any], scrutins_index: Any = None) -> list[
                     f"amendements[{i}].role_signataire non reconnu : {role_signataire!r}. "
                     f"Valeurs connues : {sorted(KNOWN_ROLES_SIGNATAIRE_AMENDEMENT)}."
                 )
-            type_deposant = a.get("type_deposant")
-            if type_deposant is not None and type_deposant not in KNOWN_TYPES_DEPOSANT:
+            amendement_id = a.get("amendement_id")
+            if amendement_id is None:
+                # Un amendement sans identifiant DOIT porter son enregistrement
+                # complet : sans lui, la donnée serait perdue au lieu d'être
+                # seulement non normalisée (AGENTS.md §2.5).
+                if not isinstance(a.get("amendement_non_resolu"), dict):
+                    errors.append(
+                        f"amendements[{i}] : 'amendement_id' absent sans "
+                        "'amendement_non_resolu'. Un amendement qu'on ne sait pas "
+                        "rattacher garde son enregistrement complet — il n'est ni "
+                        "supprimé, ni doté d'une clé inventée."
+                    )
+                continue
+            if decomposer_id_amendement(amendement_id) is None:
                 errors.append(
-                    f"amendements[{i}].type_deposant non reconnu : {type_deposant!r}. "
-                    f"Valeurs connues : {sorted(KNOWN_TYPES_DEPOSANT)}."
+                    f"amendements[{i}].amendement_id mal formé : {amendement_id!r}. "
+                    "Forme attendue : 'an:<uid AN>'."
                 )
-            base_juridique = a.get("base_juridique_irrecevabilite")
-            if a.get("sort") == "irrecevable" and not base_juridique:
+            elif index_amendements is not None and amendement_id not in index_amendements:
                 errors.append(
-                    f"amendements[{i}] : sort='irrecevable' sans "
-                    "'base_juridique_irrecevabilite' (l'irrecevabilité est un statut "
-                    "distinct d'un simple rejet)."
-                )
-            if base_juridique is not None and base_juridique not in KNOWN_BASES_IRRECEVABILITE:
-                errors.append(
-                    f"amendements[{i}].base_juridique_irrecevabilite non reconnue : "
-                    f"{base_juridique!r}. Valeurs connues : {sorted(KNOWN_BASES_IRRECEVABILITE)}."
+                    f"amendements[{i}].amendement_id introuvable dans l'index des "
+                    f"amendements : {amendement_id!r}. Le mapping pointerait dans le vide."
                 )
 
     interventions = profil.get("interventions")
@@ -683,6 +722,144 @@ def validate_scrutins_index(index: dict[str, Any]) -> list[str]:
                 f"scrutins[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
                 "(le texte 49.3 concerné doit être identifié, jamais fusionné "
                 "avec le vote sur le texte)."
+            )
+
+    return errors
+
+
+def validate_amendements_index(index: dict[str, Any]) -> list[str]:
+    """Vérifie un fichier de `pivot_data/amendements/` (schéma `amendements-v1`, #431).
+
+    Les invariants qui portaient sur `amendements[]` avant la normalisation ont
+    suivi les champs : `type_deposant`, `sort`/`base_juridique_irrecevabilite` et
+    la forme de l'identifiant se vérifient désormais ici, **une fois par
+    amendement au lieu d'une fois par signataire** — 207 238 vérifications au
+    lieu de 810 552.
+
+    Un fichier porte **une** législature : chaque identifiant doit être de cette
+    législature-là, sans quoi un consommateur qui ne charge que la XVIIe verrait
+    disparaître des amendements rangés au mauvais endroit.
+    """
+    errors: list[str] = []
+
+    if not isinstance(index, dict):
+        return ["L'index des amendements doit être un objet JSON."]
+
+    version = index.get("schema_version")
+    if version != AMENDEMENTS_SCHEMA_VERSION:
+        errors.append(
+            f"schema_version de l'index : {version!r}, attendu {AMENDEMENTS_SCHEMA_VERSION!r}."
+        )
+
+    legislature_fichier = index.get("legislature")
+    if not legislature_fichier:
+        errors.append(
+            "Clé 'legislature' manquante : elle est portée une fois par fichier "
+            "et jamais par entrée, donc son absence rend les entrées inclassables."
+        )
+
+    amendements = index.get("amendements")
+    if not isinstance(amendements, dict):
+        return errors + [
+            "Clé 'amendements' manquante ou de mauvais type (objet {id: amendement} attendu)."
+        ]
+
+    for amendement_id, amendement in amendements.items():
+        if not isinstance(amendement, dict):
+            errors.append(f"amendements[{amendement_id!r}] n'est pas un objet.")
+            continue
+
+        uid = decomposer_id_amendement(amendement_id)
+        if uid is None:
+            errors.append(
+                f"amendements[{amendement_id!r}] : identifiant mal formé. "
+                "Forme attendue : 'an:<uid AN>'."
+            )
+        elif legislature_fichier and legislature_amendement(amendement_id) not in (
+            None, str(legislature_fichier)
+        ):
+            errors.append(
+                f"amendements[{amendement_id!r}] : l'uid porte la législature "
+                f"{legislature_amendement(amendement_id)!r} mais le fichier déclare "
+                f"{legislature_fichier!r}."
+            )
+
+        type_deposant = amendement.get("type_deposant")
+        if type_deposant is not None and type_deposant not in KNOWN_TYPES_DEPOSANT:
+            errors.append(
+                f"amendements[{amendement_id!r}].type_deposant non reconnu : "
+                f"{type_deposant!r}. Valeurs connues : {sorted(KNOWN_TYPES_DEPOSANT)}."
+            )
+
+        base_juridique = amendement.get("base_juridique_irrecevabilite")
+        if amendement.get("sort") == "irrecevable" and not base_juridique:
+            errors.append(
+                f"amendements[{amendement_id!r}] : sort='irrecevable' sans "
+                "'base_juridique_irrecevabilite' (l'irrecevabilité est un statut "
+                "distinct d'un simple rejet)."
+            )
+        if base_juridique is not None and base_juridique not in KNOWN_BASES_IRRECEVABILITE:
+            errors.append(
+                f"amendements[{amendement_id!r}].base_juridique_irrecevabilite non "
+                f"reconnue : {base_juridique!r}. "
+                f"Valeurs connues : {sorted(KNOWN_BASES_IRRECEVABILITE)}."
+            )
+
+        # `co_signataires` n'a rien à faire ici : il vit dans le fichier
+        # compagnon. L'y retrouver signalerait une régression vers la forme
+        # lourde, celle qui pèse 59 % de l'index.
+        if "co_signataires" in amendement:
+            errors.append(
+                f"amendements[{amendement_id!r}] porte 'co_signataires' : les "
+                "cosignatures vivent dans <legislature>.cosignatures.json, jamais "
+                "dans le fichier de méta (75,7 Mo sur 128,8)."
+            )
+
+    return errors
+
+
+def validate_amendements_cosignatures(index: dict[str, Any]) -> list[str]:
+    """Vérifie un fichier `<legislature>.cosignatures.json` (#431).
+
+    Fichier compagnon volontairement minimal : `{id: [références AN]}`. Il est
+    séparé parce qu'aucun consommateur ne lit les cosignatures aujourd'hui et
+    qu'elles pèsent 59 % de l'index — mais elles ne sont jamais supprimées, un
+    réseau de cosignatures étant de la matière première d'analyse (#324).
+    """
+    errors: list[str] = []
+
+    if not isinstance(index, dict):
+        return ["L'index des cosignatures doit être un objet JSON."]
+
+    version = index.get("schema_version")
+    if version != AMENDEMENTS_COSIGNATURES_SCHEMA_VERSION:
+        errors.append(
+            f"schema_version de l'index : {version!r}, attendu "
+            f"{AMENDEMENTS_COSIGNATURES_SCHEMA_VERSION!r}."
+        )
+
+    cosignatures = index.get("co_signataires")
+    if not isinstance(cosignatures, dict):
+        return errors + [
+            "Clé 'co_signataires' manquante ou de mauvais type (objet {id: [refs]} attendu)."
+        ]
+
+    for amendement_id, refs in cosignatures.items():
+        if decomposer_id_amendement(amendement_id) is None:
+            errors.append(
+                f"co_signataires[{amendement_id!r}] : identifiant mal formé. "
+                "Forme attendue : 'an:<uid AN>'."
+            )
+        if not isinstance(refs, list):
+            errors.append(
+                f"co_signataires[{amendement_id!r}] n'est pas une liste."
+            )
+            continue
+        if not refs:
+            errors.append(
+                f"co_signataires[{amendement_id!r}] est une liste vide : un "
+                "amendement sans cosignataire est absent du fichier, il n'y "
+                "figure pas avec une liste vide."
             )
 
     return errors
