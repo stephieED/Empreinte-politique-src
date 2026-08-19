@@ -234,6 +234,107 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # ── Garde-fou #460 : écrasement sans collecte d'interventions ─────────
+      # `overwrite_profiles=true` (ou `fresh_run=true`) lève `--no-merge` ;
+      # `extract_interventions=false` lève `--skip-interventions`. Chacun est
+      # correct isolément — l'un est le mode de correction de schéma, l'autre
+      # le mode d'extraction rapide. Ensemble, ils réécrivent le profil SANS ce
+      # que ce run n'a pas collecté : les interventions déjà acquises sont
+      # effacées, brut et pivot, et la perte se propage à `tags_thematiques`
+      # puis à `tags_thematiques_agreges` des groupes — deux champs publiés
+      # (AGENTS.md §6). C'est exactement ce qui s'est produit au run
+      # 32288588518 (commit a125e9e) : 789 interventions, 647 tags et 497 tags
+      # agrégés perdus sans un signal.
+      #
+      # Pourquoi un ::warning:: et non un exit 1. Le refus dur existe déjà, en
+      # aval et sur la mesure plutôt que sur la prédiction : `audit_diff_profils.py`
+      # bloque le commit sur toute perte d'un champ stable, avec
+      # `tolerer_pertes_profils` pour déclarer une perte légitime. Refuser ici
+      # la combinaison ferait double emploi, et casserait un usage légitime :
+      # propager une correction de clé (#431/#432) sans repayer la collecte des
+      # interventions est un choix valide dès lors qu'il est conscient. Ce qui
+      # manquait n'était pas un veto, c'était de le rendre conscient AVANT
+      # d'engager une heure de runner. Même forme que le ::warning:: de
+      # `roster_refresh_existing` sans `overwrite_profiles` (#445).
+      #
+      # Le signal porte sur une VARIATION, pas sur un niveau — c'est ce qui
+      # manquait à la quality gate, dont la §3 se déclenchait sur 100 % du
+      # corpus et ne distinguait donc pas « n'en a jamais eu » de « vient d'en
+      # perdre 789 ». Corpus sans interventions committées = aucun avertissement :
+      # il n'y a rien à détruire, et un garde-fou qui crie à vide se fait ignorer.
+      - name: Garde-fou — écrasement sans collecte d'interventions (#460)
+        env:
+          FRESH: ${{ inputs.fresh_run }}
+          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          INTERVENTIONS: ${{ inputs.extract_interventions }}
+        run: |
+          set -euo pipefail
+          # Condition alignée mot pour mot sur le calcul de MERGE_FLAG des jobs
+          # d'extraction : c'est `--no-merge`, et lui seul, qui rend l'écrasement
+          # destructeur. La désaligner rendrait ce garde-fou muet ou bavard.
+          if [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]]; then
+            echo "Fusion additive (ni fresh_run ni overwrite_profiles) : les interventions déjà acquises sont conservées."
+            exit 0
+          fi
+          if [[ "$INTERVENTIONS" == "true" ]]; then
+            echo "Écrasement AVEC collecte d'interventions (extract_interventions=true) : rien à signaler."
+            exit 0
+          fi
+
+          # Ce que ce run détruirait, mesuré sur la baseline committée du
+          # checkout — jamais supposé. Un profil à la fois : le corpus pèse
+          # ~1,5 Go par répertoire et trois outils de ce dépôt s'y sont déjà
+          # fait tuer par l'OOM killer.
+          MESURE=$(python3 - <<'EOF'
+          import glob, json, os
+
+          total, porteurs = 0, []
+          for chemin in sorted(glob.glob("pivot_data/profiles/*.pivot.json")):
+              with open(chemin, encoding="utf-8") as fichier:
+                  nombre = len(json.load(fichier).get("interventions") or [])
+              if nombre:
+                  total += nombre
+                  porteurs.append((os.path.basename(chemin)[: -len(".pivot.json")], nombre))
+          porteurs.sort(key=lambda p: -p[1])
+          print(total)
+          print(len(porteurs))
+          print(", ".join(f"{slug} ({n})" for slug, n in porteurs))
+          EOF
+          )
+          TOTAL=$(echo "$MESURE" | sed -n 1p)
+          PROFILS=$(echo "$MESURE" | sed -n 2p)
+          DETAIL=$(echo "$MESURE" | sed -n 3p)
+
+          if [[ "$TOTAL" -eq 0 ]]; then
+            echo "Écrasement sans collecte d'interventions, mais la baseline committée n'en porte aucune : rien à perdre."
+            exit 0
+          fi
+
+          echo "::warning::overwrite_profiles/fresh_run avec extract_interventions=false : ce run va EFFACER les ${TOTAL} interventions déjà acquises sur ${PROFILS} profil(s), ainsi que les tags_thematiques qui en dérivent et les tags_thematiques_agreges des groupes — deux champs publiés. Relancer avec extract_interventions=true pour les recollecter, ou assumer la perte via tolerer_pertes_profils (le contrôle de perte bloquera le commit sinon)."
+          {
+            echo "### ⚠️ Interventions menacées par ce run"
+            echo ""
+            echo "\`overwrite_profiles\`/\`fresh_run\` lève \`--no-merge\` et"
+            echo "\`extract_interventions=false\` lève \`--skip-interventions\` :"
+            echo "les profils seront réécrits **sans** les interventions que ce run"
+            echo "ne collectera pas."
+            echo ""
+            echo "| Mesure sur la baseline committée | Valeur |"
+            echo "| --- | --- |"
+            echo "| Interventions qui seraient effacées | **${TOTAL}** |"
+            echo "| Profils concernés | ${PROFILS} |"
+            echo ""
+            echo "Détail : ${DETAIL}"
+            echo ""
+            echo "Champs dérivés touchés : \`tags_thematiques\` (profils) et"
+            echo "\`tags_thematiques_agreges\` (groupes) — publiés, cf. AGENTS.md §6."
+            echo ""
+            echo "**Pour conserver ces données** : relancer avec"
+            echo "\`extract_interventions=true\`. **Pour assumer la perte** :"
+            echo "\`tolerer_pertes_profils=true\`, sans quoi le contrôle de perte"
+            echo "d'avant-commit fera échouer \`merge-and-pivot\` (#460)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # ──────────────────────────────────────────────────────────────────────────
   # JOB D'EXTRACTION — Assemblée nationale (matrix par candidat, #344)
   # ──────────────────────────────────────────────────────────────────────────
