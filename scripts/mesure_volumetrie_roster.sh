@@ -97,7 +97,26 @@ LIMIT_FLAG=()
 [ "$LIMIT" != "0" ] && LIMIT_FLAG=(--limit "$LIMIT")
 
 echo
-echo "=== [2/3] Extraction des profils (hors dépôt) ==="
+# L'index des amendements est construit par un job CI dédié
+# (`extract-amendements-an` -> `build_amendements_index.py`), jamais par
+# `generate_all_profiles.py`. Sans cette étape, les profils sortent avec ZÉRO
+# amendement — soit 59 % de leur contenu manquant — et le rapport annonce
+# tranquillement un volume qui ne veut rien dire. C'est exactement ce qui est
+# arrivé au run du 19/08/2026 : 491 Mo au lieu de 8 093 Mo, sans un mot dans
+# les logs.
+#
+# Le garde-fou de #440 (refus d'un cache au format `numero`) rend cette étape
+# obligatoire : un cache hérité n'est plus servi, et rien d'autre ne le
+# reconstruit.
+echo "=== [2/4] Construction des index amendements ==="
+python3 src/build_amendements_index.py || {
+  echo "[!] Construction des index amendements en échec." >&2
+  echo "    Les profils sortiraient sans amendements et la mesure serait fausse." >&2
+  exit 1
+}
+
+echo
+echo "=== [3/4] Extraction des profils (hors dépôt) ==="
 /usr/bin/time -v python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
   --workers "$WORKERS" \
@@ -107,7 +126,25 @@ echo "=== [2/3] Extraction des profils (hors dépôt) ==="
   "${LIMIT_FLAG[@]}" 2>&1 | grep -vE "^\s+(Command being|User time|System time|Percent of|Average|Major|Minor|Voluntary|Involuntary|Swaps|File system|Socket|Signals|Page size|Exit status)"
 
 echo
-echo "=== [3/3] Rapport de volumétrie ==="
+# Contrôle de vraisemblance : un rapport qui annonce « seuil respecté » sur des
+# profils amputés est pire qu'aucun rapport. On refuse de le produire.
+AVEC_AMENDEMENTS=$(python3 - "$OUT_DIR" <<'PY'
+import glob, json, os, sys
+n = sum(1 for f in glob.glob(os.path.join(sys.argv[1], "*.json"))
+        if (json.load(open(f)).get("amendements") or []))
+print(n)
+PY
+)
+TOTAL_PROFILS=$(find "$OUT_DIR" -name '*.json' | wc -l)
+if [ "$AVEC_AMENDEMENTS" -eq 0 ] && [ "$TOTAL_PROFILS" -gt 0 ]; then
+  echo "[!] Aucun des $TOTAL_PROFILS profils ne porte d'amendements." >&2
+  echo "    Les amendements pèsent ~59 % du volume : toute mesure serait fausse." >&2
+  echo "    Vérifier que l'étape [2/4] a bien reconstruit les index." >&2
+  exit 1
+fi
+echo "  $AVEC_AMENDEMENTS/$TOTAL_PROFILS profils portent des amendements."
+
+echo "=== [4/4] Rapport de volumétrie ==="
 mkdir -p audit
 python3 src/audit_volumetrie_profils.py \
   --profils-dir "$OUT_DIR" \
