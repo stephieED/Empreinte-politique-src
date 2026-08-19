@@ -38,8 +38,11 @@ graph TD
     A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json<br/>(candidate_profile.py / candidate_profile_ue.py)"]
     B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
     C --> S["pivot_data/scrutins.json<br/>(build_scrutins_index.py — liste dédupliquée)"]
+    C --> AM["pivot_data/amendements/&lt;legis&gt;.json<br/>(build_amendements_index_pivot.py — liste dédupliquée)"]
     S --> D
+    AM --> D
     S --> W["web/UI_finale"]
+    AM --> W
     C --> D["group_profile.py"]
     C --> E["parti_profile.py"]
     C --> I["gouvernement_roster.py<br/>(no network — local pivots only)"]
@@ -56,11 +59,25 @@ graph TD
 - `raw_data/` = source-near (votes stay denormalized there); `pivot_data/` = only layer `web/` reads.
 - **`pivot_data/scrutins.json`** (schema `scrutins-v1`, `#432`): the deduplicated ballot list,
   shared by profiles **and** groups — the groups' 4 104 ballots are entirely included in the
-  profiles' 17 422, so one list serves both. This is the only cross-file dependency inside
-  `pivot_data/`: a profile no longer reads alone for its votes. Build it with
+  profiles' 17 422, so one list serves both. Build it with
   `src/build_scrutins_index.py`, **before** any pivot pass — resolving a ballot's `legislature`
   is a corpus-wide join (`src/scrutins_legislature.py`), never per-profile. Merged additively:
   a partial run must never drop ballots that other profiles' mappings still point at.
+- **`pivot_data/amendements/<legislature>.json`** (schema `amendements-v1`, `#431`): the
+  deduplicated amendment list, plus a companion `<legislature>.cosignatures.json`. 810 552
+  (member, amendment) pairs for 207 238 distinct amendments, and **77,7 M co-signature entries
+  for 4,96 M distinct** (× 15,7) — that N² is 1 083,9 Mo of the 1 342,4 Mo `amendements[]`
+  weighed. A profile keeps only `{amendement_id, role_signataire}`; `amendement_id` is
+  `an:<uid AN>`, and the legislature is read **inside** the uid, never derived from the date.
+  **Sharded per legislature** because a single global file already weighs 130,1 Mo, past
+  GitHub's 100 MB blob limit; co-signatures live apart because they are 59 % of the index and
+  **no consumer reads them** — never deleted, a co-signature network is analysis material
+  (#324). Build it with `src/build_amendements_index_pivot.py` (not
+  `build_amendements_index.py`, which is the raw AN index) — **after** the pivot pass, and
+  only once: nothing here needs a corpus-wide join. Merged additively, same reason as ballots.
+- Together these are the **only cross-file dependencies** inside `pivot_data/`: a profile no
+  longer reads alone for its votes nor for its amendments. Both must be in the workflow's
+  `git add` — an uncommitted index leaves every mapping pointing at nothing, silently.
 - **JSON write format**: individual profiles (`raw_data/profiles/`, `pivot_data/profiles/`)
   are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
   alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
@@ -73,6 +90,8 @@ graph TD
 **Additive merge (`merge_profile.py`)**: regeneration never removes collected data.
 - `votes`, `mandats`, `interventions`: additive, old entry wins (`merge_lists_by_key`).
 - `amendements`, `textes_portes`: new entry wins (`merge_dossier_records`) — allows stage/outcome correction.
+  An amendment's merge key is its `amendement_id`, or — for an unresolved entry — the record kept
+  under `amendement_non_resolu`; keying on the mapping alone would collapse every unresolved entry into one.
 - Scalars: new value if populated, else keep old (never regress to `null`).
 Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 
@@ -93,7 +112,8 @@ present in the artifacts. See `docs/technical_decisions.md#publication-scopee-ar
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
-partial `uid` coverage inside a profile's `amendements[]` (§3c — two versions of the same
+partial identifier coverage inside a profile's `amendements[]` (§3c — measured on
+`amendement_id` since #431, on `uid` for profiles predating it: the measure follows the field — two versions of the same
 amendment cohabiting, so the entry is counted twice and the published denominators are
 wrong; #447, cause #450 — soft on purpose: mixed profiles were expected during the
 remediation window, and failing the gate would have blocked the very runs meant to fix
@@ -122,7 +142,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 | `mandats[]` | Elections, committees... + sensitive fields (Section 5) |
 | `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
-| `amendements[]` | Outcome + inadmissibility/rejection distinction |
+| `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
 | `interventions[]` | Speeches, questions (`type_detail`) |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
 | `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/technical_decisions.md#provenance-pivot`) |
@@ -145,6 +165,11 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
   the corpus with `src/audit_legislature_votes.py` before relying on the key
   (`docs/technical_decisions.md#resolution-legislature-votes`).
 - `amendements[].sort == "irrecevable"` requires `base_juridique_irrecevabilite` (`"art. 40"` or `"art. 45"`).
+  Since `#431` both fields live in the shared index: the invariant followed them, into
+  `validate_amendements_index()` — checked once per amendment, not once per signatory.
+  What `validate_profil()` can no longer check alone is that a referenced `amendement_id`
+  exists: it does so **only if** `amendements_index=` is passed, and skips it otherwise —
+  never declares it valid by default.
 - `amendements[].type_deposant`: never aggregate adoption rates across depositor types (rule, Section 6).
 - Amendements cache (`.cache/amendements_an/<leg>/`): **a directory that exists is not
   evidence of what it holds.** Presence checks must also check the key format — a frozen
@@ -155,6 +180,12 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
   instead of "index unavailable". That atomicity is what makes the single-shard format
   check legitimate — do not fill in place.
   See `docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`.
+- An amendment with no AN `uid` gets **no invented key**: `amendement_id: null` plus its full
+  record under `amendement_non_resolu`. That is the normal shape for European Parliament
+  amendments, which ParlTrack ships without an AN uid.
+- **Never re-materialise the flat form.** `joindre()` is a generator and `get()` returns the
+  shared object itself, never a copy — expanding index × mapping cost a ~21 × factor and an
+  OOM in `#377`. Locked by `tests/test_amendements_index.py`.
 Edge-case history: `docs/technical_decisions.md#cas-limites`.
 
 ## 6. Metrics: public vs internal

@@ -59,6 +59,9 @@ CV_CandidatFR/
 |  `- profiles/                      # Raw candidate profiles: <slug>.json
 |- pivot_data/                        # Anything in pivot schema format (or derived)
 |  |- profiles/                      # <slug>.pivot.json per candidate
+|  |- scrutins.json                  # Shared deduplicated ballot list (#432)
+|  |- amendements/                   # Shared deduplicated amendment list, one file per legislature (#431)
+|  |                                 #   <leg>.json (meta) + <leg>.cosignatures.json (companion)
 |  |- partis/                        # parti-<slug>.json: editorial party aggregates
 |  |- groupes/                       # groupe-<SIGLE>-<leg>.json: real parliamentary group profiles
 |  `- gouvernements/                 # gouvernement-<ID>.json: real government profiles
@@ -210,9 +213,48 @@ refaire). Mesuré sur les 209 profils committés :
 | `cohesion_votes` des groupes | 6,23 Mo | 3,41 Mo (−45,3 %) |
 
 Le même index sert les profils et les groupes : les 4 104 scrutins des groupes
-sont tous inclus dans les 17 422 des profils. C'est la seule dépendance entre
-fichiers de `pivot_data/` — un profil ne se lit plus seul pour ses votes, et
-`sync-data.mjs` copie l'index dans `public/data/`.
+sont tous inclus dans les 17 422 des profils. Un profil ne se lit plus seul pour
+ses votes, et `sync-data.mjs` copie l'index dans `public/data/`.
+
+## 2 quater. Index partagé des amendements (#431)
+
+Même principe pour les amendements : seul `role_signataire` est propre au
+membre, tout le reste — `sort`, `date`, `texte_vise`, `type_deposant`,
+`premier_signataire` et surtout `co_signataires` — est identique pour tous les
+signataires. Un profil ne garde que le mapping `{amendement_id, role_signataire}`,
+avec `amendement_id = "an:<uid AN>"`.
+
+```bash
+python3 src/build_amendements_index_pivot.py               # fusion additive avec l'existant
+python3 src/build_amendements_index_pivot.py --no-merge    # reconstruction complète (corpus COMPLET)
+```
+
+À ne pas confondre avec `build_amendements_index.py` (index **brut** des
+archives AN, job CI `extract-amendements-an`) ni avec
+`build_amendements_index_figees.py` (législatures closes, `raw_data/`).
+
+`generate_all_profiles.py --pivot` reconstruit l'index automatiquement **après**
+la passe pivot (`--amendements`, `--skip-amendements-index` pour ne pas le
+refaire). Une seule reconstruction par run, là où les scrutins en demandent deux :
+la clé d'un amendement est son `uid`, porté par l'enregistrement lui-même, donc
+rien n'a besoin d'être résolu à l'échelle du corpus.
+
+Mesuré sur les 209 profils committés :
+
+| | avant | après |
+| --- | --- | --- |
+| `amendements[]` dans les profils | 1 342,4 Mo | 73,8 Mo de mapping |
+| index partagé (méta) | — | 54,4 Mo |
+| index partagé (cosignatures) | — | 75,7 Mo |
+| **total** | **1 342,4 Mo** | **203,8 Mo (−84,8 %)** |
+
+**Un fichier par législature**, plus un fichier compagnon pour les cosignatures :
+un fichier global unique pèse déjà 130,1 Mo, au-delà de la limite GitHub de
+100 Mo par blob, et un fichier de législature contenant aussi les cosignatures
+atteindrait 120,3 Mo pour la XV<sup>e</sup> à couverture complète des archives.
+Les cosignatures ne sont lues par aucun consommateur : `sync-data.mjs` ne les
+copie pas vers le site, et `charger(..., avec_cosignatures=False)` les évite.
+Elles ne sont jamais supprimées pour autant (#324).
 
 ## 3. Generate all candidate profiles (batch)
 

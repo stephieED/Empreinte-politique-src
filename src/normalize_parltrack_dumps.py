@@ -47,23 +47,38 @@ def _make_amendement(amendment: dict[str, Any]) -> dict[str, Any]:
     les dumps bruts d'amendements. On ne renseigne donc pas `sort` (null),
     conformément à la règle 5 (missing data = null, never default 0).
 
+    **Toujours non résolu** (#431). L'index partagé `pivot_data/amendements/`
+    est keyé par l'`uid` de l'Assemblée nationale (`an:<uid>`), et un amendement
+    du Parlement européen n'en a pas : lui en fabriquer un serait inventer une
+    clé (AGENTS.md §2.5), et le ranger dans un index dont l'identifiant annonce
+    une autre source serait pire encore. Son enregistrement complet reste donc
+    dans le profil sous `amendement_non_resolu` — la forme exacte que le schéma
+    prévoit pour une entrée qu'on ne sait pas rattacher, ni supprimée ni devinée.
+
+    Aucune duplication n'est perdue au passage : la normalisation ne sert à rien
+    ici, un amendement PE n'étant pas recopié chez ses cosignataires (ParlTrack
+    ne les fournit pas).
+
     Args:
         amendment: dict retourné par `parltrack_dumps.get_amendments_for_mep`.
 
     Returns:
-        Dict conforme au schéma `amendements[]`.
+        Dict conforme au schéma `amendements[]` (mapping + enregistrement).
     """
     return {
-        "texte_vise": amendment.get("reference") or "",
-        "sort": None,
-        "base_juridique_irrecevabilite": None,
+        "amendement_id": None,
         "role_signataire": "auteur_principal",
-        "premier_signataire": None,
-        "co_signataires": [],
-        "type_deposant": None,
-        "date": amendment.get("date"),
-        "numero": amendment.get("id"),
-        "source_url": amendment.get("source_url"),
+        "amendement_non_resolu": {
+            "texte_vise": amendment.get("reference") or "",
+            "sort": None,
+            "base_juridique_irrecevabilite": None,
+            "premier_signataire": None,
+            "co_signataires": [],
+            "type_deposant": None,
+            "date": amendment.get("date"),
+            "numero": amendment.get("id"),
+            "source_url": amendment.get("source_url"),
+        },
     }
 
 
@@ -82,7 +97,9 @@ def enrich_pivot_with_parltrack(
     identiques à celles de `merge_profile._pivot_texte_key` et
     `merge_profile._pivot_amendement_key` :
     - `textes_portes` : source_url (si présent) sinon (titre, date_min, legislature)
-    - `amendements`   : source_url (si présent) sinon (numero, texte_vise, date)
+    - `amendements`   : `amendement_id` si résolu, sinon, dans
+      `amendement_non_resolu`, source_url (si présent) sinon
+      (numero, texte_vise, date)
 
     Un warning est ajouté à `meta.warnings[]` si les dumps sont
     indisponibles.
@@ -119,7 +136,16 @@ def enrich_pivot_with_parltrack(
 
     # --- amendements ---
     amendments = get_amendments_for_mep(mep_id, force_download=force_download)
+
     def _amd_key(a: dict[str, Any]) -> Any:
+        # Même clé que `merge_profile._pivot_amendement_key` : `amendement_id`
+        # d'abord, puis l'enregistrement non résolu — sans quoi toutes les
+        # entrées PE, qui ont toutes `amendement_id: None`, se réduiraient à une.
+        if a.get("amendement_id"):
+            return a["amendement_id"]
+        non_resolu = a.get("amendement_non_resolu")
+        if isinstance(non_resolu, dict):
+            a = non_resolu
         return a.get("source_url") or (a.get("numero"), a.get("texte_vise"), a.get("date"))
 
     existing_amd_keys = {

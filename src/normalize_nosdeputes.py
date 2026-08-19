@@ -21,6 +21,7 @@ import time
 from typing import Any, Optional
 
 from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from amendements_index import cle_amendement
 from scrutins_index import ScrutinsIndex, cle_scrutin
 from scrutins_legislature import legislature_du_calendrier
 
@@ -193,35 +194,52 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
-    """Normalise un amendement officiel (Assemblée nationale) vers le format pivot.
+    """Normalise un amendement brut vers le **mapping** pivot (#431).
 
-    Le flux brut peut contenir deux cas : l'élu auteur principal ou simple
-    cosignataire (champ `role_signataire`).
+    Un amendement est identique pour tous ses signataires : `texte_vise`,
+    `sort`, `date`, `type_deposant`, `premier_signataire` et surtout
+    `co_signataires` vivent une seule fois dans `pivot_data/amendements/`, et le
+    profil ne garde que ce qui est propre au membre — son `role_signataire`.
+
+    Mesuré sur les 209 profils committés : 810 552 paires (membre, amendement)
+    pour 207 238 amendements distincts, et **77,7 M entrées de cosignatures pour
+    4,96 M distinctes** (× 15,7). C'est cette recopie qui pèse 1 083,9 Mo.
+
+    Un amendement sans `uid` n'a pas de clé — le `numero` repart à chaque texte
+    ([[amendements-cle-uid]]) — et on ne lui en invente pas : il conserve son
+    enregistrement complet sous `amendement_non_resolu`, avec `amendement_id` à
+    `null`. Ni supprimé, ni deviné (AGENTS.md §2.5). Zéro cas sur les données
+    actuelles, dont la couverture `uid` est de 100 %.
     """
     role_signataire = a.get("role_signataire")
-    premier_signataire = a.get("premier_signataire")
-    # Compatibilité ascendante : pour les données historiques sans role explicite,
-    # on conserve le comportement ancien (premier_signataire = élu du profil).
-    if role_signataire != "cosignataire":
-        premier_signataire = own_id
+    amendement_id = cle_amendement(a.get("uid"))
 
-    return {
-        # Identifiant AN de l'amendement : seule clé unique, propagée telle
-        # quelle du brut au pivot (voir
-        # docs/technical_decisions.md#amendements-cle-uid). `None` pour les
-        # entrées collectées avant son extraction.
-        "uid": a.get("uid"),
-        "texte_vise": a.get("texte_vise"),
-        "sort": a.get("sort"),
-        "base_juridique_irrecevabilite": a.get("base_juridique_irrecevabilite"),
+    amendement: dict[str, Any] = {
+        "amendement_id": amendement_id,
         "role_signataire": role_signataire,
-        "premier_signataire": premier_signataire,
-        "co_signataires": list(a.get("co_signataires") or []),
-        "type_deposant": a.get("type_deposant"),
-        "date": a.get("date"),
-        "numero": a.get("numero"),
-        "source_url": a.get("source_url"),
     }
+
+    if amendement_id is None:
+        premier_signataire = a.get("premier_signataire")
+        # Compatibilité ascendante : pour les données historiques sans rôle
+        # explicite, on conserve le comportement ancien (premier_signataire =
+        # élu du profil). Ne vaut que pour l'enregistrement non résolu : la
+        # liste partagée, elle, ne peut porter qu'une valeur indépendante du
+        # lecteur (voir amendements_index._valeur_amendement).
+        if role_signataire != "cosignataire":
+            premier_signataire = own_id
+        amendement["amendement_non_resolu"] = {
+            "texte_vise": a.get("texte_vise"),
+            "sort": a.get("sort"),
+            "base_juridique_irrecevabilite": a.get("base_juridique_irrecevabilite"),
+            "premier_signataire": premier_signataire,
+            "co_signataires": list(a.get("co_signataires") or []),
+            "type_deposant": a.get("type_deposant"),
+            "date": a.get("date"),
+            "numero": a.get("numero"),
+            "source_url": a.get("source_url"),
+        }
+    return amendement
 
 
 # ---------------------------------------------------------------------------

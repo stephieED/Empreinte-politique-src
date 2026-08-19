@@ -1604,7 +1604,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements
+          # Les index partagés font partie des données : sans eux, les mappings
+          # des profils (#432 votes, #431 amendements) pointent dans le vide et
+          # les vues se vident sans erreur visible. `scrutins.json` manquait
+          # ici depuis #432 — constaté et corrigé en même temps que l'ajout
+          # d'`amendements/`, la panne aurait été la même.
+          git add raw_data/profiles pivot_data/profiles pivot_data/partis pivot_data/groupes pivot_data/gouvernements pivot_data/scrutins.json pivot_data/amendements
           if git diff --cached --quiet; then
             echo "Aucun changement de données à committer."
             echo "pushed=false" >> "$GITHUB_OUTPUT"

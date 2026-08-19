@@ -923,7 +923,7 @@ def test_aggregate_amendements_compte_par_statut():
         _amendement("adopté"), _amendement("rejeté"), _amendement("irrecevable"),
     ])
     p2 = _pivot("nosdeputes:bob", amendements=[_amendement("retiré")])
-    agg = _aggregate_amendements([p1, p2])
+    agg, _ = _aggregate_amendements([p1, p2])
     assert agg["nb_amendements"] == 4
     assert agg["nb_adoptes"] == 1
     assert agg["nb_rejetes"] == 1
@@ -933,19 +933,19 @@ def test_aggregate_amendements_compte_par_statut():
 
 def test_aggregate_amendements_taux_adoption():
     p1 = _pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])
-    agg = _aggregate_amendements([p1])
+    agg, _ = _aggregate_amendements([p1])
     assert agg["taux_adoption"] == 0.5
 
 
 def test_aggregate_amendements_sans_accent_est_reconnu():
     """'adopte' (sans accent) doit être reconnu comme 'adopté'."""
     p1 = _pivot(amendements=[_amendement("adopte")])
-    agg = _aggregate_amendements([p1])
+    agg, _ = _aggregate_amendements([p1])
     assert agg["nb_adoptes"] == 1
 
 
 def test_aggregate_amendements_taux_none_si_aucun():
-    agg = _aggregate_amendements([_pivot(amendements=[])])
+    agg, _ = _aggregate_amendements([_pivot(amendements=[])])
     assert agg["nb_amendements"] == 0
     assert agg["taux_adoption"] is None
 
@@ -962,7 +962,7 @@ def test_aggregate_amendements_par_type_deposant_depute():
     p1 = _pivot(amendements=[
         _amendement("adopté", deposant="depute"), _amendement("rejeté", deposant="depute"),
     ])
-    agg = _aggregate_amendements([p1])
+    agg, _ = _aggregate_amendements([p1])
     assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 2
     assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.5
 
@@ -975,7 +975,7 @@ def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
         _amendement("adopté", deposant="gouvernement"),
         _amendement("adopté", deposant="commission_rapporteur"),
     ])
-    agg = _aggregate_amendements([p1])
+    agg, _ = _aggregate_amendements([p1])
     assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 1
     assert agg["par_type_deposant"]["depute"]["taux_adoption"] == 0.0
     assert agg["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
@@ -986,10 +986,83 @@ def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
     assert agg["taux_adoption"] == round(2 / 3, 4)
 
 
+def test_aggregate_amendements_identique_avant_apres_normalisation():
+    """Critère d'acceptation #431 : `amendements_agreges` ne change pas.
+
+    Même population, deux formes : l'ancienne (chaque signataire porte
+    l'enregistrement complet) et la nouvelle (mapping + index partagé). Les 20
+    champs de décompte doivent coïncider — c'est ce qui prouve qu'aucune
+    information utile n'a été perdue en route.
+
+    Vérifié aussi sur les données réelles au moment de la bascule : 810 552
+    paires, 7 groupes committés, **0 écart**.
+    """
+    from amendements_index import cle_amendement, construire_index
+
+    sorts = ["adopté", "rejeté", "irrecevable", "retiré", "tombé", "non_soutenu", "adopte"]
+    deposants = ["depute", "gouvernement", "commission_rapporteur"]
+    plats = []
+    for i, sort in enumerate(sorts):
+        for j, deposant in enumerate(deposants):
+            a = _amendement(sort, deposant=deposant)
+            a["uid"] = f"AMANR5L17PO0B0000P0D1N{i * 10 + j:06d}"
+            a["role_signataire"] = "auteur_principal" if j == 0 else "cosignataire"
+            plats.append(a)
+    # Un même amendement recopié chez trois signataires : la duplication que
+    # #431 supprime. L'agrégat, lui, compte bien trois paires dans les deux
+    # formes — c'est une paire (membre, amendement), pas un amendement.
+    plats += [dict(plats[0]), dict(plats[0])]
+
+    avant, non_resolus_avant = _aggregate_amendements([_pivot(amendements=plats)])
+    assert non_resolus_avant == 0
+
+    index = construire_index(plats)
+    mapping = [
+        {"amendement_id": cle_amendement(a["uid"]), "role_signataire": a["role_signataire"]}
+        for a in plats
+    ]
+    apres, non_resolus_apres = _aggregate_amendements([_pivot(amendements=mapping)], index)
+
+    assert non_resolus_apres == 0
+    assert apres == avant
+
+
+def test_aggregate_amendements_entree_non_resolue_est_comptee_pas_ignoree():
+    """Une exclusion muette transformerait un dénominateur en donnée fausse
+    (AGENTS.md §2.7)."""
+    from amendements_index import construire_index
+
+    connu = _amendement("adopté")
+    connu["uid"] = "AMANR5L17PO0B0000P0D1N000001"
+    index = construire_index([connu])
+    mapping = [
+        {"amendement_id": "an:AMANR5L17PO0B0000P0D1N000001", "role_signataire": "auteur_principal"},
+        # Référence un amendement qu'un index partiel ne connaît pas.
+        {"amendement_id": "an:AMANR5L17PO0B0000P0D1N999999", "role_signataire": "cosignataire"},
+    ]
+    agg, non_resolus = _aggregate_amendements([_pivot(amendements=mapping)], index)
+    assert agg["nb_amendements"] == 1
+    assert non_resolus == 1
+
+
+def test_aggregate_amendements_entree_sans_index_lit_lenregistrement_conserve():
+    """`amendement_non_resolu` porte l'enregistrement complet : il est lu, pas
+    écarté."""
+    mapping = [{
+        "amendement_id": None,
+        "role_signataire": "auteur_principal",
+        "amendement_non_resolu": _amendement("adopté"),
+    }]
+    agg, non_resolus = _aggregate_amendements([_pivot(amendements=mapping)], None)
+    assert agg["nb_amendements"] == 1
+    assert agg["nb_adoptes"] == 1
+    assert non_resolus == 0
+
+
 def test_aggregate_amendements_type_deposant_absent_est_inconnu():
     a = _amendement("adopté")
     del a["type_deposant"]
-    agg = _aggregate_amendements([_pivot(amendements=[a])])
+    agg, _ = _aggregate_amendements([_pivot(amendements=[a])])
     assert agg["par_type_deposant"]["inconnu"]["nb_amendements"] == 1
     assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 0
 

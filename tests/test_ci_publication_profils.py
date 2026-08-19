@@ -174,3 +174,24 @@ def test_l_action_de_publication_ne_retombe_jamais_sur_le_repertoire_source():
         "L'action copie le répertoire source en masse : elle republierait la "
         "baseline périmée (#450)."
     )
+
+
+def test_les_index_partages_sont_committes():
+    """Un index qui n'est pas committé laisse les mappings pointer dans le vide.
+
+    Depuis #432 (votes) et #431 (amendements), un profil pivot ne se lit plus
+    seul : `pivot_data/scrutins.json` et `pivot_data/amendements/` portent le
+    méta que les mappings référencent. Les oublier du `git add` ne casse rien de
+    visible — le pipeline continue, les profils sont committés, et les vues se
+    vident simplement sans erreur.
+    """
+    texte = WORKFLOW.read_text(encoding="utf-8")
+    ligne = next(
+        (l for l in texte.split("\n") if l.strip().startswith("git add ")), None
+    )
+    assert ligne is not None, "Aucun `git add` trouvé dans le workflow."
+    for chemin in ("pivot_data/scrutins.json", "pivot_data/amendements"):
+        assert chemin in ligne, (
+            f"`{chemin}` absent du `git add` : l'index ne serait jamais committé "
+            "et les mappings des profils pointeraient dans le vide."
+        )

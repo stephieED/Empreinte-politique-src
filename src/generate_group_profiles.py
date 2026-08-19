@@ -33,6 +33,10 @@ from typing import Any, Optional
 
 from group_profile import generate_groupe_profile_from_roster
 from group_roster import fetch_full_roster, filter_roster_by_sigle
+from amendements_index import (
+    DEFAULT_AMENDEMENTS_DIR,
+    charger as charger_amendements,
+)
 from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
 
 
@@ -49,6 +53,7 @@ def generate_all(
     merge_existing: bool = False,
     validate: bool = False,
     scrutins_path: Path = DEFAULT_SCRUTINS_PATH,
+    amendements_path: Path = DEFAULT_AMENDEMENTS_DIR,
 ) -> int:
     """Génère tous les profils de groupe de `groupes`, un seul fetch réseau par
     (roster_chambre, legislature) distincte. Retourne le nombre d'échecs."""
@@ -67,6 +72,22 @@ def generate_all(
         )
     else:
         print(f"→ Index des scrutins : {len(scrutins_index)} scrutin(s).", file=sys.stderr)
+
+    # Idem pour l'index des amendements (#431), chargé UNE fois et **sans les
+    # cosignatures** : l'agrégat ne lit que `sort` et `type_deposant`, et les
+    # cosignatures pèsent 59 % de l'index sans qu'aucun consommateur les lise.
+    amendements_index = charger_amendements(
+        Path(amendements_path), avec_cosignatures=False
+    )
+    if len(amendements_index) == 0:
+        print(
+            f"  [!] Index des amendements vide ou absent ({amendements_path}) : "
+            "`amendements_agreges` ne comptera que les entrées portant encore leur "
+            "enregistrement (#431).",
+            file=sys.stderr,
+        )
+    else:
+        print(f"→ Index des amendements : {len(amendements_index)} amendement(s).", file=sys.stderr)
 
     rosters_bruts: dict[tuple[str, Optional[str]], list[dict[str, Any]]] = {}
     echecs = 0
@@ -110,6 +131,7 @@ def generate_all(
                 merge_existing=merge_existing,
                 validate=validate,
                 scrutins_index=scrutins_index,
+                amendements_index=amendements_index,
             )
         except Exception as exc:  # noqa: BLE001 - un échec sur un groupe ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {groupe['groupe_id']} : {exc}", file=sys.stderr)

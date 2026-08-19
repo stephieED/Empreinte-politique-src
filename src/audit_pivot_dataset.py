@@ -52,6 +52,10 @@ from pathlib import Path
 from typing import Any
 
 from schema_pivot import KNOWN_CHAMBRES, KNOWN_PROVENANCES
+from amendements_index import (
+    DEFAULT_AMENDEMENTS_DIR,
+    charger as charger_amendements,
+)
 from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
 
 # Types de sources attendus par chambre pour compute_coherence_chambre_sources :
@@ -681,33 +685,44 @@ def _parse_date_seule(valeur: Any) -> date | None:
 
 
 def _date_entree(
-    entree: dict[str, Any], champ: str, scrutins_index: Any = None
+    entree: dict[str, Any], champ: str, scrutins_index: Any = None,
+    amendements_index: Any = None,
 ) -> Any:
     """Date d'une entrée de liste, `None` si elle n'en a pas.
 
-    Depuis #432 un vote ne porte plus sa date : c'est un champ du scrutin, qui
-    vit dans l'index partagé. Sans cette résolution, la plage de dates des votes
-    tomberait silencieusement à `null` pour tous les profils — et c'est
-    précisément elle qui avait montré que le corpus s'arrêtait en juin 2024
-    ([[votes-multi-legislature]]). Un audit qui perd sa mesure sans le dire est
-    pire que pas d'audit.
+    Depuis #432 un vote ne porte plus sa date, et depuis #431 un amendement non
+    plus : c'est un champ de l'entité partagée, qui vit dans son index. Sans
+    cette résolution, la plage de dates tomberait silencieusement à `null` pour
+    tous les profils — et c'est précisément elle qui avait montré que le corpus
+    s'arrêtait en juin 2024 ([[votes-multi-legislature]]). Un audit qui perd sa
+    mesure sans le dire est pire que pas d'audit.
 
-    Repli sur `scrutin_non_resolu` pour les votes qu'aucun identifiant ne
-    rattache : leur enregistrement complet y est conservé.
+    Repli sur l'enregistrement non résolu (`scrutin_non_resolu`,
+    `amendement_non_resolu`) pour les entrées qu'aucun identifiant ne rattache :
+    leur enregistrement complet y est conservé. Repli supplémentaire sur
+    l'entrée elle-même pour les profils d'avant la normalisation, qui portaient
+    encore leur date.
     """
-    if champ != "votes":
-        return entree.get("date")
-    scrutin = None
-    if scrutins_index is not None:
-        scrutin = scrutins_index.get(entree.get("scrutin_id"))
-    if scrutin is None:
-        scrutin = entree.get("scrutin_non_resolu") or {}
-    return scrutin.get("date")
+    if champ == "votes":
+        scrutin = None
+        if scrutins_index is not None:
+            scrutin = scrutins_index.get(entree.get("scrutin_id"))
+        if scrutin is None:
+            scrutin = entree.get("scrutin_non_resolu") or {}
+        return scrutin.get("date")
+    if champ == "amendements":
+        amendement = None
+        if amendements_index is not None:
+            amendement = amendements_index.get(entree.get("amendement_id"))
+        if amendement is None:
+            amendement = entree.get("amendement_non_resolu") or entree
+        return amendement.get("date")
+    return entree.get("date")
 
 
 def _plage_dates_champ_simple(
     profil: dict[str, Any], champ: str, dates_ignorees: dict[str, int],
-    scrutins_index: Any = None,
+    scrutins_index: Any = None, amendements_index: Any = None,
 ) -> dict[str, str | None]:
     """Min/max de la date de chaque entrée, en ignorant les dates invalides.
 
@@ -722,7 +737,7 @@ def _plage_dates_champ_simple(
         for entree in entrees:
             if not isinstance(entree, dict):
                 continue
-            valeur = _date_entree(entree, champ, scrutins_index)
+            valeur = _date_entree(entree, champ, scrutins_index, amendements_index)
             if valeur is None:
                 continue
             date_parsee = _parse_date_seule(valeur)
@@ -795,7 +810,8 @@ def _fusionne_plages(plages: list[dict[str, str | None]]) -> dict[str, str | Non
 
 
 def compute_plage_dates_candidats(
-    profils: list[dict[str, Any]], scrutins_index: Any = None
+    profils: list[dict[str, Any]], scrutins_index: Any = None,
+    amendements_index: Any = None,
 ) -> dict[str, Any]:
     """Plage temporelle par candidat et par type d'activité.
 
@@ -827,7 +843,9 @@ def compute_plage_dates_candidats(
             champ: (
                 _plage_dates_textes_portes(profil, dates_ignorees)
                 if champ == "textes_portes"
-                else _plage_dates_champ_simple(profil, champ, dates_ignorees, scrutins_index)
+                else _plage_dates_champ_simple(
+                    profil, champ, dates_ignorees, scrutins_index, amendements_index
+                )
             )
             for champ in CHAMPS_LISTES_VOLUMETRIE
         }
@@ -926,6 +944,7 @@ def build_report(
     staleness_days: int = 30,
     reference_date: datetime | None = None,
     scrutins_index: Any = None,
+    amendements_index: Any = None,
 ) -> dict[str, Any]:
     """Assemble tous les indicateurs `compute_*` en un rapport structuré unique.
 
@@ -978,7 +997,9 @@ def build_report(
         },
         "warnings": compute_agregation_warnings(profils),
         "tableau_croise_candidats": compute_tableau_croise_candidats(profils),
-        "plage_dates_candidats": compute_plage_dates_candidats(profils, scrutins_index),
+        "plage_dates_candidats": compute_plage_dates_candidats(
+            profils, scrutins_index, amendements_index
+        ),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -1328,6 +1349,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "votes ne peut pas être calculée."
         ),
     )
+    parser.add_argument(
+        "--amendements",
+        default=str(DEFAULT_AMENDEMENTS_DIR),
+        metavar="DOSSIER",
+        help=(
+            f"Index partagé des amendements (#431, défaut : {DEFAULT_AMENDEMENTS_DIR}). "
+            "Un amendement ne porte plus sa date dans le profil : sans l'index, la "
+            "plage de dates des amendements ne peut pas être calculée."
+        ),
+    )
     return parser
 
 
@@ -1370,9 +1401,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  [!] Index des scrutins vide ou absent ({args.scrutins}) : "
               "la plage de dates des votes ne sera pas calculée (#432).",
               file=sys.stderr)
+    # Index des amendements (#431), même raison. `avec_cosignatures=False` :
+    # l'audit ne lit que des dates, et les cosignatures pèsent 59 % de l'index.
+    amendements_index = charger_amendements(
+        Path(args.amendements), avec_cosignatures=False
+    )
+    if len(amendements_index) == 0:
+        print(f"  [!] Index des amendements vide ou absent ({args.amendements}) : "
+              "la plage de dates des amendements ne sera calculée que sur les entrées "
+              "portant encore leur enregistrement (#431).",
+              file=sys.stderr)
     rapport = build_report(
         profils, erreurs_lecture, staleness_days=args.staleness_days,
         scrutins_index=scrutins_index,
+        amendements_index=amendements_index,
     )
     output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
 

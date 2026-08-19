@@ -84,21 +84,26 @@ def test_make_texte_porte_missing_titre_falls_back_to_reference():
 
 
 def test_make_amendement_fields():
+    """#431 : un amendement PE n'a pas d'`uid` AN, donc pas d'identifiant dans
+    l'index partagé — il garde son enregistrement complet, jamais une clé
+    inventée (AGENTS.md §2.5)."""
     a = _amendment()
     amd = _make_amendement(a)
-    assert amd["texte_vise"] == "2020/2202(INI)"
-    assert amd["sort"] is None  # ParlTrack ne fournit pas de sort fiable
-    assert amd["numero"] == "A9-0052/2023-1"
-    assert amd["source_url"].startswith("https://parltrack.org/")
+    assert amd["amendement_id"] is None
     assert amd["role_signataire"] == "auteur_principal"
-    assert amd["co_signataires"] == []
-    assert amd["base_juridique_irrecevabilite"] is None
+    non_resolu = amd["amendement_non_resolu"]
+    assert non_resolu["texte_vise"] == "2020/2202(INI)"
+    assert non_resolu["sort"] is None  # ParlTrack ne fournit pas de sort fiable
+    assert non_resolu["numero"] == "A9-0052/2023-1"
+    assert non_resolu["source_url"].startswith("https://parltrack.org/")
+    assert non_resolu["co_signataires"] == []
+    assert non_resolu["base_juridique_irrecevabilite"] is None
 
 
 def test_make_amendement_missing_reference():
     a = _amendment(reference="")
     amd = _make_amendement(a)
-    assert amd["texte_vise"] == ""
+    assert amd["amendement_non_resolu"]["texte_vise"] == ""
 
 
 # ---------------------------------------------------------------------------
@@ -156,9 +161,16 @@ def test_enrich_additive_no_duplicate(tmp_path):
          patch("normalize_parltrack_dumps.get_amendments_for_mep", return_value=amds):
         enrich_pivot_with_parltrack(profil, mep_id=131580)
 
-    # Seul le nouvel amendement est ajouté
+    # Seul le nouvel amendement est ajouté. L'entrée pré-chargée est à l'ancienne
+    # forme (champs à la racine), la nouvelle à la forme #431 : la clé de fusion
+    # doit les rapprocher malgré tout, sinon une régénération dupliquerait tout
+    # l'existant le jour de la bascule.
     assert len(profil["amendements"]) == 2
-    numeros = {a["numero"] for a in profil["amendements"]}
+
+    def _numero(a):
+        return (a.get("amendement_non_resolu") or a).get("numero")
+
+    numeros = {_numero(a) for a in profil["amendements"]}
     assert "A9-0052/2023-1" in numeros
     assert "A9-0053/2023-1" in numeros
 

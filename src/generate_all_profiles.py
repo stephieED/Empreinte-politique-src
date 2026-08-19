@@ -87,6 +87,10 @@ from json_io import ecrire_profil_json
 from merge_profile import merge_pivot_profile, merge_raw_profile, preserve_stable_freshness_timestamps
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
+from amendements_index import (
+    DEFAULT_AMENDEMENTS_DIR,
+    rafraichir as rafraichir_amendements,
+)
 from scrutins_index import DEFAULT_SCRUTINS_PATH, ScrutinsIndex, charger as charger_scrutins, rafraichir as rafraichir_scrutins
 from scrutins_legislature import LegislatureIrresoluble
 from text_utils import slugify
@@ -727,6 +731,42 @@ def _rafraichir_index_scrutins(
     return index
 
 
+def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> None:
+    """Reconstruit l'index partagé des amendements depuis les profils bruts.
+
+    **Une seule fois**, et après la boucle — contrairement à l'index des
+    scrutins, qui l'est avant ET après. La différence est de nature : la clé
+    d'un scrutin demande une résolution de corpus (la législature d'un vote se
+    lit sur un jumeau étiqueté vivant dans un autre profil), donc la
+    normalisation a besoin de l'index. La clé d'un amendement est son `uid` AN,
+    porté par l'enregistrement lui-même, et sa législature se lit dans cet
+    `uid` : `_normalize_amendement` n'a besoin de rien d'extérieur, et un
+    passage préalable ne ferait que relire 1,5 Go pour rien.
+
+    Reste indispensable APRÈS : les amendements des profils collectés pendant le
+    run manqueraient sinon à l'index, et les mappings tout juste écrits
+    pointeraient dans le vide.
+    """
+    if args.skip_amendements_index:
+        print("Index des amendements : reconstruction sautée (--skip-amendements-index).")
+        return
+    dossier = Path(args.amendements)
+    index = rafraichir_amendements(
+        out_dir, dossier,
+        # Fusion additive sauf --no-merge : un run qui ne régénère qu'une
+        # tranche ne voit qu'une partie des amendements, et écraser l'index
+        # laisserait les mappings des profils non retraités pointer dans le vide
+        # (leçon de #450, au niveau de l'index).
+        fusionner=not args.no_merge,
+        genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+    )
+    detail = ", ".join(
+        f"{legislature}: {len(index.ids_de_legislature(legislature))}"
+        for legislature in index.legislatures()
+    )
+    print(f"Index des amendements : {len(index)} amendement(s) → {dossier} ({detail})")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--candidats", default=DEFAULT_CANDIDATS_PATH, help=f"Fichier JSON listant les candidats (défaut: {DEFAULT_CANDIDATS_PATH})")
@@ -799,6 +839,16 @@ def main() -> None:
                         help="Ne pas reconstruire l'index des scrutins ; l'index existant est "
                              "simplement chargé. Utile pour re-piver une tranche sans repayer la "
                              "passe de corpus (~26 s sur 209 profils).")
+    parser.add_argument("--amendements", default=str(DEFAULT_AMENDEMENTS_DIR), metavar="DOSSIER",
+                        help=f"Index partagé des amendements (#431, défaut : {DEFAULT_AMENDEMENTS_DIR}). "
+                             "Un fichier par législature, plus un fichier compagnon de cosignatures. "
+                             "Reconstruit depuis --out-dir APRÈS la passe pivot : un profil ne porte "
+                             "plus que le mapping {amendement_id, role_signataire}.")
+    parser.add_argument("--skip-amendements-index", action="store_true",
+                        help="Ne pas reconstruire l'index des amendements. Les mappings déjà écrits "
+                             "restent valides — l'identifiant est l'uid AN, il ne dépend d'aucune "
+                             "résolution de corpus — mais un amendement vu pour la première fois "
+                             "pendant ce run manquera à l'index jusqu'à la prochaine reconstruction.")
     parser.add_argument("--no-merge", action="store_true",
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
@@ -974,6 +1024,10 @@ def main() -> None:
     # brut, et sauté quand rien n'a été traité.
     if args.pivot and not args.pivot_only and candidats:
         _rafraichir_index_scrutins(args, out_dir, moment="apres")
+
+    # Index des amendements (#431) : une seule reconstruction, après la boucle.
+    if args.pivot:
+        _rafraichir_index_amendements(args, out_dir)
 
     print("\n=== Résumé ===")
     for r in sorted(resultats, key=lambda x: x.get("nom") or ""):
