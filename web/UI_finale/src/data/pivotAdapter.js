@@ -264,10 +264,54 @@ function chambreLabel(chambre, actif) {
   return actif ? label : `Ancien(ne) ${label.toLowerCase()}`;
 }
 
+/**
+ * Index des scrutins (#432) : `{ "an:16:4084": { date, texte, sort, … } }`.
+ *
+ * Un scrutin est identique pour tous ses votants, donc son méta vit une seule
+ * fois dans `/data/scrutins.json` et le profil n'en garde que le mapping
+ * `{ scrutin_id, position }`. Un profil ne se lit donc plus seul pour ses votes :
+ * c'est le couplage assumé de cette normalisation (179,8 → 26,7 Mo).
+ *
+ * Un scrutin absent de l'index rend une entrée vide plutôt que de faire planter
+ * la vue : une donnée manquante reste manquante, elle n'est pas inventée.
+ */
+function resolveScrutin(scrutinsIndex, scrutinId) {
+  return (scrutinsIndex && scrutinId && scrutinsIndex[scrutinId]) || null;
+}
+
+/**
+ * Joint le mapping du profil à l'index et rend des votes autoportants
+ * `{ position, date, texte, sort }` — la forme que le reste de l'adaptateur
+ * consommait avant #432.
+ *
+ * Les votes non résolus (`scrutin_id` null) portent leur enregistrement complet
+ * sous `scrutin_non_resolu` : ils sont lus là, jamais écartés.
+ */
+function joinVotes(votes, scrutinsIndex) {
+  return votes
+    .map((v) => {
+      // Repli sur le vote lui-même pour les pivots d'AVANT #432, qui portaient
+      // encore le méta du scrutin. Le code est déployé avant que les données
+      // ne soient régénérées : sans ce repli, tous les votes disparaîtraient
+      // des vues entre les deux, sans erreur visible. À retirer une fois la
+      // régénération committée.
+      const scrutin = resolveScrutin(scrutinsIndex, v.scrutin_id) || v.scrutin_non_resolu
+        || (v.date || v.texte ? v : null);
+      if (!scrutin) return null;
+      return {
+        position: v.position,
+        date: scrutin.date ?? null,
+        texte: scrutin.texte ?? null,
+        sort: scrutin.sort ?? null,
+      };
+    })
+    .filter(Boolean);
+}
+
 /** Construit l'objet consommé par CandidateProfile.jsx à partir d'un profil pivot v1. */
-export function buildCandidateView(pivot, manifestEntry) {
+export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null) {
   const mandats = pivot.mandats || [];
-  const votes = pivot.votes || [];
+  const votes = joinVotes(pivot.votes || [], scrutinsIndex);
   const amendements = pivot.amendements || [];
   const textesPortes = pivot.textes_portes || [];
   const periods = hemicyclePeriods(mandats);
@@ -343,19 +387,28 @@ export function buildCandidateView(pivot, manifestEntry) {
 }
 
 /** Construit l'objet consommé par GroupProfile.jsx à partir d'un profil de groupe v1. */
-export function buildGroupView(groupe) {
+export function buildGroupView(groupe, scrutinsIndex = null) {
   const rosterTotal = groupe.meta?.couverture_roster?.roster_total ?? groupe.effectif?.actuel ?? 0;
   const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? (groupe.membres || []).length;
   const coveragePct = rosterTotal ? Math.round((profilsDisponibles / rosterTotal) * 100) : 0;
 
+  // `date`, `texte` et `sort` ont migré vers l'index partagé (#432) : ce sont
+  // des champs du scrutin, qui étaient recopiés dans chacun des groupes l'ayant
+  // voté. Les 4 104 scrutins des groupes sont inclus dans ceux des profils —
+  // un seul index sert les deux.
   const cohesionVotes = groupe.cohesion_votes || [];
-  const votes = cohesionVotes.slice(0, 12).map((v) => ({
-    date: formatFrDate(v.date) || 'Date non renseignée',
-    texte: v.texte,
-    position: v.position_majoritaire,
-    coherence: v.taux_coherence != null ? Math.round(v.taux_coherence * 100) : null,
-    quorum: v.quorum_atteint,
-  }));
+  const votes = cohesionVotes.slice(0, 12).map((v) => {
+    // Même repli transitoire que pour les profils : les fichiers de groupe
+    // d'avant #432 portent encore `date`/`texte` dans l'entrée.
+    const scrutin = resolveScrutin(scrutinsIndex, v.scrutin_id) || v;
+    return {
+      date: formatFrDate(scrutin?.date) || 'Date non renseignée',
+      texte: scrutin?.texte ?? null,
+      position: v.position_majoritaire,
+      coherence: v.taux_coherence != null ? Math.round(v.taux_coherence * 100) : null,
+      quorum: v.quorum_atteint,
+    };
+  });
 
   const agg = groupe.amendements_agreges || {};
   const parDepute = agg.par_type_deposant?.depute;

@@ -355,50 +355,195 @@ def test_validate_mode_declenchement_connu_est_valide():
 
 
 # ---------------------------------------------------------------------------
-# validate_profil — votes[].type_scrutin / type_vote / texte_lie_id
+# validate_profil / validate_scrutins_index — votes[] après normalisation (#432)
+#
+# `type_scrutin`, `type_vote`, `texte_lie_id` et `sort` ont migré du profil vers
+# `pivot_data/scrutins.json` : ce sont des champs du SCRUTIN, identiques pour
+# tous ses votants. Leur validation les a suivis — elle s'exécute désormais une
+# fois par scrutin au lieu d'une fois par votant.
+#
+# Deux invariants sont devenus des JOINTURES et ne sont vérifiables qu'avec
+# l'index : qu'un `scrutin_id` référencé existe, et la règle 4 (un 49.3 ne porte
+# jamais de position). Sans index ils sont sautés — jamais validés par défaut.
 # ---------------------------------------------------------------------------
 
-def test_validate_type_scrutin_inconnu_est_une_erreur():
+def _index(scrutins):
+    """Index minimal, du type de ce que `ScrutinsIndex` expose à la validation."""
+    class _Faux:
+        par_id = {s["id"]: s for s in scrutins}
+    return _Faux()
+
+
+def _scrutin(**champs):
+    base = {
+        "id": "an:17:1", "legislature": "17", "numero_scrutin": "1",
+        "legislature_provenance": "collectee", "date": "2026-01-05",
+        "texte": "Projet de loi", "sort": "adopté", "type_scrutin": None,
+        "type_vote": "vote_texte", "texte_lie_id": None, "source_url": None,
+    }
+    base.update(champs)
+    return base
+
+
+def test_validate_vote_mapping_minimal_est_valide():
     p = _valid_profil()
-    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_scrutin": "secret"}]
+    p["votes"] = [{"scrutin_id": "an:17:1", "position": "pour"}]
+    assert validate_profil(p) == []
+
+
+def test_validate_scrutin_id_mal_forme_est_une_erreur():
+    """Un identifiant partiel se confondrait avec celui d'une autre législature :
+    le numéro de scrutin repart à 1 à chaque fois (AGENTS.md §5)."""
+    for mauvais in ("17:1", "an:17", "an::1", "an:17:", "1", "eu:17:1"):
+        p = _valid_profil()
+        p["votes"] = [{"scrutin_id": mauvais, "position": "pour"}]
+        errors = validate_profil(p)
+        assert any("scrutin_id" in e for e in errors), mauvais
+
+
+def test_validate_vote_sans_scrutin_id_exige_l_enregistrement_complet():
+    """Une donnée qu'on ne sait pas normaliser reste une donnée (§2.5) : sans
+    identifiant, le vote doit conserver son enregistrement — sinon il n'est pas
+    seulement non normalisé, il est perdu."""
+    p = _valid_profil()
+    p["votes"] = [{"scrutin_id": None, "position": "pour"}]
     errors = validate_profil(p)
-    assert any("type_scrutin" in e for e in errors)
+    assert any("scrutin_non_resolu" in e for e in errors)
 
 
-def test_validate_type_scrutin_connu_est_valide():
-    p = _valid_profil()
-    for type_scrutin in KNOWN_TYPES_SCRUTIN:
-        p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_scrutin": type_scrutin}]
-        assert validate_profil(p) == []
-
-
-def test_validate_type_vote_inconnu_est_une_erreur():
-    p = _valid_profil()
-    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "vote_secret"}]
-    errors = validate_profil(p)
-    assert any("type_vote" in e for e in errors)
-
-
-def test_validate_motion_censure_sans_texte_lie_id_est_une_erreur():
-    p = _valid_profil()
-    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "motion_censure"}]
-    errors = validate_profil(p)
-    assert any("texte_lie_id" in e for e in errors)
-
-
-def test_validate_motion_censure_avec_texte_lie_id_est_valide():
+def test_validate_vote_non_resolu_avec_enregistrement_est_valide():
     p = _valid_profil()
     p["votes"] = [{
-        "numero_scrutin": "1", "position": "pour",
-        "type_vote": "motion_censure", "texte_lie_id": "49-3-texte-42",
+        "scrutin_id": None, "position": "pour",
+        "scrutin_non_resolu": {"numero_scrutin": "1", "date": None, "texte": "x"},
     }]
     assert validate_profil(p) == []
 
 
-def test_validate_vote_texte_sans_texte_lie_id_est_valide():
+def test_validate_scrutin_id_absent_de_l_index_est_une_erreur():
+    """Le mapping pointerait dans le vide — exactement ce que la fusion additive
+    de l'index existe pour empêcher."""
     p = _valid_profil()
-    p["votes"] = [{"numero_scrutin": "1", "position": "pour", "type_vote": "vote_texte"}]
+    p["votes"] = [{"scrutin_id": "an:17:999", "position": "pour"}]
+    errors = validate_profil(p, scrutins_index=_index([_scrutin()]))
+    assert any("introuvable dans l'index" in e for e in errors)
+
+
+def test_validate_sans_index_ne_verifie_pas_l_existence_du_scrutin():
+    """Sauté, pas validé par défaut : `validate_profil` ne peut pas affirmer
+    qu'un identifiant existe quand rien ne le lui dit."""
+    p = _valid_profil()
+    p["votes"] = [{"scrutin_id": "an:17:999", "position": "pour"}]
     assert validate_profil(p) == []
+
+
+def test_validate_regle_4_49_3_avec_position_est_une_erreur():
+    """Règle 4 : un 49.3 n'est jamais une position. Le `sort` vivant sur le
+    scrutin et la `position` sur le profil, c'est devenu une jointure."""
+    p = _valid_profil()
+    p["votes"] = [{"scrutin_id": "an:17:1", "position": "pour"}]
+    index = _index([_scrutin(sort="adopte_sans_vote_49_3")])
+    errors = validate_profil(p, scrutins_index=index)
+    assert any("règle 4" in e for e in errors)
+
+
+def test_validate_regle_4_49_3_sans_position_est_valide():
+    p = _valid_profil()
+    p["votes"] = [{"scrutin_id": "an:17:1", "position": None}]
+    index = _index([_scrutin(sort="adopte_sans_vote_49_3")])
+    assert validate_profil(p, scrutins_index=index) == []
+
+
+def test_validate_position_inconnue_reste_une_erreur():
+    p = _valid_profil()
+    p["votes"] = [{"scrutin_id": "an:17:1", "position": "peut-etre"}]
+    assert any("position" in e for e in validate_profil(p))
+
+
+# --- validate_scrutins_index : les champs migrés y sont validés ---------------
+
+def test_validate_index_minimal_est_valide():
+    from schema_pivot import validate_scrutins_index
+    assert validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin()],
+    }) == []
+
+
+def test_validate_index_type_scrutin_inconnu_est_une_erreur():
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin(type_scrutin="secret")],
+    })
+    assert any("type_scrutin" in e for e in errors)
+
+
+def test_validate_index_types_scrutin_connus_sont_valides():
+    from schema_pivot import validate_scrutins_index
+    for type_scrutin in KNOWN_TYPES_SCRUTIN:
+        assert validate_scrutins_index({
+            "schema_version": "scrutins-v1", "scrutins": [_scrutin(type_scrutin=type_scrutin)],
+        }) == []
+
+
+def test_validate_index_type_vote_inconnu_est_une_erreur():
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin(type_vote="vote_secret")],
+    })
+    assert any("type_vote" in e for e in errors)
+
+
+def test_validate_index_motion_censure_sans_texte_lie_id_est_une_erreur():
+    """Invariant inchangé, seulement déplacé : une motion de censure n'est
+    jamais fusionnée avec le vote sur le texte 49.3 concerné."""
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin(type_vote="motion_censure")],
+    })
+    assert any("texte_lie_id" in e for e in errors)
+
+
+def test_validate_index_motion_censure_avec_texte_lie_id_est_valide():
+    from schema_pivot import validate_scrutins_index
+    assert validate_scrutins_index({
+        "schema_version": "scrutins-v1",
+        "scrutins": [_scrutin(type_vote="motion_censure", texte_lie_id="49-3-texte-42")],
+    }) == []
+
+
+def test_validate_index_provenance_inconnue_est_une_erreur():
+    """Une législature dérivée d'un calendrier ne doit jamais passer pour une
+    donnée collectée."""
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1",
+        "scrutins": [_scrutin(legislature_provenance="devinee")],
+    })
+    assert any("legislature_provenance" in e for e in errors)
+
+
+def test_validate_index_id_incoherent_avec_ses_champs_est_une_erreur():
+    """L'identifiant est dérivé de `legislature` et `numero_scrutin` : une
+    divergence rendrait la liste incohérente avec elle-même."""
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin(legislature="16")],
+    })
+    assert any("divergent" in e for e in errors)
+
+
+def test_validate_index_doublon_d_identifiant_est_une_erreur():
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({
+        "schema_version": "scrutins-v1", "scrutins": [_scrutin(), _scrutin()],
+    })
+    assert any("double" in e for e in errors)
+
+
+def test_validate_index_version_de_schema_erronee_est_une_erreur():
+    from schema_pivot import validate_scrutins_index
+    errors = validate_scrutins_index({"schema_version": "1", "scrutins": []})
+    assert any("schema_version" in e for e in errors)
 
 
 # ---------------------------------------------------------------------------

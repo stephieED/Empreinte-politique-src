@@ -206,7 +206,19 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
 # --- Clés d'unicité, format pivot v1 (schema_pivot.py) ---
 
 def _pivot_vote_key(v: dict[str, Any]) -> Key:
-    return (v.get("numero_scrutin"), v.get("date"))
+    """Identité d'un vote pivot depuis sa normalisation (#432).
+
+    `scrutin_id` porte déjà `(legislature, numero_scrutin)` : il identifie le
+    scrutin sans ambiguïté, là où `numero_scrutin` seul confondrait deux
+    législatures. Le repli sur l'enregistrement complet couvre les votes non
+    résolus, qui n'ont pas d'identifiant : les traiter tous comme la même clé
+    `None` les fusionnerait en un seul — une perte silencieuse.
+    """
+    scrutin_id = v.get("scrutin_id")
+    if scrutin_id:
+        return scrutin_id
+    non_resolu = v.get("scrutin_non_resolu") or {}
+    return ("non_resolu", non_resolu.get("numero_scrutin"), non_resolu.get("date"))
 
 
 def _pivot_mandat_key(m: dict[str, Any]) -> Key:
@@ -316,10 +328,14 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
 
     merged["sources"] = _merge_pivot_sources(old.get("sources"), new.get("sources"))
     merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key)
+    # Tri par identifiant, plus par date : depuis #432 la date du scrutin n'est
+    # plus dans le profil. L'ordre n'a donc plus de sens chronologique, il n'a
+    # qu'à être STABLE d'un run à l'autre pour que git ne voie que les vraies
+    # différences. Les consommateurs qui ont besoin de l'ordre chronologique
+    # joignent l'index et trient eux-mêmes (c'est déjà ce que fait l'UI).
     merged["votes"] = sorted(
         merge_lists_by_key(old.get("votes"), new.get("votes"), _pivot_vote_key),
-        key=lambda v: v.get("date") or "",
-        reverse=True,
+        key=lambda v: str(v.get("scrutin_id") or ""),
     )
     merged["textes_portes"] = sorted(
         (

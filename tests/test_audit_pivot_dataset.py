@@ -962,7 +962,7 @@ def test_compute_plage_dates_candidats_listes_vides_ou_absentes_donnent_null():
         {"id": "x:b", "nom": "Bob", "chambre": "AN"},
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     for ligne in resultat["lignes"]:
         for champ in ("votes", "textes_portes", "amendements", "interventions"):
@@ -972,17 +972,38 @@ def test_compute_plage_dates_candidats_listes_vides_ou_absentes_donnent_null():
     }
 
 
+# Depuis #432, un vote ne porte plus sa date : c'est un champ du scrutin, qui
+# vit dans l'index partagé. La plage de dates des votes doit donc être calculée
+# EN JOIGNANT l'index — sans quoi elle tomberait à null partout, silencieusement,
+# alors que c'est elle qui avait montré que le corpus s'arrêtait en juin 2024.
+_SCRUTINS_PLAGE: dict = {}
+
+
+def _vote_date(date_valeur):
+    """Vote au format mapping, dont la date est enregistrée dans l'index."""
+    scrutin_id = f"an:16:{len(_SCRUTINS_PLAGE) + 1}"
+    _SCRUTINS_PLAGE[scrutin_id] = {"id": scrutin_id, "date": date_valeur}
+    return {"scrutin_id": scrutin_id, "position": "pour"}
+
+
+def _index_plage():
+    from scrutins_index import ScrutinsIndex
+    index = ScrutinsIndex(dict(_SCRUTINS_PLAGE))
+    _SCRUTINS_PLAGE.clear()
+    return index
+
+
 def test_compute_plage_dates_candidats_min_max_direct_sur_champ_date():
     profils = [
         {
             "id": "x:a", "nom": "Alice", "chambre": "AN",
-            "votes": [{"date": "2024-06-12"}, {"date": "2022-01-01"}, {"date": "2023-05-05"}],
+            "votes": [_vote_date("2024-06-12"), _vote_date("2022-01-01"), _vote_date("2023-05-05")],
             "amendements": [{"date": "2021-11-30"}],
             "interventions": [{"date": "2020-03-14"}, {"date": "2020-09-01"}],
         },
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     ligne = resultat["lignes"][0]
     assert ligne["votes"] == {"min": "2022-01-01", "max": "2024-06-12"}
@@ -1001,7 +1022,7 @@ def test_compute_plage_dates_candidats_textes_portes_agrege_date_min_date_max():
         },
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert resultat["lignes"][0]["textes_portes"] == {"min": "2022-01-01", "max": "2023-12-15"}
 
@@ -1011,14 +1032,14 @@ def test_compute_plage_dates_candidats_dates_invalides_ignorees_et_comptees():
         {
             "id": "x:a", "nom": "Alice", "chambre": "AN",
             "votes": [
-                {"date": "2024-06-12"},
-                {"date": "pas-une-date"},
-                {"date": ""},
+                _vote_date("2024-06-12"),
+                _vote_date("pas-une-date"),
+                _vote_date(""),
             ],
         },
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert resultat["lignes"][0]["votes"] == {"min": "2024-06-12", "max": "2024-06-12"}
     assert resultat["dates_ignorees"]["votes"] == 2
@@ -1027,7 +1048,7 @@ def test_compute_plage_dates_candidats_dates_invalides_ignorees_et_comptees():
 def test_compute_plage_dates_candidats_date_absente_pas_comptee_comme_ignoree():
     profils = [{"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [{"id": 1}]}]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert resultat["lignes"][0]["votes"] == {"min": None, "max": None}
     assert resultat["dates_ignorees"]["votes"] == 0
@@ -1044,7 +1065,7 @@ def test_compute_plage_dates_candidats_textes_portes_dates_invalides_comptees():
         },
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert resultat["lignes"][0]["textes_portes"] == {"min": "2023-02-01", "max": "2022-06-30"}
     assert resultat["dates_ignorees"]["textes_portes"] == 2
@@ -1056,18 +1077,18 @@ def test_compute_plage_dates_candidats_trie_par_nom():
         {"id": "x:a", "nom": "Alban", "chambre": "AN"},
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert [ligne["nom"] for ligne in resultat["lignes"]] == ["Alban", "Zoé"]
 
 
 def test_compute_plage_dates_candidats_exclut_les_profils_roster_du_detail():
     profils = [
-        {"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [{"date": "2024-01-01"}]},
+        {"id": "x:a", "nom": "Alice", "chambre": "AN", "votes": [_vote_date("2024-01-01")]},
         roster("x:r", "Robert", "GDR", votes=[{"date": "2020-01-01"}]),
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert [ligne["id"] for ligne in resultat["lignes"]] == ["x:a"]
     assert resultat["non_candidats"]["total_profils"] == 1
@@ -1076,12 +1097,12 @@ def test_compute_plage_dates_candidats_exclut_les_profils_roster_du_detail():
 
 def test_compute_plage_dates_candidats_agregat_non_candidats_par_groupe():
     profils = [
-        roster("x:r1", "R1", "GDR", votes=[{"date": "2021-06-01"}, {"date": "2022-01-01"}]),
-        roster("x:r2", "R2", "GDR", votes=[{"date": "2019-03-15"}]),
+        roster("x:r1", "R1", "GDR", votes=[_vote_date("2021-06-01"), _vote_date("2022-01-01")]),
+        roster("x:r2", "R2", "GDR", votes=[_vote_date("2019-03-15")]),
         roster("x:r3", "R3", "LFI", interventions=[{"date": "2023-09-09"}]),
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
     par_groupe = {ligne["groupe"]: ligne for ligne in resultat["non_candidats"]["par_groupe"]}
 
     assert par_groupe["GDR"]["nb_profils"] == 2
@@ -1095,10 +1116,10 @@ def test_compute_plage_dates_candidats_agregat_non_candidats_par_groupe():
 
 def test_compute_plage_dates_candidats_dates_ignorees_couvrent_aussi_les_non_candidats():
     profils = [
-        roster("x:r1", "R1", "GDR", votes=[{"date": "pas-une-date"}]),
+        roster("x:r1", "R1", "GDR", votes=[_vote_date("pas-une-date")]),
     ]
 
-    resultat = compute_plage_dates_candidats(profils)
+    resultat = compute_plage_dates_candidats(profils, _index_plage())
 
     assert resultat["dates_ignorees"]["votes"] == 1
 
@@ -1231,7 +1252,7 @@ def test_build_report_delegue_aux_fonctions_compute():
     )
     assert (
         rapport["plage_dates_candidats"]
-        == compute_plage_dates_candidats(profils)
+        == compute_plage_dates_candidats(profils, _index_plage())
     )
 
 

@@ -87,6 +87,8 @@ from json_io import ecrire_profil_json
 from merge_profile import merge_pivot_profile, merge_raw_profile, preserve_stable_freshness_timestamps
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
+from scrutins_index import DEFAULT_SCRUTINS_PATH, ScrutinsIndex, charger as charger_scrutins, rafraichir as rafraichir_scrutins
+from scrutins_legislature import LegislatureIrresoluble
 from text_utils import slugify
 
 # Chemins par défaut, relatifs à la racine du dépôt (voir README pour l'arborescence).
@@ -459,6 +461,7 @@ def process_candidat(
     out_dir: Path,
     pivot_dir: Path,
     refresh_slugs: Optional[set[str]] = None,
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> dict[str, Any]:
     """Traite un candidat : collecte les données FR et UE en parallèle (niveau 1),
     écrit les fichiers JSON/HTML (et pivot si demandé), et renvoie un dict de résultat.
@@ -503,7 +506,7 @@ def process_candidat(
         # sinon (raw_data/candidats.json, comportement historique par défaut).
         provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
 
-        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance) if chambre else None
+        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
@@ -628,7 +631,7 @@ def process_candidat(
         parti = candidat.get("parti")
         # provenance (#189) : voir commentaire équivalent dans le bloc --pivot-only ci-dessus.
         provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
-        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance) if chambre else None
+        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
@@ -671,6 +674,57 @@ def process_candidat(
         "nb_mandats_ue": nb_mandats_ue,
         "parltrack": "n/a",
     }
+
+
+def _rafraichir_index_scrutins(
+    args: argparse.Namespace, out_dir: Path, *, moment: str
+) -> Optional[ScrutinsIndex]:
+    """Reconstruit (ou charge) l'index partagé des scrutins.
+
+    Appelé deux fois dans un run qui COLLECTE et pivote à la fois :
+
+    - **avant** la boucle, pour que la normalisation dispose de la résolution de
+      corpus sur les profils bruts déjà présents — c'est le seul appel utile en
+      `--pivot-only`, où tous les bruts sont déjà là ;
+    - **après** la boucle, parce que les profils collectés pendant le run
+      n'existaient pas au premier appel : sans ce second passage, leurs scrutins
+      manqueraient à l'index et les mappings tout juste écrits pointeraient dans
+      le vide.
+
+    Les identifiants écrits pendant la boucle restent valides : `_normalize_vote`
+    et `construire_index` résolvent la législature dans le même ordre (index,
+    puis législature portée par le vote, puis calendrier), donc le second
+    passage complète l'index sans jamais renommer un scrutin.
+    """
+    chemin = Path(args.scrutins)
+    if args.skip_scrutins_index:
+        index = charger_scrutins(chemin)
+        if moment == "avant":
+            print(f"Index des scrutins (non reconstruit) : {len(index)} scrutin(s).")
+        return index
+    try:
+        index, _ = rafraichir_scrutins(
+            out_dir, chemin,
+            strict=True,
+            # Fusion additive sauf --no-merge : un run qui ne régénère qu'une
+            # tranche ne voit qu'une partie des scrutins, et écraser l'index
+            # laisserait les mappings des profils non retraités pointer dans le
+            # vide (leçon de #450, au niveau de l'index cette fois). Le second
+            # passage fusionne toujours, y compris sous --no-merge : il complète
+            # ce que le premier vient d'écrire, il ne le remplace pas.
+            fusionner=(moment == "apres") or not args.no_merge,
+            genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        )
+    except LegislatureIrresoluble as exc:
+        # Échouer franchement : sans index complet, une partie des votes ne
+        # référencerait rien, et rien ne le signalerait (AGENTS.md §2.5).
+        raise SystemExit(
+            f"[!] {exc}\n"
+            "    Index des scrutins NON écrit. "
+            "Diagnostic : python3 src/audit_legislature_votes.py"
+        )
+    print(f"Index des scrutins ({moment} collecte) : {len(index)} scrutin(s) → {chemin}")
+    return index
 
 
 def main() -> None:
@@ -736,6 +790,15 @@ def main() -> None:
         ),
     )
     parser.add_argument("--pivot-dir", default=str(DEFAULT_PIVOT_DIR), help=f"Dossier de sortie des profils pivot (défaut: {DEFAULT_PIVOT_DIR})")
+    parser.add_argument("--scrutins", default=str(DEFAULT_SCRUTINS_PATH), metavar="FICHIER",
+                        help=f"Index partagé des scrutins (#432, défaut : {DEFAULT_SCRUTINS_PATH}). "
+                             "Reconstruit depuis --out-dir avant la passe pivot, puis fourni à la "
+                             "normalisation : un profil ne porte plus que le mapping "
+                             "{scrutin_id, position}.")
+    parser.add_argument("--skip-scrutins-index", action="store_true",
+                        help="Ne pas reconstruire l'index des scrutins ; l'index existant est "
+                             "simplement chargé. Utile pour re-piver une tranche sans repayer la "
+                             "passe de corpus (~26 s sur 209 profils).")
     parser.add_argument("--no-merge", action="store_true",
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
@@ -862,6 +925,15 @@ def main() -> None:
             print(f"Sélection réduite ({'--limit' if args.limit is not None else '--sample'}) : "
                   f"{len(candidats)}/{avant} candidat(s) retenu(s).")
 
+    # ── Index partagé des scrutins (#432) ───────────────────────────────────
+    # Construit depuis `out_dir` (les profils bruts, qui gardent
+    # l'enregistrement complet du vote) : la résolution de législature est une
+    # passe de CORPUS — un jumeau étiqueté vit dans un autre profil que celui
+    # qu'on normalise, donc un travail par profil ne le verrait jamais.
+    scrutins_index: Optional[ScrutinsIndex] = None
+    if args.pivot:
+        scrutins_index = _rafraichir_index_scrutins(args, out_dir, moment="avant")
+
     checkpoint_path = Path(args.checkpoint_file)
     checkpoint = _load_checkpoint(checkpoint_path) if not args.no_checkpoint else {"resultats": []}
     resultats: list[dict[str, Any]] = list(checkpoint.get("resultats") or []) if args.resume else []
@@ -878,7 +950,9 @@ def main() -> None:
     nb_workers = min(args.workers, len(candidats)) if candidats else 1
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
-            pool.submit(process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs): candidat
+            pool.submit(
+                process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs, scrutins_index,
+            ): candidat
             for candidat in candidats
         }
         for i, future in enumerate(as_completed(futures), start=1):
@@ -894,6 +968,12 @@ def main() -> None:
             if not args.no_checkpoint:
                 _save_checkpoint(checkpoint_path, resultats)
             _tprint(f"  [point de sauvegarde {i}/{total}] {resultat.get('nom')} : {resultat.get('statut')}")
+
+    # Second passage : les profils bruts collectés pendant la boucle
+    # n'existaient pas au premier. Inutile en --pivot-only, qui n'écrit aucun
+    # brut, et sauté quand rien n'a été traité.
+    if args.pivot and not args.pivot_only and candidats:
+        _rafraichir_index_scrutins(args, out_dir, moment="apres")
 
     print("\n=== Résumé ===")
     for r in sorted(resultats, key=lambda x: x.get("nom") or ""):

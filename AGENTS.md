@@ -37,6 +37,9 @@ Any schema/display change must preserve them:
 graph TD
     A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json<br/>(candidate_profile.py / candidate_profile_ue.py)"]
     B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
+    C --> S["pivot_data/scrutins.json<br/>(build_scrutins_index.py — liste dédupliquée)"]
+    S --> D
+    S --> W["web/UI_finale"]
     C --> D["group_profile.py"]
     C --> E["parti_profile.py"]
     C --> I["gouvernement_roster.py<br/>(no network — local pivots only)"]
@@ -50,7 +53,14 @@ graph TD
     L --> H
 ```
 
-- `raw_data/` = source-near; `pivot_data/` = only layer `web/` reads.
+- `raw_data/` = source-near (votes stay denormalized there); `pivot_data/` = only layer `web/` reads.
+- **`pivot_data/scrutins.json`** (schema `scrutins-v1`, `#432`): the deduplicated ballot list,
+  shared by profiles **and** groups — the groups' 4 104 ballots are entirely included in the
+  profiles' 17 422, so one list serves both. This is the only cross-file dependency inside
+  `pivot_data/`: a profile no longer reads alone for its votes. Build it with
+  `src/build_scrutins_index.py`, **before** any pivot pass — resolving a ballot's `legislature`
+  is a corpus-wide join (`src/scrutins_legislature.py`), never per-profile. Merged additively:
+  a partial run must never drop ballots that other profiles' mappings still point at.
 - **JSON write format**: individual profiles (`raw_data/profiles/`, `pivot_data/profiles/`)
   are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
   alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
@@ -103,7 +113,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |
 | `mandats[]` | Elections, committees... + sensitive fields (Section 5) |
-| `votes[]` | One record per vote, `legislature` included (AN legislatures 14-17 aggregated, `#403`) |
+| `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
 | `amendements[]` | Outcome + inadmissibility/rejection distinction |
 | `interventions[]` | Speeches, questions (`type_detail`) |

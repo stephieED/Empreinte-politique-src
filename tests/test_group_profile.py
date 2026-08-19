@@ -2,6 +2,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from group_profile import (
@@ -22,6 +24,7 @@ from group_profile import (
     main as group_profile_main,
 )
 from schema_groupe import validate_profil_groupe
+from scrutins_index import ScrutinsIndex, cle_scrutin
 
 
 # ---------------------------------------------------------------------------
@@ -73,16 +76,49 @@ def _pivot(
     }
 
 
-def _vote(numero: str, position: str, date: str = "2024-01-15", texte: str = "PLF", sort: str = "adopté") -> dict:
-    return {
+# Depuis #432, un vote de profil n'est plus qu'un mapping `{scrutin_id, position}` :
+# le méta du scrutin (date, texte, sort) vit une seule fois dans l'index partagé.
+# Un profil ne se lit donc plus seul pour ses votes, et les tests de cohésion
+# doivent fournir l'index — c'est le couplage assumé de cette normalisation, et
+# il vaut mieux qu'il soit visible ici que contourné par une fixture magique.
+#
+# `_vote()` enregistre le scrutin qu'il fabrique dans `_SCRUTINS`, remis à zéro
+# entre deux tests : sans cela, deux tests utilisant le même numéro à des dates
+# différentes se marcheraient dessus.
+_SCRUTINS: dict[str, dict] = {}
+
+
+@pytest.fixture(autouse=True)
+def _reset_scrutins():
+    _SCRUTINS.clear()
+    yield
+    _SCRUTINS.clear()
+
+
+def _index() -> ScrutinsIndex:
+    """Index partagé cohérent avec les votes fabriqués par ce test."""
+    return ScrutinsIndex(dict(_SCRUTINS))
+
+
+def _vote(
+    numero: str, position: str, date: str = "2024-01-15", texte: str = "PLF",
+    sort: str = "adopté", legislature: str = "16",
+) -> dict:
+    scrutin_id = cle_scrutin(legislature, numero)
+    _SCRUTINS[scrutin_id] = {
+        "id": scrutin_id,
+        "legislature": legislature,
+        "legislature_provenance": "collectee",
+        "numero_scrutin": str(numero),
         "date": date,
         "texte": texte,
-        "position": position,
-        "numero_scrutin": numero,
         "sort": sort,
-        "groupe_au_moment_du_vote": None,
+        "type_scrutin": None,
+        "type_vote": "vote_texte",
+        "texte_lie_id": None,
         "source_url": None,
     }
+    return {"scrutin_id": scrutin_id, "position": position}
 
 
 def _mandat_electif(debut: str, fin: str = None, actif: bool = None) -> dict:
@@ -256,17 +292,21 @@ def test_derive_membre_no_mandats():
 # ---------------------------------------------------------------------------
 
 def test_build_vote_index_basic():
+    """La clé est `scrutin_id` depuis #432, plus `numero_scrutin` : le numéro
+    seul faisait écraser le scrutin n° 1000 de la 16e par celui de la 17e."""
     p = _pivot(votes=[_vote("100", "pour"), _vote("200", "contre")])
     idx = _build_vote_index(p)
-    assert "100" in idx
-    assert "200" in idx
-    assert idx["100"]["position"] == "pour"
+    assert "an:16:100" in idx
+    assert "an:16:200" in idx
+    assert idx["an:16:100"]["position"] == "pour"
 
 
-def test_build_vote_index_normalizes_to_str():
-    p = _pivot(votes=[{"date": "2024-01-01", "position": "pour", "numero_scrutin": 123, "texte": "X", "sort": "adopté"}])
-    idx = _build_vote_index(p)
-    assert "123" in idx
+def test_build_vote_index_ignore_un_vote_sans_identifiant():
+    """Un vote non résolu n'est rattachable à aucun scrutin : il ne peut pas
+    entrer dans un index par scrutin."""
+    p = _pivot(votes=[{"scrutin_id": None, "position": "pour",
+                       "scrutin_non_resolu": {"numero_scrutin": "123"}}])
+    assert _build_vote_index(p) == {}
 
 
 def test_build_vote_index_empty():
@@ -287,10 +327,10 @@ def _make_groupe_profils():
 
 def test_cohesion_unanimite():
     profils = _make_groupe_profils()
-    cohesion = _compute_cohesion_votes(profils)
+    cohesion = _compute_cohesion_votes(profils, scrutins_index=_index())
     assert len(cohesion) == 1
     r = cohesion[0]
-    assert r["numero_scrutin"] == "42"
+    assert r["scrutin_id"] == "an:16:42"
     assert r["position_majoritaire"] == "pour"
     assert r["pour"] == 2
     assert r["contre"] == 0
@@ -303,7 +343,7 @@ def test_cohesion_partielle():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "contre")])
     p3 = _pivot("nosdeputes:charlie", votes=[_vote("42", "pour")])
-    cohesion = _compute_cohesion_votes([p1, p2, p3])
+    cohesion = _compute_cohesion_votes([p1, p2, p3], scrutins_index=_index())
     r = cohesion[0]
     assert r["position_majoritaire"] == "pour"
     assert r["pour"] == 2
@@ -316,7 +356,7 @@ def test_cohesion_absent_implicite():
     """Un membre n'a aucun vote pour le scrutin → absent."""
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[])  # n'a pas voté
-    cohesion = _compute_cohesion_votes([p1, p2])
+    cohesion = _compute_cohesion_votes([p1, p2], scrutins_index=_index())
     r = cohesion[0]
     assert r["absents"] == 1
     assert r["membres_eligibles"] == 2
@@ -325,7 +365,7 @@ def test_cohesion_absent_implicite():
 
 def test_cohesion_quorum_atteint():
     profils = _make_groupe_profils()
-    cohesion = _compute_cohesion_votes(profils, seuil_quorum=0.5)
+    cohesion = _compute_cohesion_votes(profils, seuil_quorum=0.5, scrutins_index=_index())
     assert cohesion[0]["quorum_atteint"] is True
 
 
@@ -333,7 +373,7 @@ def test_cohesion_quorum_non_atteint():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[])
     # 50 % de participation, seuil à 0.6 → quorum non atteint
-    cohesion = _compute_cohesion_votes([p1, p2], seuil_quorum=0.6)
+    cohesion = _compute_cohesion_votes([p1, p2], seuil_quorum=0.6, scrutins_index=_index())
     assert cohesion[0]["quorum_atteint"] is False
 
 
@@ -342,8 +382,11 @@ def test_cohesion_trie_par_date_desc():
         _vote("10", "pour", date="2023-01-10"),
         _vote("20", "contre", date="2024-06-01"),
     ])
-    cohesion = _compute_cohesion_votes([p1])
-    dates = [r["date"] for r in cohesion]
+    index = _index()
+    cohesion = _compute_cohesion_votes([p1], scrutins_index=index)
+    # La date n'est plus dans l'entrée de cohésion (#432) : elle se relit dans
+    # l'index. L'ORDRE publié, lui, reste chronologique décroissant.
+    dates = [index.get(r["scrutin_id"])["date"] for r in cohesion]
     assert dates == sorted(dates, reverse=True)
 
 
@@ -359,7 +402,7 @@ def test_cohesion_membre_non_eligible_exclu():
         mandats=[_mandat_electif("2017-06-21", "2022-06-21", actif=False)],
         votes=[_vote("42", "contre", date="2024-01-15")],
     )
-    cohesion = _compute_cohesion_votes([p1, p2])
+    cohesion = _compute_cohesion_votes([p1, p2], scrutins_index=_index())
     r = cohesion[0]
     # bob (mandat terminé en 2022) ne devrait pas être éligible au scrutin de 2024
     assert r["membres_eligibles"] == 1
@@ -370,7 +413,7 @@ def test_cohesion_membre_non_eligible_exclu():
 def test_cohesion_vide_si_aucun_scrutin():
     p1 = _pivot(votes=[])
     p2 = _pivot(votes=[])
-    assert _compute_cohesion_votes([p1, p2]) == []
+    assert _compute_cohesion_votes([p1, p2], scrutins_index=_index()) == []
 
 
 def test_cohesion_plusieurs_scrutins():
@@ -378,15 +421,15 @@ def test_cohesion_plusieurs_scrutins():
         _vote("10", "pour"),
         _vote("11", "contre"),
     ])
-    cohesion = _compute_cohesion_votes([p1])
-    nums = {r["numero_scrutin"] for r in cohesion}
-    assert nums == {"10", "11"}
+    cohesion = _compute_cohesion_votes([p1], scrutins_index=_index())
+    nums = {r["scrutin_id"] for r in cohesion}
+    assert nums == {"an:16:10", "an:16:11"}
 
 
 def test_cohesion_position_majoritaire_none_si_aucun_vote_exprime():
     """Scrutin où tous les membres ont non_votant → pas de position majoritaire."""
-    p1 = _pivot(votes=[{"date": "2024-01-01", "texte": "X", "position": "non_votant", "numero_scrutin": "99", "sort": None, "groupe_au_moment_du_vote": None, "source_url": None}])
-    cohesion = _compute_cohesion_votes([p1])
+    p1 = _pivot(votes=[_vote("99", "non_votant", date="2024-01-01")])
+    cohesion = _compute_cohesion_votes([p1], scrutins_index=_index())
     assert cohesion[0]["position_majoritaire"] is None
 
 
@@ -394,7 +437,7 @@ def test_cohesion_taux_coherence_hors_absents():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "pour")])
     p3 = _pivot("nosdeputes:charlie", votes=[])  # absent
-    cohesion = _compute_cohesion_votes([p1, p2, p3])
+    cohesion = _compute_cohesion_votes([p1, p2, p3], scrutins_index=_index())
     r = cohesion[0]
     assert r["taux_coherence_hors_absents"] == 1.0  # 2/2 parmi ceux qui ont voté
     assert abs(r["taux_coherence"] - 2 / 3) < 1e-4  # 2/3 globalement
@@ -514,7 +557,7 @@ def test_build_groupe_profile_membres():
         _pivot("nosdeputes:alice", "Alice"),
         _pivot("nosdeputes:bob", "Bob"),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert len(g["membres"]) == 2
     ids = {m["membre_id"] for m in g["membres"]}
     assert ids == {"nosdeputes:alice", "nosdeputes:bob"}
@@ -525,13 +568,13 @@ def test_build_groupe_profile_effectif_actuel():
         _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")]),
         _pivot("nosdeputes:ancien", mandats=[_mandat_electif("2017-06-21", "2022-06-21", actif=False)]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert g["effectif"]["actuel"] == 1  # seulement alice est active
 
 
 def test_build_groupe_profile_periode():
     profils = [_pivot(mandats=[_mandat_electif("2022-06-22")])]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert g["periode"]["debut"] == "2022-06-22"
     assert g["periode"]["fin"] is None
     assert g["periode"]["actif"] is True
@@ -542,9 +585,9 @@ def test_build_groupe_profile_cohesion_votes():
         _pivot("nosdeputes:alice", votes=[_vote("42", "pour")]),
         _pivot("nosdeputes:bob", votes=[_vote("42", "contre")]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert len(g["cohesion_votes"]) == 1
-    assert g["cohesion_votes"][0]["numero_scrutin"] == "42"
+    assert g["cohesion_votes"][0]["scrutin_id"] == "an:16:42"
 
 
 def test_build_groupe_profile_profils_sources_dans_meta():
@@ -552,14 +595,14 @@ def test_build_groupe_profile_profils_sources_dans_meta():
         _pivot("nosdeputes:alice"),
         _pivot("nosdeputes:bob"),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert "nosdeputes:alice" in g["meta"]["profils_sources"]
     assert "nosdeputes:bob" in g["meta"]["profils_sources"]
 
 
 def test_build_groupe_profile_seuil_quorum_dans_meta():
     profils = [_pivot()]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, seuil_quorum=0.7)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, seuil_quorum=0.7, scrutins_index=_index())
     assert g["meta"]["seuil_quorum"] == 0.7
 
 
@@ -568,7 +611,7 @@ def test_build_groupe_profile_tags():
         _pivot(tags=["budget"]),
         _pivot(tags=["budget", "santé"]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     tag_names = {t["tag"] for t in g["tags_thematiques_agreges"]}
     assert "budget" in tag_names
     assert "santé" in tag_names
@@ -585,7 +628,7 @@ def test_build_groupe_profile_sources_deduplication():
         {**_pivot("nosdeputes:alice"), "sources": [same_source]},
         {**_pivot("nosdeputes:bob"), "sources": [same_source]},
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     # La même source ne doit apparaître qu'une fois
     urls = [s["url"] for s in g["sources"]]
     assert urls.count(same_source["url"]) == 1
@@ -596,13 +639,13 @@ def test_build_groupe_profile_warning_tags_fallback():
     profils = [
         _pivot(tags=[], interventions=[{"mots_cles": ["santé"], "date": "2024-01-01"}]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert any("mots_cles_interventions" in w for w in g["meta"]["warnings"])
 
 
 def test_build_groupe_profile_profils_vide():
     """Appel avec liste vide ne doit pas lever d'exception."""
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [])
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [], scrutins_index=_index())
     assert g["membres"] == []
     assert g["cohesion_votes"] == []
     assert g["effectif"]["actuel"] == 0
@@ -846,14 +889,14 @@ def test_mandats_agreges_trie_par_nb_membres_desc_puis_categorie_label():
 
 def test_build_groupe_profile_inclut_mandats_agreges():
     p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [p1])
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [p1], scrutins_index=_index())
     assert len(g["mandats_agreges"]) == 1
     assert g["mandats_agreges"][0]["categorie"] == "commission"
     assert validate_profil_groupe(g) == []
 
 
 def test_build_groupe_profile_mandats_agreges_vide_si_profils_vide():
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [])
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", [], scrutins_index=_index())
     assert g["mandats_agreges"] == []
 
 
@@ -909,7 +952,7 @@ def test_aggregate_amendements_taux_none_si_aucun():
 
 def test_build_groupe_profile_inclut_amendements_agreges():
     profils = [_pivot(amendements=[_amendement("adopté"), _amendement("rejeté")])]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert g["amendements_agreges"]["nb_amendements"] == 2
     assert g["amendements_agreges"]["taux_adoption"] == 0.5
     assert validate_profil_groupe(g) == []
@@ -955,7 +998,7 @@ def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
     profils = [_pivot(amendements=[
         _amendement("adopté", deposant="depute"), _amendement("adopté", deposant="gouvernement"),
     ])]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert g["amendements_agreges"]["par_type_deposant"]["depute"]["nb_amendements"] == 1
     assert g["amendements_agreges"]["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
     assert validate_profil_groupe(g) == []
@@ -968,8 +1011,8 @@ def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
 def test_ecarts_cohesion_internes_membre_aligne_ecart_nul():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "pour")])
-    cohesion = _compute_cohesion_votes([p1, p2])
-    ecarts = compute_ecarts_cohesion_internes([p1, p2], cohesion)
+    cohesion = _compute_cohesion_votes([p1, p2], scrutins_index=_index())
+    ecarts = compute_ecarts_cohesion_internes([p1, p2], cohesion, scrutins_index=_index())
     for e in ecarts:
         assert e["taux_participation_individuel"] == 1.0
         assert e["taux_coherence_individuel"] == 1.0
@@ -981,8 +1024,8 @@ def test_ecarts_cohesion_internes_membre_moins_coherent():
     p1 = _pivot("nosdeputes:alice", votes=[_vote("42", "pour")])
     p2 = _pivot("nosdeputes:bob", votes=[_vote("42", "contre")])
     p3 = _pivot("nosdeputes:charlie", votes=[_vote("42", "pour")])
-    cohesion = _compute_cohesion_votes([p1, p2, p3])
-    ecarts = compute_ecarts_cohesion_internes([p1, p2, p3], cohesion)
+    cohesion = _compute_cohesion_votes([p1, p2, p3], scrutins_index=_index())
+    ecarts = compute_ecarts_cohesion_internes([p1, p2, p3], cohesion, scrutins_index=_index())
     bob = next(e for e in ecarts if e["membre_id"] == "nosdeputes:bob")
     assert bob["taux_coherence_individuel"] == 0.0
     assert bob["ecart_coherence_vs_groupe"] < 0
@@ -995,7 +1038,7 @@ def test_ecarts_cohesion_internes_vide_si_pas_de_cohesion():
 def test_ecarts_cohesion_internes_absent_du_profil_groupe_public():
     """Champ de contrôle interne : ne doit jamais apparaître dans le profil public."""
     profils = [_pivot("nosdeputes:alice", votes=[_vote("42", "pour")])]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils)
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
     assert "ecarts_cohesion_internes" not in g
     assert "compute_ecarts_cohesion_internes" not in str(g)
 
@@ -1233,7 +1276,7 @@ def test_build_groupe_profile_scale_200_membres_sans_lenteur_perceptible():
     profils = [_synthetic_pivot(i, nb_votes=n_votes) for i in range(n_membres)]
 
     debut = time.monotonic()
-    g = build_groupe_profile("AN:LR", "LR", "Les Républicains", "AN", "16", profils)
+    g = build_groupe_profile("AN:LR", "LR", "Les Républicains", "AN", "16", profils, scrutins_index=_index())
     duree = time.monotonic() - debut
 
     assert len(g["membres"]) == n_membres
@@ -1281,9 +1324,7 @@ def test_from_roster_deputes_pas_de_warning_couverture_roster_senat(tmp_path):
 # ---------------------------------------------------------------------------
 
 def _vote_legis(numero: str, position: str, legislature: str, date: str, texte: str = "PLF") -> dict:
-    vote = _vote(numero, position, date=date, texte=texte)
-    vote["legislature"] = legislature
-    return vote
+    return _vote(numero, position, date=date, texte=texte, legislature=legislature)
 
 
 def test_cohesion_ne_melange_pas_deux_legislatures_sous_un_meme_numero():
@@ -1299,10 +1340,12 @@ def test_cohesion_ne_melange_pas_deux_legislatures_sous_un_meme_numero():
         ],
     )
 
-    cohesion = _compute_cohesion_votes([membre], legislature="16")
+    index = _index()
+    cohesion = _compute_cohesion_votes([membre], legislature="16", scrutins_index=index)
 
     assert len(cohesion) == 1, "Un seul scrutin retenu : celui de la législature du groupe"
-    assert cohesion[0]["date"] == "2023-01-15"
+    assert cohesion[0]["scrutin_id"] == "an:16:1000"
+    assert index.get(cohesion[0]["scrutin_id"])["date"] == "2023-01-15"
     assert cohesion[0]["pour"] == 1
     assert cohesion[0]["contre"] == 0
 
@@ -1320,9 +1363,9 @@ def test_cohesion_ecarte_les_scrutins_d_une_autre_legislature():
         ],
     )
 
-    cohesion = _compute_cohesion_votes([membre], legislature="16")
+    cohesion = _compute_cohesion_votes([membre], legislature="16", scrutins_index=_index())
 
-    assert {r["numero_scrutin"] for r in cohesion} == {"10"}
+    assert {r["scrutin_id"] for r in cohesion} == {"an:16:10"}
 
 
 def test_cohesion_conserve_les_votes_sans_legislature():
@@ -1331,9 +1374,9 @@ def test_cohesion_conserve_les_votes_sans_legislature():
     sans quoi une regénération partielle viderait la cohésion existante."""
     membre = _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")], votes=[_vote("42", "pour")])
 
-    cohesion = _compute_cohesion_votes([membre], legislature="16")
+    cohesion = _compute_cohesion_votes([membre], legislature="16", scrutins_index=_index())
 
-    assert [r["numero_scrutin"] for r in cohesion] == ["42"]
+    assert [r["scrutin_id"] for r in cohesion] == ["an:16:42"]
 
 
 def test_cohesion_sans_legislature_de_groupe_ne_filtre_rien():
@@ -1344,9 +1387,9 @@ def test_cohesion_sans_legislature_de_groupe_ne_filtre_rien():
         votes=[_vote_legis("10", "pour", "16", "2023-01-15"), _vote_legis("20", "pour", "17", "2025-03-13")],
     )
 
-    cohesion = _compute_cohesion_votes([membre], legislature=None)
+    cohesion = _compute_cohesion_votes([membre], legislature=None, scrutins_index=_index())
 
-    assert {r["numero_scrutin"] for r in cohesion} == {"10", "20"}
+    assert {r["scrutin_id"] for r in cohesion} == {"an:16:10", "an:17:20"}
 
 
 def test_build_vote_index_restreint_a_la_legislature():
@@ -1357,7 +1400,10 @@ def test_build_vote_index_restreint_a_la_legislature():
 
     index = _build_vote_index(membre, "17")
 
-    assert index["1000"]["position"] == "contre", "La tranche de la 17e ne doit pas être écrasée par celle de la 16e"
+    assert index["an:17:1000"]["position"] == "contre", (
+        "La tranche de la 17e ne doit pas être écrasée par celle de la 16e"
+    )
+    assert "an:16:1000" not in index
 
 
 def test_ecarts_internes_utilisent_la_meme_legislature_que_la_cohesion():
@@ -1375,9 +1421,9 @@ def test_ecarts_internes_utilisent_la_meme_legislature_que_la_cohesion():
         )
         for i in range(2)
     ]
-    cohesion = _compute_cohesion_votes(membres, legislature="16")
+    cohesion = _compute_cohesion_votes(membres, legislature="16", scrutins_index=_index())
 
-    rapport = compute_ecarts_cohesion_internes(membres, cohesion, "16")
+    rapport = compute_ecarts_cohesion_internes(membres, cohesion, "16", scrutins_index=_index())
 
     assert all(r["nb_scrutins_eligibles"] == 1 for r in rapport)
     assert all(r["taux_coherence_individuel"] == 1.0 for r in rapport), (
@@ -1401,7 +1447,7 @@ def test_build_groupe_profile_transmet_sa_legislature_a_la_cohesion():
 
     profil = build_groupe_profile(
         groupe_id="AN:SOC", groupe_sigle="SOC", groupe_nom="Socialistes",
-        chambre="AN", legislature="16", profils=membres,
+        chambre="AN", legislature="16", profils=membres, scrutins_index=_index(),
     )
 
-    assert [c["numero_scrutin"] for c in profil["cohesion_votes"]] == ["10"]
+    assert [c["scrutin_id"] for c in profil["cohesion_votes"]] == ["an:16:10"]

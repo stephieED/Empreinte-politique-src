@@ -247,24 +247,78 @@ def test_pivot_votes_count():
     assert len(pivot["votes"]) == 2
 
 
-def test_pivot_vote_champs():
-    pivot = normalize_nosdeputes(_raw_depute())
-    v = pivot["votes"][0]
-    assert v["texte"] == "Projet de loi de finances 2024"
+def test_pivot_vote_ne_garde_que_le_mapping():
+    """#432 : un scrutin est identique pour tous ses votants. Son méta vit une
+    seule fois dans l'index partagé ; le profil ne garde que ce qui est propre
+    au membre — mesuré, 179,8 Mo de votes deviennent 18,0 Mo de mapping."""
+    v = normalize_nosdeputes(_raw_depute())["votes"][0]
+
     assert v["position"] == "pour"
-    assert v["date"] == "2023-11-10"
-    assert v["numero_scrutin"] == "1234"
-    assert v["sort"] == "adopté"
+    assert v["scrutin_id"] == "an:16:1234"   # date 2023-11-10 → XVIe législature
+    assert set(v) == {"scrutin_id", "position"}
 
 
-def test_pivot_vote_numero_scrutin_converti_en_str():
-    pivot = normalize_nosdeputes(_raw_depute())
-    for v in pivot["votes"]:
-        if v.get("numero_scrutin") is not None:
-            assert isinstance(v["numero_scrutin"], str)
+def test_pivot_vote_identifiant_porte_la_legislature_du_vote():
+    """Le numéro de scrutin repart à 1 à chaque législature : un identifiant qui
+    ne porterait pas la législature confondrait deux scrutins sans rapport."""
+    raw = _raw_depute()
+    raw["votes"][0]["legislature"] = "17"
+    assert normalize_nosdeputes(raw)["votes"][0]["scrutin_id"] == "an:17:1234"
 
 
-def test_pivot_vote_preserve_type_et_lien_49_3():
+def test_pivot_vote_numero_non_str_est_converti():
+    raw = _raw_depute()
+    raw["votes"][0]["numero_scrutin"] = 1234
+    assert normalize_nosdeputes(raw)["votes"][0]["scrutin_id"].endswith(":1234")
+
+
+def test_pivot_vote_index_prime_sur_la_derivation_locale():
+    """L'index porte la résolution de corpus (jointure sur jumeau étiqueté), la
+    seule qui voie au-delà du profil : elle l'emporte sur le calendrier."""
+    from scrutins_index import ScrutinsIndex
+
+    raw = _raw_depute()
+    raw["votes"][0]["legislature"] = None
+    index = ScrutinsIndex({"an:16:1234": {
+        "id": "an:16:1234", "numero_scrutin": "1234", "date": "2023-11-10",
+    }})
+    assert normalize_nosdeputes(raw, scrutins_index=index)["votes"][0]["scrutin_id"] == "an:16:1234"
+
+
+def test_pivot_vote_groupe_au_moment_du_vote_omis_quand_vide():
+    """Seule exception à « missing = null », et elle est chiffrée : le champ
+    n'est jamais peuplé (0 sur 398 085) et l'écrire coûtait 12,1 Mo de null,
+    soit 40 % du mapping."""
+    assert "groupe_au_moment_du_vote" not in normalize_nosdeputes(_raw_depute())["votes"][0]
+
+
+def test_pivot_vote_groupe_au_moment_du_vote_conserve_quand_renseigne():
+    raw = _raw_depute()
+    raw["votes"][0]["groupe_au_moment_du_vote"] = "SOC"
+    assert normalize_nosdeputes(raw)["votes"][0]["groupe_au_moment_du_vote"] == "SOC"
+
+
+def test_pivot_vote_non_resolu_garde_son_enregistrement_complet():
+    """Ni supprimé, ni doté d'une clé inventée : une donnée qu'on ne sait pas
+    normaliser reste une donnée (AGENTS.md §2.5). La date choisie tombe dans
+    l'entre-deux dissolution/ouverture de 2024, qui n'appartient à aucune
+    législature."""
+    raw = _raw_depute()
+    raw["votes"][0].update({"legislature": None, "date": "2024-07-01"})
+
+    v = normalize_nosdeputes(raw)["votes"][0]
+
+    assert v["scrutin_id"] is None
+    assert v["scrutin_non_resolu"]["numero_scrutin"] == "1234"
+    assert v["scrutin_non_resolu"]["texte"] == "Projet de loi de finances 2024"
+    assert v["scrutin_non_resolu"]["date"] == "2024-07-01"
+    assert v["position"] == "pour"
+
+
+def test_pivot_vote_49_3_et_motion_censure_migrent_vers_l_index():
+    """`type_scrutin`, `type_vote` et `texte_lie_id` sont des champs du SCRUTIN :
+    ils ne sont plus recopiés sur chacun de ses votants. Leur validation a suivi
+    (`schema_pivot.validate_scrutins_index`)."""
     raw = _raw_depute()
     raw["votes"][0].update({
         "type_scrutin": "solennel",
@@ -272,9 +326,10 @@ def test_pivot_vote_preserve_type_et_lien_49_3():
         "texte_lie_id": "texte-49-3-1",
     })
     vote = normalize_nosdeputes(raw)["votes"][0]
-    assert vote["type_scrutin"] == "solennel"
-    assert vote["type_vote"] == "motion_censure"
-    assert vote["texte_lie_id"] == "texte-49-3-1"
+
+    assert "type_scrutin" not in vote
+    assert "type_vote" not in vote
+    assert "texte_lie_id" not in vote
 
 
 # ---------------------------------------------------------------------------

@@ -52,6 +52,7 @@ from pathlib import Path
 from typing import Any
 
 from schema_pivot import KNOWN_CHAMBRES, KNOWN_PROVENANCES
+from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
 
 # Types de sources attendus par chambre pour compute_coherence_chambre_sources :
 # chaque chambre doit avoir déclaré au moins une source de l'un de ces types.
@@ -679,10 +680,36 @@ def _parse_date_seule(valeur: Any) -> date | None:
         return None
 
 
+def _date_entree(
+    entree: dict[str, Any], champ: str, scrutins_index: Any = None
+) -> Any:
+    """Date d'une entrée de liste, `None` si elle n'en a pas.
+
+    Depuis #432 un vote ne porte plus sa date : c'est un champ du scrutin, qui
+    vit dans l'index partagé. Sans cette résolution, la plage de dates des votes
+    tomberait silencieusement à `null` pour tous les profils — et c'est
+    précisément elle qui avait montré que le corpus s'arrêtait en juin 2024
+    ([[votes-multi-legislature]]). Un audit qui perd sa mesure sans le dire est
+    pire que pas d'audit.
+
+    Repli sur `scrutin_non_resolu` pour les votes qu'aucun identifiant ne
+    rattache : leur enregistrement complet y est conservé.
+    """
+    if champ != "votes":
+        return entree.get("date")
+    scrutin = None
+    if scrutins_index is not None:
+        scrutin = scrutins_index.get(entree.get("scrutin_id"))
+    if scrutin is None:
+        scrutin = entree.get("scrutin_non_resolu") or {}
+    return scrutin.get("date")
+
+
 def _plage_dates_champ_simple(
-    profil: dict[str, Any], champ: str, dates_ignorees: dict[str, int]
+    profil: dict[str, Any], champ: str, dates_ignorees: dict[str, int],
+    scrutins_index: Any = None,
 ) -> dict[str, str | None]:
-    """Min/max de `profil[champ][i]["date"]`, en ignorant les dates invalides.
+    """Min/max de la date de chaque entrée, en ignorant les dates invalides.
 
     Chaque valeur présente mais non parseable incrémente
     `dates_ignorees[champ]` (traçabilité, AGENTS.md §2.5) sans jamais faire
@@ -695,7 +722,7 @@ def _plage_dates_champ_simple(
         for entree in entrees:
             if not isinstance(entree, dict):
                 continue
-            valeur = entree.get("date")
+            valeur = _date_entree(entree, champ, scrutins_index)
             if valeur is None:
                 continue
             date_parsee = _parse_date_seule(valeur)
@@ -767,7 +794,9 @@ def _fusionne_plages(plages: list[dict[str, str | None]]) -> dict[str, str | Non
     }
 
 
-def compute_plage_dates_candidats(profils: list[dict[str, Any]]) -> dict[str, Any]:
+def compute_plage_dates_candidats(
+    profils: list[dict[str, Any]], scrutins_index: Any = None
+) -> dict[str, Any]:
     """Plage temporelle par candidat et par type d'activité.
 
     Symétrique de `compute_tableau_croise_candidats` (volumes) : détail ligne
@@ -798,7 +827,7 @@ def compute_plage_dates_candidats(profils: list[dict[str, Any]]) -> dict[str, An
             champ: (
                 _plage_dates_textes_portes(profil, dates_ignorees)
                 if champ == "textes_portes"
-                else _plage_dates_champ_simple(profil, champ, dates_ignorees)
+                else _plage_dates_champ_simple(profil, champ, dates_ignorees, scrutins_index)
             )
             for champ in CHAMPS_LISTES_VOLUMETRIE
         }
@@ -896,6 +925,7 @@ def build_report(
     erreurs_lecture: list[dict[str, Any]],
     staleness_days: int = 30,
     reference_date: datetime | None = None,
+    scrutins_index: Any = None,
 ) -> dict[str, Any]:
     """Assemble tous les indicateurs `compute_*` en un rapport structuré unique.
 
@@ -948,7 +978,7 @@ def build_report(
         },
         "warnings": compute_agregation_warnings(profils),
         "tableau_croise_candidats": compute_tableau_croise_candidats(profils),
-        "plage_dates_candidats": compute_plage_dates_candidats(profils),
+        "plage_dates_candidats": compute_plage_dates_candidats(profils, scrutins_index),
         "erreurs_lecture": erreurs_lecture,
     }
 
@@ -1288,6 +1318,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         metavar="JOURS",
         help="Seuil d'ancienneté (jours) au-delà duquel un profil est périmé (défaut : 30).",
     )
+    parser.add_argument(
+        "--scrutins",
+        default=str(DEFAULT_SCRUTINS_PATH),
+        metavar="FICHIER",
+        help=(
+            f"Index partagé des scrutins (#432, défaut : {DEFAULT_SCRUTINS_PATH}). "
+            "Un vote ne porte plus sa date : sans l'index, la plage de dates des "
+            "votes ne peut pas être calculée."
+        ),
+    )
     return parser
 
 
@@ -1320,7 +1360,20 @@ def main(argv: list[str] | None = None) -> int:
         file=sys.stderr,
     )
 
-    rapport = build_report(profils, erreurs_lecture, staleness_days=args.staleness_days)
+    # Index des scrutins (#432) : sans lui, la plage de dates des votes
+    # tomberait à `null` partout, silencieusement — un audit qui perd une mesure
+    # sans le dire est pire que pas d'audit.
+    scrutins_index = charger_scrutins(Path(args.scrutins))
+    if len(scrutins_index) == 0:
+        # sur stderr : sans --output-json, ce script écrit le rapport JSON sur
+        # STDOUT, et un avertissement s'y mêlant le rendrait illisible.
+        print(f"  [!] Index des scrutins vide ou absent ({args.scrutins}) : "
+              "la plage de dates des votes ne sera pas calculée (#432).",
+              file=sys.stderr)
+    rapport = build_report(
+        profils, erreurs_lecture, staleness_days=args.staleness_days,
+        scrutins_index=scrutins_index,
+    )
     output_json = json.dumps(rapport, ensure_ascii=False, indent=2)
 
     if output_json_path:
