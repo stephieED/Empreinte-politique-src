@@ -168,6 +168,25 @@ implemented in `candidate_profile_ue.py`:
 - send a project-identifying `User-Agent` header;
 - stay under **500 requests / 5 minutes**.
 
+## 2 bis. Résolution de `legislature` sur les votes (#432)
+
+`votes[].numero_scrutin` repart à 1 à chaque législature : la clé d'un scrutin
+est `(legislature, numero_scrutin)`. Or 22,5 % des votes collectés ne portent
+aucune législature (chemin de collecte antérieur à #403). Passe de corpus, sans
+réseau, qui dit si la clé est utilisable — et ne modifie aucun fichier :
+
+```bash
+python3 src/audit_legislature_votes.py
+python3 src/audit_legislature_votes.py --profils-dir pivot_data/profiles
+python3 src/audit_legislature_votes.py --out audit/legislature_votes.md
+```
+
+Sortie 0 si tout est résolu, 1 sinon. Deux mécanismes, jamais confondus :
+jointure sur un jumeau étiqueté (la donnée existe déjà ailleurs, étiquetée),
+puis calendrier des législatures (une dérivation, tracée comme telle). Ce qu'ils
+ne résolvent pas échoue bruyamment — jamais de valeur par défaut (AGENTS.md
+§2.5). Rapport de référence : `audit/legislature_votes_20260819.md`.
+
 ## 3. Generate all candidate profiles (batch)
 
 ```bash

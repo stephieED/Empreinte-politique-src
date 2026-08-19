@@ -119,8 +119,14 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
 - `mandats[].suspendu_pour_fonction_gouvernementale`: never confuse with completed mandate.
 - `votes[].type_vote == "motion_censure"` requires `texte_lie_id`; 49.3 → `sort = "adopte_sans_vote_49_3"`, no position (rule 4).
 - `votes[].numero_scrutin` restarts at 1 in each legislature: never a key on its own.
-  Dedupe by AN `uid`, key group cohesion by `(legislature, numero)` — see
-  `docs/technical_decisions.md#votes-multi-legislature`.
+  Dedupe by AN `uid` **at index level** (`raw_data/scrutins_an_figes/`, where the AN
+  `uid` exists); key group cohesion by `(legislature, numero)` — see
+  `docs/technical_decisions.md#votes-multi-legislature`. A profile's `votes[]` carries no
+  `uid`: its key is `(legislature, numero_scrutin)`, and 22,5 % of collected votes have no
+  `legislature` at all. Resolve it with `src/scrutins_legislature.py` — labelled-twin join
+  first, legislature calendar second, loud failure third; never a default (rule 5). Audit
+  the corpus with `src/audit_legislature_votes.py` before relying on the key
+  (`docs/technical_decisions.md#resolution-legislature-votes`).
 - `amendements[].sort == "irrecevable"` requires `base_juridique_irrecevabilite` (`"art. 40"` or `"art. 45"`).
 - `amendements[].type_deposant`: never aggregate adoption rates across depositor types (rule, Section 6).
 Edge-case history: `docs/technical_decisions.md#cas-limites`.
