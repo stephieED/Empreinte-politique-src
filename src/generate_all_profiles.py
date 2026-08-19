@@ -48,6 +48,7 @@ Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py --resume            # reprendre depuis le dernier point de sauvegarde après une interruption
     python src/generate_all_profiles.py --limit 20          # ne traiter que les 20 premiers candidats (déploiement progressif)
     python src/generate_all_profiles.py --sample 20         # ne traiter qu'un échantillon aléatoire de 20 candidats
+    python src/generate_all_profiles.py --manifest-out F    # consigner les profils écrits par CE run (publication CI scopée, #450)
 
 Extraction pilotée par roster (composition réelle des groupes parlementaires,
 cf. generate_roster_candidats.py et docs/technical_decisions.md#provenance-pivot)
@@ -106,12 +107,46 @@ SOURCE_VALUES = ("an", "senat", "ue", "all")
 _PRINT_LOCK = threading.Lock()
 # Verrou global pour sérialiser l'écriture du fichier de point de sauvegarde.
 _CHECKPOINT_LOCK = threading.Lock()
+# Verrou global pour sérialiser l'ajout d'une ligne au manifeste (#450).
+_MANIFEST_LOCK = threading.Lock()
 
 
 def _tprint(*args: Any, **kwargs: Any) -> None:
     """Equivalent thread-safe de print())."""
     with _PRINT_LOCK:
         print(*args, **kwargs)
+
+
+def _init_manifest(manifest_path: Optional[str]) -> None:
+    """Vide (ou crée) le manifeste des profils bruts écrits par CE run (#450).
+
+    Sans troncature initiale, un second run sur le même runner publierait les
+    profils du premier : le manifeste doit décrire une exécution, pas un
+    répertoire.
+    """
+    if not manifest_path:
+        return
+    path = Path(manifest_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("", encoding="utf-8")
+
+
+def _manifest_append(manifest_path: Optional[str], nom_fichier: str) -> None:
+    """Consigne un profil brut réellement écrit, une ligne par nom de fichier.
+
+    Écriture incrémentale sous verrou plutôt qu'un dump final (#450) : un job
+    préempté ou interrompu laisse alors un manifeste tronqué mais VALIDE,
+    décrivant exactement les profils déjà présents sur le disque. Même principe
+    que #443 — ne jamais jeter un préfixe valide.
+
+    Le manifeste ne contient que des noms de fichiers (`<slug>.json`), relatifs
+    à `--out-dir` : c'est ce que consomme l'étape de publication du workflow.
+    """
+    if not manifest_path:
+        return
+    with _MANIFEST_LOCK:
+        with open(manifest_path, "a", encoding="utf-8") as f:
+            f.write(f"{nom_fichier}\n")
 
 
 def _load_checkpoint(path: Path) -> dict[str, Any]:
@@ -586,6 +621,7 @@ def process_candidat(
             _tprint(f"  [!] Fusion impossible avec le profil existant ({json_path}), écrasement : {exc}")
 
     ecrire_profil_json(json_path, profile)
+    _manifest_append(getattr(args, "manifest_out", None), json_path.name)
 
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
@@ -665,6 +701,12 @@ def main() -> None:
         ),
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
+    parser.add_argument("--manifest-out", default=None, metavar="FICHIER",
+                        help="Consigne, une par ligne, le nom de fichier de chaque profil brut "
+                             "RÉELLEMENT écrit par ce run (#450). Permet à un job d'extraction de "
+                             "ne publier que sa contribution, et non tout --out-dir (qui contient "
+                             "aussi la baseline committée, périmée). Sans effet en --pivot-only "
+                             "(aucun profil brut n'y est écrit).")
     parser.add_argument("--pivot", action="store_true", help="Écrire aussi <slug>.pivot.json au format schéma pivot v1 (en plus du JSON brut)")
     parser.add_argument(
         "--pivot-only",
@@ -753,6 +795,9 @@ def main() -> None:
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Tronqué avant tout traitement : un manifeste vide (job qui n'écrit rien)
+    # doit rester distinguable d'un manifeste absent (option non passée).
+    _init_manifest(args.manifest_out)
     pivot_dir = Path(args.pivot_dir)
     if args.pivot:
         pivot_dir.mkdir(parents=True, exist_ok=True)

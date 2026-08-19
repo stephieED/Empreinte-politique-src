@@ -72,6 +72,13 @@ raw_data/profiles/.generation_checkpoint.json
 raw_data/roster_candidats.json
 parltrack-status.json
 
+# Publication scopée d'un job d'extraction (#450) : le manifeste des profils
+# réellement écrits, et le staging que l'upload prend pour `path:`. Existent le
+# temps d'un job sur un runner ; en local, un `generate_all_profiles.py
+# --manifest-out` ne doit pas salir l'arbre de travail.
+_manifest/
+_publish/
+
 # Translations
 *.mo
 *.pot

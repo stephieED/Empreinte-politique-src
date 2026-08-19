@@ -657,3 +657,206 @@ def test_refresh_existing_et_skip_existing_sont_refuses(monkeypatch, tmp_path):
     with pytest.raises(SystemExit) as exc:
         generate_all_profiles.main()
     assert "s'annulent" in str(exc.value)
+
+
+# ── --manifest-out : un artifact = la contribution d'un job (#450) ────────────
+#
+# Chaque job d'extraction publiait tout `raw_data/profiles/`, donc aussi la
+# baseline committée récupérée par son checkout. La fusion additive réunissait
+# ensuite version fraîche et version périmée du même profil, ce qui annulait
+# `--no-merge` et gonflait le volume à chaque run (+107 000 amendements sur le
+# run 32277443716). Le manifeste rétablit la propriété manquante : un job ne
+# publie que ce qu'il a lui-même écrit.
+
+def _manifest_lines(path: Path) -> list[str]:
+    return [ligne for ligne in path.read_text(encoding="utf-8").splitlines() if ligne]
+
+
+def _argv_manifest(candidats_path, out_dir, pivot_dir, checkpoint_path, manifest_path, *extra):
+    return [
+        "generate_all_profiles.py",
+        "--candidats", str(candidats_path),
+        "--out-dir", str(out_dir),
+        "--pivot-dir", str(pivot_dir),
+        "--checkpoint-file", str(checkpoint_path),
+        "--manifest-out", str(manifest_path),
+        "--skip-ue", "--skip-interventions",
+        "--workers", "2",
+        *extra,
+    ]
+
+
+def test_manifest_liste_exactement_les_profils_ecrits(tmp_path, monkeypatch):
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    manifest_path = tmp_path / "manifest.txt"
+
+    # Profil d'un autre job, déjà présent dans le répertoire de sortie : c'est
+    # la baseline que le checkout dépose sur le runner. Elle ne doit pas être
+    # publiée par ce job, qui ne l'a pas écrite.
+    out_dir.mkdir()
+    (out_dir / "carla.json").write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+    ))
+    generate_all_profiles.main()
+
+    assert sorted(_manifest_lines(manifest_path)) == ["alice.json", "bob.json"]
+    # Le fichier périmé est bien resté sur le disque : c'est la publication qui
+    # l'exclut, pas une suppression.
+    assert (out_dir / "carla.json").exists()
+
+
+def test_manifest_exclut_les_profils_sautes_par_skip_existing(tmp_path, monkeypatch):
+    """`--skip-existing` n'écrit rien pour un profil déjà couvert : le publier
+    reviendrait à republier la version committée, périmée."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "alice.json").write_text("{}", encoding="utf-8")
+    manifest_path = tmp_path / "manifest.txt"
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+        "--skip-existing",
+    ))
+    generate_all_profiles.main()
+
+    assert _manifest_lines(manifest_path) == ["bob.json"]
+
+
+def test_manifest_est_tronque_a_chaque_run(tmp_path, monkeypatch):
+    """Le manifeste décrit UNE exécution, pas un répertoire : sans troncature,
+    un second run sur le même runner republierait la tranche du premier."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    manifest_path = tmp_path / "manifest.txt"
+    manifest_path.write_text("profil-d-un-run-precedent.json\n", encoding="utf-8")
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, tmp_path / "profiles", tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+        "--only", "alice",
+    ))
+    generate_all_profiles.main()
+
+    assert _manifest_lines(manifest_path) == ["alice.json"]
+
+
+def test_manifest_est_ecrit_au_fil_de_l_eau_pas_en_fin_de_run(tmp_path, monkeypatch):
+    """Un dump final serait perdu en cas de préemption du runner — cas courant
+    ici (#228). Écrit au fil de l'eau, le manifeste laisse au contraire un
+    préfixe VALIDE, décrivant exactement les profils déjà sur le disque : même
+    principe que #443, ne jamais jeter un préfixe valide.
+
+    Vérifié en observant le manifeste DEPUIS le traitement du second candidat :
+    la ligne du premier doit déjà y être."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+
+    manifest_path = tmp_path / "manifest.txt"
+    vu_pendant_bob = {}
+
+    def build_en_observant(chambre, slug, **k):
+        if slug == "bob":
+            vu_pendant_bob["lignes"] = _manifest_lines(manifest_path)
+        return _fake_raw_profile(slug, chambre)
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", build_en_observant)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, tmp_path / "profiles", tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+        # Un seul worker : l'ordre de traitement est celui du fichier source,
+        # donc alice est intégralement écrite avant que bob ne démarre.
+        "--workers", "1",
+    ))
+    generate_all_profiles.main()
+
+    assert vu_pendant_bob["lignes"] == ["alice.json"]
+    assert sorted(_manifest_lines(manifest_path)) == ["alice.json", "bob.json"]
+
+
+def test_manifest_omet_un_candidat_dont_l_extraction_n_a_rien_produit(tmp_path, monkeypatch):
+    """Une extraction qui ne trouve aucune identité n'écrit pas de profil — mais
+    le checkout a laissé une copie périmée au chemin attendu. Publier « le
+    fichier de ce slug » plutôt que « ce que j'ai écrit » republierait cette
+    copie."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+
+    def build_introuvable_pour_bob(chambre, slug, **k):
+        return None if slug == "bob" else _fake_raw_profile(slug, chambre)
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", build_introuvable_pour_bob)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "bob.json").write_text("{}", encoding="utf-8")
+    manifest_path = tmp_path / "manifest.txt"
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+    ))
+    generate_all_profiles.main()
+
+    assert _manifest_lines(manifest_path) == ["alice.json"]
+
+
+def test_manifest_vide_quand_le_job_n_ecrit_aucun_profil(tmp_path, monkeypatch):
+    """Manifeste vide ≠ manifeste absent : l'étape de publication doit pouvoir
+    distinguer « ce job n'a rien écrit » de « l'option n'a pas été passée »,
+    et surtout ne jamais retomber sur `raw_data/profiles/` par défaut."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice"])
+    monkeypatch.setattr(generate_all_profiles, "build_profile", lambda *a, **k: None)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    manifest_path = tmp_path / "manifest.txt"
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, tmp_path / "profiles", tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+    ))
+    generate_all_profiles.main()
+
+    assert manifest_path.exists()
+    assert _manifest_lines(manifest_path) == []
+
+
+def test_manifest_ignore_le_mode_pivot_only(tmp_path, monkeypatch):
+    """`--pivot-only` n'écrit aucun profil brut : rien à publier côté raw."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice"])
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "alice.json").write_text(
+        json.dumps(_fake_raw_profile("alice"), ensure_ascii=False), encoding="utf-8"
+    )
+    manifest_path = tmp_path / "manifest.txt"
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
+        "--pivot-only",
+    ))
+    generate_all_profiles.main()
+
+    assert _manifest_lines(manifest_path) == []
