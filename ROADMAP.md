@@ -37,6 +37,13 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
+- CI still deletes the partial amendements archive on download failure (#264
+  `try/finally`), so it gains nothing from the byte-level resume of #241/#443
+  between runs. The premise behind that deletion ("the archive is never reread
+  to resume a download") stopped being true with cross-invocation resume.
+  Reversing it trades weekly cache volume for resume — measure before deciding,
+  see `technical_decisions.md#telechargement-an-trois-modes-defaillance`.
+
 - Congrès scrutins (AN + Sénat at Versailles) are excluded from `votes[]`
   (`AN_SCRUTIN_UID_PREFIXE`): their numbering restarts at 1 inside the AN
   number space, so the only one published to date — the 2024-03-04 IVG

@@ -1,4 +1,5 @@
 import gzip
+import io
 import json
 import sys
 from pathlib import Path
@@ -38,6 +39,65 @@ from candidate_profile import (
     _extract_speaker_identity_from_html,
 )
 from normalize_nosdeputes import normalize_nosdeputes
+
+
+class _FauxRaw:
+    """Substitut minimal de `resp.raw` (urllib3) : `read(amt, decode_content=…)`."""
+
+    def __init__(self, payload: bytes):
+        self._buf = io.BytesIO(payload)
+
+    def read(self, amt=None, decode_content=False):
+        return self._buf.read(amt)
+
+
+class _FluxFactice:
+    """Expose `resp.raw` à partir de `iter_content` sur les réponses factices.
+
+    Depuis #443, `_telecharger_flux` lit le flux via `resp.raw.read()` et non
+    `resp.iter_content()` : mesuré, `iter_content` jette le tampon partiel
+    d'urllib3 quand la connexion se coupe en cours de lecture, ce qui perdait
+    jusqu'à une granularité entière d'octets pourtant reçus. Les doubles de test
+    n'ont pas à connaître ce détail : ils continuent de décrire leur charge utile
+    via `iter_content`, ce mixin en dérive un `raw` minimal.
+    """
+
+    headers: dict = {}
+
+    @property
+    def raw(self):
+        if not hasattr(self, "_faux_raw"):
+            self._faux_raw = _FauxRaw(b"".join(self.iter_content()))
+        return self._faux_raw
+
+
+def _budget_appels_reseau_echec_total() -> int:
+    """Nombre total de requêtes d'un téléchargement d'archive qui échoue de bout
+    en bout, depuis #443 : par cycle, `AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS`
+    tentatives par plage puis **un** GET séquentiel de repli, et
+    `AMENDEMENTS_SOURCE_STALL_MAX_CYCLES` cycles avant d'abandonner en signalant
+    la source indisponible. Exprimé à partir des constantes plutôt qu'en dur :
+    ce qui doit rester vrai est que le budget réseau est borné, pas sa valeur du
+    jour."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AMENDEMENTS_SOURCE_STALL_MAX_CYCLES,
+    )
+
+    return (AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS + 1) * AMENDEMENTS_SOURCE_STALL_MAX_CYCLES
+
+
+def _budget_attentes_echec_total() -> int:
+    """Attentes correspondantes : le backoff entre deux tentatives de plage d'un
+    même cycle, plus l'attente entre deux cycles — aucune après la dernière,
+    déjà en échec définitif."""
+    from candidate_profile import (
+        AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS,
+        AMENDEMENTS_SOURCE_STALL_MAX_CYCLES,
+    )
+
+    backoffs = (AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS - 1) * AMENDEMENTS_SOURCE_STALL_MAX_CYCLES
+    return backoffs + AMENDEMENTS_SOURCE_STALL_MAX_CYCLES - 1
 
 
 @pytest.fixture(autouse=True)
@@ -2311,7 +2371,7 @@ def test_download_and_build_amendement_index_ignores_existing_cache_write(tmp_pa
         except AmendementsIndexError:
             pass
 
-    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+    assert mock_get.call_count == _budget_appels_reseau_echec_total()
 
 
 # ---------------------------------------------------------------------------
@@ -2336,7 +2396,7 @@ def test_download_and_build_amendement_index_success_writes_fraicheur(tmp_path):
         pass  # zip valide mais vide : suffisant, ce test porte sur la fraîcheur
     valid_zip_bytes = buf.getvalue()
 
-    class FakeStreamResponse:
+    class FakeStreamResponse(_FluxFactice):
         status_code = 200  # fichier entier en un seul segment (voir tests ci-dessus)
 
         def __enter__(self):
@@ -2377,7 +2437,7 @@ def test_download_and_build_amendement_index_success_writes_fraicheur(tmp_path):
 def _fake_amendements_zip_response(zip_bytes: bytes):
     """Réponse de streaming factice servant `zip_bytes` en un seul segment."""
 
-    class FakeStreamResponse:
+    class FakeStreamResponse(_FluxFactice):
         status_code = 200
 
         def __enter__(self):
@@ -2780,11 +2840,11 @@ def test_download_and_build_amendement_index_raises_on_download_failure(tmp_path
         except AmendementsIndexError:
             pass
 
-    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+    assert mock_get.call_count == _budget_appels_reseau_echec_total(), (
         "Le téléchargement doit être retenté jusqu'à épuisement du nombre de tentatives borné"
     )
     # Backoff entre chaque tentative, mais pas après la dernière (déjà en échec définitif).
-    assert mock_sleep.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS - 1
+    assert mock_sleep.call_count == _budget_attentes_echec_total()
 
 
 def test_download_and_build_amendement_index_failed_legislature_is_not_retried_for_next_candidate(tmp_path):
@@ -2811,7 +2871,7 @@ def test_download_and_build_amendement_index_failed_legislature_is_not_retried_f
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
-        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+        assert mock_get.call_count == _budget_appels_reseau_echec_total()
 
         # Second appel, même législature : échec immédiat depuis le cache
         # d'échec, sans aucun nouvel appel réseau.
@@ -2820,7 +2880,7 @@ def test_download_and_build_amendement_index_failed_legislature_is_not_retried_f
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
-        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+        assert mock_get.call_count == _budget_appels_reseau_echec_total(), (
             "Le second appel ne doit déclencher aucun nouvel appel réseau pour "
             "une législature déjà en échec définitif durant ce run"
         )
@@ -2854,7 +2914,7 @@ def test_download_and_build_amendement_index_failed_legislature_shared_across_jo
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
-        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS
+        assert mock_get.call_count == _budget_appels_reseau_echec_total()
 
         # Simule le passage à un second process (ex. reprise du même run) : le
         # cache mémoire intra-process est réinitialisé, mais le cache disque
@@ -2866,7 +2926,7 @@ def test_download_and_build_amendement_index_failed_legislature_shared_across_jo
             assert False, "AmendementsIndexError attendue"
         except AmendementsIndexError:
             pass
-        assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+        assert mock_get.call_count == _budget_appels_reseau_echec_total(), (
             "Le second process ne doit déclencher aucun nouvel appel réseau : le marqueur "
             "disque du run courant doit suffire à lever immédiatement"
         )
@@ -2902,7 +2962,7 @@ def test_download_and_build_amendement_index_disk_marker_from_different_run_is_i
             except AmendementsIndexError:
                 pass
 
-    assert mock_get.call_count == AMENDEMENTS_DOWNLOAD_MAX_ATTEMPTS, (
+    assert mock_get.call_count == _budget_appels_reseau_echec_total(), (
         "Un marqueur d'un GITHUB_RUN_ID différent doit être ignoré : cycle complet de "
         "tentatives réseau attendu, pas un échec immédiat depuis le marqueur périmé"
     )
@@ -2922,7 +2982,7 @@ def test_download_and_build_amendement_index_retries_transient_failure_then_succ
         pass  # zip valide mais vide : suffisant pour vérifier l'absence d'erreur
     valid_zip_bytes = buf.getvalue()
 
-    class FakeStreamResponse:
+    class FakeStreamResponse(_FluxFactice):
         # status_code=200 (au lieu de 206) simule un serveur qui ignore l'en-tête
         # Range et renvoie le fichier entier en un seul segment — suffisant ici
         # puisque ce test porte sur le retry transitoire, pas sur le découpage
@@ -2968,7 +3028,7 @@ def test_download_and_build_amendement_index_raises_on_bad_zip(tmp_path):
 
     from candidate_profile import AmendementsIndexError, _download_and_build_amendement_index
 
-    class FakeStreamResponse:
+    class FakeStreamResponse(_FluxFactice):
         status_code = 200  # fichier entier en un seul segment, voir commentaire ci-dessus
 
         def __enter__(self):
@@ -3004,7 +3064,7 @@ def test_download_amendements_zip_retries_only_failed_segment(tmp_path):
     payload = b"0123456789AB"  # 12 octets, découpés en segments de 4 -> 3 segments
     calls: list[str] = []
 
-    class FakeRangeResponse:
+    class FakeRangeResponse(_FluxFactice):
         def __init__(self, data: bytes, total: int):
             self._data = data
             self.status_code = 206
@@ -3060,7 +3120,7 @@ class _FakeHeadResponse:
         pass
 
 
-class _FakeRangeResponse:
+class _FakeRangeResponse(_FluxFactice):
     def __init__(self, data: bytes, total: int):
         self._data = data
         self.status_code = 206
@@ -3275,7 +3335,7 @@ def test_download_amendements_zip_raises_instead_of_corrupting_on_unexpected_200
     zip_path = tmp_path / "amendements.zip"
     zip_path.write_bytes(payload[:4])
 
-    class FakeFullResponse:
+    class FakeFullResponse(_FluxFactice):
         status_code = 200
         headers: dict = {}
 
@@ -3520,7 +3580,7 @@ def _make_fake_acteurs_historique_zip_bytes(organe_entries, acteur_entries=None)
     return buf.getvalue()
 
 
-class _FakeActeursHistoriqueStreamResponse:
+class _FakeActeursHistoriqueStreamResponse(_FluxFactice):
     status_code = 200
 
     def __init__(self, payload: bytes):
