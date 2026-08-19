@@ -27,6 +27,17 @@ on:
           nombre de profils repris par shard.
         type: boolean
         default: false
+      roster_refresh_existing:
+        description: >
+          Ne traiter, dans extract-roster-groupes, QUE les membres dont le
+          profil existe déjà — l'inverse exact du rollout progressif (#445).
+          Sert à propager une correction de fond (ex. la clé uid de #440) aux
+          profils déjà committés sans étendre la couverture, donc sans
+          préjuger du dimensionnement en cours (#429).
+          À combiner avec overwrite_profiles=true : sans écrasement, la fusion
+          additive conserverait les entrées erronées à côté des corrigées.
+        type: boolean
+        default: false
       threshold:
         description: >
           Seuil IncompleteRead (soft fail). Appliqué dans tous les modes,
@@ -1042,6 +1053,7 @@ jobs:
           FRESH: ${{ inputs.fresh_run }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
           ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
+          REFRESH_EXISTING: ${{ inputs.roster_refresh_existing }}
         run: |
           MERGE_FLAG=()
           # `overwrite_profiles` écrase sans purger le cache (#440) : purger
@@ -1067,6 +1079,17 @@ jobs:
           # la frontière.
           SKIP_FLAG=(--skip-existing)
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && SKIP_FLAG=()
+          # --refresh-existing (#445) : ne traiter que l'existant. Il exclut
+          # --skip-existing par construction (le script refuse la combinaison,
+          # qui ne traiterait personne), d'où la levée inconditionnelle ici.
+          REFRESH_FLAG=()
+          if [[ "$REFRESH_EXISTING" == "true" ]]; then
+            REFRESH_FLAG=(--refresh-existing)
+            SKIP_FLAG=()
+            if [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]]; then
+              echo "::warning::roster_refresh_existing=true sans overwrite_profiles : les profils existants seront FUSIONNÉS, pas écrasés. Une correction de clé laisserait alors les entrées erronées en place, à côté des corrigées."
+            fi
+          fi
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
@@ -1074,7 +1097,7 @@ jobs:
             --candidats raw_data/roster_candidats.json \
             --workers ${{ inputs.workers }} \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
-            "${SKIP_FLAG[@]}" --resume \
+            "${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
 

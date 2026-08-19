@@ -250,7 +250,7 @@ def test_skip_existing_est_leve_par_overwrite_profiles():
         "--skip-existing est de nouveau posé en dur sur le job roster : "
         "aucune combinaison d'inputs ne peut plus régénérer l'existant."
     )
-    lignes = [l for l in workflow.split("\n") if "SKIP_FLAG=()" in l]
+    lignes = [l for l in workflow.split("\n") if "&& SKIP_FLAG=()" in l]
     assert lignes, "aucune levée de SKIP_FLAG trouvée — le test ne vérifie plus rien"
     for ligne in lignes:
         assert "$FRESH" in ligne and "$OVERWRITE" in ligne, (
@@ -263,6 +263,26 @@ def test_le_job_roster_pose_skip_existing_par_defaut():
     défaut, chaque run repaierait le réseau pour tous les profils déjà écrits."""
     workflow = WORKFLOW.read_text(encoding="utf-8")
     assert "SKIP_FLAG=(--skip-existing)" in workflow
-    assert '"${SKIP_FLAG[@]}" --resume' in workflow, (
+    assert '"${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume' in workflow, (
         "SKIP_FLAG est calculé mais pas transmis à generate_all_profiles.py"
     )
+
+
+def test_refresh_existing_leve_toujours_skip_existing():
+    """`--refresh-existing` et `--skip-existing` s'annulent, et le script
+    refuse désormais la combinaison : les laisser cohabiter ferait échouer le
+    job roster au démarrage (#445)."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "REFRESH_FLAG=(--refresh-existing)" in workflow
+    bloc = workflow[workflow.index("REFRESH_FLAG=(--refresh-existing)"):]
+    bloc = bloc[:bloc.index("fi")]
+    assert "SKIP_FLAG=()" in bloc, (
+        "REFRESH_FLAG est posé sans lever SKIP_FLAG : le job échouerait aussitôt."
+    )
+
+
+def test_refresh_existing_sans_ecrasement_est_signale():
+    """Fusionner au lieu d'écraser laisserait les entrées de l'ancienne clé à
+    côté des corrigées — un run silencieusement inutile (#440/#445)."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "::warning::roster_refresh_existing=true sans overwrite_profiles" in workflow
