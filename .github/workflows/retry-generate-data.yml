@@ -281,6 +281,18 @@ jobs:
           [[ "$workers" =~ ^[0-9]+$ ]] || workers=""
 
           an_log=$(job_log "extract-an")
+          # overwrite_profiles : pas de step conditionnel dédié pour le détecter
+          # (il ne purge rien, c'est tout son intérêt). Il se déduit de la
+          # combinaison « --no-merge présent dans la commande d'extraction, mais
+          # fresh_run faux » — les deux seuls inputs qui posent ce flag.
+          #
+          # Sans cette reconstruction, un run overwrite_profiles=true préempté
+          # serait relancé en fusion additive : c'est exactement le scénario de
+          # doublons que ce mode existe pour éviter (#440).
+          overwrite_profiles=false
+          if [[ "$fresh_run" != "true" ]] && echo "$an_log" | grep -q -- '--no-merge'; then
+            overwrite_profiles=true
+          fi
           # Le texte source "--skip-interventions" est toujours présent dans
           # le script échoué, que la condition ait été vraie ou non à
           # l'exécution (GitHub échoue le SOURCE bash substitué, pas la trace
@@ -314,6 +326,7 @@ jobs:
           [[ "$roster_extraction_limit" =~ ^[0-9]+$ ]] || roster_extraction_limit=""
 
           echo "fresh_run=${fresh_run}" >> "$GITHUB_OUTPUT"
+          echo "overwrite_profiles=${overwrite_profiles}" >> "$GITHUB_OUTPUT"
           echo "threshold=${threshold:-3}" >> "$GITHUB_OUTPUT"
           echo "workers=${workers:-1}" >> "$GITHUB_OUTPUT"
           echo "extract_interventions=${extract_interventions}" >> "$GITHUB_OUTPUT"
@@ -339,6 +352,7 @@ jobs:
             --repo "${REPO}" \
             --ref "${{ github.event.workflow_run.head_branch }}" \
             -f fresh_run="${{ steps.inputs.outputs.fresh_run || 'false' }}" \
+            -f overwrite_profiles="${{ steps.inputs.outputs.overwrite_profiles || 'false' }}" \
             -f threshold="${{ steps.inputs.outputs.threshold || '3' }}" \
             -f workers="${{ steps.inputs.outputs.workers || '1' }}" \
             -f extract_interventions="${{ steps.inputs.outputs.extract_interventions || 'false' }}" \

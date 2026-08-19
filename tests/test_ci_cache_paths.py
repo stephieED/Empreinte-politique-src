@@ -176,3 +176,64 @@ def test_les_dossiers_ont_leur_propre_cle():
             "Un actions/cache couvre .cache/dossiers_an sous la clé AN : les "
             "dossiers doivent garder leur clé dédiée (#427)."
         )
+
+
+# ---------------------------------------------------------------------------
+# Découplage `overwrite_profiles` / purge du cache (#440)
+# ---------------------------------------------------------------------------
+
+RETRY = RACINE / ".github" / "workflows" / "retry-generate-data.yml"
+
+
+def test_overwrite_profiles_existe_comme_input():
+    """Écraser les profils et purger le cache sont deux besoins distincts : la
+    correction de clé de #440 impose le premier, alors que purger obligerait à
+    re-télécharger ~300 Mo auprès d'une source dont l'indisponibilité a déjà
+    bloqué trois chantiers."""
+    assert "overwrite_profiles:" in WORKFLOW.read_text(encoding="utf-8")
+
+
+def test_overwrite_profiles_ne_purge_jamais_le_cache():
+    """L'invariant central de ce découplage. Un step de nettoyage conditionné à
+    `overwrite_profiles` annulerait tout l'intérêt du mode."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    for bloc in re.split(r"\n      - name: ", workflow):
+        if not bloc.startswith("Nettoyage"):
+            continue
+        entete = bloc.split("\n", 1)[0]
+        condition = re.search(r"if:\s*\$\{\{([^}]+)\}\}", bloc)
+        assert condition, f"step de nettoyage sans condition : {entete}"
+        assert "overwrite_profiles" not in condition.group(1), (
+            f"le step « {entete} » purge sur overwrite_profiles — or ce mode "
+            "existe précisément pour écraser SANS re-télécharger (#440)."
+        )
+
+
+def test_tous_les_no_merge_considerent_les_deux_inputs():
+    """`--no-merge` doit être posé par fresh_run OU par overwrite_profiles.
+    Un job qui n'en regarderait qu'un fusionnerait alors que les autres
+    écrasent — donc produirait les doublons que #440 corrige, sur ce job-là
+    seulement, ce qui serait d'autant plus difficile à voir."""
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    lignes = [l for l in workflow.split("\n") if "MERGE_FLAG=(--no-merge)" in l]
+    assert lignes, "aucun MERGE_FLAG trouvé — le test ne vérifie plus rien"
+    for ligne in lignes:
+        assert "$FRESH" in ligne and "$OVERWRITE" in ligne, (
+            f"condition incomplète : {ligne.strip()}"
+        )
+
+
+def test_le_retry_reconstruit_overwrite_profiles():
+    """Sans cette reconstruction, un run `overwrite_profiles=true` préempté
+    serait relancé en fusion additive — exactement le scénario de doublons que
+    ce mode existe pour éviter."""
+    retry = RETRY.read_text(encoding="utf-8")
+    assert "overwrite_profiles=" in retry
+    assert "-f overwrite_profiles=" in retry, "l'input n'est pas transmis à la relance"
+
+
+def test_le_retry_deduit_overwrite_apres_avoir_lu_le_log():
+    """La déduction s'appuie sur `an_log` : la placer avant sa définition la
+    rendrait toujours fausse, silencieusement."""
+    retry = RETRY.read_text(encoding="utf-8")
+    assert retry.index("an_log=$(job_log") < retry.index("overwrite_profiles=false")
