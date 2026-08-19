@@ -55,10 +55,13 @@ Format d'un profil de groupe v1 :
 
     "cohesion_votes": [                 # une entrée par scrutin sur lequel ≥1 membre a voté
         {
-            "numero_scrutin": "4084",
-            "date": "2024-06-07",
-            "texte": "Projet de loi …",
-            "sort": "rejeté",
+            "scrutin_id": "an:16:4084",  # référence vers pivot_data/scrutins.json (#432).
+                                        # `date`, `texte` et `sort` y vivent : ce sont des
+                                        # champs du SCRUTIN, qui étaient recopiés dans chacun
+                                        # des groupes l'ayant voté (12 546 entrées pour 4 104
+                                        # scrutins, 3,15 Mo de méta répété → 1,04 Mo).
+                                        # L'index est le même que celui des profils : les 4 104
+                                        # scrutins des groupes y sont tous inclus.
             "membres_eligibles": 64,    # membres en mandat à la date du scrutin
             "position_majoritaire": "contre",
             "pour": 42,

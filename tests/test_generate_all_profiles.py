@@ -422,6 +422,9 @@ def test_integration_roster_batch_produces_pivots_with_provenance(tmp_path, monk
         "--out-dir", str(out_dir),
         "--pivot-dir", str(pivot_dir),
         "--pivot", "--skip-ue", "--skip-interventions",
+        # #432 : sans --scrutins, l'index s'écrirait dans le pivot_data/ du
+        # dépôt — un test ne doit jamais salir l'arbre de travail.
+        "--scrutins", str(tmp_path / "scrutins.json"),
         "--checkpoint-file", str(checkpoint_path),
         "--workers", "2",
     ])
@@ -504,6 +507,9 @@ def test_integration_progressive_selection_advances_across_two_runs(tmp_path, mo
         "--out-dir", str(out_dir),
         "--pivot-dir", str(pivot_dir),
         "--pivot", "--skip-ue", "--skip-interventions",
+        # #432 : sans --scrutins, l'index s'écrirait dans le pivot_data/ du
+        # dépôt — un test ne doit jamais salir l'arbre de travail.
+        "--scrutins", str(tmp_path / "scrutins.json"),
         "--no-checkpoint",
         "--workers", "2",
         "--limit", "2", "--skip-existing",
@@ -680,6 +686,9 @@ def _argv_manifest(candidats_path, out_dir, pivot_dir, checkpoint_path, manifest
         "--pivot-dir", str(pivot_dir),
         "--checkpoint-file", str(checkpoint_path),
         "--manifest-out", str(manifest_path),
+        # #432 : `--scrutins` a une valeur par défaut dans `pivot_data/` du
+        # dépôt — un test qui l'omettrait y écrirait l'index.
+        "--scrutins", str(Path(out_dir).parent / "scrutins.json"),
         "--skip-ue", "--skip-interventions",
         "--workers", "2",
         *extra,
@@ -860,3 +869,63 @@ def test_manifest_ignore_le_mode_pivot_only(tmp_path, monkeypatch):
     generate_all_profiles.main()
 
     assert _manifest_lines(manifest_path) == []
+
+
+# ── Index des scrutins : ne jamais écrire hors de --scrutins (#432) ───────────
+
+def test_index_des_scrutins_est_ecrit_dans_le_chemin_demande(tmp_path, monkeypatch):
+    """`--scrutins` a une valeur par défaut qui pointe dans `pivot_data/` : un
+    run avec des répertoires de sortie personnalisés (test, mesure hors dépôt)
+    ne doit surtout pas écrire l'index dans le dépôt au passage."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile",
+        lambda chambre, slug, **k: dict(_fake_raw_profile(slug, chambre), votes=[
+            {"numero_scrutin": "1", "date": "2026-01-05", "legislature": "17", "position": "pour"},
+        ]),
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    index_path = tmp_path / "sous" / "dossier" / "scrutins.json"
+    monkeypatch.setattr(sys, "argv", [
+        "generate_all_profiles.py",
+        "--candidats", str(candidats_path),
+        "--out-dir", str(tmp_path / "profiles"),
+        "--pivot-dir", str(tmp_path / "pivots"),
+        "--checkpoint-file", str(tmp_path / "cp.json"),
+        "--scrutins", str(index_path),
+        "--pivot", "--skip-ue", "--skip-interventions",
+    ])
+    generate_all_profiles.main()
+
+    assert index_path.exists(), "l'index doit être écrit là où on le demande"
+    assert json.loads(index_path.read_text(encoding="utf-8"))["scrutins"][0]["id"] == "an:17:1"
+
+    pivot = json.loads((tmp_path / "pivots" / "alice.pivot.json").read_text(encoding="utf-8"))
+    assert pivot["votes"] == [{"scrutin_id": "an:17:1", "position": "pour"}]
+
+
+def test_index_des_scrutins_n_est_pas_construit_sans_pivot(tmp_path, monkeypatch):
+    """Sans `--pivot`, aucun profil pivot n'est écrit : reconstruire l'index
+    coûterait une passe de corpus pour rien."""
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    index_path = tmp_path / "scrutins.json"
+    monkeypatch.setattr(sys, "argv", [
+        "generate_all_profiles.py",
+        "--candidats", str(candidats_path),
+        "--out-dir", str(tmp_path / "profiles"),
+        "--pivot-dir", str(tmp_path / "pivots"),
+        "--checkpoint-file", str(tmp_path / "cp.json"),
+        "--scrutins", str(index_path),
+        "--skip-ue", "--skip-interventions",
+    ])
+    generate_all_profiles.main()
+
+    assert not index_path.exists()

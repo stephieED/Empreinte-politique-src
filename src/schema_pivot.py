@@ -71,36 +71,31 @@ Format d'un profil pivot v1 :
             # ou null si non applicable.
         }
     ],
-    "votes": [
+    "votes": [                               # MAPPING seul (#432) : un scrutin est identique
+                                             # pour tous ses votants, son méta vit une seule fois
+                                             # dans pivot_data/scrutins.json (schéma scrutins-v1).
+                                             # Ne garder ici que ce qui est propre au membre.
         {
-            "date": "2024-06-12",
-            "texte": "Projet de loi ...",    # titre du scrutin
-            "position": "pour",              # "pour" | "contre" | "abstention" | "non_votant"
-                                             # | "absent" | "excuse"
+            "scrutin_id": "an:17:1234",      # "an:<legislature>:<numero_scrutin>" — la législature
+                                             # fait partie de l'identifiant parce que le numéro
+                                             # repart de 1 à chaque législature (AGENTS.md §5).
+                                             # null UNIQUEMENT si le scrutin n'a pas pu être
+                                             # résolu ; "scrutin_non_resolu" est alors obligatoire.
+            "position": "pour"               # "pour" | "contre" | "abstention" | "non_votant"
+                                             # | "absent" | "excuse" | null
                                              # "absent" : aucune trace de vote (implicite ou explicite)
                                              # "excuse" : absence justifiée/notifiée à la source
-            "numero_scrutin": "1234",        # numéro AN du scrutin ; il repart de 1 à chaque
-                                             # législature, donc jamais identifiant à lui seul
-                                             # (voir "legislature" ci-dessous)
-            "legislature": "17",             # législature du scrutin ; null pour les votes
-                                             # collectés avant #403 (mono-législature) et pour
-                                             # les sources sans législature (Sénat)
-            "sort": "adopté",                # résultat du scrutin : "adopté" | "rejeté" |
-                                             # "adopte_sans_vote_49_3" (engagement de la
-                                             # responsabilité du gouvernement, art. 49.3 :
-                                             # absence de vote sur l'ensemble) | ...
-            "type_scrutin": null,            # métadonnée du vote, indépendante du résultat :
-                                             # "public_ordinaire" | "solennel" | null
-            "type_vote": "vote_texte",       # "vote_texte" | "motion_censure" ; une motion de
-                                             # censure liée à un 49.3 est TOUJOURS un scrutin
-                                             # séparé, jamais fusionnée avec la position sur le texte
-            "texte_lie_id": null,            # identifiant commun reliant une motion_censure au
-                                             # texte concerné (49.3) ; null pour un vote_texte
-            "groupe_au_moment_du_vote": null,# groupe parlementaire au moment du scrutin ;
-                                             # null si non renseigné (champ enrichissable en
-                                             # post-traitement, utile pour les élus ayant changé
-                                             # de groupe en cours de mandat)
-            "source_url": null               # URL de la source primaire du scrutin
+            # "groupe_au_moment_du_vote": "SOC"
+                                             # FACULTATIF — écrit seulement s'il est renseigné.
+                                             # Son absence signifie "non renseigné", exactement
+                                             # comme null : seule exception à la convention
+                                             # "missing = null" (§4), et elle est chiffrée —
+                                             # le champ n'est jamais peuplé (0 sur 398 085) et
+                                             # l'écrire coûtait 12,1 Mo de null, 40 % du mapping.
+            # "scrutin_non_resolu": {...}    # FACULTATIF, et anormal : enregistrement complet du
+                                             # vote (date, texte, sort, type_vote…) conservé tel
+                                             # quel quand aucune législature n'a pu être résolue.
+                                             # Ni supprimé ni doté d'une clé inventée (§2.5).
         }
     ],
     "textes_portes": [                       # dossiers dont l'élu est auteur ou rapporteur
@@ -184,6 +179,7 @@ Usage :
 
 import time
 from typing import Any
+from scrutins_index import decomposer_id
 
 # Version du schéma ; à incrémenter si une rupture de compatibilité est introduite.
 # Les consommateurs peuvent vérifier profil["schema_version"] == SCHEMA_VERSION.
@@ -291,6 +287,19 @@ KNOWN_TYPES_SCRUTIN: frozenset[str] = frozenset({"public_ordinaire", "solennel"}
 # le texte concerné.
 KNOWN_TYPES_VOTE: frozenset[str] = frozenset({"vote_texte", "motion_censure"})
 
+# Version du schéma de `pivot_data/scrutins.json` (#432). Distincte de
+# SCHEMA_VERSION : la liste partagée des scrutins et les profils évoluent
+# séparément, et les confondre obligerait à réécrire tous les profils pour un
+# changement qui ne les touche pas.
+SCRUTINS_SCHEMA_VERSION = "scrutins-v1"
+
+# Provenance de la `legislature` d'un scrutin (#432, voir scrutins_legislature).
+# Nomenclature fermée, et le point n'est pas cosmétique : une législature
+# dérivée d'un calendrier ne doit jamais passer pour une donnée collectée.
+KNOWN_PROVENANCES_LEGISLATURE: frozenset[str] = frozenset({
+    "collectee", "resolue_par_jumeau", "derivee_du_calendrier",
+})
+
 # Type de déposant d'un amendement.
 KNOWN_TYPES_DEPOSANT: frozenset[str] = frozenset({
     "gouvernement", "commission_rapporteur", "depute",
@@ -354,13 +363,20 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
     }
 
 
-def validate_profil(profil: dict[str, Any]) -> list[str]:
+def validate_profil(profil: dict[str, Any], scrutins_index: Any = None) -> list[str]:
     """Vérifie les invariants de base du schéma pivot v1.
+
+    `scrutins_index` (facultatif, un `ScrutinsIndex`) : depuis #432, le méta
+    d'un scrutin vit dans `pivot_data/scrutins.json` et le profil n'en garde que
+    le mapping. Deux invariants deviennent donc des **jointures** et ne sont
+    vérifiés que si l'index est fourni : qu'un `scrutin_id` référencé existe, et
+    la règle 4 (un 49.3 ne porte jamais de position). Sans index, ils sont
+    sautés — jamais déclarés valides par défaut.
 
     Validation structurelle de premier niveau (clés obligatoires, types,
     schema_version) plus les invariants de contenu des champs sensibles :
-    position_dans_hemicycle/source_url, mode_declenchement, type_scrutin,
-    type_vote/texte_lie_id (motion_censure), type_rapport, stade_procedural,
+    position_dans_hemicycle/source_url, mode_declenchement, forme du
+    scrutin_id, type_rapport, stade_procedural,
     type_deposant, sort/base_juridique_irrecevabilite des amendements, et
     structure des champs optionnels de débats officiels dans interventions[]
     (theme_officiel, seance, dossier, source).
@@ -426,44 +442,58 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
                     f"Valeurs connues : {sorted(KNOWN_MODES_DECLENCHEMENT)}."
                 )
 
-    # type_vote == "motion_censure" doit toujours être lié à son texte 49.3 via
-    # texte_lie_id : une motion de censure n'est jamais fusionnée avec le vote
-    # sur le texte concerné (voir docstring du module).
+    # Depuis #432, `votes[]` est un MAPPING : `type_scrutin`, `type_vote`,
+    # `texte_lie_id` et `sort` ont migré vers `pivot_data/scrutins.json` et sont
+    # validés par `validate_scrutins_index`. Ne restent ici que les invariants
+    # du mapping lui-même — plus la règle 4, qui est une jointure et n'est donc
+    # vérifiable qu'avec l'index (voir `scrutins_index` ci-dessous).
     votes = profil.get("votes")
+    index_par_id = (scrutins_index.par_id if scrutins_index is not None else None)
     if isinstance(votes, list):
         for i, v in enumerate(votes):
             if not isinstance(v, dict):
                 continue
-            type_scrutin = v.get("type_scrutin")
-            if type_scrutin is not None and type_scrutin not in KNOWN_TYPES_SCRUTIN:
-                errors.append(
-                    f"votes[{i}].type_scrutin non reconnu : {type_scrutin!r}. "
-                    f"Valeurs connues : {sorted(KNOWN_TYPES_SCRUTIN)}."
-                )
-            type_vote = v.get("type_vote")
-            if type_vote is not None and type_vote not in KNOWN_TYPES_VOTE:
-                errors.append(
-                    f"votes[{i}].type_vote non reconnu : {type_vote!r}. "
-                    f"Valeurs connues : {sorted(KNOWN_TYPES_VOTE)}."
-                )
-            if type_vote == "motion_censure" and not v.get("texte_lie_id"):
-                errors.append(
-                    f"votes[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
-                    "(le texte 49.3 concerné doit être identifié, jamais fusionné "
-                    "avec le vote sur le texte)."
-                )
-            sort = v.get("sort")
-            if sort == "adopte_sans_vote_49_3" and v.get("position") is not None:
-                errors.append(
-                    f"votes[{i}] : sort='adopte_sans_vote_49_3' ne peut avoir de position "
-                    "(49.3 = absence de vote, jamais une position — AGENTS.md règle 4)."
-                )
+            scrutin_id = v.get("scrutin_id")
+            if scrutin_id is None:
+                # Un vote sans identifiant DOIT porter son enregistrement
+                # complet : sans lui, la donnée serait perdue au lieu d'être
+                # seulement non normalisée (AGENTS.md §2.5).
+                if not isinstance(v.get("scrutin_non_resolu"), dict):
+                    errors.append(
+                        f"votes[{i}] : 'scrutin_id' absent sans 'scrutin_non_resolu'. "
+                        "Un vote qu'on ne sait pas rattacher garde son enregistrement "
+                        "complet — il n'est ni supprimé, ni doté d'une clé inventée."
+                    )
+            else:
+                legislature, numero = decomposer_id(scrutin_id)
+                if legislature is None or numero is None:
+                    errors.append(
+                        f"votes[{i}].scrutin_id mal formé : {scrutin_id!r}. "
+                        "Forme attendue : 'an:<legislature>:<numero_scrutin>'."
+                    )
+                elif index_par_id is not None and scrutin_id not in index_par_id:
+                    errors.append(
+                        f"votes[{i}].scrutin_id introuvable dans l'index des scrutins : "
+                        f"{scrutin_id!r}. Le mapping pointerait dans le vide."
+                    )
             position = v.get("position")
             if position is not None and position not in KNOWN_POSITIONS:
                 errors.append(
                     f"votes[{i}].position non reconnue : {position!r}. "
                     f"Valeurs connues : {sorted(KNOWN_POSITIONS)}."
                 )
+            # Règle 4 : un 49.3 n'est jamais une position. Le `sort` vivant
+            # désormais sur le scrutin, la vérification est une jointure — elle
+            # n'est possible qu'avec l'index, et est silencieusement sautée
+            # sans lui plutôt que faussement validée.
+            if index_par_id is not None and position is not None:
+                scrutin = index_par_id.get(scrutin_id) or {}
+                if scrutin.get("sort") == "adopte_sans_vote_49_3":
+                    errors.append(
+                        f"votes[{i}] : le scrutin {scrutin_id} a sort='adopte_sans_vote_49_3' "
+                        f"mais ce vote porte une position ({position!r}) — 49.3 = absence de "
+                        "vote, jamais une position (AGENTS.md règle 4)."
+                    )
 
     # role / type_rapport / stade_procedural : nomenclature factuelle, jamais une
     # catégorie éditoriale de valorisation.
@@ -564,6 +594,95 @@ def validate_profil(profil: dict[str, Any]) -> list[str]:
             errors.append(
                 f"meta.provenance non reconnue : {provenance!r}. "
                 f"Valeurs connues : {sorted(KNOWN_PROVENANCES)}."
+            )
+
+    return errors
+
+
+def validate_scrutins_index(index: dict[str, Any]) -> list[str]:
+    """Vérifie `pivot_data/scrutins.json` (schéma `scrutins-v1`, #432).
+
+    Les invariants qui portaient sur `votes[]` avant la normalisation ont suivi
+    les champs : `type_scrutin`, `type_vote`, `texte_lie_id` (motion de censure)
+    et la forme de l'identifiant se vérifient désormais ici, une fois par
+    scrutin au lieu d'une fois par votant.
+
+    La règle 4 (49.3 = jamais une position) reste chez `validate_profil` : elle
+    joint un `sort` d'ici à une `position` de là-bas, et c'est côté profil que la
+    position vit.
+    """
+    errors: list[str] = []
+
+    if not isinstance(index, dict):
+        return ["L'index des scrutins doit être un objet JSON."]
+
+    version = index.get("schema_version")
+    if version != SCRUTINS_SCHEMA_VERSION:
+        errors.append(
+            f"schema_version de l'index : {version!r}, attendu {SCRUTINS_SCHEMA_VERSION!r}."
+        )
+
+    scrutins = index.get("scrutins")
+    if not isinstance(scrutins, list):
+        return errors + ["Clé 'scrutins' manquante ou de mauvais type (liste attendue)."]
+
+    vus: set[str] = set()
+    for i, scrutin in enumerate(scrutins):
+        if not isinstance(scrutin, dict):
+            errors.append(f"scrutins[{i}] n'est pas un objet.")
+            continue
+
+        scrutin_id = scrutin.get("id")
+        legislature, numero = decomposer_id(scrutin_id) if scrutin_id else (None, None)
+        if legislature is None or numero is None:
+            errors.append(
+                f"scrutins[{i}].id mal formé : {scrutin_id!r}. "
+                "Forme attendue : 'an:<legislature>:<numero_scrutin>'."
+            )
+        else:
+            # L'identifiant est dérivé de ces deux champs : une divergence
+            # rendrait la liste incohérente avec elle-même, et un consommateur
+            # qui décomposerait l'id n'obtiendrait pas ce que porte le champ.
+            if str(scrutin.get("legislature")) != legislature:
+                errors.append(
+                    f"scrutins[{i}] : id {scrutin_id!r} et legislature "
+                    f"{scrutin.get('legislature')!r} divergent."
+                )
+            if str(scrutin.get("numero_scrutin")) != numero:
+                errors.append(
+                    f"scrutins[{i}] : id {scrutin_id!r} et numero_scrutin "
+                    f"{scrutin.get('numero_scrutin')!r} divergent."
+                )
+            if scrutin_id in vus:
+                errors.append(f"scrutins[{i}] : identifiant en double ({scrutin_id!r}).")
+            vus.add(scrutin_id)
+
+        provenance = scrutin.get("legislature_provenance")
+        if provenance not in KNOWN_PROVENANCES_LEGISLATURE:
+            errors.append(
+                f"scrutins[{i}].legislature_provenance non reconnue : {provenance!r}. "
+                f"Valeurs connues : {sorted(KNOWN_PROVENANCES_LEGISLATURE)}. "
+                "Une législature dérivée ne doit jamais passer pour collectée."
+            )
+
+        type_scrutin = scrutin.get("type_scrutin")
+        if type_scrutin is not None and type_scrutin not in KNOWN_TYPES_SCRUTIN:
+            errors.append(
+                f"scrutins[{i}].type_scrutin non reconnu : {type_scrutin!r}. "
+                f"Valeurs connues : {sorted(KNOWN_TYPES_SCRUTIN)}."
+            )
+
+        type_vote = scrutin.get("type_vote")
+        if type_vote is not None and type_vote not in KNOWN_TYPES_VOTE:
+            errors.append(
+                f"scrutins[{i}].type_vote non reconnu : {type_vote!r}. "
+                f"Valeurs connues : {sorted(KNOWN_TYPES_VOTE)}."
+            )
+        if type_vote == "motion_censure" and not scrutin.get("texte_lie_id"):
+            errors.append(
+                f"scrutins[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
+                "(le texte 49.3 concerné doit être identifié, jamais fusionné "
+                "avec le vote sur le texte)."
             )
 
     return errors

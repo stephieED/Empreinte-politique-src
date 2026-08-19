@@ -91,6 +91,7 @@ from schema_groupe import (
 )
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_nosdeputes import normalize_nosdeputes
+from scrutins_index import ScrutinsIndex, charger as charger_scrutins, decomposer_id, DEFAULT_SCRUTINS_PATH
 
 
 # ---------------------------------------------------------------------------
@@ -241,36 +242,63 @@ def _votes_de_legislature(
     agrégerait les scrutins de la 17e dès qu'un membre y siège encore — un
     scrutin serait attribué à un groupe qui n'existait pas au moment du vote.
 
-    Un vote sans `legislature` est conservé : c'est la forme des votes
-    collectés avant #403, qui ne pouvaient venir que de la seule législature
-    alors interrogée (règle 5 — une donnée absente n'est pas une donnée
-    contradictoire). Un groupe sans législature (Sénat) ne filtre rien.
+    Depuis #432 la législature se lit dans `scrutin_id` (`an:16:4084`), et le
+    filtre est **exact**. Il l'était mal avant : un vote sans `legislature`
+    était conservé pour n'importe quelle législature de groupe
+    (`v.get("legislature") or legislature`), ce qui était juste tant que tous
+    les groupes étaient de la 16e — les 89 687 votes concernés en venaient tous
+    — mais aurait fait absorber ces mêmes votes par un groupe de la 17e. Le
+    repli n'est levé qu'ici, une fois la législature effectivement résolue sur
+    les données : le lever plus tôt aurait retiré ces 89 687 votes de la
+    cohésion de la 16e, ce qui aurait été une régression, pas une correction.
+
+    Un vote sans `scrutin_id` (scrutin non résolu, `scrutin_non_resolu`) est
+    **écarté** : il n'est rattachable à aucune législature. L'appelant en
+    compte le nombre et le remonte en warning — écarté, jamais silencieux.
+
+    Un groupe sans législature (Sénat) ne filtre rien.
     """
     votes = profil.get("votes") or []
     if not legislature:
         return list(votes)
-    return [v for v in votes if (v.get("legislature") or legislature) == str(legislature)]
+    retenus = []
+    for v in votes:
+        legislature_vote, _ = decomposer_id(v.get("scrutin_id"))
+        if legislature_vote == str(legislature):
+            retenus.append(v)
+    return retenus
+
+
+def _votes_non_resolus(profils: list[dict[str, Any]]) -> int:
+    """Nombre de votes qu'aucun identifiant ne rattache à une législature.
+
+    Zéro sur les données mesurées au 19/08/2026. Compté quand même, et remonté :
+    c'est exactement le genre d'exclusion qui, muette, transformerait un
+    dénominateur en donnée fausse (AGENTS.md §2.7)."""
+    return sum(
+        1
+        for profil in profils
+        for v in (profil.get("votes") or [])
+        if not v.get("scrutin_id")
+    )
 
 
 def _build_vote_index(
     profil: dict[str, Any], legislature: Optional[str] = None
 ) -> dict[str, dict[str, Any]]:
-    """Construit un index {numero_scrutin → vote_dict} pour un profil individuel.
+    """Construit un index {scrutin_id → vote_dict} pour un profil individuel.
 
-    Permet une recherche O(1) par numéro de scrutin lors du calcul de cohésion.
-    Les numéros de scrutin sont normalisés en chaînes pour garantir une comparaison
-    homogène.
-
-    L'index n'est unique par numéro qu'à législature donnée : le numéro de
-    scrutin AN repart de 1 à chaque législature (#403). `legislature` restreint
-    donc les votes retenus à celle du groupe — sans quoi le scrutin n° 1000 de
-    la 17e écraserait celui de la 16e, deux textes sans rapport.
+    Permet une recherche O(1) lors du calcul de cohésion. La clé est
+    `scrutin_id` depuis #432 : elle porte déjà la législature, là où
+    `numero_scrutin` seul faisait écraser le scrutin n° 1000 de la 16e par celui
+    de la 17e — deux textes sans rapport. `legislature` reste appliqué en amont
+    pour ne retenir que les scrutins du groupe.
     """
     index: dict[str, dict[str, Any]] = {}
     for v in _votes_de_legislature(profil, legislature):
-        num = v.get("numero_scrutin")
-        if num is not None:
-            index[str(num)] = v
+        scrutin_id = v.get("scrutin_id")
+        if scrutin_id:
+            index[str(scrutin_id)] = v
     return index
 
 
@@ -282,6 +310,7 @@ def _compute_cohesion_votes(
     profils: list[dict[str, Any]],
     seuil_quorum: float = 0.5,
     legislature: Optional[str] = None,
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> list[dict[str, Any]]:
     """Calcule la cohésion de vote pour chaque scrutin couvert par les membres.
 
@@ -302,27 +331,39 @@ def _compute_cohesion_votes(
         legislature: législature du groupe (ex. "16"), qui restreint les
                      scrutins retenus — voir ``_votes_de_legislature``. None
                      (Sénat, ou groupe sans législature) ne filtre rien.
+        scrutins_index: index partagé (#432). La `date` d'un scrutin n'est plus
+                     dans le profil : elle est nécessaire à l'éligibilité des
+                     membres, donc un scrutin absent de l'index est écarté du
+                     calcul plutôt que compté sur une date inventée.
 
     Returns:
         Liste de dicts conformes à la structure cohesion_votes[], triée par date
-        décroissante.
+        décroissante. Les entrées ne portent plus `date`/`texte`/`sort` : ces
+        champs sont ceux du scrutin, ils vivent dans l'index (#432).
     """
     # --- 1. Collecte de tous les scrutins ---
-    # Clé : numero_scrutin (str) → méta du scrutin. Unique à législature
-    # donnée seulement, d'où le filtrage préalable (#403).
-    scrutins: dict[str, dict[str, Any]] = {}
+    # Clé : scrutin_id → date du scrutin, lue dans l'index partagé. Un scrutin
+    # inconnu de l'index n'est pas datable, donc ses membres ne sont pas
+    # éligibles de façon vérifiable : il est écarté, et compté comme tel.
+    scrutins: dict[str, Optional[str]] = {}
+    scrutins_hors_index: set[str] = set()
     for profil in profils:
         for v in _votes_de_legislature(profil, legislature):
-            num = v.get("numero_scrutin")
-            if num is None:
+            scrutin_id = v.get("scrutin_id")
+            if not scrutin_id or scrutin_id in scrutins or scrutin_id in scrutins_hors_index:
                 continue
-            num_str = str(num)
-            if num_str not in scrutins:
-                scrutins[num_str] = {
-                    "date": v.get("date"),
-                    "texte": v.get("texte") or "",
-                    "sort": v.get("sort"),
-                }
+            scrutin = scrutins_index.get(scrutin_id) if scrutins_index is not None else None
+            if scrutin is None:
+                scrutins_hors_index.add(scrutin_id)
+                continue
+            scrutins[scrutin_id] = scrutin.get("date")
+
+    if scrutins_hors_index:
+        print(
+            f"  [!] {len(scrutins_hors_index)} scrutin(s) référencés par les membres mais "
+            f"absents de l'index partagé, écartés de la cohésion : "
+            f"{sorted(scrutins_hors_index)[:5]}"
+        )
 
     if not scrutins:
         return []
@@ -338,8 +379,7 @@ def _compute_cohesion_votes(
     _EXPRESSED = ("pour", "contre", "abstention")
 
     cohesion: list[dict[str, Any]] = []
-    for num_str, meta in scrutins.items():
-        vote_date = meta["date"]
+    for scrutin_id, vote_date in scrutins.items():
         parsed_vote_date = _parse_date(vote_date)
 
         compteurs: dict[str, int] = {
@@ -353,7 +393,7 @@ def _compute_cohesion_votes(
                 continue
             n_eligible += 1
 
-            vote = v_index.get(num_str)
+            vote = v_index.get(scrutin_id)
             if vote is None:
                 compteurs["absent"] += 1
             else:
@@ -393,10 +433,11 @@ def _compute_cohesion_votes(
             taux_coherence_hors_absents = None
 
         cohesion.append({
-            "numero_scrutin": num_str,
-            "date": meta["date"],
-            "texte": meta["texte"],
-            "sort": meta["sort"],
+            # `date`, `texte` et `sort` ont migré vers l'index partagé (#432) :
+            # ce sont des champs du SCRUTIN, recopiés jusque-là dans chacun des
+            # 5 groupes qui l'ont voté (12 546 entrées pour 4 104 scrutins,
+            # 3,15 Mo de méta répété ramenés à 1,04 Mo une seule fois).
+            "scrutin_id": scrutin_id,
             "membres_eligibles": n_eligible,
             "position_majoritaire": position_majoritaire,
             "pour": compteurs["pour"],
@@ -417,8 +458,10 @@ def _compute_cohesion_votes(
             "quorum_atteint": taux_participation >= seuil_quorum,
         })
 
-    # Tri par date décroissante (scrutins récents en premier)
-    cohesion.sort(key=lambda x: x["date"] or "", reverse=True)
+    # Tri par date décroissante (scrutins récents en premier). La date n'étant
+    # plus dans l'entrée, elle est relue dans l'index — l'ordre publié reste
+    # celui qu'attendent les consommateurs.
+    cohesion.sort(key=lambda x: scrutins.get(x["scrutin_id"]) or "", reverse=True)
     return cohesion
 
 
@@ -759,6 +802,7 @@ def compute_ecarts_cohesion_internes(
     profils: list[dict[str, Any]],
     cohesion_votes: list[dict[str, Any]],
     legislature: Optional[str] = None,
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> list[dict[str, Any]]:
     """Calcule, pour chaque membre, son écart de participation/cohérence vs le groupe.
 
@@ -788,7 +832,7 @@ def compute_ecarts_cohesion_internes(
     moyenne_participation_groupe = sum(participations) / len(participations) if participations else None
     moyenne_coherence_groupe = sum(coherences) / len(coherences) if coherences else None
 
-    coh_by_scrutin = {c["numero_scrutin"]: c for c in cohesion_votes}
+    coh_by_scrutin = {c["scrutin_id"]: c for c in cohesion_votes}
 
     resultats: list[dict[str, Any]] = []
     for profil in profils:
@@ -799,12 +843,18 @@ def compute_ecarts_cohesion_internes(
         n_present = 0
         n_alignes = 0
 
-        for num_str, c in coh_by_scrutin.items():
-            if not _member_eligible_at(mandats, c.get("date")):
+        for scrutin_id, c in coh_by_scrutin.items():
+            # La date du scrutin vient de l'index partagé depuis #432 : sans
+            # elle, l'éligibilité n'est pas vérifiable, et compter le membre
+            # comme éligible « par défaut » fausserait le dénominateur.
+            scrutin = scrutins_index.get(scrutin_id) if scrutins_index is not None else None
+            if scrutin is None:
+                continue
+            if not _member_eligible_at(mandats, scrutin.get("date")):
                 continue
             n_eligible += 1
 
-            vote = v_index.get(num_str)
+            vote = v_index.get(scrutin_id)
             if vote is None:
                 continue
             pos = vote.get("position")
@@ -903,6 +953,7 @@ def build_groupe_profile(
     profils: list[dict[str, Any]],
     seuil_quorum: float = 0.5,
     licence_donnees: str = "",
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -915,6 +966,10 @@ def build_groupe_profile(
         profils: liste de profils pivot v1 des membres du groupe.
         seuil_quorum: seuil de taux de participation pour quorum_atteint (défaut : 0.5).
         licence_donnees: texte de licence à inscrire dans meta.
+        scrutins_index: index partagé des scrutins (#432). Nécessaire au calcul
+                    de cohésion : la date d'un scrutin, qui détermine quels
+                    membres étaient éligibles, n'est plus dans les profils.
+                    Absent, la cohésion est vide plutôt que fausse.
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
@@ -948,8 +1003,16 @@ def build_groupe_profile(
 
     # --- Cohésion de vote ---
     cohesion_votes = _compute_cohesion_votes(
-        profils, seuil_quorum=seuil_quorum, legislature=legislature
+        profils, seuil_quorum=seuil_quorum, legislature=legislature,
+        scrutins_index=scrutins_index,
     )
+    n_non_resolus = _votes_non_resolus(profils)
+    if n_non_resolus:
+        warnings.append(
+            f"cohesion_votes : {n_non_resolus} vote(s) sans scrutin_id écarté(s) — "
+            "aucun rattachement de législature possible, donc aucun scrutin identifiable "
+            "(#432). Le dénominateur publié ne les compte pas."
+        )
 
     # --- Tags thématiques ---
     tags_agreges, tag_source = aggregate_tags_thematiques(profils)
@@ -1084,6 +1147,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--legislature", default=None, help="Ex. 16")
     parser.add_argument(
+        "--scrutins", default=str(DEFAULT_SCRUTINS_PATH), metavar="FICHIER",
+        help=(
+            "Index partagé des scrutins (#432, défaut : "
+            f"{DEFAULT_SCRUTINS_PATH}). La cohésion en dépend : la date d'un scrutin, "
+            "qui détermine les membres éligibles, n'est plus dans les profils."
+        ),
+    )
+    parser.add_argument(
         "--seuil-quorum",
         type=float,
         default=0.5,
@@ -1136,6 +1207,7 @@ def generate_groupe_profile_from_roster(
     licence_donnees: str = "",
     validate: bool = False,
     rapport_interne_path: Optional[Path] = None,
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
@@ -1216,6 +1288,7 @@ def generate_groupe_profile_from_roster(
         profils=profils,
         seuil_quorum=seuil_quorum,
         licence_donnees=licence_donnees,
+        scrutins_index=scrutins_index,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
@@ -1270,7 +1343,8 @@ def generate_groupe_profile_from_roster(
 
     if rapport_interne_path:
         rapport = compute_ecarts_cohesion_internes(
-            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature")
+            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature"),
+            scrutins_index=scrutins_index,
         )
         rapport_interne_path.parent.mkdir(parents=True, exist_ok=True)
         rapport_interne_path.write_text(
@@ -1354,6 +1428,19 @@ def main(argv: Optional[list[str]] = None) -> int:
         file=sys.stderr,
     )
 
+    scrutins_index = charger_scrutins(Path(args.scrutins))
+    if len(scrutins_index) == 0:
+        # Sans index, la cohésion sort vide plutôt que fausse : mieux vaut le
+        # dire ici que laisser lire un `cohesion_votes: []` comme un fait.
+        print(
+            f"  [!] Index des scrutins vide ou absent ({args.scrutins}) : la cohésion "
+            "de vote ne pourra pas être calculée (#432). Construire l'index avec "
+            "`python3 src/build_scrutins_index.py`.",
+            file=sys.stderr,
+        )
+    else:
+        print(f"→ Index des scrutins : {len(scrutins_index)} scrutin(s).", file=sys.stderr)
+
     profil_groupe = build_groupe_profile(
         groupe_id=args.groupe_id,
         groupe_sigle=args.groupe_sigle,
@@ -1363,6 +1450,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         profils=profils,
         seuil_quorum=args.seuil_quorum,
         licence_donnees=args.licence,
+        scrutins_index=scrutins_index,
     )
 
     if args.validate:
@@ -1376,7 +1464,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if args.rapport_interne:
         rapport = compute_ecarts_cohesion_internes(
-            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature")
+            profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature"),
+            scrutins_index=scrutins_index,
         )
         rapport_path = Path(args.rapport_interne)
         rapport_path.parent.mkdir(parents=True, exist_ok=True)

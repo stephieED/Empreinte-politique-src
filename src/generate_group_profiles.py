@@ -33,6 +33,7 @@ from typing import Any, Optional
 
 from group_profile import generate_groupe_profile_from_roster
 from group_roster import fetch_full_roster, filter_roster_by_sigle
+from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
 
 
 def _roster_key(groupe: dict[str, Any]) -> tuple[str, Optional[str]]:
@@ -47,10 +48,25 @@ def generate_all(
     out_dir: Path,
     merge_existing: bool = False,
     validate: bool = False,
+    scrutins_path: Path = DEFAULT_SCRUTINS_PATH,
 ) -> int:
     """Génère tous les profils de groupe de `groupes`, un seul fetch réseau par
     (roster_chambre, legislature) distincte. Retourne le nombre d'échecs."""
     import requests  # import tardif : non requis hors génération réelle
+
+    # Index des scrutins chargé UNE fois pour tous les groupes (#432) : 17 422
+    # scrutins, ~8,7 Mo — le relire par groupe multiplierait la lecture par 7
+    # pour un contenu identique. Même logique que le fetch de roster partagé
+    # ci-dessous.
+    scrutins_index = charger_scrutins(Path(scrutins_path))
+    if len(scrutins_index) == 0:
+        print(
+            f"  [!] Index des scrutins vide ou absent ({scrutins_path}) : la cohésion de "
+            "vote sortira vide pour tous les groupes (#432).",
+            file=sys.stderr,
+        )
+    else:
+        print(f"→ Index des scrutins : {len(scrutins_index)} scrutin(s).", file=sys.stderr)
 
     rosters_bruts: dict[tuple[str, Optional[str]], list[dict[str, Any]]] = {}
     echecs = 0
@@ -93,6 +109,7 @@ def generate_all(
                 out_path=out_path,
                 merge_existing=merge_existing,
                 validate=validate,
+                scrutins_index=scrutins_index,
             )
         except Exception as exc:  # noqa: BLE001 - un échec sur un groupe ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {groupe['groupe_id']} : {exc}", file=sys.stderr)

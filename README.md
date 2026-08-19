@@ -187,6 +187,33 @@ puis calendrier des législatures (une dérivation, tracée comme telle). Ce qu'
 ne résolvent pas échoue bruyamment — jamais de valeur par défaut (AGENTS.md
 §2.5). Rapport de référence : `audit/legislature_votes_20260819.md`.
 
+## 2 ter. Index partagé des scrutins (#432)
+
+Un scrutin est identique pour tous ses votants : seul `position` est propre au
+membre. Son méta vit donc une seule fois dans `pivot_data/scrutins.json`, et un
+profil ne garde que le mapping `{scrutin_id, position}`.
+
+```bash
+python3 src/build_scrutins_index.py                 # fusion additive avec l'existant
+python3 src/build_scrutins_index.py --no-merge      # reconstruction complète (corpus COMPLET)
+```
+
+À construire **avant** toute passe pivot : `generate_all_profiles.py --pivot`
+le fait automatiquement (`--scrutins`, `--skip-scrutins-index` pour ne pas le
+refaire). Mesuré sur les 209 profils committés :
+
+| | avant | après |
+| --- | --- | --- |
+| `votes[]` dans les profils | 179,8 Mo | 17,9 Mo |
+| index partagé | — | 8,1 Mo |
+| **total** | **179,8 Mo** | **26,0 Mo (−85,5 %)** |
+| `cohesion_votes` des groupes | 6,23 Mo | 3,41 Mo (−45,3 %) |
+
+Le même index sert les profils et les groupes : les 4 104 scrutins des groupes
+sont tous inclus dans les 17 422 des profils. C'est la seule dépendance entre
+fichiers de `pivot_data/` — un profil ne se lit plus seul pour ses votes, et
+`sync-data.mjs` copie l'index dans `public/data/`.
+
 ## 3. Generate all candidate profiles (batch)
 
 ```bash

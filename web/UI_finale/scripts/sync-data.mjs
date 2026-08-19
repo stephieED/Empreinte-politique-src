@@ -3,7 +3,7 @@
 // manifest listant les candidats et groupes réellement disponibles. Exécuté
 // avant `dev`/`build` (voir package.json) car Vite ne sert pas de fichiers
 // situés hors du dossier du projet.
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -16,10 +16,26 @@ const pivotProfilesDir = path.join(repoRoot, 'pivot_data', 'profiles');
 const pivotGroupesDir = path.join(repoRoot, 'pivot_data', 'groupes');
 const pivotGouvernementsDir = path.join(repoRoot, 'pivot_data', 'gouvernements');
 const candidatsPath = path.join(repoRoot, 'raw_data', 'candidats.json');
+const scrutinsPath = path.join(repoRoot, 'pivot_data', 'scrutins.json');
 
 mkdirSync(path.join(outDir, 'profiles'), { recursive: true });
 mkdirSync(path.join(outDir, 'groupes'), { recursive: true });
 mkdirSync(path.join(outDir, 'gouvernements'), { recursive: true });
+
+// --- scrutins.json (index partagé, #432) ---
+// Depuis la normalisation des votes, un profil ne porte plus que le mapping
+// { scrutin_id, position } : sans cet index, l'UI n'a ni date, ni texte, ni
+// sort à afficher. Copié en premier, et son absence est signalée plutôt que
+// silencieuse — c'est la seule dépendance entre fichiers de pivot_data/, et
+// une copie oubliée viderait les votes de toutes les vues d'un coup.
+if (existsSync(scrutinsPath)) {
+  cpSync(scrutinsPath, path.join(outDir, 'scrutins.json'));
+} else {
+  console.warn(
+    `sync-data : ${scrutinsPath} absent — les votes s'afficheront vides (#432). ` +
+    'Construire l\'index : python3 src/build_scrutins_index.py',
+  );
+}
 
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));

@@ -21,6 +21,8 @@ import time
 from typing import Any, Optional
 
 from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from scrutins_index import ScrutinsIndex, cle_scrutin
+from scrutins_legislature import legislature_du_calendrier
 
 # Correspondance chambre (clé du profil brut) → valeur normalisée du pivot.
 _CHAMBRE_MAP: dict[str, str] = {
@@ -47,28 +49,63 @@ def _first(*values: Any) -> Any:
 # Normaliseurs de sections individuelles
 # ---------------------------------------------------------------------------
 
-def _normalize_vote(v: dict[str, Any]) -> dict[str, Any]:
-    """Normalise un vote brut NosDéputés/AN vers le format pivot."""
-    return {
-        "date": v.get("date"),
-        "texte": v.get("titre") or None,
+def _normalize_vote(
+    v: dict[str, Any], scrutins_index: Optional[ScrutinsIndex] = None
+) -> dict[str, Any]:
+    """Normalise un vote brut vers le **mapping** pivot (#432).
+
+    Un scrutin est identique pour tous ses votants : son méta (`texte`, `date`,
+    `sort`…) vit une seule fois dans `pivot_data/scrutins.json`, et le profil ne
+    garde que ce qui est propre au membre. Mesuré : 179,8 → 18,0 Mo de mapping
+    plus 8,7 Mo de liste partagée, soit −85 %.
+
+    `groupe_au_moment_du_vote` n'est écrit que s'il est renseigné. Son absence
+    signifie « non renseigné », exactement comme `null` — exception documentée
+    à la convention « missing = null » d'AGENTS.md §4, et elle seule : le champ
+    n'est aujourd'hui jamais peuplé (0 sur 398 085) et l'écrire quand même
+    coûtait **12,1 Mo de `null`, soit 40 % du mapping**.
+
+    Résolution de l'identifiant, dans cet ordre :
+
+    1. **l'index** — il porte la résolution de corpus (jointure sur un jumeau
+       étiqueté, `scrutins_legislature`), la seule qui voie au-delà du profil ;
+    2. **la législature du vote lui-même**, quand il la porte ;
+    3. **le calendrier des législatures**, dérivation locale et déterministe.
+
+    Si rien ne résout, le vote n'est **ni supprimé ni doté d'une clé inventée** :
+    il conserve son enregistrement complet sous `scrutin_non_resolu`, avec
+    `scrutin_id` à `null`. Une donnée qu'on ne sait pas normaliser reste une
+    donnée (AGENTS.md §2.5) — et elle est visible plutôt que muette.
+    """
+    numero = str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None
+    legislature = str(v["legislature"]) if v.get("legislature") is not None else None
+
+    scrutin_id = scrutins_index.identifiant_de_vote(v) if scrutins_index is not None else None
+    if scrutin_id is None and numero is not None:
+        legislature_resolue = legislature or legislature_du_calendrier(v.get("date"))
+        if legislature_resolue:
+            scrutin_id = cle_scrutin(legislature_resolue, numero)
+
+    vote: dict[str, Any] = {
+        "scrutin_id": scrutin_id,
         "position": v.get("position") or None,
-        "numero_scrutin": str(v["numero_scrutin"]) if v.get("numero_scrutin") is not None else None,
-        # Législature du scrutin (#403) : le numéro de scrutin repart de 1 à
-        # chaque législature, donc lui seul n'identifie pas un scrutin dès lors
-        # que plusieurs législatures sont agrégées. `null` pour les votes
-        # collectés avant #403 et pour les sources qui ne la fournissent pas.
-        "legislature": str(v["legislature"]) if v.get("legislature") is not None else None,
-        "sort": v.get("sort"),
-        "type_scrutin": v.get("type_scrutin"),
-        "type_vote": v.get("type_vote") or "vote_texte",
-        "texte_lie_id": v.get("texte_lie_id"),
-        # groupe_au_moment_du_vote : null par défaut ; enrichissable en post-traitement
-        # (NosDéputés/AN open data ne fournit pas l'historique de groupe par scrutin).
-        "groupe_au_moment_du_vote": v.get("groupe_au_moment_du_vote"),
-        # url_source présent uniquement dans les votes fallback nosdeputes
-        "source_url": v.get("url_source"),
     }
+    if v.get("groupe_au_moment_du_vote"):
+        vote["groupe_au_moment_du_vote"] = v["groupe_au_moment_du_vote"]
+
+    if scrutin_id is None:
+        vote["scrutin_non_resolu"] = {
+            "numero_scrutin": numero,
+            "legislature": legislature,
+            "date": v.get("date"),
+            "texte": v.get("texte") or v.get("titre") or None,
+            "sort": v.get("sort"),
+            "type_scrutin": v.get("type_scrutin"),
+            "type_vote": v.get("type_vote") or "vote_texte",
+            "texte_lie_id": v.get("texte_lie_id"),
+            "source_url": v.get("source_url") or v.get("url_source"),
+        }
+    return vote
 
 
 def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
@@ -195,6 +232,7 @@ def normalize_nosdeputes(
     raw_profile: dict[str, Any],
     parti: Optional[str] = None,
     provenance: str = "candidat_declare",
+    scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> dict[str, Any]:
     """Convertit un profil brut NosDéputés/NosSénateurs vers le schéma pivot v1.
 
@@ -202,6 +240,12 @@ def normalize_nosdeputes(
         raw_profile: dict produit par candidate_profile.build_profile().
         parti: parti politique de l'élu (optionnel ; peut être passé depuis
                candidats.json car non fourni par l'API NosDéputés).
+        scrutins_index: index partagé des scrutins (#432). Porte la résolution
+               de corpus de la législature — la seule qui voie au-delà du
+               profil courant. Facultatif : sans lui, chaque vote se résout sur
+               sa propre législature puis sur le calendrier, ce qui suffit pour
+               un profil isolé mais ne peut pas exploiter un jumeau étiqueté
+               vivant dans un autre fichier.
         provenance: "candidat_declare" (défaut) ou "roster_groupe" — voir
                     schema_pivot.KNOWN_PROVENANCES. Propagé tel quel vers
                     meta.provenance du profil pivot.
@@ -263,7 +307,7 @@ def normalize_nosdeputes(
 
     # --- Sections principales ---
     profil["mandats"] = [_normalize_mandat(m) for m in (raw_profile.get("mandats") or [])]
-    profil["votes"] = [_normalize_vote(v) for v in (raw_profile.get("votes") or [])]
+    profil["votes"] = [_normalize_vote(v, scrutins_index) for v in (raw_profile.get("votes") or [])]
     profil["textes_portes"] = [_normalize_texte_porte(d) for d in (raw_profile.get("dossiers_legislatifs") or [])]
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
     profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
