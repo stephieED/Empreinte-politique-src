@@ -12,6 +12,7 @@ from audit_volumetrie_profils import (
     _poids_champ,
     analyser_profil,
     analyser_repertoires,
+    compute_historique_git,
     compute_leviers,
     compute_projection,
     compute_volumetrie,
@@ -256,3 +257,134 @@ def test_entete_distingue_population_et_echantillon():
     md = generate_markdown_report(_rapport(nb_profils=752, cible=752))
     assert "Population : **752 profils**" in md
     assert "Ratios" in md and "**1 profils**" in md
+
+
+# ---------------------------------------------------------------------------
+# compute_historique_git — la mesure comparable aux seuils GitHub
+#
+# Ce script comparait un total d'ARBRE DE TRAVAIL aux seuils GitHub, qui portent
+# sur le DÉPÔT. L'écart n'est pas marginal : mesuré le 19/08/2026, les profils
+# JSON se déltifient d'un facteur 10 à 14 (3 017 Mo d'arbre de travail pour
+# 670 Mo de `.git`). Le cadrage de #429 a repris cette erreur telle quelle et
+# annonçait une urgence d'un ordre de grandeur au-dessus du réel.
+#
+# Et surtout : la photo ne grandit qu'avec le nombre de profils, l'historique
+# grandit à CHAQUE run. C'est le coût par run qui décide.
+# ---------------------------------------------------------------------------
+
+def _init_depot(tmp_path: Path) -> Path:
+    import subprocess
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp_path, check=True)
+    return tmp_path
+
+
+def _commit(depot: Path, message: str) -> None:
+    import subprocess
+    subprocess.run(["git", "add", "-A"], cwd=depot, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=depot, check=True)
+
+
+def test_historique_git_mesure_chaque_repertoire(tmp_path, monkeypatch):
+    depot = _init_depot(tmp_path)
+    (depot / "profils").mkdir()
+    _ecrire(depot / "profils", "alice.json", {"votes": [{"x": i} for i in range(200)]})
+    _commit(depot, "initial")
+    monkeypatch.chdir(depot)
+
+    hist = compute_historique_git([Path("profils")])
+
+    assert hist["octets_total"] > 0
+    assert hist["par_repertoire"]["profils"] > 0
+    assert hist["par_repertoire"]["profils"] <= hist["octets_total"]
+
+
+def test_historique_git_isole_le_cout_du_dernier_run_de_donnees(tmp_path, monkeypatch):
+    """Le coût par run est le chiffre qui décide : il s'ajoute définitivement,
+    run après run, alors que la photo ne bouge qu'avec le nombre de profils."""
+    depot = _init_depot(tmp_path)
+    (depot / "profils").mkdir()
+    _ecrire(depot / "profils", "alice.json", {"votes": [{"x": i} for i in range(50)]})
+    _commit(depot, "initial")
+    _ecrire(depot / "profils", "bob.json", {"votes": [{"y": i} for i in range(500)]})
+    _commit(depot, "chore: mise à jour automatique des données (2026-08-19)")
+    monkeypatch.chdir(depot)
+
+    run = compute_historique_git([Path("profils")])["dernier_run"]
+
+    assert run is not None
+    assert len(run["sha"]) == 7
+    assert run["octets"] > 0
+    assert run["par_repertoire"]["profils"] > 0
+
+
+def test_historique_git_sans_commit_de_donnees_ne_rend_pas_de_run(tmp_path, monkeypatch):
+    depot = _init_depot(tmp_path)
+    (depot / "profils").mkdir()
+    _ecrire(depot / "profils", "alice.json", {"votes": []})
+    _commit(depot, "initial")
+    monkeypatch.chdir(depot)
+
+    assert compute_historique_git([Path("profils")])["dernier_run"] is None
+
+
+def test_historique_git_hors_depot_rend_un_dict_vide(tmp_path, monkeypatch):
+    """La volumétrie de l'arbre de travail reste utile seule : elle ne doit pas
+    dépendre de la présence d'un dépôt git."""
+    monkeypatch.chdir(tmp_path)
+    assert compute_historique_git([Path("profils")]) == {}
+
+
+def test_rapport_signale_que_la_projection_porte_sur_l_arbre_de_travail():
+    """La confusion coûte cher : #429 a été cadrée sur une projection d'arbre de
+    travail comparée à un seuil de dépôt."""
+    rapport = {
+        "volumetrie": {
+            "nb_profils": 2, "octets_total": 2_000_000, "octets_median": 1_000_000,
+            "octets_moyen": 1_000_000, "octets_max": 1_000_000, "fichier_max": "a.json",
+        },
+        "leviers": [],
+        "projection": compute_projection(
+            {"nb_profils": 2, "octets_total": 2_000_000}, cible=752, facteur_duplication=1.0
+        ),
+        "historique_git": {},
+    }
+    markdown = generate_markdown_report(rapport)
+
+    assert "arbre de travail" in markdown
+    assert "pas la taille du dépôt" in markdown
+    # Le piège du comptage en fichiers, qui m'a fait produire une mesure fausse.
+    assert "compte des **fichiers**" in markdown
+
+
+def test_rapport_affiche_l_historique_quand_il_est_mesure():
+    rapport = {
+        "volumetrie": {
+            "nb_profils": 1, "octets_total": 1000, "octets_median": 1000,
+            "octets_moyen": 1000, "octets_max": 1000, "fichier_max": "a.json",
+        },
+        "leviers": [],
+        "projection": {},
+        "historique_git": {
+            "octets_total": 350 * 1024 ** 2,
+            "par_repertoire": {"pivot_data/profiles": 109 * 1024 ** 2},
+            "dernier_run": {"sha": "a125e9e", "octets": 49 * 1024 ** 2, "par_repertoire": {}},
+        },
+    }
+    markdown = generate_markdown_report(rapport)
+
+    assert "Historique git" in markdown
+    assert "a125e9e" in markdown
+    assert "définitivement" in markdown
+
+
+def test_rapport_sans_historique_n_affiche_pas_la_section():
+    rapport = {
+        "volumetrie": {
+            "nb_profils": 1, "octets_total": 1000, "octets_median": 1000,
+            "octets_moyen": 1000, "octets_max": 1000, "fichier_max": "a.json",
+        },
+        "leviers": [], "projection": {}, "historique_git": {},
+    }
+    assert "Historique git" not in generate_markdown_report(rapport)

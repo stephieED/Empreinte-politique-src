@@ -46,6 +46,7 @@ Usage :
 import argparse
 import gzip
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Optional
@@ -59,7 +60,13 @@ CHAMPS_EXTERNALISABLES: tuple[tuple[str, ...], ...] = (
     ("interventions",),
 )
 
-# Seuils GitHub, pour situer la projection (documentation GitHub, 2026-08).
+# Seuils GitHub (documentation GitHub, 2026-08). Ils portent sur le **dépôt** —
+# ce qu'on clone, donc l'historique compressé — et non sur l'arbre de travail.
+# La distinction n'est pas académique : mesuré le 19/08/2026, les profils JSON
+# se déltifient d'un facteur 10 à 14 (3 017 Mo d'arbre de travail pour 670 Mo
+# de `.git`). Comparer un total d'arbre de travail à ces seuils surestime donc
+# le problème d'un ordre de grandeur — c'est l'erreur que faisait ce script, et
+# elle a été reprise telle quelle dans le cadrage de #429.
 SEUIL_PUSH_GO = 2.0
 SEUIL_DEPOT_RECOMMANDE_GO = 5.0
 
@@ -202,10 +209,81 @@ def compute_leviers(volumetrie: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(leviers, key=lambda l: -l["gain_octets"])
 
 
+def compute_historique_git(repertoires: list[Path]) -> dict[str, Any]:
+    """Coût de chaque répertoire dans l'historique git, et coût du dernier
+    commit de données.
+
+    C'est **cette** mesure qu'il faut comparer aux seuils GitHub, pas celle de
+    l'arbre de travail : les seuils portent sur le dépôt. Et c'est surtout le
+    coût **par run** qui décide, parce qu'un commit de données ajoute de
+    l'historique définitivement — la photo, elle, ne grandit qu'avec le nombre
+    de profils.
+
+    Renvoie un dict vide hors dépôt git ou si `git` est indisponible : la
+    volumétrie de l'arbre de travail reste utile seule, elle ne doit pas
+    dépendre de ça.
+    """
+    def _disk_usage(*args: str) -> Optional[int]:
+        try:
+            sortie = subprocess.run(
+                ["git", "rev-list", "--disk-usage", "--objects", *args],
+                capture_output=True, text=True, check=True, timeout=120,
+            ).stdout.strip()
+            return int(sortie) if sortie else None
+        except (subprocess.SubprocessError, OSError, ValueError):
+            return None
+
+    total = _disk_usage("--all")
+    if total is None:
+        return {}
+
+    par_repertoire = {}
+    for repertoire in repertoires:
+        octets = _disk_usage("--all", "--", str(repertoire))
+        if octets is not None:
+            par_repertoire[str(repertoire)] = octets
+
+    # Coût du dernier commit de données : le meilleur estimateur du coût par
+    # run, seul chiffre qui dise à quelle vitesse le dépôt grossit.
+    dernier_run = None
+    try:
+        sha = subprocess.run(
+            ["git", "log", "-1", "--format=%H", "--grep=mise à jour automatique des données"],
+            capture_output=True, text=True, check=True, timeout=30,
+        ).stdout.strip()
+        if sha:
+            dernier_run = {
+                "sha": sha[:7],
+                "octets": _disk_usage(sha, "--not", f"{sha}^"),
+                "par_repertoire": {
+                    str(r): _disk_usage(sha, "--not", f"{sha}^", "--", str(r))
+                    for r in repertoires
+                },
+            }
+    except (subprocess.SubprocessError, OSError):
+        pass
+
+    return {
+        "octets_total": total,
+        "par_repertoire": par_repertoire,
+        "dernier_run": dernier_run,
+    }
+
+
 def compute_projection(
     volumetrie: dict[str, Any], cible: int, facteur_duplication: float
 ) -> dict[str, Any]:
     """Projection à `cible` profils. Fonction pure.
+
+    ⚠️ Elle projette la taille de l'**arbre de travail**, c'est-à-dire le coût
+    d'un checkout — pas la taille du dépôt. Les seuils GitHub, eux, portent sur
+    le dépôt : voir `compute_historique_git`.
+
+    `cible` est un nombre de **fichiers**, pas de profils : `octets_total` est
+    divisé par `nb_profils`, qui compte les fichiers scannés. Passer deux
+    répertoires avec `facteur_duplication=1.0` projette donc 752 *fichiers*,
+    soit ~376 profils — ni l'état actuel, ni le scénario d'un seul répertoire.
+    Le bon usage est **un seul répertoire**, avec le facteur en paramètre.
 
     `facteur_duplication` vaut 2,0 quand `raw_data/profiles` et
     `pivot_data/profiles` sont tous deux versionnés — ils portent des volumes
@@ -288,16 +366,59 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             f"À **{proj['cible']} profils**, facteur de duplication "
             f"`raw`/`pivot` = {proj['facteur_duplication']} :",
             "",
-            f"- **{proj['go_projetes']} Go** de données versionnées ;",
-            f"- seuil de push GitHub ({SEUIL_PUSH_GO} Go) : "
-            f"{'**dépassé**' if proj['depasse_seuil_push'] else 'respecté'} ;",
-            f"- seuil de dépôt recommandé ({SEUIL_DEPOT_RECOMMANDE_GO} Go) : "
-            f"{'**dépassé**' if proj['depasse_seuil_depot'] else 'respecté'} ;",
-            f"- seuil atteint vers **{proj['profils_avant_seuil_depot']} profils**.",
+            f"- **{proj['go_projetes']} Go** dans l'arbre de travail — c'est le coût "
+            "d'un *checkout*, pas la taille du dépôt ;",
+            f"- à titre indicatif, les seuils GitHub ({SEUIL_PUSH_GO} Go par push, "
+            f"{SEUIL_DEPOT_RECOMMANDE_GO} Go recommandés) portent sur le **dépôt** : "
+            "voir la section « Historique git » ci-dessous, qui est la mesure à leur "
+            "comparer.",
+            "",
+            "> ⚠️ `cible` compte des **fichiers**, pas des profils. Deux répertoires "
+            "passés avec `--facteur-duplication 1.0` projettent 752 *fichiers*, soit "
+            "~376 profils. Le bon usage est un seul répertoire, avec le facteur en "
+            "paramètre.",
             "",
             _avertissement_representativite(vol, proj),
             "",
         ]
+
+    hist = rapport.get("historique_git") or {}
+    if hist:
+        lignes += [
+            "## Historique git — la mesure à comparer aux seuils GitHub",
+            "",
+            f"Dépôt entier (objets atteignables) : **{_mo(hist['octets_total'])}**.",
+            "",
+        ]
+        if hist.get("par_repertoire"):
+            lignes += [
+                "| Répertoire | Arbre de travail | Historique | Facteur |",
+                "| --- | --- | --- | --- |",
+            ]
+            for rep, octets in hist["par_repertoire"].items():
+                arbre = sum(
+                    f.stat().st_size for f in Path(rep).glob("*.json")
+                ) if Path(rep).is_dir() else 0
+                facteur = f"× {arbre / octets:.1f}" if octets else "—"
+                lignes.append(f"| `{rep}` | {_mo(arbre)} | {_mo(octets)} | {facteur} |")
+            lignes.append("")
+        run = hist.get("dernier_run") or {}
+        if run.get("octets"):
+            lignes += [
+                f"**Coût du dernier commit de données** (`{run['sha']}`) : "
+                f"**{_mo(run['octets'])}** ajoutés à l'historique, définitivement.",
+                "",
+                "C'est le chiffre qui décide : la photo ne grandit qu'avec le nombre de "
+                "profils, l'historique grandit à **chaque run**. Un dépôt qui reste sous "
+                "les seuils aujourd'hui peut les franchir en quelques semaines de runs "
+                "quotidiens, sans qu'un seul profil ne s'alourdisse.",
+                "",
+            ]
+            details = {k: v for k, v in (run.get("par_repertoire") or {}).items() if v}
+            if details:
+                lignes += ["| Répertoire | Coût du dernier run |", "| --- | --- |"]
+                lignes += [f"| `{k}` | {_mo(v)} |" for k, v in details.items()]
+                lignes.append("")
 
     lignes += [
         "## Leviers, tous sans perte d'information",
@@ -416,6 +537,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              "Le total, la médiane et le maximum restent mesurés sur TOUS les "
              "fichiers ; seuls les ratios compact/gzip/champs sont échantillonnés.",
     )
+    parser.add_argument(
+        "--sans-historique-git", action="store_true",
+        help="Ne pas mesurer l'historique git (`git rev-list --disk-usage`). Utile hors "
+             "dépôt, ou sur un très gros dépôt où la mesure traîne ; le rapport perd "
+             "alors la seule mesure comparable aux seuils GitHub.",
+    )
     parser.add_argument("--out", metavar="FICHIER", help="Rapport Markdown.")
     parser.add_argument("--out-json", metavar="FICHIER", help="Rapport JSON.")
     return parser
@@ -435,6 +562,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         "volumetrie": volumetrie,
         "leviers": compute_leviers(volumetrie),
         "projection": compute_projection(volumetrie, args.cible, args.facteur_duplication),
+        "historique_git": (
+            {} if args.sans_historique_git else compute_historique_git(repertoires)
+        ),
         "erreurs_lecture": erreurs,
     }
 
