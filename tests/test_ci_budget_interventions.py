@@ -4,9 +4,9 @@ temps mur doivent rester d'accord entre eux.
 Contexte. `timeout-minutes: 5` sur `extract-an` était justifié par des durées
 mesurées « 1m18s-2m10s » — toutes relevées dans le mode par défaut, celui qui
 lève `--skip-interventions`. Employé avec `collect_interventions=true`, ce
-timeout tuait le shard : 4 shards sur 8 du run 32302557156, 5 sur 5 relevés du
-run 32379928098. Le correctif tient en deux valeurs couplées, écrites à deux
-endroits différents du même fichier :
+timeout tuait le shard : 4 shards sur 8 du run 32302557156, puis 8 sur 8 du
+run 32379928098 — ce dernier n'a collecté aucun profil AN. Le correctif tient
+en deux valeurs couplées, écrites à deux endroits différents du même fichier :
 
 - `timeout-minutes` d'`extract-an`, conditionnel au mode ;
 - `--budget-interventions-secondes` du step d'extraction, qui borne la collecte
@@ -37,10 +37,10 @@ WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 
 # Provision de préambule de job : `actions/checkout`, `setup-python`, `pip
 # install`, restauration des deux caches, téléchargement de l'artifact
-# d'amendements. Mesurée entre 30 s et 193 s sur les 29 shards `extract-an` des
-# runs 32233766814, 32288588518, 32302557156 et 32379928098 — c'est ce que le
-# `timeout-minutes` couvre en plus de la collecte, et ce que le budget interne,
-# lui, ne couvre pas.
+# d'amendements. Mesurée entre 30 s et 193 s sur les 32 shards `extract-an`
+# des runs 32233766814, 32288588518, 32302557156 et 32379928098 — c'est ce
+# que le `timeout-minutes` couvre en plus de la collecte, et ce que le
+# budget interne, lui, ne couvre pas.
 PREAMBULE_PROVISIONNE_SECONDES = 240
 
 
@@ -86,7 +86,7 @@ def _budget_du_script() -> int:
     assert motif, (
         "Le step d'extraction ne passe plus `--budget-interventions-secondes`. "
         "Sans budget interne, un shard tué par `timeout-minutes` ne publie AUCUN "
-        "profil (constaté : « Publication : 0 profil(s) » sur les 9 shards tués "
+        "profil (constaté : « Publication : 0 profil(s) » sur les 12 shards tués "
         "des runs 32302557156 et 32379928098)."
     )
     return int(motif.group(1))

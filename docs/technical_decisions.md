@@ -221,8 +221,8 @@ la sous-issue D (#493, `needs-human`), et #492 ne la préempte pas.
 
 `timeout-minutes: 5` sur `extract-an` tuait les shards dès que
 `collect_interventions=true`. Sur les deux seuls runs connus dans ce mode :
-4 shards tués sur 8 (run `32302557156`, 19/08 21:11), puis 5 sur 5 relevés
-(run `32379928098`, 20/08 14:24).
+4 shards tués sur 8 (run `32302557156`, 19/08 21:11), puis **8 sur 8** (run
+`32379928098`, 20/08 14:24) — ce dernier n'a collecté aucun profil AN.
 
 ### Deux chiffres, deux populations
 
@@ -235,7 +235,7 @@ En séparant les populations, le relevé par step change complètement de sens :
 | population | n | job total | dont extraction | dont préambule |
 | --- | ---: | ---: | ---: | ---: |
 | `collect_interventions=false` (runs `32233766814`, `32288588518`) | 16 shards | 117-207 s | **8-18 s** | 107-193 s |
-| `collect_interventions=true` (runs `32302557156`, `32379928098`) | 13 shards | 208-321 s | 59-286 s | 30-149 s |
+| `collect_interventions=true` (runs `32302557156`, `32379928098`) | 16 shards | 208-321 s | 59-286 s | 30-149 s |
 
 Le « pire cas normal » de 2m10 n'était donc **pas** un coût d'extraction : dans
 le mode par défaut, l'extraction coûte 8 à 18 secondes. Les deux minutes sont le
@@ -290,8 +290,8 @@ préférer. **Un shard tué par `timeout-minutes` ne publie rien du tout.**
 L'issue supposait l'inverse (« ce qui avait été collecté avant la coupure est
 publié ») parce que les steps `Profils écrits par ce job` et `Upload artifact
 AN` s'exécutent bien, en `success`, sur un job tué. Ils s'exécutent — et
-rapportent `Publication : 0 profil(s) écrits par ce job`, sur les 9 shards tués
-des deux runs, sans exception. Le profil n'est écrit qu'à la fin de la collecte
+rapportent `Publication : 0 profil(s) écrits par ce job`, sur les 12 shards tués
+des deux runs, vérifiés un par un, sans exception. Le profil n'est écrit qu'à la fin de la collecte
 du candidat : coupé avant, le manifeste est vide et l'artifact aussi. Cinq
 minutes de runner par shard pour aucune donnée.
 

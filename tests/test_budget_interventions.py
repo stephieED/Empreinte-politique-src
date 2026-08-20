@@ -3,7 +3,7 @@
 Ce que ces tests protègent, et qui n'est pas le simple fait de « s'arrêter à
 temps » : **ce qui a été collecté avant l'arrêt doit être conservé, et l'arrêt
 doit laisser une trace exploitable**. C'est exactement ce que le
-`timeout-minutes` du job ne sait pas faire — sur les 9 shards `extract-an` tués
+`timeout-minutes` du job ne sait pas faire — sur les 12 shards `extract-an` tués
 des runs 32302557156 et 32379928098, le log ne dit que
 `##[error]The operation was canceled` et le step de publication rapporte
 « 0 profil(s) écrits par ce job ».

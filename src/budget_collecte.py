@@ -3,7 +3,7 @@
 Pourquoi un budget INTERNE alors qu'un `timeout-minutes` existe déjà.
 `timeout-minutes` borne le *job*, pas la collecte : il couvre aussi
 `actions/checkout`, `setup-python`, `pip install`, la restauration des caches
-et le téléchargement de l'artifact d'amendements. Mesuré sur les 29 shards
+et le téléchargement de l'artifact d'amendements. Mesuré sur les 32 shards
 `extract-an` des runs 32233766814, 32288588518, 32302557156 et 32379928098,
 ce préambule va de **30 s à 193 s** — soit, sur un timeout de 5 min, entre
 107 s et 270 s réellement laissés à l'extraction, sans que rien ne le dise.
@@ -14,8 +14,8 @@ Et surtout : un dépassement de `timeout-minutes` tue le process. GitHub
 affiche `##[error]The operation was canceled`, qui ne dit ni combien avait été
 collecté, ni où la collecte en était — et `generate_all_profiles.py` n'atteint
 jamais son écriture de profil, donc le shard publie **zéro** profil (constaté
-sur les 4 shards tués du run 32302557156 et les 5 du run 32379928098 :
-« Publication : 0 profil(s) écrits par ce job »). Un budget interne, lui, rend
+sur les 4 shards tués du run 32302557156 et les 8 du run 32379928098, vérifiés
+un par un : « Publication : 0 profil(s) écrits par ce job »). Un budget interne, lui, rend
 la main : ce qui est collecté est écrit, et ce qui ne l'est pas est déclaré
 dans `meta.warnings[]` (règle éditoriale 2.5 — une collecte tronquée ne doit
 jamais se lire comme une collecte complète).

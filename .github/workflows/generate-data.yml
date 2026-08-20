@@ -352,10 +352,10 @@ jobs:
     #   setup-python, pip, restauration des caches, artifact d'amendements) :
     #   107-193 s. C'est lui que ce timeout borne en réalité, pas la collecte.
     #
-    # collect_interventions=true → 9 min. Mesuré sur les 13 shards des runs
+    # collect_interventions=true → 9 min. Mesuré sur les 16 shards des runs
     #   32302557156 (19/08 21:11) et 32379928098 (20/08 14:24), les seuls connus
     #   dans ce mode : les 4 extractions qui sont allées au bout ont pris
-    #   59-160 s, les 9 autres ont été tuées à 173-286 s d'extraction — non pas
+    #   59-160 s, les 12 autres ont été tuées à 173-286 s d'extraction — non pas
     #   parce qu'elles étaient lentes, mais parce que le préambule avait déjà
     #   consommé jusqu'à 149 s des 5 min. Le mode ajoute trois charges que le
     #   mode par défaut n'a pas : recherche NosDéputés (90 s mesurées sur
@@ -555,8 +555,9 @@ jobs:
           # entre deux unités, le profil partiel est écrit — donc publié par le
           # step suivant — et la troncature part en ::warning:: et dans
           # meta.warnings[] du profil. Sans ce budget, le shard était tué par
-          # `timeout-minutes` avant son écriture : les 9 shards tués des runs
-          # 32302557156 et 32379928098 ont tous publié « 0 profil(s) ».
+          # `timeout-minutes` avant son écriture : les 12 shards tués des runs
+          # 32302557156 (4 sur 8) et 32379928098 (8 sur 8) ont TOUS publié
+          # « 0 profil(s) », vérifiés un par un.
           # Doit rester cohérent avec le `timeout-minutes` de ce job (vérifié par
           # tests/test_ci_budget_interventions.py).
           BUDGET_FLAG=()
