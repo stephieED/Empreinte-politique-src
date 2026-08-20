@@ -1,3 +1,69 @@
+<a id="libelles-formulaire"></a>
+## Les descriptions d'input sont des LIBELLES, pas des descriptions (2026-08-20)
+
+Constat de l'utilisatrice en utilisant reellement le formulaire : **GitHub
+affiche la description comme libelle du champ et masque le nom de l'input.**
+
+La refonte du meme jour ([[refonte-inputs-workflow]]) avait raccourci les
+descriptions mais gardait des renvois croises — « Implies overwrite_profiles »,
+« Already implied by cold_start », « DISTINCT from allow_declared_losses ». Ces
+renvois designent des noms **que personne ne voit a l'ecran**. Ils etaient donc
+inutilisables par construction, et personne ne l'avait remarque parce que
+personne n'avait relu le formulaire rendu.
+
+### Ce qui change
+
+Les libelles sont courts, autonomes, et ne referencent aucun autre champ par
+son nom. La relation entre les deux premiers se lit **dans le texte** :
+
+| Champ | Libelle |
+| --- | --- |
+| `cold_start` | *Full reset: purge cache and outputs, then overwrite profiles* |
+| `overwrite_profiles` | *Overwrite profiles instead of merging (keeps the cache)* |
+| `refresh_existing_only` | *Limit roster to pre-existing members (no new ones)* |
+| `roster_limit` | *Roster members to process. 0 = all* |
+| `collect_interventions` | *Collect floor speeches (roster and Senate jobs always skip them)* |
+| `incomplete_read_threshold` | *IncompleteRead errors tolerated before the quality gate fails* |
+| `allow_declared_losses` | *DANGEROUS: allow commit despite lost entries* |
+| `allow_broken_references` | *EMERGENCY ONLY: allow keys that don't resolve in their shared index* |
+
+« purge … **then** overwrite » contient « overwrite … keeping the cache » : la
+lectrice voit l'inclusion sans connaitre aucun nom.
+
+**« overwrite » et non « rebuild »** : `--no-merge` remplace au lieu de
+fusionner. « rebuild » etait plus vague pour le meme nombre de caracteres.
+
+### Deux mentions retirees, et pourquoi
+
+**« Applies PER SHARD » sur `roster_limit`.** Elle expliquait *pourquoi* une
+valeur non nulle force un seul shard — c'est-a-dire du rationale, exactement ce
+que la refonte devait sortir du formulaire. Le defaut corrige y avait ete
+reintroduit. Et comme toute valeur non nulle force un seul shard, la valeur
+**est** le total : « 0 = all » suffit, sans ambiguite.
+
+**Le renvoi « DISTINCT from allow_declared_losses ».** Le garde-fou de
+`test_ci_integrite_referentielle.py` l'exigeait. Il exige desormais que le
+libelle porte sa propre marque de gravite (`EMERGENCY ONLY`), qui le separe de
+`DANGEROUS` sur l'autre tolerance — une distinction **visible a l'ecran**
+plutot qu'un renvoi a un nom cache.
+
+### `nosdeputes_max_pages` retire
+
+Jamais employe autrement que par son defaut. Fige a `--max-pages 5` a l'unique
+site qui le lisait, et retire de la reconstruction de `retry-generate-data.yml`
+— y compris son extraction depuis les logs, devenue sans consommateur.
+
+Le flag `--max-pages` de `generate_all_profiles.py` reste : la CLI n'a pas a
+etre amputee parce que la CI n'en veut plus. Meme raisonnement que
+[[workers-fige-a-1]].
+
+### Ce que cet episode apprend
+
+Deux refontes du meme formulaire dans la meme journee, la seconde corrigeant ce
+que la premiere n'avait pas vu — parce que la premiere avait ete faite en
+lisant le YAML, pas en regardant l'ecran que l'operatrice utilise. Un artefact
+d'interface se relit dans son rendu.
+
 <a id="interventions-senat-501"></a>
 ## `extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)
 

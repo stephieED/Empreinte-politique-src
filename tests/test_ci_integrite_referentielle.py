@@ -135,9 +135,15 @@ def test_la_tolerance_existe_et_est_desactivee_par_defaut():
     assert debut > 0, "input `allow_broken_references` absent"
     bloc = texte[debut:][:1200]
     assert "default: false" in bloc
-    assert "DISTINCT from allow_declared_losses" in bloc, (
-        "L'input doit dire qu'il n'est pas celui du contrôle de perte : sans "
-        "ça, les deux seront fusionnés à la première relecture."
+    # La version précédente exigeait la mention « DISTINCT from
+    # allow_declared_losses ». Elle renvoyait au NOM d'un autre input — or
+    # GitHub affiche la description comme libellé du champ et masque le nom :
+    # le renvoi désignait quelque chose d'invisible à l'écran. La distinction
+    # doit donc se lire dans le texte lui-même, par sa marque de gravité.
+    assert "EMERGENCY ONLY" in bloc, (
+        "Le libellé doit porter sa propre marque de gravité : c'est ce qui le "
+        "sépare de la tolérance du contrôle de perte, qui dit « DANGEROUS ». "
+        "Sans elle, les deux seront confondus à la première relecture."
     )
 
 
