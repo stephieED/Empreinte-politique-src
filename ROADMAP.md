@@ -58,19 +58,15 @@ something is pending, not *why*.
   persisted. **Confirmed by run 32136438841 and fixed in #424**: amendements
   moved to their own `public-data-cache-amendements-*` key, AN jobs now list
   their cached directories explicitly (`technical_decisions.md#cache-cle-amendements-separee`).
-- `generate-data.yml`: the same #424 defect has reappeared on the two cache
-  directories only `collect_interventions=true` ever fills. `.cache/syceron_an`
-  and `.cache/questions_an` are listed in the AN cache `path:`, but the weekly
-  key is written by `--skip-interventions` jobs that leave them empty; every
-  interventions-mode shard then gets an exact key hit and `actions/cache` skips
-  its post-job save (`not saving cache`, job 96228895556 — restored tar verified
-  on run 32379928098). Each of the 8 shards therefore re-downloads all Syceron
-  and QE/QG/QOSD archives: measured 118 s of Syceron alone on `laurent-wauquiez`,
-  and 2 to 5 min of fixed cost per shard. A separate cache key is **not** enough
-  (the first shard would persist a partial index and no later shard could ever
-  complete it); it needs the amendements treatment — a dedicated job building the
-  indexes once and publishing them as an artifact, `extract-an` reading them
-  cache-only. See `technical_decisions.md#budget-collecte-interventions`.
+- `generate-data.yml`: the same #424 defect had reappeared on the two cache
+  directories only `collect_interventions=true` ever fills. **Fixed in #505**,
+  with a different mechanism than the one first diagnosed: `extract-roster-groupes`
+  never wrote the weekly key (it runs behind `extract-an` by `needs:`), the
+  dissociation was between the two **modes** of `extract-an` — one key for the
+  ISO week, two possible contents. The key now carries the mode, the `path:`
+  keeps only the per-legislature indexes (never the 650,5 MB of archives, measured),
+  and the roster job is `actions/cache/restore` on both its cache steps.
+  See `technical_decisions.md#cache-mode-interventions-505`.
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.
@@ -85,6 +81,18 @@ something is pending, not *why*.
   `technical_decisions.md#id-pivot-sans-prefixe`).
 
 ## Ideas not yet scheduled
+
+- Syceron debates are collected, parsed and indexed but **never retained**:
+  `_parse_syceron_intervention_entry` requires an `acteurRef` matching `PA\d+`,
+  while the AN's `syseron.xml.zip` publishes a bare numeric speaker id
+  (`<orateur><id>942</id>`). 0 of the 789 interventions in the 209 raw profiles
+  come from Syceron; 115 of the corpus's 207 `PA<n>` ids appear unprefixed among
+  the 730 speaker ids of legislature 17. Rebuilt locally with the prefix, that
+  single legislature indexes **105 392 interventions for 674 speakers** (102,3 MB).
+  Cost paid today for zero: 262,3 MB of archives and ~1,1 GB of extracted XML per
+  shard, 118 s measured on `laurent-wauquiez` (#498). Fixing it is a collection
+  change with a large data footprint, not a cache change — hence deliberately out
+  of #505. Measured in `technical_decisions.md#cache-mode-interventions-505`.
 
 - Senate speeches are collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which

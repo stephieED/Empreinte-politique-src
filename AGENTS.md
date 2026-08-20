@@ -115,6 +115,17 @@ See `docs/technical_decisions.md#ci-tests-pytest`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
+**A job never writes a cache key for a directory it does not fill (#412 §2.3 → #424 →
+#505, same defect three times)**: `actions/cache` skips the post-job save on an exact key
+hit, so the first writer freezes the entry for everyone. Two corollaries, both enforced by
+`tests/test_ci_cache_producteur_ecrivain.py` (verified by mutation): a job carrying a
+`--skip-*` flag uses `actions/cache/restore`, and a key whose **content** depends on an
+input must carry that input — `public-data-cache-an-<week>` alone let one default-mode run
+starve every interventions run of the week. Two jobs sharing a key must also share the
+exact same `path:`, since the entry's version is a hash of it. A collection index is only
+cached once **complete**: a truncated one served to every shard is a missing value turned
+into a measured `0` (§2.5). See `docs/technical_decisions.md#cache-mode-interventions-505`.
+
 **`collect_interventions=true` is a different job (#498)**: it adds the NosDéputés
 search, the Syceron debate archives and the QE/QG/QOSD archives — extraction measured
 at **8-18 s** without it, **59-286 s** with (32 shards, four runs). `extract-an`'s

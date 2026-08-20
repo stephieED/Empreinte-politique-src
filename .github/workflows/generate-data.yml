@@ -452,15 +452,36 @@ jobs:
       # problème au lieu de le résoudre. L'énumération explicite est donc
       # délibérée : son revers est qu'un nouveau sous-répertoire de .cache ne
       # serait pas caché silencieusement, d'où le garde-fou ci-dessous.
+      #
+      # LA CLÉ PORTE LE MODE (#505). Elle ne portait que la semaine ISO, alors
+      # que le CONTENU dépend de `collect_interventions` : sans lui, ce job ne
+      # remplit ni questions_an ni syceron_an. Le premier run de la semaine
+      # figeait donc l'entrée pour les six jours suivants, et un run en mode
+      # interventions faisait un *exact key hit* sur une entrée sans débats ni
+      # questions — `actions/cache` sautait sa sauvegarde et CHAQUE shard
+      # retéléchargeait 650 Mo d'archives. Mesuré : l'entrée
+      # `public-data-cache-an-2026-W34` (21 881 332 o) a été écrite le
+      # 18/08 14:46:15 par le premier shard de ce job dans le run 32149708461,
+      # en mode par défaut ; les deux runs en mode interventions du 20/08
+      # (32302557156, 32379928098) l'ont tous deux touchée sans jamais sauver.
+      # C'est #424 sous une autre forme : dissociation non pas entre deux JOBS
+      # mais entre deux MODES du même job.
+      #
+      # `path` ne retient des interventions que l'INDEX, jamais les archives.
+      # `_build_acteur_questions_index` / `_build_acteur_interventions_syceron_index`
+      # court-circuitent tout le réseau dès que `index_par_acteur.json` existe :
+      # cacher les ZIP et l'arborescence XML extraite n'accélérerait rien et
+      # coûterait ~1,8 Go d'entrée (mesuré le 20/08 : 380 Mo sur disque pour la
+      # SEULE législature 17 de syceron_an, dont 324 Mo de XML extrait).
       - uses: actions/cache@v5
         if: ${{ !inputs.cold_start }}
         with:
           path: |
             .cache/acteurs_historique_an
             .cache/scrutins_an
-            .cache/questions_an
-            .cache/syceron_an
-          key: public-data-cache-an-${{ steps.week.outputs.week }}
+            .cache/questions_an/*/index_par_acteur.json
+            .cache/syceron_an/*/index_par_acteur.json
+          key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && '-interv' || '' }}
           restore-keys: |
             public-data-cache-an-
 
@@ -469,10 +490,21 @@ jobs:
       # mais restaurer `public-data-cache-an-*` depuis là-bas embarquerait
       # aussi `scrutins_an` — plusieurs centaines de Mo pour en utiliser 46.
       #
-      # Contrairement au défaut corrigé en #424, il n'y a ici aucune
-      # dissociation entre producteur de contenu et écrivain de clé : les trois
-      # jobs téléchargent et consomment les mêmes archives, donc le premier qui
-      # sauvegarde suffit et les suivants font un exact key hit sans perte.
+      # Ce commentaire a affirmé jusqu'à #505 qu'aucune dissociation entre
+      # producteur de contenu et écrivain de clé n'était possible ici, les
+      # *trois* jobs concernés consommant les mêmes archives. C'ÉTAIT FAUX.
+      # `extract-roster-groupes` porte `--skip-dossiers-legislatifs` en dur
+      # depuis #357 : il ne télécharge aucun dossier et n'en consomme aucun. Ils
+      # ne sont donc que DEUX producteurs (ce job et merge-and-pivot) sur trois
+      # jobs qui déclarent ce chemin. Le raisonnement était juste quand il a été
+      # écrit ; c'est le pipeline qui a bougé sous lui, sans que personne ne
+      # relise l'affirmation.
+      # Le défaut restait latent parce que ce job-ci est ordonné AVANT le roster
+      # (`needs:`) et écrit donc la clé le premier — mais rien ne le garantit :
+      # un `prepare-an-matrix` rendant une liste vide skippe ce job, et le
+      # roster (`if: !cancelled()`) écrirait alors la clé de la semaine sur un
+      # répertoire de dossiers vide. D'où la restauration seule côté roster
+      # (#505) et le garde-fou tests/test_ci_cache_producteur_ecrivain.py.
       - uses: actions/cache@v5
         if: ${{ !inputs.cold_start }}
         with:
@@ -959,10 +991,13 @@ jobs:
   #
   # Pas de needs: sur ce job — il démarre à t=0, en parallèle des autres jobs
   # sans dépendance. Mais extract-an et extract-roster-groupes l'ont, EUX, en
-  # `needs:` : les trois jobs qui écrivent la clé de cache partagée
-  # public-data-cache-an-* sont donc strictement séquencés
+  # `needs:`, si bien que les trois jobs restent strictement séquencés
   # (extract-amendements-an → extract-an → extract-roster-groupes), et les deux
   # consommateurs sont en lecture cache-only depuis #252.
+  # Ce commentaire parlait des « trois jobs qui écrivent la clé de cache
+  # partagée public-data-cache-an-* » : périmé depuis #424, qui a donné aux
+  # amendements leur propre clé, et depuis #505, qui a mis le roster en
+  # restauration seule. UN SEUL job écrit désormais cette clé : extract-an.
   #
   # La course d'écriture décrite ici jusqu'à #412 §2.2, et laissée ouverte par
   # #248 sous-issue 4, n'existe donc plus : elle a été éteinte par effet de bord
@@ -970,11 +1005,12 @@ jobs:
   # valider sur un run réel : voir le commentaire de cache d'extract-an (#412
   # §2.3, sauvegarde post-job sautée sur exact key hit).
   #
-  # Clé de cache réutilisée : la même clé hebdomadaire partagée
-  # public-data-cache-an-* que extract-an/extract-roster-groupes, pas de clé
-  # quotidienne dédiée aux amendements — décision et justification complète
-  # dans docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite
-  # (sous-issue 1 de #248).
+  # Granularité de clé HEBDOMADAIRE et non quotidienne — décision et
+  # justification complète dans
+  # docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite
+  # (sous-issue 1 de #248). Ce qui a changé depuis : la clé n'est plus la clé
+  # partagée `public-data-cache-an-*` mais `public-data-cache-amendements-*`
+  # (#424) ; seule la granularité de #248 subsiste.
   #
   # continue-on-error: true, même pattern que extract-parltrack : un échec
   # (total ou partiel, une seule législature) ne bloque pas merge-and-pivot.
@@ -1249,14 +1285,15 @@ jobs:
       # Les DEUX arguments qui restaient à #412 sont tombés à la mesure, et
       # seulement pour CE matrix (extract-an garde max-parallel: 1, voir son
       # propre commentaire) :
-      #   - CACHE : les shards ne se passent RIEN. Le `needs:` de ce job
-      #     garantit que la clé public-data-cache-an-* est déjà écrite par
-      #     extract-an quand la matrice démarre ; chaque shard fait donc un
-      #     exact key hit sur la MÊME entrée immuable et ne sauvegarde jamais.
-      #     Mesuré dans le log du run 32288588518 : « Cache hit occurred on the
-      #     primary key public-data-cache-an-2026-W34, not saving cache » sur
-      #     les shards roster, entrée de 21 Mo restaurée en 1,1 s. Sérialiser
-      #     ne réchauffe rien qui ne soit déjà chaud.
+      #   - CACHE : les shards ne se passent RIEN. Depuis #505 c'est une
+      #     propriété du workflow et non plus un effet de bord observé : les
+      #     deux steps de cache de ce job sont en `actions/cache/restore`, donc
+      #     aucun shard ne peut sauvegarder. Ce que le `needs:` garantit reste
+      #     vrai — la clé public-data-cache-an-* est déjà écrite par extract-an
+      #     quand la matrice démarre. Mesuré avant la bascule, run 32288588518 :
+      #     « Cache hit occurred on the primary key public-data-cache-an-2026-W34,
+      #     not saving cache » sur les shards roster, entrée de 21 Mo restaurée
+      #     en 1,1 s. Sérialiser ne réchauffe rien qui ne soit déjà chaud.
       #   - PRUDENCE RÉSEAU : le profil réseau d'un shard, mesuré, est de
       #     2 requêtes NosDéputés (construction du roster) + 1 requête
       #     data.europarl.europa.eu (liste des eurodéputés) + **0 requête par
@@ -1303,15 +1340,34 @@ jobs:
       # déjà chaud au moment de cette restauration.
       #
       # Même `path` explicite que extract-an, amendements_an exclu (#424) : voir
-      # le commentaire détaillé sur le cache de extract-an.
-      - uses: actions/cache@v5
+      # le commentaire détaillé sur le cache de extract-an. Le `path` doit
+      # rester IDENTIQUE à celui d'extract-an, et pas seulement équivalent :
+      # `actions/cache` dérive la *version* de l'entrée du hash des chemins, si
+      # bien que deux listes différentes sous la même clé donnent deux entrées
+      # distinctes qui ne se voient pas (trois coexistent sous
+      # `public-data-cache-an-2026-W34` — 915 Mo, 53 Mo, 21 Mo — vestiges des
+      # `path` successifs). Vérifié par tests/test_ci_cache_paths.py.
+      #
+      # RESTAURATION SEULE (#505). Ce job porte `--skip-interventions` en dur :
+      # il ne remplit ni `questions_an` ni `syceron_an`, deux des quatre chemins
+      # qu'il déclare. Un `actions/cache` complet le rendrait candidat à écrire
+      # la clé de la semaine pour un contenu qu'il ne produit pas — exactement
+      # le défaut de #424. Il ne l'a jamais fait en pratique, parce que
+      # `needs: extract-an` le place derrière le vrai producteur (mesuré sur le
+      # run 32149708461 : « not saving cache » sur les deux clés à 15:05:30,
+      # alors qu'extract-an les avait écrites à 14:46:12-15) — mais c'était un
+      # accident d'ordonnancement, pas une garantie. `cache/restore` en fait
+      # une propriété du workflow.
+      # Rien n'est perdu : les deux répertoires qu'il produit réellement
+      # (acteurs_historique_an, scrutins_an) sont déjà persistés par extract-an.
+      - uses: actions/cache/restore@v5
         if: ${{ !inputs.cold_start }}
         with:
           path: |
             .cache/acteurs_historique_an
             .cache/scrutins_an
-            .cache/questions_an
-            .cache/syceron_an
+            .cache/questions_an/*/index_par_acteur.json
+            .cache/syceron_an/*/index_par_acteur.json
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
@@ -1321,11 +1377,14 @@ jobs:
       # mais restaurer `public-data-cache-an-*` depuis là-bas embarquerait
       # aussi `scrutins_an` — plusieurs centaines de Mo pour en utiliser 46.
       #
-      # Contrairement au défaut corrigé en #424, il n'y a ici aucune
-      # dissociation entre producteur de contenu et écrivain de clé : les trois
-      # jobs téléchargent et consomment les mêmes archives, donc le premier qui
-      # sauvegarde suffit et les suivants font un exact key hit sans perte.
-      - uses: actions/cache@v5
+      # RESTAURATION SEULE (#505), et ici la dissociation est totale : ce job
+      # porte `--skip-dossiers-legislatifs` en dur, donc il ne remplit JAMAIS
+      # `.cache/dossiers_an`. Il n'a rien à sauvegarder — seulement à lire ce
+      # qu'extract-an y a mis, pour le passer à l'agrégation de groupe.
+      # Le commentaire qui vivait ici affirmait le contraire : voir sa
+      # correction dans extract-an et
+      # docs/technical_decisions.md#cache-mode-interventions-505.
+      - uses: actions/cache/restore@v5
         if: ${{ !inputs.cold_start }}
         with:
           path: .cache/dossiers_an
