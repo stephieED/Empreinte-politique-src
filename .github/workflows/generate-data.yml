@@ -37,7 +37,7 @@ on:
         type: number
         default: 3
       allow_declared_losses:
-        description: "DANGEROUS: allow commit despite lost entries"
+        description: "INTENDED REMOVAL: allow commit despite lost entries"
         type: boolean
         default: false
       allow_broken_references:

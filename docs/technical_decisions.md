@@ -429,7 +429,7 @@ son nom. La relation entre les deux premiers se lit **dans le texte** :
 | `roster_limit` | *Roster members to process. 0 = all* |
 | `collect_interventions` | *Collect floor speeches (skipped for roster AN and senate)* |
 | `incomplete_read_threshold` | *IncompleteRead errors tolerated before the quality gate fails* |
-| `allow_declared_losses` | *DANGEROUS: allow commit despite lost entries* |
+| `allow_declared_losses` | *INTENDED REMOVAL: allow commit despite lost entries* |
 | `allow_broken_references` | *EMERGENCY ONLY: allow keys that don't resolve in their shared index* |
 
 Les deux libelles sont **paralleles** : « Overwrite profiles **from
@@ -451,8 +451,35 @@ reintroduit. Et comme toute valeur non nulle force un seul shard, la valeur
 **Le renvoi « DISTINCT from allow_declared_losses ».** Le garde-fou de
 `test_ci_integrite_referentielle.py` l'exigeait. Il exige desormais que le
 libelle porte sa propre marque de gravite (`EMERGENCY ONLY`), qui le separe de
-`DANGEROUS` sur l'autre tolerance — une distinction **visible a l'ecran**
+`INTENDED REMOVAL` sur l'autre tolerance — une distinction **visible a l'ecran**
 plutot qu'un renvoi a un nom cache.
+
+### `DANGEROUS` remplace par `INTENDED REMOVAL` (meme jour)
+
+`DANGEROUS` disait l'humeur, pas l'enjeu : il prevenait qu'il faut faire
+attention sans dire **de quoi on prend la responsabilite**. C'est exactement ce
+qui a manque le 19/08/2026, quand la case a ete cochee sans que les pertes
+soient elucidees — 789 interventions effacees.
+
+`INTENDED REMOVAL` est une **affirmation que l'operatrice doit pouvoir faire
+honnetement**. Si elle coche parce qu'un run a perdu des donnees sans qu'on
+sache pourquoi, le libelle sonne faux au moment de cliquer. C'est la qu'il doit
+resister.
+
+*Ecarte* : `CLEANING`. Il decrit une activite benigne et y installe la lectrice
+— « oui, je fais du menage », donc je coche. Un libelle qui rassure au moment
+ou il faudrait faire hesiter est pire qu'un libelle absent.
+
+*Ecarte aussi* : un `(careful!)` en fin de ligne. La lectrice a deja lu
+l'action et decide ; un avertissement final se lit comme une politesse. Un
+marqueur en tete change la lecture, un marqueur en queue la commente.
+
+Le miroir avec le champ voisin tient : **INTENDED REMOVAL** contre **EMERGENCY
+ONLY** — ce qu'on affirme d'un cote, ce qu'on subit de l'autre. Le rendement du
+rétrécissement de portee est assume : le drapeau couvre « j'ai compris cette
+perte et je l'assume », ce qui n'est pas toujours une suppression voulue. Ce
+rétrécissement joue dans le bon sens — il rend le drapeau inconfortable
+precisement dans le cas ou il a ete mal employe.
 
 ### `nosdeputes_max_pages` retire
 
