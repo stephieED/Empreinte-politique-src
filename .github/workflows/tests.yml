@@ -66,12 +66,20 @@ jobs:
         with:
           filter: blob:none
           sparse-checkout-cone-mode: false
+          # Liste blanche : tout ce qui n'y figure pas est absent du disque.
+          # Un test portant sur un fichier hors liste échoue en CI alors qu'il
+          # passe en local — c'est arrivé dès le premier run, sur les 10 tests
+          # de scripts/borner_historique_donnees.sh (#434), mergé entre-temps.
+          # Ajouter ici tout nouveau répertoire de premier niveau dont les
+          # tests lisent le contenu ; ne jamais y ajouter pivot_data/ ni
+          # raw_data/profiles/, que le garde-fou ci-dessous refuse.
           sparse-checkout: |
             .github
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             requirements.txt
             requirements-dev.txt
+            scripts
             src
             tests
             web
