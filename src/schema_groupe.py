@@ -39,7 +39,7 @@ Format d'un profil de groupe v1 :
 
     "membres": [                        # un enregistrement par membre (et par période si changement)
         {
-            "membre_id": "nosdeputes:jerome-guedj",  # id pivot individuel
+            "membre_id": "jerome-guedj",         # id pivot individuel = son slug (#487)
             "nom": "Jérôme Guedj",
             "debut_dans_groupe": "2022-06-22",       # début de l'appartenance à CE groupe
             "fin_dans_groupe": null,                 # null = toujours membre
@@ -108,7 +108,7 @@ Format d'un profil de groupe v1 :
             },
             "membres": [                 # traçabilité : qui, quelle fonction, quelle période
                 {
-                    "membre_id": "nosdeputes:jerome-guedj",
+                    "membre_id": "jerome-guedj",
                     "nom": "Jérôme Guedj",
                     "fonction": "président",
                     "debut": "2022-06-22",
@@ -158,8 +158,8 @@ Format d'un profil de groupe v1 :
         "genere_le": "2026-07-29T10:00:00+0000",
         "licence_donnees": "ODbL …",
         "profils_sources": [            # ids pivot des profils individuels agrégés
-            "nosdeputes:jerome-guedj",
-            "nosdeputes:boris-vallaud"
+            "jerome-guedj",
+            "boris-vallaud"
         ],
         "seuil_quorum": 0.5,            # seuil de participation retenu pour quorum_atteint
         "warnings": [],

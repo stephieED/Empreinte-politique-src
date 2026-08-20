@@ -13,7 +13,7 @@ dans le bloc `sources[]`.
 Format d'un profil pivot v1 :
 {
     "schema_version": "1",
-    "id": "nosdeputes:jean-luc-melenchon",  # <source>:<identifiant_source>
+    "id": "jean-luc-melenchon",             # = le slug, sans préfixe (#487)
     "nom": "Jean-Luc Mélenchon",
     "chambre": "AN",                         # "AN" | "Senat" | "PE" | "mairie" | null
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
@@ -67,7 +67,7 @@ Format d'un profil pivot v1 :
                                              # "droit_tirage" | "demande_votee" | null
             "suspendu_pour_fonction_gouvernementale": null
             # période de suspension du mandat pour cause de fonction ministérielle :
-            # {"debut": "2024-01-08", "fin": "2024-09-05", "suppleant_id": "nosdeputes:x"}
+            # {"debut": "2024-01-08", "fin": "2024-09-05", "suppleant_id": "slug-du-suppleant"}
             # ou null si non applicable.
         }
     ],
@@ -348,8 +348,16 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
     """Crée un profil pivot v1 vide avec des valeurs par défaut.
 
     Args:
-        id_: identifiant unique de la forme "<source>:<identifiant_source>",
-             ex. "nosdeputes:jean-luc-melenchon", "parltrack:197451".
+        id_: identifiant unique du profil. Pour un profil de
+             `pivot_data/profiles/`, c'est le **slug** — le nom du fichier,
+             sans préfixe de provenance (#487, épic #486) : le préfixe
+             `nosdeputes:`/`nossenateurs:` dérivait de la chambre qui avait
+             répondu à la collecte, donc changeait de valeur sur une carrière
+             inchangée. Ex. "jean-luc-melenchon".
+             Les outils autonomes qui construisent un pivot sans slug
+             (`mep_profile.py --ep-id`) gardent un identifiant de source
+             explicite, ex. "parltrack:197451" : mieux vaut ça qu'un slug
+             inventé à partir d'un nom collecté.
         nom: nom complet de l'élu.
         provenance: origine du profil, "candidat_declare" (défaut, raw_data/candidats.json)
                     ou "roster_groupe" (extraction pilotée par le roster réel d'un

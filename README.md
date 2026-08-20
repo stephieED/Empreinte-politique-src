@@ -836,7 +836,7 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
 ```json
 {
   "schema_version": "1",
-  "id": "nosdeputes:jean-luc-melenchon",
+  "id": "jean-luc-melenchon",  // = le slug, sans prefixe de provenance (#487)
   "nom": "Jean-Luc Melenchon",
   "chambre": "AN",
   "parti": null,

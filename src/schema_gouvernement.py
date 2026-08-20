@@ -42,7 +42,7 @@ Format d'un profil de gouvernement v1 :
     "membres": [                             # un enregistrement par ministre (et par période
                                               # si changement de portefeuille)
         {
-            "membre_id": "nosdeputes:bruno-le-maire",  # id pivot individuel, si connu
+            "membre_id": "bruno-le-maire",       # id pivot individuel (= son slug, #487), si connu
             "nom": "Bruno Le Maire",
             "portefeuille": None,            # jamais de placeholder textuel : null tant que la
                                               # source primaire n'a pas été vérifiée (voir
@@ -73,7 +73,7 @@ Format d'un profil de gouvernement v1 :
                 {                            # déclarés par `initiateur.acteurs.acteur[]` du
                                               # dump AN — un texte en porte souvent plusieurs
                     "acteur_ref": "PA643210",  # référence AN brute, toujours conservée
-                    "membre_id": "nosdeputes:sebastien-lecornu",  # null si l'acteur ne figure
+                    "membre_id": "sebastien-lecornu",  # null si l'acteur ne figure
                 },                             # pas dans membres[] (couverture partielle)
             ],                               # null (jamais []) si la source n'en déclare aucun
             "source_url": None,

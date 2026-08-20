@@ -286,7 +286,18 @@ def normalize_nosdeputes(
     if "nosdeputes" not in synchro_sources:
         synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     # --- Profil pivot de base ---
-    profil: dict[str, Any] = make_empty_profil(f"{source_type}:{slug}", nom, provenance=provenance)
+    # L'`id` est le slug, SANS préfixe de provenance (#487, épic #486). Le slug
+    # est une donnée d'entrée — le nom du fichier du profil, fixé par
+    # `raw_data/candidats.json` ou par le roster —, jamais un résultat de
+    # collecte. Le préfixe `nosdeputes:`/`nossenateurs:` dérivait au contraire
+    # de la chambre qui avait répondu ce jour-là : entre `25f7bc7` et
+    # `01ffa7f`, `jean-luc-melenchon` est passé à `nossenateurs` et
+    # `stephane-mazars` à `nosdeputes` — deux bascules en sens opposés, sur des
+    # carrières inchangées. Un identifiant que la météo du réseau fait varier
+    # n'en est pas un.
+    # `source_type` reste utilisé plus bas pour `sources[].type`, où il décrit
+    # bien la provenance d'UNE source : c'est vrai, stable, et à sa place.
+    profil: dict[str, Any] = make_empty_profil(slug, nom, provenance=provenance)
     profil["chambre"] = chambre
     profil["parti"] = parti
     profil["groupe"] = identite.get("groupe_nom") or identite.get("groupe_sigle")

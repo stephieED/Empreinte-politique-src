@@ -203,7 +203,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 
 | Key | Content |
 |---|---|
-| `id` | `"<source>:<identifiant_source>"` |
+| `id` | The profile's **slug** — its filename, **no provenance prefix** (#487). `nosdeputes:`/`nossenateurs:` derived from whichever chamber answered the collection, so it *changed value* on an unchanged career (two profiles flipped, in opposite directions, between `25f7bc7` and `01ffa7f`). Provenance stays where it is true: `sources[].type`, `identite.source_url`, `meta.provenance`. Standalone tools with no slug (`mep_profile.py --ep-id`) keep an explicit source id — better that than a slug invented from a collected name. See `docs/technical_decisions.md#id-pivot-sans-prefixe`. |
 | `nom`, `chambre`, `parti`, `groupe` | `chambre` in `{AN, Senat, PE, mairie, null}` |
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |

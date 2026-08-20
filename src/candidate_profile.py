@@ -1523,8 +1523,8 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
-        # des identifiants pivot ("nosdeputes:slug") — la resolution vers un
-        # candidat suivi par ce projet n'est pas faite ici.
+        # des identifiants pivot (le slug du profil depuis #487) — la resolution
+        # vers un candidat suivi par ce projet n'est pas faite ici.
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),

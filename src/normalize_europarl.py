@@ -46,6 +46,7 @@ def normalize_europarl(
     ue_profile: dict[str, Any],
     parti: Optional[str] = None,
     provenance: str = "candidat_declare",
+    slug: Optional[str] = None,
 ) -> dict[str, Any]:
     """Convertit un profil Open Data Portal Parlement européen en pivot v1.
 
@@ -55,6 +56,16 @@ def normalize_europarl(
         provenance: "candidat_declare" (défaut) ou "roster_groupe" — voir
                     schema_pivot.KNOWN_PROVENANCES. Propagé tel quel vers
                     meta.provenance du profil pivot.
+        slug: slug du profil, c'est-à-dire son identifiant (#487, épic #486).
+              Fourni, il devient l'`id` tel quel — même convention que
+              `normalize_nosdeputes`, pour que l'espace d'identifiants pivot
+              n'ait qu'une seule forme.
+              Absent, l'`id` retombe sur `europarl:<identifiant_pe>`. Ce repli
+              n'est pas une exception de confort : `ue_profile` ne porte pas de
+              slug, et le seul candidat qu'on pourrait en tirer serait dérivé
+              de `nom_complet`, donc d'une donnée de collecte — exactement le
+              défaut que #487 retire. Mieux vaut un identifiant de source
+              explicite qu'un slug inventé.
 
     Returns:
         Profil pivot v1 dict (chambre: "PE").
@@ -66,7 +77,8 @@ def normalize_europarl(
     synchro_le = meta_ue.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     licence = meta_ue.get("licence_donnees") or None
 
-    profil = make_empty_profil(id_=f"europarl:{mep_id}", nom=nom, provenance=provenance)
+    profil_id = slug if slug else f"europarl:{mep_id}"
+    profil = make_empty_profil(id_=profil_id, nom=nom, provenance=provenance)
     profil["chambre"] = "PE"
     profil["parti"] = parti
     profil["sources"] = [
