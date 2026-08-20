@@ -425,6 +425,7 @@ def test_integration_roster_batch_produces_pivots_with_provenance(tmp_path, monk
         # #432 : sans --scrutins, l'index s'écrirait dans le pivot_data/ du
         # dépôt — un test ne doit jamais salir l'arbre de travail.
         "--scrutins", str(tmp_path / "scrutins.json"),
+        "--amendements", str(tmp_path / "amendements"),
         "--checkpoint-file", str(checkpoint_path),
         "--workers", "2",
     ])
@@ -510,6 +511,7 @@ def test_integration_progressive_selection_advances_across_two_runs(tmp_path, mo
         # #432 : sans --scrutins, l'index s'écrirait dans le pivot_data/ du
         # dépôt — un test ne doit jamais salir l'arbre de travail.
         "--scrutins", str(tmp_path / "scrutins.json"),
+        "--amendements", str(tmp_path / "amendements"),
         "--no-checkpoint",
         "--workers", "2",
         "--limit", "2", "--skip-existing",
@@ -689,6 +691,7 @@ def _argv_manifest(candidats_path, out_dir, pivot_dir, checkpoint_path, manifest
         # #432 : `--scrutins` a une valeur par défaut dans `pivot_data/` du
         # dépôt — un test qui l'omettrait y écrirait l'index.
         "--scrutins", str(Path(out_dir).parent / "scrutins.json"),
+        "--amendements", str(Path(out_dir).parent / "amendements"),
         "--skip-ue", "--skip-interventions",
         "--workers", "2",
         *extra,
@@ -895,6 +898,7 @@ def test_index_des_scrutins_est_ecrit_dans_le_chemin_demande(tmp_path, monkeypat
         "--pivot-dir", str(tmp_path / "pivots"),
         "--checkpoint-file", str(tmp_path / "cp.json"),
         "--scrutins", str(index_path),
+        "--amendements", str(tmp_path / "amendements"),
         "--pivot", "--skip-ue", "--skip-interventions",
     ])
     generate_all_profiles.main()
@@ -924,8 +928,177 @@ def test_index_des_scrutins_n_est_pas_construit_sans_pivot(tmp_path, monkeypatch
         "--pivot-dir", str(tmp_path / "pivots"),
         "--checkpoint-file", str(tmp_path / "cp.json"),
         "--scrutins", str(index_path),
+        "--amendements", str(tmp_path / "amendements"),
         "--skip-ue", "--skip-interventions",
     ])
     generate_all_profiles.main()
 
     assert not index_path.exists()
+
+
+# ── #465 : en mode écrasement, une collecte vide ne détruit rien ──────────────
+#
+# Reproduction du scénario réel du 19/08/2026 (run 32302557156) : un profil
+# committé complet, une régénération `--no-merge` dont la collecte échoue, et
+# le profil qui repart à zéro. C'est ainsi que `jean-luc-melenchon` a perdu
+# 18 721 amendements et 1 016 votes.
+
+def _profil_committe(out_dir: Path, slug: str) -> dict:
+    """Écrit un profil « déjà collecté » sur le disque, comme le ferait un
+    checkout du dépôt."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    profil = _fake_raw_profile(slug)
+    profil["votes"] = [{"numero_scrutin": str(i), "date": "2024-01-01"} for i in range(1016)]
+    profil["amendements"] = [{"uid": f"A{i}"} for i in range(18721)]
+    profil["dossiers_legislatifs"] = [{"id": f"D{i}", "role": "auteur"} for i in range(33)]
+    (out_dir / f"{slug}.json").write_text(json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+    return profil
+
+
+def _argv_ecrasement(candidats_path, out_dir, tmp_path, *extra):
+    return [
+        "generate_all_profiles.py",
+        "--candidats", str(candidats_path),
+        "--out-dir", str(out_dir),
+        "--pivot-dir", str(tmp_path / "pivots"),
+        "--checkpoint-file", str(tmp_path / "cp.json"),
+        "--scrutins", str(tmp_path / "scrutins.json"),
+        "--amendements", str(tmp_path / "amendements"),
+        # `--scrutins` ET `--amendements` : les deux ont une valeur par défaut
+        # dans `pivot_data/` du dépôt. Un test qui les omettrait y écrirait les
+        # index partagés — vécu, et invisible autrement que par un `git status`.
+        "--amendements", str(tmp_path / "amendements"),
+        "--skip-ue", "--skip-interventions", "--no-merge",
+        *extra,
+    ]
+
+
+def test_ecrasement_ne_detruit_pas_sur_collecte_vide(tmp_path, monkeypatch, capsys):
+    candidats_path = tmp_path / "candidats.json"
+    _write_roster_candidats(candidats_path, ["jean-luc-melenchon"])
+    out_dir = tmp_path / "profiles"
+    _profil_committe(out_dir, "jean-luc-melenchon")
+
+    # La collecte « réussit » mais ne rend rien — identité trouvée, tout le
+    # reste vide. C'est exactement la forme du profil écrit le 19/08.
+    def collecte_vide(chambre, slug, **k):
+        p = _fake_raw_profile(slug, chambre)
+        p["votes"], p["amendements"], p["dossiers_legislatifs"] = [], [], []
+        return p
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", collecte_vide)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sys, "argv", _argv_ecrasement(candidats_path, out_dir, tmp_path))
+    generate_all_profiles.main()
+
+    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    assert len(apres["votes"]) == 1016
+    assert len(apres["amendements"]) == 18721
+    assert len(apres["dossiers_legislatifs"]) == 33
+    # Préservé, mais DIT : une préservation silencieuse serait un autre défaut.
+    assert "PRÉSERVÉES" in capsys.readouterr().out
+
+
+def test_ecrasement_par_une_collecte_non_vide_aboutit(tmp_path, monkeypatch):
+    """Le garde-fou ne doit pas empêcher une correction de fond d'aboutir :
+    #440 a légitimement remplacé 2 018 amendements par 944."""
+    candidats_path = tmp_path / "candidats.json"
+    _write_roster_candidats(candidats_path, ["jean-luc-melenchon"])
+    out_dir = tmp_path / "profiles"
+    _profil_committe(out_dir, "jean-luc-melenchon")
+
+    def collecte_corrigee(chambre, slug, **k):
+        p = _fake_raw_profile(slug, chambre)
+        p["votes"] = [{"numero_scrutin": "1", "date": "2024-01-01"}]
+        p["amendements"] = [{"uid": f"CORRIGE{i}"} for i in range(944)]
+        p["dossiers_legislatifs"] = []
+        return p
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", collecte_corrigee)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sys, "argv", _argv_ecrasement(candidats_path, out_dir, tmp_path))
+    generate_all_profiles.main()
+
+    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    assert len(apres["amendements"]) == 944, "une collecte non vide doit écraser"
+    assert apres["amendements"][0]["uid"].startswith("CORRIGE")
+    assert len(apres["votes"]) == 1
+    assert len(apres["dossiers_legislatifs"]) == 33, "seul le champ vide est préservé"
+
+
+def test_autoriser_collecte_vide_leve_le_garde_fou(tmp_path, monkeypatch):
+    """Vider un champ délibérément doit rester possible — mais déclaré."""
+    candidats_path = tmp_path / "candidats.json"
+    _write_roster_candidats(candidats_path, ["jean-luc-melenchon"])
+    out_dir = tmp_path / "profiles"
+    _profil_committe(out_dir, "jean-luc-melenchon")
+
+    def collecte_vide(chambre, slug, **k):
+        p = _fake_raw_profile(slug, chambre)
+        p["votes"], p["amendements"], p["dossiers_legislatifs"] = [], [], []
+        return p
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", collecte_vide)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sys, "argv", _argv_ecrasement(
+        candidats_path, out_dir, tmp_path, "--autoriser-collecte-vide"))
+    generate_all_profiles.main()
+
+    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    assert apres["votes"] == []
+    assert apres["amendements"] == []
+
+
+def test_fusion_additive_reste_le_comportement_par_defaut(tmp_path, monkeypatch):
+    """Sans --no-merge, rien ne change : c'est la fusion qui protège."""
+    candidats_path = tmp_path / "candidats.json"
+    _write_roster_candidats(candidats_path, ["jean-luc-melenchon"])
+    out_dir = tmp_path / "profiles"
+    _profil_committe(out_dir, "jean-luc-melenchon")
+
+    def collecte_vide(chambre, slug, **k):
+        p = _fake_raw_profile(slug, chambre)
+        p["votes"], p["amendements"], p["dossiers_legislatifs"] = [], [], []
+        return p
+
+    monkeypatch.setattr(generate_all_profiles, "build_profile", collecte_vide)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+    argv = [a for a in _argv_ecrasement(candidats_path, out_dir, tmp_path) if a != "--no-merge"]
+    monkeypatch.setattr(sys, "argv", argv)
+    generate_all_profiles.main()
+
+    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    assert len(apres["amendements"]) == 18721
+
+
+def test_index_des_amendements_est_ecrit_dans_le_chemin_demande(tmp_path, monkeypatch):
+    """Pendant de `test_index_des_scrutins_est_ecrit_dans_le_chemin_demande`
+    pour l'index des amendements (#431). Sa valeur par défaut pointe elle aussi
+    dans `pivot_data/` du dépôt, et une omission y écrit 125 Mo d'index sans
+    qu'aucun test n'échoue — seul un `git status` le révèle."""
+    candidats_path = tmp_path / "candidats.json"
+    _write_roster_candidats(candidats_path, ["alice"])
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "alice.json").write_text(
+        json.dumps(dict(_fake_raw_profile("alice"), amendements=[
+            {"uid": "AMANR5L17-1", "role_signataire": "auteur", "texte_vise": "PLF"},
+        ]), ensure_ascii=False),
+        encoding="utf-8",
+    )
+    index_path = tmp_path / "sous" / "amendements"
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(sys, "argv", [
+        "generate_all_profiles.py",
+        "--candidats", str(candidats_path),
+        "--out-dir", str(out_dir),
+        "--pivot-dir", str(tmp_path / "pivots"),
+        "--checkpoint-file", str(tmp_path / "cp.json"),
+        "--scrutins", str(tmp_path / "scrutins.json"),
+        "--amendements", str(index_path),
+        "--pivot-only", "--skip-ue",
+    ])
+    generate_all_profiles.main()
+
+    assert index_path.exists(), "l'index doit être écrit là où on le demande"
+    assert any(index_path.glob("*.json"))

@@ -135,6 +135,62 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
     meta["warnings"] = filtered
 
 
+# Champs dont une collecte vide, en mode écrasement, détruirait des données
+# acquises. Couvre les deux schémas : `dossiers_legislatifs` côté brut,
+# `textes_portes` côté pivot.
+CHAMPS_PROTEGES_DU_VIDE: tuple[str, ...] = (
+    "votes", "mandats", "amendements", "dossiers_legislatifs",
+    "interventions", "textes_portes",
+)
+
+
+def preserver_collectes_non_vides(
+    ancien: Optional[dict[str, Any]], nouveau: dict[str, Any]
+) -> tuple[dict[str, Any], list[str]]:
+    """**Une collecte vide n'écrase jamais une collecte non vide** (#465).
+
+    S'applique en mode écrasement (`--no-merge`), là où la fusion additive ne
+    protège plus rien. Ce n'est pas une demi-fusion : un champ dont la collecte
+    a rendu des entrées écrase normalement — c'est ce qui permet à une
+    correction de clé d'aboutir (#440 : 2 018 amendements remplacés par 944).
+    Seul le passage à **zéro** est refusé.
+
+    Le motif est celui de #427 sur les gouvernements, où il est déjà énoncé :
+    *distinguer « zéro constaté » de « collecte incomplète »*. Un `[]` rendu par
+    une API en panne n'est pas un fait mesuré, et le publier violerait AGENTS.md
+    §2.5. Les profils étaient le seul endroit qui ne l'appliquait pas.
+
+    Ce que ça aurait évité, le 19/08/2026 (run `32302557156`, mode écrasement) :
+
+    - `jean-luc-melenchon` — recherche d'identité en échec, profil minimal
+      écrit : 18 721 amendements, 1 016 votes et 33 textes portés à zéro ;
+    - `bruno-retailleau` — « votes introuvables » : 36 textes portés à zéro ;
+    - `marine-le-pen` — **aucun avertissement**, amendements et votes intacts,
+      23 textes portés à zéro.
+
+    Le troisième cas est le plus instructif : rien, dans le profil écrit, ne
+    signalait l'échec. Un garde-fou conditionné à la présence d'un avertissement
+    ne l'aurait pas vu ; celui-ci ne regarde que le résultat.
+
+    Renvoie `(profil, champs_preserves)` — la liste sert à le **dire**, jamais à
+    corriger en silence.
+    """
+    if not ancien:
+        return nouveau, []
+
+    preserves: list[str] = []
+    resultat = dict(nouveau)
+    for champ in CHAMPS_PROTEGES_DU_VIDE:
+        anciennes = ancien.get(champ)
+        if not isinstance(anciennes, list) or not anciennes:
+            continue
+        if resultat.get(champ):
+            continue
+        resultat[champ] = anciennes
+        preserves.append(champ)
+    return resultat, preserves
+
+
 def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
     """Fusionne un profil brut nouvellement généré (`new`) avec la version
     déjà présente sur disque (`old`, ou None si aucun fichier existant).

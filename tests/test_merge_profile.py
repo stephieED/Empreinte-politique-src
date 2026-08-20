@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from merge_profile import (
+    preserver_collectes_non_vides,
     clean_stale_textes_portes,
     load_existing_document,
     merge_lists_by_key,
@@ -773,3 +774,103 @@ def test_publication_scopee_conserve_l_union_entre_sources_differentes(tmp_path)
 
     alice = json.loads((out / "alice.json").read_text(encoding="utf-8"))
     assert sorted(a["uid"] for a in alice["amendements"]) == ["AMANR5L17-1", "AMANR5L17-2"]
+
+
+# ---------------------------------------------------------------------------
+# #465 — une collecte vide n'écrase jamais une collecte non vide
+#
+# En mode écrasement (`--no-merge`), la fusion additive ne protège plus rien.
+# Or une sous-collecte peut échouer sans que le profil écrit n'ait l'air
+# anormal : identité introuvable, endpoint en panne, archive indisponible. Le
+# profil part alors avec un champ simplement vide, et il écrase le bon.
+#
+# Vécu le 19/08/2026 sur le run 32302557156 : `jean-luc-melenchon` a perdu
+# 18 721 amendements, 1 016 votes et 33 textes portés ; `marine-le-pen` a perdu
+# ses 23 textes portés SANS le moindre avertissement dans son profil.
+#
+# Le motif est celui de #427 sur les gouvernements, déjà énoncé là-bas :
+# distinguer « zéro constaté » de « collecte incomplète ». Les profils étaient
+# le seul endroit qui ne l'appliquait pas.
+# ---------------------------------------------------------------------------
+
+def test_collecte_vide_ne_remplace_pas_des_entrees_existantes():
+    ancien = {"votes": [{"numero_scrutin": "1"}], "amendements": [{"uid": "A1"}]}
+    nouveau = {"votes": [], "amendements": []}
+
+    profil, preserves = preserver_collectes_non_vides(ancien, nouveau)
+
+    assert len(profil["votes"]) == 1
+    assert len(profil["amendements"]) == 1
+    assert sorted(preserves) == ["amendements", "votes"]
+
+
+def test_collecte_non_vide_ecrase_normalement():
+    """Le point qui distingue ce garde-fou d'une demi-fusion : une correction de
+    clé DOIT pouvoir aboutir. #440 a remplacé 2 018 amendements par 944 — c'est
+    une baisse massive, et elle est légitime parce qu'elle n'est pas un vide."""
+    ancien = {"amendements": [{"uid": None, "numero": str(i)} for i in range(2018)]}
+    nouveau = {"amendements": [{"uid": f"A{i}"} for i in range(944)]}
+
+    profil, preserves = preserver_collectes_non_vides(ancien, nouveau)
+
+    assert len(profil["amendements"]) == 944
+    assert preserves == []
+
+
+def test_champ_par_champ_et_non_tout_ou_rien():
+    """`marine-le-pen` avait ses amendements et ses votes intacts, et seuls ses
+    textes portés à zéro. Un garde-fou qui raisonnerait sur le profil entier
+    l'aurait laissé passer."""
+    ancien = {"amendements": [{"uid": "A1"}], "dossiers_legislatifs": [{"id": "D1"}]}
+    nouveau = {"amendements": [{"uid": "A2"}, {"uid": "A3"}], "dossiers_legislatifs": []}
+
+    profil, preserves = preserver_collectes_non_vides(ancien, nouveau)
+
+    assert len(profil["amendements"]) == 2, "la collecte réussie doit écraser"
+    assert len(profil["dossiers_legislatifs"]) == 1, "la collecte vide ne doit pas écraser"
+    assert preserves == ["dossiers_legislatifs"]
+
+
+def test_garde_fou_ne_depend_pas_d_un_avertissement():
+    """Le cas le plus instructif du 19/08 : le profil de `marine-le-pen` ne
+    portait AUCUN avertissement. Un garde-fou conditionné à la présence d'un
+    warning ne l'aurait pas vu — celui-ci ne regarde que le résultat."""
+    ancien = {"dossiers_legislatifs": [{"id": "D1"}], "meta": {"warnings": []}}
+    nouveau = {"dossiers_legislatifs": [], "meta": {"warnings": []}}
+
+    profil, preserves = preserver_collectes_non_vides(ancien, nouveau)
+
+    assert len(profil["dossiers_legislatifs"]) == 1
+    assert preserves == ["dossiers_legislatifs"]
+
+
+def test_couvre_les_deux_schemas():
+    """`dossiers_legislatifs` côté brut, `textes_portes` côté pivot : le même
+    fait porte deux noms selon la couche."""
+    for champ in ("dossiers_legislatifs", "textes_portes"):
+        profil, preserves = preserver_collectes_non_vides({champ: [{"id": "X"}]}, {champ: []})
+        assert preserves == [champ], champ
+
+
+def test_champ_vide_des_deux_cotes_nest_pas_signale():
+    profil, preserves = preserver_collectes_non_vides({"votes": []}, {"votes": []})
+    assert preserves == []
+
+
+def test_profil_neuf_nest_pas_concerne():
+    """Un premier passage n'a rien à préserver — et ne doit pas se plaindre."""
+    profil, preserves = preserver_collectes_non_vides(None, {"votes": []})
+    assert preserves == []
+    assert profil["votes"] == []
+
+
+def test_ancien_champ_de_mauvais_type_est_ignore():
+    """Un profil corrompu ne doit pas faire échouer l'écriture du bon."""
+    profil, preserves = preserver_collectes_non_vides({"votes": "pas une liste"}, {"votes": []})
+    assert preserves == []
+
+
+def test_le_profil_source_nest_pas_modifie():
+    nouveau = {"votes": []}
+    preserver_collectes_non_vides({"votes": [{"numero_scrutin": "1"}]}, nouveau)
+    assert nouveau["votes"] == [], "la fonction doit être pure vis-à-vis de son entrée"

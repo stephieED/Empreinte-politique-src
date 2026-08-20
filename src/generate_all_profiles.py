@@ -84,7 +84,12 @@ from audit_pivot_dataset import compute_profils_perimes
 from candidate_profile import build_profile
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
-from merge_profile import merge_pivot_profile, merge_raw_profile, preserve_stable_freshness_timestamps
+from merge_profile import (
+    merge_pivot_profile,
+    merge_raw_profile,
+    preserve_stable_freshness_timestamps,
+    preserver_collectes_non_vides,
+)
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
 from amendements_index import (
@@ -619,13 +624,30 @@ def process_candidat(
     if mandat_ue is not None:
         profile["mandat_europeen"] = mandat_ue
 
-    if not args.no_merge and json_path.exists():
+    if json_path.exists():
+        existing_profile = None
         try:
             with open(json_path, encoding="utf-8") as f:
                 existing_profile = json.load(f)
-            profile = merge_raw_profile(existing_profile, profile)
         except (json.JSONDecodeError, OSError) as exc:
-            _tprint(f"  [!] Fusion impossible avec le profil existant ({json_path}), écrasement : {exc}")
+            _tprint(f"  [!] Lecture du profil existant impossible ({json_path}), écrasement : {exc}")
+
+        if existing_profile is not None:
+            if not args.no_merge:
+                profile = merge_raw_profile(existing_profile, profile)
+            elif not args.autoriser_collecte_vide:
+                # Mode écrasement : la fusion additive ne protège plus rien, et
+                # une sous-collecte en échec (identité introuvable, endpoint en
+                # panne) rend un profil d'apparence normale dont un champ est
+                # simplement vide. Un `[]` non mesuré n'écrase pas un fait
+                # acquis (#465, même principe que #427 sur les gouvernements).
+                profile, preserves = preserver_collectes_non_vides(existing_profile, profile)
+                if preserves:
+                    _tprint(
+                        f"  [!] {effective_slug} : collecte vide sur {', '.join(preserves)} — "
+                        "entrées existantes PRÉSERVÉES malgré --no-merge (#465). "
+                        "Relancer avec --autoriser-collecte-vide pour forcer le vidage."
+                    )
 
     ecrire_profil_json(json_path, profile)
     _manifest_append(getattr(args, "manifest_out", None), json_path.name)
@@ -849,6 +871,12 @@ def main() -> None:
                              "restent valides — l'identifiant est l'uid AN, il ne dépend d'aucune "
                              "résolution de corpus — mais un amendement vu pour la première fois "
                              "pendant ce run manquera à l'index jusqu'à la prochaine reconstruction.")
+    parser.add_argument("--autoriser-collecte-vide", action="store_true",
+                        help="Lever le garde-fou de #465 : autoriser une collecte VIDE à écraser "
+                             "des entrées existantes en mode --no-merge. Par défaut, un champ "
+                             "revenu à zéro ne remplace jamais un champ qui en portait — un `[]` "
+                             "rendu par une API en panne n'est pas un fait mesuré (AGENTS.md "
+                             "§2.5). À n'employer que pour vider délibérément un champ.")
     parser.add_argument("--no-merge", action="store_true",
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "

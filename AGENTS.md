@@ -110,6 +110,16 @@ collide under `merge-multiple` so only one shard's work survived. The baseline n
 artifact: `merge-and-pivot` checks out the repo and `merge_raw_dirs` only rewrites slugs
 present in the artifacts. See `docs/technical_decisions.md#publication-scopee-artifacts`.
 
+**An empty collection never overwrites a non-empty one (#465)**: under `--no-merge`, a field
+that comes back with **zero** entries never replaces one that had some — per field, not per
+profile. A non-empty result overwrites normally, so a key correction still lands (#440 replaced
+2 018 amendements with 944). Lifted only by `--autoriser-collecte-vide`, and the preservation is
+always printed, never silent. Same principle as #427 on governments: *distinguish "zero observed"
+from "incomplete collection"* — a `[]` returned by a failing API is not a measured fact (rule 5).
+Profiles were the only place not applying it, which cost 18 721 amendements and 1 016 votes on
+`jean-luc-melenchon`, and 23 textes portés on `marine-le-pen` **with no warning in the profile**.
+See `docs/technical_decisions.md#collecte-vide-necrase-jamais`.
+
 **Loss check before commit (#460)**: `merge-and-pivot` runs `src/audit_diff_profils.py
 --ref HEAD` **before** the commit step, and a loss on a stable field (`votes`, `mandats`,
 `textes_portes`, `interventions`, `dossiers_legislatifs`) **aborts the commit**. A run may
