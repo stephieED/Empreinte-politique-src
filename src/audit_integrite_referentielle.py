@@ -365,14 +365,17 @@ def verifier_document(
                         "position": position,
                     })
                 continue
-            if not isinstance(cle, str) or index.resout(cle):
-                if not isinstance(cle, str):
-                    constats.append({
-                        "motif": "orpheline", "couche": couche,
-                        "fichier": fichier, "champ": renvoi.champ,
-                        "cle": repr(cle), "detail": "clé qui n'est pas une chaîne",
-                        "position": position,
-                    })
+            if not isinstance(cle, str):
+                # Une clé qui n'est pas une chaîne ne peut résoudre nulle part,
+                # et `resout()` la compterait à tort comme « vue ».
+                constats.append({
+                    "motif": "orpheline", "couche": couche,
+                    "fichier": fichier, "champ": renvoi.champ,
+                    "cle": repr(cle), "detail": "clé qui n'est pas une chaîne",
+                    "position": position,
+                })
+                continue
+            if index.resout(cle):
                 continue
             if not index.present:
                 motif, detail = "index_absent", index.nom
