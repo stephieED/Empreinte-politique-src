@@ -11,6 +11,14 @@ from gouvernement_roster import (
     _est_mandat_appartenance_gouvernement,
     _mandate_matches_gouvernement,
     _derive_membre_entry,
+    _normalise_fonction,
+    _qualite_portefeuille,
+    FONCTIONS_MINISTERIELLES,
+    FONCTIONS_MINISTERIELLES_OBSERVEES,
+    FONCTIONS_NON_MINISTERIELLES_OBSERVEES,
+    QUALITE_INCONNUE,
+    QUALITE_MINISTERIELLE,
+    QUALITE_NON_MINISTERIELLE,
     build_gouvernement_roster,
     build_premier_ministre,
     load_profils_from_dir,
@@ -53,7 +61,7 @@ def _pivot(
 def _mandat_gouv(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
     return {
         "categorie": "fonction_gouvernementale",
-        "type": "membre",
+        "fonction": "membre",
         "label": label,
         "debut": debut,
         "fin": fin,
@@ -63,14 +71,28 @@ def _mandat_gouv(label: str, debut: str, fin: str = None, actif: bool = False) -
     }
 
 
-def _mandat_portefeuille(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
-    """Mandat `typeOrgane == "MINISTERE"` tel qu'il sort de
-    `candidate_profile._extract_mandats_officiels` : même catégorie que le
-    mandat d'appartenance, mais label de portefeuille, et **sans**
-    `source_url` (aucun mandat de ce chemin n'en porte)."""
+def _mandat_portefeuille(
+    label: str,
+    debut: str,
+    fin: str = None,
+    actif: bool = False,
+    fonction: str = "Ministre",
+) -> dict:
+    """Mandat `typeOrgane == "MINISTERE"` tel qu'il apparaît dans un pivot :
+    même catégorie que le mandat d'appartenance, mais label de portefeuille, et
+    **sans** `source_url` (aucun mandat de ce chemin n'en porte).
+
+    `fonction` reprend `infosQualite.libQualite` du zip AMO30 — c'est le champ
+    qui sépare un maroquin d'une mission parlementaire (#474). Ces fabriques
+    portaient `type` et non `fonction` : la clé `type` est celle produite par
+    `candidate_profile._extract_mandats_officiels`, mais
+    `normalize_nosdeputes` la renomme en `fonction` avant écriture du pivot,
+    et c'est un pivot que `gouvernement_roster` lit. Les fixtures figées de
+    #457 portent bien `fonction` ; ces fabriques les suivent désormais.
+    """
     return {
         "categorie": "fonction_gouvernementale",
-        "type": "Ministre",
+        "fonction": fonction,
         "label": label,
         "debut": debut,
         "fin": fin,
@@ -489,6 +511,230 @@ def test_real_pivot_gabriel_attal_deux_portefeuilles_sous_borne():
 
 
 # ---------------------------------------------------------------------------
+# Parlementaire en mission ≠ ministre (#474)
+# ---------------------------------------------------------------------------
+
+def test_qualite_portefeuille_reconnait_les_qualites_ministerielles_observees():
+    """Les 7 qualités relevées sur les mandats `MINISTERE` du dépôt."""
+    for fonction in FONCTIONS_MINISTERIELLES_OBSERVEES:
+        assert _qualite_portefeuille(fonction) == QUALITE_MINISTERIELLE, fonction
+
+
+def test_qualite_portefeuille_en_mission_nest_pas_ministerielle():
+    """Un parlementaire en mission (art. LO144) n'est pas ministre : c'est le
+    fait qui a publié une attribution fausse (#474)."""
+    for fonction in FONCTIONS_NON_MINISTERIELLES_OBSERVEES:
+        assert _qualite_portefeuille(fonction) == QUALITE_NON_MINISTERIELLE, fonction
+    assert "en mission" not in FONCTIONS_MINISTERIELLES
+
+
+def test_qualite_portefeuille_valeur_inconnue_nest_jamais_un_portefeuille():
+    """Liste blanche, pas liste noire (§2.5) : une 8e valeur qui apparaîtrait
+    à pleine échelle est « inconnue », pas « ministérielle par défaut »."""
+    assert _qualite_portefeuille("Haut-commissaire au plan") == QUALITE_INCONNUE
+    assert _qualite_portefeuille(None) == QUALITE_INCONNUE
+    assert _qualite_portefeuille("") == QUALITE_INCONNUE
+    # `normalize_nosdeputes` remplace un `libQualite` absent par « membre » :
+    # sur un mandat MINISTERE, c'est une lacune de source, pas une qualité.
+    assert _qualite_portefeuille("membre") == QUALITE_INCONNUE
+
+
+def test_normalise_fonction_casse_et_espaces_seulement():
+    """La source écrit « Garde des sceaux » et « Garde des Sceaux » pour la
+    même qualité : normalisation typographique, jamais sémantique."""
+    assert _normalise_fonction("Garde des sceaux, ministre de la justice") == (
+        _normalise_fonction("Garde des Sceaux, ministre de la justice")
+    )
+    assert _normalise_fonction("  Ministre   délégué ") == _normalise_fonction("Ministre délégué")
+    # Deux libellés distincts restent distincts : aucun rapprochement par préfixe.
+    assert _normalise_fonction("Ministre") != _normalise_fonction("Ministre délégué")
+
+
+def test_build_roster_mandat_en_mission_nest_pas_un_portefeuille():
+    """Cas synthétique minimal du défaut : le label d'un mandat de
+    parlementaire en mission est l'intitulé du ministère **auprès duquel** la
+    personne est missionnée — indiscernable d'un maroquin sur ce seul critère.
+    """
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Ministère de l'économie", "2024-12-24", "2025-09-09",
+                fonction="en mission",
+            ),
+        ]),
+    ]
+    warnings = []
+    membres = build_gouvernement_roster(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    )
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+    assert membres[0]["source_url"] is None
+    # Exclusion attendue, pas anomalie : 92 des 209 profils du dépôt portent au
+    # moins un tel mandat. Un warning par occurrence noierait les vraies alertes.
+    assert warnings == []
+
+
+def test_build_roster_qualite_inconnue_warning_explicite_et_portefeuille_null():
+    """Une qualité hors liste blanche ne devient jamais un portefeuille, et ne
+    passe jamais en silence : warning nommant la personne, l'intitulé et la
+    qualité rencontrée, pour que l'ajout à la liste soit une décision humaine."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Ministère de l'intérieur", "2024-12-24", "2025-09-09",
+                fonction="Haut-commissaire au plan",
+            ),
+        ]),
+    ]
+    warnings = []
+    membres = build_gouvernement_roster(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    )
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+    assert len(warnings) == 1
+    assert "Haut-commissaire au plan" in warnings[0]
+    assert "Ministère de l'intérieur" in warnings[0]
+    assert "X" in warnings[0]
+
+
+def test_build_roster_warning_de_qualite_inconnue_dedupe():
+    """Deux mandats d'appartenance au même gouvernement réexaminent le même
+    mandat ministériel : le fait est consigné une fois, pas deux."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", None, actif=True),
+            _mandat_portefeuille(
+                "Ministère de l'intérieur", "2024-12-24", "2025-09-09",
+                fonction="Haut-commissaire au plan",
+            ),
+        ]),
+    ]
+    warnings = []
+    build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings)
+    assert len(warnings) == 1
+
+
+def test_build_roster_portefeuille_posterieur_a_la_fin_du_gouvernement_exclu():
+    """Second défaut de #474, indépendant de la qualité : un mandat
+    d'appartenance jamais clos (`fin: null`) sur un gouvernement pourtant
+    achevé accroche n'importe quel mandat ministériel postérieur.
+
+    Sans borne sur la période du gouvernement, le portefeuille de 2026
+    ci-dessous entrerait dans un gouvernement clos en 2025 — avec `actif:
+    true` dans un gouvernement `actif: false`.
+    """
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            # Le mandat d'appartenance sans fin, l'anomalie de source.
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", None, actif=True),
+            _mandat_portefeuille(
+                "Ministère de l'économie", "2026-02-04", None, actif=True,
+                fonction="Ministre",
+            ),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils)
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+    assert membres[0]["debut"] == "2024-12-24"
+
+
+def test_build_roster_borne_gouvernement_ne_casse_pas_le_ministre_entre_en_cours():
+    """Non-régression du garde-fou de #398 : la borne ajoutée par #474 ne fait
+    que restreindre, elle ne peut rien rattraper.
+
+    Un ministre entré en cours de mandature ne doit pas se voir attribuer le
+    portefeuille qu'il occupait avant — même quand ce portefeuille antérieur
+    chevauche, lui, la période du gouvernement.
+    """
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            # Entré en cours de gouvernement.
+            _mandat_gouv("Gouvernement (BORNE)", "2023-07-21", "2024-01-09"),
+            # Portefeuille antérieur : dans la période du gouvernement, hors
+            # de celle du mandat.
+            _mandat_portefeuille(
+                "Ministère de la culture", "2022-05-21", "2023-07-20",
+                fonction="Ministre",
+            ),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BORNE", "2022-05-21", "2024-01-09", profils)
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] is None
+
+
+def test_real_pivot_astrid_panosyan_bouvet_pas_de_maroquin_fantome_sous_bayrou():
+    """L'attribution fausse publiée sur `main` à `ea6f0d5` (#474).
+
+    Le profil porte un mandat de parlementaire en mission auprès du ministère
+    de l'économie (`fonction: "en mission"`, 2026-02-04, jamais clos) et
+    **deux** mandats d'appartenance au gouvernement Bayrou, dont un jamais clos
+    lui non plus. Le second accrochait le premier, et
+    `gouvernement-BAYROU.json` publiait un portefeuille de l'économie daté du
+    2026-02-04 dans un gouvernement achevé le 2025-09-09, `actif: true` dans un
+    gouvernement `actif: false`.
+
+    Les assertions portent sur des propriétés, pas sur un compte d'entrées :
+    ce profil déclenche par ailleurs une duplication d'entrées (deux mandats
+    d'appartenance identiques en tout sauf leur `fin`), défaut distinct et hors
+    périmètre de #474 — figer le compte ici le graverait en invariant, ce que
+    #457 a précisément appris à ne pas faire.
+    """
+    profil = _load_pivot_fixture("astrid-panosyan-bouvet")
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", [profil])
+
+    assert membres, "le mandat ministériel légitime sous Bayrou doit rester"
+    assert not any(
+        "économie" in (m["portefeuille"] or "") for m in membres
+    ), "le ministère de la mission LO144 ne doit plus être attribué"
+    # Aucun début postérieur à la fin du gouvernement, aucun actif dans un
+    # gouvernement clos (critères d'acceptation de #474).
+    assert all(m["debut"] <= "2025-09-09" for m in membres)
+    assert all(m["actif"] is False for m in membres)
+    # Le portefeuille réellement occupé, lui, est conservé.
+    assert all(
+        m["portefeuille"].startswith("Ministère auprès de la ministre du travail")
+        for m in membres
+    )
+    assert all(m["source_url"] for m in membres)
+
+
+def test_real_pivot_astrid_panosyan_bouvet_portefeuille_reel_conserve_sous_barnier():
+    """Contrôle positif : le filtre ne rogne pas les vrais maroquins.
+
+    Sous Barnier, la même personne détient « Ministère du travail et de
+    l'emploi » (`fonction: "Ministre"`) — attribution qui doit rester intacte.
+    """
+    profil = _load_pivot_fixture("astrid-panosyan-bouvet")
+    membres = build_gouvernement_roster("BARNIER", "2024-09-28", "2024-12-13", [profil])
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] == "Ministère du travail et de l’emploi"
+    assert membres[0]["debut"] == "2024-09-22"
+    assert membres[0]["source_url"]
+
+
+def test_le_mandat_en_mission_reste_dans_le_profil():
+    """#474 retire une attribution fausse, il ne supprime aucune donnée
+    collectée : le mandat de parlementaire en mission est un fait public et
+    traçable, il reste dans `mandats[]` du profil (critère d'acceptation).
+    """
+    for slug in ("astrid-panosyan-bouvet", "david-amiel"):
+        profil = _load_pivot_fixture(slug)
+        missions = [
+            m for m in profil["mandats"]
+            if m.get("categorie") == "fonction_gouvernementale"
+            and m.get("fonction") == "en mission"
+        ]
+        assert missions, slug
+
+
+# ---------------------------------------------------------------------------
 # build_premier_ministre (#398)
 # ---------------------------------------------------------------------------
 
@@ -496,7 +742,10 @@ def test_build_premier_ministre_nominal():
     profils = [
         _pivot("nosdeputes:x", "X", mandats=[
             _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
-            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-12-24", "2025-09-09",
+                fonction="Premier ministre",
+            ),
         ]),
     ]
     pm = build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", profils)
@@ -526,11 +775,17 @@ def test_build_premier_ministre_ambigu_reste_none_avec_warning():
     profils = [
         _pivot("nosdeputes:x", "X", mandats=[
             _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
-            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-12-24", "2025-09-09",
+                fonction="Premier ministre",
+            ),
         ]),
         _pivot("nosdeputes:y", "Y", mandats=[
             _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
-            _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-12-24", "2025-09-09",
+                fonction="Premier ministre",
+            ),
         ]),
     ]
     warnings = []
@@ -547,7 +802,10 @@ def test_build_premier_ministre_dun_autre_gouvernement_non_retenu():
     profils = [
         _pivot("nosdeputes:x", "X", mandats=[
             _mandat_gouv("Gouvernement (ATTAL)", "2024-01-10", "2024-09-05"),
-            _mandat_portefeuille("Premier ministre", "2024-01-10", "2024-09-05"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-01-10", "2024-09-05",
+                fonction="Premier ministre",
+            ),
         ]),
     ]
     assert build_premier_ministre("BARNIER", "2024-09-21", "2024-12-13", profils) is None
@@ -570,12 +828,123 @@ def test_real_pivot_premier_ministre_attal_et_philippe():
     assert build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", [attal]) is None
 
 
+def test_build_premier_ministre_missionne_ninvente_pas_un_premier_ministre():
+    """Cas latent de #474 : le label « Premier ministre » est aussi celui d'une
+    mission parlementaire **auprès de** Matignon.
+
+    Seul en lice, un missionné ne doit pas devenir Premier ministre.
+    """
+    profils = [
+        _pivot("nosdeputes:missionne", "Missionné", mandats=[
+            _mandat_gouv("Gouvernement (ATTAL)", "2024-01-10", "2024-09-05"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-01-12", "2024-05-05",
+                fonction="en mission",
+            ),
+        ]),
+    ]
+    warnings = []
+    assert build_premier_ministre(
+        "ATTAL", "2024-01-10", "2024-09-05", profils, warnings=warnings
+    ) is None
+    assert warnings == []
+
+
+def test_build_premier_ministre_missionne_nefface_pas_le_vrai_premier_ministre():
+    """Le dégât ne serait pas seulement d'inventer un Premier ministre : deux
+    candidats font retourner `None` **avec un warning d'ambiguïté** (§2.5), donc
+    un missionné pourrait *effacer* le vrai (#474).
+
+    Cas synthétique et non fixture : les deux mandats existent bien dans le
+    corpus — `nosdeputes:david-amiel` porte « Premier ministre » /
+    `en mission` du 2024-01-12 au 2024-05-05, période du gouvernement Attal —
+    mais son seul mandat d'appartenance est postérieur (Lecornu II,
+    2025-10-13), si bien qu'aucun chevauchement ne se produit *aujourd'hui*.
+    Le fait « en mission » lui-même est vérifié sur la fixture figée, ci-dessous
+    et dans `test_le_mandat_en_mission_reste_dans_le_profil`.
+    """
+    profils = [
+        _pivot("nosdeputes:vrai-pm", "Vrai PM", mandats=[
+            _mandat_gouv("Gouvernement (ATTAL)", "2024-01-10", "2024-09-05"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-01-10", "2024-09-05",
+                fonction="Premier ministre",
+            ),
+        ]),
+        _pivot("nosdeputes:missionne", "Missionné", mandats=[
+            _mandat_gouv("Gouvernement (ATTAL)", "2024-01-10", "2024-09-05"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-01-12", "2024-05-05",
+                fonction="en mission",
+            ),
+        ]),
+    ]
+    warnings = []
+    pm = build_premier_ministre(
+        "ATTAL", "2024-01-10", "2024-09-05", profils, warnings=warnings
+    )
+    assert pm is not None, "le vrai Premier ministre ne doit pas être effacé"
+    assert pm["nom"] == "Vrai PM"
+    assert not any("Premiers ministres possibles" in w for w in warnings)
+
+
+def test_build_premier_ministre_label_pm_mais_autre_qualite_warning():
+    """Second verrou, propre à `build_premier_ministre` : une qualité
+    ministérielle connue mais différente de « Premier ministre » sur un mandat
+    de label « Premier ministre » est une incohérence de source — écartée avec
+    un warning, jamais retenue en silence."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_portefeuille(
+                "Premier ministre", "2024-12-24", "2025-09-09",
+                fonction="Ministre délégué",
+            ),
+        ]),
+    ]
+    warnings = []
+    assert build_premier_ministre(
+        "BAYROU", "2024-12-24", "2025-09-09", profils, warnings=warnings
+    ) is None
+    assert len(warnings) == 1
+    assert "Ministre délégué" in warnings[0]
+    assert "#474" in warnings[0]
+
+
+def test_real_pivot_david_amiel_mission_aupres_de_matignon_jamais_premier_ministre():
+    """Fixture figée : David Amiel porte bien un mandat de label « Premier
+    ministre » de qualité « en mission ». Il ne devient Premier ministre
+    d'aucun des gouvernements auxquels il a appartenu, et son roster Lecornu II
+    ne fait apparaître aucun portefeuille « Premier ministre »."""
+    profil = _load_pivot_fixture("david-amiel")
+    mission = [
+        m for m in profil["mandats"]
+        if m.get("label") == "Premier ministre" and m.get("fonction") == "en mission"
+    ]
+    assert len(mission) == 1
+
+    warnings = []
+    assert build_premier_ministre(
+        "LECORNU II", "2025-10-13", None, [profil], warnings=warnings
+    ) is None
+    assert build_premier_ministre(
+        "ATTAL", "2024-01-10", "2024-09-05", [profil], warnings=warnings
+    ) is None
+    assert warnings == []
+
+    membres = build_gouvernement_roster("LECORNU II", "2025-10-13", None, [profil])
+    assert all(m["portefeuille"] != "Premier ministre" for m in membres)
+
+
 def test_acteur_ref_absent_si_url_non_reconnue():
     """Fiche Sénat ou identité absente : `acteur_ref` reste None plutôt que
     d'être reconstruit."""
     profil = _pivot("nosdeputes:x", "X", mandats=[
         _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
-        _mandat_portefeuille("Premier ministre", "2024-12-24", "2025-09-09"),
+        _mandat_portefeuille(
+                "Premier ministre", "2024-12-24", "2025-09-09",
+                fonction="Premier ministre",
+            ),
     ])
     profil["identite"] = {"source_url": "https://archive.nossenateurs.fr/stephane-mazars"}
     pm = build_premier_ministre("BAYROU", "2024-12-24", "2025-09-09", [profil])

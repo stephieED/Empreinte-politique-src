@@ -35,22 +35,29 @@ documente ce même principe pour `membres[]`.
 `portefeuille` (#398) vient des mandats `typeOrgane == "MINISTERE"` exposés
 par le même zip AMO30 et mappés en `fonction_gouvernementale` depuis #382/#383
 (« Ministère de l'éducation nationale et de la jeunesse », « Secrétariat
-d'État auprès du Premier ministre… »). La catégorie mélange donc deux natures
-de mandats, que seul le label distingue — voir
-`_est_mandat_appartenance_gouvernement`. Un portefeuille n'est retenu que s'il
-chevauche le mandat d'appartenance du membre, et **tous** les portefeuilles
-chevauchants le sont : un ministre qui change de portefeuille en cours de
-gouvernement produit une entrée `membres[]` par période, jamais un
-portefeuille choisi arbitrairement parmi les siens. `portefeuille` retombe à
-`null` (avec un warning) si aucune `source_url` n'est traçable, le schéma
-l'exigeant dès que l'intitulé est renseigné. La limite inverse est levée :
-`docs/technical_decisions.md#hors-perimetre` § "Ministerial function" est
-marquée RÉSOLU.
+d'État auprès du Premier ministre… »). Le label sépare ces mandats de ceux
+d'appartenance (`_est_mandat_appartenance_gouvernement`), mais il ne suffit
+**pas** à établir qu'il s'agit d'un maroquin : un *parlementaire en mission*
+(art. LO144) porte lui aussi un mandat `MINISTERE`, dont le label est
+l'intitulé du ministère **auprès duquel** il est missionné. Seule
+`mandats[].fonction` les sépare — d'où `_qualite_portefeuille` et la liste
+blanche `FONCTIONS_MINISTERIELLES` (#474). Un portefeuille n'est donc retenu
+que s'il porte une qualité ministérielle connue **et** qu'il chevauche à la
+fois le mandat d'appartenance du membre et la période du gouvernement ; tous
+les portefeuilles ainsi retenus le sont : un ministre qui change de
+portefeuille en cours de gouvernement produit une entrée `membres[]` par
+période, jamais un portefeuille choisi arbitrairement parmi les siens.
+`portefeuille` retombe à `null` (avec un warning) si aucune `source_url`
+n'est traçable, le schéma l'exigeant dès que l'intitulé est renseigné. La
+limite inverse est levée : `docs/technical_decisions.md#hors-perimetre`
+§ "Ministerial function" est marquée RÉSOLU.
 
 `premier_ministre` (#398, `build_premier_ministre`) se dérive du même
 matériau : le membre du gouvernement dont un mandat `MINISTERE` porte le label
-« Premier ministre ». Aucun appariement par la seule période, aucune déduction
-depuis le nom du gouvernement — voir la docstring de la fonction.
+« Premier ministre » **et** la qualité « Premier ministre » (le label seul ne
+suffit pas : une mission auprès du Premier ministre porte le même — #474).
+Aucun appariement par la seule période, aucune déduction depuis le nom du
+gouvernement — voir la docstring de la fonction.
 
 Hors périmètre de ce module (sous-issue #5 de #184) :
   - Collecte des textes législatifs portés par le gouvernement.
@@ -123,27 +130,139 @@ def _expected_label(libelle_an: str) -> str:
 
 
 def _est_mandat_appartenance_gouvernement(label: str) -> bool:
-    """Distingue les deux natures de mandats `fonction_gouvernementale`.
+    """Distingue les deux `typeOrgane` réunis dans `fonction_gouvernementale`.
 
     La catégorie en mélange deux, issues du même zip AMO30 mais de deux
     `typeOrgane` différents (voir `candidate_profile._TYPE_ORGANE_TO_CATEGORIE`) :
       - `GOUVERNEMENT` : l'appartenance au gouvernement, label « Gouvernement
         (<libelleAbrege>) » — c'est le mandat qui rattache un membre à CE
         gouvernement (`_mandate_matches_gouvernement`) ;
-      - `MINISTERE` : le portefeuille précis, label « Ministère de… »,
-        « Secrétariat d'État… », « Premier ministre » (#382/#383).
+      - `MINISTERE` : un mandat rattaché à un ministère, label « Ministère
+        de… », « Secrétariat d'État… », « Premier ministre » (#382/#383).
 
-    Le label est le seul discriminant : `categorie` est identique pour les
-    deux, et `position_dans_hemicycle` n'est renseigné que sur les premiers.
+    Pour cette séparation-là, le label est bien le seul discriminant :
+    `categorie` est identique pour les deux, et `position_dans_hemicycle`
+    n'est renseigné que sur les premiers.
+
+    Ce que le label ne dit **pas** (#474) : qu'un mandat `MINISTERE` soit un
+    portefeuille. Un parlementaire en mission (art. LO144) porte le même type
+    de mandat, avec pour label l'intitulé du ministère **auprès duquel** il
+    est missionné — strictement indiscernable d'un maroquin sur ce seul
+    critère. Cette seconde distinction se lit dans `mandats[].fonction` :
+    voir `_qualite_portefeuille`.
     """
     return label == "Gouvernement" or (
         label.startswith("Gouvernement (") and label.endswith(")")
     )
 
 
+# ---------------------------------------------------------------------------
+# Qualité du mandat MINISTERE : maroquin ou mission ? (#474)
+# ---------------------------------------------------------------------------
+
+# `mandats[].fonction` reprend `infosQualite.libQualite` du zip AMO30
+# (`candidate_profile._build_acteur_mandats_index`, renommé `type` →
+# `fonction` par `normalize_nosdeputes`). C'est le seul champ qui sépare un
+# portefeuille ministériel d'un mandat de parlementaire en mission.
+#
+# Liste BLANCHE, pas liste noire de « en mission » (#474, AGENTS.md §2.5) :
+# une liste noire laisserait passer silencieusement toute qualité non prévue
+# et la publierait comme un maroquin. La liste blanche, elle, fait retomber
+# l'inconnu sur « portefeuille non renseigné » **avec un warning** — une
+# donnée manquante, jamais une donnée par défaut.
+#
+# Les valeurs ci-dessous sont celles observées sur les 209 profils du dépôt au
+# 2026-08-20 (`pivot_data/profiles/`) ; le corpus cible en compte ~752, donc
+# d'autres qualités apparaîtront. Le geste de maintenance attendu est alors
+# d'ajouter la valeur ici après vérification humaine — même principe éditorial
+# que `raw_data/gouvernements_reels.json` — en s'appuyant sur le warning, qui
+# nomme la personne, l'intitulé et la qualité rencontrée.
+FONCTIONS_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
+    "Premier ministre",
+    "Ministre",
+    "Ministre délégué",
+    "Secrétaire d'État",
+    "Ministre d'État, ministre",
+    "Garde des sceaux, ministre de la justice",
+    "Ministre d'État, Garde des Sceaux, ministre de la justice",
+)
+
+# Qualités connues qui ne sont PAS un portefeuille : exclues sans warning,
+# leur exclusion étant le comportement attendu et non une anomalie. 92 des
+# 209 profils portent au moins un mandat « en mission ».
+FONCTIONS_NON_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
+    "en mission",
+)
+
+# Qualité exacte du chef du gouvernement (`build_premier_ministre`).
+FONCTION_PREMIER_MINISTRE = "Premier ministre"
+
+
+def _normalise_fonction(fonction: Any) -> str:
+    """Normalise une `mandats[].fonction` pour comparaison : casse et espaces.
+
+    Purement typographique, jamais sémantique — la source mélange déjà « Garde
+    des sceaux » et « Garde des Sceaux » sur la même qualité. Aucune
+    troncature, aucun rapprochement par préfixe : deux libellés distincts
+    restent distincts.
+    """
+    if not isinstance(fonction, str):
+        return ""
+    return re.sub(r"\s+", " ", fonction).strip().casefold()
+
+
+FONCTIONS_MINISTERIELLES: frozenset[str] = frozenset(
+    _normalise_fonction(f) for f in FONCTIONS_MINISTERIELLES_OBSERVEES
+)
+FONCTIONS_NON_MINISTERIELLES: frozenset[str] = frozenset(
+    _normalise_fonction(f) for f in FONCTIONS_NON_MINISTERIELLES_OBSERVEES
+)
+
+QUALITE_MINISTERIELLE = "ministerielle"
+QUALITE_NON_MINISTERIELLE = "non_ministerielle"
+QUALITE_INCONNUE = "inconnue"
+
+
+def _qualite_portefeuille(fonction: Any) -> str:
+    """Classe la `fonction` d'un mandat `MINISTERE` en trois états (#474).
+
+    Trois états et non deux : « inconnue » n'est ni un portefeuille ni une
+    exclusion de routine, c'est une donnée non résolue qui doit se voir et se
+    corriger (§2.5). Un `fonction` absent (`None`) est traité comme inconnu —
+    `normalize_nosdeputes` le remplace par « membre » quand la source ne
+    renseigne pas `libQualite`, ce qui, sur un mandat `MINISTERE`, est
+    précisément une lacune de source, pas une qualité.
+    """
+    normalisee = _normalise_fonction(fonction)
+    if normalisee in FONCTIONS_MINISTERIELLES:
+        return QUALITE_MINISTERIELLE
+    if normalisee in FONCTIONS_NON_MINISTERIELLES:
+        return QUALITE_NON_MINISTERIELLE
+    return QUALITE_INCONNUE
+
+
+def _ajouter_warning(warnings: Optional[list[str]], message: str) -> None:
+    """Consigne un warning sans doublon.
+
+    Le même mandat est réexaminé une fois par mandat d'appartenance du même
+    profil (un membre peut en porter plusieurs pour un même gouvernement, cf.
+    #474) et une seconde fois par `build_premier_ministre`, qui partage la
+    liste de warnings du roster : sans déduplication, le même fait serait
+    consigné trois ou quatre fois dans `meta.warnings`.
+    """
+    if warnings is None or message in warnings:
+        return
+    warnings.append(message)
+
+
 def _mandats_portefeuille(profil: dict[str, Any]) -> list[dict[str, Any]]:
     """Mandats `MINISTERE` d'un profil : les mandats `fonction_gouvernementale`
-    qui portent un intitulé de portefeuille plutôt qu'une appartenance."""
+    dont le label n'est pas celui d'une appartenance.
+
+    Filtre de `typeOrgane` uniquement : ces mandats ne sont pas encore des
+    portefeuilles (un parlementaire en mission en porte aussi). Le tri
+    maroquin/mission se fait dans `_portefeuilles_du_mandat`, sur `fonction`.
+    """
     return [
         mandat
         for mandat in (profil.get("mandats") or [])
@@ -153,28 +272,58 @@ def _mandats_portefeuille(profil: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _portefeuilles_du_mandat(
-    profil: dict[str, Any], mandat_gouvernemental: dict[str, Any]
+    profil: dict[str, Any],
+    mandat_gouvernemental: dict[str, Any],
+    g_debut: Optional[date],
+    g_fin: Optional[date],
+    warnings: Optional[list[str]] = None,
 ) -> list[dict[str, Any]]:
-    """Mandats de portefeuille chevauchant un mandat d'appartenance donné,
+    """Portefeuilles ministériels rattachables à un mandat d'appartenance donné,
     triés par date de début (l'ordre chronologique de la source).
 
-    Le chevauchement se teste contre la période du **mandat** du membre, pas
-    contre celle du gouvernement : un ministre entré en cours de mandature ne
-    doit pas se voir attribuer le portefeuille qu'il occupait avant.
+    Trois conditions cumulatives, toutes nécessaires :
+
+    1. chevauchement avec la période du **mandat** du membre — un ministre
+       entré en cours de mandature ne doit pas se voir attribuer le
+       portefeuille qu'il occupait avant ;
+    2. chevauchement avec la période du **gouvernement** (#474). La condition 1
+       ne suffit pas : une source peut laisser ouvert (`fin: null`) un mandat
+       d'appartenance à un gouvernement pourtant clos, et ce mandat sans fin
+       accroche alors n'importe quel mandat ministériel postérieur. C'est
+       exactement ce qui a publié un portefeuille daté du 2026-02-04 dans un
+       gouvernement achevé le 2025-09-09. Cette condition ne fait que
+       restreindre : elle ne peut pas rattraper un portefeuille que la
+       condition 1 écarte, donc le garde-fou de #398 reste entier.
+    3. qualité ministérielle connue (`_qualite_portefeuille`) — un mandat de
+       parlementaire en mission porte le nom du ministère auprès duquel la
+       personne est missionnée, il n'est pas un maroquin.
     """
     m_debut = _parse_date(mandat_gouvernemental.get("debut"))
     m_fin = _parse_date(mandat_gouvernemental.get("fin"))
-    chevauchants = [
-        portefeuille
-        for portefeuille in _mandats_portefeuille(profil)
-        if _periods_overlap(
-            _parse_date(portefeuille.get("debut")),
-            _parse_date(portefeuille.get("fin")),
-            m_debut,
-            m_fin,
-        )
-    ]
-    return sorted(chevauchants, key=lambda p: p.get("debut") or "")
+
+    retenus: list[dict[str, Any]] = []
+    for portefeuille in _mandats_portefeuille(profil):
+        p_debut = _parse_date(portefeuille.get("debut"))
+        p_fin = _parse_date(portefeuille.get("fin"))
+        if not _periods_overlap(p_debut, p_fin, m_debut, m_fin):
+            continue
+        if not _periods_overlap(p_debut, p_fin, g_debut, g_fin):
+            continue
+
+        qualite = _qualite_portefeuille(portefeuille.get("fonction"))
+        if qualite == QUALITE_MINISTERIELLE:
+            retenus.append(portefeuille)
+        elif qualite == QUALITE_INCONNUE:
+            _ajouter_warning(
+                warnings,
+                f"gouvernement_roster: {profil.get('nom') or profil.get('id')} : "
+                f"qualité de mandat {portefeuille.get('fonction')!r} inconnue sur "
+                f"{portefeuille.get('label')!r} — ni ministérielle connue, ni "
+                f"mission : portefeuille non renseigné. Compléter "
+                f"FONCTIONS_MINISTERIELLES_OBSERVEES après vérification (#474).",
+            )
+
+    return sorted(retenus, key=lambda p: p.get("debut") or "")
 
 
 def _mandate_matches_gouvernement(
@@ -276,9 +425,13 @@ def build_gouvernement_roster(
                      si le gouvernement est toujours en fonction.
         profils: liste de profils pivot v1 (déjà chargés depuis
                  `pivot_data/profiles/*.pivot.json`).
-        warnings: liste optionnelle où consigner les anomalies (portefeuille
-                  trouvé mais non traçable). Même motif que
-                  `candidate_profile.fetch_amendements_officiels`.
+        warnings: liste optionnelle où consigner les anomalies : portefeuille
+                  trouvé mais non traçable, et qualité de mandat inconnue
+                  (#474). Même motif que
+                  `candidate_profile.fetch_amendements_officiels` ; remontée
+                  dans `meta.warnings` du profil de gouvernement par
+                  `gouvernement_profile.build_gouvernement_profile`, donc
+                  visible dans le jeu de données publié.
 
     Returns:
         Liste de dicts conformes à la structure `membres[]` de
@@ -302,7 +455,9 @@ def build_gouvernement_roster(
             # mandat d'appartenance — les fondre en une entrée effacerait un
             # des deux portefeuilles réellement occupés.
             portefeuilles: list[dict[str, Any]] = []
-            for portefeuille in _portefeuilles_du_mandat(profil, mandat):
+            for portefeuille in _portefeuilles_du_mandat(
+                profil, mandat, g_debut, g_fin, warnings
+            ):
                 if _source_url_portefeuille(portefeuille, mandat):
                     portefeuilles.append(portefeuille)
                 elif warnings is not None:
@@ -359,8 +514,16 @@ def build_premier_ministre(
     Le critère est le **cumul** de deux faits, jamais l'un des deux seul :
       1. être membre de CE gouvernement — même sélection désambiguïsée que
          `build_gouvernement_roster` (libellé exact + chevauchement) ;
-      2. porter un mandat `MINISTERE` de label « Premier ministre »
-         chevauchant ce mandat d'appartenance.
+      2. porter un mandat `MINISTERE` de label « Premier ministre » **et de
+         qualité « Premier ministre »** chevauchant ce mandat d'appartenance.
+
+    Le label seul ne suffit pas (#474) : une mission parlementaire auprès de
+    Matignon porte exactement le même, avec `fonction: "en mission"`. Un tel
+    mandat est déjà écarté en amont par `_portefeuilles_du_mandat` ; la
+    vérification de qualité ci-dessous est un second verrou, motivé par le
+    fait que l'erreur ne se limiterait pas à publier un faux Premier ministre
+    — deux candidats font retourner `None`, donc un missionné pourrait
+    *effacer* le vrai.
 
     Le seul appariement de période serait insuffisant : deux gouvernements
     successifs se suivent d'un jour, et un même Premier ministre peut en
@@ -381,8 +544,28 @@ def build_premier_ministre(
         for mandat in profil.get("mandats") or []:
             if not _mandate_matches_gouvernement(mandat, libelle_an, g_debut, g_fin):
                 continue
-            for portefeuille in _portefeuilles_du_mandat(profil, mandat):
+            for portefeuille in _portefeuilles_du_mandat(
+                profil, mandat, g_debut, g_fin, warnings
+            ):
                 if (portefeuille.get("label") or "") != LABEL_PORTEFEUILLE_PREMIER_MINISTRE:
+                    continue
+                # Second verrou, indépendant de la liste blanche amont (#474) :
+                # le label « Premier ministre » est aussi celui d'une mission
+                # auprès de Matignon. Exiger en plus la qualité exacte évite
+                # qu'un desserrement futur de `FONCTIONS_MINISTERIELLES` ne
+                # rouvre le chemin ici — où le dégât n'est pas seulement
+                # d'inventer un Premier ministre, mais d'en *effacer* un vrai :
+                # deux candidats ⇒ `None` + warning d'ambiguïté (ci-dessous).
+                if _normalise_fonction(portefeuille.get("fonction")) != _normalise_fonction(
+                    FONCTION_PREMIER_MINISTRE
+                ):
+                    _ajouter_warning(
+                        warnings,
+                        f"gouvernement_roster: {profil.get('nom') or profil.get('id')} : "
+                        f"mandat de label {LABEL_PORTEFEUILLE_PREMIER_MINISTRE!r} mais de "
+                        f"qualité {portefeuille.get('fonction')!r} — non retenu comme "
+                        f"Premier ministre (#474).",
+                    )
                     continue
                 candidats.append({
                     "nom": profil.get("nom") or "",
