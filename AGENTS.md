@@ -102,9 +102,11 @@ network** — acceptance tests on real profiles use frozen fixtures under `tests
 (#457). This is enforced, not just audited: the job sparse-checks-out only what the suite
 reads, so the corpus is absent from the CI disk. Watch for CLI/function **defaults**
 pointing into the repo — that is how nine tests were silently reading 66 MB of corpus.
-`tests/conftest.py` holds the shared offline guards: an `autouse` fixture stubs the Senate
-roster index (#488) and makes `fetch_full_roster` fail loudly, because a single per-process
-network call turned 62 existing tests into a 13,4 s file.
+`tests/conftest.py` enforces the network half structurally (#488): an `autouse` fixture cuts
+`requests.Session.send` and fails loudly, naming the URL. **Loopback stays open** — 11 tests
+serve fixtures from `127.0.0.1`; the criterion is leaving the machine, not speaking HTTP.
+It exists because one per-process request turned 62 existing tests into a 13,4 s file with
+nothing failing.
 Test-only dependencies go in `requirements-dev.txt`.
 See `docs/technical_decisions.md#ci-tests-pytest`.
 
@@ -133,18 +135,21 @@ Profiles were the only place not applying it, which cost 18 721 amendements and 
 `jean-luc-melenchon`, and 23 textes portés on `marine-le-pen` **with no warning in the profile**.
 See `docs/technical_decisions.md#collecte-vide-necrase-jamais`.
 
-**Both chambers are queried, and a failed one is named (#488)**: with `--source all`,
-`build_profile_any_chambre` no longer stops at the first chamber that returns an identity —
-that ordering published 21 of 207 `AN` profiles for people the Senate's own roster knows,
-18 of them still sitting senators. Three warning types land in the profile's `meta.warnings`
-(published, not just logged): `collecte de chambre en échec`, `carrière sur deux chambres`,
-`index Sénat indisponible`. When both chambers answer, the **first of `CHAMBRES` wins by
-documented convention** — deriving `chambre` from the mandates is #486's sub-issue D and
-would erase the other career. `--source an`/`--source senat` stay scoped, tested.
-The Senate is only really called for slugs listed in its full roster, loaded in **one request
-per run** (`slugs_connus_du_senat()`): a 404 there costs ~10 s, so the naive systematic call
-was +30,6 min per roster shard. `None` (index unreachable) is never conflated with an empty
-index. See `docs/technical_decisions.md#deux-chambres-interrogees`.
+**Bicameral collection is for candidates only (#488)**: `build_profile_any_chambre` queries
+**both** chambers — instead of stopping at the first that returns an identity — only when
+`meta.provenance == "candidat_declare"` (8 of 209 profiles). A `roster_groupe` member keeps the
+historical first-answer-wins behaviour: no Senate group is ever aggregated (both published
+`groupe-Senat-*.json` carry `cohesion_votes: 0`, no usable Senate dataset exists), so a roster
+member's Senate past feeds nothing, and collecting it costs 2 requests at ~9,5 s median each —
+**+30,6 min per roster shard**, +4 h at full scale. A candidate's Senate past is *biographical*,
+which is why it is worth those 16 requests. Two warning types reach the published
+`meta.warnings`: `carrière sur deux chambres` (candidates only) and `collecte de chambre en
+échec` (**all profiles** — it only fires on a real exception, and a chamber silently picked by
+an outage is exactly §2.5). When both answer, the **first of `CHAMBRES` wins by documented
+convention** — deriving `chambre` from the mandates is #486's sub-issue D and would erase the
+other career. No mandate is ever merged across chambers here (sub-issue C), so
+`group_profile`'s eligibility union is untouched. `--source an`/`--source senat` stay scoped
+whatever the provenance, tested. See `docs/technical_decisions.md#deux-chambres-interrogees`.
 
 **Loss check before commit (#460, scope extended by #470)**: `merge-and-pivot` runs
 `src/audit_diff_profils.py --ref HEAD` **before** the commit step, over **all of

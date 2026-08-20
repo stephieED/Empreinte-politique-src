@@ -83,7 +83,6 @@ from typing import Any, Optional
 from audit_pivot_dataset import compute_profils_perimes
 from candidate_profile import build_profile, compteur_appels_nosdeputes
 from candidate_profile_ue import build_profile_ue
-from group_roster import fetch_full_roster
 from json_io import ecrire_profil_json
 from merge_profile import (
     merge_pivot_profile,
@@ -114,7 +113,6 @@ CHAMBRES = ["deputes", "senateurs"]
 # ':' est le *type* agrégé par audit_pivot_dataset.compute_agregation_warnings.
 WARNING_PREFIX_CHAMBRE_EN_ECHEC = "collecte de chambre en échec"
 WARNING_PREFIX_DEUX_CHAMBRES = "carrière sur deux chambres"
-WARNING_PREFIX_INDEX_SENAT_INDISPONIBLE = "index Sénat indisponible"
 
 # Répertoire de cache ParlTrack — identique à parltrack_dumps.PARLTRACK_CACHE_DIR.
 _PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
@@ -360,101 +358,63 @@ def _select_candidats_couverture(
     return selection, slugs_a_rafraichir
 
 
-# ── Index des slugs connus du Sénat (#488) ──────────────────────────────────
-# Interroger systématiquement les deux chambres est le correctif demandé par
-# #488 ; le faire naïvement coûte deux requêtes HTTP par candidat vers
-# `archive.nossenateurs.fr`, pour une réponse négative dans ~90 % des cas.
-# Mesuré le 20/08/2026 : ~9,5 s de médiane par requête sur cette archive, soit
-# ~19 s par candidat, ~31 min par shard roster et ~4 h à pleine échelle — neuf
-# fois le budget actuel d'un shard, et l'exact retour de ce que #467 avait
-# supprimé (la temporisation de courtoisie redevient due à chaque candidat).
-#
-# Le roster complet du Sénat est servi en UNE requête (`/senateurs/json`,
-# 1 357 entrées, 1,09 Mo, historique compris — Mélenchon 2004→2010 y figure,
-# Retailleau 2004→en cours aussi). On s'en sert comme d'un index d'existence :
-# la seconde chambre n'est réellement interrogée que pour les slugs que le
-# Sénat connaît. Même geste que #369 (référentiel AN local au lieu d'un appel
-# NosDéputés par député), #392 et #403.
-#
-# Ce n'est PAS une décision de chambre : l'index ne dit pas où siège la
-# personne, il dit seulement si une collecte Sénat a une chance d'aboutir. La
-# décision reste prise sur les identités réellement collectées, plus bas.
-_INDEX_SENAT_LOCK = threading.Lock()
-_index_senat_charge = False
-_index_senat_slugs: Optional[frozenset[str]] = None
-
-
-def _reinitialiser_index_senat() -> None:
-    """Vide le cache mémoire de l'index Sénat (tests uniquement)."""
-    global _index_senat_charge, _index_senat_slugs
-    with _INDEX_SENAT_LOCK:
-        _index_senat_charge = False
-        _index_senat_slugs = None
-
-
-def slugs_connus_du_senat() -> Optional[frozenset[str]]:
-    """Slugs figurant au roster complet de NosSénateurs, ou `None` si l'index
-    n'a pas pu être chargé.
-
-    UNE requête par process, partagée par tous les candidats. L'échec est mis
-    en cache lui aussi : un index indisponible ne doit pas provoquer 752
-    tentatives — mais il ne doit pas non plus se traduire par un silence, d'où
-    le `None` distinct de l'ensemble vide (AGENTS.md §2.5). L'appelant en fait
-    un warning publié, jamais une valeur par défaut.
-    """
-    global _index_senat_charge, _index_senat_slugs
-    with _INDEX_SENAT_LOCK:
-        if not _index_senat_charge:
-            _index_senat_charge = True
-            try:
-                membres = fetch_full_roster("senateurs")
-                _index_senat_slugs = frozenset(
-                    m["slug"] for m in membres if isinstance(m, dict) and m.get("slug")
-                )
-                _tprint(f"  · index Sénat : {len(_index_senat_slugs)} slugs connus (1 requête).")
-            except Exception as exc:
-                _index_senat_slugs = None
-                _tprint(f"  [!] Index Sénat indisponible : {exc}")
-        return _index_senat_slugs
-
-
 def build_profile_any_chambre(
     slug: str,
     max_pages: int,
     chambres: Optional[list[str]] = None,
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
+    collecte_bicamerale: bool = False,
 ) -> tuple[Optional[dict], Optional[str], list[str]]:
-    """Interroge **toutes** les chambres demandées et renvoie
-    `(profil_retenu, chambre_retenue, warnings)`.
+    """Collecte le profil FR et renvoie `(profil_retenu, chambre_retenue, warnings)`.
 
     Avant #488, cette fonction s'arrêtait à la première chambre qui rendait une
     identité, et un `except Exception: continue` avalait les échecs sans laisser
     de trace ailleurs qu'en log. Deux conséquences mesurées dans le corpus :
 
     - un parlementaire présent des deux côtés était classé par **l'ordre de la
-      boucle** — 21 des 207 profils publiés `chambre: "AN"` au 20/08/2026 ont
-      un slug figurant au roster complet du Sénat, dont 18 avec un mandat
-      sénatorial encore ouvert (Retailleau, Larcher…) ;
+      boucle** — cas Retailleau, sénateur en exercice publié `chambre: "AN"` ;
     - une **défaillance transitoire** de la première chambre faisait basculer
       la chambre publiée sur la seconde, sans warning (cas Mélenchon, #484).
 
-    Ce que fait cette version :
+    Deux régimes, séparés par `collecte_bicamerale` :
 
-    1. elle interroge chaque chambre de `chambres` (l'index ci-dessus évite les
-       appels Sénat voués à un 404) ;
-    2. **quand les deux répondent**, elle retient la première de `chambres` —
-       une *convention d'ordre*, explicitement nommée dans un warning publié,
-       pas une détermination. Choisir « la chambre du mandat en cours »
-       reviendrait à dériver `chambre` des mandats : c'est la sous-issue D de
-       #486, et l'appliquer ici effacerait la carrière AN de Retailleau comme
-       on efface aujourd'hui son mandat sénatorial — un fait faux remplacé par
-       un autre (#486). La donnée publiée ne bouge donc pas ; ce qui change,
-       c'est qu'elle cesse d'être muette ;
-    3. **quand une chambre échoue alors qu'une autre répond**, elle nomme la
-       chambre et la raison dans un warning publié (AGENTS.md §2.5) ;
-    4. elle ne fusionne PAS les deux profils bruts : porter la chambre sur
-       chaque mandat est la sous-issue C de #486, qui dépend de #487.
+    **`collecte_bicamerale=True` — profils de candidats** (`meta.provenance ==
+    "candidat_declare"`, 8 slugs résolvables sur les 13 de
+    `raw_data/candidats.json`). Toutes les chambres de `chambres` sont
+    interrogées, et non plus seulement la première qui répond. C'est le seul
+    endroit où un passé sénatorial a un usage : **biographique**, sur un CV
+    (« a été sénateur de 2004 à 2010 »).
+
+    **`collecte_bicamerale=False` — membres de roster** (`roster_groupe`, 201
+    des 209 profils). Comportement historique : on s'arrête à la première
+    chambre qui répond. Aucun groupe sénatorial n'est agrégé — aucun jeu de
+    données Sénat structuré n'est exploitable, voir
+    `docs/technical_decisions.md` § *Senate votes, amendments, sponsored texts*,
+    et les deux `groupe-Senat-*.json` publiés portent `cohesion_votes: 0`. Le
+    passé sénatorial d'un membre de roster n'alimente donc rien, et le collecter
+    coûterait deux requêtes à ~9,5 s de médiane pour 752 membres, soit
+    **+30,6 min par shard** et **+4 h 04** à pleine échelle (mesuré le
+    20/08/2026, voir `docs/technical_decisions.md#deux-chambres-interrogees`).
+
+    Ce que fait cette version, dans les deux régimes :
+
+    1. **quand une chambre échoue**, elle nomme la chambre et la raison dans un
+       warning publié (AGENTS.md §2.5) — y compris pour un profil de roster :
+       le warning ne se déclenche que sur une exception réelle, jamais en
+       régime nominal, et c'est exactement l'échec que #484 a vu disparaître
+       dans un log de run ;
+    2. **quand les deux chambres répondent** (bicaméral seulement), elle retient
+       la première de `chambres` — une *convention d'ordre*, explicitement
+       nommée dans un warning publié, pas une détermination. Choisir « la
+       chambre du mandat en cours » reviendrait à dériver `chambre` des
+       mandats : c'est la sous-issue D de #486, et l'appliquer ici effacerait
+       la carrière AN de Retailleau comme on efface aujourd'hui son mandat
+       sénatorial — un fait faux remplacé par un autre (#486) ;
+    3. elle ne fusionne PAS les deux profils bruts : porter la chambre sur
+       chaque mandat est la sous-issue C de #486. Aucun mandat n'est donc ajouté
+       à aucun profil par cette fonction, et les dénominateurs de cohésion de
+       `group_profile` sont hors d'atteinte.
 
     Les warnings renvoyés sont aussi ajoutés à `meta.warnings` du profil retenu
     (donc propagés au pivot par `normalize_nosdeputes`), et rendus à l'appelant
@@ -463,24 +423,11 @@ def build_profile_any_chambre(
     """
     if chambres is None:
         chambres = CHAMBRES
-    interroger_plusieurs_chambres = len(chambres) > 1
 
     resultats: list[tuple[str, dict]] = []
     echecs: list[tuple[str, str]] = []
-    index_indisponible = False
 
     for chambre in chambres:
-        # Pré-filtre d'existence : uniquement quand PLUSIEURS chambres sont
-        # demandées. Avec `--source senat`, l'extraction est explicitement
-        # scopée sur le Sénat et doit l'interroger, index ou pas.
-        if chambre == "senateurs" and interroger_plusieurs_chambres:
-            connus = slugs_connus_du_senat()
-            if connus is None:
-                index_indisponible = True
-                continue
-            if slug not in connus:
-                continue
-
         try:
             profile = build_profile(
                 chambre,
@@ -495,6 +442,8 @@ def build_profile_any_chambre(
             continue
         if profile.get("identite"):
             resultats.append((chambre, profile))
+            if not collecte_bicamerale:
+                break
 
     warnings: list[str] = []
 
@@ -517,14 +466,6 @@ def build_profile_any_chambre(
             f"{WARNING_PREFIX_CHAMBRE_EN_ECHEC} : la collecte '{chambre}' a échoué "
             f"({raison}) alors que '{chambre_retenue}' a répondu — la chambre publiée est "
             f"celle qui a répondu, pas le résultat d'une comparaison des deux (#488)."
-        )
-
-    if index_indisponible:
-        warnings.append(
-            f"{WARNING_PREFIX_INDEX_SENAT_INDISPONIBLE} : le roster complet de "
-            f"NosSénateurs n'a pas pu être chargé ce run, la chambre 'senateurs' n'a donc "
-            f"pas été interrogée pour ce slug — un éventuel mandat sénatorial reste "
-            f"invisible de cette collecte (#488)."
         )
 
     if len(resultats) > 1:
@@ -659,6 +600,14 @@ def process_candidat(
 
     source = getattr(args, "source", "all")
 
+    # provenance (#189) : "roster_groupe" pour les entrées produites par
+    # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
+    # sinon (raw_data/candidats.json, comportement historique par défaut).
+    # Calculée ici, et plus seulement au moment de la normalisation pivot : depuis
+    # #488 elle décide aussi si la collecte est bicamérale (voir
+    # build_profile_any_chambre).
+    provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
+
     # ── Mode --pivot-only : pas de réseau, juste normalisation ──────────────
     if getattr(args, "pivot_only", False):
         if not json_path.exists():
@@ -675,10 +624,6 @@ def process_candidat(
         chambre = profile.get("chambre")
         mandat_ue = profile.get("mandat_europeen")
         parti = candidat.get("parti")
-        # provenance (#189) : "roster_groupe" pour les entrées produites par
-        # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
-        # sinon (raw_data/candidats.json, comportement historique par défaut).
-        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
 
         pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
@@ -758,6 +703,11 @@ def process_candidat(
             chambres=chambres_fr,
             skip_interventions=args.skip_interventions,
             skip_dossiers_legislatifs=args.skip_dossiers_legislatifs,
+            # #488 : les deux chambres ne sont interrogées que pour un profil de
+            # CANDIDAT. Pour un membre de roster, un passé sénatorial n'alimente
+            # aucun agrégat (aucun groupe sénatorial n'est agrégé) et coûterait
+            # +30,6 min par shard — voir le docstring de la fonction.
+            collecte_bicamerale=(provenance == "candidat_declare"),
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
@@ -839,8 +789,6 @@ def process_candidat(
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
         parti = candidat.get("parti")
-        # provenance (#189) : voir commentaire équivalent dans le bloc --pivot-only ci-dessus.
-        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
         pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
@@ -1013,9 +961,10 @@ def main() -> None:
             "'all' = toutes les sources (comportement par défaut). "
             "Avec 'an'/'senat', la source UE est ignorée. "
             "Avec 'ue', les sources FR (AN/Sénat) sont ignorées. "
-            "Avec 'all', les DEUX chambres FR sont interrogées et non plus seulement "
-            "la première qui répond (#488) : le Sénat n'est réellement appelé que pour "
-            "les slugs figurant à son roster complet, chargé en une requête par run."
+            "Avec 'all', les DEUX chambres FR sont interrogées — et non plus seulement "
+            "la première qui répond — pour les seuls profils de CANDIDATS "
+            "(meta.provenance = candidat_declare, #488). Un membre de roster garde le "
+            "comportement historique : on s'arrête à la première chambre qui répond."
         ),
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")

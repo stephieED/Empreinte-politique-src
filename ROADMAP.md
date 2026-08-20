@@ -9,10 +9,16 @@ something is pending, not *why*.
 ## Known bugs
 
 - 21 of the 207 profiles published as `chambre: "AN"` are known to the Senate's own
-  roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). Both chambers
-  are now queried and the case is named in `meta.warnings`, but the model still publishes
-  one chamber per profile: fixing the published value needs #486 sub-issues C/D, which
-  depend on #487 (`needs-human`). See `technical_decisions.md#deux-chambres-interrogees`.
+  roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). All but
+  Retailleau are `roster_groupe`, so they are deliberately **out of scope**: no Senate
+  group is aggregated, and their Senate past feeds nothing. The published value stays
+  wrong for them until #486 sub-issues C/D put the chamber on each mandate. See
+  `technical_decisions.md#deux-chambres-interrogees`.
+- In CI a candidate's `chambre` is also decided by **artifact merge order**, not only by
+  the collection loop: `extract-an` (`--source an`) and `extract-senat` (`--source senat`)
+  are two scoped passes whose raw profiles meet in `merge_raw_profile`, where
+  `chambre = _prefer_non_empty(new, old)` lets the last one landing win. #488 fixed the
+  default `--source all` path; this second path belongs to #486 sub-issue D.
 - Profiles collected before 2026-08-18 carry amendements resolved through the
   old `numero`-keyed store: ~75% of a legislature's amendements are missing and
   ~40% of the remaining (member, amendement) links point at the wrong text/date/
