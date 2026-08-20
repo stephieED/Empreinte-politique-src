@@ -15,7 +15,7 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:edouard-philippe",
+      "membre_id": "edouard-philippe",
       "nom": "Édouard Philippe",
       "portefeuille": "Premier ministre",
       "debut": "2017-06-20",
@@ -51,7 +51,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gabriel-attal",
+      "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'éducation nationale et de la jeunesse",
       "debut": "2018-10-17",
@@ -108,7 +108,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-234"
@@ -124,7 +124,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -144,7 +144,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -164,7 +164,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA642788",
@@ -184,7 +184,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -208,7 +208,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA335758",
@@ -232,7 +232,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-562"
@@ -248,7 +248,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-539"
@@ -264,7 +264,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -288,7 +288,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -308,7 +308,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions_fraude_fiscale"
@@ -324,7 +324,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -344,7 +344,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -364,7 +364,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/report_senatoriales_legislatives_partielles"
@@ -380,7 +380,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717161",
@@ -400,7 +400,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA642788",
@@ -424,7 +424,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA642788",
@@ -448,7 +448,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -468,7 +468,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -492,7 +492,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA335758",
@@ -512,7 +512,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -532,7 +532,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_elections_expulsions_outre-mer"
@@ -548,7 +548,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-351"
@@ -564,7 +564,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -584,7 +584,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -604,7 +604,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA642788",
@@ -624,7 +624,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -644,7 +644,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_comptables_fonction_publique"
@@ -660,7 +660,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-329"
@@ -676,7 +676,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_collectivites_logement"
@@ -692,7 +692,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_urgentes_consequences_covid-19"
@@ -708,7 +708,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -728,7 +728,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_etat_urgence_sanitaire"
@@ -744,7 +744,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -764,7 +764,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-307"
@@ -780,7 +780,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -804,7 +804,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_organique_urgence_epidemie_covid-19"
@@ -820,7 +820,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -844,7 +844,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_urgence_epidemie_covid-19"
@@ -860,7 +860,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2019-1335_2020-7"
@@ -876,7 +876,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -896,7 +896,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA758792",
@@ -916,7 +916,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_cooperation_instruction_militaire"
@@ -932,7 +932,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -952,7 +952,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_adaptation_droit_ue_economie_finances"
@@ -968,7 +968,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_turkmenistan_etats-unis_personnes_charge_agents"
@@ -984,7 +984,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1170"
@@ -1000,7 +1000,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/acceleration_simplification_action_publique"
@@ -1016,7 +1016,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717161",
@@ -1036,7 +1036,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/parquet_europeen_justice_penale_specialisee"
@@ -1052,7 +1052,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -1076,7 +1076,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -1100,7 +1100,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_convention_europeenne_extradition"
@@ -1116,7 +1116,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1110"
@@ -1132,7 +1132,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -1152,7 +1152,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1101"
@@ -1168,7 +1168,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-964"
@@ -1184,7 +1184,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA415452",
@@ -1204,7 +1204,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_lys_deulemont_menin"
@@ -1220,7 +1220,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -1240,7 +1240,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -1260,7 +1260,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_suisse_poincons_metaux"
@@ -1276,7 +1276,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -1296,7 +1296,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA335758",
@@ -1316,7 +1316,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA335758",
@@ -1336,7 +1336,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -1356,7 +1356,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -1376,7 +1376,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_mandat_membres_hadopi"
@@ -1392,7 +1392,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -1412,7 +1412,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modification_loi_alinea5_article13_constitution"
@@ -1428,7 +1428,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -1452,7 +1452,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-738"
@@ -1468,7 +1468,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-848"
@@ -1484,7 +1484,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -1504,7 +1504,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -1524,7 +1524,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-761"
@@ -1540,7 +1540,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -1560,7 +1560,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-784"
@@ -1576,7 +1576,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -1600,7 +1600,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-770"
@@ -1616,7 +1616,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -1636,7 +1636,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -1656,7 +1656,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-741"
@@ -1672,7 +1672,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-724"
@@ -1688,7 +1688,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -1712,7 +1712,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-698"
@@ -1728,7 +1728,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -1748,7 +1748,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA205600",
@@ -1776,7 +1776,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-700"
@@ -1792,7 +1792,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_penale_extradition_niger"
@@ -1808,7 +1808,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_penale_extradition_niger"
@@ -1824,7 +1824,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -1864,7 +1864,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -1884,7 +1884,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -1904,7 +1904,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/conventions_entraide_judiciaire_extradition_burkina_faso"
@@ -1920,7 +1920,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -1944,7 +1944,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-501"
@@ -1960,7 +1960,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -1980,7 +1980,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717161",
@@ -2000,7 +2000,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA227076",
@@ -2024,7 +2024,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/engagement_vie_locale_proximite_action_publique"
@@ -2040,7 +2040,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accession_macedoine_nord_otan"
@@ -2056,7 +2056,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_gaspillage_economie_circulaire"
@@ -2072,7 +2072,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-414"
@@ -2088,7 +2088,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-48"
@@ -2104,7 +2104,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -2128,7 +2128,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-363"
@@ -2144,7 +2144,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA332747",
@@ -2168,7 +2168,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -2196,7 +2196,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -2216,7 +2216,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA415452",
@@ -2236,7 +2236,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-235"
@@ -2252,7 +2252,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-361"
@@ -2268,7 +2268,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -2288,7 +2288,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-207"
@@ -2304,7 +2304,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traite_cooperation_integration_franco-allemandes"
@@ -2320,7 +2320,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -2340,7 +2340,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA332747",
@@ -2360,7 +2360,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-183"
@@ -2376,7 +2376,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_readmission_sejour_irregulier"
@@ -2392,7 +2392,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -2412,7 +2412,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -2432,7 +2432,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717161",
@@ -2456,7 +2456,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-59"
@@ -2472,7 +2472,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA335758",
@@ -2492,7 +2492,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA605131",
@@ -2512,7 +2512,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/modernisation_distribution_presse"
@@ -2528,7 +2528,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -2548,7 +2548,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_armenie_agents_missions_officielles"
@@ -2564,7 +2564,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -2588,7 +2588,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_fiscale_botswana"
@@ -2604,7 +2604,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA758792",
@@ -2624,7 +2624,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -2644,7 +2644,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA729330",
@@ -2664,7 +2664,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-1135"
@@ -2680,7 +2680,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -2700,7 +2700,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/competences_collectivite_europeenne_alsace"
@@ -2716,7 +2716,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA205600",
@@ -2736,7 +2736,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -2756,7 +2756,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord-cadres_cooperation_monaco"
@@ -2772,7 +2772,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -2792,7 +2792,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_belgique_mobilite_terrestre"
@@ -2808,7 +2808,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717159",
@@ -2828,7 +2828,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-937"
@@ -2844,7 +2844,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -2864,7 +2864,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -2884,7 +2884,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -2908,7 +2908,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/statut_autonomie_polynesie_francaise"
@@ -2924,7 +2924,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dispositions_institutionnelles_polynesie_francaise"
@@ -2940,7 +2940,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717157",
@@ -2960,7 +2960,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_orientation_mobilites"
@@ -2976,7 +2976,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_cooperation_afghanistan"
@@ -2992,7 +2992,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -3012,7 +3012,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA332747",
@@ -3032,7 +3032,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA332747",
@@ -3052,7 +3052,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_albanie_chypre_defense"
@@ -3068,7 +3068,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -3092,7 +3092,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_loi_modernisation_justice"
@@ -3108,7 +3108,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -3128,7 +3128,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_luxembourg_doubles_impositions"
@@ -3144,7 +3144,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -3164,7 +3164,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-310"
@@ -3180,7 +3180,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -3204,7 +3204,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-361"
@@ -3220,7 +3220,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/suppression_sur-transpositions_directives"
@@ -3236,7 +3236,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/preparation_retrait_royaume-uni_ue"
@@ -3252,7 +3252,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -3272,7 +3272,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA758792",
@@ -3292,7 +3292,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -3312,7 +3312,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_suisse_organisation_europeenne_recherche_nucleaire"
@@ -3328,7 +3328,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -3348,7 +3348,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -3368,7 +3368,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_protocole_additionnel_nagoya-kuala-lumpur"
@@ -3384,7 +3384,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA906",
@@ -3404,7 +3404,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -3424,7 +3424,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/protocole_djibouti_competences_prevote"
@@ -3440,7 +3440,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-22"
@@ -3456,7 +3456,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_siege_autorite_europeenne_marches_financiers"
@@ -3472,7 +3472,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -3492,7 +3492,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-3_2018-4_2018-17"
@@ -3508,7 +3508,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -3528,7 +3528,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_pays_emploi_familles_missions_officielles"
@@ -3544,7 +3544,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -3564,7 +3564,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA906",
@@ -3584,7 +3584,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA906",
@@ -3604,7 +3604,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_2018-74_2018-75"
@@ -3624,7 +3624,7 @@
         },
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -3644,7 +3644,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -3664,7 +3664,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/renforcement_organisation_juridictions"
@@ -3680,7 +3680,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reforme_justice_programmation_2018-2022"
@@ -3696,7 +3696,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -3716,7 +3716,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-20"
@@ -3732,7 +3732,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA415482",
@@ -3752,7 +3752,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_contre_fraude"
@@ -3768,7 +3768,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717163",
@@ -3788,7 +3788,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717161",
@@ -3808,7 +3808,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -3828,7 +3828,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accords_ouzbekistan_kazakhstan_cote_ivoire_services_aeriens"
@@ -3844,7 +3844,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1717"
@@ -3860,7 +3860,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -3880,7 +3880,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -3900,7 +3900,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-157"
@@ -3916,7 +3916,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1609"
@@ -3932,7 +3932,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA906",
@@ -3952,7 +3952,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -3972,7 +3972,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA205600",
@@ -3992,7 +3992,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607395",
@@ -4012,7 +4012,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4032,7 +4032,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4052,7 +4052,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_accord_fondation_internationale_ue-alc"
@@ -4068,7 +4068,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_prevention_erosion_base_imposition"
@@ -4084,7 +4084,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -4104,7 +4104,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1177"
@@ -4120,7 +4120,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1178"
@@ -4136,7 +4136,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1179"
@@ -4152,7 +4152,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1162"
@@ -4168,7 +4168,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/election_des_representants_parlement_europeen"
@@ -4184,7 +4184,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1142"
@@ -4200,7 +4200,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4220,7 +4220,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1432"
@@ -4236,7 +4236,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4256,7 +4256,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1426"
@@ -4272,7 +4272,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA702191",
@@ -4292,7 +4292,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4312,7 +4312,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -4332,7 +4332,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/organisation_consultation_pleine_souverainete_nouvelle-caledonie"
@@ -4348,7 +4348,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4368,7 +4368,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717159",
@@ -4388,7 +4388,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/adaptation_droit_ue_securite"
@@ -4404,7 +4404,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4424,7 +4424,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717171",
@@ -4448,7 +4448,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4472,7 +4472,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -4492,7 +4492,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_congo_equateur_perou_missions"
@@ -4508,7 +4508,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -4532,7 +4532,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_allemagne_emploi_transfrontalier_aeronefs"
@@ -4548,7 +4548,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -4568,7 +4568,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-747"
@@ -4584,7 +4584,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4604,7 +4604,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4624,7 +4624,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4644,7 +4644,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4664,7 +4664,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4684,7 +4684,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -4704,7 +4704,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717155",
@@ -4724,7 +4724,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717155",
@@ -4744,7 +4744,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accord_fiscalite_aeroport_bale-mulhouse"
@@ -4760,7 +4760,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4780,7 +4780,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-762"
@@ -4796,7 +4796,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4820,7 +4820,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4840,7 +4840,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-496"
@@ -4856,7 +4856,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4876,7 +4876,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -4896,7 +4896,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -4916,7 +4916,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -4936,7 +4936,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4956,7 +4956,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -4976,7 +4976,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -4996,7 +4996,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717147",
@@ -5016,7 +5016,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1090"
@@ -5032,7 +5032,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -5052,7 +5052,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -5072,7 +5072,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-970"
@@ -5088,7 +5088,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-748"
@@ -5104,7 +5104,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -5124,7 +5124,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/traites_extradition_entraide_penale_vietnam"
@@ -5140,7 +5140,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA607846",
@@ -5160,7 +5160,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA331481",
@@ -5180,7 +5180,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -5200,7 +5200,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -5220,7 +5220,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -5240,7 +5240,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717169",
@@ -5260,7 +5260,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717153",
@@ -5280,7 +5280,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA717147",
@@ -5300,7 +5300,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA1872",
@@ -5320,7 +5320,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         },
         {
           "acteur_ref": "PA729330",
@@ -5340,7 +5340,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/convention_oit_securite_sante_agriculture"
@@ -5356,7 +5356,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/securite_interieure_lutte_terrorisme"
@@ -5372,7 +5372,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_loi_etat_urgence"
@@ -5388,7 +5388,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-378"
@@ -5411,12 +5411,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/edouard-philippe",
-      "synchro_le": "2026-08-06T09:02:12+0000"
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T19:08:41+0200"
+      "synchro_le": "2026-08-20T18:56:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -5456,7 +5456,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:27+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

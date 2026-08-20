@@ -63,7 +63,7 @@
       "actif": false
     },
     {
-      "membre_id": "nosdeputes:bruno-retailleau",
+      "membre_id": "bruno-retailleau",
       "nom": "Bruno Retailleau",
       "debut_dans_groupe": "2004-09-26",
       "fin_dans_groupe": null,
@@ -247,7 +247,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -287,7 +287,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -307,7 +307,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -327,7 +327,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -347,7 +347,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "président",
           "debut": null,
@@ -367,7 +367,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "président",
           "debut": null,
@@ -387,7 +387,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -407,7 +407,7 @@
       },
       "membres": [
         {
-          "membre_id": "nosdeputes:bruno-retailleau",
+          "membre_id": "bruno-retailleau",
           "nom": "Bruno Retailleau",
           "fonction": "membre",
           "debut": null,
@@ -498,7 +498,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-17T17:28:34+0200"
+      "synchro_le": "2026-08-19T21:13:48+0000"
+    },
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-20T18:55:03+0000"
     },
     {
       "type": "nosdeputes",
@@ -538,7 +543,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:04+0000",
+    "genere_le": "2026-08-20T19:09:33+0000",
     "licence_donnees": "",
     "profils_sources": [
       "nosdeputes:catherine-deroche",
@@ -548,7 +553,7 @@
       "nosdeputes:catherine-procaccia",
       "nosdeputes:charles-guene",
       "nosdeputes:gerard-larcher",
-      "nosdeputes:bruno-retailleau",
+      "bruno-retailleau",
       "nosdeputes:jean-jacques-panunzi",
       "nosdeputes:evelyne-renaud-garabedian",
       "nosdeputes:marie-christine-chauvin",

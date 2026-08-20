@@ -20,24 +20,6 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
-      "nom": "Astrid Panosyan-Bouvet",
-      "portefeuille": "Ministère auprès de la ministre du travail, de la santé, de la solidarité et des familles, chargé du travail et de l’emploi",
-      "debut": "2024-12-24",
-      "fin": "2025-09-09",
-      "actif": false,
-      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
-    },
-    {
-      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
-      "nom": "Astrid Panosyan-Bouvet",
-      "portefeuille": "Ministère de l’économie, des finances et de la souveraineté industrielle, énergétique et numérique",
-      "debut": "2026-02-04",
-      "fin": null,
-      "actif": true,
-      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
-    },
-    {
       "membre_id": "nosdeputes:aurore-berge",
       "nom": "Aurore Bergé",
       "portefeuille": "Ministère délégué auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
@@ -56,7 +38,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:bruno-retailleau",
+      "membre_id": "bruno-retailleau",
       "nom": "Bruno Retailleau",
       "portefeuille": "Ministère de l'intérieur",
       "debut": "2024-12-24",
@@ -86,15 +68,6 @@
       "membre_id": "nosdeputes:gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de la justice",
-      "debut": "2024-12-24",
-      "fin": "2025-09-09",
-      "actif": false,
-      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
-    },
-    {
-      "membre_id": "nosdeputes:marc-ferracci",
-      "nom": "Marc Ferracci",
-      "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
       "debut": "2024-12-24",
       "fin": "2025-09-09",
       "actif": false,
@@ -759,7 +732,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:10:09+0000"
+      "synchro_le": "2026-08-19T22:00:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -774,7 +747,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-19T18:43:44+0000"
+      "synchro_le": "2026-08-19T21:13:48+0000"
+    },
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-20T18:55:03+0000"
     },
     {
       "type": "nosdeputes",
@@ -804,7 +782,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:28+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

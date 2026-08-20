@@ -128,7 +128,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gabriel-attal",
+      "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
       "debut": "2022-05-21",
@@ -137,7 +137,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gabriel-attal",
+      "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Ministère de l’éducation nationale et de la jeunesse",
       "debut": "2023-07-21",
@@ -1250,7 +1250,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR2022"
@@ -1274,7 +1274,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/PLR_2021"
@@ -1542,7 +1542,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plrfss_pour_2023"
@@ -1798,7 +1798,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plfr_2022"
@@ -1914,7 +1914,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/plf_2023"
@@ -1938,7 +1938,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/programmation_finances_publiques_2023_2027"
@@ -1958,7 +1958,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -2250,7 +2250,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/loi_finances_rectificative_2022"
@@ -2298,7 +2298,7 @@
         },
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/reglement_budget_2021"
@@ -2478,7 +2478,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:19:31+0000"
+      "synchro_le": "2026-08-19T22:10:23+0000"
     },
     {
       "type": "nosdeputes",
@@ -2503,7 +2503,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96850",
-      "synchro_le": "2026-08-19T19:02:42+0000"
+      "synchro_le": "2026-08-19T21:53:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -2578,7 +2578,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
-      "synchro_le": "2026-08-19T09:18:50+0000"
+      "synchro_le": "2026-08-19T22:14:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -2598,7 +2598,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:27+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

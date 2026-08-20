@@ -15,7 +15,7 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:edouard-philippe",
+      "membre_id": "edouard-philippe",
       "nom": "Édouard Philippe",
       "portefeuille": "Premier ministre",
       "debut": "2017-05-18",
@@ -54,7 +54,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA345619",
-          "membre_id": "nosdeputes:edouard-philippe"
+          "membre_id": "edouard-philippe"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique"
@@ -77,12 +77,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/edouard-philippe",
-      "synchro_le": "2026-08-06T09:02:12+0000"
+      "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-17T19:08:41+0200"
+      "synchro_le": "2026-08-20T18:56:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -97,7 +97,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

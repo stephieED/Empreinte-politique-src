@@ -51,7 +51,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gabriel-attal",
+      "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Premier ministre",
       "debut": "2024-01-10",
@@ -180,7 +180,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -204,7 +204,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA793940",
@@ -250,7 +250,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N50115"
@@ -266,7 +266,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -294,7 +294,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA607846",
@@ -314,7 +314,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA842137",
@@ -334,7 +334,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49943"
@@ -350,7 +350,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49868"
@@ -366,7 +366,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -390,7 +390,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49806"
@@ -406,7 +406,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49807"
@@ -422,7 +422,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA267797",
@@ -446,7 +446,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA719938",
@@ -466,7 +466,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49615"
@@ -482,7 +482,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -502,7 +502,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49485"
@@ -518,7 +518,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -542,7 +542,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA331481",
@@ -562,7 +562,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         },
         {
           "acteur_ref": "PA842137",
@@ -582,7 +582,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49374"
@@ -598,7 +598,7 @@
       "initiateurs": [
         {
           "acteur_ref": "PA722190",
-          "membre_id": "nosdeputes:gabriel-attal"
+          "membre_id": "gabriel-attal"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/DLR5L16N49373"
@@ -658,7 +658,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:19:31+0000"
+      "synchro_le": "2026-08-19T22:10:23+0000"
     },
     {
       "type": "nosdeputes",
@@ -728,7 +728,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
-      "synchro_le": "2026-08-19T09:18:50+0000"
+      "synchro_le": "2026-08-19T22:14:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -743,7 +743,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:27+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

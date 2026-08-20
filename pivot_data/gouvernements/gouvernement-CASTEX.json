@@ -56,7 +56,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gabriel-attal",
+      "membre_id": "gabriel-attal",
       "nom": "Gabriel Attal",
       "portefeuille": "Secrétariat d’État auprès du Premier ministre, porte-parole du Gouvernement",
       "debut": "2020-07-07",
@@ -3797,7 +3797,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:03:13+0000"
+      "synchro_le": "2026-08-19T21:53:53+0000"
     },
     {
       "type": "nosdeputes",
@@ -3857,7 +3857,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:27+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

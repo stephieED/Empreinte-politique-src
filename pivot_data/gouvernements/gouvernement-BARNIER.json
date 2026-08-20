@@ -47,7 +47,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:bruno-retailleau",
+      "membre_id": "bruno-retailleau",
       "nom": "Bruno Retailleau",
       "portefeuille": "Ministère de l'intérieur",
       "debut": "2024-09-22",
@@ -173,7 +173,7 @@
         },
         {
           "acteur_ref": "PA2538",
-          "membre_id": "nosdeputes:bruno-retailleau"
+          "membre_id": null
         },
         {
           "acteur_ref": "PA721836",
@@ -385,7 +385,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:13:12+0000"
+      "synchro_le": "2026-08-19T22:03:39+0000"
     },
     {
       "type": "nosdeputes",
@@ -405,7 +405,12 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-19T18:43:44+0000"
+      "synchro_le": "2026-08-19T21:13:48+0000"
+    },
+    {
+      "type": "nossenateurs",
+      "url": "https://archive.nossenateurs.fr/bruno-retailleau",
+      "synchro_le": "2026-08-20T18:55:03+0000"
     },
     {
       "type": "nosdeputes",
@@ -435,7 +440,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:27+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -38,7 +38,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:laurent-wauquiez",
+      "membre_id": "laurent-wauquiez",
       "nom": "Laurent Wauquiez",
       "portefeuille": "Secrétaire d'Etat, porte-parole du Gouvernement",
       "debut": "2007-06-19",
@@ -47,7 +47,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:laurent-wauquiez",
+      "membre_id": "laurent-wauquiez",
       "nom": "Laurent Wauquiez",
       "portefeuille": "Secrétariat d'Etat à l'emploi, auprès de la ministre de l'économie, de l'industrie et de l'emploi",
       "debut": "2008-03-18",
@@ -79,17 +79,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-18T15:05:12+0000"
+      "synchro_le": "2026-08-19T22:07:17+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/laurent-wauquiez",
-      "synchro_le": "2026-08-15T13:27:39+0000"
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T09:24:17+0000",
+    "genere_le": "2026-08-20T19:09:36+0000",
     "licence_donnees": "",
     "warnings": []
   }
