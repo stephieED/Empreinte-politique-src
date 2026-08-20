@@ -1816,18 +1816,27 @@ jobs:
       # committé ni déployé. Une perte doit être déclarée, jamais subie —
       # `tolerer_pertes_profils` existe pour la déclarer explicitement, et son
       # emploi laisse une trace dans les inputs du run.
-      - name: Contrôle de perte sur les profils (avant commit)
+      #
+      # PÉRIMÈTRE ÉTENDU PAR #470 : `--pivot-dir` ajoute aux profils les quatre
+      # autres couches publiées et les deux index partagés. Les deux pertes qui
+      # ont motivé cette extension étaient hors de portée du périmètre
+      # d'origine, ALORS QUE CE STEP TOURNAIT — la cohésion de vote de SOC-16
+      # tombée de 814 à 0 (un dénominateur publié, AGENTS.md §2.7) et `parti`
+      # passé de renseigné à null sur trois profils, un scalaire qu'un contrôle
+      # de longueurs de listes ne voit pas.
+      - name: Contrôle de perte sur pivot_data (avant commit)
         env:
           TOLERER: ${{ inputs.tolerer_pertes_profils }}
         run: |
           TOLERANCE=()
           if [[ "$TOLERER" == "true" ]]; then
-            echo "::warning::tolerer_pertes_profils=true — une perte sur un champ stable ne bloquera pas le commit. À n'employer qu'après avoir élucidé chaque perte (#460)."
+            echo "::warning::tolerer_pertes_profils=true — une perte bloquante ne bloquera pas le commit. À n'employer qu'après avoir élucidé chaque perte (#460)."
             TOLERANCE=(--tolerer-pertes)
           fi
           python3 src/audit_diff_profils.py \
             --ref HEAD \
             --profils-dir pivot_data/profiles \
+            --pivot-dir pivot_data \
             --out diff-profils.md \
             --out-json diff-profils.json \
             "${TOLERANCE[@]}" || CODE=$?
@@ -1835,12 +1844,12 @@ jobs:
           # échec qu'on en a le plus besoin, et un artifact qu'il faut aller
           # télécharger ne serait pas lu.
           {
-            echo "### Contrôle de perte sur les profils (#460)"
+            echo "### Contrôle de perte sur pivot_data (#460, étendu par #470)"
             echo ""
             cat diff-profils.md
           } >> "$GITHUB_STEP_SUMMARY"
           if [[ "${CODE:-0}" -ne 0 ]]; then
-            echo "::error::PERTE_PROFILS_NON_DECLAREE — au moins un profil a perdu des entrées sur un champ stable (votes, mandats, textes portés, interventions, dossiers législatifs). Commit annulé. Voir le résumé de job. Si la perte est voulue, relancer avec tolerer_pertes_profils=true (#460)."
+            echo "::error::PERTE_PROFILS_NON_DECLAREE — au moins un fichier de pivot_data a disparu, a perdu des entrées sur une liste stable (votes, mandats, textes portés, interventions, tags thématiques, membres, cohésion de vote, mandats agrégés, candidats, textes), ou a vu un scalaire surveillé passer de renseigné à null (parti, groupe, chambre, identite, premier_ministre…). Commit annulé. Voir le résumé de job. Si la perte est voulue, relancer avec tolerer_pertes_profils=true (#460, #470)."
             exit 1
           fi
 
