@@ -376,11 +376,11 @@ def compute_agregation_warnings(profils: list[dict[str, Any]]) -> dict[str, Any]
 def compute_doublons_id(profils: list[dict[str, Any]]) -> dict[str, Any]:
     """Détecte les `id` présents plusieurs fois dans le corpus pivot.
 
-    L'`id` pivot (`"<source>:<identifiant_source>"`) doit être unique : un
-    doublon signale une erreur amont de génération ou de fusion. Les profils
-    sans `id` (absent ou vide) sont ignorés — ce défaut relève de la
-    validation structurelle (`validate_profil`), pas de la cohérence
-    inter-profils.
+    L'`id` pivot est le slug du profil depuis #487 — donc son nom de fichier —
+    et doit être unique : un doublon signale une erreur amont de génération ou
+    de fusion. Les profils sans `id` (absent ou vide) sont ignorés — ce défaut
+    relève de la validation structurelle (`validate_profil`), pas de la
+    cohérence inter-profils.
 
     Returns:
         {"doublons": [{"id": str, "occurrences": int}, ...]}, trié par `id`

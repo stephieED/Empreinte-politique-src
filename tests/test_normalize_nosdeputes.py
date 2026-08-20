@@ -132,14 +132,24 @@ def test_pivot_schema_version():
     assert pivot["schema_version"] == SCHEMA_VERSION
 
 
-def test_pivot_id_prefixe_nosdeputes():
+def test_pivot_id_est_le_slug_cote_deputes():
+    # Sans préfixe de provenance depuis #487 : le préfixe dérivait de la
+    # chambre qui avait répondu, donc changeait de valeur sur une carrière
+    # inchangée. Garde-fou de fond : tests/test_id_pivot_sans_prefixe.py.
     pivot = normalize_nosdeputes(_raw_depute())
-    assert pivot["id"] == "nosdeputes:jean-dupont"
+    assert pivot["id"] == "jean-dupont"
 
 
-def test_pivot_id_prefixe_nossenateurs():
+def test_pivot_id_est_le_slug_cote_senateurs():
     pivot = normalize_nosdeputes(_raw_senateur())
-    assert pivot["id"] == "nossenateurs:marie-martin"
+    assert pivot["id"] == "marie-martin"
+
+
+def test_pivot_sources_portent_toujours_la_provenance():
+    """`_SOURCE_TYPE_MAP` reste utilisé pour `sources[].type` (#487) : là, il
+    décrit la provenance d'UNE source, ce qui est vrai et stable."""
+    assert normalize_nosdeputes(_raw_depute())["sources"][0]["type"] == "nosdeputes"
+    assert normalize_nosdeputes(_raw_senateur())["sources"][0]["type"] == "nossenateurs"
 
 
 def test_pivot_nom_depuis_identite():

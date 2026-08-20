@@ -190,7 +190,16 @@ def test_pivot_chambre_est_pe():
     assert pivot["chambre"] == "PE"
 
 
-def test_pivot_id_prefixe_europarl():
+def test_pivot_id_est_le_slug_quand_il_est_fourni():
+    # #487 : l'`id` pivot est le slug. `normalize_europarl` ne peut pas le
+    # déduire de `ue_profile`, il lui est donc passé par le pipeline.
+    pivot = normalize_europarl(_raw_ue_profile(), slug="jean-dupont")
+    assert pivot["id"] == "jean-dupont"
+
+
+def test_pivot_id_repli_sur_l_identifiant_de_source_sans_slug():
+    # Sans slug, pas de slug inventé depuis `nom_complet` : ce serait dériver
+    # l'identifiant d'une donnée de collecte, le défaut que #487 retire.
     pivot = normalize_europarl(_raw_ue_profile())
     assert pivot["id"] == "europarl:1234"
 

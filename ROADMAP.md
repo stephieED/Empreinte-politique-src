@@ -34,6 +34,12 @@ something is pending, not *why*.
   The value `"minoritaire"` (valid per `schema_pivot.py` `KNOWN_POSITIONS_HEMICYCLE`)
   falls through to `"indetermine"` / `non_distingue`, mis-bucketing texts/amendments
   from minority-group periods when the legislative reading-mode filter is active.
+- `pivot_data/gouvernements/gouvernement-BAYROU.json` publishes 12 `membres[]`
+  where the current code rebuilds 9 — 2 strict duplicates removed by #480, plus
+  an `astrid-panosyan-bouvet` entry (`debut: 2026-02-04`, `actif: true`) the
+  code no longer reproduces. The pre-commit loss check blocks on it, and will at
+  the next `merge-and-pivot` run, independently of #487 that measured it (see
+  `technical_decisions.md#id-pivot-sans-prefixe`).
 
 ## Ideas not yet scheduled
 
