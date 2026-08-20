@@ -12,22 +12,32 @@ something is pending, not *why*.
   roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). All but
   Retailleau are `roster_groupe`, so they are deliberately **out of scope**: no Senate
   group is aggregated, and their Senate past feeds nothing. #492 (sub-issue C) put the
-  chamber on each **mandate**; the profile-level `chambre` stays wrong for them until
-  sub-issue D (#493). See `technical_decisions.md#deux-chambres-interrogees`.
+  chamber on each **mandate**; #493 (D) made the profile level a derived `chambres` list.
+  Neither corrects these 18 — they have **no `mandat_electif` at all**, so nothing can
+  back a chamber for them, and #488 restricts bicameral collection to the 8
+  `candidat_declare`. They now carry a `chambres du profil non corroborée` warning that
+  says so. Correcting them is a **collection** matter, not a schema one. See
+  `technical_decisions.md#deux-chambres-interrogees` and `#chambres-profil-derivees`.
 - `mandats[].chambre` is `null` on 214 of the 228 published `mandat_electif` (189 profiles,
   measured on `f5a828b`): the stamp is written at collection (#492) and is not
   reconstructible for already-collected mandates. They fill in at their next real
   collection, via `merge_profile.backfill_mandat_chambre`. Each affected profile carries one
   `chambre de mandat électif non résolue` warning until then — the count is the migration's
   progress bar, not an anomaly. See `technical_decisions.md#chambre-par-mandat-electif`.
-- The UI still shows one parliamentary experience per candidate: #492 carries the chamber,
-  but publishing both chambers' mandates side by side needs the profile-level `chambre`
-  settled first (#486 sub-issues D then F, and #324).
+- The UI still shows one parliamentary experience per candidate. The data model no longer
+  stands in the way — #492 carries the chamber on each mandate, #493 publishes the
+  profile-level `chambres` list — but the values only become real after a full
+  regeneration re-collects the 228 published `mandat_electif`, all still at
+  `chambre: null`. #486 sub-issue F (#495) and #324.
 - In CI a candidate's `chambre` is also decided by **artifact merge order**, not only by
   the collection loop: `extract-an` (`--source an`) and `extract-senat` (`--source senat`)
   are two scoped passes whose raw profiles meet in `merge_raw_profile`, where
   `chambre = _prefer_non_empty(new, old)` lets the last one landing win. #488 fixed the
-  default `--source all` path; this second path belongs to #486 sub-issue D.
+  default `--source all` path. #493 narrowed this one without closing it: the **raw**
+  profile's `chambre` is still order-dependent, but it now only feeds the *fallback* of
+  `deriver_chambres()`, and both passes' mandates are merged additively — so a chamber
+  established by a mandate can no longer be overwritten by arrival order. What arrival
+  order still decides is the unbacked fallback value, which the profile now declares.
 - Profiles collected before 2026-08-18 carry amendements resolved through the
   old `numero`-keyed store: ~75% of a legislature's amendements are missing and
   ~40% of the remaining (member, amendement) links point at the wrong text/date/

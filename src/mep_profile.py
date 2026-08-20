@@ -39,7 +39,7 @@ import requests
 
 from download_watchdog import download_with_watchdog
 
-from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
 
 HEADERS = {
     "User-Agent": "cv-politique-mep-profile/0.1 (usage personnel / non commercial)"
@@ -349,7 +349,7 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
             nom = f"{given} {surname}"
 
     profil: dict[str, Any] = make_empty_profil(f"parltrack:{ep_id}", nom)
-    profil["chambre"] = "PE"
+    # `chambres`/`chambre` sont dérivées en fin de fonction (#493), pas posées ici.
 
     # Groupe politique actuel (dernier enregistrement)
     groups = mep_raw.get("Groups") or []
@@ -424,6 +424,17 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
                 "url": "https://parltrack.org/dumps",
                 "synchro_le": get_cache_date(VOTES_CACHE_PATH) or synchro_le,
             })
+
+    # #493 : ce constructeur ne produit **aucun** `mandat_electif` — les
+    # `Groups` de Parltrack sont rangés en `autre` et les `Committees` en
+    # `commission`, par cohérence avec `normalize_europarl._CATEGORIE_MAP`. La
+    # dérivation retombe donc systématiquement sur le repli, et c'est le cas qui
+    # montre que le repli n'est pas seulement transitoire : la chambre d'un
+    # profil Parltrack est une donnée de source (le dump est celui du Parlement
+    # européen), pas une déduction, et aucun mandat ne viendra jamais l'établir
+    # ici. La cohérence `chambre == chambres[0]` est assurée quand même.
+    profil["chambre"] = "PE"                 # repli, consommé par appliquer_chambres
+    appliquer_chambres(profil)
 
     profil["meta"]["licence_donnees"] = "Open Data — Parltrack (CC0 / Open Database License)"
     if not mep_raw.get("active"):

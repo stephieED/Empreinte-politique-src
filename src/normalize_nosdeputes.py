@@ -20,7 +20,7 @@ Usage :
 import time
 from typing import Any, Optional
 
-from schema_pivot import SCHEMA_VERSION, make_empty_profil
+from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
 from amendements_index import cle_amendement
 from scrutins_index import ScrutinsIndex, cle_scrutin
 from scrutins_legislature import legislature_du_calendrier
@@ -41,6 +41,15 @@ _SOURCE_TYPE_MAP: dict[str, str] = {
 # candidate_profile.WARNING_PREFIX_* : le texte avant le premier ':' est le
 # *type* agrégé par audit_pivot_dataset.compute_agregation_warnings.
 WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE = "chambre de mandat électif non résolue"
+
+# Préfixe de warning publié dans `meta.warnings` (#493) quand `chambres` n'est
+# pas entièrement étayée par les mandats : une chambre y figure au seul titre de
+# la collecte, ou un `mandat_electif` reste sans chambre. Cette liste-là est
+# utilisable, pas vérifiée, et ce warning est exactement ce qui l'empêche d'être
+# trompeuse. Son décompte agrégé par
+# `audit_pivot_dataset.compute_agregation_warnings` est la mesure de la
+# migration : il tombe à zéro quand `chambre` peut être retiré.
+WARNING_PREFIX_CHAMBRES_NON_CORROBOREE = "chambres du profil non corroborée"
 
 
 def _first(*values: Any) -> Any:
@@ -296,7 +305,13 @@ def normalize_nosdeputes(
     """
     slug = raw_profile.get("slug") or ""
     chambre_raw = raw_profile.get("chambre") or ""
-    chambre = _CHAMBRE_MAP.get(chambre_raw, chambre_raw or None)
+    # `chambre_collecte` (#493) : la chambre dont le jeu de données a répondu.
+    # Elle n'est plus publiée telle quelle — elle sert de **repli** à
+    # `deriver_chambres()` tant qu'aucun `mandat_electif` n'est estampillé.
+    # `_CHAMBRE_MAP.get(x, x or None)` laisserait passer une chambre brute non
+    # mappée telle quelle : elle est écartée par `deriver_chambres`, qui n'accepte
+    # comme repli qu'une valeur de KNOWN_CHAMBRES.
+    chambre_collecte = _CHAMBRE_MAP.get(chambre_raw, chambre_raw or None)
     source_type = _SOURCE_TYPE_MAP.get(chambre_raw, "nosdeputes")
 
     identite = raw_profile.get("identite") or {}
@@ -321,7 +336,10 @@ def normalize_nosdeputes(
     # `source_type` reste utilisé plus bas pour `sources[].type`, où il décrit
     # bien la provenance d'UNE source : c'est vrai, stable, et à sa place.
     profil: dict[str, Any] = make_empty_profil(slug, nom, provenance=provenance)
-    profil["chambre"] = chambre
+    # `chambre` n'est plus posée ici (#493) : elle est dérivée plus bas, une fois
+    # `mandats[]` normalisé, par `deriver_chambres()` — la seule fabrique du
+    # couple `chambres`/`chambre`. `chambre_collecte` n'est plus qu'une entrée de
+    # cette dérivation (le repli), plus un champ publié directement.
     profil["parti"] = parti
     profil["groupe"] = identite.get("groupe_nom") or identite.get("groupe_sigle")
 
@@ -363,6 +381,15 @@ def normalize_nosdeputes(
     profil["textes_portes"] = [_normalize_texte_porte(d) for d in (raw_profile.get("dossiers_legislatifs") or [])]
     profil["interventions"] = [_normalize_intervention(i) for i in (raw_profile.get("interventions") or [])]
     profil["amendements"] = [_normalize_amendement(a, profil["id"]) for a in (raw_profile.get("amendements") or [])]
+
+    # --- chambres / chambre (#493) ---
+    # Dérivées ici, APRÈS `mandats[]`, et pas avant : les deux champs sortent de
+    # la même fabrique et ne peuvent donc pas se contredire. C'est la condition
+    # non négociable de leur coexistence — un champ collecté à côté d'un champ
+    # dérivé garderait le mensonge à côté de la vérité, en ajoutant la question
+    # « lequel croire ».
+    profil["chambre"] = chambre_collecte     # repli, consommé par appliquer_chambres
+    derivation_chambres = appliquer_chambres(profil)
 
     # --- Tags thématiques bruts : source hybride — thème officiel Syceron (quand
     # disponible via `theme_officiel`) ou mots-clés scraping NosDéputés en fallback.
@@ -416,6 +443,24 @@ def normalize_nosdeputes(
             "posteriori — ni depuis `source_url` (jamais renseignée sur un mandat électif "
             "AN/Sénat), ni depuis la chambre du profil (la fusion additive y accumule des "
             "mandats des deux chambres)."
+        )
+
+    # `chambres` non corroborée (#493) : déclarée, jamais muette. C'est ce qui
+    # sépare « utilisable » de « trompeur » — un consommateur migré tôt (#494)
+    # peut distinguer une liste que les mandats étayent entièrement d'une liste
+    # où la chambre de collecte figure sur sa seule parole. Un warning par
+    # profil, comme celui de #492 et pour la même raison : le cas est uniforme,
+    # et c'est le compte de profils qui est l'information utile.
+    if not derivation_chambres.corroboree:
+        profil["meta"]["warnings"].append(
+            f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
+            f"chambres={derivation_chambres.chambres}, dont "
+            f"{derivation_chambres.chambres_non_corroborees or 'aucune'} sans mandat "
+            f"électif estampillé pour l'étayer, et "
+            f"{derivation_chambres.mandats_non_estampilles} mandat(s) électif(s) "
+            "encore sans chambre (#493). Une chambre non corroborée est celle de la "
+            "collecte : elle dit quel jeu de données a répondu, pas où la personne a "
+            "siégé — l'épic #486 a mesuré qu'elle peut être fausse dans les deux sens."
         )
 
     return profil

@@ -93,6 +93,7 @@ from merge_profile import (
 )
 from normalize_europarl import normalize_europarl
 from normalize_nosdeputes import normalize_nosdeputes
+from schema_pivot import appliquer_chambres
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     rafraichir as rafraichir_amendements,
@@ -647,6 +648,11 @@ def process_candidat(
             else:
                 pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
+                # #493 : `mandats[]` vient de changer, donc `chambres` aussi.
+                # Sans ce recalcul, un profil AN + PE publierait `["AN"]` et
+                # effacerait le mandat européen — le défaut même que #486
+                # reproche au scalaire, reconduit dans le champ censé le corriger.
+                appliquer_chambres(pivot_profile)
 
         if pivot_profile is None:
             _tprint(f"— {nom} ({effective_slug}) : aucune source normalisable en --pivot-only.")
@@ -814,6 +820,9 @@ def process_candidat(
                 # ajouter la source EP et les mandats européens.
                 pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
                 pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
+                # #493 : voir --pivot-only ci-dessus — `chambres` est dérivé de
+                # `mandats[]`, il se recalcule après chaque mutation de la liste.
+                appliquer_chambres(pivot_profile)
         if pivot_profile is not None:
             pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
             existing_pivot = None

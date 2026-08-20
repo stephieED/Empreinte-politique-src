@@ -13,7 +13,7 @@ Usage :
 import time
 from typing import Any, Optional
 
-from schema_pivot import make_empty_profil
+from schema_pivot import appliquer_chambres, make_empty_profil
 
 # Correspondance entre le type brut de l'API EP et la catégorie pivot.
 _CATEGORIE_MAP: dict[str, str] = {
@@ -79,7 +79,8 @@ def normalize_europarl(
 
     profil_id = slug if slug else f"europarl:{mep_id}"
     profil = make_empty_profil(id_=profil_id, nom=nom, provenance=provenance)
-    profil["chambre"] = "PE"
+    # `chambres`/`chambre` sont dérivées en fin de fonction, une fois `mandats[]`
+    # construit (#493) : une seule fabrique pour les deux champs.
     profil["parti"] = parti
     profil["sources"] = [
         {
@@ -115,5 +116,13 @@ def normalize_europarl(
             # 228, mesuré sur `f5a828b`).
             mandat["chambre"] = "PE"
         profil["mandats"].append(mandat)
+
+    # #493 : `chambres` dérivée des mandats estampillés ci-dessus. Le repli
+    # `"PE"` couvre le seul cas restant — un profil européen sans aucun
+    # `mandat_electif` (`mandats_europeens` ne portant que des groupes/commissions) :
+    # la chambre reste alors une donnée de source, le Parlement européen étant la
+    # seule chambre que ce normaliseur sache lire.
+    profil["chambre"] = "PE"                 # repli, consommé par appliquer_chambres
+    appliquer_chambres(profil)
 
     return profil

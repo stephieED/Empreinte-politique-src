@@ -49,6 +49,8 @@ def _amendment(amd_id="A9-0052/2023-1", reference="2020/2202(INI)", date="2023-0
 
 def _empty_pivot():
     p = make_empty_profil("parltrack:131580", "Jordan Bardella")
+    # #493 : `chambre` vaut `chambres[0]` — les deux se posent ensemble.
+    p["chambres"] = ["PE"]
     p["chambre"] = "PE"
     return p
 

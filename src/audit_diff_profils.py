@@ -173,6 +173,17 @@ class Collection:
 # `normalize_nosdeputes` verse dans `textes_portes`. Le garder ne coûte rien et
 # couvre `--profils-dir raw_data/profiles`.
 #
+# `chambres` (#493) est signalé et non bloquant. Signalé, parce qu'un champ
+# publié qui ne figure dans aucune des deux catégories est exactement la faille
+# que #470 a payée sur `tags_thematiques`. Non bloquant, parce que la perte qui
+# compte est déjà couverte : `chambre` est un scalaire surveillé, et il vaut
+# `chambres[0]` — `chambres` ne peut pas se vider sans que `chambre` régresse
+# vers `null`, ce qui bloque déjà. En faire un champ stable ajouterait un
+# second verrou sur le même événement. Et la seule baisse réelle possible —
+# `--no-merge` recollectant moins de mandats qu'avant — fait d'abord tomber
+# `mandats`, qui est un champ **stable** : le blocage est déjà là, sur la cause
+# plutôt que sur son reflet.
+#
 # `sources` est signalé et non bloquant : son historique montre des baisses
 # (2 → 1, 3 → 2) qui accompagnent aussi bien une perte réelle qu'une
 # sous-collecte non rejouée. Bloquer dessus doublerait l'alerte des champs qui
@@ -184,7 +195,7 @@ COLLECTION_PROFILS = Collection(
         "votes", "mandats", "textes_portes", "interventions",
         "tags_thematiques", "dossiers_legislatifs",
     ),
-    listes_signalees=("amendements", "sources"),
+    listes_signalees=("amendements", "sources", "chambres"),
     scalaires=("id", "nom", "chambre", "parti", "groupe", "identite",
                "meta.provenance"),
     motif_present="*.json",
