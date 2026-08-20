@@ -5,43 +5,43 @@ on:
   #  - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
-      # Descriptions: one line each, stating WHAT the input does — never why.
+      # These strings are the FORM LABELS: GitHub shows the description and
+      # hides the input name. So they must be short, self-contained, and never
+      # reference another field by a name nobody can see on screen — the link
+      # between the first two reads from the text itself: both say "no merge",
+      # and what separates them — purging the cache vs keeping it — sits side
+      # by side in the two labels.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
-      # A launch form is read under time pressure; an essay there is not read.
       cold_start:
-        description: "Full reset: purge outputs and cache, rebuild without merging, zero-tolerance quality gate. Implies overwrite_profiles."
+        description: "Overwrite profiles from scratch (purge cache & output - no merge)"
         type: boolean
         default: false
       overwrite_profiles:
-        description: "Rebuild profiles without merging, keeping the cache. Already implied by cold_start — ticking both is redundant."
+        description: "Overwrite profiles from cache (no merge)"
         type: boolean
         default: false
       refresh_existing_only:
-        description: "Roster job: process ONLY members that already have a profile. Extends nothing. Combine with overwrite_profiles."
+        description: "Limit roster to pre-existing members (no new ones)"
         type: boolean
         default: false
       roster_limit:
-        description: "Roster members to process. Applies PER SHARD, so any non-zero value forces a single shard. 0 = no limit (full run, 8 shards)."
+        description: "Roster members to process. 0 = all"
         type: number
         default: 20
       collect_interventions:
-        description: "Collect floor speeches. Affects extract-an only — the roster and Senate jobs always skip them."
+        description: "Collect floor speeches (skipped for roster AN and senate)"
         type: boolean
         default: false
-      nosdeputes_max_pages:
-        description: "NosDéputés search pages per candidate, used only as a fallback when Syceron returns nothing. Ignored unless collect_interventions."
-        type: number
-        default: 5
       incomplete_read_threshold:
-        description: "How many IncompleteRead errors are tolerated before the quality gate fails. Applies in every mode."
+        description: "IncompleteRead errors tolerated before the quality gate fails"
         type: number
         default: 3
       allow_declared_losses:
-        description: "Commit even though entries were lost on a monitored field. Only after investigating EACH loss — this is how 789 speeches vanished on 2026-08-19."
+        description: "DANGEROUS: allow commit despite lost entries"
         type: boolean
         default: false
       allow_broken_references:
-        description: "EMERGENCY ONLY — commit even though published keys do not resolve in their shared index. DISTINCT from allow_declared_losses: a loss can be legitimate, a broken reference never is."
+        description: "EMERGENCY ONLY: allow keys that don't resolve in their shared index"
         type: boolean
         default: false
 
@@ -556,7 +556,9 @@ jobs:
           INTERV_FLAG=()
           [[ "${{ inputs.collect_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
-          [[ "${{ inputs.collect_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.nosdeputes_max_pages }})
+          # 5 en dur : l'input a été retiré, jamais employé autrement que par
+          # son défaut. Voir docs/technical_decisions.md#libelles-formulaire.
+          [[ "${{ inputs.collect_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages 5)
           # #498 : la collecte d'interventions se borne elle-même. 240 s = 1,5x la
           # plus longue extraction qui soit allée au bout dans CE mode (160 s,
           # edouard-philippe, run 32302557156). Au-delà, la collecte s'arrête

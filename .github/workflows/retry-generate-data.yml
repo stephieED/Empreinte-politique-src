@@ -183,7 +183,7 @@ jobs:
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
       # cold_start est lu de façon fiable via la conclusion du step conditionnel
       # dédié ; les autres valeurs sont extraites du texte résolu des steps
-      # (collect_interventions/nosdeputes_max_pages/roster_limit, substitués
+      # (collect_interventions/roster_limit, substitués
       # directement par ${{ inputs.* }} dans le script ou dans son bloc env:)
       # ou du rapport stdout de check_quality_gate.py
       # (incomplete_read_threshold).
@@ -294,8 +294,6 @@ jobs:
           collect_interventions=$(echo "$an_log" | grep -oP -- '\[\[ "\K(true|false)(?=" != "true" \]\] && INTERV_FLAG)' | head -1) || true
           [[ "$collect_interventions" == "true" || "$collect_interventions" == "false" ]] || collect_interventions=false
 
-          nosdeputes_max_pages=$(echo "$an_log" | grep -oP -- '--max-pages \K[0-9]+' | head -1) || true
-          [[ "$nosdeputes_max_pages" =~ ^[0-9]+$ ]] || nosdeputes_max_pages=""
 
           gate_log=$(job_log "merge-and-pivot")
           incomplete_read_threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1) || true
@@ -320,7 +318,6 @@ jobs:
           echo "overwrite_profiles=${overwrite_profiles}" >> "$GITHUB_OUTPUT"
           echo "incomplete_read_threshold=${incomplete_read_threshold:-3}" >> "$GITHUB_OUTPUT"
           echo "collect_interventions=${collect_interventions}" >> "$GITHUB_OUTPUT"
-          echo "nosdeputes_max_pages=${nosdeputes_max_pages:-5}" >> "$GITHUB_OUTPUT"
           echo "roster_limit=${roster_limit:-20}" >> "$GITHUB_OUTPUT"
 
       # if: always() (#336) : ce step ne doit pas dépendre du succès du step
@@ -345,7 +342,6 @@ jobs:
             -f overwrite_profiles="${{ steps.inputs.outputs.overwrite_profiles || 'false' }}" \
             -f incomplete_read_threshold="${{ steps.inputs.outputs.incomplete_read_threshold || '3' }}" \
             -f collect_interventions="${{ steps.inputs.outputs.collect_interventions || 'false' }}" \
-            -f nosdeputes_max_pages="${{ steps.inputs.outputs.nosdeputes_max_pages || '5' }}" \
             -f roster_limit="${{ steps.inputs.outputs.roster_limit || '20' }}"
 
       - name: Résumé — trace visible du résultat
