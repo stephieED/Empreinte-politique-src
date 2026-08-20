@@ -366,6 +366,204 @@ Vérification que ces tests testent bien quelque chose : le blocage sur
 l'orpheline désarmé et la couche `groupes` retirée du périmètre, **15 des 33
 tests passent au rouge**.
 
+
+<a id="deux-chambres-interrogees"></a>
+## Interroger les deux chambres sans payer 752 fois un 404 (#488) (2026-08-20)
+
+Sous-issue B de l'épic **#486**, la seule qui ne dépende de rien : elle ne
+touche ni au schéma pivot, ni à l'`id` préfixé (**#487**, `needs-human`), ni au
+profil de Mélenchon (**#484**). Elle empêche le défaut de s'aggraver pendant
+que le reste s'instruit.
+
+### Le défaut, et son ampleur réelle
+
+`generate_all_profiles.build_profile_any_chambre` retenait **la première chambre
+qui rendait une identité** (`CHAMBRES = ["deputes", "senateurs"]`) et avalait
+les échecs par un `except Exception: continue` qui n'écrivait qu'une ligne de
+log. Deux conséquences, toutes deux observées :
+
+1. un parlementaire présent des deux côtés est classé par **l'ordre de la
+   boucle** — `deputes` répond, le Sénat n'est jamais interrogé ;
+2. une **défaillance transitoire** réattribue la chambre publiée sans trace
+   (cas Mélenchon, #484).
+
+L'issue citait Retailleau comme cas mesuré. **Il n'est pas isolé.** En croisant
+le roster complet du Sénat (`archive.nossenateurs.fr/senateurs/json`,
+1 357 entrées, historique compris) avec les 209 profils publiés du 20/08/2026 :
+
+| | |
+| --- | --- |
+| profils dont le slug figure au roster du Sénat | **22** |
+| … publiés `chambre: "AN"` | **21** |
+| … dont le mandat sénatorial est encore **ouvert** (`mandat_fin: null`) | **18** |
+
+Soit **10,1 % des 207 profils publiés `AN`**. Retailleau (2004 → en cours),
+Larcher (2007 → en cours), Deroche, Procaccia, Guené, Raynal… La liste
+comprend aussi des carrières réellement bicamérales (Mazars : sénateur
+2012-2014, député ensuite). Ce n'est pas une anomalie ponctuelle, c'est un
+dixième du corpus.
+
+*Réserve à garder en tête* : un slug n'est pas un identifiant de personne d'un
+site à l'autre — deux homonymes partageraient le même slug. C'est exactement le
+sujet de #487 ; la mesure ci-dessus est donc un majorant, mais les mandats
+sénatoriaux vérifiés à la main sur les premiers de la liste sont réels.
+
+### Ce que coûte l'appel systématique : le 404 n'est pas bon marché
+
+L'issue supposait qu'« un 404 est bon marché ». **C'est faux sur cette
+source**, et c'est la principale correction que cette mesure apporte au
+diagnostic.
+
+Mesuré le 20/08/2026 entre 14:45 et 14:55 UTC, avec le `User-Agent` et le
+`TIMEOUT=15` du projet, en 7 requêtes (courtoisie : quelques requêtes suffisent
+à établir un coût unitaire, le reste s'extrapole) :
+
+| requête | statut | durée |
+| --- | --- | --- |
+| `/gabriel-attal/json` | 404 | 9,25 s |
+| `/aurore-berge/json` | 404 | 15,91 s |
+| `/bruno-retailleau/json` | 200 | 12,62 s |
+| `/bruno-retailleau/votes/json` | 404 | 8,99 s |
+| `/gabriel-attal/votes/json` | 404 | 10,56 s |
+| `/jean-luc-melenchon/json` | 200 | 14,98 s |
+| `/gabriel-attal/json` (2ᵉ passage) | 200 (page générique) | 10,20 s |
+
+Médiane **≈ 10,6 s**, min 8,99 s, max 15,91 s. Une requête `curl` sur la même
+URL a mis **66,7 s**, dont **63,3 s de poignée de main TLS** — la latence n'est
+pas dans le transfert, elle est dans l'établissement de connexion.
+
+Coût **par candidat**, mesuré de bout en bout avec le vrai code
+(`fetch_identity` + `fetch_votes`, mode d'extraction léger du job roster) :
+`gabriel-attal` **21,1 s / 2 requêtes**, `aurore-berge` **17,7 s / 2 requêtes**.
+Deux requêtes, pas une : l'identité *et* les votes sont demandés au Sénat.
+
+Ces chiffres sont un **majorant d'un mauvais jour** : `www.nosdeputes.fr` a
+répondu en 12,3 s puis a dépassé 120 s pendant la même fenêtre. Toute
+l'infrastructure Regards Citoyens était dégradée. Mais la forme tient : sur ces
+domaines, une réponse négative se compte en **secondes**, pas en millisecondes.
+
+### Projection : ce que l'appel naïf aurait coûté
+
+Le job affecté est le seul qui n'utilise pas `--source` : **`extract-roster-groupes`**
+(752 membres, 8 shards, ~94 par shard). `extract-an` (`--source an`),
+`extract-senat` (`--source senat`) et `merge-and-pivot` (`--pivot-only`) ne
+changent pas d'un iota.
+
+| | par candidat | par shard (94) | pleine échelle (752) |
+| --- | --- | --- | --- |
+| appel Sénat systématique | +19,5 s | **+30,6 min** | **+4 h 04** |
+| avec l'index d'existence | +2,0 s (moyenne) | **+2,3 à 3,1 min** | **+25 min** |
+
+Les 19,5 s se décomposent en ~19 s de réseau et **0,5 s de temporisation de
+courtoisie** : `process_candidat` ne temporise que si la source publique a
+réellement été appelée (#467). Un appel Sénat systématique **rend cette
+temporisation due pour chaque candidat**, c'est-à-dire réinstalle exactement ce
+que #467 avait supprimé (12,0 s pour 24 membres).
+
+Un shard roster tourne aujourd'hui en ~200 s, dont ~130 s de frais fixes. La
+version naïve multiplie son temps d'extraction par ~40 et l'amène à moins d'un
+facteur 2 du timeout de 60 min — avec une queue de distribution (67 s sur une
+seule requête) qui le franchirait. **Non finançable en l'état.**
+
+### Le compromis retenu : un index d'existence, une requête par run
+
+`archive.nossenateurs.fr/senateurs/json` sert **en une requête** la liste
+complète des sénateurs, historique compris : 1 357 entrées, 1,09 Mo, **9,53 s**.
+Mélenchon y figure (2004-09-26 → 2010-01-07), Retailleau aussi
+(2004-09-26 → `null`).
+
+La seconde chambre n'est donc réellement interrogée que pour les slugs que le
+Sénat connaît. C'est le geste déjà appliqué trois fois dans ce dépôt : #369
+(référentiel AN local au lieu d'un appel NosDéputés par député), #392
+(amendements), #403 (scrutins). Rapporté au taux mesuré de 10,1 %, il divise le
+surcoût par **≈ 10**.
+
+Trois précisions qui font la différence entre un index et un raccourci :
+
+- **l'index ne décide pas la chambre.** Il ne dit pas où siège la personne, il
+  dit si une collecte Sénat a une chance d'aboutir. La décision reste prise sur
+  les identités réellement collectées.
+- **`--source senat` n'est pas pré-filtré.** Le pré-filtre n'existe que pour
+  rendre la *seconde* chambre abordable ; une extraction explicitement scopée
+  sur le Sénat l'interroge, index ou pas, sans quoi `--source senat` deviendrait
+  tributaire d'une liste tierce. Vérifié par
+  `test_source_senat_interroge_le_senat_meme_hors_index`.
+- **index indisponible ≠ index vide.** `slugs_connus_du_senat()` renvoie `None`
+  dans le premier cas, `frozenset()` dans le second, et l'échec est mis en cache
+  pour ne pas provoquer 752 tentatives. Un `None` produit un warning publié :
+  « on n'a pas pu chercher » ne doit jamais devenir « on a cherché, il n'y est
+  pas » (AGENTS.md §2.5).
+
+Alternative écartée : **se fier au `roster_chambre` de l'entrée roster**
+(`raw_data/roster_candidats.json` porte une `source` qui trahit le site
+d'origine). C'est précisément le raisonnement que l'issue corrige — le roster
+dit de quel *groupe* la personne est membre, pas quelles chambres elle a
+connues. Retailleau serait passé au travers dans l'autre sens.
+
+### Ce que le profil publie désormais
+
+Trois types de warnings, dans `meta.warnings` du profil — donc dans le jeu de
+données publié, pas seulement dans un log de run. Même modèle que #474 pour les
+qualités ministérielles inconnues : le texte avant le premier `:` est le *type*
+agrégé par `audit_pivot_dataset.compute_agregation_warnings`.
+
+| type | quand |
+| --- | --- |
+| `collecte de chambre en échec` | une chambre a levé une exception — que l'autre ait répondu ou non. Nomme la chambre et la raison. |
+| `carrière sur deux chambres` | les deux chambres rendent une identité. Nomme l'autre chambre et sa `source`. |
+| `index Sénat indisponible` | le roster du Sénat n'a pas pu être chargé : la chambre `senateurs` n'a pas été interrogée pour ce slug. |
+
+Les deux cas que l'issue demandait de distinguer le sont : « aucune chambre ne
+répond » reste le statut `introuvable` (déjà géré), « une échoue, l'autre
+répond » produit le warning nommé.
+
+### Quand les deux chambres répondent : convention d'ordre, dite explicitement
+
+C'est le cas Retailleau, et il fallait bien écrire quelque chose dans `chambre`
+tant que la sous-issue C n'a pas porté la chambre sur chaque mandat.
+
+**La première chambre de `chambres` est retenue** — `deputes`, donc `chambre:
+"AN"`. La valeur publiée ne change pas ; ce qui change, c'est qu'elle cesse
+d'être muette : le profil dit qu'une identité existe des deux côtés, nomme
+l'autre source, et dit que « AN » vient d'une **convention d'ordre de collecte**
+et non d'une comparaison des mandats.
+
+L'alternative — dériver la chambre du mandat en cours, ce qui ferait basculer
+Retailleau sur `Senat` — a été écartée pour la raison même que l'épic énonce :
+elle **effacerait sa carrière de député** comme on efface aujourd'hui son mandat
+sénatorial. On remplacerait un fait faux par un autre. Dériver `chambre` est la
+sous-issue D, et elle dépend de C, qui dépend de #487.
+
+Les deux profils bruts ne sont **pas fusionnés** : c'est la sous-issue C. Ce que
+cette issue garantit, c'est que l'information cesse d'être jetée à la collecte
+et qu'elle est nommée dans le jeu publié.
+
+### Interaction avec `build_minimal_profile`, signalée et non corrigée
+
+Quand la collecte FR échoue entièrement et qu'un mandat européen existe,
+`build_minimal_profile` écrit un squelette (`chambre: None`, `identite` à six
+champs vides). #484 a montré la suite : la fusion additive garde l'ancienne
+`chambre` non-null (`_prefer_non_empty`) tandis que le squelette, *truthy*,
+écrase une `identite` réelle — la chambre est collante, l'identité ne l'est pas.
+
+Cette issue **ne corrige pas cette asymétrie** (c'est #484, après #487), mais
+elle empêche l'échec d'être muet : les warnings `collecte de chambre en échec`
+partent désormais avec le squelette dans le profil brut. **Limite assumée** :
+sur ce chemin `chambre` vaut `None`, donc le pivot est construit par
+`normalize_europarl`, qui ne relit pas `meta.warnings` du brut. La trace
+s'arrête à `raw_data/` dans ce cas précis. Combler cet écart appartient à #484.
+
+### Le garde-fou de test qui manquait
+
+L'index Sénat a fait entrer un appel réseau dans **62 tests existants** dès sa
+première version : `tests/test_generate_all_profiles.py` est passé de 0,50 s à
+**13,4 s**, exactement la pathologie que #473 avait supprimée. D'où
+`tests/conftest.py` : une fixture `autouse` qui remet `fetch_full_roster` à une
+doublure qui **échoue bruyamment**, neutralise `slugs_connus_du_senat` sur un
+index vide, et vide le cache mémoire entre deux tests. La suite complète est à
+1 726 tests, 14,7 s.
+
+
 <a id="deduplication-entrees-membres"></a>
 ## `membres[]` publiait deux fois le même fait : dédupliquer sans effacer les changements de portefeuille (#480) (2026-08-20)
 

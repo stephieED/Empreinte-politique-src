@@ -1044,6 +1044,19 @@ jobs:
   # gitignoré, donc un shard préempté perd sa tranche et elle seule.
   # Ce n'est plus le timeout qui impose de sharder.
   #
+  # DEPUIS #488, ce job est le SEUL affecté par l'interrogation des deux
+  # chambres : c'est le seul qui n'utilise pas --source (extract-an est en
+  # --source an, extract-senat en --source senat, merge-and-pivot en
+  # --pivot-only). Surcoût mesuré/projeté, à ajouter au budget ci-dessus :
+  #   - 1 requête par shard pour l'index Sénat (`/senateurs/json`, 1 357 slugs,
+  #     1,09 Mo, 9,53 s mesurés le 20/08/2026) ;
+  #   - 2 requêtes (~19,5 s) pour les ~10,1 % de membres que le Sénat connaît
+  #     réellement — soit ~7 à 9 membres par shard de 94, ~2,3 à 3,1 min.
+  # Sans cet index, l'appel Sénat systématique aurait coûté +30,6 min PAR SHARD
+  # (2 requêtes × ~9,5 s de médiane sur archive.nossenateurs.fr, mesurées) et
+  # aurait réinstallé la temporisation de courtoisie de #467 sur chaque membre.
+  # Voir docs/technical_decisions.md#deux-chambres-interrogees.
+  #
   # ATTENTION, le shardage n'est pas gratuit : ~130 s de frais fixes par shard
   # (mesuré), dont ~110 s de `actions/checkout`. À max-parallel: 1 c'était
   # 8 × 130 s = ~17 min de temps mur pour zéro travail utile — c'est ce que

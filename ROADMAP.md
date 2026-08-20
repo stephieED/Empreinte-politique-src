@@ -8,6 +8,11 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- 21 of the 207 profiles published as `chambre: "AN"` are known to the Senate's own
+  roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). Both chambers
+  are now queried and the case is named in `meta.warnings`, but the model still publishes
+  one chamber per profile: fixing the published value needs #486 sub-issues C/D, which
+  depend on #487 (`needs-human`). See `technical_decisions.md#deux-chambres-interrogees`.
 - Profiles collected before 2026-08-18 carry amendements resolved through the
   old `numero`-keyed store: ~75% of a legislature's amendements are missing and
   ~40% of the remaining (member, amendement) links point at the wrong text/date/
