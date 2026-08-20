@@ -25,7 +25,7 @@ on:
         type: number
         default: 20
       collect_interventions:
-        description: "Collect floor speeches. Affects extract-an only — the roster job always skips them."
+        description: "Collect floor speeches. Affects extract-an only — the roster and Senate jobs always skip them."
         type: boolean
         default: false
       nosdeputes_max_pages:
@@ -104,26 +104,34 @@ concurrency:
 # n'ajoute pas de travail, il le divise. « S × 60 » supposait 5 696 membres.
 #
 # ── PLAFOND AUTORISÉ (somme des timeouts, jamais atteint) ────────────────────
-# prepare-* 5 min / amendements-an 30 / AN 5 PAR SHARD (nb de shards =
-# candidats à slug résolvable, 8 aujourd'hui, alerte au-delà de AN_SHARDS_WARN)
-# / Sénat 90 / UE 60 / ParlTrack 30 / roster-groupes 60 PAR SHARD (S = 1 en
-# rollout progressif, 8 en run complet) / merge-and-pivot 60.
-# Chaîne la plus longue : 90 (Sénat) + 60·S (roster) + 60 (merge) = 210 min à
-# S=1, 630 min à S=8. Aucune limite GitHub n'est approchée (6 h par JOB, 35 j
-# par RUN). Ces valeurs sont des filets de sécurité : ne pas les budgéter.
+# prepare-* 5 min / amendements-an 30 / AN 5 PAR SHARD, 9 avec
+# collect_interventions (#498 ; nb de shards = candidats à slug résolvable, 8
+# aujourd'hui, alerte au-delà de AN_SHARDS_WARN) / Sénat 15 (#501, 90 avant) /
+# UE 60 / ParlTrack 30 / roster-groupes 60 PAR SHARD (S = 1 en rollout
+# progressif, 8 en run complet) / merge-and-pivot 60.
+#
+# Chaîne la plus longue : le Sénat n'est PLUS le maillon dimensionnant depuis
+# #501. `extract-roster-groupes` attend tout le premier étage ET `extract-an` ;
+# ce dernier plafonne à 30 (amendements) + 5·8 = 70 min, au-delà des 60 min
+# d'`extract-ue-officiel` et des 15 du Sénat. Donc 70 + 60·S + 60 = **190 min à
+# S=1, 610 min à S=8** (222 / 642 avec collect_interventions, où extract-an
+# passe à 30 + 9·8 = 102). Aucune limite GitHub n'est approchée (6 h par JOB,
+# 35 j par RUN). Ces valeurs sont des filets de sécurité : ne pas les budgéter.
 #
 # ── TEMPS MUR MESURÉ — run 32288588518, 19/08/2026, run complet (S=8) ────────
 #
 #   | Étape                        | Début  | Durée   | Timeout | Ratio  |
 #   |------------------------------|--------|---------|---------|--------|
-#   | 6 jobs sans needs: (Sénat)    | 0      | 4,6 min | 90 min  | ×20    |
+#   | 6 jobs sans needs: (Sénat)    | 0      | 4,6 min | 15 min  | ×3,3   |
 #   | extract-an (8 shards, série) | 2,2    | 18,2    | 40      | ×2,2   |
 #   | extract-roster (8 sh., série)| 20,5   | 26,9    | 480     | ×18    |
 #   | merge-and-pivot              | 47,4   |  7,5    | 60      | ×8     |
-#   | TOTAL                        | —      | 54,9    | 630     | ×11,5  |
+#   | TOTAL                        | —      | 54,9    | 610     | ×11,1  |
 #
-# Le Sénat ne domine PAS : son timeout de 90 min est un filet, son temps réel
-# est de 4,6 min. Le chemin critique réel, ce sont les deux matrices en série.
+# Le Sénat ne domine PAS. Les 4,6 min de ce relevé incluent encore la collecte
+# d'interventions, que #501 a coupée : 280 des 311 requêtes de ce job y
+# passaient, pour zéro intervention retenue. Le chemin critique réel, ce sont
+# les deux matrices en série.
 #
 # ── CE QUE COÛTE UN SHARD (mesuré, même run) ────────────────────────────────
 # Un shard roster = ~200 s, dont ~130 s de FRAIS FIXES (dont ~110 s de
@@ -613,7 +621,42 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   extract-senat:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # 90 → 15 min (#501). Valeur UNIQUE, pas conditionnelle au mode comme
+    # `extract-an` : ce job ne collecte plus jamais d'interventions (voir le
+    # step d'extraction), il n'a donc plus deux modes à couvrir.
+    #
+    # Ce que 90 bornait : rien. Sur les 15 derniers runs portant un
+    # `extract-senat` (14/08 → 20/08/2026), le job n'a JAMAIS atteint ses
+    # 90 min. Les deux plus longs — 969 s et 4 482 s — se sont terminés à la
+    # seconde près en même temps qu'`extract-roster-groupes` et
+    # `merge-and-pivot`, signature d'une annulation de RUN, pas d'un
+    # `timeout-minutes` (qui aurait coupé le second à 5 400 s). Le plafond
+    # était trop haut pour être ce qui arrête le job.
+    #
+    # Ce que 15 borne, mesuré. `timeout-minutes` couvre `préambule + collecte`
+    # (leçon de #498) :
+    #   - préambule (checkout, bootstrap-extraction, cache) : 6-170 s sur ces
+    #     mêmes 15 runs → 240 s provisionnés, comme extract-an ;
+    #   - collecte résiduelle : 4 requêtes par slug résolvable (identité, votes,
+    #     2 législatures de dossiers), soit 32 requêtes pour les 8 slugs de
+    #     raw_data/candidats.json. Chronométré à 2,7 s pour `bruno-retailleau`
+    #     le 20/08/2026 sur la source saine, ~30 s projetés pour les 8.
+    # 15 min laissent donc ~11 min à une collecte mesurée à 30 s. Une source
+    # dégradée coûte au pire 48 s par requête (3 × read timeout 15 s + backoff) :
+    # 32 requêtes tenant toutes leur pire cas dépasseraient 15 min, et c'est
+    # voulu — une source qui fait expirer ses 32 requêtes est à terre, le job
+    # ne produira rien de plus en attendant 90 min.
+    #
+    # Le coût d'une coupure est faible, contrairement à extract-an : ce job
+    # n'est pas shardé et `_manifest_append` publie candidat par candidat, donc
+    # un timeout ne perd que le candidat en cours, pas le job. C'est pourquoi
+    # aucun `--budget-interventions-secondes` n'est posé ici : sans collecte
+    # d'interventions il n'aurait rien à borner (`build_profile_any_chambre` le
+    # neutralise sous `--skip-interventions`), et la publication incrémentale
+    # tient déjà le rôle que le budget joue sur extract-an.
+    #
+    # Cohérence tenue par tests/test_ci_interventions_par_job.py.
+    timeout-minutes: 15
     # continue-on-error: true — voir justification sur extract-an ci-dessus.
     continue-on-error: true
 
@@ -659,7 +702,38 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source senat --workers 1 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+          # `--skip-interventions` EN DUR (#501), comme le job roster et pour une
+          # raison mesurée, pas par symétrie. Jusqu'à #501 ce job collectait les
+          # interventions QUEL QUE SOIT `collect_interventions` — le seul des
+          # trois chemins de collecte à n'obéir à rien.
+          #
+          # Ce que la collecte rendait : RIEN, et par construction. Le détail
+          # d'une intervention est rattaché à son orateur par
+          # `fetch_intervention_details`, qui lit la clé `url_nosdeputes` du
+          # document pour aller chercher le bloc `div.perso` de la page de
+          # séance. L'API de `archive.nossenateurs.fr` n'expose jamais cette
+          # clé : elle publie `url_nossenateurs` (vérifié sur 4 documents le
+          # 20/08/2026). `_classify_intervention` ne trouve donc aucun orateur,
+          # classe en `mention`, et `_process_search_result` jette le document.
+          # Toutes les interventions sénatoriales, sans exception.
+          #
+          # Constaté côté CI sur 7 runs (14/08 → 19/08/2026) : jusqu'à 58 pages
+          # de recherche et ~2 700 requêtes de détail à `archive.nossenateurs.fr`
+          # par run, pour « Bruno Retailleau: ok (0 interventions, senateurs) »
+          # à chaque fois — le seul sénateur en exercice de la liste. Les 15
+          # interventions que le résumé affiche parfois sur Mélenchon viennent
+          # de `questions.assemblee-nationale.fr` (vérifié sur les 15 URLs) :
+          # elles sont collectées par le chemin AN et conservées par la fusion
+          # additive, jamais collectées ici.
+          #
+          # Effet sur les données : AUCUN. `build_profile` rendait déjà `[]`, et
+          # `preserver_collectes_non_vides` (#465) empêche un `[]` d'écraser un
+          # fait acquis, y compris sous `--no-merge`. Ce flag supprime ~90 % des
+          # requêtes du job (280 des 311 du run 32288588518), pas une donnée.
+          #
+          # À rouvrir si `fetch_intervention_details` apprend `url_nossenateurs`
+          # — voir ROADMAP.md et docs/technical_decisions.md#interventions-senat-501.
+          python3 src/generate_all_profiles.py --source senat --workers 1 --skip-interventions --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
