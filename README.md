@@ -125,8 +125,12 @@ See:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install requests beautifulsoup4 pytest
+pip install -r requirements-dev.txt
 ```
+
+`requirements-dev.txt` pulls in `requirements.txt` (runtime dependencies) and
+adds the pinned `pytest`. For a runtime-only environment, install
+`requirements.txt` alone — that is what the extraction jobs do.
 
 Run all commands below from the repository root with the virtual environment
 activated.
@@ -853,6 +857,19 @@ Sensitive institutional constraints are documented in `AGENTS.md`.
 ```bash
 pytest -q
 ```
+
+The full suite runs in ~11 s (24 s for the whole CI job, checkout included),
+executed by `.github/workflows/tests.yml` on every pull request and on every
+push to `main`; the job fails if any test fails.
+
+The suite is **decoupled from the living corpus**: no test reads `pivot_data/`
+or `raw_data/profiles/`, none writes anywhere under `pivot_data/` or
+`raw_data/`, and none makes an external network call (#473). The CI job enforces
+this structurally — it sparse-checks-out only what the suite actually reads, so
+the corpus is not on disk at all. A test that re-couples to it fails there with
+a `FileNotFoundError` naming the path. Acceptance tests that need real profiles
+use the frozen fixtures under `tests/fixtures/`. Rationale:
+`docs/technical_decisions.md#ci-tests-pytest`.
 
 ## Coverage limits
 

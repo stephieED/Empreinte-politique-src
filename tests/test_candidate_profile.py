@@ -1734,6 +1734,12 @@ def test_build_profile_no_syceron_for_senat():
         # Évite un vrai appel réseau : chambre="senateurs" ne prend jamais le
         # chemin Syceron, mais tombe dans la branche NosDéputés générique.
         patch("candidate_profile._extract_search_results", return_value=[]),
+        # …et l'étape 3 des dossiers législatifs, qui n'est atteinte QUE pour
+        # `chambre != "deputes"` : ce test était le seul de la suite à sortir
+        # réellement sur le réseau (archive.nossenateurs.fr, deux législatures
+        # à TIMEOUT=15 s), ce qui lui coûtait ~16 s des ~35 s de la suite et
+        # aurait rendu le job CI de #473 tributaire d'un site tiers.
+        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
     ):
         build_profile("senateurs", "jean-dupont")
 

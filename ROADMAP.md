@@ -45,6 +45,12 @@ something is pending, not *why*.
   baseline, so what can be pruned has to be established first. Measure before
   deciding, see `technical_decisions.md#budget-execution-pleine-echelle-467`.
 
+- `tests/test_amendements_download_modes.py` now dominates the suite: eleven
+  teardowns wait 0.5 s each for a local HTTP server to stop — ~5.5 s of the
+  11 s total (#473). The waits are part of the scenario under test (the three
+  Range-download degradation states); shortening them means touching the module,
+  not the test. Only worth doing if the CI job becomes a contention point.
+
 - CI still deletes the partial amendements archive on download failure (#264
   `try/finally`), so it gains nothing from the byte-level resume of #241/#443
   between runs. The premise behind that deletion ("the archive is never reread

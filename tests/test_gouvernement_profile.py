@@ -13,7 +13,8 @@ from gouvernement_profile import (
 )
 from schema_gouvernement import KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL, validate_profil_gouvernement
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+# Pivots réels **figés**, partagés avec tests/test_gouvernement_roster.py (#457).
+FIXTURES_PIVOTS_DIR = Path(__file__).resolve().parent / "fixtures" / "gouvernement_roster"
 
 
 # ---------------------------------------------------------------------------
@@ -453,16 +454,25 @@ def test_build_profile_pas_de_reseau_appele():
 
 
 # ---------------------------------------------------------------------------
-# build_gouvernement_profile — pivots réels du dépôt
+# build_gouvernement_profile — pivots réels, figés en fixtures (#457, #473)
 # ---------------------------------------------------------------------------
 
-def _load_real_pivot(slug: str) -> dict:
-    path = REPO_ROOT / "pivot_data" / "profiles" / f"{slug}.pivot.json"
+def _load_pivot_fixture(slug: str) -> dict:
+    """Charge un pivot réel **figé** sous `tests/fixtures/gouvernement_roster/`.
+
+    Même raison qu'en #457 pour `tests/test_gouvernement_roster.py` : ce test
+    d'acceptation lisait `pivot_data/profiles/` et cassait donc à chaque mise à
+    jour du corpus. Il avait échappé au découplage de #457, qui n'avait traité
+    que le fichier où l'échec s'était manifesté — repéré par l'audit de #473.
+    La fixture est la même que celle du roster : un seul extrait figé, une seule
+    provenance à tenir à jour (`meta.fixture`, AGENTS.md §2.2).
+    """
+    path = FIXTURES_PIVOTS_DIR / f"{slug}.pivot.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def test_build_profile_real_pivot_gabriel_attal():
-    profil_pivot = _load_real_pivot("gabriel-attal")
+    profil_pivot = _load_pivot_fixture("gabriel-attal")
     profil = build_gouvernement_profile(
         gouvernement_id="gouvernement:ATTAL",
         nom="Gouvernement Attal",

@@ -95,6 +95,16 @@ graph TD
 - Scalars: new value if populated, else keep old (never regress to `null`).
 Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
 
+**Tests in CI (`.github/workflows/tests.yml`, #473)**: the full suite runs on every PR
+and every push to `main`, and a failure fails the job. **No test may read `pivot_data/`
+or `raw_data/profiles/`, write anywhere under `pivot_data/`/`raw_data/`, or hit the
+network** — acceptance tests on real profiles use frozen fixtures under `tests/fixtures/`
+(#457). This is enforced, not just audited: the job sparse-checks-out only what the suite
+reads, so the corpus is absent from the CI disk. Watch for CLI/function **defaults**
+pointing into the repo — that is how nine tests were silently reading 66 MB of corpus.
+Test-only dependencies go in `requirements-dev.txt`.
+See `docs/technical_decisions.md#ci-tests-pytest`.
+
 **CI/CD (`.github/workflows/generate-data.yml`)**: `fresh_run=true` = full purge, `--no-merge`.
 `fresh_run=false` = additive merge, cache restored.
 In both modes, threshold = `inputs.threshold` (default 3).
@@ -259,6 +269,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `docs/technical_decisions.md` | New architectural choice or trade-off. Dated entry: context, decision, alternative rejected. |
 | `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `technical_decisions.md` instead. |
 | `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
+| `requirements-dev.txt` | A new **test-only** package is imported. Same pinning rule; it already pulls `requirements.txt` via `-r`. |
 
 Never create a missing file from this list without flagging it first.
 
@@ -287,7 +298,7 @@ don't restate it in the chat.
 - `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
-- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
+- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#ci-tests-pytest`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
   automatically — consult on request). Rationale for deferred items lives
   in `docs/technical_decisions.md#hors-perimetre`, not duplicated here.

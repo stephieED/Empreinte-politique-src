@@ -3,6 +3,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_pivot_dataset import (
@@ -29,6 +31,27 @@ from audit_pivot_dataset import (
 
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "audit_pivot"
+
+
+@pytest.fixture(autouse=True)
+def index_partages_isoles(monkeypatch, tmp_path_factory):
+    """Coupe les index partagés du corpus vivant pour tout ce fichier (#473).
+
+    `--scrutins` et `--amendements` ont pour **valeur par défaut** les chemins du
+    dépôt (`pivot_data/scrutins.json`, `pivot_data/amendements/`). Quatre tests
+    de `main()` surchargeaient `--input-dir` vers les fixtures mais pas ces
+    deux-là : ils lisaient donc ~66 Mo du corpus vivant, sans qu'aucune de leurs
+    assertions n'en dépende. C'est le pendant en lecture du piège d'écriture déjà
+    rencontré ici — une option argparse dont le défaut pointe dans le dépôt.
+
+    Le parser est construit à chaque appel de `main()` : réécrire les deux
+    globales suffit, et couvre les tests à venir sans qu'ils aient à y penser.
+    Un test qui veut vraiment un index le passe explicitement, la surcharge
+    n'étant qu'un défaut.
+    """
+    absent = tmp_path_factory.mktemp("index-partages-absents")
+    monkeypatch.setattr("audit_pivot_dataset.DEFAULT_SCRUTINS_PATH", absent / "scrutins.json")
+    monkeypatch.setattr("audit_pivot_dataset.DEFAULT_AMENDEMENTS_DIR", absent / "amendements")
 
 
 # ---------------------------------------------------------------------------

@@ -2,10 +2,41 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from amendements_index import charger as charger_amendements_reel
 from generate_group_profiles import generate_all, main as generate_group_profiles_main
 from schema_groupe import validate_profil_groupe
+from scrutins_index import charger as charger_scrutins_reel
+
+
+@pytest.fixture(autouse=True)
+def index_partages_isoles(monkeypatch, tmp_path_factory):
+    """Coupe les index partagés du corpus vivant pour tout ce fichier (#473).
+
+    `generate_all()` reçoit `scrutins_path` / `amendements_path` en **valeur par
+    défaut de paramètre** — liée à la définition, donc insensible à un
+    monkeypatch de la globale du module. Cinq tests d'ici lisaient ainsi
+    `pivot_data/scrutins.json` et `pivot_data/amendements/` (~66 Mo) sans qu'une
+    seule assertion n'en dépende : leurs pivots portent `votes: []` et
+    `amendements: []`. C'est le pendant en lecture du piège d'écriture déjà
+    rencontré ici — un défaut qui pointe dans le dépôt.
+
+    Les vrais chargeurs sont conservés, appliqués à un chemin absent : ils
+    rendent un index vide du bon type (contrat documenté « index vide si le
+    fichier est absent »), plutôt qu'un doublon de test qui dériverait.
+    """
+    absent = tmp_path_factory.mktemp("index-partages-absents")
+    monkeypatch.setattr(
+        "generate_group_profiles.charger_scrutins",
+        lambda _chemin: charger_scrutins_reel(absent / "scrutins.json"),
+    )
+    monkeypatch.setattr(
+        "generate_group_profiles.charger_amendements",
+        lambda _dossier, **kwargs: charger_amendements_reel(absent / "amendements", **kwargs),
+    )
 
 
 def _pivot(id_: str, nom: str) -> dict:
