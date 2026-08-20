@@ -42,7 +42,7 @@ def _pivot(id_: str, nom: str, mandats: list = None, sources: list = None) -> di
 def _mandat_gouv(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
     return {
         "categorie": "fonction_gouvernementale",
-        "type": "membre",
+        "fonction": "membre",
         "label": label,
         "debut": debut,
         "fin": fin,
@@ -483,11 +483,23 @@ def test_build_profile_real_pivot_gabriel_attal():
 # premier_ministre et portefeuille (#398)
 # ---------------------------------------------------------------------------
 
-def _mandat_portefeuille(label: str, debut: str, fin: str = None, actif: bool = False) -> dict:
-    """Mandat `MINISTERE` tel qu'il sort de la collecte : sans `source_url`."""
+def _mandat_portefeuille(
+    label: str,
+    debut: str,
+    fin: str = None,
+    actif: bool = False,
+    fonction: str = "Ministre",
+) -> dict:
+    """Mandat `MINISTERE` tel qu'il apparaît dans un pivot : sans `source_url`.
+
+    `fonction` (issu de `infosQualite.libQualite`) est le champ qui sépare un
+    maroquin d'un mandat de parlementaire en mission (#474) : la fabrique
+    portait `type`, la clé d'avant normalisation, que `gouvernement_roster` ne
+    lit pas — voir `tests/test_gouvernement_roster.py`.
+    """
     return {
         "categorie": "fonction_gouvernementale",
-        "type": "Ministre",
+        "fonction": fonction,
         "label": label,
         "debut": debut,
         "fin": fin,
@@ -501,7 +513,10 @@ def test_build_profile_premier_ministre_cable_et_valide():
     profils = [
         _pivot("nosdeputes:pm", "Première Ministre", mandats=[
             _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
-            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille(
+                "Premier ministre", "2025-01-01", "2025-06-30",
+                fonction="Premier ministre",
+            ),
         ]),
     ]
     profil = build_gouvernement_profile(
@@ -538,11 +553,17 @@ def test_build_profile_premier_ministre_ambigu_warning_dans_meta():
     profils = [
         _pivot("nosdeputes:a", "A", mandats=[
             _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
-            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille(
+                "Premier ministre", "2025-01-01", "2025-06-30",
+                fonction="Premier ministre",
+            ),
         ]),
         _pivot("nosdeputes:b", "B", mandats=[
             _mandat_gouv("Gouvernement (TEST)", "2025-01-01", "2025-06-30"),
-            _mandat_portefeuille("Premier ministre", "2025-01-01", "2025-06-30"),
+            _mandat_portefeuille(
+                "Premier ministre", "2025-01-01", "2025-06-30",
+                fonction="Premier ministre",
+            ),
         ]),
     ]
     profil = build_gouvernement_profile(
