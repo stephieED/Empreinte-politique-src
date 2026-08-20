@@ -81,6 +81,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from audit_pivot_dataset import compute_profils_perimes
+from budget_collecte import BudgetCollecte
 from candidate_profile import build_profile, compteur_appels_nosdeputes
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
@@ -365,6 +366,7 @@ def build_profile_any_chambre(
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
     collecte_bicamerale: bool = False,
+    budget_interventions_secondes: int = 0,
 ) -> tuple[Optional[dict], Optional[str], list[str]]:
     """Collecte le profil FR et renvoie `(profil_retenu, chambre_retenue, warnings)`.
 
@@ -424,6 +426,17 @@ def build_profile_any_chambre(
     if chambres is None:
         chambres = CHAMBRES
 
+    # #498 : UN budget pour le candidat, partagé par les deux chambres. Un budget
+    # par appel de `build_profile` doublerait le plafond d'un profil bicaméral
+    # (`candidat_declare`, 8 profils sur 209) sans que le `timeout-minutes` du
+    # shard, lui, double. Le plafond doit porter sur ce que borne le job : un
+    # shard = un candidat.
+    budget = (
+        BudgetCollecte(budget_interventions_secondes, libelle="collecte d'interventions")
+        if budget_interventions_secondes and not skip_interventions
+        else None
+    )
+
     resultats: list[tuple[str, dict]] = []
     echecs: list[tuple[str, str]] = []
 
@@ -435,6 +448,7 @@ def build_profile_any_chambre(
                 intervention_max_pages=max_pages,
                 skip_interventions=skip_interventions,
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
+                budget_interventions=budget,
             )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
@@ -708,6 +722,7 @@ def process_candidat(
             # aucun agrégat (aucun groupe sénatorial n'est agrégé) et coûterait
             # +30,6 min par shard — voir le docstring de la fonction.
             collecte_bicamerale=(provenance == "candidat_declare"),
+            budget_interventions_secondes=args.budget_interventions_secondes,
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
@@ -941,6 +956,13 @@ def main() -> None:
     parser.add_argument("--candidats", default=DEFAULT_CANDIDATS_PATH, help=f"Fichier JSON listant les candidats (défaut: {DEFAULT_CANDIDATS_PATH})")
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
     parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
+    parser.add_argument(
+        "--budget-interventions-secondes", type=int, default=0,
+        help="Budget de temps mur (s) pour la collecte d'interventions d'UN candidat : recherche "
+             "NosDéputés, débats Syceron, détails document par document, questions officielles. "
+             "Épuisé, la collecte s'arrête entre deux unités, le profil est écrit avec ce qui a été "
+             "collecté et la troncature est consignée dans meta.warnings[]. 0 (défaut) = aucun "
+             "budget. Sans effet avec --skip-interventions. Voir #498.")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--refresh-existing", action="store_true",
                         help="Ne traiter QUE les candidats dont le profil JSON existe déjà (#445) : "
@@ -1046,7 +1068,7 @@ def main() -> None:
                              "Réduire si les API publiques commencent à renvoyer des erreurs 429. "
                              "En extraction légère AN (--skip-interventions --skip-dossiers-legislatifs, "
                              "mode du job roster), monter cette valeur RALENTIT : la charge y est du "
-                             "parsing JSON sous GIL, pas du réseau — mesuré +41 % à 4 workers (#467, "
+                             "parsing JSON sous GIL, pas du réseau — mesuré +41 %% à 4 workers (#467, "
                              "docs/technical_decisions.md#budget-execution-pleine-echelle-467).")
     parser.add_argument("--checkpoint-file", default=DEFAULT_CHECKPOINT_PATH,
                         help=f"Fichier de point de sauvegarde de la progression, mis à jour après chaque "

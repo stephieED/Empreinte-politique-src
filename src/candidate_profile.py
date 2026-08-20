@@ -41,6 +41,13 @@ from xml.etree import ElementTree as ET
 import requests
 import urllib3
 from bs4 import BeautifulSoup
+from budget_collecte import (
+    BudgetCollecte,
+    annoncer_troncature,
+    epuise as budget_epuise,
+    ignorer as budget_ignorer,
+    section as budget_section,
+)
 from download_watchdog import download_with_watchdog
 from gouvernement_textes import (
     DOSSIERS_CACHE_DIR,
@@ -554,6 +561,12 @@ WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES = "interventions syceron indisponibles (fallback nosdeputes)"
+# #498 : collecte d'interventions interrompue par son budget de temps mur. JAMAIS
+# retiré par _prune_stale_warnings : contrairement à « votes introuvables », que
+# la fusion peut démentir en restaurant les votes de l'ancien fichier, celui-ci
+# décrit ce que CE run n'a pas collecté. Une liste tronquée qui a l'air complète
+# après fusion reste une liste dont on ne sait pas si elle est complète.
+WARNING_PREFIX_BUDGET_INTERVENTIONS = "collecte d'interventions tronquée (budget de temps)"
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -4018,7 +4031,10 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
         return index
 
 
-def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+def fetch_questions_officielles(
+    url_an_ou_senat: Optional[str],
+    budget: Optional[BudgetCollecte] = None,
+) -> list[dict[str, Any]]:
     """Récupère les questions parlementaires officielles (QE/QG/QOSD) d'un député.
 
     Source : open data Assemblée nationale (data.assemblee-nationale.fr). Agrège
@@ -4034,7 +4050,16 @@ def fetch_questions_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str
         return []
 
     questions: list[dict[str, Any]] = []
-    for legislature in AN_QUESTIONS_PATH:
+    legislatures = list(AN_QUESTIONS_PATH)
+    for rang, legislature in enumerate(legislatures):
+        # #498 : une législature = jusqu'à 3 archives (QE/QG/QOSD) de plusieurs
+        # dizaines de Mo. Le budget est vérifié AVANT d'en engager une, jamais au
+        # milieu : l'index par acteur n'est écrit en cache qu'une fois la
+        # législature entièrement lue, et un index partiel ferait passer une
+        # collecte incomplète pour une collecte faite.
+        if budget_epuise(budget):
+            budget_ignorer(budget, "législature(s) de questions officielles", len(legislatures) - rang)
+            break
         index = _build_acteur_questions_index(legislature)
         for record in index.get(acteur_ref, []):
             uid = record.get("uid") or ""
@@ -4153,14 +4178,27 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
         return index
 
 
-def fetch_interventions_syceron(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
+def fetch_interventions_syceron(
+    url_an_ou_senat: Optional[str],
+    budget: Optional[BudgetCollecte] = None,
+) -> list[dict[str, Any]]:
     """Récupère les débats Syceron d'un député via son `acteurRef` officiel AN."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
 
     interventions: list[dict[str, Any]] = []
-    for legislature in sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int, reverse=True):
+    legislatures = sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int, reverse=True)
+    for rang, legislature in enumerate(legislatures):
+        # #498 : même garde que pour les questions officielles — une législature
+        # Syceron, c'est une archive de 50 à 150 Mo (mesuré : 22 à 55 s quand
+        # data.assemblee-nationale.fr répond). Vérifié entre deux législatures,
+        # jamais au milieu de l'une d'elles. Les législatures sont parcourues de
+        # la plus récente à la plus ancienne : ce qui tombe en premier sous le
+        # budget est donc le plus ancien, pas le plus consulté.
+        if budget_epuise(budget):
+            budget_ignorer(budget, "législature(s) de débats Syceron", len(legislatures) - rang)
+            break
         index = _build_acteur_interventions_syceron_index(legislature)
         interventions.extend(index.get(acteur_ref, []))
 
@@ -4542,12 +4580,25 @@ def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_
     }
 
 
-def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: str, candidate_id: Optional[str]) -> Optional[dict[str, Any]]:
+def _process_search_result(
+    item: dict[str, Any],
+    base_url: str,
+    candidate_name: str,
+    candidate_id: Optional[str],
+    budget: Optional[BudgetCollecte] = None,
+) -> Optional[dict[str, Any]]:
     """Traite un résultat de recherche unique (détail + contexte de séance) et le nettoie.
 
     Retourne None si le résultat n'est pas une prise de parole (mention simple).
     Extrait de `_extract_search_results` pour être exécuté en parallèle par résultat.
     """
+    # #498 : le budget est vérifié à l'entrée de CHAQUE document, et non une fois
+    # pour toute la liste. C'est le seul point du parcours où la granularité est
+    # fine : sur une source dégradée, un document coûte jusqu'à 45 s (read
+    # timeout=15 × 3 tentatives), et il y en a jusqu'à ~250 par candidat.
+    if budget_epuise(budget):
+        budget_ignorer(budget, "document(s) d'intervention NosDéputés")
+        return None
     document_id = item.get("document_id")
     search_base_url = item.get("_search_base_url") or base_url
     detail = None
@@ -4589,7 +4640,13 @@ def _process_search_result(item: dict[str, Any], base_url: str, candidate_name: 
     return cleaned
 
 
-def _extract_search_results(base_url: str, search_payload: Optional[dict], candidate_name: str, candidate_id: Optional[str]) -> list[dict[str, Any]]:
+def _extract_search_results(
+    base_url: str,
+    search_payload: Optional[dict],
+    candidate_name: str,
+    candidate_id: Optional[str],
+    budget: Optional[BudgetCollecte] = None,
+) -> list[dict[str, Any]]:
     """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail.
 
     Les requêtes de détail/contexte sont indépendantes d'un résultat à l'autre : on les
@@ -4602,9 +4659,13 @@ def _extract_search_results(base_url: str, search_payload: Optional[dict], candi
     results = [item for item in (search_payload.get("results") or []) if isinstance(item, dict)]
     if not results:
         return []
+    # `executor.map` est conservé (et non `submit` + annulation) : une fois le
+    # budget épuisé, `_process_search_result` rend la main immédiatement, donc
+    # la queue restante se vide en quelques millisecondes. Annuler des futures
+    # n'interromprait de toute façon pas la requête déjà partie.
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         processed = list(executor.map(
-            lambda item: _process_search_result(item, base_url, candidate_name, candidate_id),
+            lambda item: _process_search_result(item, base_url, candidate_name, candidate_id, budget),
             results,
         ))
     return [item for item in processed if item is not None]
@@ -4617,6 +4678,7 @@ def build_profile(
     intervention_max_pages: int = 10,
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
+    budget_interventions: Optional[BudgetCollecte] = None,
 ) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
@@ -4638,6 +4700,15 @@ def build_profile(
             NosDéputés (sénateurs) ni `fetch_textes_portes_officiels` (députés). Voir mode
             d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
             amendements sont exploités en aval (agrégats de groupe, #349).
+        budget_interventions: budget de temps mur (`BudgetCollecte`) pour la SEULE
+            collecte d'interventions — recherche NosDéputés, débats Syceron, détails
+            document par document, questions officielles. None = aucun budget, le
+            comportement historique. Épuisé, il arrête la collecte entre deux unités,
+            conserve ce qui est déjà collecté et ajoute un
+            `WARNING_PREFIX_BUDGET_INTERVENTIONS` à `meta.warnings[]` (#498). Le
+            budget est destiné à être PARTAGÉ entre les deux chambres d'un même
+            candidat (voir `generate_all_profiles.build_profile_any_chambre`) : le
+            plafond porte sur le candidat, pas sur chaque interrogation de chambre.
 
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
@@ -4740,12 +4811,18 @@ def build_profile(
         # la législature courante : ses interventions réelles sont archivées sur le
         # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
         # pour trouver celui qui contient réellement ses interventions.
-        interventions_payload = fetch_all_intervention_results_from_domains(
-            base_urls,
-            search_candidate_name,
-            object_name="Intervention",
-            max_pages=0 if skip_interventions else intervention_max_pages,
-        )
+        # #498 : la recherche fait partie de la collecte d'interventions et est
+        # imputée à son budget — `max_pages=0` la rend gratuite en mode
+        # --skip-interventions, donc rien n'est facturé à un mode qui ne collecte
+        # pas. Mesurée à 90 s sur `jean-luc-melenchon` (run 32379928098) : ce
+        # n'est pas un préliminaire négligeable.
+        with budget_section(budget_interventions, "recherche NosDéputés"):
+            interventions_payload = fetch_all_intervention_results_from_domains(
+                base_urls,
+                search_candidate_name,
+                object_name="Intervention",
+                max_pages=0 if skip_interventions else intervention_max_pages,
+            )
         interventions_base_url = base_urls[0]
     except Exception as exc:
         pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
@@ -5038,7 +5115,10 @@ def build_profile(
     # Sénat/PE non couverts par Syceron : chemin NosDéputés uniquement. ---
     if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
-            syceron_interventions = fetch_interventions_syceron(profile["identite"].get("url_an_ou_senat"))
+            with budget_section(budget_interventions, "débats Syceron"):
+                syceron_interventions = fetch_interventions_syceron(
+                    profile["identite"].get("url_an_ou_senat"), budget_interventions
+                )
         except Exception as exc:
             syceron_interventions = []
             warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : {exc}")
@@ -5046,26 +5126,46 @@ def build_profile(
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
-            profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+            with budget_section(budget_interventions, "détails d'interventions NosDéputés"):
+                profile["interventions"] = _extract_search_results(
+                    interventions_base_url, interventions_payload, candidate_name, candidate_id,
+                    budget_interventions,
+                )
             warnings.append(
                 f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : "
                 "aucune intervention Syceron trouvée pour cet acteurRef ; "
                 "interventions NosDéputés utilisées en fallback."
             )
     else:
-        profile["interventions"] = _extract_search_results(interventions_base_url, interventions_payload, candidate_name, candidate_id)
+        with budget_section(budget_interventions, "détails d'interventions NosDéputés"):
+            profile["interventions"] = _extract_search_results(
+                interventions_base_url, interventions_payload, candidate_name, candidate_id,
+                budget_interventions,
+            )
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
     # déjà collectées (type_detail="question", source AN structurée). ---
     if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
-            official_questions = fetch_questions_officielles(profile["identite"].get("url_an_ou_senat"))
+            with budget_section(budget_interventions, "questions officielles"):
+                official_questions = fetch_questions_officielles(
+                    profile["identite"].get("url_an_ou_senat"), budget_interventions
+                )
             if official_questions:
                 profile["interventions"].extend(official_questions)
                 profile["meta"]["synchro_sources"]["assemblee_nationale_questions"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         except Exception as exc:
             warnings.append(f"{WARNING_PREFIX_QUESTIONS_INDISPONIBLES} : {exc}")
+
+    # --- 9ter. Le budget a-t-il tronqué la collecte ? (#498) Consigné en tout
+    # dernier, une fois toutes les sections passées, pour que le décompte porte
+    # sur l'ensemble et non sur une seule d'entre elles. Un profil tronqué reste
+    # un profil écrit et publié : c'est tout l'intérêt d'un budget interne face à
+    # un `timeout-minutes` qui, lui, tue le process avant l'écriture.
+    message_budget = annoncer_troncature(budget_interventions, f"{chambre}/{slug}")
+    if message_budget:
+        warnings.append(f"{WARNING_PREFIX_BUDGET_INTERVENTIONS} : {message_budget}")
 
     return profile
 

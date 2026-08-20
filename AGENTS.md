@@ -115,6 +115,19 @@ See `docs/technical_decisions.md#ci-tests-pytest`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
+**`collect_interventions=true` is a different job (#498)**: it adds the NosDéputés
+search, the Syceron debate archives and the QE/QG/QOSD archives — extraction measured
+at **8-18 s** without it, **59-286 s** with (32 shards, four runs). `extract-an`'s
+`timeout-minutes` is therefore conditional on the input (5 / 9), and the collection
+bounds *itself* with `--budget-interventions-secondes` (240 s in CI, per candidate,
+shared across both chambers). Never raise one without the other — a shard killed by
+`timeout-minutes` writes **no profile at all** (`Publication : 0 profil(s)`, all 12
+killed shards of runs 32302557156 and 32379928098), while an exhausted budget
+writes the partial profile and declares the truncation in `meta.warnings[]`
+(§2.5). Guarded by
+`tests/test_ci_budget_interventions.py`.
+See `docs/technical_decisions.md#budget-collecte-interventions`.
+
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
 profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also
 filled with the committed baseline. Enforced by `generate_all_profiles.py --manifest-out`
