@@ -37,6 +37,11 @@ _SOURCE_TYPE_MAP: dict[str, str] = {
     "senateurs": "nossenateurs",
 }
 
+# Préfixe de warning publié dans `meta.warnings` (#492). Même convention que
+# candidate_profile.WARNING_PREFIX_* : le texte avant le premier ':' est le
+# *type* agrégé par audit_pivot_dataset.compute_agregation_warnings.
+WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE = "chambre de mandat électif non résolue"
+
 
 def _first(*values: Any) -> Any:
     """Retourne la première valeur non-None parmi les arguments."""
@@ -110,8 +115,22 @@ def _normalize_vote(
 
 
 def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
-    """Normalise un mandat/responsabilité brut vers le format pivot."""
-    return {
+    """Normalise un mandat/responsabilité brut vers le format pivot.
+
+    `chambre` (#492) n'est portée que par les `mandat_electif`, et **lue sur le
+    mandat lui-même**, jamais sur `raw_profile["chambre"]`. La distinction n'est
+    pas cosmétique : la fusion additive accumule dans un même profil des mandats
+    collectés lors de runs différents, donc potentiellement sous des chambres
+    différentes. Mesuré sur `f5a828b` : `jean-luc-melenchon` est un profil brut
+    `chambre: "senateurs"` qui porte trois `mandat_electif`, dont deux
+    manifestement AN (2017-2022, groupe LFI). Reprendre la chambre du profil
+    aurait donc estampillé « Sénat » deux mandats de l'Assemblée — un fait faux
+    de plus, exactement ce que l'épic #486 reproche au champ de niveau profil.
+    Un mandat non estampillé (collecté avant #492) reste à `null` : la chambre
+    d'un mandat déjà collecté n'est pas reconstituable a posteriori, et une
+    valeur par défaut est interdite (AGENTS.md §2.5).
+    """
+    mandat = {
         "label": m.get("label") or None,
         "categorie": m.get("categorie") or None,
         # Dans le format brut, la fonction s'appelle "type" (héritage de l'API)
@@ -124,6 +143,10 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
         "mode_declenchement": m.get("mode_declenchement"),
         "suspendu_pour_fonction_gouvernementale": m.get("suspendu_pour_fonction_gouvernementale"),
     }
+    if mandat["categorie"] == "mandat_electif":
+        chambre_brute = m.get("chambre")
+        mandat["chambre"] = _CHAMBRE_MAP.get(chambre_brute) if chambre_brute else None
+    return mandat
 
 
 def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
@@ -367,6 +390,32 @@ def normalize_nosdeputes(
     if synchro_sources.get("nosdeputes") is None:
         profil["meta"]["warnings"].append(
             "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+        )
+
+    # Mandats électifs dont la chambre n'est pas résolue (#492) : `null` publié,
+    # jamais une valeur par défaut (§2.5). **Un seul warning par profil**, et non
+    # un par mandat : le cas est uniforme et déterministe (un mandat collecté
+    # avant #492 n'a pas d'estampille, et n'en aura une qu'à sa prochaine
+    # collecte), et `audit_pivot_dataset.compute_agregation_warnings` agrège par
+    # préfixe — un warning par mandat ferait 214 occurrences sur 207 profils
+    # (mesuré sur `f5a828b`) là où une par profil dit exactement la même chose.
+    # Ce n'est pas le cas de #474 (les 92 parlementaires en mission sont écartés
+    # sans warning parce que leur exclusion est le comportement attendu et
+    # permanent) : ici le `null` est un manque transitoire, et le compte est
+    # précisément la mesure qui dit quand la migration est terminée.
+    n_sans_chambre = sum(
+        1 for m in profil["mandats"]
+        if m.get("categorie") == "mandat_electif" and not m.get("chambre")
+    )
+    if n_sans_chambre:
+        profil["meta"]["warnings"].append(
+            f"{WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE} : {n_sans_chambre} mandat(s) "
+            "électif(s) sans chambre déterminée, publiés à null (#492). La chambre est "
+            "estampillée à la collecte ; un mandat conservé par la fusion additive et "
+            "collecté avant #492 n'en porte pas, et elle n'est pas reconstituable a "
+            "posteriori — ni depuis `source_url` (jamais renseignée sur un mandat électif "
+            "AN/Sénat), ni depuis la chambre du profil (la fusion additive y accumule des "
+            "mandats des deux chambres)."
         )
 
     return profil

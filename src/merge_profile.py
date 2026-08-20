@@ -68,6 +68,52 @@ def merge_lists_by_key(
     return merged
 
 
+def backfill_mandat_chambre(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte la `chambre` d'un mandat neuf sur l'entrée ancienne de même clé (#492).
+
+    `merge_lists_by_key` est additif pur : l'entrée ancienne gagne, et sa clé
+    (`categorie`, `fonction`, `label`, `debut`) ne contient pas la chambre.
+    Sans ce report, un mandat déjà présent dans le corpus n'acquerrait **jamais**
+    son estampille de chambre : la version neuve, estampillée, porte la même clé
+    et serait écartée à chaque régénération. Le champ resterait à `null` pour
+    toujours en fusion additive, et ne se remplirait qu'en `cold_start`/
+    `--no-merge`.
+
+    Le report est strictement croissant en information : il ne remplit qu'un
+    champ **absent ou nul**, n'écrase jamais une chambre déjà déterminée, ne
+    touche aucun autre champ et ne réordonne rien. C'est le même principe que
+    `_prefer_non_empty` sur les scalaires, appliqué à un champ d'entrée de liste.
+    Il est volontairement limité à `chambre` : généraliser le report ferait de la
+    fusion additive une fusion par champ, ce qu'elle n'est pas.
+    """
+    if not new_list:
+        return merged
+
+    chambres_neuves: dict[Key, str] = {}
+    for m in new_list:
+        if not isinstance(m, dict):
+            continue
+        chambre = m.get("chambre")
+        if chambre:
+            chambres_neuves.setdefault(key_fn(m), chambre)
+
+    if not chambres_neuves:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for m in merged:
+        if isinstance(m, dict) and not m.get("chambre"):
+            chambre = chambres_neuves.get(key_fn(m))
+            if chambre:
+                m = {**m, "chambre": chambre}
+        result.append(m)
+    return result
+
+
 def _prefer_non_empty(new_value: Any, old_value: Any) -> Any:
     """Garde `new_value` si elle est renseignée (non vide/non nulle), sinon
     retombe sur `old_value` (évite qu'un échec transitoire de collecte fasse
@@ -218,7 +264,11 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
-    merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key)
+    merged["mandats"] = backfill_mandat_chambre(
+        merge_lists_by_key(old.get("mandats"), new.get("mandats"), _mandat_key),
+        new.get("mandats"),
+        _mandat_key,
+    )
     merged["votes"] = sorted(
         merge_lists_by_key(old.get("votes"), new.get("votes"), _vote_key),
         key=lambda v: v.get("date") or "",
@@ -396,7 +446,11 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
 
     merged["sources"] = _merge_pivot_sources(old.get("sources"), new.get("sources"))
-    merged["mandats"] = merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key)
+    merged["mandats"] = backfill_mandat_chambre(
+        merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
+        new.get("mandats"),
+        _pivot_mandat_key,
+    )
     # Tri par identifiant, plus par date : depuis #432 la date du scrutin n'est
     # plus dans le profil. L'ordre n'a donc plus de sens chronologique, il n'a
     # qu'à être STABLE d'un run à l'autre pour que git ne voie que les vraies

@@ -147,9 +147,23 @@ which is why it is worth those 16 requests. Two warning types reach the publishe
 échec` (**all profiles** — it only fires on a real exception, and a chamber silently picked by
 an outage is exactly §2.5). When both answer, the **first of `CHAMBRES` wins by documented
 convention** — deriving `chambre` from the mandates is #486's sub-issue D and would erase the
-other career. No mandate is ever merged across chambers here (sub-issue C), so
-`group_profile`'s eligibility union is untouched. `--source an`/`--source senat` stay scoped
-whatever the provenance, tested. See `docs/technical_decisions.md#deux-chambres-interrogees`.
+other career. No mandate is ever merged across chambers here, and #492 merged none either.
+`--source an`/`--source senat` stay scoped whatever the provenance, tested.
+See `docs/technical_decisions.md#deux-chambres-interrogees`.
+
+**A group's eligibility window is chamber-scoped (#492)**:
+`group_profile._member_eligibility_intervals` took the **union** of all `mandat_electif`, so
+a chamber change mid-legislature extended the window past the member's departure from the
+Assembly and counted him absent on ballots he could no longer vote — a false cohesion
+denominator (§2.7). It now filters on the group's chamber (threaded through
+`_derive_membre_entry`, `_compute_cohesion_votes`, `_aggregate_mandats`,
+`compute_ecarts_cohesion_internes`). Two rules make it a fix and not a new defect: a mandate
+with `chambre: null` is **kept** — excluding it would shrink a published denominator on
+missing data, so on today's unstamped corpus the filter changes **no** published
+denominator — and "no elective mandate at all" (`None` → eligible by default) stays distinct
+from "elective mandates, none in this chamber" (`[]` → never eligible). Falling back on
+`groupe_politique` mandates does **not** work: 398 of them on 188 profiles, **0 open**.
+See `docs/technical_decisions.md#chambre-par-mandat-electif`.
 
 **Loss check before commit (#460, scope extended by #470)**: `merge-and-pivot` runs
 `src/audit_diff_profils.py --ref HEAD` **before** the commit step, over **all of
@@ -228,7 +242,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 | `nom`, `chambre`, `parti`, `groupe` | `chambre` in `{AN, Senat, PE, mairie, null}` |
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |
-| `mandats[]` | Elections, committees... + sensitive fields (Section 5) |
+| `mandats[]` | Elections, committees... + sensitive fields (Section 5). `mandats[].chambre` (#492) is written **only on `mandat_electif`**: `AN`/`Senat`/`PE`/`null`, meaning *the chamber whose dataset returned this mandate*, stamped at collection. Never derived from `source_url` (0 of 214 AN/Senate elective mandates carry one) nor from the profile's `chambre` (additive merge accumulates mandates from both chambers in one profile). `null` + one aggregated warning per profile, never a default. See `docs/technical_decisions.md#chambre-par-mandat-electif` |
 | `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |

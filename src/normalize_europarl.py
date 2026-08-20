@@ -98,16 +98,22 @@ def normalize_europarl(
         categorie = _CATEGORIE_MAP.get(m.get("type") or "", "autre")
         label = m.get("organisation_nom") or m.get("organisation_sigle") or ""
         fonction = m.get("role_label") or m.get("role") or ""
-        profil["mandats"].append(
-            {
-                "label": label,
-                "categorie": categorie,
-                "fonction": fonction,
-                "debut": m.get("debut"),
-                "fin": m.get("fin"),
-                "actif": bool(m.get("actif")),
-                "source_url": url_source,
-            }
-        )
+        mandat: dict[str, Any] = {
+            "label": label,
+            "categorie": categorie,
+            "fonction": fonction,
+            "debut": m.get("debut"),
+            "fin": m.get("fin"),
+            "actif": bool(m.get("actif")),
+            "source_url": url_source,
+        }
+        if categorie == "mandat_electif":
+            # #492 : seul cas où la chambre est établie sans ambiguïté par la
+            # source elle-même — le mandat vient du Parlement européen, et son
+            # `source_url` pointe déjà sur europarl.europa.eu. C'est aussi le
+            # seul `mandat_electif` du corpus qui porte une `source_url` (14 sur
+            # 228, mesuré sur `f5a828b`).
+            mandat["chambre"] = "PE"
+        profil["mandats"].append(mandat)
 
     return profil
