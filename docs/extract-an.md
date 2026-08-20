@@ -12,7 +12,7 @@ un par un (`max-parallel: 1`). Chaque shard installe l'environnement Python, res
 python3 generate_all_profiles.py --source an --only <slug>
 ```
 
-(avec `--no-merge` si `fresh_run=true`). Voir `generate-data.yml`.
+(avec `--no-merge` si `cold_start=true`). Voir `generate-data.yml`.
 
 Le scope `--source an` force une extraction Assemblée nationale uniquement (députés), sans Sénat, sans UE.
 Un candidat sans slug (liste éditoriale) est un no-op silencieux dans ce scope et n'a donc pas de shard.

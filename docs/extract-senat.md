@@ -8,7 +8,7 @@ Il installe l'environnement Python, restaure éventuellement le cache, puis lanc
 python3 src/generate_all_profiles.py --source senat
 ```
 
-(avec `--no-merge` si `fresh_run=true`). Voir `.github/workflows/generate-data.yml`.
+(avec `--no-merge` si `cold_start=true`). Voir `.github/workflows/generate-data.yml`.
 
 Le scope `--source senat` force une extraction NosSénateurs uniquement (pas AN, pas UE).
 Les profils bruts produits vont dans `raw_data/profiles/`, puis sont uploadés comme artifact `raw-profiles-senat`.

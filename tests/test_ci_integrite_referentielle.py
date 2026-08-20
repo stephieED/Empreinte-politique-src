@@ -11,7 +11,7 @@ une variation dans le temps. Ce contrôle-ci vérifie une **invariance dans un
 cohérente-mais-fausse ne bougent aucun compteur.
 
 Ces tests verrouillent l'appel et, surtout, le **cloisonnement des deux
-tolérances** : `tolerer_pertes_profils` ne doit jamais désarmer ce contrôle-ci.
+tolérances** : `allow_declared_losses` ne doit jamais désarmer ce contrôle-ci.
 #470 a documenté le piège inverse — un contrôle grossier rendu bloquant force
 l'opérateur à relancer avec la tolérance, ce qui désarme du même coup les
 contrôles précis.
@@ -114,28 +114,28 @@ def test_le_controle_porte_sur_tout_pivot_data():
 def test_la_tolerance_est_distincte_de_celle_du_controle_de_perte():
     """LE point de ces tests.
 
-    `tolerer_pertes_profils` désarme le contrôle de perte. S'il désarmait aussi
+    `allow_declared_losses` désarme le contrôle de perte. S'il désarmait aussi
     celui-ci, déclarer une perte légitime publierait au passage des références
     cassées — exactement l'échange que #470 refuse.
     """
     step = _step_du_controle(_sans_commentaires(_bloc_job("merge-and-pivot")))
     assert "--tolerer-orphelins" in step
     assert "--tolerer-pertes" not in step
-    assert "tolerer_pertes_profils" not in step, (
+    assert "allow_declared_losses" not in step, (
         "Le contrôle d'intégrité lit la tolérance du contrôle de perte : une "
         "perte déclarée désarmerait aussi la détection des références "
         "orphelines (#470, #485)."
     )
-    assert "inputs.tolerer_references_orphelines" in step
+    assert "inputs.allow_broken_references" in step
 
 
 def test_la_tolerance_existe_et_est_desactivee_par_defaut():
     texte = WORKFLOW.read_text(encoding="utf-8")
-    debut = texte.find("tolerer_references_orphelines:")
-    assert debut > 0, "input `tolerer_references_orphelines` absent"
+    debut = texte.find("allow_broken_references:")
+    assert debut > 0, "input `allow_broken_references` absent"
     bloc = texte[debut:][:1200]
     assert "default: false" in bloc
-    assert "DISTINCT de tolerer_pertes_profils" in bloc, (
+    assert "DISTINCT from allow_declared_losses" in bloc, (
         "L'input doit dire qu'il n'est pas celui du contrôle de perte : sans "
         "ça, les deux seront fusionnés à la première relecture."
     )

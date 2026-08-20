@@ -278,8 +278,8 @@ comme garde-fou avant commit, et branché comme tel dans `merge-and-pivot`.
 
 À ne pas confondre avec `audit_diff_profils.py`, qui compare **deux états** :
 celui-ci vérifie une **invariance dans un seul**. Leurs tolérances sont
-cloisonnées — `tolerer_pertes_profils` ne désarme pas
-`tolerer_references_orphelines`. Mesuré sur les 209 profils committés : 0
+cloisonnées — `allow_declared_losses` ne désarme pas
+`allow_broken_references`. Mesuré sur les 209 profils committés : 0
 référence orpheline sur 1 347 451, 3,02 s / 162,0 Mio. Voir
 `docs/technical_decisions.md#integrite-referentielle-pivot`.
 
@@ -620,12 +620,12 @@ WORKERS=4 ROSTER_EXTRACTION_LIMIT=0 EXTRACT_INTERVENTIONS=true ./scripts/generat
 
 | Variable | Default | Same as `workflow_dispatch` input |
 |---|---|---|
-| `FRESH_RUN` | `false` | `fresh_run` |
+| `FRESH_RUN` | `false` | `cold_start` |
 | `THRESHOLD` | `3` | `threshold` |
 | `WORKERS` | `1` (sequential) | `workers` |
-| `EXTRACT_INTERVENTIONS` | `false` | `extract_interventions` |
+| `EXTRACT_INTERVENTIONS` | `false` | `collect_interventions` |
 | `MAX_PAGES` | `5` | `max_pages` |
-| `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_extraction_limit` |
+| `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_limit` |
 | `BACKGROUND` | `true` | *(local-only, no CI equivalent)* |
 
 Each stage keeps the CI job's `continue-on-error` behavior: a failure in one

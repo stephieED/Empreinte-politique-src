@@ -90,8 +90,8 @@ def test_la_tolerance_existe_et_est_desactivee_par_defaut():
     Elle doit alors être DÉCLARÉE, pas subie : l'input laisse une trace dans les
     paramètres du run, là où un contrôle simplement absent n'en laisse aucune."""
     texte = WORKFLOW.read_text(encoding="utf-8")
-    bloc = texte[texte.find("tolerer_pertes_profils:"):][:600]
-    assert bloc, "input `tolerer_pertes_profils` absent"
+    bloc = texte[texte.find("allow_declared_losses:"):][:600]
+    assert bloc, "input `allow_declared_losses` absent"
     assert "default: false" in bloc, "la tolérance doit être désactivée par défaut"
     assert "--tolerer-pertes" in _sans_commentaires(_bloc_job("merge-and-pivot"))
 

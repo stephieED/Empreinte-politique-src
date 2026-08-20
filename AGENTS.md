@@ -110,8 +110,8 @@ nothing failing.
 Test-only dependencies go in `requirements-dev.txt`.
 See `docs/technical_decisions.md#ci-tests-pytest`.
 
-**CI/CD (`.github/workflows/generate-data.yml`)**: `fresh_run=true` = full purge, `--no-merge`.
-`fresh_run=false` = additive merge, cache restored.
+**CI/CD (`.github/workflows/generate-data.yml`)**: `cold_start=true` = full purge, `--no-merge`.
+`cold_start=false` = additive merge, cache restored.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
@@ -165,9 +165,9 @@ drops on `amendements` and `sources`, drops in the shared indexes' distinct-entr
 and any scalar **value change** (A → B) — measured over 13 committed transitions, every
 `populated → null` was a real defect and nearly every value change was a legitimate
 normalisation. A run may legitimately lose entries — declare it with the
-`tolerer_pertes_profils` input, never by removing the check. Guarded by
+`allow_declared_losses` input, never by removing the check. Guarded by
 `tests/test_ci_controle_perte_profils.py` and `tests/test_audit_diff_agregats.py`.
-Why it exists: `extract_interventions=false` (skip collection, intended) combined with
+Why it exists: `collect_interventions=false` (skip collection, intended) combined with
 `overwrite_profiles=true` (rewrite without what wasn't collected, also intended) erased the
 corpus's 789 interventions — and with them 647 `tags_thematiques` and 497 aggregated tags,
 all **published** fields. The quality gate could not catch it: it measures a *level*, not a
@@ -191,8 +191,8 @@ an EP amendment and never blocks. Reported but non-blocking: **index entries
 nobody references**, at 0 today but a legitimate state — additive merge means an
 entry outlives its referent by design. Measured at `01ffa7f`: 0 orphans out of
 1 347 451 references, 3,02 s / 162,0 Mio, a separate process from the loss check
-so the job's peak stays 186,6 Mio. **`tolerer_pertes_profils` does not disarm
-it** and must never be merged with `tolerer_references_orphelines`: a loss can be
+so the job's peak stays 186,6 Mio. **`allow_declared_losses` does not disarm
+it** and must never be merged with `allow_broken_references`: a loss can be
 legitimate, an orphan reference cannot. This is an **invariance in one state**,
 not a variation over time — which is why `audit_diff_profils` cannot cover it.
 Guarded by `tests/test_audit_integrite_referentielle.py` and
