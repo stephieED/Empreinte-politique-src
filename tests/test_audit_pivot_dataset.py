@@ -665,7 +665,12 @@ def test_compute_coherence_chambre_sources_an_incoherente():
 
     assert resultat == {
         "profils_incoherents": [
-            {"id": "a", "chambre": "AN", "types_sources": ["wikidata"]}
+            {
+                "id": "a",
+                "chambres": ["AN"],
+                "chambres_sans_source": ["AN"],
+                "types_sources": ["wikidata"],
+            }
         ]
     }
 
@@ -714,8 +719,56 @@ def test_compute_coherence_chambre_sources_sources_absentes():
     resultat = compute_coherence_chambre_sources(profils)
 
     assert resultat == {
-        "profils_incoherents": [{"id": "a", "chambre": "AN", "types_sources": []}]
+        "profils_incoherents": [
+            {
+                "id": "a",
+                "chambres": ["AN"],
+                "chambres_sans_source": ["AN"],
+                "types_sources": [],
+            }
+        ]
     }
+
+
+def test_compute_coherence_chambre_sources_bicameral_controle_chaque_chambre():
+    """#494 — un profil AN + PE est contrôlé sur **les deux**, pas sur une seule.
+
+    Le scalaire n'en portait qu'une : ce profil-ci, publié `chambre: "AN"` et
+    déclarant une source `nosdeputes`, passait le contrôle alors que rien
+    n'étaye son mandat européen. C'est un contrôle élargi, pas déplacé.
+    """
+    profils = [{
+        "id": "bicameral",
+        "chambres": ["AN", "PE"],
+        "chambre": "AN",
+        "sources": [{"type": "nosdeputes"}],
+    }]
+
+    resultat = compute_coherence_chambre_sources(profils)
+
+    assert resultat == {
+        "profils_incoherents": [
+            {
+                "id": "bicameral",
+                "chambres": ["AN", "PE"],
+                "chambres_sans_source": ["PE"],
+                "types_sources": ["nosdeputes"],
+            }
+        ]
+    }
+
+
+def test_compute_coherence_chambre_sources_bicameral_les_deux_etayees():
+    profils = [{
+        "id": "bicameral",
+        "chambres": ["AN", "PE"],
+        "chambre": "AN",
+        "sources": [{"type": "nosdeputes"}, {"type": "europarl"}],
+    }]
+
+    assert compute_coherence_chambre_sources(profils) == {"profils_incoherents": []}
+
+
 # compute_taux_remplissage
 # ---------------------------------------------------------------------------
 
@@ -836,10 +889,26 @@ def test_compute_tableau_croise_candidats_candidat_toutes_categories_renseignees
 
     assert resultat["lignes"] == [
         {
-            "id": "nosdeputes:a", "nom": "Alice", "chambre": "AN",
+            "id": "nosdeputes:a", "nom": "Alice", "chambres": ["AN"],
             "votes": 2, "textes_portes": 1, "amendements": 3, "interventions": 1,
         },
     ]
+
+
+def test_compute_tableau_croise_candidats_ligne_porte_les_deux_chambres():
+    """#494 — la ligne montre la carrière entière, pas la chambre qui l'emporte."""
+    profils = [
+        {
+            "id": "bicameral",
+            "nom": "Alice",
+            "chambres": ["AN", "Senat"],
+            "chambre": "AN",
+        },
+    ]
+
+    resultat = compute_tableau_croise_candidats(profils)
+
+    assert resultat["lignes"][0]["chambres"] == ["AN", "Senat"]
 
 
 def test_compute_tableau_croise_candidats_categories_vides_ou_absentes():
@@ -852,11 +921,11 @@ def test_compute_tableau_croise_candidats_categories_vides_ou_absentes():
 
     assert resultat["lignes"] == [
         {
-            "id": "nosdeputes:b", "nom": "Bob", "chambre": "AN",
+            "id": "nosdeputes:b", "nom": "Bob", "chambres": ["AN"],
             "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
         },
         {
-            "id": "nosdeputes:c", "nom": "Chloé", "chambre": "Senat",
+            "id": "nosdeputes:c", "nom": "Chloé", "chambres": ["Senat"],
             "votes": 0, "textes_portes": 0, "amendements": 0, "interventions": 0,
         },
     ]

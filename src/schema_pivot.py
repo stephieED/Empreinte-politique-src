@@ -20,13 +20,17 @@ Format d'un profil pivot v1 :
                                              # de ORDRE_CHAMBRES. **Dérivée**, jamais
                                              # collectée : voir `deriver_chambres()`, seule
                                              # fabrique de ce champ ET de `chambre`.
+                                             # Se LIT par `lire_chambres()` (#494), jamais en
+                                             # direct : le corpus publié ne la porte pas encore.
     "chambre": "AN",                         # "AN" | "Senat" | "PE" | "mairie" | null
                                              # #493 — n'est plus une donnée autonome : c'est
                                              # `chambres[0]`, donc incapable de contredire
-                                             # `chambres`. Champ de transition, retiré quand
-                                             # ses 16 consommateurs lisent `chambres` (#494) —
-                                             # condition de retrait écrite dans
-                                             # docs/technical_decisions.md#chambres-profil-derivees.
+                                             # `chambres`. Champ de transition ; #494 a migré
+                                             # tous ses consommateurs du pipeline, il n'en reste
+                                             # qu'un dans l'interface (#495). Condition de
+                                             # retrait écrite dans
+                                             # docs/technical_decisions.md#chambres-profil-derivees,
+                                             # vérifiée par tests/test_garde_fou_chambre.py.
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
     "identite": {                            # bloc biographique, tout est nullable/optionnel
@@ -266,6 +270,16 @@ KNOWN_CHAMBRES: frozenset[str] = frozenset({"AN", "Senat", "PE", "mairie"})
 # scalaire publié ne change de valeur du seul fait que la dérivation le remplace.
 ORDRE_CHAMBRES: tuple[str, ...] = ("AN", "Senat", "PE", "mairie")
 
+# Chambre de **collecte** (« quel jeu de données a répondu ») → chambre pivot.
+# Définie ici, et non dans `normalize_nosdeputes` qui la portait seul, parce que
+# `lire_chambres()` en a besoin elle aussi : `check_quality_gate` teste depuis
+# toujours `chambre in ("AN", "deputes")`, et cette tolérance ne doit pas se
+# perdre en migrant (#494). Deux tables séparées auraient pu diverger en silence.
+CHAMBRE_COLLECTE_VERS_PIVOT: dict[str, str] = {
+    "deputes": "AN",
+    "senateurs": "Senat",
+}
+
 
 class ChambresDerivees(NamedTuple):
     """Résultat de `deriver_chambres()` : les deux champs, et ce qui les étaye.
@@ -419,6 +433,72 @@ def appliquer_chambres(profil: dict[str, Any]) -> ChambresDerivees:
     profil["chambres"] = derivation.chambres
     profil["chambre"] = derivation.chambre
     return derivation
+
+
+def lire_chambres(profil: Any) -> list[str]:
+    """Les chambres d'un profil pivot, **côté lecture** — seule porte d'entrée (#494).
+
+    Tout consommateur du niveau profil passe par ici, et aucun ne lit plus
+    `chambre` ni `chambres` directement. C'est ce qui rend la condition de retrait
+    du scalaire mécaniquement vérifiable (`tests/test_garde_fou_chambre.py`) :
+    quand cette fonction est le dernier lecteur, `chambre` peut partir, et il
+    suffit d'y supprimer une branche.
+
+    **Pourquoi un repli est nécessaire aujourd'hui, et pas seulement commode** :
+    `chambres` est produite par #493, mais aucun des 209 profils publiés ne la
+    porte encore (mesuré sur `07e9147`, le 20/08/2026 — 0/209). Elle n'apparaîtra
+    qu'après un run complet. Un consommateur qui lirait `chambres` sans repli
+    verrait donc une liste vide sur tout le corpus : `population_an` passerait de
+    207 à **0** et le signal de régression qu'elle porte s'éteindrait en silence,
+    sur le corpus même qu'il surveille. Le repli n'élargit rien — il rend la
+    migration lisible avant la régénération, pas après.
+
+    **Ce repli-ci a une fin écrite**, contrairement à ceux de #431 et #432 qui
+    sont devenus permanents faute de critère : il disparaît avec le scalaire, à la
+    condition de retrait de docs/technical_decisions.md#chambres-profil-derivees.
+
+    Args:
+        profil: un profil pivot. Un objet non-dict rend `[]` — cette fonction
+                tourne dans le pipeline comme dans les rapports, avant toute
+                validation, et une donnée malformée doit produire « chambre non
+                déterminée », jamais une exception.
+
+    Returns:
+        Les chambres de `KNOWN_CHAMBRES`, dédoublonnées, dans l'ordre de
+        `ORDRE_CHAMBRES`. Liste vide si la chambre n'est pas déterminée — jamais
+        `None`, jamais une valeur par défaut (§2.5) : `[]` dit « on ne sait pas »,
+        et `"AN" in []` est faux, ce qui est le comportement voulu.
+    """
+    if not isinstance(profil, dict):
+        return []
+
+    brut = profil.get("chambres")
+    if isinstance(brut, list):
+        # `chambres` présente fait foi, y compris vide : la fabrique garantit
+        # `chambre == chambres[0]`, donc une liste vide veut dire un scalaire nul.
+        # Retomber sur le scalaire ici ne pourrait que ressusciter une valeur que
+        # `validate_profil` refuse déjà comme divergente.
+        retenues = {c for c in brut if isinstance(c, str) and c in KNOWN_CHAMBRES}
+        return [c for c in ORDRE_CHAMBRES if c in retenues]
+
+    scalaire = profil.get("chambre")
+    if isinstance(scalaire, str):
+        scalaire = CHAMBRE_COLLECTE_VERS_PIVOT.get(scalaire, scalaire)
+        if scalaire in KNOWN_CHAMBRES:
+            return [scalaire]
+    return []
+
+
+def libelle_chambres(chambres: list[str], vide: str = "?") -> str:
+    """Rendu d'une liste de chambres pour un rapport : `"AN+PE"`, ou `vide` (#494).
+
+    Vit ici, à côté de `lire_chambres()`, parce que trois rapports l'affichent
+    (`check_quality_gate` §3, `audit_pivot_dataset` × 2) et qu'un séparateur qui
+    diverge d'un rapport à l'autre rendrait les tableaux incomparables. `vide`
+    dit « chambre non déterminée » — jamais une chambre par défaut (§2.5).
+    """
+    return "+".join(chambres) if chambres else vide
+
 
 # Positions de vote reconnues.
 KNOWN_POSITIONS: frozenset[str] = frozenset({

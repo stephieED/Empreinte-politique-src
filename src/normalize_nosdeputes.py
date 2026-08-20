@@ -20,16 +20,21 @@ Usage :
 import time
 from typing import Any, Optional
 
-from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
+from schema_pivot import (
+    CHAMBRE_COLLECTE_VERS_PIVOT,
+    SCHEMA_VERSION,
+    appliquer_chambres,
+    make_empty_profil,
+)
 from amendements_index import cle_amendement
 from scrutins_index import ScrutinsIndex, cle_scrutin
 from scrutins_legislature import legislature_du_calendrier
 
 # Correspondance chambre (clé du profil brut) → valeur normalisée du pivot.
-_CHAMBRE_MAP: dict[str, str] = {
-    "deputes": "AN",
-    "senateurs": "Senat",
-}
+# Vit dans `schema_pivot` depuis #494 : `lire_chambres()` doit appliquer la même
+# tolérance côté lecture, et deux tables auraient pu diverger sans que rien ne le
+# dise. L'alias local garde les appels du module inchangés.
+_CHAMBRE_MAP: dict[str, str] = CHAMBRE_COLLECTE_VERS_PIVOT
 
 # Type de source selon la chambre.
 _SOURCE_TYPE_MAP: dict[str, str] = {
