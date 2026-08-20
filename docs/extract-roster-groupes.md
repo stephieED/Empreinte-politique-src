@@ -13,17 +13,17 @@ python3 src/generate_all_profiles.py \
   --workers <workers> \
   [--skip-existing | --refresh-existing] --resume \
   --skip-interventions --skip-dossiers-legislatifs \
-  [--limit <roster_extraction_limit>] [--no-merge]
+  [--limit <roster_limit>] [--no-merge]
 ```
 
 **`--skip-existing` n'est plus posé en dur (#445).** Il reste le défaut — le
-rollout progressif en dépend — mais il est levé par `fresh_run` ou par
+rollout progressif en dépend — mais il est levé par `cold_start` ou par
 `overwrite_profiles`, et remplacé par `--refresh-existing` quand l'input
-`roster_refresh_existing` est actif. Voir §*Régénérer l'existant* ci-dessous.
+`refresh_existing_only` est actif. Voir §*Régénérer l'existant* ci-dessous.
 
 **Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
 --skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
-l'input de workflow `extract_interventions` (qui ne pilote que `extract-an`) —
+l'input de workflow `collect_interventions` (qui ne pilote que `extract-an`) —
 un membre roster n'a besoin que d'identité minimale + mandats + votes +
 amendements, seules données consommées par les agrégats de groupe (§4,
 `build_groupe_profile()`, #349). `dossiers_legislatifs`/`interventions`/
@@ -55,7 +55,7 @@ précisément les profils qu'il faudrait corriger.
 
 Deux pièges vérifiés, tous deux contre-intuitifs :
 
-- **`roster_extraction_limit=0` n'y supplée pas.** Sans `--limit`, le chemin de
+- **`roster_limit=0` n'y supplée pas.** Sans `--limit`, le chemin de
   rafraîchissement de #224 (`_select_candidats_couverture`) n'est pas emprunté
   du tout, et `--skip-existing` saute chaque profil existant. Un run à pleine
   échelle n'aurait rien corrigé — il aurait seulement étendu la frontière.
@@ -74,10 +74,10 @@ Le run correspondant :
 | input | valeur |
 | --- | --- |
 | `overwrite_profiles` | `true` |
-| `roster_refresh_existing` | `true` |
-| `roster_extraction_limit` | `0` |
+| `refresh_existing_only` | `true` |
+| `roster_limit` | `0` |
 
-`roster_refresh_existing` sans `overwrite_profiles` déclenche un `::warning::` :
+`refresh_existing_only` sans `overwrite_profiles` déclenche un `::warning::` :
 la fusion additive conserverait alors les entrées de l'ancienne clé **à côté**
 des corrigées, ce qui est pire que de n'avoir rien fait.
 
@@ -91,7 +91,7 @@ Ce job est un **déploiement progressif**, pas encore un run complet :
 
 - `continue-on-error: true` — un échec ou dépassement de ce job ne bloque pas
   `merge-and-pivot` (même traitement que `extract-parltrack`).
-- `roster_extraction_limit` (input du workflow, défaut `20`) borne le nombre
+- `roster_limit` (input du workflow, défaut `20`) borne le nombre
   de membres traités par run (`--limit`) pour rester dans un budget CI
   raisonnable pendant le rollout. **`--limit` est déterministe pour un fichier
   donné, mais l'ordre de `roster_candidats.json` ne l'est pas dans le temps :
@@ -102,7 +102,7 @@ Ce job est un **déploiement progressif**, pas encore un run complet :
   du profil (`--refresh-existing`, #445). `0` = pas de limite
   (déconseillé tant que le timeout n'a pas été recalibré sur un run complet).
 - `timeout-minutes: 60` est provisoire, calibré pour
-  `roster_extraction_limit=20` avec `--source` implicite (coût par membre
+  `roster_limit=20` avec `--source` implicite (coût par membre
   comparable à `extract-an`) — à recalibrer après un premier run mesuré
   manuellement (`workflow_dispatch`, limite réduite) avant d'envisager
   d'augmenter la limite par défaut.
@@ -147,7 +147,7 @@ flowchart TD
 > `docs/technical_decisions.md#provenance-pivot`.  
 > **Même fan-out par membre que `extract-an`/`extract-senat`** : coût par
 > candidat identique, seul le volume traité change (borné par
-> `roster_extraction_limit`).
+> `roster_limit`).
 
 ---
 
@@ -178,7 +178,7 @@ flowchart TD
    extraits ici (non consommés par les agrégats de groupe, #349).
 6. `--skip-existing --resume` évite de retraiter les profils déjà présents
    et permet la reprise après interruption ; `--limit` (piloté par
-   `roster_extraction_limit`) borne le nombre de membres traités ce run.
+   `roster_limit`) borne le nombre de membres traités ce run.
    `--skip-existing` s'applique **avant** `--no-merge` : voir §*Régénérer
    l'existant* pour la conséquence.
 7. Les données sont écrites dans `raw_data/profiles/<slug>.json` puis
@@ -216,7 +216,7 @@ Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-prof
 | `extract-senat` | Sénat / NosSénateurs, liste éditoriale `candidats.json` |
 | `extract-ue-officiel` | Parlement européen, liste éditoriale `candidats.json` |
 | `extract-parltrack` | Téléchargement des dumps ParlTrack (`.zst`) |
-| **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_extraction_limit`, mode léger (#357) |
+| **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_limit`, mode léger (#357) |
 | `merge-and-pivot` | Fusion inter-sources + normalisation pivot + profils groupes/partis |
 
 Tout est orchestré dans `.github/workflows/generate-data.yml`.

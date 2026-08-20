@@ -181,11 +181,12 @@ jobs:
 
       # Best-effort : reconstruit les inputs du run échoué à partir des logs
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
-      # fresh_run est lu de façon fiable via la conclusion du step conditionnel
+      # cold_start est lu de façon fiable via la conclusion du step conditionnel
       # dédié ; les autres valeurs sont extraites du texte résolu des steps
-      # (workers/extract_interventions/max_pages/roster_extraction_limit,
-      # substitués directement par ${{ inputs.* }} dans le script ou dans son
-      # bloc env:) ou du rapport stdout de check_quality_gate.py (threshold).
+      # (collect_interventions/nosdeputes_max_pages/roster_limit, substitués
+      # directement par ${{ inputs.* }} dans le script ou dans son bloc env:)
+      # ou du rapport stdout de check_quality_gate.py
+      # (incomplete_read_threshold).
       # En cas d'échec d'extraction d'une valeur, retombe sur le défaut déclaré
       # de generate-data.yml pour cet input (dégradation documentée, pas un
       # blocage).
@@ -196,22 +197,16 @@ jobs:
       # AUCUN job ne portait plus les noms recherchés par l'égalité stricte
       # `select(.name==$n)`. Toute la reconstruction retombait donc
       # silencieusement sur les défauts — la « dégradation documentée » était
-      # devenue systématique (un run fresh_run=true était relancé en
-      # incrémental, un run roster_extraction_limit=0 relancé à 20). job_log()
+      # devenue systématique (un run cold_start=true était relancé en
+      # incrémental, un run roster_limit=0 relancé à 20). job_log()
       # matche désormais `<préfixe>` OU `<préfixe> (…)`, et privilégie un shard
       # ayant réussi (son log est complet ; celui d'un shard préempté peut être
       # tronqué avant même la ligne `Run ...`).
       #
-      # workers est lu sur extract-senat et non sur extract-an : le matrix a
-      # supprimé --workers de la ligne de commande d'extract-an (--only "<slug>"
-      # remplace le parallélisme inter-candidats), le motif n'y existe donc
-      # plus. extract-senat porte toujours `--source senat --workers N` et
-      # n'est pas shardé.
-      #
       # job_log() exclut les lignes ##[debug] : ce dépôt tourne avec le
       # logging de debug activé, et le log brut d'un step contenant plusieurs
       # ${{ }} contient alors AUSSI le texte du template GitHub Actions non
-      # résolu (ex. littéralement "--workers {3}", émis par
+      # résolu (ex. littéralement "--max-pages {3}", émis par
       # "##[debug]Evaluating format(...)") avant la ligne "Run ..." réellement
       # résolue. Sans ce filtre, `grep | head -1` peut capturer ce
       # placeholder au lieu de la vraie valeur — régression constatée sur un
@@ -259,27 +254,23 @@ jobs:
             grep -v '##\[debug\]' "$cached" || true
           }
 
-          fresh_run=false
+          cold_start=false
           if jq -e '[.jobs[]
               | select(.name == "extract-an" or (.name | startswith("extract-an (")))
               | .steps[]
-              | select(.name == "Nettoyage complet (fresh_run uniquement)")
+              | select(.name == "Nettoyage complet (cold_start uniquement)")
               | select(.conclusion == "success")] | length > 0' "$jobs_json" >/dev/null 2>&1; then
-            fresh_run=true
+            cold_start=true
           fi
 
-          # Ancré sur la ligne de commande finale ("--source senat --workers N")
-          # pour éviter tout autre match fortuit, et restreint à [0-9]+ (pas
-          # \S+) pour qu'une valeur inattendue échoue la validation ci-dessous
-          # plutôt que d'être transmise telle quelle. `|| true` : sous
+          # Ancrés sur la ligne de commande finale pour éviter tout match
+          # fortuit, et restreints à [0-9]+ (pas \S+) pour qu'une valeur
+          # inattendue échoue la validation ci-dessous plutôt que d'être
+          # transmise telle quelle. `|| true` : sous
           # `set -e`/`pipefail`, un grep sans match (job_log vide, motif
           # absent) ferait sinon avorter tout le step ici — perdant du même
           # coup les valeurs suivantes, correctement extractibles, plutôt que
           # de dégrader uniquement celle en cause vers son défaut.
-          senat_log=$(job_log "extract-senat")
-          workers=$(echo "$senat_log" | grep -oP -- '--source senat --workers \K[0-9]+' | head -1) || true
-          [[ "$workers" =~ ^[0-9]+$ ]] || workers=""
-
           an_log=$(job_log "extract-an")
           # overwrite_profiles : pas de step conditionnel dédié pour le détecter
           # (il ne purge rien, c'est tout son intérêt). Il se déduit de la
@@ -290,7 +281,7 @@ jobs:
           # serait relancé en fusion additive : c'est exactement le scénario de
           # doublons que ce mode existe pour éviter (#440).
           overwrite_profiles=false
-          if [[ "$fresh_run" != "true" ]] && echo "$an_log" | grep -q -- '--no-merge'; then
+          if [[ "$cold_start" != "true" ]] && echo "$an_log" | grep -q -- '--no-merge'; then
             overwrite_profiles=true
           fi
           # Le texte source "--skip-interventions" est toujours présent dans
@@ -298,17 +289,17 @@ jobs:
           # l'exécution (GitHub échoue le SOURCE bash substitué, pas la trace
           # d'exécution) : chercher sa seule présence donnerait donc toujours
           # vrai. On lit à la place la valeur substituée de
-          # ${{ inputs.extract_interventions }} directement dans la
+          # ${{ inputs.collect_interventions }} directement dans la
           # condition `[[ "<valeur>" != "true" ]]`.
-          extract_interventions=$(echo "$an_log" | grep -oP -- '\[\[ "\K(true|false)(?=" != "true" \]\] && INTERV_FLAG)' | head -1) || true
-          [[ "$extract_interventions" == "true" || "$extract_interventions" == "false" ]] || extract_interventions=false
+          collect_interventions=$(echo "$an_log" | grep -oP -- '\[\[ "\K(true|false)(?=" != "true" \]\] && INTERV_FLAG)' | head -1) || true
+          [[ "$collect_interventions" == "true" || "$collect_interventions" == "false" ]] || collect_interventions=false
 
-          max_pages=$(echo "$an_log" | grep -oP -- '--max-pages \K[0-9]+' | head -1) || true
-          [[ "$max_pages" =~ ^[0-9]+$ ]] || max_pages=""
+          nosdeputes_max_pages=$(echo "$an_log" | grep -oP -- '--max-pages \K[0-9]+' | head -1) || true
+          [[ "$nosdeputes_max_pages" =~ ^[0-9]+$ ]] || nosdeputes_max_pages=""
 
           gate_log=$(job_log "merge-and-pivot")
-          threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1) || true
-          [[ "$threshold" =~ ^[0-9]+$ ]] || threshold=""
+          incomplete_read_threshold=$(echo "$gate_log" | grep -oP 'Seuil : \K[0-9]+' | head -1) || true
+          [[ "$incomplete_read_threshold" =~ ^[0-9]+$ ]] || incomplete_read_threshold=""
 
           # Lu d'abord dans le bloc env: résolu du step d'extraction roster
           # ("ROSTER_LIMIT: <valeur>"), seule source EXACTE de l'input : le
@@ -319,19 +310,18 @@ jobs:
           # complet en run échantillonné. Le grep "Sélection" reste en repli si
           # le bloc env: est absent du log.
           roster_log=$(job_log "extract-roster-groupes")
-          roster_extraction_limit=$(echo "$roster_log" | grep -oP 'ROSTER_LIMIT: \K[0-9]+' | head -1) || true
-          if [[ ! "$roster_extraction_limit" =~ ^[0-9]+$ ]]; then
-            roster_extraction_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
+          roster_limit=$(echo "$roster_log" | grep -oP 'ROSTER_LIMIT: \K[0-9]+' | head -1) || true
+          if [[ ! "$roster_limit" =~ ^[0-9]+$ ]]; then
+            roster_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
           fi
-          [[ "$roster_extraction_limit" =~ ^[0-9]+$ ]] || roster_extraction_limit=""
+          [[ "$roster_limit" =~ ^[0-9]+$ ]] || roster_limit=""
 
-          echo "fresh_run=${fresh_run}" >> "$GITHUB_OUTPUT"
+          echo "cold_start=${cold_start}" >> "$GITHUB_OUTPUT"
           echo "overwrite_profiles=${overwrite_profiles}" >> "$GITHUB_OUTPUT"
-          echo "threshold=${threshold:-3}" >> "$GITHUB_OUTPUT"
-          echo "workers=${workers:-1}" >> "$GITHUB_OUTPUT"
-          echo "extract_interventions=${extract_interventions}" >> "$GITHUB_OUTPUT"
-          echo "max_pages=${max_pages:-5}" >> "$GITHUB_OUTPUT"
-          echo "roster_extraction_limit=${roster_extraction_limit:-20}" >> "$GITHUB_OUTPUT"
+          echo "incomplete_read_threshold=${incomplete_read_threshold:-3}" >> "$GITHUB_OUTPUT"
+          echo "collect_interventions=${collect_interventions}" >> "$GITHUB_OUTPUT"
+          echo "nosdeputes_max_pages=${nosdeputes_max_pages:-5}" >> "$GITHUB_OUTPUT"
+          echo "roster_limit=${roster_limit:-20}" >> "$GITHUB_OUTPUT"
 
       # if: always() (#336) : ce step ne doit pas dépendre du succès du step
       # best-effort précédent. Ce dernier est documenté comme dégradable (cf.
@@ -351,13 +341,12 @@ jobs:
           gh workflow run generate-data.yml \
             --repo "${REPO}" \
             --ref "${{ github.event.workflow_run.head_branch }}" \
-            -f fresh_run="${{ steps.inputs.outputs.fresh_run || 'false' }}" \
+            -f cold_start="${{ steps.inputs.outputs.cold_start || 'false' }}" \
             -f overwrite_profiles="${{ steps.inputs.outputs.overwrite_profiles || 'false' }}" \
-            -f threshold="${{ steps.inputs.outputs.threshold || '3' }}" \
-            -f workers="${{ steps.inputs.outputs.workers || '1' }}" \
-            -f extract_interventions="${{ steps.inputs.outputs.extract_interventions || 'false' }}" \
-            -f max_pages="${{ steps.inputs.outputs.max_pages || '5' }}" \
-            -f roster_extraction_limit="${{ steps.inputs.outputs.roster_extraction_limit || '20' }}"
+            -f incomplete_read_threshold="${{ steps.inputs.outputs.incomplete_read_threshold || '3' }}" \
+            -f collect_interventions="${{ steps.inputs.outputs.collect_interventions || 'false' }}" \
+            -f nosdeputes_max_pages="${{ steps.inputs.outputs.nosdeputes_max_pages || '5' }}" \
+            -f roster_limit="${{ steps.inputs.outputs.roster_limit || '20' }}"
 
       - name: Résumé — trace visible du résultat
         if: always()

@@ -36,8 +36,8 @@ flowchart TD
 
 ## Logique d'extraction (chaîne interne)
 
-1. Le job tente de restaurer `.cache/parltrack` (sauf `fresh_run=true`).
-2. Avec `fresh_run=true`, le cache ParlTrack est purgé puis les dumps sont re-téléchargés.
+1. Le job tente de restaurer `.cache/parltrack` (sauf `cold_start=true`).
+2. Avec `cold_start=true`, le cache ParlTrack est purgé puis les dumps sont re-téléchargés.
 3. L'étape Python appelle `ensure_dump(...)` pour :
    - `ep_dossiers.json.zst`
    - `ep_plenary_amendments.json.zst`

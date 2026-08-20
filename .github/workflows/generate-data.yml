@@ -5,104 +5,45 @@ on:
   #  - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
-      fresh_run:
-        description: >
-          Démarrage à froid — purge complète des sorties et du cache,
-          génération sans fusion, quality gate à tolérance zéro.
-          false = mode incrémental résilient (fusion additive, cache restauré, seuil souple).
+      # Descriptions: one line each, stating WHAT the input does — never why.
+      # The rationale lives in docs/technical_decisions.md, reachable by anchor.
+      # A launch form is read under time pressure; an essay there is not read.
+      cold_start:
+        description: "Full reset: purge outputs and cache, rebuild without merging, zero-tolerance quality gate. Implies overwrite_profiles."
         type: boolean
         default: false
       overwrite_profiles:
-        description: >
-          Écraser les profils au lieu de les fusionner, SANS purger le cache
-          (--no-merge seul). À utiliser quand une correction de schéma rend la
-          fusion incorrecte — ex. un changement de clé qui ferait compter deux
-          fois la même entrée — mais qu'il n'y a aucune raison de re-télécharger
-          les archives sources. fresh_run=true implique déjà ce comportement,
-          en y ajoutant la purge du cache.
-          Lève aussi --skip-existing sur extract-roster-groupes (#445) : sans
-          cela, les profils de roster déjà committés étaient sautés avant même
-          que --no-merge s'applique, et restaient donc indéfiniment sur
-          l'ancienne clé. Combiner avec roster_extraction_limit pour borner le
-          nombre de profils repris par shard.
+        description: "Rebuild profiles without merging, keeping the cache. Already implied by cold_start — ticking both is redundant."
         type: boolean
         default: false
-      roster_refresh_existing:
-        description: >
-          Ne traiter, dans extract-roster-groupes, QUE les membres dont le
-          profil existe déjà — l'inverse exact du rollout progressif (#445).
-          Sert à propager une correction de fond (ex. la clé uid de #440) aux
-          profils déjà committés sans étendre la couverture, donc sans
-          préjuger du dimensionnement en cours (#429).
-          À combiner avec overwrite_profiles=true : sans écrasement, la fusion
-          additive conserverait les entrées erronées à côté des corrigées.
+      refresh_existing_only:
+        description: "Roster job: process ONLY members that already have a profile. Extends nothing. Combine with overwrite_profiles."
         type: boolean
         default: false
-      threshold:
-        description: >
-          Seuil IncompleteRead (soft fail). Appliqué dans tous les modes,
-          y compris fresh_run=true. Défaut : 3.
-        type: number
-        default: 3
-      tolerer_pertes_profils:
-        description: >
-          Autoriser le commit malgré une perte d'entrées sur un champ stable
-          (votes, mandats, textes portés, interventions, dossiers législatifs).
-          false (défaut) = une perte non déclarée annule le commit (#460).
-          À n'employer qu'après avoir élucidé CHAQUE perte : c'est la
-          combinaison overwrite_profiles=true + extract_interventions=false qui
-          a effacé les 789 interventions du corpus le 19/08/2026, sans que rien
-          ne le signale.
-        type: boolean
-        default: false
-      tolerer_references_orphelines:
-        description: >
-          Autoriser le commit malgré une clé publiée qui ne résout pas dans son
-          index partagé (votes[].scrutin_id, cohesion_votes[].scrutin_id,
-          amendements[].amendement_id — #485).
-          false (défaut) = une référence orpheline annule le commit.
-          DISTINCT de tolerer_pertes_profils, et jamais fusionné avec lui : une
-          perte peut être légitime et se déclare, une référence orpheline non —
-          c'est un vote publié sans objet, et pour un groupe un dénominateur
-          faux (AGENTS.md §2.5, §2.7). Ce drapeau n'a pas de cas d'emploi
-          normal : il n'existe que pour qu'une panne de l'outil ne bloque pas
-          indéfiniment toute publication.
-        type: boolean
-        default: false
-      extract_interventions:
-        description: >
-          Extraire les interventions dans extract-an (débats officiels Syceron en
-          source primaire, avec fallback recherche NosDéputés + questions officielles AN
-          si Syceron indisponible pour le candidat/législature).
-          false (défaut) = skip interventions, extraction plus rapide.
-        type: boolean
-        default: false
-      max_pages:
-        description: >
-          Pages max. de recherche NosDéputés par candidat (50 résultats/page,
-          utilisé seulement en fallback si Syceron ne retourne rien).
-          Ignoré si extract_interventions=false. Défaut : 5.
-        type: number
-        default: 5
-      roster_extraction_limit:
-        description: >
-          Déploiement progressif de l'extraction roster-driven (#190, job
-          extract-roster-groupes) : ne traiter que les N premiers membres du
-          roster (raw_data/roster_candidats.json, ordre déterministe --limit).
-          Défaut : 20 (rollout manuel à petite échelle, cf. #192).
-          Budget mesuré en CI (run 32288588518) puis re-mesuré après #467 :
-          ~1,9 s par membre avant #467, ~0,5 s projeté après — soit moins d'une
-          minute d'extraction quelle que soit la limite, le coût dominant d'un
-          run étant devenu les ~2,2 min de frais fixes par shard (checkout).
-          Le timeout de 60 min n'est plus dimensionnant.
-          ATTENTION : la limite s'applique PAR SHARD (--shard précède --limit
-          dans generate_all_profiles.main()). C'est pourquoi
-          prepare-roster-matrix force 1 seul shard dès qu'elle est non nulle —
-          sinon `limite=100` traiterait jusqu'à 800 candidats.
-          0 = pas de limite : run complet, 8 shards (voir prepare-roster-matrix).
-          Reste une décision produit (#192).
+      roster_limit:
+        description: "Roster members to process. Applies PER SHARD, so any non-zero value forces a single shard. 0 = no limit (full run, 8 shards)."
         type: number
         default: 20
+      collect_interventions:
+        description: "Collect floor speeches. Affects extract-an only — the roster job always skips them."
+        type: boolean
+        default: false
+      nosdeputes_max_pages:
+        description: "NosDéputés search pages per candidate, used only as a fallback when Syceron returns nothing. Ignored unless collect_interventions."
+        type: number
+        default: 5
+      incomplete_read_threshold:
+        description: "How many IncompleteRead errors are tolerated before the quality gate fails. Applies in every mode."
+        type: number
+        default: 3
+      allow_declared_losses:
+        description: "Commit even though entries were lost on a monitored field. Only after investigating EACH loss — this is how 789 speeches vanished on 2026-08-19."
+        type: boolean
+        default: false
+      allow_broken_references:
+        description: "EMERGENCY ONLY — commit even though published keys do not resolve in their shared index. DISTINCT from allow_declared_losses: a loss can be legitimate, a broken reference never is."
+        type: boolean
+        default: false
 
 # Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
 # `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
@@ -289,7 +230,7 @@ jobs:
           fi
 
       # ── Garde-fou #460 : écrasement sans collecte d'interventions ─────────
-      # `overwrite_profiles=true` (ou `fresh_run=true`) lève `--no-merge` ;
+      # `overwrite_profiles=true` (ou `cold_start=true`) lève `--no-merge` ;
       # `extract_interventions=false` lève `--skip-interventions`. Chacun est
       # correct isolément — l'un est le mode de correction de schéma, l'autre
       # le mode d'extraction rapide. Ensemble, ils réécrivent le profil SANS ce
@@ -318,9 +259,9 @@ jobs:
       # il n'y a rien à détruire, et un garde-fou qui crie à vide se fait ignorer.
       - name: Garde-fou — écrasement sans collecte d'interventions (#460)
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
-          INTERVENTIONS: ${{ inputs.extract_interventions }}
+          INTERVENTIONS: ${{ inputs.collect_interventions }}
         run: |
           set -euo pipefail
           # Condition alignée mot pour mot sur le calcul de MERGE_FLAG des jobs
@@ -451,8 +392,8 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      # fresh_run=true  → pas de restore (on repart de zéro).
-      # fresh_run=false → restore du cache AN ; réduit les requêtes NosDéputés.
+      # cold_start=true  → pas de restore (on repart de zéro).
+      # cold_start=false → restore du cache AN ; réduit les requêtes NosDéputés.
       # Clé partagée entre les shards de ce job et extract-roster-groupes, qui
       # consomment le même jeu de données source.
       #
@@ -470,7 +411,7 @@ jobs:
       # délibérée : son revers est qu'un nouveau sous-répertoire de .cache ne
       # serait pas caché silencieusement, d'où le garde-fou ci-dessous.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: |
             .cache/acteurs_historique_an
@@ -491,16 +432,16 @@ jobs:
       # jobs téléchargent et consomment les mêmes archives, donc le premier qui
       # sauvegarde suffit et les suivants font un exact key hit sans perte.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache/dossiers_an
           key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-dossiers-
 
-      # fresh_run=true → purge des profils bruts et du cache avant extraction.
-      - name: Nettoyage complet (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
+      # cold_start=true → purge des profils bruts et du cache avant extraction.
+      - name: Nettoyage complet (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
@@ -546,8 +487,8 @@ jobs:
       # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
       # --only : un seul candidat par shard, donc --workers n'a plus d'effet
       # (le parallélisme inter-candidats est désormais porté par le matrix).
-      # fresh_run=true  → --no-merge : écrasement complet.
-      # fresh_run=false → fusion additive : données existantes préservées.
+      # cold_start=true  → --no-merge : écrasement complet.
+      # cold_start=false → fusion additive : données existantes préservées.
       # /usr/bin/time -v : trace le pic de RSS (diagnostic OOM, voir le step
       # "Diagnostic mémoire runner" de ./.github/actions/bootstrap-extraction)
       # — n'apparaît dans les logs que si le process Python se termine
@@ -562,7 +503,7 @@ jobs:
       # extract-ue-officiel et extract-roster-groupes.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -571,9 +512,9 @@ jobs:
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           INTERV_FLAG=()
-          [[ "${{ inputs.extract_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
+          [[ "${{ inputs.collect_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
-          [[ "${{ inputs.extract_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.max_pages }})
+          [[ "${{ inputs.collect_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.nosdeputes_max_pages }})
           /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
@@ -647,15 +588,15 @@ jobs:
       # retirer une entrée de cache est une décision de comportement qui mérite
       # son propre arbitrage, pas un effet de bord de #424.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache
           key: public-data-cache-senat-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-senat-
 
-      - name: Nettoyage complet (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
+      - name: Nettoyage complet (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
@@ -663,7 +604,7 @@ jobs:
       # --source senat → NosSénateurs uniquement (pas d'AN, pas d'UE dans ce job).
       - name: Extraction Sénat (NosSénateurs)
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -736,15 +677,15 @@ jobs:
       # provoque l'éviction LRU des autres — dont la clé AN que #424 vient de
       # réparer.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache/europarl
           key: public-data-cache-ue-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-ue-
 
-      - name: Nettoyage complet (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
+      - name: Nettoyage complet (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
@@ -752,7 +693,7 @@ jobs:
       # --source ue → Open Data Portal Parlement européen uniquement (pas de FR).
       - name: Extraction UE (Open Data Portal EP)
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -821,18 +762,18 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
-      # fresh_run=true  → pas de restore ; les dumps seront re-téléchargés.
-      # fresh_run=false → restore du cache ParlTrack (évite re-téléchargement de centaines de Mo).
+      # cold_start=true  → pas de restore ; les dumps seront re-téléchargés.
+      # cold_start=false → restore du cache ParlTrack (évite re-téléchargement de centaines de Mo).
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache/parltrack
           key: public-data-cache-parltrack-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-parltrack-
 
-      - name: Nettoyage cache ParlTrack (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
+      - name: Nettoyage cache ParlTrack (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
         run: rm -rf .cache/parltrack
 
       # Télécharge les dumps ParlTrack (.zst) dans .cache/parltrack/.
@@ -844,7 +785,7 @@ jobs:
           import sys
           sys.path.insert(0, "src")
           from parltrack_dumps import ensure_dump, _DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS
-          force = "${{ inputs.fresh_run }}" == "true"
+          force = "${{ inputs.cold_start }}" == "true"
           ok = True
           for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENTS]:
               path = ensure_dump(dump, force_download=force)
@@ -948,11 +889,11 @@ jobs:
       # run 32136438841). Le `path` est restreint à ce que ce job produit
       # réellement — il n'écrit que sous .cache/amendements_an/.
       #
-      # fresh_run=true → pas de restore : le job repart de zéro et retélécharge
+      # cold_start=true → pas de restore : le job repart de zéro et retélécharge
       # les 3 archives, sans étape de purge dédiée (ce répertoire est absent par
       # construction sur un checkout neuf quand aucun cache n'est restauré).
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache/amendements_an
           key: public-data-cache-amendements-${{ steps.week.outputs.week }}
@@ -1095,7 +1036,7 @@ jobs:
       - name: Liste des shards roster
         id: shards
         env:
-          ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
+          ROSTER_LIMIT: ${{ inputs.roster_limit }}
           # Nombre de tranches pour un run complet. 8 -> ~94 membres/shard,
           # soit ~2,9 min chacun (projeté après #467 : ~130 s de frais fixes
           # par shard + ~1 min d'extraction), exécutés 4 à la fois.
@@ -1200,7 +1141,7 @@ jobs:
       #     d'index locaux depuis #369/#392/#403. Quatre shards simultanés,
       #     c'est 8 requêtes NosDéputés au lieu de 2, une fois par run.
       #
-      # Pourquoi 4 et non 8 : en fresh_run=true les steps de cache sont sautés
+      # Pourquoi 4 et non 8 : en cold_start=true les steps de cache sont sautés
       # et chaque shard retélécharge ~40 Mo d'archives AN (acteurs historiques
       # 13,6 Mo + scrutins XVII 26,3 Mo, relevé le 20/08/2026). 4 borne cette
       # rafale à la moitié pour ~3 min de temps mur en plus à pleine échelle.
@@ -1241,7 +1182,7 @@ jobs:
       # Même `path` explicite que extract-an, amendements_an exclu (#424) : voir
       # le commentaire détaillé sur le cache de extract-an.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: |
             .cache/acteurs_historique_an
@@ -1262,15 +1203,15 @@ jobs:
       # jobs téléchargent et consomment les mêmes archives, donc le premier qui
       # sauvegarde suffit et les suivants font un exact key hit sans perte.
       - uses: actions/cache@v5
-        if: ${{ !inputs.fresh_run }}
+        if: ${{ !inputs.cold_start }}
         with:
           path: .cache/dossiers_an
           key: public-data-cache-dossiers-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-dossiers-
 
-      - name: Nettoyage complet (fresh_run uniquement)
-        if: ${{ inputs.fresh_run }}
+      - name: Nettoyage complet (cold_start uniquement)
+        if: ${{ inputs.cold_start }}
         run: |
           rm -rf .cache
           find raw_data/profiles -name "*.json" -delete
@@ -1328,7 +1269,7 @@ jobs:
       #
       # Mode d'extraction léger (#357, sous-issue 6/6 de #351) : --skip-interventions
       # --skip-dossiers-legislatifs sont *toujours* appliqués ici, indépendamment de
-      # inputs.extract_interventions (qui ne pilote que extract-an) — un membre
+      # inputs.collect_interventions (qui ne pilote que extract-an) — un membre
       # roster n'a besoin que d'identité/mandats/votes/amendements pour les agrégats
       # de groupe (#349) ; dossiers_legislatifs/interventions/questions_officielles
       # ne sont consommés par aucun agrégat actuel ni prévu, les extraire ici serait
@@ -1339,10 +1280,10 @@ jobs:
       # retry-generate-data.yml).
       - name: Extraction roster-driven (mode léger)
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
-          ROSTER_LIMIT: ${{ inputs.roster_extraction_limit }}
-          REFRESH_EXISTING: ${{ inputs.roster_refresh_existing }}
+          ROSTER_LIMIT: ${{ inputs.roster_limit }}
+          REFRESH_EXISTING: ${{ inputs.refresh_existing_only }}
         run: |
           MERGE_FLAG=()
           # `overwrite_profiles` écrase sans purger le cache (#440) : purger
@@ -1601,11 +1542,11 @@ jobs:
       # --enrich-parltrack : enrichit les pivots MEP si .cache/parltrack/ est
       #                      disponible ; sinon ajoute un warning fallback.
       # --parltrack-status-out : fichier JSON lu par check_quality_gate.py §5.
-      # fresh_run=true  → --no-merge : recréation complète des pivots.
-      # fresh_run=false → fusion additive des pivots (défaut).
+      # cold_start=true  → --no-merge : recréation complète des pivots.
+      # cold_start=false → fusion additive des pivots (défaut).
       - name: Normalisation pivot + enrichissement ParlTrack
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -1637,7 +1578,7 @@ jobs:
       # → chaque candidat roster est ignoré comme "profil brut absent").
       - name: Normalisation pivot roster-driven
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -1668,7 +1609,7 @@ jobs:
       # ramènerait précisément les données que l'écrasement vise à remplacer.
       - name: Générer les profils de groupe parlementaire réel
         env:
-          FRESH: ${{ inputs.fresh_run }}
+          FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
         run: |
           MERGE_FLAG=()
@@ -1724,14 +1665,14 @@ jobs:
           name: amendements-index-an
           path: .cache/amendements_an
 
-      # inputs.threshold appliqué dans tous les modes (y compris fresh_run=true).
+      # inputs.incomplete_read_threshold appliqué dans tous les modes (y compris cold_start=true).
       # §5 ParlTrack : --parltrack-status-file active la section de rapport
       #   enrichi ce run vs fallback (nb candidats dans chaque catégorie).
       - name: Quality gate — résumé et contrôle qualité
         env:
-          THRESHOLD: ${{ inputs.threshold }}
+          THRESHOLD: ${{ inputs.incomplete_read_threshold }}
         run: |
-          # inputs.threshold a un défaut déclaré de 3 ; traitement du défaut en
+          # inputs.incomplete_read_threshold a un défaut déclaré de 3 ; traitement du défaut en
           # bash pour éviter que GHA évalue 0 comme falsy (0 || 3 → 3).
           GATE_THRESHOLD="${THRESHOLD:-3}"
           python3 src/check_quality_gate.py \
@@ -1762,7 +1703,7 @@ jobs:
           # Amendements (§3c/§3d) : aucun flag d'escalade n'est passé — il n'en
           # existe pas. « 0 amendement collecté » et « index jamais construit »
           # restent des signaux NON bloquants dans tous les modes, y compris
-          # fresh_run=true, et sont affichés en tête du rapport plutôt que
+          # cold_start=true, et sont affichés en tête du rapport plutôt que
           # d'échouer le run (#378, arbitrage tranché dans
           # docs/technical_decisions.md#amendements-zero-pas-de-hard-fail :
           # la collecte dépend d'un CDN AN chroniquement défaillant sur la
@@ -1845,7 +1786,7 @@ jobs:
       # de longueurs de listes ne voit pas.
       - name: Contrôle de perte sur pivot_data (avant commit)
         env:
-          TOLERER: ${{ inputs.tolerer_pertes_profils }}
+          TOLERER: ${{ inputs.allow_declared_losses }}
         run: |
           TOLERANCE=()
           if [[ "$TOLERER" == "true" ]]; then
@@ -1923,7 +1864,7 @@ jobs:
       # actés par #460.
       - name: Intégrité référentielle de pivot_data (avant commit)
         env:
-          TOLERER: ${{ inputs.tolerer_references_orphelines }}
+          TOLERER: ${{ inputs.allow_broken_references }}
         run: |
           TOLERANCE=()
           if [[ "$TOLERER" == "true" ]]; then
