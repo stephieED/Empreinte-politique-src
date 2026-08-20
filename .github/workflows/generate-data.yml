@@ -44,24 +44,6 @@ on:
           y compris fresh_run=true. Défaut : 3.
         type: number
         default: 3
-      workers:
-        description: >
-          Nombre de workers parallèles pour generate_all_profiles.py
-          (candidats traités simultanément). Défaut : 1 (séquentiel).
-          MAINTENU À 1 PAR #467, et désormais sur une mesure : augmenter cette
-          valeur RALENTIT l'extraction. Sur les 24 membres du shard 0 du run
-          32288588518 rejoués en local, cache amendements réel —
-          avant #467 : 74,1 s à workers=1 contre 94,6 s à workers=4 (+28 %) ;
-          après #467 :  9,8 s à workers=1 contre 13,8 s à workers=4 (+41 %).
-          La charge est du parsing JSON sous GIL, sérialisé de surcroît par les
-          verrous par législature : quatre threads se disputent le même
-          interpréteur. Le RSS de pointe monte en prime (1 281 → 1 374 Mo en
-          local, 1,52 Go mesuré en CI à workers=1), sur un job déjà exposé à
-          l'OOM (#377). Et cet input est PARTAGÉ avec extract-senat et
-          merge-and-pivot : le Sénat, lui, est réellement borné par NosDéputés.
-          Voir docs/technical_decisions.md#budget-execution-pleine-echelle-467.
-        type: number
-        default: 1
       tolerer_pertes_profils:
         description: >
           Autoriser le commit malgré une perte d'entrées sur un champ stable
@@ -689,7 +671,7 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source senat --workers ${{ inputs.workers }} --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source senat --workers 1 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
@@ -778,7 +760,7 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_all_profiles.py --source ue --workers ${{ inputs.workers }} --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+          python3 src/generate_all_profiles.py --source ue --workers 1 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
@@ -1385,9 +1367,17 @@ jobs:
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
+          # --workers 1 en dur, plus un input (#467 mesuré, figé ensuite) :
+          # augmenter cette valeur RALENTIT. La charge est du parsing JSON sous
+          # GIL, sérialisé de surcroît par les verrous par législature — quatre
+          # threads se disputent le même interpréteur (9,8 s -> 13,8 s, +41 %),
+          # et le RSS de pointe monte sur un job déjà exposé à l'OOM (#377).
+          # L'input a été retiré parce qu'il ne pouvait que nuire s'il était
+          # tourné : voir #workers-fige-a-1 pour les trois charges qu'il
+          # confondait.
           /usr/bin/time -v python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
-            --workers ${{ inputs.workers }} \
+            --workers 1 \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             "${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
@@ -1612,7 +1602,7 @@ jobs:
             --pivot-only \
             --enrich-parltrack \
             --parltrack-status-out parltrack-status.json \
-            --workers ${{ inputs.workers }} \
+            --workers 1 \
             "${MERGE_FLAG[@]}"
 
       # Pas de --enrich-parltrack sur ce second passage, contrairement au
@@ -1644,7 +1634,7 @@ jobs:
           python3 src/generate_all_profiles.py \
             --pivot-only \
             --candidats raw_data/roster_candidats.json \
-            --workers ${{ inputs.workers }} \
+            --workers 1 \
             "${MERGE_FLAG[@]}"
 
       - name: Générer les profils de parti
