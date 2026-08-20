@@ -492,6 +492,48 @@ _ACTEURS_MANDATS_LOCK = threading.Lock()
 # depuis le même fichier bulk que l'index titre (dossiers legislatifs).
 _DOSSIERS_TEXTES_PORTES_LOCK = threading.Lock()
 
+# ── Memo intra-process des index derives du zip historique AMO30 (#467) ──────
+# Les quatre builders ci-dessous (identite, mandats, organes, positions dans
+# l'hemicycle) relisaient leur fichier `.cache/acteurs_historique_an/index_*.json`
+# a CHAQUE appel. Le cache disque evitait le retelechargement, jamais le
+# reparsing : mesure sur les 24 membres du shard 0 du run 32288588518,
+# `fetch_organe` etait appele 2 255 fois et relisait index_organes.json autant
+# de fois — 43,4 s sur 74,1 s de temps mur. Meme pathologie que celle corrigee
+# pour les amendements en #392 (93 % du cout par membre) et pour les scrutins
+# en #403, au meme endroit : un index partage relu par candidat.
+#
+# Memo indexe par CHEMIN de l'index, pas par nom logique : les tests patchent
+# `ACTEURS_HISTORIQUE_CACHE_DIR` vers un `tmp_path` different a chaque cas, et
+# un memo global les ferait lire l'index du test precedent — c'est exactement
+# le piege qui avait fait reverter la memoisation de #377 (voir la fixture
+# `_purge_memo_store_amendements`). Une fixture autouse purge quand meme le
+# memo, ceinture et bretelles.
+#
+# L'objet rendu est PARTAGE, jamais copie (meme regle que l'index amendements,
+# AGENTS.md §5) : aucun appelant ne le mute, tous font `.get(...)` en lecture.
+_ACTEURS_HISTORIQUE_INDEX_MEMO: dict[str, Any] = {}
+_ACTEURS_HISTORIQUE_MEMO_LOCK = threading.Lock()
+
+
+def _index_historique_memoise(index_path: Path) -> Optional[Any]:
+    """Index deja materialise en memoire pour ce chemin, ou None."""
+    with _ACTEURS_HISTORIQUE_MEMO_LOCK:
+        return _ACTEURS_HISTORIQUE_INDEX_MEMO.get(str(index_path))
+
+
+def _memoiser_index_historique(index_path: Path, index: Any) -> Any:
+    """Memorise `index` pour ce chemin et le renvoie tel quel (jamais copie)."""
+    with _ACTEURS_HISTORIQUE_MEMO_LOCK:
+        _ACTEURS_HISTORIQUE_INDEX_MEMO[str(index_path)] = index
+    return index
+
+
+def _clear_acteurs_historique_index_memo() -> None:
+    """Purge le memo — usage test uniquement (cf. fixture autouse)."""
+    with _ACTEURS_HISTORIQUE_MEMO_LOCK:
+        _ACTEURS_HISTORIQUE_INDEX_MEMO.clear()
+
+
 # Nomenclature officielle des types de rapport (typeRapporteur, dossiers
 # legislatifs Assemblee nationale) -> nomenclature du schema pivot.
 TYPE_RAPPORTEUR_MAP = {
@@ -654,6 +696,36 @@ def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
 _GET_PAYLOAD_MAX_ATTEMPTS = 3
 _GET_PAYLOAD_RETRY_BACKOFF_SECONDS = 1.5
 
+# ── Compteur d'appels réellement émis vers NosDéputés/NosSénateurs (#467) ────
+# `_get_payload` est le chokepoint EXCLUSIF de ces deux domaines (identité,
+# votes, recherche d'interventions, détail d'intervention, dossiers Sénat) :
+# l'Open Data AN passe par `requests.get`/`_telecharger_flux` en direct, jamais
+# par ici. Compter ici, c'est donc compter exactement la charge que la
+# temporisation de courtoisie de `process_candidat` est censée lisser.
+#
+# Pourquoi un compteur global et non un thread-local : les appels partent de
+# sous-pools (`_fetch_fr`/`_fetch_ue`, `fetch_all_intervention_results_from_domains`),
+# donc d'autres threads que celui qui traite le candidat. Un global rend la
+# mesure CONSERVATRICE quand `--workers > 1` — un candidat peut temporiser à
+# cause des appels d'un autre, jamais l'inverse. Le sens de l'erreur est celui
+# de la courtoisie.
+_APPELS_NOSDEPUTES_LOCK = threading.Lock()
+_appels_nosdeputes = 0
+
+
+def compteur_appels_nosdeputes() -> int:
+    """Nombre de requêtes HTTP émises vers NosDéputés/NosSénateurs depuis le
+    démarrage du process. Sert à savoir si un candidat a réellement sollicité
+    ces sources — voir la temporisation de `process_candidat`."""
+    with _APPELS_NOSDEPUTES_LOCK:
+        return _appels_nosdeputes
+
+
+def _incrementer_appels_nosdeputes() -> None:
+    global _appels_nosdeputes
+    with _APPELS_NOSDEPUTES_LOCK:
+        _appels_nosdeputes += 1
+
 
 def _get_payload(url: str) -> Any:
     """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
@@ -671,6 +743,7 @@ def _get_payload(url: str) -> Any:
     for attempt in range(1, _GET_PAYLOAD_MAX_ATTEMPTS + 1):
         is_last_attempt = attempt == _GET_PAYLOAD_MAX_ATTEMPTS
         try:
+            _incrementer_appels_nosdeputes()
             resp = _get_with_watchdog(url, timeout=TIMEOUT)
             try:
                 resp.raise_for_status()
@@ -3065,10 +3138,13 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_IDENTITE_LOCK:
         index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
+        memoise = _index_historique_memoise(index_path)
+        if memoise is not None:
+            return memoise
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return _memoiser_index_historique(index_path, json.load(f))
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
@@ -3173,7 +3249,7 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
         except OSError:
             pass
 
-        return index
+        return _memoiser_index_historique(index_path, index)
 
 
 def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[str, Any]]:
@@ -3205,6 +3281,13 @@ def _build_acteur_nom_index() -> dict[str, list[str]]:
     séparateur prénom/nom — sans ce traitement symétrique, la clé normalisée
     ne matche jamais ("jean-luc melenchon" vs "jean luc melenchon"), et la
     résolution échoue silencieusement pour tout prénom/nom composé."""
+    # Memoise comme les index dont il derive (#467) : purement derive de
+    # `_build_acteur_identite_index`, il etait sinon reconstruit — ~7 000
+    # acteurs parcourus — a chaque resolution de slug, donc a chaque candidat.
+    cle_memo = ACTEURS_HISTORIQUE_CACHE_DIR / "index_nom.derive"
+    memoise = _index_historique_memoise(cle_memo)
+    if memoise is not None:
+        return memoise
     index: dict[str, list[str]] = {}
     for acteur_ref, fiche in _build_acteur_identite_index().items():
         nom_complet = fiche.get("nom_complet")
@@ -3212,7 +3295,7 @@ def _build_acteur_nom_index() -> dict[str, list[str]]:
             continue
         cle = _normalize_search_query(nom_complet.replace("-", " "))
         index.setdefault(cle, []).append(acteur_ref)
-    return index
+    return _memoiser_index_historique(cle_memo, index)
 
 
 def _resolve_acteur_ref_par_slug(slug: str) -> Optional[str]:
@@ -3346,10 +3429,13 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
     Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_HEMICYCLE_LOCK:
         index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_positions_hemicycle.json"
+        memoise = _index_historique_memoise(index_path)
+        if memoise is not None:
+            return memoise
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return _memoiser_index_historique(index_path, json.load(f))
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
@@ -3410,7 +3496,7 @@ def _build_acteur_positions_hemicycle_index() -> dict[str, list[dict[str, Any]]]
         except OSError:
             pass
 
-        return index
+        return _memoiser_index_historique(index_path, index)
 
 
 def fetch_positions_hemicycle_officielles(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
@@ -3450,10 +3536,13 @@ def _build_organe_index() -> dict[str, dict[str, Any]]:
     d'échec (retourne {})."""
     with _ACTEURS_ORGANES_LOCK:
         index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_organes.json"
+        memoise = _index_historique_memoise(index_path)
+        if memoise is not None:
+            return memoise
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return _memoiser_index_historique(index_path, json.load(f))
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
@@ -3493,7 +3582,7 @@ def _build_organe_index() -> dict[str, dict[str, Any]]:
         except OSError:
             pass
 
-        return index
+        return _memoiser_index_historique(index_path, index)
 
 
 def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
@@ -3612,10 +3701,13 @@ def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
     Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_MANDATS_LOCK:
         index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_mandats.json"
+        memoise = _index_historique_memoise(index_path)
+        if memoise is not None:
+            return memoise
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
+                    return _memoiser_index_historique(index_path, json.load(f))
             except (json.JSONDecodeError, OSError):
                 pass  # cache corrompu : on reconstruit
 
@@ -3690,7 +3782,7 @@ def _build_acteur_mandats_index() -> dict[str, list[dict[str, Any]]]:
         except OSError:
             pass
 
-        return index
+        return _memoiser_index_historique(index_path, index)
 
 
 def _extract_mandats_officiels(acteur_ref: str) -> list[dict[str, Any]]:

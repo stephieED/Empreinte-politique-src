@@ -81,7 +81,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from audit_pivot_dataset import compute_profils_perimes
-from candidate_profile import build_profile
+from candidate_profile import build_profile, compteur_appels_nosdeputes
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
 from merge_profile import (
@@ -561,6 +561,10 @@ def process_candidat(
 
     _tprint(f"\n=== {nom} ({effective_slug}) ===")
 
+    # Point de repère pour la temporisation de courtoisie de fin de fonction
+    # (#467) : relevé AVANT toute collecte, comparé APRÈS.
+    appels_nosdeputes_avant = compteur_appels_nosdeputes()
+
     # Chambres FR à interroger selon --source
     if source == "an":
         chambres_fr: list[str] = ["deputes"]
@@ -604,7 +608,16 @@ def process_candidat(
         except Exception as exc:
             _tprint(f"  [!] Recherche du mandat européen impossible pour {nom} : {exc}")
             return None
-        time.sleep(0.3)
+        # Même principe que la temporisation de fin de fonction (#467) : un
+        # `None` signifie que le nom n'apparaît pas dans la liste des
+        # eurodéputés — liste mise en cache disque et téléchargée une fois par
+        # process, donc aucun appel propre à ce candidat n'a eu lieu. Les
+        # appels par candidat (détail du mandat, résolution des organisations)
+        # n'existent que pour un mandat trouvé, cas où la temporisation reste.
+        # Elle pesait sinon sur le chemin critique de chaque non-eurodéputé,
+        # c'est-à-dire la quasi-totalité du roster.
+        if result is not None:
+            time.sleep(0.3)
         return result
 
     with ThreadPoolExecutor(max_workers=2) as pool:
@@ -689,7 +702,22 @@ def process_candidat(
     extra = f", {nb_mandats_ue} mandats UE" if mandat_ue or profile.get("mandat_europeen") else ""
     _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} ({nb_interventions} interventions{extra})")
 
-    time.sleep(0.5)  # on reste courtois avec l'API publique entre deux candidats
+    # Courtoisie envers NosDéputés/NosSénateurs entre deux candidats — mais
+    # seulement envers une source réellement sollicitée (#467). Depuis #369 un
+    # député trouvé dans le référentiel historique AN ne déclenche AUCUN appel
+    # NosDéputés, et depuis #392/#403 ses amendements et ses votes viennent
+    # d'index locaux : mesuré sur les 24 membres du shard 0 du run 32288588518
+    # rejoués en local, 1 seule requête HTTP pour les 24 candidats, et 12,0 s
+    # de cette temporisation sur 74,1 s de temps mur — et la moitié de ce qui
+    # restait une fois la relecture d'index supprimée : du travail passé à
+    # ménager une source qu'on n'interrogeait pas.
+    # Un sénateur, un député absent du référentiel AN ou une passe avec
+    # interventions continuent d'appeler NosDéputés, donc de temporiser.
+    # `compteur_appels_nosdeputes` est global, donc conservateur avec
+    # `--workers > 1` : on peut temporiser pour les appels d'un autre candidat,
+    # jamais s'en dispenser à tort.
+    if compteur_appels_nosdeputes() != appels_nosdeputes_avant:
+        time.sleep(0.5)
 
     return {
         "nom": nom,
@@ -892,7 +920,11 @@ def main() -> None:
                              "par aucun agrégat de groupe (#349). Les dossiers existants restent intacts en mode fusion.")
     parser.add_argument("--workers", type=int, default=4, metavar="N",
                         help="Nombre de candidats traités en parallèle (niveau 2 ; défaut: 4). "
-                             "Réduire si les API publiques commencent à renvoyer des erreurs 429.")
+                             "Réduire si les API publiques commencent à renvoyer des erreurs 429. "
+                             "En extraction légère AN (--skip-interventions --skip-dossiers-legislatifs, "
+                             "mode du job roster), monter cette valeur RALENTIT : la charge y est du "
+                             "parsing JSON sous GIL, pas du réseau — mesuré +41 % à 4 workers (#467, "
+                             "docs/technical_decisions.md#budget-execution-pleine-echelle-467).")
     parser.add_argument("--checkpoint-file", default=DEFAULT_CHECKPOINT_PATH,
                         help=f"Fichier de point de sauvegarde de la progression, mis à jour après chaque "
                              f"candidat traité (défaut: {DEFAULT_CHECKPOINT_PATH}).")

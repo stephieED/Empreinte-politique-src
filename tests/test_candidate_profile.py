@@ -115,6 +115,22 @@ def _purge_memo_store_amendements():
 
 
 @pytest.fixture(autouse=True)
+def _purge_memo_index_acteurs_historique():
+    """Mémo intra-process des index dérivés du zip AMO30 (#467).
+
+    Il est indexé par CHEMIN d'index, donc déjà insensible au patch de
+    `ACTEURS_HISTORIQUE_CACHE_DIR` vers un `tmp_path` différent par test. Cette
+    purge est la ceinture de la bretelle : un cas qui réutiliserait le même
+    `tmp_path` en changeant le contenu de l'index lirait sinon la version
+    mémoïsée. Même précaution que `_purge_memo_store_amendements`, et même
+    leçon que la mémoïsation revertée de #377."""
+    from candidate_profile import _clear_acteurs_historique_index_memo
+    _clear_acteurs_historique_index_memo()
+    yield
+    _clear_acteurs_historique_index_memo()
+
+
+@pytest.fixture(autouse=True)
 def _reset_amendements_failed_legislatures_cache():
     """Le cache d'échec inter-candidats (`_amendements_failed_legislatures`, issue
     #239) est un état module-level : sans réinitialisation, un test qui fait
@@ -3665,6 +3681,99 @@ def test_build_organe_index_uses_disk_cache_without_download(tmp_path):
 
     mock_get.assert_not_called()
     assert index == cached_index
+
+
+# ── Mémo intra-process des index dérivés du zip AMO30 (#467) ────────────────
+# Le cache disque évitait le re-TÉLÉCHARGEMENT, jamais le re-PARSING : chaque
+# appel relisait son `index_*.json`. Mesuré sur les 24 membres du shard 0 du
+# run 32288588518 rejoués en local : 2 255 appels à `fetch_organe`, 59,8 s de
+# relecture sur 88,8 s de temps mur. Ces tests verrouillent le remède ET son
+# effet de bord dangereux (un mémo global qui ferait fuiter l'index d'un test
+# dans le suivant — le piège qui avait fait reverter la mémoïsation de #377).
+
+
+def test_index_historique_lu_une_seule_fois_par_process(tmp_path):
+    """Le deuxième appel ne relit pas le fichier : c'est tout l'objet du mémo.
+
+    Vérifié en RENDANT LE DISQUE MENTEUR entre les deux appels — si le second
+    relisait, il verrait le nouveau contenu."""
+    from candidate_profile import _build_organe_index
+
+    chemin = tmp_path / "index_organes.json"
+    premier = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
+    chemin.write_text(json.dumps(premier, ensure_ascii=False), encoding="utf-8")
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+    ):
+        assert _build_organe_index() == premier
+        chemin.write_text(json.dumps({"PO1": {"sigle": "X", "nom": "X", "type": "GA"}}), encoding="utf-8")
+        assert _build_organe_index() == premier
+        chemin.unlink()
+        assert _build_organe_index() == premier
+
+    mock_get.assert_not_called()
+
+
+def test_index_historique_memoise_par_chemin_pas_globalement(tmp_path):
+    """Deux répertoires de cache distincts ne partagent pas leur mémo.
+
+    C'est la propriété qui rend la mémoïsation sûre en test : chaque cas patche
+    `ACTEURS_HISTORIQUE_CACHE_DIR` vers son propre `tmp_path`. Un mémo indexé
+    par nom logique ferait lire au second l'index du premier."""
+    from candidate_profile import _build_organe_index
+
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+    index_a = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
+    index_b = {"PO393167": {"sigle": "Malaisie", "nom": "France-Malaisie", "type": "GA"}}
+    (a / "index_organes.json").write_text(json.dumps(index_a, ensure_ascii=False), encoding="utf-8")
+    (b / "index_organes.json").write_text(json.dumps(index_b, ensure_ascii=False), encoding="utf-8")
+
+    with patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", a):
+        assert _build_organe_index() == index_a
+    with patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", b):
+        assert _build_organe_index() == index_b
+
+
+def test_purge_du_memo_index_historique_rend_la_relecture(tmp_path):
+    """La purge explicite (fixture autouse) restaure bien la relecture disque —
+    sans quoi le garde-fou ci-dessus protégerait un mécanisme inerte."""
+    from candidate_profile import _build_organe_index, _clear_acteurs_historique_index_memo
+
+    chemin = tmp_path / "index_organes.json"
+    premier = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
+    second = {"PO1": {"sigle": "X", "nom": "X", "type": "GA"}}
+    chemin.write_text(json.dumps(premier, ensure_ascii=False), encoding="utf-8")
+
+    with patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path):
+        assert _build_organe_index() == premier
+        chemin.write_text(json.dumps(second, ensure_ascii=False), encoding="utf-8")
+        _clear_acteurs_historique_index_memo()
+        assert _build_organe_index() == second
+
+
+def test_index_historique_memoise_apres_construction_depuis_le_zip(tmp_path):
+    """Le mémo est alimenté aussi par le chemin « construction depuis le zip »,
+    pas seulement par la relecture du cache disque : sinon le tout premier
+    candidat d'un run paierait un parsing de plus que les suivants."""
+    from candidate_profile import _build_organe_index
+
+    zip_bytes = _make_fake_acteurs_historique_zip_bytes({
+        "PO59048": {"uid": "PO59048", "codeType": "COMPER",
+                    "libelle": "Commission des finances", "libelleAbrege": "Finances"},
+    })
+
+    with (
+        patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get",
+              return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
+    ):
+        premier = _build_organe_index()
+        (tmp_path / "index_organes.json").unlink()
+        assert _build_organe_index() is premier
 
 
 def test_build_organe_index_download_failure_returns_empty(tmp_path):

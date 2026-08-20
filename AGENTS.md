@@ -201,6 +201,13 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
   instead of "index unavailable". That atomicity is what makes the single-shard format
   check legitimate — do not fill in place.
   See `docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`.
+- **A disk cache prevents a re-download, never a re-parse.** Any shared index read
+  once per candidate must be memoised in-process — third occurrence of the same
+  cost at the same spot (#392 amendements, #403 scrutins, #467 AN acteurs/organes:
+  2 255 re-reads of one index for 24 members, 59 % of wall time). Key the memo on the
+  index **path**, never on a logical name: tests patch the cache dir per case, and a
+  global memo leaks one test's index into the next (the trap that reverted #377).
+  See `docs/technical_decisions.md#budget-execution-pleine-echelle-467`.
 - An amendment with no AN `uid` gets **no invented key**: `amendement_id: null` plus its full
   record under `amendement_non_resolu`. That is the normal shape for European Parliament
   amendments, which ParlTrack ships without an AN uid.
