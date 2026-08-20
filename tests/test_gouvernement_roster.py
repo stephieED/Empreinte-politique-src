@@ -261,16 +261,42 @@ def test_build_roster_ambiguous_overlap_two_successive_governments():
 
 
 # ---------------------------------------------------------------------------
-# build_gouvernement_roster — pivots réels du dépôt
+# build_gouvernement_roster — pivots réels, figés en fixtures (#457)
 # ---------------------------------------------------------------------------
 
-def _load_real_pivot(slug: str) -> dict:
-    path = REPO_ROOT / "pivot_data" / "profiles" / f"{slug}.pivot.json"
+FIXTURES_PIVOTS_DIR = Path(__file__).resolve().parent / "fixtures" / "gouvernement_roster"
+
+
+def _load_pivot_fixture(slug: str) -> dict:
+    """Charge un pivot réel **figé** sous `tests/fixtures/gouvernement_roster/`.
+
+    Ces tests sont les vérifications d'acceptation de #209 : ils confrontent
+    `build_gouvernement_roster` à de vrais profils, pas à des cas fabriqués.
+    Ils lisaient `pivot_data/profiles/` directement, et cassaient donc à chaque
+    mise à jour du corpus — y compris quand la donnée **s'améliore** (#457 : un
+    portefeuille jusque-là manquant a fini par être renseigné, et le test l'a
+    signalé comme un échec). Un test qui rougit parce qu'une lacune a été
+    comblée envoie le mauvais signal : la couverture du corpus vivant relève du
+    quality gate (`check_quality_gate.py` §5), pas d'une assertion unitaire.
+
+    Les fixtures sont donc des **extraits** des vrais pivots, réduits aux seuls
+    champs que `gouvernement_roster` lit (`id`, `nom`, `identite.source_url`,
+    `mandats[]`) et aux catégories de mandat `fonction_gouvernementale` et
+    `mandat_electif` — quelques Ko au lieu de quelques centaines. `mandats[]`
+    conserve l'ordre de la source : le roster émet ses entrées dans cet ordre.
+    `mandat_electif` est gardé bien qu'inerte ici, pour que le filtrage par
+    catégorie porte réellement sur quelque chose.
+
+    Chaque fixture consigne sa provenance dans `meta.fixture` (fichier source,
+    ref du dépôt, date d'extraction — AGENTS.md §2.2) : la rafraîchir, c'est
+    rejouer cette même réduction sur le pivot courant.
+    """
+    path = FIXTURES_PIVOTS_DIR / f"{slug}.pivot.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def test_real_pivot_gabriel_attal_attal_government():
-    profil = _load_real_pivot("gabriel-attal")
+    profil = _load_pivot_fixture("gabriel-attal")
     membres = build_gouvernement_roster("ATTAL", "2024-01-10", "2024-09-05", [profil])
     assert len(membres) == 1
     assert membres[0]["membre_id"] == "nosdeputes:gabriel-attal"
@@ -281,29 +307,81 @@ def test_real_pivot_gabriel_attal_attal_government():
 
 def test_real_pivot_gabriel_attal_excluded_from_unrelated_government():
     """Gabriel Attal n'a jamais siégé dans le gouvernement Barnier."""
-    profil = _load_real_pivot("gabriel-attal")
+    profil = _load_pivot_fixture("gabriel-attal")
     membres = build_gouvernement_roster("BARNIER", "2024-09-28", "2024-12-13", [profil])
     assert membres == []
 
 
 def test_real_pivot_charlotte_parmentier_lecocq_bayrou_government():
     """Vérification manuelle (acceptation #209) : Gouvernement Bayrou contre
-    un profil pivot réel."""
-    profil = _load_real_pivot("charlotte-parmentier-lecocq")
+    un profil pivot réel.
+
+    Ce profil porte cinq portefeuilles ministériels, répartis sur trois
+    gouvernements. Le test vérifie que celui rattaché est **celui de la période
+    Bayrou** (2024-12-24 → 2025-09-09) : c'est l'objet de
+    `_portefeuilles_du_mandat`, qui teste le chevauchement contre le mandat
+    d'appartenance du membre. Il assenait auparavant `portefeuille is None`,
+    ce qui figeait une lacune de données en invariant (#457) — l'intitulé est
+    renseigné depuis, et le test échouait pour cette raison-là.
+    """
+    profil = _load_pivot_fixture("charlotte-parmentier-lecocq")
     membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", [profil])
     assert len(membres) == 1
     assert membres[0]["nom"] == "Charlotte Parmentier-Lecocq"
-    assert membres[0]["portefeuille"] is None
+    assert membres[0]["portefeuille"] == (
+        "Ministère délégué auprès de la ministre du travail, de la santé, "
+        "de la solidarité et des familles, chargé de l'autonomie et du handicap"
+    )
+    assert membres[0]["debut"] == "2024-12-24"
+    assert membres[0]["fin"] == "2025-09-09"
+    # Renseigné implique traçable : le schéma refuse un intitulé sans source.
+    assert membres[0]["source_url"]
 
 
-def test_real_pivot_david_amiel_lecornu_ii_still_active():
+def test_real_pivot_david_amiel_lecornu_ii_deux_portefeuilles_un_seul_actif():
     """Vérification manuelle (acceptation #209) : Gouvernement Lecornu II
-    contre un profil pivot réel, mandat toujours actif."""
-    profil = _load_real_pivot("david-amiel")
+    contre un profil pivot réel, changement de portefeuille **sans changement
+    de gouvernement**.
+
+    David Amiel est ministre délégué chargé de la fonction publique jusqu'au
+    2026-02-21, puis ministre de l'action et des comptes publics à partir du
+    2026-02-22 — deux fonctions distinctes, deux périodes distinctes, un seul
+    mandat d'appartenance (jamais scindé, lui). Le roster rend donc **deux
+    entrées pour un même `membre_id`**, une par période : les fondre en une
+    seule effacerait un fait vérifiable (AGENTS.md §2.2), et en choisir une
+    arbitrairement serait pire encore.
+
+    Corollaire à connaître (#457) : `membres[]` dénombre des **entrées**, pas
+    des personnes. Sur les 10 gouvernements publiés, 7 sont concernés — 116
+    entrées pour 95 personnes, Borne à lui seul 31 entrées pour 23 personnes.
+    Rien ne publie d'effectif aujourd'hui : `comptages.par_statut` dénombre des
+    textes de loi, et `GovernmentProfile.jsx` liste les membres sans en donner
+    le total. Aucun dénominateur faux n'est donc exposé (§2.7). Mais toute vue
+    future annonçant « N ministres » devra dédupliquer par `membre_id`, sans
+    quoi elle affichera 31 pour Borne au lieu de 23.
+    """
+    profil = _load_pivot_fixture("david-amiel")
     membres = build_gouvernement_roster("LECORNU II", "2025-10-13", None, [profil])
-    assert len(membres) == 1
-    assert membres[0]["actif"] is True
-    assert membres[0]["fin"] is None
+    assert len(membres) == 2
+    assert {m["membre_id"] for m in membres} == {"nosdeputes:david-amiel"}
+
+    # Ordre chronologique : `_portefeuilles_du_mandat` trie par date de début.
+    delegue, ministre = membres
+    assert delegue["portefeuille"].startswith(
+        "Ministère délégué auprès de la ministre de l'action et des comptes publics"
+    )
+    assert delegue["debut"] == "2025-10-13"
+    assert delegue["fin"] == "2026-02-21"
+    assert delegue["actif"] is False
+
+    assert ministre["portefeuille"] == "Ministère de l'action et des comptes publics"
+    assert ministre["debut"] == "2026-02-22"
+    assert ministre["fin"] is None
+    assert ministre["actif"] is True
+
+    # Les deux périodes se succèdent sans trou ni recouvrement : elles pavent
+    # le mandat d'appartenance, elles ne le comptent pas deux fois.
+    assert delegue["fin"] < ministre["debut"]
 
 
 # ---------------------------------------------------------------------------
@@ -401,7 +479,7 @@ def test_build_roster_portefeuille_sans_source_tracable_reste_null_avec_warning(
 def test_real_pivot_gabriel_attal_deux_portefeuilles_sous_borne():
     """Cas réel : Gabriel Attal a changé de portefeuille en cours de
     gouvernement Borne (comptes publics, puis éducation nationale)."""
-    profil = _load_real_pivot("gabriel-attal")
+    profil = _load_pivot_fixture("gabriel-attal")
     membres = build_gouvernement_roster("BORNE", "2022-05-16", "2024-01-09", [profil])
     assert len(membres) == 2
     portefeuilles = [m["portefeuille"] for m in membres]
@@ -477,13 +555,13 @@ def test_build_premier_ministre_dun_autre_gouvernement_non_retenu():
 
 def test_real_pivot_premier_ministre_attal_et_philippe():
     """Cas réels : les seuls Premiers ministres ayant un profil pivot local."""
-    attal = _load_real_pivot("gabriel-attal")
+    attal = _load_pivot_fixture("gabriel-attal")
     pm_attal = build_premier_ministre("ATTAL", "2024-01-10", "2024-09-05", [attal])
     assert pm_attal["nom"] == "Gabriel Attal"
     assert pm_attal["acteur_ref"] == "PA722190"
     assert pm_attal["source_url"]
 
-    philippe = _load_real_pivot("edouard-philippe")
+    philippe = _load_pivot_fixture("edouard-philippe")
     pm_philippe = build_premier_ministre("PHILIPPE 2", "2017-06-20", "2020-07-06", [philippe])
     assert pm_philippe["nom"] == "Édouard Philippe"
 
