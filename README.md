@@ -45,6 +45,7 @@ CV_CandidatFR/
 |  |- audit_gouvernement_dataset.py  # Gouvernement dataset audit: I/O + volumetry/completeness/consistency/freshness indicators (no CLI/Markdown yet, see #319)
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
 |  |- audit_integrite_referentielle.py # Pre-commit guard: every published key resolves in its shared index (#485)
+|  |- audit_collecte_non_publiee.py  # Pre-commit guard: every collected raw profile has its pivot (#511)
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -282,6 +283,25 @@ cloisonnées — `allow_declared_losses` ne désarme pas
 `allow_broken_references`. Mesuré sur les 209 profils committés : 0
 référence orpheline sur 1 347 451, 3,02 s / 162,0 Mio. Voir
 `docs/technical_decisions.md#integrite-referentielle-pivot`.
+
+### Vérifier que tout ce qui est collecté est publié (#511)
+
+Troisième angle : ni le contrôle de perte (un avant / un après) ni l'intégrité
+référentielle (les clés publiées résolvent) ne voit un profil **collecté et
+publié nulle part** — rien n'a été perdu, et ce qui manque ne porte aucune clé.
+
+```bash
+python3 src/audit_collecte_non_publiee.py
+python3 src/audit_collecte_non_publiee.py --out audit/collecte.md --out-json audit/collecte.json
+```
+
+Sortie non nulle dès qu'un `raw_data/profiles/<slug>.json` n'a pas son
+`pivot_data/profiles/<slug>.pivot.json` — branché avant commit dans
+`merge-and-pivot`, après les deux passes de normalisation pivot. Seuil **0**,
+mesuré : 0 écart sur les 12 commits de run du 16 au 20/08/2026, pendant que le
+corpus passait de 48 à 209 profils. Le contrôle ne parse aucun profil (deux
+listes de noms de fichiers) : 0,08 s / 13,9 Mio mesurés à 752 profils. Voir
+`docs/technical_decisions.md#collecte-non-publiee`.
 
 ## 3. Generate all candidate profiles (batch)
 

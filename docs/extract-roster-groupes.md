@@ -168,6 +168,14 @@ flowchart TD
    incohérente), écrite dans `raw_data/roster_candidats.json` au même format
    d'entrée que `raw_data/candidats.json` (`{"candidats": [...]}`) —
    `statut: "roster_groupe"`, `notes` référençant le groupe d'origine.
+5. **Rien n'est écrit si la collecte est incomplète (#511)** : un fetch en
+   échec, un groupe configuré rendant 0 membre, ou un roster total vide font
+   sortir le script en 1 sans toucher au fichier. Un `Read timed out` avait
+   écrit un roster de 0 candidat en rendant 0, et la passe pivot suivante avait
+   itéré sur le vide — run `32405297873`, conclu en `success`. Ce n'est pas un
+   seuil de rétrécissement : la granularité d'une panne est la clé de fetch
+   entière, soit 452 ou 300 membres sur 752. Voir
+   `docs/technical_decisions.md#roster-jamais-ecrit-vide`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`/`extract-senat`
    (`candidate_profile.py`, identité/mandats/votes/amendements via

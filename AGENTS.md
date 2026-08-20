@@ -299,6 +299,28 @@ Guarded by `tests/test_audit_integrite_referentielle.py` and
 `tests/test_ci_integrite_referentielle.py`.
 See `docs/technical_decisions.md#integrite-referentielle-pivot`.
 
+**Collected must equal published (#511)**: `merge-and-pivot` also runs
+`src/audit_collecte_non_publiee.py`, **after both `--pivot-only` passes** (declared
+candidates, then roster) and before the commit. Every `raw_data/profiles/<slug>.json`
+must have its `pivot_data/profiles/<slug>.pivot.json`; **any** miss aborts the commit,
+naming the slugs. Threshold **0**, measured: 0 gap across the 12 run-produced commits
+of 16-20/08/2026 while the corpus went 48 → 209. A raw profile is always normalisable —
+`process_candidat` writes nothing when collection returns neither an FR identity nor an
+EU mandate — so a raw without a pivot means **never offered to a pivot pass**. Reported
+but non-blocking: a pivot with no raw. **Placement is half the control**: between the
+two passes every roster member is legitimately pivot-less, so checking earlier would
+flag 543 phantom gaps. It **parses no profile** (two filename listings — the raw corpus
+is 1 642 Mo, largest profile 26,5 Mo): 0,08 s / 13,9 Mio measured at 752, a separate
+process so the job peak stays the loss check's. Third tolerance, still partitioned:
+`allow_unpublished_profiles` — neither `allow_declared_losses` nor
+`allow_broken_references` disarms it. **Same run also fixed the cause**:
+`generate_roster_candidats.py` now refuses to write on a failed fetch, on a configured
+group returning 0 members, or on an empty roster — a `Read timed out` wrote a 0-candidate
+roster and the roster pivot pass iterated on nothing, in a run that concluded `success`.
+Guarded by `tests/test_audit_collecte_non_publiee.py`,
+`tests/test_ci_collecte_non_publiee.py` and `tests/test_generate_roster_candidats.py`.
+See `docs/technical_decisions.md#collecte-non-publiee`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on
