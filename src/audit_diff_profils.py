@@ -83,29 +83,43 @@ def lire_profils_git(ref: str, repertoire: str) -> dict[str, dict[str, int]]:
     if not fichiers:
         return {}
 
-    requetes = "".join(f"{ref}:{repertoire}/{f}\n" for f in fichiers)
-    proc = subprocess.run(
+    # Lecture EN FLUX du `--batch`, blob par blob. `capture_output=True`
+    # bufferisait la totalité des profils avant d'en compter la première
+    # entrée : 3,2 Gio de RSS sur les 209 profils du 19/08/2026, et un process
+    # tué par l'OOM killer. À 752 profils ce serait ~11 Go, donc un échec
+    # certain en CI — pour un script dont tout l'intérêt est de tourner AVANT
+    # le commit (#460).
+    #
+    # Seuls les comptes sont retenus, jamais les profils : la mémoire ne dépend
+    # plus que du plus gros blob (~26 Mo), pas du corpus. Même correction que
+    # sur l'index des scrutins (#432) et sur celui des amendements (#431) —
+    # c'est le troisième outil de ce dépôt à buter là-dessus.
+    proc = subprocess.Popen(
         ["git", "cat-file", "--batch"],
-        input=requetes.encode(), capture_output=True,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
     )
-    sortie = proc.stdout
+    assert proc.stdin is not None and proc.stdout is not None
 
     resultats: dict[str, dict[str, int]] = {}
-    position = 0
-    for fichier in fichiers:
-        fin_entete = sortie.index(b"\n", position)
-        entete = sortie[position:fin_entete].split()
-        if len(entete) < 3:            # « <oid> missing »
-            position = fin_entete + 1
-            continue
-        taille = int(entete[2])
-        debut = fin_entete + 1
-        contenu = sortie[debut:debut + taille]
-        position = debut + taille + 1  # +1 : saut de ligne final
-        try:
-            resultats[fichier] = _compter(json.loads(contenu))
-        except ValueError:
-            continue
+    try:
+        for fichier in fichiers:
+            proc.stdin.write(f"{ref}:{repertoire}/{fichier}\n".encode())
+            proc.stdin.flush()
+            entete = proc.stdout.readline().split()
+            if len(entete) < 3:        # « <oid> missing »
+                continue
+            taille = int(entete[2])
+            contenu = proc.stdout.read(taille)
+            proc.stdout.read(1)        # saut de ligne final
+            try:
+                resultats[fichier] = _compter(json.loads(contenu))
+            except ValueError:
+                continue
+            del contenu
+    finally:
+        proc.stdin.close()
+        proc.stdout.read()
+        proc.wait()
     return resultats
 
 
