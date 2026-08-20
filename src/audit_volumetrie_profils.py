@@ -70,6 +70,22 @@ CHAMPS_EXTERNALISABLES: tuple[tuple[str, ...], ...] = (
 SEUIL_PUSH_GO = 2.0
 SEUIL_DEPOT_RECOMMANDE_GO = 5.0
 
+# Fenêtre de commits de données au-delà de laquelle l'historique est borné
+# (#434, option D). Dimensionnée sur la latence de détection d'un incident, pas
+# sur un objectif de taille : voir `docs/technical_decisions.md#fenetre-historique-donnees`.
+FENETRE_COMMITS_DONNEES = 30
+
+# Nombre de runs récents sur lesquels la distribution du coût est calculée.
+# Prendre TOUS les commits de données la fausserait : les plus anciens ont été
+# écrits quand le corpus faisait 14 à 30 profils, et coûtaient 0,03 à 2,8 Mo.
+# Les mélanger aux runs à 209 profils ramène la médiane de 12,6 à 2,6 Mo et
+# gonfle l'écart min/max à × 1 790 — un chiffre qui ne décrit aucun run réel.
+RUNS_RECENTS = 8
+
+# Motif du sujet des commits de données. Le workflow les écrit tous ainsi
+# (`.github/workflows/generate-data.yml`, étape de commit).
+MOTIF_COMMIT_DONNEES = "mise à jour automatique des données"
+
 _OCTETS_PAR_GO = 1024 ** 3
 _OCTETS_PAR_MO = 1024 ** 2
 
@@ -270,6 +286,118 @@ def compute_historique_git(repertoires: list[Path]) -> dict[str, Any]:
     }
 
 
+def collecte_commits_donnees(limite: int = 200) -> list[dict[str, Any]]:
+    """Relève les commits de données et ce que chacun a coûté en historique.
+
+    I/O pure git, du plus récent au plus ancien. Renvoie une liste vide hors
+    dépôt git ou si `git` est indisponible : la mesure de fenêtre est un
+    complément, elle ne doit jamais faire échouer le reste du rapport.
+
+    Le coût d'un commit est celui des objets qu'il **introduit** — donc
+    `--not` chacun de ses parents, et non le seul premier : sur un merge, ne
+    retrancher que le premier parent recompterait toute la branche fusionnée.
+    """
+    def _git(*args: str) -> Optional[str]:
+        try:
+            return subprocess.run(
+                ["git", *args], capture_output=True, text=True, check=True, timeout=120,
+            ).stdout.strip()
+        except (subprocess.SubprocessError, OSError):
+            return None
+
+    listing = _git(
+        "log", f"--max-count={limite}", "--format=%H %aI",
+        f"--grep={MOTIF_COMMIT_DONNEES}",
+    )
+    if not listing:
+        return []
+
+    commits: list[dict[str, Any]] = []
+    for ligne in listing.splitlines():
+        sha, _, date = ligne.partition(" ")
+        if not sha:
+            continue
+        parents = (_git("rev-list", "--parents", "-n1", sha) or "").split()[1:]
+        exclusions: list[str] = []
+        for parent in parents:
+            exclusions += ["--not", parent]
+        brut = _git("rev-list", "--disk-usage", "--objects", sha, *exclusions)
+        try:
+            octets = int(brut) if brut else 0
+        except ValueError:
+            octets = 0
+        commits.append({"sha": sha[:7], "date": date, "octets": octets})
+    return commits
+
+
+def compute_fenetre_donnees(
+    commits: list[dict[str, Any]],
+    fenetre: int = FENETRE_COMMITS_DONNEES,
+    socle_octets: Optional[int] = None,
+    recents: int = RUNS_RECENTS,
+) -> dict[str, Any]:
+    """État de la fenêtre glissante de #434. Fonction pure.
+
+    Dit trois choses, et une seule décide :
+
+    1. **La fenêtre est-elle contraignante ?** Tant que le dépôt porte moins de
+       `fenetre` commits de données, borner l'historique ne retirerait rien —
+       il n'y a pas d'opération à mener, seulement à mesurer.
+    2. **La distribution du coût par run**, jamais la moyenne seule : mesuré le
+       20/08/2026, les huit derniers runs vont de 0,2 à 53,5 Mo pour une
+       médiane de 12,6 — un facteur 4 entre médiane et maximum. Une moyenne
+       dimensionnerait la fenêtre sur un run qui n'existe pas.
+
+       Elle porte sur les `recents` derniers runs, pas sur tous : le coût d'un
+       run suit la taille du corpus, et y mêler les runs à 14 profils
+       décrirait un dépôt qui n'existe plus.
+    3. **Le majorant du gain** — et c'est le chiffre à ne PAS lire comme un
+       gain.
+
+    ⚠️ `majorant_gain_octets` est la somme de ce qu'ont coûté les commits hors
+    fenêtre. Ce **n'est pas** ce qu'un squash libérerait, et l'écart est
+    énorme : mesuré sur un clone au 20/08/2026, à `fenetre=10` la somme vaut
+    93 Mo pour un gain réel de **6 Mo** (× 15), et à `fenetre=3` elle vaut
+    254 Mo pour **115 Mo** (× 2,2). La raison est structurelle : le squash
+    conserve l'arbre complet à la coupure, et les objets des commits retirés
+    sont majoritairement des deltas dont la base doit de toute façon être
+    gardée. Le seul gain fiable se mesure en repackant un clone, jamais en
+    additionnant des coûts par run.
+    """
+    nb = len(commits)
+    resultat: dict[str, Any] = {
+        "fenetre": fenetre,
+        "nb_commits_donnees": nb,
+        "contraignante": nb > fenetre,
+        "sha_coupure": None,
+        "majorant_gain_octets": 0,
+        "couts": {},
+    }
+    if not nb:
+        return resultat
+
+    echantillon = commits[:recents] if recents > 0 else commits
+    couts = sorted(c.get("octets") or 0 for c in echantillon)
+    milieu = len(couts) // 2
+    resultat["nb_runs_mesures"] = len(couts)
+    resultat["couts"] = {
+        "median": couts[milieu] if len(couts) % 2 else (couts[milieu - 1] + couts[milieu]) // 2,
+        "moyen": sum(couts) // len(couts),
+        "max": couts[-1],
+        "min": couts[0],
+    }
+
+    if nb > fenetre:
+        resultat["sha_coupure"] = commits[fenetre]["sha"]
+        resultat["majorant_gain_octets"] = sum(
+            c.get("octets") or 0 for c in commits[fenetre:]
+        )
+
+    if socle_octets:
+        resultat["plafond_octets"] = socle_octets + fenetre * resultat["couts"]["moyen"]
+    return resultat
+
+
 def compute_projection(
     volumetrie: dict[str, Any], cible: int, facteur_duplication: float
 ) -> dict[str, Any]:
@@ -420,6 +548,60 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
                 lignes += [f"| `{k}` | {_mo(v)} |" for k, v in details.items()]
                 lignes.append("")
 
+    fen = rapport.get("fenetre_donnees") or {}
+    if fen.get("nb_commits_donnees"):
+        couts = fen["couts"]
+        lignes += [
+            "## Fenêtre d'historique de données (#434)",
+            "",
+            f"**{fen['nb_commits_donnees']} commits de données** dans l'historique, "
+            f"pour une fenêtre retenue de **{fen['fenetre']}**.",
+            "",
+            f"Distribution mesurée sur les **{fen.get('nb_runs_mesures', 0)} runs les "
+            "plus récents** : le coût d'un run suit la taille du corpus, et y mêler "
+            "les runs à 14 profils décrirait un dépôt qui n'existe plus.",
+            "",
+            "| Coût par run | Valeur |",
+            "| --- | --- |",
+            f"| Médian | {_mo(couts['median'])} |",
+            f"| Moyen | {_mo(couts['moyen'])} |",
+            f"| Minimum | {_mo(couts['min'])} |",
+            f"| Maximum | {_mo(couts['max'])} |",
+            "",
+            "> C'est la **distribution** qui dimensionne, pas la moyenne : "
+            "l'écart entre le run le moins cher et le plus cher est d'un facteur "
+            f"{(couts['max'] / couts['min']) if couts['min'] else 0:.1f}.",
+            "",
+        ]
+        if fen.get("plafond_octets"):
+            lignes += [
+                f"Plafond impliqué par la fenêtre : **{_mo(fen['plafond_octets'])}** "
+                "(socle + fenêtre × coût moyen).",
+                "",
+            ]
+        if fen["contraignante"]:
+            lignes += [
+                f"⚠️ **La fenêtre est contraignante** : la coupure serait "
+                f"`{fen['sha_coupure']}`. Majorant du gain : "
+                f"{_mo(fen['majorant_gain_octets'])}.",
+                "",
+                "> Ce majorant n'est **pas** le gain. Il additionne des coûts par "
+                "run, alors qu'un squash conserve l'arbre complet à la coupure et "
+                "que les objets retirés sont surtout des deltas dont la base est "
+                "gardée. Mesuré sur un clone le 20/08/2026 : × 15 d'écart à une "
+                "fenêtre de 10, × 2,2 à une fenêtre de 3. **Le gain réel se mesure "
+                "en repackant un clone**, jamais en additionnant cette colonne — "
+                "`scripts/borner_historique_donnees.sh --mesurer`.",
+                "",
+            ]
+        else:
+            lignes += [
+                "✓ **La fenêtre n'est pas contraignante** : moins de commits de "
+                "données que la fenêtre ne l'autorise. Il n'y a rien à borner, et "
+                "donc aucune réécriture d'historique à mener.",
+                "",
+            ]
+
     lignes += [
         "## Leviers, tous sans perte d'information",
         "",
@@ -543,6 +725,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              "dépôt, ou sur un très gros dépôt où la mesure traîne ; le rapport perd "
              "alors la seule mesure comparable aux seuils GitHub.",
     )
+    parser.add_argument(
+        "--fenetre", type=int, default=FENETRE_COMMITS_DONNEES, metavar="N",
+        help=f"Nombre de commits de données conservés par la fenêtre glissante de "
+             f"#434 (défaut : {FENETRE_COMMITS_DONNEES}). Sert à dire si la fenêtre "
+             "est contraignante, jamais à réécrire quoi que ce soit.",
+    )
     parser.add_argument("--out", metavar="FICHIER", help="Rapport Markdown.")
     parser.add_argument("--out-json", metavar="FICHIER", help="Rapport JSON.")
     return parser
@@ -564,6 +752,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         "projection": compute_projection(volumetrie, args.cible, args.facteur_duplication),
         "historique_git": (
             {} if args.sans_historique_git else compute_historique_git(repertoires)
+        ),
+        "fenetre_donnees": (
+            {} if args.sans_historique_git
+            else compute_fenetre_donnees(collecte_commits_donnees(), args.fenetre)
         ),
         "erreurs_lecture": erreurs,
     }
