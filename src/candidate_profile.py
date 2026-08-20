@@ -33,6 +33,7 @@ import threading
 import time
 import unicodedata
 import zipfile
+from collections import Counter
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
 from urllib.parse import urlsplit
@@ -567,6 +568,81 @@ WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES = "interventions syceron indisp
 # décrit ce que CE run n'a pas collecté. Une liste tronquée qui a l'air complète
 # après fusion reste une liste dont on ne sait pas si elle est complète.
 WARNING_PREFIX_BUDGET_INTERVENTIONS = "collecte d'interventions tronquée (budget de temps)"
+
+# #510 : l'archive Syceron publie l'identifiant d'orateur NU (`<orateur><id>847629
+# </id>`), et le code lui appliquait `re.fullmatch(r"PA\d+")` — donc l'index de la
+# source PRIMAIRE des interventions était vide depuis toujours.
+#
+# Le correctif est livré INACTIF par défaut, et son activation est une décision
+# distincte, parce que ce qu'il déverrouille n'est pas prêt à être publié. Mesuré
+# le 20/08/2026 sur l'archive complète de la 17e législature (601 comptes rendus,
+# 55 772 428 octets, `content-length` vérifié) :
+#
+#   - l'index passe de **2 octets / 0 acteur** à **136,8 Mio / 673 acteurs /
+#     104 239 interventions** ;
+#   - sur le corpus de `d7d8fb1` (229 profils bruts, 209 pivot), 112 profils
+#     reçoivent des interventions : +21 767 entrées, +25,7 Mio de brut (×1,02) et
+#     +20,3 Mio de pivot (×1,20 au total, ×1,17 en médiane sur les profils
+#     touchés, ×6,8 au maximum) — pour la 17e SEULE, alors que
+#     `SYCERON_AVAILABLE_LEGISLATURES` en compte trois ;
+#   - `_build_acteur_interventions_syceron_index` relit l'index depuis le disque à
+#     CHAQUE candidat et pour CHAQUE législature : 1,56 s et 563 Mio de RSS par
+#     lecture d'un index de 136,8 Mio, soit ~4,7 s par candidat sur trois
+#     législatures, à imputer au budget de 240 s de #498/#500 qui avait été
+#     dimensionné sur une source rendant zéro.
+#
+# Et surtout, deux défauts indépendants de celui-ci rendent la donnée impubliable
+# en l'état — tous deux mesurés sur la même archive, tous deux issus de la même
+# cause que #510 (les fixtures décrivent un schéma que l'AN ne publie pas) :
+#
+#   - `parse_syceron._parse_interventions` ne descend pas dans les `<point>`
+#     imbriqués (`point.findall("paragraphe")` au lieu d'un parcours récursif) :
+#     **212 264 des 321 892** paragraphes de la 17e sont invisibles, soit les
+#     deux tiers du débat ;
+#   - `<titreStruct>` n'existe pas sous `<contenu>` (**0** occurrence sur les 601
+#     comptes rendus ; le titre du point vit dans `<point><texte>`), donc `sujet`,
+#     `type_detail` et `theme_officiel` sortent respectivement à `None`, `"debat"`
+#     et `None` sur **100 %** des 104 239 entrées. Or Syceron REMPLACE la liste
+#     d'interventions NosDéputés (`profile["interventions"] = syceron_interventions`)
+#     et `tags_thematiques` est dérivé de cette liste : activer sans corriger cela
+#     publierait 104 239 interventions sans thème à la place de 789 qui en portent.
+#
+# Activer ce drapeau est donc un choix d'opérateur, pris en connaissance de ces
+# mesures : `--activer-interventions-syceron`.
+SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE = False
+
+# Nom du fichier d'index selon le mode de résolution. Deux noms distincts, et non
+# un seul : `.cache/syceron_an` est partagé entre les shards par la clé de cache
+# de #505, et un index construit dans un mode servi à un run de l'autre mode est
+# exactement le défaut que #505 vient de corriger (un contenu qui dépend d'une
+# entrée doit porter cette entrée dans sa clé, AGENTS.md).
+SYCERON_INDEX_FILENAME = "index_par_acteur.json"
+SYCERON_INDEX_FILENAME_ACTEUR_NU = "index_par_acteur_acteurs_nus.json"
+
+AIDE_ACTIVER_INTERVENTIONS_SYCERON = (
+    "Résoudre les identifiants d'orateur que l'archive Syceron publie NUS "
+    "(<orateur><id>847629</id>) en acteurRef AN, et laisser ainsi la source "
+    "PRIMAIRE des interventions alimenter réellement les profils (#510). "
+    "INACTIF par défaut : mesuré le 20/08/2026 sur la 17e législature complète, "
+    "l'activation fait passer l'index de 2 octets à 136,8 Mio (673 acteurs, "
+    "104 239 interventions) et ajoute +21 767 interventions / +20,3 Mio de pivot "
+    "au corpus de d7d8fb1 (×1,20) — pour UNE législature sur trois. Et deux défauts "
+    "indépendants (points imbriqués ignorés, <titreStruct> inexistant) font que "
+    "les entrées ainsi publiées seraient les deux tiers manquants et sans thème. "
+    "N'activer qu'en connaissance de ces mesures."
+)
+
+
+def activer_resolution_acteur_nu_syceron(actif: bool) -> None:
+    """Active (ou non) la résolution des identifiants d'orateur nus (#510).
+
+    Drapeau de module et non paramètre d'appel : l'index Syceron est construit
+    UNE fois par législature, mis en cache et partagé entre les shards (#505).
+    C'est donc une propriété de l'index, pas du candidat en cours — un réglage
+    par candidat ne pourrait rien vouloir dire sur un fichier partagé.
+    """
+    global SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE
+    SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE = bool(actif)
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -4115,6 +4191,62 @@ def fetch_questions_officielles(
     return questions
 
 
+def _normaliser_orateur_id_syceron(valeur: Any) -> tuple[Optional[str], str]:
+    """Résout l'identifiant d'orateur Syceron en `acteurRef` AN (#510).
+
+    Retourne `(acteur_ref, motif)`. `acteur_ref` est `None` dès que la valeur
+    n'est pas rattachable à un acteur du référentiel AN ; `motif` nomme alors
+    laquelle des quatre formes observées a été rencontrée, pour que le rejet
+    soit **compté** et non muet (§2.5).
+
+    **L'archive publie l'identifiant nu**, jamais préfixé : `<orateur><id>847629
+    </id>`. Le motif `PA\\d+` appliqué à cette valeur échouait donc sur 100 % des
+    entrées, et l'index de la source *primaire* des interventions se construisait
+    vide depuis toujours — 0 des 789 interventions publiées à `f1fff09` venaient
+    de Syceron.
+
+    Le préfixage n'est pas une inférence, il est **écrit dans la source** : le
+    même `<paragraphe>` porte l'attribut `id_acteur="PA847629"` à côté de
+    `<orateur><id>847629</id>`. Mesuré sur les 601 comptes rendus de la 17e
+    législature (archive du 20/08/2026) : `id_acteur == "PA" + orateur/id` sur
+    **289 701 des 289 702** paragraphes portant les deux, et les **673** des 673
+    identifiants nus distincts se résolvent dans le référentiel
+    `acteurs_historique_an` (3 117 acteurs), dont 662 avec concordance de nom —
+    les 11 autres étant nommés par leur fonction (« Mme la présidente »), et
+    correctement identifiés.
+
+    Trois formes ne sont **pas** des acteurs et sont écartées par construction,
+    définitivement et sans warning individuel — même raisonnement que #474, où
+    les 92 parlementaires en mission sont écartés sans trace parce que leur
+    exclusion est le comportement attendu et permanent :
+
+    - `0` : orateur **collectif anonyme** (« Un député du groupe RN », 1 153
+      occurrences sur la 17e). L'indexer fabriquerait un acteur `PA0` inexistant ;
+    - un identifiant **négatif** : pseudo-acteur de rôle, absent du référentiel
+      AN (304 occurrences ; l'archive écrit alors `id_acteur="PA-125799"`, une
+      valeur syntaxiquement formée mais qui ne résout rien) ;
+    - **absent** : paragraphe sans orateur (didascalie, applaudissements).
+
+    Reste `forme_inattendue`, à **0 mesuré** : c'est le compteur-témoin. Une
+    valeur non nulle signifierait que la forme de l'identifiant a de nouveau
+    bougé sous le code — exactement le défaut que cette fonction corrige.
+    """
+    if not isinstance(valeur, str) or not valeur.strip():
+        return None, "absent"
+    valeur = valeur.strip()
+    if re.fullmatch(r"PA[1-9]\d*", valeur):
+        # Forme déjà préfixée : jamais observée sur la 17e, acceptée par
+        # tolérance au cas où une archive antérieure la publie ainsi.
+        return valeur, "prefixe_deja_present"
+    if re.fullmatch(r"0+", valeur):
+        return None, "orateur_collectif_anonyme"
+    if re.fullmatch(r"[1-9]\d*", valeur):
+        return "PA" + valeur, "identifiant_nu_prefixe"
+    if re.fullmatch(r"-\d+", valeur):
+        return None, "pseudo_acteur_hors_referentiel"
+    return None, "forme_inattendue"
+
+
 def _parse_syceron_intervention_entry(
     intervention: Any,
     legislature: str,
@@ -4122,14 +4254,26 @@ def _parse_syceron_intervention_entry(
 ) -> Optional[tuple[str, dict[str, Any]]]:
     """Convertit une intervention Syceron en entrée d'index acteurRef -> interventions.
 
-    Seules les interventions dont l'orateur est relié sans ambiguïté à un
-    `acteurRef` officiel Assemblée nationale (`PA...`) sont indexées.
+    Seules les interventions dont l'orateur est relié sans ambiguïté à un acteur
+    du référentiel officiel Assemblée nationale sont indexées ; la résolution de
+    l'identifiant publié vers l'`acteurRef` est celle de
+    `_normaliser_orateur_id_syceron` (#510).
+
+    Tant que `SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE` est à `False` (défaut), seule
+    la forme historiquement acceptée (`PA<n>`) passe : le comportement publié est
+    inchangé, octet pour octet. Voir `_build_acteur_interventions_syceron_index`
+    pour ce que l'activation coûte, et pourquoi elle est une décision distincte
+    du correctif.
     """
     if not isinstance(intervention, dict):
         return None
 
-    acteur_ref = intervention.get("orateur_id_source")
-    if not isinstance(acteur_ref, str) or not re.fullmatch(r"PA\d+", acteur_ref):
+    valeur = intervention.get("orateur_id_source")
+    if SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
+        acteur_ref, _motif = _normaliser_orateur_id_syceron(valeur)
+    else:
+        acteur_ref = valeur if isinstance(valeur, str) and re.fullmatch(r"PA\d+", valeur) else None
+    if acteur_ref is None:
         return None
 
     source_id = intervention.get("source_id")
@@ -4170,9 +4314,40 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
     Les XML Syceron sont déjà téléchargés/extraits par `syceron_debates.py` ;
     ici on ne sérialise que l'index final des interventions rattachables sans
     ambiguïté à un `acteurRef` officiel.
+
+    **Un index vide construit sur une archive LISIBLE n'est plus jamais rendu en
+    silence (#510, §2.5).** C'est le trou par lequel le défaut est passé : la
+    garde de #505 ne couvrait que le cas « aucun fichier lisible », et un `{}`
+    produit à partir de 601 comptes rendus lus passait, lui, pour un résultat.
+    Une source primaire qui rend zéro sur une archive présente est une donnée
+    manquante, pas un zéro mesuré ; le repli NosDéputés comblait le silence, donc
+    rien ne le signalait.
+
+    Deux régimes, parce que le vide n'y a pas le même sens :
+
+    - `SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE` **actif** : un index vide est une
+      anomalie. Il est annoncé et **non mis en cache** — figé sous la clé de la
+      semaine (#505), il rendrait le défaut invisible à tous les shards suivants ;
+    - **inactif** (défaut) : le vide est le comportement attendu. L'index reste
+      mis en cache — ne plus le faire ferait re-parcourir l'archive (16,2 s
+      mesurées sur la 17e) à chaque candidat, au débit du budget de 240 s de
+      #498 — mais la ligne qui l'annonce, elle, est émise dans les deux cas.
+
+    Les rejets sont **agrégés**, une ligne par législature, jamais un warning par
+    entrée : ils se comptent en milliers (mesuré sur la 17e, mode actif : 3 932
+    paragraphes sans orateur, 1 153 orateurs collectifs anonymes, 304
+    pseudo-acteurs hors référentiel, 0 forme inattendue). Un warning par entrée
+    serait pire que le silence — même arbitrage que #492, où un warning par
+    mandat aurait fait 214 occurrences là qu'un agrégat par profil dit la même
+    chose.
     """
     with _get_syceron_lock(legislature):
-        index_path = Path(".cache") / "syceron_an" / legislature / "index_par_acteur.json"
+        nom_index = (
+            SYCERON_INDEX_FILENAME_ACTEUR_NU
+            if SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE
+            else SYCERON_INDEX_FILENAME
+        )
+        index_path = Path(".cache") / "syceron_an" / legislature / nom_index
         if index_path.is_file():
             try:
                 with open(index_path, encoding="utf-8") as f:
@@ -4181,6 +4356,7 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 pass
 
         index: dict[str, list[dict[str, Any]]] = {}
+        motifs: Counter[str] = Counter()
         fichiers_lus = 0
         for xml_path in iter_syceron_xml_files(legislature):
             try:
@@ -4189,6 +4365,9 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 continue
             fichiers_lus += 1
             for idx, intervention in enumerate(parsed.get("interventions") or []):
+                if isinstance(intervention, dict):
+                    _, motif = _normaliser_orateur_id_syceron(intervention.get("orateur_id_source"))
+                    motifs[motif] += 1
                 parsed_entry = _parse_syceron_intervention_entry(intervention, legislature, idx)
                 if parsed_entry is None:
                     continue
@@ -4207,6 +4386,48 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 "cache : aucun compte rendu lisible (archive indisponible ?)."
             )
             return index
+
+        detail = ", ".join(f"{motif}={n}" for motif, n in sorted(motifs.items())) or "aucune entrée"
+        print(
+            f"  -> Index des débats Syceron (législature {legislature}) : "
+            f"{fichiers_lus} compte(s) rendu(s) lu(s), {len(index)} acteur(s), "
+            f"{sum(len(v) for v in index.values())} intervention(s) — orateurs : {detail}"
+        )
+        if motifs.get("forme_inattendue"):
+            # Compteur-témoin : à 0 sur la 17e. Non nul, il dit que la forme de
+            # l'identifiant a de nouveau bougé sous le code (#510).
+            print(
+                f"  [!] Débats Syceron (législature {legislature}) : "
+                f"{motifs['forme_inattendue']} identifiant(s) d'orateur d'une forme "
+                "non reconnue — la forme publiée par l'archive a changé (#510)."
+            )
+
+        if not index and SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
+            # #510, §2.5 : une source primaire qui rend zéro sur une archive
+            # lisible est une donnée manquante, pas un zéro mesuré. Ne rien
+            # mettre en cache — un index vide figé sous la clé de la semaine
+            # (#505) rendrait le défaut invisible pour tous les shards suivants,
+            # et c'est très exactement ainsi que #510 a survécu.
+            print(
+                f"  [!] Index des débats Syceron (législature {legislature}) NON mis en "
+                f"cache : {fichiers_lus} compte(s) rendu(s) lu(s) mais AUCUN acteur résolu. "
+                "La source primaire des interventions ne rend rien alors que l'archive est "
+                "présente — le repli NosDéputés va combler le silence (#510)."
+            )
+            return index
+        if not index:
+            # Mode par défaut : l'index vide est le comportement ATTENDU tant que
+            # la résolution des identifiants nus n'est pas activée. Il reste mis
+            # en cache — ne plus le faire ferait re-parcourir les 601 comptes
+            # rendus (16 s mesurées sur la 17e) à chaque candidat, au débit du
+            # budget de 240 s de #498. Mais il n'est plus muet : c'est le silence
+            # qui a coûté #510.
+            print(
+                f"  [!] Index des débats Syceron (législature {legislature}) VIDE : "
+                "la résolution des identifiants d'orateur nus est inactive, aucune "
+                "intervention Syceron ne sera indexée et le repli NosDéputés prendra "
+                "la main. Activation : --activer-interventions-syceron (#510)."
+            )
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
@@ -5229,7 +5450,14 @@ def main():
         default=10,
         help="Nombre max. de pages (50 résultats/page) de recherche d'interventions (défaut: 10)",
     )
+    parser.add_argument(
+        "--activer-interventions-syceron",
+        action="store_true",
+        help=AIDE_ACTIVER_INTERVENTIONS_SYCERON,
+    )
     args = parser.parse_args()
+
+    activer_resolution_acteur_nu_syceron(args.activer_interventions_syceron)
 
     profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
 
