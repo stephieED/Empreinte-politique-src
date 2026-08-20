@@ -698,7 +698,10 @@ def generate_markdown_report(rapport: dict[str, Any], ref: str) -> str:
         "(222 Mio de RSS pour les ouvrir, aucun consommateur) ;",
         "- l'**intégrité référentielle** entre un `votes[].scrutin_id` et "
         "`scrutins.json` : un mapping peut pointer dans le vide sans qu'aucun "
-        "compteur ne bouge ;",
+        "compteur ne bouge. Couverte depuis #485 par un contrôle distinct, "
+        "`src/audit_integrite_referentielle.py`, qui tourne juste après "
+        "celui-ci — une invariance dans un état donné n'est pas une variation "
+        "dans le temps, et sa tolérance est cloisonnée de celle-ci ;",
         "- la **valeur** des entrées d'une liste : seule leur cardinalité est "
         "comparée.",
         "",

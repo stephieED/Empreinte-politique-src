@@ -156,6 +156,28 @@ all **published** fields. The quality gate could not catch it: it measures a *le
 See `docs/technical_decisions.md#controle-de-perte-avant-commit` and
 `#perimetre-controle-perte`.
 
+**Referential integrity before commit (#485)**: `merge-and-pivot` also runs
+`src/audit_integrite_referentielle.py --pivot-dir pivot_data`, right after the
+loss check and before the commit. Every published key must resolve in the shared
+index it points at — `votes[].scrutin_id` and a groupe's
+`cohesion_votes[].scrutin_id` in `scrutins.json`, `amendements[].amendement_id`
+in `amendements/<legislature>.json`. An **orphan reference** aborts the commit,
+naming the file and the key (§2.5): a key that doesn't resolve is a vote
+published with no object, and on a groupe a **false denominator** (§2.7). So do
+a missing index/shard, and a `null` key **without** its `scrutin_non_resolu` /
+`amendement_non_resolu` record — **with** that record it is the normal shape of
+an EP amendment and never blocks. Reported but non-blocking: **index entries
+nobody references**, at 0 today but a legitimate state — additive merge means an
+entry outlives its referent by design. Measured at `01ffa7f`: 0 orphans out of
+1 347 451 references, 3,02 s / 162,0 Mio, a separate process from the loss check
+so the job's peak stays 186,6 Mio. **`tolerer_pertes_profils` does not disarm
+it** and must never be merged with `tolerer_references_orphelines`: a loss can be
+legitimate, an orphan reference cannot. This is an **invariance in one state**,
+not a variation over time — which is why `audit_diff_profils` cannot cover it.
+Guarded by `tests/test_audit_integrite_referentielle.py` and
+`tests/test_ci_integrite_referentielle.py`.
+See `docs/technical_decisions.md#integrite-referentielle-pivot`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

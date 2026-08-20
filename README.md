@@ -44,6 +44,7 @@ CV_CandidatFR/
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
 |  |- audit_gouvernement_dataset.py  # Gouvernement dataset audit: I/O + volumetry/completeness/consistency/freshness indicators (no CLI/Markdown yet, see #319)
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
+|  |- audit_integrite_referentielle.py # Pre-commit guard: every published key resolves in its shared index (#485)
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -259,6 +260,28 @@ atteindrait 120,3 Mo pour la XV<sup>e</sup> à couverture complète des archives
 Les cosignatures ne sont lues par aucun consommateur : `sync-data.mjs` ne les
 copie pas vers le site, et `charger(..., avec_cosignatures=False)` les évite.
 Elles ne sont jamais supprimées pour autant (#324).
+
+### Vérifier que les clés publiées résolvent (#485)
+
+Ces deux index font que `pivot_data/` n'est plus **auto-suffisant** : un vote ou
+un amendement n'a de sens que si sa clé résout. Le contrôle qui le vérifie :
+
+```bash
+python3 src/audit_integrite_referentielle.py                    # tout pivot_data/
+python3 src/audit_integrite_referentielle.py --sans-amendements # scrutins seuls, moins cher
+python3 src/audit_integrite_referentielle.py --out audit/integrite.md --out-json audit/integrite.json
+```
+
+Sortie non nulle si une clé publiée ne résout pas, si l'index ou le shard visé
+est absent, ou si une clé manque sans son enregistrement de repli — utilisable
+comme garde-fou avant commit, et branché comme tel dans `merge-and-pivot`.
+
+À ne pas confondre avec `audit_diff_profils.py`, qui compare **deux états** :
+celui-ci vérifie une **invariance dans un seul**. Leurs tolérances sont
+cloisonnées — `tolerer_pertes_profils` ne désarme pas
+`tolerer_references_orphelines`. Mesuré sur les 209 profils committés : 0
+référence orpheline sur 1 347 451, 3,02 s / 162,0 Mio. Voir
+`docs/technical_decisions.md#integrite-referentielle-pivot`.
 
 ## 3. Generate all candidate profiles (batch)
 

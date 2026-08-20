@@ -73,6 +73,20 @@ on:
           ne le signale.
         type: boolean
         default: false
+      tolerer_references_orphelines:
+        description: >
+          Autoriser le commit malgré une clé publiée qui ne résout pas dans son
+          index partagé (votes[].scrutin_id, cohesion_votes[].scrutin_id,
+          amendements[].amendement_id — #485).
+          false (défaut) = une référence orpheline annule le commit.
+          DISTINCT de tolerer_pertes_profils, et jamais fusionné avec lui : une
+          perte peut être légitime et se déclare, une référence orpheline non —
+          c'est un vote publié sans objet, et pour un groupe un dénominateur
+          faux (AGENTS.md §2.5, §2.7). Ce drapeau n'a pas de cas d'emploi
+          normal : il n'existe que pour qu'une panne de l'outil ne bloque pas
+          indéfiniment toute publication.
+        type: boolean
+        default: false
       extract_interventions:
         description: >
           Extraire les interventions dans extract-an (débats officiels Syceron en
@@ -1861,6 +1875,81 @@ jobs:
           path: |
             diff-profils.md
             diff-profils.json
+          if-no-files-found: ignore
+
+      # ── Intégrité référentielle avant commit (#485) ────────────────────────
+      # CONTRÔLE DE NATURE DIFFÉRENTE du précédent, et c'est pourquoi il est un
+      # step à part et non une option de celui-ci. `audit_diff_profils` compare
+      # un AVANT et un APRÈS : il verrait une chute du nombre d'entrées d'un
+      # index, mais pas une rupture de correspondance entre deux couches du MÊME
+      # état. Un run où les profils et l'index seraient tous deux régénérés de
+      # façon cohérente-mais-fausse — convention de clé changée des deux côtés —
+      # lui paraîtrait irréprochable. Invariance dans un état donné, pas
+      # variation dans le temps.
+      #
+      # POURQUOI ICI. Depuis #432 (votes) et #431 (amendements), un profil ne
+      # garde qu'une CLÉ et le détail vit dans un index partagé : un vote n'a
+      # plus de sens que si sa clé résout. Trois façons de casser ça sans qu'un
+      # compteur bouge — clé qui ne résout pas, convention changée, index publié
+      # partiellement (échec de shard). Le troisième n'est pas théorique : c'est
+      # ce que #450 faisait aux profils, et #465 a montré qu'une sous-collecte
+      # en échec s'écrit comme une collecte vide.
+      #
+      # ORDRE DES STEPS : les deux index sont écrits par les passes
+      # `generate_all_profiles.py --pivot-only` ci-dessus (scrutins avant la
+      # boucle, amendements après), et `cohesion_votes` par la génération des
+      # profils de groupe. Les trois couches référençantes et les deux index
+      # sont donc sur le disque quand ce step tourne. Le vérifier plus tôt
+      # contrôlerait un état que le run n'a pas fini d'écrire.
+      #
+      # DRAPEAU DISTINCT, DÉLIBÉRÉMENT. `tolerer_pertes_profils` ne désarme PAS
+      # ce contrôle et ne doit jamais le faire : #470 a documenté le piège —
+      # rendre bloquant un contrôle grossier force l'opérateur à relancer avec
+      # la tolérance, ce qui désarme du même coup les contrôles précis. Une
+      # perte peut être légitime et se déclare ; une référence orpheline n'a
+      # aucune explication légitime (AGENTS.md §2.5). `tolerer_references_orphelines`
+      # n'existe que pour qu'une panne de cet outil ne bloque pas indéfiniment
+      # toute publication, jamais comme mode d'exploitation.
+      #
+      # COÛT : 3,02 s / 162,0 Mio mesurés sur les 209 profils, ~7,7 s projetées
+      # à 752 (la RSS, elle, ne bouge pas : elle est fixée par les index, déjà
+      # à pleine échelle). Processus séparé du contrôle de perte : le pic du job
+      # reste celui du plus coûteux des deux, soit 186,6 Mio, sous les 236
+      # actés par #460.
+      - name: Intégrité référentielle de pivot_data (avant commit)
+        env:
+          TOLERER: ${{ inputs.tolerer_references_orphelines }}
+        run: |
+          TOLERANCE=()
+          if [[ "$TOLERER" == "true" ]]; then
+            echo "::warning::tolerer_references_orphelines=true — des votes ou des amendements publiés sans objet ne bloqueront pas le commit. Ce drapeau n'a pas de cas d'emploi normal (#485)."
+            TOLERANCE=(--tolerer-orphelins)
+          fi
+          python3 src/audit_integrite_referentielle.py \
+            --pivot-dir pivot_data \
+            --out integrite-referentielle.md \
+            --out-json integrite-referentielle.json \
+            "${TOLERANCE[@]}" || CODE=$?
+          # Joint au résumé DANS TOUS LES CAS, même raison qu'au step précédent :
+          # c'est en échec qu'on en a le plus besoin.
+          {
+            echo "### Intégrité référentielle de pivot_data (#485)"
+            echo ""
+            cat integrite-referentielle.md
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${CODE:-0}" -ne 0 ]]; then
+            echo "::error::REFERENCES_ORPHELINES — au moins une clé publiée (votes[].scrutin_id, cohesion_votes[].scrutin_id, amendements[].amendement_id) ne résout pas dans son index partagé, ou l'index/le shard visé est absent. Ce serait un vote ou un amendement publié SANS OBJET, et pour un groupe un dénominateur faux (AGENTS.md §2.5, §2.7). Commit annulé. Le fichier et la clé fautifs sont nommés dans le résumé de job."
+            exit 1
+          fi
+
+      - name: Rapport d'intégrité référentielle — artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: integrite-referentielle
+          path: |
+            integrite-referentielle.md
+            integrite-referentielle.json
           if-no-files-found: ignore
 
       #
