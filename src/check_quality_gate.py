@@ -51,6 +51,12 @@ try:
     _SCHEMA_GOUVERNEMENT_AVAILABLE = True
 except ImportError:
     _SCHEMA_GOUVERNEMENT_AVAILABLE = False
+# Lecture des chambres d'un profil (#494) : porte unique, jamais `chambre` ni
+# `chambres` en direct. Deux filtres de population en dépendent — la §3c et la
+# couverture Syceron —, et le corpus publié ne porte pas encore `chambres`.
+# stdlib pure, aucune I/O, comme `couverture_dossiers` juste dessous.
+from schema_pivot import libelle_chambres, lire_chambres  # noqa: E402
+
 # Périmètre réellement couvert par les archives de dossiers ingérées (#399) :
 # stdlib pure, aucune I/O — importé pour ne pas signaler comme un défaut de
 # données ce qui n'est qu'une absence de source.
@@ -347,14 +353,17 @@ def _report_low_interventions(
                 continue
             slug = _slug_from_stem(path.stem)
             n_interv = len(data.get("interventions") or [])
-            chambre = data.get("chambre") or "?"
+            # #494 — `chambres` (liste) plutôt que le scalaire : un profil
+            # bicaméral s'affichait sous une seule chambre, celle du site qui
+            # avait répondu. La colonne montre désormais « AN+PE ».
+            chambres = libelle_chambres(lire_chambres(data))
             nom = data.get("nom") or slug
             has_warns = bool((data.get("meta") or {}).get("warnings"))
             rows.append(
                 {
                     "slug": slug,
                     "nom": nom,
-                    "chambre": chambre,
+                    "chambres": chambres,
                     "nb_interventions": n_interv,
                     "has_warnings": has_warns,
                 }
@@ -372,13 +381,13 @@ def _report_low_interventions(
         "│",
     ]
     if low:
-        header = f"│  {'Candidat':<30} {'Chambre':<8} {'Interventions':>13}  Warnings"
+        header = f"│  {'Candidat':<30} {'Chambres':<8} {'Interventions':>13}  Warnings"
         lines.append(header)
         lines.append("│  " + "─" * 60)
         for r in low:
             warn_flag = " ⚠" if r["has_warnings"] else ""
             lines.append(
-                f"│  {r['nom']:<30} {r['chambre']:<8} {r['nb_interventions']:>13}{warn_flag}"
+                f"│  {r['nom']:<30} {r['chambres']:<8} {r['nb_interventions']:>13}{warn_flag}"
             )
     else:
         lines.append(f"│  {icon} Tous les candidats ont ≥ {threshold} interventions.")
@@ -398,13 +407,13 @@ def _report_low_interventions(
     ]
     if low:
         md_lines += [
-            "| Candidat | Chambre | Interventions | Warnings API |",
+            "| Candidat | Chambres | Interventions | Warnings API |",
             "|---|---|---|---|",
         ]
         for r in low:
             warn_cell = "⚠️" if r["has_warnings"] else "—"
             md_lines.append(
-                f"| {r['nom']} | {r['chambre']} | {r['nb_interventions']} | {warn_cell} |"
+                f"| {r['nom']} | {r['chambres']} | {r['nb_interventions']} | {warn_cell} |"
             )
         md_lines.append("")
     else:
@@ -441,8 +450,13 @@ def _report_low_syceron_coverage(
             data = _load_json(path)
             if data is None:
                 continue
-            chambre = data.get("chambre") or ""
-            if chambre not in ("AN", "deputes"):
+            # #494 — `"AN" in lire_chambres(...)` remplace
+            # `chambre in ("AN", "deputes")`. Le scalaire n'en retenait qu'une :
+            # un profil bicaméral publié `Senat` sortait de la population alors
+            # qu'il siège aussi à l'Assemblée, et ses débats Syceron cessaient
+            # d'être surveillés. La tolérance historique pour la valeur de
+            # collecte `"deputes"` est conservée — `lire_chambres` la mappe.
+            if "AN" not in lire_chambres(data):
                 continue
             # Vérifie si le candidat a des mandats sur une législature Syceron.
             mandats = data.get("mandats") or []
@@ -628,7 +642,6 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
             data = _load_json(path)
             if data is None:
                 continue
-            chambre = data.get("chambre") or ""
             amendements = data.get("amendements") or []
             # Deux populations distinctes, délibérément (#447) :
             #
@@ -645,7 +658,16 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
             # invisibles au signal même qui doit les surveiller, sur le profil
             # que #447 cite. Un profil peut cesser d'être compté sans cesser
             # d'être publié : la §3c doit suivre les amendements, pas la fiche.
-            population_an = bool(chambre in ("AN", "deputes") and data.get("identite"))
+            #
+            # #494 — le test porte désormais sur `chambres` (liste) et non plus
+            # sur le scalaire. Ce n'est pas une reformulation : le scalaire ne
+            # retenait qu'**une** chambre, donc un profil bicaméral en sortait
+            # dès que l'autre chambre l'emportait — c'est le mécanisme même de
+            # l'angle mort ci-dessus. `"AN" in chambres` garde dans la population
+            # AN quelqu'un qui a aussi siégé au Sénat : l'assiette ne peut plus
+            # que croître, jamais rétrécir. La tolérance pour la valeur de
+            # collecte `"deputes"` est conservée par `lire_chambres`.
+            population_an = bool("AN" in lire_chambres(data) and data.get("identite"))
             if not population_an and not amendements:
                 continue
             slug = _slug_from_stem(path.stem)

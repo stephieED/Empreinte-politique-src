@@ -51,7 +51,12 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from schema_pivot import KNOWN_CHAMBRES, KNOWN_PROVENANCES
+from schema_pivot import (
+    KNOWN_CHAMBRES,
+    KNOWN_PROVENANCES,
+    libelle_chambres,
+    lire_chambres,
+)
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     charger as charger_amendements,
@@ -130,22 +135,37 @@ def _taille_liste(profil: dict[str, Any], champ: str) -> int:
 
 
 def compute_repartition_chambre(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """Nombre total de profils et répartition par `chambre`.
+    """Nombre total de profils et répartition par chambre (`chambres`, #494).
 
-    Les valeurs de `chambre` hors `KNOWN_CHAMBRES` (dont `null`) sont
-    comptées sous la clé `"null"`, pour garantir un rapport toujours
-    sérialisable en JSON quelle que soit la donnée manquante.
+    **Ce n'est plus une partition.** Depuis #493 un profil porte la *liste* des
+    chambres où il a siégé, et il est donc compté dans **chacune** — un
+    bicaméral AN + PE compte pour un dans `AN` et pour un dans `PE`. La somme de
+    `par_chambre` peut donc dépasser `total_profils`, et `total_attributions` la
+    donne explicitement : publier un dénominateur sans dire ce qu'il dénombre est
+    précisément ce qu'AGENTS.md §2.7 interdit. `total_profils` reste le nombre de
+    profils, inchangé.
+
+    Un profil dont la chambre n'est pas déterminée (`chambres` vide, ou scalaire
+    absent/inconnu avant régénération) est compté sous la clé `"null"` — donnée
+    manquante, jamais chambre par défaut (§2.5).
     """
     repartition: dict[str, int] = {chambre: 0 for chambre in sorted(KNOWN_CHAMBRES)}
     repartition["null"] = 0
+    total_attributions = 0
 
     for profil in profils:
-        chambre = profil.get("chambre")
-        cle = chambre if chambre in KNOWN_CHAMBRES else "null"
-        repartition[cle] += 1
+        chambres = lire_chambres(profil)
+        if not chambres:
+            repartition["null"] += 1
+            total_attributions += 1
+            continue
+        for chambre in chambres:
+            repartition[chambre] += 1
+            total_attributions += 1
 
     return {
         "total_profils": len(profils),
+        "total_attributions": total_attributions,
         "par_chambre": repartition,
     }
 
@@ -494,24 +514,34 @@ def compute_validite_dates(profils: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def compute_coherence_chambre_sources(profils: list[dict[str, Any]]) -> dict[str, Any]:
-    """Vérifie la cohérence entre `chambre` et les types de `sources[]` déclarés.
+    """Vérifie la cohérence entre `chambres` et les types de `sources[]` déclarés.
 
     Chaque chambre attend au moins une source d'un type de référence, voir
     `MAPPING_CHAMBRE_SOURCES` : `"AN"` -> `nosdeputes`/`assemblee_nationale`,
     `"Senat"` -> `nossenateurs`, `"PE"` -> `parltrack`/`europarl`. `"mairie"`
-    et `chambre` absente/inconnue n'ont pas de mapping de référence à ce
+    et une chambre absente/inconnue n'ont pas de mapping de référence à ce
     stade et ne sont jamais signalées en incohérence par cette fonction.
 
+    #494 — le contrôle porte sur **chaque** chambre de `chambres`, ce que le
+    docstring d'origine promettait déjà (« chaque chambre attend ») sans que le
+    scalaire puisse le tenir : il n'en portait qu'une, donc un profil AN + PE
+    n'était contrôlé que sur celle des deux qui l'avait emporté. C'est un
+    contrôle **élargi**, pas déplacé : un profil déjà signalé le reste.
+
     Returns:
-        {"profils_incoherents": [{"id":..., "chambre":...,
+        {"profils_incoherents": [{"id":..., "chambres": [...],
+                                   "chambres_sans_source": [...],
                                    "types_sources": [...]}, ...]}
+        `chambres_sans_source` nomme celles des chambres qu'aucune source
+        attendue n'étaye — sans elle, un profil bicaméral signalé ne dirait pas
+        laquelle de ses deux chambres est en cause.
     """
     profils_incoherents: list[dict[str, Any]] = []
 
     for profil in profils:
-        chambre = profil.get("chambre")
-        types_attendus = MAPPING_CHAMBRE_SOURCES.get(chambre)
-        if types_attendus is None:
+        chambres = lire_chambres(profil)
+        controlees = [c for c in chambres if c in MAPPING_CHAMBRE_SOURCES]
+        if not controlees:
             continue
 
         sources = profil.get("sources")
@@ -520,14 +550,20 @@ def compute_coherence_chambre_sources(profils: list[dict[str, Any]]) -> dict[str
             if isinstance(sources, list) else []
         )
 
-        if not types_attendus.intersection(types_sources):
+        sans_source = [
+            c for c in controlees
+            if not MAPPING_CHAMBRE_SOURCES[c].intersection(types_sources)
+        ]
+        if sans_source:
             profils_incoherents.append({
                 "id": profil.get("id"),
-                "chambre": chambre,
+                "chambres": chambres,
+                "chambres_sans_source": sans_source,
                 "types_sources": types_sources,
             })
 
     return {"profils_incoherents": profils_incoherents}
+
 def _est_renseigne(valeur: Any) -> bool:
     """True si `valeur` est une donnée renseignée.
 
@@ -615,7 +651,7 @@ def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str,
     Un champ absent ou `null` compte pour 0 élément.
 
     Returns:
-        `{"lignes": [{"id":..., "nom":..., "chambre":..., "votes": int,
+        `{"lignes": [{"id":..., "nom":..., "chambres": [...], "votes": int,
         "textes_portes": int, "amendements": int, "interventions": int}, ...],
         "non_candidats": {"total_profils": int, "par_groupe": [{"groupe":...,
         "nb_profils": int, <champ>: {"min","max","mediane","moyenne"}}, ...],
@@ -629,7 +665,7 @@ def compute_tableau_croise_candidats(profils: list[dict[str, Any]]) -> dict[str,
         {
             "id": profil.get("id"),
             "nom": profil.get("nom"),
-            "chambre": profil.get("chambre"),
+            "chambres": lire_chambres(profil),   # #494 — liste, plus le scalaire
             **{champ: _taille_liste(profil, champ) for champ in CHAMPS_LISTES_VOLUMETRIE},
         }
         for profil in candidats
@@ -828,7 +864,7 @@ def compute_plage_dates_candidats(
     plages des membres d'un même groupe (plus petit `min`, plus grand `max`).
 
     Returns:
-        `{"lignes": [{"id":..., "nom":..., "chambre":..., <champ>: {"min","max"}},
+        `{"lignes": [{"id":..., "nom":..., "chambres": [...], <champ>: {"min","max"}},
         ...], "non_candidats": {"total_profils": int, "par_groupe":
         [{"groupe":..., "nb_profils": int, <champ>: {"min","max"}}, ...],
         "ensemble": {<champ>: {"min","max"}}}, "dates_ignorees": {champ: int}}`.
@@ -859,7 +895,7 @@ def compute_plage_dates_candidats(
             lignes.append({
                 "id": profil.get("id"),
                 "nom": profil.get("nom"),
-                "chambre": profil.get("chambre"),
+                "chambres": lire_chambres(profil),   # #494 — liste, plus le scalaire
                 **plages,
             })
         else:
@@ -1034,10 +1070,17 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
     par_provenance = volumetrie["repartition_provenance"]["par_provenance"]
     lignes_provenance = [[provenance, effectif] for provenance, effectif in par_provenance.items()]
 
+    repartition = volumetrie["repartition_chambre"]
+    # #494 — la répartition n'est plus une partition : un profil bicaméral est
+    # compté dans chacune de ses chambres. Le total des attributions est donc
+    # affiché à côté du nombre de profils, jamais à sa place (§2.7).
     return (
         "## Volumétrie\n\n"
-        f"Total profils : {volumetrie['repartition_chambre']['total_profils']}\n\n"
+        f"Total profils : {repartition['total_profils']}\n\n"
         "### Répartition par chambre\n\n"
+        "Un profil est compté dans **chacune** des chambres où il a siégé "
+        f"(`chambres`, #493) : {repartition['total_attributions']} attributions "
+        f"pour {repartition['total_profils']} profils.\n\n"
         + _md_table(["Chambre", "Profils"], lignes_chambre, "Aucun profil.")
         + "\n### Répartition par provenance (`meta.provenance`)\n\n"
         + _md_table(["Provenance", "Profils"], lignes_provenance, "Aucun profil.")
@@ -1088,7 +1131,12 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         for d in coherence["validite_dates"]["dates_invalides"]
     ]
     lignes_chambre_sources = [
-        [p["id"], p["chambre"], ", ".join(t or "null" for t in p["types_sources"]) or "—"]
+        [
+            p["id"],
+            libelle_chambres(p["chambres"]),
+            libelle_chambres(p["chambres_sans_source"], vide="—"),
+            ", ".join(t or "null" for t in p["types_sources"]) or "—",
+        ]
         for p in coherence["coherence_chambre_sources"]["profils_incoherents"]
     ]
 
@@ -1103,9 +1151,9 @@ def _md_section_coherence(coherence: dict[str, Any]) -> str:
         )
         + "\n### Dates de traçabilité invalides ou futures\n\n"
         + _md_table(["id", "Champ", "Valeur", "Erreur"], lignes_dates, "Aucune date invalide détectée.")
-        + "\n### Cohérence `chambre` / types de `sources[]`\n\n"
+        + "\n### Cohérence `chambres` / types de `sources[]`\n\n"
         + _md_table(
-            ["id", "Chambre", "Types de sources déclarés"],
+            ["id", "Chambres", "Sans source attendue", "Types de sources déclarés"],
             lignes_chambre_sources, "Aucune incohérence détectée.",
         )
     )
@@ -1138,7 +1186,7 @@ def _md_section_fraicheur(fraicheur: dict[str, Any], staleness_days: int) -> str
 def _md_section_tableau_croise_candidats(tableau: dict[str, Any]) -> str:
     lignes = [
         [
-            ligne["id"], ligne["nom"], ligne["chambre"],
+            ligne["id"], ligne["nom"], libelle_chambres(ligne["chambres"]),
             ligne["votes"], ligne["textes_portes"], ligne["amendements"], ligne["interventions"],
         ]
         for ligne in tableau["lignes"]
@@ -1165,7 +1213,7 @@ def _md_section_tableau_croise_candidats(tableau: dict[str, Any]) -> str:
         "## Tableau croisé des volumes par candidat\n\n"
         "Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).\n\n"
         + _md_table(
-            ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
+            ["id", "Nom", "Chambres", "Votes", "Textes portés", "Amendements", "Interventions"],
             lignes, "Aucun profil.",
         )
         + "\n### Membres de groupe non candidats (agrégé par groupe)\n\n"
@@ -1188,7 +1236,7 @@ def _md_format_plage(plage: dict[str, str | None]) -> str:
 def _md_section_plage_dates_candidats(plage_dates: dict[str, Any]) -> str:
     lignes = [
         [
-            ligne["id"], ligne["nom"], ligne["chambre"],
+            ligne["id"], ligne["nom"], libelle_chambres(ligne["chambres"]),
             _md_format_plage(ligne["votes"]), _md_format_plage(ligne["textes_portes"]),
             _md_format_plage(ligne["amendements"]), _md_format_plage(ligne["interventions"]),
         ]
@@ -1221,7 +1269,7 @@ def _md_section_plage_dates_candidats(plage_dates: dict[str, Any]) -> str:
         "## Plages temporelles par candidat\n\n"
         "Candidats déclarés uniquement (`meta.provenance` = `candidat_declare`).\n\n"
         + _md_table(
-            ["id", "Nom", "Chambre", "Votes", "Textes portés", "Amendements", "Interventions"],
+            ["id", "Nom", "Chambres", "Votes", "Textes portés", "Amendements", "Interventions"],
             lignes, "Aucun profil.",
         )
         + "\n### Membres de groupe non candidats (agrégé par groupe)\n\n"
