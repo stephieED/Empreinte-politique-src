@@ -185,12 +185,18 @@ jobs:
         env:
           # Nombre de shards au-delà duquel le temps mur d'extract-an devient un
           # problème silencieux : les shards s'exécutent en série (max-parallel:
-          # 1) à 5 min chacun, donc 16 shards = 80 min de temps mur pour ce seul
-          # job. Modifier ici suffit — aucune autre occurrence de cette valeur.
+          # 1), donc 16 shards = 16 fois le timeout d'un shard pour ce seul job.
+          # Modifier ici suffit — aucune autre occurrence de cette valeur.
           # Répond au « recalculer si raw_data/candidats.json change
           # significativement » de l'en-tête de ce fichier, jusqu'ici non
           # outillé (#412 §2.7).
           AN_SHARDS_WARN: "16"
+          # Doit refléter le `timeout-minutes` d'extract-an, qui dépend du mode
+          # depuis #498 : annoncer 5 min de temps mur par shard pendant qu'un run
+          # avec interventions en consomme 9 rendrait cet avertissement faux au
+          # moment précis où il sert. Cohérence vérifiée par
+          # tests/test_ci_budget_interventions.py.
+          AN_TIMEOUT_MINUTES: ${{ inputs.collect_interventions && 9 || 5 }}
         run: |
           set -euo pipefail
           SLUGS_JSON=$(python3 - <<'EOF'
@@ -219,13 +225,13 @@ jobs:
               echo "roster) et la fusion finale s'exécutent normalement."
             } >> "$GITHUB_STEP_SUMMARY"
           elif [[ "$COUNT" -gt "$AN_SHARDS_WARN" ]]; then
-            echo "::warning::${COUNT} shards extract-an (> ${AN_SHARDS_WARN}) — shards exécutés en série à 5 min chacun, soit ~$((COUNT * 5)) min de temps mur. Revoir max-parallel/timeout ou le volume de raw_data/candidats.json."
+            echo "::warning::${COUNT} shards extract-an (> ${AN_SHARDS_WARN}) — shards exécutés en série à ${AN_TIMEOUT_MINUTES} min chacun, soit ~$((COUNT * AN_TIMEOUT_MINUTES)) min de temps mur. Revoir max-parallel/timeout ou le volume de raw_data/candidats.json."
             {
               echo "### ⚠️ Budget de temps mur d'extract-an"
               echo ""
               echo "${COUNT} shards (seuil d'alerte : ${AN_SHARDS_WARN}), exécutés en série"
-              echo "(\`max-parallel: 1\`) à 5 min de timeout chacun → jusqu'à ~$((COUNT * 5)) min"
-              echo "de temps mur pour ce seul job."
+              echo "(\`max-parallel: 1\`) à ${AN_TIMEOUT_MINUTES} min de timeout chacun → jusqu'à"
+              echo "~$((COUNT * AN_TIMEOUT_MINUTES)) min de temps mur pour ce seul job."
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -337,15 +343,43 @@ jobs:
     needs: [extract-amendements-an, prepare-an-matrix]
     name: extract-an (${{ matrix.slug }})
     runs-on: ubuntu-latest
-    # 5 min (pas 20) : tous les shards observés en pratique se terminent en
-    # 1m18s-2m10s, succès comme échec par shutdown signal (voir
-    # docs/technical_decisions.md#resilience-generate-data-shutdown-signal
-    # Décision 8) — sauf un cas anormal resté bloqué 20+ min sans signature
-    # reconnue (run du 16/08, jerome-guedj) qui a immobilisé tout le matrix
-    # séquentiel (max-parallel: 1) derrière lui. 5 min laisse une marge large
-    # (>2x le pire cas normal) tout en bornant les dégâts d'un futur blocage
-    # du même type à 5 min au lieu de 20+.
-    timeout-minutes: 5
+    # TIMEOUT CONDITIONNEL AU MODE (#498). Une seule valeur ne peut pas couvrir
+    # les deux : ce job fait deux choses différentes selon `collect_interventions`.
+    #
+    # collect_interventions=false (défaut) → 5 min. Mesuré sur les 16 shards des
+    #   runs 32233766814 et 32288588518, TOUS dans ce mode : job total 117-207 s,
+    #   dont **8-18 s d'extraction**. Le reste est le préambule du job (checkout,
+    #   setup-python, pip, restauration des caches, artifact d'amendements) :
+    #   107-193 s. C'est lui que ce timeout borne en réalité, pas la collecte.
+    #
+    # collect_interventions=true → 9 min. Mesuré sur les 13 shards des runs
+    #   32302557156 (19/08 21:11) et 32379928098 (20/08 14:24), les seuls connus
+    #   dans ce mode : les 4 extractions qui sont allées au bout ont pris
+    #   59-160 s, les 9 autres ont été tuées à 173-286 s d'extraction — non pas
+    #   parce qu'elles étaient lentes, mais parce que le préambule avait déjà
+    #   consommé jusqu'à 149 s des 5 min. Le mode ajoute trois charges que le
+    #   mode par défaut n'a pas : recherche NosDéputés (90 s mesurées sur
+    #   jean-luc-melenchon), archives de débats Syceron (3 législatures, 22-55 s
+    #   chacune) et archives de questions QE/QG/QOSD (jusqu'à 12 fichiers).
+    #   9 min = 240 s de préambule provisionné (mesure max : 193 s) + les 240 s
+    #   de `--budget-interventions-secondes` du step d'extraction + ~60 s de
+    #   marge.
+    #
+    # Le risque d'origine reste borné. Ce qui justifiait 5 min était un cas
+    # anormal resté bloqué 20+ min sans signature reconnue (run du 16/08,
+    # jerome-guedj) qui a immobilisé tout le matrix séquentiel (max-parallel: 1)
+    # derrière lui. Trois raisons pour lesquelles 9 min ne le réintroduit pas :
+    # (1) la valeur ne s'applique QUE si `collect_interventions` est coché, ce
+    # qui n'est pas le défaut ; (2) dans ce mode, la collecte se borne
+    # elle-même — `--budget-interventions-secondes` rend la main au bout de
+    # 240 s, écrit le profil partiel et consigne la troncature, si bien que le
+    # timeout de job n'est plus le mécanisme d'arrêt normal mais le dernier
+    # recours contre un vrai gel ; (3) un tel gel coûte 9 min au lieu de 20+.
+    #
+    # Toute modification de ces valeurs doit rester cohérente avec le budget du
+    # step d'extraction et avec le message de temps mur de prepare-an-matrix —
+    # les trois sont vérifiés ensemble par tests/test_ci_budget_interventions.py.
+    timeout-minutes: ${{ inputs.collect_interventions && 9 || 5 }}
     strategy:
       # fail-fast: false — un shard en échec/gelé (shutdown signal) ne doit
       # jamais annuler les shards restants : sinon le matrix n'apporte aucune
@@ -515,7 +549,19 @@ jobs:
           [[ "${{ inputs.collect_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           MAX_PAGES_FLAG=()
           [[ "${{ inputs.collect_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages ${{ inputs.nosdeputes_max_pages }})
-          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}"
+          # #498 : la collecte d'interventions se borne elle-même. 240 s = 1,5x la
+          # plus longue extraction qui soit allée au bout dans CE mode (160 s,
+          # edouard-philippe, run 32302557156). Au-delà, la collecte s'arrête
+          # entre deux unités, le profil partiel est écrit — donc publié par le
+          # step suivant — et la troncature part en ::warning:: et dans
+          # meta.warnings[] du profil. Sans ce budget, le shard était tué par
+          # `timeout-minutes` avant son écriture : les 9 shards tués des runs
+          # 32302557156 et 32379928098 ont tous publié « 0 profil(s) ».
+          # Doit rester cohérent avec le `timeout-minutes` de ce job (vérifié par
+          # tests/test_ci_budget_interventions.py).
+          BUDGET_FLAG=()
+          [[ "${{ inputs.collect_interventions }}" == "true" ]] && BUDGET_FLAG=(--budget-interventions-secondes 240)
+          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" "${BUDGET_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,

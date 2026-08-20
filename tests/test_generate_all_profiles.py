@@ -57,6 +57,10 @@ def _make_args(**overrides) -> argparse.Namespace:
         max_pages=1,
         skip_interventions=True,
         skip_dossiers_legislatifs=True,
+        # #498 : 0 = aucun budget de collecte d'interventions, le comportement
+        # historique. Ces tests portent tous sur --skip-interventions, où le
+        # budget n'est de toute façon jamais instancié.
+        budget_interventions_secondes=0,
         skip_ue=True,
         pivot=True,
         no_merge=False,
