@@ -561,7 +561,7 @@ première version : `tests/test_generate_all_profiles.py` est passé de 0,50 s �
 `tests/conftest.py` : une fixture `autouse` qui remet `fetch_full_roster` à une
 doublure qui **échoue bruyamment**, neutralise `slugs_connus_du_senat` sur un
 index vide, et vide le cache mémoire entre deux tests. La suite complète est à
-1 726 tests, 14,7 s.
+1 768 tests, 13,2 s (dont les 13 ajoutés ici).
 
 
 <a id="deduplication-entrees-membres"></a>
