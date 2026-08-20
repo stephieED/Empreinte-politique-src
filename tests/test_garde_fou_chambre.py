@@ -1,0 +1,389 @@
+"""Garde-fou de la **condition de retrait** du scalaire `chambre` (#494).
+
+Sous-issue **E** de l'épic **#486**, après #493 (D, PR #504) qui a créé
+`chambres` — la liste dérivée — et l'a fait coexister avec `chambre`, le
+scalaire, « le temps de reprendre les consommateurs un par un ».
+
+#493 a écrit la condition de retrait dans
+`docs/technical_decisions.md#chambres-profil-derivees` :
+
+> 1. **les consommateurs ont migré** — et le garde-fou de #494 le vérifie ;
+> 2. **le champ n'a plus rien de propre à dire** — le warning
+>    `chambres du profil non corroborée` est absent de tout le corpus.
+
+**Ce fichier est la condition 1.** Il ne peut pas être la condition 2 : celle-ci
+porte sur le corpus vivant, absent du disque en CI (§3, #473), et se mesure par
+`audit_pivot_dataset.compute_agregation_warnings` sur un run réel.
+
+Pourquoi un garde-fou statique plutôt qu'une note dans un journal : le dépôt
+porte déjà des transitoires devenus permanents — les replis de lecture de #431
+et #432 sont encore là, des mois après. Une coexistence sans critère mécanique
+devient définitive par défaut, jamais par décision.
+
+## Comment il s'y prend
+
+Il énumère **tout** endroit où la clé `"chambre"` est lue ou écrite, dans le
+pipeline Python (`src/*.py`, par l'AST) comme dans l'interface
+(`web/UI_finale`, par le motif d'accès à la propriété), et exige que chacun soit
+**déclaré** ci-dessous avec sa catégorie. C'est la déclaration qui fait le
+travail : un emplacement neuf casse le test, et son auteur doit dire *de quelle
+`chambre` il parle* — celle d'un profil, d'un mandat, d'un groupe, ou la chambre
+de collecte. Le recensement de #486 confondait les quatre, et c'est ce qui l'a
+rendu faux sur trois points (voir `docs/technical_decisions.md`).
+
+Le retrait devient alors trivialement décidable : quand plus aucun emplacement
+n'est de catégorie `CONSOMMATEUR_PROFIL`, la condition 1 est remplie.
+`test_condition_1_de_retrait` en donne l'état à chaque run, sans jugement.
+"""
+
+from __future__ import annotations
+
+import ast
+import re
+from pathlib import Path
+
+import pytest
+
+RACINE = Path(__file__).resolve().parents[1]
+SRC = RACINE / "src"
+UI = RACINE / "web" / "UI_finale"
+
+# --- Catégories -------------------------------------------------------------
+#
+# Quatre `chambre` différentes vivent dans ce dépôt sous le même nom. Les
+# distinguer n'est pas cosmétique : migrer la mauvaise casserait quelque chose
+# de sans rapport, et le recensement de l'épic mélangeait déjà les quatre.
+
+#: `chambre` du **profil pivot** — le champ que #493 a rendu dérivé et que #494
+#: migre. Tout emplacement de cette catégorie retarde le retrait du scalaire.
+CONSOMMATEUR_PROFIL = "consommateur du champ profil"
+
+#: La fabrique elle-même (`deriver_chambres` / `appliquer_chambres`), son
+#: validateur et le gabarit du schéma. Ne disparaît qu'avec le champ.
+FABRIQUE = "fabrique / validation du champ profil"
+
+#: Le **repli** passé à la fabrique : la chambre de collecte, reprise telle
+#: quelle pour ne pas supprimer une donnée observée (#493). Disparaît avec le
+#: scalaire, puisque c'est lui.
+REPLI = "repli de la fabrique"
+
+#: Le **repli de lecture** de `schema_pivot.lire_chambres()`, porte unique des
+#: consommateurs (#494) : la seule branche qui lit encore le scalaire pour le
+#: compte d'un tiers. Elle existe parce qu'aucun des 209 profils publiés ne
+#: porte encore `chambres` (mesuré sur `07e9147`, 0/209) ; c'est la ligne à
+#: supprimer le jour du retrait, et il n'y en a qu'une.
+REPLI_DE_LECTURE = "repli de lecture de lire_chambres()"
+
+#: `chambre` du profil **brut** (`raw_data/profiles`), qui vaut `"deputes"` ou
+#: `"senateurs"` : *quel jeu de données a répondu*, pas où siège la personne.
+#: Sans rapport avec le champ pivot — ne migre pas.
+COLLECTE = "chambre de collecte (profil brut)"
+
+#: `chambre` d'un **groupe parlementaire** (`schema_groupe`), ou d'un texte.
+#: Sans rapport avec le champ pivot — ne migre pas.
+GROUPE = "chambre d'un groupe / d'un texte"
+
+#: `chambre` portée par un **mandat électif** depuis #492. C'est la source dont
+#: `chambres` dérive — elle ne migre pas, elle est ce vers quoi on migre.
+MANDAT = "chambre d'un mandat électif (#492)"
+
+
+# --- Emplacements déclarés, côté pipeline -----------------------------------
+#
+# Clé : (module, fonction englobante). Une fonction peut porter plusieurs
+# emplacements ; ils partagent alors une catégorie, sauf mention `+`.
+
+SITES_PYTHON: dict[tuple[str, str], str] = {
+    # -- La fabrique et sa validation ---------------------------------------
+    ("schema_pivot.py", "deriver_chambres"): MANDAT,
+    ("schema_pivot.py", "appliquer_chambres"): FABRIQUE,
+    ("schema_pivot.py", "validate_profil"): FABRIQUE,
+    ("schema_pivot.py", "make_empty_profil"): FABRIQUE,
+    ("schema_pivot.py", "lire_chambres"): REPLI_DE_LECTURE,
+    # -- Les producteurs du repli, à la construction du pivot ---------------
+    ("normalize_nosdeputes.py", "_normalize_mandat"): MANDAT,
+    ("normalize_nosdeputes.py", "normalize_nosdeputes"): REPLI,
+    ("normalize_europarl.py", "normalize_europarl"): REPLI,
+    ("mep_profile.py", "normalize_parltrack"): REPLI,
+    # -- La fusion ----------------------------------------------------------
+    # `merge_pivot_profile` réécrit les deux champs par `appliquer_chambres`
+    # juste après : son `_prefer_non_empty` n'alimente plus que le repli.
+    ("merge_profile.py", "merge_pivot_profile"): REPLI,
+    # `merge_raw_profile` fusionne le profil **brut** : sa `chambre` vaut
+    # "deputes"/"senateurs". Le recensement de #494 la comptait comme l'un des
+    # « deux niveaux de fusion » du champ profil — elle n'en est pas un.
+    ("merge_profile.py", "merge_raw_profile"): COLLECTE,
+    ("merge_profile.py", "backfill_mandat_chambre"): MANDAT,
+    # -- La collecte --------------------------------------------------------
+    ("candidate_profile.py", "_extract_mandats"): MANDAT,
+    ("candidate_profile.py", "build_profile"): COLLECTE,
+    ("generate_all_profiles.py", "build_minimal_profile"): COLLECTE,
+    ("generate_all_profiles.py", "process_candidat"): COLLECTE,
+    ("generate_all_profiles.py", "main"): COLLECTE,
+    # -- Les groupes --------------------------------------------------------
+    ("schema_groupe.py", "make_empty_profil_groupe"): GROUPE,
+    ("schema_groupe.py", "validate_profil_groupe"): GROUPE,
+    ("group_profile.py", "_mandats_electifs"): MANDAT,
+    ("group_profile.py", "generate_groupe_profile_from_roster"): GROUPE,
+    ("group_profile.py", "main"): GROUPE,
+    ("generate_group_profiles.py", "generate_all"): GROUPE,
+    ("generate_roster_candidats.py", "build_roster_candidats"): GROUPE,
+    ("check_quality_gate.py", "_report_groupes"): GROUPE,
+    ("audit_groupe_dataset.py", "compute_tableau_croise_groupes"): GROUPE,
+    ("audit_groupe_dataset.py", "compute_plage_dates_groupes"): GROUPE,
+    ("audit_groupe_dataset.py", "_md_section_tableau_croise_groupes"): GROUPE,
+    ("audit_groupe_dataset.py", "_md_section_plage_dates_groupes"): GROUPE,
+}
+
+# --- Emplacements déclarés, côté interface ----------------------------------
+#
+# Clé : (fichier relatif à web/UI_finale, expression du receveur). L'expression
+# est un ancrage plus stable qu'un numéro de ligne et dit à elle seule de quelle
+# `chambre` il s'agit.
+
+SITES_UI: dict[tuple[str, str], str] = {
+    ("scripts/sync-data.mjs", "groupe"): GROUPE,
+    ("src/data/index.js", "g"): GROUPE,
+    ("src/data/pivotAdapter.js", "groupe"): GROUPE,
+    ("src/components/GovernmentProfile.jsx", "texte"): GROUPE,
+    # Le seul consommateur du champ profil qui reste, et il n'est pas dans le
+    # recensement de #486/#494 : celui-ci ne couvrait que `src/*.py`.
+    # `chambreLabel(pivot.chambre, actif)` fabrique le libellé de profession de
+    # repli — « Député », « Ancien(ne) sénateur ». Sur un profil bicaméral il
+    # n'en montre qu'une, ce qui est exactement la question éditoriale posée par
+    # l'épic. Sa migration appartient à #495 (F), hors périmètre ici.
+    ("src/data/pivotAdapter.js", "pivot"): CONSOMMATEUR_PROFIL,
+}
+
+
+# --- Scanners ---------------------------------------------------------------
+
+
+def _fonction_englobante(arbre: ast.AST) -> dict[int, str]:
+    """`id(nœud)` -> nom de la fonction qui le contient (`<module>` sinon)."""
+    proprietaire: dict[int, str] = {}
+
+    def descendre(noeud: ast.AST, fonction: str) -> None:
+        for enfant in ast.iter_child_nodes(noeud):
+            courante = fonction
+            if isinstance(enfant, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                courante = enfant.name
+            proprietaire[id(enfant)] = courante
+            descendre(enfant, courante)
+
+    descendre(arbre, "<module>")
+    return proprietaire
+
+
+def _scanner_python() -> dict[tuple[str, str], list[int]]:
+    """Tout usage de la clé `"chambre"` dans `src/*.py`, par (module, fonction).
+
+    Trois formes sont reconnues, et ce sont les trois par lesquelles un
+    dictionnaire JSON se lit ou s'écrit en Python : `x.get("chambre")`,
+    `x["chambre"]` (lecture comme écriture) et la clé d'un littéral `{...}`.
+    """
+    trouves: dict[tuple[str, str], list[int]] = {}
+
+    for chemin in sorted(SRC.glob("*.py")):
+        arbre = ast.parse(chemin.read_text(encoding="utf-8"))
+        proprietaire = _fonction_englobante(arbre)
+
+        def noter(noeud: ast.AST, ligne: int) -> None:
+            cle = (chemin.name, proprietaire.get(id(noeud), "<module>"))
+            trouves.setdefault(cle, []).append(ligne)
+
+        for noeud in ast.walk(arbre):
+            if (
+                isinstance(noeud, ast.Call)
+                and isinstance(noeud.func, ast.Attribute)
+                and noeud.func.attr == "get"
+                and noeud.args
+                and isinstance(noeud.args[0], ast.Constant)
+                and noeud.args[0].value == "chambre"
+            ):
+                noter(noeud, noeud.lineno)
+            elif (
+                isinstance(noeud, ast.Subscript)
+                and isinstance(noeud.slice, ast.Constant)
+                and noeud.slice.value == "chambre"
+            ):
+                noter(noeud, noeud.lineno)
+            elif isinstance(noeud, ast.Dict):
+                for cle_litterale in noeud.keys:
+                    if (
+                        isinstance(cle_litterale, ast.Constant)
+                        and cle_litterale.value == "chambre"
+                    ):
+                        noter(noeud, cle_litterale.lineno)
+
+    return trouves
+
+
+#: `\bchambre\b` et non `chambre` : sans la frontière de mot, `chambre_depot_initial`
+#: (la chambre de dépôt d'un texte, champ distinct) serait comptée comme un accès
+#: à `chambre`.
+_MOTIF_UI = re.compile(r"([A-Za-z_$][\w$]*(?:\??\.[A-Za-z_$][\w$]*)*)\.chambre\b")
+_SUFFIXES_UI = frozenset({".js", ".jsx", ".mjs", ".ts", ".tsx"})
+_REPERTOIRES_IGNORES_UI = frozenset({"node_modules", "dist", "build"})
+
+
+def _scanner_ui() -> dict[tuple[str, str], list[int]]:
+    """Tout accès `<expr>.chambre` sous `web/UI_finale`, par (fichier, receveur).
+
+    `web/old/` est hors périmètre : ce sont des générations archivées de
+    l'interface (AGENTS.md §1), qui ne lisent plus le pivot.
+    """
+    trouves: dict[tuple[str, str], list[int]] = {}
+    if not UI.exists():
+        return trouves
+
+    for chemin in sorted(UI.rglob("*")):
+        if not chemin.is_file() or chemin.suffix not in _SUFFIXES_UI:
+            continue
+        if _REPERTOIRES_IGNORES_UI.intersection(chemin.parts):
+            continue
+        relatif = chemin.relative_to(UI).as_posix()
+        for numero, ligne in enumerate(
+            chemin.read_text(encoding="utf-8").splitlines(), 1
+        ):
+            for occurrence in _MOTIF_UI.finditer(ligne):
+                trouves.setdefault((relatif, occurrence.group(1)), []).append(numero)
+
+    return trouves
+
+
+def _formatter(emplacements: dict[tuple[str, str], list[int]]) -> str:
+    return "\n".join(
+        f"  - {a} :: {b} (ligne(s) {', '.join(str(n) for n in lignes)})"
+        for (a, b), lignes in sorted(emplacements.items())
+    )
+
+
+# --- Le garde-fou -----------------------------------------------------------
+
+
+def test_tout_emplacement_du_scalaire_chambre_est_declare_python():
+    """Aucun usage de `"chambre"` dans `src/` qui ne soit catégorisé ci-dessus.
+
+    Un emplacement neuf casse ce test : son auteur doit dire de quelle `chambre`
+    il parle. C'est le seul mécanisme qui empêche un consommateur de se rajouter
+    en silence pendant la coexistence — et donc qui empêche la coexistence de
+    devenir définitive.
+    """
+    trouves = _scanner_python()
+
+    inconnus = {cle: lignes for cle, lignes in trouves.items() if cle not in SITES_PYTHON}
+    assert not inconnus, (
+        "Emplacement(s) de la clé `chambre` non déclaré(s) dans SITES_PYTHON :\n"
+        + _formatter(inconnus)
+        + "\n\nAjoute chacun avec sa catégorie. S'il lit la `chambre` d'un PROFIL "
+        "pivot, migre-le vers `schema_pivot.lire_chambres()` plutôt que de le "
+        "déclarer CONSOMMATEUR_PROFIL : le scalaire est en cours de retrait (#494)."
+    )
+
+
+def test_aucun_emplacement_declare_n_a_disparu_python():
+    """La liste ne survit pas à ce qu'elle décrit.
+
+    Une déclaration qui reste après la disparition de son emplacement redevient
+    du commentaire, et la prochaine lecture y croira.
+    """
+    trouves = _scanner_python()
+
+    disparus = {cle: SITES_PYTHON[cle] for cle in SITES_PYTHON if cle not in trouves}
+    assert not disparus, (
+        "Emplacement(s) déclaré(s) dans SITES_PYTHON mais introuvable(s) — "
+        "retire-les :\n"
+        + "\n".join(f"  - {a} :: {b} ({categorie})" for (a, b), categorie in sorted(disparus.items()))
+    )
+
+
+def test_tout_acces_chambre_de_l_interface_est_declare():
+    """Même règle côté `web/UI_finale`.
+
+    Le recensement de #486 puis de #494 ne couvrait que `src/*.py`. L'interface
+    lit pourtant le pivot, et c'est là que se trouve le dernier consommateur du
+    scalaire — voir SITES_UI.
+    """
+    trouves = _scanner_ui()
+
+    inconnus = {cle: lignes for cle, lignes in trouves.items() if cle not in SITES_UI}
+    assert not inconnus, (
+        "Accès `.chambre` non déclaré(s) dans SITES_UI :\n" + _formatter(inconnus)
+    )
+
+    disparus = {cle: SITES_UI[cle] for cle in SITES_UI if cle not in trouves}
+    assert not disparus, (
+        "Accès déclaré(s) dans SITES_UI mais introuvable(s) — retire-les :\n"
+        + "\n".join(f"  - {a} :: {b} ({categorie})" for (a, b), categorie in sorted(disparus.items()))
+    )
+
+
+def test_condition_1_de_retrait_pipeline_python():
+    """**Le pipeline a fini de migrer** : plus un seul consommateur du profil.
+
+    C'est la moitié atteignable de la condition 1 par #494. Elle est vraie
+    depuis cette issue : `check_quality_gate` (2 filtres de population) et
+    `audit_pivot_dataset` (4 indicateurs) lisent `chambres` via
+    `schema_pivot.lire_chambres()`.
+    """
+    restants = {
+        cle: categorie
+        for cle, categorie in SITES_PYTHON.items()
+        if categorie == CONSOMMATEUR_PROFIL
+    }
+    assert not restants, (
+        "Consommateur(s) du champ profil restant(s) dans src/ :\n"
+        + "\n".join(f"  - {a} :: {b}" for a, b in sorted(restants))
+        + "\n\nMigre-les vers `schema_pivot.lire_chambres()`."
+    )
+
+
+def test_condition_1_de_retrait_etat_global():
+    """L'état de la condition 1, interface comprise — et pourquoi elle attend.
+
+    Ce test **échouera** quand #495 aura migré `pivotAdapter.chambreLabel`, et
+    ce sera le signal : plus aucun consommateur, condition 1 remplie. Il faudra
+    alors le retourner en assertion positive, vérifier la condition 2 sur un run
+    réel (warning `chambres du profil non corroborée` absent du corpus), et
+    retirer le scalaire.
+
+    Un test qui échoue pour dire « c'est fini » plutôt qu'une note dans un
+    journal : c'est la différence entre un transitoire qui se termine et les
+    replis de #431/#432, qui ne se sont jamais terminés.
+    """
+    restants = sorted(
+        cle for cle, categorie in {**SITES_PYTHON, **SITES_UI}.items()
+        if categorie == CONSOMMATEUR_PROFIL
+    )
+
+    assert restants == [("src/data/pivotAdapter.js", "pivot")], (
+        "L'inventaire des consommateurs du champ profil a changé :\n"
+        + "\n".join(f"  - {a} :: {b}" for a, b in restants)
+        + "\n\nS'il est vide, la condition 1 de retrait de `chambre` est remplie "
+        "(docs/technical_decisions.md#chambres-profil-derivees) : reste à vérifier "
+        "la condition 2 sur le corpus, puis à retirer le scalaire et la branche de "
+        "repli de `lire_chambres()`."
+    )
+
+
+@pytest.mark.parametrize(
+    "module, symboles",
+    [
+        ("check_quality_gate", ("lire_chambres",)),
+        ("audit_pivot_dataset", ("lire_chambres",)),
+    ],
+)
+def test_les_consommateurs_migres_passent_par_la_porte_unique(module, symboles):
+    """Les deux modules migrés importent bien le lecteur canonique.
+
+    Sans cette vérification, un consommateur pourrait « migrer » vers
+    `profil.get("chambres")` en direct et rouvrir la question que
+    `lire_chambres()` ferme : que vaut la lecture sur les 209 profils publiés
+    qui ne portent pas encore `chambres` ?
+    """
+    importe = __import__(module)
+    for symbole in symboles:
+        assert hasattr(importe, symbole), (
+            f"{module} n'importe pas {symbole} de schema_pivot."
+        )
