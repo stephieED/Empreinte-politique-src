@@ -399,11 +399,15 @@ mesurable sans jugement :
 > **`chambre` est retiré du schéma quand les deux conditions sont vraies :**
 >
 > 1. **les consommateurs ont migré** — les emplacements recensés par #486 lisent
->    `chambres`, et le garde-fou de #494 le vérifie ;
+>    `chambres`, et le garde-fou de #494 le vérifie. Écrit depuis :
+>    `tests/test_garde_fou_chambre.py`, voir [[consommateurs-chambres-migres]].
+>    Le pipeline a migré ; il reste `pivotAdapter.chambreLabel` dans l'UI (#495).
 > 2. **le champ n'a plus rien de propre à dire** — le warning
 >    `chambres du profil non corroborée` est absent de tout le corpus, c'est-à-dire
 >    que chaque chambre publiée est étayée par un `mandat_electif` estampillé.
->    Aujourd'hui : **208 profils sur 209** le portent.
+>    **208 profils sur 209** est une *projection* : sur le corpus publié à
+>    `07e9147`, aucun profil ne porte encore ni `chambres` ni ce warning (0/209),
+>    faute de régénération.
 >
 > Au retrait, `chambres` entre dans `REQUIRED_TOP_LEVEL_KEYS` — elle en est
 > volontairement absente pendant la coexistence, les 209 profils publiés ne la
