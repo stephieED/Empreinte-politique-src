@@ -175,6 +175,28 @@ other career. No mandate is ever merged across chambers here, and #492 merged no
 `--source an`/`--source senat` stay scoped whatever the provenance, tested.
 See `docs/technical_decisions.md#deux-chambres-interrogees`.
 
+**A profile's chambers are derived, and the fallback is declared (#493)**:
+`chambres` is recomputed from `mandats[].chambre` by `schema_pivot.deriver_chambres()`;
+`chambre` is its head. **Call `appliquer_chambres()` after any mutation of `mandats[]`** —
+a derived field is recomputed, never merged: `merge_lists_by_key` makes `merged["mandats"]`
+a *superset* of both sides, so a merged `chambres` would describe a mandate set that exists
+in neither (the mirror image of the `backfill_mandat_chambre` trap in #492). The collection
+chamber — *which dataset answered* — is **always unioned in**, never substituted and never
+dropped: two stricter rules were measured and reverted on the 209 published profiles of
+`b2c34f4`, flipping 7 then 1 profile from `AN`/`Senat` to `PE`, because removing an observed
+chamber is a deletion. That fallback is usable, not verified — it is wrong on at least 20
+measured profiles, including **18 senators published `chambre: "AN"`**, the same 18 that have
+no `mandat_electif` at all. What keeps it from being misleading is that it is **declared**:
+one `chambres du profil non corroborée` warning per profile names the unbacked chambers
+(§2.5), and its corpus count is the migration meter — 208 of 209 today. Measured read-only on
+both pipeline paths: **0** scalar divergence, `population_an` 207 → 207,
+`MAPPING_CHAMBRE_SOURCES` 209 → 209, loss check non-blocking. Consumers are **not** migrated
+here (#494). `chambre`'s retirement condition — both consumers migrated *and* the warning
+gone from the whole corpus — is written in
+`docs/technical_decisions.md#chambres-profil-derivees`; without a written criterion this
+transitional would become permanent, as #431's and #432's read fallbacks did.
+Guarded by `tests/test_chambres_profil.py`.
+
 **A group's eligibility window is chamber-scoped (#492)**:
 `group_profile._member_eligibility_intervals` took the **union** of all `mandat_electif`, so
 a chamber change mid-legislature extended the window past the member's departure from the
@@ -263,7 +285,7 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 | Key | Content |
 |---|---|
 | `id` | The profile's **slug** — its filename, **no provenance prefix** (#487). `nosdeputes:`/`nossenateurs:` derived from whichever chamber answered the collection, so it *changed value* on an unchanged career (two profiles flipped, in opposite directions, between `25f7bc7` and `01ffa7f`). Provenance stays where it is true: `sources[].type`, `identite.source_url`, `meta.provenance`. Standalone tools with no slug (`mep_profile.py --ep-id`) keep an explicit source id — better that than a slug invented from a collected name. See `docs/technical_decisions.md#id-pivot-sans-prefixe`. |
-| `nom`, `chambre`, `parti`, `groupe` | `chambre` in `{AN, Senat, PE, mairie, null}` |
+| `nom`, `chambres`, `chambre`, `parti`, `groupe` | `chambres` (#493) is the **derived list** of chambers the person sat in, values from `KNOWN_CHAMBRES`, ordered by `ORDRE_CHAMBRES` (`AN`, `Senat`, `PE`, `mairie`). `chambre` is `chambres[0]` — never collected, never able to contradict it (`validate_profil` enforces it). Both come from `schema_pivot.deriver_chambres()`, the single factory. See `docs/technical_decisions.md#chambres-profil-derivees` |
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |
 | `mandats[]` | Elections, committees... + sensitive fields (Section 5). `mandats[].chambre` (#492) is written **only on `mandat_electif`**: `AN`/`Senat`/`PE`/`null`, meaning *the chamber whose dataset returned this mandate*, stamped at collection. Never derived from `source_url` (0 of 214 AN/Senate elective mandates carry one) nor from the profile's `chambre` (additive merge accumulates mandates from both chambers in one profile). `null` + one aggregated warning per profile, never a default. See `docs/technical_decisions.md#chambre-par-mandat-electif` |

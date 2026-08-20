@@ -15,7 +15,18 @@ Format d'un profil pivot v1 :
     "schema_version": "1",
     "id": "jean-luc-melenchon",             # = le slug, sans préfixe (#487)
     "nom": "Jean-Luc Mélenchon",
+    "chambres": ["AN", "Senat"],             # #493 — LISTE des chambres où la personne a
+                                             # siégé, valeurs de KNOWN_CHAMBRES, dans l'ordre
+                                             # de ORDRE_CHAMBRES. **Dérivée**, jamais
+                                             # collectée : voir `deriver_chambres()`, seule
+                                             # fabrique de ce champ ET de `chambre`.
     "chambre": "AN",                         # "AN" | "Senat" | "PE" | "mairie" | null
+                                             # #493 — n'est plus une donnée autonome : c'est
+                                             # `chambres[0]`, donc incapable de contredire
+                                             # `chambres`. Champ de transition, retiré quand
+                                             # ses 16 consommateurs lisent `chambres` (#494) —
+                                             # condition de retrait écrite dans
+                                             # docs/technical_decisions.md#chambres-profil-derivees.
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
     "identite": {                            # bloc biographique, tout est nullable/optionnel
@@ -206,7 +217,7 @@ Usage :
 """
 
 import time
-from typing import Any
+from typing import Any, NamedTuple, Optional
 from amendements_index import (
     SCHEMA_VERSION as AMENDEMENTS_SCHEMA_VERSION,
     COSIGNATURES_SCHEMA_VERSION as AMENDEMENTS_COSIGNATURES_SCHEMA_VERSION,
@@ -244,6 +255,170 @@ KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
 
 # Valeurs de chambre reconnues.
 KNOWN_CHAMBRES: frozenset[str] = frozenset({"AN", "Senat", "PE", "mairie"})
+
+# Ordre canonique de `chambres` (#493). Il rend la liste **stable** d'un run à
+# l'autre — sans lui, l'ordre suivrait celui des mandats, que la fusion additive
+# fait varier — et fixe quelle chambre devient le scalaire `chambre` quand une
+# carrière en compte plusieurs.
+# `AN` avant `Senat` n'est pas arbitraire : c'est la convention déjà documentée
+# par #488, où `CHAMBRES = ["deputes", "senateurs"]` et « le premier de CHAMBRES
+# l'emporte quand les deux répondent ». La reprendre ici garantit qu'aucun
+# scalaire publié ne change de valeur du seul fait que la dérivation le remplace.
+ORDRE_CHAMBRES: tuple[str, ...] = ("AN", "Senat", "PE", "mairie")
+
+
+class ChambresDerivees(NamedTuple):
+    """Résultat de `deriver_chambres()` : les deux champs, et ce qui les étaye.
+
+    L'état de la dérivation est retourné explicitement plutôt que redéduit par
+    l'appelant : c'est lui qui décide de publier le warning de #493 (§2.5), et
+    c'est le compteur qui dira quand `chambre` peut être retiré.
+    """
+
+    #: Liste ordonnée (ORDRE_CHAMBRES), sans doublon, valeurs de KNOWN_CHAMBRES.
+    chambres: list[str]
+    #: `chambres[0]`, ou `None` si `chambres` est vide. Jamais autre chose.
+    chambre: Optional[str]
+    #: `True` si **chaque** entrée de `chambres` est étayée par un
+    #: `mandat_electif` estampillé et qu'aucun mandat électif ne reste à `null` :
+    #: la liste est alors la liste vérifiée des chambres où la personne a siégé.
+    #: `False` partout ailleurs. C'est ce booléen qui déclenche le warning, et
+    #: c'est son passage à `True` sur tout le corpus qui clôt la migration.
+    corroboree: bool
+    #: Les entrées de `chambres` qu'aucun mandat estampillé n'étaye — en pratique
+    #: la seule chambre de collecte. Nommées dans le warning : « on publie AN
+    #: parce que nosdeputes.fr a répondu, pas parce qu'un mandat le dit ».
+    chambres_non_corroborees: list[str]
+    #: Nombre de `mandat_electif` sans chambre déterminée (#492) : c'est lui qui
+    #: décroît à mesure que la recollecte avance.
+    mandats_non_estampilles: int
+
+
+def deriver_chambres(
+    mandats: Optional[list[dict[str, Any]]], repli: Any = None
+) -> ChambresDerivees:
+    """Dérive `chambres` (liste) et `chambre` (scalaire) des `mandat_electif` (#493).
+
+    **Seule fabrique des deux champs.** C'est ce qui les rend incapables de se
+    contredire : `chambre` n'est pas une donnée collectée à côté d'une donnée
+    dérivée, c'est `chambres[0]`. L'invariant est vérifié par `validate_profil`.
+
+    Pourquoi une liste plutôt qu'un scalaire : une carrière peut traverser deux
+    chambres, et le scalaire en efface une (épic #486 — Retailleau publié `AN`
+    alors qu'il siège au Sénat depuis 2004, Mélenchon publié `Senat` alors qu'il
+    a été député 2017-2022). Pourquoi une liste plutôt qu'une chaîne concaténée :
+    `chambre in ("AN", "deputes")` renvoie `False` sur `"AN; Senat"` **sans lever
+    d'erreur**, là où `"AN" in chambres` est explicite et testable.
+
+    Pourquoi pas « la chambre du mandat en cours » — l'option que posait #493 :
+    mesurée sur les 209 profils publiés de `b2c34f4`, elle produit **114 `null`
+    sur 209** (55 % du corpus), dont `edouard-philippe` et `jean-luc-melenchon`
+    parmi les 8 `candidat_declare`. Elle remplace un fait faux par un autre : la
+    carrière de député de Retailleau disparaîtrait comme disparaissent
+    aujourd'hui les années sénatoriales de Mélenchon.
+
+    Args:
+        mandats: `mandats[]` du profil pivot. Seules les entrées de catégorie
+                 `mandat_electif` sont lues, et seule leur `chambre` (#492) —
+                 jamais un libellé. Déduire « PE » de « Mandat de député
+                 européen » remettrait une chaîne collectée au cœur d'un champ
+                 fermé, exactement ce que #492 a écarté.
+        repli: chambre de collecte du profil — *quel jeu de données a répondu*.
+               Elle est **toujours ajoutée** à la liste, jamais substituée à ce
+               que disent les mandats et jamais écartée par eux. Ce n'est pas une
+               valeur par défaut au sens de §2.5 : c'est une donnée observée,
+               reprise telle quelle. Mais elle n'est **pas étayée par un mandat**,
+               et l'appelant doit le déclarer dans `meta.warnings` dès que
+               `corroboree` est faux. Justification mesurée :
+               docs/technical_decisions.md#chambres-profil-derivees.
+
+               « Toujours ajoutée » est le point que deux simulations en lecture
+               seule sur les 209 profils publiés de `b2c34f4` ont dû corriger, et
+               la raison est toujours la même — *retirer une chambre observée est
+               une suppression*, ce que le pipeline ne fait jamais :
+
+               - un repli « utilisé seulement si rien n'est estampillé » faisait
+                 basculer **7 profils de `AN`/`Senat` vers `PE`** (`marine-le-pen`,
+                 `damien-abad`, `jean-luc-melenchon`, `philippe-juvin`,
+                 `constance-le-grip`, `anne-sophie-frigout`, `yannick-vaugrenard`) :
+                 leurs mandats européens sont estampillés `PE` par
+                 `normalize_europarl`, quand leurs mandats AN, collectés avant
+                 #492, restent à `null` ;
+               - un repli « utilisé tant que la couverture est incomplète » en
+                 laissait **un** : `yannick-vaugrenard`, dont le seul
+                 `mandat_electif` collecté est européen. Tous ses mandats électifs
+                 étant estampillés, la couverture passait pour complète et son
+                 `AN` disparaissait — le sortant de
+                 `check_quality_gate.population_an`.
+
+               La complétude de `mandats[]` n'est donc pas celle d'une carrière :
+               un profil peut n'avoir aucun `mandat_electif` français collecté
+               sans avoir cessé de siéger. C'est pourquoi `corroboree` dit
+               seulement « chaque chambre publiée est étayée par un mandat », et
+               jamais « voici toute la carrière ».
+
+    Returns:
+        Un `ChambresDerivees`.
+    """
+    estampillees: set[str] = set()
+    n_non_estampilles = 0
+    for m in mandats or []:
+        if not isinstance(m, dict) or m.get("categorie") != "mandat_electif":
+            continue
+        chambre_mandat = m.get("chambre")
+        # `isinstance(..., str)` avant l'appartenance : un profil malformé peut
+        # porter une liste ou un dict là, et `x in frozenset` lève alors un
+        # TypeError. Cette fonction tourne dans le pipeline, avant toute
+        # validation — une entrée mal formée doit produire « chambre non
+        # déterminée », pas tuer un shard d'extraction.
+        if isinstance(chambre_mandat, str) and chambre_mandat in KNOWN_CHAMBRES:
+            estampillees.add(chambre_mandat)
+        else:
+            n_non_estampilles += 1
+
+    toutes = set(estampillees)
+    if isinstance(repli, str) and repli in KNOWN_CHAMBRES:
+        toutes.add(repli)
+
+    chambres = [c for c in ORDRE_CHAMBRES if c in toutes]
+    non_corroborees = [c for c in chambres if c not in estampillees]
+    corroboree = bool(chambres) and not non_corroborees and not n_non_estampilles
+
+    return ChambresDerivees(
+        chambres,
+        chambres[0] if chambres else None,
+        corroboree,
+        non_corroborees,
+        n_non_estampilles,
+    )
+
+
+def appliquer_chambres(profil: dict[str, Any]) -> ChambresDerivees:
+    """(Re)pose `chambres` et `chambre` sur `profil`, d'après ses `mandats` (#493).
+
+    À appeler **après toute modification de `mandats[]`**, et pas seulement à la
+    construction du profil. `chambres` est un champ dérivé : il ne se fusionne
+    pas, il se recalcule — sinon il décrit un ensemble de mandats qui n'est plus
+    celui du profil. Trois endroits mutent `mandats[]` après la normalisation, et
+    tous les trois doivent repasser ici :
+
+    - `merge_profile.merge_pivot_profile`, dont la fusion additive rend
+      `mandats[]` **surensemble** de l'ancien comme du neuf ;
+    - `merge_profile.backfill_mandat_chambre` (#492), qui estampille après coup
+      un mandat déjà connu — un mandat qui gagne sa chambre doit faire gagner sa
+      chambre au profil ;
+    - `generate_all_profiles`, qui verse les `mandat_electif` européens dans le
+      pivot AN/Sénat par un `mandats.extend(...)` : sans ce recalcul, un profil
+      bicaméral AN + PE publierait `chambres: ["AN"]`, en effaçant le PE —
+      exactement le défaut que #486 reproche au scalaire.
+
+    Le repli reste la valeur courante de `profil["chambre"]` : c'est ce qui
+    garantit qu'un scalaire déjà publié ne régresse jamais vers `null`.
+    """
+    derivation = deriver_chambres(profil.get("mandats"), repli=profil.get("chambre"))
+    profil["chambres"] = derivation.chambres
+    profil["chambre"] = derivation.chambre
+    return derivation
 
 # Positions de vote reconnues.
 KNOWN_POSITIONS: frozenset[str] = frozenset({
@@ -384,6 +559,9 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
         "schema_version": SCHEMA_VERSION,
         "id": id_,
         "nom": nom,
+        # #493 : les deux champs sortent de `deriver_chambres()` et de nulle part
+        # ailleurs. Un profil vide n'a pas de mandat, donc pas de chambre.
+        "chambres": [],
         "chambre": None,
         "parti": None,
         "groupe": None,
@@ -463,6 +641,47 @@ def validate_profil(
         errors.append(
             f"'chambre' non reconnue : {chambre!r}. Valeurs connues : {sorted(KNOWN_CHAMBRES)}."
         )
+
+    # #493 — `chambres` (liste) et `chambre` (scalaire) coexistent le temps de la
+    # migration des consommateurs (#494). La clé n'est **pas** dans
+    # REQUIRED_TOP_LEVEL_KEYS : les profils publiés avant #493 ne la portent pas,
+    # et les déclarer invalides ne dirait rien de vrai sur eux. Elle le devient
+    # quand `chambre` est retiré — c'est l'autre moitié de la condition de retrait
+    # (docs/technical_decisions.md#chambres-profil-derivees).
+    #
+    # Absente, on ne valide rien. Présente, elle est tenue à l'invariant qui fait
+    # tout l'intérêt du couple : `chambre == chambres[0]`. Sans cette
+    # vérification, la coexistence redeviendrait exactement ce que #493 refuse —
+    # un champ collecté à côté d'un champ dérivé, et la question « lequel croire ».
+    if "chambres" in profil:
+        chambres = profil.get("chambres")
+        if not isinstance(chambres, list):
+            errors.append(
+                f"'chambres' doit être une liste, reçu : {type(chambres).__name__}."
+            )
+        else:
+            inconnues = [c for c in chambres if c not in KNOWN_CHAMBRES]
+            if inconnues:
+                errors.append(
+                    f"'chambres' contient des valeurs non reconnues : {inconnues!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_CHAMBRES)}."
+                )
+            if len(set(chambres)) != len(chambres):
+                errors.append(f"'chambres' contient des doublons : {chambres!r}.")
+            attendu = [c for c in ORDRE_CHAMBRES if c in chambres]
+            if not inconnues and chambres != attendu:
+                errors.append(
+                    f"'chambres' n'est pas dans l'ordre canonique : {chambres!r} "
+                    f"(attendu : {attendu!r}). Voir ORDRE_CHAMBRES."
+                )
+            scalaire_attendu = chambres[0] if chambres else None
+            if chambre != scalaire_attendu:
+                errors.append(
+                    f"'chambre' ({chambre!r}) contredit 'chambres' ({chambres!r}) : "
+                    f"le scalaire est chambres[0], soit {scalaire_attendu!r}. "
+                    "Les deux champs se dérivent de la même source "
+                    "(schema_pivot.deriver_chambres) et ne peuvent pas diverger."
+                )
 
     identite = profil.get("identite")
     if identite is not None and not isinstance(identite, dict):

@@ -89,6 +89,10 @@ def test_make_empty_profil_provenance_explicite_roster_groupe():
 def _valid_profil() -> dict:
     """Construit un profil pivot minimal valide pour les tests."""
     p = make_empty_profil("nosdeputes:test", "Test Personne")
+    # #493 : `chambre` vaut `chambres[0]`, et `validate_profil` le vérifie. Les
+    # deux se posent donc ensemble — normalement via `deriver_chambres()`, seule
+    # fabrique du couple ; ici à la main, pour garder la fixture minimale.
+    p["chambres"] = ["AN"]
     p["chambre"] = "AN"
     p["meta"]["licence_donnees"] = "ODbL"
     return p
@@ -100,18 +104,21 @@ def test_validate_valid_profil_returns_no_errors():
 
 def test_validate_valid_profil_with_chambre_senat():
     p = _valid_profil()
+    p["chambres"] = ["Senat"]
     p["chambre"] = "Senat"
     assert validate_profil(p) == []
 
 
 def test_validate_valid_profil_with_chambre_pe():
     p = _valid_profil()
+    p["chambres"] = ["PE"]
     p["chambre"] = "PE"
     assert validate_profil(p) == []
 
 
 def test_validate_valid_profil_chambre_none():
     p = _valid_profil()
+    p["chambres"] = []
     p["chambre"] = None
     assert validate_profil(p) == []
 

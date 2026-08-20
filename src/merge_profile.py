@@ -40,6 +40,8 @@ from candidate_profile import (
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
 )
 from json_io import ecrire_profil_json
+from normalize_nosdeputes import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
+from schema_pivot import appliquer_chambres
 
 Key = Any
 
@@ -451,6 +453,23 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         new.get("mandats"),
         _pivot_mandat_key,
     )
+
+    # --- chambres / chambre : RECALCULÉS, jamais fusionnés (#493) -----------
+    #
+    # `merge_lists_by_key` est additif : `merged["mandats"]` est un **surensemble**
+    # des mandats de `new` comme de ceux de `old`. Un `chambres` fusionné —
+    # `_prefer_non_empty(new, old)` ou une union de listes — décrirait donc un
+    # ensemble de mandats qui n'existe dans aucun des deux profils. C'est le
+    # symétrique du piège que #492 a rencontré sur `backfill_mandat_chambre` :
+    # un champ dérivé ne se fusionne pas, il se recalcule après la fusion de ce
+    # dont il dérive.
+    #
+    # Le recalcul est monotone : les mandats ne peuvent qu'augmenter, donc
+    # `chambres` ne peut que gagner des entrées. Le repli reste `merged["chambre"]`
+    # — la valeur qu'on aurait publiée sans #493 : c'est ce qui garantit qu'aucun
+    # scalaire publié ne régresse vers `null` (un `chambre` renseigné → `null` est
+    # une perte bloquante pour `audit_diff_profils`).
+    derivation = appliquer_chambres(merged)
     # Tri par identifiant, plus par date : depuis #432 la date du scrutin n'est
     # plus dans le profil. L'ordre n'a donc plus de sens chronologique, il n'a
     # qu'à être STABLE d'un run à l'autre pour que git ne voie que les vraies
@@ -495,6 +514,30 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         if old_meta.get("provenance", "candidat_declare") == "candidat_declare":
             merged["meta"]["provenance"] = "candidat_declare"
 
+    # #493 : la déclaration d'une `chambres` non corroborée doit survivre à la
+    # fusion **dans les deux sens**. Le filtre ci-dessous ne sait que retirer un
+    # warning devenu faux ; il faut aussi pouvoir en ajouter un devenu vrai.
+    # Le cas se produit dès qu'un run recollecte proprement un mandat pendant
+    # que la fusion additive en conserve un ancien, non estampillé : le profil
+    # neuf ne porte alors aucun warning, le profil fusionné le mérite. Sans ce
+    # rattrapage, la seule chose qui empêche `chambres` d'être trompeuse
+    # disparaîtrait précisément sur les profils mixtes — ceux de la migration.
+    if isinstance(merged.get("meta"), dict) and not derivation.corroboree:
+        warnings_merged = merged["meta"].setdefault("warnings", [])
+        # Le texte est recalculé sur le profil FUSIONNÉ, jamais repris de
+        # l'ancien : ses compteurs porteraient sur un autre ensemble de mandats.
+        if not any(w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE)
+                   for w in warnings_merged if isinstance(w, str)):
+            warnings_merged.append(
+                f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
+                f"chambres={derivation.chambres}, dont "
+                f"{derivation.chambres_non_corroborees or 'aucune'} sans mandat électif "
+                f"estampillé pour l'étayer, et {derivation.mandats_non_estampilles} "
+                "mandat(s) électif(s) encore sans chambre, après fusion additive (#493). "
+                "Une chambre non corroborée est celle de la collecte : elle dit quel jeu "
+                "de données a répondu, pas où la personne a siégé."
+            )
+
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
         for w in merged["meta"]["warnings"]:
@@ -503,6 +546,13 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and merged.get("mandats"):
                 continue
             if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and merged.get("amendements"):
+                continue
+            # #493 : le warning de non-corroboration est calculé par
+            # `normalize_nosdeputes` sur les seuls mandats du profil neuf. La
+            # fusion peut avoir ramené des mandats estampillés que le run neuf
+            # n'a pas recollectés : la liste est alors corroborée, et le dire
+            # encore serait faux.
+            if w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE) and derivation.corroboree:
                 continue
             filtered.append(w)
         merged["meta"]["warnings"] = filtered
