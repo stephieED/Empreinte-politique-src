@@ -37,6 +37,14 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
+- `actions/checkout` is now the dominant per-shard cost in `generate-data.yml`:
+  93–117 s measured per roster shard on run 32288588518, i.e. ~55 % of a shard,
+  against ~65 s of actual extraction — and it is paid once per shard, so
+  sharding multiplies it. A shallow/partial checkout (`fetch-depth`, sparse
+  paths) would attack it, but the extraction jobs read the committed profile
+  baseline, so what can be pruned has to be established first. Measure before
+  deciding, see `technical_decisions.md#budget-execution-pleine-echelle-467`.
+
 - CI still deletes the partial amendements archive on download failure (#264
   `try/finally`), so it gains nothing from the byte-level resume of #241/#443
   between runs. The premise behind that deletion ("the archive is never reread

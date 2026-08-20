@@ -1102,3 +1102,79 @@ def test_index_des_amendements_est_ecrit_dans_le_chemin_demande(tmp_path, monkey
 
     assert index_path.exists(), "l'index doit être écrit là où on le demande"
     assert any(index_path.glob("*.json"))
+
+
+# ---------------------------------------------------------------------------
+# #467 : la temporisation de courtoisie ne se paie que si la source publique a
+# réellement été appelée.
+#
+# `time.sleep(0.5)` datait de l'ère NosDéputés. Depuis #369 un député trouvé
+# dans le référentiel historique AN ne déclenche aucun appel NosDéputés, et
+# depuis #392/#403 ses amendements et ses votes viennent d'index locaux :
+# rejeu local des 24 membres du shard 0 du run 32288588518 → 1 requête HTTP
+# pour les 24 candidats, et 12,0 s de temporisation sur 23,7 s de temps mur.
+# Ces tests verrouillent les DEUX sens : plus de temporisation quand rien n'est
+# appelé, temporisation conservée dès qu'un appel part.
+# ---------------------------------------------------------------------------
+
+def _process_candidat_en_comptant_les_pauses(tmp_path, monkeypatch, build_profile_factice):
+    """Exécute process_candidat et renvoie la liste des durées de pause."""
+    pauses: list[float] = []
+    monkeypatch.setattr(generate_all_profiles, "build_profile", build_profile_factice)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda d: pauses.append(d))
+
+    out_dir = tmp_path / "profiles"
+    pivot_dir = tmp_path / "pivots"
+    out_dir.mkdir()
+    pivot_dir.mkdir()
+
+    resultat = process_candidat(
+        {"nom": "Alice", "slug": "alice", "parti": None, "statut": "roster_groupe"},
+        _make_args(), out_dir, pivot_dir,
+    )
+    assert resultat["statut"] == "ok"
+    return pauses
+
+
+def test_aucune_temporisation_si_nosdeputes_na_pas_ete_appele(tmp_path, monkeypatch):
+    """Le cas dominant du roster : identité, mandats, votes et amendements
+    résolus depuis les référentiels AN locaux, zéro requête NosDéputés."""
+    pauses = _process_candidat_en_comptant_les_pauses(
+        tmp_path, monkeypatch, lambda *a, **k: _fake_raw_profile("alice"),
+    )
+
+    assert pauses == []
+
+
+def test_temporisation_conservee_si_nosdeputes_a_ete_appele(tmp_path, monkeypatch):
+    """Sénateur, député absent du référentiel AN, ou passe avec interventions :
+    la source publique est réellement sollicitée, la courtoisie reste due."""
+    import candidate_profile
+
+    def _build_profile_qui_appelle_nosdeputes(*a, **k):
+        candidate_profile._incrementer_appels_nosdeputes()
+        return _fake_raw_profile("alice")
+
+    pauses = _process_candidat_en_comptant_les_pauses(
+        tmp_path, monkeypatch, _build_profile_qui_appelle_nosdeputes,
+    )
+
+    assert pauses == [0.5]
+
+
+def test_le_compteur_dappels_suit_get_payload(monkeypatch):
+    """Garde-fou du garde-fou : si `_get_payload` cessait d'incrémenter, les
+    deux tests ci-dessus passeraient tous les deux pour la mauvaise raison —
+    plus personne ne temporiserait jamais."""
+    import candidate_profile
+
+    def _echoue(url, timeout):
+        raise candidate_profile.requests.RequestException("boom")
+
+    avant = candidate_profile.compteur_appels_nosdeputes()
+    monkeypatch.setattr(candidate_profile, "_get_with_watchdog", _echoue)
+    monkeypatch.setattr(candidate_profile.time, "sleep", lambda *_: None)
+
+    candidate_profile._get_payload("https://www.nosdeputes.fr/alice/json")
+
+    assert candidate_profile.compteur_appels_nosdeputes() > avant
