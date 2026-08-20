@@ -889,6 +889,20 @@ Chiffres mesurés en local (Python 3.12.3, la même version qu'en CI) :
 | Avant correctifs, à chaud | ~35 s | |
 | **Après correctifs** | **11,2 s** | |
 
+Et en CI, sur le premier run réel du job (`32361952284`, PR #478, commit
+`efed279`, 20/08/2026 11:03 UTC) — **job complet en 24 s**, soit :
+
+| Étape | Durée |
+|---|---|
+| `actions/checkout` (sparse + `blob:none`) | **2 s** |
+| Garde « corpus hors du checkout » | < 1 s |
+| `bootstrap-extraction` (setup-python + `pip install`) | 5 s |
+| **pytest (1 639 tests)** | **12 s** |
+
+Les 2 s de checkout sont à comparer aux **93–117 s** que #467 a mesurées pour un
+checkout complet du même dépôt : la liste de chemins ci-dessous vaut un facteur
+~50 sur ce poste.
+
 La correction a supprimé les trois postes qui dominaient : 16 s d'appel réseau
 réel, ~8 s de chargement d'index du corpus, et le reste en désérialisation. Ce
 qui domine désormais est `tests/test_amendements_download_modes.py`, dont onze

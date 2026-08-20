@@ -858,8 +858,9 @@ Sensitive institutional constraints are documented in `AGENTS.md`.
 pytest -q
 ```
 
-The full suite runs in ~11 s, executed by `.github/workflows/tests.yml` on every pull request
-and on every push to `main`; the job fails if any test fails.
+The full suite runs in ~11 s (24 s for the whole CI job, checkout included),
+executed by `.github/workflows/tests.yml` on every pull request and on every
+push to `main`; the job fails if any test fails.
 
 The suite is **decoupled from the living corpus**: no test reads `pivot_data/`
 or `raw_data/profiles/`, none writes anywhere under `pivot_data/` or
