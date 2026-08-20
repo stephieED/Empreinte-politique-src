@@ -82,7 +82,12 @@ from typing import Any, Optional
 
 from audit_pivot_dataset import compute_profils_perimes
 from budget_collecte import BudgetCollecte
-from candidate_profile import build_profile, compteur_appels_nosdeputes
+from candidate_profile import (
+    AIDE_ACTIVER_INTERVENTIONS_SYCERON,
+    activer_resolution_acteur_nu_syceron,
+    build_profile,
+    compteur_appels_nosdeputes,
+)
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
 from merge_profile import (
@@ -1063,6 +1068,8 @@ def main() -> None:
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
                              "qui évite de perdre des votes/interventions/mandats déjà collectés en cas d'aléa des API).")
+    parser.add_argument("--activer-interventions-syceron", action="store_true",
+                        help=AIDE_ACTIVER_INTERVENTIONS_SYCERON)
     parser.add_argument("--skip-interventions", action="store_true",
                         help="Ne pas extraire les interventions (ni la recherche NosDéputés ni les questions officielles AN). "
                              "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
@@ -1119,6 +1126,15 @@ def main() -> None:
     # --pivot-only implique --pivot (normalisation pivot activée)
     if args.pivot_only:
         args.pivot = True
+
+    # #510 : réglé une fois, avant tout appel de collecte. L'index Syceron est
+    # construit par législature et partagé entre les shards (#505), donc le mode
+    # de résolution est une propriété du process, pas du candidat.
+    activer_resolution_acteur_nu_syceron(args.activer_interventions_syceron)
+    if args.activer_interventions_syceron and not args.skip_interventions:
+        print("[#510] Résolution des identifiants d'orateur Syceron nus ACTIVÉE : la source "
+              "primaire des interventions va alimenter les profils. Volumétrie mesurée sur la "
+              "17e législature : 673 acteurs, 104 239 interventions, index de 136,8 Mio.")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

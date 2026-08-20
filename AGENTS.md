@@ -150,6 +150,35 @@ must be added to the inventory in `tests/test_ci_interventions_par_job.py` with 
 mode, and any job that ignores the input must be named in the input's description.
 See `docs/technical_decisions.md#interventions-senat-501`.
 
+**Syceron publishes the speaker id BARE, and never indexed anything (#510)**:
+`<orateur><id>847629</id>`, matched against `re.fullmatch(r"PA\d+")` — so the
+**primary** source of interventions built an empty index from day one (2 bytes
+from 601 comptes rendus), and **0 of the 789 published interventions** came from
+it. The prefixing is not an inference: the same `<paragraphe>` carries
+`id_acteur="PA847629"`, identical on **289 701 of 289 702** paragraphs, and all
+**673** distinct bare ids of the 17th resolve in the AN referential. The fix
+ships **inactive** (`--activer-interventions-syceron`) because what it unlocks is
+not publishable yet — measured on legislature 17 alone: 104 239 interventions,
+a **136,8 Mio** index re-read **per candidate per legislature** (1,56 s, 563 Mio
+RSS, against #500's 240 s budget), +20,3 Mio of pivot on the 229-profile corpus
+of `d7d8fb1` (×1,20, up to ×6,8 on one profile), and two *independent* parser
+defects that make the
+data two-thirds truncated (`point.findall` is not recursive: 212 264 of 321 892
+paragraphs invisible) and themeless (`<titreStruct>` does not exist: `sujet` is
+`None` on 100 % of entries, and Syceron **replaces** the NosDéputés list that
+`tags_thematiques` is derived from). Both parser defects have the same cause as
+#510: `tests/fixtures/syceron_minimal.xml` describes a schema the AN does not
+publish, so the parser was validated against its own assumption — measure only
+on `syceron_reel_leg17.xml`. Unresolved ids are **counted, not warned** per
+entry (5 389 on the 17th; same arbitration as #492, and expected-and-permanent
+discards get no warning at all, as in #474); the tripwire is `forme_inattendue`,
+at **0**. And an index built from *readable* comptes rendus that resolves **zero**
+actors is never cached nor returned silently — #505's guard only covered "no
+readable file", and that gap is how this survived (§2.5). **Not verified:
+legislatures 15 and 16** — only the 17th was downloaded. Guarded by
+`tests/test_syceron_acteur_ref.py`.
+See `docs/technical_decisions.md#syceron-acteur-ref-nu-510`.
+
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
 profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also
 filled with the committed baseline. Enforced by `generate_all_profiles.py --manifest-out`
