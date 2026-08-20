@@ -27,8 +27,14 @@ def _profil(**compte) -> dict:
 
 
 def _releve(**compte) -> dict:
+    """Relevé d'un profil : longueurs de listes, aucun scalaire surveillé.
+
+    Depuis #470 un relevé porte deux espaces de noms — les listes et les
+    scalaires — pour qu'un champ nommé `votes` ne puisse pas entrer en
+    collision avec un scalaire du même nom."""
     from audit_diff_profils import TOUS_CHAMPS
-    return {c: compte.get(c, 0) for c in TOUS_CHAMPS}
+    return {"listes": {c: compte.get(c, 0) for c in TOUS_CHAMPS},
+            "scalaires": {}, "lu": True}
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +52,7 @@ def test_profil_entierement_disparu_est_une_perte():
     """Le pire cas : un profil que la régénération n'a pas produit."""
     r = comparer({"a.json": _releve(votes=100)}, {})
     assert len(r["pertes_sur_champs_stables"]) == 1
-    assert r["pertes_sur_champs_stables"][0]["champ"] == "(profil entier)"
+    assert r["pertes_sur_champs_stables"][0]["champ"] == "(fichier entier)"
 
 
 def test_baisse_amendements_signalee_mais_pas_bloquante():
@@ -112,8 +118,8 @@ def test_lecture_disque_compte_les_entrees(tmp_path):
     (tmp_path / "a.json").write_text(
         json.dumps(_profil(votes=3, amendements=5)), encoding="utf-8")
     releve = lire_profils_disque(tmp_path)
-    assert releve["a.json"]["votes"] == 3
-    assert releve["a.json"]["amendements"] == 5
+    assert releve["a.json"]["listes"]["votes"] == 3
+    assert releve["a.json"]["listes"]["amendements"] == 5
 
 
 def test_lecture_disque_ignore_un_json_illisible(tmp_path):
@@ -173,10 +179,10 @@ def test_lecture_git_compte_chaque_profil(tmp_path, monkeypatch):
 
     releve = lire_profils_git("HEAD", "pivot_data/profiles")
 
-    assert releve["alice.pivot.json"]["votes"] == 3
-    assert releve["alice.pivot.json"]["amendements"] == 1
-    assert releve["bob.pivot.json"]["mandats"] == 2
-    assert releve["bob.pivot.json"]["interventions"] == 0
+    assert releve["alice.pivot.json"]["listes"]["votes"] == 3
+    assert releve["alice.pivot.json"]["listes"]["amendements"] == 1
+    assert releve["bob.pivot.json"]["listes"]["mandats"] == 2
+    assert releve["bob.pivot.json"]["listes"]["interventions"] == 0
 
 
 def test_lecture_git_reste_correcte_sur_un_grand_nombre_de_profils(tmp_path, monkeypatch):
@@ -195,7 +201,7 @@ def test_lecture_git_reste_correcte_sur_un_grand_nombre_de_profils(tmp_path, mon
 
     assert len(releve) == 60
     for i in range(60):
-        assert releve[f"membre-{i:03d}.pivot.json"]["votes"] == i, i
+        assert releve[f"membre-{i:03d}.pivot.json"]["listes"]["votes"] == i, i
 
 
 def test_lecture_git_supporte_des_profils_de_tailles_tres_inegales(tmp_path, monkeypatch):
@@ -210,9 +216,9 @@ def test_lecture_git_supporte_des_profils_de_tailles_tres_inegales(tmp_path, mon
 
     releve = lire_profils_git("HEAD", "pivot_data/profiles")
 
-    assert releve["petit.pivot.json"]["votes"] == 1
-    assert releve["gros.pivot.json"]["votes"] == 2000
-    assert releve["apres.pivot.json"]["votes"] == 2
+    assert releve["petit.pivot.json"]["listes"]["votes"] == 1
+    assert releve["gros.pivot.json"]["listes"]["votes"] == 2000
+    assert releve["apres.pivot.json"]["listes"]["votes"] == 2
 
 
 def test_lecture_git_ignore_un_json_illisible_sans_desynchroniser(tmp_path, monkeypatch):
@@ -230,7 +236,7 @@ def test_lecture_git_ignore_un_json_illisible_sans_desynchroniser(tmp_path, monk
     releve = lire_profils_git("HEAD", "pivot_data/profiles")
 
     assert "casse.pivot.json" not in releve
-    assert releve["zoe.pivot.json"]["votes"] == 3
+    assert releve["zoe.pivot.json"]["listes"]["votes"] == 3
 
 
 def test_lecture_git_chemin_absent_de_la_reference_echoue_clairement(tmp_path, monkeypatch):

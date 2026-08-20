@@ -130,16 +130,31 @@ Profiles were the only place not applying it, which cost 18 721 amendements and 
 `jean-luc-melenchon`, and 23 textes portés on `marine-le-pen` **with no warning in the profile**.
 See `docs/technical_decisions.md#collecte-vide-necrase-jamais`.
 
-**Loss check before commit (#460)**: `merge-and-pivot` runs `src/audit_diff_profils.py
---ref HEAD` **before** the commit step, and a loss on a stable field (`votes`, `mandats`,
-`textes_portes`, `interventions`, `dossiers_legislatifs`) **aborts the commit**. A run may
-legitimately lose entries — declare it with the `tolerer_pertes_profils` input, never by
-removing the check. Guarded by `tests/test_ci_controle_perte_profils.py`.
+**Loss check before commit (#460, scope extended by #470)**: `merge-and-pivot` runs
+`src/audit_diff_profils.py --ref HEAD` **before** the commit step, over **all of
+`pivot_data/`** — the five published layers plus the two shared indexes. Three findings
+abort the commit: a file that **disappeared**; a **drop on a stable list** (profiles:
+`votes`, `mandats`, `textes_portes`, `interventions`, `tags_thematiques`,
+`dossiers_legislatifs` — groupes: `membres`, `cohesion_votes`, `mandats_agreges`,
+`tags_thematiques_agreges`, `historique_noms` — partis: `candidats`,
+`tags_thematiques_agreges` — gouvernements: `membres`, `textes`); a **watched scalar going
+from populated to `null`** (`parti`, `groupe`, `chambre`, `identite`, `meta.provenance`,
+`premier_ministre`, `meta.couverture_roster.roster_total`…). Reported but **non-blocking**:
+drops on `amendements` and `sources`, drops in the shared indexes' distinct-entry counts,
+and any scalar **value change** (A → B) — measured over 13 committed transitions, every
+`populated → null` was a real defect and nearly every value change was a legitimate
+normalisation. A run may legitimately lose entries — declare it with the
+`tolerer_pertes_profils` input, never by removing the check. Guarded by
+`tests/test_ci_controle_perte_profils.py` and `tests/test_audit_diff_agregats.py`.
 Why it exists: `extract_interventions=false` (skip collection, intended) combined with
 `overwrite_profiles=true` (rewrite without what wasn't collected, also intended) erased the
 corpus's 789 interventions — and with them 647 `tags_thematiques` and 497 aggregated tags,
 all **published** fields. The quality gate could not catch it: it measures a *level*, not a
-*variation*. See `docs/technical_decisions.md#controle-de-perte-avant-commit`.
+*variation*. Why the scope grew: with only profile list-lengths watched, SOC-16's
+`cohesion_votes` fell 814 → 0 (a **published denominator**, §2.7) and `parti` regressed to
+`null` on three profiles, both while the check was running.
+See `docs/technical_decisions.md#controle-de-perte-avant-commit` and
+`#perimetre-controle-perte`.
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
