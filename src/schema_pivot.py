@@ -366,13 +366,18 @@ def deriver_chambres(
         if not isinstance(m, dict) or m.get("categorie") != "mandat_electif":
             continue
         chambre_mandat = m.get("chambre")
-        if chambre_mandat in KNOWN_CHAMBRES:
+        # `isinstance(..., str)` avant l'appartenance : un profil malformé peut
+        # porter une liste ou un dict là, et `x in frozenset` lève alors un
+        # TypeError. Cette fonction tourne dans le pipeline, avant toute
+        # validation — une entrée mal formée doit produire « chambre non
+        # déterminée », pas tuer un shard d'extraction.
+        if isinstance(chambre_mandat, str) and chambre_mandat in KNOWN_CHAMBRES:
             estampillees.add(chambre_mandat)
         else:
             n_non_estampilles += 1
 
     toutes = set(estampillees)
-    if repli in KNOWN_CHAMBRES:
+    if isinstance(repli, str) and repli in KNOWN_CHAMBRES:
         toutes.add(repli)
 
     chambres = [c for c in ORDRE_CHAMBRES if c in toutes]

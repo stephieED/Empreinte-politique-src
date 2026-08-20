@@ -467,3 +467,13 @@ def test_un_profil_ancien_sans_chambres_est_fusionnable():
     fusionne = merge_pivot_profile(ancien, neuf)
     assert fusionne["chambres"] == ["AN"]
     assert fusionne["chambre"] == "AN"
+
+
+def test_un_profil_malforme_ne_tue_pas_le_pipeline():
+    """`deriver_chambres` tourne dans le pipeline, **avant** toute validation.
+    Une `chambre` qui n'est pas une chaîne doit produire « non déterminée », pas
+    un `TypeError` (`x in frozenset` lève sur une valeur non hashable) — un shard
+    d'extraction qui meurt n'écrit aucun profil du tout (#498)."""
+    d = deriver_chambres([{"categorie": "mandat_electif", "chambre": ["AN"]}], repli={"x": 1})
+    assert d.chambres == []
+    assert d.mandats_non_estampilles == 1
