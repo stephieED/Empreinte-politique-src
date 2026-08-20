@@ -3992,6 +3992,7 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
             return {}
 
         index: dict[str, list[dict[str, Any]]] = {}
+        complet = True
 
         for sous_type, (dossier, fichier) in question_types.items():
             url = f"{AN_OPENDATA_BASE}/{legislature}/questions/{dossier}/{fichier}"
@@ -4002,6 +4003,7 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
                 download_with_watchdog(url, zip_path, headers=HEADERS, timeout=TIMEOUT)
             except (requests.RequestException, OSError, TimeoutError) as exc:
                 print(f"  [!] Questions {sous_type} législature {legislature} indisponibles : {exc}")
+                complet = False
                 continue
 
             try:
@@ -4020,6 +4022,26 @@ def _build_acteur_questions_index(legislature: str) -> dict[str, list[dict[str, 
                         index.setdefault(acteur_ref, []).append(record)
             except zipfile.BadZipFile as exc:
                 print(f"  [!] Archive de questions {sous_type} législature {legislature} invalide : {exc}")
+                complet = False
+
+        # #505 : l'index n'est mis en cache QUE s'il est complet. Le
+        # commentaire de `fetch_questions_officielles` affirmait déjà que
+        # « l'index par acteur n'est écrit en cache qu'une fois la législature
+        # entièrement lue » — ce n'était pas vrai : il était écrit même après
+        # l'échec d'une des trois archives. Mesuré le 20/08/2026 sur la
+        # législature 17 (QE en `IncompleteRead`) : un index de 16,8 Mo mis en
+        # cache avec les seules QG/QOSD, 2 611 questions au lieu du compte
+        # réel. Tant que cet index vivait dans le seul runner qui l'avait
+        # construit, le défaut se limitait à ce shard. Depuis que la clé de
+        # cache le partage entre tous les shards (#505), une seule coupure
+        # réseau figerait pour la semaine une collecte tronquée présentée comme
+        # faite — un « 0 » qui n'est pas une absence mesurée (§2.5).
+        if not complet:
+            print(
+                f"  [!] Index des questions (législature {legislature}) NON mis en cache : "
+                "au moins une archive n'a pas pu être lue."
+            )
+            return index
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
@@ -4054,9 +4076,12 @@ def fetch_questions_officielles(
     for rang, legislature in enumerate(legislatures):
         # #498 : une législature = jusqu'à 3 archives (QE/QG/QOSD) de plusieurs
         # dizaines de Mo. Le budget est vérifié AVANT d'en engager une, jamais au
-        # milieu : l'index par acteur n'est écrit en cache qu'une fois la
-        # législature entièrement lue, et un index partiel ferait passer une
-        # collecte incomplète pour une collecte faite.
+        # milieu, pour qu'un index partiel ne fasse pas passer une collecte
+        # incomplète pour une collecte faite.
+        # Le budget seul n'y suffisait pas : jusqu'à #505 l'index était écrit en
+        # cache même quand une des trois archives avait échoué en cours de
+        # législature. C'est `_build_acteur_questions_index` qui refuse
+        # désormais de le mettre en cache dans ce cas.
         if budget_epuise(budget):
             budget_ignorer(budget, "législature(s) de questions officielles", len(legislatures) - rang)
             break
@@ -4156,17 +4181,32 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 pass
 
         index: dict[str, list[dict[str, Any]]] = {}
+        fichiers_lus = 0
         for xml_path in iter_syceron_xml_files(legislature):
             try:
                 parsed = parse_syceron_xml(xml_path.read_bytes())
             except (ET.ParseError, OSError):
                 continue
+            fichiers_lus += 1
             for idx, intervention in enumerate(parsed.get("interventions") or []):
                 parsed_entry = _parse_syceron_intervention_entry(intervention, legislature, idx)
                 if parsed_entry is None:
                     continue
                 acteur_ref, record = parsed_entry
                 index.setdefault(acteur_ref, []).append(record)
+
+        # #505, même règle que pour les questions officielles : ne jamais mettre
+        # en cache un index construit sur une archive absente. `iter_syceron_xml_files`
+        # rend un itérateur VIDE quand le téléchargement échoue — indiscernable,
+        # une fois l'index écrit, d'une législature réellement sans débats.
+        # L'index étant désormais partagé entre les shards par la clé de cache,
+        # un tel `{}` se propagerait à toute la semaine (§2.5).
+        if fichiers_lus == 0:
+            print(
+                f"  [!] Index des débats Syceron (législature {legislature}) NON mis en "
+                "cache : aucun compte rendu lisible (archive indisponible ?)."
+            )
+            return index
 
         try:
             index_path.parent.mkdir(parents=True, exist_ok=True)
