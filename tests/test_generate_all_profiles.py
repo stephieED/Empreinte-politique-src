@@ -1178,3 +1178,325 @@ def test_le_compteur_dappels_suit_get_payload(monkeypatch):
     candidate_profile._get_payload("https://www.nosdeputes.fr/alice/json")
 
     assert candidate_profile.compteur_appels_nosdeputes() > avant
+
+
+# ---------------------------------------------------------------------------
+# #488 (épic #486) : interroger les deux chambres pour un CANDIDAT, ne plus
+# avaler les échecs.
+#
+# Avant : `build_profile_any_chambre` retenait la première chambre qui rendait
+# une identité et un `except Exception: continue` avalait le reste. Deux effets
+# observés — Retailleau, sénateur en exercice, publié `chambre: "AN"`, et
+# Mélenchon basculé de `AN` à `Senat` par une défaillance réseau (#484).
+#
+# Le périmètre est la provenance, pas la chambre : la collecte bicamérale ne
+# vaut que pour un profil de CANDIDAT (`candidat_declare`, 8 slugs résolvables),
+# où un passé sénatorial est un fait de carrière publié. Pour un membre de
+# roster (`roster_groupe`, 201 des 209 profils), aucun groupe sénatorial n'est
+# agrégé — les deux `groupe-Senat-*.json` publiés portent `cohesion_votes: 0` —
+# donc le comportement historique est conservé, et le coût mesuré
+# (+30,6 min/shard) n'est pas engagé.
+#
+# Toutes les doublures ci-dessous sont locales : aucun appel réseau, aucune
+# lecture de `pivot_data/` ni de `raw_data/profiles/`.
+# ---------------------------------------------------------------------------
+
+def _build_profile_espion(reponses: dict, echecs: dict | None = None):
+    """Doublure de `build_profile` qui note les chambres réellement demandées.
+
+    `reponses` : chambre -> profil brut (ou absente pour « pas d'identité »).
+    `echecs`   : chambre -> exception à lever.
+    Renvoie `(doublure, chambres_appelees)`.
+    """
+    chambres_appelees: list[str] = []
+
+    def _build(chambre, slug, **kwargs):
+        chambres_appelees.append(chambre)
+        if echecs and chambre in echecs:
+            raise echecs[chambre]
+        profil = reponses.get(chambre)
+        if profil is None:
+            vide = _fake_raw_profile(slug, chambre=chambre)
+            vide["identite"] = None
+            return vide
+        return profil
+
+    return _build, chambres_appelees
+
+
+def _executer_process_candidat(
+    tmp_path, monkeypatch, build_double, statut="candidat_declare", **args_overrides
+):
+    """Exécute `process_candidat` sur un candidat de la provenance demandée.
+
+    `statut="roster_groupe"` produit `meta.provenance = "roster_groupe"` ;
+    toute autre valeur (dont le défaut) produit `"candidat_declare"`.
+    """
+    monkeypatch.setattr(generate_all_profiles, "build_profile", build_double)
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    pivot_dir = tmp_path / "pivots"
+    out_dir.mkdir()
+    pivot_dir.mkdir()
+
+    resultat = process_candidat(
+        {"nom": "Alice", "slug": "alice", "parti": None, "statut": statut},
+        _make_args(**args_overrides), out_dir, pivot_dir,
+    )
+    return resultat, out_dir, pivot_dir
+
+
+def _profils_des_deux_chambres():
+    profil_senat = _fake_raw_profile("alice", chambre="senateurs")
+    profil_senat["source"] = "https://archive.nossenateurs.fr/alice"
+    return {
+        "deputes": _fake_raw_profile("alice", chambre="deputes"),
+        "senateurs": profil_senat,
+    }
+
+
+# --- Le périmètre : candidat oui, roster non -------------------------------
+
+def test_un_candidat_declare_interroge_les_deux_chambres(tmp_path, monkeypatch):
+    """Le correctif de fond, là où il sert : on ne s'arrête plus à la première
+    chambre qui répond pour un profil de candidat."""
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    resultat, _, _ = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    assert resultat["statut"] == "ok"
+    assert appelees == ["deputes", "senateurs"]
+
+
+def test_un_membre_de_roster_sarrete_a_la_premiere_chambre(tmp_path, monkeypatch):
+    """Le périmètre, et le budget : aucun groupe sénatorial n'étant agrégé, le
+    passé sénatorial d'un membre de roster n'alimente rien. L'interroger
+    coûterait deux requêtes à ~9,5 s de médiane pour 752 membres."""
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    resultat, _, pivot_dir = _executer_process_candidat(
+        tmp_path, monkeypatch, double, statut="roster_groupe",
+    )
+
+    assert appelees == ["deputes"]
+    assert resultat["statut"] == "ok"
+    pivot = json.loads((pivot_dir / "alice.pivot.json").read_text(encoding="utf-8"))
+    assert pivot["meta"]["provenance"] == "roster_groupe"
+    # Pas de bruit « carrière sur deux chambres » sur une information hors
+    # périmètre : le cas ne peut structurellement pas se produire ici.
+    assert not [
+        w for w in pivot["meta"]["warnings"]
+        if w.startswith(generate_all_profiles.WARNING_PREFIX_DEUX_CHAMBRES)
+    ], pivot["meta"]["warnings"]
+
+
+def test_un_membre_de_roster_retombe_toujours_sur_le_senat(tmp_path, monkeypatch):
+    """Le repli historique reste indispensable : un sénateur de roster n'est
+    trouvé que par la chambre 'senateurs'. S'arrêter à la première qui *répond*
+    n'est pas s'arrêter à la première *essayée*."""
+    profils = _profils_des_deux_chambres()
+    del profils["deputes"]
+    double, appelees = _build_profile_espion(profils)
+
+    resultat, _, _ = _executer_process_candidat(
+        tmp_path, monkeypatch, double, statut="roster_groupe",
+    )
+
+    assert appelees == ["deputes", "senateurs"]
+    assert resultat["chambre"] == "senateurs"
+
+
+# --- Le scope de --source ---------------------------------------------------
+
+def test_source_an_reste_scope_a_lassemblee(tmp_path, monkeypatch):
+    """`--source an` restreint `chambres_fr` : le garde-fou ne doit pas sauter,
+    même pour un candidat."""
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    _executer_process_candidat(tmp_path, monkeypatch, double, source="an")
+
+    assert appelees == ["deputes"]
+
+
+def test_source_senat_reste_scope_au_senat(tmp_path, monkeypatch):
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    _executer_process_candidat(tmp_path, monkeypatch, double, source="senat")
+
+    assert appelees == ["senateurs"]
+
+
+def test_source_senat_reste_scope_meme_pour_un_membre_de_roster(tmp_path, monkeypatch):
+    """Une extraction explicitement scopée reste scopée quelle que soit la
+    provenance : c'est ainsi que le job extract-senat collecte les sénateurs."""
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    _executer_process_candidat(
+        tmp_path, monkeypatch, double, statut="roster_groupe", source="senat",
+    )
+
+    assert appelees == ["senateurs"]
+
+
+# --- Les warnings publiés ---------------------------------------------------
+
+def test_deux_chambres_qui_repondent_produisent_un_warning_publie(tmp_path, monkeypatch):
+    """Le cas Retailleau. La chambre publiée ne change pas — la dériver des
+    mandats est la sous-issue D de #486 et effacerait l'autre carrière — mais
+    elle cesse d'être muette : le profil dit qu'une identité existe des deux
+    côtés, et que 'AN' vient d'une convention d'ordre."""
+    double, appelees = _build_profile_espion(_profils_des_deux_chambres())
+
+    resultat, _, pivot_dir = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    assert appelees == ["deputes", "senateurs"]
+    assert resultat["chambre"] == "deputes"
+    pivot = json.loads((pivot_dir / "alice.pivot.json").read_text(encoding="utf-8"))
+    assert pivot["chambre"] == "AN"
+    warnings = pivot["meta"]["warnings"]
+    warning = next(
+        w for w in warnings
+        if w.startswith(generate_all_profiles.WARNING_PREFIX_DEUX_CHAMBRES)
+    )
+    # Le warning est exploitable : il nomme l'autre chambre et sa source.
+    assert "senateurs" in warning
+    assert "https://archive.nossenateurs.fr/alice" in warning
+
+
+def test_une_chambre_en_echec_et_lautre_qui_repond_produit_un_warning(tmp_path, monkeypatch):
+    """Le cas Mélenchon (#484) : une défaillance transitoire de la première
+    chambre réattribuait la chambre publiée, et l'`except Exception: continue`
+    n'en laissait qu'une ligne de log dans un run que personne ne relit."""
+    profils = _profils_des_deux_chambres()
+    del profils["deputes"]
+    double, appelees = _build_profile_espion(
+        profils, echecs={"deputes": RuntimeError("nosdeputes.fr injoignable")},
+    )
+
+    resultat, _, pivot_dir = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    assert appelees == ["deputes", "senateurs"]
+    assert resultat["chambre"] == "senateurs"
+    pivot = json.loads((pivot_dir / "alice.pivot.json").read_text(encoding="utf-8"))
+    assert pivot["chambre"] == "Senat"
+    warning = next(
+        w for w in pivot["meta"]["warnings"]
+        if w.startswith(generate_all_profiles.WARNING_PREFIX_CHAMBRE_EN_ECHEC)
+    )
+    assert "deputes" in warning
+    assert "nosdeputes.fr injoignable" in warning
+
+
+def test_lechec_asymetrique_est_trace_aussi_sur_un_membre_de_roster(tmp_path, monkeypatch):
+    """Ce warning-là n'est PAS restreint aux candidats, et c'est délibéré : il
+    ne se déclenche que sur une exception réelle — jamais en régime nominal —
+    et il signale une chambre publiée qu'une panne a choisie à notre place
+    (AGENTS.md §2.5). `chambre` est lu par group_profile et le contrôle de
+    perte ; le taire sur 201 profils rétablirait le silence que #488 corrige."""
+    profils = _profils_des_deux_chambres()
+    del profils["deputes"]
+    double, _ = _build_profile_espion(
+        profils, echecs={"deputes": RuntimeError("nosdeputes.fr injoignable")},
+    )
+
+    _, _, pivot_dir = _executer_process_candidat(
+        tmp_path, monkeypatch, double, statut="roster_groupe",
+    )
+
+    pivot = json.loads((pivot_dir / "alice.pivot.json").read_text(encoding="utf-8"))
+    assert any(
+        w.startswith(generate_all_profiles.WARNING_PREFIX_CHAMBRE_EN_ECHEC)
+        for w in pivot["meta"]["warnings"]
+    ), pivot["meta"]["warnings"]
+
+
+def test_aucun_warning_de_chambre_en_regime_nominal(tmp_path, monkeypatch):
+    """Un candidat que le Sénat ne connaît pas ne produit aucun warning de
+    chambre : une absence constatée n'est pas une anomalie."""
+    profils = _profils_des_deux_chambres()
+    del profils["senateurs"]
+    double, appelees = _build_profile_espion(profils)
+
+    _, _, pivot_dir = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    assert appelees == ["deputes", "senateurs"]
+    pivot = json.loads((pivot_dir / "alice.pivot.json").read_text(encoding="utf-8"))
+    prefixes_chambre = (
+        generate_all_profiles.WARNING_PREFIX_CHAMBRE_EN_ECHEC,
+        generate_all_profiles.WARNING_PREFIX_DEUX_CHAMBRES,
+    )
+    assert not [
+        w for w in pivot["meta"]["warnings"] if w.startswith(prefixes_chambre)
+    ], pivot["meta"]["warnings"]
+
+
+def test_aucune_chambre_ne_repond_reste_introuvable(tmp_path, monkeypatch):
+    """Cas déjà géré, et qui doit le rester : sans identité ni mandat européen,
+    aucun profil n'est écrit."""
+    double, appelees = _build_profile_espion({})
+
+    resultat, out_dir, _ = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    assert appelees == ["deputes", "senateurs"]
+    assert resultat["statut"] == "introuvable"
+    assert not list(out_dir.glob("*.json"))
+
+
+def test_echec_total_de_la_collecte_fr_trace_dans_le_profil_minimal(tmp_path, monkeypatch):
+    """#484 : quand la collecte FR échoue et qu'un mandat européen existe, le
+    squelette `build_minimal_profile` est écrit — et la fusion additive garde
+    l'ancienne `chambre` non-null. La raison de l'échec part au moins avec lui
+    dans le profil brut, au lieu de disparaître dans le log du run."""
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile_ue",
+        lambda nom: {"identifiant_pe": 12345, "nom_complet": nom, "mandats_europeens": []},
+    )
+    double, _ = _build_profile_espion(
+        {},
+        echecs={
+            "deputes": RuntimeError("nosdeputes.fr injoignable"),
+            "senateurs": RuntimeError("archive.nossenateurs.fr injoignable"),
+        },
+    )
+
+    _, out_dir, _ = _executer_process_candidat(
+        tmp_path, monkeypatch, double, skip_ue=False, pivot=False,
+    )
+
+    brut = json.loads((out_dir / "alice.json").read_text(encoding="utf-8"))
+    assert brut["chambre"] is None
+    en_echec = [
+        w for w in brut["meta"]["warnings"]
+        if w.startswith(generate_all_profiles.WARNING_PREFIX_CHAMBRE_EN_ECHEC)
+    ]
+    assert len(en_echec) == 2, brut["meta"]["warnings"]
+    assert any("deputes" in w for w in en_echec)
+    assert any("senateurs" in w for w in en_echec)
+
+
+# --- Aucun mandat n'est ajouté par cette collecte ---------------------------
+
+def test_le_profil_de_lautre_chambre_nest_pas_fusionne(tmp_path, monkeypatch):
+    """Garde-fou de périmètre. Porter la chambre sur chaque mandat est la
+    sous-issue C de #486 ; fusionner ici les mandats des deux chambres
+    élargirait au passage la fenêtre d'éligibilité de
+    `group_profile._member_eligibility_intervals`, qui prend l'union de TOUS
+    les `mandat_electif` sans distinction de chambre. Rien ne doit sortir de la
+    seconde chambre à part un warning."""
+    profils = _profils_des_deux_chambres()
+    profils["deputes"]["mandats"] = [
+        {"categorie": "mandat_electif", "label": "Mandat AN",
+         "debut": "2022-06-22", "fin": "2024-06-09"},
+    ]
+    profils["senateurs"]["mandats"] = [
+        {"categorie": "mandat_electif", "label": "Mandat Sénat",
+         "debut": "2004-09-26", "fin": None},
+    ]
+    double, _ = _build_profile_espion(profils)
+
+    _, out_dir, _ = _executer_process_candidat(tmp_path, monkeypatch, double)
+
+    brut = json.loads((out_dir / "alice.json").read_text(encoding="utf-8"))
+    labels = [m.get("label") for m in brut["mandats"]]
+    assert labels == ["Mandat AN"], labels

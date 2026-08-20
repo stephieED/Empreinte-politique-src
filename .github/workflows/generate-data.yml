@@ -1044,6 +1044,21 @@ jobs:
   # gitignoré, donc un shard préempté perd sa tranche et elle seule.
   # Ce n'est plus le timeout qui impose de sharder.
   #
+  # #488 NE CHANGE RIEN À CE BUDGET, et c'est le résultat d'une mesure.
+  # Ce job est le seul à omettre --source, donc le seul qui aurait pu payer
+  # l'interrogation systématique du Sénat. Elle est restreinte aux profils de
+  # CANDIDATS (meta.provenance = candidat_declare) : un membre de roster garde
+  # le comportement historique — on s'arrête à la première chambre qui répond.
+  # Coût évité, mesuré le 20/08/2026 : 2 requêtes vers archive.nossenateurs.fr
+  # à ~9,5 s de médiane par membre, soit +30,6 min PAR SHARD et +4 h 04 à
+  # pleine échelle, plus le retour de la temporisation de courtoisie que #467
+  # avait supprimée (0,5 s par membre, puisque la source serait de nouveau
+  # réellement appelée).
+  # Raison éditoriale, indépendante du coût : aucun groupe sénatorial n'est
+  # agrégé (les deux groupe-Senat-*.json publiés portent cohesion_votes: 0),
+  # donc le passé sénatorial d'un membre de roster n'alimente aucun agrégat.
+  # Voir docs/technical_decisions.md#deux-chambres-interrogees.
+  #
   # ATTENTION, le shardage n'est pas gratuit : ~130 s de frais fixes par shard
   # (mesuré), dont ~110 s de `actions/checkout`. À max-parallel: 1 c'était
   # 8 × 130 s = ~17 min de temps mur pour zéro travail utile — c'est ce que

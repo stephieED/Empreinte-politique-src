@@ -108,6 +108,12 @@ DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 
 CHAMBRES = ["deputes", "senateurs"]
 
+# Préfixes de warnings publiés dans `meta.warnings` du profil (#488). Même
+# convention que candidate_profile.WARNING_PREFIX_* : le texte avant le premier
+# ':' est le *type* agrégé par audit_pivot_dataset.compute_agregation_warnings.
+WARNING_PREFIX_CHAMBRE_EN_ECHEC = "collecte de chambre en échec"
+WARNING_PREFIX_DEUX_CHAMBRES = "carrière sur deux chambres"
+
 # Répertoire de cache ParlTrack — identique à parltrack_dumps.PARLTRACK_CACHE_DIR.
 _PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
 
@@ -358,11 +364,69 @@ def build_profile_any_chambre(
     chambres: Optional[list[str]] = None,
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
-) -> tuple[Optional[dict], Optional[str]]:
-    """Essaie les chambres indiquées (défaut : deputes puis senateurs) et renvoie
-    le premier profil avec une identité exploitable."""
+    collecte_bicamerale: bool = False,
+) -> tuple[Optional[dict], Optional[str], list[str]]:
+    """Collecte le profil FR et renvoie `(profil_retenu, chambre_retenue, warnings)`.
+
+    Avant #488, cette fonction s'arrêtait à la première chambre qui rendait une
+    identité, et un `except Exception: continue` avalait les échecs sans laisser
+    de trace ailleurs qu'en log. Deux conséquences mesurées dans le corpus :
+
+    - un parlementaire présent des deux côtés était classé par **l'ordre de la
+      boucle** — cas Retailleau, sénateur en exercice publié `chambre: "AN"` ;
+    - une **défaillance transitoire** de la première chambre faisait basculer
+      la chambre publiée sur la seconde, sans warning (cas Mélenchon, #484).
+
+    Deux régimes, séparés par `collecte_bicamerale` :
+
+    **`collecte_bicamerale=True` — profils de candidats** (`meta.provenance ==
+    "candidat_declare"`, 8 slugs résolvables sur les 13 de
+    `raw_data/candidats.json`). Toutes les chambres de `chambres` sont
+    interrogées, et non plus seulement la première qui répond. C'est le seul
+    endroit où un passé sénatorial a un usage : **biographique**, sur un CV
+    (« a été sénateur de 2004 à 2010 »).
+
+    **`collecte_bicamerale=False` — membres de roster** (`roster_groupe`, 201
+    des 209 profils). Comportement historique : on s'arrête à la première
+    chambre qui répond. Aucun groupe sénatorial n'est agrégé — aucun jeu de
+    données Sénat structuré n'est exploitable, voir
+    `docs/technical_decisions.md` § *Senate votes, amendments, sponsored texts*,
+    et les deux `groupe-Senat-*.json` publiés portent `cohesion_votes: 0`. Le
+    passé sénatorial d'un membre de roster n'alimente donc rien, et le collecter
+    coûterait deux requêtes à ~9,5 s de médiane pour 752 membres, soit
+    **+30,6 min par shard** et **+4 h 04** à pleine échelle (mesuré le
+    20/08/2026, voir `docs/technical_decisions.md#deux-chambres-interrogees`).
+
+    Ce que fait cette version, dans les deux régimes :
+
+    1. **quand une chambre échoue**, elle nomme la chambre et la raison dans un
+       warning publié (AGENTS.md §2.5) — y compris pour un profil de roster :
+       le warning ne se déclenche que sur une exception réelle, jamais en
+       régime nominal, et c'est exactement l'échec que #484 a vu disparaître
+       dans un log de run ;
+    2. **quand les deux chambres répondent** (bicaméral seulement), elle retient
+       la première de `chambres` — une *convention d'ordre*, explicitement
+       nommée dans un warning publié, pas une détermination. Choisir « la
+       chambre du mandat en cours » reviendrait à dériver `chambre` des
+       mandats : c'est la sous-issue D de #486, et l'appliquer ici effacerait
+       la carrière AN de Retailleau comme on efface aujourd'hui son mandat
+       sénatorial — un fait faux remplacé par un autre (#486) ;
+    3. elle ne fusionne PAS les deux profils bruts : porter la chambre sur
+       chaque mandat est la sous-issue C de #486. Aucun mandat n'est donc ajouté
+       à aucun profil par cette fonction, et les dénominateurs de cohésion de
+       `group_profile` sont hors d'atteinte.
+
+    Les warnings renvoyés sont aussi ajoutés à `meta.warnings` du profil retenu
+    (donc propagés au pivot par `normalize_nosdeputes`), et rendus à l'appelant
+    pour le cas où aucune chambre ne répond — le profil minimal doit alors
+    porter la trace de l'échec (#484).
+    """
     if chambres is None:
         chambres = CHAMBRES
+
+    resultats: list[tuple[str, dict]] = []
+    echecs: list[tuple[str, str]] = []
+
     for chambre in chambres:
         try:
             profile = build_profile(
@@ -374,10 +438,52 @@ def build_profile_any_chambre(
             )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
+            echecs.append((chambre, f"{type(exc).__name__}: {exc}"))
             continue
         if profile.get("identite"):
-            return profile, chambre
-    return None, None
+            resultats.append((chambre, profile))
+            if not collecte_bicamerale:
+                break
+
+    warnings: list[str] = []
+
+    if not resultats:
+        # Aucune chambre ne rend d'identité : le candidat est introuvable côté
+        # FR (cas déjà géré par l'appelant). L'échec reste consigné — c'est
+        # celui-là que #484 a vu disparaître dans un log de run.
+        for chambre, raison in echecs:
+            warnings.append(
+                f"{WARNING_PREFIX_CHAMBRE_EN_ECHEC} : la collecte '{chambre}' a échoué "
+                f"({raison}) et aucune autre chambre n'a rendu d'identité — la chambre "
+                f"de ce profil n'a pas été résolue par cette collecte (#488)."
+            )
+        return None, None, warnings
+
+    chambre_retenue, profil_retenu = resultats[0]
+
+    for chambre, raison in echecs:
+        warnings.append(
+            f"{WARNING_PREFIX_CHAMBRE_EN_ECHEC} : la collecte '{chambre}' a échoué "
+            f"({raison}) alors que '{chambre_retenue}' a répondu — la chambre publiée est "
+            f"celle qui a répondu, pas le résultat d'une comparaison des deux (#488)."
+        )
+
+    if len(resultats) > 1:
+        autres = ", ".join(
+            f"'{chambre}' ({profil.get('source')})" for chambre, profil in resultats[1:]
+        )
+        warnings.append(
+            f"{WARNING_PREFIX_DEUX_CHAMBRES} : une identité a aussi été trouvée sur "
+            f"{autres}. La chambre publiée est '{chambre_retenue}', par convention d'ordre "
+            f"de collecte et non par comparaison des mandats ; les mandats de l'autre "
+            f"chambre ne sont pas publiés tant que #486 (sous-issues C/D) n'a pas porté la "
+            f"chambre sur chaque mandat."
+        )
+
+    if warnings:
+        profil_retenu.setdefault("meta", {}).setdefault("warnings", []).extend(warnings)
+
+    return profil_retenu, chambre_retenue, warnings
 
 
 def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any]) -> dict[str, Any]:
@@ -494,6 +600,14 @@ def process_candidat(
 
     source = getattr(args, "source", "all")
 
+    # provenance (#189) : "roster_groupe" pour les entrées produites par
+    # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
+    # sinon (raw_data/candidats.json, comportement historique par défaut).
+    # Calculée ici, et plus seulement au moment de la normalisation pivot : depuis
+    # #488 elle décide aussi si la collecte est bicamérale (voir
+    # build_profile_any_chambre).
+    provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
+
     # ── Mode --pivot-only : pas de réseau, juste normalisation ──────────────
     if getattr(args, "pivot_only", False):
         if not json_path.exists():
@@ -510,10 +624,6 @@ def process_candidat(
         chambre = profile.get("chambre")
         mandat_ue = profile.get("mandat_europeen")
         parti = candidat.get("parti")
-        # provenance (#189) : "roster_groupe" pour les entrées produites par
-        # generate_roster_candidats.py (#188, statut="roster_groupe"), "candidat_declare"
-        # sinon (raw_data/candidats.json, comportement historique par défaut).
-        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
 
         pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
@@ -579,19 +689,25 @@ def process_candidat(
     profile: Optional[dict] = None
     chambre: Optional[str] = None
     mandat_ue: Optional[dict] = None
+    warnings_chambres: list[str] = []
 
-    def _fetch_fr() -> tuple[Optional[dict], Optional[str]]:
+    def _fetch_fr() -> tuple[Optional[dict], Optional[str], list[str]]:
         if not chambres_fr:
-            return None, None
+            return None, None, []
         if not slug:
             _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés/NosSénateurs).")
-            return None, None
+            return None, None, []
         result = build_profile_any_chambre(
             slug,
             args.max_pages,
             chambres=chambres_fr,
             skip_interventions=args.skip_interventions,
             skip_dossiers_legislatifs=args.skip_dossiers_legislatifs,
+            # #488 : les deux chambres ne sont interrogées que pour un profil de
+            # CANDIDAT. Pour un membre de roster, un passé sénatorial n'alimente
+            # aucun agrégat (aucun groupe sénatorial n'est agrégé) et coûterait
+            # +30,6 min par shard — voir le docstring de la fonction.
+            collecte_bicamerale=(provenance == "candidat_declare"),
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
@@ -623,7 +739,7 @@ def process_candidat(
     with ThreadPoolExecutor(max_workers=2) as pool:
         future_fr = pool.submit(_fetch_fr)
         future_ue = pool.submit(_fetch_ue)
-        profile, chambre = future_fr.result()
+        profile, chambre, warnings_chambres = future_fr.result()
         mandat_ue = future_ue.result()
 
     if profile is None and mandat_ue is None:
@@ -633,6 +749,11 @@ def process_candidat(
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
         # raw_data/candidats.json plutôt que de ne rien produire.
         profile = build_minimal_profile(nom, effective_slug, candidat)
+        # #488/#484 : si la collecte FR a ÉCHOUÉ (au lieu de simplement ne rien
+        # trouver), le squelette ne doit pas être écrit comme s'il était un
+        # constat. La raison de l'échec part avec lui dans le profil brut.
+        if warnings_chambres:
+            profile["meta"].setdefault("warnings", []).extend(warnings_chambres)
 
     if mandat_ue is not None:
         profile["mandat_europeen"] = mandat_ue
@@ -668,8 +789,6 @@ def process_candidat(
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
         parti = candidat.get("parti")
-        # provenance (#189) : voir commentaire équivalent dans le bloc --pivot-only ci-dessus.
-        provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
         pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
@@ -841,7 +960,11 @@ def main() -> None:
             "'ue' = Open Data Portal UE uniquement, "
             "'all' = toutes les sources (comportement par défaut). "
             "Avec 'an'/'senat', la source UE est ignorée. "
-            "Avec 'ue', les sources FR (AN/Sénat) sont ignorées."
+            "Avec 'ue', les sources FR (AN/Sénat) sont ignorées. "
+            "Avec 'all', les DEUX chambres FR sont interrogées — et non plus seulement "
+            "la première qui répond — pour les seuls profils de CANDIDATS "
+            "(meta.provenance = candidat_declare, #488). Un membre de roster garde le "
+            "comportement historique : on s'arrête à la première chambre qui répond."
         ),
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
