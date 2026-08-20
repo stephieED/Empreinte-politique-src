@@ -76,6 +76,16 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
+- Senate speeches are collectable but never attributed: `fetch_intervention_details`
+  resolves a speaker through the document's `url_nosdeputes` key, which
+  `archive.nossenateurs.fr` never emits — it publishes `url_nossenateurs`. Every Senate
+  intervention is therefore classified `mention` and dropped, which is why `extract-senat`
+  now hard-codes `--skip-interventions` (#501). Reopening it means teaching that
+  function the Senate key *and* confronting the archive's HTML with
+  `_extract_speaker_identity_from_html`, for a body of work no aggregate consumes yet
+  (#488). `tests/test_interventions_senat_non_retenues.py` fails the day the key is
+  read. See `technical_decisions.md#interventions-senat-501`.
+
 - `actions/checkout` is now the dominant per-shard cost in `generate-data.yml`:
   93–117 s measured per roster shard on run 32288588518, i.e. ~55 % of a shard,
   against ~65 s of actual extraction — and it is paid once per shard, so

@@ -128,6 +128,17 @@ writes the partial profile and declares the truncation in `meta.warnings[]`
 `tests/test_ci_budget_interventions.py`.
 See `docs/technical_decisions.md#budget-collecte-interventions`.
 
+**Every collection path must declare what it does with interventions (#501)**:
+`extract-an` follows the input, `extract-roster-groupes` and `extract-senat`
+hard-code `--skip-interventions`. The Senate one collects nothing because
+nothing it collects is ever kept — `archive.nossenateurs.fr` publishes
+`url_nossenateurs`, `fetch_intervention_details` reads `url_nosdeputes`, so every
+Senate intervention is classified `mention` and dropped (0 of 789 published
+interventions come from the Senate). A new invocation of `generate_all_profiles.py`
+must be added to the inventory in `tests/test_ci_interventions_par_job.py` with its
+mode, and any job that ignores the input must be named in the input's description.
+See `docs/technical_decisions.md#interventions-senat-501`.
+
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
 profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also
 filled with the committed baseline. Enforced by `generate_all_profiles.py --manifest-out`
