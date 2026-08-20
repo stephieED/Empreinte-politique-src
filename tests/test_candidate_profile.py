@@ -4381,6 +4381,8 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
         }
     ]
     # Mandat électif reconstruit depuis identite_an (AN), NosDéputés n'étant plus appelé.
+    # `chambre` est estampillée à la collecte depuis #492 : ce chemin de repli
+    # n'est atteignable que pour la chambre "deputes".
     mandat_electif_entries = [m for m in profile["mandats"] if m["categorie"] == "mandat_electif"]
     assert mandat_electif_entries == [
         {
@@ -4390,6 +4392,7 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
             "debut": "2022-06-22",
             "fin": None,
             "actif": True,
+            "chambre": "deputes",
         }
     ]
     assert profile["identite"]["groupe_sigle"] == "RE"

@@ -118,18 +118,66 @@ def _parse_date(s: Any) -> Optional[date]:
 # Eligibilité d'un membre à un scrutin
 # ---------------------------------------------------------------------------
 
-def _member_eligibility_intervals(mandats: list[dict[str, Any]]) -> Optional[list[tuple[Optional[date], Optional[date]]]]:
+def _mandats_electifs(
+    mandats: list[dict[str, Any]], chambre: Optional[str] = None
+) -> list[dict[str, Any]]:
+    """Mandats électifs d'un membre, restreints à la chambre du groupe (#492).
+
+    ``_member_eligibility_intervals`` prenait l'**union** de tous les
+    `mandat_electif`, sans distinction de chambre. Un mandat sénatorial ne peut
+    pas chevaucher un mandat AN (incompatibilité constitutionnelle), donc dans
+    le cas général l'union est inoffensive ; le cas dangereux est le
+    **changement de chambre en cours de législature**, qui prolongerait la
+    fenêtre d'éligibilité au-delà du départ de l'Assemblée et compterait le
+    membre absent sur des scrutins qu'il ne pouvait plus voter — un dénominateur
+    de cohésion faux (§2.7). Le filtre n'était pas écrivable avant #492 : la
+    chambre n'était portée par aucun mandat.
+
+    **Un mandat à `chambre: null` est conservé**, jamais écarté. L'écarter
+    réduirait un dénominateur publié sur la foi d'une donnée absente, ce qui est
+    l'erreur exactement symétrique de celle qu'on corrige. Conséquence directe :
+    sur un corpus entièrement non estampillé — celui d'aujourd'hui, 214 des 228
+    `mandat_electif` mesurés sur `f5a828b` — ce filtre ne change **aucun**
+    dénominateur publié. La correction entre en vigueur au fil de la collecte,
+    mandat par mandat, jamais d'un coup.
+
+    ``chambre=None`` (groupe sans chambre, ou appel hors contexte de groupe) ne
+    filtre rien.
+    """
+    electif = [m for m in mandats if m.get("categorie") == "mandat_electif"]
+    if chambre is None:
+        return electif
+    return [m for m in electif if m.get("chambre") in (None, chambre)]
+
+
+def _member_eligibility_intervals(
+    mandats: list[dict[str, Any]], chambre: Optional[str] = None
+) -> Optional[list[tuple[Optional[date], Optional[date]]]]:
     """Pré-analyse les mandats électifs d'un membre en intervalles (début, fin).
 
     Évite de refiltrer ``mandats`` et de reparser les dates de mandat à chaque
     scrutin dans ``_compute_cohesion_votes`` (le même membre est testé pour des
     milliers de scrutins). Retourne None si aucun mandat électif n'est renseigné
     (éligibilité par défaut, cf. ``_member_eligible_at``).
+
+    ``chambre`` : chambre du groupe, voir ``_mandats_electifs`` (#492). Deux
+    absences y sont distinguées, et elles n'ont pas le même sens :
+
+    - **aucun mandat électif du tout** → ``None``, éligibilité par défaut :
+      absence d'information, on ne peut pas exclure (comportement historique) ;
+    - **des mandats électifs, mais aucun dans cette chambre** → ``[]``, donc
+      jamais éligible : ce n'est pas une absence d'information, c'est
+      l'information que ce membre ne siège pas dans cette chambre. Le compter au
+      dénominateur d'une cohésion qu'il ne pouvait pas voter serait précisément
+      le défaut que #492 corrige. Cas impossible tant qu'aucun mandat n'est
+      estampillé — un mandat à ``null`` est conservé par ``_mandats_electifs``.
     """
-    electif = [m for m in mandats if m.get("categorie") == "mandat_electif"]
-    if not electif:
+    if not any(m.get("categorie") == "mandat_electif" for m in mandats):
         return None
-    return [(_parse_date(m.get("debut")), _parse_date(m.get("fin"))) for m in electif]
+    return [
+        (_parse_date(m.get("debut")), _parse_date(m.get("fin")))
+        for m in _mandats_electifs(mandats, chambre)
+    ]
 
 
 def _is_eligible_at(intervals: Optional[list[tuple[Optional[date], Optional[date]]]], d: Optional[date]) -> bool:
@@ -162,7 +210,9 @@ def _intervals_overlap(
     return True
 
 
-def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str]) -> bool:
+def _member_eligible_at(
+    mandats: list[dict[str, Any]], vote_date: Optional[str], chambre: Optional[str] = None
+) -> bool:
     """Détermine si un membre était en mandat (éligible à voter) à la date du scrutin.
 
     Un membre est éligible si au moins un de ses mandats électifs est actif à
@@ -172,18 +222,23 @@ def _member_eligible_at(mandats: list[dict[str, Any]], vote_date: Optional[str])
     Args:
         mandats: liste des mandats du profil pivot (champ ``mandats[]``).
         vote_date: date du scrutin au format "YYYY-MM-DD", ou None.
+        chambre: chambre du groupe, voir ``_mandats_electifs`` (#492).
 
     Returns:
         True si le membre est éligible pour ce scrutin.
     """
-    return _is_eligible_at(_member_eligibility_intervals(mandats), _parse_date(vote_date))
+    return _is_eligible_at(
+        _member_eligibility_intervals(mandats, chambre), _parse_date(vote_date)
+    )
 
 
 # ---------------------------------------------------------------------------
 # Construction de l'entrée membre
 # ---------------------------------------------------------------------------
 
-def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
+def _derive_membre_entry(
+    profil: dict[str, Any], chambre: Optional[str] = None
+) -> dict[str, Any]:
     """Dérive une entrée ``membres[]`` du profil de groupe à partir d'un profil pivot.
 
     La date de début dans le groupe correspond au début du premier mandat électif ;
@@ -191,16 +246,17 @@ def _derive_membre_entry(profil: dict[str, Any]) -> dict[str, Any]:
     actif). Cette approximation est correcte pour les cas sans changement de groupe
     en cours de mandat.
 
+    ``chambre`` (#492) restreint les mandats électifs pris en compte à ceux de
+    la chambre du groupe : sans ça, `debut_dans_groupe` d'un membre bicaméral
+    remonterait à son mandat dans **l'autre** chambre. Voir ``_mandats_electifs``.
+
     Args:
         profil: profil pivot v1.
 
     Returns:
         Dict conformant à la structure membres[] du schéma de groupe.
     """
-    electif = [
-        m for m in (profil.get("mandats") or [])
-        if m.get("categorie") == "mandat_electif"
-    ]
+    electif = _mandats_electifs(profil.get("mandats") or [], chambre)
 
     debut: Optional[str] = None
     fin: Optional[str] = None
@@ -317,6 +373,7 @@ def _compute_cohesion_votes(
     seuil_quorum: float = 0.5,
     legislature: Optional[str] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
+    chambre: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Calcule la cohésion de vote pour chaque scrutin couvert par les membres.
 
@@ -341,6 +398,11 @@ def _compute_cohesion_votes(
                      dans le profil : elle est nécessaire à l'éligibilité des
                      membres, donc un scrutin absent de l'index est écarté du
                      calcul plutôt que compté sur une date inventée.
+        chambre: chambre du groupe ("AN" | "Senat" | …). Restreint les mandats
+                     électifs qui ouvrent la fenêtre d'éligibilité à ceux de
+                     cette chambre — un dénominateur publié (§2.7) ne doit pas
+                     être élargi par un mandat d'une autre chambre. Voir
+                     ``_mandats_electifs`` (#492).
 
     Returns:
         Liste de dicts conformes à la structure cohesion_votes[], triée par date
@@ -379,7 +441,9 @@ def _compute_cohesion_votes(
     # scrutin) : un groupe de N membres et M scrutins ferait sinon O(M x N) reparsing
     # de dates au lieu de O(N) ici + une comparaison de dates déjà parsées par scrutin.
     vote_indexes = [_build_vote_index(p, legislature) for p in profils]
-    eligibility_intervals = [_member_eligibility_intervals(p.get("mandats") or []) for p in profils]
+    eligibility_intervals = [
+        _member_eligibility_intervals(p.get("mandats") or [], chambre) for p in profils
+    ]
 
     # --- 3. Calcul par scrutin ---
     _EXPRESSED = ("pour", "contre", "abstention")
@@ -638,6 +702,7 @@ def _select_mandat_entree_unique(mandats: list[dict[str, Any]]) -> dict[str, Any
 def _aggregate_mandats(
     profils: list[dict[str, Any]],
     membres: list[dict[str, Any]],
+    chambre: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Agrège les mandats catégoriels (``MANDATS_AGREGES_CATEGORIES``) de tous
     les membres du groupe, par ``(categorie, label)``.
@@ -671,7 +736,7 @@ def _aggregate_mandats(
         membre_id = profil.get("id") or ""
         nom = profil.get("nom") or ""
         mandats = profil.get("mandats") or []
-        eligibility_intervals = _member_eligibility_intervals(mandats)
+        eligibility_intervals = _member_eligibility_intervals(mandats, chambre)
 
         # Regroupe les mandats catégoriels éligibles de CE membre par (categorie, label)
         candidats_par_cle: dict[tuple[str, str], list[dict[str, Any]]] = {}
@@ -838,6 +903,7 @@ def compute_ecarts_cohesion_internes(
     cohesion_votes: list[dict[str, Any]],
     legislature: Optional[str] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
+    chambre: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Calcule, pour chaque membre, son écart de participation/cohérence vs le groupe.
 
@@ -885,7 +951,7 @@ def compute_ecarts_cohesion_internes(
             scrutin = scrutins_index.get(scrutin_id) if scrutins_index is not None else None
             if scrutin is None:
                 continue
-            if not _member_eligible_at(mandats, scrutin.get("date")):
+            if not _member_eligible_at(mandats, scrutin.get("date"), chambre):
                 continue
             n_eligible += 1
 
@@ -1019,7 +1085,7 @@ def build_groupe_profile(
     warnings: list[str] = []
 
     # --- Membres ---
-    membres = [_derive_membre_entry(p) for p in profils]
+    membres = [_derive_membre_entry(p, chambre) for p in profils]
 
     # --- Effectif ---
     n_actif = sum(1 for m in membres if m["actif"])
@@ -1046,7 +1112,7 @@ def build_groupe_profile(
     # --- Cohésion de vote ---
     cohesion_votes = _compute_cohesion_votes(
         profils, seuil_quorum=seuil_quorum, legislature=legislature,
-        scrutins_index=scrutins_index,
+        scrutins_index=scrutins_index, chambre=chambre,
     )
     n_non_resolus = _votes_non_resolus(profils)
     if n_non_resolus:
@@ -1087,7 +1153,7 @@ def build_groupe_profile(
                 sources.append(s)
 
     # --- Mandats agrégés (agrégation catégorielle sur mandats[]) ---
-    mandats_agreges = _aggregate_mandats(profils, membres)
+    mandats_agreges = _aggregate_mandats(profils, membres, chambre)
 
     # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
     amendements_agreges, n_amendements_non_resolus = _aggregate_amendements(
@@ -1404,7 +1470,7 @@ def generate_groupe_profile_from_roster(
     if rapport_interne_path:
         rapport = compute_ecarts_cohesion_internes(
             profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature"),
-            scrutins_index=scrutins_index,
+            scrutins_index=scrutins_index, chambre=profil_groupe.get("chambre"),
         )
         rapport_interne_path.parent.mkdir(parents=True, exist_ok=True)
         rapport_interne_path.write_text(
@@ -1542,7 +1608,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     if args.rapport_interne:
         rapport = compute_ecarts_cohesion_internes(
             profils, profil_groupe["cohesion_votes"], profil_groupe.get("legislature"),
-            scrutins_index=scrutins_index,
+            scrutins_index=scrutins_index, chambre=profil_groupe.get("chambre"),
         )
         rapport_path = Path(args.rapport_interne)
         rapport_path.parent.mkdir(parents=True, exist_ok=True)

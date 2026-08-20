@@ -11,9 +11,18 @@ something is pending, not *why*.
 - 21 of the 207 profiles published as `chambre: "AN"` are known to the Senate's own
   roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). All but
   Retailleau are `roster_groupe`, so they are deliberately **out of scope**: no Senate
-  group is aggregated, and their Senate past feeds nothing. The published value stays
-  wrong for them until #486 sub-issues C/D put the chamber on each mandate. See
-  `technical_decisions.md#deux-chambres-interrogees`.
+  group is aggregated, and their Senate past feeds nothing. #492 (sub-issue C) put the
+  chamber on each **mandate**; the profile-level `chambre` stays wrong for them until
+  sub-issue D (#493). See `technical_decisions.md#deux-chambres-interrogees`.
+- `mandats[].chambre` is `null` on 214 of the 228 published `mandat_electif` (189 profiles,
+  measured on `f5a828b`): the stamp is written at collection (#492) and is not
+  reconstructible for already-collected mandates. They fill in at their next real
+  collection, via `merge_profile.backfill_mandat_chambre`. Each affected profile carries one
+  `chambre de mandat électif non résolue` warning until then — the count is the migration's
+  progress bar, not an anomaly. See `technical_decisions.md#chambre-par-mandat-electif`.
+- The UI still shows one parliamentary experience per candidate: #492 carries the chamber,
+  but publishing both chambers' mandates side by side needs the profile-level `chambre`
+  settled first (#486 sub-issues D then F, and #324).
 - In CI a candidate's `chambre` is also decided by **artifact merge order**, not only by
   the collection loop: `extract-an` (`--source an`) and `extract-senat` (`--source senat`)
   are two scoped passes whose raw profiles meet in `merge_raw_profile`, where

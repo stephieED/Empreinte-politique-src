@@ -51,6 +51,20 @@ Format d'un profil pivot v1 :
             "debut": "2022-01-01",
             "fin": null,
             "actif": true,
+            "chambre": null,                 # #492 — présent UNIQUEMENT sur les mandats de
+                                             # categorie "mandat_electif" ; "AN" | "Senat" |
+                                             # "PE" | null (voir KNOWN_CHAMBRES). Sémantique
+                                             # exacte : *la chambre dont le jeu de données a
+                                             # rendu ce mandat*, estampillée à la collecte —
+                                             # un fait de collecte traçable (§2.2), pas une
+                                             # déduction. C'est le niveau où l'information
+                                             # est vraie : un mandat appartient à une chambre,
+                                             # une personne n'y est pas réductible (#486).
+                                             # `null` = chambre non déterminée (mandat collecté
+                                             # avant #492, conservé par la fusion additive) :
+                                             # jamais une valeur par défaut (§2.5), et un
+                                             # warning `chambre de mandat électif non résolue`
+                                             # le dit dans meta.warnings.
             "source_url": null,              # URL de la fiche source, si disponible
             "position_dans_hemicycle": null, # "majorite" | "opposition" | "minoritaire" |
                                              # "gouvernement" | null ; champ éditorial le plus
@@ -476,6 +490,16 @@ def validate_profil(
                 errors.append(
                     f"mandats[{i}].mode_declenchement non reconnu : {mode_declenchement!r}. "
                     f"Valeurs connues : {sorted(KNOWN_MODES_DECLENCHEMENT)}."
+                )
+            # #492 : la chambre d'un mandat est une valeur fermée. `null` reste
+            # licite (chambre non déterminée) ; une valeur hors nomenclature ne
+            # l'est pas — c'est ainsi qu'une chambre brute non mappée
+            # ("deputes", "senateurs") se ferait passer pour une chambre pivot.
+            chambre_mandat = m.get("chambre")
+            if chambre_mandat is not None and chambre_mandat not in KNOWN_CHAMBRES:
+                errors.append(
+                    f"mandats[{i}].chambre non reconnue : {chambre_mandat!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_CHAMBRES)}."
                 )
 
     # Depuis #432, `votes[]` est un MAPPING : `type_scrutin`, `type_vote`,

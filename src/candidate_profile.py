@@ -4221,7 +4221,9 @@ def _extract_responsabilite_entries(raw_list: Any, categorie: str) -> list[dict[
     return entries
 
 
-def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
+def _extract_mandats(
+    parlementaire: dict[str, Any], chambre: Optional[str] = None
+) -> list[dict[str, Any]]:
     """Extrait les responsabilités lisibles (commissions, missions, groupes d'amitié,
     engagements extra-parlementaires) et le mandat électif de base, à partir des
     champs réels renvoyés par l'API NosDéputés.fr / NosSénateurs.fr :
@@ -4230,6 +4232,14 @@ def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
 
     Chaque entrée a le format {categorie, type (la fonction : membre/président/
     rapporteur/...), label (le nom de l'organisme), debut, fin, actif}.
+
+    `chambre` ("deputes" | "senateurs") est estampillée sur le **mandat électif**
+    (#492) : c'est la chambre dont le jeu de données a rendu ce mandat, donc un
+    fait de collecte traçable, et non une déduction. Sans elle, « Mandat
+    parlementaire (Les Républicains) » est le même libellé qu'on siège au
+    Palais-Bourbon ou au Luxembourg. Elle n'est jamais inventée : appelée sans
+    `chambre`, la fonction n'écrit pas le champ, et le pivot publiera `null`
+    (AGENTS.md §2.5).
     """
     mandats: list[dict[str, Any]] = []
 
@@ -4237,14 +4247,17 @@ def _extract_mandats(parlementaire: dict[str, Any]) -> list[dict[str, Any]]:
     fin_mandat = parlementaire.get("mandat_fin")
     if debut_mandat or fin_mandat:
         groupe_label = _groupe_label(parlementaire.get("groupe"))
-        mandats.append({
+        mandat_electif: dict[str, Any] = {
             "categorie": "mandat_electif",
             "type": "mandat",
             "label": "Mandat parlementaire" + (f" ({groupe_label})" if groupe_label else ""),
             "debut": debut_mandat,
             "fin": fin_mandat,
             "actif": not fin_mandat,
-        })
+        }
+        if chambre:
+            mandat_electif["chambre"] = chambre
+        mandats.append(mandat_electif)
 
     mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites"), "commission"))
     mandats.extend(_extract_responsabilite_entries(parlementaire.get("historique_responsabilites"), "commission"))
@@ -4841,8 +4854,13 @@ def build_profile(
                 "debut": identite_an.get("mandat_debut"),
                 "fin": identite_an.get("mandat_fin"),
                 "actif": not identite_an.get("mandat_fin"),
+                # Ce chemin n'est atteignable que pour `chambre == "deputes"`
+                # (`identite_an` n'est résolue que là), mais la valeur est lue
+                # sur la variable et non écrite en dur : une constante ici
+                # serait une chambre inventée le jour où le garde-fou bouge.
+                "chambre": chambre,
             })
-        mandats_nosdeputes = _extract_mandats(parlementaire) if parlementaire_valide else []
+        mandats_nosdeputes = _extract_mandats(parlementaire, chambre) if parlementaire_valide else []
         if mandats_an:
             categories_an = set(_TYPE_ORGANE_TO_CATEGORIE.values())
             mandats_nosdeputes = [m for m in mandats_nosdeputes if m.get("categorie") not in categories_an]
