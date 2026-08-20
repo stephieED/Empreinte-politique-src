@@ -39,6 +39,7 @@ import requests
 
 from download_watchdog import download_with_watchdog
 
+from normalize_nosdeputes import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
 from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
 
 HEADERS = {
@@ -434,7 +435,14 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
     # européen), pas une déduction, et aucun mandat ne viendra jamais l'établir
     # ici. La cohérence `chambre == chambres[0]` est assurée quand même.
     profil["chambre"] = "PE"                 # repli, consommé par appliquer_chambres
-    appliquer_chambres(profil)
+    derivation = appliquer_chambres(profil)
+    if not derivation.corroboree:
+        profil["meta"]["warnings"].append(
+            f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : chambres={derivation.chambres}, "
+            f"dont {derivation.chambres_non_corroborees or 'aucune'} sans mandat électif "
+            "estampillé pour l'étayer (#493). Le dump ParlTrack ne produit aucun "
+            "`mandat_electif` : la chambre vient de la source, pas d'un mandat."
+        )
 
     profil["meta"]["licence_donnees"] = "Open Data — Parltrack (CC0 / Open Database License)"
     if not mep_raw.get("active"):

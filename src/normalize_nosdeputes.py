@@ -306,11 +306,12 @@ def normalize_nosdeputes(
     slug = raw_profile.get("slug") or ""
     chambre_raw = raw_profile.get("chambre") or ""
     # `chambre_collecte` (#493) : la chambre dont le jeu de données a répondu.
-    # Elle n'est plus publiée telle quelle — elle sert de **repli** à
-    # `deriver_chambres()` tant qu'aucun `mandat_electif` n'est estampillé.
-    # `_CHAMBRE_MAP.get(x, x or None)` laisserait passer une chambre brute non
-    # mappée telle quelle : elle est écartée par `deriver_chambres`, qui n'accepte
-    # comme repli qu'une valeur de KNOWN_CHAMBRES.
+    # Elle n'est plus publiée telle quelle — elle devient le **repli** de
+    # `deriver_chambres()`, qui l'ajoute toujours à `chambres` sans jamais la
+    # substituer à ce que disent les mandats ni la laisser les évincer.
+    # `_CHAMBRE_MAP.get(x, x or None)` laisse passer une chambre brute non mappée
+    # telle quelle : elle est écartée par `deriver_chambres`, qui n'accepte comme
+    # repli qu'une valeur de KNOWN_CHAMBRES.
     chambre_collecte = _CHAMBRE_MAP.get(chambre_raw, chambre_raw or None)
     source_type = _SOURCE_TYPE_MAP.get(chambre_raw, "nosdeputes")
 

@@ -524,20 +524,19 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # disparaîtrait précisément sur les profils mixtes — ceux de la migration.
     if isinstance(merged.get("meta"), dict) and not derivation.corroboree:
         warnings_merged = merged["meta"].setdefault("warnings", [])
+        # Le texte est recalculé sur le profil FUSIONNÉ, jamais repris de
+        # l'ancien : ses compteurs porteraient sur un autre ensemble de mandats.
         if not any(w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE)
                    for w in warnings_merged if isinstance(w, str)):
-            repris = next(
-                (w for w in (old.get("meta") or {}).get("warnings") or []
-                 if isinstance(w, str) and w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE)),
-                None,
-            )
-            warnings_merged.append(repris or (
+            warnings_merged.append(
                 f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
                 f"chambres={derivation.chambres}, dont "
                 f"{derivation.chambres_non_corroborees or 'aucune'} sans mandat électif "
                 f"estampillé pour l'étayer, et {derivation.mandats_non_estampilles} "
-                "mandat(s) électif(s) encore sans chambre, après fusion additive (#493)."
-            ))
+                "mandat(s) électif(s) encore sans chambre, après fusion additive (#493). "
+                "Une chambre non corroborée est celle de la collecte : elle dit quel jeu "
+                "de données a répondu, pas où la personne a siégé."
+            )
 
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
