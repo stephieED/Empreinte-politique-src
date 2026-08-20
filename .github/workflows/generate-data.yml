@@ -1107,17 +1107,35 @@ jobs:
             # lot et on en obtiendrait huit. Forcer 1 shard est ce qui rend
             # `roster_extraction_limit` exact.
             #
-            # Alternative écartée par #467 — découper quand même en 8 tranches
-            # de limite/8. Le lot resterait de la bonne taille en volume, mais
-            # plus exactement de N : la sélection progressive de #224 prend
-            # d'abord les non couverts, qui ne sont pas répartis uniformément
-            # (#445 : 24, 24, 28, 27 couverts selon le shard) — on demanderait
-            # 100 et on en obtiendrait 70 ou 80, sans savoir lesquels. Et le
-            # gain fond depuis #467 : un shard coûte ~2,2 min de frais fixes
-            # (checkout compris, mesuré sur le run 32288588518) pour une
-            # extraction tombée à ~0,5 s par membre — découper un lot de 100
-            # ferait payer huit fois ces frais fixes pour économiser ~1 min de
-            # temps mur. L'exactitude du lot vaut plus que cette minute.
+            # Alternative écartée (#471) — découper quand même en 8 tranches
+            # de limite/8, en passant --limit ceil(L/N) à chaque shard.
+            #
+            # Deux motifs ont été avancés contre elle, et SIMULÉS sur le roster
+            # réel (752 membres, budget 100/run, rollout complet depuis un
+            # dépôt vierge) : aucun des deux ne tient.
+            #
+            #   - « le lot ne ferait plus exactement N » : non. 1 shard x 100
+            #     donne 8 runs [100 x7, 52] ; 8 shards x 13 donne 8 runs
+            #     [104 x7, 24]. Même nombre de runs, même couverture finale
+            #     752/752. L'écart est un DÉPASSEMENT de 4, jamais un déficit.
+            #   - « le modulo corrigerait le biais de groupe du fichier
+            #     roster » (#471) : non plus, et c'est arithmétique. Le shard i
+            #     porte les positions i, i+8, i+16… donc ses 13 premiers sont
+            #     les positions i à i+96 ; la réunion des 8 shards est
+            #     exactement les positions 0 à 103 du fichier. Chaque shard
+            #     préserve l'ordre du fichier en son sein, donc le découpage ne
+            #     déplace personne. Vérifié : sélections identiques sur dépôt
+            #     vierge (écart symétrique 0), 4 personnes d'écart sur la
+            #     couverture au 20/08/2026.
+            #
+            # Ce qui tranche est le coût, pas l'exactitude : un shard coûte
+            # ~2,2 min de frais fixes (checkout compris, mesuré sur le run
+            # 32288588518) pour une extraction tombée à ~0,5 s par membre
+            # (#467). Découper un lot de 100 ferait payer huit fois ces frais
+            # fixes pour économiser ~1 min de temps mur — et max-parallel: 4
+            # capture déjà le parallélisme là où il compte. Reste le seul gain
+            # réel, la résilience à la préemption : perdre 1/8 au lieu de tout,
+            # sur un job tombé à ~3 min. Trop peu pour le prix.
             TOTAL=1
             echo "Rollout progressif (limite ${ROSTER_LIMIT}) : 1 seul shard (la limite s'applique par shard, cf. commentaire ci-dessus)."
           fi
