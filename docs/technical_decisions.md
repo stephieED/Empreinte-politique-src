@@ -10548,6 +10548,20 @@ pipeline equivalent to the AN one is not currently feasible without a fragile
 HTML-scraping approach. No official structured vote source has been found
 as an alternative either.
 
+**Senate *debates* are a distinct case, settled separately by #501.** This
+section covers roll-call votes, amendments and sponsored texts; it says nothing
+about floor speeches, which come from `archive.nossenateurs.fr` rather than from
+`data.senat.fr`. Measured on 2026-08-20: that archive *does* serve both the
+intervention search and the per-document detail, and serves them fast (0,2-0,9 s
+per document). What it does not serve is the **attribution**:
+`fetch_intervention_details` resolves a speaker through the document's
+`url_nosdeputes` key, and the Senate archive publishes `url_nossenateurs`
+instead — so every Senate intervention is classified `mention` and dropped, and
+0 of the 789 published interventions come from the Senate. `extract-senat`
+therefore hard-codes `--skip-interventions`. Unlike votes and amendments, this
+one is a **fixable** limitation, not a missing dataset — see
+[[interventions-senat-501]] and `ROADMAP.md`.
+
 Applies to the gouvernement view's `textes[]` too (confirmed in
 [[gouvernement-doc-cloture]], #214): `gouvernement_textes.py` only reads the
 AN dossiers-legislatifs dump, so a bill whose primary deposit chamber is the
