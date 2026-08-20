@@ -8,11 +8,12 @@ on:
       # These strings are the FORM LABELS: GitHub shows the description and
       # hides the input name. So they must be short, self-contained, and never
       # reference another field by a name nobody can see on screen — the link
-      # between the first two reads from the text itself ("purge … then
-      # overwrite" contains "overwrite … keeping the cache").
+      # between the first two reads from the text itself: both say "no merge",
+      # and what separates them — purging the cache vs keeping it — sits side
+      # by side in the two labels.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
       cold_start:
-        description: "Full reset: purge cache and outputs, then overwrite profiles"
+        description: "Full reset: purge cache and outputs (no merge)"
         type: boolean
         default: false
       overwrite_profiles:
