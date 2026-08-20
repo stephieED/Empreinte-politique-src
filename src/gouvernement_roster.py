@@ -370,6 +370,67 @@ def _source_url_portefeuille(
     return portefeuille.get("source_url") or mandat_gouvernemental.get("source_url")
 
 
+# Champs qui *identifient* un fait publié dans `membres[]` : qui, quel
+# portefeuille, sur quelle période, encore en cours ou non. `nom` et
+# `source_url` n'en font pas partie — le premier se déduit de `membre_id`, le
+# second trace le fait sans le définir (#480).
+CHAMPS_IDENTITE_MEMBRE: tuple[str, ...] = (
+    "membre_id", "portefeuille", "debut", "fin", "actif",
+)
+
+
+def _dedupliquer_membres(
+    membres: list[dict[str, Any]], warnings: Optional[list[str]] = None
+) -> list[dict[str, Any]]:
+    """Retire les entrées `membres[]` strictement identiques à une précédente,
+    en conservant l'ordre d'apparition (#480).
+
+    Même raisonnement que la déduplication des candidats de
+    `build_premier_ministre` : un même profil peut porter **plusieurs mandats
+    d'appartenance au même gouvernement**, et un portefeuille qui chevauche les
+    deux est alors émis deux fois. Ce sont des doublons, pas deux faits.
+
+    La déduplication est volontairement **stricte** — l'entrée entière, pas la
+    seule identité. `membres[]` compte un enregistrement « par ministre et par
+    période si changement de portefeuille » (`schema_gouvernement.py`) : deux
+    entrées d'une même personne sur des portefeuilles ou des périodes distincts
+    sont deux faits vérifiables, que fondre effacerait (AGENTS.md §2.2). Sur le
+    corpus au 20/08/2026, 18 des 20 entrées surnuméraires sont de cette nature ;
+    seules 2 sont des répétitions.
+
+    Cas non résolu, jamais tranché en silence (§2.5) : deux entrées identiques
+    sur `CHAMPS_IDENTITE_MEMBRE` mais divergentes ailleurs — typiquement deux
+    `source_url` différentes. Aucune des deux n'est plus traçable que l'autre :
+    en choisir une serait arbitraire, et les fondre perdrait une source. Les
+    deux sont donc conservées, avec un warning. Le cas ne se présente pas sur le
+    corpus actuel (les deux mandats scindés portent la même URL AMO30) ; le
+    warning est là pour qu'il ne passe pas inaperçu s'il apparaissait.
+    """
+    uniques: list[dict[str, Any]] = []
+    for membre in membres:
+        if membre in uniques:
+            continue
+        identite = tuple(membre.get(champ) for champ in CHAMPS_IDENTITE_MEMBRE)
+        jumeau = next(
+            (
+                autre for autre in uniques
+                if tuple(autre.get(champ) for champ in CHAMPS_IDENTITE_MEMBRE) == identite
+            ),
+            None,
+        )
+        if jumeau is not None:
+            _ajouter_warning(
+                warnings,
+                f"gouvernement_roster: {membre.get('nom') or membre.get('membre_id')} : "
+                f"deux entrées de même identité ({membre.get('portefeuille')!r}, "
+                f"{membre.get('debut')} → {membre.get('fin')}) divergent hors identité "
+                f"(source_url {jumeau.get('source_url')!r} vs {membre.get('source_url')!r}) "
+                f"— les deux sont conservées, aucune n'étant plus traçable que l'autre (#480).",
+            )
+        uniques.append(membre)
+    return uniques
+
+
 def _derive_membre_entry(
     profil: dict[str, Any],
     mandat: dict[str, Any],
@@ -426,8 +487,9 @@ def build_gouvernement_roster(
         profils: liste de profils pivot v1 (déjà chargés depuis
                  `pivot_data/profiles/*.pivot.json`).
         warnings: liste optionnelle où consigner les anomalies : portefeuille
-                  trouvé mais non traçable, et qualité de mandat inconnue
-                  (#474). Même motif que
+                  trouvé mais non traçable, qualité de mandat inconnue (#474),
+                  et deux entrées de même identité divergentes hors identité
+                  (#480, voir `_dedupliquer_membres`). Même motif que
                   `candidate_profile.fetch_amendements_officiels` ; remontée
                   dans `meta.warnings` du profil de gouvernement par
                   `gouvernement_profile.build_gouvernement_profile`, donc
@@ -439,6 +501,13 @@ def build_gouvernement_roster(
         et, depuis #398, un enregistrement par **période de portefeuille** dès
         qu'un mandat d'appartenance en chevauche plusieurs (un ministre qui
         change de portefeuille en cours de gouvernement).
+
+        Dédupliquée depuis #480 : une entrée strictement identique à une
+        précédente est retirée. Un même profil peut porter plusieurs mandats
+        d'appartenance au même gouvernement, et le portefeuille qui les
+        chevauche tous les deux est alors produit deux fois — voir
+        `_dedupliquer_membres`, qui dit aussi pourquoi la déduplication ne
+        porte **pas** sur `membre_id` seul.
     """
     g_debut = _parse_date(periode_debut)
     g_fin = _parse_date(periode_fin)
@@ -476,7 +545,12 @@ def build_gouvernement_roster(
             for portefeuille in portefeuilles:
                 membres.append(_derive_membre_entry(profil, mandat, portefeuille))
 
-    return membres
+    # Un mandat d'appartenance scindé fait émettre deux fois le portefeuille
+    # qui chevauche ses deux moitiés : ce sont des doublons, pas deux faits
+    # (#480). Déduplication en sortie, jamais pendant la sélection — le tri
+    # entre répétition et changement de portefeuille se fait sur l'entrée
+    # produite, pas sur le mandat dont elle vient.
+    return _dedupliquer_membres(membres, warnings)
 
 
 # ---------------------------------------------------------------------------

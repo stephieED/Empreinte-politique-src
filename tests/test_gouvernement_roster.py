@@ -11,6 +11,7 @@ from gouvernement_roster import (
     _est_mandat_appartenance_gouvernement,
     _mandate_matches_gouvernement,
     _derive_membre_entry,
+    _dedupliquer_membres,
     _normalise_fonction,
     _qualite_portefeuille,
     FONCTIONS_MINISTERIELLES,
@@ -374,8 +375,10 @@ def test_real_pivot_david_amiel_lecornu_ii_deux_portefeuilles_un_seul_actif():
     arbitrairement serait pire encore.
 
     Corollaire à connaître (#457) : `membres[]` dénombre des **entrées**, pas
-    des personnes. Sur les 10 gouvernements publiés, 7 sont concernés — 116
-    entrées pour 95 personnes, Borne à lui seul 31 entrées pour 23 personnes.
+    des personnes. Sur les 10 gouvernements publiés, 7 sont concernés — 113
+    entrées pour 95 personnes au 20/08/2026 (#480 a retiré les 2 seules
+    répétitions strictes de l'écart), Borne à lui seul 31 entrées pour 23
+    personnes.
     Rien ne publie d'effectif aujourd'hui : `comptages.par_statut` dénombre des
     textes de loi, et `GovernmentProfile.jsx` liste les membres sans en donner
     le total. Aucun dénominateur faux n'est donc exposé (§2.7). Mais toute vue
@@ -681,10 +684,12 @@ def test_real_pivot_astrid_panosyan_bouvet_pas_de_maroquin_fantome_sous_bayrou()
     gouvernement `actif: false`.
 
     Les assertions portent sur des propriétés, pas sur un compte d'entrées :
-    ce profil déclenche par ailleurs une duplication d'entrées (deux mandats
-    d'appartenance identiques en tout sauf leur `fin`), défaut distinct et hors
-    périmètre de #474 — figer le compte ici le graverait en invariant, ce que
-    #457 a précisément appris à ne pas faire.
+    ce profil déclenchait par ailleurs une duplication d'entrées (deux mandats
+    d'appartenance identiques en tout sauf leur `fin`), défaut distinct, hors
+    périmètre de #474 et corrigé depuis par #480 — figer le compte ici le
+    graverait en invariant, ce que #457 a précisément appris à ne pas faire.
+    Le compte, lui, est vérifié par
+    `test_real_pivot_bayrou_deux_mandats_dappartenance_une_entree_par_personne`.
     """
     profil = _load_pivot_fixture("astrid-panosyan-bouvet")
     membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", [profil])
@@ -732,6 +737,146 @@ def test_le_mandat_en_mission_reste_dans_le_profil():
             and m.get("fonction") == "en mission"
         ]
         assert missions, slug
+
+
+# ---------------------------------------------------------------------------
+# Déduplication des entrées `membres[]` (#480)
+# ---------------------------------------------------------------------------
+
+def test_build_roster_mandat_dappartenance_scinde_ne_publie_pas_deux_fois_le_meme_fait():
+    """Deux mandats d'appartenance au même gouvernement, un seul portefeuille :
+    une seule entrée (#480).
+
+    C'est la forme fabriquée du cas Bayrou : la source AN porte deux mandats
+    `GOUVERNEMENT` de même `dateDebut` pour le même organe, dont un jamais clos.
+    Le portefeuille chevauche les deux, et l'entrée dérivée — dates du
+    portefeuille, jamais du mandat d'appartenance — sort donc deux fois à
+    l'identique. Le même fait, sourcé une fois, ne se publie pas deux fois
+    (AGENTS.md §2.2).
+    """
+    profils = [
+        _pivot("nosdeputes:y", "Y", mandats=[
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09"),
+            _mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", None, actif=True),
+            _mandat_portefeuille("Ministère du travail", "2024-12-24", "2025-09-09"),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils)
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] == "Ministère du travail"
+    assert membres[0]["debut"] == "2024-12-24"
+    assert membres[0]["fin"] == "2025-09-09"
+    assert membres[0]["actif"] is False
+
+
+def test_build_roster_changement_de_portefeuille_survit_a_la_deduplication():
+    """Le garde-fou contre la sur-déduplication (#480).
+
+    Même mandat d'appartenance scindé que le test précédent, mais **deux**
+    portefeuilles successifs. Les entrées diffèrent alors par leur intitulé et
+    leurs dates : ce sont deux faits, pas une répétition, et
+    `schema_gouvernement.py` les prévoit explicitement (« un enregistrement par
+    ministre et par période si changement de portefeuille »). Une déduplication
+    par `membre_id` seul les fondrait — c'est précisément ce que ce test
+    interdit. Sur le corpus au 20/08/2026, 18 des 20 entrées surnuméraires sont
+    de cette nature ; les fondre effacerait 18 faits réels.
+    """
+    profils = [
+        _pivot("nosdeputes:y", "Y", mandats=[
+            _mandat_gouv("Gouvernement (BORNE)", "2022-05-21", "2024-01-09"),
+            _mandat_gouv("Gouvernement (BORNE)", "2022-05-21", None, actif=True),
+            _mandat_portefeuille("Ministère de la transition", "2022-05-21", "2023-07-20"),
+            _mandat_portefeuille("Ministère de l'éducation", "2023-07-21", "2024-01-09"),
+        ]),
+    ]
+    membres = build_gouvernement_roster("BORNE", "2022-05-21", "2024-01-09", profils)
+    assert len(membres) == 2
+    assert {m["membre_id"] for m in membres} == {"nosdeputes:y"}
+    assert [m["portefeuille"] for m in membres] == [
+        "Ministère de la transition",
+        "Ministère de l'éducation",
+    ]
+    assert [(m["debut"], m["fin"]) for m in membres] == [
+        ("2022-05-21", "2023-07-20"),
+        ("2023-07-21", "2024-01-09"),
+    ]
+
+
+def test_dedupliquer_membres_garde_les_deux_entrees_divergentes_hors_identite():
+    """Deux entrées de même identité mais de `source_url` différentes ne sont
+    **pas** fusionnées : aucune n'est plus traçable que l'autre, en choisir une
+    serait arbitraire et les fondre perdrait une source (AGENTS.md §2.5).
+
+    Le cas ne se présente pas sur le corpus au 20/08/2026 — les deux mandats
+    d'appartenance scindés portent la même URL AMO30. Le warning existe pour
+    qu'il ne passe pas inaperçu s'il apparaissait.
+    """
+    entree = {
+        "membre_id": "nosdeputes:y",
+        "nom": "Y",
+        "portefeuille": "Ministère du travail",
+        "debut": "2024-12-24",
+        "fin": "2025-09-09",
+        "actif": False,
+        "source_url": "https://data.assemblee-nationale.fr/a.zip",
+    }
+    autre_source = dict(entree, source_url="https://data.assemblee-nationale.fr/b.zip")
+
+    warnings: list[str] = []
+    uniques = _dedupliquer_membres([entree, autre_source], warnings)
+    assert len(uniques) == 2
+    assert len(warnings) == 1
+    assert "divergent hors identité" in warnings[0]
+
+    # Strictement identiques : plus de warning, une seule entrée.
+    warnings_stricts: list[str] = []
+    assert _dedupliquer_membres([entree, dict(entree)], warnings_stricts) == [entree]
+    assert warnings_stricts == []
+
+
+def test_real_pivot_bayrou_deux_mandats_dappartenance_une_entree_par_personne():
+    """Le cas réel de #480, sur fixtures figées.
+
+    `astrid-panosyan-bouvet` et `marc-ferracci` portent chacun deux mandats
+    d'appartenance au gouvernement Bayrou (même `debut`, l'un clos au
+    2025-09-09, l'autre jamais clos et `actif: true`) et un seul portefeuille
+    chevauchant les deux. `membres[]` publiait deux entrées strictement
+    identiques par personne. Le roster en rend désormais une chacune.
+
+    Assertions de propriété, pas de compte figé sur le corpus (#457) : les
+    fixtures sont figées, le compte porte sur elles seules.
+    """
+    profils = [
+        _load_pivot_fixture("astrid-panosyan-bouvet"),
+        _load_pivot_fixture("marc-ferracci"),
+    ]
+    membres = build_gouvernement_roster("BAYROU", "2024-12-24", "2025-09-09", profils)
+
+    assert len(membres) == 2
+    assert {m["membre_id"] for m in membres} == {
+        "nosdeputes:astrid-panosyan-bouvet",
+        "nosdeputes:marc-ferracci",
+    }
+    # Aucune entrée n'est la répétition d'une autre, sur l'identité du fait
+    # publié comme sur l'entrée entière.
+    identites = [
+        (m["membre_id"], m["portefeuille"], m["debut"], m["fin"], m["actif"])
+        for m in membres
+    ]
+    assert len(set(identites)) == len(membres)
+    assert all(m["source_url"] for m in membres)
+
+
+def test_real_pivot_marc_ferracci_portefeuille_reel_conserve_sous_barnier():
+    """Contrôle positif sur la fixture ajoutée par #480 : la déduplication ne
+    rogne pas le portefeuille que la même personne détenait sous Barnier — un
+    autre gouvernement, un autre fait."""
+    profil = _load_pivot_fixture("marc-ferracci")
+    membres = build_gouvernement_roster("BARNIER", "2024-09-28", "2024-12-13", [profil])
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"].startswith("Ministère délégué auprès du ministre")
+    assert membres[0]["debut"] == "2024-09-22"
+    assert membres[0]["fin"] == "2024-12-13"
 
 
 # ---------------------------------------------------------------------------
