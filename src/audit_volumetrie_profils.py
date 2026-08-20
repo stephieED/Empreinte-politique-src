@@ -235,6 +235,18 @@ def compute_historique_git(repertoires: list[Path]) -> dict[str, Any]:
     l'historique définitivement — la photo, elle, ne grandit qu'avec le nombre
     de profils.
 
+    MAIS `octets_total` est un **majorant**, jamais la taille du dépôt.
+    `rev-list --disk-usage` additionne la représentation *actuelle* de chaque
+    objet, donc sur des packs mal compactés il compte des deltas que le repack
+    fera disparaître. Mesuré le 20/08/2026 sur `3a8455a` : 409 Mo ici, **295 Mo**
+    sur un `git clone --mirror --no-hardlinks` après `gc --prune=now`, soit
+    39 % d'écart — l'API GitHub en annonçait 397 le même jour, et ce troisième
+    chiffre porte en plus le coût des push forcés non ramassés. Le rapport le
+    dit à l'endroit où le chiffre se lit : c'est la même confusion arbre de
+    travail / dépôt qui a fait recadrer #429 quatre fois. Pour obtenir la
+    mesure d'après repack sans toucher au dépôt de travail :
+    `scripts/borner_historique_donnees.sh --mesurer` (#434).
+
     Renvoie un dict vide hors dépôt git ou si `git` est indisponible : la
     volumétrie de l'arbre de travail reste utile seule, elle ne doit pas
     dépendre de ça.
@@ -516,6 +528,15 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             "## Historique git — la mesure à comparer aux seuils GitHub",
             "",
             f"Dépôt entier (objets atteignables) : **{_mo(hist['octets_total'])}**.",
+            "",
+            "> ⚠️ Ce total est un **majorant**, pas la taille du dépôt. "
+            "`rev-list --disk-usage` additionne la représentation *actuelle* de "
+            "chaque objet sur des packs mal compactés ; le seul chiffre "
+            "comparable aux seuils GitHub est celui d'après `gc --prune=now`, "
+            "mesuré 39 % plus bas le 20/08/2026 (409 Mo annoncés ici, 295 Mo "
+            "après repack). Le mesurer sans toucher au dépôt de travail : "
+            "`scripts/borner_historique_donnees.sh --mesurer` "
+            "(#434, `docs/technical_decisions.md#fenetre-historique-donnees`).",
             "",
         ]
         if hist.get("par_repertoire"):

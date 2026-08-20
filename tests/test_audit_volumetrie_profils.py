@@ -322,6 +322,23 @@ def test_historique_git_isole_le_cout_du_dernier_run_de_donnees(tmp_path, monkey
     assert run["par_repertoire"]["profils"] > 0
 
 
+def test_rapport_dit_que_le_total_du_depot_est_un_majorant():
+    """`rev-list --disk-usage` additionne la représentation actuelle de chaque
+    objet : sur des packs mal compactés il surestime (409 Mo annoncés contre
+    295 Mo après `gc --prune=now`, mesuré le 20/08/2026, #434). Le rapport
+    désigne ce total comme « la mesure à comparer aux seuils GitHub » — sans la
+    réserve, il rejoue la confusion qui a fait recadrer #429 quatre fois, à
+    l'endroit précis où le chiffre se lit."""
+    rapport = dict(_rapport(nb_profils=752, cible=752))
+    rapport["historique_git"] = {"octets_total": 409 * 1024 ** 2,
+                                 "par_repertoire": {}, "dernier_run": None}
+
+    md = generate_markdown_report(rapport)
+
+    assert "majorant" in md
+    assert "gc --prune=now" in md
+
+
 def test_historique_git_sans_commit_de_donnees_ne_rend_pas_de_run(tmp_path, monkeypatch):
     depot = _init_depot(tmp_path)
     (depot / "profils").mkdir()
