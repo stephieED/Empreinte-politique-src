@@ -36,7 +36,7 @@ Format d'un profil de parti v1 :
 
     "candidats": [                            # un enregistrement par candidat déclaré
         {
-            "candidat_id": "nosdeputes:bruno-retailleau",  # id pivot ; null si aucun pivot dispo
+            "candidat_id": "bruno-retailleau",   # id pivot = slug (#487) ; null si aucun pivot dispo
             "nom": "Bruno Retailleau",
             "statut": "declare",              # cf. raw_data/candidats.json._meta.statuts_possibles
             "famille_politique": "droite",
