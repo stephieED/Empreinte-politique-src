@@ -18,18 +18,18 @@ son nom. La relation entre les deux premiers se lit **dans le texte** :
 
 | Champ | Libelle |
 | --- | --- |
-| `cold_start` | *Full reset: purge cache and outputs (no merge)* |
-| `overwrite_profiles` | *Overwrite profiles instead of merging (keeps the cache)* |
+| `cold_start` | *Full reset: purge cache and outputs. Overwrite profiles from scratch (No merge)* |
+| `overwrite_profiles` | *Overwrite profiles from cache (no merge)* |
 | `refresh_existing_only` | *Limit roster to pre-existing members (no new ones)* |
 | `roster_limit` | *Roster members to process. 0 = all* |
-| `collect_interventions` | *Collect floor speeches (roster and Senate jobs always skip them)* |
+| `collect_interventions` | *Collect floor speeches (skipped for roster AN and senate)* |
 | `incomplete_read_threshold` | *IncompleteRead errors tolerated before the quality gate fails* |
 | `allow_declared_losses` | *DANGEROUS: allow commit despite lost entries* |
 | `allow_broken_references` | *EMERGENCY ONLY: allow keys that don't resolve in their shared index* |
 
-Les deux disent « no merge » ; ce qui les separe — purger le cache contre le
-garder — se lit en face a face. La lectrice voit la difference sans connaitre
-aucun nom.
+Les deux disent « no merge » ; ce qui les separe — **purge cache** contre
+**from cache** — se lit en face a face. La lectrice voit la difference sans
+connaitre aucun nom.
 
 **« overwrite » et non « rebuild »** : `--no-merge` remplace au lieu de
 fusionner. « rebuild » etait plus vague pour le meme nombre de caracteres.

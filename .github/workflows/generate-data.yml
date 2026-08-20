@@ -13,11 +13,11 @@ on:
       # by side in the two labels.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
       cold_start:
-        description: "Full reset: purge cache and outputs (no merge)"
+        description: "Full reset: purge cache and outputs. Overwrite profiles from scratch (No merge)"
         type: boolean
         default: false
       overwrite_profiles:
-        description: "Overwrite profiles instead of merging (keeps the cache)"
+        description: "Overwrite profiles from cache (no merge)"
         type: boolean
         default: false
       refresh_existing_only:
@@ -29,7 +29,7 @@ on:
         type: number
         default: 20
       collect_interventions:
-        description: "Collect floor speeches (roster and Senate jobs always skip them)"
+        description: "Collect floor speeches (skipped for roster AN and senate)"
         type: boolean
         default: false
       incomplete_read_threshold:
