@@ -67,6 +67,16 @@ something is pending, not *why*.
   keeps only the per-legislature indexes (never the 650,5 MB of archives, measured),
   and the roster job is `actions/cache/restore` on both its cache steps.
   See `technical_decisions.md#cache-mode-interventions-505`.
+- `generate-data.yml`: a `Read timed out` on NosDéputés made
+  `generate_roster_candidats.py` overwrite the roster with **0 candidate** and exit 0,
+  so the roster pivot pass iterated on nothing — run `32405297873` concluded
+  `success` with 229 raw profiles for 209 pivots, the 20 members it had just
+  collected published nowhere. **Fixed in #511**: the roster is never written on a
+  failed fetch, a 0-member configured group, or an empty result (a shrink threshold
+  was measured and rejected — a partial failure drops 452 or 300 of 752 at once, and
+  is observable at its cause); and `src/audit_collecte_non_publiee.py` now reconciles
+  collected against published before every commit. See
+  `technical_decisions.md#collecte-non-publiee`.
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.

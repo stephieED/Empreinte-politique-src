@@ -127,7 +127,12 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     ("group_profile.py", "generate_groupe_profile_from_roster"): GROUPE,
     ("group_profile.py", "main"): GROUPE,
     ("generate_group_profiles.py", "generate_all"): GROUPE,
-    ("generate_roster_candidats.py", "build_roster_candidats"): GROUPE,
+    # #511 a scindé `build_roster_candidats` : l'aplatissement (et donc la
+    # lecture de la `chambre` du groupe) a migré dans la variante qui compte
+    # aussi les membres par groupe, et le libellé d'anomalie s'en sert pour
+    # distinguer les deux `LR` (`AN:LR` et `Senat:LR`).
+    ("generate_roster_candidats.py", "build_roster_candidats_detaille"): GROUPE,
+    ("generate_roster_candidats.py", "_libelle_groupe"): GROUPE,
     ("check_quality_gate.py", "_report_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "compute_tableau_croise_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "compute_plage_dates_groupes"): GROUPE,

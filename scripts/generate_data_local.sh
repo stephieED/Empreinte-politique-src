@@ -140,7 +140,12 @@ rm -f "$PARLTRACK_SCRIPT"
 trap - EXIT
 
 echo "=== [6/7] extract-roster-groupes : membres de groupe (mode léger) ==="
-python3 src/generate_roster_candidats.py
+# #511 : sortie non nulle sur une collecte incomplète (fetch en échec, groupe à
+# 0 membre, roster vide). Ce script n'a pas `set -e` — sans ce test explicite,
+# l'extraction ci-dessous repartirait sur un roster périmé ou absent, ce qui est
+# exactement l'enchaînement qui a produit 229 profils bruts pour 209 pivots.
+python3 src/generate_roster_candidats.py \
+  || { echo "[!] Roster non régénéré (collecte incomplète, #511) — extraction roster sautée."; exit 1; }
 LIMIT_FLAG=()
 [ -n "$ROSTER_EXTRACTION_LIMIT" ] && [ "$ROSTER_EXTRACTION_LIMIT" != "0" ] && LIMIT_FLAG=(--limit "$ROSTER_EXTRACTION_LIMIT")
 python3 src/generate_all_profiles.py \
@@ -160,7 +165,10 @@ python3 src/generate_all_profiles.py \
   --workers "$WORKERS" \
   "${MERGE_FLAG[@]}"
 
-python3 src/generate_roster_candidats.py
+# #511 : sans ce test, un roster non régénéré fait normaliser la passe suivante
+# sur une liste périmée — ou, dans l'incident d'origine, sur une liste vide.
+python3 src/generate_roster_candidats.py \
+  || { echo "[!] Roster non régénéré (collecte incomplète, #511) — pivots roster non produits."; exit 1; }
 python3 src/generate_all_profiles.py \
   --pivot-only \
   --candidats raw_data/roster_candidats.json \

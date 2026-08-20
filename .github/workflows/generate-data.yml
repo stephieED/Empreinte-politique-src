@@ -44,6 +44,10 @@ on:
         description: "EMERGENCY ONLY: allow keys that don't resolve in their shared index"
         type: boolean
         default: false
+      allow_unpublished_profiles:
+        description: "LAST RESORT: allow commit while collected profiles have no pivot"
+        type: boolean
+        default: false
 
 # Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
 # `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
@@ -1758,6 +1762,14 @@ jobs:
       # listes. No-op silencieux si extract-roster-groupes a échoué/été
       # absent (raw_data/profiles ne contient alors aucun profil roster-driven
       # → chaque candidat roster est ignoré comme "profil brut absent").
+      #
+      # `generate_roster_candidats.py` PEUT DÉSORMAIS FAIRE ÉCHOUER CE STEP
+      # (#511) : sur un fetch en timeout, il refuse d'écrire un roster incomplet
+      # et sort en 1, ce que le `bash -e` du step propage. C'est voulu — le run
+      # 32405297873 s'est conclu en `success` précisément parce que ce script
+      # rendait 0 sur un roster vide, et la passe ci-dessous a itéré sur rien.
+      # Un run coupé ici ne perd aucune donnée : les profils bruts collectés
+      # sont dans les artifacts, la fusion est additive, un run suivant publie.
       - name: Normalisation pivot roster-driven
         env:
           FRESH: ${{ inputs.cold_start }}
@@ -2078,6 +2090,83 @@ jobs:
           path: |
             integrite-referentielle.md
             integrite-referentielle.json
+          if-no-files-found: ignore
+
+      # ── Collecté mais non publié, avant commit (#511) ──────────────────────
+      # TROISIÈME ANGLE, et c'est pourquoi c'est un step de plus et non une
+      # option des deux précédents :
+      #   - le contrôle de perte compare un AVANT et un APRÈS. Un profil brut
+      #     qui n'a JAMAIS eu de pivot ne lui apparaît pas : rien n'a été perdu,
+      #     les deux compteurs montent, seule la correspondance manque ;
+      #   - l'intégrité référentielle vérifie que les clés PUBLIÉES résolvent.
+      #     Ce qui n'a jamais été publié ne porte aucune clé.
+      # Run 32405297873 (20/08/2026), conclusion `success` : un `Read timed out`
+      # a fait écrire un roster de 0 candidat, la passe pivot roster a itéré sur
+      # le vide, et `68bc094` a été commité avec 229 profils bruts pour 209
+      # pivots. Les 20 membres collectés par ce run (jusqu'à 3 536 votes chacun)
+      # ne sont publiés nulle part, sans un seul signal.
+      #
+      # ORDRE DES STEPS : après les DEUX passes `generate_all_profiles.py
+      # --pivot-only` — celle de `raw_data/candidats.json` et celle de
+      # `raw_data/roster_candidats.json`. Placé avant, il signalerait un écart
+      # qui n'existe pas encore : entre les deux passes, tout membre de roster
+      # est légitimement sans pivot. Vérifié par
+      # tests/test_ci_collecte_non_publiee.py.
+      #
+      # SEUIL 0, MESURÉ. Sur les 12 commits produits par un run generate-data
+      # entre 604c8d6 (16/08) et e82406a (20/08), l'écart brut/pivot est 0 à
+      # chaque fois, pendant que le corpus passait de 48 à 209 profils. Ce n'est
+      # pas une valeur basse, c'est une invariance — et un profil brut est
+      # toujours normalisable (`process_candidat` n'écrit rien quand la collecte
+      # ne rend ni identité FR ni mandat UE).
+      #
+      # COÛT : 0,05 s / 13,7 Mio mesurés à 229 profils, 0,08 s / 13,9 Mio
+      # MESURÉS à 752 (doublure de 752+752 noms de fichiers) — pas projetés. Ce
+      # contrôle ne parse aucun profil : il compare deux listes de NOMS de
+      # fichiers, seule façon de tenir 1 642 Mo de profils bruts à mémoire
+      # bornée. Processus séparé des deux précédents : le pic du job reste celui
+      # du plus coûteux, le contrôle de perte (186,6 Mio à #485), sous les 236
+      # actés par #460.
+      #
+      # DRAPEAU DISTINCT, comme pour #485 : ni `allow_declared_losses` ni
+      # `allow_broken_references` ne désarme celui-ci. #470 a documenté le piège
+      # — un contrôle grossier rendu bloquant force à relancer avec la
+      # tolérance, ce qui désarme du même coup les contrôles précis.
+      - name: Collecté mais non publié (avant commit)
+        env:
+          TOLERER: ${{ inputs.allow_unpublished_profiles }}
+        run: |
+          TOLERANCE=()
+          if [[ "$TOLERER" == "true" ]]; then
+            echo "::warning::tolerer_profils_non_publies=true — des profils collectés resteront publiés nulle part. À n'employer qu'après avoir élucidé chaque écart (#511)."
+            TOLERANCE=(--tolerer-non-publies)
+          fi
+          python3 src/audit_collecte_non_publiee.py \
+            --raw-dir raw_data/profiles \
+            --pivot-dir pivot_data/profiles \
+            --out collecte-non-publiee.md \
+            --out-json collecte-non-publiee.json \
+            "${TOLERANCE[@]}" || CODE=$?
+          # Joint au résumé DANS TOUS LES CAS, même raison que les deux steps
+          # précédents : c'est en échec qu'on en a le plus besoin.
+          {
+            echo "### Collecté mais non publié (#511)"
+            echo ""
+            cat collecte-non-publiee.md
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${CODE:-0}" -ne 0 ]]; then
+            echo "::error::COLLECTE_NON_PUBLIEE — au moins un profil de raw_data/profiles/ n'a pas de pivot dans pivot_data/profiles/. Il a été collecté (identité, mandats, votes) et n'atteint aucune vue : une passe pivot a itéré sur moins que ce que ce run a collecté. Commit annulé. Les slugs sont nommés dans le résumé de job (#511)."
+            exit 1
+          fi
+
+      - name: Rapport collecté/non publié — artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: collecte-non-publiee
+          path: |
+            collecte-non-publiee.md
+            collecte-non-publiee.json
           if-no-files-found: ignore
 
       #
