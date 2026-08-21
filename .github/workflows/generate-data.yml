@@ -608,7 +608,17 @@ jobs:
           # tests/test_ci_budget_interventions.py).
           BUDGET_FLAG=()
           [[ "${{ inputs.collect_interventions }}" == "true" ]] && BUDGET_FLAG=(--budget-interventions-secondes 240)
-          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" "${BUDGET_FLAG[@]}"
+          # `--budget-collecte-secondes 0` (#514) : absence de budget de
+          # collecte globale, DÉCLARÉE. Ce n'est pas un oubli reconduit —
+          # mesuré sur les 16 shards des runs 32233766814 et 32288588518, une
+          # extraction AN sans interventions coûte 8 à 18 s, et avec
+          # interventions elle est déjà bornée par les 240 s ci-dessus, qui
+          # couvrent les trois charges du mode (Syceron, questions, détails
+          # NosDéputés). Un second plafond n'aurait rien à borner de plus, et
+          # #500 fonctionne : les 8 shards du run 32421439590 sont en succès.
+          # Le zéro est explicite parce que l'OMISSION est ce qui a produit
+          # #514 — la valeur doit être une décision lisible, pas un défaut.
+          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --budget-collecte-secondes 0 --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" "${BUDGET_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
@@ -685,15 +695,45 @@ jobs:
     # voulu — une source qui fait expirer ses 32 requêtes est à terre, le job
     # ne produira rien de plus en attendant 90 min.
     #
-    # Le coût d'une coupure est faible, contrairement à extract-an : ce job
-    # n'est pas shardé et `_manifest_append` publie candidat par candidat, donc
-    # un timeout ne perd que le candidat en cours, pas le job. C'est pourquoi
-    # aucun `--budget-interventions-secondes` n'est posé ici : sans collecte
-    # d'interventions il n'aurait rien à borner (`build_profile_any_chambre` le
-    # neutralise sous `--skip-interventions`), et la publication incrémentale
-    # tient déjà le rôle que le budget joue sur extract-an.
+    # #514 — 15 min RESTE la valeur, et c'est désormais le budget interne qui
+    # la rend inatteignable, pas une espérance sur l'état de la source.
     #
-    # Cohérence tenue par tests/test_ci_interventions_par_job.py.
+    # Ce que #501 avait tenu pour acquis et qui était faux : « un timeout ne
+    # perd que le candidat en cours, la publication est incrémentale ». Vrai
+    # pour un candidat dont l'identité est résolue ; faux pour tous les autres.
+    # Sans identité, `build_profile_any_chambre` rend `None`, `process_candidat`
+    # sort en « introuvable » et n'écrit RIEN. Le run 32421439590 (20/08/2026)
+    # a passé 13 min 27 s sur trois candidats et publié **1 profil** — pas
+    # « tous sauf le dernier ».
+    #
+    # Les budgets, et la population de chaque chiffre :
+    #   - --budget-collecte-secondes 160 (par candidat). Il couvre la
+    #     RÉSOLUTION D'IDENTITÉ, seule porte vers un profil écrit : 2 formats
+    #     × 3 tentatives, soit au pire 6 × (25 s de watchdog + 1,5 s de
+    #     backoff) = 159 s. Mesuré sur SOURCE DÉGRADÉE (run 32421439590) :
+    #     103 s, 109 s et 125 s pour les trois seuls candidats que le job a
+    #     atteints. Mesuré sur SOURCE SAINE (#501, `bruno-retailleau`,
+    #     20/08/2026) : 2,7 s pour les 4 requêtes du candidat — le budget vaut
+    #     59× la mesure, il ne peut pas se déclencher.
+    #   - --budget-job-secondes 600 (tout le run). Dérivé du timeout, pas
+    #     observé : 900 s − 240 s de préambule provisionné − 25 s de
+    #     dépassement possible de la requête en vol − 30 s pour la publication
+    #     = 605 s, arrondi à 600. Sur source saine, la collecte entière est
+    #     mesurée à ~30 s projetées pour 8 slugs : ce plafond est à 20× et ne
+    #     borne rien. Sur source dégradée, il rend la main vers 14 min avec un
+    #     résumé complet et des annotations, au lieu d'un
+    #     `##[error]The operation was canceled` à 15 min.
+    #
+    # 8 slugs × 160 s = 1 280 s > 660 s disponibles : le budget par candidat ne
+    # borne donc PAS le job, et c'est pour cela qu'il en faut deux. Sur une
+    # source à terre, quatre candidats environ obtiennent une vraie tentative
+    # de résolution d'identité et les autres sortent en `budget_job_epuise` —
+    # déclarés, comptés, annotés. C'est un arbitrage assumé : donner à chacun
+    # 600/8 = 75 s ferait échouer la résolution d'identité pour TOUS (elle
+    # coûte 103 s au minimum mesuré), donc garantirait zéro profil.
+    #
+    # Cohérence tenue par tests/test_ci_interventions_par_job.py et
+    # tests/test_ci_budget_par_job.py.
     timeout-minutes: 15
     # continue-on-error: true — voir justification sur extract-an ci-dessus.
     continue-on-error: true
@@ -771,7 +811,14 @@ jobs:
           #
           # À rouvrir si `fetch_intervention_details` apprend `url_nossenateurs`
           # — voir ROADMAP.md et docs/technical_decisions.md#interventions-senat-501.
-          python3 src/generate_all_profiles.py --source senat --workers 1 --skip-interventions --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
+          #
+          # #514 : les deux budgets sont dimensionnés dans le commentaire de
+          # `timeout-minutes` ci-dessus, avec la condition de source de chaque
+          # chiffre. Ils ne sont neutralisés par aucun autre drapeau — c'est ce
+          # que `--budget-interventions-secondes` était, sous
+          # `--skip-interventions`, et pourquoi ce job s'est retrouvé sans
+          # aucun plafond interne.
+          python3 src/generate_all_profiles.py --source senat --workers 1 --skip-interventions --budget-collecte-secondes 160 --budget-job-secondes 600 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
@@ -1517,12 +1564,22 @@ jobs:
           # L'input a été retiré parce qu'il ne pouvait que nuire s'il était
           # tourné : voir #workers-fige-a-1 pour les trois charges qu'il
           # confondait.
+          #
+          # `--budget-collecte-secondes 0` (#514) : absence de budget DÉCLARÉE,
+          # et non reconduite par omission. Ce job a `--resume` et un point de
+          # sauvegarde par membre : un shard coupé reprend là où il s'est
+          # arrêté au run suivant, ce qu'`extract-senat` n'a pas. Le
+          # dimensionner demanderait une mesure sur les 752 membres du roster,
+          # population que #514 n'a pas relevée — poser un chiffre ici serait
+          # exactement la valeur mesurée ailleurs qu'elle corrige. À rouvrir si
+          # un shard roster meurt sur une source dégradée (ROADMAP.md).
           /usr/bin/time -v python3 src/generate_all_profiles.py \
             --candidats raw_data/roster_candidats.json \
             --workers 1 \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             "${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
+            --budget-collecte-secondes 0 \
             --manifest-out _manifest/profils-ecrits.txt \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"
 

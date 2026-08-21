@@ -23,6 +23,27 @@ jamais se lire comme une collecte complète).
 Même famille que les watchdogs de `download_watchdog.py` (#370) et de
 `candidate_profile._get_with_watchdog` (#340), à un étage au-dessus : ceux-là
 bornent UNE requête, celui-ci borne l'agrégat d'une phase.
+
+#514 — la phase bornée n'était pas la seule qui en avait besoin. Le budget
+de #498 ne couvrait que les interventions, et `build_profile_any_chambre` le
+rendait `None` dès `--skip-interventions`. Quand #502 a levé ce drapeau en dur
+sur `extract-senat`, le job s'est retrouvé sans aucun budget : identité, votes
+et dossiers n'en avaient jamais eu. Le 20/08/2026, run 32421439590, il a
+consommé ses 15 minutes de `timeout-minutes` pour **un** profil écrit.
+
+D'où trois portées, et non plus une :
+
+- **par phase** (`libelle="collecte d'interventions"`, #498) — le temps ne
+  court que dans les sections de cette phase ;
+- **par candidat** (`libelle="collecte"`, #514) — toute la collecte réseau
+  d'un candidat, partagée entre ses chambres ;
+- **par process** (`libelle="collecte du job"`, #514) — la boucle de candidats
+  entière, pour qu'une source à terre rende la main au lieu d'être coupée par
+  `timeout-minutes` sans résumé ni annotation.
+
+Elles s'emboîtent sans se connaître : ce sont trois instances distinctes, donc
+trois compteurs distincts, et une seconde passée dans la collecte
+d'interventions d'un candidat est facturée aux trois.
 """
 
 from __future__ import annotations
@@ -31,7 +52,7 @@ import os
 import sys
 import threading
 import time
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from typing import Iterator, Optional
 
 
@@ -48,9 +69,22 @@ class BudgetCollecte:
 
     Thread-safe : `epuise()` et `ignorer()` sont appelés depuis le pool de
     threads qui récupère les détails d'intervention (`max_workers=4`).
+
+    **`parent` (#514)** — chaîne un budget plus large au-dessus de celui-ci.
+    Une section ouverte ici ouvre aussi celle du parent (donc le parent est
+    facturé du temps de ses enfants), et `epuise()` est vrai dès qu'un budget
+    de la chaîne l'est. C'est ce qui permet au budget par candidat de borner la
+    collecte d'interventions **sans toucher une ligne** du code de #500 : tous
+    ses `budget_epuise(...)`/`budget_ignorer(...)` existants voient
+    l'épuisement du parent par la même méthode qu'avant.
     """
 
-    def __init__(self, secondes: float, libelle: str = "collecte") -> None:
+    def __init__(
+        self,
+        secondes: float,
+        libelle: str = "collecte",
+        parent: Optional["BudgetCollecte"] = None,
+    ) -> None:
         if secondes <= 0:
             raise ValueError(
                 f"budget de {libelle} invalide : {secondes} s. Un budget nul ou négatif "
@@ -58,6 +92,7 @@ class BudgetCollecte:
             )
         self.secondes = float(secondes)
         self.libelle = libelle
+        self.parent = parent
         self._lock = threading.Lock()
         self._consomme = 0.0
         self._profondeur = 0
@@ -72,18 +107,25 @@ class BudgetCollecte:
         la plus externe compte, pour qu'une section imbriquée ne facture pas
         deux fois la même seconde."""
         _ = nom  # nom conservé pour la lisibilité des appels, pas pour le calcul
-        with self._lock:
-            if self._profondeur == 0:
-                self._debut_racine = time.monotonic()
-            self._profondeur += 1
-        try:
-            yield self
-        finally:
+        with ExitStack() as pile:
+            # Le parent est facturé du temps de ses enfants : sans cela, un
+            # budget par candidat ne verrait jamais passer les secondes de la
+            # collecte d'interventions, qui est précisément la phase la plus
+            # chère qu'il doit borner.
+            if self.parent is not None:
+                pile.enter_context(self.parent.section(nom))
             with self._lock:
-                self._profondeur -= 1
-                if self._profondeur == 0 and self._debut_racine is not None:
-                    self._consomme += time.monotonic() - self._debut_racine
-                    self._debut_racine = None
+                if self._profondeur == 0:
+                    self._debut_racine = time.monotonic()
+                self._profondeur += 1
+            try:
+                yield self
+            finally:
+                with self._lock:
+                    self._profondeur -= 1
+                    if self._profondeur == 0 and self._debut_racine is not None:
+                        self._consomme += time.monotonic() - self._debut_racine
+                        self._debut_racine = None
 
     def _ecoule_sans_verrou(self) -> float:
         ecoule = self._consomme
@@ -101,7 +143,25 @@ class BudgetCollecte:
         return max(0.0, self.secondes - self.consomme())
 
     def epuise(self) -> bool:
-        return self.consomme() >= self.secondes
+        """Vrai dès qu'UN budget de la chaîne est épuisé (#514).
+
+        Un budget par candidat qui déborde arrête aussi la phase
+        d'interventions qu'il englobe, sans que celle-ci ait à connaître son
+        existence."""
+        return self._responsable() is not None
+
+    def _responsable(self) -> Optional["BudgetCollecte"]:
+        """Le budget de la chaîne qui est effectivement épuisé, du plus interne
+        au plus externe — ou None si aucun ne l'est. Sert à ce que le message
+        de troncature nomme le bon plafond : dire « budget de collecte
+        d'interventions épuisé (plafond 240 s) » alors que c'est le budget du
+        job qui a rendu la main serait un chiffre juste sur la mauvaise
+        population."""
+        if self.consomme() >= self.secondes:
+            return self
+        if self.parent is not None:
+            return self.parent._responsable()
+        return None
 
     # -- Ce qui n'a pas été collecté ---------------------------------------
 
@@ -126,10 +186,48 @@ class BudgetCollecte:
         if not ignores:
             return None
         details = ", ".join(f"{nombre} {unite}" for unite, nombre in ignores.items())
-        return (
-            f"budget de {self.libelle} épuisé après {self.consomme():.0f} s "
-            f"(plafond {self.secondes:.0f} s) — non collecté : {details}"
-        )
+        responsable = self._responsable() or self
+        if responsable is self:
+            cause = (
+                f"budget de {self.libelle} épuisé après {self.consomme():.0f} s "
+                f"(plafond {self.secondes:.0f} s)"
+            )
+        else:
+            cause = (
+                f"budget de {self.libelle} interrompu par le budget de "
+                f"{responsable.libelle}, épuisé après {responsable.consomme():.0f} s "
+                f"(plafond {responsable.secondes:.0f} s)"
+            )
+        return f"{cause} — non collecté : {details}"
+
+
+def creer(
+    secondes: Optional[float],
+    libelle: str,
+    parent: Optional[BudgetCollecte] = None,
+) -> Optional[BudgetCollecte]:
+    """`BudgetCollecte(secondes, libelle)`, ou `None` si `secondes` est nul/absent.
+
+    **Un seul critère, et c'est tout l'objet de cette fonction : la valeur.**
+    #514 est né d'une condition supplémentaire glissée à l'endroit de la
+    création — `if budget_secondes and not skip_interventions` — qui a
+    désactivé le budget sur un mode où il restait pourtant tout à borner.
+
+    Une condition de mode se pose sur la **valeur passée**, à l'endroit qui
+    décide du mode (le job, ou l'appelant qui connaît ses phases), jamais ici :
+    `creer(0 if skip else 240, ...)` se lit et se teste ; un `and not` enfoui
+    dans la fabrique rend un `None` que plus rien en aval ne distingue d'un
+    « aucun budget demandé ».
+
+    `None` en sortie ne veut pas dire « plus aucun plafond » : c'est à
+    l'appelant de retomber sur le budget englobant (voir
+    `build_profile`, `budget_phase_interventions`). Rendre `parent` ici ferait
+    porter au budget du dessus le *libellé* de la phase absente, et une
+    troncature nommerait alors le mauvais plafond.
+    """
+    if not secondes:
+        return None
+    return BudgetCollecte(secondes, libelle=libelle, parent=parent)
 
 
 # -- Helpers tolérants au budget absent ------------------------------------

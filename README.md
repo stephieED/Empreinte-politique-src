@@ -319,7 +319,20 @@ python src/generate_all_profiles.py --pivot-dir /tmp/pivots
 python src/generate_all_profiles.py --limit 20    # premiers N candidats (déploiement progressif)
 python src/generate_all_profiles.py --sample 20   # échantillon aléatoire de N candidats
 python src/generate_all_profiles.py --manifest-out _manifest/profils-ecrits.txt  # cf. ci-dessous (#450)
+python src/generate_all_profiles.py --budget-collecte-secondes 160   # plafond de collecte PAR CANDIDAT (#514)
+python src/generate_all_profiles.py --budget-collecte-secondes 0     # pas de plafond, décidé et non subi
+python src/generate_all_profiles.py --budget-job-secondes 600        # plafond de collecte pour TOUT le run (#514)
 ```
+
+`--budget-collecte-secondes` borne la collecte réseau d'un candidat (identité,
+votes, dossiers, interventions). Épuisé, il rend la main entre deux requêtes : le
+profil partiel est **écrit**, donc publié, et la troncature part dans
+`meta.warnings[]`. Omettre l'option lance une collecte sans plafond **et** sans
+décision écrite : un avertissement le signale, `0` déclare l'absence de budget.
+`--budget-job-secondes` fait la même chose pour le run entier — les candidats non
+atteints sortent en `budget_job_epuise`, déclarés et comptés au résumé, au lieu
+d'être emportés sans trace par le `timeout-minutes` du job.
+Voir `docs/technical_decisions.md#budget-collecte-source-injoignable-514`.
 
 `--manifest-out` consigne, une ligne par nom de fichier, les profils bruts que
 CE run a réellement écrits — ni ceux qu'il a sautés, ni ceux qui étaient déjà

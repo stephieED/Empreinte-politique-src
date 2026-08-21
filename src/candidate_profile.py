@@ -34,6 +34,7 @@ import time
 import unicodedata
 import zipfile
 from collections import Counter
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
 from urllib.parse import urlsplit
@@ -568,6 +569,19 @@ WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES = "interventions syceron indisp
 # décrit ce que CE run n'a pas collecté. Une liste tronquée qui a l'air complète
 # après fusion reste une liste dont on ne sait pas si elle est complète.
 WARNING_PREFIX_BUDGET_INTERVENTIONS = "collecte d'interventions tronquée (budget de temps)"
+# #514 : collecte du candidat (identité, votes, dossiers, interventions)
+# interrompue par le budget de temps mur du candidat. Même raison qu'au-dessus
+# de n'être jamais retiré par _prune_stale_warnings.
+WARNING_PREFIX_BUDGET_COLLECTE = "collecte tronquée (budget de temps)"
+# #514 : la source n'a pas répondu — à distinguer de « elle a répondu qu'il n'y
+# a rien ». Sans cette distinction, un `archive.nossenateurs.fr` en timeout et
+# un parlementaire réellement absent de l'archive produisent le même silence :
+# `_try_urls` rend `(None, None)` dans les deux cas, `build_profile_any_chambre`
+# ne journalise rien (aucune exception n'a été levée) et `process_candidat`
+# conclut « introuvable ». Sur le run 32421439590, onze candidats sur treize
+# sont ainsi sortis sans profil ET sans trace — exactement la donnée manquante
+# qui se lit comme un constat que la règle 2.5 interdit.
+WARNING_PREFIX_SOURCE_INJOIGNABLE = "source injoignable"
 
 # #510 : l'archive Syceron publie l'identifiant d'orateur NU (`<orateur><id>847629
 # </id>`), et le code lui appliquait `re.fullmatch(r"PA\d+")` — donc l'index de la
@@ -800,6 +814,18 @@ _GET_PAYLOAD_RETRY_BACKOFF_SECONDS = 1.5
 # de la courtoisie.
 _APPELS_NOSDEPUTES_LOCK = threading.Lock()
 _appels_nosdeputes = 0
+# #514 : requêtes pour lesquelles la source n'a rendu AUCUNE réponse, toutes
+# tentatives épuisées (timeout de connexion, timeout de lecture, watchdog, 5xx
+# répétés). Volontairement disjoint du compteur ci-dessus, qui compte les
+# requêtes ÉMISES : un 404 est une réponse, il incrémente `_appels_nosdeputes`
+# et pas celui-ci.
+#
+# À quoi ça sert : `_try_urls` et `fetch_votes` rendent `(None, None)` aussi
+# bien quand la source répond « rien pour ce slug » que quand elle ne répond
+# pas du tout. Les deux cas sortent ensuite en « introuvable ». Comparer ce
+# compteur avant/après une collecte est le seul moyen, sans changer la
+# signature de toute la chaîne de fetch, de savoir lequel des deux on a vécu.
+_requetes_sans_reponse = 0
 
 
 def compteur_appels_nosdeputes() -> int:
@@ -810,13 +836,30 @@ def compteur_appels_nosdeputes() -> int:
         return _appels_nosdeputes
 
 
+def compteur_requetes_sans_reponse() -> int:
+    """Nombre de requêtes restées SANS RÉPONSE depuis le démarrage du process
+    (#514). Global et non thread-local, pour la même raison que le compteur
+    d'appels : les requêtes partent de sous-pools. La mesure est donc
+    conservatrice avec `--workers > 1` — on peut attribuer à un candidat
+    l'échec réseau d'un autre, ce qui fait sur-déclarer « source injoignable »
+    et jamais l'inverse. Le sens de l'erreur est celui de la prudence."""
+    with _APPELS_NOSDEPUTES_LOCK:
+        return _requetes_sans_reponse
+
+
 def _incrementer_appels_nosdeputes() -> None:
     global _appels_nosdeputes
     with _APPELS_NOSDEPUTES_LOCK:
         _appels_nosdeputes += 1
 
 
-def _get_payload(url: str) -> Any:
+def _incrementer_requetes_sans_reponse() -> None:
+    global _requetes_sans_reponse
+    with _APPELS_NOSDEPUTES_LOCK:
+        _requetes_sans_reponse += 1
+
+
+def _get_payload(url: str, budget: Optional[BudgetCollecte] = None) -> Any:
     """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
 
     Retourne :
@@ -828,9 +871,31 @@ def _get_payload(url: str) -> Any:
       après épuisement de ``_GET_PAYLOAD_MAX_ATTEMPTS`` tentatives (backoff
       fixe ``_GET_PAYLOAD_RETRY_BACKOFF_SECONDS`` entre chaque) : un nouvel
       essai sur un autre miroir reste légitime côté appelant.
+
+    `budget` (#514) est vérifié **entre deux tentatives**, jamais avant la
+    première ni au milieu de l'une d'elles. C'est ce qui plafonne le
+    dépassement d'un budget de collecte à UNE tentative (25 s, la borne du
+    watchdog) au lieu d'un cycle de reprise entier (jusqu'à 78 s).
+
+    Ce n'est PAS une politique de reprise déguisée : tant que le budget tient,
+    les trois tentatives ont lieu, y compris après un timeout. Le run
+    32421439590 dit pourquoi — le seul profil qu'il ait écrit vient d'une
+    3ᵉ tentative réussie après deux timeouts sur le même format
+    (`/jean-luc-melenchon/xml`, 20/08/2026 21:54:33 UTC). Une règle « ne pas
+    retenter après un timeout » aurait supprimé la seule donnée du job.
     """
     for attempt in range(1, _GET_PAYLOAD_MAX_ATTEMPTS + 1):
         is_last_attempt = attempt == _GET_PAYLOAD_MAX_ATTEMPTS
+        if attempt > 1 and budget_epuise(budget):
+            print(
+                f"  [!] Reprise abandonnée sur {url} (tentative {attempt}/"
+                f"{_GET_PAYLOAD_MAX_ATTEMPTS}) : budget de {budget.libelle} épuisé.",
+                file=sys.stderr,
+            )
+            budget_ignorer(budget, "tentative(s) de reprise réseau",
+                           _GET_PAYLOAD_MAX_ATTEMPTS - attempt + 1)
+            _incrementer_requetes_sans_reponse()
+            return None
         try:
             _incrementer_appels_nosdeputes()
             resp = _get_with_watchdog(url, timeout=TIMEOUT)
@@ -846,6 +911,7 @@ def _get_payload(url: str) -> Any:
                 if not is_last_attempt:
                     time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
                     continue
+                _incrementer_requetes_sans_reponse()
                 return None
             content_type = resp.headers.get("content-type", "")
             if "json" in content_type.lower() or resp.text.lstrip().startswith("{"):
@@ -871,11 +937,14 @@ def _get_payload(url: str) -> Any:
             if not is_last_attempt:
                 time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
                 continue
+            _incrementer_requetes_sans_reponse()
             return None
     return None  # pragma: no cover - inatteignable, chaque branche ci-dessus retourne déjà
 
 
-def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Optional[str]]:
+def _try_urls(
+    urls: list[str], label: str, slug: str, budget: Optional[BudgetCollecte] = None
+) -> tuple[Optional[Any], Optional[str]]:
     """Essaie plusieurs URLs jusqu'à trouver un payload exploitable.
 
     Logique de court-circuit :
@@ -891,9 +960,12 @@ def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Op
         for suffix in ["/json", "/xml"]:
             if base_terminal:
                 break
+            if budget_epuise(budget):
+                budget_ignorer(budget, f"format(s) de « {label} » non tenté(s)")
+                return None, None
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> {label} : {url}")
-            data = _get_payload(url)
+            data = _get_payload(url, budget)
             if data is _TERMINAL_FAILURE:
                 # Échec déterministe : inutile d'essayer l'autre format sur ce
                 # base_url (même ressource servie différemment).
@@ -905,23 +977,32 @@ def _try_urls(urls: list[str], label: str, slug: str) -> tuple[Optional[Any], Op
     return None, None
 
 
-def fetch_identity(base_urls: list[str], slug: str) -> tuple[Optional[Any], Optional[str]]:
+def fetch_identity(
+    base_urls: list[str], slug: str, budget: Optional[BudgetCollecte] = None
+) -> tuple[Optional[Any], Optional[str]]:
     """Infos biographiques, mandats, contacts."""
-    return _try_urls(base_urls, "Récupération de l'identité", slug)
+    return _try_urls(base_urls, "Récupération de l'identité", slug, budget)
 
 
-def fetch_dossiers(base_url: str, legislature: str) -> Optional[dict]:
+def fetch_dossiers(
+    base_url: str, legislature: str, budget: Optional[BudgetCollecte] = None
+) -> Optional[dict]:
     """Récupère la liste des dossiers législatifs d'une législature."""
     url = f"{base_url}/{legislature}/dossiers/nom/json"
     print(f"-> Dossiers législatifs : {url}")
-    return _get_payload(url)
+    return _get_payload(url, budget)
 
 
-def fetch_dossiers_for_legislatures(base_url: str, legislatures: list[str]) -> list[dict[str, Any]]:
+def fetch_dossiers_for_legislatures(
+    base_url: str, legislatures: list[str], budget: Optional[BudgetCollecte] = None
+) -> list[dict[str, Any]]:
     """Récupère et fusionne les dossiers législatifs pour plusieurs législatures."""
     dossiers: list[dict[str, Any]] = []
-    for legislature in legislatures:
-        payload = fetch_dossiers(base_url, legislature)
+    for rang, legislature in enumerate(legislatures):
+        if budget_epuise(budget):
+            budget_ignorer(budget, "législature(s) de dossiers Sénat", len(legislatures) - rang)
+            break
+        payload = fetch_dossiers(base_url, legislature, budget)
         if not isinstance(payload, dict):
             continue
         sections = payload.get("sections") or []
@@ -4467,13 +4548,18 @@ def fetch_interventions_syceron(
     return interventions
 
 
-def fetch_votes(base_urls: list[str], slug: str) -> tuple[Optional[list], Optional[str]]:
+def fetch_votes(
+    base_urls: list[str], slug: str, budget: Optional[BudgetCollecte] = None
+) -> tuple[Optional[list], Optional[str]]:
     """Liste des scrutins auxquels le parlementaire a participé, avec sa position."""
     for base_url in base_urls:
         for suffix in ["/votes/json", "/votes/xml"]:
+            if budget_epuise(budget):
+                budget_ignorer(budget, "format(s) de votes NosSénateurs non tenté(s)")
+                return None, None
             url = f"{base_url}/{slug}{suffix}"
             print(f"-> Récupération des votes : {url}")
-            data = _get_payload(url)
+            data = _get_payload(url, budget)
             if data is _TERMINAL_FAILURE:
                 # Échec déterministe : inutile d'essayer l'autre format sur ce base_url.
                 break
@@ -4940,6 +5026,8 @@ def build_profile(
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
     budget_interventions: Optional[BudgetCollecte] = None,
+    budget_collecte: Optional[BudgetCollecte] = None,
+    journal: Optional[dict[str, Any]] = None,
 ) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
@@ -4970,6 +5058,24 @@ def build_profile(
             budget est destiné à être PARTAGÉ entre les deux chambres d'un même
             candidat (voir `generate_all_profiles.build_profile_any_chambre`) : le
             plafond porte sur le candidat, pas sur chaque interrogation de chambre.
+        budget_collecte: budget de temps mur (`BudgetCollecte`) pour la
+            collecte ENTIÈRE du candidat — identité, votes, dossiers Sénat,
+            interventions comprises (#514). Contrairement au précédent, il
+            **n'est jamais conditionné à un mode** : c'est précisément un
+            budget qui ne couvrait qu'une phase, désactivé par
+            `--skip-interventions`, qui a laissé `extract-senat` consommer ses
+            15 minutes de `timeout-minutes` pour un seul profil écrit
+            (run 32421439590, 20/08/2026). Partagé entre les chambres d'un
+            même candidat, comme `budget_interventions`.
+        journal: dict rempli en sortie (#514), jamais lu. Reçoit
+            `{"sans_reponse": {section: nombre}}` — le nombre de requêtes
+            restées SANS RÉPONSE par section de collecte. Sert à l'appelant qui
+            doit distinguer « la source dit que ce slug n'existe pas » de « la
+            source n'a rien dit » : lui seul voit le cas où le profil est jeté
+            faute d'identité, et c'est celui-là qui sortait en « introuvable »
+            sans autre trace. Hors de `profile` volontairement — `meta` part
+            dans `raw_data/profiles/`, un compteur de requêtes n'y a pas sa
+            place.
 
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
@@ -4978,6 +5084,34 @@ def build_profile(
         raise ValueError(f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)})")
 
     base_urls = BASE_URLS[chambre]
+
+    # #514 : la phase d'interventions est bornée par SON budget quand il existe
+    # (#500, qui le veut étanche aux autres phases), et par celui du candidat
+    # sinon. Jamais par rien : c'est cette troisième possibilité, laissée
+    # ouverte par le `and not skip_interventions` de #500, qui a produit #514.
+    # Quand les deux existent, `budget_interventions` a le budget du candidat
+    # pour parent : le temps est facturé aux deux, et l'épuisement de l'un
+    # arrête l'autre.
+    budget_phase_interventions = budget_interventions or budget_collecte
+
+    # #514 : requêtes restées sans réponse, comptées SECTION PAR SECTION.
+    #
+    # Un total sur toute la collecte se tromperait de population : un 404 sur
+    # l'identité est une réponse — le parlementaire n'est pas dans l'archive —
+    # même si les votes du même candidat, eux, partent en timeout. Confondre les
+    # deux ferait déclarer « source injoignable » sur une identité que la source
+    # a bel et bien tranchée.
+    sans_reponse: dict[str, int] = {}
+
+    @contextmanager
+    def _compter_sans_reponse(section: str):
+        avant = compteur_requetes_sans_reponse()
+        try:
+            yield
+        finally:
+            sans_reponse[section] = (
+                sans_reponse.get(section, 0) + compteur_requetes_sans_reponse() - avant
+            )
 
     # --- 0. Identité/mandats officiels (Assemblée nationale), résolus en tout
     # premier afin que l'étape 1 puisse sauter l'appel NosDéputés dès que
@@ -5000,7 +5134,9 @@ def build_profile(
     # l'AN n'a pas trouvé l'acteur, et en repli complet d'identité si le
     # candidat n'est trouvé ni dans les archives AN ni via NosDéputés. ---
     if chambre != "deputes" or acteur_ref_an is None:
-        identity_result = fetch_identity(base_urls, slug)
+        with budget_section(budget_collecte, "identité NosDéputés/NosSénateurs"), \
+                _compter_sans_reponse("identité"):
+            identity_result = fetch_identity(base_urls, slug, budget_collecte)
         if isinstance(identity_result, tuple):
             identity_raw, identity_base_url = identity_result
         else:
@@ -5023,7 +5159,9 @@ def build_profile(
     # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel.
     votes_raw: Any = None
     if chambre != "deputes":
-        votes_result = fetch_votes(base_urls, slug)
+        with budget_section(budget_collecte, "votes NosSénateurs"), \
+                _compter_sans_reponse("votes"):
+            votes_result = fetch_votes(base_urls, slug, budget_collecte)
         if isinstance(votes_result, tuple):
             votes_raw, _ = votes_result
         else:
@@ -5061,11 +5199,18 @@ def build_profile(
             # base_urls[0] (législature courante) renvoie une liste vide pour un
             # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
             dossiers_base_url = identity_base_url or base_urls[0]
+            # Section budgétée (#514) : sur le chemin sénatorial ces deux
+            # requêtes ont coûté 104 s à `jean-luc-melenchon` sur le run
+            # 32421439590 (21:56:18 → 21:58:03 UTC), pour une source à terre.
             # Cette branche n'est atteinte que pour les sénateurs, dont les
             # domaines (archive.nossenateurs.fr) n'ont jamais figuré dans le
             # mapping domaine -> législature supprimé en #403 : le repli 15/16
             # était donc déjà le seul chemin réellement emprunté ici.
-            dossiers_payload = fetch_dossiers_for_legislatures(dossiers_base_url, ["15", "16"])
+            with budget_section(budget_collecte, "dossiers législatifs NosSénateurs"), \
+                    _compter_sans_reponse("dossiers législatifs"):
+                dossiers_payload = fetch_dossiers_for_legislatures(
+                    dossiers_base_url, ["15", "16"], budget_collecte
+                )
             time.sleep(0.3)
         # Un parlementaire dont le mandat s'est terminé lors d'une législature
         # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
@@ -5077,7 +5222,8 @@ def build_profile(
         # --skip-interventions, donc rien n'est facturé à un mode qui ne collecte
         # pas. Mesurée à 90 s sur `jean-luc-melenchon` (run 32379928098) : ce
         # n'est pas un préliminaire négligeable.
-        with budget_section(budget_interventions, "recherche NosDéputés"):
+        with budget_section(budget_phase_interventions, "recherche NosDéputés"), \
+                _compter_sans_reponse("interventions"):
             interventions_payload = fetch_all_intervention_results_from_domains(
                 base_urls,
                 search_candidate_name,
@@ -5376,9 +5522,9 @@ def build_profile(
     # Sénat/PE non couverts par Syceron : chemin NosDéputés uniquement. ---
     if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
-            with budget_section(budget_interventions, "débats Syceron"):
+            with budget_section(budget_phase_interventions, "débats Syceron"):
                 syceron_interventions = fetch_interventions_syceron(
-                    profile["identite"].get("url_an_ou_senat"), budget_interventions
+                    profile["identite"].get("url_an_ou_senat"), budget_phase_interventions
                 )
         except Exception as exc:
             syceron_interventions = []
@@ -5387,10 +5533,10 @@ def build_profile(
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
-            with budget_section(budget_interventions, "détails d'interventions NosDéputés"):
+            with budget_section(budget_phase_interventions, "détails d'interventions NosDéputés"):
                 profile["interventions"] = _extract_search_results(
                     interventions_base_url, interventions_payload, candidate_name, candidate_id,
-                    budget_interventions,
+                    budget_phase_interventions,
                 )
             warnings.append(
                 f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : "
@@ -5398,10 +5544,10 @@ def build_profile(
                 "interventions NosDéputés utilisées en fallback."
             )
     else:
-        with budget_section(budget_interventions, "détails d'interventions NosDéputés"):
+        with budget_section(budget_phase_interventions, "détails d'interventions NosDéputés"):
             profile["interventions"] = _extract_search_results(
                 interventions_base_url, interventions_payload, candidate_name, candidate_id,
-                budget_interventions,
+                budget_phase_interventions,
             )
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
@@ -5409,9 +5555,9 @@ def build_profile(
     # déjà collectées (type_detail="question", source AN structurée). ---
     if not skip_interventions and chambre == "deputes" and profile.get("identite"):
         try:
-            with budget_section(budget_interventions, "questions officielles"):
+            with budget_section(budget_phase_interventions, "questions officielles"):
                 official_questions = fetch_questions_officielles(
-                    profile["identite"].get("url_an_ou_senat"), budget_interventions
+                    profile["identite"].get("url_an_ou_senat"), budget_phase_interventions
                 )
             if official_questions:
                 profile["interventions"].extend(official_questions)
@@ -5427,6 +5573,56 @@ def build_profile(
     message_budget = annoncer_troncature(budget_interventions, f"{chambre}/{slug}")
     if message_budget:
         warnings.append(f"{WARNING_PREFIX_BUDGET_INTERVENTIONS} : {message_budget}")
+
+    # --- 9quater. La source a-t-elle répondu ? (#514) ---------------------
+    # Une section vide se lit par défaut comme « la source dit qu'il n'y a
+    # rien ». Quand ses requêtes sont restées sans réponse, cette lecture est
+    # fausse, et rien ne le disait : sur le run 32421439590, le profil écrit de
+    # `jean-luc-melenchon` porte `votes: []` et `dossiers_legislatifs: []` après
+    # dix requêtes en timeout, sans un mot dans `meta.warnings`.
+    #
+    # Le rapprochement se fait SECTION PAR SECTION, et le total ne compte que
+    # les sections effectivement citées. Un compteur global dirait « source
+    # injoignable : identité » d'un slug dont l'identité a reçu un franc 404
+    # (constat) et dont seuls les votes sont partis en timeout — deux
+    # populations distinctes réunies sous un seul chiffre, l'erreur même que
+    # cette issue corrige ailleurs.
+    #
+    # `votes` et `dossiers législatifs` ne sont examinés que pour les
+    # sénateurs : côté députés ils viennent de l'open data AN, qui ne passe pas
+    # par `_get_payload` et n'incrémente donc pas ce compteur. Les citer ici
+    # attribuerait à NosDéputés une panne qui n'est pas la sienne.
+    sections_vides = [
+        ("identité", not profile.get("identite")),
+        ("votes", chambre != "deputes" and not profile.get("votes")),
+        (
+            "dossiers législatifs",
+            chambre != "deputes"
+            and not skip_dossiers_legislatifs
+            and not profile.get("dossiers_legislatifs"),
+        ),
+        ("interventions", not skip_interventions and not profile.get("interventions")),
+    ]
+    non_collecte = [
+        nom for nom, vide in sections_vides if vide and sans_reponse.get(nom, 0) > 0
+    ]
+    if non_collecte:
+        total = sum(sans_reponse.get(nom, 0) for nom in non_collecte)
+        warnings.append(
+            f"{WARNING_PREFIX_SOURCE_INJOIGNABLE} : {total} requête(s) à "
+            f"{base_urls[0]} restée(s) sans réponse — {', '.join(non_collecte)} : "
+            f"vide parce que la source n'a pas répondu, et non parce qu'elle ne "
+            f"rend rien (#514)."
+        )
+
+    # Canal de retour vers `build_profile_any_chambre` (#514). Un dict passé par
+    # l'appelant plutôt qu'un champ de `profile` : `meta` est sérialisé dans
+    # `raw_data/profiles/`, et un compteur de requêtes n'a rien à faire dans le
+    # corpus publié. L'appelant en a besoin parce que lui seul voit le cas « le
+    # profil est jeté faute d'identité » — c'est là que « introuvable » et
+    # « source injoignable » se confondaient.
+    if journal is not None:
+        journal["sans_reponse"] = dict(sans_reponse)
 
     return profile
 

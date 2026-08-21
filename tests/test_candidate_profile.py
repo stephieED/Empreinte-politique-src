@@ -1602,8 +1602,12 @@ def test_try_urls_skips_xml_after_json_terminal_failure():
 
     calls: list[str] = []
 
-    def fake_get_payload(url: str):
+    # `budget` (#514) : la doublure doit porter la signature réelle, sinon le
+    # test passerait encore le jour où l'appelant cesserait de transmettre le
+    # budget — un garde-fou débranché (#460).
+    def fake_get_payload(url: str, budget=None):
         calls.append(url)
+        assert budget is None, "aucun budget n'est posé par ce test"
         return _TERMINAL_FAILURE
 
     with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
@@ -1625,8 +1629,12 @@ def test_fetch_votes_skips_xml_after_terminal_failure():
 
     calls: list[str] = []
 
-    def fake_get_payload(url: str):
+    # `budget` (#514) : la doublure doit porter la signature réelle, sinon le
+    # test passerait encore le jour où l'appelant cesserait de transmettre le
+    # budget — un garde-fou débranché (#460).
+    def fake_get_payload(url: str, budget=None):
         calls.append(url)
+        assert budget is None, "aucun budget n'est posé par ce test"
         return _TERMINAL_FAILURE
 
     with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
