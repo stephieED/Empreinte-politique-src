@@ -924,17 +924,21 @@ def process_candidat(
         # interdit, et ferait basculer `chambre` sur une défaillance transitoire
         # (le défaut même de #484). Ce qui change, c'est que l'échec est nommé,
         # compté au résumé et annoté dans le job.
-        indisponible = any(
-            w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE) for w in warnings_chambres
-        )
-        if indisponible:
+        injoignables = [
+            w for w in warnings_chambres if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)
+        ]
+        if injoignables:
             for w in warnings_chambres:
                 _tprint(f"  [!] {effective_slug} : {w}")
-            _annoter_github(f"{effective_slug} : {warnings_chambres[0]}")
+            # L'annotation porte le warning de source injoignable, pas le
+            # premier de la liste : une troncature de budget peut le précéder,
+            # et c'est bien la source muette qu'il faut lire dans l'onglet de
+            # résumé du job.
+            _annoter_github(f"{effective_slug} : {injoignables[0]}")
         return {
             "nom": nom,
             "slug": effective_slug,
-            "statut": "source_indisponible" if indisponible else "introuvable",
+            "statut": "source_indisponible" if injoignables else "introuvable",
             "parltrack": "n/a",
         }
     if profile is None:
