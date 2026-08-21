@@ -71,6 +71,7 @@ n'étant consommés par aucun agrégat de groupe (#349).
 
 import argparse
 import json
+import os
 import random
 import re
 import threading
@@ -81,9 +82,18 @@ from pathlib import Path
 from typing import Any, Optional
 
 from audit_pivot_dataset import compute_profils_perimes
-from budget_collecte import BudgetCollecte
+from budget_collecte import (
+    BudgetCollecte,
+    annoncer_troncature,
+    creer as creer_budget,
+    epuise as budget_epuise,
+    ignorer as budget_ignorer,
+    section as budget_section,
+)
 from candidate_profile import (
     AIDE_ACTIVER_INTERVENTIONS_SYCERON,
+    WARNING_PREFIX_BUDGET_COLLECTE,
+    WARNING_PREFIX_SOURCE_INJOIGNABLE,
     activer_resolution_acteur_nu_syceron,
     build_profile,
     compteur_appels_nosdeputes,
@@ -139,6 +149,17 @@ def _tprint(*args: Any, **kwargs: Any) -> None:
     """Equivalent thread-safe de print())."""
     with _PRINT_LOCK:
         print(*args, **kwargs)
+
+
+def _annoter_github(message: str) -> None:
+    """Remonte un message en annotation GitHub Actions (#514).
+
+    Même canal que `budget_collecte.annoncer_troncature` : un échec qui ne vit
+    que dans 1 200 lignes de log de step n'est pas un échec déclaré. Silencieux
+    hors CI — le `_tprint` de l'appelant suffit alors."""
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        propre = message.replace("\n", " ").replace("\r", "")
+        _tprint(f"::warning::{propre}", flush=True)
 
 
 def _init_manifest(manifest_path: Optional[str]) -> None:
@@ -365,6 +386,45 @@ def _select_candidats_couverture(
     return selection, slugs_a_rafraichir
 
 
+def valider_budgets(args: argparse.Namespace) -> None:
+    """Refuse un budget mort, signale une collecte sans budget déclaré (#514).
+
+    La classe de défaut à casser : un chemin de collecte qui se retrouve sans
+    plafond, ou avec un plafond que rien ne borne, SANS que ça se voie. Elle
+    s'attrape en deux temps — ici pour ce qui est lisible sur la ligne de
+    commande, et dans `tests/test_ci_budget_par_job.py` pour l'inventaire des
+    invocations du workflow, seul endroit d'où l'on voit qu'un job n'a rien
+    déclaré du tout.
+
+    Les deux moitiés du défaut d'origine ont chacune leur garde :
+
+    - **un budget posé mais mort** — `--budget-interventions-secondes` sous
+      `--skip-interventions` — est refusé net. C'est la combinaison que
+      `build_profile_any_chambre` neutralisait en silence ;
+    - **aucun budget du tout** est signalé, pas refusé. Rendre l'option
+      obligatoire casserait les commandes locales documentées dans `README.md`,
+      et un garde-fou qu'on désactive pour pouvoir travailler ne garde rien
+      (leçon de #460). Le garde dur vit côté CI, là où l'oubli coûte des
+      quarts d'heure de runner.
+    """
+    if args.budget_interventions_secondes and args.skip_interventions:
+        raise SystemExit(
+            "[!] --budget-interventions-secondes avec --skip-interventions : ce budget "
+            "ne bornerait rien (aucune intervention n'est collectée), et il donnerait "
+            "l'apparence d'une protection. C'est la moitié visible de #514 ; l'autre "
+            "moitié était qu'il ne restait alors AUCUN budget sur la collecte. "
+            "Utiliser --budget-collecte-secondes, qui borne identité, votes et dossiers."
+        )
+    if not args.pivot_only and getattr(args, "budget_collecte_secondes", None) is None:
+        message = (
+            "collecte réseau lancée sans --budget-collecte-secondes : aucun plafond de "
+            "temps par candidat, et aucune décision écrite qu'il n'en faut pas. "
+            "Passer --budget-collecte-secondes 0 pour déclarer l'absence de budget (#514)."
+        )
+        print(f"[!] {message}")
+        _annoter_github(message)
+
+
 def build_profile_any_chambre(
     slug: str,
     max_pages: int,
@@ -373,6 +433,8 @@ def build_profile_any_chambre(
     skip_dossiers_legislatifs: bool = False,
     collecte_bicamerale: bool = False,
     budget_interventions_secondes: int = 0,
+    budget_collecte_secondes: int = 0,
+    budget_job: Optional[BudgetCollecte] = None,
 ) -> tuple[Optional[dict], Optional[str], list[str]]:
     """Collecte le profil FR et renvoie `(profil_retenu, chambre_retenue, warnings)`.
 
@@ -437,16 +499,45 @@ def build_profile_any_chambre(
     # (`candidat_declare`, 8 profils sur 209) sans que le `timeout-minutes` du
     # shard, lui, double. Le plafond doit porter sur ce que borne le job : un
     # shard = un candidat.
-    budget = (
-        BudgetCollecte(budget_interventions_secondes, libelle="collecte d'interventions")
-        if budget_interventions_secondes and not skip_interventions
-        else None
+    #
+    # #514 : DEUX budgets emboîtés, et non plus un. Celui de la collecte entière
+    # (identité, votes, dossiers, interventions) est chaîné sous celui du job ;
+    # celui des interventions, quand il existe, est chaîné sous lui. La
+    # condition de mode porte sur la VALEUR (`0 if skip_interventions else ...`)
+    # et non sur la fabrique : c'est un `and not skip_interventions` posé ici
+    # qui a désactivé le seul budget d'`extract-senat` (voir `budget_collecte.creer`).
+    # Le `or budget_job` n'est pas une commodité : sans lui, un job qui pose un
+    # budget de run mais pas de budget par candidat ne verrait AUCUNE section
+    # s'ouvrir (`creer` rend None sur 0), donc son compteur ne bougerait jamais
+    # et son plafond ne serait jamais atteint. Un maillon absent casserait la
+    # chaîne en silence — la forme exacte du défaut que cette issue corrige.
+    budget_collecte_candidat = creer_budget(
+        budget_collecte_secondes, "collecte", parent=budget_job
+    ) or budget_job
+    budget = creer_budget(
+        0 if skip_interventions else budget_interventions_secondes,
+        "collecte d'interventions",
+        parent=budget_collecte_candidat,
     )
 
     resultats: list[tuple[str, dict]] = []
     echecs: list[tuple[str, str]] = []
+    # Requêtes d'IDENTITÉ restées sans réponse, cumulées sur les chambres
+    # interrogées (#514). Cumuler est ici la bonne opération, et pas seulement
+    # une commodité : le 20/08/2026 les deux sources étaient à terre en même
+    # temps — `archive.nossenateurs.fr` sur `extract-senat`, et
+    # `www.nosdeputes.fr` sur `merge-and-pivot`, où le garde-fou de #511/#513 a
+    # refusé d'écrire un roster incomplet. Un compteur par hôte dirait « lequel
+    # est tombé » ; celui-ci répond à la seule question qui décide du statut du
+    # candidat : « une source a-t-elle tranché, ou aucune n'a répondu ? »
+    identite_sans_reponse = 0
 
-    for chambre in chambres:
+    for rang, chambre in enumerate(chambres):
+        if budget_epuise(budget_collecte_candidat):
+            budget_ignorer(budget_collecte_candidat, "chambre(s) non interrogée(s)",
+                           len(chambres) - rang)
+            break
+        journal: dict[str, Any] = {}
         try:
             profile = build_profile(
                 chambre,
@@ -455,17 +546,46 @@ def build_profile_any_chambre(
                 skip_interventions=skip_interventions,
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
                 budget_interventions=budget,
+                budget_collecte=budget_collecte_candidat,
+                journal=journal,
             )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
             echecs.append((chambre, f"{type(exc).__name__}: {exc}"))
             continue
+        identite_sans_reponse += (journal.get("sans_reponse") or {}).get("identité", 0)
         if profile.get("identite"):
             resultats.append((chambre, profile))
             if not collecte_bicamerale:
                 break
 
     warnings: list[str] = []
+
+    # #514 : la troncature du budget par candidat est annoncée ICI et une seule
+    # fois — le budget est partagé entre les chambres, l'annoncer dans
+    # `build_profile` le répéterait à chacune.
+    message_budget = annoncer_troncature(budget_collecte_candidat, slug)
+    if message_budget:
+        warnings.append(f"{WARNING_PREFIX_BUDGET_COLLECTE} : {message_budget}")
+
+    # #514 : « aucune chambre n'a rendu d'identité » ne veut pas dire la même
+    # chose selon que la source a répondu ou non. Sans cette distinction,
+    # `process_candidat` conclut « introuvable » — le même mot pour un candidat
+    # réellement absent de l'archive et pour une archive en timeout. Le run
+    # 32421439590 a imprimé onze « introuvable », dont trois sincères (candidats
+    # sans slug) et huit dus à une source muette, sans rien pour les séparer.
+    #
+    # Le critère porte sur les requêtes d'IDENTITÉ, et sur elles seules : c'est
+    # l'identité qui décide qu'un profil est écrit ou jeté. Un slug dont
+    # l'identité reçoit un franc 404 reste « introuvable » même si ses votes
+    # sont partis en timeout — la source a répondu à la question posée.
+    if not resultats and identite_sans_reponse > 0:
+        warnings.append(
+            f"{WARNING_PREFIX_SOURCE_INJOIGNABLE} : {identite_sans_reponse} requête(s) "
+            f"d'identité restée(s) sans réponse sur {', '.join(chambres)} pour "
+            f"'{slug}' — l'absence d'identité est un défaut de la source, pas un "
+            f"constat d'absence (#514)."
+        )
 
     if not resultats:
         # Aucune chambre ne rend d'identité : le candidat est introuvable côté
@@ -597,6 +717,7 @@ def process_candidat(
     pivot_dir: Path,
     refresh_slugs: Optional[set[str]] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
+    budget_job: Optional[BudgetCollecte] = None,
 ) -> dict[str, Any]:
     """Traite un candidat : collecte les données FR et UE en parallèle (niveau 1),
     écrit les fichiers JSON/HTML (et pivot si demandé), et renvoie un dict de résultat.
@@ -612,6 +733,14 @@ def process_candidat(
     (fetch + merge additif) même si --skip-existing est actif et que le
     profil existe déjà — utilisé par `_select_candidats_couverture` pour
     rafraîchir les profils couverts mais périmés sans jamais les sauter.
+
+    `budget_job` (#514) : budget de temps mur pour la collecte réseau du
+    process entier. Épuisé, les candidats restants sortent en
+    `budget_job_epuise` **sans aucune requête**, et le job se termine
+    normalement — résumé, annotations et publication compris — au lieu d'être
+    tué par `timeout-minutes`. Ce n'est pas une deuxième expression du budget
+    par candidat : 8 candidats × 160 s dépassent le timeout d'`extract-senat`,
+    donc borner le candidat ne borne pas le job.
     """
     slug = candidat.get("slug")
     nom = candidat.get("nom")
@@ -694,6 +823,22 @@ def process_candidat(
         _tprint(f"— {nom} ({effective_slug}) : profil déjà présent, ignoré (--skip-existing).")
         return {"nom": nom, "slug": effective_slug, "statut": "deja_present", "parltrack": "n/a"}
 
+    # ── Mode normal : budget de collecte du job (#514) ──────────────────────
+    # Vérifié AVANT le `===` de démarrage : un candidat qui ne sera pas
+    # collecté ne doit pas laisser croire qu'il l'a été. Le statut le nomme, et
+    # le résumé de fin de run le compte — c'est la différence avec un
+    # `timeout-minutes` atteint, où les candidats restants ne sont mentionnés
+    # nulle part.
+    if budget_epuise(budget_job):
+        budget_ignorer(budget_job, "candidat(s) non collecté(s)")
+        _tprint(
+            f"— {nom} ({effective_slug}) : budget de collecte du job épuisé, "
+            "candidat non collecté (#514)."
+        )
+        return {
+            "nom": nom, "slug": effective_slug, "statut": "budget_job_epuise", "parltrack": "n/a",
+        }
+
     _tprint(f"\n=== {nom} ({effective_slug}) ===")
 
     # Point de repère pour la temporisation de courtoisie de fin de fonction
@@ -734,6 +879,8 @@ def process_candidat(
             # +30,6 min par shard — voir le docstring de la fonction.
             collecte_bicamerale=(provenance == "candidat_declare"),
             budget_interventions_secondes=args.budget_interventions_secondes,
+            budget_collecte_secondes=getattr(args, "budget_collecte_secondes", None) or 0,
+            budget_job=budget_job,
         )
         if result[0] is None:
             _tprint(f"  [!] Aucune identité trouvée pour {slug} dans {chambres_fr}.")
@@ -769,7 +916,31 @@ def process_candidat(
         mandat_ue = future_ue.result()
 
     if profile is None and mandat_ue is None:
-        return {"nom": nom, "slug": effective_slug, "statut": "introuvable", "parltrack": "n/a"}
+        # #514 : « introuvable » est un CONSTAT — la source a répondu qu'elle ne
+        # connaît pas ce slug. Quand elle n'a pas répondu du tout, le mot est
+        # faux, et c'est celui que le run 32421439590 a imprimé onze fois. Aucun
+        # profil n'est fabriqué pour autant : un squelette écrit à la place
+        # d'une collecte manquée serait la donnée par défaut que la règle 2.5
+        # interdit, et ferait basculer `chambre` sur une défaillance transitoire
+        # (le défaut même de #484). Ce qui change, c'est que l'échec est nommé,
+        # compté au résumé et annoté dans le job.
+        injoignables = [
+            w for w in warnings_chambres if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)
+        ]
+        if injoignables:
+            for w in warnings_chambres:
+                _tprint(f"  [!] {effective_slug} : {w}")
+            # L'annotation porte le warning de source injoignable, pas le
+            # premier de la liste : une troncature de budget peut le précéder,
+            # et c'est bien la source muette qu'il faut lire dans l'onglet de
+            # résumé du job.
+            _annoter_github(f"{effective_slug} : {injoignables[0]}")
+        return {
+            "nom": nom,
+            "slug": effective_slug,
+            "statut": "source_indisponible" if injoignables else "introuvable",
+            "parltrack": "n/a",
+        }
     if profile is None:
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
@@ -976,7 +1147,25 @@ def main() -> None:
              "NosDéputés, débats Syceron, détails document par document, questions officielles. "
              "Épuisé, la collecte s'arrête entre deux unités, le profil est écrit avec ce qui a été "
              "collecté et la troncature est consignée dans meta.warnings[]. 0 (défaut) = aucun "
-             "budget. Sans effet avec --skip-interventions. Voir #498.")
+             "budget. INCOMPATIBLE avec --skip-interventions (le budget n'aurait rien à "
+             "borner) : la combinaison est refusée plutôt que neutralisée en silence, "
+             "c'est l'origine de #514. Voir #498.")
+    parser.add_argument(
+        "--budget-collecte-secondes", type=int, default=None,
+        help="Budget de temps mur (s) pour la collecte ENTIÈRE d'UN candidat : identité, "
+             "votes, dossiers législatifs, interventions comprises. Épuisé, la collecte "
+             "s'arrête entre deux requêtes, le profil partiel est écrit et la troncature "
+             "part dans meta.warnings[] et en ::warning::. Contrairement au budget "
+             "d'interventions, il n'est neutralisé par AUCUN autre drapeau. "
+             "0 = pas de budget, DÉCLARÉ comme tel ; omettre l'option laisse la collecte "
+             "sans plafond et sans décision écrite — c'est exactement ce qui a coûté "
+             "15 minutes de runner pour un profil à extract-senat (#514).")
+    parser.add_argument(
+        "--budget-job-secondes", type=int, default=0,
+        help="Budget de temps mur (s) pour la collecte réseau de TOUT le run. Épuisé, les "
+             "candidats restants sortent en `budget_job_epuise` sans aucune requête et le "
+             "run se termine normalement (résumé, annotations, publication) au lieu d'être "
+             "tué par le `timeout-minutes` du job. 0 (défaut) = aucun budget. Voir #514.")
     parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
     parser.add_argument("--refresh-existing", action="store_true",
                         help="Ne traiter QUE les candidats dont le profil JSON existe déjà (#445) : "
@@ -1127,6 +1316,9 @@ def main() -> None:
     if args.pivot_only:
         args.pivot = True
 
+    # ── Garde-fous de budget (#514) ─────────────────────────────────────────
+    valider_budgets(args)
+
     # #510 : réglé une fois, avant tout appel de collecte. L'index Syceron est
     # construit par législature et partagé entre les shards (#505), donc le mode
     # de résolution est une propriété du process, pas du candidat.
@@ -1226,12 +1418,19 @@ def main() -> None:
             print(f"Reprise depuis {checkpoint_path} : {avant - len(candidats)} candidat(s) déjà traité(s) ignoré(s).")
 
     # --- Niveau 2 : pool de threads inter-candidats ---
+    # #514 : le budget de collecte du job est créé ici et partagé par tous les
+    # candidats. `BudgetCollecte` est thread-safe, et la mesure reste
+    # conservatrice avec `--workers > 1` (le temps de plusieurs candidats
+    # simultanés se cumule sur le même compteur) : on rend la main trop tôt
+    # plutôt que trop tard, ce qui est le bon sens de l'erreur pour un plafond.
+    budget_job = creer_budget(args.budget_job_secondes, "collecte du job")
     total = len(candidats)
     nb_workers = min(args.workers, len(candidats)) if candidats else 1
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
             pool.submit(
-                process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs, scrutins_index,
+                process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs,
+                scrutins_index, budget_job,
             ): candidat
             for candidat in candidats
         }
@@ -1263,6 +1462,26 @@ def main() -> None:
     for r in sorted(resultats, key=lambda x: x.get("nom") or ""):
         extra = f" ({r.get('nb_interventions')} interventions, {r.get('chambre')})" if r["statut"] in ("ok", "ok_pivot_only") else ""
         print(f"  - {r['nom']}: {r['statut']}{extra}")
+
+    # #514 : ce que le run n'a PAS pu faire, compté et annoté. Une ligne par
+    # candidat dans une liste de treize se lit mal ; un total remonte dans
+    # l'onglet de résumé du job, là où on cherche pourquoi il n'a rien produit.
+    indisponibles = [r for r in resultats if r.get("statut") == "source_indisponible"]
+    non_collectes = [r for r in resultats if r.get("statut") == "budget_job_epuise"]
+    if indisponibles:
+        _annoter_github(
+            f"{len(indisponibles)} candidat(s) sans profil parce que la source n'a pas "
+            f"répondu (et non parce qu'elle les ignore) : "
+            f"{', '.join(sorted(r.get('slug') or '?' for r in indisponibles))}."
+        )
+    if non_collectes:
+        _annoter_github(
+            f"{len(non_collectes)} candidat(s) non collecté(s) : budget de collecte du "
+            f"job ({args.budget_job_secondes} s) épuisé avant leur tour — "
+            f"{', '.join(sorted(r.get('slug') or '?' for r in non_collectes))}."
+        )
+    # Imprime sur stderr et annote le job ; rien à réafficher ici.
+    annoncer_troncature(budget_job, "collecte du job")
 
     # Écriture du fichier de statut ParlTrack si demandé
     if args.parltrack_status_out:

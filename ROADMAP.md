@@ -8,6 +8,13 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- `extract-senat` traite ses candidats dans l'ordre du fichier et n'a ni `--resume`
+  ni rotation : quand le budget de collecte du job (#514, 600 s) est épuisé par une
+  source dégradée, ce sont toujours les mêmes premiers slugs qui l'ont consommé. Voir
+  `technical_decisions.md#budget-collecte-source-injoignable-514`.
+- `extract-roster-groupes` déclare `--budget-collecte-secondes 0` (absence de budget
+  assumée, #514) faute d'une mesure sur ses 752 membres. À dimensionner si un shard
+  roster meurt sur une source dégradée.
 - 21 of the 207 profiles published as `chambre: "AN"` are known to the Senate's own
   roster, 18 with a still-open Senate mandate (measured 2026-08-20, #488). All but
   Retailleau are `roster_groupe`, so they are deliberately **out of scope**: no Senate
