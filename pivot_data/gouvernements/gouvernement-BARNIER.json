@@ -11,7 +11,16 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:anne-genetet",
+      "membre_id": "alexandre-portier",
+      "nom": "Alexandre Portier",
+      "portefeuille": "Ministère délégué auprès de la ministre de l'éducation nationale, chargé de la réussite scolaire et de l’enseignement professionnel",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "anne-genetet",
       "nom": "Anne Genetet",
       "portefeuille": "Ministère de l’éducation nationale",
       "debut": "2024-09-22",
@@ -20,7 +29,16 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:antoine-armand",
+      "membre_id": "annie-genevard",
+      "nom": "Annie Genevard",
+      "portefeuille": "Ministère de l’agriculture, de la souveraineté alimentaire et de la forêt",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "antoine-armand",
       "nom": "Antoine Armand",
       "portefeuille": "Ministère de l’économie, des finances et de l’industrie",
       "debut": "2024-09-22",
@@ -29,7 +47,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:astrid-panosyan-bouvet",
+      "membre_id": "astrid-panosyan-bouvet",
       "nom": "Astrid Panosyan-Bouvet",
       "portefeuille": "Ministère du travail et de l’emploi",
       "debut": "2024-09-22",
@@ -38,7 +56,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:benjamin-haddad",
+      "membre_id": "benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": "Ministère délégué auprès du Premier ministre et du ministre de l’Europe et des affaires étrangères, chargé de l’Europe",
       "debut": "2024-09-22",
@@ -56,7 +74,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
+      "membre_id": "charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": "Ministère délégué auprès du ministre des solidarités, de l'autonomie et de l'égalité entre les femmes et les hommes, chargé des personnes en situation de handicap",
       "debut": "2024-09-28",
@@ -65,7 +83,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:guillaume-kasbarian",
+      "membre_id": "guillaume-kasbarian",
       "nom": "Guillaume Kasbarian",
       "portefeuille": "Ministère de la fonction publique, de la simplification et de la transformation de l’action publique",
       "debut": "2024-09-22",
@@ -74,7 +92,16 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:marc-ferracci",
+      "membre_id": "jean-louis-thieriot",
+      "nom": "Jean-Louis Thiériot",
+      "portefeuille": "Ministère délégué auprès du ministre des armées et des anciens combattants",
+      "debut": "2024-09-28",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "marc-ferracci",
       "nom": "Marc Ferracci",
       "portefeuille": "Ministère délégué auprès du ministre de l'économie, des finances et de l'industrie, chargé de l’industrie",
       "debut": "2024-09-22",
@@ -83,7 +110,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:maud-bregeon",
+      "membre_id": "maud-bregeon",
       "nom": "Maud Bregeon",
       "portefeuille": "Ministère délégué auprès du Premier ministre, porte-parole du Gouvernement",
       "debut": "2024-09-22",
@@ -92,9 +119,18 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olga-givernet",
+      "membre_id": "olga-givernet",
       "nom": "Olga Givernet",
       "portefeuille": "Ministère délégué auprès de la ministre de la transition écologique, de l'énergie, du climat et de la prévention des risques, chargé de l’énergie",
+      "debut": "2024-09-22",
+      "fin": "2024-12-13",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "patrick-hetzel",
+      "nom": "Patrick Hetzel",
+      "portefeuille": "Ministère de l’enseignement supérieur et de la recherche",
       "debut": "2024-09-22",
       "fin": "2024-12-13",
       "actif": false,
@@ -117,7 +153,7 @@
         },
         {
           "acteur_ref": "PA795144",
-          "membre_id": "nosdeputes:antoine-armand"
+          "membre_id": "antoine-armand"
         },
         {
           "acteur_ref": "PA720878",
@@ -173,7 +209,7 @@
         },
         {
           "acteur_ref": "PA2538",
-          "membre_id": null
+          "membre_id": "bruno-retailleau"
         },
         {
           "acteur_ref": "PA721836",
@@ -197,7 +233,7 @@
         },
         {
           "acteur_ref": "PA795144",
-          "membre_id": "nosdeputes:antoine-armand"
+          "membre_id": "antoine-armand"
         },
         {
           "acteur_ref": "PA720878",
@@ -237,7 +273,7 @@
         },
         {
           "acteur_ref": "PA795144",
-          "membre_id": "nosdeputes:antoine-armand"
+          "membre_id": "antoine-armand"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/diverses_dispositions_adaptation_due_2024_eco_finances_environnement"
@@ -305,7 +341,7 @@
         },
         {
           "acteur_ref": "PA795144",
-          "membre_id": "nosdeputes:antoine-armand"
+          "membre_id": "antoine-armand"
         },
         {
           "acteur_ref": "PA720878",
@@ -357,7 +393,7 @@
         },
         {
           "acteur_ref": "PA795144",
-          "membre_id": "nosdeputes:antoine-armand"
+          "membre_id": "antoine-armand"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/ratification_ordonnance_juillet_2024_modernisation"
@@ -379,13 +415,23 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/anne-genetet",
+      "url": "https://www.nosdeputes.fr/alexandre-portier",
       "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T22:03:39+0000"
+      "synchro_le": "2026-08-24T21:44:34+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/anne-genetet",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/annie-genevard",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -405,7 +451,7 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bruno-retailleau",
-      "synchro_le": "2026-08-19T21:13:48+0000"
+      "synchro_le": "2026-08-20T18:55:03+0000"
     },
     {
       "type": "nossenateurs",
@@ -424,6 +470,11 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/jean-louis-thieriot",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marc-ferracci",
       "synchro_le": null
     },
@@ -436,11 +487,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olga-givernet",
       "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/patrick-hetzel",
+      "synchro_le": null
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -11,7 +11,16 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:aurore-berge",
+      "membre_id": "annie-genevard",
+      "nom": "Annie Genevard",
+      "portefeuille": "Ministère de l’agriculture, de l'agro-alimentaire et de la souveraineté alimentaire",
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "aurore-berge",
       "nom": "Aurore Bergé",
       "portefeuille": "Ministère délégué auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
       "debut": "2025-10-13",
@@ -20,7 +29,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:benjamin-haddad",
+      "membre_id": "benjamin-haddad",
       "nom": "Benjamin Haddad",
       "portefeuille": "Ministère délégué auprès du ministre de l’Europe et des affaires étrangères, chargé de l'Europe",
       "debut": "2025-10-13",
@@ -29,7 +38,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:charlotte-parmentier-lecocq",
+      "membre_id": "charlotte-parmentier-lecocq",
       "nom": "Charlotte Parmentier-Lecocq",
       "portefeuille": "Ministère délégué auprès de la ministre de la santé, des familles, de l’autonomie et des personnes handicapées, chargé de  l’autonomie et des personnes handicapées",
       "debut": "2025-10-13",
@@ -38,7 +47,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:david-amiel",
+      "membre_id": "david-amiel",
       "nom": "David Amiel",
       "portefeuille": "Ministère délégué auprès de la ministre de l'action et des comptes publics, chargé de la fonction publique et de la réforme de l'État",
       "debut": "2025-10-13",
@@ -47,7 +56,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:david-amiel",
+      "membre_id": "david-amiel",
       "nom": "David Amiel",
       "portefeuille": "Ministère de l'action et des comptes publics",
       "debut": "2026-02-22",
@@ -56,7 +65,16 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gerald-darmanin",
+      "membre_id": "eleonore-caroit",
+      "nom": "Eléonore Caroit",
+      "portefeuille": "Ministère délégué auprès du ministre de l’Europe et des affaires étrangères, chargé de la francophonie, des partenariats internationaux et des Français de l’étranger",
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de la justice",
       "debut": "2025-10-13",
@@ -65,7 +83,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:mathieu-lefevre",
+      "membre_id": "mathieu-lefevre",
       "nom": "Mathieu Lefèvre",
       "portefeuille": "Ministère délégué auprès de la ministre de la transition écologique, de la biodiversité et des négociations internationales sur le climat et la nature, chargé de la transition écologique",
       "debut": "2025-10-13",
@@ -74,7 +92,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:maud-bregeon",
+      "membre_id": "maud-bregeon",
       "nom": "Maud Bregeon",
       "portefeuille": "Ministère délégué auprès du Premier ministre, porte-parole du Gouvernement",
       "debut": "2025-10-13",
@@ -83,7 +101,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:maud-bregeon",
+      "membre_id": "maud-bregeon",
       "nom": "Maud Bregeon",
       "portefeuille": "Ministère délégué, porte-parole du Gouvernement auprès du Premier ministre, et ministère délégué, chargé de l'énergie auprès du ministre de l’économie, des finances et de la souveraineté industrielle, énergétique et numérique",
       "debut": "2026-02-27",
@@ -92,7 +110,16 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:roland-lescure",
+      "membre_id": "nicolas-forissier",
+      "nom": "Nicolas Forissier",
+      "portefeuille": "Ministère délégué auprès du ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur et de l'attractivité",
+      "debut": "2025-10-13",
+      "fin": null,
+      "actif": true,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "roland-lescure",
       "nom": "Roland Lescure",
       "portefeuille": "Ministère de l’économie, des finances et de la souveraineté industrielle, énergétique et numérique",
       "debut": "2025-10-13",
@@ -101,7 +128,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:sabrina-agresti-roubache",
+      "membre_id": "sabrina-agresti-roubache",
       "nom": "Sabrina Agresti-Roubache",
       "portefeuille": null,
       "debut": "2026-02-27",
@@ -110,7 +137,7 @@
       "source_url": null
     },
     {
-      "membre_id": "nosdeputes:stephanie-rist",
+      "membre_id": "stephanie-rist",
       "nom": "Stéphanie Rist",
       "portefeuille": "Ministère de la santé, des familles, de l’autonomie et des personnes handicapées",
       "debut": "2025-10-13",
@@ -315,7 +342,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA873627",
@@ -323,7 +350,7 @@
         },
         {
           "acteur_ref": "PA720066",
-          "membre_id": "nosdeputes:stephanie-rist"
+          "membre_id": "stephanie-rist"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_relatif_a_la_protection_des_enfants"
@@ -347,11 +374,11 @@
         },
         {
           "acteur_ref": "PA720066",
-          "membre_id": "nosdeputes:stephanie-rist"
+          "membre_id": "stephanie-rist"
         },
         {
           "acteur_ref": "PA795950",
-          "membre_id": "nosdeputes:david-amiel"
+          "membre_id": "david-amiel"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_de_loi_portant_approbation_des_comptes_de_la_securite_sociale_de_annee_2025"
@@ -571,7 +598,7 @@
         },
         {
           "acteur_ref": "PA605991",
-          "membre_id": null
+          "membre_id": "annie-genevard"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/projet_loi_urgence_pour_protection_et_souverainete_agricoles"
@@ -935,7 +962,7 @@
         },
         {
           "acteur_ref": "PA721134",
-          "membre_id": "nosdeputes:roland-lescure"
+          "membre_id": "roland-lescure"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/loi_speciale_2026"
@@ -1055,7 +1082,7 @@
         },
         {
           "acteur_ref": "PA721134",
-          "membre_id": "nosdeputes:roland-lescure"
+          "membre_id": "roland-lescure"
         },
         {
           "acteur_ref": "PA721670",
@@ -1163,7 +1190,7 @@
         },
         {
           "acteur_ref": "PA721134",
-          "membre_id": "nosdeputes:roland-lescure"
+          "membre_id": "roland-lescure"
         },
         {
           "acteur_ref": "PA721670",
@@ -1187,7 +1214,7 @@
         },
         {
           "acteur_ref": "PA720066",
-          "membre_id": "nosdeputes:stephanie-rist"
+          "membre_id": "stephanie-rist"
         },
         {
           "acteur_ref": "PA721670",
@@ -1233,13 +1260,18 @@
   "sources": [
     {
       "type": "nosdeputes",
-      "url": "https://www.nosdeputes.fr/aurore-berge",
+      "url": "https://www.nosdeputes.fr/annie-genevard",
       "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
       "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T19:19:31+0000"
+      "synchro_le": "2026-08-24T21:40:57+0000"
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/aurore-berge",
+      "synchro_le": null
     },
     {
       "type": "nosdeputes",
@@ -1254,6 +1286,11 @@
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-amiel",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/eleonore-caroit",
       "synchro_le": null
     },
     {
@@ -1273,13 +1310,18 @@
     },
     {
       "type": "nosdeputes",
+      "url": "https://www.nosdeputes.fr/nicolas-forissier",
+      "synchro_le": null
+    },
+    {
+      "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/roland-lescure",
       "synchro_le": null
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
-      "synchro_le": "2026-08-19T09:18:50+0000"
+      "synchro_le": "2026-08-19T22:14:10+0000"
     },
     {
       "type": "nosdeputes",
@@ -1289,7 +1331,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-19T19:31:28+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

@@ -11,7 +11,7 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:eric-woerth",
+      "membre_id": "eric-woerth",
       "nom": "Éric Woerth",
       "portefeuille": "Ministère du budget, des comptes publics et de la fonction publique",
       "debut": "2007-06-19",
@@ -20,7 +20,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:eric-woerth",
+      "membre_id": "eric-woerth",
       "nom": "Éric Woerth",
       "portefeuille": "Ministère du budget, des comptes publics, de la fonction publique et de la réforme de l'Etat",
       "debut": "2009-06-23",
@@ -29,7 +29,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:eric-woerth",
+      "membre_id": "eric-woerth",
       "nom": "Éric Woerth",
       "portefeuille": "Ministère du travail, de la solidarité et de la fonction publique",
       "debut": "2010-03-22",
@@ -89,7 +89,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

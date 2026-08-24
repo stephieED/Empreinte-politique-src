@@ -24,7 +24,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:elisabeth-borne",
+      "membre_id": "elisabeth-borne",
       "nom": "Élisabeth Borne",
       "portefeuille": "Ministère auprès du ministre d'État, ministre de la transition écologique et solidaire, chargé des transports",
       "debut": "2017-06-22",
@@ -33,7 +33,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:elisabeth-borne",
+      "membre_id": "elisabeth-borne",
       "nom": "Élisabeth Borne",
       "portefeuille": "Ministère de la transition écologique et solidaire",
       "debut": "2019-07-17",
@@ -42,7 +42,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:franck-riester",
+      "membre_id": "franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère de la culture",
       "debut": "2018-10-17",
@@ -60,7 +60,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gerald-darmanin",
+      "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de l'action et des comptes publics",
       "debut": "2017-06-22",
@@ -69,7 +69,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivier-dussopt",
+      "membre_id": "olivier-dussopt",
       "nom": "Olivier Dussopt",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'action et des comptes publics",
       "debut": "2017-11-25",
@@ -78,7 +78,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivier-veran",
+      "membre_id": "olivier-veran",
       "nom": "Olivier Véran",
       "portefeuille": "Ministère des solidarités et de la santé",
       "debut": "2020-02-17",
@@ -87,7 +87,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:stephane-travert",
+      "membre_id": "stephane-travert",
       "nom": "Stéphane Travert",
       "portefeuille": "Ministère de l'agriculture et de l'alimentation",
       "debut": "2017-06-22",
@@ -168,7 +168,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/fin_etat_urgence_sanitaire"
@@ -192,7 +192,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr3_2020"
@@ -212,7 +212,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         },
         {
           "acteur_ref": "PA758792",
@@ -268,11 +268,11 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-560"
@@ -384,7 +384,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2020-161"
@@ -404,11 +404,11 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/dette_sociale_autonomie"
@@ -428,11 +428,11 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/autonomie_dette_sociale"
@@ -496,7 +496,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_droits_auteurs"
@@ -608,7 +608,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_covid-19_solidarites_sante"
@@ -712,7 +712,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2019"
@@ -784,7 +784,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA331481",
@@ -828,7 +828,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2020"
@@ -1020,7 +1020,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1034"
@@ -1136,7 +1136,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1068"
@@ -1300,7 +1300,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle_pjlo"
@@ -1320,7 +1320,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/communication_audiovisuel_et_souverainete_culturelle"
@@ -1436,7 +1436,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2019"
@@ -1488,7 +1488,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-1015"
@@ -1580,7 +1580,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA717153",
@@ -1732,7 +1732,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2020"
@@ -1928,7 +1928,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-552"
@@ -1984,7 +1984,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2019-397"
@@ -2152,7 +2152,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_preparation_retrait_royaume-uni_ue"
@@ -2396,7 +2396,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2018"
@@ -2436,7 +2436,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         },
         {
           "acteur_ref": "PA332747",
@@ -2476,7 +2476,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/souscription_nationale_restauration_notre-dame_paris"
@@ -2568,11 +2568,11 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/transformation_fonction_publique"
@@ -3072,7 +3072,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA331481",
@@ -3184,7 +3184,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA717153",
@@ -3256,7 +3256,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2019"
@@ -3296,7 +3296,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2018-474"
@@ -3548,7 +3548,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2017"
@@ -3792,7 +3792,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/nouveau_pacte_ferroviaire"
@@ -3996,7 +3996,7 @@
         },
         {
           "acteur_ref": "PA607395",
-          "membre_id": "nosdeputes:stephane-travert"
+          "membre_id": "stephane-travert"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/equilibre_relations_commerciales_agriculture"
@@ -4296,7 +4296,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-1390"
@@ -4352,7 +4352,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/etat_service_societe_confiance"
@@ -4452,7 +4452,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA331481",
@@ -4516,7 +4516,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/collectif_budgetaire_2017"
@@ -4800,7 +4800,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA717153",
@@ -4824,7 +4824,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-543"
@@ -4860,7 +4860,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/programmation_finances_publiques_2018-2022"
@@ -4900,7 +4900,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_finances_2018"
@@ -5108,7 +5108,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_2017-562"
@@ -5144,7 +5144,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_comptes_2016"
@@ -5456,7 +5456,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

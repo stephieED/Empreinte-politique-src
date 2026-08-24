@@ -15,7 +15,7 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:aurore-berge",
+      "membre_id": "aurore-berge",
       "nom": "Aurore Bergé",
       "portefeuille": "Ministère auprès du Premier ministre, chargé de l’égalité entre les femmes et les hommes et de la lutte contre les discriminations",
       "debut": "2024-01-12",
@@ -24,7 +24,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:dominique-faure",
+      "membre_id": "dominique-faure",
       "nom": "Dominique Faure",
       "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargé des collectivités territoriales et de la ruralité",
       "debut": "2024-02-09",
@@ -33,7 +33,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:fadila-khattabi",
+      "membre_id": "fadila-khattabi",
       "nom": "Fadila Khattabi",
       "portefeuille": "Ministère auprès de la ministre du travail, de la santé et des solidarités, chargé des personnes âgées et des personnes handicapées",
       "debut": "2024-02-09",
@@ -42,7 +42,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:franck-riester",
+      "membre_id": "franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère auprès du ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur, de l'attractivité, de la francophonie et des Français de l’étranger",
       "debut": "2024-02-09",
@@ -60,7 +60,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gerald-darmanin",
+      "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de l’intérieur et des outre-mer",
       "debut": "2024-01-12",
@@ -69,7 +69,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:guillaume-kasbarian",
+      "membre_id": "guillaume-kasbarian",
       "nom": "Guillaume Kasbarian",
       "portefeuille": "Ministère auprès du ministre de la transition écologique et de la cohésion des territoires, chargé du logement",
       "debut": "2024-02-09",
@@ -78,7 +78,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:herve-berville",
+      "membre_id": "herve-berville",
       "nom": "Hervé Berville",
       "portefeuille": "Secrétariat d’État auprès du ministre de la transition écologique et de la cohésion des territoires, chargé de la mer et de la biodiversité",
       "debut": "2024-02-09",
@@ -87,7 +87,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:marie-guevenoux",
+      "membre_id": "marie-guevenoux",
       "nom": "Marie Guévenoux",
       "portefeuille": "Ministère auprès du ministre de l’intérieur et des outre-mer, chargé des outre-mer",
       "debut": "2024-02-09",
@@ -96,7 +96,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:marie-lebec",
+      "membre_id": "marie-lebec",
       "nom": "Marie Lebec",
       "portefeuille": "Ministère auprès du Premier ministre, chargé des relations avec le Parlement",
       "debut": "2024-01-12",
@@ -105,7 +105,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivia-gregoire",
+      "membre_id": "olivia-gregoire",
       "nom": "Olivia Grégoire",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des entreprises, du tourisme et de la consommation",
       "debut": "2024-02-09",
@@ -114,7 +114,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:patricia-miralles",
+      "membre_id": "patricia-miralles",
       "nom": "Patricia Mirallès",
       "portefeuille": "Secrétariat d’État auprès du ministre des armées, chargé des anciens combattants et de la mémoire",
       "debut": "2024-02-09",
@@ -123,7 +123,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:prisca-thevenot",
+      "membre_id": "prisca-thevenot",
       "nom": "Prisca Thevenot",
       "portefeuille": "Ministère auprès du Premier ministre, chargé du renouveau démocratique, porte-parole du Gouvernement",
       "debut": "2024-01-12",
@@ -132,7 +132,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:roland-lescure",
+      "membre_id": "roland-lescure",
       "nom": "Roland Lescure",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé de l’industrie et de l’énergie",
       "debut": "2024-02-09",
@@ -141,7 +141,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:sabrina-agresti-roubache",
+      "membre_id": "sabrina-agresti-roubache",
       "nom": "Sabrina Agresti-Roubache",
       "portefeuille": null,
       "debut": "2024-02-09",
@@ -150,7 +150,7 @@
       "source_url": null
     },
     {
-      "membre_id": "nosdeputes:stanislas-guerini",
+      "membre_id": "stanislas-guerini",
       "nom": "Stanislas Guerini",
       "portefeuille": "Ministère de la transformation et fonction publiques",
       "debut": "2024-02-09",
@@ -159,7 +159,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:thomas-cazenave",
+      "membre_id": "thomas-cazenave",
       "nom": "Thomas Cazenave",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la souveraineté industrielle et numérique, chargé des comptes publics",
       "debut": "2024-02-09",
@@ -188,7 +188,7 @@
         },
         {
           "acteur_ref": "PA793940",
-          "membre_id": "nosdeputes:thomas-cazenave"
+          "membre_id": "thomas-cazenave"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/17/dossiers/plr_pour_2023"
@@ -208,7 +208,7 @@
         },
         {
           "acteur_ref": "PA793940",
-          "membre_id": "nosdeputes:thomas-cazenave"
+          "membre_id": "thomas-cazenave"
         },
         {
           "acteur_ref": "PA331481",
@@ -278,7 +278,7 @@
         },
         {
           "acteur_ref": "PA793940",
-          "membre_id": "nosdeputes:thomas-cazenave"
+          "membre_id": "thomas-cazenave"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/approbation_comptes_secsoc_2023"
@@ -298,7 +298,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ratification_ordonnance_2024-153"
@@ -374,7 +374,7 @@
         },
         {
           "acteur_ref": "PA793940",
-          "membre_id": "nosdeputes:thomas-cazenave"
+          "membre_id": "thomas-cazenave"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/resultats_gestion_approbation_comptes_2023"
@@ -526,7 +526,7 @@
         },
         {
           "acteur_ref": "PA793940",
-          "membre_id": "nosdeputes:thomas-cazenave"
+          "membre_id": "thomas-cazenave"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/16/dossiers/ordonnance_gestionnaires_credits_acheteurs_credits"
@@ -743,7 +743,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

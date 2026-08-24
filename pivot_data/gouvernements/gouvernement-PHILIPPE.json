@@ -24,7 +24,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:elisabeth-borne",
+      "membre_id": "elisabeth-borne",
       "nom": "Élisabeth Borne",
       "portefeuille": "Ministère chargé des transports auprès du ministre d’État, ministre de la transition écologique et solidaire",
       "debut": "2017-05-18",
@@ -33,7 +33,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gerald-darmanin",
+      "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de l’action et des comptes publics",
       "debut": "2017-05-18",
@@ -97,7 +97,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }

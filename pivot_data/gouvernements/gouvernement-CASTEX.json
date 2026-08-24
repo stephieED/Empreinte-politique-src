@@ -11,7 +11,7 @@
   },
   "membres": [
     {
-      "membre_id": "nosdeputes:barbara-pompili",
+      "membre_id": "barbara-pompili",
       "nom": "Barbara Pompili",
       "portefeuille": "Ministère de la transition écologique",
       "debut": "2020-07-07",
@@ -20,7 +20,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:brigitte-klinkert",
+      "membre_id": "brigitte-klinkert",
       "nom": "Brigitte Klinkert",
       "portefeuille": "Ministère auprès de la ministre du travail, de l’emploi et de l’insertion, chargé de l'insertion",
       "debut": "2020-07-07",
@@ -29,7 +29,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:clement-beaune",
+      "membre_id": "clement-beaune",
       "nom": "Clément Beaune",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'Europe et des affaires étrangères, chargé des affaires européennes",
       "debut": "2020-07-27",
@@ -38,7 +38,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:elisabeth-borne",
+      "membre_id": "elisabeth-borne",
       "nom": "Élisabeth Borne",
       "portefeuille": "Ministère du travail, de l’emploi et de l’insertion",
       "debut": "2020-07-07",
@@ -47,7 +47,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:franck-riester",
+      "membre_id": "franck-riester",
       "nom": "Franck Riester",
       "portefeuille": "Ministère auprès du ministre de l’Europe et des affaires étrangères, chargé du commerce extérieur et de l'attractivité",
       "debut": "2020-07-07",
@@ -65,7 +65,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:gerald-darmanin",
+      "membre_id": "gerald-darmanin",
       "nom": "Gérald Darmanin",
       "portefeuille": "Ministère de l’intérieur",
       "debut": "2020-07-07",
@@ -74,7 +74,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:joel-giraud",
+      "membre_id": "joel-giraud",
       "nom": "Joël Giraud",
       "portefeuille": "Secrétariat d'État auprès de la ministre de la cohésion des territoires et des relations avec les collectivités territoriales, chargé de la ruralité",
       "debut": "2020-07-27",
@@ -83,7 +83,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:joel-giraud",
+      "membre_id": "joel-giraud",
       "nom": "Joël Giraud",
       "portefeuille": "Ministère de la cohésion des territoires et des relations avec les collectivités territoriales",
       "debut": "2022-03-06",
@@ -92,7 +92,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:nadia-hai",
+      "membre_id": "nadia-hai",
       "nom": "Nadia Hai",
       "portefeuille": "Ministère auprès de la ministre de la cohésion des territoires et des relations avec les collectivités territoriales, chargé de la ville",
       "debut": "2020-07-07",
@@ -101,7 +101,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:nadia-hai",
+      "membre_id": "nadia-hai",
       "nom": "Nadia Hai",
       "portefeuille": "Ministère auprès du ministre de la cohésion des territoires et des relations avec les collectivités territoriales - ville",
       "debut": "2022-03-06",
@@ -110,7 +110,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivia-gregoire",
+      "membre_id": "olivia-gregoire",
       "nom": "Olivia Grégoire",
       "portefeuille": "Secrétariat d'État auprès du ministre de l'économie, des finances et de la relance, chargé de l'économie sociale, solidaire et responsable",
       "debut": "2020-07-27",
@@ -119,7 +119,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivier-dussopt",
+      "membre_id": "olivier-dussopt",
       "nom": "Olivier Dussopt",
       "portefeuille": "Ministère auprès du ministre de l’économie, des finances et de la relance, chargé des comptes publics",
       "debut": "2020-07-07",
@@ -128,7 +128,7 @@
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
-      "membre_id": "nosdeputes:olivier-veran",
+      "membre_id": "olivier-veran",
       "nom": "Olivier Véran",
       "portefeuille": "Ministère des solidarités et de la santé",
       "debut": "2020-07-07",
@@ -377,7 +377,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/orientationprogrammationinterieur"
@@ -397,11 +397,11 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonannces_securite_sociale_mayotte"
@@ -577,7 +577,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA722236",
@@ -853,7 +853,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/adaptation_mesures_urgence_activite_partielle"
@@ -1045,7 +1045,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2021_2"
@@ -1177,11 +1177,11 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_pour_2022"
@@ -1201,7 +1201,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/certification_periodique_professionnels_sante"
@@ -1257,7 +1257,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plf_2022"
@@ -1277,7 +1277,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnnance_contributions_employeurs"
@@ -1469,7 +1469,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reponsabilite_penale_securite_interieure"
@@ -1489,7 +1489,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA721670",
@@ -1549,7 +1549,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_representation_travailleurs_independants"
@@ -1597,7 +1597,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_diverses_ordonnances_domaine_de_la_sante"
@@ -1769,7 +1769,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         },
         {
           "acteur_ref": "PA722086",
@@ -1905,7 +1905,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfr_2021"
@@ -1993,7 +1993,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_relative_a_lhydrogene"
@@ -2013,7 +2013,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prevention-actes-terrorisme-et-renseignement"
@@ -2121,7 +2121,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/reglement_budget_2020"
@@ -2301,7 +2301,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_ratif_ordonnance_ceseda"
@@ -2321,7 +2321,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA722236",
@@ -2345,7 +2345,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_travail_partiel"
@@ -2365,7 +2365,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA759830",
@@ -2409,7 +2409,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA721670",
@@ -2433,7 +2433,7 @@
         },
         {
           "acteur_ref": "PA335758",
-          "membre_id": "nosdeputes:franck-riester"
+          "membre_id": "franck-riester"
         },
         {
           "acteur_ref": "PA1872",
@@ -2493,7 +2493,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/lutte_contre_le_dereglement_climatique"
@@ -2545,7 +2545,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnance_ars"
@@ -2669,7 +2669,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_jours_de_repos"
@@ -2773,7 +2773,7 @@
         },
         {
           "acteur_ref": "PA774109",
-          "membre_id": "nosdeputes:clement-beaune"
+          "membre_id": "clement-beaune"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/approbation_decision_ue_euratom"
@@ -2849,7 +2849,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/election_president_republique"
@@ -2885,11 +2885,11 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ratification_ordonnances_travail_emploi_formation_action_sociale_sante"
@@ -2993,7 +2993,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         },
         {
           "acteur_ref": "PA717163",
@@ -3069,7 +3069,7 @@
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/ordonnance_activite_partielle"
@@ -3129,7 +3129,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjl_delais_elections"
@@ -3149,7 +3149,7 @@
         },
         {
           "acteur_ref": "PA607846",
-          "membre_id": "nosdeputes:gerald-darmanin"
+          "membre_id": "gerald-darmanin"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/pjlo_delais_elections"
@@ -3173,7 +3173,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_de_finances_rectificative_2020_4"
@@ -3213,7 +3213,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_de_letat_durgence_sanitaire"
@@ -3265,11 +3265,11 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA717161",
-          "membre_id": "nosdeputes:elisabeth-borne"
+          "membre_id": "elisabeth-borne"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/accompagnement_des_salaries_des_centrales_a_charbon"
@@ -3329,11 +3329,11 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/plfss_2021"
@@ -3389,7 +3389,7 @@
         },
         {
           "acteur_ref": "PA330357",
-          "membre_id": "nosdeputes:olivier-dussopt"
+          "membre_id": "olivier-dussopt"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/loi_de_finances_pour_2021"
@@ -3425,7 +3425,7 @@
         },
         {
           "acteur_ref": "PA642788",
-          "membre_id": "nosdeputes:olivier-veran"
+          "membre_id": "olivier-veran"
         }
       ],
       "source_url": "https://www.assemblee-nationale.fr/dyn/15/dossiers/prorogation_urgence_sanitaire"
@@ -3541,7 +3541,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA729332",
@@ -3597,7 +3597,7 @@
         },
         {
           "acteur_ref": "PA609520",
-          "membre_id": "nosdeputes:barbara-pompili"
+          "membre_id": "barbara-pompili"
         },
         {
           "acteur_ref": "PA759830",
@@ -3857,7 +3857,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-24T21:52:46+0000",
     "licence_donnees": "",
     "warnings": []
   }
