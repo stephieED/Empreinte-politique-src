@@ -154,9 +154,14 @@ flowchart TD
 ## Logique d'extraction (chaîne interne)
 
 1. `generate_roster_candidats.py` lit `raw_data/groupes_reels.json` (via
-   `--config`, défaut ce fichier).
+   `--config`, défaut ce fichier). Une entrée portant `extraction_suspendue`
+   en sort d'emblée (#516) : ni fetch, ni collecte, et son absence n'est pas
+   une anomalie. Les **2 groupes Sénat** le sont depuis le 24/08/2026, ce qui
+   retire la clé `('senateurs', None)` — donc, aujourd'hui, **1 seul appel
+   réseau** au lieu de 2. Voir
+   `docs/technical_decisions.md#extraction-groupe-suspendue-516`.
 2. Pour chaque `(roster_chambre, legislature)` distinct référencé par les
-   groupes de la config, il fait **un seul** fetch réseau
+   groupes **actifs** de la config, il fait **un seul** fetch réseau
    (`group_roster.fetch_full_roster`) — partagé entre tous les groupes de la
    même chambre/législature.
 3. Chaque roster brut est filtré côté client par `groupe_sigle`

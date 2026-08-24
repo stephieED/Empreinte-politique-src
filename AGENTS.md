@@ -321,6 +321,22 @@ Guarded by `tests/test_audit_collecte_non_publiee.py`,
 `tests/test_ci_collecte_non_publiee.py` and `tests/test_generate_roster_candidats.py`.
 See `docs/technical_decisions.md#collecte-non-publiee`.
 
+**A configured group's extraction can be suspended, never silently (#516)**: an
+entry of `groupes_reels.json` carrying `extraction_suspendue` is not fetched
+(`generate_roster_candidats.py`), not regenerated (`generate_group_profiles.py`,
+and **not counted as a failure**), and keeps its **hard** gate checks but not
+its soft ones — the published file stays on disk, frozen, still served by the
+Groupes tab. Suspending is not removing: removing an entry deletes a published
+file, which `audit_diff_profils` blocks (#460/#470). The block requires
+`depuis`, `motif`, `references`, `condition_reprise` — **the gate hard-fails
+without them**, `"extraction_suspendue": true` included: a suspension with
+nothing left to re-read becomes permanent by omission. Both Senate groups are
+suspended since 24/08/2026 (expired TLS certificate on
+`archive.nossenateurs.fr`, the only domain left serving the Senate roster;
+runs `32463926808` and `32548486495` died on it, AN collection included).
+Guarded by `tests/test_groupes_suspendus.py`.
+See `docs/technical_decisions.md#extraction-groupe-suspendue-516`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

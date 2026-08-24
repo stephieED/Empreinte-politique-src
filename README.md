@@ -35,6 +35,7 @@ CV_CandidatFR/
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
 |  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
+|  |- groupes_config.py              # Shared read of groupes_reels.json + temporary extraction suspension (#516)
 |  |- gouvernement_roster.py         # Ministerial roster of a government from local pivots (no network call)
 |  |- gouvernement_profile.py        # Aggregate roster + legislative files into a full government profile
 |  |- generate_gouvernement_profiles.py # Batch: all governments from raw_data/gouvernements_reels.json
@@ -932,7 +933,12 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
 - **Group scope**: profile generation (roster-driven or not) only covers the
   7 groups declared in `raw_data/groupes_reels.json` (5 AN + 2 Senate) — not
   every parliamentary group that exists. Extending coverage means adding
-  entries to that file, a separate editorial decision.
+  entries to that file, a separate editorial decision. The **2 Senate groups
+  are suspended** since 2026-08-24 (`extraction_suspendue`, #516): they are no
+  longer fetched nor regenerated — expired TLS certificate on
+  `archive.nossenateurs.fr`, which failed whole runs, AN collection included —
+  and their published files stay in place, frozen. See
+  [`docs/technical_decisions.md#extraction-groupe-suspendue-516`](docs/technical_decisions.md#extraction-groupe-suspendue-516).
 - **Government scope**: profile generation only covers the governments
   declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
   Fillon II through Lecornu II) — not every government in the Fifth

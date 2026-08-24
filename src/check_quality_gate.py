@@ -57,6 +57,17 @@ except ImportError:
 # stdlib pure, aucune I/O, comme `couverture_dossiers` juste dessous.
 from schema_pivot import libelle_chambres, lire_chambres  # noqa: E402
 
+# Suspension d'extraction d'un groupe (#516) : stdlib pure, aucune I/O. Le
+# gate est le seul des trois consommateurs de `groupes_reels.json` à VOIR le
+# fichier publié — c'est donc lui qui garde une suspension honnête (structure
+# toujours contrôlée, couverture plus mesurée) et qui refuse une suspension
+# non documentée.
+from groupes_config import (  # noqa: E402
+    anomalies_suspension,
+    est_suspendu,
+    resume_suspension,
+)
+
 # Périmètre réellement couvert par les archives de dossiers ingérées (#399) :
 # stdlib pure, aucune I/O — importé pour ne pas signaler comme un défaut de
 # données ce qui n'est qu'une absence de source.
@@ -74,6 +85,12 @@ INCOMPLETE_READ_MARKER = "IncompleteRead"
 _GROUPE_NETWORK_SIGNALS = ("roster_indisponible", "Échec de récupération", "timeout")
 # Warning attendu sur toutes les données AN/Sénat figées — ne doit pas déclencher d'alerte
 _FRAICHEUR_PREFIX = "fraicheur_donnees"
+# Statuts d'une ligne du tableau §4. `suspendu` (#516) n'est ni un succès ni un
+# défaut : l'extraction du groupe est arrêtée par décision écrite, sa fiche
+# publiée reste gelée — d'où un marqueur à lui, et non un ✓ qui laisserait
+# croire à une mesure fraîche.
+_MARQUEURS_STATUT_GROUPE = {"hard": "✗", "soft": "⚠", "suspendu": "⏸", "ok": "✓"}
+_ICONES_STATUT_GROUPE = {"hard": "❌", "soft": "⚠️", "suspendu": "⏸️", "ok": "✅"}
 
 IN_GHA = os.getenv("GITHUB_ACTIONS") == "true"
 
@@ -1092,6 +1109,7 @@ def _report_groupes(
     Retourne (hard_errors, soft_warnings, console_text, markdown_text).
 
     hard_errors  — chaque élément provoque exit_code=1 (structure cassée) :
+      - suspension d'extraction non documentée dans la config (#516)
       - fichier attendu manquant
       - JSON invalide
       - échec de validation de schéma (validate_profil_groupe)
@@ -1102,6 +1120,11 @@ def _report_groupes(
         relatif — désactivé par défaut, voir doc de `min_coverage_pct`)
       - IncompleteRead dans meta.warnings (signal réseau)
       - pas de cohesion_votes malgré des membres présents (données incomplètes)
+
+    Un groupe à l'extraction suspendue (#516) garde les contrôles **durs** —
+    son fichier reste publié et servi — mais aucun contrôle souple : ceux-ci
+    mesurent la collecte de ce run, qui n'a délibérément rien collecté pour
+    lui. Il est compté à part (« Suspendus »), jamais dans « OK ».
 
     Args:
         min_members: seuil absolu (nombre de profils chargés). Voir
@@ -1139,6 +1162,19 @@ def _report_groupes(
     for grp in expected:
         groupe_id = grp.get("groupe_id", "?")
         fichier = grp.get("fichier")
+
+        # Hard 0 — suspension non documentée (#516). Même statut qu'un champ
+        # `fichier` absent : c'est la config qui est en défaut, pas la donnée.
+        # Une suspension sans motif, sans date, sans référence ni condition de
+        # reprise est un assouplissement silencieux — il n'y a plus rien à
+        # relire pour savoir quand la lever.
+        anomalies_config = anomalies_suspension(grp)
+        if anomalies_config:
+            hard_errors.extend(anomalies_config)
+            rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
+                         "status": "hard", "detail": "suspension non documentée"})
+            continue
+
         if not fichier:
             hard_errors.append(f"{groupe_id}: champ 'fichier' absent de groupes_reels.json")
             rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
@@ -1187,6 +1223,30 @@ def _report_groupes(
         row_soft: list[str] = []
         row_status = "ok"
         coverage_pct = round(100 * profils_dispo / roster_total, 2) if roster_total > 0 else None
+
+        # ── Extraction suspendue (#516) ───────────────────────────────────
+        # Les trois contrôles durs ci-dessus s'appliquent quand même : le
+        # fichier est TOUJOURS publié, servi par l'onglet Groupes, et rien ne
+        # le garderait sinon. Les contrôles souples, eux, s'arrêtent : ils
+        # mesurent la COLLECTE de ce run, et ce run n'a rien collecté ici.
+        # Les laisser tourner ferait clignoter à chaque run une couverture et
+        # un `0 vote de cohésion` qui ne parlent plus de rien — le bruit qui
+        # apprend à ignorer un avertissement.
+        if est_suspendu(grp):
+            rows.append({
+                "groupe_id": groupe_id,
+                "nom": groupe_nom,
+                "chambre": chambre,
+                "profils_dispo": profils_dispo,
+                "roster_total": roster_total,
+                "coverage_pct": coverage_pct,
+                "nb_membres": nb_membres,
+                "nb_cohesion": nb_cohesion,
+                "status": "suspendu",
+                "soft_flags": "extraction suspendue",
+                "suspension": resume_suspension(grp),
+            })
+            continue
 
         # Soft 1a — couverture insuffisante (seuil absolu)
         if roster_total > 0 and profils_dispo < min_members:
@@ -1247,6 +1307,7 @@ def _report_groupes(
     n_hard = len(hard_errors)
     n_soft = len(soft_warnings)
     n_ok = sum(1 for r in rows if r["status"] == "ok")
+    suspendus = [r for r in rows if r["status"] == "suspendu"]
 
     global_icon = "✓" if n_hard == 0 and n_soft == 0 else ("✗" if n_hard > 0 else "⚠")
 
@@ -1255,9 +1316,15 @@ def _report_groupes(
         "",
         "┌─ 4/4  Groupes parlementaires ──────────────────────────────────────",
         f"│  Attendus : {len(expected)}   OK : {n_ok}   "
+        f"Suspendus : {len(suspendus)}   "
         f"Échecs durs : {n_hard}   Avertissements : {n_soft}",
         "│",
     ]
+    if suspendus:
+        lines.append("│  ⏸ Extraction suspendue (fiche publiée gelée, #516) :")
+        for r in suspendus:
+            lines.append(f"│    · {r['suspension']}")
+        lines.append("│")
     if not _SCHEMA_GROUPE_AVAILABLE:
         lines.append("│  [!] schema_groupe non disponible — validation de schéma ignorée.")
         lines.append("│")
@@ -1277,7 +1344,7 @@ def _report_groupes(
     lines.append(header)
     lines.append("│  " + "─" * 72)
     for r in rows:
-        status_marker = "✗" if r["status"] == "hard" else ("⚠" if r["status"] == "soft" else "✓")
+        status_marker = _MARQUEURS_STATUT_GROUPE.get(r["status"], "✓")
         if r.get("roster_total"):
             coverage = f"{r.get('profils_dispo','?')}/{r.get('roster_total','?')} ({r.get('coverage_pct','?')}%)"
         else:
@@ -1303,10 +1370,21 @@ def _report_groupes(
         "|---|---|",
         f"| {overall_md} Attendus | {len(expected)} |",
         f"| ✅ Valides | {n_ok} |",
+        f"| ⏸️ Extraction suspendue | {len(suspendus)} |",
         f"| ❌ Échecs durs | {n_hard} |",
         f"| ⚠️ Avertissements qualité | {n_soft} |",
         "",
     ]
+    if suspendus:
+        md_lines += [
+            "**Extraction suspendue** _(fiche publiée gelée à sa dernière "
+            "génération réussie, #516)_",
+            "",
+            "| Groupe | Suspension |",
+            "|---|---|",
+        ]
+        md_lines += [f"| `{r['groupe_id']}` | {r['suspension']} |" for r in suspendus]
+        md_lines.append("")
     if not _SCHEMA_GROUPE_AVAILABLE:
         md_lines.append("> ⚠️ `schema_groupe` non importé — validation de schéma ignorée.\n")
 
@@ -1329,7 +1407,7 @@ def _report_groupes(
         "|---|---|---|---|---|---|---|",
     ]
     for r in rows:
-        status_icon = "❌" if r["status"] == "hard" else ("⚠️" if r["status"] == "soft" else "✅")
+        status_icon = _ICONES_STATUT_GROUPE.get(r["status"], "✅")
         coverage = (
             f"{r.get('profils_dispo','?')}/{r.get('roster_total','?')}"
             if r.get("roster_total") else "—"

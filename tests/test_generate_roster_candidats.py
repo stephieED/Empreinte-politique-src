@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from generate_all_profiles import load_candidats
+from groupes_config import partitionner_groupes
 from generate_roster_candidats import (
     anomalies_roster,
     build_roster_candidats,
@@ -403,32 +404,50 @@ def test_anomalies_roster_ne_repete_pas_les_groupes_d_un_fetch_en_echec():
 # partir des données réelles du dépôt (fetch réseau mocké).
 # ---------------------------------------------------------------------------
 
-def test_repository_groupes_reels_json_produces_valid_roster_candidats(monkeypatch):
+_PAYLOADS_REELS = {
+    "deputes": [
+        {"slug": "alice", "nom": "Alice", "groupe_sigle": "REN", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"slug": "carla", "nom": "Carla", "groupe_sigle": "RN", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"slug": "dan", "nom": "Dan", "groupe_sigle": "LFI", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"slug": "eve", "nom": "Eve", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
+    ],
+    "senateurs": [
+        {"slug": "farid", "nom": "Farid", "groupe_sigle": "LR", "mandat_debut": "2020-01-01", "mandat_fin": None},
+        {"slug": "gina", "nom": "Gina", "groupe_sigle": "SER", "mandat_debut": "2020-01-01", "mandat_fin": None},
+    ],
+}
+
+
+def _groupes_reels() -> list[dict]:
     config_path = Path(__file__).resolve().parents[1] / "raw_data" / "groupes_reels.json"
-    config = json.loads(config_path.read_text(encoding="utf-8"))
-    groupes = config["groupes"]
+    return json.loads(config_path.read_text(encoding="utf-8"))["groupes"]
+
+
+def test_repository_groupes_reels_json_produces_valid_roster_candidats(monkeypatch):
+    groupes = _groupes_reels()
 
     def fake_fetch_full_roster(chambre, legislature=None, session=None):
-        if chambre == "deputes":
-            return [
-                {"slug": "alice", "nom": "Alice", "groupe_sigle": "REN", "mandat_debut": "2022-06-22", "mandat_fin": None},
-                {"slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
-                {"slug": "carla", "nom": "Carla", "groupe_sigle": "RN", "mandat_debut": "2022-06-22", "mandat_fin": None},
-                {"slug": "dan", "nom": "Dan", "groupe_sigle": "LFI", "mandat_debut": "2022-06-22", "mandat_fin": None},
-                {"slug": "eve", "nom": "Eve", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
-            ]
-        return [
-            {"slug": "farid", "nom": "Farid", "groupe_sigle": "LR", "mandat_debut": "2020-01-01", "mandat_fin": None},
-            {"slug": "gina", "nom": "Gina", "groupe_sigle": "SER", "mandat_debut": "2020-01-01", "mandat_fin": None},
-        ]
+        return _PAYLOADS_REELS[chambre]
 
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster", fake_fetch_full_roster)
 
     candidats = generate_roster_candidats(groupes)
 
+    # Attendu dérivé de la config, pas figé : ce test doit rester vrai qu'une
+    # entrée soit suspendue (#516) ou réactivée, sans être réécrit à chaque
+    # bascule — sinon il finit par décrire l'état d'hier.
+    actifs, _ = partitionner_groupes(groupes)
+    attendus = {
+        membre["slug"]
+        for groupe in actifs
+        for membre in _PAYLOADS_REELS[groupe["roster_chambre"]]
+        if membre["groupe_sigle"] == groupe["groupe_sigle"]
+    }
+
     assert isinstance(candidats, list)
     assert candidats
-    assert {c["slug"] for c in candidats} == {"alice", "bob", "carla", "dan", "eve", "farid", "gina"}
+    assert {c["slug"] for c in candidats} == attendus
     for c in candidats:
         assert c["statut"] == "roster_groupe"
         assert c["slug"]

@@ -132,7 +132,10 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     # aussi les membres par groupe, et le libellé d'anomalie s'en sert pour
     # distinguer les deux `LR` (`AN:LR` et `Senat:LR`).
     ("generate_roster_candidats.py", "build_roster_candidats_detaille"): GROUPE,
-    ("generate_roster_candidats.py", "_libelle_groupe"): GROUPE,
+    # #516 a sorti le libellé de `generate_roster_candidats._libelle_groupe`
+    # (qui n'en est plus qu'un alias) vers le module de config partagé : les
+    # trois consommateurs de `groupes_reels.json` nomment un groupe pareil.
+    ("groupes_config.py", "libelle_groupe"): GROUPE,
     ("check_quality_gate.py", "_report_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "compute_tableau_croise_groupes"): GROUPE,
     ("audit_groupe_dataset.py", "compute_plage_dates_groupes"): GROUPE,

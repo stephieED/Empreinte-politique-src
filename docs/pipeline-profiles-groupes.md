@@ -161,7 +161,7 @@ d'entrée distinctes via `--candidats`, qui pilotent des périmètres différent
 | Source | Fichier | Qui la produit | Portée | `meta.provenance` |
 |---|---|---|---|---|
 | Éditoriale (défaut) | `raw_data/candidats.json` | Maintenue à la main | Candidats/présidentiables déclarés/pressentis | `candidat_declare` |
-| Roster-driven | `raw_data/roster_candidats.json` | Générée par `generate_roster_candidats.py` depuis `raw_data/groupes_reels.json` | Tou·te·s les membres réels des 7 groupes configurés (couverture de groupe complète, pas seulement les présidentiables) | `roster_groupe` |
+| Roster-driven | `raw_data/roster_candidats.json` | Générée par `generate_roster_candidats.py` depuis `raw_data/groupes_reels.json` | Tou·te·s les membres réels des groupes configurés **dont l'extraction n'est pas suspendue** — 5 des 7 depuis le 24/08/2026 (#516), les 2 groupes Sénat étant gelés | `roster_groupe` |
 
 Les deux sources partagent le même format d'entrée (attendu par
 `generate_all_profiles.py --candidats`) et alimentent le même pipeline de
@@ -270,6 +270,7 @@ Entrées / sorties de la pipeline candidats
 Comment ça marche concrètement
 
 La liste des groupes à produire est définie dans groupes_reels.json.
+Une entrée portant extraction_suspendue (#516) est ignorée : ni fetch, ni régénération, et ce n'est pas un échec — sa fiche déjà publiée reste en place, gelée à sa dernière génération réussie. Voir technical_decisions.md#extraction-groupe-suspendue-516.
 Le batch generate_group_profiles.py fait un seul fetch réseau par couple (chambre, législature) (optimisation clé).
 Ce fetch passe par group_roster.py:
   - récupération de la liste complète députés/sénateurs,
