@@ -173,6 +173,45 @@ def test_les_fichiers_non_json_sont_ignores(tmp_path):
     assert auditer(raw_dir, pivot_dir)["nb_bruts"] == 1
 
 
+def test_le_point_de_sauvegarde_n_est_pas_un_profil(tmp_path):
+    """Run `32773067295` (24/08/2026) : 22 jobs verts, commit annulé sur
+    `Slug(s) : .generation_checkpoint`.
+
+    `generate_all_profiles.py` écrit sa progression dans
+    `raw_data/profiles/.generation_checkpoint.json` — un fichier de service,
+    DANS le répertoire des profils bruts. Ce contrôle inventorie ce répertoire
+    par nom de fichier : il l'a compté comme un brut, cherché son pivot, et
+    annulé le commit de ~477 profils parfaitement collectés et publiés.
+
+    Le filtre porte sur le point initial, pas sur ce nom précis : `slugify` ne
+    produit que `[a-z0-9-]` puis `.strip("-")`, donc aucun slug ne peut
+    commencer par un point. C'est une propriété du générateur de noms, pas une
+    liste d'exceptions à tenir à jour.
+    """
+    raw_dir, pivot_dir = _corpus(tmp_path, ["alice", "bob"], ["alice", "bob"])
+    (raw_dir / ".generation_checkpoint.json").write_text(
+        '{"resultats": []}', encoding="utf-8")
+
+    rapport = auditer(raw_dir, pivot_dir)
+
+    assert rapport["nb_bruts"] == 2
+    assert rapport["non_publies"] == []
+    assert rapport["bloquant"] is False
+
+
+def test_un_fichier_cache_du_repertoire_pivot_n_est_pas_un_pivot(tmp_path):
+    """Symétrique du précédent : un fichier de service côté pivots deviendrait
+    un « publié sans brut », c.-à-d. un compteur de dérive qui dérive tout
+    seul."""
+    raw_dir, pivot_dir = _corpus(tmp_path, ["alice"], ["alice"])
+    (pivot_dir / ".etat.pivot.json").write_text("{}", encoding="utf-8")
+
+    rapport = auditer(raw_dir, pivot_dir)
+
+    assert rapport["nb_pivots"] == 1
+    assert rapport["nb_publies_sans_brut"] == 0
+
+
 # ---------------------------------------------------------------------------
 # Le seuil, et la tolérance
 # ---------------------------------------------------------------------------

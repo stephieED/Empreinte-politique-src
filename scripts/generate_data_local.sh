@@ -158,8 +158,12 @@ python3 src/generate_all_profiles.py \
 
 echo "=== [7/7] merge-and-pivot : pivots, groupes, gouvernements, quality gate ==="
 
+# --no-checkpoint comme en CI (#518) : une passe --pivot-only n'a rien à
+# reprendre, et son point de sauvegarde s'écrirait dans raw_data/profiles/,
+# où le garde-fou #511 le prendrait pour un profil brut sans pivot.
 python3 src/generate_all_profiles.py \
   --pivot-only \
+  --no-checkpoint \
   --enrich-parltrack \
   --parltrack-status-out parltrack-status.json \
   --workers "$WORKERS" \
@@ -175,6 +179,7 @@ python3 src/generate_roster_candidats.py \
   || { echo "[!] Roster non régénéré (collecte incomplète, #511) — pivots roster non produits."; exit 1; }
 python3 src/generate_all_profiles.py \
   --pivot-only \
+  --no-checkpoint \
   --candidats raw_data/roster_candidats.json \
   --workers "$WORKERS" \
   "${MERGE_FLAG[@]}"

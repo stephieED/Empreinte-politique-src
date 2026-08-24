@@ -322,6 +322,31 @@ Guarded by `tests/test_audit_collecte_non_publiee.py`,
 `tests/test_ci_collecte_non_publiee.py` and `tests/test_generate_roster_candidats.py`.
 See `docs/technical_decisions.md#collecte-non-publiee`.
 
+**A progress file is not a profile — and `Path.glob` disagrees (#518, third incident)**:
+`pathlib.Path.glob("*.json")` **returns dotfiles**, unlike the `glob` module. Every
+inventory of `raw_data/profiles/` must therefore skip `name.startswith(".")` — the
+convention four of them already carried (`merge_profile.merge_raw_dirs`,
+`scrutins_index`, `amendements_index`, `audit_legislature_votes`), and the one #511's
+control had not. It read `raw_data/profiles/.generation_checkpoint.json` —
+`generate_all_profiles.py`'s save point, written **into the data directory** — as a raw
+profile with no pivot and aborted the commit of 476 correctly published profiles: run
+`32773067295`, 22 green jobs, `Slug(s) : .generation_checkpoint`. **No run had ever
+cleared this step.** The filter is safe by construction, not by exception list:
+`slugify()` emits `[a-z0-9-]` then `.strip("-")`, so no slug can start with a dot. The
+cause is fixed too — **`--no-checkpoint` on every `--pivot-only` pass** (nothing to
+resume there; the roster shards keep `--resume`, and their checkpoint never leaves the
+runner since #450 stages from the manifest). Threshold stays 0, no tolerance added.
+See `docs/technical_decisions.md#point-de-sauvegarde-dans-les-profils-518`.
+
+**A test reading a file outside `tests.yml`'s sparse-checkout passes locally and fails
+in CI (#518, third incident)**: second occurrence after #434 — #520 shipped a test
+reading `.gitignore`, green locally, `FileNotFoundError` on the push to `main` (run
+`32773016491`). Whitelisting the file is half of it; the other half is
+`tests/test_ci_perimetre_sparse_checkout.py`, which collects the repo-root-anchored path
+literals across the suite and fails **locally** when one is not covered — and checks the
+other direction too, that `pivot_data/` and `raw_data/profiles/` never enter the list
+(#473). **A top-level file counts as much as a directory.**
+
 **A configured group's extraction can be suspended, never silently (#516)**: an
 entry of `groupes_reels.json` carrying `extraction_suspendue` is not fetched
 (`generate_roster_candidats.py`), not regenerated (`generate_group_profiles.py`,

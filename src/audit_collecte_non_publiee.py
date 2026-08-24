@@ -138,6 +138,19 @@ def _slugs(repertoire: Path, suffixe: str) -> set[str]:
         nom = chemin.name
         if not chemin.is_file() or not nom.endswith(suffixe):
             continue
+        # Un fichier de service n'est pas un profil. `slugify` ne produit que
+        # `[a-z0-9-]` puis `.strip("-")` : un slug ne peut pas commencer par un
+        # point, donc écarter les fichiers cachés n'écarte aucun profil — c'est
+        # une propriété du générateur de noms, pas une liste d'exceptions à
+        # tenir à jour. Sans cela, `raw_data/profiles/.generation_checkpoint.json`
+        # — le point de sauvegarde de `generate_all_profiles.py`, écrit dans le
+        # répertoire des profils — se présentait ici comme un brut sans pivot et
+        # annulait le commit : run `32773067295` (24/08/2026), 22 jobs verts,
+        # `Slug(s) : .generation_checkpoint`. La cause est traitée à part
+        # (`--no-checkpoint` sur les passes `--pivot-only`) ; ce filtre-ci rend
+        # le contrôle indépendant de tout fichier de service futur.
+        if nom.startswith("."):
+            continue
         # Un brut ne doit pas être confondu avec un pivot égaré dans le même
         # répertoire : `.pivot.json` se termine aussi par `.json`.
         if suffixe == SUFFIXE_BRUT and nom.endswith(SUFFIXE_PIVOT):

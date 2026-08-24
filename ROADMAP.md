@@ -29,6 +29,20 @@ something is pending, not *why*.
   même artifact, code de sortie 2 « roster indisponible » toléré par le step (et lui
   seul), annotations `::error::` nommant la clé et les fiches sautées. Voir
   `technical_decisions.md#plafond-roster-et-commit-518`.
+- Le run `32773067295` (24/08/2026) a perdu son commit sur `.generation_checkpoint`,
+  le point de sauvegarde de `generate_all_profiles.py` écrit **dans**
+  `raw_data/profiles/` : le garde-fou #511 l'a compté comme un profil brut sans pivot.
+  Aucun run n'avait jamais franchi ce step. **Corrigé en #518** (`--no-checkpoint` sur
+  les passes `--pivot-only`, et les fichiers cachés écartés des inventaires — `Path.glob`
+  les remonte). Voir `technical_decisions.md#point-de-sauvegarde-dans-les-profils-518`.
+- **Reste à faire** : sortir `DEFAULT_CHECKPOINT_PATH` de `raw_data/profiles/`, pour que
+  chaque nouvel inventaire n'ait plus à se souvenir de l'écarter. La destination n'est pas
+  triviale — `.cache/` est restauré d'un run à l'autre par `actions/cache`, et un
+  checkpoint survivant au run ferait sauter à `--resume` des candidats jamais traités.
+- Le même push a laissé `Tests (pytest)` **rouge sur `main`** (run `32773016491`) : un
+  test lisait `.gitignore`, absent du sparse-checkout de `tests.yml`. **Corrigé en #518**
+  (liste blanche + `tests/test_ci_perimetre_sparse_checkout.py`, qui fait échouer le cas
+  en local). Deuxième occurrence du même piège après #434.
 - Les anomalies de `generate_roster_candidats.py` et les slugs de
   `audit_collecte_non_publiee.py` restaient enterrés dans les logs de step : la seule
   annotation d'un run mort là-dessus était `Process completed with exit code 1`.

@@ -1282,7 +1282,12 @@ def main() -> None:
                         help="Reprendre depuis le dernier point de sauvegarde : ignore les candidats déjà "
                              "marqués 'ok' ou 'deja_present' lors d'une exécution précédente interrompue.")
     parser.add_argument("--no-checkpoint", action="store_true",
-                        help="Désactiver l'écriture du point de sauvegarde intermédiaire.")
+                        help="Désactiver l'écriture du point de sauvegarde intermédiaire. À poser "
+                             "sur toute passe qui n'a rien à reprendre — une passe --pivot-only, "
+                             "par exemple : le point de sauvegarde est écrit dans "
+                             f"{DEFAULT_CHECKPOINT_PATH}, c'est-à-dire DANS le répertoire des "
+                             "profils bruts, où tout ce qui inventorie le corpus le rencontre "
+                             "(#518).")
     limit_group = parser.add_mutually_exclusive_group()
     parser.add_argument("--shard", default=None, metavar="I/N",
                         help="Ne traiter que la tranche I sur N du fichier de candidats "

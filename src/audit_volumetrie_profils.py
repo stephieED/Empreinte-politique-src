@@ -547,6 +547,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             for rep, octets in hist["par_repertoire"].items():
                 arbre = sum(
                     f.stat().st_size for f in Path(rep).glob("*.json")
+                    if not f.name.startswith(".")
                 ) if Path(rep).is_dir() else 0
                 facteur = f"× {arbre / octets:.1f}" if octets else "—"
                 lignes.append(f"| `{rep}` | {_mo(arbre)} | {_mo(octets)} | {facteur} |")
@@ -677,7 +678,13 @@ def analyser_repertoires(
         if not repertoire.is_dir():
             print(f"  [!] Répertoire absent, ignoré : {repertoire}", file=sys.stderr)
             continue
-        tous.extend(sorted(repertoire.glob("*.json")))
+        # Un fichier de service n'est pas un profil, et le compter fausserait la
+        # volumétrie : `raw_data/profiles/.generation_checkpoint.json` est un
+        # point de progression, pas une donnée collectée (#518). `Path.glob`
+        # remonte les fichiers cachés, contrairement au module `glob` — même
+        # filtre que `merge_profile`, `scrutins_index`, `amendements_index`.
+        tous.extend(sorted(
+            c for c in repertoire.glob("*.json") if not c.name.startswith(".")))
 
     tailles = [(c, c.stat().st_size) for c in tous]
     tailles.sort(key=lambda ct: ct[1])

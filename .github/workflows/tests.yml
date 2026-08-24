@@ -73,8 +73,16 @@ jobs:
           # Ajouter ici tout nouveau répertoire de premier niveau dont les
           # tests lisent le contenu ; ne jamais y ajouter pivot_data/ ni
           # raw_data/profiles/, que le garde-fou ci-dessous refuse.
+          #
+          # `.gitignore` : lu par `tests/test_ci_roster_unique_par_run.py`, qui
+          # vérifie que les sorties régénérées à chaque run ne sont pas
+          # committées. Le piège annoncé deux lignes plus haut s'est reproduit
+          # tel quel avec #520 — suite verte en local, `FileNotFoundError` en CI
+          # sur le push vers `main` (run 32773016491). Un fichier de premier
+          # niveau compte autant qu'un répertoire.
           sparse-checkout: |
             .github
+            .gitignore
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             requirements.txt
