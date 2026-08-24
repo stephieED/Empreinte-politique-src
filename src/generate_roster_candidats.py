@@ -55,6 +55,23 @@ une panne, c'est une décision écrite. Les deux entrées Sénat le sont depuis 
 faisait échouer tout le run, collecte AN comprise. Voir `groupes_config.py` et
 docs/technical_decisions.md#extraction-groupe-suspendue-516.
 
+## Une seule construction par run en CI, et des anomalies annotées (#518)
+
+Ce script était appelé par les **9 invocations** d'un run `generate-data`
+(8 shards + `merge-and-pivot`), donc 9 fetchs de la même liste. Il n'est plus
+appelé qu'une fois, par `prepare-roster-matrix`, et son résultat transite par
+l'artifact `roster-candidats` ; les consommateurs ne le rappellent qu'en repli,
+si l'artifact manque. Ce n'était pas qu'une affaire de coût : les shards se
+partagent le roster **par position**, et `merge-and-pivot` normalise en pivot
+**sa** liste — deux listes qui divergent laissent un membre collecté sans
+aucune passe pivot, sans qu'aucune étape n'échoue.
+
+Chaque anomalie ci-dessus part aussi en annotation GitHub Actions
+(`::error::`, voir `gha.py`) : trois runs sont morts ici en une semaine, et la
+seule trace qu'en gardait l'onglet de résumé était
+`Process completed with exit code 1`. Voir
+docs/technical_decisions.md#roster-unique-par-run-518.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_roster_candidats.py \\
         --config raw_data/groupes_reels.json \\
@@ -69,6 +86,7 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
+import gha
 from group_roster import _base_url_for, fetch_full_roster, filter_roster_by_sigle
 from groupes_config import (
     libelle_groupe,
@@ -327,18 +345,35 @@ def main(argv: Optional[list[str]] = None) -> int:
     if anomalies:
         for anomalie in anomalies:
             print(f"[!] {anomalie}", file=sys.stderr)
+            # #518 : chaque anomalie est aussi une annotation. Les runs des 21,
+            # 22 et 24/08/2026 sont morts ici, et la seule trace qu'un lecteur
+            # de l'onglet « Summary » en gardait était
+            # `Process completed with exit code 1` — la cause (quelle clé de
+            # fetch, quel groupe) restait dans un log de step à télécharger.
+            # C'est le motif exact du garde-fou : une donnée non résolue doit
+            # échouer BRUYAMMENT, et un log qu'il faut aller chercher n'est pas
+            # du bruit (ROADMAP.md, #516).
+            gha.annoter("error", f"ROSTER — {anomalie}")
         if not args.autoriser_roster_incomplet:
-            print(
-                f"[!] ROSTER_INCOMPLET — {out_path} N'A PAS été écrit : "
+            message = (
+                f"ROSTER_INCOMPLET — {out_path} N'A PAS été écrit : "
                 f"{len(candidats)} candidat(s) collecté(s) sur une collecte incomplète. "
                 "L'écrire publierait une composition de groupe non mesurée, et la passe "
                 "pivot suivante itérerait sur ce qu'il en reste (AGENTS.md §2 règle 5, "
-                "#511). Relancer, ou --autoriser-roster-incomplet en connaissance de cause.",
-                file=sys.stderr,
+                "#511). Relancer, ou --autoriser-roster-incomplet en connaissance de cause."
             )
+            print(f"[!] {message}", file=sys.stderr)
+            gha.annoter("error", message)
             return 1
         print("[!] --autoriser-roster-incomplet : écriture forcée malgré les anomalies "
               "ci-dessus.", file=sys.stderr)
+        # Écriture forcée : l'annotation reste, en `warning`. Le run continue,
+        # donc rien d'autre ne dira que ce qu'il publie a été mesuré partiellement.
+        gha.annoter(
+            "warning",
+            f"ROSTER_INCOMPLET toléré (--autoriser-roster-incomplet) : {out_path} est "
+            f"écrit avec {len(candidats)} candidat(s) malgré {len(anomalies)} anomalie(s).",
+        )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps({"candidats": candidats}, ensure_ascii=False, indent=2), encoding="utf-8")

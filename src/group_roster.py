@@ -22,6 +22,7 @@ Usage (depuis la racine du dépôt) :
 import argparse
 import json
 import sys
+import time
 from typing import Any, Optional
 
 import requests
@@ -55,6 +56,49 @@ _LIST_ENDPOINT = {
     "deputes": "deputes",
     "senateurs": "senateurs",
 }
+
+# ── Reprise sur échec transitoire du fetch de roster (#518) ──────────────────
+# `fetch_full_roster` faisait UN SEUL essai (timeout 15 s, aucun backoff), là où
+# `candidate_profile._get_payload` en fait trois depuis longtemps pour les
+# appels par candidat. L'asymétrie coûtait cher : ce fetch est le PREMIER pas
+# de `generate_roster_candidats.py`, et #511 refuse — à raison — d'écrire un
+# roster sur une collecte incomplète. Un hoquet de 15 s tuait donc le job
+# entier, pas un membre.
+#
+# Mesuré sur le run 32738726729 (24/08/2026) : 4 shards roster sur 8 morts sur
+# `Construction de la liste roster-driven`, alors que la seule clé de fetch
+# restante — ('deputes', '16'), le Sénat étant suspendu depuis #516 — répondait
+# normalement aux 4 autres, lancés dans la même minute. Rien de déterministe :
+# 4 échecs et 4 succès sur la même URL, la signature d'un aléa transitoire.
+#
+# CE QUI EST RETENTÉ, et rien d'autre (voir `_erreur_retentable`) : timeout,
+# erreur de connexion, 5xx. Un `SSLError` (certificat expiré, cas Sénat de
+# #516) et un 4xx sont DÉTERMINISTES — les retenter ferait payer trois fois le
+# même verdict et retarderait d'autant le message qui nomme la panne. C'est la
+# même ligne de partage que `_get_payload`, et elle compte double ici : la
+# suspension d'extraction de #516 s'appuie sur un échec qui remonte VITE.
+_ROSTER_MAX_ATTEMPTS = 3
+#: Temporisation avant la n-ième reprise, multipliée par le rang de la
+#: tentative écoulée (2 s puis 4 s) : au pire 6 s d'attente ajoutés à un job
+#: qui en dure ~200, contre un run entier perdu.
+_ROSTER_RETRY_BACKOFF_SECONDS = 2.0
+
+
+def _erreur_retentable(exc: Exception) -> bool:
+    """Un nouvel essai sur la MÊME URL a-t-il une chance de rendre autre chose ?
+
+    L'ordre des tests n'est pas indifférent : `requests.exceptions.SSLError`
+    hérite de `ConnectionError`, donc un `isinstance(exc, ConnectionError)`
+    placé en premier classerait un certificat expiré comme transitoire — et
+    ferait exactement ce que la panne Sénat de #516 a montré qu'il ne faut pas
+    faire.
+    """
+    if isinstance(exc, requests.exceptions.SSLError):
+        return False
+    if isinstance(exc, requests.HTTPError):
+        statut = exc.response.status_code if exc.response is not None else None
+        return statut is not None and 500 <= statut < 600
+    return isinstance(exc, (requests.Timeout, requests.ConnectionError))
 
 
 def _base_url_for(chambre: str, legislature: Optional[str]) -> str:
@@ -111,24 +155,47 @@ def fetch_full_roster(
     (voir generate_group_profiles.py) : filtrer ensuite le résultat avec
     `filter_roster_by_sigle`.
 
+    Un échec TRANSITOIRE (timeout, erreur de connexion, 5xx) est retenté
+    jusqu'à `_ROSTER_MAX_ATTEMPTS` fois, avec temporisation croissante (#518).
+    Un échec DÉTERMINISTE (certificat, 4xx) remonte à la première tentative :
+    voir `_erreur_retentable`.
+
     Returns:
         Liste des membres bruts (déjà déballés de l'enveloppe {"depute": {...}}
         / {"senateur": {...}}), sans filtrage par groupe.
 
     Raises:
         ValueError: chambre ou législature inconnue.
-        requests.RequestException: échec réseau (non intercepté, remonté tel quel).
+        requests.RequestException: échec réseau, après épuisement des reprises
+            pour un échec retentable (non intercepté, remonté tel quel).
     """
     base_url = _base_url_for(chambre, legislature)
     url = f"{base_url}/{_LIST_ENDPOINT[chambre]}/json"
 
     http = session or requests
-    response = http.get(url, headers=HEADERS, timeout=TIMEOUT)
-    response.raise_for_status()
-    payload = response.json()
+    for tentative in range(1, _ROSTER_MAX_ATTEMPTS + 1):
+        try:
+            response = http.get(url, headers=HEADERS, timeout=TIMEOUT)
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            if tentative == _ROSTER_MAX_ATTEMPTS or not _erreur_retentable(exc):
+                raise
+            attente = _ROSTER_RETRY_BACKOFF_SECONDS * tentative
+            print(
+                f"  [!] Roster {url} — tentative {tentative}/{_ROSTER_MAX_ATTEMPTS} "
+                f"en échec ({type(exc).__name__}: {exc}). Nouvelle tentative dans "
+                f"{attente:.0f} s.",
+                file=sys.stderr,
+            )
+            time.sleep(attente)
+            continue
+        payload = response.json()
+        raw_entries = payload.get(chambre) or []
+        return [entry.get("depute") or entry.get("senateur") or entry for entry in raw_entries]
 
-    raw_entries = payload.get(chambre) or []
-    return [entry.get("depute") or entry.get("senateur") or entry for entry in raw_entries]
+    # Inatteignable : la boucle sort par `return` ou par `raise`. Présent pour
+    # que l'absence de valeur de retour ne dépende pas de la lecture du corps.
+    raise AssertionError("fetch_full_roster : sortie de boucle impossible.")
 
 
 def filter_roster_by_sigle(

@@ -1235,14 +1235,70 @@ jobs:
   # Le partitionnement se fait par position modulo côté Python (--shard I/N,
   # voir _select_shard), ce qui ne demande pas de connaître l'effectif ici.
   # ──────────────────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────────────────
+  # Ce job fait DEUX choses depuis #518, et c'est une seule décision : il
+  # décide du découpage du roster, et il construit le roster lui-même.
+  #
+  # Avant, `raw_data/roster_candidats.json` était reconstruit par chacune des
+  # 9 invocations d'un run (8 shards + `merge-and-pivot`), soit 9 fetchs
+  # identiques de la même liste de 618 parlementaires. Deux défauts, l'un de
+  # coût et l'autre de correction :
+  #
+  #   - COÛT/FRAGILITÉ : 9 requêtes qui doivent TOUTES passer pour que le run
+  #     aboutisse, sur une source qui a déjà fait tomber trois runs (#516).
+  #     Le run 32738726729 (24/08/2026) a perdu 4 shards sur 8 exactement là,
+  #     pendant que les 4 autres obtenaient la même liste sans incident ;
+  #   - CORRECTION : rien ne garantissait que les 9 listes soient la MÊME.
+  #     Les shards se partagent le roster par `--shard i/N`, position par
+  #     position, et `merge-and-pivot` normalise en pivot ce que sa PROPRE
+  #     liste contient. Deux listes qui divergent, et un membre collecté par un
+  #     shard n'est plus normalisé par la fusion : c'est la définition du
+  #     « collecté mais non publié » de #511, produit sans qu'aucune étape
+  #     n'ait échoué.
+  #
+  # Le roster est donc construit UNE fois, ici, et transité par artifact.
+  # Chaque consommateur garde un repli qui le régénère si l'artifact manque
+  # (`prepare-roster-matrix` en échec ou skippé) : la panne d'un job de
+  # préparation ne doit pas valoir panne du run, cohérent avec le
+  # `|| '[0]'` du matrix ci-dessous.
+  # ──────────────────────────────────────────────────────────────────────────
   prepare-roster-matrix:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 5 -> 15 min : ce job fait désormais un appel réseau avec reprises (#518).
+    # Reste un filet, pas un budget : le fetch tient en quelques secondes.
+    timeout-minutes: 15
     outputs:
       shards: ${{ steps.shards.outputs.shards }}
       shard_total: ${{ steps.shards.outputs.shard_total }}
 
     steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      # Le roster du run, construit une fois pour toutes. Un échec ici fait
+      # échouer ce job — donc `extract-roster-groupes` retombe sur son matrix
+      # `[0]` et sur son repli de régénération, et le run continue en mode
+      # dégradé au lieu de s'arrêter. Ne PAS ajouter de `continue-on-error`
+      # sans ce repli : un artifact absent doit rester distinguable d'un
+      # artifact vide (AGENTS.md §2 règle 5).
+      # Le `#518` reste dans ce commentaire et pas dans le `name:` : un `#` non
+      # quoté dans un scalaire YAML ouvre un commentaire, et le nom du step
+      # serait tronqué juste avant lui.
+      - name: Roster du run — une seule construction pour tout le run
+        run: python3 src/generate_roster_candidats.py
+
+      - name: Roster du run — artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: roster-candidats
+          path: raw_data/roster_candidats.json
+          if-no-files-found: error
+
       - name: Liste des shards roster
         id: shards
         env:
@@ -1487,14 +1543,35 @@ jobs:
           restore-keys: |
             public-data-cache-amendements-
 
-      # 2 appels réseau au total, mutualisés par (chambre, législature) — voir
-      # group_roster.py / generate_roster_candidats.py. raw_data/roster_candidats.json
-      # n'est pas committé : régénéré à chaque run (source de vérité =
-      # groupes_reels.json). Ce n'était vrai que sur le papier jusqu'à #413 §5 —
-      # le fichier était tracké et dérivait silencieusement ; il est désormais
-      # gitignoré et désindexé, comme parltrack-status.json.
-      - name: Construction de la liste roster-driven
-        run: python3 src/generate_roster_candidats.py
+      # raw_data/roster_candidats.json n'est pas committé : produit à chaque run
+      # (source de vérité = groupes_reels.json). Ce n'était vrai que sur le
+      # papier jusqu'à #413 §5 — le fichier était tracké et dérivait
+      # silencieusement ; il est désormais gitignoré et désindexé, comme
+      # parltrack-status.json.
+      #
+      # DEPUIS #518, ce shard ne le construit plus lui-même en régime nominal :
+      # il télécharge celui que `prepare-roster-matrix` a construit pour TOUT
+      # le run. Voir l'en-tête de ce job pour les deux raisons (fragilité de
+      # 9 fetchs, et divergence possible entre les listes des shards et celle
+      # de `merge-and-pivot`).
+      - name: Roster du run — artifact (optionnel)
+        id: roster_artifact
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: roster-candidats
+          path: raw_data
+
+      # Repli, et pas une seconde source de vérité : il ne s'exécute QUE si
+      # l'artifact a manqué (prepare-roster-matrix en échec, préempté, ou son
+      # fetch tombé). Le supprimer rendrait ce job dépendant d'un job de
+      # préparation dont l'échec est précisément ce que #412 §2.1 a cessé de
+      # laisser propager.
+      - name: Repli — construction de la liste roster-driven
+        if: ${{ steps.roster_artifact.outcome == 'failure' }}
+        run: |
+          echo "::warning::Artifact roster-candidats absent : ce shard reconstruit le roster pour lui-même. Sa tranche peut différer de celle des autres shards si la source a changé entre-temps (#518)."
+          python3 src/generate_roster_candidats.py
 
       # Même fan-out par membre que extract-an/extract-senat (coût par candidat
       # identique, seul le volume change) — roster_extraction_limit borne ce
@@ -1810,9 +1887,14 @@ jobs:
       # aucun pivot à enrichir ici. Asymétrie voulue, pas un oubli.
       #
       # Pivots roster-driven (#192) : repasse --pivot-only explicitement sur
-      # raw_data/roster_candidats.json (régénéré ici — fetch réseau bon marché,
-      # 2 appels — plutôt que transitée par artifact) pour normaliser aussi les
-      # profils bruts fusionnés depuis extract-roster-groupes. meta.provenance
+      # raw_data/roster_candidats.json — celui du run, téléchargé juste avant
+      # (#518), et non plus une liste reconstruite ICI. C'est la moitié
+      # « correction » de #518 : ce step normalise en pivot ce que sa liste
+      # contient, et les shards ont collecté ce que LEUR liste contenait. Tant
+      # que les deux étaient deux fetchs distincts, un membre pouvait être
+      # collecté par un shard sans jamais être présenté à cette passe — un
+      # « collecté mais non publié » (#511) produit sans qu'aucune étape
+      # n'échoue. meta.provenance
       # "roster_groupe" ne rétrograde jamais un pivot "candidat_declare"
       # existant (merge_pivot_profile, voir docs/technical_decisions.md
       # #provenance-pivot) : sûr même si le même slug existe dans les deux
@@ -1820,13 +1902,27 @@ jobs:
       # absent (raw_data/profiles ne contient alors aucun profil roster-driven
       # → chaque candidat roster est ignoré comme "profil brut absent").
       #
-      # `generate_roster_candidats.py` PEUT DÉSORMAIS FAIRE ÉCHOUER CE STEP
+      # `generate_roster_candidats.py` PEUT FAIRE ÉCHOUER LE REPLI CI-DESSOUS
       # (#511) : sur un fetch en timeout, il refuse d'écrire un roster incomplet
       # et sort en 1, ce que le `bash -e` du step propage. C'est voulu — le run
       # 32405297873 s'est conclu en `success` précisément parce que ce script
-      # rendait 0 sur un roster vide, et la passe ci-dessous a itéré sur rien.
-      # Un run coupé ici ne perd aucune donnée : les profils bruts collectés
+      # rendait 0 sur un roster vide, et la passe suivante a itéré sur rien.
+      # Un run coupé là ne perd aucune donnée : les profils bruts collectés
       # sont dans les artifacts, la fusion est additive, un run suivant publie.
+      - name: Roster du run — artifact (optionnel)
+        id: roster_artifact
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: roster-candidats
+          path: raw_data
+
+      - name: Repli — construction de la liste roster-driven
+        if: ${{ steps.roster_artifact.outcome == 'failure' }}
+        run: |
+          echo "::warning::Artifact roster-candidats absent : merge-and-pivot reconstruit le roster pour lui-même. Sa liste peut différer de celle sur laquelle les shards ont collecté (#518)."
+          python3 src/generate_roster_candidats.py
+
       - name: Normalisation pivot roster-driven
         env:
           FRESH: ${{ inputs.cold_start }}
@@ -1837,7 +1933,6 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          python3 src/generate_roster_candidats.py
           python3 src/generate_all_profiles.py \
             --pivot-only \
             --candidats raw_data/roster_candidats.json \
