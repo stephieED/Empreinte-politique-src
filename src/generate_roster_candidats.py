@@ -72,10 +72,16 @@ seule trace qu'en gardait l'onglet de résumé était
 `Process completed with exit code 1`. Voir
 docs/technical_decisions.md#roster-unique-par-run-518.
 
+Le roster BRUT peut être publié avec (`--rosters-bruts-out`) : c'est ce qui
+supprime le DERNIER fetch de la même liste dans un run, celui de
+`generate_group_profiles.py`. Voir la section correspondante de
+`group_roster.py`.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_roster_candidats.py \\
         --config raw_data/groupes_reels.json \\
-        --out raw_data/roster_candidats.json
+        --out raw_data/roster_candidats.json \\
+        --rosters-bruts-out raw_data/rosters_bruts.json
 """
 
 from __future__ import annotations
@@ -87,7 +93,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import gha
-from group_roster import _base_url_for, fetch_full_roster, filter_roster_by_sigle
+from group_roster import (
+    _base_url_for,
+    ecrire_rosters_bruts,
+    fetch_full_roster,
+    filter_roster_by_sigle,
+)
 from groupes_config import (
     libelle_groupe,
     partitionner_groupes,
@@ -289,6 +300,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Fichier JSON de sortie (défaut : raw_data/roster_candidats.json).",
     )
     parser.add_argument(
+        "--rosters-bruts-out",
+        default=None,
+        metavar="FICHIER",
+        help="Écrire AUSSI les rosters bruts (non filtrés, tels que rendus par "
+             "fetch_full_roster) dans ce fichier, pour que les autres étages du "
+             "run les réutilisent au lieu de refetcher la même liste — voir "
+             "generate_group_profiles.py --rosters-bruts (#518). Non écrit par "
+             "défaut : seul le run CI en a besoin.",
+    )
+    parser.add_argument(
         "--autoriser-roster-incomplet",
         action="store_true",
         help="Écrire le roster MALGRÉ une collecte incomplète (fetch en échec, "
@@ -377,6 +398,19 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps({"candidats": candidats}, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # Le roster BRUT part avec le roster de candidats, et sous la MÊME
+    # autorisation d'écriture (#518) : les deux décrivent la même collecte, à
+    # la même seconde. Publier l'un sans l'autre rendrait au consommateur une
+    # composition de groupe qui n'est pas celle sur laquelle les profils ont
+    # été collectés — le défaut même que ce transit ferme.
+    if args.rosters_bruts_out:
+        chemin_bruts = Path(args.rosters_bruts_out)
+        cles_ecrites = ecrire_rosters_bruts(chemin_bruts, rosters_bruts)
+        print(
+            f"→ {cles_ecrites} roster(s) brut(s) écrit(s) dans {chemin_bruts}.",
+            file=sys.stderr,
+        )
 
     print(f"→ {len(candidats)} candidat(s) écrit(s) dans {out_path}.", file=sys.stderr)
     for libelle, nombre in sorted(membres_par_groupe.items()):

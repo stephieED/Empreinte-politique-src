@@ -206,7 +206,7 @@ def test_generation_ignore_un_groupe_suspendu_sans_le_compter_en_echec(tmp_path,
 
     monkeypatch.setattr("generate_group_profiles.fetch_full_roster", fake_fetch_full_roster)
 
-    echecs = generate_all(
+    resultat = generate_all(
         [_GROUPE_AN, _GROUPE_SENAT],
         profiles_dir=profiles_dir,
         out_dir=out_dir,
@@ -215,7 +215,10 @@ def test_generation_ignore_un_groupe_suspendu_sans_le_compter_en_echec(tmp_path,
 
     # 0 et non 1 : compter la suspension en échec ferait sortir le script en 1
     # à chaque run, donc échouer le job pour une décision écrite.
-    assert echecs == 0
+    assert resultat.echecs == 0
+    # Et pas davantage un « roster indisponible » (code 2, #518) : une clé de
+    # fetch qu'on n'a délibérément pas construite n'est pas une clé en panne.
+    assert resultat.code_sortie() == 0
     assert interrogees == ["deputes"]
     assert (out_dir / "groupe-AN-LR-16.json").exists()
     assert not (out_dir / "groupe-Senat-SER.json").exists()

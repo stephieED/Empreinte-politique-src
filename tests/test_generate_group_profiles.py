@@ -107,9 +107,9 @@ def test_generate_all_fetches_once_per_chambre_legislature(tmp_path, monkeypatch
         {"roster_chambre": "deputes", "groupe_id": "AN:SOC", "groupe_sigle": "SOC", "groupe_nom": "Socialistes", "chambre": "AN", "legislature": "16", "fichier": "groupe-AN-SOC-16.json"},
     ]
 
-    echecs = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir, validate=True)
+    resultat = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir, validate=True)
 
-    assert echecs == 0
+    assert resultat.echecs == 0
     assert call_count["n"] == 1  # un seul fetch réseau partagé entre les 2 groupes
 
     lr = json.loads((out_dir / "groupe-AN-LR-16.json").read_text(encoding="utf-8"))
@@ -140,9 +140,9 @@ def test_generate_all_two_chambres_two_fetches(tmp_path, monkeypatch):
         {"roster_chambre": "senateurs", "groupe_id": "Senat:LR", "groupe_sigle": "LR", "groupe_nom": "Les Républicains", "chambre": "Senat", "legislature": None, "fichier": "groupe-Senat-LR.json"},
     ]
 
-    echecs = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir)
+    resultat = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir)
 
-    assert echecs == 0
+    assert resultat.echecs == 0
     assert len(fetch_calls) == 2
     assert set(fetch_calls) == {("deputes", "16"), ("senateurs", None)}
 
@@ -163,10 +163,14 @@ def test_generate_all_roster_fetch_failure_reported_as_echec(tmp_path, monkeypat
         {"roster_chambre": "deputes", "groupe_id": "AN:LR", "groupe_sigle": "LR", "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "16", "fichier": "groupe-AN-LR-16.json"},
     ]
 
-    echecs = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir)
+    resultat = generate_all(groupes, profiles_dir=tmp_path / "profiles", out_dir=out_dir)
 
-    assert echecs == 1
+    assert resultat.echecs == 1
     assert not (out_dir / "groupe-AN-LR-16.json").exists()
+    # Un roster indisponible n'est PAS un échec de génération (#518) : rien n'a
+    # été écrit, donc rien n'a été perdu — voir test_generate_group_profiles_codes_sortie.py.
+    assert resultat.echecs_generation == []
+    assert resultat.groupes_sautes == {("deputes", "16"): ["AN:LR"]}
 
 
 # ---------------------------------------------------------------------------
@@ -249,8 +253,8 @@ def test_generate_all_couverture_roster_grande_echelle_quasi_complete(tmp_path, 
         {"roster_chambre": "deputes", "groupe_id": "AN:LR", "groupe_sigle": "LR", "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "16", "fichier": "groupe-AN-LR-16.json"},
     ]
 
-    echecs = generate_all(groupes, profiles_dir=profiles_dir, out_dir=out_dir, validate=True)
-    assert echecs == 0
+    resultat = generate_all(groupes, profiles_dir=profiles_dir, out_dir=out_dir, validate=True)
+    assert resultat.echecs == 0
 
     lr = json.loads((out_dir / "groupe-AN-LR-16.json").read_text(encoding="utf-8"))
     couverture = lr["meta"]["couverture_roster"]

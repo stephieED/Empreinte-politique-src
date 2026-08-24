@@ -23,6 +23,7 @@ import argparse
 import json
 import sys
 import time
+from pathlib import Path
 from typing import Any, Optional
 
 import requests
@@ -82,6 +83,108 @@ _ROSTER_MAX_ATTEMPTS = 3
 #: tentative écoulée (2 s puis 4 s) : au pire 6 s d'attente ajoutés à un job
 #: qui en dure ~200, contre un run entier perdu.
 _ROSTER_RETRY_BACKOFF_SECONDS = 2.0
+
+# ── Le plafond de lecture du roster lui est propre (#518, second incident) ───
+# `fetch_full_roster` héritait de `candidate_profile.TIMEOUT` (15 s), une
+# constante dimensionnée pour les pages PAR CANDIDAT (quelques Ko, servies
+# depuis un cache). Or `/deputes/json` fait **814 Ko** et est généré à la
+# volée : son coût est presque entièrement du time-to-first-byte.
+#
+# Mesuré le 24/08/2026, 24 appels sur `https://www.nosdeputes.fr/deputes/json` :
+# aucune réponse en moins de 10 s, la plus rapide à 10,7 s, médiane des succès
+# ~16,7 s. Le plafond de production était donc À L'INTÉRIEUR de la distribution
+# de réponse de l'endpoint — 0 succès sur 8 à `timeout=15`, 3 sur 8 à
+# `timeout=30`. (Ces latences absolues sont celles d'un environnement derrière
+# proxy, pas d'un runner GitHub ; ce qui est robuste est la forme, pas le
+# chiffre.) C'est ce qui a fait tomber `merge-and-pivot` sur le run
+# 32750929942 : trois tentatives sous un plafond trop bas ne rachètent pas le
+# plafond.
+#
+# Séparé en (connect, read) comme `gouvernement_textes.TIMEOUT` et
+# `syceron_debates.TIMEOUT` le font déjà pour leurs gros dumps. Le CONNECT
+# reste à `TIMEOUT` : c'est lui que la détection déterministe de #516 emprunte
+# (poignée de main TLS, `SSLError`), et l'allonger retarderait le verdict qui
+# justifie une suspension d'extraction. Seule la LECTURE est desserrée.
+#
+# Pire cas ajouté : 3 x 90 s + 6 s de backoff ≈ 4,5 min, sur un job qui en a 60.
+_ROSTER_READ_TIMEOUT_SECONDS = 90
+_ROSTER_TIMEOUT: tuple[int, int] = (TIMEOUT, _ROSTER_READ_TIMEOUT_SECONDS)
+
+
+# ── Transit du roster BRUT par artifact (#518, second incident) ──────────────
+# Il restait DEUX fetchs de la même liste par run après #519 :
+# `prepare-roster-matrix` (→ artifact `roster-candidats`) et
+# `generate_group_profiles.py`, qui refetche pour son propre compte. Le second
+# n'est pas qu'une requête de trop : la fiche de groupe publiée est bâtie sur
+# une composition lue ~7 min après celle qui a servi à la collecte des profils.
+# Une entrée/sortie de groupe entre les deux, et la composition publiée diverge
+# du corpus collecté — exactement le défaut de correction de #518, sans qu'une
+# seule étape n'échoue.
+#
+# Le format est un dict {clé texte → membres bruts}, tel que rendu par
+# `fetch_full_roster` : aucune projection, pour que le consommateur applique
+# `filter_roster_by_sigle` sur la MÊME matière que le producteur.
+
+#: Séparateur de la clé texte. `None` (législature non applicable, cas Sénat)
+#: se sérialise en chaîne vide — jamais en `"None"` ni en `"courante"`, qui
+#: seraient des valeurs de législature possibles au relire.
+_SEPARATEUR_CLE = ":"
+
+
+def cle_roster_texte(chambre: str, legislature: Optional[str]) -> str:
+    """Clé JSON d'un roster brut : `"deputes:16"`, `"senateurs:"`."""
+    return f"{chambre}{_SEPARATEUR_CLE}{legislature or ''}"
+
+
+def _cle_roster_depuis_texte(cle: str) -> tuple[str, Optional[str]]:
+    chambre, _, legislature = cle.partition(_SEPARATEUR_CLE)
+    return (chambre, legislature or None)
+
+
+def ecrire_rosters_bruts(
+    chemin: Path,
+    rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]],
+) -> int:
+    """Sérialise les rosters bruts RÉUSSIS ; retourne le nombre de clés écrites.
+
+    Une clé en échec (`None`) n'est pas écrite : un fetch raté ne doit pas
+    devenir une liste vide chez le consommateur (AGENTS.md §2 règle 5) — son
+    absence le fait retomber sur son propre fetch, ce qui est le mode dégradé
+    voulu, pas une composition de 0 membre.
+    """
+    charge = {
+        cle_roster_texte(chambre, legislature): membres
+        for (chambre, legislature), membres in rosters_bruts.items()
+        if membres is not None
+    }
+    chemin.parent.mkdir(parents=True, exist_ok=True)
+    # Compact : 814 Ko par clé, et personne ne lit ce fichier à l'œil (#433).
+    chemin.write_text(
+        json.dumps({"rosters": charge}, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    return len(charge)
+
+
+def charger_rosters_bruts(chemin: Path) -> dict[tuple[str, Optional[str]], list[dict[str, Any]]]:
+    """Relit un fichier écrit par `ecrire_rosters_bruts`.
+
+    Raises:
+        OSError: fichier absent ou illisible.
+        ValueError: JSON invalide, ou structure inattendue — jamais un dict
+            vide par défaut : « fichier corrompu » et « aucun roster » n'ont
+            pas la même conséquence chez l'appelant.
+    """
+    charge = json.loads(chemin.read_text(encoding="utf-8"))
+    rosters = charge.get("rosters")
+    if not isinstance(rosters, dict):
+        raise ValueError(f"{chemin} : clé `rosters` absente ou de type inattendu.")
+    resultat: dict[tuple[str, Optional[str]], list[dict[str, Any]]] = {}
+    for cle, membres in rosters.items():
+        if not isinstance(membres, list):
+            raise ValueError(f"{chemin} : roster {cle!r} n'est pas une liste.")
+        resultat[_cle_roster_depuis_texte(cle)] = membres
+    return resultat
 
 
 def _erreur_retentable(exc: Exception) -> bool:
@@ -160,6 +263,10 @@ def fetch_full_roster(
     Un échec DÉTERMINISTE (certificat, 4xx) remonte à la première tentative :
     voir `_erreur_retentable`.
 
+    Le plafond appliqué est `_ROSTER_TIMEOUT` — propre à ce fetch, pas celui
+    des pages par candidat, dont la valeur tombait au milieu de la
+    distribution de réponse de cet endpoint (#518).
+
     Returns:
         Liste des membres bruts (déjà déballés de l'enveloppe {"depute": {...}}
         / {"senateur": {...}}), sans filtrage par groupe.
@@ -175,7 +282,7 @@ def fetch_full_roster(
     http = session or requests
     for tentative in range(1, _ROSTER_MAX_ATTEMPTS + 1):
         try:
-            response = http.get(url, headers=HEADERS, timeout=TIMEOUT)
+            response = http.get(url, headers=HEADERS, timeout=_ROSTER_TIMEOUT)
             response.raise_for_status()
         except requests.RequestException as exc:
             if tentative == _ROSTER_MAX_ATTEMPTS or not _erreur_retentable(exc):

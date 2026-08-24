@@ -440,10 +440,19 @@ python src/generate_group_profiles.py \
     --config raw_data/groupes_reels.json \
     --profiles-dir pivot_data/profiles \
     --out-dir pivot_data/groupes \
+    --rosters-bruts raw_data/rosters_bruts.json \
     --validate
 ```
 
 `--merge-existing` applies to all groups in config.
+
+`--rosters-bruts` (#518) reuses the raw roster already collected by
+`generate_roster_candidats.py --rosters-bruts-out` earlier in the same run —
+**zero** network call. In CI both files travel in the `roster-candidats`
+artifact. A key missing from the file is fetched normally. Exit codes:
+`0` all good, **`2` roster unavailable** (nothing written, published sheets left
+untouched — the workflow step tolerates this code and only this one), `1` a
+group generation actually crashed.
 
 ### Government ministerial roster
 

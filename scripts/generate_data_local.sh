@@ -167,7 +167,11 @@ python3 src/generate_all_profiles.py \
 
 # #511 : sans ce test, un roster non régénéré fait normaliser la passe suivante
 # sur une liste périmée — ou, dans l'incident d'origine, sur une liste vide.
+# `--rosters-bruts-out` reproduit ce que le run CI transite par l'artifact
+# `roster-candidats` : le step groupes plus bas lit cette liste au lieu d'en
+# refetcher une (#518).
 python3 src/generate_roster_candidats.py \
+  --rosters-bruts-out raw_data/rosters_bruts.json \
   || { echo "[!] Roster non régénéré (collecte incomplète, #511) — pivots roster non produits."; exit 1; }
 python3 src/generate_all_profiles.py \
   --pivot-only \
@@ -182,11 +186,21 @@ python3 src/parti_profile.py \
 
 GROUPE_MERGE_FLAG=()
 [ "$FRESH_RUN" != "true" ] && GROUPE_MERGE_FLAG=(--merge-existing)
+# Même filtrage qu'en CI, et pour la même raison (#518) : le code 2 dit « roster
+# indisponible, aucune fiche touchée » — le run continue. Tout autre code reste
+# un échec. Ne pas remplacer par un `|| true`, qui avalerait aussi le code 1.
+GROUPE_CODE=0
 python3 src/generate_group_profiles.py \
   --config raw_data/groupes_reels.json \
   --profiles-dir pivot_data/profiles \
   --out-dir pivot_data/groupes \
-  --validate "${GROUPE_MERGE_FLAG[@]}"
+  --rosters-bruts raw_data/rosters_bruts.json \
+  --validate "${GROUPE_MERGE_FLAG[@]}" || GROUPE_CODE=$?
+if [ "$GROUPE_CODE" -eq 2 ]; then
+  echo "[!] Roster indisponible : aucune fiche de groupe régénérée, les versions existantes restent en place (#518)."
+elif [ "$GROUPE_CODE" -ne 0 ]; then
+  exit "$GROUPE_CODE"
+fi
 
 python3 src/generate_gouvernement_profiles.py \
   --config raw_data/gouvernements_reels.json \
