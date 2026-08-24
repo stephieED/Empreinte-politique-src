@@ -13,15 +13,22 @@ something is pending, not *why*.
   `32548486495`, #516) : leurs fiches publiées sont gelées. Reprise conditionnée à
   un certificat valide ou à une source de remplacement — sinon, trancher le retrait
   définitif. Voir `technical_decisions.md#extraction-groupe-suspendue-516`.
-- `fetch_full_roster` fait **un seul essai** (timeout 15 s, aucun backoff) et chacune
-  des 9 invocations d'un run reconstruit le roster pour elle-même : 18 requêtes par
-  run, toutes devant passer. C'est ce qui a transformé une panne transitoire en run
-  rouge le 21/08/2026 (#516). À corriger par un retry sur ce qui est retentable
-  (timeout/`ConnectionError`/5xx, jamais `SSLError` ni 4xx) et un roster unique par
-  run transité par artifact depuis `prepare-roster-matrix`.
-- Les anomalies de `generate_roster_candidats.py` restent enterrées dans les logs de
-  step : la seule annotation d'un run mort là-dessus est `Process completed with exit
-  code 1`. Les émettre en `::error::` (#516).
+- `fetch_full_roster` faisait **un seul essai** (timeout 15 s, aucun backoff) et
+  chacune des 9 invocations d'un run reconstruisait le roster pour elle-même : le run
+  `32738726729` (24/08/2026) y a perdu 4 shards sur 8, la même URL répondant aux 4
+  autres. **Corrigé en #518** : reprise sur ce qui est retentable
+  (timeout/`ConnectionError`/5xx, jamais `SSLError` ni 4xx), et roster unique par run
+  transité par artifact depuis `prepare-roster-matrix` — ce qui ferme aussi la
+  divergence possible entre la liste des shards et celle de `merge-and-pivot`. Voir
+  `technical_decisions.md#roster-unique-par-run-518`.
+- Les anomalies de `generate_roster_candidats.py` et les slugs de
+  `audit_collecte_non_publiee.py` restaient enterrés dans les logs de step : la seule
+  annotation d'un run mort là-dessus était `Process completed with exit code 1`.
+  **Corrigé en #518** (`::error::` via `src/gha.py`).
+- Les **20 profils orphelins** de `68bc094` (229 bruts / 209 pivots, incident #511 du
+  20/08/2026) sont toujours dans `main`. Ils ne bloquent rien — les deux passes
+  `--pivot-only` les publient, vérifié en #518 — mais ils ne disparaîtront qu'au
+  premier run `generate-data` qui ira jusqu'au commit.
 - `extract-senat` traite ses candidats dans l'ordre du fichier et n'a ni `--resume`
   ni rotation : quand le budget de collecte du job (#514, 600 s) est épuisé par une
   source dégradée, ce sont toujours les mêmes premiers slugs qui l'ont consommé. Voir

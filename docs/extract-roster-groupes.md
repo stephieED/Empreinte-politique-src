@@ -121,9 +121,10 @@ flowchart TD
     NS["NosDeputes.fr / NosSenateurs.fr\n/deputes/json ou /senateurs/json"] --> GR["group_roster.py\nfetch_full_roster + filter_roster_by_sigle"]
     GR --> RC
 
-    RC --> RCJ["raw_data/roster_candidats.json\n(non committe, regenere a chaque run)"]
+    RC --> RCJ["raw_data/roster_candidats.json\n(non committe, produit UNE fois par run)"]
 
-    RCJ --> B["generate_all_profiles.py\n--candidats roster_candidats.json"]
+    RCJ --> ART["artifact : roster-candidats\n(prepare-roster-matrix -> 8 shards + merge-and-pivot)"]
+    ART --> B["generate_all_profiles.py\n--candidats roster_candidats.json"]
     B --> C["candidate_profile.py\nbuild_profile(chambre=deputes|senateurs)"]
 
     CACHE[".cache/\n(evite les re-telechargements)"] -. mise en cache .-> C
@@ -140,7 +141,16 @@ flowchart TD
 > `groupe_sigle` (l'endpoint `/groupe/<SIGLE>/json` renvoie systématiquement
 > une erreur HTTP 500).  
 > **`raw_data/roster_candidats.json` n'est pas committé** : source de vérité
-> = `raw_data/groupes_reels.json`, régénéré à chaque run.  
+> = `raw_data/groupes_reels.json`, produit à chaque run.  
+> **UNE construction par run depuis #518** : `prepare-roster-matrix` la fait et
+> publie l'artifact `roster-candidats` ; les 8 shards et `merge-and-pivot` le
+> téléchargent, et ne régénèrent que si l'artifact manque. Neuf constructions
+> indépendantes étaient à la fois fragiles (4 shards perdus sur le run
+> `32738726729`) et **incorrectes** : les shards se partagent le roster par
+> position, `merge-and-pivot` normalise en pivot **sa** liste — deux listes qui
+> divergent produisent un « collecté mais non publié » (#511) sans qu'aucune
+> étape n'échoue. Voir
+> `docs/technical_decisions.md#roster-unique-par-run-518`.  
 > **Provenance** : chaque profil produit ici porte `meta.provenance =
 > "roster_groupe"` — ne rétrograde jamais un profil `candidat_declare`
 > existant lors de la fusion (`merge_pivot_profile`), voir
@@ -163,7 +173,9 @@ flowchart TD
 2. Pour chaque `(roster_chambre, legislature)` distinct référencé par les
    groupes **actifs** de la config, il fait **un seul** fetch réseau
    (`group_roster.fetch_full_roster`) — partagé entre tous les groupes de la
-   même chambre/législature.
+   même chambre/législature. Ce fetch reprend jusqu'à 3 fois sur un échec
+   **transitoire** (timeout, `ConnectionError`, 5xx) et **jamais** sur un
+   verdict déterministe (`SSLError`, 4xx) : #518.
 3. Chaque roster brut est filtré côté client par `groupe_sigle`
    (`group_roster.filter_roster_by_sigle`), avec filtrage temporel
    additionnel pour le Sénat (`senat_periode_debut`, domaine d'archive
@@ -180,7 +192,9 @@ flowchart TD
    itéré sur le vide — run `32405297873`, conclu en `success`. Ce n'est pas un
    seuil de rétrécissement : la granularité d'une panne est la clé de fetch
    entière, soit 452 ou 300 membres sur 752. Voir
-   `docs/technical_decisions.md#roster-jamais-ecrit-vide`.
+   `docs/technical_decisions.md#roster-jamais-ecrit-vide`. Chaque anomalie part
+   aussi en annotation `::error::` depuis #518 — un run mort ici ne laissait
+   sinon que `Process completed with exit code 1`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`/`extract-senat`
    (`candidate_profile.py`, identité/mandats/votes/amendements via
@@ -201,9 +215,10 @@ flowchart TD
 8. Dans `merge-and-pivot`, cet artifact est fusionné avec ceux de
    `extract-an`/`extract-senat`/`extract-ue-officiel`
    (`merge_profile.py --dirs`), puis re-normalisé en pivot spécifiquement
-   via `raw_data/roster_candidats.json` régénéré à cette étape (fetch réseau
-   bon marché, 2 appels, plutôt que transitée par artifact) — no-op
-   silencieux si `extract-roster-groupes` a échoué/été absent.
+   via `raw_data/roster_candidats.json` — **celui du run**, téléchargé depuis
+   l'artifact `roster-candidats` (#518), et non plus une liste reconstruite à
+   cette étape. No-op silencieux si `extract-roster-groupes` a échoué/été
+   absent.
 
 ---
 

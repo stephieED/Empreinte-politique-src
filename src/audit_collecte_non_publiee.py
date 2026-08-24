@@ -103,6 +103,8 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
+import gha
+
 #: Suffixe d'un profil brut et d'un profil pivot. Le second est plus long et
 #: contient le premier : c'est pourquoi le dépouillement se fait par `removesuffix`
 #: sur le suffixe attendu du répertoire lu, et jamais par `Path.stem`, qui
@@ -320,8 +322,12 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if rapport["repertoire_brut_absent"]:
         print(f"[!] {raw_dir} est absent : rien n'a été rapproché.", file=sys.stderr)
+        gha.annoter("error", f"COLLECTE_NON_PUBLIEE — {raw_dir} est absent : "
+                             "rien n'a été rapproché.")
     if rapport["repertoire_pivot_absent"]:
         print(f"[!] {pivot_dir} est absent : rien n'a été rapproché.", file=sys.stderr)
+        gha.annoter("error", f"COLLECTE_NON_PUBLIEE — {pivot_dir} est absent : "
+                             "rien n'a été rapproché.")
 
     if rapport["nb_publies_sans_brut"]:
         print(f"  {rapport['nb_publies_sans_brut']} pivot(s) sans profil brut "
@@ -334,9 +340,28 @@ def main(argv: Optional[list[str]] = None) -> int:
         reste = rapport["nb_non_publies"] - len(rapport["non_publies"])
         if reste > 0:
             print(f"[!] … et {reste} autre(s), non détaillé(s).", file=sys.stderr)
-        print(f"[!] {rapport['nb_non_publies']} profil(s) collecté(s) sur "
-              f"{rapport['nb_bruts']} ne sont publiés nulle part "
-              f"(seuil : {rapport['seuil']}).", file=sys.stderr)
+        resume = (f"{rapport['nb_non_publies']} profil(s) collecté(s) sur "
+                  f"{rapport['nb_bruts']} ne sont publiés nulle part "
+                  f"(seuil : {rapport['seuil']}).")
+        print(f"[!] {resume}", file=sys.stderr)
+        # #518 : les slugs partent en annotation, pas seulement en stderr et
+        # dans le rapport. Le run 32738726729 (24/08/2026) est mort ici, et
+        # `::error::COLLECTE_NON_PUBLIEE` du step ne nommait personne : le
+        # Markdown qui les nomme n'existe que dans l'onglet « Summary » du job
+        # et dans un artifact — l'un et l'autre invisibles depuis la liste des
+        # annotations, et l'artifact expire. UNE annotation, plafonnée par
+        # `PLAFOND_EXEMPLES` comme le rapport : 543 annotations identiques
+        # noieraient l'onglet au lieu de le renseigner.
+        exemples = ", ".join(rapport["non_publies"])
+        if reste > 0:
+            exemples += f", … (+{reste})"
+        # `bloquant` sans aucun slug, c'est le cas « répertoire absent » : il a
+        # déjà son annotation ci-dessus, et « Slug(s) : » y serait vide.
+        gha.annoter(
+            "error" if not args.tolerer_non_publies else "warning",
+            f"COLLECTE_NON_PUBLIEE — {resume}"
+            + (f" Slug(s) : {exemples}" if exemples else ""),
+        )
         return 0 if args.tolerer_non_publies else 1
 
     print(f"✓ {rapport['nb_bruts']} profil(s) brut(s) collecté(s), "

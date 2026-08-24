@@ -337,6 +337,22 @@ runs `32463926808` and `32548486495` died on it, AN collection included).
 Guarded by `tests/test_groupes_suspendus.py`.
 See `docs/technical_decisions.md#extraction-groupe-suspendue-516`.
 
+**One roster per run, and failures you can read (#518)**: `raw_data/roster_candidats.json`
+is built **once**, by `prepare-roster-matrix`, and shipped to the 8 roster shards and to
+`merge-and-pivot` as the `roster-candidats` artifact. Nine independent fetches were both
+fragile (4 shards lost on run `32738726729`) and *incorrect*: shards split the roster by
+position while `merge-and-pivot` pivots its own list, so two diverging lists produce a
+"collected but never published" (#511) with no step failing. Each consumer still
+regenerates it, but **only if the artifact is missing** — never unconditionally.
+`fetch_full_roster` retries timeout/`ConnectionError`/5xx (3 attempts, growing backoff)
+and **never** `SSLError` (subclass of `ConnectionError` — order matters) or 4xx: a
+deterministic verdict must surface fast, that is what #516 relied on. Blocking anomalies
+of `generate_roster_candidats.py` and `audit_collecte_non_publiee.py` are now `::error::`
+annotations via `src/gha.py` — **stdout only** (GitHub reads workflow commands nowhere
+else) and single-line. Guarded by `tests/test_ci_roster_unique_par_run.py`,
+`tests/test_roster_reprise_reseau.py`, `tests/test_annotations_gha.py`.
+See `docs/technical_decisions.md#roster-unique-par-run-518`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on
