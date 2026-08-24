@@ -1,6 +1,7 @@
 {
   "_meta": {
     "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
+    "suspension": "Une entrée portant `extraction_suspendue` n'est ni interrogée en réseau (generate_roster_candidats.py) ni régénérée (generate_group_profiles.py) : son fichier de groupe déjà publié reste en place, gelé à sa dernière génération réussie, et le quality gate le contrôle toujours structurellement mais ne mesure plus sa couverture. Le bloc exige `depuis`, `motif`, `references` et `condition_reprise` — voir docs/technical_decisions.md#extraction-groupe-suspendue-516.",
     "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré."
   },
   "groupes": [
@@ -56,7 +57,20 @@
       "groupe_nom": "Les Républicains",
       "chambre": "Senat",
       "legislature": null,
-      "fichier": "groupe-Senat-LR.json"
+      "fichier": "groupe-Senat-LR.json",
+      "extraction_suspendue": {
+        "depuis": "2026-08-24",
+        "motif": "Certificat TLS expiré sur archive.nossenateurs.fr, seul domaine servant le roster sénatorial : le fetch ('senateurs', None) échoue de façon déterministe, et le refus d'écrire un roster incomplet (#511) fait échouer tout le run — y compris la collecte des 452 membres AN, qui, eux, alimentent des agrégats publiés.",
+        "references": [
+          "#516",
+          "run 32463926808 (21/08/2026, 6 shards roster sur 8 en échec)",
+          "run 32548486495 (22/08/2026, 8 shards sur 8)",
+          "#511",
+          "#488",
+          "#501"
+        ],
+        "condition_reprise": "Un certificat valide sur archive.nossenateurs.fr (GET https://archive.nossenateurs.fr/senateurs/json en 200), ou une source Sénat de remplacement. À défaut de l'un des deux d'ici fin 2026, trancher la question éditoriale : retirer définitivement les deux groupes Sénat de cette config (leurs fiches publiées portent cohesion_votes: 0)."
+      }
     },
     {
       "roster_chambre": "senateurs",
@@ -65,7 +79,18 @@
       "groupe_nom": "Socialiste, Écologiste et Républicain",
       "chambre": "Senat",
       "legislature": null,
-      "fichier": "groupe-Senat-SER.json"
+      "fichier": "groupe-Senat-SER.json",
+      "extraction_suspendue": {
+        "depuis": "2026-08-24",
+        "motif": "Même cause que Senat:LR — la panne est la clé de fetch ('senateurs', None) entière, pas un groupe. Ce groupe est de surcroît clos depuis le 13/07/2009 (periode.fin), donc sans composition à rafraîchir.",
+        "references": [
+          "#516",
+          "run 32463926808 (21/08/2026)",
+          "run 32548486495 (22/08/2026)",
+          "#511"
+        ],
+        "condition_reprise": "Identique à Senat:LR — les deux entrées partagent la même source et se réactivent ensemble."
+      }
     }
   ]
 }

@@ -45,6 +45,16 @@ fichier : une donnée non résolue ne reçoit pas de valeur par défaut, elle
 Un seuil de rétrécissement chiffré a été écarté, pas oublié : voir
 docs/technical_decisions.md#roster-jamais-ecrit-vide.
 
+## Un groupe à l'extraction suspendue n'est pas interrogé (#516)
+
+Une entrée de `groupes_reels.json` portant `extraction_suspendue` sort des
+trois étages ci-dessus : sa clé de fetch n'est pas construite, ses membres ne
+sont pas collectés, et son absence n'est **pas** une anomalie — ce n'est pas
+une panne, c'est une décision écrite. Les deux entrées Sénat le sont depuis le
+24/08/2026 (certificat TLS expiré sur `archive.nossenateurs.fr`), ce qui
+faisait échouer tout le run, collecte AN comprise. Voir `groupes_config.py` et
+docs/technical_decisions.md#extraction-groupe-suspendue-516.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_roster_candidats.py \\
         --config raw_data/groupes_reels.json \\
@@ -60,12 +70,30 @@ from pathlib import Path
 from typing import Any, Optional
 
 from group_roster import _base_url_for, fetch_full_roster, filter_roster_by_sigle
+from groupes_config import (
+    libelle_groupe,
+    partitionner_groupes,
+    resume_suspension,
+)
 
 
 def _roster_key(groupe: dict[str, Any]) -> tuple[str, Optional[str]]:
     """Clé (roster_chambre, legislature) identifiant un fetch réseau partageable."""
     legislature = groupe.get("legislature") if groupe["roster_chambre"] == "deputes" else None
     return (groupe["roster_chambre"], legislature)
+
+
+def _actifs(groupes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Les groupes dont l'extraction n'est pas suspendue (#516).
+
+    Appliqué aux TROIS étages (fetch, aplatissement, anomalies) et pas
+    seulement dans `main()` : un groupe suspendu qui resterait visible d'un
+    seul d'entre eux rouvrirait sa clé de fetch (étage 1) ou déclencherait un
+    « 0 membre retenu » sur un roster qu'on n'a délibérément pas récupéré
+    (étage 3). La suspension n'a de sens que si les trois la voient.
+    """
+    actifs, _ = partitionner_groupes(groupes)
+    return actifs
 
 
 def fetch_rosters_bruts(groupes: list[dict[str, Any]]) -> dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]]:
@@ -75,7 +103,7 @@ def fetch_rosters_bruts(groupes: list[dict[str, Any]]) -> dict[tuple[str, Option
     import requests  # import tardif : non requis hors récupération réelle
 
     rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]] = {}
-    for groupe in groupes:
+    for groupe in _actifs(groupes):
         key = _roster_key(groupe)
         if key in rosters_bruts:
             continue
@@ -95,8 +123,11 @@ def _libelle_groupe(groupe: dict[str, Any]) -> str:
     `groupe_id` est renseigné sur les 7 groupes de `raw_data/groupes_reels.json`
     et distingue les deux `LR` (`AN:LR` et `Senat:LR`), ce que le seul sigle ne
     ferait pas. Repli sur `chambre:sigle` pour une config plus ancienne.
+
+    Délègue à `groupes_config.libelle_groupe` depuis #516 : les trois
+    consommateurs de la config nomment désormais un groupe de la même façon.
     """
-    return groupe.get("groupe_id") or f"{groupe.get('chambre')}:{groupe.get('groupe_sigle')}"
+    return libelle_groupe(groupe)
 
 
 def build_roster_candidats_detaille(
@@ -117,7 +148,7 @@ def build_roster_candidats_detaille(
     candidats_par_slug: dict[str, dict[str, Any]] = {}
     membres_par_groupe: dict[str, int] = {}
 
-    for groupe in groupes:
+    for groupe in _actifs(groupes):
         libelle = _libelle_groupe(groupe)
         membres_par_groupe.setdefault(libelle, 0)
         key = _roster_key(groupe)
@@ -174,7 +205,7 @@ def anomalies_roster(
             "en échec : la composition de ses groupes est INCONNUE, pas vide."
         )
 
-    for groupe in groupes:
+    for groupe in _actifs(groupes):
         if _roster_key(groupe) in cles_en_echec:
             # Déjà expliqué par la ligne ci-dessus ; le répéter par groupe
             # noierait la cause sous ses conséquences.
@@ -266,6 +297,21 @@ def main(argv: Optional[list[str]] = None) -> int:
     groupes = config.get("groupes") or []
     if not groupes:
         print(f"[!] Aucun groupe à agréger dans {config_path}.", file=sys.stderr)
+        return 1
+
+    # Une suspension se voit dans les logs du run qui la subit, jamais seulement
+    # dans la config (#516) : sans cette ligne, un roster amputé de 300 membres
+    # ressemble à un roster complet.
+    groupes_actifs, groupes_suspendus = partitionner_groupes(groupes)
+    for groupe in groupes_suspendus:
+        print(f"⏸  {resume_suspension(groupe)}", file=sys.stderr)
+    if not groupes_actifs:
+        print(
+            f"[!] Les {len(groupes_suspendus)} groupe(s) de {config_path} ont tous "
+            "leur extraction suspendue : il n'y a rien à agréger. Réactiver au "
+            "moins une entrée, ou ne pas appeler ce script.",
+            file=sys.stderr,
+        )
         return 1
 
     # Le fetch et l'aplatissement sont appelés séparément (et non via

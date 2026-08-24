@@ -15,6 +15,11 @@ pour chaque groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle
 La liste des groupes à générer est lue depuis un fichier de config JSON (par
 défaut raw_data/groupes_reels.json), validée manuellement (voir README §6).
 
+Une entrée portant `extraction_suspendue` est ignorée, sans compter comme un
+échec : sa fiche de groupe déjà publiée reste en place, gelée à sa dernière
+génération réussie (#516, voir groupes_config.py et
+docs/technical_decisions.md#extraction-groupe-suspendue-516).
+
 Usage (depuis la racine du dépôt) :
     python src/generate_group_profiles.py \\
         --config raw_data/groupes_reels.json \\
@@ -33,6 +38,7 @@ from typing import Any, Optional
 
 from group_profile import generate_groupe_profile_from_roster
 from group_roster import fetch_full_roster, filter_roster_by_sigle
+from groupes_config import partitionner_groupes, resume_suspension
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     charger as charger_amendements,
@@ -92,7 +98,18 @@ def generate_all(
     rosters_bruts: dict[tuple[str, Optional[str]], list[dict[str, Any]]] = {}
     echecs = 0
 
-    for groupe in groupes:
+    # Un groupe à l'extraction suspendue (#516) n'est ni fetché ni régénéré, et
+    # ce n'est PAS un échec : sa fiche déjà publiée reste sur le disque, gelée à
+    # sa dernière génération réussie. La compter en échec ferait sortir ce
+    # script en 1 à chaque run, donc échouer le job pour une décision écrite.
+    groupes_actifs, groupes_suspendus = partitionner_groupes(groupes)
+    for groupe in groupes_suspendus:
+        print(
+            f"⏸  {resume_suspension(groupe)} — fiche publiée laissée en l'état.",
+            file=sys.stderr,
+        )
+
+    for groupe in groupes_actifs:
         key = _roster_key(groupe)
         if key not in rosters_bruts:
             roster_chambre, legislature = key
@@ -204,7 +221,15 @@ def main(argv: Optional[list[str]] = None) -> int:
         validate=args.validate,
     )
 
-    print(f"→ {len(groupes) - echecs}/{len(groupes)} profil(s) de groupe généré(s).", file=sys.stderr)
+    # Le dénominateur est le nombre de groupes ACTIFS : rapporter 5/7 quand 2
+    # sont suspendus donnerait à lire un run à moitié raté (#516).
+    groupes_actifs, groupes_suspendus = partitionner_groupes(groupes)
+    suffixe = f" ({len(groupes_suspendus)} suspendu(s))" if groupes_suspendus else ""
+    print(
+        f"→ {len(groupes_actifs) - echecs}/{len(groupes_actifs)} profil(s) de groupe "
+        f"généré(s){suffixe}.",
+        file=sys.stderr,
+    )
     return 1 if echecs else 0
 
 
