@@ -102,6 +102,37 @@ def test_le_controle_suit_les_deux_passes_de_normalisation_pivot():
         "la passe pivot roster-driven doit précéder le contrôle.")
 
 
+def test_les_passes_pivot_n_ecrivent_pas_de_point_de_sauvegarde():
+    """La cause du run `32773067295` (24/08/2026), et pas seulement son symptôme.
+
+    `generate_all_profiles.py` écrit sa progression dans
+    `raw_data/profiles/.generation_checkpoint.json` sauf `--no-checkpoint` —
+    dans le répertoire même que ce contrôle inventorie. Les deux passes
+    `--pivot-only` de `merge-and-pivot` n'ont **rien à reprendre** (ni l'une ni
+    l'autre ne porte `--resume`) : le fichier n'y servait qu'à faire échouer le
+    contrôle, sur un run dont les 22 autres jobs étaient verts.
+
+    Le contrôle écarte désormais les fichiers cachés, mais le point de
+    sauvegarde reste lu par les six inventaires en `glob("*.json")` du dépôt —
+    `pathlib` remonte les fichiers cachés, contrairement au module `glob`.
+    """
+    code = _sans_commentaires(_bloc_job("merge-and-pivot"))
+    invocations = re.findall(
+        r"python3 src/generate_all_profiles\.py(?:[^\n]*\\\n)*[^\n]*", code)
+    passes_pivot = [i for i in invocations if "--pivot-only" in i]
+    assert len(passes_pivot) >= 2, (
+        "les deux passes pivot attendues ne sont plus dans le job.")
+    for passe in passes_pivot:
+        assert "--no-checkpoint" in passe, (
+            "une passe --pivot-only sans --no-checkpoint écrit "
+            "`raw_data/profiles/.generation_checkpoint.json`, que ce contrôle "
+            "rencontre juste après (#518).")
+        assert "--resume" not in passe, (
+            "cette passe reprend une progression : --no-checkpoint la "
+            "priverait de son point de reprise. Revoir le placement du "
+            "fichier plutôt que de retirer le drapeau.")
+
+
 def test_un_profil_non_publie_annule_le_commit():
     """Sans `exit 1`, le step afficherait le rapport et laisserait committer —
     c'est-à-dire exactement le run 32405297873, conclu en succès."""

@@ -1891,8 +1891,20 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # --no-checkpoint : une passe --pivot-only n'a rien à reprendre (pas
+          # de --resume ici, ni sur la passe roster qui suit). Sans ce drapeau,
+          # elle écrit `raw_data/profiles/.generation_checkpoint.json` — un
+          # fichier de progression DANS le répertoire des profils bruts — et le
+          # garde-fou « Collecté mais non publié » (#511), qui inventorie ce
+          # répertoire par nom de fichier, le comptait comme un brut sans pivot.
+          # Run 32773067295 (24/08/2026) : 22 jobs verts, commit annulé,
+          # `Slug(s) : .generation_checkpoint`. Le garde-fou écarte désormais
+          # les fichiers cachés ; ce drapeau supprime la cause, qui touchait
+          # aussi les six inventaires en `glob("*.json")` du dépôt (pathlib
+          # remonte les fichiers cachés, contrairement au module `glob`).
           python3 src/generate_all_profiles.py \
             --pivot-only \
+            --no-checkpoint \
             --enrich-parltrack \
             --parltrack-status-out parltrack-status.json \
             --workers 1 \
@@ -1951,8 +1963,10 @@ jobs:
           # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
           # dont l'indisponibilité a déjà bloqué trois chantiers.
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # --no-checkpoint : même raison que la passe précédente (#518).
           python3 src/generate_all_profiles.py \
             --pivot-only \
+            --no-checkpoint \
             --candidats raw_data/roster_candidats.json \
             --workers 1 \
             "${MERGE_FLAG[@]}"

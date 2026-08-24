@@ -242,7 +242,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"[!] Dossier introuvable : {profiles_dir}", file=sys.stderr)
         return 1
 
-    chemins = sorted(profiles_dir.glob("*.json"))
+    # `Path.glob` remonte les fichiers cachés, contrairement au module `glob` :
+    # sans ce filtre, `raw_data/profiles/.generation_checkpoint.json` gonflerait
+    # le compteur « ignorés sans acteur » (#518). Même convention que
+    # `merge_profile`, `scrutins_index`, `amendements_index`.
+    chemins = sorted(
+        c for c in profiles_dir.glob("*.json") if not c.name.startswith("."))
     if args.only:
         chemins = [p for p in chemins if p.stem == args.only]
 
