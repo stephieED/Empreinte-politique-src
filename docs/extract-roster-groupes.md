@@ -122,9 +122,12 @@ flowchart TD
     GR --> RC
 
     RC --> RCJ["raw_data/roster_candidats.json\n(non committe, produit UNE fois par run)"]
+    RC --> RBJ["raw_data/rosters_bruts.json\n(--rosters-bruts-out : la MEME collecte, avant filtrage)"]
 
     RCJ --> ART["artifact : roster-candidats\n(prepare-roster-matrix -> 8 shards + merge-and-pivot)"]
+    RBJ --> ART
     ART --> B["generate_all_profiles.py\n--candidats roster_candidats.json"]
+    ART --> GP["generate_group_profiles.py\n--rosters-bruts (zero fetch)"]
     B --> C["candidate_profile.py\nbuild_profile(chambre=deputes|senateurs)"]
 
     CACHE[".cache/\n(evite les re-telechargements)"] -. mise en cache .-> C
@@ -151,6 +154,16 @@ flowchart TD
 > divergent produisent un « collecté mais non publié » (#511) sans qu'aucune
 > étape n'échoue. Voir
 > `docs/technical_decisions.md#roster-unique-par-run-518`.  
+> **ZÉRO fetch résiduel depuis le second incident de #518** : le même artifact
+> porte aussi le roster **brut** (`--rosters-bruts-out` →
+> `generate_group_profiles.py --rosters-bruts`), qui était le dernier à
+> refetcher la liste — et le fetch sur lequel le run `32750929942` a perdu son
+> commit. Ce n'est pas qu'une requête de moins : la fiche de groupe était bâtie
+> sur une composition lue ~7 min après celle qui avait servi à collecter les
+> profils. Le plafond de lecture de `fetch_full_roster` lui est désormais
+> propre — `(15, 90)` au lieu des 15 s des pages par candidat, aucune réponse
+> de `/deputes/json` n'ayant été mesurée sous 10 s. Voir
+> `docs/technical_decisions.md#plafond-roster-et-commit-518`.  
 > **Provenance** : chaque profil produit ici porte `meta.provenance =
 > "roster_groupe"` — ne rétrograde jamais un profil `candidat_declare`
 > existant lors de la fusion (`merge_pivot_profile`), voir

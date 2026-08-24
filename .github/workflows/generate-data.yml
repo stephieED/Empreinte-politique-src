@@ -1289,14 +1289,31 @@ jobs:
       # Le `#518` reste dans ce commentaire et pas dans le `name:` : un `#` non
       # quoté dans un scalaire YAML ouvre un commentaire, et le nom du step
       # serait tronqué juste avant lui.
+      # `--rosters-bruts-out` publie AUSSI la liste avant filtrage par sigle.
+      # C'est ce qui supprime le dernier fetch du même roster dans un run,
+      # celui de `generate_group_profiles.py` — et avec lui la dernière
+      # divergence possible : jusqu'ici la fiche de groupe publiée décrivait
+      # une composition lue ~7 min après celle sur laquelle les profils
+      # avaient été collectés. Le run 32750929942 est mort sur ce fetch-là.
       - name: Roster du run — une seule construction pour tout le run
-        run: python3 src/generate_roster_candidats.py
+        run: |
+          python3 src/generate_roster_candidats.py \
+            --rosters-bruts-out raw_data/rosters_bruts.json
 
+      # Les DEUX fichiers dans le même artifact, et sous le même
+      # `if-no-files-found: error` : ils décrivent la même collecte, à la même
+      # seconde. En publier un sans l'autre rendrait au consommateur une
+      # composition de groupe qui n'est pas celle du corpus collecté.
+      # (Avec plusieurs chemins, l'action prend leur ancêtre commun `raw_data/`
+      # pour racine — les fichiers reviennent donc bien à leur place chez le
+      # consommateur qui télécharge dans `path: raw_data`.)
       - name: Roster du run — artifact
         uses: actions/upload-artifact@v6
         with:
           name: roster-candidats
-          path: raw_data/roster_candidats.json
+          path: |
+            raw_data/roster_candidats.json
+            raw_data/rosters_bruts.json
           if-no-files-found: error
 
       - name: Liste des shards roster
@@ -1921,7 +1938,8 @@ jobs:
         if: ${{ steps.roster_artifact.outcome == 'failure' }}
         run: |
           echo "::warning::Artifact roster-candidats absent : merge-and-pivot reconstruit le roster pour lui-même. Sa liste peut différer de celle sur laquelle les shards ont collecté (#518)."
-          python3 src/generate_roster_candidats.py
+          python3 src/generate_roster_candidats.py \
+            --rosters-bruts-out raw_data/rosters_bruts.json
 
       - name: Normalisation pivot roster-driven
         env:
@@ -1953,6 +1971,44 @@ jobs:
       # `overwrite_profiles` agit ici comme `fresh_run` (#440) : réintégrer des
       # membres depuis un fichier de groupe produit avec l'ancien schéma
       # ramènerait précisément les données que l'écrasement vise à remplacer.
+      #
+      # `--rosters-bruts` : la composition vient du roster que
+      # `prepare-roster-matrix` a collecté au début du run, pas d'un fetch
+      # propre à ce step. Deux raisons, et la seconde est la vraie (#518) :
+      #   - ce fetch est celui qui a tué le run 32750929942. Les 5 groupes AN
+      #     partagent la clé ('deputes','16') : un fetch raté = 5 échecs =
+      #     step rouge = commit skippé, pour ~452 profils de candidats
+      #     parfaitement collectés ;
+      #   - la fiche publiée décrivait une composition lue ~7 min APRÈS celle
+      #     qui a servi à collecter les profils. Une entrée/sortie de groupe
+      #     entre les deux, et la composition publiée diverge du corpus
+      #     collecté — sans qu'aucune étape n'échoue. Même défaut de
+      #     correction que le roster de candidats, fermé de la même façon.
+      # Une clé absente du fichier est fetchée normalement : le repli reste.
+      #
+      # SEUL LE CODE 2 EST TOLÉRÉ, et c'est la raison d'être du code 2.
+      #
+      # Même arbitrage que le step gouvernement ci-dessous (#427) : « roster
+      # indisponible » veut dire qu'AUCUNE fiche n'a été touchée — les versions
+      # committées sont intactes sur le disque. Faire tomber tout le job
+      # priverait alors le run du commit des ~452 profils de candidats et des
+      # profils de parti, qui sont corrects. Refuser qu'une donnée NON écrite
+      # annule la publication d'une donnée écrite, c'est ce que le run
+      # 32750929942 a fait faute de cette distinction.
+      #
+      # Le filtrage se fait ici, sur le code, et NON par un
+      # `continue-on-error: true` sur le step : celui-ci avalerait aussi le
+      # code 1 — une génération de groupe qui plante réellement —, ce qui
+      # annulerait la distinction que ce même step vient d'introduire et
+      # laisserait committer une fiche périmée sans que rien ne bloque. Le prix
+      # de ce choix est que le step reste VERT sur un code 2 ; ce qui rend la
+      # chose lisible n'est de toute façon pas sa couleur mais les annotations
+      # `::error::` de `generate_group_profiles.py`, qui nomment la clé de
+      # roster tombée et chaque fiche non régénérée (#518) — la couleur d'un
+      # step ne dit jamais laquelle.
+      #
+      # Aucune tolérance ajoutée par ailleurs : la section 4 du quality gate
+      # hard-faile toujours sur une fiche de groupe absente ou invalide.
       - name: Générer les profils de groupe parlementaire réel
         env:
           FRESH: ${{ inputs.cold_start }}
@@ -1960,11 +2016,21 @@ jobs:
         run: |
           MERGE_FLAG=()
           [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]] && MERGE_FLAG=(--merge-existing)
+          CODE=0
           python3 src/generate_group_profiles.py \
             --config raw_data/groupes_reels.json \
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/groupes \
-            --validate "${MERGE_FLAG[@]}"
+            --rosters-bruts raw_data/rosters_bruts.json \
+            --validate "${MERGE_FLAG[@]}" || CODE=$?
+          # 2 = EXIT_ROSTER_INDISPONIBLE : rien d'écrit, rien de perdu.
+          if [[ "$CODE" -eq 2 ]]; then
+            echo "### Profils de groupe (#518)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Roster indisponible : aucune fiche de groupe régénérée, les versions committées restent en place. Le run continue — voir les annotations \`ROSTER_INDISPONIBLE\` pour la clé de fetch et les fiches concernées." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          exit "$CODE"
 
       # Agrégation locale depuis les profils pivot déjà produits ci-dessus,
       # pas de roster réseau (gouvernement_roster.py) : contrairement au step

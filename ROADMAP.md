@@ -21,6 +21,14 @@ something is pending, not *why*.
   transité par artifact depuis `prepare-roster-matrix` — ce qui ferme aussi la
   divergence possible entre la liste des shards et celle de `merge-and-pivot`. Voir
   `technical_decisions.md#roster-unique-par-run-518`.
+- Le run `32750929942` (24/08/2026) a perdu son commit sur le **dernier** fetch de
+  roster du run, celui de `generate_group_profiles.py` : `fetch_full_roster` héritait
+  du plafond de 15 s des pages par candidat, alors qu'aucune réponse de
+  `/deputes/json` (814 Ko généré à la volée) n'a été mesurée sous 10 s.
+  **Corrigé en #518** : plafond propre `(15, 90)`, roster **brut** transité par le
+  même artifact, code de sortie 2 « roster indisponible » toléré par le step (et lui
+  seul), annotations `::error::` nommant la clé et les fiches sautées. Voir
+  `technical_decisions.md#plafond-roster-et-commit-518`.
 - Les anomalies de `generate_roster_candidats.py` et les slugs de
   `audit_collecte_non_publiee.py` restaient enterrés dans les logs de step : la seule
   annotation d'un run mort là-dessus était `Process completed with exit code 1`.

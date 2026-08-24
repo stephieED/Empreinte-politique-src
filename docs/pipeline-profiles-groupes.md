@@ -140,7 +140,15 @@ Repères d'implémentation UI_finale :
 
 - `group_profile.py` n'interroge pas le reseau: il agrege des profils locaux.
 - Le fetch roster est mutualise par `(chambre, legislature)` dans
-  `generate_group_profiles.py` pour eviter les appels redondants.
+  `generate_group_profiles.py` pour eviter les appels redondants — et en CI il
+  n'y en a **aucun** : `--rosters-bruts` relit le roster brut collecte au debut
+  du run (artifact `roster-candidats`). C'est ce qui garantit que la
+  composition publiee est celle du corpus collecte, et non une liste relue
+  ~7 min plus tard (#518, voir
+  `technical_decisions.md#plafond-roster-et-commit-518`).
+- Un roster indisponible fait sortir `generate_group_profiles.py` en **2**, pas
+  en 1 : aucune fiche n'a ete touchee, donc le run peut committer le reste. Un
+  vrai plantage de generation reste en 1 et fait echouer le step.
 - La logique groupe parlementaire reel est distincte de l'agregation editoriale
   par parti (`parti_profile.py`).
 - A ne pas confondre avec le job CI `extract-roster-groupes` : ce dernier

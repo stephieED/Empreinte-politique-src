@@ -74,6 +74,38 @@ def test_prepare_roster_matrix_construit_le_roster_et_le_publie():
     assert "raw_data/roster_candidats.json" in bloc
 
 
+def test_le_producteur_publie_aussi_le_roster_brut():
+    """#519 avait ramené 9 fetchs à 2 ; il en restait un, celui de
+    `generate_group_profiles.py`, et c'est lui qui a tué le run 32750929942.
+
+    Le roster BRUT (avant filtrage par sigle) part dans le même artifact : la
+    fiche de groupe cesse d'être bâtie sur une composition lue ~7 min après
+    celle qui a servi à collecter les profils.
+    """
+    bloc = _sans_commentaires(_bloc_job("prepare-roster-matrix"))
+    assert "--rosters-bruts-out raw_data/rosters_bruts.json" in bloc
+    step = _step_contenant(_bloc_job("prepare-roster-matrix"), f"name: {ARTIFACT}")
+    assert "raw_data/rosters_bruts.json" in step, (
+        "le roster brut est produit mais pas publié : `merge-and-pivot` "
+        "refetcherait (#518).")
+
+
+def test_le_repli_de_merge_and_pivot_produit_les_deux_fichiers():
+    """Un repli qui n'écrirait que le roster de candidats laisserait le step
+    groupes sans roster brut — donc en refetch, dans le job même où l'artifact
+    a manqué, c'est-à-dire au pire moment."""
+    step = _step_contenant(_bloc_job("merge-and-pivot"), SCRIPT)
+    assert "--rosters-bruts-out raw_data/rosters_bruts.json" in step
+
+
+def test_le_roster_brut_n_est_pas_committe():
+    """Il est régénéré à chaque run et pèse ~814 Ko par clé : committé, il
+    salirait l'arbre au `git rebase --autostash` du push et dériverait
+    silencieusement (même piège que #413 §5)."""
+    gitignore = (RACINE / ".gitignore").read_text(encoding="utf-8")
+    assert "raw_data/rosters_bruts.json" in gitignore
+
+
 def test_l_artifact_du_producteur_ne_peut_pas_etre_vide():
     """`if-no-files-found: ignore` publierait un artifact vide, que les
     consommateurs téléchargeraient avec succès — un roster absent deviendrait

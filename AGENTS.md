@@ -82,7 +82,8 @@ graph TD
   are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
   alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
   Never read a profile line by line; the format carries no meaning.
-- Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`.
+- Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`,
+  and **zero** in CI — the run's raw roster arrives by artifact (#518, see below).
 - Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
   from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
   once per batch (`generate_gouvernement_profiles.py`).
@@ -352,6 +353,30 @@ annotations via `src/gha.py` — **stdout only** (GitHub reads workflow commands
 else) and single-line. Guarded by `tests/test_ci_roster_unique_par_run.py`,
 `tests/test_roster_reprise_reseau.py`, `tests/test_annotations_gha.py`.
 See `docs/technical_decisions.md#roster-unique-par-run-518`.
+
+**Retrying under a ceiling set too low does not buy back the ceiling (#518, second
+incident)**: run `32750929942` lost its commit on the **last** roster fetch of the run —
+`generate_group_profiles.py` fetched its own. `fetch_full_roster` inherited
+`candidate_profile.TIMEOUT` (15 s), sized for per-candidate pages, while
+`/deputes/json` is **814 Ko generated on the fly**: measured over 24 calls, **no reply
+under 10 s**, fastest 10,7 s, median of successes ~16,7 s. The production ceiling sat
+**inside** the endpoint's response distribution. Now `group_roster._ROSTER_TIMEOUT =
+(TIMEOUT, 90)`, split `(connect, read)` like `gouvernement_textes` and `syceron_debates`
+— **connect unchanged**, it is what #516's deterministic `SSLError` verdict rides on.
+Three more rules, and the last two are the ones that keep a slow source from costing a
+commit: the run's **raw** roster ships in the same `roster-candidats` artifact
+(`--rosters-bruts-out` → `--rosters-bruts`), because a group sheet built on a roster read
+~7 min after the collection one diverges from the collected corpus with **no step
+failing**; `generate_group_profiles.py` returns **`EXIT_ROSTER_INDISPONIBLE = 2`** (same
+value as `generate_gouvernement_profiles.EXIT_COLLECTE_INCOMPLETE`) when *every* failure
+is "roster unavailable" — nothing written, committed sheets intact — and `1` as soon as a
+generation actually crashed; and the workflow step tolerates **only** code 2, in the
+shell. **Never put `continue-on-error: true` on that step**: it would swallow code 1 too
+and commit a stale sheet with nothing blocking. Failures are `::error::` annotations
+naming the fetch key and every skipped `groupe_id`. Guarded by
+`tests/test_roster_timeout_lecture.py`, `tests/test_rosters_bruts_transit.py`,
+`tests/test_groupes_roster_indisponible.py`.
+See `docs/technical_decisions.md#plafond-roster-et-commit-518`.
 
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
