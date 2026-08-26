@@ -72,6 +72,27 @@ seule trace qu'en gardait l'onglet de résumé était
 `Process completed with exit code 1`. Voir
 docs/technical_decisions.md#roster-unique-par-run-518.
 
+## Une anomalie nomme sa cause, et la suspension totale n'en est pas une (#524)
+
+Deux corrections, toutes deux sur ce qui se lit APRÈS coup :
+
+1. **l'exception voyage jusqu'à l'annotation**. `fetch_rosters_bruts` la
+   jetait après l'avoir affichée sur `stderr` ; `anomalies_roster`
+   reconstruisait ensuite son message depuis la seule clé. L'annotation disait
+   donc « en échec », jamais `HTTP 500`, jamais `SSLError`, jamais
+   `Read timed out` — et il fallait sonder l'endpoint à la main pour retrouver
+   ce que le run savait déjà (run `32876863499`, 3 jobs rouges sur un 500
+   immédiat et déterministe). Elle transite désormais dans le second membre
+   rendu par `fetch_rosters_bruts` ;
+2. **« tous les groupes suspendus » rend `EXIT_ROSTER_INDISPONIBLE` (2)**, pas
+   1. Suspendre les entrées AN comme les 2 entrées Sénat le sont depuis #516
+   est le remède documenté à une source en panne ; tant que ce cas sortait en
+   1, ce remède reproduisait l'échec qu'il devait éteindre, et il n'existait
+   aucun moyen de conclure un run vert pendant que NosDéputés répondait 500.
+   Les trois appelants du workflow tolèrent ce code et sautent la branche
+   roster. **Aucun roster à 0 candidat n'est jamais écrit** pour autant : ce
+   chemin n'écrit rien du tout, ce qui reste exactement l'interdit de #511.
+
 Le roster BRUT peut être publié avec (`--rosters-bruts-out`) : c'est ce qui
 supprime le DERNIER fetch de la même liste dans un run, celui de
 `generate_group_profiles.py`. Voir la section correspondante de
@@ -106,6 +127,43 @@ from groupes_config import (
 )
 
 
+# Code de retour distinct d'un échec ordinaire (1) : il n'y avait RIEN à
+# collecter, et c'est une décision écrite — pas une panne. Même valeur et même
+# sémantique que `generate_group_profiles.EXIT_ROSTER_INDISPONIBLE` et que
+# `generate_gouvernement_profiles.EXIT_COLLECTE_INCOMPLETE` (#427), pour que le
+# workflow les traite pareil : dégradé-mais-sûr, jamais une régression du code.
+#
+# #524 : sans lui, le remède documenté d'une source AN en panne — suspendre les
+# entrées AN de `groupes_reels.json` comme les 2 entrées Sénat le sont depuis
+# #516 — REPRODUISAIT l'échec qu'il est censé éteindre, puisque suspendre les 5
+# dernières entrées actives sortait ici en 1. Il n'existait alors aucun moyen
+# d'obtenir un run vert pendant que NosDéputés répondait 500.
+#
+# Ce que ce code ne dit JAMAIS : « écris un roster vide ». Rien n'est écrit sur
+# ce chemin, et l'appelant saute la branche roster au lieu de la nourrir avec 0
+# candidat — ce que #511 interdit.
+EXIT_ROSTER_INDISPONIBLE = 2
+
+#: Longueur au-delà de laquelle le message d'une exception est tronqué dans
+#: une anomalie. Une annotation GitHub Actions tient sur UNE ligne, dans une
+#: liste : un `HTTPError` porte l'URL complète et déborderait sur ce qui suit.
+_LONGUEUR_MAX_EXCEPTION = 200
+
+
+def resume_exception(exc: BaseException) -> str:
+    """`"HTTPError: 500 Server Error: … for url: …"` — type ET message (#524).
+
+    Le type seul ne distingue pas un 500 d'un 404 ; le message seul ne dit pas
+    qu'il s'agit d'un `SSLError` quand `requests` le formate en une phrase de
+    certificat. Les deux, aplatis sur une ligne et bornés, parce que la
+    destination est une annotation.
+    """
+    message = " ".join(str(exc).split()) or "aucun message"
+    if len(message) > _LONGUEUR_MAX_EXCEPTION:
+        message = message[: _LONGUEUR_MAX_EXCEPTION - 1] + "…"
+    return f"{type(exc).__name__}: {message}"
+
+
 def _roster_key(groupe: dict[str, Any]) -> tuple[str, Optional[str]]:
     """Clé (roster_chambre, legislature) identifiant un fetch réseau partageable."""
     legislature = groupe.get("legislature") if groupe["roster_chambre"] == "deputes" else None
@@ -125,13 +183,33 @@ def _actifs(groupes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return actifs
 
 
-def fetch_rosters_bruts(groupes: list[dict[str, Any]]) -> dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]]:
+def fetch_rosters_bruts(
+    groupes: list[dict[str, Any]],
+) -> tuple[
+    dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]],
+    dict[tuple[str, Optional[str]], Exception],
+]:
     """Récupère le roster complet (non filtré) de chaque (roster_chambre, legislature)
-    distinct présent dans `groupes`, un seul fetch réseau par clé. Une valeur `None`
-    signale un échec réseau pour cette clé."""
+    distinct présent dans `groupes`, un seul fetch réseau par clé.
+
+    Returns:
+        `(rosters_bruts, echecs)`. Dans `rosters_bruts`, une valeur `None`
+        signale un échec réseau pour cette clé ; `echecs` porte, pour chacune
+        de ces clés, **l'exception qui l'a causé**.
+
+    Le second membre est la correction de #524 : jusque-là l'exception était
+    affichée sur `stderr` puis JETÉE, et `anomalies_roster` reconstruisait son
+    message à partir de la seule clé. L'annotation `::error::` de #518 disait
+    donc « en échec » — jamais `HTTP 500`, jamais `SSLError`, jamais
+    `Read timed out`. Quatre runs sont morts là en une semaine, et il a fallu
+    sonder l'endpoint à la main pour retrouver la cause que le run
+    connaissait : l'annotation existe précisément pour éviter ce
+    téléchargement de log.
+    """
     import requests  # import tardif : non requis hors récupération réelle
 
     rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]] = {}
+    echecs: dict[tuple[str, Optional[str]], Exception] = {}
     for groupe in _actifs(groupes):
         key = _roster_key(groupe)
         if key in rosters_bruts:
@@ -141,9 +219,10 @@ def fetch_rosters_bruts(groupes: list[dict[str, Any]]) -> dict[tuple[str, Option
         try:
             rosters_bruts[key] = fetch_full_roster(roster_chambre, legislature=legislature)
         except (ValueError, requests.RequestException) as exc:
-            print(f"  [!] Récupération du roster impossible pour {key} : {exc}", file=sys.stderr)
+            print(f"  [!] Récupération du roster impossible pour {key} : {resume_exception(exc)}", file=sys.stderr)
             rosters_bruts[key] = None
-    return rosters_bruts
+            echecs[key] = exc
+    return rosters_bruts, echecs
 
 
 def _libelle_groupe(groupe: dict[str, Any]) -> str:
@@ -217,6 +296,7 @@ def anomalies_roster(
     rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]],
     membres_par_groupe: dict[str, int],
     candidats: list[dict[str, Any]],
+    echecs: Optional[dict[tuple[str, Optional[str]], Exception]] = None,
 ) -> list[str]:
     """Les raisons de NE PAS écrire le roster. Liste vide = écriture sûre.
 
@@ -224,14 +304,24 @@ def anomalies_roster(
     motifs sont ceux du docstring de module (#511), dans cet ordre — du plus
     causal au plus symptomatique, pour que le premier message affiché soit celui
     qui explique les autres.
+
+    `echecs` (#524) porte l'exception de chaque clé tombée, telle que
+    `fetch_rosters_bruts` l'a interceptée : c'est ce qui fait dire à
+    l'annotation `HTTPError: 500 …` plutôt qu'« en échec ». Optionnel — une
+    clé sans exception connue garde le message d'origine plutôt que d'inventer
+    une cause (AGENTS.md §2 règle 5).
     """
     anomalies: list[str] = []
+    echecs = echecs or {}
 
     cles_en_echec = {cle for cle, roster in rosters_bruts.items() if roster is None}
-    for chambre, legislature in sorted(cles_en_echec, key=lambda c: (c[0], c[1] or "")):
+    for cle in sorted(cles_en_echec, key=lambda c: (c[0], c[1] or "")):
+        chambre, legislature = cle
+        cause = echecs.get(cle)
+        precision = f" ({resume_exception(cause)})" if cause is not None else ""
         anomalies.append(
             f"récupération du roster ({chambre}, législature={legislature or 'courante'}) "
-            "en échec : la composition de ses groupes est INCONNUE, pas vide."
+            f"en échec{precision} : la composition de ses groupes est INCONNUE, pas vide."
         )
 
     for groupe in _actifs(groupes):
@@ -281,7 +371,7 @@ def build_roster_candidats(
 
 def generate_roster_candidats(groupes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Récupère les rosters réseau nécessaires puis construit la liste aplatie de candidats."""
-    rosters_bruts = fetch_rosters_bruts(groupes)
+    rosters_bruts, _ = fetch_rosters_bruts(groupes)
     return build_roster_candidats(groupes, rosters_bruts)
 
 
@@ -327,6 +417,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     config_path = Path(args.config)
+    out_path = Path(args.out)
     try:
         config = json.loads(config_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
@@ -345,24 +436,40 @@ def main(argv: Optional[list[str]] = None) -> int:
     for groupe in groupes_suspendus:
         print(f"⏸  {resume_suspension(groupe)}", file=sys.stderr)
     if not groupes_actifs:
-        print(
-            f"[!] Les {len(groupes_suspendus)} groupe(s) de {config_path} ont tous "
-            "leur extraction suspendue : il n'y a rien à agréger. Réactiver au "
-            "moins une entrée, ou ne pas appeler ce script.",
-            file=sys.stderr,
+        # #524 : « tous les groupes suspendus » est une DÉCISION, pas une
+        # anomalie — chacune de ces entrées porte `depuis`/`motif`/
+        # `references`/`condition_reprise`, que la gate de #516 exige en dur.
+        # Sortir en 1 faisait échouer le run pour cette décision, donc
+        # interdisait le seul remède documenté à une source en panne. Le code
+        # 2 dit à l'appelant de SAUTER la branche roster : rien n'est écrit,
+        # et surtout pas un roster à 0 candidat (#511).
+        message = (
+            f"ROSTER_SUSPENDU — les {len(groupes_suspendus)} groupe(s) de {config_path} "
+            "ont tous leur extraction suspendue : il n'y a rien à agréger, "
+            f"{out_path} n'est pas écrit et la branche roster du run est "
+            f"sautée (sortie {EXIT_ROSTER_INDISPONIBLE}). Réactiver au moins une entrée "
+            "pour la rouvrir."
         )
-        return 1
+        print(f"[!] {message}", file=sys.stderr)
+        # `warning` et non `error` : un run qui saute une branche délibérément
+        # suspendue n'a pas de défaut à signaler, mais l'onglet de résumé doit
+        # dire POURQUOI il ne publie aucun profil de roster — sans quoi la
+        # suspension devient invisible au bout de deux runs (#516).
+        gha.annoter("warning", message)
+        return EXIT_ROSTER_INDISPONIBLE
 
     # Le fetch et l'aplatissement sont appelés séparément (et non via
     # `generate_roster_candidats`) pour garder sous la main ce que chacun sait :
     # quelles clés ont échoué, et combien de membres chaque groupe a rendus.
     # C'est exactement l'information que la version jusqu'à #511 jetait avant
     # d'écrire son résultat vide.
-    rosters_bruts = fetch_rosters_bruts(groupes)
+    # `echecs` porte l'exception de chaque clé tombée (#524) : c'est elle que
+    # l'annotation nomme, et sans elle « en échec » était tout ce qu'un run
+    # mort laissait derrière lui.
+    rosters_bruts, echecs = fetch_rosters_bruts(groupes)
     candidats, membres_par_groupe = build_roster_candidats_detaille(groupes, rosters_bruts)
 
-    out_path = Path(args.out)
-    anomalies = anomalies_roster(groupes, rosters_bruts, membres_par_groupe, candidats)
+    anomalies = anomalies_roster(groupes, rosters_bruts, membres_par_groupe, candidats, echecs)
     if anomalies:
         for anomalie in anomalies:
             print(f"[!] {anomalie}", file=sys.stderr)

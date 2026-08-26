@@ -67,9 +67,13 @@ def test_un_echec_transitoire_est_retente_et_le_roster_est_rendu(transitoire):
     assert [m["slug"] for m in membres] == ["alice"]
 
 
-def test_un_5xx_est_retente():
+@pytest.mark.parametrize("statut", [502, 503, 504])
+def test_un_5xx_d_infrastructure_est_retente(statut):
+    """502/503/504 viennent d'un frontal ou d'un backend momentanément
+    indisponible : un second essai y change quelque chose. 500 non — voir
+    `test_un_500_ne_donne_droit_a_aucune_reprise`."""
     session = MagicMock()
-    session.get.side_effect = [_reponse_http(503), _reponse_ok()]
+    session.get.side_effect = [_reponse_http(statut), _reponse_ok()]
 
     membres = fetch_full_roster("deputes", legislature="16", session=session)
 
@@ -123,12 +127,36 @@ def test_un_404_ne_donne_droit_a_aucune_reprise():
     assert session.get.call_count == 1
 
 
+def test_un_500_ne_donne_droit_a_aucune_reprise():
+    """Un 500 de nosdeputes.fr n'est pas un aléa (#524).
+
+    L'en-tête de `group_roster` documente depuis toujours que
+    `/groupe/<SIGLE>/json` « renvoie systématiquement une erreur HTTP 500 » :
+    sur cette plateforme, un 500 est une SIGNATURE DE PANNE applicative, pas un
+    hoquet d'infrastructure. Le run 32876863499 l'a payé sur `/deputes/json` —
+    3 jobs morts en 8 s, soit 3 tentatives et 6 s de backoff sur des réponses
+    reçues en 0,4 s. Les reprises ne changeaient pas le verdict, elles ne
+    faisaient que retarder le message qui le nomme.
+    """
+    session = MagicMock()
+    session.get.return_value = _reponse_http(500)
+
+    with pytest.raises(requests.HTTPError):
+        fetch_full_roster("deputes", legislature="16", session=session)
+
+    assert session.get.call_count == 1
+
+
 def test_erreur_retentable_classe_les_quatre_familles():
     assert _erreur_retentable(requests.Timeout("t")) is True
     assert _erreur_retentable(requests.ConnectionError("c")) is True
     assert _erreur_retentable(requests.exceptions.SSLError("s")) is False
 
-    for statut, attendu in ((500, True), (503, True), (400, False), (429, False)):
+    for statut, attendu in (
+        (500, False),  # #524 — déterministe sur cette plateforme
+        (502, True), (503, True), (504, True),
+        (400, False), (429, False),
+    ):
         reponse = MagicMock()
         reponse.status_code = statut
         erreur = requests.HTTPError(str(statut))

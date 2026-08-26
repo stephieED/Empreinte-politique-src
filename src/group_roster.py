@@ -73,12 +73,22 @@ _LIST_ENDPOINT = {
 # 4 échecs et 4 succès sur la même URL, la signature d'un aléa transitoire.
 #
 # CE QUI EST RETENTÉ, et rien d'autre (voir `_erreur_retentable`) : timeout,
-# erreur de connexion, 5xx. Un `SSLError` (certificat expiré, cas Sénat de
-# #516) et un 4xx sont DÉTERMINISTES — les retenter ferait payer trois fois le
-# même verdict et retarderait d'autant le message qui nomme la panne. C'est la
-# même ligne de partage que `_get_payload`, et elle compte double ici : la
-# suspension d'extraction de #516 s'appuie sur un échec qui remonte VITE.
+# erreur de connexion, 502/503/504. Un `SSLError` (certificat expiré, cas Sénat
+# de #516), un 4xx et un **500** sont DÉTERMINISTES — les retenter ferait payer
+# trois fois le même verdict et retarderait d'autant le message qui nomme la
+# panne. C'est la même ligne de partage que `_get_payload`, et elle compte
+# double ici : la suspension d'extraction de #516 s'appuie sur un échec qui
+# remonte VITE.
 _ROSTER_MAX_ATTEMPTS = 3
+#: Codes 5xx retentés. **500 en est exclu** (#524) : sur cette plateforme, ce
+#: n'est pas un hoquet d'infrastructure mais la signature d'une panne
+#: applicative — l'en-tête de ce module documente depuis toujours que
+#: `/groupe/<SIGLE>/json` « renvoie systématiquement une erreur HTTP 500 », et
+#: le run 32876863499 a vu `/deputes/json` faire de même, 3 tentatives durant,
+#: sur des réponses reçues en 0,4 s. 502/503/504 restent retentés : ceux-là
+#: viennent d'un frontal ou d'un backend momentanément indisponible, pas de
+#: l'application, et un second essai y change quelque chose.
+_STATUTS_5XX_RETENTABLES = frozenset({502, 503, 504})
 #: Temporisation avant la n-ième reprise, multipliée par le rang de la
 #: tentative écoulée (2 s puis 4 s) : au pire 6 s d'attente ajoutés à un job
 #: qui en dure ~200, contre un run entier perdu.
@@ -195,12 +205,15 @@ def _erreur_retentable(exc: Exception) -> bool:
     placé en premier classerait un certificat expiré comme transitoire — et
     ferait exactement ce que la panne Sénat de #516 a montré qu'il ne faut pas
     faire.
+
+    Un **500** est traité comme déterministe (#524), au même titre : voir
+    `_STATUTS_5XX_RETENTABLES`.
     """
     if isinstance(exc, requests.exceptions.SSLError):
         return False
     if isinstance(exc, requests.HTTPError):
         statut = exc.response.status_code if exc.response is not None else None
-        return statut is not None and 500 <= statut < 600
+        return statut in _STATUTS_5XX_RETENTABLES
     return isinstance(exc, (requests.Timeout, requests.ConnectionError))
 
 
@@ -258,10 +271,10 @@ def fetch_full_roster(
     (voir generate_group_profiles.py) : filtrer ensuite le résultat avec
     `filter_roster_by_sigle`.
 
-    Un échec TRANSITOIRE (timeout, erreur de connexion, 5xx) est retenté
-    jusqu'à `_ROSTER_MAX_ATTEMPTS` fois, avec temporisation croissante (#518).
-    Un échec DÉTERMINISTE (certificat, 4xx) remonte à la première tentative :
-    voir `_erreur_retentable`.
+    Un échec TRANSITOIRE (timeout, erreur de connexion, 502/503/504) est
+    retenté jusqu'à `_ROSTER_MAX_ATTEMPTS` fois, avec temporisation croissante
+    (#518). Un échec DÉTERMINISTE (certificat, 4xx, **500**) remonte à la
+    première tentative : voir `_erreur_retentable`.
 
     Le plafond appliqué est `_ROSTER_TIMEOUT` — propre à ce fetch, pas celui
     des pages par candidat, dont la valeur tombait au milieu de la

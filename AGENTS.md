@@ -403,6 +403,30 @@ naming the fetch key and every skipped `groupe_id`. Guarded by
 `tests/test_groupes_roster_indisponible.py`.
 See `docs/technical_decisions.md#plafond-roster-et-commit-518`.
 
+**A source outage costs the roster branch, never the commit (#524)**: three
+amplifiers turned one 500 into a fully lost run (`32876863499`, 3 red jobs, the
+same mute annotation in all three). (a) `fetch_rosters_bruts` returns
+`(rosters_bruts, echecs)` — the **exception** reaches the `::error::`
+annotation (`HTTPError: 500 …`), flattened and capped by `resume_exception()`;
+reconstructing the message from the key alone is why the endpoint had to be
+probed by hand. (b) `merge-and-pivot`'s roster fallback tolerates codes **1 and
+2 in the shell** — nothing is written on either path — and `Normalisation pivot
+roster-driven` is gated on `hashFiles('raw_data/roster_candidats.json')`, on the
+**file**, not on a step's success. Never `continue-on-error: true`: it would
+swallow undocumented codes too (same rule as the groupes step). The skip is
+legitimate *because* `audit_collecte_non_publiee.py` stays armed — it is not
+bypassed. (c) "every group suspended" returns
+**`EXIT_ROSTER_INDISPONIBLE = 2`**, tolerated by all **three** callers, which
+then skip the roster branch: while it exited 1, suspending the AN entries — the
+documented remedy for an outage — reproduced the very failure it was meant to
+end. **A 0-candidate roster is still never written** (#511); an unreadable
+config keeps code 1. And a **500 is deterministic** on this platform
+(`_STATUTS_5XX_RETENTABLES = {502, 503, 504}`): retrying it only delayed the
+verdict the suspension decision rides on. Guarded by
+`tests/test_roster_cause_echec.py` and
+`tests/test_ci_cloisonnement_branche_roster.py`.
+See `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

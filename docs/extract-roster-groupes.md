@@ -187,8 +187,12 @@ flowchart TD
    groupes **actifs** de la config, il fait **un seul** fetch réseau
    (`group_roster.fetch_full_roster`) — partagé entre tous les groupes de la
    même chambre/législature. Ce fetch reprend jusqu'à 3 fois sur un échec
-   **transitoire** (timeout, `ConnectionError`, 5xx) et **jamais** sur un
-   verdict déterministe (`SSLError`, 4xx) : #518.
+   **transitoire** (timeout, `ConnectionError`, 502/503/504) et **jamais** sur
+   un verdict déterministe (`SSLError`, 4xx, **500**) : #518, #524. Un 500 de
+   `nosdeputes.fr` est une signature de panne applicative — l'endpoint
+   `/groupe/<SIGLE>/json` en renvoie un systématiquement —, pas un hoquet
+   d'infrastructure : le retenter ne change pas le verdict, il retarde le
+   message qui le nomme.
 3. Chaque roster brut est filtré côté client par `groupe_sigle`
    (`group_roster.filter_roster_by_sigle`), avec filtrage temporel
    additionnel pour le Sénat (`senat_periode_debut`, domaine d'archive
@@ -207,7 +211,23 @@ flowchart TD
    entière, soit 452 ou 300 membres sur 752. Voir
    `docs/technical_decisions.md#roster-jamais-ecrit-vide`. Chaque anomalie part
    aussi en annotation `::error::` depuis #518 — un run mort ici ne laissait
-   sinon que `Process completed with exit code 1`.
+   sinon que `Process completed with exit code 1` —, et **nomme sa cause**
+   depuis #524 (`HTTPError: 500 …`, `SSLError: …`, `Timeout: …`) : l'exception
+   était jusque-là affichée puis jetée, et l'annotation se réduisait à « en
+   échec ».
+6. **Trois codes de sortie, et ils ne veulent pas dire la même chose** (#524) :
+
+   | Code | Sens | Ce que fait l'appelant |
+   |---|---|---|
+   | `0` | roster écrit | poursuit la branche roster |
+   | `1` | collecte incomplète (§5) **ou** config illisible/vide | `merge-and-pivot` saute la branche roster et committe quand même ; les autres appelants rougissent |
+   | `2` | `EXIT_ROSTER_INDISPONIBLE` — **toutes** les entrées ont leur extraction suspendue (#516) | les **trois** appelants sautent la branche roster |
+
+   Aucun de ces codes n'écrit un roster à 0 candidat : `1` et `2` n'écrivent
+   rien du tout. Le filtrage se fait **sur le code, dans le shell** — jamais
+   par un `continue-on-error: true`, qui avalerait aussi un code non
+   documenté. Voir
+   `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`/`extract-senat`
    (`candidate_profile.py`, identité/mandats/votes/amendements via

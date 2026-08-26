@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from check_quality_gate import _report_groupes
 from generate_group_profiles import generate_all
 from generate_roster_candidats import (
+    EXIT_ROSTER_INDISPONIBLE,
     anomalies_roster,
     build_roster_candidats_detaille,
     fetch_rosters_bruts,
@@ -127,10 +128,11 @@ def test_roster_n_interroge_jamais_la_cle_d_un_groupe_suspendu(monkeypatch):
 
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster", fake_fetch_full_roster)
 
-    rosters_bruts = fetch_rosters_bruts([_GROUPE_AN, _GROUPE_SENAT])
+    rosters_bruts, echecs = fetch_rosters_bruts([_GROUPE_AN, _GROUPE_SENAT])
 
     assert interrogees == [("deputes", "16")]
     assert ("senateurs", None) not in rosters_bruts
+    assert echecs == {}
 
 
 def test_roster_suspendu_n_est_pas_une_anomalie_de_retrecissement():
@@ -168,10 +170,15 @@ def test_roster_ecrit_bien_le_fichier_malgre_un_groupe_suspendu(tmp_path, monkey
 
 
 def test_roster_refuse_une_config_entierement_suspendue(tmp_path, monkeypatch):
-    """Zéro groupe actif n'est pas « un roster vide » : c'est une config à revoir.
+    """Zéro groupe actif n'est pas « un roster vide » : c'est une décision écrite.
 
     Le distinguer importe — un roster vide écrit sans bruit est exactement
-    l'incident de #511.
+    l'incident de #511, et rien n'est écrit ici.
+
+    Le code de sortie est **2** depuis #524 (`EXIT_ROSTER_INDISPONIBLE`) et non
+    plus 1 : suspendre les entrées AN comme les 2 entrées Sénat le sont depuis
+    #516 est le remède documenté d'une source en panne. Tant que ce cas sortait
+    en 1, ce remède reproduisait l'échec qu'il devait éteindre.
     """
     config_path = tmp_path / "groupes_reels.json"
     config_path.write_text(json.dumps({"groupes": [_GROUPE_SENAT]}), encoding="utf-8")
@@ -184,8 +191,8 @@ def test_roster_refuse_une_config_entierement_suspendue(tmp_path, monkeypatch):
 
     rc = generate_roster_candidats_main(["--config", str(config_path), "--out", str(out_path)])
 
-    assert rc == 1
-    assert not out_path.exists()
+    assert rc == EXIT_ROSTER_INDISPONIBLE
+    assert not out_path.exists(), "aucun roster à 0 candidat n'est jamais écrit (#511)"
 
 
 # ---------------------------------------------------------------------------
