@@ -6,10 +6,15 @@ L'archive Syceron publie l'identifiant d'orateur **nu** (`<orateur><id>847629
 construisait donc vide depuis toujours : 0 des 789 interventions publiées à
 `f1fff09` venaient de Syceron, et le repli NosDéputés comblait le silence.
 
-Ces tests travaillent sur `tests/fixtures/syceron_reel_leg17.xml`, extraite de
-l'archive réelle (CRSANR5L17S2025O1N053.xml, 17e législature) — les deux
-fixtures précédentes décrivent un schéma que l'Assemblée nationale ne publie
-pas, et c'est précisément ce qui a rendu le défaut invisible aux tests.
+Ces tests travaillent sur des RÉDUCTIONS de l'archive réelle — les deux fixtures
+précédentes décrivaient un schéma que l'Assemblée nationale ne publie pas, et
+c'est précisément ce qui a rendu le défaut invisible aux tests. Elles sont
+retirées.
+
+La forme de l'identifiant est vérifiée sur les **trois** législatures collectées
+depuis le 26/08/2026 (archives complètes téléchargées, `content-length` vérifié) :
+`forme_inattendue` est à 0 sur chacune, et `id_acteur == "PA" + <orateur><id>`
+sur 1 232 692 des 1 235 317 paragraphes qui portent les deux.
 
 Aucun réseau, aucune lecture de `raw_data/` ni de `pivot_data/` : le ZIP servi à
 `iter_syceron_xml_files` est fabriqué en mémoire depuis la fixture.
@@ -28,7 +33,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import candidate_profile as cp
 from parse_syceron import parse_syceron_xml
 
-FIXTURE = Path(__file__).resolve().parent / "fixtures" / "syceron_reel_leg17.xml"
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURE = FIXTURES / "syceron_reel_leg17.xml"
+FIXTURE_ATTRIBUTION_REFUSEE = FIXTURES / "syceron_reel_leg17_attribution_refusee.xml"
 
 
 # --------------------------------------------------------------------------
@@ -66,12 +73,12 @@ def test_larchive_publie_lidentifiant_nu_et_le_prefixe_cote_a_cote():
         ("847629", "PA847629", "identifiant_nu_prefixe"),
         ("795310", "PA795310", "identifiant_nu_prefixe"),
         ("PA847629", "PA847629", "prefixe_deja_present"),
-        # Orateur collectif anonyme (« Un député du groupe LFI-NFP ») : 1 153
-        # occurrences sur la 17e. `PA0` n'existe pas — l'indexer fabriquerait un
-        # acteur.
+        # Orateur collectif anonyme (« Un député du groupe LFI-NFP ») : 7 580
+        # occurrences sur les trois archives. `PA0` n'existe pas — l'indexer
+        # fabriquerait un acteur.
         ("0", None, "orateur_collectif_anonyme"),
         ("000", None, "orateur_collectif_anonyme"),
-        # Pseudo-acteur de rôle, hors référentiel AN (304 occurrences). L'archive
+        # Pseudo-acteur de rôle, hors référentiel AN (977 occurrences). L'archive
         # écrit `id_acteur="PA-125799"` : syntaxiquement formé, ne résout rien.
         ("-125799", None, "pseudo_acteur_hors_referentiel"),
         # Paragraphe sans orateur : didascalie, applaudissements.
@@ -79,8 +86,8 @@ def test_larchive_publie_lidentifiant_nu_et_le_prefixe_cote_a_cote():
         ("", None, "absent"),
         ("   ", None, "absent"),
         (42, None, "absent"),
-        # Compteur-témoin : à 0 mesuré sur la 17e. Non nul, il dit que la forme
-        # de l'identifiant a de nouveau bougé sous le code.
+        # Compteur-témoin : à 0 mesuré sur les TROIS législatures. Non nul, il dit
+        # que la forme de l'identifiant a de nouveau bougé sous le code.
         ("PA12A", None, "forme_inattendue"),
         ("acteur/PA123", None, "forme_inattendue"),
     ],
@@ -94,6 +101,42 @@ def test_le_prefixage_ne_fabrique_jamais_un_acteur_a_partir_de_zero():
     ref, _ = cp._normaliser_orateur_id_syceron("0")
     assert ref is None
     assert ref != "PA0"
+
+
+@pytest.mark.parametrize(
+    "valeur, id_acteur, attendu, motif",
+    [
+        # Concordance : la source confirme le préfixage (1 232 692 paragraphes).
+        ("847629", "PA847629", "PA847629", "identifiant_nu_prefixe"),
+        # `id_acteur` absent : rien à contredire, le préfixage s'applique.
+        ("847629", None, "PA847629", "identifiant_nu_prefixe"),
+        ("847629", "", "PA847629", "identifiant_nu_prefixe"),
+        # La source REFUSE l'attribution (2 625 paragraphes sur les trois
+        # archives, dont 2 524 avec un `<nom>` citant deux orateurs).
+        ("335612", "PA0", None, "attribution_refusee_par_la_source"),
+        ("267306", "PA0", None, "attribution_refusee_par_la_source"),
+        ("923", "PA720746", None, "attribution_refusee_par_la_source"),
+        # Le refus ne s'applique qu'aux formes autrement résolubles : un orateur
+        # collectif reste un orateur collectif, quel que soit `id_acteur`.
+        ("0", "PA0", None, "orateur_collectif_anonyme"),
+        ("-125799", "PA-125799", None, "pseudo_acteur_hors_referentiel"),
+    ],
+)
+def test_lattribution_contredite_par_la_source_nest_jamais_forcee(valeur, id_acteur, attendu, motif):
+    """La source porte `id_acteur` à côté de l'identifiant nu : quand les deux se
+    contredisent, retenir l'identifiant présent fabriquerait une prise de parole
+    (§2 règle 2). Même arbitrage que sur les orateurs multiples."""
+    assert cp._normaliser_orateur_id_syceron(valeur, id_acteur) == (attendu, motif)
+
+
+def test_lattribution_refusee_est_lue_sur_larchive_reelle():
+    """Bout en bout sur la réduction verbatim du seul cas de la 17e législature."""
+    parsed = parse_syceron_xml(FIXTURE_ATTRIBUTION_REFUSEE.read_bytes())
+    inter = parsed["interventions"][0]
+    assert (inter["orateur_id_source"], inter["orateur_id_acteur"]) == ("335612", "PA0")
+    assert cp._normaliser_orateur_id_syceron(
+        inter["orateur_id_source"], inter["orateur_id_acteur"]
+    ) == (None, "attribution_refusee_par_la_source")
 
 
 # --------------------------------------------------------------------------
@@ -147,22 +190,80 @@ def test_active_lindex_se_remplit(cache_syceron, capsys):
     assert "PA-125799" not in index
     assert all(entree["orateur_id_source"].startswith("PA") for v in index.values() for entree in v)
 
-    # Défaut INDÉPENDANT de #510, mesuré sur la même archive et laissé en l'état
-    # ici : `parse_syceron._parse_interventions` fait `point.findall("paragraphe")`
-    # — non récursif — alors que les <point> sont imbriqués jusqu'à nivpoint 5.
-    # PA795310 parle dans le <point nivpoint="2"> de la fixture et reste donc
-    # invisible. 212 264 des 321 892 paragraphes de la 17e législature sont
-    # perdus ainsi, soit les deux tiers du débat. Ce test fige la mesure : le jour
-    # où le parcours devient récursif, il échoue et rappelle de revoir la
-    # volumétrie sur laquelle l'activation de #510 a été décidée.
-    assert "PA795310" not in index, (
-        "les <point> imbriqués restent hors du parseur : défaut distinct de #510"
+    # Le parcours des <point> imbriqués est corrigé depuis le 26/08/2026 :
+    # PA795310 ne parle que dans le <point nivpoint="2"> de la fixture, et il est
+    # désormais indexé. Le parcours d'origine ne voyait que 180 755 des 1 444 564
+    # paragraphes des trois archives (12,5 %).
+    assert "PA795310" in index, (
+        "les <point> imbriqués doivent être parcourus (défaut nº1 de #510)"
     )
 
     sortie = capsys.readouterr().out
     assert "identifiant_nu_prefixe=" in sortie
     assert "orateur_collectif_anonyme=" in sortie
     assert "pseudo_acteur_hors_referentiel=" in sortie
+
+
+def test_les_entrees_indexees_portent_leur_sujet(cache_syceron):
+    """Second défaut de #510 : `sujet` sortait à `None` sur 100 % des entrées.
+
+    Syceron REMPLACE la liste d'interventions dont `tags_thematiques` est dérivé
+    (`normalize_nosdeputes` lit `theme_officiel`, qui vaut `sujet`) : activer avec
+    un `sujet` universellement vide publierait un ordre de grandeur
+    d'interventions sans thème à la place de 789 qui en portent.
+    """
+    cp.activer_resolution_acteur_nu_syceron(True)
+    index = cp._build_acteur_interventions_syceron_index("17")
+
+    entrees = [e for v in index.values() for e in v]
+    assert entrees
+    assert any(e["sujet"] for e in entrees)
+    assert {e["sujet"] for e in entrees} == {
+        "Questions au Gouvernement",
+        "Accès à l’enseignement supérieur",
+    }
+
+
+def test_lattribution_refusee_est_comptee_dans_lindex(cache_syceron, capsys):
+    """Le refus de la source se compte comme les autres rejets, jamais en silence."""
+    cp.activer_resolution_acteur_nu_syceron(True)
+    xml_dir = cache_syceron / "xml" / "compteRendu"
+    for f in xml_dir.glob("*.xml"):
+        f.unlink()
+    xml_dir.joinpath("refusee.xml").write_bytes(FIXTURE_ATTRIBUTION_REFUSEE.read_bytes())
+
+    index = cp._build_acteur_interventions_syceron_index("17")
+
+    assert index == {}, "l'unique paragraphe est une attribution refusée par la source"
+    sortie = capsys.readouterr().out
+    assert "attribution_refusee_par_la_source=1" in sortie
+
+
+def test_un_index_sans_aucun_sujet_est_annonce(cache_syceron, capsys, monkeypatch):
+    """Compteur-témoin du second défaut (§2.5).
+
+    Un `sujet` vide partout est exactement l'état que #510 avait laissé —
+    invisible parce que rien ne le disait. Mesuré aujourd'hui : 88,0 % des
+    1 227 415 interventions indexables des trois archives portent un sujet.
+
+    On simule ici le déplacement du vocabulaire de la source (`code_grammaire`),
+    seule cause plausible d'un retour à 100 % de vides, plutôt que de fabriquer
+    un compte rendu qui n'existe pas — c'est la fixture inventée qui a produit
+    ce défaut.
+    """
+    import parse_syceron
+
+    monkeypatch.setattr(parse_syceron, "_CODE_GRAMMAIRE_SUJET", frozenset())
+    cp.activer_resolution_acteur_nu_syceron(True)
+
+    index = cp._build_acteur_interventions_syceron_index("17")
+
+    assert index, "les orateurs restent résolus : c'est le sujet qui manque"
+    assert all(not e["sujet"] for v in index.values() for e in v)
+    sortie = capsys.readouterr().out
+    assert "AUCUNE" in sortie
+    assert "sujet" in sortie
+    assert "#510" in sortie
 
 
 def test_les_deux_modes_nutilisent_pas_le_meme_fichier_dindex(cache_syceron):
@@ -231,25 +332,31 @@ def test_fetch_interventions_syceron_resout_le_deputes_par_son_url(cache_syceron
     assert all(i["legislature"] == "17" for i in interventions)
 
 
-def test_les_anciennes_fixtures_decrivent_un_schema_que_lan_ne_publie_pas():
-    """Garde-fou de contexte : ne pas réintroduire le schéma inventé.
+def test_le_sujet_est_desormais_lu_la_ou_la_source_le_publie():
+    """Second défaut de #510, corrigé : `sujet` sortait à `None` sur 100 % des
+    entrées parce que le parseur cherchait un `<titreStruct>` sous `<contenu>`,
+    qui n'y existe pas (0 occurrence sur les 162 073 points des trois archives).
 
-    `syceron_minimal.xml` et `syceron_missing_fields.xml` portent des `<id>PA…</id>`
-    et des `<titreStruct>` sous `<point>`. Ni l'un ni l'autre n'existe dans
-    l'archive : 0 occurrence de `<titreStruct>` sous `<contenu>` sur les 601
-    comptes rendus de la 17e, et 0 identifiant d'orateur préfixé. Elles restent
-    en place — elles couvrent la robustesse du parseur aux champs manquants —
-    mais aucune mesure ne doit plus être prise sur elles.
+    Le titre vit dans `<point><texte>`. `sujet` est désormais renseigné sur
+    **88,0 %** des 1 227 415 interventions indexables des trois archives — et le
+    reste à `None` là où la source ne publie qu'un intitulé de procédure, ce qui
+    est un résultat et non un défaut (§2 règles 5 et 8).
     """
     parsed = parse_syceron_xml(FIXTURE.read_bytes())
-    assert all(i["sujet"] is None for i in parsed["interventions"]), (
-        "sans <titreStruct>, `sujet` sort à None sur 100 % des 104 239 "
-        "interventions de la 17e — le titre du point vit dans <point><texte>"
-    )
-    assert all(i["type_detail"] == "debat" for i in parsed["interventions"])
+    assert any(i["sujet"] for i in parsed["interventions"])
+    assert {i["type_detail"] for i in parsed["interventions"]} == {"question_gouvernement"}
+
+
+def test_les_fixtures_inventees_restent_retirees():
+    """Garde-fou de contexte : ne pas réintroduire le schéma inventé.
+
+    `syceron_minimal.xml` et `syceron_missing_fields.xml` portaient des
+    `<id>PA…</id>` et des `<titreStruct>` sous `<point>` : ni l'un ni l'autre
+    n'existe dans l'archive. Le parseur a donc été validé contre sa propre
+    hypothèse, et c'est la cause commune de #510 et de ses deux défauts de
+    parseur. Elles sont retirées — les réintroduire, c'est réarmer la cause.
+    """
     for nom in ("syceron_minimal.xml", "syceron_missing_fields.xml"):
-        inventee = (FIXTURE.parent / nom).read_text(encoding="utf-8")
-        assert "<id>PA" in inventee, (
-            f"{nom} décrit le schéma inventé ; si elle change, relire #510 avant "
-            "d'en tirer une mesure"
+        assert not (FIXTURE.parent / nom).exists(), (
+            f"{nom} décrit un schéma inventé ; relire #510 avant de la réintroduire"
         )

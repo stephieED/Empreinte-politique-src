@@ -1,3 +1,18 @@
+"""Parseur XML Syceron — mesuré sur des RÉDUCTIONS de l'archive réelle (#510).
+
+Ce fichier travaillait sur `syceron_minimal.xml` et `syceron_missing_fields.xml`,
+deux fixtures écrites avant toute lecture de l'archive : elles portaient
+`<id>PA123456</id>` et un `<titreStruct><intitule>` sous `<point>`, or **ni l'un
+ni l'autre n'existe** — 0 identifiant d'orateur préfixé, et 0 `<titreStruct>` sous
+`<contenu>` sur les 162 073 points des législatures 15, 16 et 17. Le parseur était
+donc validé contre sa propre hypothèse, et c'est ce qui a laissé passer #510 puis
+ses deux défauts de parseur pendant toute la vie du projet.
+
+Les deux fixtures inventées sont retirées. Toute mesure se prend désormais sur des
+réductions **verbatim** de comptes rendus réels, obtenues en supprimant des frères,
+jamais en écrivant du balisage.
+"""
+
 import sys
 from pathlib import Path
 
@@ -7,272 +22,281 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from parse_syceron import parse_syceron_xml
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+STRUCTURE = "syceron_reel_leg17_structure.xml"
+ATTRIBUTION_REFUSEE = "syceron_reel_leg17_attribution_refusee.xml"
+IMBRICATION = "syceron_reel_leg17.xml"
 
 
 def _load(filename: str) -> bytes:
     return (FIXTURES / filename).read_bytes()
 
 
+@pytest.fixture(scope="module")
+def structure():
+    return parse_syceron_xml(_load(STRUCTURE))
+
+
 # ---------------------------------------------------------------------------
-# Fixture: syceron_minimal.xml
-# Compte rendu complet (etat=complet, version=JO) avec 3 interventions :
-#   point 1 "Questions au Gouvernement" → 2 paragraphes avec orateurs
-#   point 2 "Discussion générale…"      → 1 paragraphe avec orateur
+# 1. Métadonnées de séance
 # ---------------------------------------------------------------------------
 
-def test_minimal_seance_uid():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["uid"] == "CRSANR5L17S2025O1N037"
+def test_seance_uid(structure):
+    assert structure["seance"]["uid"] == "CRSANR5L17S2026O1N187"
 
 
-def test_minimal_seance_ref():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["seance_ref"] == "RUANR5L17S2025IDS28624"
+def test_seance_refs(structure):
+    assert structure["seance"]["seance_ref"] == "RUANR5L17S2026IDS30420"
+    assert structure["seance"]["session_ref"] == "SCR5A2026O1"
 
 
-def test_minimal_session_ref():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["session_ref"] == "SCR5A2025O1"
+def test_seance_date_iso(structure):
+    """`<dateSeance>20260331150000000</dateSeance>` → ISO."""
+    assert structure["seance"]["date"] == "2026-03-31"
 
 
-def test_minimal_date_iso():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["date"] == "2025-02-11"
+def test_seance_legislature_et_numero(structure):
+    assert structure["seance"]["legislature"] == "17"
+    assert structure["seance"]["numero_seance"] == "187"
 
 
-def test_minimal_legislature():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["legislature"] == "17"
+def test_seance_etat_et_version(structure):
+    assert structure["seance"]["etat"] == "complet"
+    assert structure["seance"]["version"] == "avant_JO"
 
 
-def test_minimal_numero_seance():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["numero_seance"] == "037"
-
-
-def test_minimal_etat():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["etat"] == "complet"
-
-
-def test_minimal_version():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["seance"]["version"] == "JO"
-
-
-def test_minimal_interventions_count():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert len(result["interventions"]) == 3
-
-
-def test_minimal_intervention_date_propagee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
-        assert i["date"] == "2025-02-11"
-
-
-def test_minimal_intervention_source_id_propagee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
-        assert i["source_id"] == "CRSANR5L17S2025O1N037"
-
-
-def test_minimal_premier_point_type_detail():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["type_detail"] == "question_gouvernement"
-
-
-def test_minimal_premier_point_sujet():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["sujet"] == "Questions au Gouvernement"
-
-
-def test_minimal_premier_orateur_id():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["orateur_id_source"] == "PA123456"
-
-
-def test_minimal_premier_orateur_nom():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["orateur_nom"] == "Jean Dupont"
-
-
-def test_minimal_premier_orateur_fonction():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["fonction"] == "député"
-
-
-def test_minimal_deuxieme_orateur_qualite_rapporteure():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][1]["fonction"] == "Rapporteure générale"
-
-
-def test_minimal_texte_non_nul():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["texte"] is not None
-    assert len(result["interventions"][0]["texte"]) > 10
-
-
-def test_minimal_troisieme_intervention_type_detail_loi():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][2]["type_detail"] == "loi"
-
-
-def test_minimal_troisieme_intervention_br_inline_normalise():
-    """La balise <br/> dans le texte doit être normalisée (remplacée par espace)."""
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    texte = result["interventions"][2]["texte"]
-    assert texte is not None
-    assert "<br" not in texte
-
-
-def test_minimal_format_prise_developpee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    # La 3e intervention est longue → format développé
-    assert result["interventions"][2]["format"] == "prise_de_parole_developpee"
-
-
-def test_minimal_format_reaction_courte():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    # La 1re intervention est courte → reaction_courte ou prise_developpee selon longueur
-    # On vérifie simplement que le champ est l'une des deux valeurs attendues.
-    assert result["interventions"][0]["format"] in ("reaction_courte", "prise_de_parole_developpee")
-
-
-def test_minimal_mots_cles_liste_vide():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
+def test_metadonnees_propagees_a_chaque_intervention(structure):
+    for i in structure["interventions"]:
+        assert i["date"] == "2026-03-31"
+        assert i["source_id"] == "CRSANR5L17S2026O1N187"
+        assert i["etat_compte_rendu"] == "complet"
+        assert i["version_compte_rendu"] == "avant_JO"
         assert i["mots_cles"] == []
-
-
-def test_minimal_source_url_none():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
         assert i["source_url"] is None
 
 
-def test_minimal_etat_compte_rendu_propagee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
-        assert i["etat_compte_rendu"] == "complet"
+# ---------------------------------------------------------------------------
+# 2. La forme réelle de l'identifiant d'orateur
+# ---------------------------------------------------------------------------
+
+def test_lidentifiant_dorateur_est_publie_nu(structure):
+    """`<orateur><id>721908</id>` — jamais `PA721908`, qui vit dans `id_acteur`."""
+    ids = [i["orateur_id_source"] for i in structure["interventions"] if i["orateur_id_source"]]
+    assert ids
+    assert all(not i.startswith("PA") for i in ids)
+    assert "721908" in ids
 
 
-def test_minimal_version_compte_rendu_propagee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    for i in result["interventions"]:
-        assert i["version_compte_rendu"] == "JO"
-
-
-def test_minimal_point_ordre_du_jour_propagee():
-    result = parse_syceron_xml(_load("syceron_minimal.xml"))
-    assert result["interventions"][0]["point_ordre_du_jour"] == "Questions au Gouvernement"
-    assert result["interventions"][2]["point_ordre_du_jour"] == "Discussion générale sur le projet de loi de finances pour 2025"
+def test_le_prefixe_est_publie_dans_lattribut_id_acteur(structure):
+    """La preuve du préfixage de #510 : la source écrit les deux formes côte à côte."""
+    for i in structure["interventions"]:
+        if i["orateur_id_source"] and i["orateur_id_acteur"]:
+            assert i["orateur_id_acteur"] == "PA" + i["orateur_id_source"]
 
 
 # ---------------------------------------------------------------------------
-# Fixture: syceron_missing_fields.xml
-# Compte rendu provisoire (avant_JO), champs manquants variés :
-#   point 1 : pas de titreStruct, paragraphe avec orateur sans qualite
-#   point 2 : titre présent, paragraphes sans orateur ou orateurs vide
-#   point 3 : titre présent, paragraphe avec orateur mais sans texte
+# 3. Le parcours : points frères, points imbriqués, conteneurs intermédiaires
 # ---------------------------------------------------------------------------
 
-def test_missing_seance_uid():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["uid"] == "CRSANR5L17S2025O1N079"
+def test_les_points_de_nivpoint_1_a_3_sont_des_freres_pas_des_descendants():
+    """La hiérarchie du sommaire n'est pas l'imbrication XML.
+
+    Mesuré sur la 17e : les 1 749 + 5 085 + 4 831 points de nivpoint 1, 2 et 3
+    sont tous à la profondeur XML 1. Un parcours qui ne suivrait que
+    l'imbrication rattacherait « Article 9 terdecies » à rien du tout.
+    """
+    brut = (FIXTURES / STRUCTURE).read_text(encoding="utf-8")
+    assert 'nivpoint="1"' in brut and 'nivpoint="2"' in brut and 'nivpoint="3"' in brut
+
+    parsed = parse_syceron_xml(_load(STRUCTURE))
+    chemins = {i["point_ordre_du_jour"] for i in parsed["interventions"]}
+    assert "Lutte contre les fraudes sociales et fiscales > Discussion des articles (suite) > Article 9 terdecies" in chemins
 
 
-def test_missing_seance_ref_none():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["seance_ref"] is None
+def test_les_paragraphes_des_points_imbriques_sont_vus():
+    """Le défaut nº1 de #510 : `point.findall("paragraphe")` n'était pas récursif.
+
+    Mesuré sur les trois archives, il ne voyait que 180 755 des 1 444 564
+    paragraphes (12,5 %). Dans `syceron_reel_leg17.xml`, PA795310 ne parle que
+    dans le `<point nivpoint="2">` imbriqué : il était invisible.
+    """
+    parsed = parse_syceron_xml(_load(IMBRICATION))
+    ids = {i["orateur_id_source"] for i in parsed["interventions"]}
+    assert "795310" in ids
 
 
-def test_missing_session_ref_none():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["session_ref"] is None
+def test_les_conteneurs_intermediaires_sont_traverses(structure):
+    """`<interExtraction>` porte 86 163 des 103 213 paragraphes d'un échantillon
+    de 200 comptes rendus de la 15e : ne pas le traverser perd la 15e entière."""
+    brut = (FIXTURES / STRUCTURE).read_text(encoding="utf-8")
+    assert "<interExtraction" in brut
+    assert len(structure["interventions"]) >= 10
 
 
-def test_missing_date_iso():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["date"] == "2025-03-18"
+def test_ouverture_et_fin_de_seance_restent_hors_perimetre(structure):
+    """Contrat inchangé : le périmètre reste « sous un `<point>` »."""
+    brut = (FIXTURES / STRUCTURE).read_text(encoding="utf-8")
+    assert "<ouvertureSeance" in brut
+    textes = [i["texte"] for i in structure["interventions"] if i["texte"]]
+    assert not any("La séance est ouverte" in t for t in textes)
 
 
-def test_missing_etat_provisoire():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["etat"] == "provisoire"
+# ---------------------------------------------------------------------------
+# 4. Le sujet : lu là où la source le publie, et jamais fabriqué
+# ---------------------------------------------------------------------------
+
+def test_le_titre_du_point_vit_dans_point_texte_pas_dans_titrestruct(structure):
+    """Défaut nº2 de #510 : `<titreStruct>` n'existe pas sous `<contenu>`.
+
+    Il existe, mais dans `<metadonnees><sommaire>` — la fixture le montre.
+    """
+    import xml.etree.ElementTree as ET
+    ns = "{http://schemas.assemblee-nationale.fr/referentiel}"
+    racine = ET.fromstring(_load(STRUCTURE))
+    metadonnees = racine.find(ns + "metadonnees")
+    contenu = racine.find(ns + "contenu")
+
+    assert list(metadonnees.iter(ns + "titreStruct")), "le sommaire réel en porte"
+    assert not list(contenu.iter(ns + "titreStruct")), (
+        "0 occurrence sur les 162 073 points des législatures 15, 16 et 17"
+    )
+    assert any(i["sujet"] for i in structure["interventions"])
 
 
-def test_missing_version_avant_jo():
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    assert result["seance"]["version"] == "avant_JO"
+def test_le_sujet_vient_du_point_qui_en_porte_un(structure):
+    """`QG_1_1` porte le sujet de la question, `TITRE_TEXTE_DISCUSSION` le texte
+    en discussion — mesurés comme les seuls codes de matière sur 30 322 points."""
+    par_sujet = {}
+    for i in structure["interventions"]:
+        par_sujet.setdefault(i["sujet"], []).append(i["point_code_grammaire"])
+
+    assert "Racisme envers les nouveaux élus" in par_sujet
+    assert "Lutte contre les fraudes sociales et fiscales" in par_sujet
 
 
-def test_missing_orateur_qualite_none_si_absent():
-    """Un orateur sans <qualite> doit avoir fonction=None (pas "")."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    # Premier paragraphe du point 1 : orateur sans qualite
-    inter = next(i for i in result["interventions"] if i["orateur_id_source"] == "PA999999")
-    assert inter["fonction"] is None
+def test_le_sujet_survit_aux_points_de_procedure_intercales(structure):
+    """Un paragraphe prononcé sous « Article 9 terdecies » garde pour sujet le
+    texte en discussion, pas l'intitulé de l'article."""
+    sous_article = [
+        i for i in structure["interventions"]
+        if (i["point_ordre_du_jour"] or "").endswith("Article 9 terdecies")
+    ]
+    assert sous_article
+    for i in sous_article:
+        assert i["sujet"] == "Lutte contre les fraudes sociales et fiscales"
 
 
-def test_missing_sujet_none_si_pas_titrestruct():
-    """Un point sans titreStruct doit produire sujet=None."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    inter = next(i for i in result["interventions"] if i["orateur_id_source"] == "PA999999")
+def test_un_intitule_de_procedure_ne_devient_jamais_un_sujet():
+    """§2 règle 8 : les tags thématiques ne sont pas des faits de procédure.
+
+    `sujet` alimente `theme_officiel` puis `tags_thematiques` : publier
+    « article 11 », « suspension et reprise de la séance » (1 009 occurrences sur
+    la 17e) ou « rappel au règlement » (788) y fabriquerait de faux thèmes. Le
+    titre reste lisible dans `point_ordre_du_jour`, qui est du contexte, pas un
+    thème — et `sujet` reste `None`, ce qui est un résultat, pas un défaut
+    (§2 règle 5). Mesuré : 12,0 % des 1 227 415 interventions indexables des
+    trois archives sont dans ce cas.
+    """
+    parsed = parse_syceron_xml(_load(ATTRIBUTION_REFUSEE))
+    inter = parsed["interventions"][0]
+    assert inter["point_ordre_du_jour"] == "Article 11 (appelé par priorité - suite)"
+    assert inter["point_code_grammaire"] == "DISC_ARTICLES_2_4"
     assert inter["sujet"] is None
-
-
-def test_missing_type_detail_debat_si_pas_titre():
-    """Sans titre, type_detail doit être "debat"."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    inter = next(i for i in result["interventions"] if i["orateur_id_source"] == "PA999999")
     assert inter["type_detail"] == "debat"
 
 
-def test_missing_paragraphe_sans_orateur_retenu_si_texte():
-    """Paragraphe sans orateur mais avec texte → intervention retenue (orateur_id_source=None)."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    no_orateur = [i for i in result["interventions"] if i["orateur_id_source"] is None and i["texte"] is not None]
-    assert len(no_orateur) >= 1
-
-
-def test_missing_orateur_id_none_si_absent():
-    """Les interventions sans orateur doivent avoir orateur_nom=None aussi."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    no_orateur = [i for i in result["interventions"] if i["orateur_id_source"] is None]
-    assert len(no_orateur) >= 1
-    for i in no_orateur:
-        assert i["orateur_nom"] is None
-
-
-def test_missing_paragraphe_texte_none_avec_orateur():
-    """Paragraphe avec orateur mais sans texte → texte=None, intervention retenue."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    inter = next(i for i in result["interventions"] if i["orateur_id_source"] == "PA111111")
-    assert inter["texte"] is None
-    assert inter["orateur_nom"] == "Sophie Bernard"
-
-
-def test_missing_aucun_champ_chaine_vide():
-    """Aucun champ scalaire ne doit être une chaîne vide."""
-    result = parse_syceron_xml(_load("syceron_missing_fields.xml"))
-    scalar_keys = ("date", "type_detail", "sujet", "texte", "fonction",
-                   "source_id", "seance_ref", "session_ref",
-                   "orateur_id_source", "orateur_nom", "point_ordre_du_jour",
-                   "etat_compte_rendu", "version_compte_rendu")
-    for inter in result["interventions"]:
-        for key in scalar_keys:
-            val = inter.get(key)
-            assert val != "", f"Champ '{key}' ne doit pas être une chaîne vide"
+def test_type_detail_vient_du_code_grammaire_avant_le_titre(structure):
+    """`QG_1_1` → `question_gouvernement`, sans regex sur la prose du titre."""
+    qg = [i for i in structure["interventions"] if i["point_code_grammaire"] == "QG_1_1"]
+    assert qg
+    for i in qg:
+        assert i["type_detail"] == "question_gouvernement"
 
 
 # ---------------------------------------------------------------------------
-# Robustesse : XML minimal sans contenu
+# 5. Ce que la source refuse d'attribuer
+# ---------------------------------------------------------------------------
+
+def test_attribution_contredite_par_la_source_exposee_telle_quelle():
+    """Le parseur transcrit, il n'arbitre pas : `id_acteur="PA0"` est rendu tel
+    quel à côté de l'identifiant nu. L'arbitrage est celui de
+    `candidate_profile._normaliser_orateur_id_syceron`."""
+    parsed = parse_syceron_xml(_load(ATTRIBUTION_REFUSEE))
+    assert len(parsed["interventions"]) == 1
+    inter = parsed["interventions"][0]
+    assert inter["orateur_id_source"] == "335612"
+    assert inter["orateur_id_acteur"] == "PA0"
+    # L'archive écrit une espace insécable après la civilité : transcrite telle quelle.
+    assert inter["orateur_nom"] == "M. Jean-Paul Lecoq"
+
+
+def test_orateurs_multiples_distincts_non_attribues():
+    """Correspondance ambiguë : on préfère ne rien attribuer.
+
+    Réduction du cas réel, avec la forme réelle de l'identifiant (nue).
+    """
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
+  <uid>CRSANR5L17S2026O1N187</uid>
+  <metadonnees><dateSeance>20260331150000000</dateSeance></metadonnees>
+  <contenu>
+    <point nivpoint="1" code_grammaire="TITRE_TEXTE_DISCUSSION">
+      <texte>Questions au gouvernement</texte>
+      <paragraphe id_acteur="PA0">
+        <orateurs>
+          <orateur><id>721908</id><nom>Mme la présidente</nom></orateur>
+          <orateur><id>842013</id><nom>M. le ministre</nom></orateur>
+        </orateurs>
+        <texte>Texte attribuable sans ambiguïté impossible.</texte>
+      </paragraphe>
+    </point>
+  </contenu>
+</compteRendu>""".encode("utf-8")
+    result = parse_syceron_xml(xml)
+    assert len(result["interventions"]) == 1
+    assert result["interventions"][0]["orateur_id_source"] is None
+    assert result["interventions"][0]["orateur_nom"] is None
+
+
+# ---------------------------------------------------------------------------
+# 6. Champs manquants — jamais "" ni 0
+# ---------------------------------------------------------------------------
+
+def test_qualite_absente_donne_none(structure):
+    """`<qualite />` vide → `fonction` à `None`, jamais `""` (§2 règle 5)."""
+    brut = (FIXTURES / STRUCTURE).read_text(encoding="utf-8")
+    assert "<qualite />" in brut
+    assert any(i["fonction"] is None for i in structure["interventions"])
+
+
+def test_aucun_champ_scalaire_nest_une_chaine_vide(structure):
+    scalar_keys = ("date", "type_detail", "sujet", "texte", "fonction",
+                   "source_id", "seance_ref", "session_ref",
+                   "orateur_id_source", "orateur_id_acteur", "orateur_nom",
+                   "point_ordre_du_jour", "point_code_grammaire",
+                   "etat_compte_rendu", "version_compte_rendu")
+    for inter in structure["interventions"]:
+        for key in scalar_keys:
+            assert inter.get(key) != "", f"Champ '{key}' ne doit pas être une chaîne vide"
+
+
+def test_texte_inline_normalise(structure):
+    """`<italique>`, `<br/>`, `<sup>` : contenu conservé, balise supprimée."""
+    textes = [i["texte"] for i in structure["interventions"] if i["texte"]]
+    assert textes
+    for t in textes:
+        assert "<" not in t
+
+
+def test_format_deduit_du_volume(structure):
+    formats = {i["format"] for i in structure["interventions"]}
+    assert formats <= {"reaction_courte", "prise_de_parole_developpee"}
+    assert "prise_de_parole_developpee" in formats
+
+
+# ---------------------------------------------------------------------------
+# 7. Robustesse
 # ---------------------------------------------------------------------------
 
 def test_xml_sans_contenu_retourne_liste_vide():
@@ -301,31 +325,17 @@ def test_xml_accepts_str_input():
     assert result["seance"]["uid"] == "CRSTEST"
 
 
-def test_multiple_orateurs_distincts_are_treated_as_ambiguous():
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
-<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
-  <uid>CRSTEST-AMBIGU</uid>
-  <metadonnees><dateSeance>20260101</dateSeance></metadonnees>
-  <contenu>
-    <point>
-      <titreStruct><intitule>Discussion generale</intitule></titreStruct>
-      <paragraphe>
-        <orateurs>
-          <orateur><id>PA1</id><nom>Jean Dupont</nom></orateur>
-          <orateur><id>PA2</id><nom>Jeanne Martin</nom></orateur>
-        </orateurs>
-        <texte>Texte attribuable sans ambiguïté impossible.</texte>
-      </paragraphe>
-    </point>
-  </contenu>
-</compteRendu>""".encode("utf-8")
-    result = parse_syceron_xml(xml)
-    assert len(result["interventions"]) == 1
-    assert result["interventions"][0]["orateur_id_source"] is None
-    assert result["interventions"][0]["orateur_nom"] is None
-
-
 def test_xml_malformed_raises():
     import xml.etree.ElementTree as ET
     with pytest.raises(ET.ParseError):
         parse_syceron_xml(b"<not valid xml")
+
+
+def test_les_fixtures_inventees_ne_reviennent_pas():
+    """Garde-fou de contexte : `syceron_minimal.xml` et `syceron_missing_fields.xml`
+    décrivaient un schéma que l'Assemblée nationale ne publie pas. Elles sont
+    retirées ; les réintroduire, c'est réarmer la cause de #510."""
+    for nom in ("syceron_minimal.xml", "syceron_missing_fields.xml"):
+        assert not (FIXTURES / nom).exists(), (
+            f"{nom} décrit un schéma inventé — relire #510 avant de la réintroduire"
+        )

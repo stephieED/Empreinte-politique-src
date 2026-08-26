@@ -589,38 +589,34 @@ WARNING_PREFIX_SOURCE_INJOIGNABLE = "source injoignable"
 # source PRIMAIRE des interventions était vide depuis toujours.
 #
 # Le correctif est livré INACTIF par défaut, et son activation est une décision
-# distincte, parce que ce qu'il déverrouille n'est pas prêt à être publié. Mesuré
-# le 20/08/2026 sur l'archive complète de la 17e législature (601 comptes rendus,
-# 55 772 428 octets, `content-length` vérifié) :
+# distincte, parce que ce qu'il déverrouille n'est pas prêt à être publié.
 #
-#   - l'index passe de **2 octets / 0 acteur** à **136,8 Mio / 673 acteurs /
-#     104 239 interventions** ;
-#   - sur le corpus de `d7d8fb1` (229 profils bruts, 209 pivot), 112 profils
-#     reçoivent des interventions : +21 767 entrées, +25,7 Mio de brut (×1,02) et
-#     +20,3 Mio de pivot (×1,20 au total, ×1,17 en médiane sur les profils
-#     touchés, ×6,8 au maximum) — pour la 17e SEULE, alors que
-#     `SYCERON_AVAILABLE_LEGISLATURES` en compte trois ;
-#   - `_build_acteur_interventions_syceron_index` relit l'index depuis le disque à
-#     CHAQUE candidat et pour CHAQUE législature : 1,56 s et 563 Mio de RSS par
-#     lecture d'un index de 136,8 Mio, soit ~4,7 s par candidat sur trois
-#     législatures, à imputer au budget de 240 s de #498/#500 qui avait été
-#     dimensionné sur une source rendant zéro.
+# Les deux défauts de parseur qui bloquaient l'activation sont corrigés depuis le
+# 26/08/2026 (parcours récursif des `<point>`, sujet lu là où la source le publie)
+# et les trois archives ont été téléchargées, ce que #510 n'avait pas pu faire —
+# la forme de l'identifiant est donc vérifiée sur TOUTES les législatures
+# collectées, pas seulement la 17e. Mesuré sur les trois archives complètes
+# (`content-length` vérifié : 148 954 869 / 57 553 703 / 55 772 428 octets) :
 #
-# Et surtout, deux défauts indépendants de celui-ci rendent la donnée impubliable
-# en l'état — tous deux mesurés sur la même archive, tous deux issus de la même
-# cause que #510 (les fixtures décrivent un schéma que l'AN ne publie pas) :
+#   | Législature | Comptes rendus | Interventions indexables | Acteurs | `sujet` |
+#   | --- | ---: | ---: | ---: | ---: |
+#   | 15 | 1 562 | 633 764 | 687 | 84,8 % |
+#   | 16 |   605 | 305 862 | 656 | 93,9 % |
+#   | 17 |   601 | 287 789 | 675 | 88,9 % |
+#   | **total** | **2 768** | **1 227 415** | — | **88,0 %** |
 #
-#   - `parse_syceron._parse_interventions` ne descend pas dans les `<point>`
-#     imbriqués (`point.findall("paragraphe")` au lieu d'un parcours récursif) :
-#     **212 264 des 321 892** paragraphes de la 17e sont invisibles, soit les
-#     deux tiers du débat ;
-#   - `<titreStruct>` n'existe pas sous `<contenu>` (**0** occurrence sur les 601
-#     comptes rendus ; le titre du point vit dans `<point><texte>`), donc `sujet`,
-#     `type_detail` et `theme_officiel` sortent respectivement à `None`, `"debat"`
-#     et `None` sur **100 %** des 104 239 entrées. Or Syceron REMPLACE la liste
-#     d'interventions NosDéputés (`profile["interventions"] = syceron_interventions`)
-#     et `tags_thematiques` est dérivé de cette liste : activer sans corriger cela
-#     publierait 104 239 interventions sans thème à la place de 789 qui en portent.
+# `forme_inattendue` — le compteur-témoin — est à **0 sur les trois**, et
+# `id_acteur == "PA" + <orateur><id>` sur **1 232 692 des 1 235 317** paragraphes
+# qui portent les deux. Le préfixage vaut donc pour les trois archives.
+#
+# Ce que l'activation coûterait, en revanche, a été multiplié par la correction
+# du parseur, pas réduit : là où #510 mesurait 104 239 interventions et 136,8 Mio
+# d'index pour la seule 17e, il y en a désormais **1 227 415 pour les trois**,
+# soit ~7,5 fois plus. Et `_build_acteur_interventions_syceron_index` relit
+# l'index depuis le disque à CHAQUE candidat et pour CHAQUE législature (1,56 s
+# et 563 Mio de RSS mesurés sur un index de 136,8 Mio) : le budget de 240 s de
+# #498/#500 avait été dimensionné sur une source rendant zéro, et la tranche par
+# acteur (`_scrutins_shard_path_acteur`, #392/#403) reste à écrire ici.
 #
 # Activer ce drapeau est donc un choix d'opérateur, pris en connaissance de ces
 # mesures : `--activer-interventions-syceron`.
@@ -638,13 +634,13 @@ AIDE_ACTIVER_INTERVENTIONS_SYCERON = (
     "Résoudre les identifiants d'orateur que l'archive Syceron publie NUS "
     "(<orateur><id>847629</id>) en acteurRef AN, et laisser ainsi la source "
     "PRIMAIRE des interventions alimenter réellement les profils (#510). "
-    "INACTIF par défaut : mesuré le 20/08/2026 sur la 17e législature complète, "
-    "l'activation fait passer l'index de 2 octets à 136,8 Mio (673 acteurs, "
-    "104 239 interventions) et ajoute +21 767 interventions / +20,3 Mio de pivot "
-    "au corpus de d7d8fb1 (×1,20) — pour UNE législature sur trois. Et deux défauts "
-    "indépendants (points imbriqués ignorés, <titreStruct> inexistant) font que "
-    "les entrées ainsi publiées seraient les deux tiers manquants et sans thème. "
-    "N'activer qu'en connaissance de ces mesures."
+    "INACTIF par défaut : mesuré le 26/08/2026 sur les TROIS archives complètes "
+    "(2 768 comptes rendus), l'activation indexerait 1 227 415 interventions "
+    "(633 764 sur la 15e, 305 862 sur la 16e, 287 789 sur la 17e) là où le corpus "
+    "en publie 789 aujourd'hui. L'index est relu à chaque candidat et pour chaque "
+    "législature (1,56 s / 563 Mio de RSS pour 136,8 Mio) : le budget de 240 s de "
+    "#500 a été dimensionné sur une source qui rendait zéro, et la tranche par "
+    "acteur reste à écrire. N'activer qu'en connaissance de ces mesures."
 )
 
 
@@ -4325,13 +4321,27 @@ def fetch_questions_officielles(
     return questions
 
 
-def _normaliser_orateur_id_syceron(valeur: Any) -> tuple[Optional[str], str]:
+def _normaliser_orateur_id_syceron(
+    valeur: Any,
+    id_acteur: Any = None,
+) -> tuple[Optional[str], str]:
     """Résout l'identifiant d'orateur Syceron en `acteurRef` AN (#510).
 
     Retourne `(acteur_ref, motif)`. `acteur_ref` est `None` dès que la valeur
     n'est pas rattachable à un acteur du référentiel AN ; `motif` nomme alors
-    laquelle des quatre formes observées a été rencontrée, pour que le rejet
+    laquelle des formes observées a été rencontrée, pour que le rejet
     soit **compté** et non muet (§2.5).
+
+    `id_acteur` est l'attribut que le `<paragraphe>` porte à côté de l'orateur.
+    Quand il est présent et qu'il **contredit** le préfixage, c'est la source
+    elle-même qui refuse l'attribution, et on la suit. Mesuré sur les trois
+    archives, 2 625 paragraphes sont dans ce cas, et 2 592 portent
+    `id_acteur="PA0"` — l'orateur collectif : **2 524** d'entre eux ont un
+    `<nom>` qui cite *deux* orateurs (« M. André Chassaigne et M. Jean-Paul
+    Lecoq ») alors que `<orateur><id>` ne porte que le premier ; les 68 autres
+    sont des interruptions que la source neutralise sans dire pourquoi. Retenir
+    l'identifiant présent fabriquerait une prise de parole (§2 règle 2) ; c'est
+    le même arbitrage que `parse_syceron._parse_orateur` sur orateurs multiples.
 
     **L'archive publie l'identifiant nu**, jamais préfixé : `<orateur><id>847629
     </id>`. Le motif `PA\\d+` appliqué à cette valeur échouait donc sur 100 % des
@@ -4341,44 +4351,54 @@ def _normaliser_orateur_id_syceron(valeur: Any) -> tuple[Optional[str], str]:
 
     Le préfixage n'est pas une inférence, il est **écrit dans la source** : le
     même `<paragraphe>` porte l'attribut `id_acteur="PA847629"` à côté de
-    `<orateur><id>847629</id>`. Mesuré sur les 601 comptes rendus de la 17e
-    législature (archive du 20/08/2026) : `id_acteur == "PA" + orateur/id` sur
-    **289 701 des 289 702** paragraphes portant les deux, et les **673** des 673
-    identifiants nus distincts se résolvent dans le référentiel
-    `acteurs_historique_an` (3 117 acteurs), dont 662 avec concordance de nom —
-    les 11 autres étant nommés par leur fonction (« Mme la présidente »), et
-    correctement identifiés.
+    `<orateur><id>847629</id>`. Mesuré sur les **trois** archives complètes
+    (2 768 comptes rendus, téléchargées le 26/08/2026) : `id_acteur ==
+    "PA" + orateur/id` sur **1 232 692 des 1 235 317** paragraphes portant les
+    deux — 636 594/638 901 sur la 15e, 307 086/307 403 sur la 16e, 289 015/289 016
+    sur la 17e. Les 673 des 673 identifiants nus distincts de la 17e se résolvent
+    par ailleurs dans le référentiel `acteurs_historique_an` (3 117 acteurs), dont
+    662 avec concordance de nom — les 11 autres étant nommés par leur fonction
+    (« Mme la présidente »), et correctement identifiés.
 
-    Trois formes ne sont **pas** des acteurs et sont écartées par construction,
+    Quatre formes ne sont **pas** des acteurs et sont écartées par construction,
     définitivement et sans warning individuel — même raisonnement que #474, où
     les 92 parlementaires en mission sont écartés sans trace parce que leur
     exclusion est le comportement attendu et permanent :
 
-    - `0` : orateur **collectif anonyme** (« Un député du groupe RN », 1 153
-      occurrences sur la 17e). L'indexer fabriquerait un acteur `PA0` inexistant ;
+    - `0` : orateur **collectif anonyme** (« Un député du groupe RN », 7 580
+      occurrences sur les trois archives). L'indexer fabriquerait un acteur `PA0`
+      inexistant ;
     - un identifiant **négatif** : pseudo-acteur de rôle, absent du référentiel
-      AN (304 occurrences ; l'archive écrit alors `id_acteur="PA-125799"`, une
+      AN (977 occurrences ; l'archive écrit alors `id_acteur="PA-125799"`, une
       valeur syntaxiquement formée mais qui ne résout rien) ;
-    - **absent** : paragraphe sans orateur (didascalie, applaudissements).
+    - **absent** : paragraphe sans orateur (didascalie, applaudissements) ;
+    - `attribution_refusee_par_la_source` : `id_acteur` contredit le préfixage
+      (2 625 occurrences, toutes des prises de parole à deux orateurs).
 
-    Reste `forme_inattendue`, à **0 mesuré** : c'est le compteur-témoin. Une
-    valeur non nulle signifierait que la forme de l'identifiant a de nouveau
-    bougé sous le code — exactement le défaut que cette fonction corrige.
+    Reste `forme_inattendue`, à **0 mesuré sur les trois législatures** : c'est le
+    compteur-témoin. Une valeur non nulle signifierait que la forme de
+    l'identifiant a de nouveau bougé sous le code — exactement le défaut que
+    cette fonction corrige.
     """
     if not isinstance(valeur, str) or not valeur.strip():
         return None, "absent"
     valeur = valeur.strip()
     if re.fullmatch(r"PA[1-9]\d*", valeur):
-        # Forme déjà préfixée : jamais observée sur la 17e, acceptée par
-        # tolérance au cas où une archive antérieure la publie ainsi.
-        return valeur, "prefixe_deja_present"
-    if re.fullmatch(r"0+", valeur):
+        # Forme déjà préfixée : jamais observée sur les trois archives, acceptée
+        # par tolérance au cas où une archive ultérieure la publie ainsi.
+        acteur_ref, motif = valeur, "prefixe_deja_present"
+    elif re.fullmatch(r"0+", valeur):
         return None, "orateur_collectif_anonyme"
-    if re.fullmatch(r"[1-9]\d*", valeur):
-        return "PA" + valeur, "identifiant_nu_prefixe"
-    if re.fullmatch(r"-\d+", valeur):
+    elif re.fullmatch(r"[1-9]\d*", valeur):
+        acteur_ref, motif = "PA" + valeur, "identifiant_nu_prefixe"
+    elif re.fullmatch(r"-\d+", valeur):
         return None, "pseudo_acteur_hors_referentiel"
-    return None, "forme_inattendue"
+    else:
+        return None, "forme_inattendue"
+
+    if isinstance(id_acteur, str) and id_acteur.strip() and id_acteur.strip() != acteur_ref:
+        return None, "attribution_refusee_par_la_source"
+    return acteur_ref, motif
 
 
 def _parse_syceron_intervention_entry(
@@ -4404,7 +4424,9 @@ def _parse_syceron_intervention_entry(
 
     valeur = intervention.get("orateur_id_source")
     if SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
-        acteur_ref, _motif = _normaliser_orateur_id_syceron(valeur)
+        acteur_ref, _motif = _normaliser_orateur_id_syceron(
+            valeur, intervention.get("orateur_id_acteur")
+        )
     else:
         acteur_ref = valeur if isinstance(valeur, str) and re.fullmatch(r"PA\d+", valeur) else None
     if acteur_ref is None:
@@ -4435,6 +4457,7 @@ def _parse_syceron_intervention_entry(
         "orateur_id_source": acteur_ref,
         "orateur_nom": intervention.get("orateur_nom"),
         "point_ordre_du_jour": intervention.get("point_ordre_du_jour"),
+        "point_code_grammaire": intervention.get("point_code_grammaire"),
         "etat_compte_rendu": intervention.get("etat_compte_rendu"),
         "version_compte_rendu": intervention.get("version_compte_rendu"),
         "legislature": legislature,
@@ -4468,12 +4491,12 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
       #498 — mais la ligne qui l'annonce, elle, est émise dans les deux cas.
 
     Les rejets sont **agrégés**, une ligne par législature, jamais un warning par
-    entrée : ils se comptent en milliers (mesuré sur la 17e, mode actif : 3 932
-    paragraphes sans orateur, 1 153 orateurs collectifs anonymes, 304
-    pseudo-acteurs hors référentiel, 0 forme inattendue). Un warning par entrée
-    serait pire que le silence — même arbitrage que #492, où un warning par
-    mandat aurait fait 214 occurrences là qu'un agrégat par profil dit la même
-    chose.
+    entrée : ils se comptent en dizaines de milliers (mesuré sur la 17e, mode
+    actif, parseur corrigé : 28 592 paragraphes sans orateur, 2 154 orateurs
+    collectifs anonymes, 312 pseudo-acteurs hors référentiel, 1 attribution
+    refusée par la source, 0 forme inattendue). Un warning par entrée serait pire
+    que le silence — même arbitrage que #492, où un warning par mandat aurait
+    fait 214 occurrences là qu'un agrégat par profil dit la même chose.
     """
     with _get_syceron_lock(legislature):
         nom_index = (
@@ -4492,6 +4515,7 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
         index: dict[str, list[dict[str, Any]]] = {}
         motifs: Counter[str] = Counter()
         fichiers_lus = 0
+        indexees_sans_sujet = 0
         for xml_path in iter_syceron_xml_files(legislature):
             try:
                 parsed = parse_syceron_xml(xml_path.read_bytes())
@@ -4500,12 +4524,17 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
             fichiers_lus += 1
             for idx, intervention in enumerate(parsed.get("interventions") or []):
                 if isinstance(intervention, dict):
-                    _, motif = _normaliser_orateur_id_syceron(intervention.get("orateur_id_source"))
+                    _, motif = _normaliser_orateur_id_syceron(
+                        intervention.get("orateur_id_source"),
+                        intervention.get("orateur_id_acteur"),
+                    )
                     motifs[motif] += 1
                 parsed_entry = _parse_syceron_intervention_entry(intervention, legislature, idx)
                 if parsed_entry is None:
                     continue
                 acteur_ref, record = parsed_entry
+                if not record.get("sujet"):
+                    indexees_sans_sujet += 1
                 index.setdefault(acteur_ref, []).append(record)
 
         # #505, même règle que pour les questions officielles : ne jamais mettre
@@ -4528,12 +4557,27 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
             f"{sum(len(v) for v in index.values())} intervention(s) — orateurs : {detail}"
         )
         if motifs.get("forme_inattendue"):
-            # Compteur-témoin : à 0 sur la 17e. Non nul, il dit que la forme de
-            # l'identifiant a de nouveau bougé sous le code (#510).
+            # Compteur-témoin : à 0 sur les trois législatures. Non nul, il dit
+            # que la forme de l'identifiant a de nouveau bougé sous le code (#510).
             print(
                 f"  [!] Débats Syceron (législature {legislature}) : "
                 f"{motifs['forme_inattendue']} identifiant(s) d'orateur d'une forme "
                 "non reconnue — la forme publiée par l'archive a changé (#510)."
+            )
+
+        # Second compteur-témoin, sur l'autre moitié de #510 : le sujet. Il est
+        # renseigné sur 88,0 % des 1 227 415 interventions indexables des trois
+        # archives (84,8 / 93,9 / 88,9 % par législature). À 100 % de vides, c'est
+        # que `code_grammaire` ou l'emplacement du titre ont bougé sous le code —
+        # et un `sujet` universellement `None` est précisément l'état que #510
+        # avait laissé, invisible parce que rien ne le disait (§2.5).
+        indexees = sum(len(v) for v in index.values())
+        if indexees and not indexees - indexees_sans_sujet:
+            print(
+                f"  [!] Débats Syceron (législature {legislature}) : AUCUNE des "
+                f"{indexees} interventions indexées ne porte de sujet. Le titre de "
+                "point n'est plus lu là où la source le publie (#510) — les tags "
+                "thématiques dérivés seraient vides."
             )
 
         if not index and SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
