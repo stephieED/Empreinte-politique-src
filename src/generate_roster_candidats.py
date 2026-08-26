@@ -295,7 +295,6 @@ def build_roster_candidats_detaille(
             raw_members,
             groupe["roster_chambre"],
             groupe["groupe_sigle"],
-            senat_periode_debut=groupe.get("senat_periode_debut"),
         )
         base_url = _base_url_for(groupe["roster_chambre"], key[1])
 
@@ -355,7 +354,6 @@ def membres_sans_slug(
             raw_members,
             groupe["roster_chambre"],
             groupe["groupe_sigle"],
-            senat_periode_debut=groupe.get("senat_periode_debut"),
         )
         for membre in roster:
             if membre.get("slug"):

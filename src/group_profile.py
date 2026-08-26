@@ -1221,20 +1221,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "Récupère la composition réelle du groupe via group_roster.py "
-            "(NosDéputés.fr/NosSénateurs.fr) au lieu des fichiers PROFIL.json."
+            "(AMO30 / NosDéputés.fr) au lieu des fichiers PROFIL.json."
         ),
     )
     parser.add_argument(
         "--roster-chambre",
-        choices=["deputes", "senateurs"],
+        choices=["deputes"],
         default=None,
-        help="Requis avec --from-roster : chambre interrogée pour la composition du groupe.",
-    )
-    parser.add_argument(
-        "--roster-senat-periode-debut",
-        default=None,
-        metavar="YYYY-MM-DD",
-        help="Avec --from-roster --roster-chambre senateurs : filtre les membres par date (voir group_roster.py).",
+        help=(
+            "Requis avec --from-roster : chambre interrogée pour la composition du "
+            "groupe. Seule valeur depuis #528 — le Sénat est hors périmètre."
+        ),
     )
     parser.add_argument(
         "--profiles-dir",
@@ -1471,29 +1468,17 @@ def generate_groupe_profile_from_roster(
             f"{', '.join(recovered_slugs)}. meta.couverture_roster.roster_total ne reflète "
             f"que le roster récupéré cette exécution, pas ces membres réintégrés."
         )
+    # #528 : la branche `roster_chambre == "senateurs"` a été retirée. Elle
+    # posait deux avertissements publiés (`fraicheur_donnees` sur
+    # archive.nossenateurs.fr, `couverture_roster_senat` sur l'impossibilité de
+    # distinguer les sénateurs en fonction des anciens) sur les deux fiches
+    # `groupe-Senat-*.json`. Ces fiches restent PUBLIÉES et FIGÉES, avec leurs
+    # avertissements : la suspension d'extraction de #516 les empêche d'être
+    # régénérées, et les retirer supprimerait un fichier publié — ce que
+    # `audit_diff_profils` bloque (#460/#470). Voir
+    # docs/technical_decisions.md#retrait-senat-528.
     if roster_chambre == "deputes":
         profil_groupe["meta"]["warnings"].append(_avertissement_fraicheur_an())
-    elif roster_chambre == "senateurs":
-        profil_groupe["meta"]["warnings"].append(
-            "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, "
-            "site arrêté par Regards Citoyens (plus de mise à jour, pas de champ "
-            "mandat_fin exploitable). Ce profil reflète donc la dernière donnée "
-            "disponible avant l'arrêt du site, pas nécessairement la composition "
-            "actuelle du Sénat (ex. incompatibilités liées à une fonction "
-            "ministérielle non détectables automatiquement)."
-        )
-        profil_groupe["meta"]["warnings"].append(
-            "couverture_roster_senat : sans mandat_fin exploitable (voir avertissement "
-            "fraicheur_donnees ci-dessus), _member_matches_legislature/senat_periode_debut "
-            "(group_roster.py) ne peut pas fiablement distinguer les sénateurs·rices "
-            "encore en fonction des anciens·nes sur ce roster — renseigner "
-            "senat_periode_debut ne comble pas cette lacune tant que mandat_fin n'est "
-            "pas exploitable pour la majorité des entrées archivées (décision "
-            "documentée dans docs/technical_decisions.md#senat-periode-debut). "
-            "cohesion_votes/effectif peuvent donc inclure des membres qui ne siègent "
-            "plus, avec un effet d'autant plus visible que la couverture des profils "
-            "(meta.couverture_roster) se rapproche de 100 %."
-        )
 
     if validate:
         errors = validate_profil_groupe(profil_groupe)
@@ -1538,7 +1523,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if args.from_roster:
         if not args.roster_chambre:
-            print("[!] --from-roster requiert --roster-chambre (deputes|senateurs).", file=sys.stderr)
+            print("[!] --from-roster requiert --roster-chambre (deputes).", file=sys.stderr)
             return 1
         from group_roster import fetch_group_roster  # import tardif : requests non requis hors ce mode
         import requests
@@ -1549,7 +1534,6 @@ def main(argv: Optional[list[str]] = None) -> int:
                 chambre=args.roster_chambre,
                 groupe_sigle=args.groupe_sigle,
                 legislature=legislature,
-                senat_periode_debut=args.roster_senat_periode_debut,
             )
         except (ValueError, requests.RequestException) as exc:
             print(f"[!] Récupération du roster impossible : {exc}", file=sys.stderr)

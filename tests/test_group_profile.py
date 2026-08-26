@@ -1358,26 +1358,18 @@ def test_build_groupe_profile_scale_200_membres_sans_lenteur_perceptible():
     assert duree < 5.0, f"build_groupe_profile trop lent à l'échelle ({duree:.2f}s) : régression possible"
 
 
-def test_from_roster_senat_warning_couverture_roster_senat_present(tmp_path):
-    """Un profil de groupe Sénat généré via --from-roster porte toujours un
-    avertissement explicite sur la limite de mandat_fin/senat_periode_debut
-    (voir docs/technical_decisions.md#senat-periode-debut) : ce comportement
-    doit être visible dans le profil, pas seulement découvert via l'audit."""
-    roster = [{"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2023-09-24", "mandat_fin": None, "actif": True}]
-    (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
-
-    profil_groupe = generate_groupe_profile_from_roster(
-        roster=roster,
-        groupe_id="Senat:LR", groupe_sigle="LR", groupe_nom="Les Républicains",
-        chambre="Senat", legislature=None, roster_chambre="senateurs",
-        profiles_dir=tmp_path,
-    )
-
-    assert any("couverture_roster_senat" in w for w in profil_groupe["meta"]["warnings"])
-
+# `test_from_roster_senat_warning_couverture_roster_senat_present` a été retiré
+# par #528 : la branche `roster_chambre == "senateurs"` de
+# `generate_groupe_profile_from_roster` est partie avec le Sénat. Les deux
+# fiches `groupe-Senat-*.json` restent PUBLIÉES et FIGÉES, avec leurs deux
+# avertissements — elles ne sont plus régénérées (suspension #516), et les
+# retirer supprimerait un fichier publié, ce que `audit_diff_profils` bloque
+# (#460/#470). Le test ci-dessous garde l'autre moitié : le warning ne doit pas
+# apparaître là où il n'a rien à faire.
 
 def test_from_roster_deputes_pas_de_warning_couverture_roster_senat(tmp_path):
-    """Le warning spécifique Sénat ne doit pas apparaître pour un roster AN."""
+    """Le warning spécifique Sénat ne doit pas apparaître pour un roster AN —
+    et depuis #528 il ne doit plus apparaître nulle part sur une génération."""
     roster = [{"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None, "actif": True}]
     (tmp_path / "alice.pivot.json").write_text(json.dumps(_pivot("nosdeputes:alice")), encoding="utf-8")
 

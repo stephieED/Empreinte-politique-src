@@ -64,7 +64,6 @@ Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-prof
 | Job | Périmètre |
 |---|---|
 | `extract-an` | Profils bruts AN |
-| `extract-senat` | Profils bruts Sénat |
 | `extract-ue-officiel` | Profils bruts UE (API officielle EP) |
 | **extract-parltrack** | Téléchargement de dumps `.zst` pour enrichissement pivot |
 | `merge-and-pivot` | Fusion des profils bruts + enrichissement ParlTrack + sorties pivot/groupes/partis |

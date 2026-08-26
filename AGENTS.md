@@ -144,15 +144,37 @@ writes the partial profile and declares the truncation in `meta.warnings[]`
 See `docs/technical_decisions.md#budget-collecte-interventions`.
 
 **Every collection path must declare what it does with interventions (#501)**:
-`extract-an` follows the input, `extract-roster-groupes` and `extract-senat`
-hard-code `--skip-interventions`. The Senate one collects nothing because
-nothing it collects is ever kept — `archive.nossenateurs.fr` publishes
-`url_nossenateurs`, `fetch_intervention_details` reads `url_nosdeputes`, so every
-Senate intervention is classified `mention` and dropped (0 of 789 published
-interventions come from the Senate). A new invocation of `generate_all_profiles.py`
-must be added to the inventory in `tests/test_ci_interventions_par_job.py` with its
-mode, and any job that ignores the input must be named in the input's description.
+`extract-an` follows the input, `extract-roster-groupes` hard-codes
+`--skip-interventions`. A new invocation of `generate_all_profiles.py` must be
+added to the inventory in `tests/test_ci_interventions_par_job.py` with its mode,
+and any job that ignores the input must be named in the input's description.
+The third path, `extract-senat`, is **gone** (#528, below): it collected nothing
+because nothing it collected was ever kept.
 See `docs/technical_decisions.md#interventions-senat-501`.
+
+**The Senate is out of scope, and the job that concluded green without producing
+anything is retired (#528, lot 3)**: `archive.nossenateurs.fr` has served an
+expired certificate since 24/08/2026 and no replacement source is **established**
+— `data.senat.fr`/`www.senat.fr` were never probed. The decision is **editorial**,
+not technical, and the measured data cost was near zero on the 476 committed
+profiles: **2** `sources[]` entries of type `nossenateurs`, **0** published Senate
+interventions, **0** `cohesion_votes` on both `groupe-Senat-*.json`. Removed:
+the `extract-senat` job, `--source senat` (`SOURCE_VALUES` is `("an","ue","all")`),
+`CHAMBRES = ["deputes"]`, `BASE_URLS["senateurs"]` with `fetch_votes` and
+`fetch_dossiers_for_legislatures`, `senat_periode_debut`, `docs/extract-senat.md`.
+**Kept**: the 2 published `groupe-Senat-*.json` (frozen — deleting a published
+file is a disappearance `audit_diff_profils` blocks), the 2 `groupes_reels.json`
+entries (still `extraction_suspendue`, `condition_reprise` rewritten to the
+editorial reopening, no longer to a certificate), the Senate mandates already
+collected on the 2 bicameral profiles (additive merge removes nothing), and the
+NosSénateurs ODbL attribution in the legal notice. **Declared loss**: the 2
+`sources[]` entries at the next regeneration (non-blocking, #460); a `cold_start`
+run additionally drops 1 `mandat` on each of the 2 profiles — a **watched stable
+list**, so that run needs `allow_declared_losses`. Three loud refusals guard the
+non-return (`build_profile`, `_base_url_for`, argparse), frozen by
+`tests/test_retrait_senat_528.py`. Reopening requires the three written
+conditions of `docs/technical_decisions.md#retrait-senat-528` §7 — a renewed
+certificate changes nothing.
 
 **Syceron publishes the speaker id BARE, and never indexed anything (#510)**:
 `<orateur><id>847629</id>`, matched against `re.fullmatch(r"PA\d+")` — so the
