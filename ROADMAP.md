@@ -151,16 +151,25 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
-- Lot 1b de l'épic « une seule source AN » : brancher `src/an_roster.py` (livré inactif
-  par #526) sur `generate_roster_candidats.py` / `generate_group_profiles.py`, publier
-  les 5 fiches de la 17e (156 profils à collecter) et câbler `--divergence` en CI.
-  Condition de retrait du double calcul écrite dans
-  `technical_decisions.md#roster-an-derive-amo30-526`.
+- Câbler `src/an_roster.py --divergence` dans `generate-data.yml` (prévu par #526 §6) :
+  demande d'ajouter `.cache/acteurs_historique_an` au cache de `prepare-roster-matrix`,
+  qui n'en a aucun et retélécharge donc 13,6 Mo par run depuis la bascule (#527).
+- Publier les 5 fiches de la 17e (#526 §4, clause 3 de la condition de retrait) suppose
+  156 slugs de plus dans `raw_data/correspondance_acteurs_an.json` — or cette table part
+  d'un slug **publié**, et AMO30 n'en fournit aucun. Il faut d'abord trancher comment un
+  slug naît quand la source n'en publie pas : `build_correspondance_acteurs_an.py` refuse
+  d'inventer (#525) et AGENTS §4 interdit un `id` fabriqué depuis un nom collecté.
 - 4 députés de la 16e connus d'AMO30 sont absents des fiches publiées faute de slug :
   `PA794914` (LR), `PA722070`, `PA719032`, `PA721522` (REN) — tous partis avant
-  2024-06-09. Leur donner une entrée dans `raw_data/correspondance_acteurs_an.json`, ou
-  une décision écrite de ne pas les publier, est le point 2 de la condition de retrait
-  de #526.
+  2024-06-09. Depuis #527 ils sont **nommés à chaque run** (annotation
+  `ROSTER_SANS_SLUG`) et comptés dans `meta.couverture_roster.roster_total`. Leur donner
+  une entrée dans `raw_data/correspondance_acteurs_an.json`, ou une décision écrite de ne
+  pas les publier, est la clause 2 de la condition de retrait de #526 §9 — la dernière
+  qui dépende d'une seule décision.
+- Retirer le double calcul de #526 (drapeau `AN_ROSTER_ACTIF`, repli
+  `fetch_full_roster_nosdeputes` côté Assemblée) une fois les deux points ci-dessus
+  soldés. Clause 1 déjà vérifiée à la bascule ; état complet dans
+  `technical_decisions.md#bascule-roster-an-amo30-527` §7.
 - `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
   `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test

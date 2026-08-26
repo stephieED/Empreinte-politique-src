@@ -1,4 +1,4 @@
-"""La composition des groupes AN dérivée d'AMO30, et son drapeau baissé (#526).
+"""La composition des groupes AN dérivée d'AMO30 (#526), et sa bascule (#527).
 
 Tout tourne sur `tests/fixtures/amo30_gp_leg16_17.zip`, **extraite de l'archive
 réelle** téléchargée le 26/08/2026 à
@@ -93,12 +93,25 @@ def _entrees_table(legislature=None):
 
 
 # --------------------------------------------------------------------------
-# 1. Le drapeau : livré baissé, et « baissé » veut dire refus bruyant
+# 1. Le drapeau : levé par #527, et « baissé » veut toujours dire refus bruyant
 # --------------------------------------------------------------------------
+#
+# Les deux verrous que le lot 1 avait posés ici — drapeau `False`, aucun
+# appelant dans `src/` — ont fait leur travail : ils ont obligé la bascule à
+# être une PR à elle seule. Ils ne disparaissent pas pour autant, ils changent
+# de valeur attendue. Un verrou qu'on retire le jour où il se déclenche
+# n'aurait rien gardé du tout.
 
-def test_le_drapeau_est_baisse_dans_le_source():
-    """Ce lot est livré INACTIF. Ce test fige cette inactivité (patron #510)."""
-    assert an_roster.AN_ROSTER_ACTIF is False
+def test_le_drapeau_est_leve_dans_le_source():
+    """La bascule du lot 1b (#527) EST cette ligne, et ce test la fige.
+
+    Le lot 1 figeait `False` pour que la bascule soit une décision prise seule ;
+    ce test fige `True` pour que le retour en arrière en soit une aussi. Un
+    `git revert` de la ligne fait échouer ce test, ce qui est exactement le
+    signal voulu : le repli NosDéputés existe, il ne s'emprunte pas par
+    inadvertance.
+    """
+    assert an_roster.AN_ROSTER_ACTIF is True
 
 
 @pytest.mark.parametrize(
@@ -113,31 +126,49 @@ def test_inactif_refuse_au_lieu_de_rendre_une_liste_vide(appel):
     """Un roster vide est indiscernable d'un groupe dissous, une fois écrit.
 
     C'est ce que #511 puis #524 ont payé : « collecte en échec » et « 0 membre »
-    doivent rester deux faits différents (AGENTS §2 règle 5).
+    doivent rester deux faits différents (AGENTS §2 règle 5). Le drapeau est
+    levé depuis #527, mais ce refus reste la seule réponse admise quand il est
+    baissé — c'est lui qui rend le repli sûr.
     """
     an_roster.activer_roster_an(False)
     with pytest.raises(an_roster.RosterAnInactif) as exc:
         appel()
-    assert "--activer-roster-an" in str(exc.value) or "activer_roster_an" in str(exc.value)
+    assert "activer_roster_an" in str(exc.value)
 
 
-def test_aucun_module_du_pipeline_n_appelle_ce_module():
-    """L'inactivité structurelle : personne ne l'importe encore (lot 1b).
+#: Modules de `src/` autorisés à importer `an_roster`, et la raison de chacun.
+#: Une liste, pas un `[]` : le verrou du lot 1 interdisait tout appelant, celui
+#: du lot 1b interdit tout appelant **imprévu**. C'est le même verrou, à la
+#: valeur près, et il continue de faire échouer la suite quand la source du
+#: roster gagne un consommateur en douce.
+APPELANTS_ATTENDUS = {
+    # L'aiguillage lui-même : `fetch_full_roster` délègue la clé `deputes`.
+    "group_roster.py",
+    # Le `meta.warnings` de fraîcheur d'une fiche AN doit NOMMER sa source ;
+    # il lit le drapeau plutôt que de l'écrire en dur (AGENTS §2 règle 2).
+    "group_profile.py",
+}
 
-    Un drapeau se lève par mégarde ; une absence d'appelant, non. Le jour où
-    `generate_roster_candidats.py` ou `generate_group_profiles.py` s'y
-    branchent, ce test échoue et rappelle que la bascule est une décision.
+
+def test_les_appelants_de_ce_module_sont_ceux_qu_on_attend():
+    """Qui dérive le roster AN, nommément (#526 lot 1 → #527 lot 1b).
+
+    Un drapeau se lève par mégarde ; une liste d'appelants, non. Le jour où un
+    troisième module s'y branche, ce test échoue et demande qu'on écrive
+    pourquoi.
     """
     import re
 
     importe = re.compile(r"^\s*(?:import an_roster|from an_roster import)", re.M)
-    appelants = sorted(
+    appelants = {
         chemin.name
         for chemin in (RACINE / "src").glob("*.py")
         if chemin.name != "an_roster.py" and importe.search(chemin.read_text(encoding="utf-8"))
-    )
-    assert appelants == [], (
-        f"{appelants} consomme(nt) an_roster : c'est la bascule du lot 1b, pas le lot 1."
+    }
+    assert appelants == APPELANTS_ATTENDUS, (
+        f"Appelants inattendus : {sorted(appelants - APPELANTS_ATTENDUS)} ; "
+        f"disparus : {sorted(APPELANTS_ATTENDUS - appelants)}. La source du "
+        "roster AN se gagne ou se perd un consommateur par décision écrite."
     )
 
 
@@ -148,9 +179,14 @@ def test_le_cli_annonce_le_drapeau_et_ses_mesures():
         text=True,
         check=True,
     ).stdout
-    assert "--activer-roster-an" in sortie
-    assert "#526" in an_roster.AIDE_ACTIVER_ROSTER_AN
-    assert "INACTIF" in an_roster.AIDE_ACTIVER_ROSTER_AN
+    # `--activer-roster-an` a disparu et ne doit PAS revenir : en `store_true`
+    # sur un drapeau déjà levé, il aurait baissé le drapeau à chaque appel qui
+    # l'omet — un défaut muet, du type que ce module refuse.
+    assert "--activer-roster-an" not in sortie
+    assert "--desactiver-roster-an" in sortie
+    assert "#527" in an_roster.AIDE_ROSTER_AN
+    assert "#526" in an_roster.AIDE_ROSTER_AN
+    assert not hasattr(an_roster, "AIDE_ACTIVER_ROSTER_AN")
 
 
 # --------------------------------------------------------------------------

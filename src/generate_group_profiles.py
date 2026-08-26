@@ -4,13 +4,20 @@ generate_group_profiles.py — Génère plusieurs profils de groupe parlementair
 réel en un seul run, en ne récupérant qu'UNE SEULE FOIS le roster complet de
 chaque chambre/législature (au lieu d'un fetch réseau par groupe).
 
-Contexte : NosDéputés.fr / NosSénateurs.fr n'exposent qu'un seul point d'accès
-« liste complète de la chambre » (pas de endpoint par groupe). Générer les 7
-groupes réels validés (5 AN + 2 Sénat) via group_profile.py --from-roster,
-appelé une fois par groupe, refait donc 5 fois le même téléchargement du
-roster AN (16e législature) et 2 fois le même roster Sénat. Ce script fetche
-une fois par (chambre, législature) distincte puis filtre localement par sigle
-pour chaque groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle).
+Contexte : la source d'un roster n'expose qu'un seul point d'accès « liste
+complète de la chambre » (pas de endpoint par groupe). Générer les 7 groupes
+réels validés (5 AN + 2 Sénat) via group_profile.py --from-roster, appelé une
+fois par groupe, referait donc 5 fois la même récupération du roster AN (16e
+législature) et 2 fois le même roster Sénat. Ce script récupère une fois par
+(chambre, législature) distincte puis filtre localement par sigle pour chaque
+groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle).
+
+Depuis #527, la clé `deputes` est dérivée d'AMO30 et non plus fetchée sur
+NosDéputés — l'aiguillage est dans `group_roster.fetch_full_roster`, rien ici
+n'a eu à changer pour cela hormis la liste des erreurs interceptées
+(`ERREURS_ROSTER`) : une archive AMO30 absente doit rester un « roster
+indisponible » nommé, donc un `exit 2` qui laisse les fiches publiées en
+place, et non une trace de pile qui annule le commit du run (#518).
 
 La liste des groupes à générer est lue depuis un fichier de config JSON (par
 défaut raw_data/groupes_reels.json), validée manuellement (voir README §6).
@@ -64,7 +71,12 @@ from typing import Any, NamedTuple, Optional
 
 import gha
 from group_profile import generate_groupe_profile_from_roster
-from group_roster import charger_rosters_bruts, fetch_full_roster, filter_roster_by_sigle
+from group_roster import (
+    ERREURS_ROSTER,
+    charger_rosters_bruts,
+    fetch_full_roster,
+    filter_roster_by_sigle,
+)
 from groupes_config import partitionner_groupes, resume_suspension
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
@@ -175,8 +187,6 @@ def generate_all(
     Retourne un `ResultatGeneration` : le compte seul ne dirait pas si le run a
     manqué de réseau ou de code, et c'est de cette distinction que dépend le
     code de sortie."""
-    import requests  # import tardif : non requis hors génération réelle
-
     # Index des scrutins chargé UNE fois pour tous les groupes (#432) : 17 422
     # scrutins, ~8,7 Mo — le relire par groupe multiplierait la lecture par 7
     # pour un contenu identique. Même logique que le fetch de roster partagé
@@ -235,7 +245,7 @@ def generate_all(
             print(f"→ Récupération du roster complet ({roster_chambre}, législature={legislature or 'courante'})…", file=sys.stderr)
             try:
                 rosters_bruts[key] = fetch_full_roster(roster_chambre, legislature=legislature)
-            except (ValueError, requests.RequestException) as exc:
+            except ERREURS_ROSTER as exc:
                 print(f"  [!] Récupération du roster impossible pour {key} : {exc}", file=sys.stderr)
                 rosters_bruts[key] = None
                 cles_indisponibles.append(key)

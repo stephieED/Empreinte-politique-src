@@ -1,6 +1,6 @@
 """Reprise sur échec transitoire du fetch de roster (#518).
 
-`fetch_full_roster` faisait **un seul essai**, là où `_get_payload` en fait
+`fetch_full_roster_nosdeputes` faisait **un seul essai**, là où `_get_payload` en fait
 trois pour les appels par candidat depuis longtemps. L'asymétrie a coûté 4
 shards sur 8 au run `32738726729` (24/08/2026) : la même URL, interrogée dans
 la même minute par 8 jobs, a répondu à 4 d'entre eux.
@@ -11,6 +11,12 @@ de partage** : on retente ce qui peut rendre autre chose (timeout, connexion,
 expiré ferait payer trois fois le même échec et retarderait d'autant le
 message qui nomme la panne — c'est exactement ce dont #516 avait besoin pour
 décider d'une suspension.
+
+Depuis #527 ces règles décrivent la lecture **NosDéputés/NosSénateurs** sous son
+propre nom, `fetch_full_roster_nosdeputes` : le Sénat en régime normal, et
+l'Assemblée seulement en repli, `group_roster.fetch_full_roster` dérivant
+désormais la clé `deputes` d'AMO30. Elles restent testées ici parce qu'un repli
+non testé n'est pas un repli.
 """
 
 import sys
@@ -23,7 +29,7 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import group_roster
-from group_roster import _ROSTER_MAX_ATTEMPTS, _erreur_retentable, fetch_full_roster
+from group_roster import _ROSTER_MAX_ATTEMPTS, _erreur_retentable, fetch_full_roster_nosdeputes
 
 
 @pytest.fixture(autouse=True)
@@ -61,7 +67,7 @@ def test_un_echec_transitoire_est_retente_et_le_roster_est_rendu(transitoire):
     session = MagicMock()
     session.get.side_effect = [transitoire, _reponse_ok()]
 
-    membres = fetch_full_roster("deputes", legislature="16", session=session)
+    membres = fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 2
     assert [m["slug"] for m in membres] == ["alice"]
@@ -75,7 +81,7 @@ def test_un_5xx_d_infrastructure_est_retente(statut):
     session = MagicMock()
     session.get.side_effect = [_reponse_http(statut), _reponse_ok()]
 
-    membres = fetch_full_roster("deputes", legislature="16", session=session)
+    membres = fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 2
     assert [m["slug"] for m in membres] == ["alice"]
@@ -91,7 +97,7 @@ def test_les_reprises_sont_plafonnees_et_l_erreur_remonte():
     session.get.side_effect = requests.Timeout("Read timed out")
 
     with pytest.raises(requests.Timeout):
-        fetch_full_roster("deputes", legislature="16", session=session)
+        fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == _ROSTER_MAX_ATTEMPTS
 
@@ -112,7 +118,7 @@ def test_un_certificat_expire_ne_donne_droit_a_aucune_reprise():
     session.get.side_effect = requests.exceptions.SSLError("CERTIFICATE_VERIFY_FAILED")
 
     with pytest.raises(requests.exceptions.SSLError):
-        fetch_full_roster("senateurs", session=session)
+        fetch_full_roster_nosdeputes("senateurs", session=session)
 
     assert session.get.call_count == 1
 
@@ -122,7 +128,7 @@ def test_un_404_ne_donne_droit_a_aucune_reprise():
     session.get.return_value = _reponse_http(404)
 
     with pytest.raises(requests.HTTPError):
-        fetch_full_roster("deputes", legislature="16", session=session)
+        fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 1
 
@@ -142,7 +148,7 @@ def test_un_500_ne_donne_droit_a_aucune_reprise():
     session.get.return_value = _reponse_http(500)
 
     with pytest.raises(requests.HTTPError):
-        fetch_full_roster("deputes", legislature="16", session=session)
+        fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 1
 
@@ -176,6 +182,6 @@ def test_le_chemin_nominal_ne_paie_aucune_reprise():
     session = MagicMock()
     session.get.return_value = _reponse_ok()
 
-    fetch_full_roster("deputes", legislature="16", session=session)
+    fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 1

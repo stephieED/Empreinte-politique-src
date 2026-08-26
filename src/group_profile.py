@@ -1315,6 +1315,50 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _avertissement_fraicheur_an() -> str:
+    """`meta.warnings` de fraîcheur d'une fiche AN — il doit NOMMER sa source.
+
+    C'est un champ **publié**, et la règle 2 d'AGENTS §2 (traçabilité totale)
+    ne souffre pas qu'il dise `www.nosdeputes.fr` pendant que la composition
+    vient d'AMO30. Le texte suit donc le drapeau de #527 plutôt que d'être écrit
+    en dur : les deux sources n'ont pas la même limite de fraîcheur, et c'est la
+    limite, pas le nom, qui intéresse un lecteur.
+
+    - **AMO30** est le référentiel de l'Assemblée elle-même : la 16e y est close
+      et complète, y compris les mandats qui se sont terminés en cours de
+      législature — ce que le miroir, qui ne publie que la dernière
+      appartenance connue, perdait (4 acteurs mesurés, #526 §2).
+    - **NosDéputés** s'est arrêté à la dissolution du 9 juin 2024, et il n'a
+      jamais servi la 17e.
+
+    Import de `an_roster` assumé ici : la seule alternative était de faire
+    descendre la source depuis `generate_group_profiles.py` à travers quatre
+    signatures, pour une information que le drapeau porte déjà.
+    """
+    import an_roster  # noqa: PLC0415 — voir docstring
+
+    if an_roster.AN_ROSTER_ACTIF:
+        return (
+            "fraicheur_donnees : composition dérivée du référentiel AMO30 de "
+            "l'Assemblée nationale (data.assemblee-nationale.fr, Licence "
+            "Ouverte), et non plus de www.nosdeputes.fr depuis #527. Une "
+            "législature close y est complète : les mandats terminés en cours "
+            "de législature y figurent, alors que la dernière composition "
+            "connue d'un miroir les perd. La fiche reflète donc l'appartenance "
+            "au groupe telle que l'Assemblée la publie à la date de "
+            "meta.genere_le ; un membre sans profil publié n'y apparaît pas "
+            "(voir meta.couverture_roster)."
+        )
+    return (
+        "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
+        "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
+        "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
+        "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
+        "dissolution, pas nécessairement la composition actuelle de "
+        "l'Assemblée nationale."
+    )
+
+
 def generate_groupe_profile_from_roster(
     *,
     roster: list[dict[str, Any]],
@@ -1428,14 +1472,7 @@ def generate_groupe_profile_from_roster(
             f"que le roster récupéré cette exécution, pas ces membres réintégrés."
         )
     if roster_chambre == "deputes":
-        profil_groupe["meta"]["warnings"].append(
-            "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
-            "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
-            "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
-            "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
-            "dissolution, pas nécessairement la composition actuelle de "
-            "l'Assemblée nationale."
-        )
+        profil_groupe["meta"]["warnings"].append(_avertissement_fraicheur_an())
     elif roster_chambre == "senateurs":
         profil_groupe["meta"]["warnings"].append(
             "fraicheur_donnees : composition dérivée de archive.nossenateurs.fr, "

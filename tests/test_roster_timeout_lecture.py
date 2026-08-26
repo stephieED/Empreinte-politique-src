@@ -8,7 +8,7 @@ avoir écrit une seule fiche. Le budget de temps désigne la cause : 3 × 15 s d
 timeout + 2 s + 4 s de backoff = 51 s, plus le démarrage. Les trois tentatives
 ajoutées par #519 avaient été **épuisées**.
 
-Elles l'ont été parce que `fetch_full_roster` héritait de
+Elles l'ont été parce que `fetch_full_roster_nosdeputes` héritait de
 `candidate_profile.TIMEOUT` (15 s), une constante dimensionnée pour les pages
 **par candidat** — quelques Ko, servies depuis un cache. `/deputes/json` fait
 814 Ko et est généré à la volée : son coût est presque tout entier du
@@ -76,7 +76,7 @@ def test_le_pire_cas_reste_tres_sous_le_timeout_du_job():
     assert pire_cas < 15 * 60
 
 
-def test_fetch_full_roster_applique_ce_plafond_et_pas_celui_des_candidats(monkeypatch):
+def test_fetch_full_roster_nosdeputes_applique_ce_plafond_et_pas_celui_des_candidats(monkeypatch):
     """Le test qui rend les précédents utiles : la constante peut être juste et
     l'appel continuer d'utiliser l'autre."""
     vus = []
@@ -94,7 +94,7 @@ def test_fetch_full_roster_applique_ce_plafond_et_pas_celui_des_candidats(monkey
 
     monkeypatch.setattr(group_roster.requests, "get", faux_get)
 
-    group_roster.fetch_full_roster("deputes", legislature="16")
+    group_roster.fetch_full_roster_nosdeputes("deputes", legislature="16")
 
     assert vus == [group_roster._ROSTER_TIMEOUT]
     assert vus != [TIMEOUT_PAR_CANDIDAT]
