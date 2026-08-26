@@ -33,8 +33,8 @@ CV_CandidatFR/
 |  |- parse_syceron.py               # AN Syceron XML parser -> interventions[]
 |  |- text_utils.py                  # Shared text helpers (normalisation, accent folding)
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
-|  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
-|  |- an_roster.py                   # Derive AN group composition from AMO30 (open data AN), incl. legislature 17 — INACTIVE flag (#526)
+|  |- group_roster.py                # Real group composition: picks the source (AMO30 for the AN since #527, NosSenateurs for the Senate)
+|  |- an_roster.py                   # AN group composition derived from AMO30 (open data AN), incl. legislature 17 — production source since #527
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- groupes_config.py              # Shared read of groupes_reels.json + temporary extraction suspension (#516)
 |  |- gouvernement_roster.py         # Ministerial roster of a government from local pivots (no network call)
@@ -311,30 +311,39 @@ arbitrer (2 homonymes, 2 apostrophes, 5 noms divergents, 1 hors AN). La
 couverture est un **échec dur** du quality gate (§5b), qui nomme le slug
 manquant. Voir `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 
-### Dériver la composition des groupes AN d'AMO30 (#526, **inactif**)
+### La composition des groupes AN vient d'AMO30 (#526 → bascule #527)
 
 `src/an_roster.py` reconstruit la composition des groupes de l'Assemblée à
 partir de l'open data AN (`AMO30_tous_acteurs_tous_mandats_tous_organes`), que
-le pipeline télécharge et met déjà en cache. Il tourne **à côté** de
-NosDéputés, il ne le remplace pas : la bascule est un lot séparé.
+le pipeline télécharge et met déjà en cache. Depuis #527 c'est **la** source
+AN : `group_roster.fetch_full_roster` y délègue toute clé `deputes`, et la
+lecture NosDéputés (`fetch_full_roster_nosdeputes`) ne sert plus que le Sénat.
 
 ```bash
 # Composition d'un groupe (sigle PUBLIÉ, pas le sigle AN)
-python3 src/an_roster.py --activer-roster-an --legislature 17 --sigle EPR
+python3 src/an_roster.py --legislature 16 --sigle REN
 
 # Écart avec les fiches publiées, entrée par entrée (compteur de migration)
-python3 src/an_roster.py --activer-roster-an --divergence
+python3 src/an_roster.py --divergence
 ```
 
-Sans `--activer-roster-an`, le module **refuse bruyamment** : il ne rend jamais
-une liste vide, qui serait indiscernable d'un groupe dissous. La table sigle
-publié → sigle(s) AN est committée dans `raw_data/groupes_reels.json`
-(`correspondance_sigles_an`), avec organes et effectifs **mesurés**. Mesuré le
-26/08/2026 : les 5 fiches de la 16e sont reproduites, écart total **4** — quatre
-députés partis avant la fin de la législature, nommés et datés, qu'AMO30 connaît
-et que NosDéputés ne publie plus. La 17e législature, absente de NosDéputés, est
-servie (461 membres sur les 5 familles publiées, 305 ont déjà un profil). Voir
-`docs/technical_decisions.md#roster-an-derive-amo30-526`.
+La table sigle publié → sigle(s) AN est committée dans
+`raw_data/groupes_reels.json` (`correspondance_sigles_an`), avec organes et
+effectifs **mesurés**. À la bascule : les 5 fiches de la 16e sont reproduites
+**à l'identique** (0 membre perdu ou gagné, agrégats inchangés, roster de
+candidats toujours à 452), et l'écart total reste **4** — quatre députés partis
+avant la fin de la législature, sans profil publié donc sans slug, qu'AMO30
+connaît et que NosDéputés ne publie plus. Ils sont désormais **nommés à chaque
+run** et comptés dans `meta.couverture_roster.roster_total`, qui passe de
+193/193 à 193/196 sur REN et de 62/62 à 62/63 sur LR : une couverture qui
+exclut ce qu'elle ne sait pas mesurer n'en est pas une.
+
+`--desactiver-roster-an` reproduit l'état d'avant la bascule ; le module
+**refuse alors bruyamment** plutôt que de rendre une liste vide, qui serait
+indiscernable d'un groupe dissous. La 17e législature, absente de NosDéputés,
+est servie par le module (461 membres sur les 5 familles publiées, 305 ont déjà
+un profil) mais **n'est pas encore publiée** — voir `ROADMAP.md`. Détail et
+mesures : `docs/technical_decisions.md#bascule-roster-an-amo30-527`.
 
 ### Vérifier que tout ce qui est collecté est publié (#511)
 

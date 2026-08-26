@@ -82,8 +82,11 @@ graph TD
   are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
   alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
   Never read a profile line by line; the format carries no meaning.
-- Groups from `groupes_reels.json`; `group_roster.py` = 1 fetch per `(chambre, legislature)`,
-  and **zero** in CI — the run's raw roster arrives by artifact (#518, see below).
+- Groups from `groupes_reels.json`; `group_roster.py` = 1 roster per `(chambre, legislature)`,
+  and **zero fetch** in CI — the run's raw roster arrives by artifact (#518, see below).
+  Since #527 the `deputes` key is **derived from AMO30**, not fetched from NosDéputés;
+  `fetch_full_roster` is the switch, and it is the only place in the repo that picks a
+  roster source.
 - Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
   from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
   once per batch (`generate_gouvernement_profiles.py`).
@@ -450,7 +453,40 @@ from `identite.source_url`. Guarded by `tests/test_correspondance_acteurs_an.py`
 (fixture only — the table is not in `tests.yml`'s sparse-checkout).
 See `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 
-**The AN group roster is derivable from AMO30, and ships inactive (#526)**:
+**The AN group roster now comes from AMO30 (#527, lot 1b)**: the flag below is
+`True`, and `group_roster.fetch_full_roster` delegates every `deputes` key to
+`an_roster.fetch_full_roster_an`. The NosDéputés read survives under its own
+name, `fetch_full_roster_nosdeputes` — the Senate in normal operation, the
+Assembly only if the flag goes back down. **The switch is that one line**, and
+its `git revert` is the whole insurance of the epic: no caller had to change,
+so none changes to go back. Measured on the 476 committed pivots: the **5
+published 16th-legislature sheets are reproduced identically** — 0 member lost
+or gained, `cohesion_votes`/`mandats_agreges`/`tags_thematiques_agreges`
+unchanged, roster of candidates still 452. The only move is
+`meta.couverture_roster.roster_total` on two sheets (193 → **196**, 62 → **63**),
+a *gain*: the 4 members the mirror dropped are now in the **denominator**, so
+coverage reads 98,5 % instead of a false 100 % (rule 7). Three consequences the
+one line does not carry alone: `ERREURS_ROSTER` unites both sources' failures,
+so an absent AMO30 archive stays a named « roster indisponible » (`exit 2`,
+committed sheets intact) instead of a stack trace costing the run's commit
+(#518/#524); a **slugless** member — impossible with NosDéputés, normal with
+AMO30 — is counted and named (`ROSTER_SANS_SLUG`, non-blocking) instead of
+being dropped without a word, the exact shape of #510's mute hole; and the
+**published** `fraicheur_donnees` warning follows the flag, because saying
+`www.nosdeputes.fr` while the composition comes from AMO30 breaks rule 2. **The
+double computation is NOT retired**: of #526 §9's three written clauses, only
+the first holds (`membres_sans_slug` = **4**, no 17th-legislature sheet
+published), and clause 3 is now known to require deciding *how a slug is born
+when the source publishes none* — a schema decision, not a collection pass.
+`generate-data.yml` is untouched: `prepare-roster-matrix` has no
+`.cache/acteurs_historique_an` entry and will download 13,6 Mo once per run,
+and `--divergence` is still not wired in CI. Guarded by
+`tests/test_bascule_roster_an_527.py` and the two **reversed** freeze tests of
+`tests/test_an_roster.py` (flag `True`; the set of `src/` importers is
+`{group_roster.py, group_profile.py}`, named, not empty).
+See `docs/technical_decisions.md#bascule-roster-an-amo30-527`.
+
+**The AN group roster is derivable from AMO30, and shipped inactive (#526)**:
 `src/an_roster.py` rebuilds a legislature's group composition from the archive
 `candidate_profile.py` already downloads and caches — same source as the ballots
 and the amendments, **Licence Ouverte** instead of ODbL, and it serves the **17th

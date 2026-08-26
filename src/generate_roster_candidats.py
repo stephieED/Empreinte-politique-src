@@ -98,6 +98,21 @@ supprime le DERNIER fetch de la même liste dans un run, celui de
 `generate_group_profiles.py`. Voir la section correspondante de
 `group_roster.py`.
 
+## La clé `deputes` vient d'AMO30, et ses membres sans slug sont NOMMÉS (#527)
+
+Ce script est inchangé sur la clé `senateurs`. Sur `deputes`,
+`group_roster.fetch_full_roster` dérive désormais la composition d'AMO30 : une
+seule source AN, la même que les scrutins et les amendements, et plus le miroir
+tiers dont trois lots consécutifs ont amorti les pannes (#518, #524).
+
+Une conséquence de la bascule tombe **ici** et pas ailleurs : AMO30 publie un
+`PA######`, pas un slug, et le slug vient de la table committée du lot 2
+(#525). Un membre qui n'y a pas d'entrée traversait l'aplatissement sans un mot
+— `build_roster_candidats_detaille` ignore un membre sans slug depuis toujours,
+mais NosDéputés n'en produisait aucun. `membres_sans_slug` les compte et les
+nomme (4 à la bascule, tous déclarés dans `raw_data/groupes_reels.json`), en
+`warning` : ils ne bloquent pas, ils cessent d'être invisibles.
+
 Usage (depuis la racine du dépôt) :
     python src/generate_roster_candidats.py \\
         --config raw_data/groupes_reels.json \\
@@ -115,6 +130,7 @@ from typing import Any, Optional
 
 import gha
 from group_roster import (
+    ERREURS_ROSTER,
     _base_url_for,
     ecrire_rosters_bruts,
     fetch_full_roster,
@@ -148,6 +164,12 @@ EXIT_ROSTER_INDISPONIBLE = 2
 #: une anomalie. Une annotation GitHub Actions tient sur UNE ligne, dans une
 #: liste : un `HTTPError` porte l'URL complète et déborderait sur ce qui suit.
 _LONGUEUR_MAX_EXCEPTION = 200
+
+#: Nombre de membres sans slug nommés dans l'annotation. Même contrainte qu'au
+#: dessus : une annotation tient sur une ligne. 4 aujourd'hui, tous nommés ; la
+#: borne existe pour que ce ne soit pas le jour où ils seront 200 qu'on
+#: découvre que l'annotation est illisible.
+_MAX_MEMBRES_NOMMES = 12
 
 
 def resume_exception(exc: BaseException) -> str:
@@ -194,8 +216,15 @@ def fetch_rosters_bruts(
 
     Returns:
         `(rosters_bruts, echecs)`. Dans `rosters_bruts`, une valeur `None`
-        signale un échec réseau pour cette clé ; `echecs` porte, pour chacune
-        de ces clés, **l'exception qui l'a causé**.
+        signale un échec de récupération pour cette clé ; `echecs` porte, pour
+        chacune de ces clés, **l'exception qui l'a causé**.
+
+    Depuis #527 la clé `deputes` ne fait plus d'appel réseau vers NosDéputés :
+    `fetch_full_roster` la dérive d'AMO30. Les échecs interceptés sont donc
+    ceux de `group_roster.ERREURS_ROSTER` — archive indisponible ou table de
+    sigles incomplète autant que timeout HTTP. Ce qu'ils deviennent ensuite est
+    inchangé : `None` pour la clé, l'exception dans `echecs`, une anomalie
+    nommée, aucun roster écrit (#511).
 
     Le second membre est la correction de #524 : jusque-là l'exception était
     affichée sur `stderr` puis JETÉE, et `anomalies_roster` reconstruisait son
@@ -206,8 +235,6 @@ def fetch_rosters_bruts(
     connaissait : l'annotation existe précisément pour éviter ce
     téléchargement de log.
     """
-    import requests  # import tardif : non requis hors récupération réelle
-
     rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]] = {}
     echecs: dict[tuple[str, Optional[str]], Exception] = {}
     for groupe in _actifs(groupes):
@@ -218,7 +245,7 @@ def fetch_rosters_bruts(
         print(f"→ Récupération du roster complet ({roster_chambre}, législature={legislature or 'courante'})…", file=sys.stderr)
         try:
             rosters_bruts[key] = fetch_full_roster(roster_chambre, legislature=legislature)
-        except (ValueError, requests.RequestException) as exc:
+        except ERREURS_ROSTER as exc:
             print(f"  [!] Récupération du roster impossible pour {key} : {resume_exception(exc)}", file=sys.stderr)
             rosters_bruts[key] = None
             echecs[key] = exc
@@ -289,6 +316,85 @@ def build_roster_candidats_detaille(
             membres_par_groupe[libelle] += 1
 
     return list(candidats_par_slug.values()), membres_par_groupe
+
+
+def membres_sans_slug(
+    groupes: list[dict[str, Any]],
+    rosters_bruts: dict[tuple[str, Optional[str]], Optional[list[dict[str, Any]]]],
+) -> list[dict[str, Any]]:
+    """Les membres que `build_roster_candidats_detaille` laisse tomber (#527).
+
+    Un membre sans `slug` ne peut alimenter aucun profil : `<slug>.pivot.json`
+    **est** le nom du fichier (#487). L'aplatissement l'ignore donc, et
+    l'ignorait jusqu'ici **sans un mot** — la forme exacte du trou muet de #510
+    et #501.
+
+    Ça ne coûtait rien tant que la source était NosDéputés, qui n'a pas d'autre
+    identifiant que le slug : il n'y avait pas de membre sans slug. AMO30 en a,
+    par construction — il publie un `PA######` et l'état civil, et le slug vient
+    de la table committée du lot 2 (#525). Les 4 acteurs de la 16e qui n'y ont
+    pas d'entrée entrent maintenant dans le roster et en ressortent sans être
+    collectés : ils sont **comptés et nommés**, jamais silencieux.
+
+    Non bloquant, et c'est un choix : ces 4-là sont une catégorie fermée, datée
+    et déclarée entrée par entrée dans `raw_data/groupes_reels.json`
+    (`correspondance_sigles_an[].ecart_membres`) — même arbitrage que les 5 389
+    identifiants non résolus de #510 et les rejets attendus-et-permanents de
+    #474. Ce qui doit rester bruyant, c'est leur **nombre s'il bouge**, et c'est
+    précisément ce que ce décompte publie. Leur sort est la clause 2 de la
+    condition de retrait du double calcul (#526 §9).
+
+    Fonction pure : elle ne lit que ce que la collecte a déjà rendu.
+    """
+    sans_slug: list[dict[str, Any]] = []
+    for groupe in _actifs(groupes):
+        raw_members = rosters_bruts.get(_roster_key(groupe))
+        if not raw_members:
+            continue
+        roster = filter_roster_by_sigle(
+            raw_members,
+            groupe["roster_chambre"],
+            groupe["groupe_sigle"],
+            senat_periode_debut=groupe.get("senat_periode_debut"),
+        )
+        for membre in roster:
+            if membre.get("slug"):
+                continue
+            sans_slug.append(
+                {
+                    "groupe": _libelle_groupe(groupe),
+                    "nom": membre.get("nom"),
+                    "mandat_debut": membre.get("mandat_debut"),
+                    "mandat_fin": membre.get("mandat_fin"),
+                }
+            )
+    return sans_slug
+
+
+def resume_membres_sans_slug(sans_slug: list[dict[str, Any]]) -> str:
+    """Une ligne, nommant chaque membre écarté — destination : une annotation.
+
+    Bornée à `_MAX_MEMBRES_NOMMES` noms parce qu'une annotation GitHub Actions
+    tient sur une ligne ; le **décompte**, lui, n'est jamais tronqué, et le
+    reste se relit avec `python3 src/an_roster.py --divergence`.
+    """
+    noms = [
+        f"{m['groupe']}/{m['nom'] or '?'} ({m['mandat_debut']} → {m['mandat_fin']})"
+        for m in sans_slug
+    ]
+    suffixe = ""
+    if len(noms) > _MAX_MEMBRES_NOMMES:
+        suffixe = f" (+{len(noms) - _MAX_MEMBRES_NOMMES} autre(s))"
+        noms = noms[:_MAX_MEMBRES_NOMMES]
+    return (
+        f"ROSTER_SANS_SLUG — {len(sans_slug)} membre(s) du roster n'ont pas de slug "
+        "et ne seront donc pas collectés ni publiés : "
+        + "; ".join(noms)
+        + suffixe
+        + ". Écart déclaré dans raw_data/groupes_reels.json "
+        "(correspondance_sigles_an[].ecart_membres) ; détail entrée par entrée : "
+        "python3 src/an_roster.py --divergence (#526 §9, clause 2)."
+    )
 
 
 def anomalies_roster(
@@ -468,6 +574,16 @@ def main(argv: Optional[list[str]] = None) -> int:
     # mort laissait derrière lui.
     rosters_bruts, echecs = fetch_rosters_bruts(groupes)
     candidats, membres_par_groupe = build_roster_candidats_detaille(groupes, rosters_bruts)
+
+    # Avant les anomalies, et séparément d'elles : un membre sans slug n'est
+    # pas une panne, c'est une lacune de la table du lot 2 (#525). Il ne doit
+    # donc bloquer aucune écriture — mais il ne doit pas non plus disparaître
+    # sans laisser de trace, ce qu'il faisait jusqu'à #527.
+    sans_slug = membres_sans_slug(groupes, rosters_bruts)
+    if sans_slug:
+        resume = resume_membres_sans_slug(sans_slug)
+        print(f"[i] {resume}", file=sys.stderr)
+        gha.annoter("warning", resume)
 
     anomalies = anomalies_roster(groupes, rosters_bruts, membres_par_groupe, candidats, echecs)
     if anomalies:

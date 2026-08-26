@@ -3,9 +3,12 @@
 an_roster.py — La composition des groupes de l'Assemblée nationale est
 **dérivée d'AMO30**, le référentiel que le pipeline télécharge déjà (#526).
 
-Livré **INACTIF** (`AN_ROSTER_ACTIF = False`) : aucun consommateur du pipeline
-n'appelle ce module, et l'appeler sans activation échoue bruyamment plutôt que
-de rendre une liste vide. La bascule est le lot 1b.
+**Source de production depuis le lot 1b (#527)** : `AN_ROSTER_ACTIF = True`, et
+`group_roster.fetch_full_roster` délègue ici toute clé `deputes`. La bascule
+tient en cette ligne — c'est ce qui rend son `git revert` trivial, et c'est la
+vraie assurance de l'épic. Baisser le drapeau (`--desactiver-roster-an`) rend
+la lecture à NosDéputés ; le module ne rend alors **jamais** une liste vide, il
+refuse bruyamment.
 
 ## Pourquoi AMO30 plutôt que NosDéputés
 
@@ -87,15 +90,19 @@ inventé (AGENTS §2 règle 5). C'est ce qui explique, entrée par entrée, les
 
 ## Patron #493 : dérivé + divergence déclarée + condition de retrait
 
-Ce module tourne **à côté** de NosDéputés, il ne le remplace pas. L'écart par
-groupe se lit avec `python src/an_roster.py --divergence`, entrée par entrée,
-et son décompte est le **compteur de migration**. La condition de retrait du
-double calcul est écrite dans
-`docs/technical_decisions.md#roster-an-derive-amo30-526`.
+Depuis #527 ce module **est** la source AN ; NosDéputés reste derrière le
+drapeau, comme repli de `git revert`, et ne sert plus que le Sénat en régime
+normal. L'écart par groupe se lit toujours avec
+`python src/an_roster.py --divergence`, entrée par entrée : c'est le
+**compteur de migration**, et il reste le seul moyen de relire ce que la
+bascule a changé. La condition de retrait du double calcul — les trois clauses
+qui autorisent à supprimer le drapeau et le repli — est écrite dans
+`docs/technical_decisions.md#roster-an-derive-amo30-526` §9, et son état du
+jour dans `#bascule-roster-an-amo30-527`.
 
 Usage (depuis la racine du dépôt) :
-    python src/an_roster.py --activer-roster-an --legislature 17 --sigle REN
-    python src/an_roster.py --activer-roster-an --divergence
+    python src/an_roster.py --legislature 17 --sigle REN
+    python src/an_roster.py --divergence
 """
 
 from __future__ import annotations
@@ -114,24 +121,29 @@ import correspondance_acteurs_an  # noqa: E402
 
 
 # ── Le drapeau (patron #510) ─────────────────────────────────────────────────
-# Inactif par défaut, et « inactif » veut dire **refus bruyant**, pas « liste
-# vide » : un roster vide est indiscernable d'un groupe dissous une fois écrit
-# sur disque, et c'est très exactement le défaut que #511 puis #524 ont payé.
-# Ce que l'activation engage n'est pas technique mais éditorial — voir
-# AIDE_ACTIVER_ROSTER_AN.
-AN_ROSTER_ACTIF = False
+# ACTIF depuis #527 (lot 1b). Le lot 1 l'avait posé à `False` pour que la
+# bascule soit une DÉCISION, prise seule, dans une PR d'une ligne : cette ligne
+# est la ligne, et son `git revert` rend l'Assemblée à NosDéputés sans toucher
+# à rien d'autre.
+#
+# Baissé, le module **refuse bruyamment** au lieu de rendre une liste vide : un
+# roster vide est indiscernable d'un groupe dissous une fois écrit sur disque,
+# et c'est très exactement le défaut que #511 puis #524 ont payé. Le refus vaut
+# donc aussi dans ce sens-là — voir `_exiger_actif`.
+AN_ROSTER_ACTIF = True
 
-AIDE_ACTIVER_ROSTER_AN = (
-    "Dériver la composition des groupes AN d'AMO30 au lieu de NosDéputés "
-    "(#526). INACTIF par défaut : ce module est livré à côté de la source en "
-    "place, pas à sa place. Mesuré le 26/08/2026 — les 5 rosters publiés de la "
-    "16e sont reproduits à l'identique à 4 entrées près, toutes nommées et "
-    "datées (des membres partis avant la fin de la législature, sans profil "
-    "publié) ; et la 17e législature, que NosDéputés n'a jamais servie, "
-    "apporte 461 membres sur les 5 familles publiées, dont 305 seulement ont "
-    "déjà un slug — soit 156 profils à collecter (641 et 326 si on la prend "
-    "entière). Activer, c'est décider d'élargir le corpus, pas seulement de "
-    "changer de source."
+AIDE_ROSTER_AN = (
+    "La composition des groupes AN vient d'AMO30 et non de NosDéputés depuis "
+    "#527 (lot 1b de l'épic « une seule source AN »), sur la mesure du lot 1 "
+    "(#526) : les 5 rosters publiés de la 16e sont reproduits à l'identique à "
+    "4 entrées près, toutes nommées et datées dans "
+    "raw_data/groupes_reels.json (des membres partis avant la fin de la "
+    "législature, sans profil publié, donc sans slug). La 17e législature, que "
+    "NosDéputés n'a jamais servie, reste HORS périmètre tant que ses 5 fiches "
+    "ne sont pas configurées : elle apporterait 461 membres sur les 5 familles "
+    "publiées, dont 305 seulement ont déjà un slug — 156 profils à collecter "
+    "(641 et 326 si on la prend entière). Élargir le corpus est une décision "
+    "distincte de celle de changer de source."
 )
 
 
@@ -152,7 +164,7 @@ class RosterAnIndisponible(RuntimeError):
 
 
 def activer_roster_an(actif: bool) -> None:
-    """Active (ou non) la dérivation du roster depuis AMO30 (#526).
+    """Active (ou non) la dérivation du roster depuis AMO30 (#526, bascule #527).
 
     Drapeau de module et non paramètre d'appel, pour la même raison qu'en
     #510 : l'index GP est construit **une** fois par archive, mis en cache sur
@@ -166,11 +178,13 @@ def activer_roster_an(actif: bool) -> None:
 def _exiger_actif() -> None:
     if not AN_ROSTER_ACTIF:
         raise RosterAnInactif(
-            "Roster AN dérivé d'AMO30 non activé (#526). Rendre une liste vide "
-            "ici publierait « groupe sans membre » à la place de « source non "
-            "activée » (AGENTS §2 règle 5). Lever le drapeau avec "
-            "`an_roster.activer_roster_an(True)` ou `--activer-roster-an`, en "
-            "connaissance des mesures : " + AIDE_ACTIVER_ROSTER_AN
+            "Roster AN dérivé d'AMO30 désactivé (drapeau baissé). Rendre une "
+            "liste vide ici publierait « groupe sans membre » à la place de "
+            "« source non activée » (AGENTS §2 règle 5) — c'est pour cela que "
+            "l'appel échoue au lieu de rendre `[]`. Relever le drapeau avec "
+            "`an_roster.activer_roster_an(True)`, ou passer par "
+            "`group_roster.fetch_full_roster`, qui rend la lecture à "
+            "NosDéputés quand le drapeau est baissé. " + AIDE_ROSTER_AN
         )
 
 
@@ -854,9 +868,12 @@ def rapport_divergence(
     """Le compteur de migration : l'écart AMO30 ↔ fiches publiées, par groupe.
 
     Le total (`ecart_total`) est ce qui doit tomber à 0 — ou n'être composé que
-    d'écarts **expliqués** — avant que le lot 1b ne bascule la source. Un
-    groupe dont la fiche n'est pas encore publiée (la 17e) est compté à part,
-    dans `non_publies` : il n'a pas d'écart, il a un périmètre.
+    d'écarts **expliqués** — pour que le drapeau et son repli puissent
+    disparaître (#526 §9). Il valait **4** à la bascule (#527), quatre acteurs
+    sans slug, nommés et datés : c'est la clause 2 de la condition de retrait,
+    et c'est elle qui reste ouverte. Un groupe dont la fiche n'est pas encore
+    publiée (la 17e) est compté à part, dans `non_publies` : il n'a pas
+    d'écart, il a un périmètre.
     """
     _exiger_actif()
     racine = Path(chemin_groupes_pivot) if chemin_groupes_pivot else CHEMIN_GROUPES_PIVOT
@@ -932,13 +949,22 @@ def _afficher_rapport_divergence(rapport: dict[str, Any]) -> None:
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Composition des groupes de l'Assemblée nationale dérivée "
-                    "d'AMO30 (#526). Livré INACTIF.",
+                    "d'AMO30 (#526). Source de production depuis #527.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    # #527 : l'option dit désormais l'inverse de ce qu'elle disait, et c'est
+    # volontaire. Garder un `--activer-roster-an` en `store_true` sur un
+    # drapeau déjà levé aurait fait **baisser** le drapeau à chaque appel qui
+    # l'omet — un défaut muet, du type exact que ce module passe son temps à
+    # refuser. Une option qui ne peut plus dire vrai se retire ; elle ne se
+    # garde pas « au cas où ».
     parser.add_argument(
-        "--activer-roster-an",
+        "--desactiver-roster-an",
         action="store_true",
-        help=AIDE_ACTIVER_ROSTER_AN,
+        help="Baisser le drapeau pour cet appel : le module refuse alors "
+             "bruyamment au lieu de dériver le roster. Sert à reproduire "
+             "l'état d'avant #527, jamais à obtenir une liste vide. "
+             + AIDE_ROSTER_AN,
     )
     parser.add_argument("--legislature", metavar="N", help='Ex. "16", "17".')
     parser.add_argument(
@@ -974,7 +1000,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
 
-    activer_roster_an(args.activer_roster_an)
+    if args.desactiver_roster_an:
+        activer_roster_an(False)
 
     try:
         if args.divergence:

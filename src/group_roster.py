@@ -3,10 +3,31 @@
 group_roster.py — Récupère la composition réelle d'un groupe parlementaire.
 
 Contrairement à raw_data/candidats.json (liste éditoriale des candidats déclarés
-à l'élection présidentielle, voir parti_profile.py), ce module interroge les
-données ouvertes NosDéputés.fr / NosSénateurs.fr pour obtenir la VRAIE liste
-des membres d'un groupe parlementaire (ex. tou·te·s les député·es LR d'une
-législature), à utiliser ensuite avec group_profile.py.
+à l'élection présidentielle, voir parti_profile.py), ce module rend la VRAIE
+liste des membres d'un groupe parlementaire (ex. tou·te·s les député·es LR
+d'une législature), à utiliser ensuite avec group_profile.py — depuis l'open
+data de l'Assemblée pour l'AN, des données ouvertes NosSénateurs.fr pour le
+Sénat (voir la section suivante).
+
+## L'Assemblée ne passe plus par ici (#527, lot 1b)
+
+`fetch_full_roster` est devenu un **aiguillage** : pour `chambre == "deputes"`
+il délègue à `an_roster.fetch_full_roster_an`, qui dérive la composition
+d'AMO30 — même source que les scrutins et les amendements, Licence Ouverte au
+lieu d'ODbL, et une législature qui est une donnée du référentiel plutôt qu'un
+sous-domaine à connaître d'avance (AGENTS §7, #526). La lecture NosDéputés
+survit sous son propre nom, `fetch_full_roster_nosdeputes`, et ne sert plus que
+le Sénat en régime normal.
+
+L'aiguillage tient en une condition, sur `an_roster.AN_ROSTER_ACTIF` : baisser
+ce drapeau — ou faire un `git revert` de la ligne qui l'a levé — rend
+l'Assemblée à NosDéputés sans qu'aucun appelant ne change. C'est la raison
+d'être de cette forme, et ce qui justifie de garder le code NosDéputés vivant
+tant que la condition de retrait de #526 §9 n'est pas remplie.
+
+Ce qui n'a PAS bougé : le contrat de sortie. `filter_roster_by_sigle`
+s'applique inchangé sur les membres rendus par l'une comme par l'autre source
+— c'est ce qui a fait de la bascule une ligne et non une réécriture.
 
 L'endpoint documenté `/groupe/<SIGLE>/json` renvoie systématiquement une
 erreur HTTP 500 (vérifié sur plusieurs sigles et domaines de législature,
@@ -28,6 +49,7 @@ from typing import Any, Optional
 
 import requests
 
+import an_roster
 from candidate_profile import BASE_URLS, HEADERS, TIMEOUT
 
 # Association legislature AN -> domaine NosDeputes.fr. Ne couvre que
@@ -258,13 +280,70 @@ def _member_matches_legislature(member: dict[str, Any], legislature_debut: Optio
     return fin is None or str(fin) >= legislature_debut
 
 
+#: Tout ce qu'un appel à `fetch_full_roster` peut légitimement lever, quelle
+#: que soit la source (#527). Les deux consommateurs interceptaient
+#: `(ValueError, requests.RequestException)` — la forme des échecs NosDéputés.
+#: `an_roster` lève `RosterAnIndisponible` / `RosterAnInactif`, qui héritent de
+#: `RuntimeError` : sans cette liste, une archive AMO30 absente ne serait plus
+#: un « roster indisponible » nommé et annoté (#518/#524) mais une trace de pile
+#: qui tue le job — c'est-à-dire un `exit 1` là où #518 a payé pour obtenir un
+#: `exit 2`. `CorrespondanceSiglesInvalide` et `CorrespondanceInvalide` héritent
+#: déjà de `ValueError` et sont couvertes par elle.
+ERREURS_ROSTER: tuple[type[BaseException], ...] = (
+    ValueError,
+    requests.RequestException,
+    an_roster.RosterAnIndisponible,
+    an_roster.RosterAnInactif,
+)
+
+
 def fetch_full_roster(
+    chambre: str,
+    legislature: Optional[str] = None,
+    session: Optional[requests.Session] = None,
+) -> list[dict[str, Any]]:
+    """Le roster brut d'une (chambre, législature) — **AMO30 pour l'Assemblée**.
+
+    Aiguillage de la bascule du lot 1b (#527), et seul endroit du dépôt qui
+    choisit la source d'un roster :
+
+    - `deputes` + drapeau levé → `an_roster.fetch_full_roster_an`, dérivé de
+      l'archive AMO30 déjà téléchargée et mise en cache par
+      `candidate_profile` ;
+    - tout le reste → `fetch_full_roster_nosdeputes`, inchangé.
+
+    `session` n'a de sens que sur la seconde branche : la première ne fait
+    aucune requête HTTP directe. Elle est donc **ignorée** côté AMO30, et c'est
+    sans conséquence — aucun appelant du pipeline n'en passe (les tests qui en
+    passent visent explicitement `fetch_full_roster_nosdeputes`).
+
+    La table sigle publié → sigle AN est lue dans son fichier committé,
+    `raw_data/groupes_reels.json` (`an_roster.CHEMIN_CONFIG_GROUPES`), et non
+    dans le `--config` de l'appelant : un groupe absent de la table échoue en
+    **nommant** le couple `(sigle, législature)` plutôt que de rendre un roster
+    vide (#526 §3b).
+
+    Raises:
+        Tout ce que liste `ERREURS_ROSTER`, selon la branche empruntée.
+    """
+    if chambre == "deputes" and an_roster.AN_ROSTER_ACTIF:
+        return an_roster.fetch_full_roster_an(legislature)
+    return fetch_full_roster_nosdeputes(chambre, legislature=legislature, session=session)
+
+
+def fetch_full_roster_nosdeputes(
     chambre: str,
     legislature: Optional[str] = None,
     session: Optional[requests.Session] = None,
 ) -> list[dict[str, Any]]:
     """Récupère en UN seul appel réseau la liste complète (tous groupes confondus)
     des député·e·s/sénateur·rice·s d'une chambre/législature.
+
+    Lecture **NosDéputés/NosSénateurs**. Depuis #527 elle ne sert plus
+    l'Assemblée en régime normal : `fetch_full_roster` y aiguille le Sénat, et
+    l'Assemblée seulement si le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé.
+    Tout ce qui suit — reprises, plafond de lecture, partage 500/502 — décrit
+    donc désormais le repli et le Sénat, et reste vivant pour eux.
 
     À réutiliser pour construire plusieurs profils de groupe de la même
     chambre/législature sans refaire le même appel réseau à chaque sigle
@@ -315,7 +394,7 @@ def fetch_full_roster(
 
     # Inatteignable : la boucle sort par `return` ou par `raise`. Présent pour
     # que l'absence de valeur de retour ne dépende pas de la lecture du corps.
-    raise AssertionError("fetch_full_roster : sortie de boucle impossible.")
+    raise AssertionError("fetch_full_roster_nosdeputes : sortie de boucle impossible.")
 
 
 def filter_roster_by_sigle(
@@ -378,6 +457,11 @@ def fetch_group_roster(
     Note : pour construire plusieurs groupes de la même chambre/législature,
     préférer `fetch_full_roster` + `filter_roster_by_sigle` pour éviter de
     refaire le même appel réseau à chaque sigle.
+
+    Passe par `fetch_full_roster`, donc par l'aiguillage de #527 : sur
+    `deputes`, ce que rend cette fonction vient d'AMO30, pas de NosDéputés.
+    Une commodité de mise au point qui lirait une autre source que le pipeline
+    serait un piège — c'est pour la ligne de commande qu'on regarde un roster.
     """
     raw_members = fetch_full_roster(chambre, legislature=legislature, session=session)
     return filter_roster_by_sigle(raw_members, chambre, groupe_sigle, senat_periode_debut=senat_periode_debut)
@@ -386,7 +470,7 @@ def fetch_group_roster(
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Récupère la composition réelle d'un groupe parlementaire "
-        "(NosDéputés.fr / NosSénateurs.fr).",
+        "(AMO30 pour l'Assemblée depuis #527 ; NosSénateurs.fr pour le Sénat).",
     )
     parser.add_argument("--chambre", choices=["deputes", "senateurs"], required=True)
     parser.add_argument("--sigle", required=True, metavar="SIGLE", help='Ex. "LR", "RN", "SOC".')
@@ -411,7 +495,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             legislature=args.legislature,
             senat_periode_debut=args.senat_periode_debut,
         )
-    except (ValueError, requests.RequestException) as exc:
+    except ERREURS_ROSTER as exc:
         print(f"[!] {exc}", file=sys.stderr)
         return 1
 
