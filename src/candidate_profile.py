@@ -50,6 +50,7 @@ from budget_collecte import (
     ignorer as budget_ignorer,
     section as budget_section,
 )
+import correspondance_acteurs_an
 from download_watchdog import download_with_watchdog
 from gouvernement_textes import (
     DOSSIERS_CACHE_DIR,
@@ -3468,14 +3469,66 @@ def _build_acteur_nom_index() -> dict[str, list[str]]:
     return _memoiser_index_historique(cle_memo, index)
 
 
-def _resolve_acteur_ref_par_slug(slug: str) -> Optional[str]:
-    """Résout un acteur_ref AN (ex. "PA2150") directement depuis un slug
-    NosDéputés.fr (ex. "jean-luc-melenchon" -> nom normalisé "jean luc
-    melenchon"), par correspondance de nom sur `_build_acteur_nom_index` —
-    sans appel réseau préalable à NosDéputés pour en extraire l'URL AN.
-    Renvoie None si le slug ne correspond à aucun acteur du référentiel, ou à
-    plusieurs (homonymie : on renonce plutôt que de risquer une mauvaise
-    attribution)."""
+#: Mémo du repli déclaré ci-dessous : la table absente ne se signale qu'une
+#: fois par processus, pas une fois par candidat.
+_CORRESPONDANCE_INDISPONIBLE_SIGNALEE = False
+
+
+def _correspondance_committee() -> Optional[dict[str, Any]]:
+    """Table `raw_data/correspondance_acteurs_an.json` (#525), ou None.
+
+    Le repli est **déclaré, jamais muet** : une table introuvable ou invalide
+    imprime une ligne nommant le fichier et la cause, une seule fois par
+    processus, puis la résolution retombe sur la correspondance par nom. La
+    couverture du corpus publié, elle, est un échec dur — mais il appartient
+    au quality gate, pas au chemin de collecte : un membre de roster
+    nouvellement élu n'a par construction aucune entrée relue.
+    """
+    global _CORRESPONDANCE_INDISPONIBLE_SIGNALEE
+    try:
+        return correspondance_acteurs_an.charger_correspondance()
+    except correspondance_acteurs_an.CorrespondanceInvalide as exc:
+        if not _CORRESPONDANCE_INDISPONIBLE_SIGNALEE:
+            print(f"  [!] Correspondance slug ↔ acteur AN indisponible : {exc}")
+            print("      Repli sur la correspondance par nom (#525).")
+            _CORRESPONDANCE_INDISPONIBLE_SIGNALEE = True
+        return None
+
+
+def _resolve_acteur_ref_par_slug(slug: str, *, utiliser_table: bool = True) -> Optional[str]:
+    """Résout un acteur_ref AN (ex. "PA2150") depuis un slug NosDéputés.fr
+    (ex. "jean-luc-melenchon").
+
+    Deux sources, dans cet ordre (#525) :
+
+      1. la **table committée** `raw_data/correspondance_acteurs_an.json`, qui
+         porte pour chaque slug publié son `acteur_ref`, l'état civil retenu,
+         la preuve et la date de vérification. Une entrée déclarée sans acteur
+         AN (`jordan-bardella`, député européen) renvoie None **sans** repli :
+         c'est un fait vérifié, pas une absence à combler ;
+      2. à défaut d'entrée, la correspondance par nom sur
+         `_build_acteur_nom_index` (nom normalisé "jean luc melenchon"), sans
+         appel réseau préalable à NosDéputés. Elle renvoie None si le slug ne
+         correspond à aucun acteur du référentiel, ou à plusieurs (homonymie :
+         on renonce plutôt que de risquer une mauvaise attribution).
+
+    La table passe devant parce qu'elle tranche ce que la normalisation ne
+    peut pas trancher : apostrophe (`loic-prud-homme`), nom d'usage
+    (`sabrina-agresti-roubache`), changement de nom (`guillaume-gouffier-cha`)
+    et surtout homonymie réelle (`alexandra-martin` / `alexandra-martin-1`,
+    deux députées que l'AN ne distingue que par leur département).
+
+    `utiliser_table=False` court-circuite l'étape 1 — c'est ce dont
+    `build_correspondance_acteurs_an.py` a besoin pour construire la table
+    sans la relire.
+    """
+    if utiliser_table:
+        table = _correspondance_committee()
+        if table is not None:
+            entree = table.get(slug)
+            if entree is not None:
+                return entree["acteur_ref"]
+
     nom_index = _build_acteur_nom_index()
     matches = nom_index.get(_normalize_search_query(slug.replace("-", " ")))
     if not matches or len(matches) != 1:

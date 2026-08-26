@@ -151,6 +151,15 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
+- Lot 1 de l'épic « une seule source AN » : dériver le roster d'AMO30 plutôt que de
+  NosDéputés. Débloqué par #525 — `raw_data/correspondance_acteurs_an.json` couvre les
+  476 slugs publiés, un roster dérivé sait donc quel profil il alimente. Voir
+  `technical_decisions.md#correspondance-acteurs-an-525`.
+- `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
+  `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,
+  pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test
+  structurel sur la table committée elle-même (#525).
+
 - Syceron debates are collected, parsed and indexed but **never retained**:
   `_parse_syceron_intervention_entry` requires an `acteurRef` matching `PA\d+`,
   while the AN's `syseron.xml.zip` publishes a bare numeric speaker id

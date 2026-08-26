@@ -215,6 +215,36 @@ def _write_config_vide(path: Path, cle: str) -> None:
     path.write_text(json.dumps({cle: []}), encoding="utf-8")
 
 
+def _write_correspondance(path: Path, slugs) -> None:
+    """Table slug ↔ acteur AN couvrant les profils factices de `_run_main`.
+
+    Même raison que `--amendements-figes-dir` ci-dessous : sans elle, la §5b
+    lirait la table réelle du dépôt, n'y trouverait pas `jean-dupont`, et ces
+    tests-ci — qui portent sur les sections 3c/3d — échoueraient sur un autre
+    sujet que le leur (#525).
+    """
+    correspondances = {
+        slug: {
+            "acteur_ref": f"PA90000{index}",
+            "etat_civil": {"nom_complet": slug.replace("-", " ").title()},
+            "ecart": None,
+            "motif": None,
+            "preuve": f"https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA90000{index}",
+            "verifie_le": "2026-08-26",
+        }
+        for index, slug in enumerate(sorted(slugs))
+    }
+    path.write_text(
+        json.dumps({
+            "schema_version": "correspondance-acteurs-an-v1",
+            "genere_le": "2026-08-26T00:00:00+0000",
+            "source_referentiel": "https://data.assemblee-nationale.fr/",
+            "correspondances": correspondances,
+        }),
+        encoding="utf-8",
+    )
+
+
 def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None, pivots: dict | None = None) -> int:
     """Exécute le quality gate complet sur une arborescence minimale, avec les
     seules sections amendements susceptibles de signaler quelque chose.
@@ -224,11 +254,13 @@ def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None, pivots: dict 
     particulier (couverture `uid`, #447)."""
     profiles_dir = tmp_path / "profiles"
     profiles_dir.mkdir()
-    for slug, amendements in (pivots or {"jean-dupont": [], "marie-martin": []}).items():
+    profils = pivots or {"jean-dupont": [], "marie-martin": []}
+    for slug, amendements in profils.items():
         _write_pivot(
             profiles_dir, slug, "AN", {"nom_complet": slug.replace("-", " ").title()},
             amendements=amendements, warnings=[],
         )
+    _write_correspondance(tmp_path / "correspondance_acteurs_an.json", profils)
 
     for sous_dossier in ("groupes", "partis", "gouvernements", "raw"):
         (tmp_path / sous_dossier).mkdir()
@@ -252,6 +284,7 @@ def _run_main(monkeypatch, tmp_path: Path, cache_dir: Path | None, pivots: dict 
         # 3c/3d. Sans cet argument, ils liraient les index réels du dépôt et
         # dépendraient de leur état.
         "--amendements-figes-dir", str(tmp_path / "figes_absent"),
+        "--correspondance-acteurs", str(tmp_path / "correspondance_acteurs_an.json"),
     ]
     monkeypatch.setattr(sys, "argv", argv)
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
