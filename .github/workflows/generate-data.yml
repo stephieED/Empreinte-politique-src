@@ -1295,10 +1295,35 @@ jobs:
       # divergence possible : jusqu'ici la fiche de groupe publiée décrivait
       # une composition lue ~7 min après celle sur laquelle les profils
       # avaient été collectés. Le run 32750929942 est mort sur ce fetch-là.
+      #
+      # SEUL LE CODE 2 EST TOLÉRÉ ICI (#524), et c'est la raison d'être du
+      # code 2 — même arbitrage, même mécanique que le step « Générer les
+      # profils de groupe parlementaire réel » de `merge-and-pivot`.
+      # `EXIT_ROSTER_INDISPONIBLE` veut dire « toutes les entrées de
+      # `groupes_reels.json` ont leur extraction suspendue » : il n'y avait
+      # RIEN à collecter, par décision écrite (#516), et rien n'a été écrit.
+      # Tant que ce cas sortait en 1, suspendre les entrées AN — le remède
+      # documenté d'une source en panne — reproduisait l'échec qu'il devait
+      # éteindre, et aucun run ne pouvait conclure vert pendant que
+      # NosDéputés répondait 500.
+      #
+      # Le filtrage se fait sur le CODE, dans le shell, et non par un
+      # `continue-on-error: true` : celui-ci avalerait aussi le code 1 — un
+      # fetch tombé, donc un roster INCOMPLET — et le run repartirait sur une
+      # composition de groupe non mesurée (#511).
       - name: Roster du run — une seule construction pour tout le run
+        id: roster
         run: |
+          CODE=0
           python3 src/generate_roster_candidats.py \
-            --rosters-bruts-out raw_data/rosters_bruts.json
+            --rosters-bruts-out raw_data/rosters_bruts.json || CODE=$?
+          if [[ "$CODE" == "2" ]]; then
+            echo "ecrit=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Roster du run non construit (code 2, extraction de tous les groupes suspendue) : la branche roster de ce run est sautée, aucun artifact roster-candidats n'est publié (#524)."
+            exit 0
+          fi
+          [[ "$CODE" == "0" ]] || exit "$CODE"
+          echo "ecrit=true" >> "$GITHUB_OUTPUT"
 
       # Les DEUX fichiers dans le même artifact, et sous le même
       # `if-no-files-found: error` : ils décrivent la même collecte, à la même
@@ -1307,7 +1332,16 @@ jobs:
       # (Avec plusieurs chemins, l'action prend leur ancêtre commun `raw_data/`
       # pour racine — les fichiers reviennent donc bien à leur place chez le
       # consommateur qui télécharge dans `path: raw_data`.)
+      #
+      # `if:` sur le step, et `if-no-files-found: error` CONSERVÉ (#524) : sur
+      # une suspension totale il n'y a aucun fichier à publier, et les deux
+      # façons de le dire ne sont pas équivalentes. Sans le `if:`, il faudrait
+      # relâcher `error` en `ignore` — ce qui publierait un artifact VIDE que
+      # les consommateurs téléchargeraient avec succès, transformant « roster
+      # absent » en « roster de 0 candidat », c'est-à-dire l'incident de #511.
+      # Un artifact ABSENT, lui, fait tomber les consommateurs sur leur repli.
       - name: Roster du run — artifact
+        if: ${{ steps.roster.outputs.ecrit == 'true' }}
         uses: actions/upload-artifact@v6
         with:
           name: roster-candidats
@@ -1584,11 +1618,26 @@ jobs:
       # fetch tombé). Le supprimer rendrait ce job dépendant d'un job de
       # préparation dont l'échec est précisément ce que #412 §2.1 a cessé de
       # laisser propager.
+      #
+      # SEUL LE CODE 2 EST TOLÉRÉ (#524) : « toutes les entrées suspendues »,
+      # donc rien à collecter et rien d'écrit. Le step d'extraction ci-dessous
+      # est conditionné à l'existence du fichier, ce shard ne collecte donc
+      # rien et son artifact est vide — ce que `publish-written-profiles` sait
+      # déjà produire sans le confondre avec la baseline (#450). Un code 1
+      # (roster incomplet, fetch tombé) continue de faire rougir ce shard :
+      # là, une composition NON MESURÉE existe, et la taire ferait collecter
+      # une tranche qui n'est celle de personne.
       - name: Repli — construction de la liste roster-driven
         if: ${{ steps.roster_artifact.outcome == 'failure' }}
         run: |
           echo "::warning::Artifact roster-candidats absent : ce shard reconstruit le roster pour lui-même. Sa tranche peut différer de celle des autres shards si la source a changé entre-temps (#518)."
-          python3 src/generate_roster_candidats.py
+          CODE=0
+          python3 src/generate_roster_candidats.py || CODE=$?
+          if [[ "$CODE" == "2" ]]; then
+            echo "::warning::Roster non construit (code 2, extraction de tous les groupes suspendue) : ce shard n'extrait rien (#524)."
+            exit 0
+          fi
+          [[ "$CODE" == "0" ]] || exit "$CODE"
 
       # Même fan-out par membre que extract-an/extract-senat (coût par candidat
       # identique, seul le volume change) — roster_extraction_limit borne ce
@@ -1605,7 +1654,16 @@ jobs:
       # MERGE_FLAG/LIMIT_FLAG non factorisables : cf. le commentaire équivalent
       # sur le step d'extraction d'extract-an (#412 §3, grep de logs de
       # retry-generate-data.yml).
+      #
+      # `if: hashFiles(...)` (#524) — la liste roster est le SEUL intrant de ce
+      # step, et elle n'est pas committée : sans elle, `--candidats` pointe sur
+      # un fichier absent et le step échouerait de toute façon, en disant
+      # « fichier introuvable » plutôt que « la branche roster est fermée pour
+      # ce run ». La sauter est la seule lecture juste de ce qui s'est passé —
+      # et un shard qui n'extrait rien publie un artifact vide, jamais la
+      # baseline (#450).
       - name: Extraction roster-driven (mode léger)
+        if: ${{ hashFiles('raw_data/roster_candidats.json') != '' }}
         env:
           FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}
@@ -1931,13 +1989,37 @@ jobs:
       # absent (raw_data/profiles ne contient alors aucun profil roster-driven
       # → chaque candidat roster est ignoré comme "profil brut absent").
       #
-      # `generate_roster_candidats.py` PEUT FAIRE ÉCHOUER LE REPLI CI-DESSOUS
-      # (#511) : sur un fetch en timeout, il refuse d'écrire un roster incomplet
-      # et sort en 1, ce que le `bash -e` du step propage. C'est voulu — le run
-      # 32405297873 s'est conclu en `success` précisément parce que ce script
-      # rendait 0 sur un roster vide, et la passe suivante a itéré sur rien.
-      # Un run coupé là ne perd aucune donnée : les profils bruts collectés
-      # sont dans les artifacts, la fusion est additive, un run suivant publie.
+      # LA BRANCHE ROSTER NE COÛTE PLUS LE COMMIT DES CANDIDATS DÉCLARÉS (#524).
+      #
+      # Jusqu'ici `generate_roster_candidats.py` FAISAIT ÉCHOUER LE REPLI
+      # ci-dessous (#511) : sur un fetch tombé, il refuse d'écrire un roster
+      # incomplet et sort en 1, que le `bash -e` du step propageait. Le run
+      # 32876863499 a montré le prix de cet arbitrage : l'étape 12 (fusion des
+      # bruts) et l'étape 13 (normalisation pivot + ParlTrack, 165 s, VERTE)
+      # étaient terminées, et tout a été jeté au step 15.
+      #
+      # C'est exactement l'arbitrage écrit 70 lignes plus bas pour
+      # `generate_group_profiles.py`, et jamais appliqué ici : refuser qu'une
+      # donnée NON écrite annule la publication d'une donnée écrite. Rien n'a
+      # été écrit sur ce chemin — le roster n'est pas committé, les profils de
+      # candidats déclarés et les fiches de parti, si.
+      #
+      # Le saut est SÛR ET SURVEILLÉ, il n'est pas décrété : si le fetch roster
+      # échoue ici, les shards n'ont rien collecté non plus (ils meurent au même
+      # endroit), donc il n'existe aucun profil « collecté mais non publié » à
+      # produire. Et si cette hypothèse devenait fausse un jour,
+      # `audit_collecte_non_publiee.py` (#511/#518) reste armé plus bas et
+      # bloquerait le commit. Le garde-fou de #511 n'est pas contourné : il est
+      # ce qui rend ce saut légitime.
+      #
+      # Filtrage sur le CODE, dans le shell, JAMAIS `continue-on-error: true` —
+      # même raison qu'au step groupes : il avalerait aussi ce qui n'est pas un
+      # code de sortie documenté (127, 137/OOM…), et un job mort pour une autre
+      # cause passerait pour un roster indisponible. Codes tolérés :
+      #   · 2 — extraction de tous les groupes suspendue, rien à collecter (#524) ;
+      #   · 1 — roster INCOMPLET, donc NON ÉCRIT (#511). C'est le cas du 500.
+      # Dans les deux cas `raw_data/roster_candidats.json` est absent, et c'est
+      # cette absence — pas le code — qui ferme la branche au step suivant.
       - name: Roster du run — artifact (optionnel)
         id: roster_artifact
         uses: actions/download-artifact@v7
@@ -1950,10 +2032,24 @@ jobs:
         if: ${{ steps.roster_artifact.outcome == 'failure' }}
         run: |
           echo "::warning::Artifact roster-candidats absent : merge-and-pivot reconstruit le roster pour lui-même. Sa liste peut différer de celle sur laquelle les shards ont collecté (#518)."
+          CODE=0
           python3 src/generate_roster_candidats.py \
-            --rosters-bruts-out raw_data/rosters_bruts.json
+            --rosters-bruts-out raw_data/rosters_bruts.json || CODE=$?
+          if [[ "$CODE" == "1" || "$CODE" == "2" ]]; then
+            echo "::warning::Roster du run indisponible (code ${CODE}) : la branche roster de ce job est sautée. Les profils de candidats déclarés et les profils de parti sont committés normalement ; audit_collecte_non_publiee.py reste armé et bloquerait le commit si un profil collecté restait non publié (#524)."
+            exit 0
+          fi
+          [[ "$CODE" == "0" ]] || exit "$CODE"
 
+      # `if: hashFiles(...)` et non un `if:` sur le code du step précédent : le
+      # roster peut aussi manquer sans que ce repli ait tourné (artifact
+      # téléchargé mais vide, `prepare-roster-matrix` sauté). La condition
+      # porte donc sur ce dont ce step a réellement besoin — le fichier —, pas
+      # sur l'une des routes qui l'amènent. Il n'est jamais committé : sans lui
+      # cette passe échouerait de toute façon, sur un message qui parlerait de
+      # fichier introuvable plutôt que de branche roster fermée (#524).
       - name: Normalisation pivot roster-driven
+        if: ${{ hashFiles('raw_data/roster_candidats.json') != '' }}
         env:
           FRESH: ${{ inputs.cold_start }}
           OVERWRITE: ${{ inputs.overwrite_profiles }}

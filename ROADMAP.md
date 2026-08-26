@@ -47,6 +47,15 @@ something is pending, not *why*.
   `audit_collecte_non_publiee.py` restaient enterrés dans les logs de step : la seule
   annotation d'un run mort là-dessus était `Process completed with exit code 1`.
   **Corrigé en #518** (`::error::` via `src/gha.py`).
+- Le run `32876863499` (24/08/2026) a perdu 3 jobs et son commit sur un **500 immédiat**
+  de `www.nosdeputes.fr/deputes/json`, alors que la normalisation pivot des candidats
+  déclarés (165 s) était verte. **Corrigé en #524** : l'exception remonte jusqu'à
+  l'annotation, `merge-and-pivot` saute la branche roster au lieu d'annuler le commit,
+  « tous les groupes suspendus » rend 2 (toléré par les 3 appelants), et un 500 n'est
+  plus retenté. Voir `technical_decisions.md#cloisonnement-branche-roster-524`.
+- **Reste à faire** : suspendre effectivement les 5 entrées AN de `groupes_reels.json`
+  si la panne dure — `condition_reprise` = `GET https://www.nosdeputes.fr/deputes/json`
+  en 200 (#516 l'exige en dur). C'est la suite de #524, pas #524.
 - Les **20 profils orphelins** de `68bc094` (229 bruts / 209 pivots, incident #511 du
   20/08/2026) sont toujours dans `main`. Ils ne bloquent rien — les deux passes
   `--pivot-only` les publient, vérifié en #518 — mais ils ne disparaîtront qu'au

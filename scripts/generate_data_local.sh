@@ -144,8 +144,21 @@ echo "=== [6/7] extract-roster-groupes : membres de groupe (mode léger) ==="
 # 0 membre, roster vide). Ce script n'a pas `set -e` — sans ce test explicite,
 # l'extraction ci-dessous repartirait sur un roster périmé ou absent, ce qui est
 # exactement l'enchaînement qui a produit 229 profils bruts pour 209 pivots.
-python3 src/generate_roster_candidats.py \
-  || { echo "[!] Roster non régénéré (collecte incomplète, #511) — extraction roster sautée."; exit 1; }
+#
+# Mais elle n'arrête plus le script (#524) : en CI, un shard roster rouge ne tue
+# pas `merge-and-pivot`, et ce script doit refléter la même chose. Codes 1
+# (roster incomplet, NON écrit) et 2 (extraction de tous les groupes suspendue)
+# sautent la branche roster ; tout autre code reste un échec, pour ne pas
+# avaler un plantage réel.
+ROSTER_CODE=0
+python3 src/generate_roster_candidats.py || ROSTER_CODE=$?
+if [ "$ROSTER_CODE" != "0" ] && [ "$ROSTER_CODE" != "1" ] && [ "$ROSTER_CODE" != "2" ]; then
+  echo "[!] generate_roster_candidats.py : code inattendu $ROSTER_CODE."
+  exit "$ROSTER_CODE"
+fi
+if [ "$ROSTER_CODE" != "0" ]; then
+  echo "[!] Roster non régénéré (code $ROSTER_CODE) — extraction roster sautée, le reste du pipeline continue (#524)."
+else
 LIMIT_FLAG=()
 [ -n "$ROSTER_EXTRACTION_LIMIT" ] && [ "$ROSTER_EXTRACTION_LIMIT" != "0" ] && LIMIT_FLAG=(--limit "$ROSTER_EXTRACTION_LIMIT")
 python3 src/generate_all_profiles.py \
@@ -155,6 +168,7 @@ python3 src/generate_all_profiles.py \
   --skip-interventions --skip-dossiers-legislatifs \
   "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}" \
   || echo "[!] extract-roster-groupes en échec (continue-on-error, comme en CI)"
+fi
 
 echo "=== [7/7] merge-and-pivot : pivots, groupes, gouvernements, quality gate ==="
 
@@ -174,15 +188,28 @@ python3 src/generate_all_profiles.py \
 # `--rosters-bruts-out` reproduit ce que le run CI transite par l'artifact
 # `roster-candidats` : le step groupes plus bas lit cette liste au lieu d'en
 # refetcher une (#518).
+#
+# Le `exit 1` d'ici est tombé avec #524, et c'est le même arbitrage qu'en CI :
+# la passe pivot des candidats déclarés vient de se terminer juste au-dessus,
+# les fiches de parti et de groupe suivent, et une donnée NON écrite n'annule
+# pas la publication d'une donnée écrite. Seule la branche roster est sautée.
+ROSTER_PIVOT_CODE=0
 python3 src/generate_roster_candidats.py \
-  --rosters-bruts-out raw_data/rosters_bruts.json \
-  || { echo "[!] Roster non régénéré (collecte incomplète, #511) — pivots roster non produits."; exit 1; }
+  --rosters-bruts-out raw_data/rosters_bruts.json || ROSTER_PIVOT_CODE=$?
+if [ "$ROSTER_PIVOT_CODE" != "0" ] && [ "$ROSTER_PIVOT_CODE" != "1" ] && [ "$ROSTER_PIVOT_CODE" != "2" ]; then
+  echo "[!] generate_roster_candidats.py : code inattendu $ROSTER_PIVOT_CODE."
+  exit "$ROSTER_PIVOT_CODE"
+fi
+if [ "$ROSTER_PIVOT_CODE" != "0" ]; then
+  echo "[!] Roster non régénéré (code $ROSTER_PIVOT_CODE) — pivots roster non produits, le reste du pipeline continue (#524)."
+else
 python3 src/generate_all_profiles.py \
   --pivot-only \
   --no-checkpoint \
   --candidats raw_data/roster_candidats.json \
   --workers "$WORKERS" \
   "${MERGE_FLAG[@]}"
+fi
 
 python3 src/parti_profile.py \
   --candidats raw_data/candidats.json \
