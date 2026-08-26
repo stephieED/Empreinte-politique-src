@@ -42,9 +42,11 @@ WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 ACTION_PUBLICATION = RACINE / ".github" / "actions" / "publish-written-profiles" / "action.yml"
 
 # Jobs d'extraction qui écrivent des profils bruts et les publient.
+# `extract-senat` en faisait partie jusqu'à #528, qui l'a retiré avec le Sénat
+# (docs/technical_decisions.md#retrait-senat-528). Un job d'extraction ajouté
+# ici doit publier via l'action dédiée, pas tout `raw_data/profiles/` (#450).
 JOBS_EXTRACTION = (
     "extract-an",
-    "extract-senat",
     "extract-ue-officiel",
     "extract-roster-groupes",
 )

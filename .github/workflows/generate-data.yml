@@ -29,7 +29,7 @@ on:
         type: number
         default: 20
       collect_interventions:
-        description: "Collect floor speeches (skipped for roster AN and senate)"
+        description: "Collect floor speeches (skipped for the group roster job)"
         type: boolean
         default: false
       incomplete_read_threshold:
@@ -52,7 +52,7 @@ on:
 # Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
 # `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
 # jobs d'extraction exécutent du code réseau contre des sources tierces (AN
-# Open Data, NosDéputés, Sénat, Parlement européen, ParlTrack) — leur donner un
+# Open Data, NosDéputés, Parlement européen, ParlTrack) — leur donner un
 # token en écriture sur le dépôt était un privilège sans usage.
 permissions:
   contents: read
@@ -84,13 +84,18 @@ concurrency:
 # ouverte à max-parallel: 4. Voir
 # docs/technical_decisions.md#budget-execution-pleine-echelle-467.
 #
-# ── LES 9 JOBS ──────────────────────────────────────────────────────────────
-# 2 préparatoires (prepare-an-matrix, prepare-roster-matrix), 6 d'extraction
-# (extract-amendements-an, extract-an, extract-senat, extract-ue-officiel,
-# extract-parltrack, extract-roster-groupes — dont 2 shardés), 1 de fusion
-# (merge-and-pivot). Les en-têtes de job ne sont plus numérotés : la
-# numérotation « JOB n/4 » était périmée depuis #344/#394 et l'était redevenue
-# à chaque ajout (#413).
+# ── LES 8 JOBS ──────────────────────────────────────────────────────────────
+# 2 préparatoires (prepare-an-matrix, prepare-roster-matrix), 5 d'extraction
+# (extract-amendements-an, extract-an, extract-ue-officiel, extract-parltrack,
+# extract-roster-groupes — dont 2 shardés), 1 de fusion (merge-and-pivot). Les
+# en-têtes de job ne sont plus numérotés : la numérotation « JOB n/4 » était
+# périmée depuis #344/#394 et l'était redevenue à chaque ajout (#413).
+#
+# `extract-senat` a été RETIRÉ par #528 : le Sénat est sorti du périmètre
+# éditorial du produit, et ce job tournait, échouait sur 8 candidats sur 8 et
+# concluait vert depuis le 24/08/2026. Voir
+# docs/technical_decisions.md#retrait-senat-528 — la condition de réouverture y
+# est écrite, et un certificat renouvelé ne suffit pas.
 #
 # ── BUDGET DE TEMPS MUR ─────────────────────────────────────────────────────
 # ATTENTION, deux grandeurs à ne pas confondre — et c'est la confusion qui a
@@ -107,35 +112,46 @@ concurrency:
 # shard en contient ~94. Les 8 shards se partagent une charge FIXE — sharder
 # n'ajoute pas de travail, il le divise. « S × 60 » supposait 5 696 membres.
 #
+# #528 a retiré extract-senat, et le plafond N'A PAS BOUGÉ : ses 15 min étaient
+# dominées par les 70 min d'extract-an dans le max() du premier étage. Ce qui
+# disparaît est un job de runner et ~32 requêtes par run vers une source morte,
+# pas du temps mur. Le calcul est refait ci-dessous plutôt que corrigé de tête
+# — c'est l'oubli de ce job dans ce même max() qui a produit le « 190 min »
+# faux publié jusqu'à #413.
+#
 # ── PLAFOND AUTORISÉ (somme des timeouts, jamais atteint) ────────────────────
 # prepare-* 5 min / amendements-an 30 / AN 5 PAR SHARD, 9 avec
 # collect_interventions (#498 ; nb de shards = candidats à slug résolvable, 8
-# aujourd'hui, alerte au-delà de AN_SHARDS_WARN) / Sénat 15 (#501, 90 avant) /
-# UE 60 / ParlTrack 30 / roster-groupes 60 PAR SHARD (S = 1 en rollout
-# progressif, 8 en run complet) / merge-and-pivot 60.
+# aujourd'hui, alerte au-delà de AN_SHARDS_WARN) / UE 60 / ParlTrack 30 /
+# roster-groupes 60 PAR SHARD (S = 1 en rollout progressif, 8 en run complet) /
+# merge-and-pivot 60.
 #
-# Chaîne la plus longue : le Sénat n'est PLUS le maillon dimensionnant depuis
-# #501. `extract-roster-groupes` attend tout le premier étage ET `extract-an` ;
-# ce dernier plafonne à 30 (amendements) + 5·8 = 70 min, au-delà des 60 min
-# d'`extract-ue-officiel` et des 15 du Sénat. Donc 70 + 60·S + 60 = **190 min à
+# Chaîne la plus longue : `extract-roster-groupes` attend tout le premier étage
+# ET `extract-an` ; ce dernier plafonne à 30 (amendements) + 5·8 = 70 min,
+# au-delà des 60 min d'`extract-ue-officiel`. Donc 70 + 60·S + 60 = **190 min à
 # S=1, 610 min à S=8** (222 / 642 avec collect_interventions, où extract-an
-# passe à 30 + 9·8 = 102). Aucune limite GitHub n'est approchée (6 h par JOB,
-# 35 j par RUN). Ces valeurs sont des filets de sécurité : ne pas les budgéter.
+# passe à 30 + 9·8 = 102). Inchangé par le retrait du Sénat (#528) : ses 15 min
+# n'ont jamais dominé ce max(). Aucune limite GitHub n'est approchée (6 h par
+# JOB, 35 j par RUN). Ces valeurs sont des filets de sécurité : ne pas les
+# budgéter.
 #
 # ── TEMPS MUR MESURÉ — run 32288588518, 19/08/2026, run complet (S=8) ────────
 #
 #   | Étape                        | Début  | Durée   | Timeout | Ratio  |
 #   |------------------------------|--------|---------|---------|--------|
-#   | 6 jobs sans needs: (Sénat)    | 0      | 4,6 min | 15 min  | ×3,3   |
+#   | 6 jobs sans needs: (Sénat)   | 0      | 4,6 min | 15 min  | ×3,3   |
 #   | extract-an (8 shards, série) | 2,2    | 18,2    | 40      | ×2,2   |
 #   | extract-roster (8 sh., série)| 20,5   | 26,9    | 480     | ×18    |
 #   | merge-and-pivot              | 47,4   |  7,5    | 60      | ×8     |
 #   | TOTAL                        | —      | 54,9    | 610     | ×11,1  |
 #
-# Le Sénat ne domine PAS. Les 4,6 min de ce relevé incluent encore la collecte
-# d'interventions, que #501 a coupée : 280 des 311 requêtes de ce job y
-# passaient, pour zéro intervention retenue. Le chemin critique réel, ce sont
-# les deux matrices en série.
+# Le Sénat ne dominait PAS, et c'est pourquoi le retirer (#528) laisse ce total
+# à 54,9 min : il n'était pas sur le chemin critique. La ligne reste ici parce
+# qu'un relevé mesuré ne se réécrit pas — le job a existé, ces 4,6 min ont été
+# consommées. Elles incluaient encore la collecte d'interventions, que #501
+# avait coupée : 280 des 311 requêtes de ce job y passaient, pour zéro
+# intervention retenue. Le chemin critique réel, ce sont les deux matrices en
+# série ; il n'y a plus que 5 jobs sans `needs:`.
 #
 # ── CE QUE COÛTE UN SHARD (mesuré, même run) ────────────────────────────────
 # Un shard roster = ~200 s, dont ~130 s de FRAIS FIXES (dont ~110 s de
@@ -233,7 +249,7 @@ jobs:
               echo ""
               echo "Aucun candidat de \`raw_data/candidats.json\` n'a de \`slug\` :"
               echo "\`extract-an\` est skippé et ce run ne collectera rien côté"
-              echo "Assemblée nationale. Les autres sources (Sénat, UE, ParlTrack,"
+              echo "Assemblée nationale. Les autres sources (UE, ParlTrack,"
               echo "roster) et la fusion finale s'exécutent normalement."
             } >> "$GITHUB_STEP_SUMMARY"
           elif [[ "$COUNT" -gt "$AN_SHARDS_WARN" ]]; then
@@ -562,7 +578,8 @@ jobs:
           restore-keys: |
             public-data-cache-amendements-
 
-      # --source an → NosDéputés uniquement (pas de Sénat, pas d'UE dans ce job).
+      # --source an → NosDéputés uniquement (pas d'UE dans ce job ; le Sénat
+      # n'existe plus comme source depuis #528).
       # --only : un seul candidat par shard, donc --workers n'a plus d'effet
       # (le parallélisme inter-candidats est désormais porté par le matrix).
       # cold_start=true  → --no-merge : écrasement complet.
@@ -577,7 +594,7 @@ jobs:
       # reconstruit les inputs du run échoué en grepant le TEXTE BASH SUBSTITUÉ
       # de ce step dans les logs (`--source an --workers \K[0-9]+`,
       # `INTERV_FLAG`, `--max-pages \K[0-9]+`). Les factoriser casserait ce
-      # mécanisme. Même remarque pour les steps homonymes de extract-senat,
+      # mécanisme. Même remarque pour les steps homonymes de
       # extract-ue-officiel et extract-roster-groupes.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
@@ -662,198 +679,6 @@ jobs:
         with:
           kind: failure
           scope: 'candidat `${{ matrix.slug }}`'
-
-
-  # ──────────────────────────────────────────────────────────────────────────
-  # JOB D'EXTRACTION — Sénat
-  # ──────────────────────────────────────────────────────────────────────────
-  extract-senat:
-    runs-on: ubuntu-latest
-    # 90 → 15 min (#501). Valeur UNIQUE, pas conditionnelle au mode comme
-    # `extract-an` : ce job ne collecte plus jamais d'interventions (voir le
-    # step d'extraction), il n'a donc plus deux modes à couvrir.
-    #
-    # Ce que 90 bornait : rien. Sur les 15 derniers runs portant un
-    # `extract-senat` (14/08 → 20/08/2026), le job n'a JAMAIS atteint ses
-    # 90 min. Les deux plus longs — 969 s et 4 482 s — se sont terminés à la
-    # seconde près en même temps qu'`extract-roster-groupes` et
-    # `merge-and-pivot`, signature d'une annulation de RUN, pas d'un
-    # `timeout-minutes` (qui aurait coupé le second à 5 400 s). Le plafond
-    # était trop haut pour être ce qui arrête le job.
-    #
-    # Ce que 15 borne, mesuré. `timeout-minutes` couvre `préambule + collecte`
-    # (leçon de #498) :
-    #   - préambule (checkout, bootstrap-extraction, cache) : 6-170 s sur ces
-    #     mêmes 15 runs → 240 s provisionnés, comme extract-an ;
-    #   - collecte résiduelle : 4 requêtes par slug résolvable (identité, votes,
-    #     2 législatures de dossiers), soit 32 requêtes pour les 8 slugs de
-    #     raw_data/candidats.json. Chronométré à 2,7 s pour `bruno-retailleau`
-    #     le 20/08/2026 sur la source saine, ~30 s projetés pour les 8.
-    # 15 min laissent donc ~11 min à une collecte mesurée à 30 s. Une source
-    # dégradée coûte au pire 48 s par requête (3 × read timeout 15 s + backoff) :
-    # 32 requêtes tenant toutes leur pire cas dépasseraient 15 min, et c'est
-    # voulu — une source qui fait expirer ses 32 requêtes est à terre, le job
-    # ne produira rien de plus en attendant 90 min.
-    #
-    # #514 — 15 min RESTE la valeur, et c'est désormais le budget interne qui
-    # la rend inatteignable, pas une espérance sur l'état de la source.
-    #
-    # Ce que #501 avait tenu pour acquis et qui était faux : « un timeout ne
-    # perd que le candidat en cours, la publication est incrémentale ». Vrai
-    # pour un candidat dont l'identité est résolue ; faux pour tous les autres.
-    # Sans identité, `build_profile_any_chambre` rend `None`, `process_candidat`
-    # sort en « introuvable » et n'écrit RIEN. Le run 32421439590 (20/08/2026)
-    # a passé 13 min 27 s sur trois candidats et publié **1 profil** — pas
-    # « tous sauf le dernier ».
-    #
-    # Les budgets, et la population de chaque chiffre :
-    #   - --budget-collecte-secondes 160 (par candidat). Il couvre la
-    #     RÉSOLUTION D'IDENTITÉ, seule porte vers un profil écrit : 2 formats
-    #     × 3 tentatives, soit au pire 6 × (25 s de watchdog + 1,5 s de
-    #     backoff) = 159 s. Mesuré sur SOURCE DÉGRADÉE (run 32421439590) :
-    #     103 s, 109 s et 125 s pour les trois seuls candidats que le job a
-    #     atteints. Mesuré sur SOURCE SAINE (#501, `bruno-retailleau`,
-    #     20/08/2026) : 2,7 s pour les 4 requêtes du candidat — le budget vaut
-    #     59× la mesure, il ne peut pas se déclencher.
-    #   - --budget-job-secondes 600 (tout le run). Dérivé du timeout, pas
-    #     observé : 900 s − 240 s de préambule provisionné − 25 s de
-    #     dépassement possible de la requête en vol − 30 s pour la publication
-    #     = 605 s, arrondi à 600. Sur source saine, la collecte entière est
-    #     mesurée à ~30 s projetées pour 8 slugs : ce plafond est à 20× et ne
-    #     borne rien. Sur source dégradée, il rend la main vers 14 min avec un
-    #     résumé complet et des annotations, au lieu d'un
-    #     `##[error]The operation was canceled` à 15 min.
-    #
-    # 8 slugs × 160 s = 1 280 s > 660 s disponibles : le budget par candidat ne
-    # borne donc PAS le job, et c'est pour cela qu'il en faut deux. Sur une
-    # source à terre, quatre candidats environ obtiennent une vraie tentative
-    # de résolution d'identité et les autres sortent en `budget_job_epuise` —
-    # déclarés, comptés, annotés. C'est un arbitrage assumé : donner à chacun
-    # 600/8 = 75 s ferait échouer la résolution d'identité pour TOUS (elle
-    # coûte 103 s au minimum mesuré), donc garantirait zéro profil.
-    #
-    # Cohérence tenue par tests/test_ci_interventions_par_job.py et
-    # tests/test_ci_budget_par_job.py.
-    timeout-minutes: 15
-    # continue-on-error: true — voir justification sur extract-an ci-dessus.
-    continue-on-error: true
-
-    steps:
-      - uses: actions/checkout@v5
-
-      # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
-      # pip install, factorisés par #412 §3.
-      - uses: ./.github/actions/bootstrap-extraction
-
-      - name: Semaine ISO courante (clé de cache Sénat)
-        id: week
-        run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
-
-      # OBSERVATION (#424) : ce job n'écrit RIEN sous .cache — NosSénateurs n'a
-      # pas de répertoire de cache (aucune constante `.cache/...` côté Sénat,
-      # cf. l'inventaire dans src/). Cette entrée ne sert donc qu'à recopier ce
-      # que la restauration a placé là. Laissée en l'état plutôt que supprimée :
-      # retirer une entrée de cache est une décision de comportement qui mérite
-      # son propre arbitrage, pas un effet de bord de #424.
-      - uses: actions/cache@v5
-        if: ${{ !inputs.cold_start }}
-        with:
-          path: .cache
-          key: public-data-cache-senat-${{ steps.week.outputs.week }}
-          restore-keys: |
-            public-data-cache-senat-
-
-      - name: Nettoyage complet (cold_start uniquement)
-        if: ${{ inputs.cold_start }}
-        run: |
-          rm -rf .cache
-          find raw_data/profiles -name "*.json" -delete
-
-      # --source senat → NosSénateurs uniquement (pas d'AN, pas d'UE dans ce job).
-      - name: Extraction Sénat (NosSénateurs)
-        env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
-        run: |
-          MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
-          # `--skip-interventions` EN DUR (#501), comme le job roster et pour une
-          # raison mesurée, pas par symétrie. Jusqu'à #501 ce job collectait les
-          # interventions QUEL QUE SOIT `collect_interventions` — le seul des
-          # trois chemins de collecte à n'obéir à rien.
-          #
-          # Ce que la collecte rendait : RIEN, et par construction. Le détail
-          # d'une intervention est rattaché à son orateur par
-          # `fetch_intervention_details`, qui lit la clé `url_nosdeputes` du
-          # document pour aller chercher le bloc `div.perso` de la page de
-          # séance. L'API de `archive.nossenateurs.fr` n'expose jamais cette
-          # clé : elle publie `url_nossenateurs` (vérifié sur 4 documents le
-          # 20/08/2026). `_classify_intervention` ne trouve donc aucun orateur,
-          # classe en `mention`, et `_process_search_result` jette le document.
-          # Toutes les interventions sénatoriales, sans exception.
-          #
-          # Constaté côté CI sur 7 runs (14/08 → 19/08/2026) : jusqu'à 58 pages
-          # de recherche et ~2 700 requêtes de détail à `archive.nossenateurs.fr`
-          # par run, pour « Bruno Retailleau: ok (0 interventions, senateurs) »
-          # à chaque fois — le seul sénateur en exercice de la liste. Les 15
-          # interventions que le résumé affiche parfois sur Mélenchon viennent
-          # de `questions.assemblee-nationale.fr` (vérifié sur les 15 URLs) :
-          # elles sont collectées par le chemin AN et conservées par la fusion
-          # additive, jamais collectées ici.
-          #
-          # Effet sur les données : AUCUN. `build_profile` rendait déjà `[]`, et
-          # `preserver_collectes_non_vides` (#465) empêche un `[]` d'écraser un
-          # fait acquis, y compris sous `--no-merge`. Ce flag supprime ~90 % des
-          # requêtes du job (280 des 311 du run 32288588518), pas une donnée.
-          #
-          # À rouvrir si `fetch_intervention_details` apprend `url_nossenateurs`
-          # — voir ROADMAP.md et docs/technical_decisions.md#interventions-senat-501.
-          #
-          # #514 : les deux budgets sont dimensionnés dans le commentaire de
-          # `timeout-minutes` ci-dessus, avec la condition de source de chaque
-          # chiffre. Ils ne sont neutralisés par aucun autre drapeau — c'est ce
-          # que `--budget-interventions-secondes` était, sous
-          # `--skip-interventions`, et pourquoi ce job s'est retrouvé sans
-          # aucun plafond interne.
-          python3 src/generate_all_profiles.py --source senat --workers 1 --skip-interventions --budget-collecte-secondes 160 --budget-job-secondes 600 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
-
-      # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
-      # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
-      # qui contient aussi la baseline committée issue du checkout — c'est elle
-      # qui, republiée par chaque job, réinjectait des données périmées à la
-      # fusion et faisait entrer les shards en collision. Rationale complète
-      # dans ./.github/actions/publish-written-profiles.
-      - name: Profils écrits par ce job
-        if: always()
-        uses: ./.github/actions/publish-written-profiles
-        with:
-          manifest: _manifest/profils-ecrits.txt
-
-      - name: Upload artifact Sénat
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: raw-profiles-senat
-          path: _publish/profiles/
-          if-no-files-found: warn
-
-      # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
-      # le step appelant : cancelled()/failure() évalués à l'intérieur de
-      # l'action porteraient sur ses propres steps, pas sur l'état du job.
-      - name: Diagnostic — job annulé (signal externe)
-        if: cancelled()
-        uses: ./.github/actions/job-diagnostics
-        with:
-          kind: cancelled
-
-      - name: Diagnostic — job en échec
-        if: failure()
-        uses: ./.github/actions/job-diagnostics
-        with:
-          kind: failure
 
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -1413,7 +1238,7 @@ jobs:
           echo "shard_total=${TOTAL}" >> "$GITHUB_OUTPUT"
 
   extract-roster-groupes:
-    needs: [extract-amendements-an, extract-an, extract-senat, extract-ue-officiel, extract-parltrack, prepare-roster-matrix]
+    needs: [extract-amendements-an, extract-an, extract-ue-officiel, extract-parltrack, prepare-roster-matrix]
     # if: !cancelled() (#412 §2.1) — continue-on-error: transforme un ÉCHEC en
     # non-bloquant, mais ne fait rien contre un job *skipped* : un maillon amont
     # skippé (matrix vide, prepare-* en échec) skippait toute la suite, donc le
@@ -1639,8 +1464,8 @@ jobs:
           fi
           [[ "$CODE" == "0" ]] || exit "$CODE"
 
-      # Même fan-out par membre que extract-an/extract-senat (coût par candidat
-      # identique, seul le volume change) — roster_extraction_limit borne ce
+      # Même fan-out par membre que extract-an (coût par candidat identique,
+      # seul le volume change) — roster_extraction_limit borne ce
       # volume pendant le rollout progressif.
       #
       # Mode d'extraction léger (#357, sous-issue 6/6 de #351) : --skip-interventions
@@ -1720,7 +1545,8 @@ jobs:
           # `--budget-collecte-secondes 0` (#514) : absence de budget DÉCLARÉE,
           # et non reconduite par omission. Ce job a `--resume` et un point de
           # sauvegarde par membre : un shard coupé reprend là où il s'est
-          # arrêté au run suivant, ce qu'`extract-senat` n'a pas. Le
+          # arrêté au run suivant, ce que l'ex-job `extract-senat` n'avait pas
+          # (retiré par #528, la remarque vaut pour tout job sans reprise). Le
           # dimensionner demanderait une mesure sur les 752 membres du roster,
           # population que #514 n'a pas relevée — poser un chiffre ici serait
           # exactement la valeur mesurée ailleurs qu'elle corrige. À rouvrir si
@@ -1800,7 +1626,7 @@ jobs:
   # déléguée à la quality gate (check_quality_gate.py) plutôt qu'à needs:.
   # ──────────────────────────────────────────────────────────────────────────
   merge-and-pivot:
-    needs: [extract-an, extract-senat, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
+    needs: [extract-an, extract-ue-officiel, extract-parltrack, extract-roster-groupes]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -1845,7 +1671,7 @@ jobs:
       # ── Téléchargement des artifacts d'extraction ─────────────────────────
       # Chaque source arrive dans son propre sous-répertoire pour éviter les conflits.
       # continue-on-error: true sur les 3 téléchargements ci-dessous — depuis
-      # que extract-an/extract-senat/extract-ue-officiel ont eux-mêmes
+      # que extract-an/extract-ue-officiel ont eux-mêmes
       # continue-on-error: true, un échec précoce (avant l'étape "Upload
       # artifact", ex. pip install) peut laisser l'artifact absent plutôt que
       # simplement vide ; sans ce flag, download-artifact ferait échouer tout
@@ -1864,13 +1690,6 @@ jobs:
           pattern: raw-profiles-an-*
           path: _artifacts/an
           merge-multiple: true
-
-      - name: Download artifact Sénat (optionnel)
-        uses: actions/download-artifact@v7
-        continue-on-error: true
-        with:
-          name: raw-profiles-senat
-          path: _artifacts/senat
 
       - name: Download artifact UE (optionnel)
         uses: actions/download-artifact@v7
@@ -1926,10 +1745,14 @@ jobs:
       # fait ce mode a lieu sur les runners d'EXTRACTION, pas ici. Un profil
       # qu'aucun job d'extraction ne couvre survit donc à un `fresh_run` par le
       # checkout de ce job — c'était déjà le cas avant #450.
-      - name: Fusion des profils bruts (AN + Sénat + UE + roster)
+      # #528 : plus de `_artifacts/senat` — le job qui le produisait a été
+      # retiré avec le Sénat. Un répertoire absent est un no-op pour
+      # `merge_raw_dirs`, mais le laisser listé aurait fait croire à une source
+      # muette là où il n'y a plus de source du tout.
+      - name: Fusion des profils bruts (AN + UE + roster)
         run: |
           python3 src/merge_profile.py \
-            --dirs _artifacts/an _artifacts/senat _artifacts/ue _artifacts/roster \
+            --dirs _artifacts/an _artifacts/ue _artifacts/roster \
             --out raw_data/profiles
 
       # ── Pivot + enrichissement ParlTrack ──────────────────────────────────
@@ -1970,7 +1793,7 @@ jobs:
 
       # Pas de --enrich-parltrack sur ce second passage, contrairement au
       # premier (#413 §4) : ParlTrack est une source UE (eurodéputé·es), et le
-      # roster ne contient que des membres AN/Sénat — l'enrichissement n'aurait
+      # roster ne contient que des membres AN — l'enrichissement n'aurait
       # aucun pivot à enrichir ici. Asymétrie voulue, pas un oubli.
       #
       # Pivots roster-driven (#192) : repasse --pivot-only explicitement sur

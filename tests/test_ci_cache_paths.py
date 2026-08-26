@@ -26,11 +26,14 @@ from pathlib import Path
 RACINE = Path(__file__).resolve().parents[1]
 WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 
-# Jobs autorisés à cacher `.cache` en bloc, avec la raison. `extract-senat`
-# n'écrit rien sous `.cache` (aucune constante côté Sénat) : son entrée ne
-# recopie que ce que la restauration y a mis. Laissé en l'état par #424, qui ne
-# supprime pas une entrée de cache en effet de bord.
-JOBS_CACHE_LARGE_TOLERES = {"extract-senat"}
+# Jobs autorisés à cacher `.cache` en bloc, avec la raison. Le seul l'était
+# `extract-senat`, qui n'écrivait rien sous `.cache` (aucune constante côté
+# Sénat) : son entrée ne recopiait que ce que la restauration y avait mis. #424
+# l'avait laissée en l'état plutôt que de la supprimer en effet de bord ; #528
+# a retiré le job, donc l'entrée, donc la tolérance. L'ensemble redevient
+# **vide** : une tolérance qui survit à son bénéficiaire est une porte ouverte
+# que personne ne relit. Voir docs/technical_decisions.md#retrait-senat-528.
+JOBS_CACHE_LARGE_TOLERES: set[str] = set()
 
 
 def _repertoires_cache_utilises_par_le_code() -> set[str]:
