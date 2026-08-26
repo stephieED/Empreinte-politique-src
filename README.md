@@ -40,7 +40,9 @@ CV_CandidatFR/
 |  |- gouvernement_profile.py        # Aggregate roster + legislative files into a full government profile
 |  |- generate_gouvernement_profiles.py # Batch: all governments from raw_data/gouvernements_reels.json
 |  |- parti_profile.py               # Editorial party aggregates from individual pivots
-|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (5 sections)
+|  |- check_quality_gate.py          # Pre-commit quality gate + run summary (6 sections)
+|  |- correspondance_acteurs_an.py   # Committed slug <-> AN acteur_ref table: load, validate, resolve loudly (#525)
+|  |- build_correspondance_acteurs_an.py # Rebuild that table from published profiles + AMO30 (never invents an entry)
 |  |- audit_pivot_dataset.py         # Pivot dataset audit: volumetry/completeness/consistency/freshness/warnings + JSON/Markdown report
 |  |- audit_groupe_dataset.py        # Groupe dataset audit: same categories as audit_pivot_dataset.py + JSON/Markdown report
 |  |- audit_gouvernement_dataset.py  # Gouvernement dataset audit: I/O + volumetry/completeness/consistency/freshness indicators (no CLI/Markdown yet, see #319)
@@ -59,6 +61,7 @@ CV_CandidatFR/
 |  |- candidats.json                 # Candidate list (name, slug, party, status, sources)
 |  |- groupes_reels.json             # Validated list of real groups to generate
 |  |- gouvernements_reels.json       # Validated list of real governments (ministerial roster source)
+|  |- correspondance_acteurs_an.json # Reviewed slug <-> AN acteur_ref table, with proof per entry (#525)
 |  `- profiles/                      # Raw candidate profiles: <slug>.json
 |- pivot_data/                        # Anything in pivot schema format (or derived)
 |  |- profiles/                      # <slug>.pivot.json per candidate
@@ -284,6 +287,27 @@ cloisonnées — `allow_declared_losses` ne désarme pas
 `allow_broken_references`. Mesuré sur les 209 profils committés : 0
 référence orpheline sur 1 347 451, 3,02 s / 162,0 Mio. Voir
 `docs/technical_decisions.md#integrite-referentielle-pivot`.
+
+### Régénérer la table slug ↔ acteur AN (#525)
+
+`raw_data/correspondance_acteurs_an.json` associe chaque slug publié à son
+`acteur_ref` AN (`PA######`), avec l'état civil AMO30, la preuve (fiche AN) et
+la date de vérification. Elle est **committée et relue** : le pipeline la lit,
+il ne la recalcule pas.
+
+```bash
+python3 src/build_correspondance_acteurs_an.py             # complète et réécrit
+python3 src/build_correspondance_acteurs_an.py --verifier   # n'écrit rien, sort 1 si un slug manque
+```
+
+Les entrées existantes sont reconduites **verbatim** — c'est le travail relu —
+et un changement d'état civil côté AN est signalé, jamais corrigé tout seul. Un
+slug que la correspondance par nom ne résout pas est **nommé sur stderr** et le
+script sort en 1 : il n'invente jamais une entrée. Mesuré le 26/08/2026 sur les
+476 profils publiés et les 3 119 acteurs d'AMO30 : 466 résolus par le nom, 10 à
+arbitrer (2 homonymes, 2 apostrophes, 5 noms divergents, 1 hors AN). La
+couverture est un **échec dur** du quality gate (§5b), qui nomme le slug
+manquant. Voir `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 
 ### Vérifier que tout ce qui est collecté est publié (#511)
 

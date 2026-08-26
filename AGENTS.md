@@ -427,6 +427,29 @@ verdict the suspension decision rides on. Guarded by
 `tests/test_ci_cloisonnement_branche_roster.py`.
 See `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
 
+**The slug ↔ AN actor correspondence is a committed artifact, not a heuristic (#525)**:
+`raw_data/correspondance_acteurs_an.json` maps each of the **476 published slugs** to
+its `PA######`, the AMO30 état civil, the **proof** (the actor's AN fiche URL) and a
+verification date. Slugs are the profile `id` (#487) and AMO30 publishes no external
+id, so a roster derived from it cannot know which profile it feeds without this table.
+Name matching resolves **466 of 476**; the 10 remaining are facts nothing in the data
+can guess — two real homonyms the AN disambiguates *inside the état civil*
+(`Martin (Alpes-Maritimes)` / `Martin (Gironde)`), two apostrophes, four noms d'usage,
+one mid-career name change, and one **declared** `hors_an` (`jordan-bardella`, MEP:
+`acteur_ref: null` + `ecart` + `motif`, never absent — a mute hole is what produced
+#510 and #501). Cross-checked: 474 agreements, **0 disagreements** with the published
+profiles' `identite.source_url`. `_resolve_acteur_ref_par_slug` reads the table
+**first**; a declared `hors_an` returns `None` with **no** name fallback, an *absent*
+slug does fall back (the roster grows every run — a newly elected member has no
+reviewed entry by construction), and a missing table is a **declared** fallback, one
+printed line. The loud failure lives in the gate: **§5b hard-fails the commit naming
+any published slug with no entry**, threshold 0; an entry with no published profile is
+non-blocking. `build_correspondance_acteurs_an.py` reconducts reviewed entries verbatim
+and **refuses to invent** — unresolved slugs are named on stderr, exit 1, never filled
+from `identite.source_url`. Guarded by `tests/test_correspondance_acteurs_an.py`
+(fixture only — the table is not in `tests.yml`'s sparse-checkout).
+See `docs/technical_decisions.md#correspondance-acteurs-an-525`.
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

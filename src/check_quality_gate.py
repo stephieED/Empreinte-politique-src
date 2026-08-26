@@ -80,6 +80,16 @@ from couverture_dossiers import (  # noqa: E402
     statut_couverture_textes,
 )
 
+# Correspondance slug ↔ acteur AN (#525) : stdlib pure, une seule lecture de
+# `raw_data/correspondance_acteurs_an.json`. Le gate est le seul contrôle
+# d'avant-commit qui voie à la fois le corpus PUBLIÉ et la table — c'est donc
+# lui qui refuse un profil publié sans correspondance relue.
+from correspondance_acteurs_an import (  # noqa: E402
+    CHEMIN_PAR_DEFAUT as CORRESPONDANCE_PAR_DEFAUT,
+    CorrespondanceInvalide,
+    charger_correspondance,
+)
+
 INCOMPLETE_READ_MARKER = "IncompleteRead"
 # Signaux réseau spécifiques aux groupes (hors IncompleteRead, déjà traité §1)
 _GROUPE_NETWORK_SIGNALS = ("roster_indisponible", "Échec de récupération", "timeout")
@@ -1746,6 +1756,117 @@ def _report_gouvernements(
 
 
 # ---------------------------------------------------------------------------
+# Section 5b — Correspondance slug ↔ acteur AN (#525)
+# ---------------------------------------------------------------------------
+
+def _report_correspondance_acteurs(
+    profiles_dir: Path, chemin_table: Path
+) -> tuple[list[str], str, str]:
+    """Vérifie que **tout profil publié** a son entrée dans
+    `raw_data/correspondance_acteurs_an.json` (#525).
+
+    **Hard fail**, et le seuil est 0. Un profil publié sans correspondance
+    relue est un profil dont personne ne sait quel acteur AN il décrit : dès
+    lors que le roster est dérivé d'AMO30, cette entrée manquante ne se
+    manifeste pas comme une erreur mais comme un profil **alimenté par les
+    données de quelqu'un d'autre**, ou par rien. C'est la classe de panne du
+    lot 2 — « une correspondance non résolue doit échouer bruyamment, jamais
+    inventer un slug ».
+
+    Ce qui bloque :
+
+      - un slug publié absent de la table — le message le **nomme** ;
+      - une table absente, illisible, d'une autre version de schéma, ou
+        violant un invariant (`CorrespondanceInvalide`).
+
+    Ce qui ne bloque pas : une entrée de la table sans profil publié. La table
+    est un artefact relu qui a le droit de survivre à un profil retiré du
+    corpus, exactement comme l'index partagé survit à son référent (#485).
+
+    Un slug déclaré **sans acteur AN** (`jordan-bardella`, député européen) est
+    couvert : il porte `acteur_ref: null`, `ecart: "hors_an"` et son motif. Un
+    trou déclaré n'est pas un trou (AGENTS.md §2 règle 5).
+
+    Retourne (hard_errors, console_text, markdown_text).
+    """
+    hard_errors: list[str] = []
+    manquants: list[str] = []
+    publies: list[str] = []
+    total_table = 0
+    hors_an = 0
+    non_publies = 0
+
+    try:
+        table = charger_correspondance(chemin_table)
+    except CorrespondanceInvalide as exc:
+        hard_errors.append(str(exc))
+        table = None
+
+    if table is not None:
+        total_table = len(table)
+        hors_an = sum(1 for e in table.values() if e["ecart"] == "hors_an")
+        # `Path.glob` renvoie les dotfiles, contrairement au module `glob` :
+        # `.generation_checkpoint.json` a déjà été lu comme un profil et a
+        # coûté un commit (#518).
+        publies = sorted(
+            p.stem.replace(".pivot", "")
+            for p in profiles_dir.glob("*.pivot.json")
+            if not p.name.startswith(".")
+        )
+        manquants = sorted(set(publies) - set(table))
+        non_publies = len(set(table) - set(publies))
+        for slug in manquants:
+            hard_errors.append(
+                f"{slug} : profil publié sans correspondance slug ↔ acteur AN. "
+                "Ajoute son entrée (acteur_ref, état civil, preuve, date de "
+                "vérification) dans raw_data/correspondance_acteurs_an.json — "
+                "python3 src/build_correspondance_acteurs_an.py la propose pour "
+                "les slugs que la correspondance par nom résout seule (#525)."
+            )
+
+    lignes = [
+        "┌─ 5b/6  Correspondance slug ↔ acteur AN ────────────────────────────",
+        f"│  Profils publiés : {len(publies)}   Entrées : {total_table}   "
+        f"Sans acteur AN (déclaré) : {hors_an}   Sans entrée : {len(manquants)}",
+    ]
+    if non_publies:
+        lignes.append(
+            f"│  ℹ {non_publies} entrée(s) sans profil publié — non bloquant."
+        )
+    for e in hard_errors:
+        lignes.append(f"│  ✗ {e}")
+    if not hard_errors:
+        lignes.append("│  ✓ Tout profil publié porte sa correspondance relue.")
+    lignes.append("└" + "─" * 68)
+
+    md_lines = [
+        "### 5b · Correspondance slug ↔ acteur AN",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Profils publiés | {len(publies)} |",
+        f"| Entrées de la table | {total_table} |",
+        f"| Déclarés sans acteur AN | {hors_an} |",
+        f"| Publiés sans entrée | {len(manquants)} |",
+        f"| Entrées sans profil publié (non bloquant) | {non_publies} |",
+        "",
+    ]
+    if hard_errors:
+        md_lines.append(
+            "> ✗ **Correspondance manquante** — un profil publié dont on ignore "
+            "quel acteur AN il décrit (`technical_decisions.md"
+            "#correspondance-acteurs-an-525`). À compléter avant commit.\n"
+        )
+        for e in hard_errors:
+            md_lines.append(f"> - {e}")
+        md_lines.append("")
+    else:
+        md_lines.append("_Tout profil publié porte sa correspondance relue._\n")
+
+    return hard_errors, "\n".join(lignes), "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Section 6 — Couverture ParlTrack (optionnelle)
 # ---------------------------------------------------------------------------
 
@@ -1846,6 +1967,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--partis-dir", type=Path, default=Path("pivot_data/partis"))
     parser.add_argument("--raw-dir", type=Path, default=Path("raw_data/profiles"))
     parser.add_argument("--candidats", type=Path, default=Path("raw_data/candidats.json"))
+    parser.add_argument(
+        "--correspondance-acteurs",
+        type=Path,
+        default=CORRESPONDANCE_PAR_DEFAUT,
+        dest="correspondance_acteurs",
+        help=(
+            "Table committée slug ↔ acteur AN (défaut : "
+            "raw_data/correspondance_acteurs_an.json, #525)."
+        ),
+    )
     parser.add_argument(
         "--groupes-config",
         type=Path,
@@ -2028,6 +2159,12 @@ def main() -> int:
     )
     gouv_exit = 1 if gouv_hard else 0
 
+    # ── Section 5b : Correspondance slug ↔ acteur AN ───────────────────────
+    corr_hard, corr_console, corr_md = _report_correspondance_acteurs(
+        args.profiles_dir, args.correspondance_acteurs,
+    )
+    corr_exit = 1 if corr_hard else 0
+
     # ── Section 6 : Couverture ParlTrack (optionnelle) ─────────────────────
     pt_console = ""
     pt_md = ""
@@ -2040,6 +2177,7 @@ def main() -> int:
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (
         ir_exit == 1 or grp_exit == 1 or gouv_exit == 1 or amdfmt_exit == 1
+        or corr_exit == 1
     ) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
@@ -2062,6 +2200,7 @@ def main() -> int:
     print(amdfmt_console)
     print(grp_console)
     print(gouv_console)
+    print(corr_console)
     if pt_console:
         print(pt_console)
     print()
@@ -2092,6 +2231,7 @@ def main() -> int:
         amdfmt_md,
         grp_md,
         gouv_md,
+        corr_md,
         pt_md,
     ])
     _write_step_summary(md)
@@ -2115,6 +2255,8 @@ def main() -> int:
         _gha_annotation("warning", f"Groupe — qualité dégradée : {warn}")
     for err in gouv_hard:
         _gha_annotation("error", f"Gouvernement — structure cassée : {err}")
+    for err in corr_hard:
+        _gha_annotation("error", f"Correspondance acteur AN — {err}")
     for warn in gouv_soft:
         _gha_annotation("warning", f"Gouvernement — qualité dégradée : {warn}")
     for warn in syc_soft:
