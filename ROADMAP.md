@@ -175,17 +175,14 @@ something is pending, not *why*.
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test
   structurel sur la table committée elle-même (#525).
 
-- Syceron debates are collected, parsed and indexed but **never retained**:
-  `_parse_syceron_intervention_entry` requires an `acteurRef` matching `PA\d+`,
-  while the AN's `syseron.xml.zip` publishes a bare numeric speaker id
-  (`<orateur><id>942</id>`). 0 of the 789 interventions in the 209 raw profiles
-  come from Syceron; 115 of the corpus's 207 `PA<n>` ids appear unprefixed among
-  the 730 speaker ids of legislature 17. Rebuilt locally with the prefix, that
-  single legislature indexes **105 392 interventions for 674 speakers** (102,3 MB).
-  Cost paid today for zero: 262,3 MB of archives and ~1,1 GB of extracted XML per
-  shard, 118 s measured on `laurent-wauquiez` (#498). Fixing it is a collection
-  change with a large data footprint, not a cache change — hence deliberately out
-  of #505. Measured in `technical_decisions.md#cache-mode-interventions-505`.
+- Syceron debates: the id, the traversal and the subject are fixed (#510), the
+  three archives are verified, but the flag is still **inactive**. The last
+  technical lock is the **per-actor shard** — 1 664,8 MB of index re-read per
+  candidate per legislature, 12,5 s and a 3,8 GB RSS peak against #500's 240 s
+  budget. Same remedy as #392/#403. Then re-measure profile weight and group
+  aggregates on 1 227 415 indexable interventions (789 published today), and
+  revalidate #505's cache. Measured in
+  `technical_decisions.md#syceron-acteur-ref-nu-510`.
 
 - Senate speeches were collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which

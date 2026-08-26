@@ -46,6 +46,68 @@ _TYPE_DETAIL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"projet de loi|proposition de loi|PLFSS|PLF", re.I), "loi"),
 ]
 
+# `code_grammaire` des `<point>` dont le TITRE porte le sujet du débat (#510).
+#
+# La hiérarchie des points est décrite par deux mécanismes que la source emploie
+# ensemble, et c'est la raison pour laquelle le parcours ci-dessous n'est ni un
+# simple `findall` ni une simple récursion :
+#
+#   - l'attribut `nivpoint` (1, 2, 3) désigne les niveaux du sommaire, et ces
+#     points-là sont des FRÈRES en XML, pas des descendants — mesuré sur la 17e :
+#     1 749 + 5 085 + 4 831 points, tous à la profondeur XML 1, tous titrés ;
+#   - l'imbrication XML porte les niveaux 4 et 5 (16 300 + 1 347 points sur la
+#     17e, profondeur 2 à 9), qui ne sont JAMAIS titrés : ce sont les points
+#     d'amendement, et ils héritent du titre de leur ancêtre.
+#
+# Un paragraphe de niveau 4 ne se rattache donc à son sujet ni par ses ancêtres
+# XML seuls ni par `nivpoint` seul. Il faut une pile de titres alimentée en ordre
+# de document, à laquelle l'imbrication XML se superpose.
+#
+# Le titre du point le plus proche n'est pas pour autant un thème : mesurés sur
+# la 17e, les plus fréquents sont « suspension et reprise de la séance » (1 009),
+# « rappel au règlement » (788), « ordre du jour de la prochaine séance » (594),
+# « article 1er » (155) — de la PROCÉDURE. Publier cela dans `sujet`, d'où
+# `normalize_nosdeputes` dérive `theme_officiel` puis `tags_thematiques`,
+# fabriquerait des tags thématiques à partir d'intitulés de procédure (§2 règle 8).
+#
+# Le discriminant est structurel, pas lexical : c'est le `code_grammaire` du
+# point, vocabulaire contrôlé de la source. Mesuré sur les 30 322 points de la
+# 17e législature, seuls trois codes portent un titre de matière —
+# `TITRE_TEXTE_DISCUSSION` (1 093 : « droit à l'aide à mourir », « projet de loi
+# de finances pour 2026 »), `QG_1_1` (1 804 : « crise agricole », « prix des
+# carburants ») et `QOSD_1_1` (815 : « permis de conduire », « zéro
+# artificialisation nette »). Tous les autres codes titrés sont procéduraux :
+# `DISC_ARTICLES_*`, `SUSP_SEANCE_1_1`, `RAP_REGLEMENT_1_1`, `DISC_GENERALE_1`,
+# `PRESENTATION_1_0`, `VOTE_ENS_*`, `FIN_SEAN_1_2`, `SOUS_TITRE_TEXTE_DISCUSSION`.
+#
+# Le `<sommaire>` de `<metadonnees>` n'apporte rien de plus, contrairement à ce
+# que supposait #510 : mesuré sur la 17e, l'`<intitule>` du sommaire est
+# rigoureusement le `<point><texte>` du point qu'il référence sur **12 035 des
+# 12 038** jointures par `id_syceron`. Il n'est donc pas lu.
+_CODE_GRAMMAIRE_SUJET = frozenset({
+    "TITRE_TEXTE_DISCUSSION",   # texte inscrit à l'ordre du jour
+    "QG_1_1",                   # question au Gouvernement
+    "QOSD_1_1",                 # question orale sans débat
+})
+
+# `type_detail` déduit du `code_grammaire` plutôt que d'une regex sur le titre :
+# le code est un vocabulaire contrôlé de la source, le titre est de la prose.
+_TYPE_DETAIL_PAR_CODE_GRAMMAIRE: dict[str, str] = {
+    "QG_1_1": "question_gouvernement",
+    "QOSD_1_1": "question_orale",
+}
+
+# Sous-arbres dans lesquels le parcours ne descend pas : `<ouvertureSeance>` et
+# `<finSeance>` par contrat historique (hors périmètre des interventions), les
+# deux autres parce qu'ils ne peuvent contenir aucun `<paragraphe>` et que les
+# traverser coûterait un parcours de tout le texte des débats.
+_TAGS_IGNORES = frozenset({
+    f"{_NSP}ouvertureSeance",
+    f"{_NSP}finSeance",
+    f"{_NSP}texte",
+    f"{_NSP}orateurs",
+})
+
 
 def _tag(local: str) -> str:
     """Retourne le nom de tag qualifié avec le namespace Syceron."""
@@ -82,13 +144,59 @@ def _extract_texte(paragraphe: ET.Element) -> Optional[str]:
     return text or None
 
 
-def _infer_type_detail(titre: Optional[str]) -> str:
-    """Infère le type_detail depuis le titre du point de l'ordre du jour."""
-    if not titre:
-        return "debat"
-    for pattern, type_detail in _TYPE_DETAIL_MAP:
-        if pattern.search(titre):
+def _titre_point(point: ET.Element) -> Optional[str]:
+    """Titre d'un `<point>`, lu dans son `<texte>` enfant direct (#510).
+
+    C'est là que la source le publie — et nulle part ailleurs : `<titreStruct>`
+    sous `<contenu>` compte **0 occurrence** sur les 162 073 points des trois
+    législatures Syceron (15, 16, 17), alors que le parseur le lisait là.
+
+    `find` ne regarde que les enfants directs : le `<texte>` d'un point imbriqué
+    ne peut donc pas être pris pour celui de son parent.
+    """
+    texte = point.find(_tag("texte"))
+    if texte is None:
+        return None
+    titre = " ".join("".join(texte.itertext()).split())
+    return titre or None
+
+
+def _niveau_point(point: ET.Element) -> Optional[int]:
+    """Niveau de sommaire déclaré par l'attribut `nivpoint`, ou `None` s'il est
+    absent ou non numérique — auquel cas seule l'imbrication XML fait foi."""
+    try:
+        return int(point.get("nivpoint"))
+    except (TypeError, ValueError):
+        return None
+
+
+def _sujet_depuis_chaine(chaine: tuple[tuple[Optional[int], Optional[str], str], ...]) -> Optional[str]:
+    """Titre du point titré le plus profond qui porte un sujet, ou `None`.
+
+    `None` est un résultat, pas un défaut : un paragraphe prononcé sous « article
+    1er » n'a pas de sujet publié par la source, et lui en inventer un depuis
+    l'intitulé de procédure alimenterait `tags_thematiques` de faux thèmes
+    (§2 règle 5 et règle 8)."""
+    for _niveau, code_grammaire, titre in reversed(chaine):
+        if code_grammaire in _CODE_GRAMMAIRE_SUJET:
+            return titre
+    return None
+
+
+def _infer_type_detail(chaine: tuple[tuple[Optional[int], Optional[str], str], ...]) -> str:
+    """Infère le `type_detail` depuis la chaîne des points englobants.
+
+    Le `code_grammaire` prime — vocabulaire contrôlé de la source — et la regex
+    sur les titres ne sert que de repli, du point le plus profond au plus haut.
+    """
+    for _niveau, code_grammaire, _titre in reversed(chaine):
+        type_detail = _TYPE_DETAIL_PAR_CODE_GRAMMAIRE.get(code_grammaire or "")
+        if type_detail:
             return type_detail
+    for _niveau, _code_grammaire, titre in reversed(chaine):
+        for pattern, type_detail in _TYPE_DETAIL_MAP:
+            if pattern.search(titre):
+                return type_detail
     return "debat"
 
 
@@ -157,6 +265,62 @@ def _parse_orateur(paragraphe: ET.Element) -> tuple[Optional[str], Optional[str]
     return oid, nom, qualite
 
 
+def _iter_paragraphes(
+    element: ET.Element,
+    chaine: tuple[tuple[Optional[int], Optional[str], str], ...],
+    dans_point: bool = False,
+):
+    """Parcourt les `<paragraphe>` sous les `<point>`, à TOUTE profondeur (#510).
+
+    Rend `(paragraphe, chaine)`, où `chaine` est la suite des points englobants
+    du plus haut au plus profond, sous forme `(nivpoint, code_grammaire, titre)`.
+
+    Le parcours d'origine était `contenu.findall("point")` puis
+    `point.findall("paragraphe")` — deux niveaux, en enfants directs. Mesuré sur
+    les trois archives, il ne voyait que **180 755 des 1 444 564** paragraphes
+    (12,5 %) : 29 194 / 788 095 sur la 15e, 41 933 / 335 800 sur la 16e,
+    109 628 / 320 669 sur la 17e. Les deux tiers à sept huitièmes du débat
+    étaient donc invisibles, pour la même raison que #510 lui-même : la fixture
+    sur laquelle le parseur avait été validé ne décrivait pas la source.
+
+    La pile de titres se dépile sur `nivpoint` — les points de niveau 1 à 3 sont
+    des frères en XML — et se transmet par l'imbrication pour les niveaux 4 et 5.
+    Un point sans titre (les 17 647 points de niveau 4 et 5 de la 17e) n'empile
+    rien : ses paragraphes gardent le titre de l'ancêtre.
+
+    Les `<paragraphe>` ne sont pas non plus tous enfants d'un `<point>` : la
+    source les regroupe dans des conteneurs intermédiaires — `<interExtraction>`
+    (un échange rattaché à un orateur) porte **86 163 des 103 213** paragraphes
+    d'un échantillon de 200 comptes rendus de la 15e législature, et
+    `<changementPresidence>` en porte d'autres. Ces conteneurs n'ont pas de
+    titre : on les traverse sans rien empiler.
+
+    `<ouvertureSeance>` et `<finSeance>` restent ignorés, et le périmètre reste
+    « sous un `<point>` » : ce parcours corrige la profondeur atteinte, il
+    n'élargit pas la portion du compte rendu retenue.
+    """
+    courant = list(chaine)
+    for enfant in element:
+        if enfant.tag in _TAGS_IGNORES:
+            continue
+        if enfant.tag == _tag("point"):
+            titre = _titre_point(enfant)
+            if titre:
+                niveau = _niveau_point(enfant)
+                if niveau is not None:
+                    while courant and courant[-1][0] is not None and courant[-1][0] >= niveau:
+                        courant.pop()
+                courant.append((niveau, enfant.get("code_grammaire"), titre))
+            yield from _iter_paragraphes(enfant, tuple(courant), True)
+        elif enfant.tag == _tag("paragraphe"):
+            if dans_point:
+                yield enfant, tuple(courant)
+        elif dans_point:
+            # Conteneur intermédiaire SANS titre à l'intérieur d'un point
+            # (`<interExtraction>`, `<changementPresidence>`…) : traversé.
+            yield from _iter_paragraphes(enfant, tuple(courant), True)
+
+
 def _parse_interventions(
     root: ET.Element,
     seance: dict[str, Any],
@@ -183,40 +347,41 @@ def _parse_interventions(
 
     interventions: list[dict[str, Any]] = []
 
-    for point in contenu.findall(_tag("point")):
-        # Titre du point (signal de contexte / thème)
-        titre_struct = point.find(_tag("titreStruct"))
-        titre = _text(titre_struct, _tag("intitule")) if titre_struct is not None else None
-        type_detail = _infer_type_detail(titre)
+    for paragraphe, chaine in _iter_paragraphes(contenu, ()):
+        texte = _extract_texte(paragraphe)
+        oid, nom_orateur, qualite = _parse_orateur(paragraphe)
 
-        for paragraphe in point.findall(_tag("paragraphe")):
-            texte = _extract_texte(paragraphe)
-            oid, nom_orateur, qualite = _parse_orateur(paragraphe)
+        # On retient le paragraphe s'il a un orateur identifié ou un texte.
+        if not oid and not nom_orateur and not texte:
+            continue
 
-            # On retient le paragraphe s'il a un orateur identifié ou un texte.
-            if not oid and not nom_orateur and not texte:
-                continue
-
-            interventions.append({
-                # Champs compatibles avec le format pivot interventions[]
-                "date": date_seance,
-                "type_detail": type_detail,
-                "sujet": titre,
-                "texte": texte,
-                "fonction": qualite,
-                "format": _infer_format(texte),
-                "mots_cles": [],
-                "source_url": None,
-                # Champs contextuels Syceron (traçabilité et audit qualité)
-                "source_id": uid,
-                "seance_ref": seance_ref,
-                "session_ref": session_ref,
-                "orateur_id_source": oid,
-                "orateur_nom": nom_orateur,
-                "point_ordre_du_jour": titre,
-                "etat_compte_rendu": etat,
-                "version_compte_rendu": version,
-            })
+        chemin = " > ".join(titre for _niveau, _code, titre in chaine) or None
+        interventions.append({
+            # Champs compatibles avec le format pivot interventions[]
+            "date": date_seance,
+            "type_detail": _infer_type_detail(chaine),
+            "sujet": _sujet_depuis_chaine(chaine),
+            "texte": texte,
+            "fonction": qualite,
+            "format": _infer_format(texte),
+            "mots_cles": [],
+            "source_url": None,
+            # Champs contextuels Syceron (traçabilité et audit qualité)
+            "source_id": uid,
+            "seance_ref": seance_ref,
+            "session_ref": session_ref,
+            "orateur_id_source": oid,
+            # Attribution que la source porte elle-même, en attribut du
+            # `<paragraphe>`, à côté de l'identifiant nu de `<orateur><id>`.
+            # C'est la preuve du préfixage de #510 — et, quand les deux se
+            # contredisent, le refus d'attribution de la source elle-même.
+            "orateur_id_acteur": paragraphe.get("id_acteur") or None,
+            "orateur_nom": nom_orateur,
+            "point_ordre_du_jour": chemin,
+            "point_code_grammaire": (chaine[-1][1] if chaine else None),
+            "etat_compte_rendu": etat,
+            "version_compte_rendu": version,
+        })
 
     return interventions
 
@@ -254,9 +419,11 @@ def parse_syceron_xml(xml_content: Union[str, bytes]) -> dict[str, Any]:
                     "source_id": str | None,
                     "seance_ref": str | None,
                     "session_ref": str | None,
-                    "orateur_id_source": str | None,
+                    "orateur_id_source": str | None,   # NU, tel que publié
+                    "orateur_id_acteur": str | None,   # attribut id_acteur du paragraphe
                     "orateur_nom": str | None,
-                    "point_ordre_du_jour": str | None,
+                    "point_ordre_du_jour": str | None, # chaîne des titres, " > "
+                    "point_code_grammaire": str | None,
                     "etat_compte_rendu": str | None,
                     "version_compte_rendu": str | None,
                 },

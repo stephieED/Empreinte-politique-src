@@ -181,28 +181,45 @@ certificate changes nothing.
 **primary** source of interventions built an empty index from day one (2 bytes
 from 601 comptes rendus), and **0 of the 789 published interventions** came from
 it. The prefixing is not an inference: the same `<paragraphe>` carries
-`id_acteur="PA847629"`, identical on **289 701 of 289 702** paragraphs, and all
-**673** distinct bare ids of the 17th resolve in the AN referential. The fix
-ships **inactive** (`--activer-interventions-syceron`) because what it unlocks is
-not publishable yet — measured on legislature 17 alone: 104 239 interventions,
-a **136,8 Mio** index re-read **per candidate per legislature** (1,56 s, 563 Mio
-RSS, against #500's 240 s budget), +20,3 Mio of pivot on the 229-profile corpus
-of `d7d8fb1` (×1,20, up to ×6,8 on one profile), and two *independent* parser
-defects that make the
-data two-thirds truncated (`point.findall` is not recursive: 212 264 of 321 892
-paragraphs invisible) and themeless (`<titreStruct>` does not exist: `sujet` is
-`None` on 100 % of entries, and Syceron **replaces** the NosDéputés list that
-`tags_thematiques` is derived from). Both parser defects have the same cause as
-#510: `tests/fixtures/syceron_minimal.xml` describes a schema the AN does not
-publish, so the parser was validated against its own assumption — measure only
-on `syceron_reel_leg17.xml`. Unresolved ids are **counted, not warned** per
-entry (5 389 on the 17th; same arbitration as #492, and expected-and-permanent
-discards get no warning at all, as in #474); the tripwire is `forme_inattendue`,
-at **0**. And an index built from *readable* comptes rendus that resolves **zero**
-actors is never cached nor returned silently — #505's guard only covered "no
-readable file", and that gap is how this survived (§2.5). **Not verified:
-legislatures 15 and 16** — only the 17th was downloaded. Guarded by
-`tests/test_syceron_acteur_ref.py`.
+`id_acteur="PA847629"`. Verified on **all three** archives since 26/08/2026
+(2 768 comptes rendus, `content-length` checked): `id_acteur == "PA"+id` on
+**1 232 692 of 1 235 317** paragraphs, `forme_inattendue` at **0** on each — no
+archive publishes the prefixed form. When `id_acteur` **contradicts** the
+prefixing (2 625 paragraphs, 2 524 of them a `<nom>` naming *two* speakers), the
+source itself refuses the attribution and so do we: keeping the first would
+fabricate a speech (§2 rule 2).
+Two *independent* parser defects, same cause as #510 — the invented fixtures —
+are fixed in the same run. (a) The traversal saw **180 755 of 1 444 564**
+paragraphs (**12,5 %**, down to 3,7 % on the 15th): `nivpoint` 1-3 points are XML
+**siblings**, `nivpoint` 4-5 are **nested** and never titled, and an undocumented
+`<interExtraction>` container holds 86 163 of 103 213 paragraphs in a 200-CR
+sample of the 15th. The perimeter is unchanged — still "under a `<point>`",
+`<ouvertureSeance>`/`<finSeance>` still out. (b) `<titreStruct>` does not exist
+under `<contenu>` (**0** of 162 073 points); the title is in `<point><texte>`,
+and `<metadonnees><sommaire>` adds nothing (its `<intitule>` *is* the point's
+`<texte>` on 12 035 of 12 038 joins). What separates a subject from a procedural
+heading is **structural**, not lexical: the point's `code_grammaire`
+(`TITRE_TEXTE_DISCUSSION`, `QG_1_1`, `QOSD_1_1` — the only three of 30 322 points
+that carry matter). `sujet` is now filled on **88,0 %** of the 1 227 415 indexable
+interventions, `None` otherwise (rule 5) — never a procedural title, since Syceron
+**replaces** the NosDéputés list `tags_thematiques` is derived from (rule 8).
+`point_ordre_du_jour` carries the full title chain instead.
+**Measure only on verbatim reductions of the archive**: the two invented fixtures
+are **deleted**, not deprecated — keeping them under test was keeping the cause
+armed.
+Unresolved ids are **counted, not warned** per entry (same arbitration as #492,
+and expected-and-permanent discards get no warning at all, as in #474); the
+tripwires are `forme_inattendue` and "not one indexed entry carries a subject",
+both at **0**. And an index built from *readable* comptes rendus that resolves
+**zero** actors is never cached nor returned silently — #505's guard only covered
+"no readable file", and that gap is how this survived (§2.5).
+The flag stays **inactive** (`--activer-interventions-syceron`), and the parser
+fix made activation *more* expensive, not less: **1 227 415** indexable
+interventions against 789 published, **1 664,8 Mio** of index re-read **per
+candidate per legislature** — **12,5 s** and a 3,8 Gio RSS peak, against #500's
+240 s budget. The last technical lock is the **per-actor shard**
+(`_scrutins_shard_path_acteur`, #392/#403), still unwritten, and it is not in
+#510. Guarded by `tests/test_syceron_acteur_ref.py` and `tests/test_parse_syceron.py`.
 See `docs/technical_decisions.md#syceron-acteur-ref-nu-510`.
 
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
