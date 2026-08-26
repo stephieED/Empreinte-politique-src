@@ -34,6 +34,7 @@ CV_CandidatFR/
 |  |- text_utils.py                  # Shared text helpers (normalisation, accent folding)
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
 |  |- group_roster.py                # Fetch real group composition (NosDeputes/NosSenateurs)
+|  |- an_roster.py                   # Derive AN group composition from AMO30 (open data AN), incl. legislature 17 — INACTIVE flag (#526)
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- groupes_config.py              # Shared read of groupes_reels.json + temporary extraction suspension (#516)
 |  |- gouvernement_roster.py         # Ministerial roster of a government from local pivots (no network call)
@@ -82,6 +83,7 @@ CV_CandidatFR/
 |  |- test_candidate_profile_ue.py
 |  |- test_group_profile.py
 |  |- test_group_roster.py
+|  |- test_an_roster.py
 |  |- test_generate_group_profiles.py
 |  |- test_gouvernement_textes.py
 |  |- test_gouvernement_roster.py
@@ -308,6 +310,31 @@ script sort en 1 : il n'invente jamais une entrée. Mesuré le 26/08/2026 sur le
 arbitrer (2 homonymes, 2 apostrophes, 5 noms divergents, 1 hors AN). La
 couverture est un **échec dur** du quality gate (§5b), qui nomme le slug
 manquant. Voir `docs/technical_decisions.md#correspondance-acteurs-an-525`.
+
+### Dériver la composition des groupes AN d'AMO30 (#526, **inactif**)
+
+`src/an_roster.py` reconstruit la composition des groupes de l'Assemblée à
+partir de l'open data AN (`AMO30_tous_acteurs_tous_mandats_tous_organes`), que
+le pipeline télécharge et met déjà en cache. Il tourne **à côté** de
+NosDéputés, il ne le remplace pas : la bascule est un lot séparé.
+
+```bash
+# Composition d'un groupe (sigle PUBLIÉ, pas le sigle AN)
+python3 src/an_roster.py --activer-roster-an --legislature 17 --sigle EPR
+
+# Écart avec les fiches publiées, entrée par entrée (compteur de migration)
+python3 src/an_roster.py --activer-roster-an --divergence
+```
+
+Sans `--activer-roster-an`, le module **refuse bruyamment** : il ne rend jamais
+une liste vide, qui serait indiscernable d'un groupe dissous. La table sigle
+publié → sigle(s) AN est committée dans `raw_data/groupes_reels.json`
+(`correspondance_sigles_an`), avec organes et effectifs **mesurés**. Mesuré le
+26/08/2026 : les 5 fiches de la 16e sont reproduites, écart total **4** — quatre
+députés partis avant la fin de la législature, nommés et datés, qu'AMO30 connaît
+et que NosDéputés ne publie plus. La 17e législature, absente de NosDéputés, est
+servie (461 membres sur les 5 familles publiées, 305 ont déjà un profil). Voir
+`docs/technical_decisions.md#roster-an-derive-amo30-526`.
 
 ### Vérifier que tout ce qui est collecté est publié (#511)
 

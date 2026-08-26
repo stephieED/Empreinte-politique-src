@@ -30,27 +30,27 @@ import requests
 
 from candidate_profile import BASE_URLS, HEADERS, TIMEOUT
 
-# Association domaine NosDeputes.fr -> legislature AN. Definie ici depuis #403 :
-# candidate_profile ne l'utilisait plus que pour les votes, ou elle figeait
-# chaque profil sur une seule legislature (voir AN_SCRUTINS_LEGISLATURES) ; ce
-# module en reste le seul utilisateur legitime, car les rosters de groupes sont
-# bien servis par un domaine NosDeputes different par legislature. Verifie le
-# 18/08/2026 : www.nosdeputes.fr sert toujours la 16e (618 deputes, mandats
-# 2022-06-22 -> 2024-06-09), le site n'ayant pas ete etendu a la 17e — d'ou
-# l'absence de cette derniere ici, contrairement aux votes qui viennent
-# desormais directement de l'open data AN.
-LEGISLATURE_BY_BASE_URL: dict[str, str] = {
-    "https://www.nosdeputes.fr": "16",
-    "https://2017-2022.nosdeputes.fr": "15",
-    "https://2012-2017.nosdeputes.fr": "14",
-    "https://2007-2012.nosdeputes.fr": "13",
-}
-
-# Association legislature AN -> domaine NosDeputes.fr (inverse du mapping
-# ci-dessus). Ne couvre que l'Assemblée : le Sénat n'a plus qu'un seul domaine
-# d'archive, quelle que soit la période (voir BASE_URLS["senateurs"]).
+# Association legislature AN -> domaine NosDeputes.fr. Ne couvre que
+# l'Assemblée : le Sénat n'a plus qu'un seul domaine d'archive, quelle que soit
+# la période (voir BASE_URLS["senateurs"]).
+#
+# Cette table **s'arrête à la 16e**, et c'est une propriété de la source, pas
+# un oubli : NosDéputés n'a jamais été étendu à la 17e législature. Vérifié le
+# 18/08/2026 : www.nosdeputes.fr sert toujours la 16e (618 députés, mandats
+# 2022-06-22 -> 2024-06-09).
+#
+# C'est la raison pour laquelle #526 dérive désormais la composition des
+# groupes d'AMO30 (`src/an_roster.py`), où la 17e existe : là-bas la
+# législature est une DONNÉE du référentiel, pas un sous-domaine à connaître
+# d'avance. Le mapping inverse (domaine -> législature), qui n'existait que
+# pour construire celui-ci, a disparu avec ce lot : personne d'autre ne le
+# lisait, et le garder aurait laissé croire qu'un domaine est une façon
+# légitime d'apprendre une législature.
 _BASE_URL_BY_LEGISLATURE_AN: dict[str, str] = {
-    legislature: base_url for base_url, legislature in LEGISLATURE_BY_BASE_URL.items()
+    "16": "https://www.nosdeputes.fr",
+    "15": "https://2017-2022.nosdeputes.fr",
+    "14": "https://2012-2017.nosdeputes.fr",
+    "13": "https://2007-2012.nosdeputes.fr",
 }
 
 _LIST_ENDPOINT = {

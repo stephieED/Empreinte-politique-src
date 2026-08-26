@@ -450,6 +450,40 @@ from `identite.source_url`. Guarded by `tests/test_correspondance_acteurs_an.py`
 (fixture only — the table is not in `tests.yml`'s sparse-checkout).
 See `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 
+**The AN group roster is derivable from AMO30, and ships inactive (#526)**:
+`src/an_roster.py` rebuilds a legislature's group composition from the archive
+`candidate_profile.py` already downloads and caches — same source as the ballots
+and the amendments, **Licence Ouverte** instead of ODbL, and it serves the **17th
+legislature**, which NosDéputés never did (hence the removal of
+`LEGISLATURE_BY_BASE_URL`). Output contract is `fetch_full_roster`'s, so
+`filter_roster_by_sigle` applies unchanged — that is what makes lot 1b a switch
+and not a rewrite. Three measured traps, all three handled in the module, none
+cosmetic: (a) **`NI` counts 592 on the 16th** because « Non inscrit » opens
+before the groups (2022-06-22 vs 2022-06-28; 2024-07-01 vs 2024-07-18) — a
+mandate ending **on or before** the day the legislature's groups are constituted
+is a transit, and that date is *read* from the referential, never hard-coded
+(`NI` 592 → 39 and 640 → 94; **no other group loses a member**); (b) the AN sigle
+is `organe.libelleAbrev`, **not** `libelleAbrege`, which writes `LFI - NUPES` and
+returns `SOC` for **both** 16th-legislature socialist organs — the published
+sigle → AN sigle(s) table is committed in `raw_data/groupes_reels.json`
+(`correspondance_sigles_an`), with organs and effectifs *measured* and the gap
+named **entry by entry**; (c) one group can have **successive organs** in one
+legislature (`SOC` `PO800496` → `SOC-A` `PO830170`; `AD` → `UDR` → `UDDPLR`), so
+the roster is the **union**, deduplicated per actor, with periods re-glued —
+without it the 31 SOC members would carry `mandat_fin: 2023-10-18`, half a year
+lost with no count moving. The slug comes from #525's table read backwards; an
+actor with no entry gets `slug: None` **and** a named, dated line in
+`membres_sans_slug` — the downstream chain drops a slugless member without a
+word. Inactive means **loud refusal**, never an empty roster, and two tests
+freeze it: the flag is `False`, and **no module in `src/` imports `an_roster`**.
+Migration meter = `--divergence`'s `ecart_total`, **4** at 26/08/2026 (four
+deputies who left before 2024-06-09). Retirement condition of the double
+computation, and the measured cost of the 17th-legislature perimeter (461
+members, 305 already carrying a slug, 156 profiles to collect), are written in
+`docs/technical_decisions.md#roster-an-derive-amo30-526`. Guarded by
+`tests/test_an_roster.py`, on a **reduction** of the real archive — never a
+hand-written fixture (#510).
+
 **Quality gate**: hard fail on IncompleteRead > threshold or invalid/missing groupe or
 gouvernement file; soft warnings on low interventions, low coverage, network signals,
 partial identifier coverage inside a profile's `amendements[]` (§3c — measured on

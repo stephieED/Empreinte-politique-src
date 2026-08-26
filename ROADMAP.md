@@ -151,10 +151,16 @@ something is pending, not *why*.
 
 ## Ideas not yet scheduled
 
-- Lot 1 de l'épic « une seule source AN » : dériver le roster d'AMO30 plutôt que de
-  NosDéputés. Débloqué par #525 — `raw_data/correspondance_acteurs_an.json` couvre les
-  476 slugs publiés, un roster dérivé sait donc quel profil il alimente. Voir
-  `technical_decisions.md#correspondance-acteurs-an-525`.
+- Lot 1b de l'épic « une seule source AN » : brancher `src/an_roster.py` (livré inactif
+  par #526) sur `generate_roster_candidats.py` / `generate_group_profiles.py`, publier
+  les 5 fiches de la 17e (156 profils à collecter) et câbler `--divergence` en CI.
+  Condition de retrait du double calcul écrite dans
+  `technical_decisions.md#roster-an-derive-amo30-526`.
+- 4 députés de la 16e connus d'AMO30 sont absents des fiches publiées faute de slug :
+  `PA794914` (LR), `PA722070`, `PA719032`, `PA721522` (REN) — tous partis avant
+  2024-06-09. Leur donner une entrée dans `raw_data/correspondance_acteurs_an.json`, ou
+  une décision écrite de ne pas les publier, est le point 2 de la condition de retrait
+  de #526.
 - `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
   `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test

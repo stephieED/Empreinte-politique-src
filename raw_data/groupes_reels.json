@@ -2,7 +2,164 @@
   "_meta": {
     "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
     "suspension": "Une entrée portant `extraction_suspendue` n'est ni interrogée en réseau (generate_roster_candidats.py) ni régénérée (generate_group_profiles.py) : son fichier de groupe déjà publié reste en place, gelé à sa dernière génération réussie, et le quality gate le contrôle toujours structurellement mais ne mesure plus sa couverture. Le bloc exige `depuis`, `motif`, `references` et `condition_reprise` — voir docs/technical_decisions.md#extraction-groupe-suspendue-516.",
-    "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré."
+    "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré.",
+    "correspondance_sigles": "La clé `correspondance_sigles_an` est la table sigle publié → sigle(s) AN (#526), lue par src/an_roster.py. Elle n'est PAS consommée par le pipeline tant que le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé : la bascule est le lot 1b. Les entrées de la 17e législature n'ont pas encore de fiche publiée — c'est un périmètre décidé, pas un écart (voir docs/technical_decisions.md#roster-an-derive-amo30-526)."
+  },
+  "correspondance_sigles_an": {
+    "_description": "Sigle publié par ce dépôt → sigle(s) AN (`organe.libelleAbrev` du référentiel AMO30), par législature. Committée et relue, jamais devinée : `RE` ne se déduit pas de `REN`, ni `DR` de `LR`. `libelleAbrev` et non `libelleAbrege`, parce que lui seul distingue les deux organes SOC successifs de la 16e (`SOC` puis `SOC-A`) et les deux UDR de la 17e (`UDR` puis `UDDPLR`).",
+    "_organes_an": "Organes MESURÉS au moment de la relecture. Ils ne servent pas à construire le roster — celui-ci prend l'union des organes portant `sigles_an`, pour qu'un organe successif nouvellement ouvert entre quand même. Ils sont le FIL-PIÈGE : une divergence entre attendus et trouvés dit que l'AN a ouvert ou fermé un organe et que la table doit être relue.",
+    "_effectif_amo30": "Effectif mesuré le 26/08/2026 sur l'archive AMO30 réelle, APRÈS filtrage des mandats de transit (voir an_roster.est_mandat_de_transit). Aucun groupe de cette table ne perd un membre à ce filtrage ; seul `NI` en perd (592 → 39 sur la 16e, 640 → 94 sur la 17e), et `NI` n'est pas un groupe publié.",
+    "_ecart_membres": "L'écart avec la fiche publiée est nommé ENTRÉE PAR ENTRÉE — acteur AN, état civil, dates de mandat — et non résumé en volume. « ~3 de plus » ne se relit pas ; un `acteur_ref` et une date de fin, si. `tests/test_an_roster.py` vérifie chacune de ces entrées contre l'archive : une liste qui cesserait de correspondre fait échouer la suite au lieu de vieillir en silence.",
+    "source": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+    "licence": "Licence Ouverte / Open Licence (Etalab) — attribution seule, contrairement à l'ODbL share-alike de NosDéputés (AGENTS.md §7).",
+    "groupes": [
+      {
+        "groupe_sigle": "REN",
+        "groupe_id": "AN:REN",
+        "legislature": "16",
+        "fichier": "groupe-AN-REN-16.json",
+        "sigles_an": ["RE"],
+        "organes_an": ["PO800538"],
+        "effectif_amo30": 196,
+        "effectif_publie": 193,
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "3 membres partis avant la fin de la législature : absents de la dernière composition connue de NosDéputés, sans profil publié, donc sans entrée dans raw_data/correspondance_acteurs_an.json. L'écart est une catégorie fermée et datée, pas un résidu.",
+        "ecart_membres": [
+          {"acteur_ref": "PA722070", "nom": "Pierre Henriet", "mandat_debut": "2022-06-29", "mandat_fin": "2024-02-15"},
+          {"acteur_ref": "PA719032", "nom": "Bertrand Bouyx", "mandat_debut": "2022-06-29", "mandat_fin": "2024-02-15"},
+          {"acteur_ref": "PA721522", "nom": "Xavier Batut", "mandat_debut": "2022-06-29", "mandat_fin": "2023-08-29"}
+        ]
+      },
+      {
+        "groupe_sigle": "SOC",
+        "groupe_id": "AN:SOC",
+        "legislature": "16",
+        "fichier": "groupe-AN-SOC-16.json",
+        "sigles_an": ["SOC", "SOC-A"],
+        "organes_an": ["PO800496", "PO830170"],
+        "effectif_amo30": 31,
+        "effectif_publie": 31,
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Aucun écart. Deux organes successifs dans la même législature — PO800496 (2022-06-28 → 2023-10-18) puis PO830170 (2023-10-19 → 2024-06-09) — dont l'union rend exactement l'effectif publié. Sans union, la moitié de l'année serait perdue.",
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "RN",
+        "groupe_id": "AN:RN",
+        "legislature": "16",
+        "fichier": "groupe-AN-RN-16.json",
+        "sigles_an": ["RN"],
+        "organes_an": ["PO800520"],
+        "effectif_amo30": 90,
+        "effectif_publie": 90,
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Aucun écart.",
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "LFI",
+        "groupe_id": "AN:LFI",
+        "legislature": "16",
+        "fichier": "groupe-AN-LFI-16.json",
+        "sigles_an": ["LFI-NUPES"],
+        "organes_an": ["PO800490"],
+        "effectif_amo30": 76,
+        "effectif_publie": 76,
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Aucun écart.",
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "LR",
+        "groupe_id": "AN:LR",
+        "legislature": "16",
+        "fichier": "groupe-AN-LR-16.json",
+        "sigles_an": ["LR"],
+        "organes_an": ["PO800508"],
+        "effectif_amo30": 63,
+        "effectif_publie": 62,
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "1 membre parti avant la fin de la législature : absent de la dernière composition connue de NosDéputés, sans profil publié, donc sans entrée dans raw_data/correspondance_acteurs_an.json.",
+        "ecart_membres": [
+          {"acteur_ref": "PA794914", "nom": "Alexandre Vincendet", "mandat_debut": "2022-06-29", "mandat_fin": "2024-03-19"}
+        ]
+      },
+      {
+        "groupe_sigle": "EPR",
+        "groupe_id": "AN:EPR",
+        "legislature": "17",
+        "fichier": "groupe-AN-EPR-17.json",
+        "sigles_an": ["EPR"],
+        "organes_an": ["PO845407"],
+        "effectif_amo30": 123,
+        "effectif_publie": null,
+        "succede_a": "AN:REN",
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 99 des 123 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "membres_avec_slug": 99,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "SOC",
+        "groupe_id": "AN:SOC:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-SOC-17.json",
+        "sigles_an": ["SOC"],
+        "organes_an": ["PO845419"],
+        "effectif_amo30": 70,
+        "effectif_publie": null,
+        "succede_a": "AN:SOC",
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 29 des 70 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "membres_avec_slug": 29,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "RN",
+        "groupe_id": "AN:RN:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-RN-17.json",
+        "sigles_an": ["RN"],
+        "organes_an": ["PO845401"],
+        "effectif_amo30": 131,
+        "effectif_publie": null,
+        "succede_a": "AN:RN",
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 79 des 131 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "membres_avec_slug": 79,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "LFI",
+        "groupe_id": "AN:LFI:17",
+        "legislature": "17",
+        "fichier": "groupe-AN-LFI-17.json",
+        "sigles_an": ["LFI-NFP"],
+        "organes_an": ["PO845413"],
+        "effectif_amo30": 73,
+        "effectif_publie": null,
+        "succede_a": "AN:LFI",
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 56 des 73 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "membres_avec_slug": 56,
+        "ecart_membres": []
+      },
+      {
+        "groupe_sigle": "DR",
+        "groupe_id": "AN:DR",
+        "legislature": "17",
+        "fichier": "groupe-AN-DR-17.json",
+        "sigles_an": ["DR"],
+        "organes_an": ["PO845425"],
+        "effectif_amo30": 64,
+        "effectif_publie": null,
+        "succede_a": "AN:LR",
+        "verifie_le": "2026-08-26",
+        "ecart_motif": "Fiche non publiée : périmètre élargi à la 17e législature (#526), la publication est le lot 1b. 42 des 64 membres ont déjà un slug dans raw_data/correspondance_acteurs_an.json.",
+        "membres_avec_slug": 42,
+        "ecart_membres": []
+      }
+    ]
   },
   "groupes": [
     {
