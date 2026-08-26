@@ -6,8 +6,15 @@ Contrairement à raw_data/candidats.json (liste éditoriale des candidats décla
 à l'élection présidentielle, voir parti_profile.py), ce module rend la VRAIE
 liste des membres d'un groupe parlementaire (ex. tou·te·s les député·es LR
 d'une législature), à utiliser ensuite avec group_profile.py — depuis l'open
-data de l'Assemblée pour l'AN, des données ouvertes NosSénateurs.fr pour le
-Sénat (voir la section suivante).
+data de l'Assemblée (voir la section suivante).
+
+## Le Sénat n'est plus une chambre servie ici (#528)
+
+`_base_url_for("senateurs", …)` **lève**, en nommant la décision. Les deux
+entrées Sénat de `raw_data/groupes_reels.json` restent `extraction_suspendue`
+— leurs fiches publiées ne bougent pas — et ce chemin n'est atteint que si
+quelqu'un lève cette suspension : il doit alors échouer bruyamment plutôt que
+rendre un roster vide. Voir docs/technical_decisions.md#retrait-senat-528.
 
 ## L'Assemblée ne passe plus par ici (#527, lot 1b)
 
@@ -16,8 +23,10 @@ il délègue à `an_roster.fetch_full_roster_an`, qui dérive la composition
 d'AMO30 — même source que les scrutins et les amendements, Licence Ouverte au
 lieu d'ODbL, et une législature qui est une donnée du référentiel plutôt qu'un
 sous-domaine à connaître d'avance (AGENTS §7, #526). La lecture NosDéputés
-survit sous son propre nom, `fetch_full_roster_nosdeputes`, et ne sert plus que
-le Sénat en régime normal.
+survit sous son propre nom, `fetch_full_roster_nosdeputes`. Depuis #528 elle
+ne sert plus AUCUNE chambre en régime normal : son dernier usage était le
+Sénat. Elle reste vivante pour une seule raison — être le repli de la bascule
+AMO30 si `AN_ROSTER_ACTIF` redescend (voir ci-dessous).
 
 L'aiguillage tient en une condition, sur `an_roster.AN_ROSTER_ACTIF` : baisser
 ce drapeau — ou faire un `git revert` de la ligne qui l'a levé — rend
@@ -30,11 +39,10 @@ s'applique inchangé sur les membres rendus par l'une comme par l'autre source
 — c'est ce qui a fait de la bascule une ligne et non une réécriture.
 
 L'endpoint documenté `/groupe/<SIGLE>/json` renvoie systématiquement une
-erreur HTTP 500 (vérifié sur plusieurs sigles et domaines de législature,
-comme le endpoint `/votes` déjà contourné dans candidate_profile.py). On
-utilise donc à la place la liste complète des parlementaires
-(`/deputes/json` ou `/senateurs/json`, qui inclut l'historique complet et un
-champ `groupe_sigle` par entrée), filtrée côté client par sigle de groupe.
+erreur HTTP 500 (vérifié sur plusieurs sigles et domaines de législature). On
+utilise donc à la place la liste complète des parlementaires (`/deputes/json`,
+qui inclut l'historique complet et un champ `groupe_sigle` par entrée),
+filtrée côté client par sigle de groupe.
 
 Usage (depuis la racine du dépôt) :
     python src/group_roster.py --chambre deputes --sigle LR --legislature 16
@@ -53,8 +61,7 @@ import an_roster
 from candidate_profile import BASE_URLS, HEADERS, TIMEOUT
 
 # Association legislature AN -> domaine NosDeputes.fr. Ne couvre que
-# l'Assemblée : le Sénat n'a plus qu'un seul domaine d'archive, quelle que soit
-# la période (voir BASE_URLS["senateurs"]).
+# l'Assemblée — depuis #528 c'est la seule chambre collectée.
 #
 # Cette table **s'arrête à la 16e**, et c'est une propriété de la source, pas
 # un oubli : NosDéputés n'a jamais été étendu à la 17e législature. Vérifié le
@@ -75,9 +82,9 @@ _BASE_URL_BY_LEGISLATURE_AN: dict[str, str] = {
     "13": "https://2007-2012.nosdeputes.fr",
 }
 
+# #528 : plus qu'une entrée — la clé "senateurs" est partie avec le Sénat.
 _LIST_ENDPOINT = {
     "deputes": "deputes",
-    "senateurs": "senateurs",
 }
 
 # ── Reprise sur échec transitoire du fetch de roster (#518) ──────────────────
@@ -157,14 +164,14 @@ _ROSTER_TIMEOUT: tuple[int, int] = (TIMEOUT, _ROSTER_READ_TIMEOUT_SECONDS)
 # `fetch_full_roster` : aucune projection, pour que le consommateur applique
 # `filter_roster_by_sigle` sur la MÊME matière que le producteur.
 
-#: Séparateur de la clé texte. `None` (législature non applicable, cas Sénat)
-#: se sérialise en chaîne vide — jamais en `"None"` ni en `"courante"`, qui
+#: Séparateur de la clé texte. `None` (législature non applicable) se
+#: sérialise en chaîne vide — jamais en `"None"` ni en `"courante"`, qui
 #: seraient des valeurs de législature possibles au relire.
 _SEPARATEUR_CLE = ":"
 
 
 def cle_roster_texte(chambre: str, legislature: Optional[str]) -> str:
-    """Clé JSON d'un roster brut : `"deputes:16"`, `"senateurs:"`."""
+    """Clé JSON d'un roster brut : `"deputes:16"`, `"deputes:"`."""
     return f"{chambre}{_SEPARATEUR_CLE}{legislature or ''}"
 
 
@@ -240,21 +247,34 @@ def _erreur_retentable(exc: Exception) -> bool:
 
 
 def _base_url_for(chambre: str, legislature: Optional[str]) -> str:
-    """Détermine le domaine NosDéputés/NosSénateurs à interroger.
+    """Détermine le domaine NosDéputés à interroger.
 
     Args:
-        chambre: "deputes" | "senateurs".
-        legislature: pour "deputes", législature AN (ex. "16") ; ignoré pour
-                     "senateurs" (domaine d'archive unique, filtrage par date).
+        chambre: "deputes" (seule chambre servie depuis #528).
+        legislature: législature AN (ex. "16"). None = domaine courant.
 
     Raises:
-        ValueError: chambre inconnue ou législature AN non couverte.
+        ValueError: chambre hors périmètre/inconnue, ou législature AN non couverte.
     """
+    # #528 : le Sénat est sorti du périmètre. Le refus est EXPLICITE et nommé —
+    # `BASE_URLS` n'a simplement plus de clé "senateurs", donc le garde générique
+    # ci-dessous suffirait à lever, mais il dirait « chambre inconnue » là où la
+    # vérité est « chambre retirée par décision éditoriale ». Les deux entrées
+    # Sénat de `groupes_reels.json` restent `extraction_suspendue` : ce chemin
+    # n'est atteint que si quelqu'un lève cette suspension, et il doit alors
+    # échouer bruyamment (`ValueError` est dans `ERREURS_ROSTER`, donc « roster
+    # indisponible », exit 2, fiches publiées intactes) plutôt que rendre un
+    # roster vide.
+    if chambre == "senateurs":
+        raise ValueError(
+            "Chambre 'senateurs' retirée du périmètre par #528 : archive.nossenateurs.fr "
+            "ne sert plus de certificat valide et aucune source de remplacement n'est "
+            "établie. Les 2 groupes Sénat restent suspendus ; voir "
+            "docs/technical_decisions.md#retrait-senat-528."
+        )
+
     if chambre not in BASE_URLS:
         raise ValueError(f"Chambre inconnue : {chambre!r}. Valeurs attendues : {sorted(BASE_URLS)}.")
-
-    if chambre == "senateurs":
-        return BASE_URLS["senateurs"][0]
 
     if legislature is None:
         return BASE_URLS["deputes"][0]
@@ -267,17 +287,13 @@ def _base_url_for(chambre: str, legislature: Optional[str]) -> str:
     return _BASE_URL_BY_LEGISLATURE_AN[legislature]
 
 
-def _member_matches_legislature(member: dict[str, Any], legislature_debut: Optional[str]) -> bool:
-    """Filtre côté client pour le Sénat (domaine d'archive unique, pas de sous-domaine par législature).
-
-    Un membre est retenu si son mandat couvre ou suit le début de la période
-    demandée. Sans date fournie, aucun filtrage n'est appliqué (tous les
-    membres, courants et anciens, sont retournés).
-    """
-    if legislature_debut is None:
-        return True
-    fin = member.get("mandat_fin")
-    return fin is None or str(fin) >= legislature_debut
+# `_member_matches_legislature` et le paramètre `senat_periode_debut` qui le
+# pilotait ont été RETIRÉS par #528. Ils n'existaient que pour le Sénat :
+# `archive.nossenateurs.fr` servait un domaine d'archive unique, sans
+# sous-domaine par période, et il fallait donc filtrer les membres côté client
+# sur `mandat_fin`. L'Assemblée n'en a jamais eu besoin — sa législature est un
+# sous-domaine (NosDéputés) ou une donnée du référentiel (AMO30, #526).
+# Voir docs/technical_decisions.md#retrait-senat-528.
 
 
 #: Tout ce qu'un appel à `fetch_full_roster` peut légitimement lever, quelle
@@ -339,7 +355,7 @@ def fetch_full_roster_nosdeputes(
     """Récupère en UN seul appel réseau la liste complète (tous groupes confondus)
     des député·e·s/sénateur·rice·s d'une chambre/législature.
 
-    Lecture **NosDéputés/NosSénateurs**. Depuis #527 elle ne sert plus
+    Lecture **NosDéputés**. Depuis #527 elle ne sert plus
     l'Assemblée en régime normal : `fetch_full_roster` y aiguille le Sénat, et
     l'Assemblée seulement si le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé.
     Tout ce qui suit — reprises, plafond de lecture, partage 500/502 — décrit
@@ -361,7 +377,7 @@ def fetch_full_roster_nosdeputes(
 
     Returns:
         Liste des membres bruts (déjà déballés de l'enveloppe {"depute": {...}}
-        / {"senateur": {...}}), sans filtrage par groupe.
+        ), sans filtrage par groupe.
 
     Raises:
         ValueError: chambre ou législature inconnue.
@@ -390,7 +406,7 @@ def fetch_full_roster_nosdeputes(
             continue
         payload = response.json()
         raw_entries = payload.get(chambre) or []
-        return [entry.get("depute") or entry.get("senateur") or entry for entry in raw_entries]
+        return [entry.get("depute") or entry for entry in raw_entries]
 
     # Inatteignable : la boucle sort par `return` ou par `raise`. Présent pour
     # que l'absence de valeur de retour ne dépende pas de la lecture du corps.
@@ -401,14 +417,17 @@ def filter_roster_by_sigle(
     raw_members: list[dict[str, Any]],
     chambre: str,
     groupe_sigle: str,
-    senat_periode_debut: Optional[str] = None,
 ) -> list[dict[str, Any]]:
-    """Filtre une liste de membres bruts (issue de `fetch_full_roster`) par sigle de groupe."""
+    """Filtre une liste de membres bruts (issue de `fetch_full_roster`) par sigle de groupe.
+
+    `chambre` n'est plus lue depuis #528 (le filtre temporel qu'elle pilotait
+    était propre au Sénat) : elle reste dans la signature parce que c'est la
+    clé de lecture des appelants, et qu'une chambre qui disparaît de la
+    signature d'un filtre est une information perdue le jour où il y en a deux.
+    """
     roster: list[dict[str, Any]] = []
     for member in raw_members:
         if member.get("groupe_sigle") != groupe_sigle:
-            continue
-        if chambre == "senateurs" and not _member_matches_legislature(member, senat_periode_debut):
             continue
 
         mandat_fin = member.get("mandat_fin")
@@ -427,23 +446,17 @@ def fetch_group_roster(
     chambre: str,
     groupe_sigle: str,
     legislature: Optional[str] = None,
-    senat_periode_debut: Optional[str] = None,
     session: Optional[requests.Session] = None,
 ) -> list[dict[str, Any]]:
     """Récupère la liste des membres réels d'un groupe parlementaire.
 
     Args:
-        chambre: "deputes" | "senateurs".
+        chambre: "deputes" (seule chambre servie depuis #528).
         groupe_sigle: sigle exact du groupe tel que fourni par l'API
                       (ex. "LR", "RN", "SOC" — voir champ `groupe_sigle` des
-                      entrées renvoyées par /deputes/json ou /senateurs/json).
-        legislature: pour "deputes" uniquement, législature AN (ex. "16") ;
-                     détermine le sous-domaine interrogé. None = domaine courant.
-        senat_periode_debut: pour "senateurs" uniquement, date ISO "YYYY-MM-DD"
-                              minimale de fin de mandat pour retenir un membre
-                              (le domaine d'archive couvre toutes les périodes
-                              sans sous-domaine dédié). None = pas de filtrage
-                              temporel (courants + anciens).
+                      entrées renvoyées par /deputes/json).
+        legislature: législature AN (ex. "16") ; détermine le sous-domaine
+                     interrogé. None = domaine courant.
         session: session requests à réutiliser (optionnel, pour les tests).
 
     Returns:
@@ -464,23 +477,22 @@ def fetch_group_roster(
     serait un piège — c'est pour la ligne de commande qu'on regarde un roster.
     """
     raw_members = fetch_full_roster(chambre, legislature=legislature, session=session)
-    return filter_roster_by_sigle(raw_members, chambre, groupe_sigle, senat_periode_debut=senat_periode_debut)
+    return filter_roster_by_sigle(raw_members, chambre, groupe_sigle)
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Récupère la composition réelle d'un groupe parlementaire "
-        "(AMO30 pour l'Assemblée depuis #527 ; NosSénateurs.fr pour le Sénat).",
+        "(AMO30 pour l'Assemblée depuis #527 ; le Sénat est hors périmètre depuis #528).",
     )
-    parser.add_argument("--chambre", choices=["deputes", "senateurs"], required=True)
-    parser.add_argument("--sigle", required=True, metavar="SIGLE", help='Ex. "LR", "RN", "SOC".')
-    parser.add_argument("--legislature", default=None, metavar="N", help='Pour "deputes" uniquement, ex. "16".')
     parser.add_argument(
-        "--senat-periode-debut",
-        default=None,
-        metavar="YYYY-MM-DD",
-        help='Pour "senateurs" uniquement : ne garder que les membres dont le mandat va au moins jusqu\'à cette date.',
+        "--chambre",
+        choices=["deputes"],
+        required=True,
+        help="Seule valeur : deputes. Le Sénat est hors périmètre depuis #528.",
     )
+    parser.add_argument("--sigle", required=True, metavar="SIGLE", help='Ex. "LR", "RN", "SOC".')
+    parser.add_argument("--legislature", default=None, metavar="N", help='Législature AN, ex. "16".')
     return parser
 
 
@@ -493,7 +505,6 @@ def main(argv: Optional[list[str]] = None) -> int:
             chambre=args.chambre,
             groupe_sigle=args.sigle,
             legislature=args.legislature,
-            senat_periode_debut=args.senat_periode_debut,
         )
     except ERREURS_ROSTER as exc:
         print(f"[!] {exc}", file=sys.stderr)

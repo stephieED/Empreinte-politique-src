@@ -20,12 +20,21 @@ deux n'avait à se prononcer sur le budget de l'autre.
 
 Ce que ce fichier impose : **toute** invocation de `generate_all_profiles.py`
 qui collecte sur le réseau déclare son régime de budget, et ce régime est
-inscrit ici. Une septième invocation muette fait échouer
-`test_l_inventaire_est_a_jour` ; une invocation qui collecte sans rien dire du
-budget fait échouer `test_aucune_collecte_ne_reste_sans_regime_de_budget`.
-Déclarer « pas de budget » reste permis — c'est le cas d'`extract-an` et du
-job roster — mais il faut l'écrire, `--budget-collecte-secondes 0`, et non
-l'obtenir en ne tapant rien.
+inscrit ici. Une invocation muette fait échouer `test_l_inventaire_est_a_jour` ;
+une invocation qui collecte sans rien dire du budget fait échouer
+`test_aucune_collecte_ne_reste_sans_regime_de_budget`. Déclarer « pas de budget »
+reste permis — c'est le cas d'`extract-an` et du job roster — mais il faut
+l'écrire, `--budget-collecte-secondes 0`, et non l'obtenir en ne tapant rien.
+
+**#528 — le job qui a produit cette issue n'existe plus.** `extract-senat` a été
+retiré avec le Sénat (docs/technical_decisions.md#retrait-senat-528), et les
+quatre tests qui vérifiaient la cohérence de SES deux chiffres (160 s par
+candidat, 600 s pour le job, contre un `timeout-minutes` de 15) sont partis avec
+lui : ils portaient sur des valeurs, pas sur une règle. Les constantes mesurées
+restent en tête de fichier — ce sont des mesures, elles ne se réécrivent pas —
+et l'inventaire, lui, reste armé sur les invocations qui subsistent. Plus aucune
+d'elles n'est en `REGIME_BORNE` aujourd'hui : c'est un fait du moment, pas une
+permission de retirer le régime.
 
 Même forme que `tests/test_ci_interventions_par_job.py` (#501), et pour la même
 raison : c'est l'inventaire qui transforme un défaut tacite en décision. Sans
@@ -92,8 +101,6 @@ INVENTAIRE = {
     # le mode par défaut. Un second plafond n'aurait rien à borner de plus, et
     # les 8 shards du run 32421439590 sont en succès : on n'y touche pas.
     ("extract-an", 0): REGIME_SANS_BUDGET_DECLARE,
-    # #514. Deux budgets : 160 s par candidat, 600 s pour le job.
-    ("extract-senat", 0): REGIME_BORNE,
     ("extract-ue-officiel", 0): REGIME_HORS_COLLECTE_FR,
     # `--resume` + point de sauvegarde par membre : un shard coupé reprend au
     # run suivant. Dimensionner un budget ici demanderait une mesure sur les
@@ -251,86 +258,18 @@ def test_la_fabrique_de_budget_ne_reprend_pas_de_condition_de_mode():
 
 
 # ---------------------------------------------------------------------------
-# Les valeurs d'extract-senat tiennent ensemble
+# Les valeurs d'extract-senat : bloc RETIRÉ par #528
+#
+# Quatre tests vérifiaient que les deux budgets de ce job tenaient ensemble et
+# tenaient dans son `timeout-minutes` : budget de job + préambule + requête en
+# vol + publication <= timeout ; budget par candidat >= la résolution d'identité
+# la plus chère mesurée sur source dégradée (125 s) et >= 20 × la collecte
+# mesurée sur source saine ; 8 slugs × budget par candidat > budget de job (la
+# raison d'en avoir deux). Le job a été retiré avec le Sénat (#528) : ces tests
+# portaient sur SES chiffres, pas sur une règle transposable telle quelle.
+#
+# Ce qu'il faut refaire le jour où une invocation repasse en `REGIME_BORNE` :
+# les quatre interlocks ci-dessus, avec les mesures de CE job-là. Les recopier
+# avec les constantes du Sénat serait exactement l'erreur que #514 corrige —
+# un chiffre mesuré sur une population, appliqué à une autre.
 # ---------------------------------------------------------------------------
-
-def _timeout_senat_secondes() -> int:
-    bloc = _blocs_de_job()["extract-senat"]
-    motif = re.search(r"^    timeout-minutes:\s*(\d+)\s*$", bloc, flags=re.M)
-    assert motif, "`timeout-minutes` d'extract-senat introuvable ou non littéral."
-    return int(motif.group(1)) * 60
-
-
-def _budget_senat(option: str) -> int:
-    commande = _invocations()[("extract-senat", 0)]
-    motif = re.search(rf"{option}\s+(\d+)", commande)
-    assert motif, f"`{option}` absent de l'invocation d'extract-senat."
-    return int(motif.group(1))
-
-
-def test_le_budget_de_job_tient_dans_le_timeout():
-    """L'interlock qui manquait. Un budget interne plus large que le
-    `timeout-minutes` qui l'entoure ne borne rien : le job serait tué avant que
-    le budget ne rende la main, et on retomberait sur
-    `##[error]The operation was canceled` — sans résumé, sans annotation, sans
-    la liste des candidats non collectés."""
-    total = (
-        PREAMBULE_PROVISIONNE_SECONDES
-        + _budget_senat("--budget-job-secondes")
-        + DEPASSEMENT_REQUETE_EN_VOL_SECONDES
-        + PUBLICATION_PROVISIONNEE_SECONDES
-    )
-    plafond = _timeout_senat_secondes()
-    assert total <= plafond, (
-        f"préambule ({PREAMBULE_PROVISIONNE_SECONDES} s) + budget de job "
-        f"({_budget_senat('--budget-job-secondes')} s) + requête en vol "
-        f"({DEPASSEMENT_REQUETE_EN_VOL_SECONDES} s) + publication "
-        f"({PUBLICATION_PROVISIONNEE_SECONDES} s) = {total} s > timeout ({plafond} s). "
-        f"Le budget ne rendrait jamais la main avant que le job ne soit tué."
-    )
-
-
-def test_le_budget_par_candidat_couvre_la_resolution_d_identite_sur_source_degradee():
-    """Le seul chiffre qui achète quelque chose sur une source à terre.
-
-    Sans identité résolue, aucun profil n'est écrit — c'est pourquoi le run
-    32421439590 n'en a publié qu'un. Un budget par candidat inférieur à la
-    résolution d'identité garantirait zéro profil au lieu d'en sauver ceux dont
-    la source répond encore par intermittence.
-    """
-    budget = _budget_senat("--budget-collecte-secondes")
-    assert budget >= IDENTITE_SOURCE_DEGRADEE_MAX_MESUREE, (
-        f"budget par candidat ({budget} s) sous la résolution d'identité la plus chère "
-        f"mesurée sur source dégradée ({IDENTITE_SOURCE_DEGRADEE_MAX_MESUREE} s, "
-        f"edouard-philippe, run 32421439590)."
-    )
-    # Pire cas structurel : 2 formats × 3 tentatives × (25 s de watchdog + 1,5 s
-    # de backoff).
-    assert budget >= 6 * 26.5
-
-
-def test_le_budget_par_candidat_ne_se_declenche_jamais_sur_source_saine():
-    """L'autre condition de source, nommée. Un budget qui mordrait en régime
-    nominal tronquerait des collectes réussies — et le `meta.warnings` qui en
-    sortirait serait du bruit, pas un signal."""
-    budget = _budget_senat("--budget-collecte-secondes")
-    assert budget >= 20 * COLLECTE_SOURCE_SAINE_MESUREE, (
-        f"budget par candidat ({budget} s) trop proche de la collecte mesurée sur "
-        f"source saine ({COLLECTE_SOURCE_SAINE_MESUREE} s)."
-    )
-
-
-def test_les_deux_budgets_ne_se_recouvrent_pas():
-    """Pourquoi il en faut DEUX, et pas un seul.
-
-    8 slugs × le budget par candidat dépasse ce que le job peut consacrer à la
-    collecte : borner le candidat ne borne donc pas le job. Le jour où ce ne
-    serait plus vrai, le budget de job deviendrait un réglage mort et ce test
-    demande de le constater plutôt que de le laisser traîner.
-    """
-    par_candidat = _budget_senat("--budget-collecte-secondes")
-    du_job = _budget_senat("--budget-job-secondes")
-    assert SLUGS_RESOLVABLES * par_candidat > du_job, (
-        f"{SLUGS_RESOLVABLES} × {par_candidat} s = {SLUGS_RESOLVABLES * par_candidat} s "
-        f"tient déjà dans le budget de job ({du_job} s) : ce dernier ne borne plus rien."
-    )

@@ -181,7 +181,7 @@ prime toujours. Détail complet de cette décision :
 [`docs/technical_decisions.md#provenance-pivot`](./technical_decisions.md#provenance-pivot).
 
 En CI/CD, la voie roster-driven est un job dédié, distinct de
-`extract-an`/`extract-senat`/`extract-ue-officiel` : `extract-roster-groupes`
+`extract-an`/`extract-ue-officiel` : `extract-roster-groupes`
 (`.github/workflows/generate-data.yml`), en rollout progressif (#188/#190/#192,
 `continue-on-error: true`, volume borné par l'input `roster_limit`).
 Détail complet du job : [`extract-roster-groupes.md`](./extract-roster-groupes.md).

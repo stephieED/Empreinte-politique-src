@@ -158,7 +158,6 @@ class DummyResponse:
 def test_build_profile_reports_empty_api_payloads():
     with (
         patch("candidate_profile.fetch_identity", return_value={}),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
@@ -1461,7 +1460,6 @@ def test_build_profile_includes_official_questions_in_interventions():
 
     with (
         patch("candidate_profile.fetch_identity", return_value={}),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
@@ -1623,29 +1621,6 @@ def test_try_urls_skips_xml_after_json_terminal_failure():
     assert base is None
 
 
-def test_fetch_votes_skips_xml_after_terminal_failure():
-    """fetch_votes ne doit pas tenter /xml si /json renvoie _TERMINAL_FAILURE."""
-    from candidate_profile import fetch_votes, _TERMINAL_FAILURE
-
-    calls: list[str] = []
-
-    # `budget` (#514) : la doublure doit porter la signature réelle, sinon le
-    # test passerait encore le jour où l'appelant cesserait de transmettre le
-    # budget — un garde-fou débranché (#460).
-    def fake_get_payload(url: str, budget=None):
-        calls.append(url)
-        assert budget is None, "aucun budget n'est posé par ce test"
-        return _TERMINAL_FAILURE
-
-    with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
-        votes, base = fetch_votes(["https://base1.test"], "slug")
-
-    xml_calls = [u for u in calls if "/votes/xml" in u]
-    assert xml_calls == [], f"Aucun essai /votes/xml attendu, obtenu: {xml_calls}"
-    assert votes is None
-    assert base is None
-
-
 # ---------------------------------------------------------------------------
 # #78 — Syceron comme source primaire dans build_profile()
 # ---------------------------------------------------------------------------
@@ -1678,7 +1653,6 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
     ]
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
@@ -1697,7 +1671,6 @@ def test_build_profile_falls_back_to_nosdeputes_when_syceron_empty():
     """Quand Syceron ne retourne rien, le fallback NosDéputés doit être utilisé et un warning ajouté."""
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -1717,7 +1690,6 @@ def test_build_profile_syceron_exception_triggers_fallback_warning():
     """Si fetch_interventions_syceron lève une exception, le fallback NosDéputés doit être utilisé et un warning ajouté."""
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
@@ -1731,29 +1703,6 @@ def test_build_profile_syceron_exception_triggers_fallback_warning():
     assert any("syceron" in w.lower() for w in profile["meta"]["warnings"])
 
 
-def test_build_profile_no_syceron_for_senat():
-    """Le chemin Syceron ne doit pas être pris pour la chambre sénateurs."""
-    with (
-        patch("candidate_profile.fetch_identity", return_value={}),
-        patch("candidate_profile.fetch_votes", return_value={}),
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
-        # Évite un vrai appel réseau : chambre="senateurs" ne prend jamais le
-        # chemin Syceron, mais tombe dans la branche NosDéputés générique.
-        patch("candidate_profile._extract_search_results", return_value=[]),
-        # …et l'étape 3 des dossiers législatifs, qui n'est atteinte QUE pour
-        # `chambre != "deputes"` : ce test était le seul de la suite à sortir
-        # réellement sur le réseau (archive.nossenateurs.fr, deux législatures
-        # à TIMEOUT=15 s), ce qui lui coûtait ~16 s des ~35 s de la suite et
-        # aurait rendu le job CI de #473 tributaire d'un site tiers.
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
-    ):
-        build_profile("senateurs", "jean-dupont")
-
-    mock_syceron.assert_not_called()
-
-
 # ---------------------------------------------------------------------------
 # #357 — mode d'extraction léger (extract-roster-groupes) : skip_dossiers_legislatifs
 # ---------------------------------------------------------------------------
@@ -1764,7 +1713,6 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
     dossiers_legislatifs vide."""
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -1782,119 +1730,6 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
 
     mock_textes_portes.assert_not_called()
     assert profile["dossiers_legislatifs"] == []
-
-
-def test_build_profile_skip_dossiers_legislatifs_senateurs_never_calls_fetch_dossiers():
-    """skip_dossiers_legislatifs=True doit empêcher tout appel à
-    fetch_dossiers_for_legislatures (étape 3, sénateurs) et laisser
-    dossiers_legislatifs vide."""
-    fake_identity = {"senateur": {"id": "PA999", "nom": "Martin", "slug": "jean-martin"}}
-    with (
-        patch("candidate_profile.fetch_identity", return_value=fake_identity),
-        patch("candidate_profile.fetch_votes", return_value={}),
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile._extract_search_results", return_value=[]),
-        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
-    ):
-        profile = build_profile(
-            "senateurs", "jean-martin", skip_interventions=True, skip_dossiers_legislatifs=True
-        )
-
-    mock_dossiers.assert_not_called()
-    assert profile["dossiers_legislatifs"] == []
-
-
-def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_dossiers():
-    """Pour les députés, dossiers_legislatifs vient uniquement de la source
-    officielle AN (fetch_textes_portes_officiels, étape 8bis) : l'appel réseau
-    à NosDéputés (fetch_dossiers_for_legislatures) ne doit plus être fait —
-    son résultat était de toute façon écrasé juste après, et c'est ce point
-    d'appel précis (dossiers/nom/json) qui pendait régulièrement en CI jusqu'au
-    shutdown du runner, faute de retry."""
-    with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
-        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
-        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
-        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
-        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
-        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
-    ):
-        build_profile("deputes", "jean-dupont")
-
-    mock_dossiers.assert_not_called()
-
-
-def test_build_profile_senateurs_appelle_toujours_nosdeputes_dossiers():
-    """Pour les sénateurs, l'archive NosSénateurs reste la seule source de
-    dossiers législatifs : aucun remplacement officiel n'est branché pour
-    cette chambre (contrairement aux députés), l'appel doit donc être
-    préservé."""
-    with (
-        patch("candidate_profile.fetch_identity", return_value={}),
-        patch("candidate_profile.fetch_votes", return_value={}),
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]) as mock_dossiers,
-        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
-    ):
-        build_profile("senateurs", "jean-dupont")
-
-    mock_dossiers.assert_called_once()
-
-
-def test_build_profile_deputes_ne_recontacte_pas_nosdeputes_votes():
-    """Pour les députés, fetch_votes (NosDéputés) ne doit plus être appelé :
-    fetch_votes_officiels (AN) est déjà préféré, et l'endpoint /votes de
-    NosDéputés.fr est en panne systématique pour cette chambre (documenté sur
-    fetch_votes_officiels) — la branche de repli sur votes_raw est donc
-    inatteignable en pratique, jusqu'à 8 requêtes (4 domaines x 2 formats)
-    faites pour rien à chaque profil."""
-    with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes") as mock_votes,
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures") as mock_dossiers,
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
-        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
-        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
-        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
-        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
-        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
-    ):
-        build_profile("deputes", "jean-dupont")
-
-    mock_votes.assert_not_called()
-    mock_dossiers.assert_not_called()
-
-
-def test_build_profile_senateurs_appelle_toujours_nosdeputes_votes():
-    """Pour les sénateurs, l'archive NosSénateurs reste la seule source de
-    votes : aucun remplacement officiel n'est branché pour cette chambre,
-    l'appel doit donc être préservé."""
-    with (
-        patch("candidate_profile.fetch_identity", return_value={}),
-        patch("candidate_profile.fetch_votes", return_value={}) as mock_votes,
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
-        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
-    ):
-        build_profile("senateurs", "jean-dupont")
-
-    mock_votes.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -1985,9 +1820,7 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
 
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
@@ -2054,9 +1887,7 @@ def test_integration_build_profile_fallback_sans_acteur_ref():
 
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
@@ -3558,9 +3389,7 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
 
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
@@ -4358,7 +4187,6 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
 
     with (
         patch("candidate_profile.fetch_identity") as mock_fetch_identity,
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -4540,9 +4368,7 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
         patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
         patch("candidate_profile.fetch_identity") as mock_fetch_identity,
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_dossiers_for_legislatures", return_value=[]),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
@@ -4585,7 +4411,6 @@ def test_build_profile_calls_nosdeputes_when_an_does_not_find_deputy():
 
     with (
         patch("candidate_profile.fetch_identity", return_value=identity) as mock_fetch_identity,
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),

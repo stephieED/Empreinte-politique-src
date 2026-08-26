@@ -20,12 +20,12 @@ The project does not make value judgments.
 ```
 CV_CandidatFR/
 |- src/                               # Python scripts
-|  |- candidate_profile.py           # Collect raw profile for ONE FR parliamentarian (AN/Senate)
+|  |- candidate_profile.py           # Collect raw profile for ONE FR deputy (AN only since #528)
 |  |- candidate_profile_ue.py        # Build the "European mandate" section for ONE candidate
 |  |- generate_all_profiles.py       # Batch: profiles for candidates in a --candidats list (candidats.json by default, or a roster-driven file)
 |  |- generate_roster_candidats.py   # Builds a --candidats-compatible list from real group rosters (groupes_reels.json), for full group coverage beyond declared candidates
 |  |- merge_profile.py               # Additive merge logic (old wins on lists, new wins on scalars)
-|  |- normalize_nosdeputes.py        # NosDeputes/NosSenateurs -> pivot adapter
+|  |- normalize_nosdeputes.py        # NosDeputes -> pivot adapter
 |  |- normalize_europarl.py          # European Parliament Open Data -> pivot adapter
 |  |- normalize_parltrack_dumps.py   # Parltrack dumps -> pivot adapter (EP mandates)
 |  |- parltrack_dumps.py             # Parltrack dump download/cache helpers
@@ -33,7 +33,7 @@ CV_CandidatFR/
 |  |- parse_syceron.py               # AN Syceron XML parser -> interventions[]
 |  |- text_utils.py                  # Shared text helpers (normalisation, accent folding)
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
-|  |- group_roster.py                # Real group composition: picks the source (AMO30 for the AN since #527, NosSenateurs for the Senate)
+|  |- group_roster.py                # Real group composition: AMO30 since #527 (NosDeputes kept as fallback)
 |  |- an_roster.py                   # AN group composition derived from AMO30 (open data AN), incl. legislature 17 — production source since #527
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- groupes_config.py              # Shared read of groupes_reels.json + temporary extraction suspension (#516)
@@ -122,7 +122,6 @@ See:
 - `docs/pipeline-profiles-groupes.md` - end-to-end profiles/groups pipeline
   maps and implementation notes.
 - `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
-- `docs/extract-senat.md` - CI job `extract-senat` (scope, extraction chain, sources).
 - `docs/extract-ue.md` - UE source investigation report and implementation context.
 - `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
 - `docs/technical_decisions.md` - full rationale and edge-case history.
@@ -143,18 +142,21 @@ adds the pinned `pytest`. For a runtime-only environment, install
 Run all commands below from the repository root with the virtual environment
 activated.
 
-## 1. Generate one candidate profile (AN / Senate)
+## 1. Generate one candidate profile (AN)
 
 ```bash
 python src/candidate_profile.py jean-luc-melenchon --chambre deputes
-python src/candidate_profile.py bruno-retailleau --chambre senateurs
 ```
+
+The Senate left the product's scope in #528: `--chambre senateurs` is refused,
+and so is `--source senat` on `generate_all_profiles.py`. Reopening condition:
+[`docs/technical_decisions.md#retrait-senat-528`](docs/technical_decisions.md#retrait-senat-528).
 
 Default output: `raw_data/profiles/<slug>.json`.
 
 | Option | Effect |
 |---|---|
-| `--chambre {deputes,senateurs}` | Parliament chamber (`deputes` by default) |
+| `--chambre {deputes}` | Parliament chamber (only value since #528) |
 | `--out path.json` | Change output file |
 | `--max-pages N` | Limit intervention pagination (default: 10 pages x 50 results). Lower is faster but less complete. |
 
@@ -316,8 +318,10 @@ manquant. Voir `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 `src/an_roster.py` reconstruit la composition des groupes de l'Assemblée à
 partir de l'open data AN (`AMO30_tous_acteurs_tous_mandats_tous_organes`), que
 le pipeline télécharge et met déjà en cache. Depuis #527 c'est **la** source
-AN : `group_roster.fetch_full_roster` y délègue toute clé `deputes`, et la
-lecture NosDéputés (`fetch_full_roster_nosdeputes`) ne sert plus que le Sénat.
+AN : `group_roster.fetch_full_roster` y délègue toute clé `deputes`. La lecture
+NosDéputés (`fetch_full_roster_nosdeputes`) ne servait plus que le Sénat, sorti
+du périmètre par #528 : elle reste vivante comme **repli** si le drapeau
+`AN_ROSTER_ACTIF` redescend, et pour rien d'autre.
 
 ```bash
 # Composition d'un groupe (sigle PUBLIÉ, pas le sigle AN)
@@ -423,8 +427,8 @@ never skipped. A covered and fresh profile is neither re-fetched nor counted aga
 
 For each candidate from `raw_data/candidats.json`, the script:
 
-1. tries FR profile collection (`deputes`, then `senateurs`) using Nos*
-   slug when available;
+1. tries FR profile collection (`deputes` — the only chamber since #528) using
+   the Nos* slug when available;
 2. tries EU mandate lookup by name (unless `--skip-ue`) and merges it under
    `mandat_europeen`;
 3. writes `raw_data/profiles/<slug>.json` as soon as at least one source
@@ -598,7 +602,6 @@ Detailed extraction and merge flow is documented in:
 
 - `docs/pipeline-profiles-groupes.md`
 - `docs/extract-an.md`
-- `docs/extract-senat.md`
 - `docs/extract-ue.md`
 - `docs/extract-parltrack.md`
 
@@ -687,7 +690,7 @@ schema, soft fail on incomplete portefeuille (ministerial portfolio) coverage, e
 ## 9. Running the full pipeline locally instead of CI
 
 `scripts/generate_data_local.sh` runs the same sequence of stages as
-`generate-data.yml` (AN, Sénat, UE, ParlTrack, amendements index,
+`generate-data.yml` (AN, UE, ParlTrack, amendements index,
 roster-driven group members, then pivots + party/group/government profiles +
 quality gate) directly on your machine, bypassing GitHub Actions entirely.
 Useful when the hosted runner is hitting transient infrastructure
@@ -971,7 +974,7 @@ Sensitive institutional constraints are documented in `AGENTS.md`.
 |---|---|---|---|---|
 | NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL v1.0 | AN |
 | NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL v1.0 | AN |
-| NosSenateurs archives | JSON/XML API | Frozen | ODbL v1.0 | Senate |
+| NosSenateurs archives | JSON/XML API | **Out of scope since #528** (dead TLS certificate; attribution still due for already-published fields) | ODbL v1.0 | Senate |
 | data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily | Licence Ouverte / Open Licence (Etalab) | AN |
 | Parltrack | LZMA dumps | Weekly (approx.) | ODbL v1.0 | EP |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | REST API + MEP pages | Live (fetched per run, no weekly cache) | EP Legal Notice (reuse policy, attribution-based) | EP |
@@ -1003,11 +1006,14 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
   7 groups declared in `raw_data/groupes_reels.json` (5 AN + 2 Senate) — not
   every parliamentary group that exists. Extending coverage means adding
   entries to that file, a separate editorial decision. The **2 Senate groups
-  are suspended** since 2026-08-24 (`extraction_suspendue`, #516): they are no
-  longer fetched nor regenerated — expired TLS certificate on
-  `archive.nossenateurs.fr`, which failed whole runs, AN collection included —
-  and their published files stay in place, frozen. See
-  [`docs/technical_decisions.md#extraction-groupe-suspendue-516`](docs/technical_decisions.md#extraction-groupe-suspendue-516).
+  are suspended** since 2026-08-24 (`extraction_suspendue`, #516) and stay so:
+  #528 took the Senate out of the product's scope, so the suspension is no
+  longer waiting on a certificate — it waits on an explicit editorial
+  reopening. Their published files stay in place, frozen (removing a published
+  file is a disappearance, which `audit_diff_profils` blocks). See
+  [`docs/technical_decisions.md#retrait-senat-528`](docs/technical_decisions.md#retrait-senat-528)
+  and
+  [`#extraction-groupe-suspendue-516`](docs/technical_decisions.md#extraction-groupe-suspendue-516).
 - **Government scope**: profile generation only covers the governments
   declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
   Fillon II through Lecornu II) — not every government in the Fifth
@@ -1031,7 +1037,9 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
   misleading zero (rule 5, `AGENTS.md`).
 - **AN votes**: official open data for deputies (14th-17th legislatures,
   depending on available dumps).
-- **Senate votes**: no equivalent official source integrated yet.
+- **Senate**: out of scope since #528 — no collection job, no `--source senat`,
+  no `senateurs` chamber. Already-published Senate mandates and the 2 frozen
+  Senate group files stay published.
 - **Freshness of `groupe`/`identite.groupe_sigle`**: derived from NosDeputes,
   currently frozen on pre-dissolution 2024 data.
 - **Interventions**: full-text name search can be partial for ambiguous names.

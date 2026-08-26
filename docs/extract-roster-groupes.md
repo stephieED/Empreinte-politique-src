@@ -35,7 +35,7 @@ pour les députés, `candidate_profile.build_profile`).
 
 Voir `.github/workflows/generate-data.yml` (job `extract-roster-groupes`).
 
-Contrairement à `extract-an` / `extract-senat` / `extract-ue-officiel`, ce job
+Contrairement à `extract-an` / `extract-ue-officiel`, ce job
 ne part pas de la liste éditoriale `raw_data/candidats.json` mais de la
 composition réelle des groupes parlementaires configurés dans
 `raw_data/groupes_reels.json` — couverture de groupe complète (~750+
@@ -178,7 +178,7 @@ flowchart TD
 > "roster_groupe"` — ne rétrograde jamais un profil `candidat_declare`
 > existant lors de la fusion (`merge_pivot_profile`), voir
 > `docs/technical_decisions.md#provenance-pivot`.  
-> **Même fan-out par membre que `extract-an`/`extract-senat`** : coût par
+> **Même fan-out par membre que `extract-an`** : coût par
 > candidat identique, seul le volume traité change (borné par
 > `roster_limit`).
 
@@ -256,10 +256,11 @@ flowchart TD
    documenté. Voir
    `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
-   pilote ensuite la même chaîne de collecte que `extract-an`/`extract-senat`
+   pilote ensuite la même chaîne de collecte que `extract-an`
    (`candidate_profile.py`, identité/mandats/votes/amendements via
-   NosDéputés/NosSénateurs + AN Open Data), candidat par candidat, chambre
-   déterminée par `roster_chambre` du groupe d'origine — en mode léger
+   NosDéputés + AN Open Data), candidat par candidat, chambre déterminée par
+   `roster_chambre` du groupe d'origine — qui ne vaut plus que `deputes`
+   depuis #528 — en mode léger
    (`--skip-interventions --skip-dossiers-legislatifs`, #357) : dossiers
    législatifs, interventions et questions officielles ne sont jamais
    extraits ici (non consommés par les agrégats de groupe, #349).
@@ -273,7 +274,7 @@ flowchart TD
    warn` — ce job peut légitimement ne produire aucun fichier si le fetch
    roster échoue).
 8. Dans `merge-and-pivot`, cet artifact est fusionné avec ceux de
-   `extract-an`/`extract-senat`/`extract-ue-officiel`
+   `extract-an`/`extract-ue-officiel`
    (`merge_profile.py --dirs`), puis re-normalisé en pivot spécifiquement
    via `raw_data/roster_candidats.json` — **celui du run**, téléchargé depuis
    l'artifact `roster-candidats` (#518), et non plus une liste reconstruite à
@@ -302,7 +303,6 @@ Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-prof
 | Job | Périmètre |
 |---|---|
 | `extract-an` | AN / NosDéputés, liste éditoriale `candidats.json` |
-| `extract-senat` | Sénat / NosSénateurs, liste éditoriale `candidats.json` |
 | `extract-ue-officiel` | Parlement européen, liste éditoriale `candidats.json` |
 | `extract-parltrack` | Téléchargement des dumps ParlTrack (`.zst`) |
 | **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_limit`, mode léger (#357) |

@@ -22,9 +22,13 @@ def _deputes_payload():
     ]
 
 
-def _senateurs_payload():
+def _deputes_15_payload():
+    """#528 : la deuxième clé de fetch était le Sénat, retiré du périmètre.
+    C'est désormais une SECONDE LÉGISLATURE de l'Assemblée — ce que ces tests
+    éprouvent est le partage d'un fetch par clé `(chambre, législature)`, pas la
+    chambre elle-même."""
     return [
-        {"slug": "carla", "nom": "Carla", "groupe_sigle": "LR", "mandat_debut": "2020-01-01", "mandat_fin": None},
+        {"slug": "carla", "nom": "Carla", "groupe_sigle": "LR", "mandat_debut": "2017-06-21", "mandat_fin": "2022-06-21"},
     ]
 
 
@@ -38,10 +42,10 @@ _GROUPE_SOC_AN = {
     "groupe_nom": "Socialistes", "chambre": "AN", "legislature": "16",
     "fichier": "groupe-AN-SOC-16.json",
 }
-_GROUPE_LR_SENAT = {
-    "roster_chambre": "senateurs", "groupe_id": "Senat:LR", "groupe_sigle": "LR",
-    "groupe_nom": "Les Républicains", "chambre": "Senat", "legislature": None,
-    "fichier": "groupe-Senat-LR.json",
+_GROUPE_LR_AN_15 = {
+    "roster_chambre": "deputes", "groupe_id": "AN:LR-15", "groupe_sigle": "LR",
+    "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "15",
+    "fichier": "groupe-AN-LR-15.json",
 }
 
 
@@ -136,18 +140,18 @@ def test_generate_roster_candidats_two_chambres_two_fetches(monkeypatch):
 
     def fake_fetch_full_roster(chambre, legislature=None, session=None):
         fetch_calls.append((chambre, legislature))
-        if chambre == "deputes":
-            return _deputes_payload()
-        return _senateurs_payload()
+        return _deputes_payload() if legislature == "16" else _deputes_15_payload()
 
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster", fake_fetch_full_roster)
 
-    candidats = generate_roster_candidats([_GROUPE_LR_AN, _GROUPE_LR_SENAT])
+    candidats = generate_roster_candidats([_GROUPE_LR_AN, _GROUPE_LR_AN_15])
 
     assert len(fetch_calls) == 2
-    assert set(fetch_calls) == {("deputes", "16"), ("senateurs", None)}
+    assert set(fetch_calls) == {("deputes", "16"), ("deputes", "15")}
     assert {c["slug"] for c in candidats} == {"alice", "carla"}
-    assert next(c for c in candidats if c["slug"] == "carla")["source"] == "https://archive.nossenateurs.fr/carla"
+    assert next(c for c in candidats if c["slug"] == "carla")["source"] == (
+        "https://2017-2022.nosdeputes.fr/carla"
+    )
 
 
 def test_generate_roster_candidats_fetch_failure_is_ignored(monkeypatch):
@@ -224,17 +228,22 @@ def _config(tmp_path, groupes):
     return chemin
 
 
-def _timeout_sur(chambres):
-    """Doublure du `Read timed out` de l'incident, pour les chambres nommées."""
+def _timeout_sur(cles):
+    """Doublure du `Read timed out` de l'incident, pour les clés nommées.
+
+    #528 : la clé est `(chambre, législature)` et non plus la seule chambre —
+    les deux clés de ces tests sont maintenant deux législatures de la même
+    chambre, le Sénat étant sorti du périmètre.
+    """
     import requests
 
     def fake_fetch_full_roster(chambre, legislature=None, session=None):
-        if chambre in chambres:
+        if (chambre, legislature) in cles:
             raise requests.RequestException(
                 "HTTPSConnectionPool(host='www.nosdeputes.fr', port=443): "
                 "Read timed out. (read timeout=15)"
             )
-        return _deputes_payload() if chambre == "deputes" else _senateurs_payload()
+        return _deputes_payload() if legislature == "16" else _deputes_15_payload()
 
     return fake_fetch_full_roster
 
@@ -242,8 +251,8 @@ def _timeout_sur(chambres):
 def test_les_deux_fetchs_en_timeout_n_ecrivent_pas_le_roster(tmp_path, monkeypatch, capsys):
     """L'incident rejoué à l'identique : 0 candidat, et un code de sortie 0."""
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster",
-                        _timeout_sur({"deputes", "senateurs"}))
-    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_LR_SENAT])
+                        _timeout_sur({("deputes", "16"), ("deputes", "15")}))
+    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_LR_AN_15])
     out_path = tmp_path / "roster_candidats.json"
 
     rc = generate_roster_candidats_main(["--config", str(config_path), "--out", str(out_path)])
@@ -257,7 +266,7 @@ def test_les_deux_fetchs_en_timeout_n_ecrivent_pas_le_roster(tmp_path, monkeypat
 def test_un_roster_existant_n_est_pas_ecrase_par_une_collecte_en_echec(tmp_path, monkeypatch):
     """Le fichier précédent survit intact — il n'est ni vidé ni réécrit."""
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster",
-                        _timeout_sur({"deputes"}))
+                        _timeout_sur({("deputes", "16")}))
     config_path = _config(tmp_path, [_GROUPE_LR_AN])
     out_path = tmp_path / "roster_candidats.json"
     precedent = json.dumps({"candidats": [{"slug": "alice", "nom": "Alice"}]})
@@ -279,8 +288,8 @@ def test_un_seul_fetch_en_echec_bloque_aussi(tmp_path, monkeypatch, capsys):
     rétrécit ? » — oui, et par la cause, pas par un seuil chiffré.
     """
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster",
-                        _timeout_sur({"senateurs"}))
-    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_SOC_AN, _GROUPE_LR_SENAT])
+                        _timeout_sur({("deputes", "15")}))
+    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_SOC_AN, _GROUPE_LR_AN_15])
     out_path = tmp_path / "roster_candidats.json"
 
     rc = generate_roster_candidats_main(["--config", str(config_path), "--out", str(out_path)])
@@ -288,7 +297,7 @@ def test_un_seul_fetch_en_echec_bloque_aussi(tmp_path, monkeypatch, capsys):
     assert rc == 1
     assert not out_path.exists()
     err = capsys.readouterr().err
-    assert "senateurs" in err
+    assert "deputes" in err
     assert "INCONNUE, pas vide" in err
 
 
@@ -316,10 +325,10 @@ def test_un_groupe_configure_sans_membre_bloque(tmp_path, monkeypatch, capsys):
 def test_collecte_complete_ecrit_et_rend_zero(tmp_path, monkeypatch):
     """Le cas nominal reste inchangé : rien de ce qui marchait ne se met à bloquer."""
     def fake_fetch_full_roster(chambre, legislature=None, session=None):
-        return _deputes_payload() if chambre == "deputes" else _senateurs_payload()
+        return _deputes_payload() if legislature == "16" else _deputes_15_payload()
 
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster", fake_fetch_full_roster)
-    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_SOC_AN, _GROUPE_LR_SENAT])
+    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_SOC_AN, _GROUPE_LR_AN_15])
     out_path = tmp_path / "roster_candidats.json"
 
     rc = generate_roster_candidats_main(["--config", str(config_path), "--out", str(out_path)])
@@ -331,8 +340,8 @@ def test_collecte_complete_ecrit_et_rend_zero(tmp_path, monkeypatch):
 def test_autoriser_roster_incomplet_ecrit_quand_meme(tmp_path, monkeypatch, capsys):
     """L'échappatoire existe, elle n'est câblée sur aucun input du workflow."""
     monkeypatch.setattr("generate_roster_candidats.fetch_full_roster",
-                        _timeout_sur({"senateurs"}))
-    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_LR_SENAT])
+                        _timeout_sur({("deputes", "15")}))
+    config_path = _config(tmp_path, [_GROUPE_LR_AN, _GROUPE_LR_AN_15])
     out_path = tmp_path / "roster_candidats.json"
 
     rc = generate_roster_candidats_main([
@@ -343,7 +352,7 @@ def test_autoriser_roster_incomplet_ecrit_quand_meme(tmp_path, monkeypatch, caps
     assert rc == 0
     assert {c["slug"] for c in load_candidats(str(out_path))} == {"alice"}
     err = capsys.readouterr().err
-    assert "senateurs" in err, "les anomalies restent affichées, la tolérance ne les tait pas"
+    assert "deputes" in err, "les anomalies restent affichées, la tolérance ne les tait pas"
 
 
 def test_le_workflow_ne_cable_aucune_tolerance_de_roster():

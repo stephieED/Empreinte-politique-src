@@ -38,8 +38,9 @@ def _contenu() -> str:
 def test_aucun_site_ne_lit_l_input_workers():
     """`${{ inputs.workers }}` ne doit apparaître nulle part.
 
-    Les cinq sites qui le lisaient — extract-senat, extract-ue-officiel, le
-    shard roster et les deux invocations de merge-and-pivot — sont figés.
+    Les cinq sites qui le lisaient — extract-senat (retiré depuis, #528),
+    extract-ue-officiel, le shard roster et les deux invocations de
+    merge-and-pivot — sont figés.
     """
     contenu = _contenu()
     assert "inputs.workers" not in contenu, (
@@ -69,7 +70,7 @@ def test_l_input_workers_n_est_pas_de_retour_dans_le_formulaire():
     )
 
 
-def test_les_cinq_invocations_passent_workers_1_en_dur():
+def test_les_quatre_invocations_passent_workers_1_en_dur():
     """Le figeage doit être explicite, pas obtenu en retirant le flag.
 
     Retirer `--workers` marcherait (le défaut de l'argparse vaut 1), mais
@@ -80,11 +81,11 @@ def test_les_cinq_invocations_passent_workers_1_en_dur():
         ligne for ligne in _contenu().splitlines()
         if "--workers 1" in ligne and not ligne.lstrip().startswith("#")
     ]
-    assert len(lignes) == 5, (
-        f"attendu 5 invocations `--workers 1` en dur, trouvé {len(lignes)} :\n"
+    assert len(lignes) == 4, (
+        f"attendu 4 invocations `--workers 1` en dur, trouvé {len(lignes)} :\n"
         + "\n".join(f"  {l.strip()}" for l in lignes)
-        + "\nSites attendus : extract-senat, extract-ue-officiel, le shard roster, "
-        "et les deux invocations de merge-and-pivot. Les lignes de commentaire "
-        "sont exclues du décompte — deux en mentionnent, dont une antérieure à "
-        "ce garde-fou."
+        + "\nSites attendus : extract-ue-officiel, le shard roster, et les deux "
+        "invocations de merge-and-pivot. Le cinquième site était extract-senat, "
+        "retiré par #528 avec le Sénat. Les lignes de commentaire sont exclues "
+        "du décompte — deux en mentionnent, dont une antérieure à ce garde-fou."
     )

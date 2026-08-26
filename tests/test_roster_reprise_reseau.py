@@ -107,18 +107,23 @@ def test_les_reprises_sont_plafonnees_et_l_erreur_remonte():
 # ---------------------------------------------------------------------------
 
 def test_un_certificat_expire_ne_donne_droit_a_aucune_reprise():
-    """Le cas Sénat de #516, en un test.
+    """Le cas Sénat de #516, en un test — rejoué sur l'Assemblée depuis #528.
 
     `requests.exceptions.SSLError` hérite de `ConnectionError` : classé par
     héritage, un certificat expiré serait « transitoire ». Trois tentatives
     de 15 s par invocation, sur 9 invocations, pour un verdict connu dès la
     première.
+
+    La chambre a changé, pas la règle : c'est l'ORDRE des `isinstance` dans
+    `_erreur_retentable` qui est verrouillé ici, et il ne dépend d'aucune
+    source. Le Sénat est sorti du périmètre (#528) ; le prochain certificat
+    expiré sera celui d'un autre domaine.
     """
     session = MagicMock()
     session.get.side_effect = requests.exceptions.SSLError("CERTIFICATE_VERIFY_FAILED")
 
     with pytest.raises(requests.exceptions.SSLError):
-        fetch_full_roster_nosdeputes("senateurs", session=session)
+        fetch_full_roster_nosdeputes("deputes", legislature="16", session=session)
 
     assert session.get.call_count == 1
 

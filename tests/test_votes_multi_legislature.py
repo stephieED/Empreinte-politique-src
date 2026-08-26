@@ -472,7 +472,6 @@ def _build_profile_avec_votes(votes, legislatures):
     }
     with (
         patch("candidate_profile.fetch_identity", return_value=identity),
-        patch("candidate_profile.fetch_votes", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),

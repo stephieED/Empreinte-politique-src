@@ -76,7 +76,6 @@ JAMAIS_PRODUIT = "jamais produit (drapeau --skip-* en dur)"
 INVENTAIRE_STEPS = {
     ("extract-an", 0): True,   # cache AN : ce job est le SEUL producteur
     ("extract-an", 1): True,   # cache dossiers : produit aussi
-    ("extract-senat", 0): True,
     ("extract-ue-officiel", 0): True,
     ("extract-parltrack", 0): True,
     ("extract-amendements-an", 0): True,
@@ -91,12 +90,14 @@ INVENTAIRE_STEPS = {
     ("merge-and-pivot", 0): True,   # dossiers : produits par ce job (#427)
 }
 
-# `extract-senat` cache `.cache` EN BLOC sous une clé qui n'appartient qu'à lui
-# (`public-data-cache-senat-*`). Il ne peut donc affamer aucun autre job : le
-# pire qu'il puisse faire est de se recopier à lui-même ce que la restauration
-# a mis là. Toléré tel quel par #424, et par #505 pour la même raison — la
-# règle porte sur les clés PARTAGÉES.
-JOBS_CACHE_LARGE_TOLERES = {"extract-senat"}
+# Jobs autorisés à cacher `.cache` EN BLOC. Le seul l'était `extract-senat`,
+# sous une clé qui n'appartenait qu'à lui (`public-data-cache-senat-*`) : il ne
+# pouvait affamer aucun autre job. Il a été retiré avec le Sénat (#528), et
+# l'ensemble redevient **vide** — pas conservé « au cas où ». Une tolérance qui
+# survit à son bénéficiaire est une porte ouverte que personne ne relit ; la
+# règle, elle, porte toujours sur les clés PARTAGÉES.
+# Voir docs/technical_decisions.md#retrait-senat-528.
+JOBS_CACHE_LARGE_TOLERES: set[str] = set()
 
 # Clés partagées par plus d'un job. Pour chacune, un seul job doit sauvegarder.
 CLES_PARTAGEES = ("public-data-cache-an-", "public-data-cache-dossiers-")
@@ -189,9 +190,10 @@ def test_le_workflow_est_lisible():
     """Si le découpage ne trouve plus ni jobs ni steps de cache, tous les tests
     ci-dessous passeraient pour une mauvaise raison (leçon de #460)."""
     jobs = _jobs()
-    assert len(jobs) >= 9, f"jobs trouvés : {sorted(jobs)}"
+    # 8 depuis le retrait d'`extract-senat` (#528), 9 avant.
+    assert len(jobs) >= 8, f"jobs trouvés : {sorted(jobs)}"
     total = sum(len(_steps_de_cache(l)) for l in jobs.values())
-    assert total >= 10, f"{total} step(s) actions/cache trouvés"
+    assert total >= 9, f"{total} step(s) actions/cache trouvés"
 
 
 def test_l_inventaire_des_steps_de_cache_est_a_jour():

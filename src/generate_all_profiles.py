@@ -4,7 +4,7 @@ generate_all_profiles.py
 
 Récupère les données et génère le CV (JSON) de chaque candidat de
 raw_data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
-NosSénateurs.fr) et/ou un mandat de député européen (recherché par nom via
+NosDéputés.fr) et/ou un mandat de député européen (recherché par nom via
 candidate_profile_ue.py, cf. Open Data Portal du Parlement européen). Les
 candidats sans aucune de ces deux sources sont simplement signalés, sans erreur.
 
@@ -123,7 +123,14 @@ DEFAULT_PROFILES_DIR = Path("raw_data/profiles")
 DEFAULT_PIVOT_DIR = Path("pivot_data/profiles")
 DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 
-CHAMBRES = ["deputes", "senateurs"]
+# #528 : le Sénat est sorti du périmètre. Cette liste ne porte plus qu'une
+# chambre, et `build_profile_any_chambre` en garde la forme — la boucle, les
+# warnings d'échec par chambre, la convention d'ordre — parce que ce qui est
+# retiré est une SOURCE, pas la possibilité qu'il y en ait plusieurs (le PE en
+# est déjà une autre, collectée à part). Rouvrir le Sénat, c'est rajouter une
+# entrée ici ET une source dans `candidate_profile.BASE_URLS` : lire d'abord
+# docs/technical_decisions.md#retrait-senat-528.
+CHAMBRES = ["deputes"]
 
 # Préfixes de warnings publiés dans `meta.warnings` du profil (#488). Même
 # convention que candidate_profile.WARNING_PREFIX_* : le texte avant le premier
@@ -134,8 +141,11 @@ WARNING_PREFIX_DEUX_CHAMBRES = "carrière sur deux chambres"
 # Répertoire de cache ParlTrack — identique à parltrack_dumps.PARLTRACK_CACHE_DIR.
 _PARLTRACK_CACHE_DIR = Path(".cache") / "parltrack"
 
-# Valeurs acceptées par --source.
-SOURCE_VALUES = ("an", "senat", "ue", "all")
+# Valeurs acceptées par --source. `"senat"` a été RETIRÉE par #528 : argparse
+# refuse désormais la valeur, ce qui est le comportement voulu — un run qui
+# demande encore le Sénat doit échouer à la ligne de commande, pas produire un
+# job vert sans profil (c'est exactement ce que faisait `extract-senat`).
+SOURCE_VALUES = ("an", "ue", "all")
 
 # Verrou global pour sérialiser les print() et éviter un affichage interleaved.
 _PRINT_LOCK = threading.Lock()
@@ -447,25 +457,32 @@ def build_profile_any_chambre(
     - une **défaillance transitoire** de la première chambre faisait basculer
       la chambre publiée sur la seconde, sans warning (cas Mélenchon, #484).
 
-    Deux régimes, séparés par `collecte_bicamerale` :
+    **#528 — `CHAMBRES` ne contient plus qu'une chambre.** Le Sénat est sorti du
+    périmètre : `chambres` vaut `["deputes"]` en régime normal, la boucle ne fait
+    donc qu'un tour et `collecte_bicamerale` n'a plus d'effet observable. Rien
+    n'a été retiré ici pour autant, et c'est délibéré — ce qui a disparu est une
+    SOURCE, pas la possibilité d'en interroger plusieurs. Les deux warnings
+    publiés (`collecte de chambre en échec`, `carrière sur deux chambres`)
+    restent produits par le même code ; le second ne peut simplement plus se
+    déclencher tant qu'il n'y a qu'une chambre. Condition de réouverture :
+    `docs/technical_decisions.md#retrait-senat-528`.
+
+    Deux régimes, séparés par `collecte_bicamerale`, conservés pour cette raison :
 
     **`collecte_bicamerale=True` — profils de candidats** (`meta.provenance ==
     "candidat_declare"`, 8 slugs résolvables sur les 13 de
     `raw_data/candidats.json`). Toutes les chambres de `chambres` sont
-    interrogées, et non plus seulement la première qui répond. C'est le seul
-    endroit où un passé sénatorial a un usage : **biographique**, sur un CV
-    (« a été sénateur de 2004 à 2010 »).
+    interrogées, et non plus seulement la première qui répond. C'était le seul
+    endroit où un passé sénatorial avait un usage : **biographique**, sur un CV
+    (« a été sénateur de 2004 à 2010 »). Cet usage est ce que #528 a tranché
+    éditorialement, et les deux profils concernés (#486, #495) gardent leurs
+    mandats sénatoriaux DÉJÀ COLLECTÉS — la fusion additive ne retire rien.
 
     **`collecte_bicamerale=False` — membres de roster** (`roster_groupe`, 201
     des 209 profils). Comportement historique : on s'arrête à la première
-    chambre qui répond. Aucun groupe sénatorial n'est agrégé — aucun jeu de
-    données Sénat structuré n'est exploitable, voir
-    `docs/technical_decisions.md` § *Senate votes, amendments, sponsored texts*,
-    et les deux `groupe-Senat-*.json` publiés portent `cohesion_votes: 0`. Le
-    passé sénatorial d'un membre de roster n'alimente donc rien, et le collecter
-    coûterait deux requêtes à ~9,5 s de médiane pour 752 membres, soit
-    **+30,6 min par shard** et **+4 h 04** à pleine échelle (mesuré le
-    20/08/2026, voir `docs/technical_decisions.md#deux-chambres-interrogees`).
+    chambre qui répond. Aucun groupe sénatorial n'était agrégé — aucun jeu de
+    données Sénat structuré n'est exploitable, et les deux `groupe-Senat-*.json`
+    publiés portent `cohesion_votes: 0`.
 
     Ce que fait cette version, dans les deux régimes :
 
@@ -652,7 +669,7 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-            "warnings": ["aucun mandat français connu (candidat non référencé sur NosDéputés/NosSénateurs, ou identité introuvable)"],
+            "warnings": ["aucun mandat français connu (candidat non référencé sur NosDéputés, ou identité introuvable)"],
         },
     }
 
@@ -848,8 +865,6 @@ def process_candidat(
     # Chambres FR à interroger selon --source
     if source == "an":
         chambres_fr: list[str] = ["deputes"]
-    elif source == "senat":
-        chambres_fr = ["senateurs"]
     elif source == "ue":
         chambres_fr = []  # skip FR entièrement
     else:  # "all"
@@ -865,7 +880,7 @@ def process_candidat(
         if not chambres_fr:
             return None, None, []
         if not slug:
-            _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés/NosSénateurs).")
+            _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés).")
             return None, None, []
         result = build_profile_any_chambre(
             slug,
@@ -887,8 +902,8 @@ def process_candidat(
         return result
 
     def _fetch_ue() -> Optional[dict]:
-        # --source an ou senat : extraction scopée, pas d'UE dans cette passe
-        if source in ("an", "senat"):
+        # --source an : extraction scopée, pas d'UE dans cette passe
+        if source == "an":
             return None
         if args.skip_ue:
             return None
@@ -1159,7 +1174,8 @@ def main() -> None:
              "d'interventions, il n'est neutralisé par AUCUN autre drapeau. "
              "0 = pas de budget, DÉCLARÉ comme tel ; omettre l'option laisse la collecte "
              "sans plafond et sans décision écrite — c'est exactement ce qui a coûté "
-             "15 minutes de runner pour un profil à extract-senat (#514).")
+             "15 minutes de runner pour un profil à l'ex-job extract-senat, retiré "
+             "depuis (#514, #528).")
     parser.add_argument(
         "--budget-job-secondes", type=int, default=0,
         help="Budget de temps mur (s) pour la collecte réseau de TOUT le run. Épuisé, les "
@@ -1181,15 +1197,12 @@ def main() -> None:
         help=(
             "Scoper l'extraction à une seule source : "
             "'an' = Assemblée nationale uniquement, "
-            "'senat' = Sénat uniquement, "
             "'ue' = Open Data Portal UE uniquement, "
             "'all' = toutes les sources (comportement par défaut). "
-            "Avec 'an'/'senat', la source UE est ignorée. "
-            "Avec 'ue', les sources FR (AN/Sénat) sont ignorées. "
-            "Avec 'all', les DEUX chambres FR sont interrogées — et non plus seulement "
-            "la première qui répond — pour les seuls profils de CANDIDATS "
-            "(meta.provenance = candidat_declare, #488). Un membre de roster garde le "
-            "comportement historique : on s'arrête à la première chambre qui répond."
+            "Avec 'an', la source UE est ignorée. Avec 'ue', la source FR (AN) est "
+            "ignorée. La valeur 'senat' a été retirée par #528 : le Sénat est hors "
+            "périmètre, et argparse refuse la valeur plutôt que de laisser une passe "
+            "tourner à vide (docs/technical_decisions.md#retrait-senat-528)."
         ),
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
@@ -1263,8 +1276,8 @@ def main() -> None:
                         help="Ne pas extraire les interventions (ni la recherche NosDéputés ni les questions officielles AN). "
                              "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
     parser.add_argument("--skip-dossiers-legislatifs", action="store_true",
-                        help="Ne pas extraire les dossiers législatifs (ni la recherche NosDéputés pour les sénateurs, ni "
-                             "fetch_textes_portes_officiels pour les députés). Combiné à --skip-interventions, constitue le "
+                        help="Ne pas extraire les dossiers législatifs — depuis #528, ils n'ont plus "
+                             "qu'une source, fetch_textes_portes_officiels (AN). Combiné à --skip-interventions, constitue le "
                              "mode d'extraction léger identité+mandats+votes+amendements (#357) utilisé par "
                              "extract-roster-groupes : les dossiers/interventions/questions officielles ne sont consommés "
                              "par aucun agrégat de groupe (#349). Les dossiers existants restent intacts en mode fusion.")

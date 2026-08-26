@@ -100,22 +100,22 @@ if [ "$FRESH_RUN" = "true" ]; then
   find raw_data/profiles -name "*.json" -delete
 fi
 
-echo "=== [1/7] extract-amendements-an : index amendements (17/16/15) ==="
+echo "=== [1/6] extract-amendements-an : index amendements (17/16/15) ==="
 python3 src/build_amendements_index.py || echo "[!] extract-amendements-an en échec (continue-on-error, comme en CI)"
 
-echo "=== [2/7] extract-an : Assemblée nationale (tous les candidats) ==="
+echo "=== [2/6] extract-an : Assemblée nationale (tous les candidats) ==="
 python3 src/generate_all_profiles.py --source an --workers "$WORKERS" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" \
   || echo "[!] extract-an en échec (continue-on-error, comme en CI)"
 
-echo "=== [3/7] extract-senat : Sénat (NosSénateurs) ==="
-python3 src/generate_all_profiles.py --source senat --workers "$WORKERS" "${MERGE_FLAG[@]}" \
-  || echo "[!] extract-senat en échec (continue-on-error, comme en CI)"
+# L'étape « extract-senat » a été retirée par #528, en même temps que le job CI :
+# le Sénat est sorti du périmètre du produit et `--source senat` n'existe plus.
+# Voir docs/technical_decisions.md#retrait-senat-528.
 
-echo "=== [4/7] extract-ue-officiel : Parlement européen (Open Data Portal) ==="
+echo "=== [3/6] extract-ue-officiel : Parlement européen (Open Data Portal) ==="
 python3 src/generate_all_profiles.py --source ue --workers "$WORKERS" "${MERGE_FLAG[@]}" \
   || echo "[!] extract-ue-officiel en échec (continue-on-error, comme en CI)"
 
-echo "=== [5/7] extract-parltrack : dumps ParlTrack (.zst) ==="
+echo "=== [4/6] extract-parltrack : dumps ParlTrack (.zst) ==="
 # Fichier temporaire plutôt qu'un heredoc (python3 - <<EOF) : un heredoc lit
 # depuis le flux du script lui-même, sensible aux mêmes soucis de descripteur
 # de fichier hérité qu'expliqué ci-dessus sur le relancement nohup — un
@@ -139,7 +139,7 @@ python3 "$PARLTRACK_SCRIPT" "$FRESH_RUN" || echo "[!] extract-parltrack en éche
 rm -f "$PARLTRACK_SCRIPT"
 trap - EXIT
 
-echo "=== [6/7] extract-roster-groupes : membres de groupe (mode léger) ==="
+echo "=== [5/6] extract-roster-groupes : membres de groupe (mode léger) ==="
 # #511 : sortie non nulle sur une collecte incomplète (fetch en échec, groupe à
 # 0 membre, roster vide). Ce script n'a pas `set -e` — sans ce test explicite,
 # l'extraction ci-dessous repartirait sur un roster périmé ou absent, ce qui est
@@ -170,7 +170,7 @@ python3 src/generate_all_profiles.py \
   || echo "[!] extract-roster-groupes en échec (continue-on-error, comme en CI)"
 fi
 
-echo "=== [7/7] merge-and-pivot : pivots, groupes, gouvernements, quality gate ==="
+echo "=== [6/6] merge-and-pivot : pivots, groupes, gouvernements, quality gate ==="
 
 # --no-checkpoint comme en CI (#518) : une passe --pivot-only n'a rien à
 # reprendre, et son point de sauvegarde s'écrirait dans raw_data/profiles/,

@@ -60,9 +60,10 @@ something is pending, not *why*.
   20/08/2026) sont toujours dans `main`. Ils ne bloquent rien — les deux passes
   `--pivot-only` les publient, vérifié en #518 — mais ils ne disparaîtront qu'au
   premier run `generate-data` qui ira jusqu'au commit.
-- `extract-senat` traite ses candidats dans l'ordre du fichier et n'a ni `--resume`
-  ni rotation : quand le budget de collecte du job (#514, 600 s) est épuisé par une
-  source dégradée, ce sont toujours les mêmes premiers slugs qui l'ont consommé. Voir
+- `extract-an` traite ses candidats dans l'ordre du fichier et n'a pas de rotation :
+  quand un budget de collecte de job est épuisé par une source dégradée, ce sont
+  toujours les mêmes premiers slugs qui l'ont consommé. Constaté sur `extract-senat`,
+  retiré depuis (#528) ; le défaut de conception, lui, n'est pas propre à ce job. Voir
   `technical_decisions.md#budget-collecte-source-injoignable-514`.
 - `extract-roster-groupes` déclare `--budget-collecte-secondes 0` (absence de budget
   assumée, #514) faute d'une mesure sur ses 752 membres. À dimensionner si un shard
@@ -88,15 +89,14 @@ something is pending, not *why*.
   profile-level `chambres` list — but the values only become real after a full
   regeneration re-collects the 228 published `mandat_electif`, all still at
   `chambre: null`. #486 sub-issue F (#495) and #324.
-- In CI a candidate's `chambre` is also decided by **artifact merge order**, not only by
-  the collection loop: `extract-an` (`--source an`) and `extract-senat` (`--source senat`)
-  are two scoped passes whose raw profiles meet in `merge_raw_profile`, where
-  `chambre = _prefer_non_empty(new, old)` lets the last one landing win. #488 fixed the
-  default `--source all` path. #493 narrowed this one without closing it: the **raw**
-  profile's `chambre` is still order-dependent, but it now only feeds the *fallback* of
-  `deriver_chambres()`, and both passes' mandates are merged additively — so a chamber
-  established by a mandate can no longer be overwritten by arrival order. What arrival
-  order still decides is the unbacked fallback value, which the profile now declares.
+- In CI a candidate's `chambre` used to be decided by **artifact merge order** too:
+  `extract-an` (`--source an`) and `extract-senat` (`--source senat`) were two scoped
+  passes whose raw profiles met in `merge_raw_profile`, where
+  `chambre = _prefer_non_empty(new, old)` let the last one landing win. #488 fixed the
+  default `--source all` path, #493 narrowed this one, and **#528 closed it by
+  removing the second pass**: there is now a single FR collection job. What remains
+  open is upstream of CI — `chambre` is still the *fallback* of `deriver_chambres()`
+  on profiles whose mandates carry no chamber, and the profile declares it.
 - Profiles collected before 2026-08-18 carry amendements resolved through the
   old `numero`-keyed store: ~75% of a legislature's amendements are missing and
   ~40% of the remaining (member, amendement) links point at the wrong text/date/
@@ -187,15 +187,15 @@ something is pending, not *why*.
   change with a large data footprint, not a cache change — hence deliberately out
   of #505. Measured in `technical_decisions.md#cache-mode-interventions-505`.
 
-- Senate speeches are collectable but never attributed: `fetch_intervention_details`
+- Senate speeches were collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which
-  `archive.nossenateurs.fr` never emits — it publishes `url_nossenateurs`. Every Senate
-  intervention is therefore classified `mention` and dropped, which is why `extract-senat`
-  now hard-codes `--skip-interventions` (#501). Reopening it means teaching that
-  function the Senate key *and* confronting the archive's HTML with
-  `_extract_speaker_identity_from_html`, for a body of work no aggregate consumes yet
-  (#488). `tests/test_interventions_senat_non_retenues.py` fails the day the key is
-  read. See `technical_decisions.md#interventions-senat-501`.
+  `archive.nossenateurs.fr` never emitted — it published `url_nossenateurs`. Every
+  Senate intervention was therefore classified `mention` and dropped, which is why
+  `extract-senat` hard-coded `--skip-interventions` (#501). **#528 retired the job and
+  the chamber**: this is now a reopening cost, not a defect to fix — see the three
+  conditions in `technical_decisions.md#retrait-senat-528` §7.
+  `tests/test_interventions_senat_non_retenues.py` still fails the day the key is read,
+  and stays as the tripwire. See `technical_decisions.md#interventions-senat-501`.
 
 - `actions/checkout` is now the dominant per-shard cost in `generate-data.yml`:
   93–117 s measured per roster shard on run 32288588518, i.e. ~55 % of a shard,

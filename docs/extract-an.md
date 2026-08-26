@@ -99,7 +99,6 @@ Référentiel documentaire détaillé : [`an_opendata.md`](./an_opendata.md).
 | Job | Périmètre |
 |---|---|
 | **extract-an** | AN / NosDéputés uniquement |
-| `extract-senat` | Sénat |
 | `extract-ue-officiel` | Parlement européen |
 | `merge-and-pivot` | Fusion et normalisation finale |
 

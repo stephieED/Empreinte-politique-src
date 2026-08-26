@@ -3,13 +3,17 @@
 candidate_profile.py
 
 Construit un profil JSON structuré ("CV politique") d'un parlementaire
-à partir des données ouvertes de NosDéputés.fr / NosSénateurs.fr
+à partir des données ouvertes de NosDéputés.fr
 (Regards Citoyens - licence ODbL / CC-BY-SA), complétées par les votes
 officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
 
+Le Sénat est HORS PÉRIMÈTRE depuis #528 : `chambre` ne connaît plus que
+"deputes", et toute autre valeur est refusée bruyamment (voir `build_profile`).
+Décision éditoriale et condition de réouverture :
+docs/technical_decisions.md#retrait-senat-528.
+
 Usage (depuis la racine du dépôt) :
     python src/candidate_profile.py jean-luc-melenchon --chambre deputes
-    python src/candidate_profile.py bruno-retailleau --chambre senateurs
     python src/candidate_profile.py jean-luc-melenchon --chambre deputes --out raw_data/profiles/jean-luc-melenchon.json
 
 Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
@@ -61,18 +65,19 @@ from json_io import ecrire_profil_json
 from parse_syceron import parse_syceron_xml
 from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
 
+# Domaines interroges, par chambre. La cle "senateurs" a ete RETIREE par #528 :
+# www.nossenateurs.fr avait definitivement ferme, et son archive
+# (archive.nossenateurs.fr) sert un certificat TLS expire depuis le 24/08/2026.
+# Le Senat est sorti du perimetre editorial du produit ; aucune source de
+# remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour. Remettre
+# une entree ici n'est PAS un geste technique : lire d'abord la condition de
+# reouverture dans docs/technical_decisions.md#retrait-senat-528.
 BASE_URLS = {
     "deputes": [
         "https://www.nosdeputes.fr",
         "https://2017-2022.nosdeputes.fr",
         "https://2012-2017.nosdeputes.fr",
         "https://2007-2012.nosdeputes.fr",
-    ],
-    "senateurs": [
-        # www.nossenateurs.fr a definitivement ferme (le site affiche desormais
-        # un message "Le site NosSenateurs.fr est desormais arrete" et redirige
-        # vers son archive) : on utilise directement l'archive, qui reste servie.
-        "https://archive.nossenateurs.fr",
     ],
 }
 
@@ -704,17 +709,16 @@ def _is_empty_payload(value: Any) -> bool:
 
 
 def _extract_parlementaire(identity_raw: Any) -> Optional[dict]:
-    """Extrait le dict "parlementaire" d'une réponse d'identité NosDéputés/NosSénateurs.
+    """Extrait le dict "parlementaire" d'une réponse d'identité NosDéputés.
 
-    La clé racine varie selon l'endpoint ("depute" ou "senateur") ; à défaut,
-    on retombe sur le payload lui-même (déjà à plat sur certains endpoints).
+    La clé racine est "depute" ; à défaut, on retombe sur le payload lui-même
+    (déjà à plat sur certains endpoints). La clé "senateur" a disparu avec le
+    retrait du Sénat (#528) — plus aucun appel ne peut la produire.
     """
     if not isinstance(identity_raw, dict):
         return None
     if identity_raw.get("depute") is not None:
         return identity_raw.get("depute")
-    if identity_raw.get("senateur") is not None:
-        return identity_raw.get("senateur")
     return identity_raw
 
 
@@ -985,45 +989,12 @@ def fetch_identity(
     return _try_urls(base_urls, "Récupération de l'identité", slug, budget)
 
 
-def fetch_dossiers(
-    base_url: str, legislature: str, budget: Optional[BudgetCollecte] = None
-) -> Optional[dict]:
-    """Récupère la liste des dossiers législatifs d'une législature."""
-    url = f"{base_url}/{legislature}/dossiers/nom/json"
-    print(f"-> Dossiers législatifs : {url}")
-    return _get_payload(url, budget)
-
-
-def fetch_dossiers_for_legislatures(
-    base_url: str, legislatures: list[str], budget: Optional[BudgetCollecte] = None
-) -> list[dict[str, Any]]:
-    """Récupère et fusionne les dossiers législatifs pour plusieurs législatures."""
-    dossiers: list[dict[str, Any]] = []
-    for rang, legislature in enumerate(legislatures):
-        if budget_epuise(budget):
-            budget_ignorer(budget, "législature(s) de dossiers Sénat", len(legislatures) - rang)
-            break
-        payload = fetch_dossiers(base_url, legislature, budget)
-        if not isinstance(payload, dict):
-            continue
-        sections = payload.get("sections") or []
-        for item in sections:
-            if not isinstance(item, dict):
-                continue
-            section = item.get("section") or item
-            if isinstance(section, dict):
-                dossiers.append({
-                    "legislature": legislature,
-                    "id": section.get("id"),
-                    "titre": section.get("titre"),
-                    "date_min": section.get("min_date"),
-                    "date_max": section.get("max_date"),
-                    "nb_interventions": section.get("nb_interventions"),
-                    "url_institution": section.get("url_institution"),
-                    "url_source": section.get("url_nosdeputes"),
-                })
-        time.sleep(0.2)
-    return dossiers
+# `fetch_dossiers` / `fetch_dossiers_for_legislatures` ont été RETIRÉES par
+# #528. Elles lisaient `<base>/<legislature>/dossiers/nom/json`, une liste
+# NosDéputés qui n'était appelée que pour la chambre "senateurs" : côté députés
+# elle était écrasée par `fetch_textes_portes_officiels` (source officielle AN,
+# propre à l'élu) depuis #400. Le Sénat sorti du périmètre, il ne restait aucun
+# appelant. Voir docs/technical_decisions.md#retrait-senat-528.
 
 
 def _normalize_search_query(text: str) -> str:
@@ -3125,10 +3096,11 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     rapporteur ou co-rapporteur), à partir du jeu de données bulk des dossiers
     législatifs (même archive que `_build_texte_titre_index`).
 
-    Contrairement à la liste NosDéputés (voir `fetch_dossiers_for_legislatures`),
-    qui renvoie l'intégralité des dossiers d'une législature identiquement pour
-    tous les élus (role toujours null, voir docs/an_opendata.md), cet index est
-    réellement propre à chaque acteur. Non-fatal en cas d'échec (retourne {})."""
+    Contrairement à la liste NosDéputés `dossiers/nom/json` — retirée par #528
+    avec le Sénat, seule chambre qui l'appelait — qui renvoyait l'intégralité
+    des dossiers d'une législature identiquement pour tous les élus (role
+    toujours null, voir docs/an_opendata.md), cet index est réellement propre à
+    chaque acteur. Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TEXTES_PORTES_LOCK:
         index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v2.json"  # cf. #400
         if index_path.is_file():
@@ -3186,8 +3158,10 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
 def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les dossiers législatifs où l'élu a un rôle factuel connu
     (auteur, rapporteur ou co-rapporteur), depuis le jeu de données officiel
-    des dossiers législatifs (Assemblée nationale). Remplace la liste NosDéputés
-    (voir `fetch_dossiers_for_legislatures`), qui n'est pas propre à l'élu."""
+    des dossiers législatifs (Assemblée nationale). SEULE source de
+    `dossiers_legislatifs` depuis #528 : elle a remplacé la liste NosDéputés
+    `dossiers/nom/json`, qui n'était pas propre à l'élu et n'était plus appelée
+    que pour le Sénat."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
@@ -4601,28 +4575,14 @@ def fetch_interventions_syceron(
     return interventions
 
 
-def fetch_votes(
-    base_urls: list[str], slug: str, budget: Optional[BudgetCollecte] = None
-) -> tuple[Optional[list], Optional[str]]:
-    """Liste des scrutins auxquels le parlementaire a participé, avec sa position."""
-    for base_url in base_urls:
-        for suffix in ["/votes/json", "/votes/xml"]:
-            if budget_epuise(budget):
-                budget_ignorer(budget, "format(s) de votes NosSénateurs non tenté(s)")
-                return None, None
-            url = f"{base_url}/{slug}{suffix}"
-            print(f"-> Récupération des votes : {url}")
-            data = _get_payload(url, budget)
-            if data is _TERMINAL_FAILURE:
-                # Échec déterministe : inutile d'essayer l'autre format sur ce base_url.
-                break
-            if data is None:
-                continue
-            votes = data.get("votes", data) if isinstance(data, dict) else data
-            if not _is_empty_payload(votes):
-                return votes, base_url
-            time.sleep(0.2)
-    return None, None
+# `fetch_votes` a été RETIRÉE par #528. Elle lisait `/<slug>/votes/{json,xml}`
+# sur NosDéputés/NosSénateurs, et n'était appelée que pour la chambre
+# "senateurs" : côté députés l'endpoint est en panne systématique (HTTP 500 sur
+# tous les domaines, voir `fetch_votes_officiels`) et l'appel avait été retiré
+# de longue date. Le Sénat sorti du périmètre, il ne restait aucun appelant, et
+# la branche de repli « utiliser votes_raw » de l'étape 6 est devenue
+# inatteignable — elle a été retirée avec.
+# Voir docs/technical_decisions.md#retrait-senat-528.
 
 
 def _groupe_label(groupe_field: Any) -> Optional[str]:
@@ -5084,14 +5044,19 @@ def build_profile(
 ) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
     votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
-    sources de données (NosDéputés.fr / NosSénateurs.fr + open data Assemblée nationale).
+    sources de données (NosDéputés.fr + open data Assemblée nationale).
 
     Aucune source indisponible ne fait échouer l'appel : chaque section manquante reste
     simplement vide, avec un message explicatif ajouté à `profile["meta"]["warnings"]`.
 
+    **`chambre` ne vaut plus que `"deputes"` (#528).** Toute autre valeur lève
+    un `ValueError` : le Sénat est sorti du périmètre, et un appel qui aurait
+    silencieusement rendu un profil vide est exactement le défaut que #501 et
+    #510 ont payé — une collecte qui rend zéro par construction, sans le dire.
+
     Args:
-        chambre: "deputes" ou "senateurs".
-        slug: identifiant NosDéputés.fr / NosSénateurs.fr du parlementaire
+        chambre: "deputes" (seule valeur acceptée depuis #528).
+        slug: identifiant NosDéputés.fr du parlementaire
             (ex. "jean-luc-melenchon").
         intervention_max_pages: nombre max. de pages de résultats de recherche
             d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
@@ -5133,9 +5098,17 @@ def build_profile(
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
     """
+    # #528 : le refus existait déjà (`chambre invalide`), mais il ne disait pas
+    # POURQUOI "senateurs" n'est plus une chambre. Un appelant qui la demande
+    # encore doit lire la décision, pas déduire une panne — et surtout pas
+    # obtenir un profil vide qui passerait pour un constat (#501, #510).
     if chambre not in BASE_URLS:
-        raise ValueError(f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)})")
-
+        raise ValueError(
+            f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)}). "
+            "Le Sénat a été retiré du périmètre par #528 — source morte, aucune "
+            "source de remplacement établie ; voir "
+            "docs/technical_decisions.md#retrait-senat-528."
+        )
     base_urls = BASE_URLS[chambre]
 
     # #514 : la phase d'interventions est bornée par SON budget quand il existe
@@ -5174,20 +5147,20 @@ def build_profile(
     pre_profile_warnings: list[str] = []
     identite_an: Optional[dict[str, Any]] = None
     acteur_ref_an: Optional[str] = None
-    if chambre == "deputes":
-        try:
-            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
-        except Exception as exc:
-            pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
+    try:
+        identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
+    except Exception as exc:
+        pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
 
-    # --- 1. Identité brute NosDéputés/NosSénateurs. Depuis #369, cet appel est
-    # sauté pour les députés dès que l'étape 0 ci-dessus a trouvé l'acteur dans
-    # le référentiel officiel AN : reste nécessaire pour les sénateurs (non
-    # couverts par l'AN), le nom de recherche d'interventions (étape 2) quand
+    # --- 1. Identité brute NosDéputés. Depuis #369, cet appel est sauté dès que
+    # l'étape 0 ci-dessus a trouvé l'acteur dans le référentiel officiel AN :
+    # reste nécessaire pour le nom de recherche d'interventions (étape 2) quand
     # l'AN n'a pas trouvé l'acteur, et en repli complet d'identité si le
-    # candidat n'est trouvé ni dans les archives AN ni via NosDéputés. ---
-    if chambre != "deputes" or acteur_ref_an is None:
-        with budget_section(budget_collecte, "identité NosDéputés/NosSénateurs"), \
+    # candidat n'est trouvé ni dans les archives AN ni via NosDéputés.
+    # La condition portait aussi `chambre != "deputes"` — la porte d'entrée des
+    # sénateurs, non couverts par l'AN. Elle est tombée avec #528. ---
+    if acteur_ref_an is None:
+        with budget_section(budget_collecte, "identité NosDéputés"), \
                 _compter_sans_reponse("identité"):
             identity_result = fetch_identity(base_urls, slug, budget_collecte)
         if isinstance(identity_result, tuple):
@@ -5200,25 +5173,11 @@ def build_profile(
         identity_raw = None
         identity_base_url = None
 
-    # Votes bruts NosDéputés : uniquement pour les sénateurs. Pour les députés,
-    # l'endpoint /votes de NosDéputés.fr est en panne de façon systématique
-    # (HTTP 500 sur tous les domaines/législatures, voir docstring de
-    # fetch_votes_officiels ci-dessous) : votes_raw y est donc TOUJOURS vide,
-    # rendant la branche de repli "else: utiliser votes_raw" (étape 6)
-    # inatteignable pour cette chambre. L'appel réseau ici (jusqu'à 8 requêtes :
-    # 4 domaines × 2 formats) ne fait donc que risquer un blocage pour un
-    # résultat qui ne sera jamais exploité — même logique que le retrait de
-    # fetch_dossiers_for_legislatures pour les députés, voir
-    # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel.
-    votes_raw: Any = None
-    if chambre != "deputes":
-        with budget_section(budget_collecte, "votes NosSénateurs"), \
-                _compter_sans_reponse("votes"):
-            votes_result = fetch_votes(base_urls, slug, budget_collecte)
-        if isinstance(votes_result, tuple):
-            votes_raw, _ = votes_result
-        else:
-            votes_raw = votes_result
+    # Votes bruts NosDéputés : plus jamais collectés (#528). L'appel n'existait
+    # que pour la chambre "senateurs" ; côté députés l'endpoint /votes de
+    # NosDéputés.fr est en panne de façon systématique (HTTP 500 sur tous les
+    # domaines/législatures, voir docstring de fetch_votes_officiels ci-dessous)
+    # et les votes viennent de l'open data AN. `fetch_votes` a été retirée avec.
 
     # --- 2. Nom de recherche fiable, dérivé de l'identité, pour l'API de recherche
     # d'interventions : un slug transformé en espaces (ex. "jean luc melenchon")
@@ -5233,38 +5192,20 @@ def build_profile(
     else:
         search_candidate_name = slug.replace("-", " ").title()
 
-    # --- 3. Dossiers législatifs et recherche des interventions (sur le
-    # meilleur domaine/législature disponible). ---
-    dossiers_payload = []
+    # --- 3. Recherche des interventions (sur le meilleur domaine/législature
+    # disponible).
+    #
+    # #528 : la liste de dossiers législatifs NosDéputés (`dossiers/nom/json`)
+    # a disparu d'ici avec le Sénat. Elle n'était appelée que pour cette
+    # chambre — côté députés, l'étape 8bis
+    # (`fetch_textes_portes_officiels`, source officielle AN, propre à chaque
+    # élu) l'écrasait de toute façon, et c'est justement ce point d'appel qui
+    # pendait régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
+    # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
+    # `dossiers_legislatifs` n'a donc plus qu'UNE source, l'AN. ---
     interventions_payload = None
     interventions_base_url = base_urls[0]
     try:
-        # Dossiers via NosDéputés : uniquement pour les sénateurs. Pour les
-        # députés, ce résultat est de toute façon écrasé plus bas par l'étape
-        # 8bis (fetch_textes_portes_officiels, source officielle AN, propre à
-        # chaque élu) — l'appel réseau ici serait fait pour rien, et c'est
-        # justement ce point d'appel (dossiers/nom/json) qui pendait
-        # régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
-        # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
-        if chambre != "deputes" and not skip_dossiers_legislatifs:
-            # Les dossiers doivent être demandés sur le domaine où l'identité a
-            # réellement été trouvée (donc sa législature) : utiliser systématiquement
-            # base_urls[0] (législature courante) renvoie une liste vide pour un
-            # parlementaire dont le mandat principal est antérieur (ex. 14e législature).
-            dossiers_base_url = identity_base_url or base_urls[0]
-            # Section budgétée (#514) : sur le chemin sénatorial ces deux
-            # requêtes ont coûté 104 s à `jean-luc-melenchon` sur le run
-            # 32421439590 (21:56:18 → 21:58:03 UTC), pour une source à terre.
-            # Cette branche n'est atteinte que pour les sénateurs, dont les
-            # domaines (archive.nossenateurs.fr) n'ont jamais figuré dans le
-            # mapping domaine -> législature supprimé en #403 : le repli 15/16
-            # était donc déjà le seul chemin réellement emprunté ici.
-            with budget_section(budget_collecte, "dossiers législatifs NosSénateurs"), \
-                    _compter_sans_reponse("dossiers législatifs"):
-                dossiers_payload = fetch_dossiers_for_legislatures(
-                    dossiers_base_url, ["15", "16"], budget_collecte
-                )
-            time.sleep(0.3)
         # Un parlementaire dont le mandat s'est terminé lors d'une législature
         # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
         # la législature courante : ses interventions réelles sont archivées sur le
@@ -5329,16 +5270,16 @@ def build_profile(
     # groupe parlementaire déclaré sont reconstruits ci-dessous depuis
     # identite_an (groupe_sigle/groupe_nom/mandat_debut/mandat_fin/nb_mandats,
     # voir _build_acteur_identite_index) faute d'être normalement sourcés par
-    # NosDéputés. NosDéputés reste la source pour les sénateurs (non couverts
-    # par l'AN) et en repli complet pour les députés absents des archives AN
-    # combinées. ---
+    # NosDéputés. Depuis #528, NosDéputés n'est plus qu'un repli complet, pour
+    # les députés absents des archives AN combinées : son autre usage — les
+    # sénateurs, non couverts par l'AN — est parti avec le Sénat. ---
     parlementaire = _extract_parlementaire(identity_raw) if isinstance(identity_raw, dict) else None
     parlementaire_valide = isinstance(parlementaire, dict) and not _is_empty_payload(parlementaire)
 
     if identite_an is None and not parlementaire_valide:
         warnings.append(
             f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : ni le référentiel officiel Assemblée nationale ni "
-            "NosDéputés/NosSénateurs ne renvoient de profil exploitable pour ce slug/chambre."
+            "NosDéputés ne renvoient de profil exploitable pour ce slug."
         )
     else:
         if identite_an is not None:
@@ -5406,12 +5347,12 @@ def build_profile(
         if _is_empty_payload(profile["mandats"]):
             if parlementaire_valide or acteur_ref_an:
                 warnings.append(
-                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité trouvé (NosDéputés/"
-                    "NosSénateurs et référentiel officiel Assemblée nationale confondus)."
+                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité trouvé "
+                    "(NosDéputés et référentiel officiel Assemblée nationale confondus)."
                 )
             else:
                 warnings.append(
-                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés/NosSénateurs et du "
+                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés et du "
                     "référentiel officiel Assemblée nationale."
                 )
 
@@ -5423,39 +5364,37 @@ def build_profile(
         # qualifiée, jamais sans source_url. Ajoute également une entrée de mandat
         # "fonction_gouvernementale" par période d'appartenance à un gouvernement
         # (position "gouvernement"), non limitée aux législatures achevées. ---
-        if chambre == "deputes":
-            try:
-                positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
-            except Exception as exc:
-                warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
-                positions_hemicycle = []
-            for periode in positions_hemicycle:
-                sigle = periode.get("groupe_sigle")
-                position = periode.get("position")
-                if position == "gouvernement":
-                    categorie = "fonction_gouvernementale"
-                    label = f"Gouvernement ({sigle})" if sigle else "Gouvernement"
-                else:
-                    categorie = "groupe_politique"
-                    label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
-                profile["mandats"].append({
-                    "categorie": categorie,
-                    "type": "membre",
-                    "label": label,
-                    "debut": periode.get("debut"),
-                    "fin": periode.get("fin"),
-                    "actif": not periode.get("fin"),
-                    "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
-                    "position_dans_hemicycle": position,
-                })
+        try:
+            positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
+        except Exception as exc:
+            warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
+            positions_hemicycle = []
+        for periode in positions_hemicycle:
+            sigle = periode.get("groupe_sigle")
+            position = periode.get("position")
+            if position == "gouvernement":
+                categorie = "fonction_gouvernementale"
+                label = f"Gouvernement ({sigle})" if sigle else "Gouvernement"
+            else:
+                categorie = "groupe_politique"
+                label = f"Groupe politique ({sigle})" if sigle else "Groupe politique"
+            profile["mandats"].append({
+                "categorie": categorie,
+                "type": "membre",
+                "label": label,
+                "debut": periode.get("debut"),
+                "fin": periode.get("fin"),
+                "actif": not periode.get("fin"),
+                "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
+                "position_dans_hemicycle": position,
+            })
 
-    # --- 6. Votes : on privilégie l'open data officiel de l'Assemblée nationale
-    # (fiable et à jour) ; pour les sénateurs (pas de source officielle
-    # branchée), on retombe sur les champs bruts de NosSénateurs (votes_raw,
-    # non interrogé pour les députés — voir étape 1). ---
+    # --- 6. Votes : open data officiel de l'Assemblée nationale, SEULE source
+    # depuis #528. Le repli sur les champs bruts NosSénateurs (`votes_raw`) est
+    # parti avec le Sénat : il n'était atteignable que pour cette chambre. ---
     official_votes: list[dict[str, Any]] = []
     official_legislatures: list[str] = []
-    if chambre == "deputes" and profile.get("identite"):
+    if profile.get("identite"):
         try:
             official_votes, official_legislatures = fetch_votes_officiels(
                 profile["identite"].get("url_an_ou_senat"), warnings
@@ -5498,40 +5437,16 @@ def build_profile(
             f"open data Assemblée nationale (data.assemblee-nationale.fr, {libelle_legislatures})"
         )
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    elif _is_empty_payload(votes_raw):
-        if chambre == "deputes":
-            warnings.append(
-                f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle Assemblée nationale "
-                "n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour "
-                "les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
-            )
-        else:
-            warnings.append(
-                f"{WARNING_PREFIX_VOTES_INTROUVABLES} : l'endpoint /votes de NosSénateurs.fr ne renvoie aucune "
-                "donnée exploitable pour ce parlementaire."
-            )
     else:
-        # On garde uniquement les champs utiles à un affichage type "CV"
-        cleaned_votes = []
-        votes_payload = votes_raw.get("votes", votes_raw) if isinstance(votes_raw, dict) else votes_raw
-        for v in votes_payload:
-            if not isinstance(v, dict):
-                continue
-            scrutin = v.get("vote", v)  # certaines réponses imbriquent sous "vote"
-            cleaned_votes.append({
-                "date": scrutin.get("date"),
-                "titre": scrutin.get("titre") or scrutin.get("title"),
-                "position": scrutin.get("position") or scrutin.get("vote"),
-                "numero_scrutin": scrutin.get("numero"),
-                "url_source": scrutin.get("url_nosdeputes") or scrutin.get("url"),
-            })
-        profile["votes"] = cleaned_votes
-        if _is_empty_payload(profile["votes"]):
-            warnings.append(f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune information de scrutin n'a été extraite de la réponse API.")
+        warnings.append(
+            f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle Assemblée nationale "
+            "n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour "
+            "les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
+        )
 
     # --- 6bis. Amendements officiels (Assemblée nationale, auteur principal uniquement,
     # toutes législatures disponibles — voir fetch_amendements_officiels). ---
-    if chambre == "deputes" and profile.get("identite"):
+    if profile.get("identite"):
         try:
             profile["amendements"] = fetch_amendements_officiels(
                 profile["identite"].get("url_an_ou_senat"), warnings
@@ -5539,22 +5454,12 @@ def build_profile(
         except Exception as exc:
             warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
 
-    if dossiers_payload:
-        # --- 8. Dossiers législatifs (sénateurs uniquement, voir étape 3
-        # ci-dessus — dossiers_payload reste [] pour les députés), triés du
-        # plus récent au plus ancien. ---
-        profile["dossiers_legislatifs"] = sorted(
-            dossiers_payload,
-            key=lambda item: (item.get("date_max") or "", item.get("titre") or ""),
-            reverse=True,
-        )
-
-    # --- 8bis. Textes portés officiels (Assemblée nationale, rôle factuel
+    # --- 8. Textes portés officiels (Assemblée nationale, rôle factuel
     # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
-    # Seule source de dossiers législatifs pour les députés (étape 3 : plus
-    # d'appel NosDéputés pour cette chambre, voir commentaire à l'appel de
-    # fetch_dossiers_for_legislatures). ---
-    if chambre == "deputes" and profile.get("identite") and not skip_dossiers_legislatifs:
+    # SEULE source de `dossiers_legislatifs` depuis #528 : l'étape 8 historique,
+    # qui triait la liste NosDéputés collectée pour les sénateurs, est partie
+    # avec le Sénat. ---
+    if profile.get("identite") and not skip_dossiers_legislatifs:
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:
@@ -5569,11 +5474,12 @@ def build_profile(
         if isinstance(parlementaire, dict):
             candidate_id = parlementaire.get("id")
 
-    # --- 9. Interventions : source primaire Syceron (débats officiels AN) pour les
-    # députés ; fallback vers le scraping NosDéputés si Syceron ne retourne rien
+    # --- 9. Interventions : source primaire Syceron (débats officiels AN) ;
+    # fallback vers le scraping NosDéputés si Syceron ne retourne rien
     # (acteurRef non résolu ou législature hors SYCERON_AVAILABLE_LEGISLATURES).
-    # Sénat/PE non couverts par Syceron : chemin NosDéputés uniquement. ---
-    if not skip_interventions and chambre == "deputes" and profile.get("identite"):
+    # Le garde `chambre == "deputes"` est tombé avec #528 : c'est désormais la
+    # seule chambre collectée. ---
+    if not skip_interventions and profile.get("identite"):
         try:
             with budget_section(budget_phase_interventions, "débats Syceron"):
                 syceron_interventions = fetch_interventions_syceron(
@@ -5606,7 +5512,7 @@ def build_profile(
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
     # déjà collectées (type_detail="question", source AN structurée). ---
-    if not skip_interventions and chambre == "deputes" and profile.get("identite"):
+    if not skip_interventions and profile.get("identite"):
         try:
             with budget_section(budget_phase_interventions, "questions officielles"):
                 official_questions = fetch_questions_officielles(
@@ -5641,19 +5547,13 @@ def build_profile(
     # populations distinctes réunies sous un seul chiffre, l'erreur même que
     # cette issue corrige ailleurs.
     #
-    # `votes` et `dossiers législatifs` ne sont examinés que pour les
-    # sénateurs : côté députés ils viennent de l'open data AN, qui ne passe pas
-    # par `_get_payload` et n'incrémente donc pas ce compteur. Les citer ici
-    # attribuerait à NosDéputés une panne qui n'est pas la sienne.
+    # `votes` et `dossiers législatifs` ne figurent PLUS dans cette liste
+    # depuis #528 : ils n'y étaient que pour les sénateurs. Côté députés ils
+    # viennent de l'open data AN, qui ne passe pas par `_get_payload` et
+    # n'incrémente donc pas ce compteur — les citer ici attribuerait à
+    # NosDéputés une panne qui n'est pas la sienne.
     sections_vides = [
         ("identité", not profile.get("identite")),
-        ("votes", chambre != "deputes" and not profile.get("votes")),
-        (
-            "dossiers législatifs",
-            chambre != "deputes"
-            and not skip_dossiers_legislatifs
-            and not profile.get("dossiers_legislatifs"),
-        ),
         ("interventions", not skip_interventions and not profile.get("interventions")),
     ]
     non_collecte = [
@@ -5685,9 +5585,9 @@ def main():
     parser.add_argument("slug", help="Identifiant du parlementaire, ex: jean-luc-melenchon")
     parser.add_argument(
         "--chambre",
-        choices=["deputes", "senateurs"],
+        choices=["deputes"],
         default="deputes",
-        help="Chambre concernée (défaut: deputes)",
+        help="Chambre concernée (seule valeur : deputes — le Sénat est hors périmètre depuis #528)",
     )
     parser.add_argument(
         "--out",

@@ -1,9 +1,10 @@
-"""La lecture NosDéputés/NosSénateurs d'un roster, et l'aiguillage de #527.
+"""La lecture NosDéputés d'un roster, et l'aiguillage de #527.
 
 Depuis la bascule du lot 1b, `fetch_full_roster` **choisit** sa source : AMO30
-pour l'Assemblée (`an_roster`), NosDéputés/NosSénateurs sinon. Les tests de ce
-fichier qui décrivent la lecture HTTP visent donc `fetch_full_roster_nosdeputes`
-— le repli et le Sénat — et deux tests décrivent l'aiguillage lui-même.
+pour l'Assemblée (`an_roster`), NosDéputés sinon. Les tests de ce fichier qui
+décrivent la lecture HTTP visent donc `fetch_full_roster_nosdeputes` — devenu le
+seul repli depuis que #528 a retiré le Sénat — et deux tests décrivent
+l'aiguillage lui-même.
 
 Ceux qui passent par `fetch_group_roster("deputes", …)` baissent le drapeau via
 la fixture `source_nosdeputes` : ils vérifient la lecture, pas le choix.
@@ -69,9 +70,26 @@ def test_base_url_for_deputes_unknown_legislature_raises():
         assert "99" in str(exc)
 
 
-def test_base_url_for_senateurs_ignores_legislature():
-    assert _base_url_for("senateurs", None) == "https://archive.nossenateurs.fr"
-    assert _base_url_for("senateurs", "16") == "https://archive.nossenateurs.fr"
+def test_base_url_for_senateurs_refuse_en_nommant_la_decision():
+    """#528 : le Sénat est sorti du périmètre. Ce chemin n'est atteint que si
+    quelqu'un lève la suspension des 2 entrées Sénat de `groupes_reels.json` —
+    il doit alors échouer bruyamment, et dire POURQUOI. Un « chambre inconnue »
+    générique laisserait croire à une faute de frappe."""
+    for legislature in (None, "16"):
+        with pytest.raises(ValueError) as echec:
+            _base_url_for("senateurs", legislature)
+        message = str(echec.value)
+        assert "#528" in message, message
+        assert "retrait-senat-528" in message, (
+            "le refus doit renvoyer à la décision écrite, pas seulement la citer"
+        )
+
+
+def test_le_refus_du_senat_est_un_roster_indisponible_pas_un_crash():
+    """`ValueError` appartient à `ERREURS_ROSTER` : les trois appelants le
+    traitent en « roster indisponible » (exit 2, fiches publiées intactes)
+    plutôt qu'en trace de pile qui coûte le commit du run (#518/#524)."""
+    assert any(issubclass(ValueError, e) for e in group_roster.ERREURS_ROSTER)
 
 
 def test_base_url_for_unknown_chambre_raises():
@@ -122,14 +140,16 @@ def test_fetch_group_roster_calls_correct_url(source_nosdeputes):
     assert called_url == "https://2012-2017.nosdeputes.fr/deputes/json"
 
 
-def test_fetch_group_roster_senateurs_uses_archive_url():
+def test_fetch_group_roster_senateurs_nemet_aucune_requete():
+    """Le refus tombe AVANT le réseau : une source retirée ne doit pas être
+    sollicitée « pour voir » — c'est ce que #516 a payé sur un certificat
+    expiré."""
     session = MagicMock()
-    session.get.return_value = _mock_response({"senateurs": []})
 
-    fetch_group_roster("senateurs", "LR", session=session)
+    with pytest.raises(ValueError):
+        fetch_group_roster("senateurs", "LR", session=session)
 
-    called_url = session.get.call_args[0][0]
-    assert called_url == "https://archive.nossenateurs.fr/senateurs/json"
+    session.get.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -160,17 +180,20 @@ def test_l_assemblee_est_derivee_d_amo30_et_ne_touche_pas_nosdeputes(monkeypatch
     assert [m["slug"] for m in membres] == ["alice"]
 
 
-def test_le_senat_reste_sur_sa_source_quel_que_soit_le_drapeau(monkeypatch):
-    """AMO30 est un référentiel de l'Assemblée : le Sénat n'y est pas (#526 §10)."""
+def test_le_senat_ne_bascule_pas_sur_amo30_en_perdant_sa_source(monkeypatch):
+    """AMO30 est un référentiel de l'Assemblée : le Sénat n'y est pas (#526 §10).
+    Son retrait (#528) ne doit donc pas se traduire par un aiguillage silencieux
+    vers AMO30 — qui rendrait un roster vide au lieu d'un refus."""
     def interdit(*_a, **_k):  # pragma: no cover - doit ne jamais être appelé
         raise AssertionError("Le Sénat ne se dérive pas d'AMO30.")
 
     monkeypatch.setattr(an_roster, "fetch_full_roster_an", interdit)
     session = MagicMock()
-    session.get.return_value = _mock_response({"senateurs": []})
 
-    assert fetch_full_roster("senateurs", session=session) == []
-    assert session.get.call_args[0][0] == "https://archive.nossenateurs.fr/senateurs/json"
+    with pytest.raises(ValueError):
+        fetch_full_roster("senateurs", session=session)
+
+    session.get.assert_not_called()
 
 
 def test_le_repli_rend_l_assemblee_a_nosdeputes(source_nosdeputes, monkeypatch):
@@ -268,63 +291,27 @@ def test_fetch_full_roster_one_call_shared_across_multiple_sigles():
 
 
 # ---------------------------------------------------------------------------
-# senat_periode_debut / _member_matches_legislature (#191)
+# `senat_periode_debut` / `_member_matches_legislature` (#191) : RETIRÉS (#528)
 #
-# archive.nossenateurs.fr (domaine unique, pas de sous-domaine par
-# législature) : filtrage optionnel côté client par date de fin de mandat.
-# Voir docs/technical_decisions.md#senat-periode-debut pour la limite connue
-# de ce filtrage (mandat_fin pas exploitable pour la majorité des entrées
-# archivées) — ces tests verrouillent le comportement du code tel qu'il
-# existe, indépendamment de cette limite de données.
+# Ce filtre côté client n'existait que pour `archive.nossenateurs.fr`, servi sur
+# un domaine d'archive unique sans sous-domaine par période : il fallait donc
+# trier les membres sur `mandat_fin`. L'Assemblée n'en a jamais eu besoin — sa
+# législature est un sous-domaine (NosDéputés) ou une donnée du référentiel
+# (AMO30, #526). Les quatre tests qui verrouillaient ce comportement sont partis
+# avec lui ; celui qui reste vérifie que `filter_roster_by_sigle` ne filtre plus
+# QUE sur le sigle. Voir docs/technical_decisions.md#retrait-senat-528.
 # ---------------------------------------------------------------------------
 
-def _senateurs_raw_members():
-    return [
-        {"slug": "courant", "nom": "Courant", "groupe_sigle": "LR", "mandat_debut": "2023-09-24", "mandat_fin": None},
-        {"slug": "ancien", "nom": "Ancien", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": "2017-09-30"},
-        {"slug": "sans-fin", "nom": "SansFin", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": None},
-    ]
-
-
-def test_filter_roster_by_sigle_senat_sans_date_garde_tous_les_membres():
-    """Sans senat_periode_debut, aucun filtrage temporel (comportement par défaut,
-    voir raw_data/groupes_reels.json qui ne renseigne pas ce paramètre)."""
-    roster = filter_roster_by_sigle(_senateurs_raw_members(), "senateurs", "LR")
-    assert {m["slug"] for m in roster} == {"courant", "ancien", "sans-fin"}
-
-
-def test_filter_roster_by_sigle_senat_periode_debut_exclut_ancien_avec_mandat_fin_connu():
-    roster = filter_roster_by_sigle(
-        _senateurs_raw_members(), "senateurs", "LR", senat_periode_debut="2020-01-01",
-    )
-    assert {m["slug"] for m in roster} == {"courant", "sans-fin"}
-
-
-def test_filter_roster_by_sigle_senat_periode_debut_garde_membre_sans_mandat_fin():
-    """mandat_fin absent (None) est traité comme 'toujours en fonction' — la
-    limite documentée de ce filtrage sur les données archivées (voir
-    docs/technical_decisions.md#senat-periode-debut) : un ancien sénateur dont
-    mandat_fin n'a jamais été renseigné n'est PAS exclu par ce filtrage."""
-    roster = filter_roster_by_sigle(
-        [{"slug": "sans-fin", "nom": "SansFin", "groupe_sigle": "LR", "mandat_debut": "2011-09-25", "mandat_fin": None}],
-        "senateurs", "LR", senat_periode_debut="2024-01-01",
-    )
-    assert {m["slug"] for m in roster} == {"sans-fin"}
-
-
-def test_filter_roster_by_sigle_senat_periode_debut_frontiere_incluse():
-    """mandat_fin == senat_periode_debut est retenu (comparaison >=, pas >)."""
-    roster = filter_roster_by_sigle(
-        [{"slug": "frontiere", "nom": "Frontiere", "groupe_sigle": "LR", "mandat_debut": "2017-01-01", "mandat_fin": "2023-01-01"}],
-        "senateurs", "LR", senat_periode_debut="2023-01-01",
-    )
-    assert {m["slug"] for m in roster} == {"frontiere"}
-
-
-def test_filter_roster_by_sigle_senat_periode_debut_ignoree_pour_deputes():
-    """senat_periode_debut n'a d'effet que pour chambre == 'senateurs'."""
+def test_filter_roster_by_sigle_ne_filtre_que_sur_le_sigle():
+    """Aucun filtrage temporel résiduel : un mandat clos reste dans le roster,
+    et c'est `_member_eligibility_intervals` (group_profile) qui décide qui vote
+    quand — jamais ce filtre-ci."""
     raw_members = [m.get("depute") for m in _deputes_payload()["deputes"]]
-    # carla a un mandat terminé en 2022-06-21, largement avant la date fournie ici ;
-    # côté "deputes" ce paramètre est ignoré, carla reste donc incluse.
-    roster = filter_roster_by_sigle(raw_members, "deputes", "LR", senat_periode_debut="2024-01-01")
+
+    roster = filter_roster_by_sigle(raw_members, "deputes", "LR")
+
+    # carla a un mandat terminé en 2022-06-21 : elle reste incluse.
     assert {m["slug"] for m in roster} == {"alice", "carla"}
+    assert {m["actif"] for m in roster} == {True, False}
+
+

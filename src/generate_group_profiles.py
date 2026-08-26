@@ -268,7 +268,6 @@ def generate_all(
             raw_members,
             groupe["roster_chambre"],
             groupe["groupe_sigle"],
-            senat_periode_debut=groupe.get("senat_periode_debut"),
         )
 
         out_path = out_dir / groupe["fichier"]
