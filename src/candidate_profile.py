@@ -3096,10 +3096,11 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     rapporteur ou co-rapporteur), à partir du jeu de données bulk des dossiers
     législatifs (même archive que `_build_texte_titre_index`).
 
-    Contrairement à la liste NosDéputés (voir `fetch_dossiers_for_legislatures`),
-    qui renvoie l'intégralité des dossiers d'une législature identiquement pour
-    tous les élus (role toujours null, voir docs/an_opendata.md), cet index est
-    réellement propre à chaque acteur. Non-fatal en cas d'échec (retourne {})."""
+    Contrairement à la liste NosDéputés `dossiers/nom/json` — retirée par #528
+    avec le Sénat, seule chambre qui l'appelait — qui renvoyait l'intégralité
+    des dossiers d'une législature identiquement pour tous les élus (role
+    toujours null, voir docs/an_opendata.md), cet index est réellement propre à
+    chaque acteur. Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TEXTES_PORTES_LOCK:
         index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v2.json"  # cf. #400
         if index_path.is_file():
@@ -3157,8 +3158,10 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
 def fetch_textes_portes_officiels(url_an_ou_senat: Optional[str]) -> list[dict[str, Any]]:
     """Récupère les dossiers législatifs où l'élu a un rôle factuel connu
     (auteur, rapporteur ou co-rapporteur), depuis le jeu de données officiel
-    des dossiers législatifs (Assemblée nationale). Remplace la liste NosDéputés
-    (voir `fetch_dossiers_for_legislatures`), qui n'est pas propre à l'élu."""
+    des dossiers législatifs (Assemblée nationale). SEULE source de
+    `dossiers_legislatifs` depuis #528 : elle a remplacé la liste NosDéputés
+    `dossiers/nom/json`, qui n'était pas propre à l'élu et n'était plus appelée
+    que pour le Sénat."""
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []

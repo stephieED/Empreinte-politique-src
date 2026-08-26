@@ -237,6 +237,35 @@ aurait été la mauvaise façon de fermer ce lot :
   Les fiches publiées gardent leurs avertissements, elles ne sont plus
   régénérées.
 
+Trois autres blocs de tests CI sont partis avec le job : les quatre tests de
+cohérence des deux budgets d'`extract-senat` (`test_ci_budget_par_job.py`) et
+les quatre de son `timeout-minutes` (`test_ci_interventions_par_job.py`). Ils
+portaient sur SES chiffres — 160 s par candidat, 600 s pour le job, 15 min de
+plafond — pas sur une règle transposable telle quelle : les recopier sur un
+autre job serait exactement l'erreur que #514 corrige, un chiffre mesuré sur une
+population appliqué à une autre. Ce qu'il faudra refaire le jour où une
+invocation repasse en `REGIME_BORNE` est écrit à leur place, dans le fichier.
+Une des huit règles n'était PAS propre au Sénat — « pas de
+`--budget-interventions-secondes` sous `--skip-interventions`, ce serait un
+réglage mort » — et a été réécrite en test générique sur `MODE_JAMAIS`.
+
+`JOBS_CACHE_LARGE_TOLERES` redevient **vide** dans les deux fichiers qui le
+portent, plutôt que de garder le nom d'un job disparu : une tolérance qui
+survit à son bénéficiaire est une porte ouverte que personne ne relit.
+
+**Les fixtures Sénat de `tests/fixtures/` ne sont PAS retirées, et c'est
+délibéré.** Celles qui décrivaient une *collecte* sénatoriale étaient toutes
+inline dans les fichiers de tests (`IDENTITE_SENATEUR`, `_senateurs_payload`,
+`_senateurs_raw_members`, `_GROUPE_LR_SENAT`) : elles ont été supprimées ou
+rejouées sur l'Assemblée. Celles qui restent sous `tests/fixtures/` décrivent
+des **valeurs publiées** — `chambre: "Senat"`, `sources[].type:
+"nossenateurs"`, un `id` hérité `nossenateurs:<slug>` — qui restent valides dans
+le schéma pivot (`KNOWN_CHAMBRES`, `KNOWN_SOURCE_TYPES`) et présentes dans les
+476 profils committés. Les retirer ferait cesser les audits
+(`audit_pivot_dataset`, `audit_diff_profils`, `audit_integrite_referentielle`)
+de couvrir un état qui existe réellement dans le corpus : ce serait retirer un
+contrôle, pas du code mort.
+
 Les scénarios de `test_budget_collecte_source_injoignable.py`, eux, ont été
 **rejoués sur l'Assemblée** plutôt que supprimés : les mesures venaient du Sénat,
 le mécanisme n'en venait pas. `BASE_URLS` y est réduit à un domaine par la

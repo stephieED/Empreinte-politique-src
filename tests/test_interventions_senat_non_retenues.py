@@ -1,4 +1,15 @@
-"""#501 : pourquoi `extract-senat` lève `--skip-interventions` en dur.
+"""#501 : pourquoi la collecte d'interventions sénatoriales ne retenait rien.
+
+**#528 — le job a été retiré, ce fichier reste.** `extract-senat` n'existe plus
+et le Sénat est sorti du périmètre
+(docs/technical_decisions.md#retrait-senat-528) : ces tests ne gardent donc plus
+un drapeau de workflow, ils gardent un **fait mesuré** dont dépend la condition
+de réouverture. Le §7 de cette décision exige, pour rouvrir, « au moins un
+agrégat publiable » — dont des interventions rattachables à un orateur. Le jour
+où `fetch_intervention_details` apprendra `url_nossenateurs`,
+`test_le_document_senat_reste_ignore` tombera : c'est la première des trois
+conditions qui bougera, et il vaut mieux que ce soit un test qui le dise qu'une
+relecture d'archive.
 
 La collecte d'interventions sénatoriales ne retenait pas *peu* — elle retenait
 **zéro**, et pour une raison structurelle, pas conjoncturelle.
@@ -17,10 +28,8 @@ domaine sénatorial, et le résumé d'`extract-senat` affiche
 entre le 14/08 et le 19/08/2026 — le seul sénateur en exercice de
 `raw_data/candidats.json`.
 
-Ces tests fixent l'asymétrie et non le zéro : le jour où
-`fetch_intervention_details` apprendra `url_nossenateurs`, c'est
-`test_le_document_senat_reste_ignore` qui tombera, et il faudra rouvrir le
-`--skip-interventions` du job plutôt que le découvrir par hasard.
+Ces tests fixent l'asymétrie et non le zéro : ils décrivent une propriété des
+deux sources, qui ne dépend pas de l'existence d'un job pour l'exploiter.
 
 Aucun réseau, aucune lecture du corpus : `_get_payload` et `requests.get` sont
 doublés.
