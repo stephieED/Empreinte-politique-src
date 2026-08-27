@@ -8,19 +8,17 @@ something is pending, not *why*.
 
 ## Issues ouvertes — ordre d'exécution
 
-État au 27/08/2026, après la clôture de l'épic #523 (lots 0 à 5) et le run complet
-`33100214165`. Le rang traduit l'ordre dans lequel je lancerais les chantiers, pas
+État au 27/08/2026 en fin de journée, après la clôture de l'épic #523 (7 lots) et
+les deux runs complets `33100214165` et `33110395663`. Le rang traduit l'ordre dans lequel je lancerais les chantiers, pas
 une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
 
 | Rang | Issue | État | Ce qui bloque |
 | --- | --- | --- | --- |
-| 1 | **#540** | corrigée, PR en revue | rien — **prioritaire sur #328** (voir ci-dessous) |
-| 1 | **#530** | agent lancé le 27/08 | rien — clôt l'épic #523 |
-| 1 | **#508** | agent lancé le 27/08 | une part relève du ruleset GitHub, pas du code |
-| 2 | **#539** | `needs-human` | **décision de schéma** : comment naît un identifiant |
-| 3 | #523 | 6 lots sur 7 faits | #530 |
+| 1 | **#546** | ouverte, mesure à faire | rien — mesurer avant de re-dimensionner |
+| 2 | **#545** | ouverte | rien — garde-fou manquant, révélé par #540 |
+| 3 | **#539** | `needs-human` | **décision de schéma** : comment naît un identifiant |
 | 4 | #326 | prêt | rien — bloque explicitement 328/329/330 |
-| 5 | #328 | prêt après #326 | #326 **et #540** |
+| 5 | #328 | prêt après #326 | #326 — #540 est corrigé et le corpus régénéré |
 | 5 | #329, #330 | prêts après #326 | #326 — parallélisables entre eux et avec #328 |
 | 6 | #331 | — | #328, #329, #330 |
 | 7 | #486 | à recadrer | prémisse changée par #528 ; à décider **après #539** |
@@ -30,9 +28,9 @@ une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
 | 11 | #305 | — | stabilisation de l'UI (#324 entière) |
 
 **Parallélisation.** Quatre voies touchent des fichiers disjoints et avancent sans se
-gêner : **données/schéma** (`src/`, `raw_data/` — #540 puis #539), **UI**
-(`web/UI_finale/src/` — #326 puis les trois pages), **CI** (`.github/` — #508) et
-**licence** (`AGENTS.md` + pages légales — #530, léger recouvrement avec l'UI).
+gêner : **données/schéma** (`src/`, `raw_data/` — #539), **UI**
+(`web/UI_finale/src/` — #326 puis les trois pages), **CI** (`.github/` — #546) et
+**qualité** (`src/audit_*` — #545). #530 et #508 sont livrés (PR #543 et #542).
 #328/#329/#330 sont parallélisables entre elles une fois #326 mergée.
 
 **La seule sérialisation inter-voies** est #539 avant #486 : les deux décrivent la même
@@ -40,6 +38,25 @@ distinction — *fait établi* / *hors couverture de source* / *non collecté* �
 trancher séparément produirait deux modèles concurrents pour un même problème.
 
 ## Known bugs
+
+- **Les deux budgets d'`extract-an` en mode `collect_interventions` sont calibrés sur
+  un pipeline disparu** (#546, mesuré sur les runs `33100214165` et `33110395663` du
+  27/08/2026). `--budget-interventions-secondes 240` **tronque déjà** : `jerome-guedj`
+  l'a épuisé à 247 s et a perdu une législature de questions officielles — perte
+  déclarée (#514), mais réelle. Et `timeout-minutes: 9` n'a plus que **~6 s de marge**
+  (`jean-luc-melenchon` à 8,9 min, sur deux runs consécutifs). Le calibrage du 20/08
+  provisionnait 90 s de recherche NosDéputés, retirée depuis (#529), et mesurait les
+  archives Syceron alors qu'elles rendaient **zéro** intervention (#510). Mesurer la
+  décomposition réelle d'un shard avant de reposer un chiffre. Voir
+  `technical_decisions.md#budgets-extract-an-perimes-546`.
+- **Rien ne compare ce que la collecte rend à ce que la publication porte**, liste par
+  liste (#545). Les trois garde-fous armés avant commit regardent ailleurs :
+  `audit_diff_profils` surveille les pertes entre deux états publiés, pas deux étages
+  du même run ; `audit_collecte_non_publiee` raisonne sur des profils, jamais sur le
+  contenu de leurs listes. C'est l'angle mort dans lequel #540 a vécu. Attention au
+  faux positif : sur les six listes métier, `mandats` est légitimement **enrichi** par
+  le pivot (+278) et `dossiers_legislatifs` y est **renommé** `textes_portes` — un
+  contrôle naïf crierait à tort sur la moitié des champs.
 
 - **L'attribution ODbL Regards Citoyens ne s'éteindra jamais sous fusion additive.**
   `merge_pivot_profile` **unit** `sources[]` par `type` : une entrée `nosdeputes`
@@ -51,7 +68,9 @@ trancher séparément produirait deux modèles concurrents pour un même problè
   Voir `technical_decisions.md#licence-lot-6-530` §3.
 - ~~**La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
   identifiant**~~ (#540, découvert sur le run `33100214165` du 27/08/2026) —
-  **corrigé, PR en revue**. `_pivot_intervention_key` faisait
+  **corrigé (PR #544) et vérifié en conditions réelles** : sur le run
+  `33110395663`, **16 242 interventions publiées**, le pivot égal au brut profil
+  par profil — ni perte, ni dédoublement des 891 entrées antérieures. `_pivot_intervention_key` faisait
   `source_url or (date, sujet, texte[:50])` : le `or` court-circuite, et comme
   Syceron renseigne toujours `source_url` — l'URL du zip de la **législature**,
   identique pour toutes ses interventions — le repli discriminant n'était jamais
