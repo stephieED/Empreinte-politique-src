@@ -270,7 +270,7 @@ def _valeur_amendement(champ: str, brut: dict[str, Any], courant: Any) -> Any:
     ou une entrée pivot d'avant #431.
 
     Un seul champ demande un arbitrage : `premier_signataire`.
-    `normalize_nosdeputes._normalize_amendement` le réécrivait à l'identifiant
+    `normalize_profil._normalize_amendement` le réécrivait à l'identifiant
     pivot du profil courant quand celui-ci était l'auteur — c'est la **seule**
     divergence entre les copies d'un même amendement (44 139 cas sur 207 238
     amendements distincts ; les 8 autres champs et `co_signataires` sont

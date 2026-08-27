@@ -72,6 +72,11 @@ from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
 # l'Assemblée nationale (chambre "AN" uniquement). "mairie" n'a pas de type de
 # source dédié dans KNOWN_SOURCE_TYPES à ce stade et n'est donc jamais
 # signalée en incohérence par cette fonction.
+# `nosdeputes`/`nossenateurs` restent listés après #529 : cette table LIT le
+# corpus publié, elle ne décrit pas ce que la collecte produit. 476 profils
+# portent encore l'un de ces deux types ; les retirer ferait déclarer
+# « incohérence chambre/sources » sur des profils parfaitement valides — un
+# audit qui signale une panne inventée est pire qu'un audit qui se tait.
 MAPPING_CHAMBRE_SOURCES: dict[str, frozenset[str]] = {
     "AN": frozenset({"nosdeputes", "assemblee_nationale"}),
     "Senat": frozenset({"nossenateurs"}),

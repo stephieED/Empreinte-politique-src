@@ -34,10 +34,10 @@ Format d'un profil pivot v1 :
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
     "identite": {                            # bloc biographique, tout est nullable/optionnel
-        "profession": "Avocat",              # activité professionnelle déclarée (nosdeputes)
-        "date_naissance": "1951-08-19",       # ISO-8601, date seule (nosdeputes ou AN)
+        "profession": "Avocat",              # activité professionnelle déclarée (référentiel AN)
+        "date_naissance": "1951-08-19",       # ISO-8601, date seule (référentiel AN)
         "lieu_naissance": null,              # ville + département/pays, texte libre ; fourni
-                                             # uniquement par le référentiel AN (acteurs), pas nosdeputes
+                                             # par le référentiel AN (acteurs)
         "num_circo": "13",                    # numéro de circonscription tel que fourni par la
                                              # source ; absent pour un sénateur ou un mandat sans circonscription
         "uri_hatvp": null,                   # lien vers la déclaration HATVP (Haute Autorité pour
@@ -46,9 +46,11 @@ Format d'un profil pivot v1 :
     },
     "sources": [                             # traçabilité de chaque source utilisée
         {
-            "type": "nosdeputes",            # "nosdeputes" | "nossenateurs" |
+            "type": "assemblee_nationale",   # "assemblee_nationale" | "europarl" |
                                              # "parltrack" | "wikidata" |
-                                             # "assemblee_nationale"
+                                             # "nosdeputes" | "nossenateurs"
+                                             # (historiques : plus produites
+                                             #  depuis #529, encore publiées)
             "url": "https://...",            # URL canonique de la fiche source
             "synchro_le": "2026-07-29T..."   # ISO-8601 de la dernière synchro réussie
         }
@@ -173,7 +175,7 @@ Format d'un profil pivot v1 :
                                              # de "rejeté" — voir base_juridique_irrecevabilite)
                 "base_juridique_irrecevabilite": "art. 40",  # "art. 40" | "art. 45" | null ;
                                              # renseigné uniquement si sort == "irrecevable"
-                "premier_signataire": "nosdeputes:jean-dupont",
+                "premier_signataire": "jean-dupont",   # slug, sans préfixe de provenance (#487)
                 "co_signataires": [],        # liste d'identifiants AN des co-signataires
                 "type_deposant": "depute",   # "gouvernement" | "commission_rapporteur" | "depute"
                 "date": "2024-10-15",
@@ -253,6 +255,13 @@ _LIST_KEYS = (
 )
 
 # Types de sources reconnus (extensible, liste non-exhaustive).
+#
+# `nosdeputes` et `nossenateurs` ne sont plus PRODUITS depuis #529 (lot 5) —
+# `normalize_profil` écrit `assemblee_nationale` — mais ils restent VALIDES :
+# 476 profils publiés en portent une, et les retirer d'ici ferait refuser par
+# `validate_profil()` le corpus qu'on vient de publier. Un schéma qui n'accepte
+# plus ce qu'il a écrit hier n'est pas une simplification, c'est une perte.
+# Leur sort, avec les mentions d'attribution ODbL, est le lot 6.
 KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
     "nosdeputes", "nossenateurs", "parltrack", "wikidata", "assemblee_nationale", "europarl",
 })
@@ -271,7 +280,7 @@ KNOWN_CHAMBRES: frozenset[str] = frozenset({"AN", "Senat", "PE", "mairie"})
 ORDRE_CHAMBRES: tuple[str, ...] = ("AN", "Senat", "PE", "mairie")
 
 # Chambre de **collecte** (« quel jeu de données a répondu ») → chambre pivot.
-# Définie ici, et non dans `normalize_nosdeputes` qui la portait seul, parce que
+# Définie ici, et non dans `normalize_profil` qui la portait seul, parce que
 # `lire_chambres()` en a besoin elle aussi : `check_quality_gate` teste depuis
 # toujours `chambre in ("AN", "deputes")`, et cette tolérance ne doit pas se
 # perdre en migrant (#494). Deux tables séparées auraient pu diverger en silence.
@@ -301,7 +310,7 @@ class ChambresDerivees(NamedTuple):
     corroboree: bool
     #: Les entrées de `chambres` qu'aucun mandat estampillé n'étaye — en pratique
     #: la seule chambre de collecte. Nommées dans le warning : « on publie AN
-    #: parce que nosdeputes.fr a répondu, pas parce qu'un mandat le dit ».
+    #: parce que le jeu de données AN a répondu, pas parce qu'un mandat le dit ».
     chambres_non_corroborees: list[str]
     #: Nombre de `mandat_electif` sans chambre déterminée (#492) : c'est lui qui
     #: décroît à mesure que la recollecte avance.

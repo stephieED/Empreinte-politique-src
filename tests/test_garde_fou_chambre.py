@@ -101,8 +101,8 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     ("schema_pivot.py", "make_empty_profil"): FABRIQUE,
     ("schema_pivot.py", "lire_chambres"): REPLI_DE_LECTURE,
     # -- Les producteurs du repli, à la construction du pivot ---------------
-    ("normalize_nosdeputes.py", "_normalize_mandat"): MANDAT,
-    ("normalize_nosdeputes.py", "normalize_nosdeputes"): REPLI,
+    ("normalize_profil.py", "_normalize_mandat"): MANDAT,
+    ("normalize_profil.py", "normalize_profil"): REPLI,
     ("normalize_europarl.py", "normalize_europarl"): REPLI,
     ("mep_profile.py", "normalize_parltrack"): REPLI,
     # -- La fusion ----------------------------------------------------------
@@ -115,7 +115,12 @@ SITES_PYTHON: dict[tuple[str, str], str] = {
     ("merge_profile.py", "merge_raw_profile"): COLLECTE,
     ("merge_profile.py", "backfill_mandat_chambre"): MANDAT,
     # -- La collecte --------------------------------------------------------
-    ("candidate_profile.py", "_extract_mandats"): MANDAT,
+    # `candidate_profile._extract_mandats` portait l'estampille de chambre sur
+    # le mandat électif tiré d'un profil brut NosDéputés ; il est parti avec la
+    # source (#529). Le mandat électif est désormais reconstruit dans
+    # `build_profile` depuis `identite_an`, qui l'estampille au même endroit
+    # que le reste de la collecte — d'où un emplacement en moins, pas une
+    # estampille en moins.
     ("candidate_profile.py", "build_profile"): COLLECTE,
     ("generate_all_profiles.py", "build_minimal_profile"): COLLECTE,
     ("generate_all_profiles.py", "process_candidat"): COLLECTE,

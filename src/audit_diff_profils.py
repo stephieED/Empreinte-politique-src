@@ -170,7 +170,7 @@ class Collection:
 # `dossiers_legislatifs` est conservé bien qu'inerte : mesuré sur les 209
 # profils de `3a8455a` et sur les 7 refs de l'historique récent, aucun pivot ne
 # porte cette clé — c'est un champ de `raw_data/profiles`, que
-# `normalize_nosdeputes` verse dans `textes_portes`. Le garder ne coûte rien et
+# `normalize_profil` verse dans `textes_portes`. Le garder ne coûte rien et
 # couvre `--profils-dir raw_data/profiles`.
 #
 # `chambres` (#493) est signalé et non bloquant. Signalé, parce qu'un champ

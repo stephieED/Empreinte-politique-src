@@ -34,9 +34,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from merge_profile import merge_pivot_profile  # noqa: E402
 from normalize_europarl import normalize_europarl  # noqa: E402
-from normalize_nosdeputes import (  # noqa: E402
+from normalize_profil import (  # noqa: E402
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
-    normalize_nosdeputes,
+    normalize_profil,
 )
 from schema_pivot import (  # noqa: E402
     KNOWN_CHAMBRES,
@@ -240,7 +240,7 @@ def test_le_repli_deja_etaye_par_un_mandat_ne_cree_pas_de_doublon():
 
 
 def test_un_repli_hors_nomenclature_est_ignore():
-    """`normalize_nosdeputes` laisse passer une chambre brute non mappée ;
+    """`normalize_profil` laisse passer une chambre brute non mappée ;
     elle est écartée ici, jamais publiée telle quelle."""
     assert deriver_chambres([], repli="deputes").chambres == []
     assert deriver_chambres([], repli="").chambres == []
@@ -316,7 +316,7 @@ def test_validate_ignore_un_profil_publie_avant_493():
 # ---------------------------------------------------------------------------
 
 def test_le_pivot_publie_les_deux_champs():
-    pivot = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
+    pivot = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
     assert pivot["chambres"] == ["AN"]
     assert pivot["chambre"] == "AN"
     assert validate_profil(pivot) == []
@@ -326,13 +326,13 @@ def test_le_pivot_ne_publie_plus_la_chambre_de_collecte_telle_quelle():
     """Un profil collecté côté `senateurs` mais dont le mandat électif est
     estampillé `AN` publie les deux — c'est le cas `jean-luc-melenchon` que #492
     a mesuré sur `f5a828b` (profil brut `senateurs`, mandats manifestement AN)."""
-    pivot = normalize_nosdeputes(_brut(chambre="senateurs", mandats=[_mandat_brut("deputes")]))
+    pivot = normalize_profil(_brut(chambre="senateurs", mandats=[_mandat_brut("deputes")]))
     assert pivot["chambres"] == ["AN", "Senat"]
     assert pivot["chambre"] == "AN"
 
 
 def test_le_pivot_declare_une_liste_non_corroboree():
-    pivot = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
+    pivot = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
     assert pivot["chambres"] == ["AN"]
     warnings = _warnings_chambres(pivot)
     assert len(warnings) == 1
@@ -340,7 +340,7 @@ def test_le_pivot_declare_une_liste_non_corroboree():
 
 
 def test_le_pivot_ne_declare_rien_quand_la_liste_est_corroboree():
-    pivot = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
+    pivot = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
     assert _warnings_chambres(pivot) == []
 
 
@@ -349,7 +349,7 @@ def test_un_seul_warning_par_profil_quel_que_soit_le_nombre_de_mandats():
     porte l'information. Un warning par mandat ferait 214 occurrences sur 207
     profils pour dire la même chose."""
     brut = _brut(chambre="deputes", mandats=[_mandat_brut(None) for _ in range(5)])
-    assert len(_warnings_chambres(normalize_nosdeputes(brut))) == 1
+    assert len(_warnings_chambres(normalize_profil(brut))) == 1
 
 
 def test_le_pivot_europeen_derive_pe_de_ses_mandats():
@@ -368,7 +368,7 @@ def test_le_versement_des_mandats_europeens_ajoute_pe_a_la_liste():
     Sans recalcul, le profil publierait `["AN"]` et effacerait le mandat
     européen — le défaut même que #486 reproche au scalaire, reconduit dans le
     champ censé le corriger."""
-    pivot = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
+    pivot = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
     ue_pivot = normalize_europarl(_ue_brut())
     pivot["mandats"].extend(ue_pivot["mandats"])
     appliquer_chambres(pivot)
@@ -377,7 +377,7 @@ def test_le_versement_des_mandats_europeens_ajoute_pe_a_la_liste():
 
 
 def test_appliquer_chambres_est_idempotent():
-    pivot = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
+    pivot = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
     avant = (list(pivot["chambres"]), pivot["chambre"])
     appliquer_chambres(pivot)
     appliquer_chambres(pivot)
@@ -403,10 +403,10 @@ def test_la_fusion_recalcule_la_liste_sur_les_mandats_fusionnes():
     """`merge_lists_by_key` est additif : `merged["mandats"]` est un surensemble
     de l'ancien comme du neuf. Une liste fusionnée décrirait un ensemble de
     mandats qui n'existe dans aucun des deux profils."""
-    ancien = normalize_nosdeputes(
+    ancien = normalize_profil(
         _brut(chambre="senateurs", mandats=[_mandat_brut("senateurs", label="Sénat", debut="2004-09-26")])
     )
-    neuf = normalize_nosdeputes(
+    neuf = normalize_profil(
         _brut(chambre="deputes", mandats=[_mandat_brut("deputes", label="AN", debut="2017-06-21")])
     )
     fusionne = merge_pivot_profile(ancien, neuf)
@@ -418,10 +418,10 @@ def test_la_fusion_recalcule_la_liste_sur_les_mandats_fusionnes():
 
 def test_la_fusion_ne_perd_jamais_une_chambre_deja_publiee():
     """Un run qui ne recollecte qu'une chambre ne doit pas retirer l'autre."""
-    ancien = normalize_nosdeputes(
+    ancien = normalize_profil(
         _brut(chambre="deputes", mandats=[_mandat_brut("deputes", label="AN", debut="2017-06-21")])
     )
-    neuf = normalize_nosdeputes(_brut(chambre="senateurs", mandats=[]))
+    neuf = normalize_profil(_brut(chambre="senateurs", mandats=[]))
     fusionne = merge_pivot_profile(ancien, neuf)
     assert "AN" in fusionne["chambres"]
 
@@ -429,10 +429,10 @@ def test_la_fusion_ne_perd_jamais_une_chambre_deja_publiee():
 def test_la_fusion_profite_du_backfill_de_chambre_de_492():
     """`backfill_mandat_chambre` estampille après coup un mandat déjà connu : le
     profil doit gagner la chambre correspondante, et perdre son warning."""
-    ancien = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
+    ancien = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
     assert len(_warnings_chambres(ancien)) == 1
 
-    neuf = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
+    neuf = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
     fusionne = merge_pivot_profile(ancien, neuf)
 
     assert fusionne["chambres"] == ["AN"]
@@ -440,10 +440,10 @@ def test_la_fusion_profite_du_backfill_de_chambre_de_492():
 
 
 def test_la_fusion_garde_le_warning_tant_quun_mandat_reste_non_estampille():
-    ancien = normalize_nosdeputes(
+    ancien = normalize_profil(
         _brut(chambre="deputes", mandats=[_mandat_brut(None, label="Ancien", debut="2012-06-20")])
     )
-    neuf = normalize_nosdeputes(
+    neuf = normalize_profil(
         _brut(chambre="deputes", mandats=[_mandat_brut("deputes", label="Neuf", debut="2017-06-21")])
     )
     fusionne = merge_pivot_profile(ancien, neuf)
@@ -451,8 +451,8 @@ def test_la_fusion_garde_le_warning_tant_quun_mandat_reste_non_estampille():
 
 
 def test_la_fusion_nintroduit_aucune_divergence_entre_les_deux_champs():
-    ancien = normalize_nosdeputes(_brut(chambre="senateurs", mandats=[_mandat_brut(None)]))
-    neuf = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
+    ancien = normalize_profil(_brut(chambre="senateurs", mandats=[_mandat_brut(None)]))
+    neuf = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut("deputes")]))
     fusionne = merge_pivot_profile(ancien, neuf)
     assert fusionne["chambre"] == fusionne["chambres"][0]
     assert validate_profil(fusionne) == []
@@ -461,9 +461,9 @@ def test_la_fusion_nintroduit_aucune_divergence_entre_les_deux_champs():
 def test_un_profil_ancien_sans_chambres_est_fusionnable():
     """Le corpus publié ne porte pas encore la clé : la fusion doit la produire
     sans rien casser, et sans faire régresser le scalaire."""
-    ancien = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
+    ancien = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
     del ancien["chambres"]
-    neuf = normalize_nosdeputes(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
+    neuf = normalize_profil(_brut(chambre="deputes", mandats=[_mandat_brut(None)]))
     fusionne = merge_pivot_profile(ancien, neuf)
     assert fusionne["chambres"] == ["AN"]
     assert fusionne["chambre"] == "AN"

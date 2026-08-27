@@ -129,9 +129,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 import gha
+from candidate_profile import acteur_ref_to_pseudo_url
 from group_roster import (
     ERREURS_ROSTER,
-    _base_url_for,
     ecrire_rosters_bruts,
     fetch_full_roster,
     filter_roster_by_sigle,
@@ -296,7 +296,6 @@ def build_roster_candidats_detaille(
             groupe["roster_chambre"],
             groupe["groupe_sigle"],
         )
-        base_url = _base_url_for(groupe["roster_chambre"], key[1])
 
         for membre in roster:
             slug = membre.get("slug")
@@ -309,7 +308,18 @@ def build_roster_candidats_detaille(
                 "famille_politique": None,
                 "statut": "roster_groupe",
                 "date_declaration": None,
-                "source": f"{base_url}/{slug}",
+                # `source` était `<domaine NosDéputés>/<slug>`, construit par
+                # `group_roster._base_url_for` depuis la législature. Les deux
+                # sont partis avec la plateforme (#529). La fiche AN de
+                # l'acteur la remplace : c'est la source dont le membre vient
+                # réellement, et elle est vérifiable (règle 2). `None` quand
+                # AMO30 n'a pas rendu d'`acteur_ref` — jamais une URL inventée
+                # (règle 5).
+                "source": (
+                    acteur_ref_to_pseudo_url(membre["acteur_ref"])
+                    if membre.get("acteur_ref")
+                    else None
+                ),
                 "notes": f"Membre du groupe {groupe['groupe_sigle']} ({groupe['groupe_nom']}), issu du roster réel {groupe['chambre']}.",
             }
             membres_par_groupe[libelle] += 1

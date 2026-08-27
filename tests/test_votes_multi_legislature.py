@@ -460,22 +460,27 @@ def test_cache_plat_herite_est_reconstruit_et_supprime(tmp_path):
 # ---------------------------------------------------------------------------
 
 def _build_profile_avec_votes(votes, legislatures):
-    """Construit un profil de député avec des votes officiels simulés."""
-    identity = {
-        "depute": {
-            "id": "PA123456",
-            "nom": "Dupont",
-            "prenom": "Jean",
-            "slug": "jean-dupont",
-            "url_an_ou_senat": "https://www.assemblee-nationale.fr/dyn/deputes/PA123456",
-        }
+    """Construit un profil de député avec des votes officiels simulés.
+
+    L'identité venait d'une réponse NosDéputés (`{"depute": {...}}`) doublée
+    sur `fetch_identity` ; elle vient du référentiel AN depuis #529, doublée
+    sur `fetch_identite_officielle_par_slug`. C'est le seul changement : ce que
+    le test éprouve — `votes_source` — n'a pas bougé.
+    """
+    identite_an = {
+        "nom_complet": "Jean Dupont",
+        "mandat_debut": "2022-06-22",
+        "mandat_fin": None,
+        "groupe_sigle": "RE",
+        "groupe_nom": "Renaissance",
     }
     with (
-        patch("candidate_profile.fetch_identity", return_value=identity),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_identite_officielle_par_slug",
+              return_value=(identite_an, "PA123456")),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),

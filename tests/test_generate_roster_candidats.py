@@ -17,8 +17,8 @@ from generate_roster_candidats import (
 
 def _deputes_payload():
     return [
-        {"slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
-        {"slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA1", "slug": "alice", "nom": "Alice", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA2", "slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
     ]
 
 
@@ -28,7 +28,7 @@ def _deputes_15_payload():
     éprouvent est le partage d'un fetch par clé `(chambre, législature)`, pas la
     chambre elle-même."""
     return [
-        {"slug": "carla", "nom": "Carla", "groupe_sigle": "LR", "mandat_debut": "2017-06-21", "mandat_fin": "2022-06-21"},
+        {"acteur_ref": "PA3", "slug": "carla", "nom": "Carla", "groupe_sigle": "LR", "mandat_debut": "2017-06-21", "mandat_fin": "2022-06-21"},
     ]
 
 
@@ -68,11 +68,14 @@ def test_build_roster_candidats_flattens_and_formats():
     assert alice["famille_politique"] is None
     assert alice["statut"] == "roster_groupe"
     assert alice["date_declaration"] is None
-    assert alice["source"] == "https://www.nosdeputes.fr/alice"
+    # `source` pointait vers `www.nosdeputes.fr/<slug>`, construite depuis la
+    # législature par `group_roster._base_url_for`. Les deux sont partis avec
+    # la plateforme (#529) : c'est la fiche AN de l'acteur qui la remplace.
+    assert alice["source"] == "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1"
     assert "LR" in alice["notes"]
 
     bob = par_slug["bob"]
-    assert bob["source"] == "https://www.nosdeputes.fr/bob"
+    assert bob["source"] == "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2"
     assert "SOC" in bob["notes"]
 
 
@@ -149,8 +152,10 @@ def test_generate_roster_candidats_two_chambres_two_fetches(monkeypatch):
     assert len(fetch_calls) == 2
     assert set(fetch_calls) == {("deputes", "16"), ("deputes", "15")}
     assert {c["slug"] for c in candidats} == {"alice", "carla"}
+    # La `source` ne dépend plus de la législature : elle identifie l'acteur,
+    # pas le sous-domaine d'archive où on l'a trouvé (#529).
     assert next(c for c in candidats if c["slug"] == "carla")["source"] == (
-        "https://2017-2022.nosdeputes.fr/carla"
+        "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA3"
     )
 
 
@@ -415,15 +420,15 @@ def test_anomalies_roster_ne_repete_pas_les_groupes_d_un_fetch_en_echec():
 
 _PAYLOADS_REELS = {
     "deputes": [
-        {"slug": "alice", "nom": "Alice", "groupe_sigle": "REN", "mandat_debut": "2022-06-22", "mandat_fin": None},
-        {"slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
-        {"slug": "carla", "nom": "Carla", "groupe_sigle": "RN", "mandat_debut": "2022-06-22", "mandat_fin": None},
-        {"slug": "dan", "nom": "Dan", "groupe_sigle": "LFI", "mandat_debut": "2022-06-22", "mandat_fin": None},
-        {"slug": "eve", "nom": "Eve", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA10", "slug": "alice", "nom": "Alice", "groupe_sigle": "REN", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA11", "slug": "bob", "nom": "Bob", "groupe_sigle": "SOC", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA12", "slug": "carla", "nom": "Carla", "groupe_sigle": "RN", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA13", "slug": "dan", "nom": "Dan", "groupe_sigle": "LFI", "mandat_debut": "2022-06-22", "mandat_fin": None},
+        {"acteur_ref": "PA14", "slug": "eve", "nom": "Eve", "groupe_sigle": "LR", "mandat_debut": "2022-06-22", "mandat_fin": None},
     ],
     "senateurs": [
-        {"slug": "farid", "nom": "Farid", "groupe_sigle": "LR", "mandat_debut": "2020-01-01", "mandat_fin": None},
-        {"slug": "gina", "nom": "Gina", "groupe_sigle": "SER", "mandat_debut": "2020-01-01", "mandat_fin": None},
+        {"acteur_ref": None, "slug": "farid", "nom": "Farid", "groupe_sigle": "LR", "mandat_debut": "2020-01-01", "mandat_fin": None},
+        {"acteur_ref": None, "slug": "gina", "nom": "Gina", "groupe_sigle": "SER", "mandat_debut": "2020-01-01", "mandat_fin": None},
     ],
 }
 
@@ -461,7 +466,11 @@ def test_repository_groupes_reels_json_produces_valid_roster_candidats(monkeypat
         assert c["statut"] == "roster_groupe"
         assert c["slug"]
         assert c["nom"]
-        assert c["source"]
+        # `source` reste `None` quand la source ne rend pas d'`acteur_ref` : on
+        # n'invente pas d'URL de fiche (règle 5). Les entrées AN en portent un,
+        # et les 2 entrées Sénat sont suspendues depuis #516 — donc jamais
+        # collectées ici.
+        assert c["source"], f"{c['slug']} : source manquante"
 
     # Rechargeable sans erreur par generate_all_profiles.load_candidats().
     payload_path_content = json.dumps({"candidats": candidats}, ensure_ascii=False)

@@ -3,8 +3,9 @@
 generate_all_profiles.py
 
 Récupère les données et génère le CV (JSON) de chaque candidat de
-raw_data/candidats.json qui possède un "slug" (identifiant NosDéputés.fr /
-NosDéputés.fr) et/ou un mandat de député européen (recherché par nom via
+raw_data/candidats.json qui possède un "slug" (l'identifiant du profil, résolu
+en acteur AN par raw_data/correspondance_acteurs_an.json, #525) et/ou un mandat
+de député européen (recherché par nom via
 candidate_profile_ue.py, cf. Open Data Portal du Parlement européen). Les
 candidats sans aucune de ces deux sources sont simplement signalés, sans erreur.
 
@@ -30,8 +31,9 @@ est généré au format schéma pivot v1 (commun à toutes les sources). Le vole
 européen, s'il existe, est normalisé et intégré au pivot.
 
 Parallélisation (deux niveaux) :
-  - Niveau 1 : pour chaque candidat, les appels NosDéputés.fr et Parlement
-    européen sont lancés simultanément (deux API distinctes, aucun état partagé).
+  - Niveau 1 : pour chaque candidat, les collectes Assemblée nationale et
+    Parlement européen sont lancées simultanément (deux jeux de données
+    distincts, aucun état partagé).
   - Niveau 2 : plusieurs candidats sont traités en parallèle grâce à un pool
     de threads (option --workers, défaut : 4). Les caches disque partagés sont
     protégés par des verrous définis dans candidate_profile.py et
@@ -91,10 +93,8 @@ from budget_collecte import (
 )
 from candidate_profile import (
     WARNING_PREFIX_BUDGET_COLLECTE,
-    WARNING_PREFIX_SOURCE_INJOIGNABLE,
     RefusDrapeauInterventionsSyceron,
     build_profile,
-    compteur_appels_nosdeputes,
 )
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
@@ -105,7 +105,7 @@ from merge_profile import (
     preserver_collectes_non_vides,
 )
 from normalize_europarl import normalize_europarl
-from normalize_nosdeputes import normalize_nosdeputes
+from normalize_profil import normalize_profil
 from schema_pivot import appliquer_chambres
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
@@ -501,7 +501,7 @@ def build_profile_any_chambre(
        `group_profile` sont hors d'atteinte.
 
     Les warnings renvoyés sont aussi ajoutés à `meta.warnings` du profil retenu
-    (donc propagés au pivot par `normalize_nosdeputes`), et rendus à l'appelant
+    (donc propagés au pivot par `normalize_profil`), et rendus à l'appelant
     pour le cas où aucune chambre ne répond — le profil minimal doit alors
     porter la trace de l'échec (#484).
     """
@@ -536,22 +536,21 @@ def build_profile_any_chambre(
 
     resultats: list[tuple[str, dict]] = []
     echecs: list[tuple[str, str]] = []
-    # Requêtes d'IDENTITÉ restées sans réponse, cumulées sur les chambres
-    # interrogées (#514). Cumuler est ici la bonne opération, et pas seulement
-    # une commodité : le 20/08/2026 les deux sources étaient à terre en même
-    # temps — `archive.nossenateurs.fr` sur `extract-senat`, et
-    # `www.nosdeputes.fr` sur `merge-and-pivot`, où le garde-fou de #511/#513 a
-    # refusé d'écrire un roster incomplet. Un compteur par hôte dirait « lequel
-    # est tombé » ; celui-ci répond à la seule question qui décide du statut du
-    # candidat : « une source a-t-elle tranché, ou aucune n'a répondu ? »
-    identite_sans_reponse = 0
+    # Le cumul `identite_sans_reponse` de #514 et le `journal` qui l'alimentait
+    # sont partis avec les compteurs de `candidate_profile` (#529) : ils
+    # comptaient les requêtes d'identité restées sans réponse chez NosDéputés,
+    # une source qui n'est plus interrogée. L'identité se résout désormais dans
+    # l'archive AMO30 déjà en cache ; quand cette archive manque, la résolution
+    # LÈVE, et l'exception est consignée dans `echecs` puis publiée en
+    # `WARNING_PREFIX_CHAMBRE_EN_ECHEC` — la distinction que #514 réclamait
+    # (« la source a tranché » vs « la source n'a rien dit ») est portée par
+    # l'exception elle-même, pas par un compteur.
 
     for rang, chambre in enumerate(chambres):
         if budget_epuise(budget_collecte_candidat):
             budget_ignorer(budget_collecte_candidat, "chambre(s) non interrogée(s)",
                            len(chambres) - rang)
             break
-        journal: dict[str, Any] = {}
         try:
             profile = build_profile(
                 chambre,
@@ -560,13 +559,11 @@ def build_profile_any_chambre(
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
                 budget_interventions=budget,
                 budget_collecte=budget_collecte_candidat,
-                journal=journal,
             )
         except Exception as exc:
             _tprint(f"  [!] Échec ({chambre}) pour {slug} : {exc}")
             echecs.append((chambre, f"{type(exc).__name__}: {exc}"))
             continue
-        identite_sans_reponse += (journal.get("sans_reponse") or {}).get("identité", 0)
         if profile.get("identite"):
             resultats.append((chambre, profile))
             if not collecte_bicamerale:
@@ -580,25 +577,6 @@ def build_profile_any_chambre(
     message_budget = annoncer_troncature(budget_collecte_candidat, slug)
     if message_budget:
         warnings.append(f"{WARNING_PREFIX_BUDGET_COLLECTE} : {message_budget}")
-
-    # #514 : « aucune chambre n'a rendu d'identité » ne veut pas dire la même
-    # chose selon que la source a répondu ou non. Sans cette distinction,
-    # `process_candidat` conclut « introuvable » — le même mot pour un candidat
-    # réellement absent de l'archive et pour une archive en timeout. Le run
-    # 32421439590 a imprimé onze « introuvable », dont trois sincères (candidats
-    # sans slug) et huit dus à une source muette, sans rien pour les séparer.
-    #
-    # Le critère porte sur les requêtes d'IDENTITÉ, et sur elles seules : c'est
-    # l'identité qui décide qu'un profil est écrit ou jeté. Un slug dont
-    # l'identité reçoit un franc 404 reste « introuvable » même si ses votes
-    # sont partis en timeout — la source a répondu à la question posée.
-    if not resultats and identite_sans_reponse > 0:
-        warnings.append(
-            f"{WARNING_PREFIX_SOURCE_INJOIGNABLE} : {identite_sans_reponse} requête(s) "
-            f"d'identité restée(s) sans réponse sur {', '.join(chambres)} pour "
-            f"'{slug}' — l'absence d'identité est un défaut de la source, pas un "
-            f"constat d'absence (#514)."
-        )
 
     if not resultats:
         # Aucune chambre ne rend d'identité : le candidat est introuvable côté
@@ -665,7 +643,7 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
-            "warnings": ["aucun mandat français connu (candidat non référencé sur NosDéputés, ou identité introuvable)"],
+            "warnings": ["aucun mandat français connu (slug absent du référentiel Assemblée nationale, ou identité introuvable)"],
         },
     }
 
@@ -787,7 +765,7 @@ def process_candidat(
         mandat_ue = profile.get("mandat_europeen")
         parti = candidat.get("parti")
 
-        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
+        pivot_profile = normalize_profil(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
@@ -854,10 +832,6 @@ def process_candidat(
 
     _tprint(f"\n=== {nom} ({effective_slug}) ===")
 
-    # Point de repère pour la temporisation de courtoisie de fin de fonction
-    # (#467) : relevé AVANT toute collecte, comparé APRÈS.
-    appels_nosdeputes_avant = compteur_appels_nosdeputes()
-
     # Chambres FR à interroger selon --source
     if source == "an":
         chambres_fr: list[str] = ["deputes"]
@@ -876,7 +850,7 @@ def process_candidat(
         if not chambres_fr:
             return None, None, []
         if not slug:
-            _tprint(f"  — {nom} : pas de slug renseigné (candidat non référencé sur NosDéputés).")
+            _tprint(f"  — {nom} : pas de slug renseigné, aucune collecte FR possible.")
             return None, None, []
         result = build_profile_any_chambre(
             slug,
@@ -926,29 +900,32 @@ def process_candidat(
         mandat_ue = future_ue.result()
 
     if profile is None and mandat_ue is None:
-        # #514 : « introuvable » est un CONSTAT — la source a répondu qu'elle ne
-        # connaît pas ce slug. Quand elle n'a pas répondu du tout, le mot est
-        # faux, et c'est celui que le run 32421439590 a imprimé onze fois. Aucun
-        # profil n'est fabriqué pour autant : un squelette écrit à la place
+        # « introuvable » est un CONSTAT — le référentiel AN ne connaît pas ce
+        # slug. Le statut `source_indisponible`, qui le distinguait d'une source
+        # muette, est parti avec le compteur qui le décidait (#529) : plus aucune
+        # requête d'identité ne quitte la machine, donc plus de silence réseau à
+        # qualifier. Ce qui reste est une VRAIE panne — archive AMO30 absente ou
+        # illisible —, et elle lève : `build_profile_any_chambre` la consigne en
+        # `WARNING_PREFIX_CHAMBRE_EN_ECHEC`, qui est ce qu'on annote ici.
+        #
+        # Aucun profil n'est fabriqué pour autant : un squelette écrit à la place
         # d'une collecte manquée serait la donnée par défaut que la règle 2.5
         # interdit, et ferait basculer `chambre` sur une défaillance transitoire
-        # (le défaut même de #484). Ce qui change, c'est que l'échec est nommé,
-        # compté au résumé et annoté dans le job.
-        injoignables = [
-            w for w in warnings_chambres if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)
+        # (le défaut même de #484).
+        en_echec = [
+            w for w in warnings_chambres if w.startswith(WARNING_PREFIX_CHAMBRE_EN_ECHEC)
         ]
-        if injoignables:
+        if en_echec:
             for w in warnings_chambres:
                 _tprint(f"  [!] {effective_slug} : {w}")
-            # L'annotation porte le warning de source injoignable, pas le
-            # premier de la liste : une troncature de budget peut le précéder,
-            # et c'est bien la source muette qu'il faut lire dans l'onglet de
-            # résumé du job.
-            _annoter_github(f"{effective_slug} : {injoignables[0]}")
+            # L'annotation porte le warning d'échec de chambre, pas le premier
+            # de la liste : une troncature de budget peut le précéder, et c'est
+            # bien la panne qu'il faut lire dans l'onglet de résumé du job.
+            _annoter_github(f"{effective_slug} : {en_echec[0]}")
         return {
             "nom": nom,
             "slug": effective_slug,
-            "statut": "source_indisponible" if injoignables else "introuvable",
+            "statut": "source_indisponible" if en_echec else "introuvable",
             "parltrack": "n/a",
         }
     if profile is None:
@@ -996,7 +973,7 @@ def process_candidat(
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
         parti = candidat.get("parti")
-        pivot_profile = normalize_nosdeputes(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
+        pivot_profile = normalize_profil(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
         if mandat_ue is not None:
             ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
             if pivot_profile is None:
@@ -1031,22 +1008,14 @@ def process_candidat(
     extra = f", {nb_mandats_ue} mandats UE" if mandat_ue or profile.get("mandat_europeen") else ""
     _tprint(f"  ✓ {chambre or 'sans chambre FR'} — {json_path} ({nb_interventions} interventions{extra})")
 
-    # Courtoisie envers NosDéputés/NosSénateurs entre deux candidats — mais
-    # seulement envers une source réellement sollicitée (#467). Depuis #369 un
-    # député trouvé dans le référentiel historique AN ne déclenche AUCUN appel
-    # NosDéputés, et depuis #392/#403 ses amendements et ses votes viennent
-    # d'index locaux : mesuré sur les 24 membres du shard 0 du run 32288588518
-    # rejoués en local, 1 seule requête HTTP pour les 24 candidats, et 12,0 s
-    # de cette temporisation sur 74,1 s de temps mur — et la moitié de ce qui
-    # restait une fois la relecture d'index supprimée : du travail passé à
-    # ménager une source qu'on n'interrogeait pas.
-    # Un sénateur, un député absent du référentiel AN ou une passe avec
-    # interventions continuent d'appeler NosDéputés, donc de temporiser.
-    # `compteur_appels_nosdeputes` est global, donc conservateur avec
-    # `--workers > 1` : on peut temporiser pour les appels d'un autre candidat,
-    # jamais s'en dispenser à tort.
-    if compteur_appels_nosdeputes() != appels_nosdeputes_avant:
-        time.sleep(0.5)
+    # La temporisation de courtoisie entre deux candidats (#467) est RETIRÉE
+    # par #529 : elle ménageait NosDéputés/NosSénateurs, une API publique tierce
+    # qui n'est plus interrogée. Elle était déjà conditionnée au compteur
+    # d'appels vers ces domaines — mesuré sur les 24 membres du shard 0 du run
+    # 32288588518 rejoués en local, 1 seule requête HTTP pour 24 candidats, et
+    # 12,0 s d'attente sur 74,1 s de temps mur. Ce qui reste sur le réseau,
+    # l'open data de l'AN, est du téléchargement d'archive mis en cache par
+    # législature, pas des pages par candidat : rien à lisser.
 
     return {
         "nom": nom,
@@ -1152,8 +1121,8 @@ def main() -> None:
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
     parser.add_argument(
         "--budget-interventions-secondes", type=int, default=0,
-        help="Budget de temps mur (s) pour la collecte d'interventions d'UN candidat : recherche "
-             "NosDéputés, débats Syceron, détails document par document, questions officielles. "
+        help="Budget de temps mur (s) pour la collecte d'interventions d'UN candidat : débats "
+             "Syceron et questions officielles. "
              "Épuisé, la collecte s'arrête entre deux unités, le profil est écrit avec ce qui a été "
              "collecté et la troncature est consignée dans meta.warnings[]. 0 (défaut) = aucun "
              "budget. INCOMPATIBLE avec --skip-interventions (le budget n'aurait rien à "

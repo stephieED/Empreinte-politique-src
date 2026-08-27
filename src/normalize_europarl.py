@@ -58,7 +58,7 @@ def normalize_europarl(
                     meta.provenance du profil pivot.
         slug: slug du profil, c'est-à-dire son identifiant (#487, épic #486).
               Fourni, il devient l'`id` tel quel — même convention que
-              `normalize_nosdeputes`, pour que l'espace d'identifiants pivot
+              `normalize_profil`, pour que l'espace d'identifiants pivot
               n'ait qu'une seule forme.
               Absent, l'`id` retombe sur `europarl:<identifiant_pe>`. Ce repli
               n'est pas une exception de confort : `ue_profile` ne porte pas de

@@ -162,7 +162,7 @@ def _est_mandat_appartenance_gouvernement(label: str) -> bool:
 
 # `mandats[].fonction` reprend `infosQualite.libQualite` du zip AMO30
 # (`candidate_profile._build_acteur_mandats_index`, renommé `type` →
-# `fonction` par `normalize_nosdeputes`). C'est le seul champ qui sépare un
+# `fonction` par `normalize_profil`). C'est le seul champ qui sépare un
 # portefeuille ministériel d'un mandat de parlementaire en mission.
 #
 # Liste BLANCHE, pas liste noire de « en mission » (#474, AGENTS.md §2.5) :
@@ -229,7 +229,7 @@ def _qualite_portefeuille(fonction: Any) -> str:
     Trois états et non deux : « inconnue » n'est ni un portefeuille ni une
     exclusion de routine, c'est une donnée non résolue qui doit se voir et se
     corriger (§2.5). Un `fonction` absent (`None`) est traité comme inconnu —
-    `normalize_nosdeputes` le remplace par « membre » quand la source ne
+    `normalize_profil` le remplace par « membre » quand la source ne
     renseigne pas `libQualite`, ce qui, sur un mandat `MINISTERE`, est
     précisément une lacune de source, pas une qualité.
     """

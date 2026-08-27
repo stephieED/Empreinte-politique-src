@@ -67,7 +67,7 @@ _TYPE_DETAIL_MAP: list[tuple[re.Pattern, str]] = [
 # la 17e, les plus fréquents sont « suspension et reprise de la séance » (1 009),
 # « rappel au règlement » (788), « ordre du jour de la prochaine séance » (594),
 # « article 1er » (155) — de la PROCÉDURE. Publier cela dans `sujet`, d'où
-# `normalize_nosdeputes` dérive `theme_officiel` puis `tags_thematiques`,
+# `normalize_profil` dérive `theme_officiel` puis `tags_thematiques`,
 # fabriquerait des tags thématiques à partir d'intitulés de procédure (§2 règle 8).
 #
 # Le discriminant est structurel, pas lexical : c'est le `code_grammaire` du

@@ -36,7 +36,7 @@ Any schema/display change must preserve them:
 ```mermaid
 graph TD
     A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json<br/>(candidate_profile.py / candidate_profile_ue.py)"]
-    B -->|"normalize_nosdeputes.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
+    B -->|"normalize_profil.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
     C --> S["pivot_data/scrutins.json<br/>(build_scrutins_index.py — liste dédupliquée)"]
     C --> AM["pivot_data/amendements/&lt;legis&gt;.json<br/>(build_amendements_index_pivot.py — liste dédupliquée)"]
     S --> D
@@ -84,9 +84,10 @@ graph TD
   Never read a profile line by line; the format carries no meaning.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 roster per `(chambre, legislature)`,
   and **zero fetch** in CI — the run's raw roster arrives by artifact (#518, see below).
-  Since #527 the `deputes` key is **derived from AMO30**, not fetched from NosDéputés;
-  `fetch_full_roster` is the switch, and it is the only place in the repo that picks a
-  roster source.
+  Since #527 the `deputes` key is **derived from AMO30**; since #529 that is the only
+  source left, `fetch_full_roster` emits no HTTP request of its own, and
+  `AN_ROSTER_ACTIF` is a kill switch (loud refusal), no longer a switch between two
+  sources.
 - Governments from `gouvernements_reels.json`; `gouvernement_roster.py` derives `membres[]`
   from local pivots only; `gouvernement_textes.py` fetches the AN dossiers-legislatifs dump
   once per batch (`generate_gouvernement_profiles.py`).
@@ -522,13 +523,44 @@ from `identite.source_url`. Guarded by `tests/test_correspondance_acteurs_an.py`
 (fixture only — the table is not in `tests.yml`'s sparse-checkout).
 See `docs/technical_decisions.md#correspondance-acteurs-an-525`.
 
+**NosDéputés is out of the pipeline (#529, lot 5 — the epic's last)**: the raw
+profile now comes **entirely** from AN open data. Each path had already migrated,
+lot after lot — #369 identity, #392/#403 votes and amendments, #400 carried texts,
+#526/#527 the group roster, #528 the Senate — and what was left here was the last
+branch still called: the **interventions search**. Removed: `BASE_URLS`, the whole
+transport (`_get_with_watchdog`, `_get_payload`, `_try_urls`), `fetch_identity`,
+`fetch_recherche`/`fetch_all_intervention_results*`, `fetch_intervention_details`,
+`fetch_seance_context`, `_extract_search_results`, `_extract_mandats`,
+`group_roster`'s NosDéputés read **with its whole retry machinery** (#518/#524 —
+sized for an 814 Ko endpoint that no longer answers), and **both counters**
+(`compteur_appels_nosdeputes` #467, `compteur_requetes_sans_reponse` #514) with the
+`source injoignable` warning they fed: on a source nobody queries, they can only
+ever read 0, and a counter structurally at zero kept under watch is exactly #510's
+mute hole. `normalize_nosdeputes.py` is renamed **`normalize_profil.py`**
+(`normalize_profil()`), and `_SOURCE_TYPE_MAP` is gone — `sources[].type` is
+`assemblee_nationale`. **Declared consequence, and it is the one to read**: #510's
+Syceron flag is still `False`, so a fresh collection now yields
+`interventions[] = official questions only`. The 496 published NosDéputés speeches
+**stay** (additive merge removes nothing) and a `--no-merge` run cannot lose them
+silently — `interventions` is a blocking watched list (#460). **Kept on purpose**,
+because they *read* the published corpus rather than collect: `nosdeputes`/
+`nossenateurs` in `KNOWN_SOURCE_TYPES` and in `MAPPING_CHAMBRE_SOURCES` (removing
+them would make `validate_profil()` reject the 476 profiles just published — that
+is lot 6, with the ODbL attribution), `normalize_profil`'s fallback read of
+`meta.synchro_sources.nosdeputes`, and the `interventions[].mots_cles` →
+`tags_thematiques` fallback, which derives **647 published tags**. `--max-pages` is
+still accepted (the workflow passes it) but **loudly declared without effect**.
+Guarded by `tests/test_retrait_nosdeputes_529.py`, which reads the *executed* code —
+strings and identifiers, never comments: history stays readable.
+See `docs/technical_decisions.md#retrait-nosdeputes-529`.
+
 **The AN group roster now comes from AMO30 (#527, lot 1b)**: the flag below is
 `True`, and `group_roster.fetch_full_roster` delegates every `deputes` key to
-`an_roster.fetch_full_roster_an`. The NosDéputés read survives under its own
-name, `fetch_full_roster_nosdeputes` — the Senate in normal operation, the
-Assembly only if the flag goes back down. **The switch is that one line**, and
-its `git revert` is the whole insurance of the epic: no caller had to change,
-so none changes to go back. Measured on the 476 committed pivots: the **5
+`an_roster.fetch_full_roster_an`. The NosDéputés read survived under its own
+name, `fetch_full_roster_nosdeputes`, as the flag's fallback — **until #529
+removed it**. The switch was that one line, and its `git revert` was the
+insurance of the epic while a second source existed; the flag is now a kill
+switch (lowered → `RosterAnInactif`, never an empty roster). Measured on the 476 committed pivots: the **5
 published 16th-legislature sheets are reproduced identically** — 0 member lost
 or gained, `cohesion_votes`/`mandats_agreges`/`tags_thematiques_agreges`
 unchanged, roster of candidates still 452. The only move is
@@ -746,6 +778,8 @@ don't restate it in the chat.
 - `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
+- `src/normalize_profil.py`: raw FR profile → pivot adapter (named
+  `normalize_nosdeputes.py` until #529).
 - `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#ci-tests-pytest`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
   automatically — consult on request). Rationale for deferred items lives

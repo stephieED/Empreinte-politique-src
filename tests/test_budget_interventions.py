@@ -189,6 +189,20 @@ def test_questions_officielles_s_arretent_et_comptent_les_legislatures_perdues(h
     assert len(questions) == 1
     assert budget.unites_ignorees() == {"législature(s) de questions officielles": 2}
 
+
+# `test_les_details_nosdeputes_s_arretent_document_par_document` est RETIRÉ
+# (#529, lot 5). Il verrouillait la granularité la plus fine du budget : un
+# document d'intervention à la fois, parce que sur une source dégradée un
+# document coûtait jusqu'à 45 s (read timeout 15 s × 3 tentatives) et qu'il y
+# en avait jusqu'à ~250 par candidat. Cette collecte-là — `_extract_search_results`
+# et les requêtes de détail qu'elle enchaînait — n'existe plus.
+#
+# Les deux granularités qui restent sont testées juste au-dessus et en dessous :
+# la législature de débats Syceron et la législature de questions officielles.
+# Ce sont désormais les seules unités que la phase d'interventions consomme,
+# et ce sont aussi les seules qui coûtaient des dizaines de secondes.
+
+
 def test_sans_budget_la_collecte_reste_complete(horloge):
     """Le budget est optionnel : `None` doit rendre exactement le comportement
     d'avant #498, sinon le mode par défaut et les appels locaux changeraient de

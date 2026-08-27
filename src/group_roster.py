@@ -6,43 +6,45 @@ Contrairement à raw_data/candidats.json (liste éditoriale des candidats décla
 à l'élection présidentielle, voir parti_profile.py), ce module rend la VRAIE
 liste des membres d'un groupe parlementaire (ex. tou·te·s les député·es LR
 d'une législature), à utiliser ensuite avec group_profile.py — depuis l'open
-data de l'Assemblée (voir la section suivante).
+data de l'Assemblée.
+
+## Ce module ne parle plus à NosDéputés (#529, lot 5)
+
+Il ne reste ici **aucun appel réseau propre**. `fetch_full_roster` délègue à
+`an_roster.fetch_full_roster_an`, qui dérive la composition d'AMO30 — même
+source que les scrutins et les amendements, Licence Ouverte au lieu d'ODbL, et
+une législature qui est une donnée du référentiel plutôt qu'un sous-domaine à
+connaître d'avance (AGENTS §7, #526/#527).
+
+Sont partis avec la plateforme : `_BASE_URL_BY_LEGISLATURE_AN` (la table
+domaine → législature, qui s'arrêtait à la 16e faute que NosDéputés y ait
+jamais été étendu), `_base_url_for`, `_LIST_ENDPOINT`,
+`fetch_full_roster_nosdeputes`, et **toute la machinerie de reprise qui
+l'entourait** — `_erreur_retentable`, `_STATUTS_5XX_RETENTABLES`,
+`_ROSTER_MAX_ATTEMPTS`, `_ROSTER_RETRY_BACKOFF_SECONDS`, `_ROSTER_TIMEOUT`.
+Elle avait été écrite (#518, #524) pour un endpoint de 814 Ko généré à la volée
+dont « aucune réponse en moins de 10 s » avait été mesurée sur 24 appels, puis
+qui a servi un **500 déterministe** trois runs durant. Sur une archive lue
+depuis `.cache/acteurs_historique_an/`, elle n'a plus d'objet : le
+téléchargement de l'archive AMO30 a ses propres reprises, dans
+`candidate_profile._ensure_acteurs_historique_zip_downloaded`.
+
+Ce qui n'a PAS bougé, et c'est le point : le **contrat de sortie**.
+`filter_roster_by_sigle` s'applique inchangé, le transit des rosters bruts par
+artifact (#518) aussi, et `ERREURS_ROSTER` reste la liste unique de ce qu'un
+appel peut lever — c'est elle qui fait d'une archive absente un « roster
+indisponible » nommé (`exit 2`, fiches publiées intactes) plutôt qu'une trace
+de pile qui coûte le commit du run.
+
+Voir docs/technical_decisions.md#retrait-nosdeputes-529.
 
 ## Le Sénat n'est plus une chambre servie ici (#528)
 
-`_base_url_for("senateurs", …)` **lève**, en nommant la décision. Les deux
+Toute chambre autre que `deputes` **lève**, en nommant la décision. Les deux
 entrées Sénat de `raw_data/groupes_reels.json` restent `extraction_suspendue`
 — leurs fiches publiées ne bougent pas — et ce chemin n'est atteint que si
 quelqu'un lève cette suspension : il doit alors échouer bruyamment plutôt que
 rendre un roster vide. Voir docs/technical_decisions.md#retrait-senat-528.
-
-## L'Assemblée ne passe plus par ici (#527, lot 1b)
-
-`fetch_full_roster` est devenu un **aiguillage** : pour `chambre == "deputes"`
-il délègue à `an_roster.fetch_full_roster_an`, qui dérive la composition
-d'AMO30 — même source que les scrutins et les amendements, Licence Ouverte au
-lieu d'ODbL, et une législature qui est une donnée du référentiel plutôt qu'un
-sous-domaine à connaître d'avance (AGENTS §7, #526). La lecture NosDéputés
-survit sous son propre nom, `fetch_full_roster_nosdeputes`. Depuis #528 elle
-ne sert plus AUCUNE chambre en régime normal : son dernier usage était le
-Sénat. Elle reste vivante pour une seule raison — être le repli de la bascule
-AMO30 si `AN_ROSTER_ACTIF` redescend (voir ci-dessous).
-
-L'aiguillage tient en une condition, sur `an_roster.AN_ROSTER_ACTIF` : baisser
-ce drapeau — ou faire un `git revert` de la ligne qui l'a levé — rend
-l'Assemblée à NosDéputés sans qu'aucun appelant ne change. C'est la raison
-d'être de cette forme, et ce qui justifie de garder le code NosDéputés vivant
-tant que la condition de retrait de #526 §9 n'est pas remplie.
-
-Ce qui n'a PAS bougé : le contrat de sortie. `filter_roster_by_sigle`
-s'applique inchangé sur les membres rendus par l'une comme par l'autre source
-— c'est ce qui a fait de la bascule une ligne et non une réécriture.
-
-L'endpoint documenté `/groupe/<SIGLE>/json` renvoie systématiquement une
-erreur HTTP 500 (vérifié sur plusieurs sigles et domaines de législature). On
-utilise donc à la place la liste complète des parlementaires (`/deputes/json`,
-qui inclut l'historique complet et un champ `groupe_sigle` par entrée),
-filtrée côté client par sigle de groupe.
 
 Usage (depuis la racine du dépôt) :
     python src/group_roster.py --chambre deputes --sigle LR --legislature 16
@@ -51,104 +53,12 @@ Usage (depuis la racine du dépôt) :
 import argparse
 import json
 import sys
-import time
 from pathlib import Path
 from typing import Any, Optional
 
 import requests
 
 import an_roster
-from candidate_profile import BASE_URLS, HEADERS, TIMEOUT
-
-# Association legislature AN -> domaine NosDeputes.fr. Ne couvre que
-# l'Assemblée — depuis #528 c'est la seule chambre collectée.
-#
-# Cette table **s'arrête à la 16e**, et c'est une propriété de la source, pas
-# un oubli : NosDéputés n'a jamais été étendu à la 17e législature. Vérifié le
-# 18/08/2026 : www.nosdeputes.fr sert toujours la 16e (618 députés, mandats
-# 2022-06-22 -> 2024-06-09).
-#
-# C'est la raison pour laquelle #526 dérive désormais la composition des
-# groupes d'AMO30 (`src/an_roster.py`), où la 17e existe : là-bas la
-# législature est une DONNÉE du référentiel, pas un sous-domaine à connaître
-# d'avance. Le mapping inverse (domaine -> législature), qui n'existait que
-# pour construire celui-ci, a disparu avec ce lot : personne d'autre ne le
-# lisait, et le garder aurait laissé croire qu'un domaine est une façon
-# légitime d'apprendre une législature.
-_BASE_URL_BY_LEGISLATURE_AN: dict[str, str] = {
-    "16": "https://www.nosdeputes.fr",
-    "15": "https://2017-2022.nosdeputes.fr",
-    "14": "https://2012-2017.nosdeputes.fr",
-    "13": "https://2007-2012.nosdeputes.fr",
-}
-
-# #528 : plus qu'une entrée — la clé "senateurs" est partie avec le Sénat.
-_LIST_ENDPOINT = {
-    "deputes": "deputes",
-}
-
-# ── Reprise sur échec transitoire du fetch de roster (#518) ──────────────────
-# `fetch_full_roster` faisait UN SEUL essai (timeout 15 s, aucun backoff), là où
-# `candidate_profile._get_payload` en fait trois depuis longtemps pour les
-# appels par candidat. L'asymétrie coûtait cher : ce fetch est le PREMIER pas
-# de `generate_roster_candidats.py`, et #511 refuse — à raison — d'écrire un
-# roster sur une collecte incomplète. Un hoquet de 15 s tuait donc le job
-# entier, pas un membre.
-#
-# Mesuré sur le run 32738726729 (24/08/2026) : 4 shards roster sur 8 morts sur
-# `Construction de la liste roster-driven`, alors que la seule clé de fetch
-# restante — ('deputes', '16'), le Sénat étant suspendu depuis #516 — répondait
-# normalement aux 4 autres, lancés dans la même minute. Rien de déterministe :
-# 4 échecs et 4 succès sur la même URL, la signature d'un aléa transitoire.
-#
-# CE QUI EST RETENTÉ, et rien d'autre (voir `_erreur_retentable`) : timeout,
-# erreur de connexion, 502/503/504. Un `SSLError` (certificat expiré, cas Sénat
-# de #516), un 4xx et un **500** sont DÉTERMINISTES — les retenter ferait payer
-# trois fois le même verdict et retarderait d'autant le message qui nomme la
-# panne. C'est la même ligne de partage que `_get_payload`, et elle compte
-# double ici : la suspension d'extraction de #516 s'appuie sur un échec qui
-# remonte VITE.
-_ROSTER_MAX_ATTEMPTS = 3
-#: Codes 5xx retentés. **500 en est exclu** (#524) : sur cette plateforme, ce
-#: n'est pas un hoquet d'infrastructure mais la signature d'une panne
-#: applicative — l'en-tête de ce module documente depuis toujours que
-#: `/groupe/<SIGLE>/json` « renvoie systématiquement une erreur HTTP 500 », et
-#: le run 32876863499 a vu `/deputes/json` faire de même, 3 tentatives durant,
-#: sur des réponses reçues en 0,4 s. 502/503/504 restent retentés : ceux-là
-#: viennent d'un frontal ou d'un backend momentanément indisponible, pas de
-#: l'application, et un second essai y change quelque chose.
-_STATUTS_5XX_RETENTABLES = frozenset({502, 503, 504})
-#: Temporisation avant la n-ième reprise, multipliée par le rang de la
-#: tentative écoulée (2 s puis 4 s) : au pire 6 s d'attente ajoutés à un job
-#: qui en dure ~200, contre un run entier perdu.
-_ROSTER_RETRY_BACKOFF_SECONDS = 2.0
-
-# ── Le plafond de lecture du roster lui est propre (#518, second incident) ───
-# `fetch_full_roster` héritait de `candidate_profile.TIMEOUT` (15 s), une
-# constante dimensionnée pour les pages PAR CANDIDAT (quelques Ko, servies
-# depuis un cache). Or `/deputes/json` fait **814 Ko** et est généré à la
-# volée : son coût est presque entièrement du time-to-first-byte.
-#
-# Mesuré le 24/08/2026, 24 appels sur `https://www.nosdeputes.fr/deputes/json` :
-# aucune réponse en moins de 10 s, la plus rapide à 10,7 s, médiane des succès
-# ~16,7 s. Le plafond de production était donc À L'INTÉRIEUR de la distribution
-# de réponse de l'endpoint — 0 succès sur 8 à `timeout=15`, 3 sur 8 à
-# `timeout=30`. (Ces latences absolues sont celles d'un environnement derrière
-# proxy, pas d'un runner GitHub ; ce qui est robuste est la forme, pas le
-# chiffre.) C'est ce qui a fait tomber `merge-and-pivot` sur le run
-# 32750929942 : trois tentatives sous un plafond trop bas ne rachètent pas le
-# plafond.
-#
-# Séparé en (connect, read) comme `gouvernement_textes.TIMEOUT` et
-# `syceron_debates.TIMEOUT` le font déjà pour leurs gros dumps. Le CONNECT
-# reste à `TIMEOUT` : c'est lui que la détection déterministe de #516 emprunte
-# (poignée de main TLS, `SSLError`), et l'allonger retarderait le verdict qui
-# justifie une suspension d'extraction. Seule la LECTURE est desserrée.
-#
-# Pire cas ajouté : 3 x 90 s + 6 s de backoff ≈ 4,5 min, sur un job qui en a 60.
-_ROSTER_READ_TIMEOUT_SECONDS = 90
-_ROSTER_TIMEOUT: tuple[int, int] = (TIMEOUT, _ROSTER_READ_TIMEOUT_SECONDS)
-
 
 # ── Transit du roster BRUT par artifact (#518, second incident) ──────────────
 # Il restait DEUX fetchs de la même liste par run après #519 :
@@ -226,74 +136,14 @@ def charger_rosters_bruts(chemin: Path) -> dict[tuple[str, Optional[str]], list[
     return resultat
 
 
-def _erreur_retentable(exc: Exception) -> bool:
-    """Un nouvel essai sur la MÊME URL a-t-il une chance de rendre autre chose ?
-
-    L'ordre des tests n'est pas indifférent : `requests.exceptions.SSLError`
-    hérite de `ConnectionError`, donc un `isinstance(exc, ConnectionError)`
-    placé en premier classerait un certificat expiré comme transitoire — et
-    ferait exactement ce que la panne Sénat de #516 a montré qu'il ne faut pas
-    faire.
-
-    Un **500** est traité comme déterministe (#524), au même titre : voir
-    `_STATUTS_5XX_RETENTABLES`.
-    """
-    if isinstance(exc, requests.exceptions.SSLError):
-        return False
-    if isinstance(exc, requests.HTTPError):
-        statut = exc.response.status_code if exc.response is not None else None
-        return statut in _STATUTS_5XX_RETENTABLES
-    return isinstance(exc, (requests.Timeout, requests.ConnectionError))
-
-
-def _base_url_for(chambre: str, legislature: Optional[str]) -> str:
-    """Détermine le domaine NosDéputés à interroger.
-
-    Args:
-        chambre: "deputes" (seule chambre servie depuis #528).
-        legislature: législature AN (ex. "16"). None = domaine courant.
-
-    Raises:
-        ValueError: chambre hors périmètre/inconnue, ou législature AN non couverte.
-    """
-    # #528 : le Sénat est sorti du périmètre. Le refus est EXPLICITE et nommé —
-    # `BASE_URLS` n'a simplement plus de clé "senateurs", donc le garde générique
-    # ci-dessous suffirait à lever, mais il dirait « chambre inconnue » là où la
-    # vérité est « chambre retirée par décision éditoriale ». Les deux entrées
-    # Sénat de `groupes_reels.json` restent `extraction_suspendue` : ce chemin
-    # n'est atteint que si quelqu'un lève cette suspension, et il doit alors
-    # échouer bruyamment (`ValueError` est dans `ERREURS_ROSTER`, donc « roster
-    # indisponible », exit 2, fiches publiées intactes) plutôt que rendre un
-    # roster vide.
-    if chambre == "senateurs":
-        raise ValueError(
-            "Chambre 'senateurs' retirée du périmètre par #528 : archive.nossenateurs.fr "
-            "ne sert plus de certificat valide et aucune source de remplacement n'est "
-            "établie. Les 2 groupes Sénat restent suspendus ; voir "
-            "docs/technical_decisions.md#retrait-senat-528."
-        )
-
-    if chambre not in BASE_URLS:
-        raise ValueError(f"Chambre inconnue : {chambre!r}. Valeurs attendues : {sorted(BASE_URLS)}.")
-
-    if legislature is None:
-        return BASE_URLS["deputes"][0]
-
-    if legislature not in _BASE_URL_BY_LEGISLATURE_AN:
-        raise ValueError(
-            f"Législature AN non couverte : {legislature!r}. "
-            f"Valeurs connues : {sorted(_BASE_URL_BY_LEGISLATURE_AN)}."
-        )
-    return _BASE_URL_BY_LEGISLATURE_AN[legislature]
-
-
-# `_member_matches_legislature` et le paramètre `senat_periode_debut` qui le
-# pilotait ont été RETIRÉS par #528. Ils n'existaient que pour le Sénat :
-# `archive.nossenateurs.fr` servait un domaine d'archive unique, sans
-# sous-domaine par période, et il fallait donc filtrer les membres côté client
-# sur `mandat_fin`. L'Assemblée n'en a jamais eu besoin — sa législature est un
-# sous-domaine (NosDéputés) ou une donnée du référentiel (AMO30, #526).
-# Voir docs/technical_decisions.md#retrait-senat-528.
+# `_erreur_retentable`, `_base_url_for` et `_member_matches_legislature` ont été
+# RETIRÉS. Les deux premiers par #529 (voir l'en-tête du module) : ils
+# décrivaient la politique de reprise et le choix de domaine d'un endpoint
+# NosDéputés qui n'est plus appelé. Le troisième par #528 : il n'existait que
+# pour le Sénat, dont `archive.nossenateurs.fr` servait un domaine d'archive
+# unique, sans sous-domaine par période, ce qui obligeait à filtrer les membres
+# côté client sur `mandat_fin`. L'Assemblée n'en a jamais eu besoin — sa
+# législature est une donnée du référentiel AMO30 (#526).
 
 
 #: Tout ce qu'un appel à `fetch_full_roster` peut légitimement lever, quelle
@@ -318,20 +168,27 @@ def fetch_full_roster(
     legislature: Optional[str] = None,
     session: Optional[requests.Session] = None,
 ) -> list[dict[str, Any]]:
-    """Le roster brut d'une (chambre, législature) — **AMO30 pour l'Assemblée**.
+    """Le roster brut d'une (chambre, législature) — **AMO30, et rien d'autre**.
 
-    Aiguillage de la bascule du lot 1b (#527), et seul endroit du dépôt qui
-    choisit la source d'un roster :
+    Seul endroit du dépôt qui choisit la source d'un roster. Depuis #529 il n'y
+    a plus de choix à faire : la lecture NosDéputés vers laquelle #527
+    aiguillait encore le Sénat et le repli du drapeau est retirée. Ce qui reste
+    de l'aiguillage est le **refus**, et il est explicite dans les deux cas :
 
-    - `deputes` + drapeau levé → `an_roster.fetch_full_roster_an`, dérivé de
-      l'archive AMO30 déjà téléchargée et mise en cache par
-      `candidate_profile` ;
-    - tout le reste → `fetch_full_roster_nosdeputes`, inchangé.
+    - une chambre autre que `deputes` lève en nommant #528 — les deux groupes
+      Sénat de `groupes_reels.json` restent suspendus, et ce chemin n'est
+      atteint que si quelqu'un lève cette suspension ;
+    - `an_roster.AN_ROSTER_ACTIF` baissé lève `RosterAnInactif` (dans
+      `an_roster`), et ne rend **jamais** une liste vide. Le drapeau n'est plus
+      un aiguillage vers une autre source, c'est un interrupteur : baissé, il
+      n'y a plus de roster du tout, bruyamment. Sa condition de retrait est
+      écrite dans docs/technical_decisions.md#roster-an-derive-amo30-526 §9.
 
-    `session` n'a de sens que sur la seconde branche : la première ne fait
-    aucune requête HTTP directe. Elle est donc **ignorée** côté AMO30, et c'est
-    sans conséquence — aucun appelant du pipeline n'en passe (les tests qui en
-    passent visent explicitement `fetch_full_roster_nosdeputes`).
+    `session` n'a plus aucun effet : aucune requête HTTP ne part d'ici.
+    Conservée dans la signature parce que trois appelants la passent encore et
+    qu'un paramètre retiré d'une signature publique est un `TypeError` chez eux
+    — elle est ignorée, et c'est sans conséquence puisque l'archive AMO30 est
+    téléchargée et mise en cache par `candidate_profile`.
 
     La table sigle publié → sigle AN est lue dans son fichier committé,
     `raw_data/groupes_reels.json` (`an_roster.CHEMIN_CONFIG_GROUPES`), et non
@@ -340,77 +197,18 @@ def fetch_full_roster(
     vide (#526 §3b).
 
     Raises:
-        Tout ce que liste `ERREURS_ROSTER`, selon la branche empruntée.
+        Tout ce que liste `ERREURS_ROSTER`.
     """
-    if chambre == "deputes" and an_roster.AN_ROSTER_ACTIF:
-        return an_roster.fetch_full_roster_an(legislature)
-    return fetch_full_roster_nosdeputes(chambre, legislature=legislature, session=session)
-
-
-def fetch_full_roster_nosdeputes(
-    chambre: str,
-    legislature: Optional[str] = None,
-    session: Optional[requests.Session] = None,
-) -> list[dict[str, Any]]:
-    """Récupère en UN seul appel réseau la liste complète (tous groupes confondus)
-    des député·e·s/sénateur·rice·s d'une chambre/législature.
-
-    Lecture **NosDéputés**. Depuis #527 elle ne sert plus
-    l'Assemblée en régime normal : `fetch_full_roster` y aiguille le Sénat, et
-    l'Assemblée seulement si le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé.
-    Tout ce qui suit — reprises, plafond de lecture, partage 500/502 — décrit
-    donc désormais le repli et le Sénat, et reste vivant pour eux.
-
-    À réutiliser pour construire plusieurs profils de groupe de la même
-    chambre/législature sans refaire le même appel réseau à chaque sigle
-    (voir generate_group_profiles.py) : filtrer ensuite le résultat avec
-    `filter_roster_by_sigle`.
-
-    Un échec TRANSITOIRE (timeout, erreur de connexion, 502/503/504) est
-    retenté jusqu'à `_ROSTER_MAX_ATTEMPTS` fois, avec temporisation croissante
-    (#518). Un échec DÉTERMINISTE (certificat, 4xx, **500**) remonte à la
-    première tentative : voir `_erreur_retentable`.
-
-    Le plafond appliqué est `_ROSTER_TIMEOUT` — propre à ce fetch, pas celui
-    des pages par candidat, dont la valeur tombait au milieu de la
-    distribution de réponse de cet endpoint (#518).
-
-    Returns:
-        Liste des membres bruts (déjà déballés de l'enveloppe {"depute": {...}}
-        ), sans filtrage par groupe.
-
-    Raises:
-        ValueError: chambre ou législature inconnue.
-        requests.RequestException: échec réseau, après épuisement des reprises
-            pour un échec retentable (non intercepté, remonté tel quel).
-    """
-    base_url = _base_url_for(chambre, legislature)
-    url = f"{base_url}/{_LIST_ENDPOINT[chambre]}/json"
-
-    http = session or requests
-    for tentative in range(1, _ROSTER_MAX_ATTEMPTS + 1):
-        try:
-            response = http.get(url, headers=HEADERS, timeout=_ROSTER_TIMEOUT)
-            response.raise_for_status()
-        except requests.RequestException as exc:
-            if tentative == _ROSTER_MAX_ATTEMPTS or not _erreur_retentable(exc):
-                raise
-            attente = _ROSTER_RETRY_BACKOFF_SECONDS * tentative
-            print(
-                f"  [!] Roster {url} — tentative {tentative}/{_ROSTER_MAX_ATTEMPTS} "
-                f"en échec ({type(exc).__name__}: {exc}). Nouvelle tentative dans "
-                f"{attente:.0f} s.",
-                file=sys.stderr,
-            )
-            time.sleep(attente)
-            continue
-        payload = response.json()
-        raw_entries = payload.get(chambre) or []
-        return [entry.get("depute") or entry for entry in raw_entries]
-
-    # Inatteignable : la boucle sort par `return` ou par `raise`. Présent pour
-    # que l'absence de valeur de retour ne dépende pas de la lecture du corps.
-    raise AssertionError("fetch_full_roster_nosdeputes : sortie de boucle impossible.")
+    del session  # cf. docstring : conservée pour les appelants, sans effet.
+    if chambre != "deputes":
+        raise ValueError(
+            f"Chambre {chambre!r} hors périmètre. Seule valeur servie : 'deputes'. "
+            "Le Sénat a été retiré par #528 (archive.nossenateurs.fr ne sert plus "
+            "de certificat valide, aucune source de remplacement établie) ; les "
+            "2 groupes Sénat restent suspendus, voir "
+            "docs/technical_decisions.md#retrait-senat-528."
+        )
+    return an_roster.fetch_full_roster_an(legislature)
 
 
 def filter_roster_by_sigle(
@@ -438,6 +236,14 @@ def filter_roster_by_sigle(
             "mandat_debut": member.get("mandat_debut"),
             "mandat_fin": mandat_fin,
             "actif": not mandat_fin,
+            # `acteur_ref` (le `PA######` d'AMO30) traverse le filtre depuis
+            # #529 : c'est ce qui permet à `generate_roster_candidats` de
+            # donner à chaque entrée de roster une `source` qui pointe vers la
+            # fiche AN du membre. L'ancienne source était
+            # `<domaine NosDéputés>/<slug>`, dérivée de la législature, et le
+            # membre brut n'avait alors pas d'identifiant externe à porter.
+            # `None` si la source n'en fournit pas : jamais inventé (règle 5).
+            "acteur_ref": member.get("acteur_ref"),
         })
     return roster
 

@@ -3,9 +3,21 @@
 candidate_profile.py
 
 Construit un profil JSON structuré ("CV politique") d'un parlementaire
-à partir des données ouvertes de NosDéputés.fr
-(Regards Citoyens - licence ODbL / CC-BY-SA), complétées par les votes
-officiels de l'Assemblée nationale (data.assemblee-nationale.fr).
+à partir des **données ouvertes officielles de l'Assemblée nationale**
+(data.assemblee-nationale.fr et questions.assemblee-nationale.fr, Licence
+Ouverte / Etalab) : référentiel des acteurs et organes (AMO30), scrutins,
+amendements, dossiers législatifs, comptes rendus Syceron, questions écrites
+et orales.
+
+**Source unique depuis #529 (lot 5).** NosDéputés.fr/NosSénateurs.fr ne sont
+plus interrogés : l'identité, les mandats, les votes, les amendements, les
+textes portés et les interventions viennent tous de l'AN. Le retrait n'a rien
+d'un basculement de source — chacun de ces chemins avait déjà migré, lot après
+lot (#369 l'identité, #392/#403 les votes et amendements, #400 les textes
+portés, #526/#527 le roster de groupe, #528 le Sénat), et ce qui restait ici
+était la dernière branche encore appelée : la recherche d'interventions.
+Motivation, mesures et conséquence déclarée :
+docs/technical_decisions.md#retrait-nosdeputes-529.
 
 Le Sénat est HORS PÉRIMÈTRE depuis #528 : `chambre` ne connaît plus que
 "deputes", et toute autre valeur est refusée bruyamment (voir `build_profile`).
@@ -19,8 +31,6 @@ Usage (depuis la racine du dépôt) :
 Le script ne fait AUCUNE interprétation ni jugement de valeur : il se
 contente d'agréger les faits bruts (mandats, responsabilités, votes,
 interventions) tels que fournis par les API, avec des liens vers les sources.
-
-Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.md
 """
 
 import argparse
@@ -28,7 +38,6 @@ import gzip
 import io
 import json
 import os
-import queue
 import re
 import shutil
 import sys
@@ -37,7 +46,6 @@ import time
 import unicodedata
 import zipfile
 from collections import Counter
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
 from xml.etree import ElementTree as ET
@@ -67,21 +75,18 @@ from syceron_debates import (
     syceron_zip_url,
 )
 
-# Domaines interroges, par chambre. La cle "senateurs" a ete RETIREE par #528 :
-# www.nossenateurs.fr avait definitivement ferme, et son archive
-# (archive.nossenateurs.fr) sert un certificat TLS expire depuis le 24/08/2026.
-# Le Senat est sorti du perimetre editorial du produit ; aucune source de
-# remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour. Remettre
-# une entree ici n'est PAS un geste technique : lire d'abord la condition de
-# reouverture dans docs/technical_decisions.md#retrait-senat-528.
-BASE_URLS = {
-    "deputes": [
-        "https://www.nosdeputes.fr",
-        "https://2017-2022.nosdeputes.fr",
-        "https://2012-2017.nosdeputes.fr",
-        "https://2007-2012.nosdeputes.fr",
-    ],
-}
+# Chambres collectees. `BASE_URLS` (la liste des domaines NosDeputes interroges
+# par chambre) a ete RETIREE par #529 : plus aucune collecte ne part vers cette
+# plateforme, et un dictionnaire d'URLs n'avait plus qu'un role de garde-fou de
+# chambre. Ce qu'il gardait est conserve ici, sous un nom qui dit ce que c'est.
+#
+# La cle "senateurs" avait deja disparu avec #528 : www.nossenateurs.fr a
+# definitivement ferme, son archive sert un certificat TLS expire depuis le
+# 24/08/2026, le Senat est sorti du perimetre editorial du produit et aucune
+# source de remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour.
+# Remettre une entree ici n'est PAS un geste technique : lire d'abord la
+# condition de reouverture dans docs/technical_decisions.md#retrait-senat-528.
+CHAMBRES_COLLECTEES: tuple[str, ...] = ("deputes",)
 
 HEADERS = {
     "User-Agent": "candidate-profile-script/0.1 (usage personnel / non commercial)"
@@ -602,15 +607,19 @@ WARNING_PREFIX_BUDGET_INTERVENTIONS = "collecte d'interventions tronquée (budge
 # interrompue par le budget de temps mur du candidat. Même raison qu'au-dessus
 # de n'être jamais retiré par _prune_stale_warnings.
 WARNING_PREFIX_BUDGET_COLLECTE = "collecte tronquée (budget de temps)"
-# #514 : la source n'a pas répondu — à distinguer de « elle a répondu qu'il n'y
-# a rien ». Sans cette distinction, un `archive.nossenateurs.fr` en timeout et
-# un parlementaire réellement absent de l'archive produisent le même silence :
-# `_try_urls` rend `(None, None)` dans les deux cas, `build_profile_any_chambre`
-# ne journalise rien (aucune exception n'a été levée) et `process_candidat`
-# conclut « introuvable ». Sur le run 32421439590, onze candidats sur treize
-# sont ainsi sortis sans profil ET sans trace — exactement la donnée manquante
-# qui se lit comme un constat que la règle 2.5 interdit.
-WARNING_PREFIX_SOURCE_INJOIGNABLE = "source injoignable"
+# `WARNING_PREFIX_SOURCE_INJOIGNABLE` (#514) a été RETIRÉ par #529. Il
+# distinguait « la source a répondu qu'il n'y a rien » de « la source n'a rien
+# dit », sur les seules requêtes qui passaient par `_get_payload` —
+# c'est-à-dire NosDéputés/NosSénateurs, et rien d'autre. Ce chemin réseau
+# n'existe plus : l'identité se résout dans une archive AMO30 déjà en cache, et
+# une archive absente ou illisible lève une exception, qui est nommée dans
+# `meta.warnings`. Un warning qui ne peut plus se déclencher est un garde-fou
+# désarmé qu'on croit armé.
+
+# `--max-pages` a été retiré du code (#510) ET de generate-data.yml : il
+# plafonnait la recherche d'interventions NosDéputés, qui n'existe plus.
+# Le garde-fou « accepter mais signaler » écrit par #529 est devenu sans
+# objet — plus aucun appelant ne passe le drapeau.
 
 # #510 : l'archive Syceron publie l'identifiant d'orateur NU (`<orateur><id>847629
 # </id>`), et le code lui appliquait `re.fullmatch(r"PA\d+")` — donc l'index de la
@@ -740,308 +749,36 @@ def _is_empty_payload(value: Any) -> bool:
     return False
 
 
-def _extract_parlementaire(identity_raw: Any) -> Optional[dict]:
-    """Extrait le dict "parlementaire" d'une réponse d'identité NosDéputés.
-
-    La clé racine est "depute" ; à défaut, on retombe sur le payload lui-même
-    (déjà à plat sur certains endpoints). La clé "senateur" a disparu avec le
-    retrait du Sénat (#528) — plus aucun appel ne peut la produire.
-    """
-    if not isinstance(identity_raw, dict):
-        return None
-    if identity_raw.get("depute") is not None:
-        return identity_raw.get("depute")
-    return identity_raw
-
-
-def _xml_to_data(xml_text: str) -> Optional[Any]:
-    """Convertit un XML simple en structure Python de base."""
-    try:
-        root = ET.fromstring(xml_text)
-    except ET.ParseError:
-        return None
-
-    def convert(elem: ET.Element) -> Any:
-        children = list(elem)
-        if not children:
-            return elem.text.strip() if elem.text and elem.text.strip() else None
-        result: dict[str, Any] = {}
-        for child in children:
-            converted = convert(child)
-            if child.tag in result:
-                if not isinstance(result[child.tag], list):
-                    result[child.tag] = [result[child.tag]]
-                result[child.tag].append(converted)
-            else:
-                result[child.tag] = converted
-        return result
-
-    return {root.tag: convert(root)}
-
-
-# Sentinel renvoyé par _get_payload pour signaler un échec déterministe (4xx,
-# format non pris en charge) qui ne doit pas déclencher de nouvel essai sur
-# d'autres formats ou d'autres bases pour la même ressource.
-_TERMINAL_FAILURE = object()
-
-# Marge appliquée au-delà de TIMEOUT dans _get_with_watchdog avant d'abandonner
-# une requête bloquée : `timeout=` de `requests` ne couvre pas la résolution
-# DNS (getaddrinfo) sur toutes les plateformes, ce qui a déjà fait pendre le
-# process bien au-delà de TIMEOUT sans lever la moindre exception Python — le
-# runner GitHub Actions finissait tué par l'infra ("shutdown signal" opaque en
-# CI, aucune trace applicative) plutôt que le job échouant proprement.
-_WATCHDOG_MARGIN_SECONDS = 10
-
-
-def _get_with_watchdog(url: str, *, timeout: int) -> requests.Response:
-    """`requests.get` protégé par un budget mur total, y compris pour les
-    blocages hors du contrôle du paramètre `timeout=` de `requests` (résolution
-    DNS notamment).
-
-    Exécute la requête dans un thread démon et abandonne après
-    ``timeout + _WATCHDOG_MARGIN_SECONDS``. Le thread sous-jacent peut rester
-    bloqué indéfiniment (impossible à interrompre depuis Python) : il est
-    volontairement laissé en arrière-plan plutôt que joint, mais étant démon,
-    il ne bloque jamais la sortie du process principal.
-    """
-    outcome: "queue.Queue[tuple[bool, Any]]" = queue.Queue(maxsize=1)
-
-    def _worker() -> None:
-        try:
-            outcome.put((True, requests.get(url, headers=HEADERS, timeout=timeout)))
-        except Exception as exc:  # relayé tel quel au thread appelant
-            outcome.put((False, exc))
-
-    threading.Thread(target=_worker, daemon=True).start()
-    try:
-        ok, payload = outcome.get(timeout=timeout + _WATCHDOG_MARGIN_SECONDS)
-    except queue.Empty:
-        raise requests.exceptions.Timeout(
-            f"Aucune réponse de {url} après {timeout + _WATCHDOG_MARGIN_SECONDS}s "
-            "(budget mur du watchdog dépassé — probable blocage DNS/réseau non "
-            "couvert par timeout= de requests)"
-        ) from None
-    if ok:
-        return payload
-    raise payload
-
-
-# Retry léger sur échec transitoire (5xx, erreur réseau, timeout watchdog).
-# _get_payload est le chokepoint partagé par identité/votes/synthèse/dossiers-
-# Sénat (voir docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel
-# et issue #340) : un retry ici bénéficie à tous ces appelants sans dupliquer
-# la logique par fonction. N'aide pas contre un vrai gel du runner CI (déjà
-# constaté : même le thread du watchdog n'arrive alors pas à s'exécuter), mais
-# couvre les hoquets réseau/serveur transitoires réels, plus fréquents.
-_GET_PAYLOAD_MAX_ATTEMPTS = 3
-_GET_PAYLOAD_RETRY_BACKOFF_SECONDS = 1.5
-
-# ── Compteur d'appels réellement émis vers NosDéputés/NosSénateurs (#467) ────
-# `_get_payload` est le chokepoint EXCLUSIF de ces deux domaines (identité,
-# votes, recherche d'interventions, détail d'intervention, dossiers Sénat) :
-# l'Open Data AN passe par `requests.get`/`_telecharger_flux` en direct, jamais
-# par ici. Compter ici, c'est donc compter exactement la charge que la
-# temporisation de courtoisie de `process_candidat` est censée lisser.
+# ── Ce qui parlait à NosDéputés vivait ici, et n'y est plus (#529, lot 5) ────
+# Retirés ensemble parce qu'ils formaient UNE seule chaîne, du transport au
+# résultat : `_get_with_watchdog` (le `requests.get` protégé par un budget mur,
+# #443) et `_get_payload` (le chokepoint JSON/XML avec ses trois tentatives),
+# puis `_try_urls` / `fetch_identity` (l'identité brute, quatre domaines × deux
+# formats), `_normalize_search_query` / `fetch_recherche` /
+# `fetch_all_intervention_results*` (le moteur de recherche d'interventions),
+# `_extract_parlementaire` et `_xml_to_data`. Aucun n'avait d'autre appelant :
+# l'open data AN passe par `requests.get` / `download_with_watchdog` /
+# `_telecharger_flux` en direct, jamais par ici — c'est ce qui rendait le
+# compteur d'appels exact, et c'est ce qui rend ce retrait total.
 #
-# Pourquoi un compteur global et non un thread-local : les appels partent de
-# sous-pools (`_fetch_fr`/`_fetch_ue`, `fetch_all_intervention_results_from_domains`),
-# donc d'autres threads que celui qui traite le candidat. Un global rend la
-# mesure CONSERVATRICE quand `--workers > 1` — un candidat peut temporiser à
-# cause des appels d'un autre, jamais l'inverse. Le sens de l'erreur est celui
-# de la courtoisie.
-_APPELS_NOSDEPUTES_LOCK = threading.Lock()
-_appels_nosdeputes = 0
-# #514 : requêtes pour lesquelles la source n'a rendu AUCUNE réponse, toutes
-# tentatives épuisées (timeout de connexion, timeout de lecture, watchdog, 5xx
-# répétés). Volontairement disjoint du compteur ci-dessus, qui compte les
-# requêtes ÉMISES : un 404 est une réponse, il incrémente `_appels_nosdeputes`
-# et pas celui-ci.
+# `_normalize_search_query` est la SEULE rescapée du lot, et elle a changé de
+# métier : elle normalisait la requête envoyée au moteur de recherche, elle
+# normalise désormais un nom pour la correspondance slug ↔ acteur AN
+# (`_build_acteur_nom_index`, `_resolve_acteur_ref_par_slug`). Elle vit
+# maintenant à côté de ces deux-là, pas ici.
 #
-# À quoi ça sert : `_try_urls` et `fetch_votes` rendent `(None, None)` aussi
-# bien quand la source répond « rien pour ce slug » que quand elle ne répond
-# pas du tout. Les deux cas sortent ensuite en « introuvable ». Comparer ce
-# compteur avant/après une collecte est le seul moyen, sans changer la
-# signature de toute la chaîne de fetch, de savoir lequel des deux on a vécu.
-_requetes_sans_reponse = 0
-
-
-def compteur_appels_nosdeputes() -> int:
-    """Nombre de requêtes HTTP émises vers NosDéputés/NosSénateurs depuis le
-    démarrage du process. Sert à savoir si un candidat a réellement sollicité
-    ces sources — voir la temporisation de `process_candidat`."""
-    with _APPELS_NOSDEPUTES_LOCK:
-        return _appels_nosdeputes
-
-
-def compteur_requetes_sans_reponse() -> int:
-    """Nombre de requêtes restées SANS RÉPONSE depuis le démarrage du process
-    (#514). Global et non thread-local, pour la même raison que le compteur
-    d'appels : les requêtes partent de sous-pools. La mesure est donc
-    conservatrice avec `--workers > 1` — on peut attribuer à un candidat
-    l'échec réseau d'un autre, ce qui fait sur-déclarer « source injoignable »
-    et jamais l'inverse. Le sens de l'erreur est celui de la prudence."""
-    with _APPELS_NOSDEPUTES_LOCK:
-        return _requetes_sans_reponse
-
-
-def _incrementer_appels_nosdeputes() -> None:
-    global _appels_nosdeputes
-    with _APPELS_NOSDEPUTES_LOCK:
-        _appels_nosdeputes += 1
-
-
-def _incrementer_requetes_sans_reponse() -> None:
-    global _requetes_sans_reponse
-    with _APPELS_NOSDEPUTES_LOCK:
-        _requetes_sans_reponse += 1
-
-
-def _get_payload(url: str, budget: Optional[BudgetCollecte] = None) -> Any:
-    """GET une URL et renvoie un objet Python (JSON ou XML simple), ou None / _TERMINAL_FAILURE.
-
-    Retourne :
-    - Un objet Python exploitable en cas de succès.
-    - ``_TERMINAL_FAILURE`` pour les échecs déterministes (4xx, format non pris
-      en charge) : aucun essai ultérieur sur d'autres formats ou miroirs ne
-      serait utile pour cette ressource — jamais retenté ici non plus.
-    - ``None`` pour les échecs transitoires (erreur réseau, timeout, 5xx),
-      après épuisement de ``_GET_PAYLOAD_MAX_ATTEMPTS`` tentatives (backoff
-      fixe ``_GET_PAYLOAD_RETRY_BACKOFF_SECONDS`` entre chaque) : un nouvel
-      essai sur un autre miroir reste légitime côté appelant.
-
-    `budget` (#514) est vérifié **entre deux tentatives**, jamais avant la
-    première ni au milieu de l'une d'elles. C'est ce qui plafonne le
-    dépassement d'un budget de collecte à UNE tentative (25 s, la borne du
-    watchdog) au lieu d'un cycle de reprise entier (jusqu'à 78 s).
-
-    Ce n'est PAS une politique de reprise déguisée : tant que le budget tient,
-    les trois tentatives ont lieu, y compris après un timeout. Le run
-    32421439590 dit pourquoi — le seul profil qu'il ait écrit vient d'une
-    3ᵉ tentative réussie après deux timeouts sur le même format
-    (`/jean-luc-melenchon/xml`, 20/08/2026 21:54:33 UTC). Une règle « ne pas
-    retenter après un timeout » aurait supprimé la seule donnée du job.
-    """
-    for attempt in range(1, _GET_PAYLOAD_MAX_ATTEMPTS + 1):
-        is_last_attempt = attempt == _GET_PAYLOAD_MAX_ATTEMPTS
-        if attempt > 1 and budget_epuise(budget):
-            print(
-                f"  [!] Reprise abandonnée sur {url} (tentative {attempt}/"
-                f"{_GET_PAYLOAD_MAX_ATTEMPTS}) : budget de {budget.libelle} épuisé.",
-                file=sys.stderr,
-            )
-            budget_ignorer(budget, "tentative(s) de reprise réseau",
-                           _GET_PAYLOAD_MAX_ATTEMPTS - attempt + 1)
-            _incrementer_requetes_sans_reponse()
-            return None
-        try:
-            _incrementer_appels_nosdeputes()
-            resp = _get_with_watchdog(url, timeout=TIMEOUT)
-            try:
-                resp.raise_for_status()
-            except requests.HTTPError as exc:
-                print(f"  [!] Échec HTTP {resp.status_code} depuis {url} : {exc}", file=sys.stderr)
-                # 4xx = erreur déterministe côté serveur (ressource absente, non
-                # autorisée...) : inutile de retenter, sur ce format ou un autre.
-                if 400 <= resp.status_code < 500:
-                    return _TERMINAL_FAILURE
-                # 5xx = erreur serveur potentiellement transitoire.
-                if not is_last_attempt:
-                    time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
-                    continue
-                _incrementer_requetes_sans_reponse()
-                return None
-            content_type = resp.headers.get("content-type", "")
-            if "json" in content_type.lower() or resp.text.lstrip().startswith("{"):
-                try:
-                    return resp.json()
-                except ValueError as exc:
-                    print(f"  [!] Réponse JSON invalide depuis {url} : {exc}", file=sys.stderr)
-                    # JSON malformé = réponse serveur incohérente, pas un vrai JSON :
-                    # on traite comme terminal pour ne pas réessayer en XML.
-                    return _TERMINAL_FAILURE
-            if "xml" in content_type.lower() or resp.text.lstrip().startswith("<"):
-                parsed = _xml_to_data(resp.text)
-                if parsed is not None:
-                    return parsed
-            print(f"  [!] Format de réponse non pris en charge depuis {url}", file=sys.stderr)
-            # Format inconnu = réponse serveur non exploitable de façon déterministe.
-            return _TERMINAL_FAILURE
-        except requests.RequestException as exc:
-            print(
-                f"  [!] Échec de requête sur {url} (tentative {attempt}/{_GET_PAYLOAD_MAX_ATTEMPTS}) : {exc}",
-                file=sys.stderr,
-            )
-            if not is_last_attempt:
-                time.sleep(_GET_PAYLOAD_RETRY_BACKOFF_SECONDS)
-                continue
-            _incrementer_requetes_sans_reponse()
-            return None
-    return None  # pragma: no cover - inatteignable, chaque branche ci-dessus retourne déjà
-
-
-def _try_urls(
-    urls: list[str], label: str, slug: str, budget: Optional[BudgetCollecte] = None
-) -> tuple[Optional[Any], Optional[str]]:
-    """Essaie plusieurs URLs jusqu'à trouver un payload exploitable.
-
-    Logique de court-circuit :
-    - Si ``_get_payload`` renvoie ``_TERMINAL_FAILURE`` sur le suffixe ``/json``,
-      on saute directement le suffixe ``/xml`` pour ce ``base_url`` (même
-      ressource, format différent : le serveur a déjà répondu de façon
-      déterministe).
-    - Si ``_get_payload`` renvoie ``_TERMINAL_FAILURE`` directement sur un
-      ``base_url`` (4xx), on passe au ``base_url`` suivant sans essayer ``/xml``.
-    """
-    for base_url in urls:
-        base_terminal = False
-        for suffix in ["/json", "/xml"]:
-            if base_terminal:
-                break
-            if budget_epuise(budget):
-                budget_ignorer(budget, f"format(s) de « {label} » non tenté(s)")
-                return None, None
-            url = f"{base_url}/{slug}{suffix}"
-            print(f"-> {label} : {url}")
-            data = _get_payload(url, budget)
-            if data is _TERMINAL_FAILURE:
-                # Échec déterministe : inutile d'essayer l'autre format sur ce
-                # base_url (même ressource servie différemment).
-                base_terminal = True
-                break
-            if not _is_empty_payload(data):
-                return data, base_url
-            time.sleep(0.2)
-    return None, None
-
-
-def fetch_identity(
-    base_urls: list[str], slug: str, budget: Optional[BudgetCollecte] = None
-) -> tuple[Optional[Any], Optional[str]]:
-    """Infos biographiques, mandats, contacts."""
-    return _try_urls(base_urls, "Récupération de l'identité", slug, budget)
-
-
-# `fetch_dossiers` / `fetch_dossiers_for_legislatures` ont été RETIRÉES par
-# #528. Elles lisaient `<base>/<legislature>/dossiers/nom/json`, une liste
-# NosDéputés qui n'était appelée que pour la chambre "senateurs" : côté députés
-# elle était écrasée par `fetch_textes_portes_officiels` (source officielle AN,
-# propre à l'élu) depuis #400. Le Sénat sorti du périmètre, il ne restait aucun
-# appelant. Voir docs/technical_decisions.md#retrait-senat-528.
-
-
-def _normalize_search_query(text: str) -> str:
-    """Normalise une requête de recherche (minuscules, sans accents).
-
-    Le moteur de recherche de nosdeputes.fr/nossenateurs.fr renvoie parfois 0
-    résultat pour une requête multi-mots contenant une majuscule accentuée en
-    première position (ex. "Élisabeth Borne" -> 0 résultat), alors que la même
-    requête en minuscules et sans accents ("elisabeth borne") renvoie bien les
-    résultats attendus. On normalise donc systématiquement la requête envoyée
-    à l'API pour éviter ce comportement erratique.
-    """
-    decomposed = unicodedata.normalize("NFKD", text)
-    without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
-    return without_accents.lower()
+# Sont partis avec eux les DEUX compteurs de #467 et #514
+# (`compteur_appels_nosdeputes`, `compteur_requetes_sans_reponse`) et le warning
+# `source injoignable` qu'ils alimentaient : ils mesuraient les requêtes émises
+# vers cette plateforme et celles restées sans réponse. Sur une source qui n'est
+# plus interrogée, ils ne peuvent plus rendre que 0 — et un compteur
+# structurellement à zéro qu'on garde sous surveillance est exactement le
+# défaut que #510 a payé (une mesure muette qui se lit comme un constat).
+#
+# La temporisation de courtoisie de `process_candidat` qu'ils pilotaient part
+# aussi : elle ménageait une API publique tierce, pas le CDN de l'Assemblée.
+#
+# Voir docs/technical_decisions.md#retrait-nosdeputes-529.
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
@@ -3364,19 +3101,35 @@ def fetch_identite_officielle(url_an_ou_senat: Optional[str]) -> Optional[dict[s
     return index.get(acteur_ref)
 
 
+def _normalize_search_query(text: str) -> str:
+    """Normalise un nom pour la correspondance (minuscules, sans accents).
+
+    Écrite pour le moteur de recherche NosDéputés — qui renvoyait 0 résultat
+    sur une requête multi-mots commençant par une majuscule accentuée
+    ("Élisabeth Borne") — elle a survécu au retrait de ce moteur (#529) parce
+    que les deux index de correspondance slug ↔ acteur AN
+    (`_build_acteur_nom_index`, `_resolve_acteur_ref_par_slug`) l'utilisent
+    pour aplatir casse et accents des DEUX côtés de la comparaison. Le nom est
+    resté le sien : le renommer changerait la seule chose que ce nom garde
+    lisible, l'origine de la règle.
+    """
+    decomposed = unicodedata.normalize("NFKD", text)
+    without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return without_accents.lower()
+
+
 def _build_acteur_nom_index() -> dict[str, list[str]]:
     """Index nom complet normalisé (sans accents/casse, voir
     _normalize_search_query) -> liste des acteur_ref partageant ce nom, à
     partir de `_build_acteur_identite_index`. Permet de résoudre un acteur_ref
-    depuis un slug NosDéputés.fr sans dépendre de l'URL AN renvoyée par
-    NosDéputés (voir fetch_identite_officielle_par_slug, issue #355). Une
-    liste de plus d'un acteur_ref pour une même clé signale une homonymie
-    dans le référentiel historique AN.
+    depuis le slug d'un profil (voir fetch_identite_officielle_par_slug, issue
+    #355). Une liste de plus d'un acteur_ref pour une même clé signale une
+    homonymie dans le référentiel historique AN.
 
     Les tirets de `nom_complet` sont remplacés par des espaces avant
     normalisation, au même titre que ceux du slug côté appelant
     (`_resolve_acteur_ref_par_slug`) : un prénom composé (ex. "Jean-Luc"
-    Mélenchon) garde son tiret dans `nom_complet` mais le slug NosDéputés.fr
+    Mélenchon) garde son tiret dans `nom_complet` mais le slug
     ("jean-luc-melenchon") le remplace par un espace au même titre que le
     séparateur prénom/nom — sans ce traitement symétrique, la clé normalisée
     ne matche jamais ("jean-luc melenchon" vs "jean luc melenchon"), et la
@@ -3478,16 +3231,28 @@ def fetch_identite_officielle_par_slug(slug: str) -> tuple[Optional[dict[str, An
     return _build_acteur_identite_index().get(acteur_ref), acteur_ref
 
 
-def _acteur_ref_to_pseudo_url(acteur_ref: str) -> str:
-    """Construit une URL de fiche AN synthétique à partir d'un acteur_ref
-    (ex. "PA2150"), au même format que le champ `url_an` renvoyé par
-    NosDéputés (ex. "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150").
-    Utilisée quand l'identité a été résolue via l'AN sans passer par
-    NosDéputés (voir fetch_identite_officielle_par_slug) : les autres appels
+def acteur_ref_to_pseudo_url(acteur_ref: str) -> str:
+    """URL de la fiche AN d'un acteur, construite depuis son `acteur_ref`
+    (ex. "PA2150") : `https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150`.
+
+    Le format vient du champ `url_an` que NosDéputés publiait ; il est
+    aujourd'hui la seule URL de fiche du pipeline, et il reste **vérifiable** —
+    c'est ce que la règle 2 demande d'une `source_url`. Tous les appels
     officiels AN (votes, amendements, textes, questions, positions hémicycle,
-    interventions) n'ont besoin que d'en extraire l'acteur_ref via
-    _extract_acteur_ref, peu importe la forme exacte de l'URL."""
+    interventions) n'ont besoin que d'en réextraire l'acteur_ref via
+    `_extract_acteur_ref`, peu importe la forme exacte de l'URL.
+
+    Publique (sans underscore) depuis #529 : `generate_roster_candidats` en a
+    besoin pour la `source` d'une entrée de roster, qui pointait jusque-là vers
+    `www.nosdeputes.fr/<slug>`.
+    """
     return f"https://www2.assemblee-nationale.fr/deputes/fiche/OMC_{acteur_ref}"
+
+
+#: Alias interne historique. Conservé parce qu'il est appelé une quinzaine de
+#: fois dans le module et dans les tests, et qu'un renommage de plus n'apporte
+#: rien ici.
+_acteur_ref_to_pseudo_url = acteur_ref_to_pseudo_url
 
 
 # Correspondance organe.positionPolitique (référentiel officiel Assemblée
@@ -4676,100 +4441,30 @@ def fetch_interventions_syceron(
 # Voir docs/technical_decisions.md#retrait-senat-528.
 
 
-def _groupe_label(groupe_field: Any) -> Optional[str]:
-    """Le champ « groupe » de l'API est un dict {organisme, fonction, debut_fonction},
-    pas une chaîne : on en extrait le nom du groupe politique."""
-    if isinstance(groupe_field, dict):
-        return groupe_field.get("organisme")
-    if isinstance(groupe_field, str):
-        return groupe_field
-    return None
-
-
-def _extract_responsabilite_entries(raw_list: Any, categorie: str) -> list[dict[str, Any]]:
-    """Normalise une liste de responsabilités (commissions, missions, groupes d'amitié...)
-    telle que fournie par les champs `responsabilites`, `historique_responsabilites`,
-    `groupes_parlementaires` ou `responsabilites_extra_parlementaires` de l'API."""
-    entries: list[dict[str, Any]] = []
-    for raw in raw_list or []:
-        if not isinstance(raw, dict):
-            continue
-        resp = raw.get("responsabilite") if isinstance(raw.get("responsabilite"), dict) else raw
-        organisme = resp.get("organisme")
-        if not organisme:
-            continue
-        fin = resp.get("fin_fonction")
-        entries.append({
-            "categorie": categorie,
-            "type": resp.get("fonction") or "membre",
-            "label": organisme,
-            "debut": resp.get("debut_fonction"),
-            "fin": fin,
-            "actif": not fin,
-        })
-    return entries
-
-
-def _extract_mandats(
-    parlementaire: dict[str, Any], chambre: Optional[str] = None
-) -> list[dict[str, Any]]:
-    """Extrait les responsabilités lisibles (commissions, missions, groupes d'amitié,
-    engagements extra-parlementaires) et le mandat électif de base, à partir des
-    champs réels renvoyés par l'API NosDéputés.fr / NosSénateurs.fr :
-    `responsabilites`, `historique_responsabilites`, `groupes_parlementaires`,
-    `responsabilites_extra_parlementaires`.
-
-    Chaque entrée a le format {categorie, type (la fonction : membre/président/
-    rapporteur/...), label (le nom de l'organisme), debut, fin, actif}.
-
-    `chambre` ("deputes" | "senateurs") est estampillée sur le **mandat électif**
-    (#492) : c'est la chambre dont le jeu de données a rendu ce mandat, donc un
-    fait de collecte traçable, et non une déduction. Sans elle, « Mandat
-    parlementaire (Les Républicains) » est le même libellé qu'on siège au
-    Palais-Bourbon ou au Luxembourg. Elle n'est jamais inventée : appelée sans
-    `chambre`, la fonction n'écrit pas le champ, et le pivot publiera `null`
-    (AGENTS.md §2.5).
-    """
-    mandats: list[dict[str, Any]] = []
-
-    debut_mandat = parlementaire.get("mandat_debut")
-    fin_mandat = parlementaire.get("mandat_fin")
-    if debut_mandat or fin_mandat:
-        groupe_label = _groupe_label(parlementaire.get("groupe"))
-        mandat_electif: dict[str, Any] = {
-            "categorie": "mandat_electif",
-            "type": "mandat",
-            "label": "Mandat parlementaire" + (f" ({groupe_label})" if groupe_label else ""),
-            "debut": debut_mandat,
-            "fin": fin_mandat,
-            "actif": not fin_mandat,
-        }
-        if chambre:
-            mandat_electif["chambre"] = chambre
-        mandats.append(mandat_electif)
-
-    mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites"), "commission"))
-    mandats.extend(_extract_responsabilite_entries(parlementaire.get("historique_responsabilites"), "commission"))
-    mandats.extend(_extract_responsabilite_entries(parlementaire.get("groupes_parlementaires"), "groupe_amitie"))
-    mandats.extend(_extract_responsabilite_entries(parlementaire.get("responsabilites_extra_parlementaires"), "extra_parlementaire"))
-
-    # Filets de secours pour d'anciens formats d'API (champs génériques non
-    # observés dans les réponses actuelles, mais conservés par prudence).
-    if not mandats:
-        for raw in parlementaire.get("mandats_generiques", []) or []:
-            if isinstance(raw, dict):
-                mandats.append({
-                    "categorie": "autre",
-                    "type": raw.get("type") or "mandat",
-                    "label": raw.get("label") or raw.get("nom") or raw.get("description"),
-                    "debut": raw.get("debut") or raw.get("date_debut"),
-                    "fin": raw.get("fin") or raw.get("date_fin"),
-                    "actif": not (raw.get("fin") or raw.get("date_fin")),
-                })
-            elif isinstance(raw, str):
-                mandats.append({"categorie": "autre", "type": "mandat", "label": raw, "actif": True})
-
-    return mandats
+# ── La lecture du profil brut NosDéputés vivait ici (#529, lot 5) ───────────
+# `_groupe_label`, `_extract_responsabilite_entries` et `_extract_mandats`
+# lisaient les champs `responsabilites` / `historique_responsabilites` /
+# `groupes_parlementaires` / `responsabilites_extra_parlementaires` d'un profil
+# NosDéputés. Depuis #369 (étape 4) ils n'étaient plus atteints que pour un
+# député absent du référentiel AN combiné ; ce repli est parti avec la source.
+# Les mandats commission / groupe d'amitié / extra-parlementaire viennent
+# désormais tous d'`_extract_mandats_officiels`, et le mandat électif de base
+# d'`identite_an` (voir `_build_acteur_identite_index`).
+#
+# Sont partis avec eux la chaîne d'interventions scrapées :
+# `fetch_intervention_details`, `fetch_seance_context`,
+# `_extract_speaker_identity_from_html`, `_classify_intervention`,
+# `_classify_intervention_format` (et son seuil `REACTION_COURTE_NB_MOTS_MAX`),
+# `_to_int`, `_process_search_result` et `_extract_search_results`. Elles
+# alimentaient les 496 interventions publiées portant une URL `nosdeputes` —
+# **conservées telles quelles dans le corpus**, la fusion additive ne retirant
+# rien (AGENTS.md §3). Ce qui disparaît est la capacité à en collecter de
+# NOUVELLES par ce chemin, pas ce qui l'a été.
+#
+# La source primaire des interventions reste Syceron
+# (`fetch_interventions_syceron`), complétée par les questions officielles
+# (`fetch_questions_officielles`). Voir
+# docs/technical_decisions.md#retrait-nosdeputes-529.
 
 
 def build_profile(
@@ -4779,11 +4474,10 @@ def build_profile(
     skip_dossiers_legislatifs: bool = False,
     budget_interventions: Optional[BudgetCollecte] = None,
     budget_collecte: Optional[BudgetCollecte] = None,
-    journal: Optional[dict[str, Any]] = None,
 ) -> dict:
     """Construit le profil complet d'un parlementaire (identité, mandats/responsabilités,
-    votes, dossiers législatifs, interventions) en enchaînant les appels aux différentes
-    sources de données (NosDéputés.fr + open data Assemblée nationale).
+    votes, dossiers législatifs, interventions) à partir des données ouvertes
+    officielles de l'Assemblée nationale — **seule source depuis #529**.
 
     Aucune source indisponible ne fait échouer l'appel : chaque section manquante reste
     simplement vide, avec un message explicatif ajouté à `profile["meta"]["warnings"]`.
@@ -4793,26 +4487,33 @@ def build_profile(
     silencieusement rendu un profil vide est exactement le défaut que #501 et
     #510 ont payé — une collecte qui rend zéro par construction, sans le dire.
 
+    **Un slug introuvable dans le référentiel AN ne produit plus d'identité
+    (#529).** Le repli NosDéputés qui la comblait est retiré ; le profil sort
+    alors avec `identite: None` et un `WARNING_PREFIX_IDENTITE_INTROUVABLE`
+    nommant la seule source consultée. C'est un constat de l'AN, pas un
+    silence : `raw_data/correspondance_acteurs_an.json` (#525) est la table qui
+    résout le couple slug ↔ acteur, et §5b du garde-fou qualité échoue déjà sur
+    tout slug publié qui n'y a pas d'entrée.
+
     Args:
         chambre: "deputes" (seule valeur acceptée depuis #528).
-        slug: identifiant NosDéputés.fr du parlementaire
-            (ex. "jean-luc-melenchon").
+        slug: identifiant du parlementaire, qui est aussi le nom de son fichier
+            de profil (ex. "jean-luc-melenchon"). Résolu en `acteur_ref` AN par
+            `_resolve_acteur_ref_par_slug` (#525).
         skip_dossiers_legislatifs: si True, ne fait aucun appel réseau pour les dossiers
-            législatifs (`profile["dossiers_legislatifs"]` reste vide) — ni le chemin
-            NosDéputés (sénateurs) ni `fetch_textes_portes_officiels` (députés). Voir mode
+            législatifs (`profile["dossiers_legislatifs"]` reste vide). Voir mode
             d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
             amendements sont exploités en aval (agrégats de groupe, #349).
         budget_interventions: budget de temps mur (`BudgetCollecte`) pour la SEULE
-            collecte d'interventions — recherche NosDéputés, débats Syceron, détails
-            document par document, questions officielles. None = aucun budget, le
-            comportement historique. Épuisé, il arrête la collecte entre deux unités,
-            conserve ce qui est déjà collecté et ajoute un
-            `WARNING_PREFIX_BUDGET_INTERVENTIONS` à `meta.warnings[]` (#498). Le
-            budget est destiné à être PARTAGÉ entre les deux chambres d'un même
-            candidat (voir `generate_all_profiles.build_profile_any_chambre`) : le
-            plafond porte sur le candidat, pas sur chaque interrogation de chambre.
+            collecte d'interventions — débats Syceron et questions officielles.
+            None = aucun budget, le comportement historique. Épuisé, il arrête la
+            collecte entre deux unités, conserve ce qui est déjà collecté et
+            ajoute un `WARNING_PREFIX_BUDGET_INTERVENTIONS` à `meta.warnings[]`
+            (#498). Le budget est destiné à être PARTAGÉ entre les chambres d'un
+            même candidat (voir `generate_all_profiles.build_profile_any_chambre`) :
+            le plafond porte sur le candidat, pas sur chaque interrogation de chambre.
         budget_collecte: budget de temps mur (`BudgetCollecte`) pour la
-            collecte ENTIÈRE du candidat — identité, votes, dossiers Sénat,
+            collecte ENTIÈRE du candidat — identité, votes, dossiers,
             interventions comprises (#514). Contrairement au précédent, il
             **n'est jamais conditionné à un mode** : c'est précisément un
             budget qui ne couvrait qu'une phase, désactivé par
@@ -4820,15 +4521,6 @@ def build_profile(
             15 minutes de `timeout-minutes` pour un seul profil écrit
             (run 32421439590, 20/08/2026). Partagé entre les chambres d'un
             même candidat, comme `budget_interventions`.
-        journal: dict rempli en sortie (#514), jamais lu. Reçoit
-            `{"sans_reponse": {section: nombre}}` — le nombre de requêtes
-            restées SANS RÉPONSE par section de collecte. Sert à l'appelant qui
-            doit distinguer « la source dit que ce slug n'existe pas » de « la
-            source n'a rien dit » : lui seul voit le cas où le profil est jeté
-            faute d'identité, et c'est celui-là qui sortait en « introuvable »
-            sans autre trace. Hors de `profile` volontairement — `meta` part
-            dans `raw_data/profiles/`, un compteur de requêtes n'y a pas sa
-            place.
 
     Returns:
         Le dict de profil, sérialisable en JSON tel quel.
@@ -4837,14 +4529,13 @@ def build_profile(
     # POURQUOI "senateurs" n'est plus une chambre. Un appelant qui la demande
     # encore doit lire la décision, pas déduire une panne — et surtout pas
     # obtenir un profil vide qui passerait pour un constat (#501, #510).
-    if chambre not in BASE_URLS:
+    if chambre not in CHAMBRES_COLLECTEES:
         raise ValueError(
-            f"chambre invalide : {chambre} (attendu: {list(BASE_URLS)}). "
+            f"chambre invalide : {chambre} (attendu: {list(CHAMBRES_COLLECTEES)}). "
             "Le Sénat a été retiré du périmètre par #528 — source morte, aucune "
             "source de remplacement établie ; voir "
             "docs/technical_decisions.md#retrait-senat-528."
         )
-    base_urls = BASE_URLS[chambre]
 
     # #514 : la phase d'interventions est bornée par SON budget quand il existe
     # (#500, qui le veut étanche aux autres phases), et par celui du candidat
@@ -4855,89 +4546,32 @@ def build_profile(
     # arrête l'autre.
     budget_phase_interventions = budget_interventions or budget_collecte
 
-    # #514 : requêtes restées sans réponse, comptées SECTION PAR SECTION.
-    #
-    # Un total sur toute la collecte se tromperait de population : un 404 sur
-    # l'identité est une réponse — le parlementaire n'est pas dans l'archive —
-    # même si les votes du même candidat, eux, partent en timeout. Confondre les
-    # deux ferait déclarer « source injoignable » sur une identité que la source
-    # a bel et bien tranchée.
-    sans_reponse: dict[str, int] = {}
-
-    @contextmanager
-    def _compter_sans_reponse(section: str):
-        avant = compteur_requetes_sans_reponse()
-        try:
-            yield
-        finally:
-            sans_reponse[section] = (
-                sans_reponse.get(section, 0) + compteur_requetes_sans_reponse() - avant
-            )
-
-    # --- 0. Identité/mandats officiels (Assemblée nationale), résolus en tout
-    # premier afin que l'étape 1 puisse sauter l'appel NosDéputés dès que
-    # l'acteur y est trouvé (#369, étape 4 — c'était jusqu'ici le point d'appel
-    # réseau le plus exposé à nosdeputes.fr : 8 requêtes systématiques par
-    # candidat, sur un domaine sujet à des ralentissements/gels observés en CI). ---
+    # --- 0. Identité/mandats officiels (Assemblée nationale). Résolue en tout
+    # premier depuis #369 (étape 4) parce qu'elle permettait alors de sauter
+    # l'appel NosDéputés ; depuis #529 elle est simplement la SEULE identité.
+    # Le compteur de requêtes sans réponse (#514) qui encadrait ce bloc est
+    # parti avec elles : cette résolution ne fait aucun appel réseau propre —
+    # elle lit l'archive AMO30 déjà téléchargée et mise en cache. ---
     pre_profile_warnings: list[str] = []
     identite_an: Optional[dict[str, Any]] = None
     acteur_ref_an: Optional[str] = None
-    try:
-        identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
-    except Exception as exc:
-        pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
-
-    # --- 1. Identité brute NosDéputés. Depuis #369, cet appel est sauté dès que
-    # l'étape 0 ci-dessus a trouvé l'acteur dans le référentiel officiel AN :
-    # reste nécessaire pour le nom de recherche d'interventions (étape 2) quand
-    # l'AN n'a pas trouvé l'acteur, et en repli complet d'identité si le
-    # candidat n'est trouvé ni dans les archives AN ni via NosDéputés.
-    # La condition portait aussi `chambre != "deputes"` — la porte d'entrée des
-    # sénateurs, non couverts par l'AN. Elle est tombée avec #528. ---
-    if acteur_ref_an is None:
-        with budget_section(budget_collecte, "identité NosDéputés"), \
-                _compter_sans_reponse("identité"):
-            identity_result = fetch_identity(base_urls, slug, budget_collecte)
-        if isinstance(identity_result, tuple):
-            identity_raw, identity_base_url = identity_result
-        else:
-            identity_raw = identity_result
-            identity_base_url = None
-        time.sleep(0.5)  # on reste courtois avec l'API publique
-    else:
-        identity_raw = None
-        identity_base_url = None
-
-    # Votes bruts NosDéputés : plus jamais collectés (#528). L'appel n'existait
-    # que pour la chambre "senateurs" ; côté députés l'endpoint /votes de
-    # NosDéputés.fr est en panne de façon systématique (HTTP 500 sur tous les
-    # domaines/législatures, voir docstring de fetch_votes_officiels ci-dessous)
-    # et les votes viennent de l'open data AN. `fetch_votes` a été retirée avec.
-
-    # --- 2 et 3. La RECHERCHE d'interventions NosDéputés a été retirée (#510).
-    #
-    # Elle ouvrait le chemin interventions : une recherche par nom sur tous les
-    # domaines, puis une requête de détail par résultat (jusqu'à ~500), le tout
-    # pour alimenter le repli qui comblait le silence de Syceron. Le repli parti,
-    # elle ne nourrit plus rien — et ce n'était pas un préliminaire négligeable :
-    # 90 s mesurées sur `jean-luc-melenchon` (run 32379928098), imputées au
-    # budget de 240 s de #500. C'est autant de rendu à la source primaire.
-    #
-    # Ce qui disparaît avec elle : le nom de recherche dérivé de l'identité, le
-    # `max_pages`, et le comptage `sans_reponse["interventions"]` (#514) — plus
-    # aucune requête d'interventions ne passe par `_get_payload`, donc ce
-    # compteur ne pouvait plus qu'accuser NosDéputés d'une panne qui n'est pas la
-    # sienne. Même raisonnement que #528 sur `votes`/`dossiers législatifs`.
-    #
-    # #528 avait déjà retiré d'ici la liste de dossiers législatifs NosDéputés
-    # (`dossiers/nom/json`) : `dossiers_legislatifs` n'a plus qu'UNE source,
-    # l'AN, résolue à l'étape 8. ---
+    with budget_section(budget_collecte, "identité Assemblée nationale"):
+        try:
+            identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
+        except Exception as exc:
+            pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
 
     # --- 4. Structure de base du profil, valeurs par défaut si une source manque. ---
     profile: dict[str, Any] = {
         "slug": slug,
         "chambre": chambre,
-        "source": f"{identity_base_url or base_urls[0]}/{slug}",
+        # Source primaire du profil (règle 2) : la fiche AN de l'acteur.
+        # C'était l'URL NosDéputés du slug jusqu'à #529 — une URL de plateforme
+        # tierce présentée comme la source d'un profil dont plus une seule
+        # section ne venait d'elle. `None` quand le slug n'est pas résolu :
+        # inventer une URL de fiche pour un acteur qu'on n'a pas trouvé serait
+        # une source qui ne mène nulle part (AGENTS.md §2 règles 2 et 5).
+        "source": _acteur_ref_to_pseudo_url(acteur_ref_an) if acteur_ref_an else None,
         "identite": None,
         "mandats": [],
         "votes": [],
@@ -4950,8 +4584,13 @@ def build_profile(
             "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
             # Traçabilité de fraîcheur : horodatage ISO-8601 de la dernière synchro
             # réussie pour chaque source (None = source non contactée ou indisponible).
+            # `nosdeputes` a été retirée de ce dict par #529 : plus aucune
+            # requête ne peut la renseigner, et un horodatage de synchro
+            # définitivement `None` se lit comme « source en panne » alors
+            # qu'elle n'est plus interrogée. Les profils bruts déjà collectés
+            # la portent encore ; `normalize_profil` sait la relire (repli
+            # explicite), il ne l'écrit plus.
             "synchro_sources": {
-                "nosdeputes": None,
                 "assemblee_nationale": None,
                 "assemblee_nationale_questions": None,
                 "assemblee_nationale_syceron": None,
@@ -4964,71 +4603,48 @@ def build_profile(
     warnings.extend(pre_profile_warnings)
 
     # --- 5. Identité + mandats/responsabilités (commissions, missions, groupes
-    # d'amitié...). Depuis #355, l'identité (infos biographiques) des députés est
-    # résolue en priorité depuis le référentiel historique officiel de
-    # l'Assemblée nationale, par correspondance de nom sur le slug (voir
-    # fetch_identite_officielle_par_slug, résolu dès l'étape 0). Depuis #369
-    # (étape 4), NosDéputés n'est plus appelé du tout pour un député dès que
-    # l'AN a trouvé l'acteur : les mandats commission/groupe_amitie/
-    # extra_parlementaire sont sourcés depuis l'AN (_extract_mandats_officiels,
-    # organeRef résolu par #353), et le mandat électif de base ainsi que le
-    # groupe parlementaire déclaré sont reconstruits ci-dessous depuis
-    # identite_an (groupe_sigle/groupe_nom/mandat_debut/mandat_fin/nb_mandats,
-    # voir _build_acteur_identite_index) faute d'être normalement sourcés par
-    # NosDéputés. Depuis #528, NosDéputés n'est plus qu'un repli complet, pour
-    # les députés absents des archives AN combinées : son autre usage — les
-    # sénateurs, non couverts par l'AN — est parti avec le Sénat. ---
-    parlementaire = _extract_parlementaire(identity_raw) if isinstance(identity_raw, dict) else None
-    parlementaire_valide = isinstance(parlementaire, dict) and not _is_empty_payload(parlementaire)
-
-    if identite_an is None and not parlementaire_valide:
+    # d'amitié...). Depuis #355 l'identité (infos biographiques) des députés est
+    # résolue depuis le référentiel historique officiel de l'Assemblée
+    # nationale, par correspondance sur le slug (voir
+    # fetch_identite_officielle_par_slug, résolu dès l'étape 0). Depuis #529
+    # c'est la seule : les mandats commission/groupe_amitie/extra_parlementaire
+    # viennent d'`_extract_mandats_officiels` (organeRef résolu par #353), et le
+    # mandat électif de base ainsi que le groupe parlementaire déclaré sont
+    # reconstruits ci-dessous depuis `identite_an` (groupe_sigle/groupe_nom/
+    # mandat_debut/mandat_fin/nb_mandats, voir _build_acteur_identite_index).
+    # Le repli NosDéputés — un député absent des archives AN combinées — est
+    # parti avec la source. ---
+    if identite_an is None:
         warnings.append(
-            f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : ni le référentiel officiel Assemblée nationale ni "
-            "NosDéputés ne renvoient de profil exploitable pour ce slug."
+            f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : le référentiel officiel "
+            "Assemblée nationale ne renvoie pas de profil exploitable pour ce "
+            "slug (seule source depuis #529)."
         )
     else:
-        if identite_an is not None:
-            profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        if parlementaire_valide:
-            profile["meta"]["synchro_sources"]["nosdeputes"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
         profile["identite"] = {
-            "nom_complet": (identite_an or {}).get("nom_complet") or (parlementaire or {}).get("nom"),
-            "groupe_sigle": (parlementaire or {}).get("groupe_sigle") or (identite_an or {}).get("groupe_sigle"),
-            "groupe_nom": (
-                (parlementaire or {}).get("nom_groupe_politique")
-                or _groupe_label((parlementaire or {}).get("groupe"))
-                or (identite_an or {}).get("groupe_nom")
-            ),
-            "profession": (identite_an or {}).get("profession") or (parlementaire or {}).get("profession"),
-            "date_naissance": (identite_an or {}).get("date_naissance") or (parlementaire or {}).get("date_naissance"),
-            "lieu_naissance": (identite_an or {}).get("lieu_naissance"),
-            "num_circo": (
-                (parlementaire or {}).get("num_circo")
-                or (parlementaire or {}).get("num_deptt")
-                or (identite_an or {}).get("numero_circo")
-            ),
-            "nb_mandats": (parlementaire or {}).get("nb_mandats") or (identite_an or {}).get("nb_mandats"),
-            "uri_hatvp": (identite_an or {}).get("uri_hatvp"),
-            "url_an_ou_senat": (
-                (parlementaire or {}).get("url_an")
-                or (parlementaire or {}).get("url_nosdeputes")
-                or (_acteur_ref_to_pseudo_url(acteur_ref_an) if acteur_ref_an else None)
-            ),
+            "nom_complet": identite_an.get("nom_complet"),
+            "groupe_sigle": identite_an.get("groupe_sigle"),
+            "groupe_nom": identite_an.get("groupe_nom"),
+            "profession": identite_an.get("profession"),
+            "date_naissance": identite_an.get("date_naissance"),
+            "lieu_naissance": identite_an.get("lieu_naissance"),
+            "num_circo": identite_an.get("numero_circo"),
+            "nb_mandats": identite_an.get("nb_mandats"),
+            "uri_hatvp": identite_an.get("uri_hatvp"),
+            "url_an_ou_senat": _acteur_ref_to_pseudo_url(acteur_ref_an) if acteur_ref_an else None,
         }
 
-        # Mandats commission/groupe_amitie/extra_parlementaire : sourcés en
-        # priorité depuis l'AN (#369) quand l'acteur y est trouvé — NosDéputés
-        # ne complète alors que les catégories non couvertes par l'AN (jamais
-        # les 3 catégories partagées, pour éviter un doublon du même organisme
-        # sous un libellé potentiellement différent).
+        # Mandats commission/groupe_amitie/extra_parlementaire, sourcés depuis
+        # l'AN (#369). Le complément NosDéputés — limité, depuis #369, aux seules
+        # catégories que l'AN ne couvre pas — est parti avec la source (#529).
         mandats_an = _extract_mandats_officiels(acteur_ref_an) if acteur_ref_an else []
-        # Depuis #369 (étape 4), NosDéputés n'étant plus appelé quand l'AN a
-        # trouvé l'acteur, le mandat électif de base — normalement produit par
-        # _extract_mandats(parlementaire) — doit être reconstruit depuis
-        # identite_an (mandat_debut/mandat_fin/groupe, voir
+        # Le mandat électif de base n'est pas dans `_extract_mandats_officiels`
+        # (qui ne parcourt que les organes) : il est reconstruit depuis
+        # `identite_an` (mandat_debut/mandat_fin/groupe, voir
         # _build_acteur_identite_index) pour ne pas le perdre silencieusement.
-        if not parlementaire_valide and identite_an and identite_an.get("mandat_debut"):
+        if identite_an.get("mandat_debut"):
             groupe_label_an = identite_an.get("groupe_nom") or identite_an.get("groupe_sigle")
             mandats_an.append({
                 "categorie": "mandat_electif",
@@ -5043,23 +4659,13 @@ def build_profile(
                 # serait une chambre inventée le jour où le garde-fou bouge.
                 "chambre": chambre,
             })
-        mandats_nosdeputes = _extract_mandats(parlementaire, chambre) if parlementaire_valide else []
-        if mandats_an:
-            categories_an = set(_TYPE_ORGANE_TO_CATEGORIE.values())
-            mandats_nosdeputes = [m for m in mandats_nosdeputes if m.get("categorie") not in categories_an]
-        profile["mandats"] = mandats_an + mandats_nosdeputes
+        profile["mandats"] = mandats_an
 
         if _is_empty_payload(profile["mandats"]):
-            if parlementaire_valide or acteur_ref_an:
-                warnings.append(
-                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité trouvé "
-                    "(NosDéputés et référentiel officiel Assemblée nationale confondus)."
-                )
-            else:
-                warnings.append(
-                    f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : candidat absent de NosDéputés et du "
-                    "référentiel officiel Assemblée nationale."
-                )
+            warnings.append(
+                f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité "
+                "trouvé dans le référentiel officiel Assemblée nationale."
+            )
 
         # --- 5bis. Positions dans l'hémicycle (Assemblée nationale, référentiel
         # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
@@ -5144,9 +4750,9 @@ def build_profile(
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     else:
         warnings.append(
-            f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle Assemblée nationale "
-            "n'a été trouvée pour ce parlementaire/cette législature (NosDéputés.fr non interrogé pour "
-            "les votes, endpoint en panne systématique — voir fetch_votes_officiels)."
+            f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle "
+            "Assemblée nationale n'a été trouvée pour ce parlementaire/cette "
+            "législature (voir fetch_votes_officiels)."
         )
 
     # --- 6bis. Amendements officiels (Assemblée nationale, auteur principal uniquement,
@@ -5187,6 +4793,7 @@ def build_profile(
     # Le garde `chambre == "deputes"` est tombé avec #528 : c'est désormais la
     # seule chambre collectée. ---
     if not skip_interventions and profile.get("identite"):
+        syceron_interventions: list[dict[str, Any]] = []
         try:
             with budget_section(budget_phase_interventions, "débats Syceron"):
                 syceron_interventions = fetch_interventions_syceron(
@@ -5230,54 +4837,14 @@ def build_profile(
     if message_budget:
         warnings.append(f"{WARNING_PREFIX_BUDGET_INTERVENTIONS} : {message_budget}")
 
-    # --- 9quater. La source a-t-elle répondu ? (#514) ---------------------
-    # Une section vide se lit par défaut comme « la source dit qu'il n'y a
-    # rien ». Quand ses requêtes sont restées sans réponse, cette lecture est
-    # fausse, et rien ne le disait : sur le run 32421439590, le profil écrit de
-    # `jean-luc-melenchon` porte `votes: []` et `dossiers_legislatifs: []` après
-    # dix requêtes en timeout, sans un mot dans `meta.warnings`.
-    #
-    # Le rapprochement se fait SECTION PAR SECTION, et le total ne compte que
-    # les sections effectivement citées. Un compteur global dirait « source
-    # injoignable : identité » d'un slug dont l'identité a reçu un franc 404
-    # (constat) et dont seuls les votes sont partis en timeout — deux
-    # populations distinctes réunies sous un seul chiffre, l'erreur même que
-    # cette issue corrige ailleurs.
-    #
-    # `votes` et `dossiers législatifs` ne figurent PLUS dans cette liste
-    # depuis #528 : ils n'y étaient que pour les sénateurs. Côté députés ils
-    # viennent de l'open data AN, qui ne passe pas par `_get_payload` et
-    # n'incrémente donc pas ce compteur — les citer ici attribuerait à
-    # NosDéputés une panne qui n'est pas la sienne.
-    #
-    # `interventions` en est sorti pour la même raison exactement (#510) : la
-    # recherche NosDéputés était le seul point du chemin interventions à passer
-    # par `_get_payload`, et elle a été retirée avec le repli. Une section
-    # d'interventions vide est désormais déclarée par
-    # `interventions syceron indisponibles`, qui nomme la bonne source.
-    sections_vides = [
-        ("identité", not profile.get("identite")),
-    ]
-    non_collecte = [
-        nom for nom, vide in sections_vides if vide and sans_reponse.get(nom, 0) > 0
-    ]
-    if non_collecte:
-        total = sum(sans_reponse.get(nom, 0) for nom in non_collecte)
-        warnings.append(
-            f"{WARNING_PREFIX_SOURCE_INJOIGNABLE} : {total} requête(s) à "
-            f"{base_urls[0]} restée(s) sans réponse — {', '.join(non_collecte)} : "
-            f"vide parce que la source n'a pas répondu, et non parce qu'elle ne "
-            f"rend rien (#514)."
-        )
-
-    # Canal de retour vers `build_profile_any_chambre` (#514). Un dict passé par
-    # l'appelant plutôt qu'un champ de `profile` : `meta` est sérialisé dans
-    # `raw_data/profiles/`, et un compteur de requêtes n'a rien à faire dans le
-    # corpus publié. L'appelant en a besoin parce que lui seul voit le cas « le
-    # profil est jeté faute d'identité » — c'est là que « introuvable » et
-    # « source injoignable » se confondaient.
-    if journal is not None:
-        journal["sans_reponse"] = dict(sans_reponse)
+    # L'étape 9quater de #514 (« la source a-t-elle répondu ? ») et le canal
+    # `journal` qui la remontait à `build_profile_any_chambre` sont partis avec
+    # les compteurs qu'ils lisaient (#529). Ils distinguaient « NosDéputés dit
+    # que ce slug n'existe pas » de « NosDéputés n'a rien dit » ; l'identité ne
+    # part plus sur le réseau du tout — elle se résout dans une archive AMO30
+    # déjà en cache — et il n'y a donc plus de silence à qualifier. Une archive
+    # absente ou illisible, elle, lève : c'est l'exception de l'étape 0, qui est
+    # nommée dans `meta.warnings`, pas un compteur.
 
     return profile
 
@@ -5302,6 +4869,7 @@ def main():
         action=RefusDrapeauInterventionsSyceron,
     )
     args = parser.parse_args()
+
 
     profile = build_profile(args.chambre, args.slug)
 

@@ -3,12 +3,12 @@
 an_roster.py — La composition des groupes de l'Assemblée nationale est
 **dérivée d'AMO30**, le référentiel que le pipeline télécharge déjà (#526).
 
-**Source de production depuis le lot 1b (#527)** : `AN_ROSTER_ACTIF = True`, et
-`group_roster.fetch_full_roster` délègue ici toute clé `deputes`. La bascule
-tient en cette ligne — c'est ce qui rend son `git revert` trivial, et c'est la
-vraie assurance de l'épic. Baisser le drapeau (`--desactiver-roster-an`) rend
-la lecture à NosDéputés ; le module ne rend alors **jamais** une liste vide, il
-refuse bruyamment.
+**Source de production depuis le lot 1b (#527)**, et **seule source depuis le
+lot 5 (#529)** : `AN_ROSTER_ACTIF = True`, et `group_roster.fetch_full_roster`
+délègue ici toute clé `deputes`. Le drapeau n'est plus un aiguillage — la
+lecture NosDéputés vers laquelle il basculait a été retirée — mais un
+interrupteur : baissé, le module ne rend **jamais** une liste vide, il refuse
+bruyamment (`RosterAnInactif`), et il n'y a alors plus de roster du tout.
 
 ## Pourquoi AMO30 plutôt que NosDéputés
 
@@ -90,9 +90,8 @@ inventé (AGENTS §2 règle 5). C'est ce qui explique, entrée par entrée, les
 
 ## Patron #493 : dérivé + divergence déclarée + condition de retrait
 
-Depuis #527 ce module **est** la source AN ; NosDéputés reste derrière le
-drapeau, comme repli de `git revert`, et ne sert plus que le Sénat en régime
-normal. L'écart par groupe se lit toujours avec
+Depuis #527 ce module **est** la source AN, et depuis #529 la seule : le repli
+NosDéputés a été retiré du dépôt. L'écart par groupe se lit toujours avec
 `python src/an_roster.py --divergence`, entrée par entrée : c'est le
 **compteur de migration**, et il reste le seul moyen de relire ce que la
 bascule a changé. La condition de retrait du double calcul — les trois clauses
@@ -122,14 +121,17 @@ import correspondance_acteurs_an  # noqa: E402
 
 # ── Le drapeau (patron #510) ─────────────────────────────────────────────────
 # ACTIF depuis #527 (lot 1b). Le lot 1 l'avait posé à `False` pour que la
-# bascule soit une DÉCISION, prise seule, dans une PR d'une ligne : cette ligne
-# est la ligne, et son `git revert` rend l'Assemblée à NosDéputés sans toucher
-# à rien d'autre.
+# bascule soit une DÉCISION, prise seule, dans une PR d'une ligne.
 #
-# Baissé, le module **refuse bruyamment** au lieu de rendre une liste vide : un
+# Ce qu'il signifie a changé avec #529 : il n'y a plus de seconde source vers
+# laquelle basculer, donc plus de `git revert` à préparer. Ce qu'il garde, et
+# qui est la seule raison de ne pas le retirer avec le repli, c'est le **refus
+# bruyant** : baissé, le module lève au lieu de rendre une liste vide — un
 # roster vide est indiscernable d'un groupe dissous une fois écrit sur disque,
-# et c'est très exactement le défaut que #511 puis #524 ont payé. Le refus vaut
-# donc aussi dans ce sens-là — voir `_exiger_actif`.
+# et c'est très exactement le défaut que #511 puis #524 ont payé. Voir
+# `_exiger_actif`. Sa condition de retrait est celle du double calcul, #526 §9,
+# dont la clause 3 reste ouverte (voir
+# docs/technical_decisions.md#retrait-nosdeputes-529).
 AN_ROSTER_ACTIF = True
 
 AIDE_ROSTER_AN = (
@@ -182,9 +184,9 @@ def _exiger_actif() -> None:
             "liste vide ici publierait « groupe sans membre » à la place de "
             "« source non activée » (AGENTS §2 règle 5) — c'est pour cela que "
             "l'appel échoue au lieu de rendre `[]`. Relever le drapeau avec "
-            "`an_roster.activer_roster_an(True)`, ou passer par "
-            "`group_roster.fetch_full_roster`, qui rend la lecture à "
-            "NosDéputés quand le drapeau est baissé. " + AIDE_ROSTER_AN
+            "`an_roster.activer_roster_an(True)`. Depuis #529 il n'existe plus "
+            "de seconde source de roster : baisser ce drapeau ne bascule sur "
+            "rien, il coupe. " + AIDE_ROSTER_AN
         )
 
 

@@ -50,14 +50,15 @@ Usage (depuis la racine du dépôt) :
         pivot_data/profiles/boris-vallaud.pivot.json \\
         --out pivot_data/groupes/groupe-SOC-16.json
 
-    Les profils en entrée peuvent être au format brut NosDéputés (candidate_profile.py)
-    ou au format pivot v1 (normalize_nosdeputes.py). Le script détecte automatiquement
+    Les profils en entrée peuvent être au format brut (candidate_profile.py)
+    ou au format pivot v1 (normalize_profil.py). Le script détecte automatiquement
     le format et normalise si nécessaire.
 
 Mode --from-roster (composition réelle du groupe, via group_roster.py) :
-    Récupère la vraie liste des membres du groupe parlementaire auprès de
-    NosDéputés.fr/NosSénateurs.fr (voir group_roster.py) puis charge le pivot
-    local de chaque membre trouvé dans --profiles-dir (pivot_data/profiles/<slug>.pivot.json).
+    Récupère la vraie liste des membres du groupe parlementaire depuis le
+    référentiel AMO30 de l'Assemblée nationale (voir group_roster.py et
+    an_roster.py) puis charge le pivot local de chaque membre trouvé dans
+    --profiles-dir (pivot_data/profiles/<slug>.pivot.json).
     Les membres du roster sans pivot local sont ignorés et signalés dans
     meta.warnings ; la couverture réelle (roster_total / profils_disponibles)
     est inscrite dans meta.couverture_roster, jamais confondue avec effectif.actuel.
@@ -90,7 +91,7 @@ from schema_groupe import (
     validate_profil_groupe,
 )
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
-from normalize_nosdeputes import normalize_nosdeputes
+from normalize_profil import normalize_profil
 from amendements_index import (
     AmendementsIndex,
     DEFAULT_AMENDEMENTS_DIR,
@@ -1006,8 +1007,8 @@ def _is_pivot_v1(profil: dict[str, Any]) -> bool:
 def load_profil_from_file(path: Path) -> dict[str, Any]:
     """Charge un profil depuis un fichier JSON et le normalise en pivot v1 si nécessaire.
 
-    Les profils au format brut NosDéputés (produits par candidate_profile.py) sont
-    convertis automatiquement via normalize_nosdeputes.
+    Les profils au format brut (produits par candidate_profile.py) sont
+    convertis automatiquement via normalize_profil.
 
     Args:
         path: chemin vers le fichier JSON.
@@ -1031,13 +1032,13 @@ def load_profil_from_file(path: Path) -> dict[str, Any]:
     if _is_pivot_v1(data):
         return data
 
-    # Format brut NosDéputés (champ "slug" présent, pas de "schema_version")
+    # Format brut de collecte (champ "slug" présent, pas de "schema_version")
     if "slug" in data:
-        return normalize_nosdeputes(data)
+        return normalize_profil(data)
 
     raise ValueError(
         f"Format non reconnu dans {path} : ni pivot v1 (schema_version + id) "
-        "ni format brut NosDéputés (slug)."
+        "ni format brut de collecte (slug)."
     )
 
 
@@ -1206,7 +1207,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="group_profile.py",
         description=(
-            "Agrège des profils individuels (pivot v1 ou brut NosDéputés) "
+            "Agrège des profils individuels (pivot v1 ou brut de collecte) "
             "en un profil de groupe politique."
         ),
     )
@@ -1221,7 +1222,8 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help=(
             "Récupère la composition réelle du groupe via group_roster.py "
-            "(AMO30 / NosDéputés.fr) au lieu des fichiers PROFIL.json."
+            "(référentiel AMO30 de l'Assemblée nationale) au lieu des fichiers "
+            "PROFIL.json."
         ),
     )
     parser.add_argument(
@@ -1316,43 +1318,28 @@ def _avertissement_fraicheur_an() -> str:
     """`meta.warnings` de fraîcheur d'une fiche AN — il doit NOMMER sa source.
 
     C'est un champ **publié**, et la règle 2 d'AGENTS §2 (traçabilité totale)
-    ne souffre pas qu'il dise `www.nosdeputes.fr` pendant que la composition
-    vient d'AMO30. Le texte suit donc le drapeau de #527 plutôt que d'être écrit
-    en dur : les deux sources n'ont pas la même limite de fraîcheur, et c'est la
-    limite, pas le nom, qui intéresse un lecteur.
+    ne souffre pas qu'il nomme une source dont la composition ne vient pas.
+    Jusqu'à #529 il avait DEUX rédactions, choisies sur
+    `an_roster.AN_ROSTER_ACTIF` : celle d'AMO30 et celle de NosDéputés, qui
+    était le repli du drapeau. Ce repli est retiré — le drapeau baissé ne rend
+    plus la lecture à personne, il refuse (`RosterAnInactif`) — donc il n'y a
+    plus qu'une source à nommer, et une seule rédaction.
 
-    - **AMO30** est le référentiel de l'Assemblée elle-même : la 16e y est close
-      et complète, y compris les mandats qui se sont terminés en cours de
-      législature — ce que le miroir, qui ne publie que la dernière
-      appartenance connue, perdait (4 acteurs mesurés, #526 §2).
-    - **NosDéputés** s'est arrêté à la dissolution du 9 juin 2024, et il n'a
-      jamais servi la 17e.
-
-    Import de `an_roster` assumé ici : la seule alternative était de faire
-    descendre la source depuis `generate_group_profiles.py` à travers quatre
-    signatures, pour une information que le drapeau porte déjà.
+    AMO30 est le référentiel de l'Assemblée elle-même : une législature close y
+    est complète, y compris les mandats terminés en cours de législature, ce
+    que le miroir — qui ne publiait que la dernière appartenance connue —
+    perdait (4 acteurs mesurés, #526 §2).
     """
-    import an_roster  # noqa: PLC0415 — voir docstring
-
-    if an_roster.AN_ROSTER_ACTIF:
-        return (
-            "fraicheur_donnees : composition dérivée du référentiel AMO30 de "
-            "l'Assemblée nationale (data.assemblee-nationale.fr, Licence "
-            "Ouverte), et non plus de www.nosdeputes.fr depuis #527. Une "
-            "législature close y est complète : les mandats terminés en cours "
-            "de législature y figurent, alors que la dernière composition "
-            "connue d'un miroir les perd. La fiche reflète donc l'appartenance "
-            "au groupe telle que l'Assemblée la publie à la date de "
-            "meta.genere_le ; un membre sans profil publié n'y apparaît pas "
-            "(voir meta.couverture_roster)."
-        )
     return (
-        "fraicheur_donnees : composition dérivée de www.nosdeputes.fr, qui "
-        "n'a plus été mis à jour depuis la dissolution du 9 juin 2024 (16e "
-        "législature, 2022-2024, 100% des mandats y figurent comme terminés). "
-        "Ce profil reflète donc la DERNIÈRE COMPOSITION CONNUE avant la "
-        "dissolution, pas nécessairement la composition actuelle de "
-        "l'Assemblée nationale."
+        "fraicheur_donnees : composition dérivée du référentiel AMO30 de "
+        "l'Assemblée nationale (data.assemblee-nationale.fr, Licence "
+        "Ouverte), et non plus de www.nosdeputes.fr depuis #527. Une "
+        "législature close y est complète : les mandats terminés en cours "
+        "de législature y figurent, alors que la dernière composition "
+        "connue d'un miroir les perd. La fiche reflète donc l'appartenance "
+        "au groupe telle que l'Assemblée la publie à la date de "
+        "meta.genere_le ; un membre sans profil publié n'y apparaît pas "
+        "(voir meta.couverture_roster)."
     )
 
 

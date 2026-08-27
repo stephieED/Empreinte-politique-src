@@ -54,8 +54,8 @@ Format d'un profil de parti v1 :
 
     "sources": [                               # traçabilité des sources individuelles agrégées
         {
-            "type": "nosdeputes",
-            "url": "https://www.nosdeputes.fr/bruno-retailleau",
+            "type": "assemblee_nationale",
+            "url": "https://data.assemblee-nationale.fr/",
             "synchro_le": "2026-07-29T10:00:00+0000"
         }
     ],

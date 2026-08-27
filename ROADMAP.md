@@ -8,6 +8,12 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- **#529 laisse deux retraits à faire dans `.github/workflows/`** (hors des droits
+  de l'agent qui a livré le lot) : supprimer `debug-network-shutdown-signal.yml`,
+  workflow de diagnostic entièrement consacré à sonder `www.nosdeputes.fr`, et
+  retirer `--max-pages 5` de `generate-data.yml` — l'option est acceptée mais
+  **sans effet**, et le signale sur stderr. Voir
+  `technical_decisions.md#retrait-nosdeputes-529` §7.
 - Les deux groupes Sénat ont leur extraction **suspendue** depuis le 24/08/2026
   (certificat TLS expiré sur `archive.nossenateurs.fr`, runs `32463926808` et
   `32548486495`, #516) : leurs fiches publiées sont gelées. Reprise conditionnée à
@@ -53,9 +59,9 @@ something is pending, not *why*.
   l'annotation, `merge-and-pivot` saute la branche roster au lieu d'annuler le commit,
   « tous les groupes suspendus » rend 2 (toléré par les 3 appelants), et un 500 n'est
   plus retenté. Voir `technical_decisions.md#cloisonnement-branche-roster-524`.
-- **Reste à faire** : suspendre effectivement les 5 entrées AN de `groupes_reels.json`
-  si la panne dure — `condition_reprise` = `GET https://www.nosdeputes.fr/deputes/json`
-  en 200 (#516 l'exige en dur). C'est la suite de #524, pas #524.
+- **Sans objet depuis #529** : la panne visée était celle de
+  `www.nosdeputes.fr/deputes/json`, qui n'est plus interrogé — le roster AN vient
+  d'AMO30. Une suspension d'entrée AN reste possible, mais sur une autre cause.
 - Les **20 profils orphelins** de `68bc094` (229 bruts / 209 pivots, incident #511 du
   20/08/2026) sont toujours dans `main`. Ils ne bloquent rien — les deux passes
   `--pivot-only` les publient, vérifié en #518 — mais ils ne disparaîtront qu'au
@@ -166,10 +172,12 @@ something is pending, not *why*.
   une entrée dans `raw_data/correspondance_acteurs_an.json`, ou une décision écrite de ne
   pas les publier, est la clause 2 de la condition de retrait de #526 §9 — la dernière
   qui dépende d'une seule décision.
-- Retirer le double calcul de #526 (drapeau `AN_ROSTER_ACTIF`, repli
-  `fetch_full_roster_nosdeputes` côté Assemblée) une fois les deux points ci-dessus
-  soldés. Clause 1 déjà vérifiée à la bascule ; état complet dans
-  `technical_decisions.md#bascule-roster-an-amo30-527` §7.
+- Le repli `fetch_full_roster_nosdeputes` est **retiré** (#529) ; `AN_ROSTER_ACTIF`
+  reste, non plus comme aiguillage mais comme refus bruyant — un roster vide écrit
+  sur disque est indiscernable d'un groupe dissous (#511/#524). Ce qui reste ouvert
+  de #526 §9 est la clause 3 : décider comment naît un slug quand la source n'en
+  publie pas. Décision de schéma, pas passe de collecte. Voir
+  `technical_decisions.md#retrait-nosdeputes-529` §5.
 - `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
   `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test
