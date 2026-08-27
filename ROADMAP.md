@@ -41,6 +41,14 @@ trancher séparément produirait deux modèles concurrents pour un même problè
 
 ## Known bugs
 
+- **L'attribution ODbL Regards Citoyens ne s'éteindra jamais sous fusion additive.**
+  `merge_pivot_profile` **unit** `sources[]` par `type` : une entrée `nosdeputes`
+  déjà publiée survit à chaque collecte AN, donc les 475 profils concernés
+  garderont leur clause ODbL indéfiniment. Ce n'est pas un bug d'attribution — elle
+  est due — mais l'échéance annoncée par #529 §4 (« la première entrée passe à
+  `assemblee_nationale` au prochain run ») est fausse. Seul un run `cold_start` /
+  `--no-merge` la ferait tomber, et c'est déjà un run à perte déclarée (#528).
+  Voir `technical_decisions.md#licence-lot-6-530` §3.
 - **La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
   identifiant** (#540, découvert sur le run `33100214165` du 27/08/2026).
   `_pivot_intervention_key` fait `source_url or (date, sujet, texte[:50])` : le `or`

@@ -67,6 +67,7 @@ from gouvernement_textes import (
     iter_dossiers_bruts,
 )
 from json_io import ecrire_profil_json
+from licences import LICENCE_AN
 from parse_syceron import parse_syceron_xml
 from syceron_debates import (
     SYCERON_AVAILABLE_LEGISLATURES,
@@ -4581,7 +4582,11 @@ def build_profile(
         "interventions": [],
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-            "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+            # Licence Ouverte depuis #530 (lot 6) : ce collecteur n'appelle plus
+            # que data.assemblee-nationale.fr (#529). La constante d'avant —
+            # « ODbL (Regards Citoyens, …) » — attribuait à une plateforme tierce
+            # un profil brut dont plus une seule section ne venait d'elle.
+            "licence_donnees": LICENCE_AN,
             # Traçabilité de fraîcheur : horodatage ISO-8601 de la dernière synchro
             # réussie pour chaque source (None = source non contactée ou indisponible).
             # `nosdeputes` a été retirée de ce dict par #529 : plus aucune

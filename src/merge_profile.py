@@ -40,6 +40,7 @@ from candidate_profile import (
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
 )
 from json_io import ecrire_profil_json
+from licences import appliquer_licence_donnees
 from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
 from schema_pivot import appliquer_chambres
 
@@ -438,6 +439,10 @@ def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_source
 def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
     """Équivalent de `merge_raw_profile` pour le format pivot v1."""
     if not old:
+        # Même recalcul que sur le chemin fusionné : `licence_donnees` dérive de
+        # `sources[]`, et un premier pivot doit publier la même chaîne qu'un
+        # pivot régénéré au même contenu (#530).
+        appliquer_licence_donnees(new)
         return new
 
     merged = dict(new)
@@ -556,6 +561,17 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
                 continue
             filtered.append(w)
         merged["meta"]["warnings"] = filtered
+
+    # `licence_donnees` : RECALCULÉ, jamais fusionné (#530, même patron que
+    # `chambres` au #493). `_merge_pivot_sources` fusionne `sources[]` par
+    # `type` : le profil fusionné est un **surensemble** des sources des deux
+    # côtés, et une entrée `nosdeputes` déjà publiée survit donc à une collecte
+    # AN. Reprendre la licence de `new` publierait « Licence Ouverte » sur un
+    # profil qui porte encore une source ODbL ; reprendre celle de `old`
+    # gèlerait l'inverse. Seul le recalcul post-fusion décrit ce qui est
+    # réellement publié, et c'est lui qui fera disparaître la clause ODbL le
+    # jour où la dernière source Regards Citoyens quittera le profil.
+    appliquer_licence_donnees(merged)
 
     return merged
 

@@ -13,9 +13,12 @@ Usage :
 import time
 from typing import Any, Optional
 
+from licences import LICENCE_PARLTRACK, appliquer_licence_donnees
 from parltrack_dumps import get_amendments_for_mep, get_dossiers_for_mep
 
-_PARLTRACK_LICENCE = "ODbL v1.0 (ParlTrack — https://parltrack.org/dumps)"
+#: Alias historique. Le libellé vit dans `licences` depuis #530 (lot 6) : les
+#: mentions d'attribution du pipeline n'ont qu'une seule fabrique.
+_PARLTRACK_LICENCE = LICENCE_PARLTRACK
 _PARLTRACK_SOURCE_URL = "https://parltrack.org/dumps"
 
 
@@ -178,13 +181,13 @@ def enrich_pivot_with_parltrack(
         })
 
     # --- licence ---
-    if new_tp or new_amds:
-        existing_licence = meta.get("licence_donnees") or ""
-        if _PARLTRACK_LICENCE not in existing_licence:
-            if existing_licence:
-                meta["licence_donnees"] = f"{existing_licence} + {_PARLTRACK_LICENCE}"
-            else:
-                meta["licence_donnees"] = _PARLTRACK_LICENCE
+    # Recalculée depuis `sources[]`, qui vient de gagner (ou non) l'entrée
+    # `parltrack` juste au-dessus : `licence_donnees` est un champ dérivé
+    # depuis #530, et la composition « <licence AN/PE> + <licence ParlTrack> »
+    # est désormais produite par `licences`, pour tout le corpus et pas
+    # seulement ici. Le partage à l'identique ODbL de ParlTrack ne disparaît
+    # donc que si la source disparaît du profil.
+    appliquer_licence_donnees(profil)
 
     # Warning si aucune donnée retournée (dumps peut-être indisponibles)
     if not dossiers and not amendments:

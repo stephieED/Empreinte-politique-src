@@ -953,7 +953,10 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
     // "assemblee_nationale". "nosdeputes"/"nossenateurs" stay VALID values —
     // 476 published profiles carry one, and dropping them from
     // KNOWN_SOURCE_TYPES would make validate_profil() reject the corpus we
-    // just published. Their retirement is lot 6, with ODbL attribution.
+    // just published. #530 measured that they do NOT go away on their own:
+    // merge_pivot_profile unions sources[] by type, so an already-published
+    // "nosdeputes" entry survives an AN collection, and the ODbL attribution
+    // stays due (docs/technical_decisions.md#licence-lot-6-530).
     {"type": "assemblee_nationale", "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1234", "synchro_le": "2026-07-29T..."},
     {"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr/", "synchro_le": "2026-07-29T..."}
   ],
@@ -968,7 +971,10 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
   "amendements": [ ... ],
   "interventions": [ ... ],
   "tags_thematiques": ["budget", "fiscalite"],
-  "meta": { "schema_version": "1", "genere_le": "...", "licence_donnees": "...", "warnings": [] }
+  "meta": { "schema_version": "1", "genere_le": "...", "warnings": [],
+            // Derived from sources[] by src/licences.py, never hardcoded (#530):
+            // "Licence Ouverte … (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (…)"
+            "licence_donnees": "..." }
 }
 ```
 
@@ -978,13 +984,20 @@ Sensitive institutional constraints are documented in `AGENTS.md`.
 
 | Source | Type | Update cadence | License | Chamber(s) |
 |---|---|---|---|---|
-| NosDeputes.fr + archives | JSON/XML API | **No longer collected since #529** (lot 5); attribution still due for already-published fields — lot 6 | ODbL v1.0 | AN |
-| NosSenateurs archives | JSON/XML API | **Out of scope since #528** (dead TLS certificate); no longer collected since #529 | ODbL v1.0 | Senate |
-| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily | Licence Ouverte / Open Licence (Etalab) | AN |
-| Parltrack | LZMA dumps | Weekly (approx.) | ODbL v1.0 | EP |
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily — **the only French source** | Licence Ouverte / Open Licence (Etalab), attribution only | AN |
+| NosDeputes.fr + archives | JSON/XML API | **No longer collected since #529** (lot 5); attribution still due for already-published fields (#530) | ODbL v1.0, **share-alike** | AN |
+| NosSenateurs archives | JSON/XML API | **Out of scope since #528** (dead TLS certificate); no longer collected since #529; attribution still due (#530) | ODbL v1.0, **share-alike** | Senate |
+| Parltrack | LZMA dumps | Weekly (approx.) — **still collected** | ODbL v1.0, **share-alike** | EP |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | REST API + MEP pages | Live (fetched per run, no weekly cache) | EP Legal Notice (reuse policy, attribution-based) | EP |
 | French Wikipedia | MediaWiki REST API | Immediate | CC BY-SA 4.0 | Candidate monitoring |
 | Wikidata | SPARQL | Immediate | CC0 1.0 | Candidate monitoring |
+
+The corpus is **not** under a single licence, and dropping Regards Citoyens from
+collection did not make it so (#530): Parltrack is still collected under ODbL, and
+published fields derived from NosDeputes/NosSenateurs are still published. Each profile
+lists the licences its own content falls under in `meta.licence_donnees`, derived from its
+`sources[]` by `src/licences.py`. Details: `AGENTS.md` §7 and
+`docs/technical_decisions.md#licence-lot-6-530`.
 
 ## Tests
 

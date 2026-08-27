@@ -98,6 +98,7 @@ from candidate_profile import (
 )
 from candidate_profile_ue import build_profile_ue
 from json_io import ecrire_profil_json
+from licences import LICENCE_AN
 from merge_profile import (
     merge_pivot_profile,
     merge_raw_profile,
@@ -642,7 +643,10 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
         "interventions": [],
         "meta": {
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-            "licence_donnees": "ODbL (Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
+            # Licence Ouverte depuis #530 : ce repli décrit un candidat sans
+            # mandat français connu — il ne porte aucune donnée, et surtout
+            # aucune donnée de Regards Citoyens.
+            "licence_donnees": LICENCE_AN,
             "warnings": ["aucun mandat français connu (slug absent du référentiel Assemblée nationale, ou identité introuvable)"],
         },
     }

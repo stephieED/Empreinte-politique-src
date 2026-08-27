@@ -726,17 +726,34 @@ Full rationale: `web/old/v3/methodologie.html` — do not duplicate prose here.
 
 ## 7. Sources and licenses (reuse implications)
 
-| Source | License | Constraint |
-|---|---|---|
-| NosDeputes.fr / NosSenateurs.fr | ODbL v1.0 | Share-alike if published as downloadable dataset |
-| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | Licence Ouverte / Open Licence (Etalab) | Attribution only |
-| Parltrack (JSON dumps) | ODbL v1.0 | Share-alike if republished as downloadable dataset |
-| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
-| French Wikipedia | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
-| Wikidata | CC0 1.0 | No restriction |
+| Source | Collected? | License | Constraint |
+|---|---|---|---|
+| data.assemblee-nationale.fr / questions.assemblee-nationale.fr | **Yes — the only French source** (#529) | Licence Ouverte / Open Licence (Etalab) | Attribution only |
+| Parltrack (JSON dumps) | Yes | ODbL v1.0 | **Share-alike** if republished as downloadable dataset |
+| European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | Yes | EP Legal Notice (reuse policy, attribution-based) | Attribution only |
+| NosDeputes.fr / NosSenateurs.fr | **No** since #528/#529 — but published fields still derive from it | ODbL v1.0 | **Share-alike** if published as downloadable dataset |
+| French Wikipedia | Yes | CC BY-SA 4.0 | Verbatim quotes only (not current use) |
+| Wikidata | Yes | CC0 1.0 | No restriction |
+
+**"No French source is collected from Regards Citoyens any more" does not mean "the corpus
+is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrack is a
+*live* source under ODbL, and 475 of 476 published profiles still carry a
+`sources[].type` of `nosdeputes`/`nossenateurs` (511 published interventions still link to
+`www.nosdeputes.fr`) — `merge_pivot_profile` unions `sources[]` by type, so additive
+regeneration never drops them. Attribution stays due while the fields stay published
+(§2 rule 2), exactly as `#retrait-senat-528` §4 already ruled.
+
+`meta.licence_donnees` is therefore a **derived** field, never a constant: `src/licences.py`
+holds the four canonical labels and `appliquer_licence_donnees(profil)` recomposes the
+string from `sources[]` after every step that changes it (`normalize_profil`,
+`normalize_europarl`, `enrich_pivot_with_parltrack`, `merge_pivot_profile`). Same pattern as
+`chambres` in #493 — and its retirement condition runs itself: the ODbL clause leaves a
+profile the day that profile stops carrying anything from Regards Citoyens.
+Never hardcode a licence label elsewhere; import it from `src/licences.py`, and keep
+`AGENTS.md` §7, `sources.config.js` and `LegalNoticePage.jsx` saying the same thing.
 
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
-Full details: `docs/technical_decisions.md#licences`.
+Full details: `docs/technical_decisions.md#licences`, `docs/technical_decisions.md#licence-lot-6-530`.
 
 ## 8. End-of-task documentation upkeep
 
@@ -780,7 +797,8 @@ don't restate it in the chat.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
   `normalize_nosdeputes.py` until #529).
-- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#ci-cd`, `#ci-tests-pytest`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
+- `src/licences.py`: canonical licence labels + the derivation of `meta.licence_donnees` (#530).
+- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#licence-lot-6-530`, `#ci-cd`, `#ci-tests-pytest`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
   automatically — consult on request). Rationale for deferred items lives
   in `docs/technical_decisions.md#hors-perimetre`, not duplicated here.
