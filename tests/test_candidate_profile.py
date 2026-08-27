@@ -11,8 +11,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from candidate_profile import (
-    _classify_intervention,
-    _classify_intervention_format,
     _collect_acteur_roles,
     _collect_initiateurs,
     _collect_texte_codes,
@@ -33,10 +31,7 @@ from candidate_profile import (
     _stade_from_code_acte,
     build_profile,
     fetch_interventions_syceron,
-    fetch_all_intervention_results_from_domains,
     fetch_questions_officielles,
-    fetch_seance_context,
-    _extract_speaker_identity_from_html,
 )
 from normalize_nosdeputes import normalize_nosdeputes
 
@@ -159,7 +154,6 @@ def test_build_profile_reports_empty_api_payloads():
     with (
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "slug-inexistant")
@@ -169,151 +163,6 @@ def test_build_profile_reports_empty_api_payloads():
     assert profile["votes"] == []
     assert any("identité" in warning for warning in profile["meta"]["warnings"])
     assert any("vote" in warning for warning in profile["meta"]["warnings"])
-
-
-def test_classify_intervention_requires_perso_speaker_match():
-    speech = _classify_intervention(
-    {
-      "texte": "Je souhaite répondre à la question.",
-      "speaker_name": "Jean-Luc Mélenchon",
-      "speaker_url": "/jean-luc-melenchon",
-    },
-        "Jean-Luc Mélenchon",
-        "62",
-    )
-    mention = _classify_intervention(
-    {
-      "texte": "Jean-Luc Mélenchon vous regarde !",
-      "speaker_name": "Yaël Braun-Pivet, présidente",
-      "speaker_url": "/yael-braun-pivet",
-    },
-        "Jean-Luc Mélenchon",
-        "62",
-    )
-
-    assert speech["mode"] == "prise_de_parole"
-    assert mention["mode"] == "mention"
-
-
-def test_fetch_seance_context_prefers_summary_over_page_title():
-    html = """
-    <html>
-      <head><title>Commission du jeudi 14 mars 2024 - Séance</title></head>
-      <body>
-        <div class='session-summary'>
-          <h2>Résumé de la réunion</h2>
-          <p>Audit des autorisations de diffusion télévisée</p>
-        </div>
-        <div class='nuage_de_tags'>Mots clés: numérique audiovisuel télévision</div>
-      </body>
-    </html>
-    """
-
-    with patch("candidate_profile.requests.get", return_value=DummyResponse(html)):
-        context = fetch_seance_context({"url": "https://example.test/seance"})
-
-    assert context["sujet"] == "Audit des autorisations de diffusion télévisée"
-    assert context["mots_cles"] == ["numérique", "audiovisuel", "télévision"]
-
-
-def test_fetch_seance_context_extracts_subject_from_summary_links():
-    html = """
-    <html>
-      <head><title>Seance du lundi 24 juin</title></head>
-      <body>
-        <div class='orga_dossier'>
-          <h2>Sommaire</h2>
-          <ul>
-            <li><a href='#table_15'>Motion de censure</a> <span class='dossier'>(<a href='/16/dossier/15'>voir le dossier</a>)</span></li>
-            <li><a href='#table_16'>Discussion et vote</a></li>
-          </ul>
-        </div>
-      </body>
-    </html>
-    """
-
-    with patch("candidate_profile.requests.get", return_value=DummyResponse(html)):
-        context = fetch_seance_context({"url": "https://example.test/seance"})
-
-    assert context["sujet"] == "Motion de censure"
-
-
-def test_classify_intervention_uses_speaker_name_from_html():
-    html = """
-    <div class='intervenant'>
-      <div class='perso'><span><a href='/yael-braun-pivet'>Yaël Braun-Pivet, présidente</a></span></div>
-      <div class='texte_intervention'>
-        <p>La parole est à M. Jérôme Guedj.</p>
-      </div>
-    </div>
-    """
-
-    speaker_name, speaker_url = _extract_speaker_identity_from_html(html)
-    assert speaker_name == "Yaël Braun-Pivet, présidente"
-    assert speaker_url == "/yael-braun-pivet"
-
-    classified = _classify_intervention(
-        {"texte": "La parole est à M. Jérôme Guedj.", "speaker_name": "Yaël Braun-Pivet, présidente"},
-        "Yaël Braun-Pivet",
-        "123",
-    )
-
-    assert classified["mode"] == "prise_de_parole"
-
-
-def test_classify_intervention_does_not_treat_name_mentions_as_speech():
-    classified = _classify_intervention(
-        {"texte": "Jean-Luc Mélenchon avait fait une excellente proposition au Président de la République."},
-        "Jean-Luc Mélenchon",
-        "456",
-    )
-
-    assert classified["mode"] == "mention"
-
-
-def test_extract_speaker_identity_uses_anchor_to_pick_correct_intervention():
-    html = """
-    <html>
-      <body>
-        <div class="intervention" id="inter_president">
-          <div class="intervenant">
-            <div class="perso"><a href="/yael-braun-pivet">Yaël Braun-Pivet, présidente</a></div>
-            <div class="texte_intervention"><p>La parole est à M. Jean-Luc Mélenchon.</p></div>
-          </div>
-        </div>
-        <div class="intervention" id="inter_melenchon">
-          <div class="intervenant">
-            <div class="perso"><a href="/jean-luc-melenchon">Jean-Luc Mélenchon</a></div>
-            <div class="texte_intervention"><p>Je vous remercie, madame la présidente.</p></div>
-          </div>
-        </div>
-      </body>
-    </html>
-    """
-
-    speaker_name, speaker_url = _extract_speaker_identity_from_html(html, anchor_id="inter_melenchon")
-    assert speaker_name == "Jean-Luc Mélenchon"
-    assert speaker_url == "/jean-luc-melenchon"
-
-    # Sans ancre, le premier div.perso de la page (la présidente) ne doit pas
-    # être confondu avec l'orateur de l'intervention ciblée.
-    speaker_name_no_anchor, _ = _extract_speaker_identity_from_html(html)
-    assert speaker_name_no_anchor == "Yaël Braun-Pivet, présidente"
-
-
-def test_extract_speaker_identity_from_perso_without_link():
-  html = """
-  <div class='intervenant'>
-    <div class='perso'>Élisabeth Borne, Première ministre</div>
-    <div class='texte_intervention'><p>Merci.</p></div>
-  </div>
-  """
-
-  speaker_name, speaker_url = _extract_speaker_identity_from_html(html)
-
-  assert speaker_name == "Élisabeth Borne, Première ministre"
-  assert speaker_url is None
-
 
 def test_groupe_label_handles_dict_and_string_and_none():
     assert _groupe_label({"organisme": "La France Insoumise", "fonction": "membre"}) == "La France Insoumise"
@@ -371,33 +220,6 @@ def test_extract_mandats_reads_real_api_responsabilites_fields():
 
 def test_extract_mandats_returns_empty_list_when_no_fields_present():
     assert _extract_mandats({}) == []
-
-
-def test_fetch_all_intervention_results_from_domains_merges_and_deduplicates():
-    with patch(
-        "candidate_profile.fetch_all_intervention_results",
-        side_effect=[
-            {"results": [{"document_id": "1", "document_url": "https://a.fr/1"}]},
-            {"results": [{"document_id": "1", "document_url": "https://a.fr/1"}, {"document_id": "2", "document_url": "https://a.fr/2"}]},
-        ],
-    ) as mocked_fetch:
-        merged = fetch_all_intervention_results_from_domains(
-            ["https://a.test", "https://b.test"],
-            "Jean-Luc Mélenchon",
-            max_pages=3,
-        )
-
-    assert mocked_fetch.call_count == 2
-    assert [item["document_id"] for item in merged["results"]] == ["1", "2"]
-    assert merged["results"][0]["_search_base_url"] == "https://a.test"
-    assert merged["results"][1]["_search_base_url"] == "https://b.test"
-
-
-def test_classify_intervention_format_uses_word_count_threshold():
-    assert _classify_intervention_format(3) == "reaction_courte"
-    assert _classify_intervention_format(274) == "prise_de_parole_developpee"
-    assert _classify_intervention_format(None) is None
-
 
 def test_derive_amendement_sort_maps_discute_states():
     assert _derive_amendement_sort("Discuté", "Adopté") == ("adopté", None)
@@ -1461,7 +1283,6 @@ def test_build_profile_includes_official_questions_in_interventions():
     with (
         patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
@@ -1654,7 +1475,6 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
@@ -1667,34 +1487,40 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
     assert not any("fallback" in w for w in profile["meta"]["warnings"])
 
 
-def test_build_profile_falls_back_to_nosdeputes_when_syceron_empty():
-    """Quand Syceron ne retourne rien, le fallback NosDéputés doit être utilisé et un warning ajouté."""
+def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
+    """#510 : le repli NosDéputés a été RETIRÉ du chemin interventions.
+
+    Une collecte Syceron vide reste vide, et le dit. C'est ce repli qui a rendu
+    #510 invisible pendant toute sa durée de vie : le chemin rendait 789
+    interventions, dont 0 de la source primaire, donc rien ne signalait que
+    celle-ci était muette.
+    """
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[{"id": "nosdeputes_1"}]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
-    assert profile["interventions"] == [{"id": "nosdeputes_1"}]
+    assert profile["interventions"] == []
     assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is None
-    fallback_warnings = [w for w in profile["meta"]["warnings"] if "fallback" in w.lower() or "nosdeputes" in w.lower()]
-    assert fallback_warnings, "Un warning de fallback NosDéputés doit être présent"
+    warnings_syceron = [
+        w for w in profile["meta"]["warnings"]
+        if w.startswith("interventions syceron indisponibles")
+    ]
+    assert warnings_syceron, "le silence de la source primaire doit être déclaré (§2.5)"
+    assert not any("fallback" in w.lower() for w in profile["meta"]["warnings"])
 
 
-def test_build_profile_syceron_exception_triggers_fallback_warning():
-    """Si fetch_interventions_syceron lève une exception, le fallback NosDéputés doit être utilisé et un warning ajouté."""
+def test_build_profile_syceron_en_echec_est_declare_sans_repli():
+    """Une exception Syceron laisse la section vide, déclarée — et ne convoque personne (#510)."""
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
@@ -1714,10 +1540,8 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
@@ -1821,7 +1645,6 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
@@ -1829,12 +1652,8 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        # Vérifie que le scraping HTML NosDéputés (fetch_seance_context) n'est jamais appelé.
-        patch("candidate_profile.fetch_seance_context") as mock_scraping,
     ):
         raw_profile = build_profile("deputes", "jean-dupont")
-
-    mock_scraping.assert_not_called()
 
     # L'étape de normalisation transforme les enregistrements bruts Syceron en format pivot.
     pivot = normalize_nosdeputes(raw_profile)
@@ -1865,54 +1684,38 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
     assert i3["source"]["type"] == "syceron"
 
 
-def test_integration_build_profile_fallback_sans_acteur_ref():
-    """Intégration bout-en-bout : quand fetch_interventions_syceron retourne une liste vide
-    (acteurRef non résolu), le fallback NosDéputés est utilisé et les champs pivot
-    Syceron (theme_officiel, seance, source syceron) doivent être absents/null."""
-    nosdeputes_intervention = {
-        "type": "Intervention",
-        "date": "2024-11-15",
-        "sujet": "Discussion générale",
-        "texte": "Intervention de fallback NosDéputés.",
-        "url": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
-        "url_detail": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
-        "speaker_name": "Jean Dupont",
-        "speaker_url": "/jean-dupont",
-        "mots_cles": [],
-        "source_id": None,
-        "seance_ref": None,
-        "session_ref": None,
-        "point_ordre_du_jour": None,
+def test_integration_les_interventions_nosdeputes_deja_collectees_restent_normalisables():
+    """#510 : le repli est retiré de la COLLECTE, pas de la normalisation.
+
+    La fusion additive ne retire rien : les interventions NosDéputés déjà
+    acquises restent dans `raw_data/profiles/` et doivent continuer à se
+    normaliser — sans champs Syceron, qu'elles n'ont jamais portés. Retirer leur
+    lecture ferait disparaître du corpus publié des faits déjà collectés, ce que
+    le contrôle de perte de #460/#470 bloque.
+    """
+    raw_profile = {
+        "interventions": [
+            {
+                "type": "Intervention",
+                "date": "2024-11-15",
+                "sujet": "Discussion générale",
+                "texte": "Intervention NosDéputés déjà collectée.",
+                "url": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
+                "url_detail": "https://www.nosdeputes.fr/jean-dupont/intervention/123",
+                "mots_cles": [],
+                "source_id": None,
+                "seance_ref": None,
+                "session_ref": None,
+                "point_ordre_du_jour": None,
+            }
+        ],
     }
 
-    with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
-        patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
-        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
-        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
-        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
-        # Syceron retourne une liste vide : acteurRef non résolu
-        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
-        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[nosdeputes_intervention]),
-    ):
-        raw_profile = build_profile("deputes", "jean-dupont")
-
-    # Un warning de fallback NosDéputés doit être présent
-    fallback_warnings = [w for w in raw_profile["meta"]["warnings"] if "fallback" in w.lower()]
-    assert fallback_warnings, "Un warning de fallback doit être émis quand Syceron ne retourne rien"
-
-    # Pas de synchro Syceron horodatée
-    assert raw_profile["meta"]["synchro_sources"].get("assemblee_nationale_syceron") is None
-
-    # La normalisation ne doit pas produire de champs Syceron
     pivot = normalize_nosdeputes(raw_profile)
 
     assert len(pivot["interventions"]) == 1
     i = pivot["interventions"][0]
+    assert i["texte"] == "Intervention NosDéputés déjà collectée."
     assert i["theme_officiel"] is None, "theme_officiel doit être null pour une intervention NosDéputés"
     assert i["seance"] is None, "seance doit être null pour une intervention NosDéputés"
     assert i["source"] is None, "source syceron doit être null pour une intervention NosDéputés"
@@ -3390,7 +3193,6 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
     with (
         patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
@@ -3401,7 +3203,6 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
     ):
         raw_profile = build_profile("deputes", "jean-dupont")
 
@@ -4188,10 +3989,8 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
     with (
         patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(identite_an, "PA123456")),
         patch("candidate_profile.fetch_identite_officielle", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
@@ -4369,14 +4168,12 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
         patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
         patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
     ):
         profile = build_profile("deputes", "francois-asensi")
 
@@ -4412,10 +4209,8 @@ def test_build_profile_calls_nosdeputes_when_an_does_not_find_deputy():
     with (
         patch("candidate_profile.fetch_identity", return_value=identity) as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_identite_officielle", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),

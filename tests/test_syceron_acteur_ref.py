@@ -6,6 +6,11 @@ L'archive Syceron publie l'identifiant d'orateur **nu** (`<orateur><id>847629
 construisait donc vide depuis toujours : 0 des 789 interventions publiées à
 `f1fff09` venaient de Syceron, et le repli NosDéputés comblait le silence.
 
+**Le 27/08/2026, la résolution est devenue le comportement et le repli a été
+retiré** : Syceron est la seule source du chemin interventions, et une collecte
+vide reste vide, déclarée dans `meta.warnings[]`. Le drapeau
+`--activer-interventions-syceron` n'existe plus — il est refusé bruyamment.
+
 Ces tests travaillent sur des RÉDUCTIONS de l'archive réelle — les deux fixtures
 précédentes décrivaient un schéma que l'Assemblée nationale ne publie pas, et
 c'est précisément ce qui a rendu le défaut invisible aux tests. Elles sont
@@ -16,14 +21,12 @@ depuis le 26/08/2026 (archives complètes téléchargées, `content-length` vér
 `forme_inattendue` est à 0 sur chacune, et `id_acteur == "PA" + <orateur><id>`
 sur 1 232 692 des 1 235 317 paragraphes qui portent les deux.
 
-Aucun réseau, aucune lecture de `raw_data/` ni de `pivot_data/` : le ZIP servi à
-`iter_syceron_xml_files` est fabriqué en mémoire depuis la fixture.
+Aucun réseau, aucune lecture de `raw_data/` ni de `pivot_data/` : les comptes
+rendus servis à `iter_syceron_xml_files` viennent des fixtures.
 """
 
-import io
 import json
 import sys
-import zipfile
 from pathlib import Path
 
 import pytest
@@ -140,7 +143,7 @@ def test_lattribution_refusee_est_lue_sur_larchive_reelle():
 
 
 # --------------------------------------------------------------------------
-# 3. L'index, dans les deux modes
+# 3. L'index : plus de mode, et une tranche par acteur
 # --------------------------------------------------------------------------
 
 @pytest.fixture
@@ -154,35 +157,25 @@ def cache_syceron(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def resolution_inactive_par_defaut():
-    """Restaure le drapeau après chaque test : c'est un état de module."""
-    initial = cp.SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE
-    yield
-    cp.activer_resolution_acteur_nu_syceron(initial)
+def memo_process_vierge():
+    """Vide le mémo des index non publiés entre deux cas.
 
-
-def test_le_defaut_reste_le_comportement_publie(cache_syceron, capsys):
-    """Drapeau inactif : index vide, exactement comme à `f1fff09`.
-
-    Le correctif est livré INACTIF. Ce test est la garantie qu'il ne publie
-    aucun octet tant que l'activation n'est pas décidée.
+    Il est clé par CHEMIN de cache (AGENTS.md : jamais par nom logique), donc
+    deux `tmp_path` ne peuvent pas se marcher dessus ; on le vide quand même,
+    pour que l'ordre des tests ne puisse jamais porter de sens.
     """
-    cp.activer_resolution_acteur_nu_syceron(False)
-    index = cp._build_acteur_interventions_syceron_index("17")
-
-    assert index == {}
-    # Il reste mis en cache : ne plus le faire ferait re-parcourir l'archive à
-    # chaque candidat, au débit du budget de 240 s de #498.
-    assert (cache_syceron / cp.SYCERON_INDEX_FILENAME).is_file()
-    # Mais il n'est plus muet — c'est le silence qui a coûté #510.
-    sortie = capsys.readouterr().out
-    assert "#510" in sortie
-    assert "--activer-interventions-syceron" in sortie
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
+    yield
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
 
 
-def test_active_lindex_se_remplit(cache_syceron, capsys):
-    """Drapeau actif : les orateurs résolubles entrent, les autres non."""
-    cp.activer_resolution_acteur_nu_syceron(True)
+def test_lindex_se_remplit_sans_drapeau(cache_syceron, capsys):
+    """La résolution des identifiants nus n'est plus conditionnelle (#510).
+
+    Elle l'a été le temps d'une décision d'opérateur — un mode où l'index se
+    construisait vide à partir de 380 Mo d'archive lisible. Ce mode n'existe
+    plus : il ne rendait pas « moins » d'interventions, il en rendait zéro.
+    """
     index = cp._build_acteur_interventions_syceron_index("17")
 
     assert "PA847629" in index
@@ -204,15 +197,29 @@ def test_active_lindex_se_remplit(cache_syceron, capsys):
     assert "pseudo_acteur_hors_referentiel=" in sortie
 
 
+def test_le_drapeau_dactivation_est_refuse_bruyamment(capsys):
+    """`--activer-interventions-syceron` a été retiré : le refus doit NOMMER la
+    décision. Un `unrecognized arguments` laisserait croire à une option inconnue
+    — ou pire, à une collecte Syceron désactivée."""
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--activer-interventions-syceron", action=cp.RefusDrapeauInterventionsSyceron
+    )
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--activer-interventions-syceron"])
+    assert "#510" in capsys.readouterr().err
+
+
 def test_les_entrees_indexees_portent_leur_sujet(cache_syceron):
     """Second défaut de #510 : `sujet` sortait à `None` sur 100 % des entrées.
 
     Syceron REMPLACE la liste d'interventions dont `tags_thematiques` est dérivé
-    (`normalize_nosdeputes` lit `theme_officiel`, qui vaut `sujet`) : activer avec
-    un `sujet` universellement vide publierait un ordre de grandeur
-    d'interventions sans thème à la place de 789 qui en portent.
+    (`normalize_nosdeputes` lit `theme_officiel`, qui vaut `sujet`) : publier un
+    ordre de grandeur d'interventions sans thème, à la place de 789 qui en
+    portent, serait une régression sur un champ publié.
     """
-    cp.activer_resolution_acteur_nu_syceron(True)
     index = cp._build_acteur_interventions_syceron_index("17")
 
     entrees = [e for v in index.values() for e in v]
@@ -226,7 +233,6 @@ def test_les_entrees_indexees_portent_leur_sujet(cache_syceron):
 
 def test_lattribution_refusee_est_comptee_dans_lindex(cache_syceron, capsys):
     """Le refus de la source se compte comme les autres rejets, jamais en silence."""
-    cp.activer_resolution_acteur_nu_syceron(True)
     xml_dir = cache_syceron / "xml" / "compteRendu"
     for f in xml_dir.glob("*.xml"):
         f.unlink()
@@ -254,7 +260,6 @@ def test_un_index_sans_aucun_sujet_est_annonce(cache_syceron, capsys, monkeypatc
     import parse_syceron
 
     monkeypatch.setattr(parse_syceron, "_CODE_GRAMMAIRE_SUJET", frozenset())
-    cp.activer_resolution_acteur_nu_syceron(True)
 
     index = cp._build_acteur_interventions_syceron_index("17")
 
@@ -266,24 +271,49 @@ def test_un_index_sans_aucun_sujet_est_annonce(cache_syceron, capsys, monkeypatc
     assert "#510" in sortie
 
 
-def test_les_deux_modes_nutilisent_pas_le_meme_fichier_dindex(cache_syceron):
-    """Un index construit dans un mode ne doit jamais être servi à l'autre.
+def test_lindex_est_publie_en_tranches_par_acteur(cache_syceron):
+    """La tranche par acteur est ce qui rend la source primaire tenable (#510).
 
-    `.cache/syceron_an` est partagé entre les shards par la clé de cache de
-    #505 : un index de 2 octets servi à un run en mode actif est exactement le
-    défaut que #505 vient de corriger.
+    L'index plat était relu ENTIER à chaque candidat et pour chaque législature :
+    1 664,8 Mio et 12,5 s mesurés sur les trois archives, contre le budget de
+    240 s de #500. Il n'est plus écrit du tout — et les deux index plats hérités
+    (dont celui de 2 octets du mode d'avant) sont supprimés à la publication.
     """
-    cp.activer_resolution_acteur_nu_syceron(False)
-    cp._build_acteur_interventions_syceron_index("17")
-    cp.activer_resolution_acteur_nu_syceron(True)
+    for nom in cp.SYCERON_INDEX_FILENAMES_HERITES:
+        (cache_syceron / nom).write_text("{}", encoding="utf-8")
+
     index = cp._build_acteur_interventions_syceron_index("17")
 
-    assert index, "l'index vide du mode par défaut ne doit pas être resservi"
-    assert cp.SYCERON_INDEX_FILENAME != cp.SYCERON_INDEX_FILENAME_ACTEUR_NU
-    assert (cache_syceron / cp.SYCERON_INDEX_FILENAME).is_file()
-    assert (cache_syceron / cp.SYCERON_INDEX_FILENAME_ACTEUR_NU).is_file()
-    fige = json.loads((cache_syceron / cp.SYCERON_INDEX_FILENAME).read_text(encoding="utf-8"))
-    assert fige == {}
+    tranche = cache_syceron / cp.SYCERON_INDEX_PAR_ACTEUR_DIRNAME / "PA847629.json"
+    assert tranche.is_file()
+    assert json.loads(tranche.read_text(encoding="utf-8")) == index["PA847629"]
+    for nom in cp.SYCERON_INDEX_FILENAMES_HERITES:
+        assert not (cache_syceron / nom).exists(), f"{nom} hérité doit être supprimé"
+
+
+def test_larchive_nest_reparcourue_quune_fois_par_legislature(cache_syceron, monkeypatch):
+    """Le second candidat ne doit plus toucher un seul compte rendu.
+
+    C'est la propriété, pas le chiffre, qui est fixée ici : « un cache disque
+    évite un re-téléchargement, jamais un re-parsing » (AGENTS.md), quatrième
+    occurrence du même coût au même endroit après #392, #403 et #467.
+    """
+    parcours: list[str] = []
+    vrai_iter = cp.iter_syceron_xml_files
+
+    def compter(legislature, **kwargs):
+        parcours.append(legislature)
+        return vrai_iter(legislature, **kwargs)
+
+    monkeypatch.setattr(cp, "iter_syceron_xml_files", compter)
+    monkeypatch.setattr(cp, "SYCERON_AVAILABLE_LEGISLATURES", {"17"})
+
+    url = "https://www.assemblee-nationale.fr/dyn/deputes/PA847629"
+    premier = cp.fetch_interventions_syceron(url)
+    second = cp.fetch_interventions_syceron(url)
+
+    assert premier and second == premier
+    assert parcours == ["17"], "le second candidat a reparcouru l'archive"
 
 
 def test_un_index_vide_sur_une_archive_lisible_nest_jamais_mis_en_cache(cache_syceron, capsys):
@@ -292,9 +322,9 @@ def test_un_index_vide_sur_une_archive_lisible_nest_jamais_mis_en_cache(cache_sy
     La garde de #505 ne couvrait que « aucun fichier lisible ». Un `{}` construit
     à partir de 601 comptes rendus lus passait, lui, pour un résultat — une
     donnée manquante figée en zéro mesuré, propagée à tous les shards de la
-    semaine par la clé de cache.
+    semaine par la clé de cache. Le repli NosDéputés étant retiré, plus rien ne
+    comble ce silence : la garde compte double.
     """
-    cp.activer_resolution_acteur_nu_syceron(True)
     xml_dir = cache_syceron / "xml" / "compteRendu"
     for f in xml_dir.glob("*.xml"):
         f.unlink()
@@ -311,15 +341,15 @@ def test_un_index_vide_sur_une_archive_lisible_nest_jamais_mis_en_cache(cache_sy
     index = cp._build_acteur_interventions_syceron_index("17")
 
     assert index == {}
-    assert not (cache_syceron / cp.SYCERON_INDEX_FILENAME_ACTEUR_NU).exists()
+    assert not (cache_syceron / cp.SYCERON_INDEX_PAR_ACTEUR_DIRNAME).exists()
     sortie = capsys.readouterr().out
     assert "NON mis en cache" in sortie
     assert "AUCUN acteur résolu" in sortie
+    assert "repli NosDéputés a été retiré" in sortie
 
 
 def test_fetch_interventions_syceron_resout_le_deputes_par_son_url(cache_syceron, monkeypatch):
     """Bout en bout : l'URL de fiche AN d'un député rend ses interventions."""
-    cp.activer_resolution_acteur_nu_syceron(True)
     # Seule la 17e est servie depuis le cache temporaire : les autres
     # législatures de SYCERON_AVAILABLE_LEGISLATURES déclencheraient un
     # téléchargement, que `tests/conftest.py` interdit (#473).

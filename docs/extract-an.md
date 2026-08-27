@@ -37,7 +37,7 @@ flowchart TD
 
     B --> C["candidate_profile.py\nbuild_profile(chambre=deputes)"]
 
-    ND["NosDéputés API\n(identité, interventions)"] --> C
+    ND["NosDéputés API\n(identité, en repli seulement)"] --> C
     AN1["AN Open Data\nScrutins nominatifs"] --> C
     AN2["AN Open Data\nAmendements leg. 15/16/17"] --> C
     AN3["AN Open Data\nDossiers législatifs"] --> C
@@ -57,7 +57,7 @@ flowchart TD
 > **Amendements** : indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux. Lecture **cache-only** de `.cache/amendements_an/` (`_read_cached_amendement_index`) — ce job ne télécharge plus jamais les archives lui-même ; l'index est construit par le job dédié `extract-amendements-an` (`generate-data.yml`, voir `docs/technical_decisions.md#amendements-index-job-dedie-ci`), et une législature absente du cache produit un warning `meta.warnings` au lieu d'un téléchargement.  
 > **Textes portés** : rôles factuels extraits des dossiers législatifs (auteur, rapporteur, co-rapporteur).  
 > **Positions hémicycle** : issues des dumps acteurs historique — nécessitent `source_url` (règle éditoriale §6).  
-> **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` puis fusionné dans les `interventions[]` par `fetch_interventions_syceron`.
+> **Interventions Syceron** : texte intégral des séances téléchargé via `syceron_debates.py`, parsé via `parse_syceron.py`, indexé par `_build_acteur_interventions_syceron_index` — **une tranche par acteur** sous `.cache/syceron_an/<législature>/index_par_acteur/` — puis lu par `fetch_interventions_syceron`. Depuis #510 (27/08/2026), c'est la **seule** source de débats : le repli NosDéputés (recherche + détail par document) a été retiré, et une collecte vide reste vide, déclarée dans `meta.warnings[]`. Voir `docs/technical_decisions.md#syceron-actif-510`.
 
 ---
 
@@ -65,7 +65,7 @@ flowchart TD
 
 1. `generate_all_profiles.py` lit les candidats de `raw_data/candidats.json`.
 2. Pour chaque candidat (`source=an`), il appelle uniquement la chambre `deputes` via `build_profile` dans `candidate_profile.py`.
-3. `candidate_profile.py` récupère l'identité NosDéputés, la synthèse, les interventions, puis enrichit avec les jeux AN officiels.
+3. `candidate_profile.py` récupère l'identité (référentiel AN d'abord, NosDéputés en repli), puis enrichit avec les jeux AN officiels. La **recherche d'interventions NosDéputés a été retirée** (#510) : elle n'alimentait que le repli du chemin interventions.
 4. Les votes sont prioritairement pris depuis l'open data AN (scrutins nominatifs), pas depuis le endpoint votes NosDéputés (fallback seulement).
 5. Les amendements AN sont indexés par `acteurRef` (`PAxxxx`), avec mapping des états procéduraux — lus exclusivement depuis `.cache/amendements_an/` (jamais téléchargés par ce job, voir `docs/technical_decisions.md#amendements-index-cache-only-consumers`).
 6. Les dossiers législatifs AN servent à produire les textes portés avec rôles factuels (auteur, rapporteur, co-rapporteur).
@@ -80,7 +80,7 @@ flowchart TD
 
 | Source | Contenu |
 |---|---|
-| NosDéputés API | Identité, interventions, synthèse |
+| NosDéputés API | Identité (repli, quand l'acteur est absent des archives AN) |
 | [AN Open Data](https://data.assemblee-nationale.fr/static/openData/repository) | Base de référence |
 | Scrutins nominatifs | Votes (source prioritaire) |
 | Amendements (leg. 15/16/17) | Amendements + états procéduraux |

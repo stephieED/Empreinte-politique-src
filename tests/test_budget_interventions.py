@@ -26,7 +26,6 @@ import budget_collecte
 from budget_collecte import BudgetCollecte
 from candidate_profile import (
     WARNING_PREFIX_BUDGET_INTERVENTIONS,
-    _extract_search_results,
     build_profile,
     fetch_interventions_syceron,
     fetch_questions_officielles,
@@ -115,7 +114,7 @@ def test_message_nomme_les_unites_non_collectees(horloge):
         budget.ignorer("législature(s) de questions officielles", 4)
 
     message = budget.message()
-    assert "143 document(s) d'intervention NosDéputés" in message
+    assert "143 document(s) d'intervention NosDéputés" in message  # libellé conservé : le corpus en porte
     assert "4 législature(s) de questions officielles" in message
     assert "12 s" in message and "10 s" in message
 
@@ -190,42 +189,6 @@ def test_questions_officielles_s_arretent_et_comptent_les_legislatures_perdues(h
     assert len(questions) == 1
     assert budget.unites_ignorees() == {"législature(s) de questions officielles": 2}
 
-
-def test_les_details_nosdeputes_s_arretent_document_par_document(horloge):
-    """Granularité fine attendue ici : sur une source dégradée, un document coûte
-    jusqu'à 45 s (read timeout=15 × 3 tentatives) et il y en a jusqu'à ~250 par
-    candidat."""
-    budget = BudgetCollecte(10, libelle="collecte d'interventions")
-    demandes: list[str] = []
-
-    def faux_detail(base_url, document_id):
-        demandes.append(document_id)
-        horloge.avancer(4)
-        return {
-            "date": "2025-01-01",
-            "type": "intervention",
-            "nb_mots": 300,
-            "speaker_name": "Jean Dupont",
-            "speaker_url": "https://www.nosdeputes.fr/jean-dupont",
-        }
-
-    payload = {"results": [{"document_id": str(i), "document_type": "Intervention"} for i in range(10)]}
-
-    with patch("candidate_profile.fetch_intervention_details", side_effect=faux_detail), \
-         patch("candidate_profile.fetch_seance_context", return_value={"sujet": "S", "mots_cles": []}), \
-         patch("candidate_profile.time.sleep", return_value=None), \
-         budget.section("détails"):
-        resultats = _extract_search_results(
-            "https://www.nosdeputes.fr", payload, "Jean Dupont", None, budget
-        )
-
-    # Le pool a 4 threads : au moins un document part avant tout épuisement, et
-    # la liste n'est jamais parcourue jusqu'au bout.
-    assert 0 < len(demandes) < 10
-    assert len(resultats) == len(demandes)
-    assert budget.unites_ignorees()["document(s) d'intervention NosDéputés"] == 10 - len(demandes)
-
-
 def test_sans_budget_la_collecte_reste_complete(horloge):
     """Le budget est optionnel : `None` doit rendre exactement le comportement
     d'avant #498, sinon le mode par défaut et les appels locaux changeraient de
@@ -265,7 +228,6 @@ def _profil(horloge, budget, cout_syceron, **kwargs):
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(identite_an, "PA1567")),
         patch("candidate_profile._extract_mandats_officiels", return_value=[]),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value={"results": []}),
         patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),

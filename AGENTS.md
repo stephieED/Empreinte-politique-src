@@ -130,9 +130,12 @@ exact same `path:`, since the entry's version is a hash of it. A collection inde
 cached once **complete**: a truncated one served to every shard is a missing value turned
 into a measured `0` (§2.5). See `docs/technical_decisions.md#cache-mode-interventions-505`.
 
-**`collect_interventions=true` is a different job (#498)**: it adds the NosDéputés
-search, the Syceron debate archives and the QE/QG/QOSD archives — extraction measured
-at **8-18 s** without it, **59-286 s** with (32 shards, four runs). `extract-an`'s
+**`collect_interventions=true` is a different job (#498)**: it adds the Syceron
+debate archives and the QE/QG/QOSD archives — extraction measured at **8-18 s**
+without it, **59-286 s** with (32 shards, four runs). The NosDéputés search was
+the third charge until #510 removed it with the fallback (90 s on
+`jean-luc-melenchon`); the 240 s were sized with it, and the balance is not
+re-measured. `extract-an`'s
 `timeout-minutes` is therefore conditional on the input (5 / 9), and the collection
 bounds *itself* with `--budget-interventions-secondes` (240 s in CI, per candidate,
 shared across both chambers). Never raise one without the other — a shard killed by
@@ -213,14 +216,41 @@ tripwires are `forme_inattendue` and "not one indexed entry carries a subject",
 both at **0**. And an index built from *readable* comptes rendus that resolves
 **zero** actors is never cached nor returned silently — #505's guard only covered
 "no readable file", and that gap is how this survived (§2.5).
-The flag stays **inactive** (`--activer-interventions-syceron`), and the parser
-fix made activation *more* expensive, not less: **1 227 415** indexable
-interventions against 789 published, **1 664,8 Mio** of index re-read **per
-candidate per legislature** — **12,5 s** and a 3,8 Gio RSS peak, against #500's
-240 s budget. The last technical lock is the **per-actor shard**
-(`_scrutins_shard_path_acteur`, #392/#403), still unwritten, and it is not in
-#510. Guarded by `tests/test_syceron_acteur_ref.py` and `tests/test_parse_syceron.py`.
-See `docs/technical_decisions.md#syceron-acteur-ref-nu-510`.
+**Syceron is live and the NosDéputés fallback is gone (#510, 27/08/2026)**:
+operator decision, taken on those measurements. The flag is **removed**, not
+raised — the old mode returned **zero** on all three archives, and keeping it
+behind a switch kept the defect armed; `--activer-interventions-syceron` is
+still declared and **loudly refused**, because `unrecognized arguments` would
+read as "Syceron collection is off". The **fallback went with it**, and so did
+the whole chain that existed only for it (`fetch_recherche`,
+`fetch_all_intervention_results*`, `_extract_search_results`,
+`fetch_intervention_details`, `fetch_seance_context`, `_classify_intervention`,
+`--max-pages`) — the search alone cost **90 s** on `jean-luc-melenchon`, charged
+to #500's 240 s. A source that *replaced* the primary one is exactly what made
+#510 invisible: the path returned 789 interventions, **0** from its declared
+primary source, so nothing raised a hand. An empty Syceron collection now stays
+empty and says so (`interventions syceron indisponibles`, a **prefix** of the
+old label so already-published warnings stay recognisable); `interventions`
+leaves #514's `sections_vides`, since the search was the only part of the path
+going through `_get_payload`. `normalize_nosdeputes` is untouched — additive
+merge keeps the interventions already collected, and they must keep normalising.
+**The index is sharded per actor** (`.cache/syceron_an/<leg>/index_par_acteur/
+PA######.json`, published by one `os.replace`, patron #392/#403): it was the
+"last technical lock", and it stopped being out of scope the moment activation
+was decided — 1 664,8 Mio re-read **per candidate per legislature** was 12,5 s
+and a 3,8 Gio RSS peak. Both flat legacy indexes are **deleted** on publication
+and never re-read (a 2-byte index served to a run that resolves bare ids is
+#505's defect). The per-legislature lock is **reentrant**, and the memo of
+built-but-unpublished indexes is keyed on the cache **path** (the #377 trap).
+**Not measured, and it says so**: per-candidate cost and RSS of the new shape
+(bounded by construction, not by measurement), profile weight and group
+aggregates against #429, #505's cache entry (~21 Mo → order of a Go against the
+repo's 10 Go quota — the `path:` was changed identically in **both** jobs that
+declare it), and the #500 balance. `tests/test_interventions_senat_non_retenues.py`
+is **deleted** with the chain it measured: #528's reopening condition is harder
+now, not weaker. Guarded by `tests/test_syceron_acteur_ref.py`,
+`tests/test_parse_syceron.py`, `tests/test_index_interventions_cache_partiel.py`.
+See `docs/technical_decisions.md#syceron-actif-510`.
 
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
 profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also

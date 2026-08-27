@@ -488,11 +488,22 @@ jobs:
       # mais entre deux MODES du même job.
       #
       # `path` ne retient des interventions que l'INDEX, jamais les archives.
-      # `_build_acteur_questions_index` / `_build_acteur_interventions_syceron_index`
-      # court-circuitent tout le réseau dès que `index_par_acteur.json` existe :
-      # cacher les ZIP et l'arborescence XML extraite n'accélérerait rien et
-      # coûterait ~1,8 Go d'entrée (mesuré le 20/08 : 380 Mo sur disque pour la
-      # SEULE législature 17 de syceron_an, dont 324 Mo de XML extrait).
+      # `_build_acteur_questions_index` / `_read_cached_interventions_syceron_acteur`
+      # court-circuitent tout le réseau dès que l'index existe : cacher les ZIP
+      # et l'arborescence XML extraite n'accélérerait rien et coûterait ~1,8 Go
+      # d'entrée (mesuré le 20/08 : 380 Mo sur disque pour la SEULE législature
+      # 17 de syceron_an, dont 324 Mo de XML extrait).
+      #
+      # #510 : côté Syceron, l'index est désormais un RÉPERTOIRE de tranches par
+      # acteur (`index_par_acteur/PA######.json`) et non plus un fichier plat —
+      # le fichier plat était relu ENTIER à chaque candidat. Le `path` doit
+      # suivre, et **à l'identique dans les deux jobs qui le déclarent** : la
+      # version d'une entrée de cache est un hachage du `path`, donc deux
+      # écritures différentes sous la même clé ne se verraient pas (AGENTS.md).
+      # À SURVEILLER au premier run : l'entrée passe de ~21 Mo à l'ordre du Go
+      # (1 664,8 Mio d'index sur disque, avant compression) face au quota de
+      # 10 Go du dépôt. Si elle le sature, c'est la mise en cache de l'index
+      # Syceron qu'il faut trancher — pas le contenu de l'index.
       - uses: actions/cache@v5
         if: ${{ !inputs.cold_start }}
         with:
@@ -500,7 +511,7 @@ jobs:
             .cache/acteurs_historique_an
             .cache/scrutins_an
             .cache/questions_an/*/index_par_acteur.json
-            .cache/syceron_an/*/index_par_acteur.json
+            .cache/syceron_an/*/index_par_acteur
           key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && '-interv' || '' }}
           restore-keys: |
             public-data-cache-an-
@@ -589,12 +600,12 @@ jobs:
       # — n'apparaît dans les logs que si le process Python se termine
       # (normalement ou tué) sans que le runner entier ne disparaisse avec lui.
       #
-      # NE PAS déplacer les MERGE_FLAG/INTERV_FLAG/MAX_PAGES_FLAG ci-dessous
-      # dans une action composite (verdict #412 §3) : retry-generate-data.yml
-      # reconstruit les inputs du run échoué en grepant le TEXTE BASH SUBSTITUÉ
-      # de ce step dans les logs (`--source an --workers \K[0-9]+`,
-      # `INTERV_FLAG`, `--max-pages \K[0-9]+`). Les factoriser casserait ce
-      # mécanisme. Même remarque pour les steps homonymes de
+      # NE PAS déplacer les MERGE_FLAG/INTERV_FLAG ci-dessous dans une action
+      # composite (verdict #412 §3) : retry-generate-data.yml reconstruit les
+      # inputs du run échoué en grepant le TEXTE BASH SUBSTITUÉ de ce step dans
+      # les logs (`--source an --workers \K[0-9]+`, `INTERV_FLAG`). Les
+      # factoriser casserait ce mécanisme. `--max-pages` en faisait partie
+      # jusqu'à #510, qui l'a retiré avec la recherche NosDéputés. Même remarque pour les steps homonymes de
       # extract-ue-officiel et extract-roster-groupes.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
@@ -608,10 +619,10 @@ jobs:
           [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           INTERV_FLAG=()
           [[ "${{ inputs.collect_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
-          MAX_PAGES_FLAG=()
-          # 5 en dur : l'input a été retiré, jamais employé autrement que par
-          # son défaut. Voir docs/technical_decisions.md#libelles-formulaire.
-          [[ "${{ inputs.collect_interventions }}" == "true" ]] && MAX_PAGES_FLAG=(--max-pages 5)
+          # `--max-pages` a été RETIRÉ (#510) : il bornait la recherche
+          # d'interventions NosDéputés, qui n'existe plus. Le repli qu'elle
+          # alimentait est parti avec elle, et les 90 s qu'elle coûtait sur
+          # `jean-luc-melenchon` (run 32379928098) sont rendues au budget.
           # #498 : la collecte d'interventions se borne elle-même. 240 s = 1,5x la
           # plus longue extraction qui soit allée au bout dans CE mode (160 s,
           # edouard-philippe, run 32302557156). Au-delà, la collecte s'arrête
@@ -630,12 +641,13 @@ jobs:
           # mesuré sur les 16 shards des runs 32233766814 et 32288588518, une
           # extraction AN sans interventions coûte 8 à 18 s, et avec
           # interventions elle est déjà bornée par les 240 s ci-dessus, qui
-          # couvrent les trois charges du mode (Syceron, questions, détails
-          # NosDéputés). Un second plafond n'aurait rien à borner de plus, et
+          # couvrent les deux charges restantes du mode (Syceron et questions
+          # officielles — les détails NosDéputés sont partis avec le repli,
+          # #510). Un second plafond n'aurait rien à borner de plus, et
           # #500 fonctionne : les 8 shards du run 32421439590 sont en succès.
           # Le zéro est explicite parce que l'OMISSION est ce qui a produit
           # #514 — la valeur doit être une décision lisible, pas un défaut.
-          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --budget-collecte-secondes 0 --manifest-out _manifest/profils-ecrits.txt "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" "${BUDGET_FLAG[@]}"
+          /usr/bin/time -v python3 src/generate_all_profiles.py --source an --only "${{ matrix.slug }}" --budget-collecte-secondes 0 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" "${BUDGET_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
       # staging rempli à partir du manifeste, jamais sur `raw_data/profiles/`,
@@ -1350,7 +1362,7 @@ jobs:
             .cache/acteurs_historique_an
             .cache/scrutins_an
             .cache/questions_an/*/index_par_acteur.json
-            .cache/syceron_an/*/index_par_acteur.json
+            .cache/syceron_an/*/index_par_acteur
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
