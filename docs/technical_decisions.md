@@ -2214,13 +2214,151 @@ opérateur, en connaissance de ces chiffres.
 
 ### Garde-fous
 
-`tests/test_syceron_acteur_ref.py` (33 tests) : la forme réelle de l'archive, la
-normalisation cas par cas — attribution refusée comprise —, l'inactivité par
-défaut, la séparation des deux fichiers d'index, la garde §2.5 sur index vide, le
-parcours des points imbriqués, le remplissage de `sujet`, le compteur-témoin
-d'un index sans aucun sujet, et le refus de réintroduire les fixtures inventées.
-`tests/test_parse_syceron.py` (27 tests) : le parcours et le sujet, mesurés
-uniquement sur des réductions verbatim de l'archive.
+`tests/test_syceron_acteur_ref.py` : la forme réelle de l'archive, la
+normalisation cas par cas — attribution refusée comprise —, la garde §2.5 sur
+index vide, le parcours des points imbriqués, le remplissage de `sujet`, le
+compteur-témoin d'un index sans aucun sujet, et le refus de réintroduire les
+fixtures inventées. `tests/test_parse_syceron.py` (27 tests) : le parcours et le
+sujet, mesurés uniquement sur des réductions verbatim de l'archive.
+
+**Ce qui précède décrit l'état livré INACTIF.** Le drapeau a été levé et le repli
+retiré le 27/08/2026 : ce qui reste vrai (mesures d'archive, forme de
+l'identifiant, défauts de parseur) et ce qui ne l'est plus (les deux modes, les
+deux fichiers d'index, l'inactivité par défaut) sont départagés par la section
+[#syceron-actif-510](#syceron-actif-510).
+
+---
+
+<a id="syceron-actif-510"></a>
+## Syceron activé, repli NosDéputés retiré, index tranché par acteur (#510) (2026-08-27)
+
+Décision d'opérateur, prise sur les mesures du 26/08 rappelées ci-dessus, et
+demandée en ces termes : « active le drapeau et retire le repli vers
+nosdéputés ». Les deux moitiés vont ensemble et n'auraient pas de sens séparées
+— un repli qui *remplace* la source primaire est précisément ce qui a rendu #510
+invisible pendant toute sa durée de vie.
+
+### Ce qui change
+
+**1. Le drapeau n'existe plus, la résolution est le comportement.**
+`SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE` et `activer_resolution_acteur_nu_syceron`
+sont retirés ; `_parse_syceron_intervention_entry` appelle toujours
+`_normaliser_orateur_id_syceron`. Le mode d'avant n'est pas *conservé pour
+mémoire* : il ne rendait pas « moins » d'interventions, il en rendait **zéro**
+sur les trois archives, et le garder sous un drapeau, c'était garder armé l'état
+exact du défaut. `--activer-interventions-syceron` reste **déclaré** dans les
+deux CLI, avec une action qui **refuse bruyamment** en nommant la décision
+(`RefusDrapeauInterventionsSyceron`) : un `unrecognized arguments` laisserait
+croire à une option inconnue — ou pire, à une collecte Syceron désactivée. Même
+forme de refus que `--source senat` (#528).
+
+**2. Le repli NosDéputés est retiré du chemin interventions**, et avec lui toute
+la chaîne qui n'existait que pour lui : `fetch_recherche`,
+`fetch_all_intervention_results{,_from_domains}`, `_process_search_result`,
+`_extract_search_results`, `fetch_intervention_details`, `fetch_seance_context`,
+`_classify_intervention`, `_extract_speaker_identity_from_html`,
+`_classify_intervention_format`, `REACTION_COURTE_NB_MOTS_MAX`, `_to_int`, et
+les options `--max-pages` des deux CLI. Ce n'était pas un préliminaire
+négligeable : la recherche seule coûtait **90 s** sur `jean-luc-melenchon` (run
+32379928098), imputées au budget de 240 s de #500. C'est autant de rendu à la
+source primaire.
+
+Conséquences en chaîne, toutes assumées ici :
+
+- `interventions` **n'a plus qu'une source de débat** (plus les questions
+  officielles, qui n'ont jamais doublé Syceron mais l'ont complété) ;
+- une collecte Syceron vide **reste vide**, et le déclare :
+  `interventions syceron indisponibles` (§2.5). Le préfixe est volontairement un
+  **préfixe** de l'ancien libellé (`… (fallback nosdeputes)`), pour que les
+  warnings déjà écrits dans le corpus restent reconnaissables ;
+- `interventions` sort de la liste `sections_vides` de #514 : la recherche
+  NosDéputés était le **seul** point du chemin à passer par `_get_payload`, donc
+  ce compteur ne pouvait plus qu'attribuer à NosDéputés une panne qui n'est pas
+  la sienne. Même raisonnement que #528 pour `votes` et `dossiers législatifs` ;
+- `normalize_nosdeputes` n'est **pas** touché : la fusion additive conserve les
+  interventions NosDéputés déjà collectées, et elles doivent continuer à se
+  normaliser. Retirer leur *lecture* ferait disparaître du corpus publié des
+  faits déjà acquis — ce que le contrôle de perte de #460/#470 bloque.
+
+**3. L'index Syceron est tranché par acteur.** C'était « le dernier verrou
+technique » ; il n'était pas dans #510 tant que le drapeau restait baissé, il
+l'est devenu à la seconde où l'activation a été décidée. `.cache/syceron_an/<
+législature>/index_par_acteur/PA######.json`, publié d'un seul `os.replace`
+depuis un répertoire `.partiel` — patron de #392 (amendements) et #403
+(scrutins), et règle d'AGENTS.md : *un cache disque évite un re-téléchargement,
+jamais un re-parsing*. Sans lui, l'activation relisait **1 664,8 Mio** d'index à
+**chaque candidat et pour chaque législature** : 12,5 s et 3,8 Gio de pic de RSS
+mesurés le 26/08. Trois propriétés viennent avec :
+
+- `_read_cached_interventions_syceron_acteur` rend `None` (index indisponible)
+  ou `[]` (acteur absent de la législature) — jamais la même chose, règle 5 ;
+- le répertoire est **basculé**, jamais rempli en place : un répertoire qui
+  existe et qui est incomplet se lit « cet acteur n'a pas parlé », le défaut
+  exact de #447 ;
+- les deux index plats hérités (`index_par_acteur.json`, 2 octets, et
+  `index_par_acteur_acteurs_nus.json`) sont **supprimés** à la publication et
+  ne sont plus jamais relus. Servir un index de 2 octets à un run qui sait
+  résoudre les identifiants nus, c'est le défaut de cache de #505.
+
+Le verrou de législature devient **réentrant** (la lecture de tranche le prend,
+et retombe sur la construction qui le reprend), et un mémo process retient les
+index construits mais **non publiés** — clé par **chemin** de cache, jamais par
+nom logique : c'est le piège qui a fait revert #377, nommé dans AGENTS.md.
+
+### Ce qui est mesuré, et ce qui ne l'est pas
+
+**Mesuré** : la suite complète, **2 222 tests, 0 échec** — dont la tranche par
+acteur, la non-publication d'un index vide sur archive lisible, la suppression
+des index plats hérités, le refus du drapeau, et le fait qu'un second candidat
+ne reparcoure plus un seul compte rendu.
+
+**Non mesuré, et ce n'est pas un détail** : cet environnement ne peut ni
+télécharger les archives (2 768 comptes rendus, 262 Mo) ni régénérer le corpus.
+Donc, à vérifier au premier run réel :
+
+- le **coût par candidat** et le **pic de RSS** de la nouvelle forme. Ils sont
+  bornés par *construction* — une tranche d'acteur lue au lieu de l'index —, pas
+  par une mesure. Le pic de la **construction** (une fois par législature et par
+  process, sous verrou) n'a pas changé ;
+- le **poids des profils publiés** et l'effet sur les **agrégats de groupe** :
+  1 227 415 interventions indexables contre 789 publiées aujourd'hui. À
+  confronter aux seuils de #429 — et le contrôle de perte de #460/#470 verra une
+  **hausse** massive, pas une perte, donc il ne bloquera pas ;
+- l'**entrée de cache de #505** : `.cache/syceron_an/*/index_par_acteur` passe de
+  ~21 Mo à l'ordre du Go (1 664,8 Mio sur disque avant compression) face au quota
+  de 10 Go du dépôt. Si elle le sature, c'est la mise en cache de l'index qu'il
+  faudra trancher — pas le contenu de l'index. Le `path:` a été changé **à
+  l'identique dans les deux jobs** qui le déclarent : la version d'une entrée est
+  un hachage du `path`, deux écritures divergentes sous la même clé ne se
+  verraient pas ;
+- le **budget de #500** : les 240 s perdent les ~90 s de recherche NosDéputés et
+  gagnent le coût de lecture des tranches. Le solde n'est pas mesuré.
+
+### Ce que le retrait coûte ailleurs
+
+`tests/test_interventions_senat_non_retenues.py` est **supprimé** : il gardait
+l'asymétrie `url_nosdeputes` / `url_nossenateurs` de #501, mesurée sur
+`fetch_intervention_details`, qui n'existe plus. La condition de réouverture du
+Sénat (#528 §7) n'est pas affaiblie pour autant — elle est **durcie** : il ne
+s'agit plus de faire lire une clé à un lecteur existant, mais de construire un
+chemin d'interventions sénatoriales qui n'existe plus du tout. C'est une
+décision à prendre, plus un correctif à appliquer.
+
+### Ce qui n'est pas fait
+
+Rien n'a été tenté sur les 92 identifiants du corpus que la 17e ne retrouvait
+pas (relevé d'origine de #510) : les trois archives sont désormais indexées, ce
+qui déplace la question sans la trancher. Et la volumétrie publiée n'est pas
+bornée ici — aucun échantillonnage, aucune troncature de texte : ce serait une
+décision éditoriale distincte, pas une conséquence de l'activation.
+
+### Garde-fous
+
+`tests/test_syceron_acteur_ref.py` (34 tests), `tests/test_parse_syceron.py`,
+`tests/test_index_interventions_cache_partiel.py` (forme du cache, index plats
+hérités supprimés, tranche d'acteur absent ≠ index indisponible),
+`tests/test_candidate_profile.py` (une collecte Syceron vide ne convoque
+personne), `tests/test_budget_interventions.py`.
 
 <a id="collecte-non-publiee"></a>
 <a id="roster-jamais-ecrit-vide"></a>
@@ -3334,9 +3472,13 @@ l'attribution d'orateur n'est pas vérifiée (le HTML de
 `_extract_speaker_identity_from_html`), sur un travail sénatorial qu'aucun
 agrégat ne consomme aujourd'hui — voir § *Senate votes, amendments, sponsored
 texts* et #488. Consigné dans `ROADMAP.md`.
-`tests/test_interventions_senat_non_retenues.py` fixe l'asymétrie plutôt que le
-zéro : le jour où la clé sénatoriale sera lue, c'est ce fichier qui tombera, et
-le `--skip-interventions` du job sera à rouvrir — pas à redécouvrir.
+`tests/test_interventions_senat_non_retenues.py` fixait l'asymétrie plutôt que le
+zéro. **Ce fichier a été supprimé le 27/08/2026** avec la chaîne qu'il mesurait :
+`fetch_intervention_details` n'existe plus, le repli NosDéputés ayant été retiré
+du chemin interventions ([#syceron-actif-510](#syceron-actif-510)). La condition
+de réouverture n'en est pas affaiblie mais durcie : il ne s'agirait plus de faire
+lire `url_nossenateurs` à un lecteur existant, mais de construire un chemin
+d'interventions sénatoriales qui n'existe plus du tout.
 
 <a id="chambre-par-mandat-electif"></a>
 ## La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)
@@ -3600,6 +3742,12 @@ Trois charges, dont deux que l'issue n'avait pas identifiées :
 3. **les archives de questions officielles** QE/QG/QOSD, jusqu'à 12 fichiers ;
 4. et seulement ensuite, **le repli NosDéputés document par document**, qui ne
    se déclenche que si Syceron ne rend rien pour cet `acteurRef`.
+
+**Les points 1 et 4 ont été retirés le 27/08/2026** avec le repli NosDéputés
+([#syceron-actif-510](#syceron-actif-510)) : il ne reste que les deux charges
+d'archives AN, et les 90 s de recherche sont rendues au budget. Ce qui suit
+décrit le mode tel qu'il était quand le budget a été dimensionné — le solde
+n'est pas remesuré.
 
 L'issue attribuait le surcoût au seul point 4. `laurent-wauquiez` le dément :
 **zéro** appel de détail NosDéputés, et pourtant un timeout — il était encore

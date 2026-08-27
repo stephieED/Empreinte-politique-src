@@ -473,10 +473,8 @@ def _build_profile_avec_votes(votes, legislatures):
     with (
         patch("candidate_profile.fetch_identity", return_value=identity),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_all_intervention_results_from_domains", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile._extract_search_results", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),

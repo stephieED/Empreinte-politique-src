@@ -24,7 +24,6 @@ Docs API : https://github.com/regardscitoyens/nosdeputes.fr/blob/master/doc/api.
 """
 
 import argparse
-import concurrent.futures
 import gzip
 import io
 import json
@@ -41,12 +40,10 @@ from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
-from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
 
 import requests
 import urllib3
-from bs4 import BeautifulSoup
 from budget_collecte import (
     BudgetCollecte,
     annoncer_troncature,
@@ -63,7 +60,12 @@ from gouvernement_textes import (
 )
 from json_io import ecrire_profil_json
 from parse_syceron import parse_syceron_xml
-from syceron_debates import SYCERON_AVAILABLE_LEGISLATURES, iter_syceron_xml_files, syceron_zip_url
+from syceron_debates import (
+    SYCERON_AVAILABLE_LEGISLATURES,
+    SYCERON_CACHE_DIR,
+    iter_syceron_xml_files,
+    syceron_zip_url,
+)
 
 # Domaines interroges, par chambre. La cle "senateurs" a ete RETIREE par #528 :
 # www.nossenateurs.fr avait definitivement ferme, et son archive
@@ -470,9 +472,24 @@ _AMENDEMENTS_LOCKS_META = threading.Lock()
 _QUESTIONS_LOCKS: dict[str, threading.Lock] = {}
 _QUESTIONS_LOCKS_META = threading.Lock()
 
-# Même principe que _SCRUTINS_LOCKS, pour l'index des débats Syceron.
-_SYCERON_LOCKS: dict[str, threading.Lock] = {}
+# Même principe que _SCRUTINS_LOCKS, pour l'index des débats Syceron — mais
+# RÉENTRANT (#510) : la lecture d'une tranche d'acteur prend le verrou, et
+# retombe sur la construction de l'index quand la tranche manque, qui le reprend.
+# Un `Lock` simple s'auto-bloquerait sur ce chemin.
+_SYCERON_LOCKS: dict[str, threading.RLock] = {}
 _SYCERON_LOCKS_META = threading.Lock()
+
+# #510 : mémo PROCESS des index construits mais NON publiés (archive illisible,
+# ou aucun acteur résolu sur une archive lisible). Rien n'est écrit sur disque
+# dans ces cas-là — c'est délibéré, un `{}` figé sous la clé de cache de la
+# semaine rendrait le défaut invisible à tous les shards suivants (§2.5). Sans
+# ce mémo, chaque candidat reparcourrait les 601 à 1 562 comptes rendus.
+#
+# Clé = le CHEMIN du répertoire de cache, jamais la seule législature : les
+# tests déplacent le cache d'un cas à l'autre, et un mémo logique ferait fuir
+# l'index d'un cas dans le suivant — le piège qui a fait revert #377,
+# explicitement nommé dans AGENTS.md.
+_SYCERON_INDEX_NON_PUBLIE: dict[str, dict[str, list[dict[str, Any]]]] = {}
 
 # Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
 # pas de decoupage par legislature).
@@ -568,7 +585,13 @@ WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
-WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES = "interventions syceron indisponibles (fallback nosdeputes)"
+# #510 : le libellé portait « (fallback nosdeputes) » tant qu'un repli existait.
+# Le repli a été RETIRÉ le 27/08/2026 : Syceron est désormais la seule source du
+# chemin interventions (avec les questions officielles, qui ne l'ont jamais
+# doublé mais complété). Le préfixe conservé est un PRÉFIXE de l'ancien, ce qui
+# laisse `_prune_stale_warnings` reconnaître les warnings déjà écrits dans le
+# corpus publié.
+WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES = "interventions syceron indisponibles"
 # #498 : collecte d'interventions interrompue par son budget de temps mur. JAMAIS
 # retiré par _prune_stale_warnings : contrairement à « votes introuvables », que
 # la fusion peut démentir en restaurant les votes de l'ancien fichier, celui-ci
@@ -593,8 +616,10 @@ WARNING_PREFIX_SOURCE_INJOIGNABLE = "source injoignable"
 # </id>`), et le code lui appliquait `re.fullmatch(r"PA\d+")` — donc l'index de la
 # source PRIMAIRE des interventions était vide depuis toujours.
 #
-# Le correctif est livré INACTIF par défaut, et son activation est une décision
-# distincte, parce que ce qu'il déverrouille n'est pas prêt à être publié.
+# La résolution est ACTIVE depuis le 27/08/2026, sans drapeau : c'est le
+# comportement de collecte, et le repli NosDéputés qui comblait le silence a été
+# retiré du chemin interventions dans le même mouvement (décision d'opérateur
+# prise sur les mesures ci-dessous, cf. docs/technical_decisions.md#syceron-actif-510).
 #
 # Les deux défauts de parseur qui bloquaient l'activation sont corrigés depuis le
 # 26/08/2026 (parcours récursif des `<point>`, sujet lu là où la source le publie)
@@ -614,51 +639,62 @@ WARNING_PREFIX_SOURCE_INJOIGNABLE = "source injoignable"
 # `id_acteur == "PA" + <orateur><id>` sur **1 232 692 des 1 235 317** paragraphes
 # qui portent les deux. Le préfixage vaut donc pour les trois archives.
 #
-# Ce que l'activation coûterait, en revanche, a été multiplié par la correction
-# du parseur, pas réduit : là où #510 mesurait 104 239 interventions et 136,8 Mio
-# d'index pour la seule 17e, il y en a désormais **1 227 415 pour les trois**,
-# soit ~7,5 fois plus. Et `_build_acteur_interventions_syceron_index` relit
-# l'index depuis le disque à CHAQUE candidat et pour CHAQUE législature (1,56 s
-# et 563 Mio de RSS mesurés sur un index de 136,8 Mio) : le budget de 240 s de
-# #498/#500 avait été dimensionné sur une source rendant zéro, et la tranche par
-# acteur (`_scrutins_shard_path_acteur`, #392/#403) reste à écrire ici.
+# Ce que l'activation coûte a été multiplié par la correction du parseur, pas
+# réduit : là où #510 mesurait 104 239 interventions et 136,8 Mio d'index pour la
+# seule 17e, il y en a **1 227 415 pour les trois**, soit ~7,5 fois plus, et
+# 1 664,8 Mio d'index sur disque. C'est ce qui rend la TRANCHE PAR ACTEUR
+# obligatoire, et non plus « à écrire un jour » : l'index était relu ENTIER, à
+# chaque candidat et pour chaque législature (12,5 s et 3,8 Gio de RSS de pic
+# mesurés le 26/08/2026 sur les trois archives), face au budget de 240 s de
+# #498/#500. Un candidat ne lit désormais que sa propre tranche — même patron que
+# #392 (amendements) et #403 (scrutins), et la même règle d'AGENTS.md : « un cache
+# disque évite un re-téléchargement, jamais un re-parsing ».
 #
-# Activer ce drapeau est donc un choix d'opérateur, pris en connaissance de ces
-# mesures : `--activer-interventions-syceron`.
-SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE = False
+# Ce qui N'A PAS été remesuré ici, faute de pouvoir télécharger les archives dans
+# cet environnement : le coût par candidat et le pic de RSS de la nouvelle forme.
+# Ils sont bornés par CONSTRUCTION (une tranche d'acteur lue, jamais l'index),
+# pas par une mesure — la mesure reste à faire au premier run réel, et c'est
+# écrit tel quel dans docs/technical_decisions.md#syceron-actif-510.
+SYCERON_INDEX_PAR_ACTEUR_DIRNAME = "index_par_acteur"
 
-# Nom du fichier d'index selon le mode de résolution. Deux noms distincts, et non
-# un seul : `.cache/syceron_an` est partagé entre les shards par la clé de cache
-# de #505, et un index construit dans un mode servi à un run de l'autre mode est
-# exactement le défaut que #505 vient de corriger (un contenu qui dépend d'une
-# entrée doit porter cette entrée dans sa clé, AGENTS.md).
-SYCERON_INDEX_FILENAME = "index_par_acteur.json"
-SYCERON_INDEX_FILENAME_ACTEUR_NU = "index_par_acteur_acteurs_nus.json"
+# Index plats hérités, supprimés dès qu'une tranche par acteur est publiée. Le
+# premier est l'index du mode `PA\d+` — 2 octets (`{}`) construits sur 380 Mo
+# d'archive, le défaut même de #510 ; le second est l'index du mode actif d'avant
+# le tranchage. Aucun des deux n'est plus JAMAIS relu : servir un index de 2
+# octets à un run qui, lui, sait résoudre les identifiants nus est exactement le
+# défaut de cache que #505 a corrigé.
+SYCERON_INDEX_FILENAMES_HERITES = (
+    "index_par_acteur.json",
+    "index_par_acteur_acteurs_nus.json",
+)
 
-AIDE_ACTIVER_INTERVENTIONS_SYCERON = (
-    "Résoudre les identifiants d'orateur que l'archive Syceron publie NUS "
-    "(<orateur><id>847629</id>) en acteurRef AN, et laisser ainsi la source "
-    "PRIMAIRE des interventions alimenter réellement les profils (#510). "
-    "INACTIF par défaut : mesuré le 26/08/2026 sur les TROIS archives complètes "
-    "(2 768 comptes rendus), l'activation indexerait 1 227 415 interventions "
-    "(633 764 sur la 15e, 305 862 sur la 16e, 287 789 sur la 17e) là où le corpus "
-    "en publie 789 aujourd'hui. L'index est relu à chaque candidat et pour chaque "
-    "législature (1,56 s / 563 Mio de RSS pour 136,8 Mio) : le budget de 240 s de "
-    "#500 a été dimensionné sur une source qui rendait zéro, et la tranche par "
-    "acteur reste à écrire. N'activer qu'en connaissance de ces mesures."
+_AIDE_REFUS_DRAPEAU_SYCERON = (
+    "--activer-interventions-syceron a été RETIRÉ (#510, 27/08/2026) : la "
+    "résolution des identifiants d'orateur que Syceron publie nus est désormais "
+    "le comportement de collecte, et le repli NosDéputés du chemin interventions "
+    "a été retiré avec le drapeau. Il n'y a plus rien à activer — retirer "
+    "l'option. Pour ne pas collecter d'interventions du tout : "
+    "--skip-interventions. Voir docs/technical_decisions.md#syceron-actif-510."
 )
 
 
-def activer_resolution_acteur_nu_syceron(actif: bool) -> None:
-    """Active (ou non) la résolution des identifiants d'orateur nus (#510).
+class RefusDrapeauInterventionsSyceron(argparse.Action):
+    """Refus BRUYANT de l'ancien drapeau `--activer-interventions-syceron` (#510).
 
-    Drapeau de module et non paramètre d'appel : l'index Syceron est construit
-    UNE fois par législature, mis en cache et partagé entre les shards (#505).
-    C'est donc une propriété de l'index, pas du candidat en cours — un réglage
-    par candidat ne pourrait rien vouloir dire sur un fichier partagé.
+    Un `unrecognized arguments` dirait que l'option n'existe pas, pas qu'elle a
+    été retirée parce que son contenu est devenu le défaut. La différence
+    compte : un script ou un workflow qui la passe encore doit lire la décision,
+    et surtout ne pas conclure que la collecte Syceron a été désactivée. Même
+    forme de refus que `--source senat` (#528).
     """
-    global SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE
-    SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE = bool(actif)
+
+    def __init__(self, option_strings, dest, **kwargs):
+        kwargs["nargs"] = 0
+        kwargs.setdefault("help", argparse.SUPPRESS)
+        super().__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.error(_AIDE_REFUS_DRAPEAU_SYCERON)
 
 
 def _get_scrutins_lock(legislature: str) -> threading.Lock:
@@ -685,11 +721,11 @@ def _get_questions_lock(legislature: str) -> threading.Lock:
         return _QUESTIONS_LOCKS[legislature]
 
 
-def _get_syceron_lock(legislature: str) -> threading.Lock:
-    """Retourne (ou crée) le verrou associé à une législature donnée (débats Syceron)."""
+def _get_syceron_lock(legislature: str) -> threading.RLock:
+    """Retourne (ou crée) le verrou RÉENTRANT associé à une législature (débats Syceron)."""
     with _SYCERON_LOCKS_META:
         if legislature not in _SYCERON_LOCKS:
-            _SYCERON_LOCKS[legislature] = threading.Lock()
+            _SYCERON_LOCKS[legislature] = threading.RLock()
         return _SYCERON_LOCKS[legislature]
 
 
@@ -1006,83 +1042,6 @@ def _normalize_search_query(text: str) -> str:
     decomposed = unicodedata.normalize("NFKD", text)
     without_accents = "".join(c for c in decomposed if not unicodedata.combining(c))
     return without_accents.lower()
-
-
-def fetch_recherche(base_url: str, query: str, object_name: Optional[str] = None, page: int = 1) -> Optional[dict]:
-    """Récupère les résultats de recherche API pour un terme donné."""
-    params = [f"format=json"]
-    if object_name:
-        params.append(f"object_name={object_name}")
-    if page and page > 1:
-        params.append(f"page={page}")
-    url = f"{base_url}/recherche/{query}?{'&'.join(params)}"
-    print(f"-> Recherche API : {url}")
-    return _get_payload(url)
-
-
-def fetch_all_intervention_results(base_url: str, query: str, object_name: str = "Intervention", max_pages: int = 10) -> dict[str, Any]:
-    """Agrège les résultats de recherche sur plusieurs pages jusqu'à épuisement ou plafond."""
-    aggregated: list[dict[str, Any]] = []
-    normalized_query = _normalize_search_query(query)
-    for page in range(1, max_pages + 1):
-        payload = fetch_recherche(base_url, normalized_query, object_name=object_name, page=page)
-        if not isinstance(payload, dict):
-            break
-        results = payload.get("results") or []
-        if not results:
-            break
-        aggregated.extend(results)
-        time.sleep(0.2)
-    return {"results": aggregated}
-
-
-def fetch_all_intervention_results_from_domains(
-    base_urls: list[str],
-    query: str,
-    object_name: str = "Intervention",
-    max_pages: int = 10,
-) -> dict[str, Any]:
-    """Interroge tous les domaines en parallèle, fusionne les résultats et supprime les doublons."""
-    if not base_urls:
-        return {"results": []}
-
-    normalized_query = _normalize_search_query(query)
-
-    def _fetch_one(base_url: str) -> list[dict[str, Any]]:
-        payload = fetch_all_intervention_results(base_url, normalized_query, object_name=object_name, max_pages=max_pages)
-        results = payload.get("results") or []
-        enriched: list[dict[str, Any]] = []
-        for item in results:
-            if not isinstance(item, dict):
-                continue
-            enriched_item = dict(item)
-            enriched_item["_search_base_url"] = base_url
-            enriched_item["_search_query"] = normalized_query
-            enriched_item["_search_object_name"] = object_name
-            enriched.append(enriched_item)
-        return enriched
-
-    # Recherche parallèle sur chaque domaine : plusieurs requêtes de recherche
-    # distinctes, puis fusion des réponses et déduplication par document_id.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(base_urls))) as executor:
-        domain_results = list(executor.map(_fetch_one, base_urls))
-
-    merged_results: list[dict[str, Any]] = []
-    seen_ids: set[str] = set()
-    for results in domain_results:
-        for item in results:
-            if not isinstance(item, dict):
-                continue
-            document_id = item.get("document_id")
-            if not document_id:
-                continue
-            key = str(document_id)
-            if key in seen_ids:
-                continue
-            seen_ids.add(key)
-            merged_results.append(item)
-
-    return {"results": merged_results}
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
@@ -4387,22 +4346,17 @@ def _parse_syceron_intervention_entry(
     l'identifiant publié vers l'`acteurRef` est celle de
     `_normaliser_orateur_id_syceron` (#510).
 
-    Tant que `SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE` est à `False` (défaut), seule
-    la forme historiquement acceptée (`PA<n>`) passe : le comportement publié est
-    inchangé, octet pour octet. Voir `_build_acteur_interventions_syceron_index`
-    pour ce que l'activation coûte, et pourquoi elle est une décision distincte
-    du correctif.
+    Elle s'applique SANS condition depuis le 27/08/2026. Le mode historique — le
+    `re.fullmatch(r"PA\\d+")` appliqué à un identifiant que l'archive publie nu —
+    n'existe plus : il ne rendait pas « moins » d'interventions, il en rendait
+    **zéro**, sur les trois archives.
     """
     if not isinstance(intervention, dict):
         return None
 
-    valeur = intervention.get("orateur_id_source")
-    if SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
-        acteur_ref, _motif = _normaliser_orateur_id_syceron(
-            valeur, intervention.get("orateur_id_acteur")
-        )
-    else:
-        acteur_ref = valeur if isinstance(valeur, str) and re.fullmatch(r"PA\d+", valeur) else None
+    acteur_ref, _motif = _normaliser_orateur_id_syceron(
+        intervention.get("orateur_id_source"), intervention.get("orateur_id_acteur")
+    )
     if acteur_ref is None:
         return None
 
@@ -4439,52 +4393,124 @@ def _parse_syceron_intervention_entry(
     return acteur_ref, record
 
 
+def _syceron_memo_key(legislature: str) -> str:
+    """Clé du mémo process : le chemin ABSOLU du cache de la législature (#510)."""
+    return str((SYCERON_CACHE_DIR / legislature).resolve())
+
+
+def _syceron_shard_path_acteur(legislature: str, acteur_ref: str) -> Optional[Path]:
+    """Chemin de la tranche d'index d'UN acteur (#510, patron de #392/#403).
+
+    Retourne `None` si `acteur_ref` n'a pas la forme attendue d'un identifiant AN
+    (`PA` suivi de chiffres) : le nom de fichier en étant dérivé, on refuse tout
+    ce qui pourrait sortir du répertoire de cache plutôt que d'assainir
+    approximativement.
+    """
+    if not isinstance(acteur_ref, str) or not re.fullmatch(r"PA\d+", acteur_ref):
+        return None
+    return (
+        SYCERON_CACHE_DIR
+        / legislature
+        / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
+        / f"{acteur_ref}.json"
+    )
+
+
+def _read_cached_interventions_syceron_acteur(
+    legislature: str, acteur_ref: str
+) -> Optional[list[dict[str, Any]]]:
+    """Interventions Syceron d'UN acteur, lues depuis la tranche en cache (#510).
+
+    Retourne `None` si l'index n'est pas disponible (répertoire de tranches
+    absent, ou tranche illisible) — l'appelant reconstruit alors —, et une liste
+    éventuellement vide si l'acteur n'y figure pas. Distinguer « cet acteur n'a
+    pas parlé sous cette législature » de « index indisponible » est la même
+    règle que sur les votes et les amendements (règle 5 : une donnée manquante
+    n'est jamais un 0).
+
+    Coût : une tranche d'acteur, là où la forme d'avant relisait l'index ENTIER
+    à chaque candidat et pour chaque législature — 1 664,8 Mio et 12,5 s pour les
+    trois archives, mesurés le 26/08/2026.
+    """
+    index_dir = SYCERON_CACHE_DIR / legislature / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
+    if not index_dir.is_dir():
+        return None
+    shard_path = _syceron_shard_path_acteur(legislature, acteur_ref)
+    if shard_path is None or not shard_path.is_file():
+        return []
+    try:
+        with open(shard_path, encoding="utf-8") as f:
+            entrees = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return entrees if isinstance(entrees, list) else None
+
+
+def _write_syceron_index_par_acteur(
+    legislature: str, index: dict[str, list[dict[str, Any]]]
+) -> None:
+    """Publie l'index Syceron en tranches par acteur, d'un seul `os.replace` (#510).
+
+    Le répertoire est écrit à côté puis basculé : remplir `index_par_acteur/` en
+    place laisserait, pendant toute la boucle, un répertoire qui EXISTE et qui
+    est INCOMPLET — et `_read_cached_interventions_syceron_acteur` lit un
+    répertoire présent comme un index complet, donc chaque acteur dont la tranche
+    manque encore serait lu « n'a pas parlé » au lieu de « index indisponible ».
+    C'est mot pour mot le défaut de #447 sur les amendements, et le cas est
+    atteignable ici aussi : le cache est partagé entre les shards par la clé de
+    #505.
+    """
+    cache_dir = SYCERON_CACHE_DIR / legislature
+    index_dir = cache_dir / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
+    tmp_dir = cache_dir / f"{SYCERON_INDEX_PAR_ACTEUR_DIRNAME}.partiel"
+    shutil.rmtree(tmp_dir, ignore_errors=True)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    for acteur_ref, entrees in index.items():
+        shard_path = _syceron_shard_path_acteur(legislature, acteur_ref)
+        if shard_path is None:
+            continue  # acteurRef hors forme attendue : ignoré plutôt qu'écrit
+        with open(tmp_dir / shard_path.name, "w", encoding="utf-8") as f:
+            json.dump(entrees, f, ensure_ascii=False)
+    shutil.rmtree(index_dir, ignore_errors=True)
+    os.replace(tmp_dir, index_dir)
+    for nom in SYCERON_INDEX_FILENAMES_HERITES:
+        (cache_dir / nom).unlink(missing_ok=True)
+
+
 def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
-    """Construit (et met en cache) un index acteurRef -> interventions Syceron.
+    """Construit (et publie en tranches par acteur) l'index acteurRef -> interventions.
 
     Les XML Syceron sont déjà téléchargés/extraits par `syceron_debates.py` ;
     ici on ne sérialise que l'index final des interventions rattachables sans
     ambiguïté à un `acteurRef` officiel.
 
-    **Un index vide construit sur une archive LISIBLE n'est plus jamais rendu en
+    **Cette fonction ne lit jamais le cache** : c'est le CONSTRUCTEUR. La lecture
+    passe par `_read_cached_interventions_syceron_acteur`, une tranche à la fois
+    (#510) — relire l'index entier par candidat coûtait 12,5 s et 3,8 Gio de RSS
+    de pic sur les trois archives.
+
+    **Un index vide construit sur une archive LISIBLE n'est jamais publié en
     silence (#510, §2.5).** C'est le trou par lequel le défaut est passé : la
     garde de #505 ne couvrait que le cas « aucun fichier lisible », et un `{}`
     produit à partir de 601 comptes rendus lus passait, lui, pour un résultat.
     Une source primaire qui rend zéro sur une archive présente est une donnée
     manquante, pas un zéro mesuré ; le repli NosDéputés comblait le silence, donc
-    rien ne le signalait.
-
-    Deux régimes, parce que le vide n'y a pas le même sens :
-
-    - `SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE` **actif** : un index vide est une
-      anomalie. Il est annoncé et **non mis en cache** — figé sous la clé de la
-      semaine (#505), il rendrait le défaut invisible à tous les shards suivants ;
-    - **inactif** (défaut) : le vide est le comportement attendu. L'index reste
-      mis en cache — ne plus le faire ferait re-parcourir l'archive (16,2 s
-      mesurées sur la 17e) à chaque candidat, au débit du budget de 240 s de
-      #498 — mais la ligne qui l'annonce, elle, est émise dans les deux cas.
+    rien ne le signalait. Le repli est parti, mais la garde reste : sans elle,
+    c'est un profil publié sans interventions qui passerait pour un constat.
 
     Les rejets sont **agrégés**, une ligne par législature, jamais un warning par
-    entrée : ils se comptent en dizaines de milliers (mesuré sur la 17e, mode
-    actif, parseur corrigé : 28 592 paragraphes sans orateur, 2 154 orateurs
-    collectifs anonymes, 312 pseudo-acteurs hors référentiel, 1 attribution
-    refusée par la source, 0 forme inattendue). Un warning par entrée serait pire
-    que le silence — même arbitrage que #492, où un warning par mandat aurait
-    fait 214 occurrences là qu'un agrégat par profil dit la même chose.
+    entrée : ils se comptent en dizaines de milliers (mesuré sur la 17e, parseur
+    corrigé : 28 592 paragraphes sans orateur, 2 154 orateurs collectifs
+    anonymes, 312 pseudo-acteurs hors référentiel, 1 attribution refusée par la
+    source, 0 forme inattendue). Un warning par entrée serait pire que le
+    silence — même arbitrage que #492, où un warning par mandat aurait fait 214
+    occurrences là qu'un agrégat par profil dit la même chose.
     """
     with _get_syceron_lock(legislature):
-        nom_index = (
-            SYCERON_INDEX_FILENAME_ACTEUR_NU
-            if SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE
-            else SYCERON_INDEX_FILENAME
-        )
-        index_path = Path(".cache") / "syceron_an" / legislature / nom_index
-        if index_path.is_file():
-            try:
-                with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, OSError):
-                pass
+        memo_key = _syceron_memo_key(legislature)
+        non_publie = _SYCERON_INDEX_NON_PUBLIE.get(memo_key)
+        if non_publie is not None:
+            return non_publie
 
         index: dict[str, list[dict[str, Any]]] = {}
         motifs: Counter[str] = Counter()
@@ -4522,6 +4548,7 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 f"  [!] Index des débats Syceron (législature {legislature}) NON mis en "
                 "cache : aucun compte rendu lisible (archive indisponible ?)."
             )
+            _SYCERON_INDEX_NON_PUBLIE[memo_key] = index
             return index
 
         detail = ", ".join(f"{motif}={n}" for motif, n in sorted(motifs.items())) or "aucune entrée"
@@ -4554,48 +4581,69 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                 "thématiques dérivés seraient vides."
             )
 
-        if not index and SYCERON_RESOLUTION_ACTEUR_NU_ACTIVE:
+        if not index:
             # #510, §2.5 : une source primaire qui rend zéro sur une archive
             # lisible est une donnée manquante, pas un zéro mesuré. Ne rien
-            # mettre en cache — un index vide figé sous la clé de la semaine
-            # (#505) rendrait le défaut invisible pour tous les shards suivants,
-            # et c'est très exactement ainsi que #510 a survécu.
+            # publier — un index vide figé sous la clé de la semaine (#505)
+            # rendrait le défaut invisible pour tous les shards suivants, et
+            # c'est très exactement ainsi que #510 a survécu.
+            #
+            # Depuis le retrait du repli, plus rien ne comble ce silence : les
+            # profils de ce run sortiraient SANS interventions. Le warning de
+            # profil (`interventions syceron indisponibles`) le dit candidat par
+            # candidat, cette ligne-ci le dit une fois par législature.
             print(
                 f"  [!] Index des débats Syceron (législature {legislature}) NON mis en "
                 f"cache : {fichiers_lus} compte(s) rendu(s) lu(s) mais AUCUN acteur résolu. "
                 "La source primaire des interventions ne rend rien alors que l'archive est "
-                "présente — le repli NosDéputés va combler le silence (#510)."
+                "présente — et le repli NosDéputés a été retiré (#510) : les profils de ce "
+                "run n'auront pas d'interventions de débat."
             )
+            _SYCERON_INDEX_NON_PUBLIE[memo_key] = index
             return index
-        if not index:
-            # Mode par défaut : l'index vide est le comportement ATTENDU tant que
-            # la résolution des identifiants nus n'est pas activée. Il reste mis
-            # en cache — ne plus le faire ferait re-parcourir les 601 comptes
-            # rendus (16 s mesurées sur la 17e) à chaque candidat, au débit du
-            # budget de 240 s de #498. Mais il n'est plus muet : c'est le silence
-            # qui a coûté #510.
-            print(
-                f"  [!] Index des débats Syceron (législature {legislature}) VIDE : "
-                "la résolution des identifiants d'orateur nus est inactive, aucune "
-                "intervention Syceron ne sera indexée et le repli NosDéputés prendra "
-                "la main. Activation : --activer-interventions-syceron (#510)."
-            )
 
         try:
-            index_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(index_path, "w", encoding="utf-8") as f:
-                json.dump(index, f, ensure_ascii=False)
-        except OSError:
-            pass
+            _write_syceron_index_par_acteur(legislature, index)
+        except OSError as exc:
+            # L'index reste valide pour CE candidat, mais rien n'est publié : le
+            # suivant reparcourra l'archive. Dit à voix haute plutôt que mémoïsé
+            # — garder 866 Mio d'index résidents pour contourner un cache
+            # inaccessible échangerait un défaut lent contre un OOM.
+            print(
+                f"  [!] Index des débats Syceron (législature {legislature}) NON publié "
+                f"en tranches : {exc}. Chaque candidat reparcourra l'archive."
+            )
 
         return index
+
+
+def _interventions_syceron_acteur(legislature: str, acteur_ref: str) -> list[dict[str, Any]]:
+    """Interventions Syceron d'un acteur pour une législature (#510).
+
+    Lit la tranche d'acteur si l'index est publié, et ne reconstruit — donc ne
+    reparcourt l'archive — que s'il ne l'est pas. Le verrou est pris ici, et non
+    seulement dans le constructeur : sans lui, N candidats qui trouvent l'index
+    absent le construisent N fois.
+    """
+    with _get_syceron_lock(legislature):
+        entrees = _read_cached_interventions_syceron_acteur(legislature, acteur_ref)
+        if entrees is not None:
+            return entrees
+        index = _build_acteur_interventions_syceron_index(legislature)
+        return list(index.get(acteur_ref) or [])
 
 
 def fetch_interventions_syceron(
     url_an_ou_senat: Optional[str],
     budget: Optional[BudgetCollecte] = None,
 ) -> list[dict[str, Any]]:
-    """Récupère les débats Syceron d'un député via son `acteurRef` officiel AN."""
+    """Récupère les débats Syceron d'un député via son `acteurRef` officiel AN.
+
+    Source PRIMAIRE et désormais unique des interventions de débat : le repli
+    NosDéputés a été retiré du chemin par #510. Une liste vide est donc un
+    résultat publié tel quel, et déclaré par `build_profile` dans
+    `meta.warnings[]` — jamais comblé par une autre source.
+    """
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         return []
@@ -4612,8 +4660,7 @@ def fetch_interventions_syceron(
         if budget_epuise(budget):
             budget_ignorer(budget, "législature(s) de débats Syceron", len(legislatures) - rang)
             break
-        index = _build_acteur_interventions_syceron_index(legislature)
-        interventions.extend(index.get(acteur_ref, []))
+        interventions.extend(_interventions_syceron_acteur(legislature, acteur_ref))
 
     interventions.sort(key=lambda entry: (entry.get("date") or "", entry.get("id") or ""), reverse=True)
     return interventions
@@ -4725,361 +4772,9 @@ def _extract_mandats(
     return mandats
 
 
-# Seuil (en nombre de mots, champ `nb_mots` de l'API) en-deçà duquel une intervention
-# est considérée comme une réaction/interjection courte plutôt qu'une prise de parole
-# développée. Heuristique ajustable : les interjections observées ("Oh !", "Bravo !",
-# "Très bien !", "Mais non !") comptent 2 à 3 mots, tandis qu'une intervention
-# construite dépasse largement ce seuil.
-REACTION_COURTE_NB_MOTS_MAX = 15
-
-
-def _to_int(value: Any) -> Optional[int]:
-    """Convertit une valeur (souvent une chaîne renvoyée par l'API) en entier, sans lever."""
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _classify_intervention_format(nb_mots: Optional[int]) -> Optional[str]:
-    """Distingue une réaction courte (interjection/exclamation lancée depuis les bancs)
-    d'une prise de parole développée, à partir de la longueur de l'intervention.
-    Ne remplace pas `classification.mode` (qui identifie l'orateur) : les deux se
-    combinent pour répondre à « était-il à la tribune/au micro, ou a-t-il juste réagi ? »."""
-    if nb_mots is None:
-        return None
-    return "reaction_courte" if nb_mots <= REACTION_COURTE_NB_MOTS_MAX else "prise_de_parole_developpee"
-
-
-def fetch_intervention_details(base_url: str, intervention_id: str) -> Optional[dict[str, Any]]:
-    """Récupère les détails d’une intervention via l’API de document."""
-    url = f"{base_url}/api/document/Intervention/{intervention_id}/json"
-    print(f"-> Détail intervention : {url}")
-    data = _get_payload(url)
-    if isinstance(data, dict):
-        intervention = data.get("intervention") or {}
-        if isinstance(intervention, dict):
-            speaker_name = None
-            speaker_url = None
-            url_nosdeputes = intervention.get("url_nosdeputes")
-            if url_nosdeputes:
-                try:
-                    page = requests.get(url_nosdeputes, headers=HEADERS, timeout=TIMEOUT)
-                    page.raise_for_status()
-                    # Le site ne déclare pas toujours son charset : sans cela, requests
-                    # utilise ISO-8859-1 par défaut et corrompt les caractères accentués.
-                    page.encoding = page.apparent_encoding or page.encoding
-                    anchor_id = urlsplit(url_nosdeputes).fragment or None
-                    speaker_name, speaker_url = _extract_speaker_identity_from_html(page.text, anchor_id=anchor_id)
-                except requests.RequestException:
-                    speaker_name, speaker_url = None, None
-
-            return {
-                "id": intervention.get("id"),
-                "date": intervention.get("date"),
-                "created_at": intervention.get("created_at"),
-                "type": intervention.get("type"),
-                "source": intervention.get("source"),
-                "texte": intervention.get("intervention"),
-                "url": url_nosdeputes,
-                "parlementaire_id": intervention.get("parlementaire_id"),
-                "personnalite_id": intervention.get("personnalite_id"),
-                "seance_id": intervention.get("seance_id"),
-                "speaker_name": speaker_name,
-                "speaker_url": speaker_url,
-                # `fonction` est le rôle institutionnel officiel occupé par l'orateur au
-                # moment précis de cette intervention (ex. "Première ministre", "Rapporteur",
-                # "Président de la commission des lois") : vide pour un simple député sans
-                # fonction particulière. `nb_mots` sert de proxy pour distinguer une réaction
-                # courte (interjection) d'une prise de parole développée.
-                "fonction": intervention.get("fonction") or None,
-                "nb_mots": _to_int(intervention.get("nb_mots")),
-            }
-    return None
-
-
-def fetch_seance_context(detail: Optional[dict[str, Any]]) -> dict[str, Any]:
-    """Enrichit une intervention à partir du contenu HTML de la page de séance, quand la page est accessible."""
-    if not detail:
-        return {"sujet": None, "mots_cles": []}
-
-    url_detail = detail.get("url") or detail.get("source")
-    if not url_detail:
-        return {"sujet": None, "mots_cles": []}
-
-    try:
-        resp = requests.get(url_detail, headers=HEADERS, timeout=20)
-        resp.raise_for_status()
-        # Même remarque que pour les pages d'intervention : forcer l'encodage détecté
-        # évite le mojibake sur les accents lorsque le serveur ne déclare pas de charset.
-        resp.encoding = resp.apparent_encoding or resp.encoding
-        html_text = resp.text
-    except requests.RequestException:
-        return {"sujet": detail.get("type"), "mots_cles": []}
-
-    soup = BeautifulSoup(html_text, "html.parser")
-
-    sujet = None
-    keywords: list[str] = []
-
-    summary_block = None
-    for node in soup.find_all(["div", "section", "aside"]):
-        if not node.get("class"):
-            continue
-        class_names = " ".join(node.get("class", [])).lower()
-        if "orga_dossier" in class_names or "sommaire" in class_names or "summary" in class_names:
-            summary_block = node
-            break
-
-    if summary_block is None:
-        summary_block = soup.find(["div", "section"], string=lambda value: value and "sommaire" in value.lower())
-
-    if summary_block is not None:
-        link_candidates = []
-        for link in summary_block.find_all("a"):
-            text = " ".join(link.get_text(" ", strip=True).split())
-            if not text:
-                continue
-            lowered = text.lower()
-            if any(skip in lowered for skip in ["voir le dossier", "retour au sommaire", "permalink", "commentaire", "source"]):
-                continue
-            if len(text) < 120:
-                link_candidates.append(text)
-        if link_candidates:
-            sujet = link_candidates[0]
-
-    if not sujet:
-        summary_candidates: list[str] = []
-
-        for node in soup.find_all(["h1", "h2", "h3", "p", "div", "li", "span"]):
-            text = " ".join(node.get_text(" ", strip=True).split())
-            if not text:
-                continue
-            lowered = text.lower()
-            if any(marker in lowered for marker in ["résumé de la réunion", "resume de la reunion", "résumé de la séance", "resume de la seance", "résumé de la seance", "résumé"]):
-                summary_candidates.append(text)
-                continue
-            if node.name in {"h2", "h3"} and len(text) < 180 and not re.search(r"(mots clés|mot-clé|source|permalien|commentaires)", lowered):
-                summary_candidates.append(text)
-
-        for candidate in summary_candidates:
-            cleaned = re.sub(r"^(?:résumé|resume)\s*(?:de la|de la séance|de la reunion|de la seance)?\s*[:\-]?\s*", "", candidate, flags=re.I)
-            cleaned = re.sub(r"^(?:réunion|seance|séance|session|table ronde|audition)\s*[:\-]?\s*", "", cleaned, flags=re.I)
-            cleaned = cleaned.strip(" :.-")
-            if cleaned and len(cleaned) < 220:
-                sujet = cleaned
-                break
-
-    if not sujet:
-        title = soup.title.get_text(" ", strip=True) if soup.title else None
-        if title:
-            title_parts = re.split(r"\s*-\s*", title, flags=re.I)
-            title_candidate = title_parts[0].strip() if title_parts else title
-            if title_candidate:
-                sujet = title_candidate
-
-    if not sujet:
-        sujet = detail.get("type")
-
-    tag_block = soup.find(class_="nuage_de_tags")
-    if tag_block:
-        text = " ".join(tag_block.get_text(" ", strip=True).split())
-        if text:
-            parts = [p.strip() for p in re.split(r"[\s,;]+", text) if p.strip()]
-            keywords = []
-            for p in parts:
-                cleaned = re.sub(r"^(?:mots\s+clés|mots\s+cles|mot-clé|mot-cle|mots clés|mots cles|clés|cles)\s*[:\-]?\s*", "", p, flags=re.I)
-                cleaned = cleaned.strip(" :.-")
-                if cleaned and cleaned.lower() not in {"les", "de", "cette", "réunion", "reunion", "mot", "mots", "clé", "cle"}:
-                    keywords.append(cleaned)
-
-    return {"sujet": sujet, "mots_cles": keywords[:8]}
-
-
-def _extract_speaker_identity_from_html(html_text: Optional[str], anchor_id: Optional[str] = None) -> tuple[Optional[str], Optional[str]]:
-    """Extrait le nom et l'URL du profil de l'orateur depuis le HTML d'une intervention.
-
-    Une page de séance contient les interventions de tous les orateurs. Si un
-    identifiant d'ancre (ex. "inter_abc123", tiré du fragment #... de l'URL de
-    l'intervention) est fourni, on restreint la recherche du bloc div.perso au
-    conteneur de CETTE intervention précise, plutôt que de prendre le premier
-    div.perso de la page (souvent le/la président·e de séance).
-    """
-    if not html_text:
-        return None, None
-
-    try:
-        soup = BeautifulSoup(html_text, "html.parser")
-    except Exception:
-        return None, None
-
-    scope = soup
-    restrict_to_scope = False
-    if anchor_id:
-        anchor = soup.find(id=anchor_id) or soup.find(attrs={"name": anchor_id})
-        if anchor is not None:
-            classes = anchor.get("class") or []
-            container = anchor if "intervention" in classes else anchor.find_parent(class_="intervention")
-            scope = container or anchor
-            restrict_to_scope = True
-
-    for container in scope.select("div.perso"):
-        text = " ".join(container.get_text(" ", strip=True).split())
-        if text and len(text) < 220:
-            for link in container.find_all("a"):
-                href = link.get("href")
-                if href:
-                    return text, href
-            return text, None
-
-    if restrict_to_scope:
-        # On ne remonte pas à l'orateur d'une autre intervention de la page :
-        # mieux vaut ne rien renvoyer que d'attribuer la mauvaise identité.
-        return None, None
-
-    return None, None
-
-
-def _classify_intervention(item: dict[str, Any], candidate_name: str, candidate_id: Optional[str]) -> dict[str, Any]:
-    """Classe une intervention en prise de parole uniquement via l'orateur du bloc div.perso."""
-    _ = candidate_id  # Conservé pour compatibilité de signature.
-    structured_speaker = item.get("speaker_name") or item.get("speaker") or item.get("orateur")
-    speaker_url = item.get("speaker_url") or item.get("speaker_href")
-    if not structured_speaker and not speaker_url:
-        html_payload = item.get("html")
-        if html_payload:
-            structured_speaker, speaker_url = _extract_speaker_identity_from_html(str(html_payload))
-
-    if not structured_speaker and not speaker_url:
-        return {
-            "mode": "mention",
-            "reason": "orateur_bloc_perso_introuvable",
-        }
-
-    candidate_name_lower = candidate_name.lower()
-    speaker_lower = (structured_speaker or "").lower()
-    speaker_url_lower = (speaker_url or "").lower()
-    # Les URLs nosdeputes.fr sont toujours sans accent (ex. "elisabeth-borne"),
-    # contrairement au nom candidat brut : on désaccentue avant de construire le
-    # slug pour ne pas rater la correspondance (cf. _normalize_search_query).
-    slug = _normalize_search_query(candidate_name).replace(" ", "-")
-
-    if slug and slug in speaker_url_lower:
-        return {
-            "mode": "prise_de_parole",
-            "reason": "orateur_bloc_perso_url_correspondante",
-        }
-
-    if structured_speaker and candidate_name_lower in speaker_lower:
-        return {
-            "mode": "prise_de_parole",
-            "reason": "orateur_bloc_perso_nom_correspondant",
-        }
-
-    return {
-        "mode": "mention",
-        "reason": "orateur_bloc_perso_non_correspondant",
-    }
-
-
-def _process_search_result(
-    item: dict[str, Any],
-    base_url: str,
-    candidate_name: str,
-    candidate_id: Optional[str],
-    budget: Optional[BudgetCollecte] = None,
-) -> Optional[dict[str, Any]]:
-    """Traite un résultat de recherche unique (détail + contexte de séance) et le nettoie.
-
-    Retourne None si le résultat n'est pas une prise de parole (mention simple).
-    Extrait de `_extract_search_results` pour être exécuté en parallèle par résultat.
-    """
-    # #498 : le budget est vérifié à l'entrée de CHAQUE document, et non une fois
-    # pour toute la liste. C'est le seul point du parcours où la granularité est
-    # fine : sur une source dégradée, un document coûte jusqu'à 45 s (read
-    # timeout=15 × 3 tentatives), et il y en a jusqu'à ~250 par candidat.
-    if budget_epuise(budget):
-        budget_ignorer(budget, "document(s) d'intervention NosDéputés")
-        return None
-    document_id = item.get("document_id")
-    search_base_url = item.get("_search_base_url") or base_url
-    detail = None
-    if document_id:
-        detail = fetch_intervention_details(search_base_url, str(document_id))
-    classification = _classify_intervention(detail or {}, candidate_name, candidate_id) if detail else {"mode": "mention", "reason": "detail_indisponible"}
-    cleaned = None
-    if classification.get("mode") == "prise_de_parole":
-        seance_context = fetch_seance_context(detail) if detail else {"sujet": None, "mots_cles": []}
-        sujet = seance_context.get("sujet")
-        keywords = seance_context.get("mots_cles") or []
-        if not sujet:
-            sujet = detail.get("type") if detail else None
-        nb_mots = detail.get("nb_mots") if detail else None
-        cleaned = {
-            "type": item.get("document_type"),
-            "id": document_id,
-            "url": item.get("document_url"),
-            "date": detail.get("date") if detail else None,
-            "created_at": detail.get("created_at") if detail else None,
-            "type_detail": detail.get("type") if detail else None,
-            "source": detail.get("source") if detail else None,
-            "texte": detail.get("texte") if detail else None,
-            "url_detail": detail.get("url") if detail else None,
-            "classification": classification,
-            "sujet": sujet,
-            "mots_cles": keywords,
-            # Rôle institutionnel occupé au moment de l'intervention (ex. "Ministre
-            # de l'Intérieur", "Rapporteur") : vide si simple parlementaire sans
-            # fonction particulière à cet instant.
-            "fonction": detail.get("fonction") if detail else None,
-            "nb_mots": nb_mots,
-            # "reaction_courte" (interjection) vs "prise_de_parole_developpee",
-            # dérivé de nb_mots : permet de distinguer une réaction lancée depuis
-            # les bancs d'une véritable prise de parole à la tribune/au micro.
-            "format": _classify_intervention_format(nb_mots),
-        }
-    time.sleep(0.1)
-    return cleaned
-
-
-def _extract_search_results(
-    base_url: str,
-    search_payload: Optional[dict],
-    candidate_name: str,
-    candidate_id: Optional[str],
-    budget: Optional[BudgetCollecte] = None,
-) -> list[dict[str, Any]]:
-    """Normalise les résultats de recherche API et enrichit chaque intervention avec un détail.
-
-    Les requêtes de détail/contexte sont indépendantes d'un résultat à l'autre : on les
-    parallélise avec un pool limité (comme `fetch_all_intervention_results_from_domains`)
-    pour éviter des temps de génération proportionnels au nombre de résultats bruts
-    (jusqu'à ~500 avec max_pages=10), tout en restant raisonnablement courtois avec l'API.
-    """
-    if not isinstance(search_payload, dict):
-        return []
-    results = [item for item in (search_payload.get("results") or []) if isinstance(item, dict)]
-    if not results:
-        return []
-    # `executor.map` est conservé (et non `submit` + annulation) : une fois le
-    # budget épuisé, `_process_search_result` rend la main immédiatement, donc
-    # la queue restante se vide en quelques millisecondes. Annuler des futures
-    # n'interromprait de toute façon pas la requête déjà partie.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        processed = list(executor.map(
-            lambda item: _process_search_result(item, base_url, candidate_name, candidate_id, budget),
-            results,
-        ))
-    return [item for item in processed if item is not None]
-
-
-
 def build_profile(
     chambre: str,
     slug: str,
-    intervention_max_pages: int = 10,
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
     budget_interventions: Optional[BudgetCollecte] = None,
@@ -5102,10 +4797,6 @@ def build_profile(
         chambre: "deputes" (seule valeur acceptée depuis #528).
         slug: identifiant NosDéputés.fr du parlementaire
             (ex. "jean-luc-melenchon").
-        intervention_max_pages: nombre max. de pages de résultats de recherche
-            d'interventions à parcourir (chaque page = jusqu'à 50 résultats, chacun
-            nécessitant une requête de détail supplémentaire : réduire ce nombre accélère
-            fortement la génération d'un profil, au prix d'une couverture moins complète).
         skip_dossiers_legislatifs: si True, ne fait aucun appel réseau pour les dossiers
             législatifs (`profile["dossiers_legislatifs"]` reste vide) — ni le chemin
             NosDéputés (sénateurs) ni `fetch_textes_portes_officiels` (députés). Voir mode
@@ -5223,54 +4914,24 @@ def build_profile(
     # domaines/législatures, voir docstring de fetch_votes_officiels ci-dessous)
     # et les votes viennent de l'open data AN. `fetch_votes` a été retirée avec.
 
-    # --- 2. Nom de recherche fiable, dérivé de l'identité, pour l'API de recherche
-    # d'interventions : un slug transformé en espaces (ex. "jean luc melenchon")
-    # ne renvoie souvent aucun résultat, contrairement au nom complet. ---
-    parlementaire_for_search = None
-    if isinstance(identity_raw, dict):
-        parlementaire_for_search = _extract_parlementaire(identity_raw)
-    if isinstance(parlementaire_for_search, dict) and parlementaire_for_search.get("nom"):
-        search_candidate_name = parlementaire_for_search.get("nom")
-    elif identite_an and identite_an.get("nom_complet"):
-        search_candidate_name = identite_an.get("nom_complet")
-    else:
-        search_candidate_name = slug.replace("-", " ").title()
-
-    # --- 3. Recherche des interventions (sur le meilleur domaine/législature
-    # disponible).
+    # --- 2 et 3. La RECHERCHE d'interventions NosDéputés a été retirée (#510).
     #
-    # #528 : la liste de dossiers législatifs NosDéputés (`dossiers/nom/json`)
-    # a disparu d'ici avec le Sénat. Elle n'était appelée que pour cette
-    # chambre — côté députés, l'étape 8bis
-    # (`fetch_textes_portes_officiels`, source officielle AN, propre à chaque
-    # élu) l'écrasait de toute façon, et c'est justement ce point d'appel qui
-    # pendait régulièrement en CI jusqu'au shutdown du runner (aucun retry, cf.
-    # docs/technical_decisions.md#dossiers-legislatifs-nosdeputes-vs-an-officiel).
-    # `dossiers_legislatifs` n'a donc plus qu'UNE source, l'AN. ---
-    interventions_payload = None
-    interventions_base_url = base_urls[0]
-    try:
-        # Un parlementaire dont le mandat s'est terminé lors d'une législature
-        # précédente (mandat clos) n'a quasiment aucune intervention sur le site de
-        # la législature courante : ses interventions réelles sont archivées sur le
-        # sous-domaine de sa législature. On sonde donc tous les domaines disponibles
-        # pour trouver celui qui contient réellement ses interventions.
-        # #498 : la recherche fait partie de la collecte d'interventions et est
-        # imputée à son budget — `max_pages=0` la rend gratuite en mode
-        # --skip-interventions, donc rien n'est facturé à un mode qui ne collecte
-        # pas. Mesurée à 90 s sur `jean-luc-melenchon` (run 32379928098) : ce
-        # n'est pas un préliminaire négligeable.
-        with budget_section(budget_phase_interventions, "recherche NosDéputés"), \
-                _compter_sans_reponse("interventions"):
-            interventions_payload = fetch_all_intervention_results_from_domains(
-                base_urls,
-                search_candidate_name,
-                object_name="Intervention",
-                max_pages=0 if skip_interventions else intervention_max_pages,
-            )
-        interventions_base_url = base_urls[0]
-    except Exception as exc:
-        pre_profile_warnings.append(f"récupération supplémentaire impossible : {exc}")
+    # Elle ouvrait le chemin interventions : une recherche par nom sur tous les
+    # domaines, puis une requête de détail par résultat (jusqu'à ~500), le tout
+    # pour alimenter le repli qui comblait le silence de Syceron. Le repli parti,
+    # elle ne nourrit plus rien — et ce n'était pas un préliminaire négligeable :
+    # 90 s mesurées sur `jean-luc-melenchon` (run 32379928098), imputées au
+    # budget de 240 s de #500. C'est autant de rendu à la source primaire.
+    #
+    # Ce qui disparaît avec elle : le nom de recherche dérivé de l'identité, le
+    # `max_pages`, et le comptage `sans_reponse["interventions"]` (#514) — plus
+    # aucune requête d'interventions ne passe par `_get_payload`, donc ce
+    # compteur ne pouvait plus qu'accuser NosDéputés d'une panne qui n'est pas la
+    # sienne. Même raisonnement que #528 sur `votes`/`dossiers législatifs`.
+    #
+    # #528 avait déjà retiré d'ici la liste de dossiers législatifs NosDéputés
+    # (`dossiers/nom/json`) : `dossiers_legislatifs` n'a plus qu'UNE source,
+    # l'AN, résolue à l'étape 8. ---
 
     # --- 4. Structure de base du profil, valeurs par défaut si une source manque. ---
     profile: dict[str, Any] = {
@@ -5509,18 +5170,20 @@ def build_profile(
         except Exception as exc:
             warnings.append(f"textes portés officiels (Assemblée nationale) indisponibles : {exc}")
 
-    candidate_name = profile["identite"].get("nom_complet") if profile.get("identite") else slug.replace("-", " ").title()
-    candidate_id = None
-    if isinstance(identity_raw, dict):
-        # --- 9. Interventions : classification prise de parole/mention, format
-        # (réaction courte / prise de parole développée), fonction occupée, etc. ---
-        parlementaire = _extract_parlementaire(identity_raw)
-        if isinstance(parlementaire, dict):
-            candidate_id = parlementaire.get("id")
-
-    # --- 9. Interventions : source primaire Syceron (débats officiels AN) ;
-    # fallback vers le scraping NosDéputés si Syceron ne retourne rien
-    # (acteurRef non résolu ou législature hors SYCERON_AVAILABLE_LEGISLATURES).
+    # --- 9. Interventions : Syceron (débats officiels AN), SEULE source depuis
+    # #510. Le repli NosDéputés a été retiré : il ne complétait pas la source
+    # primaire, il la remplaçait intégralement — 789 interventions publiées, dont
+    # **0** de Syceron, sur un chemin dont Syceron est la source déclarée. C'est
+    # ce repli qui a rendu le défaut invisible pendant toute sa durée de vie : le
+    # chemin RENDAIT quelque chose, donc rien ne signalait que la source primaire
+    # était muette.
+    #
+    # Une collecte vide reste donc vide, et le dit (§2.5) — c'est le seul état
+    # dans lequel la panne d'une source se lit. Elle n'efface rien pour autant :
+    # la fusion additive conserve les interventions déjà acquises, et #465
+    # interdit à une collecte vide d'écraser une liste non vide même en
+    # --no-merge.
+    #
     # Le garde `chambre == "deputes"` est tombé avec #528 : c'est désormais la
     # seule chambre collectée. ---
     if not skip_interventions and profile.get("identite"):
@@ -5531,26 +5194,16 @@ def build_profile(
                 )
         except Exception as exc:
             syceron_interventions = []
-            warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : {exc}")
+            warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES} : {exc}")
         if syceron_interventions:
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
-            with budget_section(budget_phase_interventions, "détails d'interventions NosDéputés"):
-                profile["interventions"] = _extract_search_results(
-                    interventions_base_url, interventions_payload, candidate_name, candidate_id,
-                    budget_phase_interventions,
-                )
             warnings.append(
-                f"{WARNING_PREFIX_INTERVENTIONS_FALLBACK_NOSDEPUTES} : "
-                "aucune intervention Syceron trouvée pour cet acteurRef ; "
-                "interventions NosDéputés utilisées en fallback."
-            )
-    else:
-        with budget_section(budget_phase_interventions, "détails d'interventions NosDéputés"):
-            profile["interventions"] = _extract_search_results(
-                interventions_base_url, interventions_payload, candidate_name, candidate_id,
-                budget_phase_interventions,
+                f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES} : "
+                "aucune intervention Syceron pour cet acteurRef (identifiant absent "
+                "des trois archives, ou archive indisponible). Le repli NosDéputés a "
+                "été retiré (#510) : aucune autre source ne comble ce silence."
             )
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
@@ -5596,9 +5249,14 @@ def build_profile(
     # viennent de l'open data AN, qui ne passe pas par `_get_payload` et
     # n'incrémente donc pas ce compteur — les citer ici attribuerait à
     # NosDéputés une panne qui n'est pas la sienne.
+    #
+    # `interventions` en est sorti pour la même raison exactement (#510) : la
+    # recherche NosDéputés était le seul point du chemin interventions à passer
+    # par `_get_payload`, et elle a été retirée avec le repli. Une section
+    # d'interventions vide est désormais déclarée par
+    # `interventions syceron indisponibles`, qui nomme la bonne source.
     sections_vides = [
         ("identité", not profile.get("identite")),
-        ("interventions", not skip_interventions and not profile.get("interventions")),
     ]
     non_collecte = [
         nom for nom, vide in sections_vides if vide and sans_reponse.get(nom, 0) > 0
@@ -5637,22 +5295,15 @@ def main():
         "--out",
         help="Chemin du fichier JSON de sortie (défaut: raw_data/profiles/<slug>.json)",
     )
-    parser.add_argument(
-        "--max-pages",
-        type=int,
-        default=10,
-        help="Nombre max. de pages (50 résultats/page) de recherche d'interventions (défaut: 10)",
-    )
+    # `--max-pages` a été retiré avec la recherche NosDéputés qu'il bornait
+    # (#510) : plus aucune page de résultats n'est parcourue.
     parser.add_argument(
         "--activer-interventions-syceron",
-        action="store_true",
-        help=AIDE_ACTIVER_INTERVENTIONS_SYCERON,
+        action=RefusDrapeauInterventionsSyceron,
     )
     args = parser.parse_args()
 
-    activer_resolution_acteur_nu_syceron(args.activer_interventions_syceron)
-
-    profile = build_profile(args.chambre, args.slug, intervention_max_pages=args.max_pages)
+    profile = build_profile(args.chambre, args.slug)
 
     out_path = Path(args.out) if args.out else Path("raw_data/profiles") / f"{args.slug}.json"
     ecrire_profil_json(out_path, profile)

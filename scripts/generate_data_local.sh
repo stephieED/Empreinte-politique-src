@@ -25,7 +25,6 @@
 #                                      d'expérience utilisatrice sur la
 #                                      parallélisation, docs/technical_decisions.md)
 #   EXTRACT_INTERVENTIONS=false|true  (défaut: false)
-#   MAX_PAGES=<n>                     (défaut: 5, ignoré si EXTRACT_INTERVENTIONS=false)
 #   ROSTER_EXTRACTION_LIMIT=<n>       (défaut: 20, 0 = pas de limite)
 #   BACKGROUND=true|false             (défaut: true — se relance soi-même via
 #                                      nohup et rend la main immédiatement ;
@@ -67,7 +66,6 @@ FRESH_RUN="${FRESH_RUN:-false}"
 THRESHOLD="${THRESHOLD:-3}"
 WORKERS="${WORKERS:-1}"
 EXTRACT_INTERVENTIONS="${EXTRACT_INTERVENTIONS:-false}"
-MAX_PAGES="${MAX_PAGES:-5}"
 ROSTER_EXTRACTION_LIMIT="${ROSTER_EXTRACTION_LIMIT:-20}"
 
 if [ -f .venv/bin/activate ]; then
@@ -91,8 +89,8 @@ MERGE_FLAG=()
 
 INTERV_FLAG=()
 [ "$EXTRACT_INTERVENTIONS" != "true" ] && INTERV_FLAG=(--skip-interventions)
-MAX_PAGES_FLAG=()
-[ "$EXTRACT_INTERVENTIONS" = "true" ] && MAX_PAGES_FLAG=(--max-pages "$MAX_PAGES")
+# `MAX_PAGES`/`--max-pages` ont été retirés avec la recherche d'interventions
+# NosDéputés (#510) : elle n'alimentait que le repli, lui-même retiré.
 
 if [ "$FRESH_RUN" = "true" ]; then
   echo "=== Nettoyage complet (fresh_run) ==="
@@ -104,7 +102,7 @@ echo "=== [1/6] extract-amendements-an : index amendements (17/16/15) ==="
 python3 src/build_amendements_index.py || echo "[!] extract-amendements-an en échec (continue-on-error, comme en CI)"
 
 echo "=== [2/6] extract-an : Assemblée nationale (tous les candidats) ==="
-python3 src/generate_all_profiles.py --source an --workers "$WORKERS" "${MAX_PAGES_FLAG[@]}" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" \
+python3 src/generate_all_profiles.py --source an --workers "$WORKERS" "${MERGE_FLAG[@]}" "${INTERV_FLAG[@]}" \
   || echo "[!] extract-an en échec (continue-on-error, comme en CI)"
 
 # L'étape « extract-senat » a été retirée par #528, en même temps que le job CI :

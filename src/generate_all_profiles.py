@@ -40,7 +40,6 @@ Parallélisation (deux niveaux) :
 Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py
     python src/generate_all_profiles.py --only jean-luc-melenchon
-    python src/generate_all_profiles.py --max-pages 5      # recherche d'interventions plus rapide
     python src/generate_all_profiles.py --skip-existing    # ne pas relancer un profil déjà généré
     python src/generate_all_profiles.py --skip-ue          # ne pas interroger l'API du Parlement européen
     python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
@@ -91,10 +90,9 @@ from budget_collecte import (
     section as budget_section,
 )
 from candidate_profile import (
-    AIDE_ACTIVER_INTERVENTIONS_SYCERON,
     WARNING_PREFIX_BUDGET_COLLECTE,
     WARNING_PREFIX_SOURCE_INJOIGNABLE,
-    activer_resolution_acteur_nu_syceron,
+    RefusDrapeauInterventionsSyceron,
     build_profile,
     compteur_appels_nosdeputes,
 )
@@ -437,7 +435,6 @@ def valider_budgets(args: argparse.Namespace) -> None:
 
 def build_profile_any_chambre(
     slug: str,
-    max_pages: int,
     chambres: Optional[list[str]] = None,
     skip_interventions: bool = False,
     skip_dossiers_legislatifs: bool = False,
@@ -559,7 +556,6 @@ def build_profile_any_chambre(
             profile = build_profile(
                 chambre,
                 slug,
-                intervention_max_pages=max_pages,
                 skip_interventions=skip_interventions,
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
                 budget_interventions=budget,
@@ -884,7 +880,6 @@ def process_candidat(
             return None, None, []
         result = build_profile_any_chambre(
             slug,
-            args.max_pages,
             chambres=chambres_fr,
             skip_interventions=args.skip_interventions,
             skip_dossiers_legislatifs=args.skip_dossiers_legislatifs,
@@ -1155,7 +1150,6 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--candidats", default=DEFAULT_CANDIDATS_PATH, help=f"Fichier JSON listant les candidats (défaut: {DEFAULT_CANDIDATS_PATH})")
     parser.add_argument("--only", help="Ne traiter qu'un seul candidat (par slug), utile pour tester")
-    parser.add_argument("--max-pages", type=int, default=10, help="Pages max. de recherche d'interventions par candidat (défaut: 10)")
     parser.add_argument(
         "--budget-interventions-secondes", type=int, default=0,
         help="Budget de temps mur (s) pour la collecte d'interventions d'UN candidat : recherche "
@@ -1270,10 +1264,15 @@ def main() -> None:
                         help="Écraser complètement les fichiers existants au lieu de fusionner de façon additive "
                              "les nouvelles données avec celles déjà présentes (comportement par défaut : fusion, "
                              "qui évite de perdre des votes/interventions/mandats déjà collectés en cas d'aléa des API).")
-    parser.add_argument("--activer-interventions-syceron", action="store_true",
-                        help=AIDE_ACTIVER_INTERVENTIONS_SYCERON)
+    # #510 : `--max-pages` (recherche NosDéputés) et `--activer-interventions-syceron`
+    # ont été retirés ensemble — la recherche parce qu'elle n'alimentait que le
+    # repli, le drapeau parce que son contenu est devenu le comportement. Le
+    # second est REFUSÉ bruyamment plutôt qu'ignoré : un run qui le passe encore
+    # doit lire la décision, pas croire la collecte Syceron désactivée.
+    parser.add_argument("--activer-interventions-syceron",
+                        action=RefusDrapeauInterventionsSyceron)
     parser.add_argument("--skip-interventions", action="store_true",
-                        help="Ne pas extraire les interventions (ni la recherche NosDéputés ni les questions officielles AN). "
+                        help="Ne pas extraire les interventions (ni les débats Syceron ni les questions officielles AN). "
                              "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
     parser.add_argument("--skip-dossiers-legislatifs", action="store_true",
                         help="Ne pas extraire les dossiers législatifs — depuis #528, ils n'ont plus "
@@ -1337,14 +1336,14 @@ def main() -> None:
     # ── Garde-fous de budget (#514) ─────────────────────────────────────────
     valider_budgets(args)
 
-    # #510 : réglé une fois, avant tout appel de collecte. L'index Syceron est
-    # construit par législature et partagé entre les shards (#505), donc le mode
-    # de résolution est une propriété du process, pas du candidat.
-    activer_resolution_acteur_nu_syceron(args.activer_interventions_syceron)
-    if args.activer_interventions_syceron and not args.skip_interventions:
-        print("[#510] Résolution des identifiants d'orateur Syceron nus ACTIVÉE : la source "
-              "primaire des interventions va alimenter les profils. Volumétrie mesurée sur la "
-              "17e législature : 673 acteurs, 104 239 interventions, index de 136,8 Mio.")
+    # #510 : la source primaire des interventions alimente réellement les
+    # profils depuis le 27/08/2026, et elle est la SEULE (le repli NosDéputés a
+    # été retiré). Annoncé à chaque run qui collecte : la volumétrie change
+    # d'ordre de grandeur, ce n'est pas une ligne de log à découvrir après coup.
+    if not args.skip_interventions:
+        print("[#510] Interventions : débats Syceron (source unique — le repli NosDéputés a "
+              "été retiré). Mesuré le 26/08/2026 sur les trois archives : 1 227 415 "
+              "interventions indexables, 1 664,8 Mio d'index, lues par tranche d'acteur.")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

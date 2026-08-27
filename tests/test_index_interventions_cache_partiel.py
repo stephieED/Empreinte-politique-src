@@ -143,26 +143,20 @@ def test_archive_illisible_compte_aussi_comme_incomplete(tmp_path):
 # Débats Syceron
 # ---------------------------------------------------------------------------
 
-_XML_SYCERON = """<?xml version="1.0" encoding="UTF-8"?>
-<compteRendu xmlns="http://schemas.assemblee-nationale.fr/referentiel">
-  <uid>CRSANR5L17S2024D1N001</uid>
-  <metadonnees>
-    <dateSeance>20240501000000</dateSeance>
-    <legislature>17</legislature>
-    <etat>complet</etat>
-    <version>JO</version>
-  </metadonnees>
-  <contenu>
-    <point>
-      <titreStruct><intitule>Discussion générale</intitule></titreStruct>
-      <paragraphe>
-        <orateurs><orateur><id>PA1234</id><nom>Doublure</nom><qualite>députée</qualite></orateur></orateurs>
-        <texte>Intervention de doublure.</texte>
-      </paragraphe>
-    </point>
-  </contenu>
-</compteRendu>
-"""
+# La réduction VERBATIM d'un compte rendu réel de la 17e législature — jamais un
+# XML écrit à la main. #510 a été rendu invisible pendant des mois par deux
+# fixtures inventées (`<id>PA…</id>`, `<titreStruct>` sous `<point>`, deux
+# formes que l'Assemblée nationale ne publie pas) ; celle qui vivait ici en
+# portait exactement les mêmes traits.
+FIXTURE_SYCERON = Path(__file__).resolve().parent / "fixtures" / "syceron_reel_leg17.xml"
+ACTEUR_FIXTURE = "PA847629"
+
+
+def _servir_fixture_syceron(cache: Path) -> Path:
+    xml_dir = cache / "xml" / "compteRendu"
+    xml_dir.mkdir(parents=True)
+    (xml_dir / "CRSANR5L17S2025O1N053.xml").write_bytes(FIXTURE_SYCERON.read_bytes())
+    return xml_dir
 
 
 def test_index_syceron_vide_par_archive_absente_n_est_pas_mis_en_cache(tmp_path, monkeypatch):
@@ -173,30 +167,87 @@ def test_index_syceron_vide_par_archive_absente_n_est_pas_mis_en_cache(tmp_path,
     cache = tmp_path / ".cache" / "syceron_an" / LEG
     cache.mkdir(parents=True)
     cp._SYCERON_LOCKS.clear()
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
     with patch("candidate_profile.iter_syceron_xml_files", lambda leg, **_: iter(())):
         index = cp._build_acteur_interventions_syceron_index(LEG)
     assert index == {}
-    assert not (cache / "index_par_acteur.json").exists(), (
+    assert not (cache / cp.SYCERON_INDEX_PAR_ACTEUR_DIRNAME).exists(), (
         "un index Syceron vide par archive absente a été mis en cache"
     )
 
 
-def test_index_syceron_construit_est_mis_en_cache(tmp_path, monkeypatch):
-    """Le témoin. S'il tombait, le test ci-dessus ne prouverait plus rien."""
+def test_index_syceron_construit_est_publie_en_tranches(tmp_path, monkeypatch):
+    """Le témoin. S'il tombait, le test ci-dessus ne prouverait plus rien.
+
+    Il fixe aussi la FORME du cache (#510) : une tranche par acteur, publiée
+    d'un seul `os.replace`. L'index plat n'est plus écrit — il était relu en
+    entier à chaque candidat (1 664,8 Mio, 12,5 s sur les trois archives).
+    """
     monkeypatch.chdir(tmp_path)
     cache = tmp_path / ".cache" / "syceron_an" / LEG
-    xml_dir = cache / "xml" / "compteRendu"
-    xml_dir.mkdir(parents=True)
-    (xml_dir / "CR001.xml").write_text(_XML_SYCERON, encoding="utf-8")
+    xml_dir = _servir_fixture_syceron(cache)
 
     cp._SYCERON_LOCKS.clear()
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
     with patch(
         "candidate_profile.iter_syceron_xml_files",
         lambda leg, **_: iter(sorted(xml_dir.glob("*.xml"))),
     ):
         index = cp._build_acteur_interventions_syceron_index(LEG)
-    assert index["PA1234"], "la doublure ne produit plus d'intervention indexée"
-    assert (cache / "index_par_acteur.json").is_file()
+    assert index[ACTEUR_FIXTURE], "la fixture réelle ne produit plus d'intervention indexée"
+
+    tranche = cache / cp.SYCERON_INDEX_PAR_ACTEUR_DIRNAME / f"{ACTEUR_FIXTURE}.json"
+    assert tranche.is_file()
+    assert json.loads(tranche.read_text(encoding="utf-8")) == index[ACTEUR_FIXTURE]
+    assert not (cache / "index_par_acteur.json").exists(), (
+        "l'index plat n'est plus écrit : il était relu entier à chaque candidat"
+    )
+    # Le répertoire temporaire de publication ne survit jamais au basculement.
+    assert not (cache / f"{cp.SYCERON_INDEX_PAR_ACTEUR_DIRNAME}.partiel").exists()
+
+
+def test_un_index_plat_herite_est_supprime_a_la_publication(tmp_path, monkeypatch):
+    """Un index plat de 2 octets (`{}`) — l'état de #510 — traînant dans le cache
+    de la semaine (#505) ne doit jamais rester lisible derrière les tranches."""
+    monkeypatch.chdir(tmp_path)
+    cache = tmp_path / ".cache" / "syceron_an" / LEG
+    xml_dir = _servir_fixture_syceron(cache)
+    for nom in cp.SYCERON_INDEX_FILENAMES_HERITES:
+        (cache / nom).write_text("{}", encoding="utf-8")
+
+    cp._SYCERON_LOCKS.clear()
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
+    with patch(
+        "candidate_profile.iter_syceron_xml_files",
+        lambda leg, **_: iter(sorted(xml_dir.glob("*.xml"))),
+    ):
+        cp._build_acteur_interventions_syceron_index(LEG)
+
+    for nom in cp.SYCERON_INDEX_FILENAMES_HERITES:
+        assert not (cache / nom).exists(), f"{nom} hérité doit être supprimé"
+
+
+def test_la_tranche_dun_acteur_absent_nest_pas_un_index_indisponible(tmp_path, monkeypatch):
+    """Règle 5 : « cet acteur n'a pas parlé » et « index absent » ne sont pas le
+    même fait, et ne se lisent pas pareil en aval."""
+    monkeypatch.chdir(tmp_path)
+    cache = tmp_path / ".cache" / "syceron_an" / LEG
+    xml_dir = _servir_fixture_syceron(cache)
+
+    cp._SYCERON_LOCKS.clear()
+    cp._SYCERON_INDEX_NON_PUBLIE.clear()
+    # Index absent : None, l'appelant reconstruit.
+    assert cp._read_cached_interventions_syceron_acteur(LEG, "PA999999") is None
+
+    with patch(
+        "candidate_profile.iter_syceron_xml_files",
+        lambda leg, **_: iter(sorted(xml_dir.glob("*.xml"))),
+    ):
+        cp._build_acteur_interventions_syceron_index(LEG)
+
+    # Index publié, acteur absent : liste vide, sans reconstruction.
+    assert cp._read_cached_interventions_syceron_acteur(LEG, "PA999999") == []
+    assert cp._read_cached_interventions_syceron_acteur(LEG, ACTEUR_FIXTURE)
 
 
 # ---------------------------------------------------------------------------

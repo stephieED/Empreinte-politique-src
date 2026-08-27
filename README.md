@@ -158,7 +158,6 @@ Default output: `raw_data/profiles/<slug>.json`.
 |---|---|
 | `--chambre {deputes}` | Parliament chamber (only value since #528) |
 | `--out path.json` | Change output file |
-| `--max-pages N` | Limit intervention pagination (default: 10 pages x 50 results). Lower is faster but less complete. |
 
 ## 2. Add the "European mandate" section
 
@@ -373,7 +372,6 @@ listes de noms de fichiers) : 0,08 s / 13,9 Mio mesurés à 752 profils. Voir
 ```bash
 python src/generate_all_profiles.py
 python src/generate_all_profiles.py --only jean-luc-melenchon
-python src/generate_all_profiles.py --max-pages 5
 python src/generate_all_profiles.py --skip-existing
 python src/generate_all_profiles.py --refresh-existing --no-merge  # l'inverse : ne régénère QUE l'existant (#445)
 python src/generate_all_profiles.py --pivot
@@ -730,7 +728,6 @@ WORKERS=4 ROSTER_EXTRACTION_LIMIT=0 EXTRACT_INTERVENTIONS=true ./scripts/generat
 | `THRESHOLD` | `3` | `threshold` |
 | `WORKERS` | `1` (sequential) | `workers` |
 | `EXTRACT_INTERVENTIONS` | `false` | `collect_interventions` |
-| `MAX_PAGES` | `5` | `max_pages` |
 | `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_limit` |
 | `BACKGROUND` | `true` | *(local-only, no CI equivalent)* |
 
@@ -926,8 +923,11 @@ Each `raw_data/profiles/<slug>.json` includes:
   carries its own `legislature` and `url_source` (the AN scrutin page), since a
   profile now spans several legislatures
 - `dossiers_legislatifs`: chamber legislative files
-- `interventions`: speech records with date, topic, text, role at the time,
-  and basic length-based format
+- `interventions`: speech records with date, topic, text, role at the time, and
+  basic length-based format. Source since #510: the AN Syceron debate archives
+  **only** (plus official QE/QG/QOSD questions) — the NosDéputés search fallback
+  was removed, so an empty collection stays empty and is declared in
+  `meta.warnings[]`
 - `mandat_europeen`: present only if a candidate has EP records
 - `meta.warnings`: transparency on missing/incomplete source fetches
 - `meta.synchro_sources`: ISO-8601 timestamp per source

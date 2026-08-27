@@ -175,14 +175,13 @@ something is pending, not *why*.
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test
   structurel sur la table committée elle-même (#525).
 
-- Syceron debates: the id, the traversal and the subject are fixed (#510), the
-  three archives are verified, but the flag is still **inactive**. The last
-  technical lock is the **per-actor shard** — 1 664,8 MB of index re-read per
-  candidate per legislature, 12,5 s and a 3,8 GB RSS peak against #500's 240 s
-  budget. Same remedy as #392/#403. Then re-measure profile weight and group
-  aggregates on 1 227 415 indexable interventions (789 published today), and
-  revalidate #505's cache. Measured in
-  `technical_decisions.md#syceron-acteur-ref-nu-510`.
+- Syceron debates are **live** since 27/08/2026 and the NosDéputés fallback is gone
+  (#510); the index is sharded per actor. Three measurements can only be taken on a
+  real run and are still open: profile weight and group aggregates against #429's
+  thresholds (1 227 415 indexable interventions vs 789 published), the #505 cache
+  entry (~21 MB → order of a GB, against the repo's 10 GB quota), and the #500
+  budget balance now that the ~90 s NosDéputés search is gone. See
+  `technical_decisions.md#syceron-actif-510`.
 
 - Senate speeches were collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which
@@ -191,8 +190,10 @@ something is pending, not *why*.
   `extract-senat` hard-coded `--skip-interventions` (#501). **#528 retired the job and
   the chamber**: this is now a reopening cost, not a defect to fix — see the three
   conditions in `technical_decisions.md#retrait-senat-528` §7.
-  `tests/test_interventions_senat_non_retenues.py` still fails the day the key is read,
-  and stays as the tripwire. See `technical_decisions.md#interventions-senat-501`.
+  The tripwire `tests/test_interventions_senat_non_retenues.py` was **deleted** on
+  27/08/2026 with the chain it measured — `fetch_intervention_details` no longer
+  exists (#510). Reopening is now harder, not easier: there is no Senate intervention
+  path left to fix a key in. See `technical_decisions.md#interventions-senat-501`.
 
 - `actions/checkout` is now the dominant per-shard cost in `generate-data.yml`:
   93–117 s measured per roster shard on run 32288588518, i.e. ~55 % of a shard,

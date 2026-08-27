@@ -275,7 +275,6 @@ def test_le_correctif_ne_detruit_pas_la_seule_donnee_du_run(archive, monkeypatch
 
     profil, chambre, warnings = build_profile_any_chambre(
         "jean-luc-melenchon",
-        max_pages=0,
         chambres=["deputes"],
         skip_interventions=True,
         budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
@@ -312,7 +311,6 @@ def test_le_budget_borne_la_collecte_meme_sans_interventions(archive, monkeypatc
 
     build_profile_any_chambre(
         "edouard-philippe",
-        max_pages=0,
         chambres=["deputes"],
         skip_interventions=True,
         budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
@@ -353,7 +351,6 @@ def test_la_troncature_par_budget_est_declaree(archive, monkeypatch):
 
     profil, _, warnings = build_profile_any_chambre(
         "bruno-retailleau",
-        max_pages=0,
         chambres=["deputes"],
         skip_interventions=True,
         budget_collecte_secondes=40,
@@ -384,7 +381,6 @@ def test_une_source_muette_n_est_pas_une_absence(archive, monkeypatch):
 
     profil, chambre, warnings = build_profile_any_chambre(
         "jerome-guedj",
-        max_pages=0,
         chambres=["deputes"],
         skip_interventions=True,
         budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
@@ -423,7 +419,6 @@ def test_une_source_qui_repond_vraiment_ne_declenche_aucune_reserve(archive, mon
 
     profil, _, warnings = build_profile_any_chambre(
         "bruno-retailleau",
-        max_pages=0,
         chambres=["deputes"],
         skip_interventions=True,
         budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
@@ -445,7 +440,6 @@ def _args(**overrides) -> argparse.Namespace:
         source="an",
         pivot_only=False,
         skip_existing=False,
-        max_pages=0,
         skip_interventions=True,
         skip_dossiers_legislatifs=False,
         budget_interventions_secondes=0,
