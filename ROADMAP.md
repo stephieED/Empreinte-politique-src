@@ -6,13 +6,59 @@ Rationale for deferred items lives in
 `docs/technical_decisions.md#hors-perimetre`; this file only tracks *that*
 something is pending, not *why*.
 
+## Issues ouvertes — ordre d'exécution
+
+État au 27/08/2026, après la clôture de l'épic #523 (lots 0 à 5) et le run complet
+`33100214165`. Le rang traduit l'ordre dans lequel je lancerais les chantiers, pas
+une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
+
+| Rang | Issue | État | Ce qui bloque |
+| --- | --- | --- | --- |
+| 1 | **#540** | ouverte, cause établie | rien — **prioritaire sur #328** (voir ci-dessous) |
+| 1 | **#530** | agent lancé le 27/08 | rien — clôt l'épic #523 |
+| 1 | **#508** | agent lancé le 27/08 | une part relève du ruleset GitHub, pas du code |
+| 2 | **#539** | `needs-human` | **décision de schéma** : comment naît un identifiant |
+| 3 | #523 | 6 lots sur 7 faits | #530 |
+| 4 | #326 | prêt | rien — bloque explicitement 328/329/330 |
+| 5 | #328 | prêt après #326 | #326 **et #540** |
+| 5 | #329, #330 | prêts après #326 | #326 — parallélisables entre eux et avec #328 |
+| 6 | #331 | — | #328, #329, #330 |
+| 7 | #486 | à recadrer | prémisse changée par #528 ; à décider **après #539** |
+| 8 | #484 | non résolu | #486 — `identite` toujours `null`, vérifié le 27/08 |
+| 9 | #495 | — | #486 |
+| 10 | #429 | `needs-human` | 8/8 sous-issues closes ; ne reste qu'un arbitrage de critère |
+| 11 | #305 | — | stabilisation de l'UI (#324 entière) |
+
+**Parallélisation.** Quatre voies touchent des fichiers disjoints et avancent sans se
+gêner : **données/schéma** (`src/`, `raw_data/` — #540 puis #539), **UI**
+(`web/UI_finale/src/` — #326 puis les trois pages), **CI** (`.github/` — #508) et
+**licence** (`AGENTS.md` + pages légales — #530, léger recouvrement avec l'UI).
+#328/#329/#330 sont parallélisables entre elles une fois #326 mergée.
+
+**La seule sérialisation inter-voies** est #539 avant #486 : les deux décrivent la même
+distinction — *fait établi* / *hors couverture de source* / *non collecté* — et les
+trancher séparément produirait deux modèles concurrents pour un même problème.
+
 ## Known bugs
 
-- **#529 laisse deux retraits à faire dans `.github/workflows/`** (hors des droits
-  de l'agent qui a livré le lot) : supprimer `debug-network-shutdown-signal.yml`,
-  workflow de diagnostic entièrement consacré à sonder `www.nosdeputes.fr`, et
-  retirer `--max-pages 5` de `generate-data.yml` — l'option est acceptée mais
-  **sans effet**, et le signale sur stderr. Voir
+- **La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
+  identifiant** (#540, découvert sur le run `33100214165` du 27/08/2026).
+  `_pivot_intervention_key` fait `source_url or (date, sujet, texte[:50])` : le `or`
+  court-circuite, et comme Syceron renseigne toujours `source_url` — l'URL du zip de
+  la **législature**, identique pour toutes ses interventions — le repli discriminant
+  n'est jamais atteint. 3 351 entrées se réduisent à **17 clés** pour Gabriel Attal.
+  Mesuré sur le corpus : **891 interventions publiées pour 7 500 collectées**
+  (×8,4). `normalize_profil()` est hors de cause, vérifié en le rejouant ; la fusion
+  **brute** survit parce que sa clé porte `id`, que la normalisation ne conserve pas.
+  Les quatre autres clés pivot sont saines. Ce n'est pas une régression de #510, qui
+  a seulement rendu le défaut atteignable. **À corriger avant #328**, dont l'onglet
+  Interventions afficherait 17 prises de parole pour un candidat qui en a 3 351.
+
+- ~~**#529 laisse deux retraits à faire dans `.github/workflows/`**~~ — **soldé le
+  27/08/2026** au rebasage de la PR #538 : `debug-network-shutdown-signal.yml` est
+  supprimé, et `--max-pages` avait déjà été retiré de `generate-data.yml` **et** du
+  code par #510. Le compromis « accepter le drapeau mais le signaler » est parti avec
+  lui plutôt que d'être livré désarmé. Voir
   `technical_decisions.md#retrait-nosdeputes-529` §7.
 - Les deux groupes Sénat ont leur extraction **suspendue** depuis le 24/08/2026
   (certificat TLS expiré sur `archive.nossenateurs.fr`, runs `32463926808` et
@@ -184,12 +230,19 @@ something is pending, not *why*.
   structurel sur la table committée elle-même (#525).
 
 - Syceron debates are **live** since 27/08/2026 and the NosDéputés fallback is gone
-  (#510); the index is sharded per actor. Three measurements can only be taken on a
-  real run and are still open: profile weight and group aggregates against #429's
-  thresholds (1 227 415 indexable interventions vs 789 published), the #505 cache
-  entry (~21 MB → order of a GB, against the repo's 10 GB quota), and the #500
-  budget balance now that the ~90 s NosDéputés search is gone. See
-  `technical_decisions.md#syceron-actif-510`.
+  (#510); the index is sharded per actor. The three measurements this entry was
+  waiting for have been taken on run `33100214165` (27/08, 22 jobs green, 52 min):
+  **+6 963 interventions collected** on the five declared candidates that have a
+  Syceron record, and no OOM. Two findings came out of it:
+  - only **87** of those reached the published corpus — see #540, the pivot merge
+    key. Profile weight and group aggregates against #429's thresholds therefore
+    **remain unmeasured**: they can only be judged once #540 is fixed and the
+    ~7 500 interventions are actually published;
+  - `collect_interventions` drives **`extract-an` only**. The roster job carries
+    `--skip-interventions` in hard (light extraction mode, #357), so the 468 roster
+    profiles collect none. That was the right call when the roster only fed group
+    aggregates; it is worth re-deciding now that those profiles are the published
+    product. See `technical_decisions.md#syceron-actif-510`.
 
 - Senate speeches were collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which
