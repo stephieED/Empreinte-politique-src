@@ -1650,7 +1650,41 @@ jobs:
       actions: write
 
     steps:
+      # ssh-key (#508) — POURQUOI le push ne se fait plus avec le GITHUB_TOKEN.
+      #
+      # Un ruleset de dépôt applique ses `required_status_checks` AUX PUSHS
+      # DIRECTS, pas seulement aux PR. C'est la différence avec la protection
+      # de branche classique, et elle ne se voit qu'à l'exécution : le
+      # 20/08/2026, l'ajout du check requis « Suite complète » au ruleset a
+      # fait rejeter ce push trois fois de suite — `GH013 [...] Required status
+      # check "Suite complète" is expected` — sur un run qui avait produit
+      # toutes ses données. Le check a dû être retiré le soir même, laissant le
+      # dépôt sans protection bloquante.
+      #
+      # Ce job pousse sur `main` SANS PR : aucun check n'est attaché au commit
+      # qu'il crée, donc aucun check ne peut passer avant le push. La règle est
+      # structurellement insatisfiable pour lui — il lui faut un contournement,
+      # pas une attente.
+      #
+      # L'acteur de contournement évident, l'app GitHub Actions, est refusé par
+      # l'API sur un dépôt PERSONNEL (« Actor GitHub Actions integration must
+      # be part of the ruleset source or owner organization »). `DeployKey`,
+      # lui, est accepté. Le push passe donc en SSH sous une clé de
+      # déploiement inscrite dans les `bypass_actors` du ruleset.
+      #
+      # DÉGRADATION : secret absent (fork, branche de travail sans le secret)
+      # ⇒ `ssh-key` vaut la chaîne vide, actions/checkout retombe sur le
+      # GITHUB_TOKEN en HTTPS et ce job se comporte exactement comme avant. Le
+      # rejet éventuel est alors nommé par le step de push ci-dessous.
+      #
+      # CONSÉQUENCE À CONNAÎTRE : un push fait sous une clé de déploiement
+      # ÉMET un événement `push`, là où le GITHUB_TOKEN n'en émet aucun
+      # (protection anti-boucle). Deux workflows le voient désormais passer —
+      # `tests.yml` et `deploy-pages.yml` ; voir la dernière étape de ce job et
+      # docs/technical_decisions.md#push-donnees-cle-de-deploiement-508.
       - uses: actions/checkout@v5
+        with:
+          ssh-key: ${{ secrets.DATA_PUSH_SSH_KEY }}
 
       - uses: actions/setup-python@v6
         with:
@@ -2428,13 +2462,42 @@ jobs:
           # les tentatives 2 et 3 ne s'exécutaient jamais, et le message d'erreur
           # final n'était jamais atteint. Constaté sur le run #266 : une seule
           # ligne « tentative 1/3 » dans le log, puis sortie en échec.
+          #
+          # `push.log` (#508) : la sortie du push est capturée pour être RELUE,
+          # pas seulement affichée. Le 20/08/2026, le serveur a nommé la cause
+          # exacte du rejet — `Required status check "Suite complète" is
+          # expected` — et ce step a conclu « concurrence soutenue » : le
+          # diagnostic publié contredisait la ligne imprimée trois lignes plus
+          # haut. Un rejet de RÈGLE n'est pas un rejet de CONCURRENCE ; il ne
+          # cède pas au rebase, et reboucler dessus ne fait que le répéter
+          # (trois tentatives, trois fois la même erreur, 30 s perdues).
+          #
+          # Écrit dans RUNNER_TEMP et pas dans l'arbre de travail : un fichier
+          # non suivi de plus dans le dépôt pendant un `git rebase --autostash`
+          # est une complication gratuite.
+          #
+          # `git push >log 2>&1` puis test de `$?` plutôt qu'un pipe vers tee :
+          # dans `if git push | tee log`, le statut testé est celui de `tee`,
+          # donc toujours 0 — le rejet passerait pour un succès.
           set +e
           push_status=""
+          push_log="${RUNNER_TEMP:-/tmp}/push.log"
           for attempt in 1 2 3; do
-            if git push; then
+            git push >"$push_log" 2>&1
+            push_code=$?
+            cat "$push_log"
+            if [ "$push_code" -eq 0 ]; then
               echo "Push réussi (tentative ${attempt}/3)."
               echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
+            fi
+            # Rejet par une règle de dépôt : sortie immédiate, la boucle n'a
+            # rien à y gagner. GH013 est le code que GitHub renvoie pour toute
+            # violation de ruleset ; le libellé anglais est cherché en second
+            # au cas où le code changerait de forme.
+            if grep -qi 'GH013\|repository rule violations' "$push_log"; then
+              push_status="regle"
+              break
             fi
             echo "Push rejeté (tentative ${attempt}/3) — rebase sur origin/${RUN_REF} et nouvel essai."
             git fetch origin "$RUN_REF"
@@ -2451,7 +2514,9 @@ jobs:
           done
           set -e
 
-          if [ "$push_status" = "conflit" ]; then
+          if [ "$push_status" = "regle" ]; then
+            echo "::error::Push refusé par une règle du dépôt (GH013), pas par de la concurrence — la ligne \`remote:\` ci-dessus nomme la règle. Un rebase n'y peut rien. Si c'est un check requis : ce job pousse sans PR, aucun check ne peut être attaché à son commit ; vérifier que le secret DATA_PUSH_SSH_KEY est renseigné et que la clé de déploiement correspondante figure bien dans les bypass_actors du ruleset (#508, docs/technical_decisions.md#push-donnees-cle-de-deploiement-508)."
+          elif [ "$push_status" = "conflit" ]; then
             echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
           else
             echo "::error::Push toujours rejeté après 3 tentatives, rebases réussis — concurrence soutenue sur ${RUN_REF}. Intervention manuelle requise."
@@ -2459,11 +2524,12 @@ jobs:
           exit 1
 
       # ── Publication du site avec les données fraîches (#416) ──────────────
-      # Le push ci-dessus est fait avec le GITHUB_TOKEN par défaut : GitHub
-      # n'émet alors AUCUN événement `push` (protection anti-boucle des
-      # workflows). deploy-pages.yml ne peut donc pas se déclencher sur ce
-      # commit, quels que soient ses `paths:` — vérifié sur l'historique des
-      # runs : aucun workflow n'a jamais été déclenché par un commit
+      # POURQUOI CE DÉCLENCHEMENT EXPLICITE EXISTE (#416) : tant que le push
+      # ci-dessus se faisait avec le GITHUB_TOKEN, GitHub n'émettait AUCUN
+      # événement `push` (protection anti-boucle des workflows) —
+      # deploy-pages.yml ne pouvait donc pas se déclencher sur ce commit,
+      # quels que soient ses `paths:`. Vérifié à l'époque sur l'historique des
+      # runs : aucun workflow n'avait jamais été déclenché par un commit
       # « chore: mise à jour automatique des données ». Sans ce déclenchement
       # explicite, le site publié servait les données du dernier build en
       # date, déclenché par une modification d'interface sans rapport.
@@ -2472,6 +2538,22 @@ jobs:
       # (comme repository_dispatch) : un `gh workflow run` avec le
       # GITHUB_TOKEN démarre bien un run. Même mécanique que le
       # re-déclenchement de generate-data.yml par retry-generate-data.yml.
+      #
+      # CE QUI A CHANGÉ AVEC #508, ET POURQUOI CE STEP RESTE : sous la clé de
+      # déploiement, le push ÉMET un événement `push`, et les `paths:` de
+      # deploy-pages.yml (`pivot_data/**`) le voient. Le commit de données
+      # déclenche donc DEUX runs de publication, sérialisés par la concurrence
+      # `pages` de deploy-pages.yml — le second republie un contenu identique,
+      # ou est annulé comme run en attente supplanté.
+      #
+      # Ce doublon est le prix ASSUMÉ de ne pas faire dépendre la publication
+      # de l'identité qui pousse. Supprimer ce step reviendrait à écrire dans
+      # le workflow l'hypothèse « le push émettra toujours un événement » : le
+      # jour où le secret DATA_PUSH_SSH_KEY manque ou est révoqué, le push
+      # retombe sur le GITHUB_TOKEN (cf. le `ssh-key:` du checkout) et le site
+      # cesserait silencieusement de se mettre à jour — exactement la panne
+      # que #416 a corrigée. Un run de publication en trop coûte une minute ;
+      # une donnée fraîche jamais publiée ne se voit pas.
       #
       # Garde sur main : deploy-pages.yml publie le site de production. Un run
       # de génération lancé depuis une branche de travail ne doit jamais

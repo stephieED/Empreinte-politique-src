@@ -120,6 +120,19 @@ See `docs/technical_decisions.md#ci-tests-pytest`.
 In both modes, threshold = `inputs.threshold` (default 3).
 Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
 
+**The data push goes out under a deploy key, not the `GITHUB_TOKEN` (#508)**: a repository
+ruleset enforces its `required_status_checks` on **direct pushes**, not only on PRs — and
+this job pushes to `main` without a PR, so no check can ever be attached to the commit it
+builds. The rule is unsatisfiable for it, not merely slow. The GitHub Actions app cannot be
+a bypass actor on a **personal** repository (it must belong to an owning organisation), so
+`merge-and-pivot` checks out with `ssh-key: ${{ secrets.DATA_PUSH_SSH_KEY }}` and the key is
+listed in the ruleset's `bypass_actors`. Two consequences worth knowing: a deploy-key push
+**does** emit a `push` event (the `GITHUB_TOKEN` does not), so `tests.yml` now really runs on
+data commits — it never did before — and `deploy-pages.yml` fires twice, serialised by its
+`pages` concurrency group. Missing secret ⇒ checkout falls back to the token and the push is
+rejected **loudly**, naming the rule. See
+`docs/technical_decisions.md#push-donnees-cle-de-deploiement-508`.
+
 **A job never writes a cache key for a directory it does not fill (#412 §2.3 → #424 →
 #505, same defect three times)**: `actions/cache` skips the post-job save on an exact key
 hit, so the first writer freezes the entry for everyone. Two corollaries, both enforced by

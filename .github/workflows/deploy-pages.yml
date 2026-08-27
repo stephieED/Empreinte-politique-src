@@ -16,11 +16,16 @@ name: Déploiement GitHub Pages (web/UI_finale)
 #   1. push sur main touchant les chemins listés ci-dessous — couvre les
 #      commits humains (merge de PR) qui modifient l'UI ou les données ;
 #   2. workflow_dispatch déclenché explicitement par le job merge-and-pivot
-#      de generate-data.yml après un push de données réussi — indispensable
-#      car ce push est fait avec le GITHUB_TOKEN par défaut, et GitHub
-#      n'émet alors AUCUN événement `push` déclencheur (protection
-#      anti-boucle) : les `paths:` du point 1 ne peuvent structurellement
-#      pas voir passer le commit du bot.
+#      de generate-data.yml après un push de données réussi.
+#
+# Le point 2 est né (#416) de ce que le point 1 ne pouvait PAS voir passer le
+# commit du bot : le push se faisait avec le GITHUB_TOKEN, qui n'émet aucun
+# événement `push` (protection anti-boucle). Depuis #508, ce push se fait sous
+# une clé de déploiement et émet bien un événement — les deux chemins se
+# déclenchent donc tous les deux sur un commit de données, et la concurrence
+# `pages` ci-dessous les sérialise. Le point 2 est conservé délibérément :
+# il est le seul des deux qui ne dépende pas de l'identité qui pousse. Voir
+# docs/technical_decisions.md#push-donnees-cle-de-deploiement-508.
 on:
   push:
     branches: [main]
