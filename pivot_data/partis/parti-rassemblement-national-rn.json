@@ -2385,7 +2385,7 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-27T17:50:39+0000"
+      "synchro_le": "2026-08-27T19:53:30+0000"
     },
     {
       "type": "europarl",
@@ -2395,8 +2395,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T18:37:42+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-08-27T21:00:32+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,
     "warnings": []

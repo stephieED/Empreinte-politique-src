@@ -74,6 +74,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "avenir de l’élevage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "avenir d’atos",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -95,6 +100,11 @@
     },
     {
       "tag": "budget",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "campagne présidentielle",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -224,6 +234,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "délais de jugement des divorces contentieux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "effets de la réforme de l’assurance chômage sur l’iae",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -255,6 +270,11 @@
     },
     {
       "tag": "fermeture de maternités",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "fermeture des lieux culturels",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -294,7 +314,17 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "gestion de la crise sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "gouvernance des chambres d’agriculture et de la mutualité sociale agricole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "grippe aviaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -479,7 +509,17 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "nouvelle politique agricole commune",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "offre publique d’achat de l’état sur le groupe edf",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "outils de gestion de la crise sanitaire",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
     },
@@ -914,6 +954,11 @@
       "poids_relatif": 1.0
     },
     {
+      "tag": "vaccination anti-covid",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
       "tag": "violences contre les forces de l’ordre",
       "nb_membres_porteurs": 1,
       "poids_relatif": 1.0
@@ -963,13 +1008,13 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-27T18:03:18+0000"
+      "synchro_le": "2026-08-27T20:19:29+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T18:37:42+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-08-27T21:00:32+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
     "warnings": []

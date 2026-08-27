@@ -12,7 +12,133 @@
       "a_un_profil_pivot": true
     }
   ],
-  "tags_thematiques_agreges": [],
+  "tags_thematiques_agreges": [
+    {
+      "tag": "association de taïwan aux travaux des organisations internationales",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "avenir institutionnel et politique de la nouvelle-calédonie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "blocage des prix",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "coupures d’énergie et de chauffage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "crise de l’eau à mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "droit de révocation des élus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "déclaration du gouvernement relative à l’engagement de la france au sahel",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "déclaration du gouvernementrelative à la décision de la russie de faire la guerre à l’ukraine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "effectifs du gouvernement et des cabinets ministériels",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "garde à vue d’une élue en seine-maritime",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "gouvernance maritime en méditerranée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "intempéries de novembre 2019 dans la drôme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "interdiction du glyphosate",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "lutte contre la banalisation des discours de haine dans le débat public",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "nombre de postes à l’hôpital",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "nucléaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "outils de gestion de la crise sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi 3ds",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "projet de loi de finances rectificative pour 2021",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "reconnaissance de l’endométriose comme une affection de longue durée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "recrutements dans les hôpitaux publics",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "respect des principes de la république",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "situation en espagne",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "sécurité intérieure et lutte contre le terrorisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "vigilance sanitaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 1.0
+    }
+  ],
   "sources": [
     {
       "type": "nossenateurs",
@@ -27,13 +153,13 @@
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96742",
-      "synchro_le": "2026-08-20T18:51:32+0000"
+      "synchro_le": "2026-08-27T19:53:28+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:03+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-08-27T21:00:32+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "nb_candidats_declares": 1,
     "nb_candidats_avec_pivot": 1,
     "warnings": []

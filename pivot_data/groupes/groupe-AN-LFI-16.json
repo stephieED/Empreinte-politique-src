@@ -78553,8 +78553,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-26T21:40:22+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-08-27T21:00:42+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "elisa-martin",
       "clementine-autain",

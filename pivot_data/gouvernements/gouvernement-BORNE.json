@@ -2533,7 +2533,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-27T18:03:18+0000"
+      "synchro_le": "2026-08-27T20:19:29+0000"
     },
     {
       "type": "nosdeputes",
@@ -2603,8 +2603,8 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T18:38:02+0000",
-    "licence_donnees": "",
+    "genere_le": "2026-08-27T21:00:48+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
 }
