@@ -224,7 +224,7 @@ jobs:
           # avec interventions en consomme 9 rendrait cet avertissement faux au
           # moment précis où il sert. Cohérence vérifiée par
           # tests/test_ci_budget_interventions.py.
-          AN_TIMEOUT_MINUTES: ${{ inputs.collect_interventions && 9 || 5 }}
+          AN_TIMEOUT_MINUTES: ${{ inputs.collect_interventions && 10 || 5 }}
         run: |
           set -euo pipefail
           SLUGS_JSON=$(python3 - <<'EOF'
@@ -380,34 +380,78 @@ jobs:
     #   setup-python, pip, restauration des caches, artifact d'amendements) :
     #   107-193 s. C'est lui que ce timeout borne en réalité, pas la collecte.
     #
-    # collect_interventions=true → 9 min. Mesuré sur les 16 shards des runs
-    #   32302557156 (19/08 21:11) et 32379928098 (20/08 14:24), les seuls connus
-    #   dans ce mode : les 4 extractions qui sont allées au bout ont pris
-    #   59-160 s, les 12 autres ont été tuées à 173-286 s d'extraction — non pas
-    #   parce qu'elles étaient lentes, mais parce que le préambule avait déjà
-    #   consommé jusqu'à 149 s des 5 min. Le mode ajoute trois charges que le
-    #   mode par défaut n'a pas : recherche NosDéputés (90 s mesurées sur
-    #   jean-luc-melenchon), archives de débats Syceron (3 législatures, 22-55 s
-    #   chacune) et archives de questions QE/QG/QOSD (jusqu'à 12 fichiers).
-    #   9 min = 240 s de préambule provisionné (mesure max : 193 s) + les 240 s
-    #   de `--budget-interventions-secondes` du step d'extraction + ~60 s de
-    #   marge.
+    # collect_interventions=true → 10 min (#546, était 9). LE CALIBRAGE DU 20/08
+    #   NE VAUT PLUS, et ce n'est pas un ajustement de confort : il posait
+    #   « 240 s de préambule provisionné + 240 s de budget + ~60 s de marge » sur
+    #   deux hypothèses tombées depuis. (1) Il provisionnait 90 s de recherche
+    #   NosDéputés, retirée par #529. (2) Il mesurait les archives Syceron à
+    #   22-55 s par législature ALORS QU'ELLES RENDAIENT ZÉRO intervention —
+    #   c'est le défaut de #510, corrigé le 27/08. Le poste facturé n'était pas
+    #   le poste réel.
+    #
+    #   DÉCOMPOSITION MESURÉE, run 33110395663 (27/08) — le premier run où les
+    #   trois archives Syceron ont répondu (au run 33100214165, deux heures plus
+    #   tôt, les législatures 15 et 16 étaient injoignables : ses durées ne
+    #   caractérisent pas ce mode). Secondes, par shard, sur les 7 shards
+    #   PORTEURS d'un mandat AN — le 8e, jordan-bardella, n'a rien à collecter et
+    #   son extraction dure 1 s :
+    #
+    #     préambule du job ...................... 146-197  (max jerome-guedj)
+    #     préambule du script (avant 1re unité) ... 5-6
+    #     index Syceron législature 16 ........... 34-55
+    #     index Syceron législature 15 ........... 79-166  (max jerome-guedj)
+    #     questions officielles .................. 14-104  (max jean-luc-melenchon)
+    #     écriture du profil ...................... 3-4
+    #     ------------------------------------------------
+    #     extraction totale ..................... 175-342  (max jean-luc-melenchon)
+    #     job total (somme des steps) ........... 339-531
+    #
+    #   L'INTERLOCK QUI MANQUAIT. Le budget interne est vérifié ENTRE deux unités,
+    #   jamais au milieu de l'une : le timeout doit donc couvrir le budget PLUS
+    #   l'unité en vol au moment où il expire. Les législatures Syceron ne peuvent
+    #   pas être cette unité — elles sont engagées à l'horloge 41-63 s, très en
+    #   deçà de tout budget de cet ordre. C'est une législature de questions
+    #   officielles, mesurée 5-104 s (max jean-luc-melenchon, législature 15).
+    #   Provision : 120 s. D'où
+    #
+    #     timeout >= préambule provisionné (200 s, max mesuré 197)
+    #             +  préambule de script + écriture (15 s, mesuré 8-10)
+    #             +  --budget-interventions-secondes (250 s)
+    #             +  unité en vol provisionnée (120 s)
+    #             =  585 s, soit 15 s sous les 600 s de ce timeout.
+    #
+    #   Avec 9 min et un budget de 240 s, cette somme valait 575 s pour 540 s
+    #   disponibles : la paire était INCOHÉRENTE, le shard pouvait être tué avant
+    #   d'écrire — le défaut même de #498. Que jean-luc-melenchon soit sorti à
+    #   8,9 min tenait à l'unité qui a dépassé ce jour-là, pas au dimensionnement.
     #
     # Le risque d'origine reste borné. Ce qui justifiait 5 min était un cas
     # anormal resté bloqué 20+ min sans signature reconnue (run du 16/08,
     # jerome-guedj) qui a immobilisé tout le matrix séquentiel (max-parallel: 1)
-    # derrière lui. Trois raisons pour lesquelles 9 min ne le réintroduit pas :
+    # derrière lui. Trois raisons pour lesquelles 10 min ne le réintroduit pas :
     # (1) la valeur ne s'applique QUE si `collect_interventions` est coché, ce
     # qui n'est pas le défaut ; (2) dans ce mode, la collecte se borne
-    # elle-même — `--budget-interventions-secondes` rend la main au bout de
-    # 240 s, écrit le profil partiel et consigne la troncature, si bien que le
-    # timeout de job n'est plus le mécanisme d'arrêt normal mais le dernier
-    # recours contre un vrai gel ; (3) un tel gel coûte 9 min au lieu de 20+.
+    # elle-même — `--budget-interventions-secondes` rend la main, écrit le profil
+    # partiel et consigne la troncature, si bien que le timeout de job n'est plus
+    # le mécanisme d'arrêt normal mais le dernier recours contre un vrai gel ;
+    # (3) un tel gel coûte 10 min au lieu de 20+, et 80 min au pire pour les
+    # 8 shards en série au lieu de 72.
+    #
+    # CE QUE CE CALIBRAGE NE RÈGLE PAS. 113-219 s par shard partent à réindexer
+    # les législatures Syceron 15 et 16 — le MÊME travail, refait par les 7 shards
+    # porteurs, parce que la clé `public-data-cache-an-*-interv` a fait un exact
+    # key hit sur une entrée écrite au run 33100214165 alors que ces deux archives
+    # étaient injoignables : `actions/cache` saute alors sa sauvegarde, et l'index
+    # reconstruit est jeté à chaque fin de shard. C'est #505 sous une troisième
+    # forme — la clé porte le mode, pas la complétude du contenu. Tant qu'elle
+    # tient, aucune paire (budget, timeout) sous le plafond de 10 min ne peut à la
+    # fois tout collecter et garantir l'écriture : jean-luc-melenchon demande
+    # >= 340 s d'horloge de collecte, donc un timeout >= 11,3 min.
     #
     # Toute modification de ces valeurs doit rester cohérente avec le budget du
     # step d'extraction et avec le message de temps mur de prepare-an-matrix —
     # les trois sont vérifiés ensemble par tests/test_ci_budget_interventions.py.
-    timeout-minutes: ${{ inputs.collect_interventions && 9 || 5 }}
+    timeout-minutes: ${{ inputs.collect_interventions && 10 || 5 }}
     strategy:
       # fail-fast: false — un shard en échec/gelé (shutdown signal) ne doit
       # jamais annuler les shards restants : sinon le matrix n'apporte aucune
@@ -623,19 +667,41 @@ jobs:
           # d'interventions NosDéputés, qui n'existe plus. Le repli qu'elle
           # alimentait est parti avec elle, et les 90 s qu'elle coûtait sur
           # `jean-luc-melenchon` (run 32379928098) sont rendues au budget.
-          # #498 : la collecte d'interventions se borne elle-même. 240 s = 1,5x la
-          # plus longue extraction qui soit allée au bout dans CE mode (160 s,
-          # edouard-philippe, run 32302557156). Au-delà, la collecte s'arrête
-          # entre deux unités, le profil partiel est écrit — donc publié par le
-          # step suivant — et la troncature part en ::warning:: et dans
-          # meta.warnings[] du profil. Sans ce budget, le shard était tué par
-          # `timeout-minutes` avant son écriture : les 12 shards tués des runs
-          # 32302557156 (4 sur 8) et 32379928098 (8 sur 8) ont TOUS publié
-          # « 0 profil(s) », vérifiés un par un.
+          # #498 : la collecte d'interventions se borne elle-même. Au-delà du
+          # budget, elle s'arrête entre deux unités, le profil partiel est écrit
+          # — donc publié par le step suivant — et la troncature part en
+          # ::warning:: et dans meta.warnings[] du profil. Sans ce budget, le
+          # shard était tué par `timeout-minutes` avant son écriture : les 12
+          # shards tués des runs 32302557156 (4 sur 8) et 32379928098 (8 sur 8)
+          # ont TOUS publié « 0 profil(s) », vérifiés un par un.
+          #
+          # 250 s (#546, était 240). LES 240 s NE VENAIENT PAS DE CE PIPELINE :
+          # « 1,5x la plus longue extraction allée au bout dans CE mode (160 s,
+          # edouard-philippe, run 32302557156) » — un run où Syceron rendait ZÉRO
+          # intervention (défaut #510) et où la recherche NosDéputés pesait encore
+          # 90 s. Elles ont tronqué deux profils sur sept au premier run où les
+          # archives ont répondu (33110395663, 27/08) :
+          #
+          #   jerome-guedj ....... horloge 247 s — 1 législature de questions perdue
+          #   jean-luc-melenchon . horloge 332 s — 1 législature de questions perdue
+          #
+          # HORLOGE DE COLLECTE MESURÉE sur ce run, 7 shards porteurs : 166, 200,
+          # 208, 208, 244, 247*, 332* s (* = tronqué). 250 s est la plus grande
+          # valeur qui tienne dans le `timeout-minutes` de ce job — voir
+          # l'interlock détaillé au-dessus de `timeout-minutes:` — et elle passe
+          # au-dessus de six de ces sept horloges. La septième
+          # (jean-luc-melenchon) restera tronquée : la compléter demande >= 340 s
+          # d'horloge, donc un timeout >= 11,3 min, au-delà du plafond de 10 min
+          # que le gel de 20+ min du 16/08 a posé. La perte reste DÉCLARÉE.
+          # Et jerome-guedj ne passe qu'à 3 s près : ce n'est pas une garantie,
+          # c'est un profil de plus ce jour-là. Ce qui la donnerait est la
+          # réparation du cache Syceron, pas un budget plus grand (cf. le même
+          # commentaire).
+          #
           # Doit rester cohérent avec le `timeout-minutes` de ce job (vérifié par
           # tests/test_ci_budget_interventions.py).
           BUDGET_FLAG=()
-          [[ "${{ inputs.collect_interventions }}" == "true" ]] && BUDGET_FLAG=(--budget-interventions-secondes 240)
+          [[ "${{ inputs.collect_interventions }}" == "true" ]] && BUDGET_FLAG=(--budget-interventions-secondes 250)
           # `--budget-collecte-secondes 0` (#514) : absence de budget de
           # collecte globale, DÉCLARÉE. Ce n'est pas un oubli reconduit —
           # mesuré sur les 16 shards des runs 32233766814 et 32288588518, une
