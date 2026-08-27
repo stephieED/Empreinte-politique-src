@@ -8,6 +8,14 @@ something is pending, not *why*.
 
 ## Known bugs
 
+- **L'attribution ODbL Regards Citoyens ne s'éteindra jamais sous fusion additive.**
+  `merge_pivot_profile` **unit** `sources[]` par `type` : une entrée `nosdeputes`
+  déjà publiée survit à chaque collecte AN, donc les 475 profils concernés
+  garderont leur clause ODbL indéfiniment. Ce n'est pas un bug d'attribution — elle
+  est due — mais l'échéance annoncée par #529 §4 (« la première entrée passe à
+  `assemblee_nationale` au prochain run ») est fausse. Seul un run `cold_start` /
+  `--no-merge` la ferait tomber, et c'est déjà un run à perte déclarée (#528).
+  Voir `technical_decisions.md#licence-lot-6-530` §3.
 - **#529 laisse deux retraits à faire dans `.github/workflows/`** (hors des droits
   de l'agent qui a livré le lot) : supprimer `debug-network-shutdown-signal.yml`,
   workflow de diagnostic entièrement consacré à sonder `www.nosdeputes.fr`, et

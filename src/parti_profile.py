@@ -26,6 +26,7 @@ from typing import Any, Optional
 
 from group_profile import aggregate_tags_thematiques
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
+from licences import appliquer_licence_donnees
 from schema_parti import SCHEMA_PARTI_VERSION, make_empty_profil_parti, validate_profil_parti
 from text_utils import slugify as _slugify
 
@@ -108,7 +109,14 @@ def build_parti_profile(
             "tags_thematiques, d'autres utilisent mots_cles_interventions)."
         )
 
-    profil["meta"]["licence_donnees"] = licence_donnees
+    # Dérivée de `sources[]` quand l'appelant n'impose rien (#530, lot 6) :
+    # le pipeline ne passe pas `--licence`, et les 10 fiches publiées portaient
+    # une attribution vide. 4 d'entre elles n'ont aucune source et restent donc
+    # à vide — c'est l'information juste, pas un défaut de fabrique.
+    if licence_donnees:
+        profil["meta"]["licence_donnees"] = licence_donnees
+    else:
+        appliquer_licence_donnees(profil)
     profil["meta"]["nb_candidats_declares"] = len(candidats)
     profil["meta"]["nb_candidats_avec_pivot"] = len(pivots)
     profil["meta"]["warnings"] = warnings

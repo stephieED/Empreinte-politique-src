@@ -68,6 +68,7 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, Optional
 
 from json_io import ecrire_profil_json
+from licences import LICENCE_AN
 
 SCHEMA_VERSION = "amendements-v1"
 COSIGNATURES_SCHEMA_VERSION = "amendements-cosignatures-v1"
@@ -75,9 +76,9 @@ SOURCE_AN = "an"
 
 DEFAULT_AMENDEMENTS_DIR = Path("pivot_data") / "amendements"
 
-LICENCE_DONNEES = (
-    "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr"
-)
+#: Alias du libellé canonique, qui vit dans `licences` depuis #530 (lot 6) :
+#: une seule fabrique pour toutes les mentions d'attribution du pipeline.
+LICENCE_DONNEES = LICENCE_AN
 
 # Champs de l'amendement, communs à tous ses signataires. Le mapping du profil
 # n'en porte aucun : les y laisser, c'est la duplication que #431 supprime.

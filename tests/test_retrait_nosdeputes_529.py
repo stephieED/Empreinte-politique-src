@@ -16,7 +16,7 @@ docstrings.
 
 ## Les exceptions, et pourquoi ce ne sont pas des oublis
 
-Cinq modules portent encore la plateforme dans du code exécuté, en deux
+Six modules portent encore la plateforme dans du code exécuté, en trois
 familles. Aucun ne COLLECTE.
 
 **(a) Ceux qui LISENT le corpus déjà publié.** Les retirer casserait ce corpus
@@ -33,6 +33,13 @@ d'attribution ODbL :
    profils bruts collectés avant ce lot ne portent que cette clé, et la fusion
    additive les garde.
 
+**(c) Celui qui l'ATTRIBUE.** `licences` (#530, lot 6) reconnaît les
+`sources[].type` et les `source_url` de Regards Citoyens pour en dériver la
+mention ODbL que le corpus publié doit encore. Retirer ces motifs ne
+retirerait pas la donnée : il retirerait l'attribution qui lui est due
+(AGENTS.md §2 règle 2). Sa condition de retrait s'exécute d'elle-même — la
+clause disparaît d'un profil dès qu'il ne porte plus rien de Regards Citoyens.
+
 **(b) Ceux qui la NOMMENT dans un message, au passé.** Un texte destiné à un
 lecteur, pas une URL qu'on appelle :
 
@@ -44,7 +51,7 @@ lecteur, pas une URL qu'on appelle :
    nomme `archive.nossenateurs.fr` parce que c'est la panne qui a motivé #528.
    Un « chambre inconnue » générique se lit comme une faute de frappe.
 
-Cette liste est fermée et vérifiée ici : une sixième occurrence fait échouer
+Cette liste est fermée et vérifiée ici : une septième occurrence fait échouer
 la suite.
 """
 
@@ -77,6 +84,12 @@ OCCURRENCES_ADMISES = {
     "schema_pivot.py": "KNOWN_SOURCE_TYPES — 476 profils publiés en portent un",
     "audit_pivot_dataset.py": "MAPPING_CHAMBRE_SOURCES — l'audit lit ce corpus",
     "normalize_profil.py": "repli de lecture sur synchro_sources.nosdeputes",
+    # (c) attribution due au corpus publié — le lot 6 lui-même (#530)
+    "licences.py": (
+        "LICENCE_PAR_TYPE_SOURCE et _MOTIFS_URL_REGARDS_CITOYENS : c'est la "
+        "mention d'attribution ODbL qui reste due aux 475 profils et aux 511 "
+        "interventions publiées qui en dérivent encore"
+    ),
     # (b) message destiné à un lecteur, au passé
     "group_profile.py": "meta.warnings publié : nomme la source d'avant #527",
     "group_roster.py": "refus de chambre : nomme la panne qui a motivé #528",

@@ -13,6 +13,7 @@ Usage :
 import time
 from typing import Any, Optional
 
+from licences import appliquer_licence_donnees
 from schema_pivot import appliquer_chambres, make_empty_profil
 
 # Correspondance entre le type brut de l'API EP et la catégorie pivot.
@@ -75,7 +76,6 @@ def normalize_europarl(
     url_source = ue_profile.get("url_source") or None
     meta_ue = ue_profile.get("meta") or {}
     synchro_le = meta_ue.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    licence = meta_ue.get("licence_donnees") or None
 
     profil_id = slug if slug else f"europarl:{mep_id}"
     profil = make_empty_profil(id_=profil_id, nom=nom, provenance=provenance)
@@ -89,7 +89,12 @@ def normalize_europarl(
             "synchro_le": synchro_le,
         }
     ]
-    profil["meta"]["licence_donnees"] = licence
+    # `licence_donnees` est DÉRIVÉ de `sources[]` (#530, lot 6) : une seule
+    # fabrique pour tout le corpus, au lieu d'un libellé propagé depuis le profil
+    # brut. Sur les données réelles la valeur est identique — `candidate_profile_ue`
+    # écrivait déjà `licences.LICENCE_EUROPARL` mot pour mot ; ce qui change, c'est
+    # qu'un profil AN + PE cesse de publier la seule licence de sa branche AN.
+    appliquer_licence_donnees(profil)
     profil["meta"]["genere_le"] = synchro_le
 
     mandats_europeens = ue_profile.get("mandats_europeens") or []

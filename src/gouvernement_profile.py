@@ -90,6 +90,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+from licences import appliquer_licence_donnees
 from schema_gouvernement import (
     KNOWN_CHAMBRES_DEPOT_TEXTE,
     KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL,
@@ -370,7 +371,17 @@ def build_gouvernement_profile(
     profil_gouvernement["textes"] = textes
     profil_gouvernement["comptages"]["par_statut"] = par_statut
     profil_gouvernement["sources"] = sources
-    profil_gouvernement["meta"]["licence_donnees"] = licence_donnees
+    # `licence_donnees` : dérivée de `sources[]` quand l'appelant n'impose rien
+    # (#530, lot 6). Le pipeline ne passe pas `--licence`, et les 10 fiches
+    # publiées portaient donc une attribution **vide** — un manque, sur des
+    # documents dérivés de données ouvertes qui en exigent une (AGENTS.md §7).
+    # La dérivation, et non une constante : `sources[]` agrège ici celles des profils membres, qui ne relèvent pas
+    # toutes de la même licence. L'argument explicite reste
+    # prioritaire, c'est lui qui permet d'annoter une fiche hors pipeline.
+    if licence_donnees:
+        profil_gouvernement["meta"]["licence_donnees"] = licence_donnees
+    else:
+        appliquer_licence_donnees(profil_gouvernement)
     profil_gouvernement["meta"]["warnings"] = warnings
 
     return profil_gouvernement

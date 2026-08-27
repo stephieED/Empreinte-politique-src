@@ -43,6 +43,7 @@ from schema_pivot import (
     make_empty_profil,
 )
 from amendements_index import cle_amendement
+from licences import appliquer_licence_donnees
 from scrutins_index import ScrutinsIndex, cle_scrutin
 from scrutins_legislature import legislature_du_calendrier
 
@@ -463,7 +464,14 @@ def normalize_profil(
     profil["tags_thematiques"] = sorted(tags)
 
     # --- Métadonnées ---
-    profil["meta"]["licence_donnees"] = meta_raw.get("licence_donnees") or ""
+    # `licence_donnees` est DÉRIVÉ de `sources[]`, plus propagé depuis le profil
+    # brut (#530, lot 6). Le profil brut portait une constante — « ODbL (Regards
+    # Citoyens, à partir de l'Assemblée nationale / Sénat / JO) » — qui décrivait
+    # la collecte d'avant #369 et ne décrit plus rien depuis #529 : la collecte
+    # française est intégralement sous Licence Ouverte. La propager reviendrait à
+    # publier une attribution que le contenu du profil dément, dans un sens comme
+    # dans l'autre (voir `licences`).
+    appliquer_licence_donnees(profil)
     profil["meta"]["warnings"] = list(meta_raw.get("warnings") or [])
 
     # Propagation des avertissements de synchro depuis le profil brut.

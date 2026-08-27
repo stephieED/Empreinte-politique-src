@@ -39,6 +39,7 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, Optional
 
 from json_io import ecrire_profil_json
+from licences import LICENCE_AN
 from scrutins_legislature import (
     LegislatureIrresoluble,
     PROVENANCE_COLLECTEE,
@@ -275,7 +276,7 @@ def ecrire(chemin: Path, index: ScrutinsIndex, *, genere_le: Optional[str] = Non
     ecrire_profil_json(chemin, {
         "schema_version": SCHEMA_VERSION,
         "genere_le": genere_le,
-        "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
+        "licence_donnees": LICENCE_AN,
         "scrutins": index.liste(),
     })
 

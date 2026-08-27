@@ -9,7 +9,7 @@ const QUESTIONS = [
   {
     question: 'D’où viennent les données ?',
     answer:
-      'De sources publiques : NosDéputés.fr, NosSénateurs.fr, l’open data de l’Assemblée nationale, du Parlement européen et de Wikidata. Chaque profil indique ses sources et sa date de dernière synchronisation ; une donnée manquante est affichée comme manquante, jamais remplacée par un zéro.',
+      'De sources publiques. Côté français, une seule est encore collectée : l’open data de l’Assemblée nationale (data.assemblee-nationale.fr, Licence Ouverte). S’y ajoutent l’open data du Parlement européen, les dumps ParlTrack (ODbL) et Wikidata. Des champs déjà publiés proviennent de NosDéputés.fr et NosSénateurs.fr (Regards Citoyens, ODbL) : ces sources ne sont plus interrogées, mais rien de ce qu’elles ont produit n’a été effacé et l’attribution leur reste due. Chaque profil indique ses sources et sa date de dernière synchronisation ; une donnée manquante est affichée comme manquante, jamais remplacée par un zéro.',
   },
   {
     question: 'Pourquoi pas de notation ?',

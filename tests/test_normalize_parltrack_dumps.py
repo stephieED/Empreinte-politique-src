@@ -223,9 +223,20 @@ def test_enrich_parltrack_source_added_once():
 
 
 def test_enrich_licence_enriched():
-    """La licence ParlTrack est ajoutée à meta.licence_donnees."""
+    """La licence ParlTrack s'ajoute à celle que le profil portait déjà.
+
+    Depuis #530 (lot 6), `meta.licence_donnees` est DÉRIVÉ de `sources[]` et
+    non plus concaténé à la valeur en place : le profil doit donc porter sa
+    source européenne, comme le fait `normalize_europarl` dans le pipeline
+    réel. Ce que le test vérifie est inchangé — l'ODbL de ParlTrack **s'ajoute**
+    à l'attribution existante au lieu de la remplacer, faute de quoi le partage
+    à l'identique du versant européen serait annoncé seul.
+    """
     profil = _empty_pivot()
-    profil["meta"]["licence_donnees"] = "CC BY 4.0"
+    profil["sources"] = [
+        {"type": "europarl", "url": "https://www.europarl.europa.eu/meps/fr/131580",
+         "synchro_le": "2026-08-27T10:00:00+0000"},
+    ]
     dossiers = [_dossier()]
 
     with patch("normalize_parltrack_dumps.get_dossiers_for_mep", return_value=dossiers), \

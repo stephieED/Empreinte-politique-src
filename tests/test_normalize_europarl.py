@@ -4,6 +4,7 @@ from pathlib import Path
 # Les modules testés vivent dans src/, à côté du dossier tests/.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from licences import LICENCE_EUROPARL
 from normalize_europarl import _extract_groupe, normalize_europarl
 from schema_pivot import SCHEMA_VERSION, validate_profil
 
@@ -239,9 +240,18 @@ def test_pivot_source_type_europarl():
     assert pivot["sources"][0]["type"] == "europarl"
 
 
-def test_pivot_meta_licence_propagee():
+def test_pivot_meta_licence_derivee_des_sources():
+    """`licence_donnees` vient de `sources[]`, plus du profil brut (#530).
+
+    Le profil brut de ce test annonce « CC0 » ; le pivot publie la licence du
+    Portail Open Data du Parlement européen, parce que c'est de là que vient
+    `sources[0]`. La propagation d'avant permettait à un collecteur d'annoncer
+    n'importe quelle licence pour la source qu'il venait d'écrire — et sur les
+    données réelles elle ne changeait rien, `candidate_profile_ue` écrivant déjà
+    ce libellé mot pour mot.
+    """
     pivot = normalize_europarl(_raw_ue_profile())
-    assert pivot["meta"]["licence_donnees"] == "CC0"
+    assert pivot["meta"]["licence_donnees"] == LICENCE_EUROPARL
 
 
 def test_pivot_mandats_count():

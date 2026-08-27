@@ -83,6 +83,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
+from licences import appliquer_licence_donnees
 from schema_groupe import (
     SCHEMA_GROUPE_VERSION,
     AMENDEMENTS_TYPES_DEPOSANT,
@@ -1189,7 +1190,17 @@ def build_groupe_profile(
     profil_groupe["amendements_agreges"] = amendements_agreges
     profil_groupe["sources"] = sources
 
-    profil_groupe["meta"]["licence_donnees"] = licence_donnees
+    # `licence_donnees` : dérivée de `sources[]` quand l'appelant n'impose rien
+    # (#530, lot 6). Le pipeline ne passe pas `--licence`, et les 7 fiches
+    # publiées portaient donc une attribution **vide** — un manque, sur des
+    # documents dérivés de données ouvertes qui en exigent une (AGENTS.md §7).
+    # La dérivation, et non une constante : `groupe-Senat-LR` et `groupe-Senat-SER` dérivent de NosSénateurs (ODbL)
+    # quand les 5 fiches AN dérivent d'AMO30 (Licence Ouverte). L'argument explicite reste
+    # prioritaire, c'est lui qui permet d'annoter une fiche hors pipeline.
+    if licence_donnees:
+        profil_groupe["meta"]["licence_donnees"] = licence_donnees
+    else:
+        appliquer_licence_donnees(profil_groupe)
     profil_groupe["meta"]["profils_sources"] = [
         p.get("id") or "" for p in profils
     ]
