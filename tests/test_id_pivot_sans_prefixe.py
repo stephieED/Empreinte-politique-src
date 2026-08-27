@@ -33,7 +33,7 @@ from audit_diff_profils import (  # noqa: E402
 from gouvernement_roster import build_gouvernement_roster  # noqa: E402
 from merge_profile import merge_pivot_profile  # noqa: E402
 from normalize_europarl import normalize_europarl  # noqa: E402
-from normalize_nosdeputes import normalize_nosdeputes  # noqa: E402
+from normalize_profil import normalize_profil  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def _brut_ue() -> dict:
 # ---------------------------------------------------------------------------
 
 def test_id_vaut_le_slug_sans_prefixe():
-    assert normalize_nosdeputes(_brut())["id"] == "marie-martin"
+    assert normalize_profil(_brut())["id"] == "marie-martin"
 
 
 def test_id_identique_quelle_que_soit_la_chambre_qui_a_repondu():
@@ -114,17 +114,23 @@ def test_id_identique_quelle_que_soit_la_chambre_qui_a_repondu():
     Le même élu, collecté côté Assemblée puis côté Sénat, portait deux `id`
     différents. Il n'en porte plus qu'un.
     """
-    assert (normalize_nosdeputes(_brut("deputes"))["id"]
-            == normalize_nosdeputes(_brut("senateurs"))["id"]
+    assert (normalize_profil(_brut("deputes"))["id"]
+            == normalize_profil(_brut("senateurs"))["id"]
             == "marie-martin")
 
 
 def test_la_provenance_reste_lisible_dans_sources():
     """Retirer le préfixe ne perd rien : `sources[].type` porte toujours la
     provenance, et lui la décrit *vraiment* — c'est celle d'UNE source, pas
-    l'identité de la personne (AGENTS.md §2.2)."""
-    assert normalize_nosdeputes(_brut("deputes"))["sources"][0]["type"] == "nosdeputes"
-    assert normalize_nosdeputes(_brut("senateurs"))["sources"][0]["type"] == "nossenateurs"
+    l'identité de la personne (AGENTS.md §2.2).
+
+    Elle valait `nosdeputes`/`nossenateurs` selon la chambre qui avait répondu
+    (`_SOURCE_TYPE_MAP`). Depuis #529 il n'y a plus qu'une provenance possible
+    pour un profil FR, et c'est justement ce que ce test doit constater : la
+    chambre ne décide plus de la source, parce qu'il n'y a plus de choix.
+    """
+    assert normalize_profil(_brut("deputes"))["sources"][0]["type"] == "assemblee_nationale"
+    assert normalize_profil(_brut("senateurs"))["sources"][0]["type"] == "assemblee_nationale"
 
 
 # ---------------------------------------------------------------------------
@@ -146,12 +152,12 @@ def test_l_id_ne_depend_d_aucune_donnee_de_collecte():
 
     Les variantes qui font échouer la normalisation entière sont ignorées : ce
     test porte sur l'`id` d'un profil produit, pas sur la robustesse de
-    `normalize_nosdeputes` à une entrée aberrante.
+    `normalize_profil` à une entrée aberrante.
     """
     # La dépendance est vérifiée AVANT `id == slug` : c'est elle le sujet, et
     # c'est elle qui doit nommer la panne si le défaut revient. Un préfixe
     # stable réintroduit passerait la seconde assertion mais pas la première.
-    reference = normalize_nosdeputes(_brut())["id"]
+    reference = normalize_profil(_brut())["id"]
 
     champs_collectes = [c for c in _brut() if c != "slug"]
     assert "chambre" in champs_collectes, (
@@ -164,7 +170,7 @@ def test_l_id_ne_depend_d_aucune_donnee_de_collecte():
             brut = copy.deepcopy(_brut())
             brut[champ] = variante
             try:
-                obtenu = normalize_nosdeputes(brut)["id"]
+                obtenu = normalize_profil(brut)["id"]
             except (AttributeError, TypeError):
                 continue
             testes += 1
@@ -174,7 +180,7 @@ def test_l_id_ne_depend_d_aucune_donnee_de_collecte():
             )
         brut = copy.deepcopy(_brut())
         del brut[champ]
-        assert normalize_nosdeputes(brut)["id"] == reference, (
+        assert normalize_profil(brut)["id"] == reference, (
             f"l'`id` a suivi l'absence du champ collecté {champ!r}"
         )
         testes += 1
@@ -191,7 +197,7 @@ def test_seul_le_slug_deplace_l_id():
     """
     brut = _brut()
     brut["slug"] = "un-autre-slug"
-    assert normalize_nosdeputes(brut)["id"] == "un-autre-slug"
+    assert normalize_profil(brut)["id"] == "un-autre-slug"
 
 
 # ---------------------------------------------------------------------------
@@ -238,17 +244,17 @@ def test_la_fusion_laisse_le_nouvel_id_l_emporter():
     `merge_pivot_profile` part de `dict(new)` et ne rattrape jamais `id` : la
     valeur régénérée gagne, y compris contre un ancien préfixé.
     """
-    ancien = normalize_nosdeputes(_brut())
+    ancien = normalize_profil(_brut())
     ancien["id"] = "nossenateurs:marie-martin"          # l'état committé
-    nouveau = normalize_nosdeputes(_brut())             # ce que régénère le pipeline
+    nouveau = normalize_profil(_brut())             # ce que régénère le pipeline
     assert merge_pivot_profile(ancien, nouveau)["id"] == "marie-martin"
 
 
 def test_la_fusion_ne_regresse_pas_vers_l_ancien_prefixe_dans_l_autre_sens():
     """Le contrôle inverse : un ancien non préfixé ne doit pas être réécrit
     par un nouveau préfixé venu d'un chemin resté en arrière."""
-    ancien = normalize_nosdeputes(_brut())
-    nouveau = normalize_nosdeputes(_brut())
+    ancien = normalize_profil(_brut())
+    nouveau = normalize_profil(_brut())
     nouveau["id"] = "nosdeputes:marie-martin"
     # `merge_pivot_profile` fait gagner le nouveau : c'est le contrat, et c'est
     # ce qui rend la migration possible. Le test le fige pour qu'une inversion

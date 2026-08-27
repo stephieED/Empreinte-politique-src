@@ -106,10 +106,12 @@ def test_le_drapeau_est_leve_dans_le_source():
     """La bascule du lot 1b (#527) EST cette ligne, et ce test la fige.
 
     Le lot 1 figeait `False` pour que la bascule soit une décision prise seule ;
-    ce test fige `True` pour que le retour en arrière en soit une aussi. Un
-    `git revert` de la ligne fait échouer ce test, ce qui est exactement le
-    signal voulu : le repli NosDéputés existe, il ne s'emprunte pas par
-    inadvertance.
+    ce test fige `True` pour que le retour en arrière en soit une aussi.
+
+    Ce que « baissé » veut dire a changé avec #529 : il n'y a plus de repli
+    NosDéputés vers lequel basculer. Le drapeau est devenu un interrupteur —
+    baissé, il n'y a plus de roster du tout, et le module refuse bruyamment.
+    C'est ce refus, testé juste en dessous, qui reste sa seule raison d'être.
     """
     assert an_roster.AN_ROSTER_ACTIF is True
 
@@ -144,9 +146,12 @@ def test_inactif_refuse_au_lieu_de_rendre_une_liste_vide(appel):
 APPELANTS_ATTENDUS = {
     # L'aiguillage lui-même : `fetch_full_roster` délègue la clé `deputes`.
     "group_roster.py",
-    # Le `meta.warnings` de fraîcheur d'une fiche AN doit NOMMER sa source ;
-    # il lit le drapeau plutôt que de l'écrire en dur (AGENTS §2 règle 2).
-    "group_profile.py",
+    # `group_profile.py` n'y est PLUS depuis #529. Il lisait le drapeau pour
+    # choisir entre deux rédactions du `meta.warnings` de fraîcheur — celle
+    # d'AMO30 et celle de NosDéputés. Le repli retiré, il n'y a plus qu'une
+    # source à nommer, donc plus de drapeau à lire : l'avertissement est écrit
+    # une fois pour toutes (AGENTS §2 règle 2, toujours respectée — c'est le
+    # nombre de sources qui a changé, pas l'exigence).
 }
 
 
@@ -417,22 +422,24 @@ def test_chaque_ecart_de_la_16e_est_nomme_et_date(actif):
 # 7. La 17e législature — ce que NosDéputés n'a jamais servi
 # --------------------------------------------------------------------------
 
-def test_nosdeputes_ne_sert_pas_la_17e():
-    """La raison d'être du lot : la source en place s'arrête à la 16e."""
-    with pytest.raises(ValueError) as exc:
-        group_roster._base_url_for("deputes", "17")
-    assert "17" in str(exc.value)
+def test_les_tables_de_domaines_ont_disparu():
+    """Critère d'acceptation du lot 1 (#526), élargi par le lot 5 (#529).
 
-
-def test_legislature_by_base_url_a_disparu():
-    """Critère d'acceptation : la table domaine → législature n'existe plus.
-
-    Elle n'avait qu'un usage — construire son propre inverse — et laissait
-    croire qu'un sous-domaine est une façon légitime d'apprendre une
-    législature. La législature est une donnée du référentiel AN.
+    `LEGISLATURE_BY_BASE_URL` avait disparu la première : elle n'avait qu'un
+    usage — construire son propre inverse — et laissait croire qu'un
+    sous-domaine est une façon légitime d'apprendre une législature.
+    `_BASE_URL_BY_LEGISLATURE_AN`, l'inverse en question, la suit : c'est elle
+    qui portait la raison d'être du lot, **la source s'arrêtait à la 16e**, et
+    elle n'a plus d'appelant depuis que `fetch_full_roster` délègue tout à
+    AMO30. Ce que le test disait — « NosDéputés ne sert pas la 17e » — reste
+    vrai et n'a plus besoin d'être vérifié à l'exécution : la 17e est servie,
+    par AMO30, et c'est le test suivant qui le mesure.
     """
-    assert not hasattr(group_roster, "LEGISLATURE_BY_BASE_URL")
-    assert "17" not in group_roster._BASE_URL_BY_LEGISLATURE_AN
+    for nom in ("LEGISLATURE_BY_BASE_URL", "_BASE_URL_BY_LEGISLATURE_AN", "_base_url_for"):
+        assert not hasattr(group_roster, nom), (
+            f"`group_roster.{nom}` est de retour : c'est une table de domaines "
+            "NosDéputés, retirée par #526 puis #529."
+        )
 
 
 def test_la_17e_est_servie_par_amo30(actif):

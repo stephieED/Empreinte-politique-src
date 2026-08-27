@@ -252,11 +252,17 @@ def test_l_avertissement_de_fraicheur_nomme_amo30(monkeypatch):
     assert "composition dérivée de www.nosdeputes.fr" not in avertissement
 
 
-def test_l_avertissement_suit_le_repli(monkeypatch):
-    """Drapeau baissé, le texte redevient celui de la source réellement lue."""
-    monkeypatch.setattr(an_roster, "AN_ROSTER_ACTIF", False)
+def test_l_avertissement_ne_suit_plus_aucun_repli(monkeypatch):
+    """Le texte avait DEUX rédactions, choisies sur le drapeau : celle d'AMO30
+    et celle de NosDéputés, la source du repli.
 
-    avertissement = group_profile._avertissement_fraicheur_an()
-
-    assert "www.nosdeputes.fr" in avertissement
-    assert "9 juin 2024" in avertissement
+    #529 a retiré le repli. Un avertissement publié qui changerait de source
+    selon un drapeau dont l'autre branche ne lit plus rien serait pire qu'inutile
+    — il nommerait une source dont aucune composition ne peut venir. Il n'y a
+    donc plus qu'une rédaction, et elle ne dépend plus du drapeau.
+    """
+    for actif in (True, False):
+        monkeypatch.setattr(an_roster, "AN_ROSTER_ACTIF", actif)
+        avertissement = group_profile._avertissement_fraicheur_an()
+        assert "dérivée du référentiel AMO30" in avertissement
+        assert "composition dérivée de www.nosdeputes.fr" not in avertissement

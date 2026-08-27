@@ -6,10 +6,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import requests as _requests
 
 # Les modules testés vivent dans src/, à côté du dossier tests/.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+import candidate_profile
 from candidate_profile import (
     _collect_acteur_roles,
     _collect_initiateurs,
@@ -19,11 +21,9 @@ from candidate_profile import (
     _derive_amendement_sort_legacy,
     _expand_aggregated_amendements_index,
     _extract_contact,
-    _extract_mandats,
     _parse_syceron_intervention_entry,
     _format_lieu_naissance,
     _format_nom_complet,
-    _groupe_label,
     _parse_amendement_entry,
     _parse_amendement_entry_legacy,
     _parse_amendements_zip,
@@ -33,7 +33,7 @@ from candidate_profile import (
     fetch_interventions_syceron,
     fetch_questions_officielles,
 )
-from normalize_nosdeputes import normalize_nosdeputes
+from normalize_profil import normalize_profil
 
 
 class _FauxRaw:
@@ -138,21 +138,36 @@ def _reset_amendements_failed_legislatures_cache():
     _amendements_failed_legislatures.clear()
 
 
-class DummyResponse:
-    def __init__(self, text: str, status_code: int = 200):
-        self.text = text
-        self.status_code = status_code
-        self.encoding = "utf-8"
-        self.apparent_encoding = "utf-8"
-
-    def raise_for_status(self):
-        if self.status_code >= 400:
-            raise Exception("HTTP error")
-
+# ---------------------------------------------------------------------------
+# Ce qui a disparu d'ici avec la source (#529, lot 5)
+#
+# `DummyResponse` et les onze tests qui l'entouraient décrivaient la chaîne
+# d'interventions scrapées de NosDéputés : `_classify_intervention` (l'orateur
+# lu dans un `div.perso`), `_extract_speaker_identity_from_html`,
+# `fetch_seance_context` (le sujet et les mots-clés lus dans le HTML d'une page
+# de séance), `_classify_intervention_format` et son seuil de 15 mots,
+# `_extract_mandats` / `_groupe_label` (les responsabilités lues dans un profil
+# brut NosDéputés) et `fetch_all_intervention_results_from_domains`.
+#
+# Ils sont supprimés avec le code, pas conservés « au cas où » : un test qui
+# fige un comportement qui n'existe plus rend son retour indolore, et c'est
+# exactement ce que #510 a payé avec ses deux fixtures inventées. Ce que
+# `_extract_mandats` garantissait — l'estampille de chambre sur le mandat
+# électif (#492) — est repris à son nouvel emplacement dans
+# `tests/test_chambre_par_mandat.py`.
+#
+# `test_build_profile_reports_empty_api_payloads` est en revanche conservé,
+# réécrit sur la seule source restante : c'est lui qui vérifie qu'un slug
+# introuvable sort avec des warnings plutôt qu'avec un profil d'apparence
+# normale. Voir docs/technical_decisions.md#retrait-nosdeputes-529.
+# ---------------------------------------------------------------------------
 
 def test_build_profile_reports_empty_api_payloads():
+    """Slug absent du référentiel AN : aucune section n'est fabriquée, et le
+    profil DIT pourquoi. Le repli NosDéputés qui pouvait encore rendre une
+    identité ici est parti avec la source (#529) — ce chemin est donc devenu
+    le seul, et son silence serait un constat faux (AGENTS.md §2.5)."""
     with (
-        patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
@@ -161,65 +176,13 @@ def test_build_profile_reports_empty_api_payloads():
     assert profile["identite"] is None
     assert profile["mandats"] == []
     assert profile["votes"] == []
+    assert profile["source"] is None, (
+        "sans acteur résolu, `source` doit rester nulle : une URL de fiche "
+        "inventée serait une source qui ne mène nulle part (règle 2)"
+    )
     assert any("identité" in warning for warning in profile["meta"]["warnings"])
     assert any("vote" in warning for warning in profile["meta"]["warnings"])
 
-def test_groupe_label_handles_dict_and_string_and_none():
-    assert _groupe_label({"organisme": "La France Insoumise", "fonction": "membre"}) == "La France Insoumise"
-    assert _groupe_label("La France Insoumise") == "La France Insoumise"
-    assert _groupe_label(None) is None
-
-
-def test_extract_mandats_reads_real_api_responsabilites_fields():
-    parlementaire = {
-        "mandat_debut": "2017-06-21",
-        "mandat_fin": None,
-        "groupe": {"organisme": "La France Insoumise", "fonction": "membre"},
-        "responsabilites": [
-            {
-                "responsabilite": {
-                    "organisme": "Commission des affaires étrangères",
-                    "fonction": "membre",
-                    "debut_fonction": "2022-01-14",
-                }
-            }
-        ],
-        "historique_responsabilites": [
-            {
-                "responsabilite": {
-                    "organisme": "La France Insoumise",
-                    "fonction": "président",
-                    "debut_fonction": "2017-06-28",
-                    "fin_fonction": "2021-10-12",
-                }
-            }
-        ],
-        "groupes_parlementaires": [],
-        "responsabilites_extra_parlementaires": [],
-    }
-
-    mandats = _extract_mandats(parlementaire)
-
-    mandat_electif = next(m for m in mandats if m["categorie"] == "mandat_electif")
-    assert "La France Insoumise" in mandat_electif["label"]
-    assert mandat_electif["actif"] is True
-
-    commission_actuelle = next(
-        m for m in mandats if m["categorie"] == "commission" and m["label"] == "Commission des affaires étrangères"
-    )
-    assert commission_actuelle["type"] == "membre"
-    assert commission_actuelle["actif"] is True
-
-    ancienne_presidence = next(
-        m for m in mandats if m["categorie"] == "commission" and m["label"] == "La France Insoumise"
-    )
-    assert ancienne_presidence["type"] == "président"
-    assert ancienne_presidence["actif"] is False
-    assert ancienne_presidence["fin"] == "2021-10-12"
-
-
-def test_extract_mandats_returns_empty_list_when_no_fields_present():
-    assert _extract_mandats({}) == []
 
 def test_derive_amendement_sort_maps_discute_states():
     assert _derive_amendement_sort("Discuté", "Adopté") == ("adopté", None)
@@ -1281,187 +1244,60 @@ def test_build_profile_includes_official_questions_in_interventions():
     ]
 
     with (
-        patch("candidate_profile.fetch_identity", return_value={}),
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_questions_officielles", return_value=fake_questions),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "slug-test")
 
-    # Sans identité, les questions ne sont pas collectées (chambre == "deputes" mais
-    # profile["identite"] est None) : les questions ne doivent PAS être dans interventions.
+    # Sans identité, les questions ne sont pas collectées : elles ne doivent PAS
+    # être dans interventions.
     assert not any(i.get("type_detail") == "question" for i in profile["interventions"])
 
 
 # ---------------------------------------------------------------------------
-# Tests pour la logique de court-circuit sur échecs déterministes (_TERMINAL_FAILURE)
+# `_get_payload` / `_try_urls` / le watchdog : RETIRÉS (#529, lot 5)
+#
+# Six tests figeaient ici la logique de court-circuit sur échec déterministe
+# (`_TERMINAL_FAILURE` sur 4xx et sur format inconnu, `None` sur 5xx après trois
+# tentatives, l'abandon du watchdog sur requête pendue, le saut du suffixe
+# `/xml` après un `/json` terminal). Tout cela décrivait UN chemin réseau, celui
+# de NosDéputés/NosSénateurs : l'open data AN passe par `requests.get`,
+# `download_with_watchdog` et `_telecharger_flux` en direct, jamais par là.
+#
+# Les tests partent avec le code. Ce qui protège les téléchargements restants
+# est ailleurs et n'a pas bougé : les reprises segmentées des archives
+# d'amendements (plus bas dans ce fichier) et `download_watchdog.py` avec son
+# propre fichier de tests.
 # ---------------------------------------------------------------------------
-
-import requests as _requests
-
-
-def test_get_payload_returns_terminal_failure_on_4xx():
-    """Un HTTP 404 renvoie _TERMINAL_FAILURE (pas None)."""
-    from candidate_profile import _get_payload, _TERMINAL_FAILURE
-
-    class Resp404:
-        status_code = 404
-        headers = {"content-type": "text/html"}
-        text = "Not Found"
-
-        def raise_for_status(self):
-            raise _requests.HTTPError("404", response=self)
-
-    with patch("candidate_profile.requests.get", return_value=Resp404()):
-        result = _get_payload("https://example.test/missing/json")
-
-    assert result is _TERMINAL_FAILURE
-
-
-def test_get_payload_returns_none_on_5xx():
-    """Un HTTP 500 renvoie None (échec transitoire, pas terminal) après avoir
-    épuisé les tentatives de retry (_GET_PAYLOAD_MAX_ATTEMPTS)."""
-    from candidate_profile import _GET_PAYLOAD_MAX_ATTEMPTS, _get_payload, _TERMINAL_FAILURE
-
-    class Resp500:
-        status_code = 500
-        headers = {"content-type": "text/html"}
-        text = "Server Error"
-
-        def raise_for_status(self):
-            raise _requests.HTTPError("500", response=self)
-
-    with (
-        patch("candidate_profile.requests.get", return_value=Resp500()) as mock_get,
-        patch("candidate_profile.time.sleep", return_value=None),
-    ):
-        result = _get_payload("https://example.test/error/json")
-
-    assert result is None
-    assert result is not _TERMINAL_FAILURE
-    assert mock_get.call_count == _GET_PAYLOAD_MAX_ATTEMPTS
-
-
-def test_get_payload_returns_terminal_failure_on_unsupported_format():
-    """Un format de réponse non pris en charge renvoie _TERMINAL_FAILURE."""
-    from candidate_profile import _get_payload, _TERMINAL_FAILURE
-
-    class RespUnknown:
-        status_code = 200
-        headers = {"content-type": "text/plain"}
-        text = "hello world"
-
-        def raise_for_status(self):
-            pass
-
-    with patch("candidate_profile.requests.get", return_value=RespUnknown()):
-        result = _get_payload("https://example.test/resource")
-
-    assert result is _TERMINAL_FAILURE
-
-
-def test_get_payload_returns_terminal_failure_on_malformed_json():
-    """Une réponse JSON malformée (Content-Type JSON mais corps invalide) renvoie _TERMINAL_FAILURE."""
-    from candidate_profile import _get_payload, _TERMINAL_FAILURE
-
-    class RespBadJson:
-        status_code = 200
-        headers = {"content-type": "application/json"}
-        text = "{not valid json"
-
-        def raise_for_status(self):
-            pass
-
-        def json(self):
-            raise ValueError("Expecting property name")
-
-    with patch("candidate_profile.requests.get", return_value=RespBadJson()):
-        result = _get_payload("https://example.test/bad/json")
-
-    assert result is _TERMINAL_FAILURE
-
-
-def test_get_payload_watchdog_aborts_hung_request():
-    """Une requête qui pend au-delà de TIMEOUT + marge watchdog renvoie None
-    (échec transitoire, après épuisement des tentatives de retry) au lieu de
-    bloquer indéfiniment le process appelant.
-
-    Reproduit le scenario CI observé (#voir historique) : requests.get() ne
-    revient jamais (ni succès, ni exception) — un DNS/réseau bloqué n'est pas
-    toujours couvert par le paramètre timeout= de requests. Sans le watchdog,
-    ce test bloquerait le process de test lui-même indéfiniment.
-    """
-    import time as _time
-
-    from candidate_profile import _get_payload
-
-    def hung_get(*args, **kwargs):
-        _time.sleep(5)
-        raise AssertionError("ne devrait jamais retourner : le watchdog doit abandonner avant")
-
-    with (
-        patch("candidate_profile.requests.get", side_effect=hung_get),
-        patch("candidate_profile.TIMEOUT", 0.1),
-        patch("candidate_profile._WATCHDOG_MARGIN_SECONDS", 0.1),
-        # Backoff de retry mis à 0 : seul le budget watchdog (TIMEOUT + marge
-        # ci-dessus) est sous test ici, pas le délai entre tentatives.
-        patch("candidate_profile._GET_PAYLOAD_RETRY_BACKOFF_SECONDS", 0),
-    ):
-        start = _time.monotonic()
-        result = _get_payload("https://example.test/hung/json")
-        elapsed = _time.monotonic() - start
-
-    assert result is None
-    assert elapsed < 5
-
-
-def test_try_urls_skips_xml_after_json_terminal_failure():
-    """Si /json renvoie _TERMINAL_FAILURE, /xml ne doit pas être essayé pour ce base_url."""
-    from candidate_profile import _try_urls, _TERMINAL_FAILURE
-
-    calls: list[str] = []
-
-    # `budget` (#514) : la doublure doit porter la signature réelle, sinon le
-    # test passerait encore le jour où l'appelant cesserait de transmettre le
-    # budget — un garde-fou débranché (#460).
-    def fake_get_payload(url: str, budget=None):
-        calls.append(url)
-        assert budget is None, "aucun budget n'est posé par ce test"
-        return _TERMINAL_FAILURE
-
-    with patch("candidate_profile._get_payload", side_effect=fake_get_payload):
-        result, base = _try_urls(["https://base1.test", "https://base2.test"], "label", "slug")
-
-    # Ni /xml pour base1, ni essai de base2 : _TERMINAL_FAILURE doit court-circuiter
-    # l'essai de l'autre format MAIS les autres bases URL restent éligibles.
-    json_calls = [u for u in calls if u.endswith("/json")]
-    xml_calls = [u for u in calls if u.endswith("/xml")]
-    assert len(json_calls) == 2, f"Attendu 2 essais /json (un par base), obtenu: {json_calls}"
-    assert xml_calls == [], f"Aucun essai /xml attendu après terminal failure, obtenu: {xml_calls}"
-    assert result is None
-    assert base is None
-
 
 # ---------------------------------------------------------------------------
 # #78 — Syceron comme source primaire dans build_profile()
 # ---------------------------------------------------------------------------
 
-def _fake_identity_with_acteur_ref():
-    """Retourne un payload identité minimal permettant de résoudre un acteurRef."""
-    return {
-        "depute": {
-            "id": "PA123456",
-            "nom": "Dupont",
-            "prenom": "Jean",
-            "slug": "jean-dupont",
-            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
-            "url_an_ou_senat": "https://www.assemblee-nationale.fr/dyn/deputes/PA123456",
-        }
-    }
+def _identite_an_resolue():
+    """Ce que `fetch_identite_officielle_par_slug` rend pour un slug résolu.
+
+    Remplace `_fake_identity_with_acteur_ref`, qui fabriquait une réponse
+    NosDéputés (`{"depute": {...}}`) : cette forme n'entre plus nulle part
+    depuis #529. L'`acteur_ref` est ce dont dépend tout le reste de la
+    collecte — c'est lui que `_extract_acteur_ref` relit dans l'URL de fiche.
+    """
+    return (
+        {
+            "nom_complet": "Jean Dupont",
+            "groupe_sigle": "RE",
+            "groupe_nom": "Renaissance",
+            "mandat_debut": "2024-07-18",
+            "mandat_fin": None,
+        },
+        "PA123456",
+    )
 
 
 def test_build_profile_uses_syceron_as_primary_for_deputes():
-    """Quand Syceron retourne des interventions, elles doivent être utilisées comme source primaire."""
+    """Quand Syceron retourne des interventions, elles doivent être utilisées
+    comme source primaire — et, depuis #529, comme seule source."""
     fake_syceron = [
         {
             "id": "syceron_CRS17_000001",
@@ -1473,18 +1309,21 @@ def test_build_profile_uses_syceron_as_primary_for_deputes():
         }
     ]
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
     assert profile["interventions"] == fake_syceron
     assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is not None
-    # Pas de warning de fallback
-    assert not any("fallback" in w for w in profile["meta"]["warnings"])
+    assert not any("syceron indisponibles" in w for w in profile["meta"]["warnings"])
 
 
 def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
@@ -1496,11 +1335,15 @@ def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
     celle-ci était muette.
     """
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
@@ -1517,16 +1360,55 @@ def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
 def test_build_profile_syceron_en_echec_est_declare_sans_repli():
     """Une exception Syceron laisse la section vide, déclarée — et ne convoque personne (#510)."""
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_interventions_syceron", side_effect=RuntimeError("connexion échouée")),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron",
+              side_effect=RuntimeError("connexion échouée")),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
     ):
         profile = build_profile("deputes", "jean-dupont")
 
     assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is None
-    assert any("syceron" in w.lower() for w in profile["meta"]["warnings"])
+    assert any("connexion échouée" in w for w in profile["meta"]["warnings"]), (
+        "la cause de l'échec doit voyager jusqu'au warning publié (#524)"
+    )
+
+
+def test_les_fetchs_nosdeputes_nont_plus_de_definition():
+    """Le verrou du lot 5, côté collecte de profil. Ces noms formaient la
+    chaîne complète, du transport au résultat : tant que l'un d'eux existe,
+    une source retirée par décision peut être rebranchée sans décision."""
+    for nom in (
+        "BASE_URLS",
+        "_get_payload",
+        "_get_with_watchdog",
+        "_try_urls",
+        "fetch_identity",
+        "fetch_recherche",
+        "fetch_all_intervention_results",
+        "fetch_all_intervention_results_from_domains",
+        "fetch_intervention_details",
+        "fetch_seance_context",
+        "_extract_search_results",
+        "_process_search_result",
+        "_classify_intervention",
+        "_extract_speaker_identity_from_html",
+        "_extract_mandats",
+        "_extract_parlementaire",
+        "compteur_appels_nosdeputes",
+        "compteur_requetes_sans_reponse",
+        "WARNING_PREFIX_SOURCE_INJOIGNABLE",
+    ):
+        assert not hasattr(candidate_profile, nom), (
+            f"`candidate_profile.{nom}` est de retour : c'est un morceau du "
+            "chemin NosDéputés, retiré par #529. Voir "
+            "docs/technical_decisions.md#retrait-nosdeputes-529."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -1538,12 +1420,13 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
     fetch_textes_portes_officiels (étape 8bis, députés) et laisser
     dossiers_legislatifs vide."""
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug",
+              return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels") as mock_textes_portes,
@@ -1557,7 +1440,7 @@ def test_build_profile_skip_dossiers_legislatifs_deputes_never_calls_textes_port
 
 
 # ---------------------------------------------------------------------------
-# #83 — Tests d'intégration bout-en-bout : build_profile() → normalize_nosdeputes()
+# #83 — Tests d'intégration bout-en-bout : build_profile() → normalize_profil()
 # ---------------------------------------------------------------------------
 
 def _fake_syceron_interventions():
@@ -1637,17 +1520,25 @@ def _fake_syceron_interventions():
 
 
 def test_integration_build_profile_syceron_enrichit_champs_pivot():
-    """Intégration bout-en-bout : build_profile() avec Syceron → normalize_nosdeputes()
-    doit produire des interventions avec theme_officiel, seance, dossier et source renseignés,
-    sans passer par le scraping HTML NosDéputés."""
+    """Intégration bout-en-bout : build_profile() avec Syceron → normalize_profil()
+    doit produire des interventions avec theme_officiel, seance, dossier et
+    source renseignés.
+
+    Le test vérifiait aussi qu'aucun scraping HTML NosDéputés
+    (`fetch_seance_context`) n'était déclenché ; cette assertion est devenue
+    structurelle avec #529 — la fonction n'existe plus, et
+    `test_les_fetchs_nosdeputes_nont_plus_de_definition` le vérifie une fois
+    pour toutes plutôt qu'à chaque scénario.
+    """
     fake_syceron = _fake_syceron_interventions()
 
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_identite_officielle_par_slug",
+              return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=fake_syceron),
@@ -1656,7 +1547,7 @@ def test_integration_build_profile_syceron_enrichit_champs_pivot():
         raw_profile = build_profile("deputes", "jean-dupont")
 
     # L'étape de normalisation transforme les enregistrements bruts Syceron en format pivot.
-    pivot = normalize_nosdeputes(raw_profile)
+    pivot = normalize_profil(raw_profile)
 
     assert len(pivot["interventions"]) == 3, "Les 3 interventions Syceron doivent être présentes dans le pivot"
 
@@ -1711,7 +1602,7 @@ def test_integration_les_interventions_nosdeputes_deja_collectees_restent_normal
         ],
     }
 
-    pivot = normalize_nosdeputes(raw_profile)
+    pivot = normalize_profil(raw_profile)
 
     assert len(pivot["interventions"]) == 1
     i = pivot["interventions"][0]
@@ -1719,6 +1610,50 @@ def test_integration_les_interventions_nosdeputes_deja_collectees_restent_normal
     assert i["theme_officiel"] is None, "theme_officiel doit être null pour une intervention NosDéputés"
     assert i["seance"] is None, "seance doit être null pour une intervention NosDéputés"
     assert i["source"] is None, "source syceron doit être null pour une intervention NosDéputés"
+
+
+def test_integration_sans_syceron_le_pivot_ne_fabrique_aucune_intervention():
+    """Le pendant du test ci-dessus, après #529 : Syceron vide ne produit plus
+    d'interventions du tout.
+
+    Ce test remplaçait `test_integration_build_profile_fallback_sans_acteur_ref`,
+    qui vérifiait qu'une intervention de repli NosDéputés traversait la
+    normalisation avec `theme_officiel`, `seance` et `source` à `null`. Ce
+    repli n'existe plus ; ce qui doit rester vrai est que le vide est
+    **déclaré** et que la normalisation n'invente rien pour le combler.
+    """
+    with (
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
+        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+    ):
+        raw_profile = build_profile("deputes", "jean-dupont")
+
+    assert raw_profile["meta"]["synchro_sources"].get("assemblee_nationale_syceron") is None
+    assert any(
+        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        for w in raw_profile["meta"]["warnings"]
+    )
+
+    pivot = normalize_profil(raw_profile)
+
+    assert pivot["interventions"] == []
+    assert pivot["tags_thematiques"] == [], (
+        "aucun tag ne doit être dérivé de rien — les tags publiés viennent des "
+        "interventions déjà collectées, conservées par la fusion additive"
+    )
+    # Le warning brut voyage jusqu'au pivot : c'est lui qui rend le vide lisible
+    # dans le corpus publié.
+    assert any(
+        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        for w in pivot["meta"]["warnings"]
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -3191,11 +3126,12 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
     from candidate_profile import AmendementsIndexError, WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES
 
     with (
-        patch("candidate_profile.fetch_identity", return_value=_fake_identity_with_acteur_ref()),
         patch("candidate_profile.time.sleep", return_value=None),
-        patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
+        patch("candidate_profile.fetch_identite_officielle_par_slug",
+              return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch(
             "candidate_profile.fetch_amendements_officiels",
             side_effect=AmendementsIndexError("échec du téléchargement (boom)"),
@@ -3963,11 +3899,16 @@ def test_extract_mandats_officiels_unknown_acteur_returns_empty():
         assert _extract_mandats_officiels("PA_INCONNU") == []
 
 
-def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories():
-    """Quand l'acteur est résolu côté AN, les mandats commission/groupe_amitie/
-    extra_parlementaire doivent venir de l'AN (pas de doublon avec NosDéputés
-    sous un libellé différent) ; le mandat électif est reconstruit depuis l'AN
-    (identite_an) puisque NosDéputés n'est plus appelé du tout (#369, étape 4)."""
+def test_build_profile_mandats_viennent_tous_du_referentiel_an():
+    """Les mandats commission/groupe_amitie/extra_parlementaire viennent
+    d'`_extract_mandats_officiels`, et le mandat électif est reconstruit depuis
+    `identite_an`.
+
+    C'était déjà le cas depuis #369 (étape 4) quand l'acteur était résolu côté
+    AN ; le complément NosDéputés qui subsistait pour les catégories non
+    couvertes est parti avec la source (#529). Ce test s'appelait
+    `..._prefer_an_over_nosdeputes_for_shared_categories` : il n'y a plus de
+    préférence à exprimer, il n'y a plus qu'une source."""
     identite_an = {
         "nom_complet": "Jean Dupont",
         "mandat_debut": "2022-06-22",
@@ -3987,22 +3928,18 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
     ]
 
     with (
-        patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(identite_an, "PA123456")),
         patch("candidate_profile.fetch_identite_officielle", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile._extract_mandats_officiels", return_value=mandats_officiels),
     ):
         profile = build_profile("deputes", "jean-dupont")
-
-    # NosDéputés n'est plus appelé du tout : l'AN a déjà résolu l'acteur (#369, étape 4).
-    mock_fetch_identity.assert_not_called()
 
     commission_entries = [m for m in profile["mandats"] if m["categorie"] == "commission"]
     assert commission_entries == [
@@ -4015,9 +3952,9 @@ def test_build_profile_mandats_prefer_an_over_nosdeputes_for_shared_categories()
             "actif": True,
         }
     ]
-    # Mandat électif reconstruit depuis identite_an (AN), NosDéputés n'étant plus appelé.
-    # `chambre` est estampillée à la collecte depuis #492 : ce chemin de repli
-    # n'est atteignable que pour la chambre "deputes".
+    # Mandat électif reconstruit depuis identite_an : `_extract_mandats_officiels`
+    # ne parcourt que les organes. `chambre` est estampillée à la collecte
+    # depuis #492, et ce chemin n'est atteignable que pour la chambre "deputes".
     mandat_electif_entries = [m for m in profile["mandats"] if m["categorie"] == "mandat_electif"]
     assert mandat_electif_entries == [
         {
@@ -4141,12 +4078,13 @@ def test_fetch_identite_officielle_par_slug_refuses_homonym_ambiguity(tmp_path):
     assert acteur_ref is None
 
 
-def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path):
-    """Bascule #355 : quand NosDéputés ne renvoie rien pour un slug (ex. élu
-    d'une législature ancienne, plus référencé sur nosdeputes.fr), l'identité
-    (infos biographiques) doit tout de même être renseignée depuis le
-    référentiel historique officiel AN, résolu par nom depuis le slug — plus
-    de dépendance à une URL AN fournie par NosDéputés."""
+def test_build_profile_resout_l_identite_depuis_le_referentiel_an(tmp_path):
+    """Bascule #355 : l'identité (infos biographiques) est renseignée depuis le
+    référentiel historique officiel AN, résolu par nom depuis le slug — sans
+    dépendre d'une URL AN qu'une plateforme tierce aurait fournie.
+
+    Le test s'appelait `..._when_nosdeputes_has_no_profile` : ce n'est plus un
+    cas particulier depuis #529, c'est le seul chemin."""
     zip_bytes = _make_fake_acteurs_historique_zip_bytes(
         organe_entries={},
         acteur_entries={
@@ -4166,10 +4104,9 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
     with (
         patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get", return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
-        patch("candidate_profile.fetch_identity") as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
@@ -4177,54 +4114,58 @@ def test_build_profile_uses_an_identity_when_nosdeputes_has_no_profile(tmp_path)
     ):
         profile = build_profile("deputes", "francois-asensi")
 
-    # #369, étape 4 : NosDéputés n'est plus appelé du tout quand l'AN a trouvé l'acteur.
-    mock_fetch_identity.assert_not_called()
     assert profile["identite"]["nom_complet"] == "François Asensi"
     assert profile["identite"]["profession"] == "Dessinateur industriel"
     assert profile["identite"]["lieu_naissance"] is not None
     assert "PA295" in profile["identite"]["url_an_ou_senat"]
-    # Cet acteur factice n'a aucun mandat AN (mandats.mandat vide) et NosDéputés
-    # n'est pas appelé : le warning mandats introuvables doit être émis, mais
-    # pas celui d'identité introuvable (l'AN a bien trouvé l'acteur).
+    # Cet acteur factice n'a aucun mandat AN (mandats.mandat vide) : le warning
+    # mandats introuvables doit être émis, mais pas celui d'identité
+    # introuvable (l'AN a bien trouvé l'acteur).
     assert not any(w.startswith("identité introuvable") for w in profile["meta"]["warnings"])
     assert any(w.startswith("mandats introuvables") for w in profile["meta"]["warnings"])
     assert profile["mandats"] == []
 
 
-def test_build_profile_calls_nosdeputes_when_an_does_not_find_deputy():
-    """#369, étape 4 : quand le référentiel officiel AN ne trouve pas l'acteur
-    (candidat absent des archives combinées), NosDéputés reste appelé en repli
-    complet — le comportement historique de repli doit être préservé."""
-    identity = {
-        "depute": {
-            "id": "PA999999",
-            "nom": "Dupont",
-            "mandat_debut": "2022-06-22",
-            "mandat_fin": None,
-            "groupe_sigle": "RE",
-            "groupe": {"acronyme": "RE", "nom": "Renaissance"},
-        }
-    }
+def test_build_profile_sans_acteur_an_ne_fabrique_aucune_identite():
+    """Le repli complet vers NosDéputés (#369, étape 4) a été RETIRÉ (#529).
 
+    Un slug absent du référentiel AN combiné ne produit plus d'identité du
+    tout. Ce n'est pas un silence : le profil sort avec
+    `WARNING_PREFIX_IDENTITE_INTROUVABLE`, qui nomme la seule source
+    consultée, et `process_candidat` le compte en « introuvable ». C'est un
+    CONSTAT de l'AN — la table `raw_data/correspondance_acteurs_an.json` (#525)
+    est ce qui résout le couple slug ↔ acteur, et §5b du garde-fou qualité
+    échoue déjà sur tout slug publié qui n'y a pas d'entrée.
+    """
     with (
-        patch("candidate_profile.fetch_identity", return_value=identity) as mock_fetch_identity,
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=(None, None)),
-        patch("candidate_profile.fetch_identite_officielle", return_value=None),
-        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
-        patch("candidate_profile.fetch_votes_officiels", return_value=([], None)),
-        patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
-        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
-        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron") as mock_syceron,
+        patch("candidate_profile.fetch_questions_officielles") as mock_questions,
+        patch("candidate_profile.fetch_votes_officiels") as mock_votes,
+        patch("candidate_profile.fetch_amendements_officiels") as mock_amendements,
+        patch("candidate_profile.fetch_textes_portes_officiels") as mock_textes,
     ):
         profile = build_profile("deputes", "jean-dupont")
 
-    mock_fetch_identity.assert_called_once()
-    assert profile["identite"]["nom_complet"] == "Dupont"
-    assert profile["identite"]["groupe_sigle"] == "RE"
-    assert any(m["categorie"] == "mandat_electif" for m in profile["mandats"])
+    assert profile["identite"] is None
+    assert profile["mandats"] == []
+    introuvable = [
+        w for w in profile["meta"]["warnings"]
+        if w.startswith(candidate_profile.WARNING_PREFIX_IDENTITE_INTROUVABLE)
+    ]
+    assert introuvable, "l'absence d'identité doit être déclarée"
+    assert "#529" in introuvable[0], (
+        "le warning doit nommer la seule source consultée et la décision qui "
+        "l'a rendue seule"
+    )
+
+    # Sans identité, aucune collecte en aval n'est tentée : une section vide
+    # produite par une collecte qui n'a pas eu lieu se lit comme un constat.
+    for mock in (mock_syceron, mock_questions, mock_votes, mock_amendements, mock_textes):
+        mock.assert_not_called()
 
 
 def test_identite_index_shares_historique_zip_download_with_organe_index(tmp_path):

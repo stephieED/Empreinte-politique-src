@@ -12,7 +12,7 @@ profils publiés : 14 `mandat_electif` sur 228 portent un `source_url`, et **les
 14 pointent sur `www.europarl.europa.eu`**. Aucun ne pointe sur
 `assemblee-nationale.fr` ni sur `archive.nossenateurs.fr` — la distinction que
 la méthode devait établir est précisément celle qu'elle ne peut pas établir.
-`_extract_mandats` n'a jamais renseigné ce champ sur un mandat électif.
+Aucun chemin de collecte n'a jamais renseigné ce champ sur un mandat électif.
 
 La chambre est donc **estampillée à la collecte**, là où elle est connue sans
 déduction : `candidate_profile.build_profile(chambre, slug)` sait de quel jeu de
@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from candidate_profile import _extract_mandats  # noqa: E402
+import candidate_profile  # noqa: E402
 from group_profile import (  # noqa: E402
     _compute_cohesion_votes,
     _derive_membre_entry,
@@ -44,9 +44,9 @@ from group_profile import (  # noqa: E402
 )
 from merge_profile import merge_pivot_profile, merge_raw_profile  # noqa: E402
 from normalize_europarl import normalize_europarl  # noqa: E402
-from normalize_nosdeputes import (  # noqa: E402
+from normalize_profil import (  # noqa: E402
     WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
-    normalize_nosdeputes,
+    normalize_profil,
 )
 from schema_pivot import validate_profil  # noqa: E402
 from scrutins_index import ScrutinsIndex, cle_scrutin  # noqa: E402
@@ -107,38 +107,78 @@ def _warnings_chambre(pivot):
 
 # ---------------------------------------------------------------------------
 # 1. Collecte : la chambre est estampillée là où elle est connue
+#
+# L'estampille se posait dans `candidate_profile._extract_mandats`, qui lisait un
+# profil brut NosDéputés. Cette fonction est partie avec la source (#529) : le
+# mandat électif de base est désormais reconstruit dans `build_profile` depuis
+# `identite_an`, et c'est LÀ que la chambre est apposée. Ce qui est testé est
+# donc le même fait, à son nouvel emplacement — pas un fait différent.
 # ---------------------------------------------------------------------------
 
-def test_extract_mandats_estampille_la_chambre_de_collecte():
-    parlementaire = {"mandat_debut": "2022-06-22", "mandat_fin": None, "groupe": "Socialistes"}
-    for chambre in ("deputes", "senateurs"):
-        mandats = _extract_mandats(parlementaire, chambre)
-        electif = next(m for m in mandats if m["categorie"] == "mandat_electif")
-        assert electif["chambre"] == chambre
+def _collecte_stubbee(monkeypatch, identite, *, mandats_organes=None):
+    """`build_profile` sans réseau ni archive : seules les deux résolutions AN
+    qui fabriquent les mandats sont remplacées."""
+    monkeypatch.setattr(
+        candidate_profile, "fetch_identite_officielle_par_slug",
+        lambda slug: (identite, "PA1"),
+    )
+    monkeypatch.setattr(
+        candidate_profile, "_extract_mandats_officiels",
+        lambda acteur_ref: list(mandats_organes or []),
+    )
+    for nom in (
+        "fetch_positions_hemicycle_officielles",
+        "fetch_textes_portes_officiels",
+    ):
+        monkeypatch.setattr(candidate_profile, nom, lambda *_a, **_k: [])
+    monkeypatch.setattr(
+        candidate_profile, "fetch_votes_officiels", lambda *_a, **_k: ([], []),
+    )
+    monkeypatch.setattr(
+        candidate_profile, "fetch_amendements_officiels", lambda *_a, **_k: [],
+    )
+    monkeypatch.setattr(
+        candidate_profile, "fetch_interventions_syceron", lambda *_a, **_k: [],
+    )
+    monkeypatch.setattr(
+        candidate_profile, "fetch_questions_officielles", lambda *_a, **_k: [],
+    )
+    return candidate_profile.build_profile("deputes", "marie-martin")
 
 
-def test_extract_mandats_sans_chambre_ninvente_rien():
-    """§2.5 : appelée sans chambre, la fonction n'écrit pas le champ — elle ne
-    retombe pas sur une valeur « probable » comme "deputes"."""
-    mandats = _extract_mandats({"mandat_debut": "2022-06-22", "groupe": "Socialistes"})
-    electif = next(m for m in mandats if m["categorie"] == "mandat_electif")
-    assert "chambre" not in electif
+def test_build_profile_estampille_la_chambre_de_collecte(monkeypatch):
+    profil = _collecte_stubbee(
+        monkeypatch,
+        {"nom_complet": "Marie Martin", "mandat_debut": "2022-06-22",
+         "mandat_fin": None, "groupe_nom": "Socialistes"},
+    )
+    electif = next(m for m in profil["mandats"] if m["categorie"] == "mandat_electif")
+    assert electif["chambre"] == "deputes"
 
 
-def test_seul_le_mandat_electif_est_estampille():
+def test_seul_le_mandat_electif_est_estampille(monkeypatch):
     """Le périmètre de #492 est le mandat électif. La chambre d'une commission
     est un fait réel mais non publié en v1 : ne pas l'inventer non plus."""
-    parlementaire = {
-        "mandat_debut": "2022-06-22",
-        "groupe": "Socialistes",
-        "responsabilites": [
-            {"responsabilite": {"organisme": "Commission des lois", "fonction": "membre",
-                                "debut_fonction": "2022-07-01", "fin_fonction": None}}
-        ],
-    }
-    mandats = _extract_mandats(parlementaire, "deputes")
-    commission = next(m for m in mandats if m["categorie"] == "commission")
+    profil = _collecte_stubbee(
+        monkeypatch,
+        {"nom_complet": "Marie Martin", "mandat_debut": "2022-06-22",
+         "groupe_nom": "Socialistes"},
+        mandats_organes=[{
+            "categorie": "commission", "type": "membre",
+            "label": "Commission des lois", "debut": "2022-07-01",
+            "fin": None, "actif": True,
+        }],
+    )
+    commission = next(m for m in profil["mandats"] if m["categorie"] == "commission")
     assert "chambre" not in commission
+
+
+def test_un_mandat_dorgane_sans_chambre_reste_a_null_dans_le_pivot():
+    """§2.5 : un mandat électif sans estampille (collecté avant #492, conservé
+    par la fusion additive) publie `chambre: null`. Jamais une valeur
+    « probable » comme "AN"."""
+    pivot = normalize_profil(_brut("deputes", mandats=[_mandat_brut(None)]))
+    assert _electifs(pivot)[0]["chambre"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -146,8 +186,8 @@ def test_seul_le_mandat_electif_est_estampille():
 # ---------------------------------------------------------------------------
 
 def test_pivot_mappe_la_chambre_de_collecte_vers_la_nomenclature_pivot():
-    assert _electifs(normalize_nosdeputes(_brut("deputes")))[0]["chambre"] == "AN"
-    assert _electifs(normalize_nosdeputes(_brut("senateurs")))[0]["chambre"] == "Senat"
+    assert _electifs(normalize_profil(_brut("deputes")))[0]["chambre"] == "AN"
+    assert _electifs(normalize_profil(_brut("senateurs")))[0]["chambre"] == "Senat"
 
 
 def test_pivot_ne_reprend_jamais_la_chambre_du_profil():
@@ -160,12 +200,12 @@ def test_pivot_ne_reprend_jamais_la_chambre_du_profil():
         _mandat_brut("deputes", label="Mandat parlementaire (LFI)", debut="2017-06-18"),
         _mandat_brut(None, label="Mandat parlementaire (CRC)", debut="2004-09-26"),
     ])
-    chambres = [m["chambre"] for m in _electifs(normalize_nosdeputes(brut))]
+    chambres = [m["chambre"] for m in _electifs(normalize_profil(brut))]
     assert chambres == ["AN", None]
 
 
 def test_pivot_publie_null_et_un_warning_quand_la_chambre_nest_pas_etablie():
-    pivot = normalize_nosdeputes(_brut("deputes", mandats=[_mandat_brut(None)]))
+    pivot = normalize_profil(_brut("deputes", mandats=[_mandat_brut(None)]))
     assert _electifs(pivot)[0]["chambre"] is None
     assert len(_warnings_chambre(pivot)) == 1
     assert "1 mandat(s)" in _warnings_chambre(pivot)[0]
@@ -183,20 +223,20 @@ def test_un_seul_warning_par_profil_quel_que_soit_le_nombre_de_mandats():
         _mandat_brut(None, debut="2022-06-22"),
         _mandat_brut(None, debut="2024-07-07"),
     ])
-    warnings = _warnings_chambre(normalize_nosdeputes(brut))
+    warnings = _warnings_chambre(normalize_profil(brut))
     assert len(warnings) == 1
     assert "3 mandat(s)" in warnings[0]
 
 
 def test_aucun_warning_quand_tous_les_mandats_sont_estampilles():
-    assert _warnings_chambre(normalize_nosdeputes(_brut("deputes"))) == []
+    assert _warnings_chambre(normalize_profil(_brut("deputes"))) == []
 
 
 def test_une_chambre_brute_inconnue_ne_passe_pas_en_contrebande():
     """Une valeur hors `_CHAMBRE_MAP` devient `null` + warning, elle n'est pas
     recopiée telle quelle : sinon "deputes" se ferait passer pour une chambre
     pivot et `validate_profil` la refuserait au commit, pas à la collecte."""
-    pivot = normalize_nosdeputes(_brut("deputes", mandats=[_mandat_brut("congres")]))
+    pivot = normalize_profil(_brut("deputes", mandats=[_mandat_brut("congres")]))
     assert _electifs(pivot)[0]["chambre"] is None
     assert len(_warnings_chambre(pivot)) == 1
 
@@ -221,7 +261,7 @@ def test_le_mandat_europeen_est_estampille_pe():
 
 
 def test_validate_profil_refuse_une_chambre_de_mandat_hors_nomenclature():
-    pivot = normalize_nosdeputes(_brut("deputes"))
+    pivot = normalize_profil(_brut("deputes"))
     assert validate_profil(pivot) == []
     _electifs(pivot)[0]["chambre"] = "deputes"
     errors = validate_profil(pivot)
@@ -230,7 +270,7 @@ def test_validate_profil_refuse_une_chambre_de_mandat_hors_nomenclature():
 
 def test_validate_profil_accepte_une_chambre_de_mandat_nulle():
     """`null` est licite : c'est la forme normale d'une chambre non déterminée."""
-    pivot = normalize_nosdeputes(_brut("deputes", mandats=[_mandat_brut(None)]))
+    pivot = normalize_profil(_brut("deputes", mandats=[_mandat_brut(None)]))
     assert validate_profil(pivot) == []
 
 
@@ -268,8 +308,8 @@ def test_le_report_de_chambre_ne_touche_pas_le_profil_ancien():
 def test_le_report_de_chambre_vaut_aussi_au_niveau_pivot():
     """Le pivot est fusionné avec le pivot précédent : sans report ici non plus,
     l'entrée ancienne, non estampillée, gagnerait."""
-    ancien = normalize_nosdeputes(_brut("deputes", mandats=[_mandat_brut(None)]))
-    nouveau = normalize_nosdeputes(_brut("deputes"))
+    ancien = normalize_profil(_brut("deputes", mandats=[_mandat_brut(None)]))
+    nouveau = normalize_profil(_brut("deputes"))
     fusionne = merge_pivot_profile(ancien, nouveau)
     assert len(_electifs(fusionne)) == 1
     assert _electifs(fusionne)[0]["chambre"] == "AN"

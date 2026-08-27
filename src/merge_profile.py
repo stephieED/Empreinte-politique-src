@@ -40,7 +40,7 @@ from candidate_profile import (
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
 )
 from json_io import ecrire_profil_json
-from normalize_nosdeputes import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
+from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
 from schema_pivot import appliquer_chambres
 
 Key = Any
@@ -337,7 +337,7 @@ def _pivot_texte_key(t: dict[str, Any]) -> Key:
     """Identité d'un dossier législatif porté, indépendante de `role`.
 
     `role`/`type_rapport`/`stade_procedural` ne sont aujourd'hui jamais
-    renseignés par la source de collecte (voir normalize_nosdeputes.py) : les
+    renseignés par la source de collecte (voir normalize_profil.py) : les
     inclure dans la clé ferait fusionner en double une même entrée dès qu'une
     régénération produit une valeur différente (ex. données historiques
     erronées conservées indéfiniment). L'identité du dossier repose donc sur
@@ -548,7 +548,7 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and merged.get("amendements"):
                 continue
             # #493 : le warning de non-corroboration est calculé par
-            # `normalize_nosdeputes` sur les seuls mandats du profil neuf. La
+            # `normalize_profil` sur les seuls mandats du profil neuf. La
             # fusion peut avoir ramené des mandats estampillés que le run neuf
             # n'a pas recollectés : la liste est alors corroborée, et le dire
             # encore serait faux.

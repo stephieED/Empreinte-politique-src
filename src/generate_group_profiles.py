@@ -12,9 +12,10 @@ législature) et 2 fois le même roster Sénat. Ce script récupère une fois pa
 (chambre, législature) distincte puis filtre localement par sigle pour chaque
 groupe (voir group_roster.fetch_full_roster / filter_roster_by_sigle).
 
-Depuis #527, la clé `deputes` est dérivée d'AMO30 et non plus fetchée sur
-NosDéputés — l'aiguillage est dans `group_roster.fetch_full_roster`, rien ici
-n'a eu à changer pour cela hormis la liste des erreurs interceptées
+Depuis #527, la clé `deputes` est dérivée d'AMO30 ; depuis #529, la lecture
+NosDéputés qu'elle remplaçait n'existe plus du tout — tout est dans
+`group_roster.fetch_full_roster`, rien ici n'a eu à changer pour cela hormis la
+liste des erreurs interceptées
 (`ERREURS_ROSTER`) : une archive AMO30 absente doit rester un « roster
 indisponible » nommé, donc un `exit 2` qui laisse les fiches publiées en
 place, et non une trace de pile qui annule le commit du run (#518).

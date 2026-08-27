@@ -216,7 +216,7 @@ def test_les_entrees_indexees_portent_leur_sujet(cache_syceron):
     """Second défaut de #510 : `sujet` sortait à `None` sur 100 % des entrées.
 
     Syceron REMPLACE la liste d'interventions dont `tags_thematiques` est dérivé
-    (`normalize_nosdeputes` lit `theme_officiel`, qui vaut `sujet`) : publier un
+    (`normalize_profil` lit `theme_officiel`, qui vaut `sujet`) : publier un
     ordre de grandeur d'interventions sans thème, à la place de 789 qui en
     portent, serait une régression sur un champ publié.
     """

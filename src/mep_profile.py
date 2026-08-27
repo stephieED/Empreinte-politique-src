@@ -39,7 +39,7 @@ import requests
 
 from download_watchdog import download_with_watchdog
 
-from normalize_nosdeputes import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
+from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
 from schema_pivot import SCHEMA_VERSION, appliquer_chambres, make_empty_profil
 
 HEADERS = {

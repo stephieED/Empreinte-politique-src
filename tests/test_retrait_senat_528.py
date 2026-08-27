@@ -51,14 +51,18 @@ ANCRE = "retrait-senat-528"
 # Les trois portes d'entrée sont fermées
 # ---------------------------------------------------------------------------
 
-def test_senateurs_nest_plus_une_base_d_url():
-    """La porte la plus basse. Tant que `BASE_URLS` porte une entrée
-    `senateurs`, tout le reste du chemin de collecte redevient atteignable."""
-    assert set(candidate_profile.BASE_URLS) == {"deputes"}, candidate_profile.BASE_URLS
-    assert not any(
-        "nossenateurs" in url
-        for urls in candidate_profile.BASE_URLS.values()
-        for url in urls
+def test_senateurs_nest_plus_une_chambre_collectee():
+    """La porte la plus basse. Elle s'appelait `BASE_URLS` (la table des
+    domaines NosDéputés par chambre) jusqu'à #529, qui l'a remplacée par
+    `CHAMBRES_COLLECTEES` — plus aucune URL de plateforme n'est interrogée, mais
+    le garde-fou de chambre, lui, reste : tant qu'une entrée `senateurs` y
+    figure, tout le chemin de collecte redevient atteignable."""
+    assert not hasattr(candidate_profile, "BASE_URLS"), (
+        "`BASE_URLS` est de retour : c'est la table des domaines NosDéputés, "
+        "retirée par #529."
+    )
+    assert set(candidate_profile.CHAMBRES_COLLECTEES) == {"deputes"}, (
+        candidate_profile.CHAMBRES_COLLECTEES
     )
 
 
@@ -76,7 +80,7 @@ def test_les_fetchs_senatoriaux_nont_plus_de_definition():
     d'appelant : côté députés, votes et textes portés viennent de l'open data
     AN. Les laisser vivantes aurait gardé un chemin réseau vers une source
     morte, prêt à être rebranché sans décision."""
-    for nom in ("fetch_votes", "fetch_dossiers", "fetch_dossiers_for_legislatures"):
+    for nom in ("fetch_votes", "fetch_dossiers", "fetch_dossiers_for_legislatures"):  # noqa: E501
         assert not hasattr(candidate_profile, nom), (
             f"`candidate_profile.{nom}` est de retour : c'est un chemin de "
             f"collecte sénatorial. Voir docs/technical_decisions.md#{ANCRE}."
@@ -97,9 +101,14 @@ def test_build_profile_refuse_la_chambre_en_nommant_la_decision():
     assert ANCRE in message, message
 
 
-def test_base_url_for_refuse_avant_toute_requete():
+def test_le_roster_refuse_la_chambre_avant_tout_travail():
+    """Le refus vivait dans `group_roster._base_url_for`, retiré par #529 avec
+    le reste du chemin NosDéputés. Il a remonté d'un cran, dans
+    `fetch_full_roster` : c'est désormais le seul point d'entrée d'un roster,
+    et il doit refuser en nommant la décision plutôt qu'en rendant une liste
+    vide."""
     with pytest.raises(ValueError) as echec:
-        group_roster._base_url_for("senateurs", None)
+        group_roster.fetch_full_roster("senateurs")
     assert ANCRE in str(echec.value)
 
 

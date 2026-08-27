@@ -1,40 +1,39 @@
-"""#514 — une source injoignable ne consomme plus le timeout d'un job, et son
-silence ne se lit plus comme un constat.
+"""#514 — la collecte d'un candidat est bornée, et une troncature est déclarée.
 
-Ce que ces tests éprouvent, et qui n'est pas « s'arrêter à temps » :
+## Ce que #529 a retiré de ce fichier, et pourquoi
 
-1. **la collecte entière est bornée**, pas seulement la phase d'interventions.
-   Le budget de #498 était neutralisé par `--skip-interventions`, et
-   `extract-senat` levait ce drapeau en dur depuis #501 : il n'avait donc plus
-   aucun plafond interne. Run 32421439590 (20/08/2026) : 15 min 18 s de
-   `timeout-minutes` consommées, **1 profil écrit** ;
-2. **le job rend la main**, résumé et annotations compris, au lieu d'être tué ;
-3. **« introuvable » cesse de vouloir dire deux choses.** `_try_urls` rend
-   `(None, None)` aussi bien quand l'archive répond « je ne connais pas ce
-   slug » que quand elle ne répond pas. Le run 32421439590 a imprimé onze
-   « introuvable », dont trois sincères (candidats sans slug) et huit dus à une
-   source en timeout. Rien ne les distinguait ;
-4. **ce que le budget ne doit PAS casser.** Le seul profil que ce run ait
-   écrit vient d'une 3ᵉ tentative réussie après deux timeouts sur le même
-   format. C'est le contre-exemple des deux autres pistes de l'issue — un
-   circuit ouvert après N échecs consécutifs, ou l'abandon de la reprise après
-   un timeout — et `test_le_correctif_ne_detruit_pas_la_seule_donnee_du_run`
-   est là pour qu'on ne les réintroduise pas sans le voir.
+Ce fichier rejouait l'archive dégradée du run 32421439590 (20/08/2026) contre
+`candidate_profile._get_with_watchdog` : une doublure de transport qui servait
+des timeouts et des 404 sur `www.nosdeputes.fr`, sous un `BASE_URLS` réduit à
+un domaine. Toute cette machinerie visait UN chemin réseau, celui de
+NosDéputés/NosSénateurs, et ce chemin est retiré (lot 5, #529). Sont partis
+avec lui :
 
-**La source réelle n'est jamais sollicitée.** Tout passe par une doublure qui
-rejoue les réponses relevées dans le log du job 96594132947, et le temps est
-piloté par une horloge factice — un test qui dormirait réellement 160 s serait
-un test qu'on désactive.
+- **`WARNING_PREFIX_SOURCE_INJOIGNABLE` et les deux compteurs** qui
+  l'alimentaient. Ils distinguaient « la source dit que ce slug n'existe pas »
+  de « la source n'a rien dit ». L'identité ne part plus sur le réseau du tout
+  — elle se résout dans l'archive AMO30 déjà en cache — donc il n'y a plus de
+  silence à qualifier : une archive absente ou illisible **lève**, et
+  l'exception est nommée dans `meta.warnings` par
+  `WARNING_PREFIX_CHAMBRE_EN_ECHEC` (#488) ;
+- **le statut `source_indisponible` distinct d'`introuvable`** sur ce chemin :
+  il reste dans `process_candidat`, mais il se décide désormais sur un échec
+  déclaré, pas sur un compteur ;
+- **le pire cas structurel de la résolution d'identité** (2 formats ×
+  3 tentatives × 26,5 s = 159 s), qui donnait au budget de 160 s sa valeur.
+  Cette valeur reste celle du workflow, mais ce qu'elle borne a changé : elle
+  ne couvre plus une cascade de requêtes par candidat.
 
-**#528 — les mesures viennent du Sénat, le mécanisme n'en venait pas.** Le job
-`extract-senat` a été retiré et `archive.nossenateurs.fr` n'est plus une source
-(docs/technical_decisions.md#retrait-senat-528). Les scénarios sont donc rejoués
-sur la chambre `deputes`, avec `BASE_URLS` réduit à UN domaine — c'était la
-propriété du Sénat qui donnait au pire cas sa forme (2 formats × 3 tentatives =
-6 requêtes d'identité), et c'est elle, pas le domaine, que ces tests éprouvent.
-Deux tests sont partis avec la source : ils regardaient les sections `votes` et
-`dossiers législatifs` de NosSénateurs, qui n'existent plus — côté AN ces deux
-champs viennent de l'open data, qui ne passe pas par `_get_payload`.
+Ce qui reste ici est ce que #514 a apporté et qui ne dépendait d'aucune
+source : **la chaîne de budgets** (un budget enfant est épuisé par son parent,
+et le message nomme le plafond réellement atteint), **la fabrique qui n'a pas
+d'opinion sur les modes** — c'est un `and not skip_interventions` posé dans
+`creer` qui a produit #514 —, **le budget de job qui rend la main en le
+déclarant** plutôt que de se faire tuer par un `timeout-minutes`, et **le
+garde-fou de ligne de commande** qui refuse un budget mort au lieu de le
+neutraliser en silence.
+
+Voir docs/technical_decisions.md#retrait-nosdeputes-529.
 """
 
 import argparse
@@ -42,44 +41,24 @@ import sys
 from pathlib import Path
 
 import pytest
-import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import budget_collecte
 import candidate_profile
 from budget_collecte import BudgetCollecte, creer
-from candidate_profile import (
-    WARNING_PREFIX_BUDGET_COLLECTE,
-    WARNING_PREFIX_SOURCE_INJOIGNABLE,
-    build_profile,
-)
 from generate_all_profiles import (
-    build_profile_any_chambre,
     process_candidat,
     valider_budgets,
 )
 
-# ---------------------------------------------------------------------------
-# Mesures du run 32421439590, job extract-senat (96594132947), 20/08/2026 UTC.
-# Population : candidat avec slug résolvable, `--source senat
-# --skip-interventions`, source DÉGRADÉE (elle a répondu 3 fois sur 45).
-# ---------------------------------------------------------------------------
-
-# Durée d'une tentative en timeout, relevée sur les 42 échecs du job : de 14 s
-# (connect timeout) à 25 s (watchdog). 16 s est la valeur la plus fréquente.
-COUT_TENTATIVE_EN_TIMEOUT = 16.0
-
-# Résolution d'identité (2 formats × 3 tentatives) sur source dégradée :
-# jerome-guedj 103 s, jean-luc-melenchon 109 s, edouard-philippe 125 s.
-IDENTITE_LA_PLUS_CHERE_MESUREE = 125.0
-
-# La valeur retenue par le workflow pour `--budget-collecte-secondes`.
+#: La valeur retenue par le workflow pour `--budget-collecte-secondes`.
 BUDGET_PAR_CANDIDAT = 160
 
 
 class HorlogeFactice:
-    """`time.monotonic` pilotée à la main."""
+    """`time.monotonic` pilotée à la main : le budget est une question de temps
+    mur, et un test qui dormirait réellement est un test qu'on désactive."""
 
     def __init__(self) -> None:
         self.maintenant = 1000.0
@@ -91,118 +70,12 @@ class HorlogeFactice:
         self.maintenant += secondes
 
 
-class ReponseFactice:
-    """Le strict nécessaire de l'interface `requests.Response` qu'utilise
-    `_get_payload` : statut, en-têtes, corps."""
-
-    def __init__(self, payload: dict, status_code: int = 200) -> None:
-        self._payload = payload
-        self.status_code = status_code
-        self.headers = {"content-type": "application/json"}
-
-    @property
-    def text(self) -> str:
-        import json
-
-        return json.dumps(self._payload)
-
-    def json(self) -> dict:
-        return self._payload
-
-    def raise_for_status(self) -> None:
-        if self.status_code >= 400:
-            raise requests.HTTPError(f"{self.status_code} Error", response=self)
-
-
-class ArchiveRejouee:
-    """Doublure de `_get_with_watchdog` : rejoue une archive dégradée.
-
-    `scenario` associe une URL à la liste de ses résultats successifs, dans
-    l'ordre des tentatives — `None` pour un timeout, un dict pour un corps JSON,
-    un entier pour un statut HTTP. Toute URL absente du scénario est en timeout,
-    ce qui est le comportement par défaut voulu : l'archive du 20/08 ne
-    répondait presque jamais.
-    """
-
-    def __init__(self, horloge: HorlogeFactice, scenario: dict | None = None) -> None:
-        self.horloge = horloge
-        self.scenario = scenario or {}
-        self.appels: list[str] = []
-
-    def __call__(self, url: str, *, timeout: int):
-        self.appels.append(url)
-        rang = self.appels.count(url) - 1
-        resultats = self.scenario.get(url, [])
-        resultat = resultats[rang] if rang < len(resultats) else None
-        if resultat is None:
-            self.horloge.avancer(COUT_TENTATIVE_EN_TIMEOUT)
-            raise requests.exceptions.Timeout(
-                f"HTTPSConnectionPool(host='www.nosdeputes.fr', port=443): "
-                f"Read timed out. (read timeout={timeout})"
-            )
-        # Une réponse, même en erreur, coûte moins cher qu'un timeout.
-        self.horloge.avancer(1.0)
-        if isinstance(resultat, int):
-            return ReponseFactice({}, status_code=resultat)
-        return ReponseFactice(resultat)
-
-
-#: Domaine unique des scénarios rejoués (voir la fixture `archive`).
-BASE = "https://www.nosdeputes.fr"
-
-IDENTITE_PARLEMENTAIRE = {
-    "depute": {
-        "nom": "Jean-Luc Mélenchon",
-        "slug": "jean-luc-melenchon",
-        "groupe_sigle": "SOC",
-        "nb_mandats": 2,
-    }
-}
-
-
 @pytest.fixture
 def horloge(monkeypatch):
     faux = HorlogeFactice()
     monkeypatch.setattr(budget_collecte.time, "monotonic", faux)
-    # Les temporisations de courtoisie (backoff de reprise, 0,2 s entre deux
-    # formats, 0,5 s après l'identité) sont du temps mur réel : les payer
-    # rendrait le fichier inutilisable, les ignorer fausserait le budget. On
-    # les fait donc avancer l'horloge factice sans dormir.
     monkeypatch.setattr(candidate_profile.time, "sleep", faux.avancer)
     return faux
-
-
-@pytest.fixture
-def archive(horloge, monkeypatch):
-    """Doublure de source + périmètre de collecte réduit à un domaine.
-
-    `BASE_URLS["deputes"]` porte 4 sous-domaines de législature en production.
-    Les scénarios rejoués ici ont été relevés sur une source à UN domaine :
-    laisser les 4 multiplierait par 4 le nombre de requêtes du pire cas et
-    changerait ce que le budget borne. On réduit donc, explicitement.
-
-    `fetch_identite_officielle_par_slug` est neutralisé : c'est le référentiel
-    AN (archive AMO30), il ne passe pas par `_get_with_watchdog` et le laisser
-    vivant ferait sortir ces tests sur le réseau — ce que `conftest.py` refuse.
-    """
-    def _monter(scenario: dict | None = None) -> ArchiveRejouee:
-        double = ArchiveRejouee(horloge, scenario)
-        monkeypatch.setattr(candidate_profile, "_get_with_watchdog", double)
-        monkeypatch.setattr(candidate_profile, "BASE_URLS", {"deputes": [BASE]})
-        monkeypatch.setattr(
-            candidate_profile, "fetch_identite_officielle_par_slug",
-            lambda slug: (None, None),
-        )
-        return double
-
-    return _monter
-
-
-def _compteur_remis_a_zero(monkeypatch):
-    """`compteur_requetes_sans_reponse` est un global de process : les tests le
-    comparent avant/après, donc sa valeur absolue n'a pas d'importance — mais
-    on part d'un état connu pour que les messages soient lisibles."""
-    monkeypatch.setattr(candidate_profile, "_requetes_sans_reponse", 0)
 
 
 # ---------------------------------------------------------------------------
@@ -251,188 +124,7 @@ def test_creer_ne_depend_que_de_la_valeur():
 
 
 # ---------------------------------------------------------------------------
-# Ce que le correctif ne doit PAS casser
-# ---------------------------------------------------------------------------
-
-def test_le_correctif_ne_detruit_pas_la_seule_donnee_du_run(archive, monkeypatch):
-    """Rejoue `jean-luc-melenchon` tel qu'il s'est passé le 20/08/2026.
-
-    `/json` : trois timeouts. `/xml` : deux timeouts, puis **une réponse** à la
-    troisième tentative, à t+109 s. C'est le seul profil que le job ait écrit.
-
-    Trois façons de « corriger » #514 l'auraient supprimé :
-      - un circuit ouvert après N ≤ 5 échecs consécutifs sur l'hôte (il y en a
-        eu exactement 5 avant cette réponse) ;
-      - l'abandon de la reprise après un timeout (la réponse est venue de la
-        3ᵉ tentative) ;
-      - un budget par candidat inférieur à 109 s.
-    Le budget retenu, 160 s, laisse passer les trois.
-    """
-    _compteur_remis_a_zero(monkeypatch)
-    double = archive({
-        f"{BASE}/jean-luc-melenchon/xml": [None, None, IDENTITE_PARLEMENTAIRE],
-    })
-
-    profil, chambre, warnings = build_profile_any_chambre(
-        "jean-luc-melenchon",
-        chambres=["deputes"],
-        skip_interventions=True,
-        budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
-    )
-
-    assert profil is not None, (
-        "le budget a supprimé la seule collecte que la source dégradée rendait encore"
-    )
-    assert chambre == "deputes"
-    assert profil["identite"]["nom_complet"] == "Jean-Luc Mélenchon"
-    assert f"{BASE}/jean-luc-melenchon/xml" in double.appels
-
-
-def test_le_budget_couvre_la_resolution_d_identite_la_plus_chere_mesuree():
-    """160 s n'est pas un chiffre rond : c'est le pire cas structurel de la
-    résolution d'identité (6 tentatives × 26,5 s = 159 s), et il domine les
-    trois mesures de source dégradée du run 32421439590."""
-    pire_cas_structurel = 6 * (25 + 1.5)
-    assert BUDGET_PAR_CANDIDAT >= IDENTITE_LA_PLUS_CHERE_MESUREE
-    assert BUDGET_PAR_CANDIDAT >= pire_cas_structurel
-
-
-# ---------------------------------------------------------------------------
-# La collecte entière est bornée, y compris sous --skip-interventions
-# ---------------------------------------------------------------------------
-
-def test_le_budget_borne_la_collecte_meme_sans_interventions(archive, monkeypatch, horloge):
-    """Le défaut de #514, en une assertion : avec `--skip-interventions`, la
-    collecte doit rester bornée. Avant, `build_profile_any_chambre` rendait
-    `budget = None` et les six requêtes sénatoriales partaient sans plafond."""
-    _compteur_remis_a_zero(monkeypatch)
-    double = archive()
-    debut = horloge.maintenant
-
-    build_profile_any_chambre(
-        "edouard-philippe",
-        chambres=["deputes"],
-        skip_interventions=True,
-        budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
-    )
-
-    ecoule = horloge.maintenant - debut
-    # Le dépassement est plafonné à UNE tentative (la requête en vol) parce que
-    # le budget est vérifié entre deux tentatives et non entre deux requêtes.
-    assert ecoule <= BUDGET_PAR_CANDIDAT + 25 + 2, (
-        f"collecte de {ecoule:.0f} s pour un budget de {BUDGET_PAR_CANDIDAT} s"
-    )
-    # Sans budget, les 6 URLs (identité, votes, dossiers 15/16 × 2 formats)
-    # auraient toutes été tentées trois fois.
-    assert len(double.appels) < 18, (
-        f"{len(double.appels)} tentatives : le budget n'a rien arrêté"
-    )
-
-
-def test_la_troncature_par_budget_est_declaree(archive, monkeypatch):
-    """Un budget épuisé sans trace serait la valeur par défaut silencieuse que
-    la règle 2.5 interdit : la troncature part dans `meta.warnings[]` ET remonte
-    à l'appelant, qui en fait une annotation `::warning::`.
-
-    #528 — ce que ce test regardait, et ce qu'il regarde maintenant. La phase
-    tronquée était « votes + dossiers NosSénateurs », obtenue APRÈS une identité
-    résolue : le profil partiel était donc écrit, et le test le vérifiait. Cette
-    phase n'existe plus — côté AN, votes/amendements/textes viennent de l'open
-    data, qui déclare ses propres échecs et ne passe pas par le budget de
-    collecte NosDéputés. La seule unité que le budget peut encore refuser sur ce
-    chemin est un FORMAT d'identité non tenté, et l'identité est ce qui décide
-    qu'un profil est écrit : « tronqué » et « écrit » ne peuvent plus être vrais
-    en même temps ici. Ce qui est testé reste le point de #514 — la troncature
-    est DÉCLARÉE, jamais subie."""
-    _compteur_remis_a_zero(monkeypatch)
-    # `/json` en timeout sur ses 3 tentatives (48 s) : le budget de 40 s est
-    # épuisé avant que `/xml` ne soit tenté.
-    double = archive()
-
-    profil, _, warnings = build_profile_any_chambre(
-        "bruno-retailleau",
-        chambres=["deputes"],
-        skip_interventions=True,
-        budget_collecte_secondes=40,
-    )
-
-    assert profil is None, "sans identité, aucun profil n'est écrit (comportement acquis)"
-    tronquees = [w for w in warnings if w.startswith(WARNING_PREFIX_BUDGET_COLLECTE)]
-    assert tronquees, f"aucune troncature déclarée dans {warnings}"
-    assert "non tenté" in tronquees[0], (
-        "la troncature doit NOMMER ce qui n'a pas été collecté, pas seulement "
-        f"annoncer un dépassement : {tronquees[0]}"
-    )
-    assert not [u for u in double.appels if u.endswith("/xml")], (
-        "le format non tenté doit vraiment ne pas avoir été tenté"
-    )
-
-
-# ---------------------------------------------------------------------------
-# « introuvable » cesse de vouloir dire deux choses
-# ---------------------------------------------------------------------------
-
-def test_une_source_muette_n_est_pas_une_absence(archive, monkeypatch):
-    """Sur le run 32421439590, `jerome-guedj` et `edouard-philippe` sont sortis
-    en « introuvable » sans un mot sur les 25 requêtes en timeout qui les y
-    avaient menés."""
-    _compteur_remis_a_zero(monkeypatch)
-    archive()
-
-    profil, chambre, warnings = build_profile_any_chambre(
-        "jerome-guedj",
-        chambres=["deputes"],
-        skip_interventions=True,
-        budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
-    )
-
-    assert profil is None and chambre is None
-    injoignable = [w for w in warnings if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)]
-    assert injoignable, f"aucun signal de source injoignable dans {warnings}"
-    # Le verdict porte sur les requêtes d'IDENTITÉ, pas sur le total : c'est
-    # l'identité qui décide qu'un profil est écrit ou jeté.
-    assert "requête(s) d'identité restée(s) sans réponse" in injoignable[0]
-
-
-# `test_un_profil_partiel_declare_ce_que_la_source_n_a_pas_rendu` a été retiré
-# par #528. Il posait qu'un `votes: []` obtenu par timeout devait porter une
-# réserve — sur le chemin sénatorial, où `votes` venait de `_get_payload`. Côté
-# AN, `votes` vient de l'open data (`fetch_votes_officiels`), qui déclare ses
-# propres échecs et n'incrémente pas `compteur_requetes_sans_reponse` : la
-# section a donc quitté `sections_vides` avec la chambre. Ce que le test
-# éprouvait — « un vide obtenu par silence n'est pas un constat » — reste
-# couvert sur `identité` par les deux tests qui l'encadrent.
-
-
-def test_une_source_qui_repond_vraiment_ne_declenche_aucune_reserve(archive, monkeypatch):
-    """Le pendant du test précédent, et ce qui empêche l'avertissement de
-    devenir du bruit : une archive qui répond « rien pour ce slug » (404) est un
-    constat, pas une panne."""
-    _compteur_remis_a_zero(monkeypatch)
-    archive({
-        f"{BASE}/bruno-retailleau/json": [IDENTITE_PARLEMENTAIRE],
-        f"{BASE}/bruno-retailleau/votes/json": [404],
-        f"{BASE}/bruno-retailleau/votes/xml": [404],
-        f"{BASE}/15/dossiers/nom/json": [404],
-        f"{BASE}/16/dossiers/nom/json": [404],
-    })
-
-    profil, _, warnings = build_profile_any_chambre(
-        "bruno-retailleau",
-        chambres=["deputes"],
-        skip_interventions=True,
-        budget_collecte_secondes=BUDGET_PAR_CANDIDAT,
-    )
-
-    assert profil is not None
-    assert not [
-        w for w in profil["meta"]["warnings"] if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)
-    ], "un 404 est une réponse : rien à signaler"
-    assert not [w for w in warnings if w.startswith(WARNING_PREFIX_SOURCE_INJOIGNABLE)]
-
-
-# ---------------------------------------------------------------------------
-# process_candidat : le statut qui distingue les deux silences
+# process_candidat : le budget de job rend la main au lieu d'être tué
 # ---------------------------------------------------------------------------
 
 def _args(**overrides) -> argparse.Namespace:
@@ -440,6 +132,7 @@ def _args(**overrides) -> argparse.Namespace:
         source="an",
         pivot_only=False,
         skip_existing=False,
+        max_pages=None,
         skip_interventions=True,
         skip_dossiers_legislatifs=False,
         budget_interventions_secondes=0,
@@ -454,56 +147,44 @@ def _args(**overrides) -> argparse.Namespace:
     return argparse.Namespace(**base)
 
 
-def test_process_candidat_distingue_source_indisponible_d_introuvable(
-    archive, monkeypatch, tmp_path
-):
-    _compteur_remis_a_zero(monkeypatch)
-    archive()
-
-    resultat = process_candidat(
-        {"nom": "Édouard Philippe", "slug": "edouard-philippe"},
-        _args(),
-        tmp_path / "raw",
-        tmp_path / "pivot",
-    )
-
-    assert resultat["statut"] == "source_indisponible", (
-        "« introuvable » affirmerait que l'archive ne connaît pas ce slug, "
-        "alors qu'elle n'a rien répondu"
-    )
-
-
-def test_process_candidat_dit_toujours_introuvable_quand_la_source_repond(
-    archive, monkeypatch, tmp_path
-):
-    """Le constat sincère doit rester un constat : un 404 sur les deux formats
-    d'identité est une réponse."""
-    _compteur_remis_a_zero(monkeypatch)
-    archive({
-        f"{BASE}/marine-tondelier/json": [404],
-        f"{BASE}/marine-tondelier/xml": [404],
-    })
-
-    resultat = process_candidat(
-        {"nom": "Marine Tondelier", "slug": "marine-tondelier"},
-        _args(),
-        tmp_path / "raw",
-        tmp_path / "pivot",
-    )
-
-    assert resultat["statut"] == "introuvable"
-
-
-# ---------------------------------------------------------------------------
-# Le budget de job : le run se termine au lieu d'être tué
-# ---------------------------------------------------------------------------
-
-def test_le_budget_de_job_rend_la_main_sans_requete(archive, monkeypatch, tmp_path, horloge):
+def test_le_budget_de_job_rend_la_main_sans_collecter(monkeypatch, tmp_path, horloge):
     """Un candidat que le budget de job n'atteint pas doit sortir DÉCLARÉ et
-    sans toucher au réseau — la différence avec un `timeout-minutes` atteint,
-    où les candidats restants ne figurent nulle part."""
-    _compteur_remis_a_zero(monkeypatch)
-    double = archive()
+    sans qu'aucune collecte ne démarre — la différence avec un
+    `timeout-minutes` atteint, où les candidats restants ne figurent nulle
+    part.
+
+    La doublure porte sur `build_profile` et non plus sur le transport HTTP
+    (#529) : c'est le premier étage que `process_candidat` franchit, et le seul
+    qu'il faut compter pour savoir si le candidat a été collecté.
+    """
+    collectes: list[str] = []
+
+    def fausse_collecte(chambre, slug, budget_collecte=None, **kwargs):
+        """Une collecte qui coûte 120 s et ne trouve aucune identité.
+
+        Le temps est facturé DANS une section du budget de collecte du
+        candidat, qui a le budget de job pour parent : c'est cette chaîne que
+        le test éprouve, et la court-circuiter en faisant seulement avancer
+        l'horloge ne prouverait rien.
+        """
+        collectes.append(slug)
+        with budget_collecte.section("collecte factice"):
+            horloge.avancer(120)
+        return {
+            "slug": slug,
+            "chambre": chambre,
+            "identite": None,
+            "mandats": [],
+            "votes": [],
+            "interventions": [],
+            "amendements": [],
+            "dossiers_legislatifs": [],
+            "votes_source": None,
+            "source": None,
+            "meta": {"warnings": [], "synchro_sources": {}},
+        }
+
+    monkeypatch.setattr("generate_all_profiles.build_profile", fausse_collecte)
     budget_job = BudgetCollecte(90, libelle="collecte du job")
 
     premier = process_candidat(
@@ -513,8 +194,6 @@ def test_le_budget_de_job_rend_la_main_sans_requete(archive, monkeypatch, tmp_pa
         tmp_path / "pivot",
         budget_job=budget_job,
     )
-    appels_apres_le_premier = len(double.appels)
-
     second = process_candidat(
         {"nom": "Jérôme Guedj", "slug": "jerome-guedj"},
         _args(),
@@ -523,12 +202,37 @@ def test_le_budget_de_job_rend_la_main_sans_requete(archive, monkeypatch, tmp_pa
         budget_job=budget_job,
     )
 
-    assert premier["statut"] == "source_indisponible"
+    assert premier["statut"] == "introuvable", (
+        "sans identité, le candidat est introuvable — un constat du référentiel AN"
+    )
     assert second["statut"] == "budget_job_epuise"
-    assert len(double.appels) == appels_apres_le_premier, (
-        "un candidat non collecté ne doit émettre aucune requête"
+    assert collectes == ["edouard-philippe"], (
+        "un candidat non collecté ne doit déclencher aucune collecte"
     )
     assert budget_job.unites_ignorees().get("candidat(s) non collecté(s)") == 1
+
+
+def test_process_candidat_signale_une_chambre_en_echec(monkeypatch, tmp_path, horloge):
+    """L'héritier de « source injoignable » (#529). Une vraie panne — archive
+    AMO30 absente ou illisible — lève, et cette exception doit ressortir
+    NOMMÉE : c'est elle qui sépare « le référentiel ne connaît pas ce slug »
+    de « le référentiel n'a pas pu être lu »."""
+    def collecte_en_panne(chambre, slug, **kwargs):
+        raise OSError("archive AMO30 illisible")
+
+    monkeypatch.setattr("generate_all_profiles.build_profile", collecte_en_panne)
+
+    resultat = process_candidat(
+        {"nom": "Édouard Philippe", "slug": "edouard-philippe"},
+        _args(),
+        tmp_path / "raw",
+        tmp_path / "pivot",
+    )
+
+    assert resultat["statut"] == "source_indisponible", (
+        "« introuvable » affirmerait que le référentiel ne connaît pas ce slug, "
+        "alors qu'il n'a pas pu être lu"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -574,3 +278,19 @@ def test_un_zero_explicite_ne_declenche_aucun_avertissement(capsys):
     valider_budgets(_args(budget_collecte_secondes=0))
 
     assert "budget-collecte-secondes" not in capsys.readouterr().out
+
+
+def test_le_warning_de_source_injoignable_a_disparu():
+    """Le verrou du retrait. Un warning qui ne peut plus se déclencher est un
+    garde-fou désarmé qu'on croit armé : le retirer était le point, le voir
+    revenir doit échouer bruyamment."""
+    for nom in (
+        "WARNING_PREFIX_SOURCE_INJOIGNABLE",
+        "compteur_requetes_sans_reponse",
+        "compteur_appels_nosdeputes",
+    ):
+        assert not hasattr(candidate_profile, nom), (
+            f"`candidate_profile.{nom}` est de retour alors qu'aucune requête "
+            "ne peut plus l'alimenter (#529). Voir "
+            "docs/technical_decisions.md#retrait-nosdeputes-529."
+        )

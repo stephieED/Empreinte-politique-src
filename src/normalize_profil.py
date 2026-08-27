@@ -1,17 +1,33 @@
 #!/usr/bin/env python3
 """
-normalize_nosdeputes.py — Adaptateur NosDéputés/NosSénateurs → schéma pivot v1.
+normalize_profil.py — Adaptateur profil brut FR → schéma pivot v1.
 
-Convertit un profil JSON produit par candidate_profile.py (format brut
-NosDéputés.fr / NosSénateurs.fr) vers le schéma pivot commun défini dans
-schema_pivot.py.
+Convertit un profil JSON produit par `candidate_profile.py` vers le schéma
+pivot commun défini dans `schema_pivot.py`. Pendant du `normalize_europarl.py`
+pour la branche européenne.
+
+## Il s'appelait `normalize_nosdeputes.py` (#529, lot 5)
+
+Le nom datait du jour où le profil brut venait effectivement de NosDéputés.
+Ce n'est plus vrai depuis longtemps, et plus du tout depuis #529 : l'identité,
+les mandats, les votes, les amendements, les textes portés et les interventions
+viennent tous de l'open data de l'Assemblée nationale. Ce module n'a jamais
+connu la source, seulement la **forme** du profil brut — le renommer aligne son
+nom sur ce qu'il fait, et sur ce que le diagramme d'AGENTS.md §3 décrit.
+
+Ce qui a suivi le nom : `_SOURCE_TYPE_MAP` (chambre → `nosdeputes` /
+`nossenateurs`) et l'URL NosDéputés qui servait de repli à `sources[].url`.
+Ce qui ne l'a PAS suivi : la capacité à **relire** les profils déjà collectés,
+qui portent encore `meta.synchro_sources.nosdeputes` — un adaptateur qui ne
+saurait plus lire le corpus existant transformerait un renommage en perte de
+données (AGENTS.md §2 règle 5).
 
 Ce module est volontairement découplé de la collecte : il ne fait aucun
 appel réseau et ne connaît pas le mécanisme de téléchargement.
 
 Usage :
-    from normalize_nosdeputes import normalize_nosdeputes
-    pivot = normalize_nosdeputes(raw_profile)
+    from normalize_profil import normalize_profil
+    pivot = normalize_profil(raw_profile)
 
     # Enrichissement optionnel depuis candidats.json :
     pivot["parti"] = "La France Insoumise"
@@ -36,11 +52,25 @@ from scrutins_legislature import legislature_du_calendrier
 # dise. L'alias local garde les appels du module inchangés.
 _CHAMBRE_MAP: dict[str, str] = CHAMBRE_COLLECTE_VERS_PIVOT
 
-# Type de source selon la chambre.
-_SOURCE_TYPE_MAP: dict[str, str] = {
-    "deputes": "nosdeputes",
-    "senateurs": "nossenateurs",
-}
+# Type de source du profil brut FR (`sources[].type`, valeur de
+# `schema_pivot.KNOWN_SOURCE_TYPES`). Constante depuis #529, et non plus une
+# table indexée par chambre : `_SOURCE_TYPE_MAP` faisait correspondre `deputes`
+# → `nosdeputes` et `senateurs` → `nossenateurs`, deux plateformes dont plus
+# aucune n'alimente la collecte. La chambre ne décide plus de la provenance,
+# parce qu'il n'y a plus qu'une provenance.
+#
+# `nosdeputes` et `nossenateurs` restent des valeurs VALIDES du schéma : 476
+# profils publiés en portent une, et les retirer de `KNOWN_SOURCE_TYPES` ferait
+# refuser par `validate_profil()` le corpus qu'on vient de publier. Leur sort —
+# comme celui des mentions d'attribution ODbL — est le lot 6, pas celui-ci.
+_SOURCE_TYPE_PROFIL_FR = "assemblee_nationale"
+
+# Repli d'URL de source quand le profil brut n'en porte pas. C'était
+# `https://www.nosdeputes.fr/<slug>` — une URL de plateforme tierce inventée
+# pour un profil dont aucune section ne venait d'elle. La racine de l'open data
+# AN ne prétend pas identifier la personne : elle nomme le jeu de données, ce
+# qui est exactement ce qu'on sait quand le slug n'a pas été résolu en acteur.
+_URL_SOURCE_PAR_DEFAUT = "https://data.assemblee-nationale.fr/"
 
 # Préfixe de warning publié dans `meta.warnings` (#492). Même convention que
 # candidate_profile.WARNING_PREFIX_* : le texte avant le premier ':' est le
@@ -166,9 +196,12 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
 def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     """Normalise un dossier législatif brut vers le format pivot `textes_portes`.
 
-    NosDéputés ne distingue pas systématiquement auteur et rapporteur dans les
-    dossiers. Le rôle reste donc nul quand la source ne le fournit pas : aucune
-    inférence n'est faite à partir du volume d'interventions.
+    Le rôle reste nul quand la source ne le fournit pas : aucune inférence
+    n'est faite à partir du volume d'interventions. Il l'était systématiquement
+    du temps où la liste venait de NosDéputés, qui ne distinguait pas auteur et
+    rapporteur ; `fetch_textes_portes_officiels` (#400, seule source depuis
+    #528) le renseigne, mais les entrées collectées avant lui traversent la
+    fusion additive avec leur `role: null` — c'est ce que ce repli couvre.
     """
     return {
         "titre": d.get("titre") or None,
@@ -283,18 +316,18 @@ def _normalize_amendement(a: dict[str, Any], own_id: str) -> dict[str, Any]:
 # Fonction principale
 # ---------------------------------------------------------------------------
 
-def normalize_nosdeputes(
+def normalize_profil(
     raw_profile: dict[str, Any],
     parti: Optional[str] = None,
     provenance: str = "candidat_declare",
     scrutins_index: Optional[ScrutinsIndex] = None,
 ) -> dict[str, Any]:
-    """Convertit un profil brut NosDéputés/NosSénateurs vers le schéma pivot v1.
+    """Convertit un profil brut FR vers le schéma pivot v1.
 
     Args:
         raw_profile: dict produit par candidate_profile.build_profile().
         parti: parti politique de l'élu (optionnel ; peut être passé depuis
-               candidats.json car non fourni par l'API NosDéputés).
+               candidats.json car aucune source institutionnelle ne le publie).
         scrutins_index: index partagé des scrutins (#432). Porte la résolution
                de corpus de la législature — la seule qui voie au-delà du
                profil courant. Facultatif : sans lui, chaque vote se résout sur
@@ -318,16 +351,24 @@ def normalize_nosdeputes(
     # telle quelle : elle est écartée par `deriver_chambres`, qui n'accepte comme
     # repli qu'une valeur de KNOWN_CHAMBRES.
     chambre_collecte = _CHAMBRE_MAP.get(chambre_raw, chambre_raw or None)
-    source_type = _SOURCE_TYPE_MAP.get(chambre_raw, "nosdeputes")
+    source_type = _SOURCE_TYPE_PROFIL_FR
 
     identite = raw_profile.get("identite") or {}
     nom = identite.get("nom_complet") or slug.replace("-", " ").title()
 
-    # Timestamp de synchro depuis le méta du profil brut (ou maintenant si absent)
+    # Timestamp de synchro depuis le méta du profil brut (ou maintenant si absent).
+    #
+    # Trois clés lues dans cet ordre, et l'ordre est le sujet (#529) :
+    # `assemblee_nationale` (ce que la collecte écrit aujourd'hui), puis
+    # `nosdeputes` (ce que portent les profils bruts collectés avant ce lot,
+    # que la fusion additive conserve indéfiniment), puis `genere_le`. Sauter
+    # la seconde ferait reculer `sources[].synchro_le` de tout profil non
+    # recollecté vers son `genere_le` — un horodatage de fraîcheur qui régresse
+    # sans qu'aucune donnée n'ait bougé.
     meta_raw = raw_profile.get("meta") or {}
     synchro_sources = meta_raw.get("synchro_sources") or {}
-    synchro_le = synchro_sources.get("nosdeputes")
-    if "nosdeputes" not in synchro_sources:
+    synchro_le = synchro_sources.get("assemblee_nationale") or synchro_sources.get("nosdeputes")
+    if not synchro_le:
         synchro_le = meta_raw.get("genere_le") or time.strftime("%Y-%m-%dT%H:%M:%S%z")
     # --- Profil pivot de base ---
     # L'`id` est le slug, SANS préfixe de provenance (#487, épic #486). Le slug
@@ -350,7 +391,7 @@ def normalize_nosdeputes(
     profil["groupe"] = identite.get("groupe_nom") or identite.get("groupe_sigle")
 
     # --- Sources ---
-    source_url = raw_profile.get("source") or f"https://www.nosdeputes.fr/{slug}"
+    source_url = raw_profile.get("source") or _URL_SOURCE_PAR_DEFAUT
     sources: list[dict[str, Any]] = [
         {
             "type": source_type,
@@ -397,9 +438,16 @@ def normalize_nosdeputes(
     profil["chambre"] = chambre_collecte     # repli, consommé par appliquer_chambres
     derivation_chambres = appliquer_chambres(profil)
 
-    # --- Tags thématiques bruts : source hybride — thème officiel Syceron (quand
-    # disponible via `theme_officiel`) ou mots-clés scraping NosDéputés en fallback.
-    # `theme_officiel` est préféré car il provient du compte rendu officiel de l'AN.
+    # --- Tags thématiques bruts : thème officiel Syceron (via `theme_officiel`)
+    # quand l'intervention en porte un, `mots_cles` sinon.
+    #
+    # Le repli sur `mots_cles` est CONSERVÉ par #529, alors que plus rien ne les
+    # collecte : ils viennent du scraping NosDéputés, et ils sont dans les
+    # profils bruts déjà collectés, que la fusion additive garde. Les retirer
+    # ici ferait tomber les **647 `tags_thematiques` publiés** dérivés d'eux —
+    # une liste surveillée bloquante (#460/#470). On ne collecte plus cette
+    # matière ; on continue de savoir la lire (AGENTS.md §2 règle 5).
+    # `theme_officiel` reste préféré : il vient du compte rendu officiel de l'AN.
     tags: set[str] = set()
     for i in profil.get("interventions") or []:
         theme = i.get("theme_officiel")
@@ -418,11 +466,20 @@ def normalize_nosdeputes(
     profil["meta"]["licence_donnees"] = meta_raw.get("licence_donnees") or ""
     profil["meta"]["warnings"] = list(meta_raw.get("warnings") or [])
 
-    # Propagation des avertissements de synchro depuis le profil brut
+    # Propagation des avertissements de synchro depuis le profil brut.
+    #
+    # La clé surveillée est `assemblee_nationale` depuis #529, plus
+    # `nosdeputes`. L'ancienne était `None` sur presque tout le corpus depuis
+    # #369 — un député résolu dans le référentiel AN ne déclenchait aucun appel
+    # NosDéputés, donc aucune synchro à horodater : le warning décrivait le
+    # fonctionnement normal, ce qui est la définition d'un warning qui ne dit
+    # plus rien. `assemblee_nationale`, lui, est renseigné dès que l'identité
+    # est trouvée : à `None`, il signale une vraie absence de collecte.
     synchro_sources = meta_raw.get("synchro_sources") or {}
-    if synchro_sources.get("nosdeputes") is None:
+    if synchro_sources.get("assemblee_nationale") is None:
         profil["meta"]["warnings"].append(
-            "synchro_sources.nosdeputes : aucune synchro réussie enregistrée dans le profil source."
+            "synchro_sources.assemblee_nationale : aucune synchro réussie "
+            "enregistrée dans le profil source."
         )
 
     # Mandats électifs dont la chambre n'est pas résolue (#492) : `null` publié,

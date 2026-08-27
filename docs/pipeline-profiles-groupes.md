@@ -33,7 +33,7 @@ graph TD
     C2 --> R1
     C3 --> R2[raw_data/candidats.json\nMise a jour editoriale manuelle]
 
-    R1 --> N1[src/normalize_nosdeputes.py]
+    R1 --> N1[src/normalize_profil.py]
     R1 --> N2[src/normalize_europarl.py]
     N1 --> P1[pivot_data/profiles/<slug>.pivot.json]
     N2 --> P1
@@ -79,7 +79,7 @@ graph TD
         C2 --> R1
         C3 --> R2[raw_data/candidats.json]
 
-        R1 --> N1[normalize_nosdeputes.py]
+        R1 --> N1[normalize_profil.py]
         R1 --> N2[normalize_europarl.py]
         N1 --> P1[pivot_data/profiles slash slug.pivot.json]
         N2 --> P1
@@ -232,7 +232,7 @@ Détail complet du job : [`extract-roster-groupes.md`](./extract-roster-groupes.
      - `--no-merge` force un écrasement complet.
 
 6. Normalisation vers le pivot commun
-     - `normalize_nosdeputes.py` convertit le profil brut FR vers
+     - `normalize_profil.py` convertit le profil brut FR vers
          `schema_pivot.py`.
      - `normalize_europarl.py` convertit le volet UE vers le même schéma.
      - Sortie pivot: `pivot_data/profiles/<slug>.pivot.json` (option `--pivot`

@@ -2,11 +2,10 @@
 
 Generates structured "political CVs" (mandates, responsibilities, votes,
 legislative files, floor interventions) for candidates in the 2027 French
-presidential election, using open data from
-[NosDeputes.fr / NosSenateurs.fr](https://github.com/regardscitoyens)
-(Regards Citoyens, ODbL), the
+presidential election, using open data from the
 [French National Assembly open data portal](https://data.assemblee-nationale.fr/)
-for vote details, [Parltrack](https://parltrack.org) + the
+(Licence Ouverte / Etalab) — the **only** French source since #529 —,
+[Parltrack](https://parltrack.org) + the
 [European Parliament Open Data Portal](https://data.europarl.europa.eu/)
 (CC BY 4.0) for the European mandate dimension of former MEP candidates, and
 Wikipedia/Wikidata for candidacy monitoring.
@@ -20,12 +19,12 @@ The project does not make value judgments.
 ```
 CV_CandidatFR/
 |- src/                               # Python scripts
-|  |- candidate_profile.py           # Collect raw profile for ONE FR deputy (AN only since #528)
+|  |- candidate_profile.py           # Collect raw profile for ONE FR deputy (AN open data only since #529)
 |  |- candidate_profile_ue.py        # Build the "European mandate" section for ONE candidate
 |  |- generate_all_profiles.py       # Batch: profiles for candidates in a --candidats list (candidats.json by default, or a roster-driven file)
 |  |- generate_roster_candidats.py   # Builds a --candidats-compatible list from real group rosters (groupes_reels.json), for full group coverage beyond declared candidates
 |  |- merge_profile.py               # Additive merge logic (old wins on lists, new wins on scalars)
-|  |- normalize_nosdeputes.py        # NosDeputes -> pivot adapter
+|  |- normalize_profil.py            # Raw FR profile -> pivot adapter (was normalize_nosdeputes.py until #529)
 |  |- normalize_europarl.py          # European Parliament Open Data -> pivot adapter
 |  |- normalize_parltrack_dumps.py   # Parltrack dumps -> pivot adapter (EP mandates)
 |  |- parltrack_dumps.py             # Parltrack dump download/cache helpers
@@ -33,7 +32,7 @@ CV_CandidatFR/
 |  |- parse_syceron.py               # AN Syceron XML parser -> interventions[]
 |  |- text_utils.py                  # Shared text helpers (normalisation, accent folding)
 |  |- group_profile.py               # Aggregate individual profiles into a parliamentary group profile
-|  |- group_roster.py                # Real group composition: AMO30 since #527 (NosDeputes kept as fallback)
+|  |- group_roster.py                # Real group composition: AMO30 only (#527 switch, #529 removed the NosDeputes fallback)
 |  |- an_roster.py                   # AN group composition derived from AMO30 (open data AN), incl. legislature 17 — production source since #527
 |  |- generate_group_profiles.py     # Batch: all groups from raw_data/groupes_reels.json
 |  |- groupes_config.py              # Shared read of groupes_reels.json + temporary extraction suspension (#516)
@@ -76,7 +75,7 @@ CV_CandidatFR/
 |  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes · Gouvernement)
 |  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
 |- docs/
-|  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference (kept in French)
+|  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference — historical, no longer used by the pipeline (#529)
 |  `- an_opendata.md                 # Notes on AN open data (votes, amendments, Syceron)
 |- tests/
 |  |- test_candidate_profile.py
@@ -91,7 +90,7 @@ CV_CandidatFR/
 |  |- test_generate_gouvernement_profiles.py
 |  |- test_merge_profile.py
 |  |- test_normalize_europarl.py
-|  |- test_normalize_nosdeputes.py
+|  |- test_normalize_profil.py
 |  |- test_normalize_parltrack_dumps.py
 |  |- test_parltrack_dumps.py
 |  |- test_parse_syceron.py
@@ -319,8 +318,9 @@ partir de l'open data AN (`AMO30_tous_acteurs_tous_mandats_tous_organes`), que
 le pipeline télécharge et met déjà en cache. Depuis #527 c'est **la** source
 AN : `group_roster.fetch_full_roster` y délègue toute clé `deputes`. La lecture
 NosDéputés (`fetch_full_roster_nosdeputes`) ne servait plus que le Sénat, sorti
-du périmètre par #528 : elle reste vivante comme **repli** si le drapeau
-`AN_ROSTER_ACTIF` redescend, et pour rien d'autre.
+du périmètre par #528 ; elle a survécu comme **repli** du drapeau
+`AN_ROSTER_ACTIF` jusqu'à ce que **#529 la retire**. Le drapeau n'aiguille donc
+plus vers rien : baissé, il coupe — `RosterAnInactif`, jamais un roster vide.
 
 ```bash
 # Composition d'un groupe (sigle PUBLIÉ, pas le sigle AN)
@@ -341,9 +341,10 @@ run** et comptés dans `meta.couverture_roster.roster_total`, qui passe de
 193/193 à 193/196 sur REN et de 62/62 à 62/63 sur LR : une couverture qui
 exclut ce qu'elle ne sait pas mesurer n'en est pas une.
 
-`--desactiver-roster-an` reproduit l'état d'avant la bascule ; le module
-**refuse alors bruyamment** plutôt que de rendre une liste vide, qui serait
-indiscernable d'un groupe dissous. La 17e législature, absente de NosDéputés,
+Baisser `AN_ROSTER_ACTIF` ne reproduit plus l'état d'avant la bascule depuis
+#529 — il n'y a plus de seconde source. Le module **refuse alors bruyamment**
+plutôt que de rendre une liste vide, qui serait indiscernable d'un groupe
+dissous. La 17e législature, absente de NosDéputés,
 est servie par le module (461 membres sur les 5 familles publiées, 305 ont déjà
 un profil) mais **n'est pas encore publiée** — voir `ROADMAP.md`. Détail et
 mesures : `docs/technical_decisions.md#bascule-roster-an-amo30-527`.
@@ -934,7 +935,7 @@ Each `raw_data/profiles/<slug>.json` includes:
 
 ## Pivot schema v1
 
-Defined in `src/schema_pivot.py` and produced by `normalize_nosdeputes.py`
+Defined in `src/schema_pivot.py` and produced by `normalize_profil.py`
 (and EU normalizers) to unify AN/Senate/EP representation.
 
 With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
@@ -948,8 +949,13 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
   "parti": null,
   "groupe": "La France Insoumise",
   "sources": [
-    {"type": "nosdeputes", "url": "...", "synchro_le": "2026-07-29T..."},
-    {"type": "assemblee_nationale", "url": "...", "synchro_le": "2026-07-29T..."}
+    // Since #529 a freshly collected FR profile only ever produces
+    // "assemblee_nationale". "nosdeputes"/"nossenateurs" stay VALID values —
+    // 476 published profiles carry one, and dropping them from
+    // KNOWN_SOURCE_TYPES would make validate_profil() reject the corpus we
+    // just published. Their retirement is lot 6, with ODbL attribution.
+    {"type": "assemblee_nationale", "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1234", "synchro_le": "2026-07-29T..."},
+    {"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr/", "synchro_le": "2026-07-29T..."}
   ],
   "mandats": [ ... ],          // categorie ∈ mandat_electif | commission |
                                // commission_enquete | mission_information |
@@ -972,9 +978,8 @@ Sensitive institutional constraints are documented in `AGENTS.md`.
 
 | Source | Type | Update cadence | License | Chamber(s) |
 |---|---|---|---|---|
-| NosDeputes.fr | JSON/XML API | Frozen on 16th legislature (all 618 cards have `mandat_fin`) | ODbL v1.0 | AN |
-| NosDeputes archives | JSON/XML API | Frozen closed legislatures | ODbL v1.0 | AN |
-| NosSenateurs archives | JSON/XML API | **Out of scope since #528** (dead TLS certificate; attribution still due for already-published fields) | ODbL v1.0 | Senate |
+| NosDeputes.fr + archives | JSON/XML API | **No longer collected since #529** (lot 5); attribution still due for already-published fields — lot 6 | ODbL v1.0 | AN |
+| NosSenateurs archives | JSON/XML API | **Out of scope since #528** (dead TLS certificate); no longer collected since #529 | ODbL v1.0 | Senate |
 | data.assemblee-nationale.fr / questions.assemblee-nationale.fr | ZIP dumps | Daily | Licence Ouverte / Open Licence (Etalab) | AN |
 | Parltrack | LZMA dumps | Weekly (approx.) | ODbL v1.0 | EP |
 | European Parliament (data.europarl.europa.eu, www.europarl.europa.eu) | REST API + MEP pages | Live (fetched per run, no weekly cache) | EP Legal Notice (reuse policy, attribution-based) | EP |
@@ -1040,13 +1045,14 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
 - **Senate**: out of scope since #528 — no collection job, no `--source senat`,
   no `senateurs` chamber. Already-published Senate mandates and the 2 frozen
   Senate group files stay published.
-- **Freshness of `groupe`/`identite.groupe_sigle`**: derived from NosDeputes,
-  currently frozen on pre-dissolution 2024 data.
-- **Interventions**: full-text name search can be partial for ambiguous names.
+- **Interventions**: Syceron is the only source since #529, and its bare-actor-id
+  resolution is still shipped inactive (#510) — a fresh collection therefore yields
+  official questions only. Already-published speeches are kept by the additive merge,
+  and a `--no-merge` run that lost them would be blocked by `audit_diff_profils`.
 - **Mayors**: no dedicated module/source.
 - **Coverage bias**: former MPs usually have richer traces than non-MP profiles.
-- **API docs**: `docs/nosdeputes_doc/` is reference material; some endpoints
-  are deprecated/offline.
+- **API docs**: `docs/nosdeputes_doc/` is historical reference material only —
+  the pipeline stopped querying that platform at #529.
 
 ## Data freshness
 

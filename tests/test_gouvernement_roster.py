@@ -87,7 +87,7 @@ def _mandat_portefeuille(
     qui sépare un maroquin d'une mission parlementaire (#474). Ces fabriques
     portaient `type` et non `fonction` : la clé `type` est celle produite par
     `candidate_profile._extract_mandats_officiels`, mais
-    `normalize_nosdeputes` la renomme en `fonction` avant écriture du pivot,
+    `normalize_profil` la renomme en `fonction` avant écriture du pivot,
     et c'est un pivot que `gouvernement_roster` lit. Les fixtures figées de
     #457 portent bien `fonction` ; ces fabriques les suivent désormais.
     """
@@ -537,7 +537,7 @@ def test_qualite_portefeuille_valeur_inconnue_nest_jamais_un_portefeuille():
     assert _qualite_portefeuille("Haut-commissaire au plan") == QUALITE_INCONNUE
     assert _qualite_portefeuille(None) == QUALITE_INCONNUE
     assert _qualite_portefeuille("") == QUALITE_INCONNUE
-    # `normalize_nosdeputes` remplace un `libQualite` absent par « membre » :
+    # `normalize_profil` remplace un `libQualite` absent par « membre » :
     # sur un mandat MINISTERE, c'est une lacune de source, pas une qualité.
     assert _qualite_portefeuille("membre") == QUALITE_INCONNUE
 

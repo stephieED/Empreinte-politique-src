@@ -381,7 +381,7 @@ Implemented in code:
 - `_build_acteur_questions_index`
 - `fetch_questions_officielles`
 - Integration in `build_profile()` and normalization in
-  `normalize_nosdeputes._normalize_intervention`
+  `normalize_profil._normalize_intervention`
 - Merge in `merge_profile.merge_raw_profile`
 
 ## Comptes rendus de séance (Syceron)
