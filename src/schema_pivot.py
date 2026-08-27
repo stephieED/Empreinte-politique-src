@@ -186,6 +186,14 @@ Format d'un profil pivot v1 :
     ],
     "interventions": [
         {
+            # Identifiant de l'intervention, propagé VERBATIM depuis le profil
+            # brut (#540) : `syceron_<uid du compte rendu>_<rang du paragraphe>`
+            # côté débats AN, `question_<uid>` côté questions officielles,
+            # l'entier NosDéputés pour les entrées héritées d'avant #529. Null
+            # si le brut n'en porte pas. C'EST la clé de fusion pivot — une
+            # `source_url` n'en est pas une : Syceron publie l'URL de l'archive
+            # de la législature, la même pour toutes ses interventions.
+            "intervention_id": "syceron_CRSANR5L16S2023O1N055_000399",
             "date": "2023-03-15",
             "type_detail": "loi",            # "loi" | "question" | ...
             "sujet": "Budget 2024",

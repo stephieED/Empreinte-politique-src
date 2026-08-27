@@ -217,8 +217,26 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
-    """Normalise une intervention brute vers le format pivot."""
+    """Normalise une intervention brute vers le format pivot.
+
+    `intervention_id` propage **verbatim** l'`id` du profil brut (#540). C'est
+    le seul discriminant d'une intervention, et jusqu'à #540 la normalisation
+    l'abandonnait : l'entrée pivot n'avait plus que sa `source_url`, que la
+    fusion additive traitait comme un identifiant. Pour une intervention
+    Syceron, cette `source_url` est l'URL de **l'archive de la législature** —
+    la même pour toutes : 3 351 entrées collectées pour gabriel-attal se
+    réduisaient à 17 publiées. Voir `merge_profile._pivot_intervention_key`.
+
+    L'identifiant est repris tel quel, jamais reconstruit : `syceron_<uid du
+    compte rendu>_<rang du paragraphe>` côté débats AN
+    (`candidate_profile._parse_syceron_intervention_entry`), `question_<uid>`
+    côté questions officielles, l'entier NosDéputés pour les interventions
+    héritées d'avant #529. Il reste `None` si le brut n'en porte pas — une
+    donnée absente reste absente (AGENTS.md §2), et la clé de fusion sait
+    retomber sur la `source_url` puis sur le contenu.
+    """
     result: dict[str, Any] = {
+        "intervention_id": i.get("id") if i.get("id") not in (None, "") else None,
         "date": _first(i.get("date"), i.get("created_at")),
         "type_detail": i.get("type_detail"),
         "sujet": i.get("sujet"),

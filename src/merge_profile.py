@@ -413,7 +413,96 @@ def _pivot_amendement_key(a: dict[str, Any]) -> Key:
 
 
 def _pivot_intervention_key(i: dict[str, Any]) -> Key:
-    return i.get("source_url") or (i.get("date"), i.get("sujet"), (i.get("texte") or "")[:50])
+    """Identité d'une intervention pivot (#540).
+
+    **Une URL de source n'est pas un identifiant.** La clé d'origine —
+    `source_url or (date, sujet, texte[:50])` — court-circuitait sur le `or` :
+    le repli discriminant n'était jamais atteint dès que `source_url` était
+    renseignée. Elle a été écrite pour une source qui publiait un permalien par
+    intervention (l'ancre `#inter_<hash>` de NosDéputés) ; Syceron publie l'URL
+    de **l'archive de la législature**, identique pour toutes les interventions
+    de cette législature. `merge_lists_by_key` étant purement additif, il n'a
+    ajouté que les clés inédites : 3 351 entrées collectées pour gabriel-attal
+    se réduisaient à 17 publiées, et 7 767 collectées à 891 sur tout le corpus.
+    C'est le mode de défaillance que `_pivot_vote_key` décrit déjà pour les
+    votes non résolus (#432), à ceci près que la clé collante n'est pas `None`
+    mais une URL — donc qu'elle *ressemble* à un identifiant.
+
+    `intervention_id` (propagé verbatim depuis le brut par
+    `normalize_profil._normalize_intervention`) est **la même identité que
+    celle de la fusion brute** `_intervention_key`, qui repose sur `id` et n'a
+    jamais souffert du défaut. Les deux étages disent donc la même chose de ce
+    qu'est une intervention : c'est la seule forme qui garantisse qu'une entrée
+    collectée arrive publiée, une fois et une seule.
+
+    **Alternative écartée : la clé composite `(source_url, date, sujet,
+    texte[:80])`** proposée par #540. Elle rend 3 127 entrées pour
+    gabriel-attal, pas 3 351 — elle fusionne 224 prises de parole réelles.
+    Mesuré : « Même avis, pour les mêmes raisons. » est prononcé 13 fois dans
+    la même séance du 08/11/2022, sur 13 amendements successifs. Ce ne sont pas
+    des doublons d'archive, ce sont 13 interventions distinctes ; les absorber
+    serait une perte silencieuse, exactement celle qu'on corrige. Une clé qui
+    dépend du texte est en outre à la merci d'une correction typographique du
+    compte rendu — le même paragraphe reviendrait alors comme une entrée neuve.
+
+    Les replis restent pour les entrées écrites avant #540, que la fusion
+    additive fait cohabiter avec les nouvelles : `source_url` d'abord (un
+    permalien par entrée pour les interventions héritées de NosDéputés), puis
+    le contenu. Voir `clean_stale_interventions` pour leur reprise.
+    """
+    intervention_id = i.get("intervention_id")
+    if intervention_id not in (None, ""):
+        return ("intervention_id", intervention_id)
+    source_url = i.get("source_url")
+    if source_url:
+        return ("source_url", source_url)
+    return ("contenu", i.get("date"), i.get("sujet"), (i.get("texte") or "")[:50])
+
+
+def clean_stale_interventions(
+    interventions: Optional[list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    """Reprise des entrées écrites avant #540, sur le patron de
+    `clean_stale_textes_portes`.
+
+    Les 891 interventions publiées avant le correctif ne portent pas
+    d'`intervention_id` : leur clé est leur `source_url`. Les mêmes
+    interventions, renormalisées, en portent un. Sans reprise, la fusion
+    additive publierait **les deux** — l'ancienne entrée sous sa clé d'URL, la
+    neuve sous sa clé d'identifiant — et le corpus se dédoublerait au lieu de
+    se compléter.
+
+    Règle appliquée : une entrée **sans** `intervention_id` est écartée quand
+    au moins une entrée **avec** `intervention_id` porte la même `source_url`.
+    Elle est alors, par construction, l'une de ces entrées-là — soit la même
+    intervention renormalisée (permalien NosDéputés, URL de question : une
+    entrée par URL), soit l'unique rescapée de l'effondrement Syceron (URL
+    d'archive : la première entrée collectée de cette archive, que la liste
+    neuve contient aussi).
+
+    Elle ne peut donc rien perdre : sans entrée identifiée sur cette
+    `source_url` — collecte en échec, législature non recollectée, archive
+    indisponible — rien n'est écarté et l'ancienne entrée reste publiée. Une
+    entrée sans `source_url` n'est jamais écartée non plus.
+    """
+    urls_reprises = {
+        i.get("source_url")
+        for i in interventions or []
+        if isinstance(i, dict)
+        and i.get("intervention_id") not in (None, "")
+        and i.get("source_url")
+    }
+    if not urls_reprises:
+        return list(interventions or [])
+    return [
+        i
+        for i in interventions or []
+        if not (
+            isinstance(i, dict)
+            and i.get("intervention_id") in (None, "")
+            and i.get("source_url") in urls_reprises
+        )
+    ]
 
 
 def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_sources: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
@@ -493,7 +582,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         key=lambda t: (t.get("date_max") or "", t.get("titre") or ""),
         reverse=True,
     )
-    merged["interventions"] = merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
+    # `clean_stale_interventions` : reprise des entrées d'avant #540, qui n'ont
+    # pas d'`intervention_id` et seraient republiées EN DOUBLE à côté de leur
+    # renormalisation identifiée. Voir sa docstring pour la preuve de non-perte.
+    merged["interventions"] = clean_stale_interventions(
+        merge_lists_by_key(old.get("interventions"), new.get("interventions"), _pivot_intervention_key)
+    )
     # merge_dossier_records (nouvelle valeur gagne en cas de collision, aucune perte
     # sinon) : un echec/vide transitoire de l'open data amendements (voir
     # candidate_profile.fetch_amendements_officiels) ne doit pas effacer des
