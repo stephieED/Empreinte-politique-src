@@ -142,7 +142,12 @@ n'est pas dans ce lot. Aucun contrôle ne compare aujourd'hui ce que la collecte
 a rendu à ce que la publication porte, champ par champ : c'est l'angle mort
 exact dans lequel ce défaut a vécu, et il manquera à la prochaine source. Il
 mérite son propre lot — il touche `audit_diff_profils` et
-`audit_collecte_non_publiee`, dont aucun n'est en défaut ici.
+`audit_collecte_non_publiee`, dont aucun n'est en défaut ici. Le raisonnement
+qui a laissé cet angle mort ouvert est daté et cité dans
+[#syceron-actif-510](#syceron-actif-510), section « Ce qui est mesuré, et ce
+qui ne l'est pas » : la prédiction « le contrôle de perte verra une hausse, pas
+une perte, donc il ne bloquera pas » était juste, et sa conséquence — plus rien
+n'attrape alors un effondrement de clé — n'avait pas été tirée.
 
 <a id="push-donnees-cle-de-deploiement-508"></a>
 ## Rétablir le check requis sans bloquer le bot : le push de données passe par une clé de déploiement (#508) (2026-08-27)
@@ -3109,6 +3114,32 @@ Donc, à vérifier au premier run réel :
   verraient pas ;
 - le **budget de #500** : les 240 s perdent les ~90 s de recherche NosDéputés et
   gagnent le coût de lecture des tranches. Le solde n'est pas mesuré.
+
+**Vérifié au premier run réel** (`33100214165`, 27/08/2026 — 22 jobs verts,
+52 min). Trois des quatre points sont tranchés :
+
+- **coût par candidat et budget de #500** : les shards `extract-an` tiennent
+  entre **2,3 et 6,7 min** sur un budget de 9 min, sans OOM ni troncature. Le
+  solde de la bascule est positif ;
+- **entrée de cache de #505** : `.cache/syceron_an/*/index_par_acteur` pèse
+  **109 Mo**, pas « l'ordre du Go » redouté ci-dessus, face au quota de 10 Go
+  du dépôt. La mise en cache de l'index n'a pas à être tranchée ;
+- **poids des profils publiés et agrégats de groupe** : toujours **non
+  mesurable**, et pour une raison qui n'était pas soupçonnée ici — voir
+  ci-dessous.
+
+**Ce que la prédiction n'a pas tiré.** Le troisième point ci-dessus annonçait,
+correctement, que « le contrôle de perte de #460/#470 verra une **hausse**
+massive, pas une perte, donc il ne bloquera pas ». La conséquence n'a pas été
+tirée : si le garde-fou ne bloque pas, alors **rien** n'attrape un effondrement
+de clé côté publication. C'est l'angle mort exact dans lequel #540 a vécu — la
+fusion pivot traitait l'URL d'archive Syceron comme un identifiant
+d'intervention, et n'en publiait donc qu'une poignée par profil : **891 entrées
+publiées sur 7 767 collectées**. La hausse attendue a bien eu lieu (789 entrées
+publiées avant l'activation, 891 après), et c'est elle qui a masqué un
+effondrement d'un facteur 8,7 : un contrôle qui ne sait lire que le signe d'une
+variation ne peut pas voir ça. Voir
+[#cle-fusion-interventions-540](#cle-fusion-interventions-540).
 
 ### Ce que le retrait coûte ailleurs
 

@@ -14,7 +14,7 @@ une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
 
 | Rang | Issue | État | Ce qui bloque |
 | --- | --- | --- | --- |
-| 1 | **#540** | ouverte, cause établie | rien — **prioritaire sur #328** (voir ci-dessous) |
+| 1 | **#540** | corrigée, PR en revue | rien — **prioritaire sur #328** (voir ci-dessous) |
 | 1 | **#530** | agent lancé le 27/08 | rien — clôt l'épic #523 |
 | 1 | **#508** | agent lancé le 27/08 | une part relève du ruleset GitHub, pas du code |
 | 2 | **#539** | `needs-human` | **décision de schéma** : comment naît un identifiant |
@@ -49,18 +49,23 @@ trancher séparément produirait deux modèles concurrents pour un même problè
   `assemblee_nationale` au prochain run ») est fausse. Seul un run `cold_start` /
   `--no-merge` la ferait tomber, et c'est déjà un run à perte déclarée (#528).
   Voir `technical_decisions.md#licence-lot-6-530` §3.
-- **La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
-  identifiant** (#540, découvert sur le run `33100214165` du 27/08/2026).
-  `_pivot_intervention_key` fait `source_url or (date, sujet, texte[:50])` : le `or`
-  court-circuite, et comme Syceron renseigne toujours `source_url` — l'URL du zip de
-  la **législature**, identique pour toutes ses interventions — le repli discriminant
-  n'est jamais atteint. 3 351 entrées se réduisent à **17 clés** pour Gabriel Attal.
-  Mesuré sur le corpus : **891 interventions publiées pour 7 500 collectées**
-  (×8,4). `normalize_profil()` est hors de cause, vérifié en le rejouant ; la fusion
-  **brute** survit parce que sa clé porte `id`, que la normalisation ne conserve pas.
-  Les quatre autres clés pivot sont saines. Ce n'est pas une régression de #510, qui
-  a seulement rendu le défaut atteignable. **À corriger avant #328**, dont l'onglet
-  Interventions afficherait 17 prises de parole pour un candidat qui en a 3 351.
+- ~~**La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
+  identifiant**~~ (#540, découvert sur le run `33100214165` du 27/08/2026) —
+  **corrigé, PR en revue**. `_pivot_intervention_key` faisait
+  `source_url or (date, sujet, texte[:50])` : le `or` court-circuite, et comme
+  Syceron renseigne toujours `source_url` — l'URL du zip de la **législature**,
+  identique pour toutes ses interventions — le repli discriminant n'était jamais
+  atteint. 3 351 entrées se réduisaient à **17 publiées** pour Gabriel Attal. Mesuré
+  sur les profils bruts et pivot committés : **891 interventions publiées pour
+  7 767 collectées** (×8,7 — et non 7 500, qui était le décompte de la clé composite
+  *lossy* proposée par l'issue, écartée pour cette raison). `normalize_profil()`
+  était hors de cause pour la clé, mais c'est bien lui qui abandonnait l'`id` : le
+  correctif le propage en `interventions[].intervention_id`, ce qui aligne la clé
+  pivot sur celle de la fusion **brute**, seule à avoir survécu. Les quatre autres
+  clés pivot sont saines. Ce n'était pas une régression de #510, qui a seulement
+  rendu le défaut atteignable. Aucune passe de migration n'est nécessaire : les
+  7 767 entrées sont déjà dans `raw_data/`, un run `--pivot-only` les publie. Voir
+  `technical_decisions.md#cle-fusion-interventions-540`.
 
 - ~~**#529 laisse deux retraits à faire dans `.github/workflows/`**~~ — **soldé le
   27/08/2026** au rebasage de la PR #538 : `debug-network-shutdown-signal.yml` est
@@ -243,9 +248,10 @@ trancher séparément produirait deux modèles concurrents pour un même problè
   **+6 963 interventions collected** on the five declared candidates that have a
   Syceron record, and no OOM. Two findings came out of it:
   - only **87** of those reached the published corpus — see #540, the pivot merge
-    key. Profile weight and group aggregates against #429's thresholds therefore
-    **remain unmeasured**: they can only be judged once #540 is fixed and the
-    ~7 500 interventions are actually published;
+    key (fixed, PR in review). Profile weight and group aggregates against #429's
+    thresholds therefore **remain unmeasured**: they can only be judged once the fix
+    ships and the **7 767** collected interventions are actually published — 891 are
+    today;
   - `collect_interventions` drives **`extract-an` only**. The roster job carries
     `--skip-interventions` in hard (light extraction mode, #357), so the 468 roster
     profiles collect none. That was the right call when the roster only fed group
