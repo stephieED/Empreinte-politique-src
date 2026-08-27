@@ -85,11 +85,16 @@
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/laurent-wauquiez",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
+      "synchro_le": "2026-08-27T18:12:09+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-24T21:52:46+0000",
+    "genere_le": "2026-08-27T18:38:02+0000",
     "licence_donnees": "",
     "warnings": []
   }

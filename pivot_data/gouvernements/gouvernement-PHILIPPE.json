@@ -81,13 +81,18 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-20T18:56:30+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
+      "synchro_le": "2026-08-27T18:00:26+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/elisabeth-borne",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://data.assemblee-nationale.fr/",
+      "synchro_le": "2026-08-19T22:10:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -97,7 +102,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-24T21:52:46+0000",
+    "genere_le": "2026-08-27T18:38:02+0000",
     "licence_donnees": "",
     "warnings": []
   }

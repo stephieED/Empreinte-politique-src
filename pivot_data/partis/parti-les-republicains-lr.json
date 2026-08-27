@@ -21,12 +21,497 @@
   ],
   "tags_thematiques_agreges": [
     {
+      "tag": "location à une association d’un site de la ccas dans la creuse",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "lutte contre l’antisémitisme",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "maintien en rétention des personnes condamnées pour des faits d’une particulière gravité",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "motions de censure",
+      "nb_membres_porteurs": 2,
+      "poids_relatif": 1.0
+    },
+    {
+      "tag": "abrogation de la retraite à 64 ans",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "actualisation de la programmation militaire pour les années 2024 à 2030",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "adaptation du modèle de sécurité civile face aux intempéries",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "agressions de sapeurs-pompiers",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "améliorer le traitement des maladies affectant les cultures végétales à l’aide d’aéronefs télépilotés",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "apologie du terrorisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "assassinat d’aboubakar cissé",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "assignation à résidence de karim mohamed-aggad",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "attentat de mulhouse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "attentat terroriste à puget-sur-argens",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "attribution prioritaire de logements sociaux aux travailleurs",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "commémorations du 7 octobre 2023",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
       "tag": "congrès",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.5
     },
     {
+      "tag": "corruption et trafic d’armes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "difficultés des producteurs d’endives et de chicorée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dissolution de la jeune garde",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dotation aux collectivités à la suite des inondations",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "débat sur la dette",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "déclaration de politique générale, débat et vote sur cette déclaration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "déclaration du gouvernement et débat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "déclaration du gouvernement sur l’accord d’association entre l’union européenne et le mercosur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dénonciation des accords franco-algériens du 27 décembre 1968",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "dépenses de l’état",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "effectifs de police à marseille",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "examen du permis de conduire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "explosion de l’antisémitisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fermeture de classes en milieu rural",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fiscalité des microentrepreneurs et des petites entreprises",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "fusillade en ardèche",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "gens du voyage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "hommage à olivier marleix",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "information sur l’origine des denrées alimentaires par l’étiquetage",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "ingérences étrangères",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "inondations dans la région de valence",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "inscrire la mouvance des frères musulmans sur la liste européenne des organisations terroristes",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "insécurité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "insécurité dans le monde agricole",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "insécurité dans les territoires ruraux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "jeu vidéo fursan al-aqsa",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "jeux olympiques et paralympiques de 2030",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lever les contraintes à l’exercice du métier d’agriculteur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "libération des prisonniers arméniens détenus par l’azerbaïdjan",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "loi sur l’immigration",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lutte contre le narcotrafic",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lutte contre les mariages simulés ou arrangés",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lutte contre l’antisémitisme dans l’enseignement supérieur",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "lutte contre l’islamisme",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "légalisation du cannabis",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "manifestation du comité du 9-mai",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "manifestations du 1er mai",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "meurtre de philippine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mort de quentin deranque",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "motion de censure",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "mouvements sociaux",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "narcotrafic à marseille",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "narcotrafics",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "naturalisation des étrangers",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "permettre aux salariés de certains établissements et services de travailler le 1er mai",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "politique de sécurité",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "politique migratoire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "poupées pédopornographiques vendues par shein",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "pour une montagne vivante et souveraine",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programmation nationale énergie et climat pour les années 2025 à 2035",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "programmation pluriannuelle de l’énergie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2025",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "projet de loi de financement de la sécurité sociale pour 2026",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "projet de loi de finances pour 2026",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "projet de loi spéciale prévue par l’article 45 de la loi organique du 1er août 2001 relative aux lois de finances",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "prolongation de la dérogation d’usage des titres-restaurant pour tout produit alimentaire",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "propos du ministre délégué chargé de la sécurité du quotidien",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "protection et souveraineté agricoles",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "rapport sur les frères musulmans en france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "reconnaître une présomption de légitime défense pour les forces de l’ordre dans l’exercice de leurs fonctions",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "relations entre l’algérie et la france",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "renforcer les conditions d’accès à la nationalité française à mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "report du renouvellement général du congrès et des assemblées de province de la nouvelle-calédonie",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "revalorisation des retraites",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "réforme du règlement frontex",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "résultats de la politique d’éloignement des personnes sous obligation de quitter le territoire français",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "shein",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "simplification de la vie économique",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "situation sécuritaire à mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "situation à mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sortir la france du piège du narcotrafic",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sortir la france du piège du narcotrafic - statut du procureur de la république national anti-criminalité organisée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sortir la france du piège du narcotrafic-statut du procureur de la république national anti-criminalité organisée",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
       "tag": "séance",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "sécurité, rétention administrative et la prévention des risques d’attentat",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "urgence pour mayotte",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences après la victoire du psg",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences commises à paris par un groupe d’extrême droite",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences contre les élus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences en corse",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "violences envers les élus",
+      "nb_membres_porteurs": 1,
+      "poids_relatif": 0.5
+    },
+    {
+      "tag": "éloge funèbre d’olivier marleix",
       "nb_membres_porteurs": 1,
       "poids_relatif": 0.5
     }
@@ -43,19 +528,24 @@
       "synchro_le": "2026-08-20T18:55:03+0000"
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
+      "synchro_le": "2026-08-27T18:07:23+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/laurent-wauquiez",
       "synchro_le": null
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-26T21:08:48+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
+      "synchro_le": "2026-08-27T18:12:09+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-26T21:40:09+0000",
+    "genere_le": "2026-08-27T18:37:42+0000",
     "licence_donnees": "",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,

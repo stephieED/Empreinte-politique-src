@@ -60,13 +60,13 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-20T18:59:20+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
+      "synchro_le": "2026-08-27T18:12:09+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-20T19:09:36+0000",
+    "genere_le": "2026-08-27T18:38:02+0000",
     "licence_donnees": "",
     "warnings": []
   }
