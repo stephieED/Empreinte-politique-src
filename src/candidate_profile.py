@@ -43,6 +43,7 @@ import shutil
 import sys
 import threading
 import time
+import traceback
 import unicodedata
 import zipfile
 from collections import Counter
@@ -620,6 +621,15 @@ WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
+# #562 : « la source n'a pas répondu » et « notre code a échoué » sont deux
+# faits différents, et un seul des deux parle de l'Assemblée nationale. Le
+# préfixe ci-dessus dit le premier ; celui-ci dit le second, et il est
+# volontairement DISTINCT pour que `couverture_profil` ne puisse pas le mapper
+# vers `panne` — publier « panne » sur un défaut de collecte accuse la source
+# d'une faute qui est la nôtre. Mesure qui a motivé la séparation : 99 profils
+# publiés sur 481 portaient `amendements: []` avec, pour preuve, le texte d'un
+# `TypeError` du dépôt (voir `_texte_an`).
+WARNING_PREFIX_DEFAUT_COLLECTE = "défaut de collecte interne"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 # #510 : le libellé portait « (fallback nosdeputes) » tant qu'un repli existait.
 # Le repli a été RETIRÉ le 27/08/2026 : Syceron est désormais la seule source du
@@ -1566,6 +1576,62 @@ class AmendementsIndexError(Exception):
     pour cette législature) : ne doit jamais être avalée silencieusement, pour que
     `fetch_amendements_officiels` (et le warning meta.warnings à l'appel) reflète
     l'échec au lieu d'un simple "aucun amendement"."""
+
+
+#: Exceptions qui disent « la source n'a pas répondu » — les SEULES qu'une étape
+#: de collecte a le droit de convertir en indisponibilité de source (#562).
+#: `requests.RequestException` et `TimeoutError` dérivent déjà d'`OSError`, mais
+#: sont nommées : cette liste est un contrat de lecture, pas une optimisation.
+ERREURS_SOURCE: tuple[type[BaseException], ...] = (
+    AmendementsIndexError,
+    OSError,
+    TimeoutError,
+    zipfile.BadZipFile,
+    json.JSONDecodeError,
+    requests.RequestException,
+)
+
+
+def _tracer_echec_collecte(
+    warnings: list[str],
+    exc: BaseException,
+    *,
+    liste: str,
+    etape: str,
+    prefixe_panne: str,
+) -> None:
+    """Trace l'échec d'une étape de collecte **en disant de qui est la faute**.
+
+    Avant #562, chaque étape de `build_profile` était encadrée d'un
+    `except Exception` nu dont la branche unique écrivait « <source>
+    indisponible : <exception> ». Deux faits sans rapport y étaient confondus :
+
+    - la SOURCE n'a pas répondu (réseau, archive absente, ZIP corrompu) — un
+      fait sur l'Assemblée nationale, que `couverture_profil` publie en
+      `non_collecte`/`panne` ;
+    - NOTRE code a échoué — un fait sur ce dépôt, qui n'autorise à rien dire de
+      la source.
+
+    Coût mesuré de la confusion : un `TypeError` du dépôt (tri d'amendements sur
+    une date `xsi:nil`, voir `_texte_an`) a privé **99 profils publiés sur 481**
+    de tous leurs amendements, sous une preuve de couverture qui accusait l'AN
+    d'une panne — et qui n'était que le texte de l'exception.
+
+    Les deux branches restent distinguées ici, et une seule fois : le préfixe de
+    panne ne peut plus être écrit sur un défaut interne, et le message de défaut
+    interne n'est mappé vers aucune panne (`couverture_profil.MOTIFS_PANNE`).
+    Le détail technique reste dans `meta.warnings` et sur la sortie d'erreur du
+    run — jamais dans une `preuve` publiée (`schema_pivot.valider_couverture`).
+    """
+    if isinstance(exc, ERREURS_SOURCE):
+        warnings.append(f"{prefixe_panne} : {exc}")
+        return
+    traceback.print_exc()
+    warnings.append(
+        f"{WARNING_PREFIX_DEFAUT_COLLECTE} ({liste}) : {etape} a échoué sur une "
+        f"anomalie de ce dépôt ({type(exc).__name__}) — aucune source de "
+        "l'Assemblée nationale n'est en cause. Trace complète au journal de run."
+    )
 
 
 def _content_range_total(resp: "requests.Response") -> Optional[int]:
@@ -4862,7 +4928,12 @@ def build_profile(
                 profile["identite"].get("url_an_ou_senat"), warnings
             )
         except Exception as exc:
-            warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="amendements",
+                etape="fetch_amendements_officiels",
+                prefixe_panne=WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+            )
 
     # --- 8. Textes portés officiels (Assemblée nationale, rôle factuel
     # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
@@ -4873,7 +4944,12 @@ def build_profile(
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:
-            warnings.append(f"textes portés officiels (Assemblée nationale) indisponibles : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="textes_portes",
+                etape="fetch_textes_portes_officiels",
+                prefixe_panne="textes portés officiels (Assemblée nationale) indisponibles",
+            )
 
     # --- 9. Interventions : Syceron (débats officiels AN), SEULE source depuis
     # #510. Le repli NosDéputés a été retiré : il ne complétait pas la source
@@ -4900,7 +4976,12 @@ def build_profile(
                 )
         except Exception as exc:
             syceron_interventions = []
-            warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="interventions",
+                etape="fetch_interventions_syceron",
+                prefixe_panne=WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES,
+            )
         if syceron_interventions:
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
@@ -4925,7 +5006,12 @@ def build_profile(
                 profile["interventions"].extend(official_questions)
                 profile["meta"]["synchro_sources"]["assemblee_nationale_questions"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         except Exception as exc:
-            warnings.append(f"{WARNING_PREFIX_QUESTIONS_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="interventions",
+                etape="fetch_questions_officielles",
+                prefixe_panne=WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
+            )
 
     # --- 9ter. Le budget a-t-il tronqué la collecte ? (#498) Consigné en tout
     # dernier, une fois toutes les sections passées, pour que le décompte porte

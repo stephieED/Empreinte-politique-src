@@ -1358,7 +1358,16 @@ def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
 
 
 def test_build_profile_syceron_en_echec_est_declare_sans_repli():
-    """Une exception Syceron laisse la section vide, déclarée — et ne convoque personne (#510)."""
+    """Une exception Syceron laisse la section vide, déclarée — et ne convoque personne (#510).
+
+    L'échec simulé est un `requests.ConnectionError` depuis #562, et non plus un
+    `RuntimeError` : le test dit « la source n'a pas répondu », et depuis #562
+    c'est le TYPE de l'exception qui porte cette affirmation. Un `RuntimeError`
+    ne vient jamais du réseau — il est désormais lu comme un défaut de ce dépôt,
+    ce que vérifie `test_build_profile_defaut_de_code_nest_pas_une_panne_de_source`.
+    """
+    import requests
+
     with (
         patch("candidate_profile.time.sleep", return_value=None),
         patch("candidate_profile.fetch_identite_officielle_par_slug", return_value=_identite_an_resolue()),
@@ -1368,7 +1377,7 @@ def test_build_profile_syceron_en_echec_est_declare_sans_repli():
         patch("candidate_profile.fetch_amendements_officiels", return_value=[]),
         patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
         patch("candidate_profile.fetch_interventions_syceron",
-              side_effect=RuntimeError("connexion échouée")),
+              side_effect=requests.ConnectionError("connexion échouée")),
         patch("candidate_profile.fetch_questions_officielles", return_value=[]),
     ):
         profile = build_profile("deputes", "jean-dupont")
@@ -3232,6 +3241,49 @@ def test_fetch_amendements_officiels_tolere_une_date_xsi_nil_en_cache(tmp_path):
     )
 
 
+def test_build_profile_defaut_de_code_nest_pas_une_panne_de_source():
+    """#562 — un `TypeError` du dépôt ne doit plus être publié comme une
+    indisponibilité de l'Assemblée nationale.
+
+    C'est le défaut éditorial, indépendant du précédent : même le TypeError
+    corrigé, la prochaine exception repasserait par le même chemin. Le préfixe
+    de panne est réservé aux exceptions qui disent quelque chose de la source
+    (`ERREURS_SOURCE`) ; tout le reste parle de nous, et le dit."""
+    from candidate_profile import (
+        WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+        WARNING_PREFIX_DEFAUT_COLLECTE,
+    )
+
+    with (
+        patch("candidate_profile.time.sleep", return_value=None),
+        patch("candidate_profile.fetch_identite_officielle_par_slug",
+              return_value=_identite_an_resolue()),
+        patch("candidate_profile._extract_mandats_officiels", return_value=[]),
+        patch("candidate_profile.fetch_positions_hemicycle_officielles", return_value=[]),
+        patch("candidate_profile.fetch_votes_officiels", return_value=([], [])),
+        patch(
+            "candidate_profile.fetch_amendements_officiels",
+            side_effect=TypeError("'<' not supported between instances of 'dict' and 'str'"),
+        ),
+        patch("candidate_profile.fetch_textes_portes_officiels", return_value=[]),
+        patch("candidate_profile.fetch_interventions_syceron", return_value=[]),
+        patch("candidate_profile.fetch_questions_officielles", return_value=[]),
+    ):
+        raw_profile = build_profile("deputes", "jean-dupont")
+
+    warnings = raw_profile["meta"]["warnings"]
+    assert any(w.startswith(WARNING_PREFIX_DEFAUT_COLLECTE) for w in warnings), (
+        "un défaut de code doit être nommé comme tel dans meta.warnings"
+    )
+    assert not any(w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) for w in warnings), (
+        "aucune source n'était en défaut : rien n'autorise à déclarer les "
+        "amendements indisponibles côté Assemblée nationale"
+    )
+    assert "amendements" in " ".join(
+        w for w in warnings if w.startswith(WARNING_PREFIX_DEFAUT_COLLECTE)
+    ), "le warning doit nommer la liste condamnée, sinon la couverture ne peut pas le router"
+
+
 def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
     """Quand fetch_amendements_officiels échoue de façon inattendue (ex. exception
     propagée), le try/except de build_profile doit ajouter un warning
@@ -3263,6 +3315,15 @@ def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
         "Un échec de collecte des amendements officiels doit être tracé dans meta.warnings, "
         "pas avalé silencieusement"
     )
+    # #562 : le tri des deux branches se vérifie dans les DEUX sens. Une
+    # `AmendementsIndexError` dit bien que la source AN n'a pas délivré son
+    # archive — elle reste une panne, et ne doit pas basculer côté « défaut du
+    # dépôt » sous prétexte qu'on y a ajouté une branche.
+    from candidate_profile import WARNING_PREFIX_DEFAUT_COLLECTE
+
+    assert not any(
+        w.startswith(WARNING_PREFIX_DEFAUT_COLLECTE) for w in raw_profile["meta"]["warnings"]
+    ), "un échec de la source n'est pas un défaut de notre code"
 
 
 # ---------------------------------------------------------------------------

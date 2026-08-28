@@ -770,10 +770,71 @@ ETATS_COUVERTURE: frozenset[str] = frozenset({
 #: omise en silence : sans lui, une entrée `non_collecte` sans cause repasserait
 #: pour un défaut de saisie plutôt que pour ce qu'elle est, une affirmation
 #: incomplète.
+#:
+#: **Trois causes depuis #562, et pas deux.** `panne` dit « la source n'a pas
+#: répondu » : c'est une affirmation SUR L'ASSEMBLÉE NATIONALE. Y ranger un
+#: défaut de notre propre code lui impute une faute qui n'est pas la sienne —
+#: mesuré : 99 profils publiés sur 481 déclaraient une panne AN pour un
+#: `TypeError` du dépôt (tri d'amendements sur une date `xsi:nil`). D'où
+#: `defaut_collecte`, le troisième terme : la collecte n'a pas abouti, et c'est
+#: nous. Un lecteur n'a pas à savoir lequel des deux, mais le produit n'a pas le
+#: droit de se tromper de coupable.
 CAUSE_PANNE = "panne"
 CAUSE_PAR_DECISION = "par_decision"
+CAUSE_DEFAUT_COLLECTE = "defaut_collecte"
 
-CAUSES_NON_COLLECTE: frozenset[str] = frozenset({CAUSE_PANNE, CAUSE_PAR_DECISION})
+CAUSES_NON_COLLECTE: frozenset[str] = frozenset({
+    CAUSE_PANNE, CAUSE_PAR_DECISION, CAUSE_DEFAUT_COLLECTE,
+})
+
+#: Marqueurs qui trahissent qu'une `preuve` n'est pas une preuve mais le texte
+#: d'une **exception de programmation** (#562).
+#:
+#: `preuve` est le champ qui distingue une affirmation sourcée d'une affirmation
+#: nue (AGENTS.md §2.2) : il doit nommer une source, une borne d'archive ou une
+#: décision. Y recopier un message d'exception le vide de son sens tout en
+#: passant le seul contrôle qui existait — « chaîne non vide ». C'est ainsi que
+#: `'<' not supported between instances of 'dict' and 'str'` s'est retrouvé
+#: publié comme preuve sur 99 profils sur 481.
+#:
+#: La liste ne bannit PAS toute mention d'exception : une preuve de `panne` cite
+#: légitimement ce que la source a renvoyé, y compris le nom d'une erreur réseau
+#: (`ConnectionError`, `IncompleteRead`, `SSLError`…) — c'est un fait sur la
+#: source. Ce qui est refusé, ce sont les marqueurs qui ne peuvent venir que
+#: d'un **défaut de code** : ils ne disent rien de la source, seulement de nous.
+#: Vérifié sur les 3 766 entrées de couverture des 481 profils publiés au
+#: 28/08/2026 : 99 rejetées, toutes de la même famille, aucune autre.
+PREUVE_MARQUEURS_DEFAUT_CODE: tuple[str, ...] = (
+    "Traceback (most recent call last)",
+    "not supported between instances",
+    "unsupported operand type",
+    "object has no attribute",
+    "object is not subscriptable",
+    "object is not callable",
+    "object is not iterable",
+    "TypeError",
+    "AttributeError",
+    "KeyError",
+    "IndexError",
+    "NameError",
+    "UnboundLocalError",
+    "ZeroDivisionError",
+    "RecursionError",
+    "AssertionError",
+    "NotImplementedError",
+)
+
+#: `File "…", line 42` — l'autre forme, sans nom de classe.
+_PREUVE_CADRE_PYTHON = re.compile(r'File "[^"]+", line \d+')
+
+
+def marqueur_defaut_code(preuve: str) -> Optional[str]:
+    """Le marqueur d'exception trouvé dans `preuve`, ou `None` si elle est saine."""
+    for marqueur in PREUVE_MARQUEURS_DEFAUT_CODE:
+        if marqueur in preuve:
+            return marqueur
+    trouve = _PREUVE_CADRE_PYTHON.search(preuve)
+    return trouve.group(0) if trouve else None
 
 
 def valider_couverture(couverture: Any) -> list[str]:
@@ -860,6 +921,18 @@ def _valider_entree_couverture(liste: str, i: int, entree: Any) -> list[str]:
             "source, entrée de la table de correspondance ou politique nommée. "
             "Une entrée sans preuve est une affirmation sans source (§2.2)."
         )
+    else:
+        # « Chaîne non vide » ne suffit pas : c'est ce seul contrôle qui a laissé
+        # passer un message de `TypeError` comme preuve sur 99 profils (#562).
+        marqueur = marqueur_defaut_code(preuve)
+        if marqueur is not None:
+            errors.append(
+                f"{prefixe}.preuve porte un fragment d'exception de programmation "
+                f"({marqueur!r}) : {preuve!r}. Une exception n'est pas une source. "
+                "Une preuve nomme une source, une borne ou une décision ; un défaut "
+                f"de code se publie en cause '{CAUSE_DEFAUT_COLLECTE}', avec sa "
+                "trace en meta.warnings, jamais dans ce champ (§2.2)."
+            )
 
     constate_le = entree.get("constate_le")
     if not isinstance(constate_le, str):
