@@ -48,6 +48,10 @@ on:
         description: "LAST RESORT: allow commit while collected profiles have no pivot"
         type: boolean
         default: false
+      allow_publication_gaps:
+        description: "BREAK GLASS: allow commit while published lists carry less than was collected"
+        type: boolean
+        default: false
 
 # Moindre privilège (#413 §6) : `contents: read` au niveau du workflow, et
 # `contents: write` uniquement sur merge-and-pivot, seul job qui pousse. Les 6
@@ -2364,6 +2368,96 @@ jobs:
           path: |
             collecte-non-publiee.md
             collecte-non-publiee.json
+          if-no-files-found: ignore
+
+      # ── Collecté vs publié, LISTE PAR LISTE, avant commit (#545) ───────────
+      # QUATRIÈME ANGLE, et c'est pourquoi c'est un step de plus et non une
+      # option des trois précédents. Aucun des trois n'était en défaut ; c'est
+      # l'espace ENTRE eux qui n'était pas couvert :
+      #   - le contrôle de perte (#460/#470) surveille les PERTES entre une
+      #     référence git et le disque. Une publication qui *augmente* n'est pas
+      #     une perte : les deux compteurs montent, et il ne bloque pas ;
+      #   - « collecté mais non publié » (#511) vérifie qu'un profil collecté a
+      #     un pivot. Il raisonne sur des PROFILS, jamais sur le contenu de
+      #     leurs listes : un pivot présent mais vidé de ses interventions lui
+      #     est irréprochable ;
+      #   - l'intégrité référentielle (#485) vérifie qu'une clé résout. Elle ne
+      #     COMPTE rien : 891 clés qui résolvent toutes lui valent autant que
+      #     16 242.
+      # Run 33100214165 (27/08/2026), conclusion `success` : la clé de fusion
+      # pivot des interventions prenait l'URL d'archive Syceron pour un
+      # identifiant (#540). 7 767 interventions collectées, 891 publiées, les
+      # trois garde-fous verts, le commit parti. Vu à la relecture manuelle.
+      #
+      # LA TABLE DE RELATIONS EST LE CŒUR DU CONTRÔLE. Un « le pivot doit porter
+      # autant que le brut » naïf crierait à tort sur deux champs sur cinq :
+      # `dossiers_legislatifs` est RENOMMÉ en `textes_portes` (−472 et +472 pour
+      # zéro défaut) et `mandats` reçoit dans le pivot les mandats européens que
+      # le brut range sous `mandat_europeen.mandats_europeens` (+278). Chaque
+      # liste publiée déclare donc les chemins du brut dont elle est la somme —
+      # l'apport européen est une SOURCE nommée, pas une marge tolérée, et c'est
+      # ce qui permet de garder le seuil à 0 partout.
+      #
+      # ORDRE DES STEPS : après les DEUX passes `generate_all_profiles.py
+      # --pivot-only`, comme #511 et pour la même raison — entre les deux, un
+      # membre de roster est légitimement sans pivot. Vérifié par
+      # tests/test_ci_collecte_vs_publie.py.
+      #
+      # SEUIL 0, MESURÉ. Sur les 476 profils de `3104e37` (run 33110395663,
+      # premier run complet après le correctif de #540) : 0 déficit ET 0
+      # excédent sur les 2 380 couples (profil, relation). Rejoué sur l'état
+      # d'avant (`deb28a7`, mêmes 476 profils), le contrôle sort en erreur et
+      # nomme les cinq profils en déficit — gabriel-attal 3 351 → 17,
+      # marine-le-pen 2 247 → 384, jerome-guedj 1 083 → 396, laurent-wauquiez
+      # 535 → 23, bruno-retailleau 486 → 6.
+      #
+      # COÛT : 58,7 s / 158,2 Mio mesurés sur les 476 profils bruts (4,3 Go) et
+      # leurs pivots (360 Mo). Il faut LIRE les bruts — c'est ce qui distingue
+      # ce contrôle de #511, qui ne compare que des noms de fichiers — mais
+      # aucun profil n'est matérialisé : un `object_pairs_hook` ne retient que
+      # les clés de la table, ce qui ramène le plus gros profil de 186,3 à
+      # 96,0 Mio. Sous les 236 Mio actés par #460, et processus séparé des trois
+      # autres contrôles.
+      #
+      # DRAPEAU DISTINCT, comme pour #485 et #511 : aucune des trois autres
+      # tolérances ne désarme celle-ci. #470 a documenté le piège — un contrôle
+      # grossier rendu bloquant force à relancer avec la tolérance, ce qui
+      # désarme du même coup les contrôles précis.
+      - name: Collecté vs publié, liste par liste (avant commit)
+        env:
+          TOLERER: ${{ inputs.allow_publication_gaps }}
+        run: |
+          TOLERANCE=()
+          if [[ "$TOLERER" == "true" ]]; then
+            echo "::warning::tolerer_ecarts_publication=true — des entrées collectées resteront publiées nulle part. À n'employer qu'après avoir élucidé chaque écart (#545)."
+            TOLERANCE=(--tolerer-ecarts)
+          fi
+          python3 src/audit_collecte_vs_publie.py \
+            --raw-dir raw_data/profiles \
+            --pivot-dir pivot_data/profiles \
+            --out collecte-vs-publie.md \
+            --out-json collecte-vs-publie.json \
+            "${TOLERANCE[@]}" || CODE=$?
+          # Joint au résumé DANS TOUS LES CAS, même raison que les trois steps
+          # précédents : c'est en échec qu'on en a le plus besoin.
+          {
+            echo "### Collecté vs publié, liste par liste (#545)"
+            echo ""
+            cat collecte-vs-publie.md
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${CODE:-0}" -ne 0 ]]; then
+            echo "::error::ECART_COLLECTE_PUBLICATION — au moins une liste publiée (votes, amendements, interventions, textes_portes, mandats) porte MOINS d'entrées que ce que la collecte a rendu pour ce profil. La donnée est dans raw_data/profiles/ et n'atteint aucune vue : c'est le défaut de #540, où 7 767 interventions collectées n'en publiaient que 891. Commit annulé. Les profils et les deux comptes sont nommés dans le résumé de job (#545)."
+            exit 1
+          fi
+
+      - name: Rapport collecté/publié — artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: collecte-vs-publie
+          path: |
+            collecte-vs-publie.md
+            collecte-vs-publie.json
           if-no-files-found: ignore
 
       #
