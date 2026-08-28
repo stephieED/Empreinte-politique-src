@@ -343,14 +343,33 @@ plus :
         Ils archivent ce qui est atteignable AU MOMENT du passage : après la
         coupure, c'est perdu. Cet ordre n'est pas négociable.
 
-     b. Attendre que la visite soit `full`, puis VÉRIFIER que les SHA cités
-        résolvent — sans quoi l'archivage est un rituel :
-          for sha in $(git log --format=%H); do
-            curl -sf -o /dev/null \
-              "https://archive.softwareheritage.org/api/1/revision/$sha/" \
-              || echo "MANQUANT $sha"
-          done
-        (API anonyme : 120 requêtes/heure.)
+     b. VÉRIFIER que les SHA cités résolvent — sans quoi l'archivage est un
+        rituel (#551, question 4). Une commande, plus un geste (#568) :
+
+          python3 src/verifier_archivage_swh.py
+
+        Il extrait les SHA cités dans les .md suivis et les corps d'issues,
+        ne garde que ceux qui résolvent en commit, les interroge un par un et
+        NOMME les manquants avec l'endroit où chacun est cité. Il temporise
+        sur le quota anonyme (120 requêtes/heure) en le disant.
+
+        Trois verdicts, à ne pas confondre — c'est tout son intérêt :
+          VÉRIFIÉ (0)     visite \`full\`, tout résout. La coupure peut suivre.
+          MANQUANTS (1)   vrai trou d'archive : des SHA atteignables depuis
+                          une ref n'y sont pas. Relancer 2a, puis revérifier.
+          INDÉTERMINÉ (2) visite non conclue, quota épuisé, ou réseau : on n'a
+                          RIEN établi. Réessayer. Une visite en cours n'est
+                          PAS un échec d'archivage, et la traiter comme tel
+                          ferait renoncer à une coupure légitime.
+
+        Il signale à part les « citations orphelines » : des SHA atteignables
+        depuis aucune ref, venus d'une branche de PR récrite. L'origine ne les
+        a jamais servis, donc SWH n'a jamais pu les voir, et relancer 2a n'y
+        changera rien. Ils sont déjà irrésolvables pour un tiers : la coupure
+        ne leur fait rien perdre, c'est la citation qu'il faut corriger.
+
+        \`--sans-issues\` si \`gh\` n'est pas authentifié ; \`--json <fichier>\`
+        pour garder trace de ce qui a été constaté ce jour-là.
 
      c. Facultatif, pour le confort — un miroir local ADDITIF, qui rend une
         récupération immédiate là où le vault de SWH demande une cuisson :
