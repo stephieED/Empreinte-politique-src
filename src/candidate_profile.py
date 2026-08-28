@@ -572,6 +572,36 @@ def _clear_acteurs_historique_index_memo() -> None:
         _ACTEURS_HISTORIQUE_INDEX_MEMO.clear()
 
 
+def nb_acteurs_referentiel_charge() -> Optional[int]:
+    """Nombre d'acteurs AMO30 **déjà** chargés, sans jamais rien télécharger (#539).
+
+    C'est la mesure de la condition C1 : « jamais élu·e à l'Assemblée
+    nationale » n'est dérivable que d'un référentiel *prouvé chargé*. La
+    fonction rend `None` quand personne ne l'a chargé — et `None` n'est pas
+    zéro : `couverture_profil` en tire « non collecté — panne », pas « jamais
+    élu ». C'est exactement l'inversion qui a produit #484, où un échec réseau
+    a été lu comme une donnée.
+
+    Ne déclenche AUCUN téléchargement, volontairement : appelée depuis un
+    chemin `--pivot-only` ou depuis un script de migration, elle doit constater
+    l'état du cache, pas le fabriquer. Un référentiel non chargé est un fait sur
+    le run, et le run a le droit de le dire.
+    """
+    index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
+    memoise = _index_historique_memoise(index_path)
+    if isinstance(memoise, dict):
+        return len(memoise)
+    if index_path.is_file():
+        try:
+            with open(index_path, encoding="utf-8") as f:
+                index = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None
+        if isinstance(index, dict):
+            return len(index)
+    return None
+
+
 # Nomenclature officielle des types de rapport (typeRapporteur, dossiers
 # legislatifs Assemblee nationale) -> nomenclature du schema pivot.
 TYPE_RAPPORTEUR_MAP = {
@@ -4609,6 +4639,22 @@ def build_profile(
                 "assemblee_nationale_syceron": None,
             },
             "warnings": [],
+            # #539 — listes métier que CE run a délibérément écartées, et le
+            # drapeau qui l'a décidé. Écrit à la collecte parce que c'est le
+            # seul endroit qui le sache : la passe pivot de la CI est un
+            # `--pivot-only` sans drapeau (`generate-data.yml:1903`), et sans
+            # cette trace elle publierait « couvert » sur une liste que
+            # personne n'a demandée. Une liste vide par décision et une liste
+            # vide par panne sont deux faits différents (AGENTS.md §2.5) ; le
+            # premier n'est lisible que si la décision est consignée.
+            "collecte_ecartee": sorted(
+                liste
+                for liste, ecarte in (
+                    ("interventions", skip_interventions),
+                    ("textes_portes", skip_dossiers_legislatifs),
+                )
+                if ecarte
+            ),
         },
     }
 

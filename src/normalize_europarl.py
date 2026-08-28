@@ -14,7 +14,7 @@ import time
 from typing import Any, Optional
 
 from licences import appliquer_licence_donnees
-from schema_pivot import appliquer_chambres, make_empty_profil
+from schema_pivot import appliquer_chambres, make_empty_profil, poser_identifiant
 
 # Correspondance entre le type brut de l'API EP et la catégorie pivot.
 _CATEGORIE_MAP: dict[str, str] = {
@@ -79,6 +79,11 @@ def normalize_europarl(
 
     profil_id = slug if slug else f"europarl:{mep_id}"
     profil = make_empty_profil(id_=profil_id, nom=nom, provenance=provenance)
+    # #539 : l'identifiant PE est publié **nommé**, dans `identifiants`. C'est lui
+    # qui préfixait l'`id` de `jordan-bardella` (`europarl:131580`) — le seul du
+    # corpus dont l'identité portait encore une source. Le retirer de l'`id` ne
+    # coûte donc rien en traçabilité : il est ici, et il est dit.
+    poser_identifiant(profil, "europarl", mep_id)
     # `chambres`/`chambre` sont dérivées en fin de fonction, une fois `mandats[]`
     # construit (#493) : une seule fabrique pour les deux champs.
     profil["parti"] = parti

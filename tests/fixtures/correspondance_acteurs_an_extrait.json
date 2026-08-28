@@ -1,5 +1,5 @@
 {
-  "schema_version": "correspondance-acteurs-an-v1",
+  "schema_version": "correspondance-acteurs-an-v2",
   "genere_le": "2026-08-26T14:31:35+0000",
   "source_referentiel": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
   "correspondances": {

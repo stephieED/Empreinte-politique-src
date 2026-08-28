@@ -33,6 +33,7 @@ Usage :
     pivot["parti"] = "La France Insoumise"
 """
 
+import re
 import time
 from typing import Any, Optional
 
@@ -41,6 +42,7 @@ from schema_pivot import (
     SCHEMA_VERSION,
     appliquer_chambres,
     make_empty_profil,
+    poser_identifiant,
 )
 from amendements_index import cle_amendement
 from licences import appliquer_licence_donnees
@@ -93,6 +95,44 @@ def _first(*values: Any) -> Any:
     for v in values:
         if v is not None:
             return v
+    return None
+
+
+#: Identifiant d'acteur AN tel qu'il apparaît dans une URL de fiche
+#: (`.../deputes/fiche/OMC_PA1567`). Même motif que
+#: `candidate_profile._extract_acteur_ref`, recopié ici plutôt qu'importé :
+#: `normalize_profil` est volontairement découplé de la collecte et n'a aucune
+#: raison d'en tirer 4 900 lignes et ses dépendances réseau.
+_ACTEUR_REF_DANS_URL = re.compile(r"PA\d+")
+
+
+def _acteur_ref_de_l_url(url_an_ou_senat: Optional[str]) -> Optional[str]:
+    """`PA######` lu dans une URL de fiche AN, `None` si elle n'en porte pas."""
+    if not url_an_ou_senat:
+        return None
+    trouve = _ACTEUR_REF_DANS_URL.search(url_an_ou_senat)
+    return trouve.group(0) if trouve else None
+
+
+def _uri_hatvp_publiable(valeur: Any) -> Optional[str]:
+    """URI HATVP réelle, ou `None` — et surtout jamais le marqueur XML d'AMO30.
+
+    **Mesure de #539 sur les 476 profils publiés** : seuls **279** portent une
+    vraie URI dans `identite.uri_hatvp`. **186** portent
+    `{"@xmlns:xsi": "...", "@xsi:nil": "true"}` — le « pas de déclaration »
+    d'AMO30, recopié tel quel depuis le XML converti au lieu d'être lu comme un
+    `null` ; **11** sont vides. La mesure de 465 qui circulait comptait les 186
+    comme renseignés.
+
+    `identite.uri_hatvp` n'est PAS corrigé ici : ce lot le recopie, il ne
+    répare pas la collecte qui l'écrit (le défaut est dans l'extraction
+    d'identité, en amont, et sa correction réécrira 186 profils publiés — un
+    lot à part). Ce qui est corrigé, c'est ce qui est **publié** : un
+    identifiant qui ne mène nulle part ne vaut pas mieux qu'une absence, il vaut
+    moins (AGENTS.md §2 règles 2 et 5).
+    """
+    if isinstance(valeur, str) and valeur.startswith(("http://", "https://")):
+        return valeur
     return None
 
 
@@ -340,6 +380,7 @@ def normalize_profil(
     parti: Optional[str] = None,
     provenance: str = "candidat_declare",
     scrutins_index: Optional[ScrutinsIndex] = None,
+    acteur_ref: Optional[str] = None,
 ) -> dict[str, Any]:
     """Convertit un profil brut FR vers le schéma pivot v1.
 
@@ -356,6 +397,12 @@ def normalize_profil(
         provenance: "candidat_declare" (défaut) ou "roster_groupe" — voir
                     schema_pivot.KNOWN_PROVENANCES. Propagé tel quel vers
                     meta.provenance du profil pivot.
+        acteur_ref: identifiant d'acteur AN (`PA######`) issu de la table
+               committée `raw_data/correspondance_acteurs_an.json` (#525, #539).
+               Publié tel quel dans `identifiants.an`. Absent, il est relu dans
+               l'URL de fiche AN du profil brut — même fait, même source. C'est
+               ce qui fait que le `PA` cesse d'être ré-résolu par correspondance
+               de nom à chaque run : il est publié.
 
     Returns:
         Profil pivot dict conforme au schéma v1.
@@ -441,6 +488,26 @@ def normalize_profil(
     if any(v for k, v in identite_champs.items() if k != "source_url"):
         profil["identite"] = identite_champs
 
+    # --- Identifiants de source (#539) --------------------------------------
+    #
+    # Le préfixe `nosdeputes:` de l'`id` a été retiré par #487 parce qu'il était
+    # instable, mais ce qu'il portait — « d'où vient cette personne » — était une
+    # vraie information, simplement rangée au mauvais endroit. Elle vit ici,
+    # nommée par référentiel.
+    #
+    # `an` vient de la table committée quand l'appelant l'a résolue (#525) : le
+    # `PA` cesse d'être ré-résolu par correspondance de nom à chaque run, il est
+    # publié. À défaut, il est relu dans l'URL de fiche AN déjà collectée —
+    # c'est le même fait, à la même source, et ne rien écrire quand on le
+    # connaît serait une donnée perdue, pas une donnée manquante.
+    #
+    # `hatvp` est la RECOPIE de `identite.uri_hatvp`, qui reste en place : 465
+    # profils sur 476 le portent et l'interface le lit là-bas. Une seule
+    # fabrique écrit les deux, donc ils ne peuvent pas diverger.
+    poser_identifiant(profil, "an", acteur_ref or _acteur_ref_de_l_url(
+        identite.get("url_an_ou_senat")))
+    poser_identifiant(profil, "hatvp", _uri_hatvp_publiable(identite_champs["uri_hatvp"]))
+
     # --- Sections principales ---
     profil["mandats"] = [_normalize_mandat(m) for m in (raw_profile.get("mandats") or [])]
     profil["votes"] = [_normalize_vote(v, scrutins_index) for v in (raw_profile.get("votes") or [])]
@@ -491,6 +558,16 @@ def normalize_profil(
     # dans l'autre (voir `licences`).
     appliquer_licence_donnees(profil)
     profil["meta"]["warnings"] = list(meta_raw.get("warnings") or [])
+
+    # #539 — la décision de collecte suit le profil jusqu'au pivot. Écrite
+    # seulement si le brut la porte : un profil brut d'avant ce lot n'a rien
+    # décidé qu'on sache, et une liste vide écrite ici vaudrait « rien n'a été
+    # écarté », ce qui est une affirmation, pas une absence (§2.5).
+    collecte_ecartee = meta_raw.get("collecte_ecartee")
+    if isinstance(collecte_ecartee, list):
+        profil["meta"]["collecte_ecartee"] = [
+            liste for liste in collecte_ecartee if isinstance(liste, str)
+        ]
 
     # Propagation des avertissements de synchro depuis le profil brut.
     #

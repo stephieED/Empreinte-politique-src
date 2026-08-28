@@ -78,10 +78,30 @@ from typing import Any, Iterable, Optional
 import json
 import re
 
+from schema_pivot import KNOWN_IDENTIFIANTS, ORDRE_IDENTIFIANTS
+
 #: Version de schéma du fichier. Un fichier d'une autre version est refusé
 #: bruyamment plutôt que lu au mieux : la table est un artefact relu, pas un
 #: cache.
-SCHEMA_VERSION = "correspondance-acteurs-an-v1"
+SCHEMA_VERSION = "correspondance-acteurs-an-v2"
+
+#: Référentiels dont la table porte l'identifiant (#539). Même nomenclature que
+#: `schema_pivot.KNOWN_IDENTIFIANTS`, et **importée** de là : la table est ce qui
+#: alimente le bloc `identifiants` du pivot, deux listes auraient divergé.
+#:
+#: `senat` est présent et vaudra `null` partout tant qu'aucun référentiel
+#: sénatorial n'est établi (#528). C'est un trou **déclaré**, pas une colonne
+#: oubliée : la même règle que l'`acteur_ref` de Bardella, appliquée à une
+#: source entière.
+IDENTIFIANTS_CONNUS = KNOWN_IDENTIFIANTS
+
+#: Forme attendue de chaque identifiant, reprise du schéma pivot mot pour mot.
+_FORMES = {
+    "an": re.compile(r"^PA\d+$"),
+    "senat": None,
+    "europarl": re.compile(r"^\d+$"),
+    "hatvp": re.compile(r"^https?://"),
+}
 
 #: Emplacement committé de la table. Fichier de configuration, au même titre
 #: que `raw_data/groupes_reels.json` — jamais sous `raw_data/profiles/`.
@@ -135,6 +155,73 @@ def _exiger(condition: bool, message: str) -> None:
         raise CorrespondanceInvalide(message)
 
 
+def _lire_identifiants(slug: str, entree: dict[str, Any]) -> dict[str, Optional[str]]:
+    """Bloc `identifiants` complet d'une entrée, quelle que soit son écriture.
+
+    La table est **multi-sources** depuis #539 : elle porte l'identifiant de
+    chaque référentiel où la personne existe, et c'est elle qui alimente le bloc
+    `identifiants` du profil pivot.
+
+    Deux écritures sont lues, et c'est délibéré :
+
+    - `identifiants: {"an": "PA1567", …}` — la forme v2 ;
+    - `acteur_ref: "PA1567"` — la forme v1, **la même donnée sous son ancien
+      nom**. Continuer à la lire n'est pas de la complaisance : une table est un
+      artefact relu, et refuser de relire ce qu'on a écrit hier transformerait
+      un renommage de clé en perte de correspondances vérifiées à la main
+      (même arbitrage que `KNOWN_SOURCE_TYPES` dans `schema_pivot`).
+
+    Les deux ensemble sont acceptées **si et seulement si** elles disent la même
+    chose : deux valeurs divergentes seraient une table qui se contredit, et
+    rien ne dirait laquelle croire.
+    """
+    identifiants = entree.get("identifiants")
+    _exiger(
+        identifiants is None or isinstance(identifiants, dict),
+        f"{slug} : identifiants doit être un objet, reçu {type(identifiants).__name__}",
+    )
+    identifiants = dict(identifiants or {})
+
+    inconnus = sorted(set(identifiants) - IDENTIFIANTS_CONNUS)
+    _exiger(
+        not inconnus,
+        f"{slug} : référentiels inconnus dans identifiants {inconnus!r} "
+        f"(connus : {sorted(IDENTIFIANTS_CONNUS)})",
+    )
+
+    if "acteur_ref" in entree:
+        ancien = entree.get("acteur_ref")
+        if "an" in identifiants:
+            _exiger(
+                identifiants["an"] == ancien,
+                f"{slug} : identifiants.an ({identifiants['an']!r}) contredit "
+                f"acteur_ref ({ancien!r}) — la même correspondance ne peut pas "
+                "avoir deux valeurs.",
+            )
+        identifiants["an"] = ancien
+
+    complet: dict[str, Optional[str]] = {}
+    for cle in ORDRE_IDENTIFIANTS:
+        valeur = identifiants.get(cle)
+        _exiger(
+            valeur is None or isinstance(valeur, str),
+            f"{slug} : identifiants.{cle} doit être une chaîne ou null, "
+            f"reçu {type(valeur).__name__}",
+        )
+        forme = _FORMES[cle]
+        # Le message nomme l'ANCIENNE clé pour l'AN : `acteur_ref` est le nom
+        # sous lequel la table s'écrit encore, et c'est ce nom-là qu'un
+        # opérateur cherchera dans le fichier.
+        nom_lisible = "identifiants.an (acteur_ref)" if cle == "an" else f"identifiants.{cle}"
+        _exiger(
+            valeur is None or forme is None or bool(forme.match(valeur)),
+            f"{slug} : {nom_lisible} ne respecte pas la forme attendue "
+            f"({forme.pattern if forme else ''}) : {valeur!r}",
+        )
+        complet[cle] = valeur
+    return complet
+
+
 def _valider_entree(slug: str, entree: Any) -> dict[str, Any]:
     """Valide une entrée et la renvoie normalisée (tous les champs présents).
 
@@ -144,10 +231,11 @@ def _valider_entree(slug: str, entree: Any) -> dict[str, Any]:
     _exiger(isinstance(entree, dict), f"entrée non-objet pour le slug {slug!r}")
     _exiger(bool(_SLUG.match(slug)), f"slug invalide : {slug!r}")
 
-    acteur_ref = entree.get("acteur_ref")
+    identifiants = _lire_identifiants(slug, entree)
+    acteur_ref = identifiants["an"]
     _exiger(
         acteur_ref is None or (isinstance(acteur_ref, str) and bool(_ACTEUR_REF.match(acteur_ref))),
-        f"{slug} : acteur_ref doit valoir null ou 'PA<chiffres>', reçu {acteur_ref!r}",
+        f"{slug} : l'identifiant AN doit valoir null ou 'PA<chiffres>', reçu {acteur_ref!r}",
     )
 
     ecart = entree.get("ecart")
@@ -188,7 +276,12 @@ def _valider_entree(slug: str, entree: Any) -> dict[str, Any]:
     _exiger(isinstance(etat_civil, dict), f"{slug} : etat_civil absent")
 
     return {
+        # `acteur_ref` reste exposé, et vaut TOUJOURS `identifiants["an"]` : il
+        # est l'ancien nom du même champ, et une centaine d'appels le lisent.
+        # Le dériver ici, dans la seule fabrique d'entrée normalisée, garantit
+        # que les deux ne peuvent pas diverger côté lecteur (#539).
         "acteur_ref": acteur_ref,
+        "identifiants": identifiants,
         "etat_civil": etat_civil,
         "ecart": ecart,
         "motif": motif,
@@ -230,20 +323,27 @@ def charger_correspondance(chemin: Optional[Path] = None) -> dict[str, dict[str,
     _exiger(isinstance(brut, dict), f"{chemin} : clé 'correspondances' absente ou non-objet")
 
     table: dict[str, dict[str, Any]] = {}
-    par_acteur: dict[str, str] = {}
+    # Unicité par référentiel, pas seulement pour l'AN (#539) : deux slugs sur
+    # un même identifiant, ce serait deux profils publiés pour une seule
+    # personne — un doublon que rien d'autre ne relèverait. Mesuré à 0 sur les
+    # 476 profils publiés, pour les quatre référentiels.
+    # `hatvp` en est exclu : c'est une URI de déclaration, pas une clé
+    # d'identité, et rien ne garantit qu'un couple ne partage pas une page.
+    par_identifiant: dict[str, dict[str, str]] = {
+        cle: {} for cle in ("an", "senat", "europarl")
+    }
     for slug, entree in brut.items():
         valide = _valider_entree(slug, entree)
-        acteur_ref = valide["acteur_ref"]
-        if acteur_ref is not None:
-            # Deux slugs sur un même acteur, ce serait deux profils publiés
-            # pour une seule personne — un doublon que rien d'autre ne
-            # relèverait. Mesuré à 0 sur les 476 profils publiés.
+        for cle, deja_vus in par_identifiant.items():
+            valeur = valide["identifiants"][cle]
+            if valeur is None:
+                continue
             _exiger(
-                acteur_ref not in par_acteur,
-                f"{acteur_ref} est attribué à deux slugs : {par_acteur.get(acteur_ref)} "
-                f"et {slug}",
+                valeur not in deja_vus,
+                f"l'identifiant {cle}={valeur} est attribué à deux slugs : "
+                f"{deja_vus.get(valeur)} et {slug}",
             )
-            par_acteur[acteur_ref] = slug
+            deja_vus[valeur] = slug
         table[slug] = valide
 
     _MEMO[cle] = table
@@ -279,6 +379,22 @@ def resoudre_acteur_ref(
             )
         return None
     return entree["acteur_ref"]
+
+
+def resoudre_identifiants(
+    slug: str, chemin: Optional[Path] = None
+) -> dict[str, Optional[str]]:
+    """Bloc `identifiants` complet du slug (#539), toutes clés à `null` si absent.
+
+    C'est ce que le pivot publie : le `PA` cesse d'être ré-résolu par
+    correspondance de nom à chaque run, il est lu ici et écrit là-bas. Un slug
+    absent de la table rend quatre `null` — « aucun identifiant connu », jamais
+    une valeur reconstruite à la volée (AGENTS.md §2 règle 5).
+    """
+    entree = charger_correspondance(chemin).get(slug)
+    if entree is None:
+        return {cle: None for cle in ORDRE_IDENTIFIANTS}
+    return dict(entree["identifiants"])
 
 
 def est_declare_hors_an(slug: str, chemin: Optional[Path] = None) -> bool:

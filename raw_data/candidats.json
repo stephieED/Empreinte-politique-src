@@ -8,12 +8,13 @@
       "https://www.france24.com/fr/france/20260524-france-presidentielle-2027-qui-sont-les-candidats-officiellement-declares",
       "https://fr.wikipedia.org/wiki/%C3%89lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2027"
     ],
-    "avertissement": "Statuts et alliances très mouvants à ce stade (plus d'un an avant le scrutin). Vérifier chaque entrée avant usage public. slug = identifiant nosdeputes.fr/nossenateurs.fr quand le candidat y est référencé, sinon null."
+    "avertissement": "Statuts et alliances très mouvants à ce stade (plus d'un an avant le scrutin). Vérifier chaque entrée avant usage public.",
+    "regle_slug": "slug = identifiant du profil, et donc nom de son fichier (pivot_data/profiles/<slug>.pivot.json) — jamais un identifiant de source (#487, #539). Il vient de slugify(nom) et il est FABRIQUÉ UNE SEULE FOIS, à la première publication : une fois écrit ici il est immuable, jamais re-dérivé, parce que renommer un fichier publié est une suppression que audit_diff_profils bloque (#460/#470). En cas d'homonymie, suffixe numérique attribué au second (alexandra-martin / alexandra-martin-1), jamais réattribué ni recalculé. Il valait null pour cinq candidats jusqu'à #539 — l'ancienne règle le liait à la présence sur nosdeputes.fr/nossenateurs.fr, plateformes hors pipeline depuis #529, et ce null les rendait invisibles du matrix extract-an comme du manifeste de l'interface."
   },
   "candidats": [
     {
       "nom": "Nathalie Arthaud",
-      "slug": null,
+      "slug": "nathalie-arthaud",
       "parti": "Lutte Ouvrière (LO)",
       "famille_politique": "extrême gauche",
       "statut": "declare",
@@ -33,7 +34,7 @@
     },
     {
       "nom": "Marine Tondelier",
-      "slug": null,
+      "slug": "marine-tondelier",
       "parti": "Les Écologistes",
       "famille_politique": "gauche",
       "statut": "declare",
@@ -53,7 +54,7 @@
     },
     {
       "nom": "Ségolène Royal",
-      "slug": null,
+      "slug": "segolene-royal",
       "parti": "Parti Socialiste (PS)",
       "famille_politique": "gauche",
       "statut": "declare",
@@ -83,7 +84,7 @@
     },
     {
       "nom": "Xavier Bertrand",
-      "slug": null,
+      "slug": "xavier-bertrand",
       "parti": "Nous France",
       "famille_politique": "droite",
       "statut": "declare",
@@ -113,7 +114,7 @@
     },
     {
       "nom": "David Lisnard",
-      "slug": null,
+      "slug": "david-lisnard",
       "parti": "Nouvelle Énergie",
       "famille_politique": "droite",
       "statut": "declare",

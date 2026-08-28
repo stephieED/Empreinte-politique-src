@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from correspondance_acteurs_an import SCHEMA_VERSION as CORRESPONDANCE_SCHEMA_VERSION
 from check_quality_gate import (
     _AMENDEMENTS_LEGISLATURES,
     _AMENDEMENTS_LEGISLATURES_FIGEES,
@@ -236,7 +237,7 @@ def _write_correspondance(path: Path, slugs) -> None:
     }
     path.write_text(
         json.dumps({
-            "schema_version": "correspondance-acteurs-an-v1",
+            "schema_version": CORRESPONDANCE_SCHEMA_VERSION,
             "genere_le": "2026-08-26T00:00:00+0000",
             "source_referentiel": "https://data.assemblee-nationale.fr/",
             "correspondances": correspondances,
