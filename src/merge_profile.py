@@ -38,6 +38,7 @@ from candidate_profile import (
     WARNING_PREFIX_VOTES_INTROUVABLES,
     WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
+    WARNING_PREFIX_DEFAUT_COLLECTE,
 )
 from json_io import ecrire_profil_json
 from licences import appliquer_licence_donnees
@@ -158,6 +159,37 @@ def _mandat_ue_key(m: dict[str, Any]) -> Key:
     return (m.get("type"), m.get("organisation_sigle"), m.get("role"), m.get("debut"))
 
 
+#: Liste métier nommée par un warning `WARNING_PREFIX_DEFAUT_COLLECTE` (#562) ->
+#: champ(s) du profil qui la portent. Les deux schémas sont couverts :
+#: `dossiers_legislatifs` côté brut, `textes_portes` côté pivot.
+_CHAMPS_PAR_LISTE_DEFAUT_COLLECTE: dict[str, tuple[str, ...]] = {
+    "amendements": ("amendements",),
+    "interventions": ("interventions",),
+    "textes_portes": ("textes_portes", "dossiers_legislatifs"),
+    "votes": ("votes",),
+    "mandats": ("mandats",),
+}
+
+
+def _defaut_collecte_dementi_par_les_donnees(profile: dict[str, Any], warning: str) -> bool:
+    """Un défaut de collecte que la fusion a démenti (#562).
+
+    Même règle que pour « amendements indisponibles » juste en dessous, et pour
+    la même raison : la fusion additive peut avoir restauré la liste depuis le
+    fichier déjà publié. Continuer à la déclarer non collectée serait faux, et
+    `couverture_profil` publierait un `non_collecte` sur une liste pleine.
+
+    Le patron est celui du préfixe de panne, pas celui de
+    `WARNING_PREFIX_BUDGET_*` (jamais retiré) : une troncature par budget décrit
+    une liste dont le compte est incertain, un défaut de collecte décrit une
+    étape qui n'a rien rendu du tout.
+    """
+    for liste, champs in _CHAMPS_PAR_LISTE_DEFAUT_COLLECTE.items():
+        if warning.startswith(f"{WARNING_PREFIX_DEFAUT_COLLECTE} ({liste})"):
+            return any(profile.get(champ) for champ in champs)
+    return False
+
+
 def _prune_stale_warnings(profile: dict[str, Any]) -> None:
     """Retire les avertissements devenus obsolètes après fusion (ex. "votes
     introuvables" alors que les votes ont en fait été restaurés depuis
@@ -174,6 +206,8 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
         if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and profile.get("mandats"):
             continue
         if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and profile.get("amendements"):
+            continue
+        if _defaut_collecte_dementi_par_les_donnees(profile, w):
             continue
         if (
             w.startswith(WARNING_PREFIX_QUESTIONS_INDISPONIBLES)
@@ -680,6 +714,8 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if w.startswith(WARNING_PREFIX_MANDATS_INTROUVABLES) and merged.get("mandats"):
                 continue
             if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and merged.get("amendements"):
+                continue
+            if _defaut_collecte_dementi_par_les_donnees(merged, w):
                 continue
             # #493 : le warning de non-corroboration est calculé par
             # `normalize_profil` sur les seuls mandats du profil neuf. La

@@ -3,9 +3,9 @@
 couverture_profil.py — Pourquoi une liste d'un profil est vide (#539).
 
 Fabrique unique du bloc `couverture` du schéma pivot. Le vocabulaire (les
-quatre états, les deux causes, les cinq listes) vit dans `schema_pivot` avec le
-reste du contrat de structure ; ce module porte les **bornes mesurées** et la
-**dérivation**.
+quatre états, les **trois** causes depuis #562, les cinq listes) vit dans
+`schema_pivot` avec le reste du contrat de structure ; ce module porte les
+**bornes mesurées** et la **dérivation**.
 
 ## Le défaut qu'il retire
 
@@ -39,6 +39,12 @@ et « aucune correspondance officielle AN n'a été trouvée » (un constat, l. 
 Seuls les **motifs** de `MOTIFS_PANNE` ci-dessous, qui nomment une source qui
 n'a pas répondu, font basculer une liste en `non_collecte`/`panne`.
 
+Corollaire ajouté par #562 : une source en bonne santé et un code cassé sont eux
+aussi deux faits différents. `'<' not supported between instances of 'dict' and
+'str'` a été publié comme **preuve de panne** sur 99 profils sur 481, alors
+qu'aucune source n'était en défaut. `MOTIFS_DEFAUT_COLLECTE` sépare ce cas, et
+sa preuve n'est jamais recopiée d'un message d'exception : elle est construite.
+
 ## La forme à deux entrées, et pourquoi elle est la forme générale
 
 Chaque liste collectée porte **deux** entrées : ce que la source couvre, et ce
@@ -70,6 +76,7 @@ from datetime import date, timedelta
 from typing import Any, Iterable, NamedTuple, Optional
 
 from schema_pivot import (
+    CAUSE_DEFAUT_COLLECTE,
     CAUSE_PANNE,
     CAUSE_PAR_DECISION,
     ETAT_COUVERT,
@@ -264,6 +271,18 @@ MOTIFS_PANNE: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("chambre en échec", tuple(LISTES_COUVERTES)),
 )
 
+#: Motifs de `meta.warnings[]` qui nomment un défaut de CE DÉPÔT, et la liste
+#: qu'ils condamnent (#562). Dérivés de `LISTES_COUVERTES` plutôt que recopiés :
+#: deux expressions du même invariant divergent en silence.
+#:
+#: Ils sont volontairement HORS de `MOTIFS_PANNE` : la table au-dessus dit « la
+#: source n'a pas répondu », et une anomalie de notre code n'a jamais rien dit
+#: de la source. `candidate_profile._tracer_echec_collecte` écrit l'un ou
+#: l'autre, jamais les deux pour une même exception.
+MOTIFS_DEFAUT_COLLECTE: tuple[tuple[str, tuple[str, ...]], ...] = tuple(
+    (f"défaut de collecte interne ({liste})", (liste,)) for liste in LISTES_COUVERTES
+)
+
 #: Nombre d'acteurs attendus dans AMO30 (condition C1). En **dessous** de ce
 #: plancher, le référentiel n'est pas prouvé chargé et aucun « jamais élu·e » ne
 #: peut en être dérivé : l'état retombe sur `non_collecte`/`panne`. Mesuré à
@@ -426,6 +445,42 @@ def _entree(
     return entree
 
 
+def _preuve_defaut_collecte(liste: str) -> str:
+    """La preuve d'un défaut interne — **construite**, jamais recopiée.
+
+    C'est la règle qui répare #562 à la racine : le message de l'exception reste
+    dans `meta.warnings` (canal technique) et sur la sortie d'erreur du run, et
+    n'entre JAMAIS dans `preuve`. Ce que le champ publie ici est le seul fait
+    vrai et vérifiable : la collecte de cette liste n'a pas abouti, et la cause
+    est chez nous. Un lecteur y trouve ce qu'il peut en faire — ne rien conclure
+    de ce vide, et surtout rien conclure sur l'Assemblée nationale.
+    """
+    return (
+        f"défaut de collecte interne du dépôt sur « {liste} » : la collecte n'a "
+        "pas abouti pour une anomalie qui nous est propre, aucune source de "
+        "l'Assemblée nationale n'est en cause. Le détail technique est consigné "
+        "dans meta.warnings et au journal de run, pas dans ce champ (#562)."
+    )
+
+
+def _defauts_declares(warnings: Iterable[Any]) -> set[str]:
+    """Listes condamnées par un défaut de collecte interne (#562).
+
+    Renvoie les seules listes, pas les warnings : la preuve est construite
+    (`_preuve_defaut_collecte`), justement pour qu'aucun texte d'exception ne
+    puisse remonter jusqu'au champ publié.
+    """
+    defauts: set[str] = set()
+    for warning in warnings or ():
+        if not isinstance(warning, str):
+            continue
+        minuscule = warning.lower()
+        for motif, listes in MOTIFS_DEFAUT_COLLECTE:
+            if motif.lower() in minuscule:
+                defauts.update(listes)
+    return defauts
+
+
 def _pannes_declarees(warnings: Iterable[Any]) -> dict[str, str]:
     """Listes condamnées par une panne, avec le warning qui l'établit.
 
@@ -489,6 +544,7 @@ def deriver(
                 f"(meta.collecte_ecartee, #357) : {liste}",
             )
     pannes = _pannes_declarees(meta.get("warnings") or ())
+    defauts = _defauts_declares(meta.get("warnings") or ())
 
     couverture: dict[str, list[dict[str, Any]]] = {}
     for liste in LISTES_COUVERTES:
@@ -501,6 +557,18 @@ def deriver(
             couverture[liste] = [
                 _entree(ETAT_NON_COLLECTE, ecartees[liste], constate_le,
                         cause=CAUSE_PAR_DECISION)
+            ]
+            continue
+
+        # 1bis. Puis un défaut de NOTRE code, AVANT la santé de la source
+        #    (#562) : quand les deux sont signalés pour la même liste, celui
+        #    dont nous sommes sûrs est le nôtre. Publier « panne » à sa place
+        #    imputerait à l'Assemblée nationale une faute qui est la nôtre —
+        #    c'est ce qu'ont fait 99 profils sur 481.
+        if liste in defauts:
+            couverture[liste] = [
+                _entree(ETAT_NON_COLLECTE, _preuve_defaut_collecte(liste),
+                        constate_le, cause=CAUSE_DEFAUT_COLLECTE)
             ]
             continue
 

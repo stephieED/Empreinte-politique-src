@@ -43,6 +43,7 @@ import shutil
 import sys
 import threading
 import time
+import traceback
 import unicodedata
 import zipfile
 from collections import Counter
@@ -620,6 +621,15 @@ WARNING_PREFIX_IDENTITE_INTROUVABLE = "identité introuvable"
 WARNING_PREFIX_MANDATS_INTROUVABLES = "mandats introuvables"
 WARNING_PREFIX_VOTES_INTROUVABLES = "votes introuvables"
 WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES = "amendements indisponibles"
+# #562 : « la source n'a pas répondu » et « notre code a échoué » sont deux
+# faits différents, et un seul des deux parle de l'Assemblée nationale. Le
+# préfixe ci-dessus dit le premier ; celui-ci dit le second, et il est
+# volontairement DISTINCT pour que `couverture_profil` ne puisse pas le mapper
+# vers `panne` — publier « panne » sur un défaut de collecte accuse la source
+# d'une faute qui est la nôtre. Mesure qui a motivé la séparation : 99 profils
+# publiés sur 481 portaient `amendements: []` avec, pour preuve, le texte d'un
+# `TypeError` du dépôt (voir `_texte_an`).
+WARNING_PREFIX_DEFAUT_COLLECTE = "défaut de collecte interne"
 WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 # #510 : le libellé portait « (fallback nosdeputes) » tant qu'un repli existait.
 # Le repli a été RETIRÉ le 27/08/2026 : Syceron est désormais la seule source du
@@ -1337,6 +1347,28 @@ def _extract_cosignataire_refs(cosignataires_bloc: Any) -> list[str]:
     return list(dict.fromkeys(refs))
 
 
+def _texte_an(valeur: Any) -> Optional[str]:
+    """Chaîne de l'open data AN, ou `None` quand la source ne publie rien.
+
+    L'open data AN est du XML converti en JSON, et un élément vide y arrive
+    sous la forme d'un **objet**, pas d'un `null` :
+    `{"@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@xsi:nil": "true"}`. Recopié tel quel dans un enregistrement pivot, ce
+    marqueur fait passer un `dict` là où tout l'aval attend une chaîne — il ne
+    se voit pas à l'écriture, il casse à la lecture.
+
+    C'est la **troisième** fois que cet idiome mord dans ce dépôt : #539 l'a
+    trouvé dans `identite.uri_hatvp` (186 profils sur 476 portaient le marqueur
+    au lieu d'une URI, voir `normalize_profil._uri_hatvp_publiable`), et #562
+    dans `cycleDeVie.dateDepot` des amendements — 8 amendements sur les
+    624 180 des trois législatures figées, mais **99 profils publiés sur 481**
+    privés de tous leurs amendements par le `TypeError` que le tri par date en
+    tirait. Une valeur nil n'est pas une donnée : c'est une donnée manquante,
+    et le pivot l'écrit `null` (AGENTS.md §2.5).
+    """
+    return valeur if isinstance(valeur, str) and valeur else None
+
+
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
     """Extrait les enregistrements indexés par acteurRef d'un amendement brut.
 
@@ -1384,7 +1416,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
         # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
-        "texte_vise": amendement.get("texteLegislatifRef"),
+        "texte_vise": _texte_an(amendement.get("texteLegislatifRef")),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
@@ -1393,8 +1425,10 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
-        "date": cycle_de_vie.get("dateDepot"),
-        "numero": (amendement.get("identification") or {}).get("numeroLong"),
+        # `_texte_an` et pas `.get()` nu : `dateDepot` est publié `xsi:nil` par
+        # l'AN quand la date de dépôt manque, ce qui arrive en pratique (#562).
+        "date": _texte_an(cycle_de_vie.get("dateDepot")),
+        "numero": _texte_an((amendement.get("identification") or {}).get("numeroLong")),
         "source_url": None,
     }
 
@@ -1468,19 +1502,19 @@ def _parse_amendement_legacy_single(
         # seulement 22 159 `numeroLong` distincts. Meme cle que le schema
         # moderne, voir `_parse_amendement_entry`.
         "uid": amendement.get("uid"),
-        "texte_vise": texte_ref,
+        "texte_vise": _texte_an(texte_ref),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
-        "date": amendement.get("dateDepot"),
+        "date": _texte_an(amendement.get("dateDepot")),
         # `numeroLong` (ex. "7 (Rect)") est à la racine de l'amendement, pas
         # imbriqué sous `identifiant` (qui ne porte que le numéro nu "7" —
         # vérifié sur l'archive réelle le 15/08/2026 : lire depuis
         # `identifiant` ici perdait silencieusement le suffixe de
         # rectification sur tout amendement rectifié).
-        "numero": amendement.get("numeroLong") or identifiant.get("numero"),
+        "numero": _texte_an(amendement.get("numeroLong")) or _texte_an(identifiant.get("numero")),
         "source_url": None,
     }
 
@@ -1542,6 +1576,62 @@ class AmendementsIndexError(Exception):
     pour cette législature) : ne doit jamais être avalée silencieusement, pour que
     `fetch_amendements_officiels` (et le warning meta.warnings à l'appel) reflète
     l'échec au lieu d'un simple "aucun amendement"."""
+
+
+#: Exceptions qui disent « la source n'a pas répondu » — les SEULES qu'une étape
+#: de collecte a le droit de convertir en indisponibilité de source (#562).
+#: `requests.RequestException` et `TimeoutError` dérivent déjà d'`OSError`, mais
+#: sont nommées : cette liste est un contrat de lecture, pas une optimisation.
+ERREURS_SOURCE: tuple[type[BaseException], ...] = (
+    AmendementsIndexError,
+    OSError,
+    TimeoutError,
+    zipfile.BadZipFile,
+    json.JSONDecodeError,
+    requests.RequestException,
+)
+
+
+def _tracer_echec_collecte(
+    warnings: list[str],
+    exc: BaseException,
+    *,
+    liste: str,
+    etape: str,
+    prefixe_panne: str,
+) -> None:
+    """Trace l'échec d'une étape de collecte **en disant de qui est la faute**.
+
+    Avant #562, chaque étape de `build_profile` était encadrée d'un
+    `except Exception` nu dont la branche unique écrivait « <source>
+    indisponible : <exception> ». Deux faits sans rapport y étaient confondus :
+
+    - la SOURCE n'a pas répondu (réseau, archive absente, ZIP corrompu) — un
+      fait sur l'Assemblée nationale, que `couverture_profil` publie en
+      `non_collecte`/`panne` ;
+    - NOTRE code a échoué — un fait sur ce dépôt, qui n'autorise à rien dire de
+      la source.
+
+    Coût mesuré de la confusion : un `TypeError` du dépôt (tri d'amendements sur
+    une date `xsi:nil`, voir `_texte_an`) a privé **99 profils publiés sur 481**
+    de tous leurs amendements, sous une preuve de couverture qui accusait l'AN
+    d'une panne — et qui n'était que le texte de l'exception.
+
+    Les deux branches restent distinguées ici, et une seule fois : le préfixe de
+    panne ne peut plus être écrit sur un défaut interne, et le message de défaut
+    interne n'est mappé vers aucune panne (`couverture_profil.MOTIFS_PANNE`).
+    Le détail technique reste dans `meta.warnings` et sur la sortie d'erreur du
+    run — jamais dans une `preuve` publiée (`schema_pivot.valider_couverture`).
+    """
+    if isinstance(exc, ERREURS_SOURCE):
+        warnings.append(f"{prefixe_panne} : {exc}")
+        return
+    traceback.print_exc()
+    warnings.append(
+        f"{WARNING_PREFIX_DEFAUT_COLLECTE} ({liste}) : {etape} a échoué sur une "
+        f"anomalie de ce dépôt ({type(exc).__name__}) — aucune source de "
+        "l'Assemblée nationale n'est en cause. Trace complète au journal de run."
+    )
 
 
 def _content_range_total(resp: "requests.Response") -> Optional[int]:
@@ -3821,7 +3911,19 @@ def fetch_amendements_officiels(
                 )
             continue
         for record in records:
-            amendements.append({**record, "legislature": legislature})
+            # Normalisation À LA LECTURE, et pas seulement au parsing : les
+            # index des trois législatures figées sont COMMITTÉS
+            # (`AN_AMENDEMENTS_FIGEES_DIR`) et ne sont pas reconstruits par la
+            # CI — 8 d'entre eux portent déjà le marqueur `xsi:nil` en `date`,
+            # et il faudrait rejouer `build_amendements_index_figees.py` sur
+            # 350-650 Mo d'archives hors CI pour les en purger. Corriger la
+            # seule écriture laisserait donc les 99 profils de #562 cassés.
+            amendements.append({
+                **record,
+                "date": _texte_an(record.get("date")),
+                "texte_vise": _texte_an(record.get("texte_vise")),
+                "legislature": legislature,
+            })
 
     if amendements:
         titre_index = _build_texte_titre_index()
@@ -3831,6 +3933,10 @@ def fetch_amendements_officiels(
                 if titre:
                     record["texte_vise"] = titre
 
+    # Tri sûr parce que `date` vient d'être normalisée en `str | None` juste
+    # au-dessus : c'est CE tri qui levait
+    # `'<' not supported between instances of 'dict' and 'str'` sur 99 profils
+    # publiés sur 481 (#562), pour 8 amendements portant un `dateDepot` nil.
     amendements.sort(key=lambda a: a.get("date") or "", reverse=True)
     return amendements
 
@@ -4822,7 +4928,12 @@ def build_profile(
                 profile["identite"].get("url_an_ou_senat"), warnings
             )
         except Exception as exc:
-            warnings.append(f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="amendements",
+                etape="fetch_amendements_officiels",
+                prefixe_panne=WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+            )
 
     # --- 8. Textes portés officiels (Assemblée nationale, rôle factuel
     # auteur/rapporteur/co-rapporteur réel — voir fetch_textes_portes_officiels).
@@ -4833,7 +4944,12 @@ def build_profile(
         try:
             profile["dossiers_legislatifs"] = fetch_textes_portes_officiels(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:
-            warnings.append(f"textes portés officiels (Assemblée nationale) indisponibles : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="textes_portes",
+                etape="fetch_textes_portes_officiels",
+                prefixe_panne="textes portés officiels (Assemblée nationale) indisponibles",
+            )
 
     # --- 9. Interventions : Syceron (débats officiels AN), SEULE source depuis
     # #510. Le repli NosDéputés a été retiré : il ne complétait pas la source
@@ -4860,7 +4976,12 @@ def build_profile(
                 )
         except Exception as exc:
             syceron_interventions = []
-            warnings.append(f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="interventions",
+                etape="fetch_interventions_syceron",
+                prefixe_panne=WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES,
+            )
         if syceron_interventions:
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
@@ -4885,7 +5006,12 @@ def build_profile(
                 profile["interventions"].extend(official_questions)
                 profile["meta"]["synchro_sources"]["assemblee_nationale_questions"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         except Exception as exc:
-            warnings.append(f"{WARNING_PREFIX_QUESTIONS_INDISPONIBLES} : {exc}")
+            _tracer_echec_collecte(
+                warnings, exc,
+                liste="interventions",
+                etape="fetch_questions_officielles",
+                prefixe_panne=WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
+            )
 
     # --- 9ter. Le budget a-t-il tronqué la collecte ? (#498) Consigné en tout
     # dernier, une fois toutes les sections passées, pour que le décompte porte
