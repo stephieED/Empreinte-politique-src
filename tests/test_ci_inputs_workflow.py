@@ -107,10 +107,14 @@ def test_les_trois_modes_de_recollecte_se_nomment():
         "le distingue des deux autres"
     )
 
-    # Le défaut invisible, nommé là où on le lit.
-    assert "never re-collect" in desc["roster_limit"].lower(), (
-        "`roster_limit` étend la couverture sans recollecter l'existant — "
-        "c'est la lecture de « 0 = all » qui a coûté deux runs"
+    # `roster_limit` dit ce qu'il fait, sans tenter d'expliquer l'anomalie du
+    # zéro : `0` rafraîchit MOINS que `20`, parce que sans `--limit` la branche
+    # d'exemption au saut n'est pas empruntée. Aucune formulation courte ne rend
+    # ça naturel — c'est un défaut de conception, suivi par #578, et un libellé
+    # de formulaire n'est pas l'endroit où on documente un piège réductible.
+    assert "new ones first" in desc["roster_limit"].lower(), (
+        "`roster_limit` est un budget de traitement, pas une borne sur le "
+        "roster : il va d'abord aux nouveaux, puis aux profils périmés"
     )
 
 

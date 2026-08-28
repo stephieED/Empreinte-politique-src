@@ -25,7 +25,7 @@ on:
         type: boolean
         default: false
       roster_limit:
-        description: "How many roster members enter the extraction matrix. 0 = all. Extends coverage to new members only; never re-collects a profile already written."
+        description: "How many roster members this run processes: new ones first, then profiles gone stale. 0 = no cap."
         type: number
         default: 20
       collect_interventions:
