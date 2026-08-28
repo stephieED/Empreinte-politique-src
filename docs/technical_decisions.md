@@ -574,6 +574,33 @@ refs disparues en amont — exactement ce que l'archive existe pour garder. On y
 pousse le tag avant chaque coupure ; on n'y synchronise jamais. Le mot « miroir »
 suggère précisément l'inverse de ce qu'il faut faire.
 
+**État opérationnel — archivage déclenché le 28/08/2026.** La demande « Save Code
+Now » a été soumise à **14:51:37 UTC** et acceptée ; la **visite n°1** de l'origine
+`https://github.com/stephieED/Empreinte-politique-src` a été créée à **14:51:47**,
+ingestion en cours. Le filet est donc posé **avant** toute coupure — l'ordre
+inverse serait irrécupérable.
+
+Vérifier périodiquement que la visite conclut en `full` et que son `snapshot`
+n'est plus `null` :
+
+```
+curl -s "https://archive.softwareheritage.org/api/1/origin/\
+https://github.com/stephieED/Empreinte-politique-src/visit/latest/"
+```
+
+**Le renouvellement est automatique, mesuré.** Une fois l'origine connue de
+Software Heritage, elle entre dans leur planificateur. Relevé le 28/08/2026 sur
+`github.com/git/git` : **362 visites**, dont douze entre le 26/04 et le 28/08,
+soit **une tous les 11,3 jours** en moyenne, toutes en statut `full`, sans
+qu'aucune ne soit demandée. « Save Code Now » ne sert donc qu'à deux choses :
+faire entrer une origine inconnue, et forcer une visite immédiate — ce qui est
+exactement le besoin **juste avant une coupure**, où l'on ne peut pas attendre
+onze jours.
+
+Cette cadence est une **observation, pas une garantie** : elle est relevée sur un
+dépôt très actif et très référencé, et rien dans l'API n'annonce de politique de
+fréquence. À revérifier sur ce dépôt-ci une fois quelques visites accumulées.
+
 **L'ordre, non négociable** : archiver, vérifier que les SHA cités résolvent,
 **puis** couper. Software Heritage archive ce qui est atteignable au moment de
 son passage ; après la coupure, c'est perdu. L'étape 2 de la procédure
