@@ -46,10 +46,16 @@ trancher séparément produirait deux modèles concurrents pour un même problè
   hit* sur une entrée écrite alors que ces deux archives étaient injoignables ;
   `actions/cache` saute alors sa sauvegarde, et l'index reconstruit est jeté à chaque
   fin de shard. C'est #505 sous une troisième forme — la clé porte le **mode**, jamais
-  la **complétude** du contenu. Tant que ça tient, aucune paire (budget, timeout) sous
-  le plafond de 10 min ne peut à la fois tout collecter et garantir l'écriture :
-  `jean-luc-melenchon` reste tronqué, perte déclarée. À ouvrir en issue propre. Voir
-  `technical_decisions.md#budgets-extract-an-remesures-546`.
+  la **complétude** du contenu. **Corrigé dans #550** : la clé porte désormais une
+  empreinte des législatures réellement indexées (`syc15.16.17-q14.15.16.17`), et le
+  cache AN passe en `restore` sur la complétude *attendue* + `save` explicite sur la
+  complétude *atteinte* — une entrée partielle n'occupe plus la clé d'une entrée
+  complète, et une entrée de cache GitHub étant immuable, c'était la seule façon de
+  reprendre la main dans la semaine. Gain mesuré : **908 s ≈ 15 min par run** (6 des
+  7 shards porteurs ne réindexent plus). Ce que ça ne règle pas : le shard qui
+  **construit** l'index paie toujours 244 s de construction à froid et reste tronqué —
+  au plus un par semaine, contre `jean-luc-melenchon` à chaque run jusqu'ici. Voir
+  `technical_decisions.md#cache-completude-interventions-550`.
 - **`meta.warnings[]` n'est pas un détecteur fiable de troncature** pour un candidat qui
   porte aussi un profil UE (constaté sur `jean-luc-melenchon`, run `33110395663`) : la
   fusion garde les interventions d'`extract-an` et le `meta` du profil minimal écrit
