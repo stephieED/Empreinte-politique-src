@@ -37,43 +37,92 @@
 #   d'écart côté GitHub relevés le 20/08 étaient des objets DEVENUS
 #   INACCESSIBLES par des rebases et des pushs forcés — pas de l'historique.
 #
-#   Taille du dépôt selon la fenêtre (mesurée le 28/08/2026 sur un miroir de
-#   `dc3ba83` ramené à la SEULE ref `main`, gc --prune=now compris ; 28 commits
-#   de données au total, donc « 28 » = historique complet) :
+#   ⚠ IL Y A DEUX TABLES, ET ELLES RÉPONDENT À DEUX QUESTIONS DIFFÉRENTES.
+#   Les confondre est l'erreur que #551 a failli commettre.
+#
+#   ── (a) RÉTROSPECTIVE : « que gagnerais-je à resserrer AUJOURD'HUI ? » ──
+#
+#   Mesurée le 28/08/2026 sur un miroir de `dc3ba83` ramené à la SEULE ref
+#   `main`, gc --prune=now compris ; 28 commits de données, donc « 28 » =
+#   historique complet :
 #
 #     fenêtre :    0    1    2    3    4    6    8   10   12   15   20   24   27   28
 #     dépôt   :  180  194  208  219  225  312  364  394  405  430  430  433  433  434  Mo
 #
-#   ⚠ LA COURBE S'EST INVERSÉE, et c'est tout le sujet de #551.
+#   Réponse : presque rien avant 6. Passer de 28 à 15 économise 4 Mo (1 %), à
+#   10 en économise 40 (9 %), et il faut descendre à 4 pour en économiser 209
+#   (48 %).
 #
-#   La table du 20/08 SATURAIT à partir de ~10 : au-delà, les commits de
-#   données avaient été écrits quand le corpus faisait 14 à 30 profils et ne
-#   pesaient presque rien — moins de 2 % du dépôt. Sur cette base, borner à 30
-#   ne retirait RIEN : un plafond pour plus tard, pas un gain immédiat.
-#
-#   C'ÉTAIT VRAI, ÇA NE L'EST PLUS. Le corpus fait 479 profils, chaque commit
-#   de données porte 300 à 730 fichiers, et la courbe sature désormais par le
-#   BAS : passer de 28 à 15 économise 4 Mo (1 %), à 10 en économise 40 (9 %),
-#   et il faut descendre à 4 pour en économiser 209 (48 %). Autrement dit :
-#   borner à 30 — ou même à 10 — ne rend toujours presque rien, mais pour la
-#   raison INVERSE. Ce qui coûte, ce sont les commits RÉCENTS, ceux dont on a
-#   justement besoin.
-#
-#   Coût d'un commit de données (pack des objets qu'il introduit, par
-#   `git pack-objects` sur `rev-list --objects <c> --not <c>^`), les 28 commits
-#   coupés en deux moitiés de 14 :
+#   MAIS CETTE TABLE NE FONDE AUCUNE POLITIQUE. Elle sature par le bas
+#   uniquement parce que sa QUEUE est faite de commits écrits en phase de
+#   développement, quand le corpus faisait 8 à 48 profils. Ce n'est pas une
+#   propriété de la fenêtre, c'est une trace de l'histoire du projet — et ces
+#   commits-là ne reviendront pas. Le coût d'un commit de données, en packs
+#   isolés (`pack-objects` sur `rev-list --objects <c> --not <c>^`) :
 #
 #                                                médiane  moyenne   min   max
 #     14 plus anciens (01→17/08,   8→48 profils)     1,6      1,5   0,2   2,6  Mo
 #     14 plus récents (18→27/08, 129→476 profils)   29,3     34,6   0,1  78,6  Mo
 #
-#   Facteur 18 sur la médiane, À L'INTÉRIEUR du même historique. La fenêtre en
-#   COMMITS a donc cessé d'être une fenêtre en OCTETS.
+#   (La table du 20/08, elle, saturait par le HAUT — queue ET tête bon marché.
+#   D'où le « borner à 30 ne retire RIEN » qui figurait ici. C'était vrai ;
+#   ça ne le sera plus.)
+#
+#   ── (b) PROSPECTIVE : « quel PLATEAU la fenêtre pose-t-elle ? » ──────────
+#
+#   C'est celle-ci qui fonde une politique. En régime permanent, les N commits
+#   de la fenêtre coûtent tous le même prix : la courbe devient LINÉAIRE,
+#   socle + N × coût marginal, et la fenêtre est le SEUL mécanisme qui borne
+#   la croissance.
+#
+#   Coût marginal RÉEL d'un commit conservé, mesuré le 28/08/2026 en empilant
+#   les arbres du plus récent vers le plus ancien et en repackant à chaque
+#   étape — le seul bloc en régime de production (476 → 481 profils) :
+#
+#     socle : arbre complet à f5e20b6 (481 profils) ..... 153,6 Mo
+#     + e87490c ......................................... + 9,9 Mo
+#     + 74c77c2 ......................................... +15,1 Mo
+#     + bf063f2 ......................................... +15,3 Mo
+#     + de23b62 (729 fichiers) .......................... +15,2 Mo
+#
+#   Soit 10 à 15 Mo par commit — et NON les 22 à 79 Mo des packs isolés, qui
+#   ne peuvent pas se déltifier contre les arbres voisins et surestiment d'un
+#   facteur 2 à 5. Projeter sur eux DOUBLERAIT le plateau.
+#
+#   Ce qui compte est le contenu RÉELLEMENT nouveau, pas le nombre de fichiers
+#   réécrits. Deux vérifications : `de23b62` réécrit 729 fichiers — tout le
+#   corpus — et ne coûte que 15,2 Mo ; `e4d71cf`, l'une des deux propagations
+#   `--no-merge` que #434 disait « structurellement exceptionnelles » et qui
+#   pèse 47 Mo en pack isolé, ne coûte que 7,7 Mo en marginal. Une propagation
+#   ne crée pas de contenu, elle le recopie, et git le sait.
+#
+#   Le marginal suit la taille du corpus, un peu moins que proportionnellement :
+#   7,7 Mo à 209 profils, 11,5 à 229, ~15,2 à 476 — le corpus fait × 2,28, le
+#   marginal × 1,97. C'est ce qui autorise l'extrapolation ci-dessous.
+#
+#   Plateau posé par la fenêtre (socle 180 Mo + N × marginal) :
+#
+#     fenêtre :          4    10    15    20    30
+#     bas     (10,4) : 222   284   336   388   492  Mo
+#     central (14,4) : 238   324   396   468   612  Mo
+#     haut    (16,0) : 244   340   420   500   660  Mo
+#
+#   À 30, le plateau vaut donc 490 à 660 Mo à 479 profils : marge × 3,3 contre
+#   les 2 Go du critère de sortie de #429, là où le dépôt d'aujourd'hui est
+#   à × 4,7. Extrapolé à 752 membres (facteur 1,58 de #429), 780 à 1 040 Mo,
+#   soit × 2,0 à × 2,6. C'est LÀ que le choix de la fenêtre se joue.
 #
 #   Et le défaut de 30 ne vient PAS d'un budget en octets : #434 l'a tiré d'une
 #   règle de latence — « cadence de pointe × période sans surveillance »,
 #   4 commits/jour × 7 jours = 28, arrondi à 30 — pour qu'une semaine d'absence
-#   reste réparable. La règle est intacte ; c'est son PRIX qui a changé.
+#   reste réparable. La règle est intacte ; c'est son PRIX qui a changé, et il
+#   ne se lit que sur la table (b).
+#
+#   Le besoin forensique, lui, s'exprime en JOURS : les 42 SHA de commits cités
+#   dans les .md suivis et les corps d'issues s'étalent du 12 au 28/08/2026,
+#   seize jours. La fenêtre, elle, se compte en COMMITS. Le facteur de
+#   conversion est la cadence — c'est-à-dire exactement la règle de #434.
+#
 #   L'arbitrage (valeur, unité, déclenchement, destination de l'archive) est
 #   ouvert et n'est PAS rendu ici :
 #   voir docs/technical_decisions.md#fenetre-recalibrage-551.
