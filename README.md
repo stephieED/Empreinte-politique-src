@@ -49,6 +49,7 @@ CV_CandidatFR/
 |  |- audit_pipeline.py              # Manual tool: runs both audits above and compiles an overview + combined JSON/Markdown report
 |  |- audit_integrite_referentielle.py # Pre-commit guard: every published key resolves in its shared index (#485)
 |  |- audit_collecte_non_publiee.py  # Pre-commit guard: every collected raw profile has its pivot (#511)
+|  |- audit_collecte_vs_publie.py    # Pre-commit guard: each published list carries what collection returned, per declared relation (#545)
 |  |- schema_pivot.py                # Pivot schema v1 - common format across all sources
 |  |- schema_groupe.py               # Group profile schema v1 (structure contract)
 |  |- schema_parti.py                # Party profile schema v1
@@ -367,6 +368,35 @@ mesuré : 0 écart sur les 12 commits de run du 16 au 20/08/2026, pendant que le
 corpus passait de 48 à 209 profils. Le contrôle ne parse aucun profil (deux
 listes de noms de fichiers) : 0,08 s / 13,9 Mio mesurés à 752 profils. Voir
 `docs/technical_decisions.md#collecte-non-publiee`.
+
+### Vérifier que chaque liste publiée porte ce qui a été collecté (#545)
+
+Quatrième angle : #511 raisonne sur des **profils**, jamais sur le contenu de
+leurs listes. Un pivot présent mais vidé de ses interventions lui est
+irréprochable — c'est ce qui a laissé passer #540, 7 767 interventions
+collectées et 891 publiées, run vert.
+
+```bash
+python3 src/audit_collecte_vs_publie.py
+python3 src/audit_collecte_vs_publie.py --out audit/collecte-vs-publie.md --out-json audit/collecte-vs-publie.json
+```
+
+Le contrôle applique une **table de relations** committée (`RELATIONS`), une
+entrée par liste métier, parce qu'un « le pivot doit porter autant que le brut »
+naïf crierait à tort sur deux champs sur cinq : `dossiers_legislatifs` est
+**renommé** en `textes_portes`, et `mandats` reçoit dans le pivot les mandats
+européens que le brut range sous `mandat_europeen.mandats_europeens`. Chaque
+liste publiée déclare donc les chemins du brut dont elle est la **somme** — un
+apport nommé, jamais une marge — d'où un seuil **0** partout.
+
+Sortie non nulle dès qu'une liste publiée porte **moins** que ses sources
+collectées ; l'excédent et les listes collectées sans relation déclarée sont
+rapportés sans bloquer. Branché avant commit dans `merge-and-pivot`, après les
+deux passes de normalisation pivot. Mesuré : 0 déficit sur les 2 380 couples
+(profil, relation) de `3104e37` ; rejoué sur `deb28a7`, il sort en erreur et
+nomme les cinq profils en déficit. 58,7 s / 158,2 Mio sur les 4,3 Go de profils
+bruts — aucun profil n'est matérialisé. Voir
+`docs/technical_decisions.md#collecte-vs-publie-545`.
 
 ## 3. Generate all candidate profiles (batch)
 
