@@ -1,3 +1,95 @@
+<a id="critere-sortie-volumetrie-429"></a>
+## Le critère de sortie de l'épic volumétrie était écrit sur la mauvaise grandeur (#429) (2026-08-28)
+
+L'épic #429 portait ce critère :
+
+> « Profils versionnés **sous 500 Mo à 752 membres** »
+
+Il est écrit sur ①, l'**arbre de travail** — ce que `du -sh` rend. Or aucune limite
+GitHub ne porte là-dessus. C'est ce qui a fait recadrer l'épic quatre fois : elle a
+confondu des grandeurs différentes jusqu'à finir par les nommer.
+
+| # | Grandeur | Comparée à |
+| --- | --- | --- |
+| ① | Arbre de travail | **rien chez GitHub** — ni quota ni limite |
+| ② | Dépôt après `gc --prune=now` | les 5 Go recommandés |
+| ③ | `size` annoncé par l'API GitHub | indicatif — porte les résidus non ramassés |
+| ④ | Coût d'un push — le pack réellement transmis | la limite de 2 Go par push |
+| ⑤ | Coût par run — ce qu'un commit de données ajoute | la vitesse à laquelle ② et ③ montent |
+
+### La décision
+
+**Le critère est récrit sur ② et ④**, les deux grandeurs que les seuils protègent :
+
+> **Dépôt sous 2 Go après `gc --prune=now`** · **push complet sous 1 Go** ·
+> **aucun blob au-dessus de 50 Mo** · **mapping membre → vote / rôle / mandat
+> intégralement préservé**.
+
+L'alternative — garder le critère et ouvrir une suite sur l'ergonomie du checkout —
+a été écartée : elle aurait laissé #192 porter un blocage que la mesure a levé.
+Le sujet du checkout est réel mais distinct, et il est suivi par #553.
+
+### Mesuré le 28/08/2026, à 476 profils
+
+La dernière mesure de l'épic datait de **209 profils** ; ces chiffres sont pris sur
+la population du jour, pas reportés de l'ancienne. Méthode : ② sur un
+`git clone --mirror --no-hardlinks` dans un temporaire suivi d'un `gc --prune=now`,
+comme #434 ; ④ par `git pack-objects` sur les blobs exacts du HEAD. Aucun `gc` sur
+le dépôt de travail.
+
+| Clause | 209 (20/08) | **476 (28/08)** | Seuil | Marge | |
+| --- | ---: | ---: | --- | ---: | --- |
+| ② dépôt après `gc` | 294 Mo | **415 Mo** | 2 Go | × 4,9 | ✅ |
+| ④ push complet | 44,3 Mo | **110,5 Mo** | 1 Go | × 9,0 | ✅ |
+| plus gros blob | 49,8 Mo | **38,6 Mo** (`pivot_data/amendements/15.json`) | 50 Mo | × 1,3 | ✅ |
+| mapping préservé | — | aucune suppression de champ (#431, #432) | — | — | ✅ |
+
+Pour mémoire, ① — la grandeur du critère d'origine — vaut **~4,85 Go**
+(`raw_data/profiles` 4 321 Mo, `pivot_data/profiles` 359 Mo,
+`pivot_data/amendements` 182 Mo, `pivot_data/scrutins.json` 8,3 Mo).
+
+### Deux prédictions de l'épic, vérifiées par cette mesure
+
+**La saturation de l'index partagé.** `pivot_data/scrutins.json` devait plafonner
+(× 1,013 de 209 à 752). Il fait **8,3 Mo** à 476 profils — exactement la valeur
+projetée à 752. Un index partagé cesse de grandir quand la population couvre déjà
+tous les objets.
+
+**Le taux de compression ne se dégrade pas avec l'effectif, il s'améliore** :
+`raw_data/profiles` × 46,2 à 209 profils, **× 52,1** à 476 ; `pivot_data/profiles`
+× 17,6 → × 19,8 ; `pivot_data/amendements` × 19,7 → × 19,3. Chaque amendement est
+recopié chez davantage de signataires, donc se déltifie mieux. Conséquence : la
+projection de ④ à 752 tient — ~172 Mo annoncés par l'épic, ~175 Mo extrapolés
+depuis les 110,5 Mo mesurés.
+
+### La réserve, sur la seule clause qui puisse basculer
+
+« Aucun blob au-dessus de 50 Mo » ne dépend **pas du nombre de profils** : le plus
+gros blob est un index d'amendements, et les index des XIV<sup>e</sup>,
+XV<sup>e</sup> et XVI<sup>e</sup> ne couvrent que **19,5 %, 30,7 % et 29,5 %** des
+archives figées. À couverture complète, l'épic chiffrait ce blob à **74,9 Mo** —
+sous la limite dure de 100 Mo, qui est le seul garde-fou GitHub faisant échouer un
+push, mais au-dessus du seuil qu'on s'est donné.
+
+Le critère est donc un **fil de détente**, pas une formalité satisfaite d'avance.
+C'est ce qui justifie de le garder plutôt que de l'aligner sur la limite dure.
+
+### Ce qui reste, et qui n'est pas un quota
+
+- **Le temps de checkout CI.** ~4,85 Go d'arbre de travail, c'est le seul coût réel,
+  et le remède est écrit : option A de #434 (`--filter=blob:none --sparse`), ce que
+  `tests.yml` fait déjà depuis #473. Suivi par #553.
+- **La rétention.** Un commit de données coûtait 12,2 Mo à 209 profils, il en coûte
+  **22 à 76** aujourd'hui, et il reste deux commits avant que la fenêtre de 30
+  de #434 morde. Suivi par #551.
+
+Ni l'un ni l'autre n'est une limite GitHub. Le budget d'exécution à pleine échelle,
+lui, **a été mesuré** — 54,9 min contre 630 annoncées, voir
+[#budget-execution-pleine-echelle-467](#budget-execution-pleine-echelle-467) : ne pas
+le redire « projeté ».
+
+---
+
 <a id="cache-completude-interventions-550"></a>
 ## La clé de cache AN porte la COMPLÉTUDE, et la sauvegarde devient explicite (#550) (2026-08-28)
 
