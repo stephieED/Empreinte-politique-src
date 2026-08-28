@@ -82,6 +82,52 @@ def test_la_fenetre_est_lue_jamais_recopiee():
     )
 
 
+def test_la_detection_approfondit_avant_de_compter():
+    """Le défaut qui a rendu la détection inopérante à son premier run (#551).
+
+    `actions/checkout` cloue l'historique à un commit ; `merge-and-pivot` ne
+    demande pas d'autre profondeur. Sans approfondissement, `git log --grep` ne
+    voit que le commit de données que le job vient d'écrire : le compteur rendait
+    **1** et le step annonçait « non contraignante » alors que la fenêtre était
+    pleine à 30 sur 30. Constaté sur le run 33185097538 du 28/08/2026.
+
+    Un step qui tourne et ne voit rien est pire qu'un step absent : il a l'air
+    de marcher.
+    """
+    step = _sans_commentaires(_step_detection())
+    assert "git fetch" in step and "--deepen=" in step, (
+        "le step compte sur un historique superficiel : le compteur ne pourra "
+        "jamais atteindre la fenêtre"
+    )
+    assert step.index("--deepen=") < step.index("git log --grep"), (
+        "l'approfondissement doit précéder le comptage"
+    )
+
+
+def test_l_approfondissement_depasse_la_fenetre():
+    """Approfondir de moins que la fenêtre rendrait le défaut le jour où la
+    fenêtre grandit — et il repasserait inaperçu, puisque le compteur
+    continuerait de rendre un nombre plausible."""
+    step = _sans_commentaires(_step_detection())
+    motif = re.search(r"--deepen=\$\(\(\s*FENETRE\s*\+\s*(\d+)\s*\)\)", step)
+    assert motif, (
+        "la profondeur doit être dérivée de FENETRE, jamais un nombre en dur : "
+        "un littéral se désynchroniserait de la fenêtre sans que rien ne le dise"
+    )
+    assert int(motif.group(1)) > 0, "la profondeur doit dépasser la fenêtre"
+
+
+def test_l_approfondissement_ne_tire_pas_les_blobs():
+    """Le corpus pèse 4,85 Go. Approfondir avec les blobs coûterait ~600 Mo pour
+    ne lire que des sujets de commit — et transformerait un compteur en poste de
+    coût, ce que #551 a explicitement refusé pour `--mesurer`."""
+    step = _sans_commentaires(_step_detection())
+    assert "--filter=blob:none" in step, (
+        "l'approfondissement doit être sans blobs : on veut le graphe, pas le "
+        "contenu"
+    )
+
+
 def test_la_detection_publie_dans_le_resume_de_run():
     """« Rendre le franchissement visible là où on regarde » : une annotation de
     plus se noie, le résumé de run non."""

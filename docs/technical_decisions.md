@@ -432,9 +432,39 @@ et vérifiée mordante par mutation :
 il renvoie à cette entrée. Une procédure irréversible écrite à deux endroits
 diverge, et c'est la version la moins relue qu'on suit sous pression.
 
-État au moment de l'armement : **29 commits de données pour une fenêtre de 30** —
-le step émet donc un `::notice::` dès son premier run, et un `::warning::` au
-suivant.
+État au moment de l'armement : **29 commits de données pour une fenêtre de 30**.
+
+**Correction du 28/08/2026, même jour — le step tournait et ne voyait rien.** Au
+run `33185097538`, il a affiché « Commits de données dans l'historique : **1** »
+et conclu « non contraignante », alors que la fenêtre était pleine à 30 sur 30.
+
+`actions/checkout` cloue l'historique à un commit (`fetch-depth: 1` par défaut)
+et `merge-and-pivot` ne demande rien d'autre : `git log --grep` ne voyait que le
+commit de données que le job venait d'écrire. Le compteur rendait donc toujours
+0 ou 1, **l'alerte ne pouvait jamais se déclencher**.
+
+C'est la faute reprochée à #434 — « le code existe, mais rien ne le lance » —
+remplacée par une pire : **il tourne et ne voit rien**, ce qui a l'air de
+marcher. Aucun des six tests ne pouvait l'attraper : ils vérifiaient que le step
+existe, qu'il lit la constante, qu'il n'écrit pas la valeur en dur. Le défaut
+était dans l'**environnement d'exécution**, pas dans le script.
+
+Corrigé par un approfondissement **sans blobs** avant le comptage :
+
+```
+git fetch --quiet --filter=blob:none --deepen=$(( FENETRE + 10 )) origin
+```
+
+`--filter=blob:none` n'est pas une optimisation : le corpus pèse 4,85 Go, et
+approfondir avec les blobs coûterait ~600 Mo pour ne lire que des sujets de
+commit. Ce serait transformer un compteur en poste de coût — exactement ce que
+la question 2 refusait pour `--mesurer`.
+
+Trois tests neufs verrouillent la correction, vérifiés mordants : approfondissement
+retiré → 3 échecs, profondeur écrite en dur → 1, filtre de blobs retiré → 1. Le
+deuxième compte autant que le premier : une profondeur littérale se
+désynchroniserait de la fenêtre le jour où celle-ci grandit, et le compteur
+continuerait de rendre un nombre plausible.
 
 ---
 
