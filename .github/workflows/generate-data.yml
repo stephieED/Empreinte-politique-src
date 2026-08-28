@@ -441,16 +441,26 @@ jobs:
     # (3) un tel gel coûte 10 min au lieu de 20+, et 80 min au pire pour les
     # 8 shards en série au lieu de 72.
     #
-    # CE QUE CE CALIBRAGE NE RÈGLE PAS. 113-219 s par shard partent à réindexer
-    # les législatures Syceron 15 et 16 — le MÊME travail, refait par les 7 shards
-    # porteurs, parce que la clé `public-data-cache-an-*-interv` a fait un exact
-    # key hit sur une entrée écrite au run 33100214165 alors que ces deux archives
-    # étaient injoignables : `actions/cache` saute alors sa sauvegarde, et l'index
-    # reconstruit est jeté à chaque fin de shard. C'est #505 sous une troisième
-    # forme — la clé porte le mode, pas la complétude du contenu. Tant qu'elle
-    # tient, aucune paire (budget, timeout) sous le plafond de 10 min ne peut à la
-    # fois tout collecter et garantir l'écriture : jean-luc-melenchon demande
-    # >= 340 s d'horloge de collecte, donc un timeout >= 11,3 min.
+    # CE QUE CE CALIBRAGE NE RÉGLAIT PAS, ET CE QUE #550 A CORRIGÉ. 113-219 s
+    # par shard partaient à réindexer les législatures Syceron 15 et 16 — le
+    # MÊME travail, refait par les 7 shards porteurs, parce que la clé
+    # `public-data-cache-an-*-interv` faisait un exact key hit sur une entrée
+    # écrite au run 33100214165 alors que ces deux archives étaient
+    # injoignables : `actions/cache` saute alors sa sauvegarde, et l'index
+    # reconstruit était jeté à chaque fin de shard. C'était #505 sous une
+    # troisième forme — la clé portait le mode, pas la complétude du contenu.
+    # #550 a ajouté cette dimension à la clé et rendu la sauvegarde explicite.
+    #
+    # CE QUI RESTE VRAI TANT QU'UN RUN RÉEL N'A PAS TRANCHÉ. Le shard qui
+    # CONSTRUIT l'index le paie toujours en entier — 42 s pour la 17e (mesuré
+    # run 33100214165), 55 s pour la 16e, 147 s pour la 15e (mesuré run
+    # 33110395663) : environ 244 s, soit la quasi-totalité du budget de 250 s.
+    # Ce shard-là sortira tronqué. Les six suivants, eux, n'ont plus rien à
+    # réindexer, et leurs horloges de collecte tombent à 39-87 s (mesurées :
+    # 166-247 s dont 127-205 s de réindexation). C'est le premier shard, et non
+    # `jean-luc-melenchon` en particulier, qui porte désormais la troncature —
+    # sauf si l'index de la semaine est déjà complet à son démarrage, auquel cas
+    # les SEPT profils tiennent dans le budget actuel.
     #
     # Toute modification de ces valeurs doit rester cohérente avec le budget du
     # step d'extraction et avec le message de temps mur de prepare-an-matrix —
@@ -502,6 +512,26 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # #550 : L'EMPREINTE DE COMPLÉTUDE ATTENDUE, seconde dimension de la clé.
+      # Elle dit quelles législatures d'index un cache COMPLET porte, et elle
+      # est DÉRIVÉE des constantes du code (`SYCERON_AVAILABLE_LEGISLATURES`,
+      # `AN_QUESTIONS_PATH`), jamais recopiée ici : recopiée, elle deviendrait
+      # fausse à l'ouverture de la 18e législature et l'entrée complète ne
+      # serait plus jamais atteinte. Voir src/cache_an_empreinte.py et
+      # docs/technical_decisions.md#cache-completude-interventions-550.
+      #
+      # Calculée dans les DEUX modes : en mode par défaut son résultat n'entre
+      # pas dans la clé (le contenu concerné n'y est pas produit), mais le step
+      # de sauvegarde a besoin d'une sortie non vide pour distinguer « rien à
+      # sauvegarder » de « le calcul a échoué ».
+      - name: Empreinte de complétude attendue (clé de cache AN, #550)
+        id: empreinte_attendue
+        if: ${{ !inputs.cold_start }}
+        run: |
+          EMPREINTE=$(python3 src/cache_an_empreinte.py --attendue)
+          echo "empreinte=$EMPREINTE" >> "$GITHUB_OUTPUT"
+          echo "Complétude visée pour le cache d'interventions AN : $EMPREINTE"
+
       # cold_start=true  → pas de restore (on repart de zéro).
       # cold_start=false → restore du cache AN ; réduit les requêtes NosDéputés.
       # Clé partagée entre les shards de ce job et extract-roster-groupes, qui
@@ -552,7 +582,35 @@ jobs:
       # (1 664,8 Mio d'index sur disque, avant compression) face au quota de
       # 10 Go du dépôt. Si elle le sature, c'est la mise en cache de l'index
       # Syceron qu'il faut trancher — pas le contenu de l'index.
-      - uses: actions/cache@v5
+      # MESURÉ le 28/08 : l'entrée du 27/08 pèse 114 481 867 o et le dépôt en
+      # utilise 826 173 608 au total, 13 entrées comprises. Le quota n'est donc
+      # pas la contrainte active. Restent à mesurer le poids d'une entrée
+      # COMPLÈTE (les trois législatures Syceron, pas une seule) et le nombre
+      # d'entrées par semaine, que #550 fait passer de 1 à une par état de
+      # complétude réellement atteint.
+      #
+      # LA CLÉ PORTE AUSSI LA COMPLÉTUDE (#550). Le mode y était depuis #505,
+      # mais rien n'y disait ce que l'entrée CONTIENT : le 27/08, deux archives
+      # Syceron et deux archives de questions étant injoignables, ce job a
+      # sauvegardé sous la clé du mode une entrée qui ne portait que la 17e
+      # législature de débats et les 16e/17e de questions. Le run suivant a fait
+      # un *exact key hit* dessus, `actions/cache` a sauté sa sauvegarde, et les
+      # 7 shards porteurs ont réindexé les 15e et 16e pour rien — 113 à 219 s
+      # chacun. Le suffixe d'empreinte fait qu'une entrée partielle ne percute
+      # plus une entrée complète.
+      #
+      # RESTAURATION SEULE ici, sauvegarde EXPLICITE en fin de job : les deux
+      # clés diffèrent (visée / atteinte), ce qu'un `actions/cache` combiné ne
+      # sait pas exprimer — il ne connaît qu'une clé, et une entrée de cache
+      # GitHub est immuable, donc la clé fautive de la semaine ne pourrait pas
+      # être réécrite même en sauvegardant explicitement sous la même.
+      #
+      # `restore-keys` : la semaine + le mode d'abord (la meilleure entrée du
+      # jour, y compris une partielle laissée par un shard précédent), puis le
+      # repli historique. En mode par défaut la première ligne est vide et
+      # `actions/cache` l'ignore — la liste redevient celle d'avant #550.
+      - uses: actions/cache/restore@v5
+        id: cache_an
         if: ${{ !inputs.cold_start }}
         with:
           path: |
@@ -560,8 +618,9 @@ jobs:
             .cache/scrutins_an
             .cache/questions_an/*/index_par_acteur.json
             .cache/syceron_an/*/index_par_acteur
-          key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && '-interv' || '' }}
+          key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && format('-interv-{0}', steps.empreinte_attendue.outputs.empreinte) || '' }}
           restore-keys: |
+            ${{ inputs.collect_interventions && format('public-data-cache-an-{0}-interv', steps.week.outputs.week) || '' }}
             public-data-cache-an-
 
       # Clé DÉDIÉE aux dossiers législatifs (#427), séparée de la clé AN.
@@ -698,9 +757,12 @@ jobs:
           # d'horloge, donc un timeout >= 11,3 min, au-delà du plafond de 10 min
           # que le gel de 20+ min du 16/08 a posé. La perte reste DÉCLARÉE.
           # Et jerome-guedj ne passe qu'à 3 s près : ce n'est pas une garantie,
-          # c'est un profil de plus ce jour-là. Ce qui la donnerait est la
-          # réparation du cache Syceron, pas un budget plus grand (cf. le même
-          # commentaire).
+          # c'est un profil de plus ce jour-là. Ce qui la donne est la réparation
+          # du cache Syceron, pas un budget plus grand — c'est ce que #550 a
+          # fait : les 113-219 s de réindexation ne sont plus payées que par le
+          # shard qui construit l'index, pas par les sept. La valeur de 250 s
+          # n'est PAS retouchée ici : elle a été posée sur des horloges mesurées
+          # avant #550, et les remesurer demande un run réel.
           #
           # Doit rester cohérent avec le `timeout-minutes` de ce job (vérifié par
           # tests/test_ci_budget_interventions.py).
@@ -744,6 +806,64 @@ jobs:
           name: raw-profiles-an-${{ matrix.slug }}
           path: _publish/profiles/
           if-no-files-found: warn
+
+      # #550 : la complétude ATTEINTE par ce shard, mesurée sur le disque —
+      # exactement les fichiers que le `path:` ci-dessous capture, pas ce que le
+      # code croit avoir écrit. C'est elle qui nomme l'entrée sauvegardée.
+      #
+      # `!cancelled()` et non `success()` : une extraction en échec ou tronquée
+      # par son budget laisse quand même sur le disque les index qu'elle a eu le
+      # temps de construire, et ce sont eux que les shards suivants n'auront pas
+      # à reconstruire. Ce qui serait faux, c'est de les faire passer pour
+      # complets — et c'est l'empreinte qui l'interdit, pas cette condition.
+      - name: Complétude atteinte par ce shard (clé de sauvegarde, #550)
+        id: empreinte_obtenue
+        if: ${{ !cancelled() && !inputs.cold_start }}
+        run: |
+          EMPREINTE=$(python3 src/cache_an_empreinte.py --disque)
+          echo "empreinte=$EMPREINTE" >> "$GITHUB_OUTPUT"
+          echo "Complétude atteinte : $EMPREINTE (visée : ${{ steps.empreinte_attendue.outputs.empreinte }})"
+
+      # SAUVEGARDE EXPLICITE (#550). Trois choses la gouvernent :
+      #
+      # 1. PLACÉE APRÈS LA PUBLICATION DU PROFIL, délibérément. Elle est le
+      #    dernier poste du job et le seul qui puisse s'étirer (5,2 s mesurées
+      #    le 27/08 pour 114 Mo ; une entrée complète, plus lourde, reste à
+      #    mesurer). Si le `timeout-minutes` du job la coupe, ce qui est perdu
+      #    est une entrée de cache — jamais le profil, déjà écrit et uploadé.
+      #    Même raison pour `continue-on-error: true` : un échec de sauvegarde
+      #    ne doit pas marquer en échec un shard qui a livré ses données.
+      #
+      # 2. LA CLÉ PORTE L'EMPREINTE OBTENUE, pas l'attendue. Un shard qui n'a pu
+      #    indexer que deux législatures sur trois sauvegarde sous une clé qui
+      #    le dit ; le shard suivant la restaure par `restore-keys`, complète la
+      #    troisième et sauvegarde sous la clé complète. La semaine se réchauffe
+      #    de proche en proche au lieu de se figer sur son premier échec.
+      #
+      # 3. NE SAUVEGARDE PAS SI RIEN N'A CHANGÉ. La condition compare la clé
+      #    restaurée à celle qu'on écrirait : égales, l'entrée existe déjà (elles
+      #    sont immuables) et le seul effet d'un appel serait de payer
+      #    l'archivage pour un refus. C'est le cas de tous les shards qui
+      #    suivent celui qui a complété l'index. `empreinte != ''` couvre le
+      #    step d'empreinte lui-même en échec : sans lui, la clé s'écrirait
+      #    `…-interv-` et redeviendrait muette sur son contenu.
+      - name: Sauvegarde du cache AN — complétude atteinte (#550)
+        if: >-
+          ${{ !cancelled() && !inputs.cold_start
+          && steps.empreinte_obtenue.outputs.empreinte != ''
+          && steps.cache_an.outputs.cache-matched-key !=
+          format('public-data-cache-an-{0}{1}', steps.week.outputs.week,
+          inputs.collect_interventions &&
+          format('-interv-{0}', steps.empreinte_obtenue.outputs.empreinte) || '') }}
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .cache/acteurs_historique_an
+            .cache/scrutins_an
+            .cache/questions_an/*/index_par_acteur.json
+            .cache/syceron_an/*/index_par_acteur
+          key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && format('-interv-{0}', steps.empreinte_obtenue.outputs.empreinte) || '' }}
 
       # Blocs factorisés en action composite (#412 §3). Le `if:` reste porté par
       # le step appelant : cancelled()/failure() évalués à l'intérieur de
