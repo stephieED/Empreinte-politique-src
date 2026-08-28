@@ -18,28 +18,65 @@
 #
 #   --fenetre N           nombre de commits de données conservés (défaut : 30).
 #
-# ── Ce que la mesure a établi (clone du 20/08/2026, main = 0466957) ───────────
+# ── Ce que la mesure a établi ────────────────────────────────────────────────
 #
-#   objets atteignables, après repack optimal ......... 284 Mo
-#   `.git` sur disque, avant repack ................... 853 Mo
-#   taille annoncée par l'API GitHub .................. 395 Mo
+#   Deux campagnes, et c'est leur ÉCART qui compte. La seconde a été faite pour
+#   #551, parce que l'hypothèse de calibrage de la première avait cessé d'être
+#   vraie — voir plus bas.
 #
-#   Le dépôt « pèse » donc trois chiffres différents, et un seul compte pour
-#   les seuils : 284 Mo. Les 569 Mo d'écart local et les 111 Mo d'écart côté
-#   GitHub sont des objets DEVENUS INACCESSIBLES par des rebases et des pushs
-#   forcés — pas de l'historique.
+#                                        20/08/2026     28/08/2026
+#                                        (0466957,      (dc3ba83,
+#                                        209 profils,   479 profils,
+#                                        23 c. données) 28 c. données)
+#     dépôt après `gc --prune=now` ....   284 Mo         434 Mo
+#     `.git` sur disque, avant repack .   853 Mo         (non relevé)
+#     taille annoncée par l'API GitHub    395 Mo         (non relevé)
 #
-#   Taille du dépôt selon la fenêtre (mesurée, gc --prune=now compris ;
-#   23 commits de données au total, donc « 23 » = historique complet) :
+#   Le dépôt « pèse » plusieurs chiffres différents, et un seul compte pour les
+#   seuils : celui d'après repack. Les 569 Mo d'écart local et les 111 Mo
+#   d'écart côté GitHub relevés le 20/08 étaient des objets DEVENUS
+#   INACCESSIBLES par des rebases et des pushs forcés — pas de l'historique.
 #
-#     fenêtre :    0     1     2     3     4     6     8    10    15    20   23
-#     dépôt   :  127   169   175   218   246   258   259   280   280   283  284  Mo
+#   Taille du dépôt selon la fenêtre (mesurée le 28/08/2026 sur un miroir de
+#   `dc3ba83` ramené à la SEULE ref `main`, gc --prune=now compris ; 28 commits
+#   de données au total, donc « 28 » = historique complet) :
 #
-#   La courbe SATURE à partir de ~10 : les commits de données plus anciens ont
-#   été écrits quand le corpus faisait 14 à 30 profils, ils ne pèsent presque
-#   rien — tout ce qui précède le 10e commit de données vaut moins de 2 % du
-#   dépôt. Aujourd'hui, avec 23 commits de données, borner à 30 ne retire donc
-#   RIEN : c'est un plafond pour plus tard, pas un gain immédiat.
+#     fenêtre :    0    1    2    3    4    6    8   10   12   15   20   24   27   28
+#     dépôt   :  180  194  208  219  225  312  364  394  405  430  430  433  433  434  Mo
+#
+#   ⚠ LA COURBE S'EST INVERSÉE, et c'est tout le sujet de #551.
+#
+#   La table du 20/08 SATURAIT à partir de ~10 : au-delà, les commits de
+#   données avaient été écrits quand le corpus faisait 14 à 30 profils et ne
+#   pesaient presque rien — moins de 2 % du dépôt. Sur cette base, borner à 30
+#   ne retirait RIEN : un plafond pour plus tard, pas un gain immédiat.
+#
+#   C'ÉTAIT VRAI, ÇA NE L'EST PLUS. Le corpus fait 479 profils, chaque commit
+#   de données porte 300 à 730 fichiers, et la courbe sature désormais par le
+#   BAS : passer de 28 à 15 économise 4 Mo (1 %), à 10 en économise 40 (9 %),
+#   et il faut descendre à 4 pour en économiser 209 (48 %). Autrement dit :
+#   borner à 30 — ou même à 10 — ne rend toujours presque rien, mais pour la
+#   raison INVERSE. Ce qui coûte, ce sont les commits RÉCENTS, ceux dont on a
+#   justement besoin.
+#
+#   Coût d'un commit de données (pack des objets qu'il introduit, par
+#   `git pack-objects` sur `rev-list --objects <c> --not <c>^`), les 28 commits
+#   coupés en deux moitiés de 14 :
+#
+#                                                médiane  moyenne   min   max
+#     14 plus anciens (01→17/08,   8→48 profils)     1,6      1,5   0,2   2,6  Mo
+#     14 plus récents (18→27/08, 129→476 profils)   29,3     34,6   0,1  78,6  Mo
+#
+#   Facteur 18 sur la médiane, À L'INTÉRIEUR du même historique. La fenêtre en
+#   COMMITS a donc cessé d'être une fenêtre en OCTETS.
+#
+#   Et le défaut de 30 ne vient PAS d'un budget en octets : #434 l'a tiré d'une
+#   règle de latence — « cadence de pointe × période sans surveillance »,
+#   4 commits/jour × 7 jours = 28, arrondi à 30 — pour qu'une semaine d'absence
+#   reste réparable. La règle est intacte ; c'est son PRIX qui a changé.
+#   L'arbitrage (valeur, unité, déclenchement, destination de l'archive) est
+#   ouvert et n'est PAS rendu ici :
+#   voir docs/technical_decisions.md#fenetre-recalibrage-551.
 #
 # ── Trois pièges, tous rencontrés en mesurant ────────────────────────────────
 #
@@ -101,7 +138,9 @@ while [[ $# -gt 0 ]]; do
     --mesurer)  MODE=mesurer; shift ;;
     --preparer) MODE=preparer; shift ;;
     --fenetre)  FENETRE=$2; shift 2 ;;
-    -h|--help)  sed -n '2,80p' "$0"; exit 0 ;;
+    # L'en-tête entier, quelle que soit sa longueur : une plage de lignes en
+    # dur se périme au premier ajout, et tronque l'aide sans le dire.
+    -h|--help)  awk 'NR==1{next} /^#/{print; next} {exit}' "$0"; exit 0 ;;
     *) echo "[!] Option inconnue : $1" >&2; exit 2 ;;
   esac
 done
@@ -196,8 +235,9 @@ mesurer)
   APRES=$(du -sm "$TMP/m.git" | cut -f1)
   echo "   dépôt, historique borné à $FENETRE, après repack : ${APRES} Mo"
   echo "→ GAIN RÉEL : $((AVANT - APRES)) Mo ($(( (AVANT - APRES) * 100 / AVANT )) %)"
-  echo "  (à ne pas confondre avec la somme des coûts par run, qui surestime"
-  echo "   d'un facteur 2 à 15 — voir l'en-tête de ce script.)"
+  echo "  (à ne pas confondre avec la somme des coûts par run, qui surestime :"
+  echo "   au 28/08/2026, 506 Mo de packs isolés pour 254 Mo réellement ajoutés"
+  echo "   au dépôt, soit un facteur 2,0 — voir l'en-tête de ce script.)"
   ;;
 
 preparer)

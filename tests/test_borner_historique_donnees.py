@@ -148,3 +148,52 @@ def test_la_preparation_archive_l_ancien_main():
     code = _code()
     assert "archive/pre-borne-" in code
     assert "git tag" in code
+
+
+def _en_tete() -> list[str]:
+    """Le bloc de commentaires qui suit le shebang, jusqu'à la première ligne
+    de code."""
+    lignes = SCRIPT.read_text(encoding="utf-8").split("\n")[1:]
+    entete = []
+    for ligne in lignes:
+        if not ligne.startswith("#"):
+            break
+        entete.append(ligne)
+    return entete
+
+
+def test_l_aide_ne_tronque_pas_l_en_tete():
+    """L'en-tête EST la documentation : il porte la table des mesures, les
+    trois pièges et ce que l'opération ne rend pas. `--help` doit le rendre en
+    entier.
+
+    Une plage de lignes en dur se périme au premier ajout et tronque l'aide
+    sans rien signaler. C'est arrivé : `sed -n '2,80p'` a cessé de couvrir
+    l'en-tête bien avant que #551 l'allonge encore."""
+    entete = _en_tete()
+    assert len(entete) > 80, "en-tête étrangement court : le repère a bougé"
+    aide = [l for l in _code().split("\n") if "--help" in l]
+    assert aide, "option --help absente"
+    assert not re.search(r"\d+\s*,\s*\d+\s*p", aide[0]), (
+        f"plage de lignes en dur dans --help : {aide[0].strip()}"
+    )
+
+
+def test_la_fenetre_par_defaut_est_la_meme_ici_et_dans_l_audit():
+    """La valeur de la fenêtre vit à DEUX endroits (#551) : `FENETRE` dans ce
+    script, `FENETRE_COMMITS_DONNEES` dans `src/audit_volumetrie_profils.py`.
+
+    L'audit est ce qui dit « la fenêtre est-elle contraignante ? » et le script
+    est ce qui coupe. Un arbitrage qui n'en changerait qu'un ferait répondre
+    deux valeurs différentes à la même question, sans que rien ne le signale.
+    """
+    ici = re.search(r"^FENETRE=(\d+)$", _code(), flags=re.MULTILINE)
+    assert ici, "valeur par défaut de FENETRE introuvable"
+    audit = (RACINE / "src" / "audit_volumetrie_profils.py").read_text(
+        encoding="utf-8"
+    )
+    la_bas = re.search(r"^FENETRE_COMMITS_DONNEES = (\d+)$", audit, flags=re.MULTILINE)
+    assert la_bas, "FENETRE_COMMITS_DONNEES introuvable dans l'audit"
+    assert ici.group(1) == la_bas.group(1), (
+        f"fenêtre incohérente : script={ici.group(1)}, audit={la_bas.group(1)}"
+    )
