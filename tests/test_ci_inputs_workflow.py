@@ -69,6 +69,55 @@ def test_chaque_sortie_lue_par_la_relance_est_ecrite():
     )
 
 
+def test_les_trois_modes_de_recollecte_se_nomment():
+    """Trois modes se cachent derrière deux booléens, et le formulaire de
+    lancement masque le nom du champ : la description est tout ce qu'on lit.
+
+    Le défaut invisible a coûté deux runs le 28/08/2026 sur #562 — un
+    progressif, puis un à pleine échelle avec `roster_limit=0`. Une extraction
+    ne recollecte PAS un profil déjà écrit, et l'en-tête du job roster le dit
+    depuis #445 : « un run à pleine échelle ne corrige RIEN de l'existant, il
+    ne fait qu'étendre la frontière ».
+
+    Pire, le mode le plus utile était le moins découvrable : `refresh_existing_only`
+    recollecte l'existant EN FUSIONNANT — le geste sûr pour propager un
+    correctif — et s'annonçait « Limit roster to pre-existing members », c'est-à-dire
+    comme un filtre de population.
+    """
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc = contenu[contenu.index("  workflow_dispatch:"):contenu.index("\n# Moindre privilège")]
+    desc = dict(re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE))
+
+    # Les trois options qui recollectent le disent avec le même mot.
+    for nom in ("cold_start", "overwrite_profiles", "refresh_existing_only"):
+        assert "re-collect" in desc[nom].lower(), (
+            f"`{nom}` recollecte l'existant : le libellé doit le dire avec le "
+            "même mot que les deux autres, sinon on ne les compare pas."
+        )
+
+    # Et ce qui les sépare — écraser ou fusionner — doit être lisible.
+    for nom in ("cold_start", "overwrite_profiles"):
+        assert "overwrite" in desc[nom].lower(), f"`{nom}` écrase : le dire"
+        assert "drops" in desc[nom].lower(), (
+            f"`{nom}` perd ce que la collecte du jour ne rend pas : le dire, "
+            "c'est la différence qui compte face à l'option fusionnante"
+        )
+    assert "merging" in desc["refresh_existing_only"].lower(), (
+        "`refresh_existing_only` FUSIONNE : c'est le mode sûr, et c'est ce qui "
+        "le distingue des deux autres"
+    )
+
+    # `roster_limit` dit ce qu'il fait, sans tenter d'expliquer l'anomalie du
+    # zéro : `0` rafraîchit MOINS que `20`, parce que sans `--limit` la branche
+    # d'exemption au saut n'est pas empruntée. Aucune formulation courte ne rend
+    # ça naturel — c'est un défaut de conception, suivi par #578, et un libellé
+    # de formulaire n'est pas l'endroit où on documente un piège réductible.
+    assert "new ones first" in desc["roster_limit"].lower(), (
+        "`roster_limit` est un budget de traitement, pas une borne sur le "
+        "roster : il va d'abord aux nouveaux, puis aux profils périmés"
+    )
+
+
 def test_aucune_description_d_input_n_est_un_essai():
     """Une description longue n'est pas lue dans un formulaire de lancement.
 
