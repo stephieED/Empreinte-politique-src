@@ -20,6 +20,15 @@ comme un succès :
 Un script qui pousserait sur la foi d'une telle mesure serait plus dangereux
 que l'oubli qu'il prétend corriger. Volontairement sans dépendance : on lit le
 texte du script, comme les autres gardes-fous de ce dépôt.
+
+Ce que ce fichier ne peut PAS dire, c'est si la coupure fonctionne : une
+recherche de motif reste verte devant un refactor qui garderait les chaînes en
+cassant la logique. C'est `tests/test_borner_historique_execution.py` (#567)
+qui exécute réellement l'opération, sur un dépôt synthétique jetable portant le
+merge du piège n° 1. Les deux fichiers sont complémentaires et aucun ne
+remplace l'autre : celui-ci couvre ce qu'une exécution ne montre pas — que le
+script ne pousse jamais, qu'il ne réécrit pas `main`, que sa fenêtre par défaut
+est celle de l'audit.
 """
 
 import re
