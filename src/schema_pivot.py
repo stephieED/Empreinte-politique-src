@@ -44,6 +44,91 @@ Format d'un profil pivot v1 :
                                              # la Transparence de la Vie Publique), source AN (acteurs)
         "source_url": null                   # URL de la fiche source utilisée pour ce bloc
     },
+    "identifiants": {                        # #539 — identifiants de SOURCE, publiés.
+                                             # `id` est le slug et rien d'autre : le préfixe
+                                             # `nosdeputes:`/`europarl:` qui portait une source
+                                             # dans l'identité a été retiré (#487), et
+                                             # l'information qu'il portait vit ici, nommée.
+                                             # Toutes les clés de KNOWN_IDENTIFIANTS sont
+                                             # présentes, toutes sont nullables : `null` = « pas
+                                             # d'identifiant connu dans ce référentiel », jamais
+                                             # « non applicable » (§2.5). Bloc ABSENT = profil
+                                             # publié avant #539, jamais « aucun identifiant ».
+        "an": "PA1567",                      # acteur AMO30 (`PA<chiffres>`), depuis la table
+                                             # committée raw_data/correspondance_acteurs_an.json
+                                             # (#525) : le `PA` cesse d'être RÉ-RÉSOLU par
+                                             # correspondance de nom à chaque run — il est publié.
+        "senat": null,                       # aucun référentiel sénatorial établi depuis #528 :
+                                             # `null` sur tout le corpus, et c'est un fait déclaré.
+        "europarl": "131580",                # identifiant MEP de l'Open Data Portal du PE, chaîne
+                                             # de chiffres. C'est lui qui préfixait l'`id` de
+                                             # `jordan-bardella`.
+        "hatvp": null                        # URI de la déclaration HATVP. RECOPIÉ depuis
+                                             # `identite.uri_hatvp`, qui reste en place : 465
+                                             # profils sur 476 le portent et l'interface le lit
+                                             # là-bas. Deux emplacements, une seule fabrique —
+                                             # `normalize_profil` écrit les deux d'un coup.
+    },
+    "couverture": {                          # #539 — POURQUOI une liste est vide. Indexé par
+                                             # liste métier (LISTES_COUVERTES), chaque liste
+                                             # portant AU MOINS UNE entrée : aucun défaut
+                                             # implicite, « pas d'entrée = couvert »
+                                             # réintroduirait l'ambiguïté que le bloc retire et
+                                             # ferait porter à l'UI une hypothèse qu'aucune
+                                             # mesure n'étaye.
+                                             # `tags_thematiques` n'y figure PAS : c'est une aide
+                                             # à la lecture dérivée des autres listes (§2.8), sans
+                                             # source propre donc sans borne propre.
+                                             # Bloc absent = profil publié avant #539.
+                                             # Fabrique unique : couverture_profil.deriver().
+        "votes": [
+            {
+                "etat": "couvert",           # ETATS_COUVERTURE, fermé — vocabulaire aligné sur
+                                             # celui déjà fermé pour les gouvernements
+                                             # (couverture_dossiers.py, #399) :
+                                             # "couvert"         — collecté, dans le périmètre de
+                                             #                     la source, RÉELLEMENT zéro. Un
+                                             #                     zéro publiable (§2.5 interdit
+                                             #                     de confondre un zéro mesuré
+                                             #                     avec une absence, pas de le
+                                             #                     publier) ;
+                                             # "fait_etabli"     — un fait sur la PERSONNE :
+                                             #                     « jamais élu·e à l'Assemblée
+                                             #                     nationale » ;
+                                             # "hors_couverture" — la source ne couvre pas cette
+                                             #                     période. JAMAIS un fait sur la
+                                             #                     personne ;
+                                             # "non_collecte"    — rien ne peut être affirmé.
+                "cause": null,               # CAUSES_NON_COLLECTE — obligatoire SI ET SEULEMENT
+                                             # SI etat == "non_collecte", interdite sinon. Le
+                                             # « si et seulement si » est ce qui empêche la cause
+                                             # d'être omise en silence.
+                                             # "panne"        — un run n'a pas rendu ; la preuve
+                                             #                  est le warning ou le journal ;
+                                             # "par_decision" — une politique de pipeline a
+                                             #                  délibérément écarté la collecte ;
+                                             #                  la preuve NOMME la politique (le
+                                             #                  drapeau et l'issue). 469 profils
+                                             #                  sur 476 pour `interventions`
+                                             #                  (#357).
+                "portee": {"legislature": 17},
+                                             # FACULTATIVE : `{"legislature": n}` ou
+                                             # `{"debut": "...", "fin": "..."}`. Absente, l'entrée
+                                             # vaut pour tout le profil. Une couverture à cheval
+                                             # s'exprime en DEUX entrées — jamais par un cinquième
+                                             # état `partielle` qu'il faudrait désambiguïser.
+                "preuve": "...",             # OBLIGATOIRE : borne d'archive, identifiant de
+                                             # source, entrée de la table de correspondance, ou
+                                             # politique nommée. Une entrée sans preuve serait une
+                                             # affirmation sans source (§2.2).
+                "constate_le": "2026-08-28"  # OBLIGATOIRE, date ISO du constat.
+            }
+        ],
+        "amendements": [],                   # même forme ; voir LISTES_COUVERTES
+        "textes_portes": [],
+        "interventions": [],
+        "mandats": []
+    },
     "sources": [                             # traçabilité de chaque source utilisée
         {
             "type": "assemblee_nationale",   # "assemblee_nationale" | "europarl" |
@@ -230,6 +315,8 @@ Usage :
     from schema_pivot import SCHEMA_VERSION, make_empty_profil, validate_profil
 """
 
+import re
+from datetime import date as _date
 import time
 from typing import Any, NamedTuple, Optional
 from amendements_index import (
@@ -629,6 +716,318 @@ KNOWN_BASES_IRRECEVABILITE: frozenset[str] = frozenset({"art. 40", "art. 45"})
 # éditorial déjà présent (parti, etc.).
 KNOWN_PROVENANCES: frozenset[str] = frozenset({"candidat_declare", "roster_groupe"})
 
+# --- #539 : identifiants de source, publiés dans le pivot -------------------
+
+#: Référentiels dont un profil publie l'identifiant (`identifiants`). Fermé
+#: comme les autres `KNOWN_*` : on étend le frozenset, on ne le contourne pas.
+#: Les quatre clés sont TOUJOURS présentes dans le bloc — une clé absente
+#: laisserait un lecteur choisir entre « pas d'identifiant » et « le producteur
+#: n'y a pas pensé », ce que le bloc existe précisément pour éviter (§2.5).
+KNOWN_IDENTIFIANTS: frozenset[str] = frozenset({"an", "senat", "europarl", "hatvp"})
+
+#: Forme attendue de chaque identifiant. `None` = aucune contrainte de forme.
+#: `an` reprend le motif de `correspondance_acteurs_an` mot pour mot : deux
+#: expressions du même invariant divergeraient en silence.
+_FORMES_IDENTIFIANTS: dict[str, Optional[str]] = {
+    "an": r"^PA\d+$",
+    "senat": None,
+    "europarl": r"^\d+$",
+    "hatvp": r"^https?://",
+}
+
+#: Listes métier dont la couverture est déclarée (#539). **Cinq**, et pas six :
+#: `tags_thematiques` n'en est pas une — c'est une aide à la lecture DÉRIVÉE des
+#: autres listes (AGENTS.md §2.8), sans source propre donc sans borne propre.
+#: `sources` et `chambres` sont dérivées de la même façon.
+LISTES_COUVERTES: tuple[str, ...] = (
+    "mandats", "votes", "textes_portes", "interventions", "amendements",
+)
+
+#: Les quatre états de couverture (#539). Nomenclature fermée, alignée sur celle
+#: déjà fermée pour les gouvernements (`couverture_dossiers.py`, #399) plutôt que
+#: réinventée.
+#:
+#: `couvert` est le complément sans lequel les trois autres ne suffisent pas :
+#: c'est l'état où une liste vide DIT VRAI — collecté, dans le périmètre de la
+#: source, réellement zéro. Sans lui, une liste sans entrée retombe dans « on ne
+#: sait pas » et le produit perd le zéro constaté, qui est précisément ce qu'il
+#: existe pour donner. §2.5 interdit de confondre un zéro mesuré avec une
+#: absence, pas de publier le premier.
+#:
+#: `partielle` de #399 ne devient PAS un cinquième état : la portée l'exprime en
+#: **deux entrées**, qui disent en plus *où* passe la frontière.
+ETAT_COUVERT = "couvert"
+ETAT_FAIT_ETABLI = "fait_etabli"
+ETAT_HORS_COUVERTURE = "hors_couverture"
+ETAT_NON_COLLECTE = "non_collecte"
+
+ETATS_COUVERTURE: frozenset[str] = frozenset({
+    ETAT_COUVERT, ETAT_FAIT_ETABLI, ETAT_HORS_COUVERTURE, ETAT_NON_COLLECTE,
+})
+
+#: Cause d'un `non_collecte` — obligatoire **si et seulement si** l'état vaut
+#: `non_collecte`. Le « si et seulement si » est ce qui empêche la cause d'être
+#: omise en silence : sans lui, une entrée `non_collecte` sans cause repasserait
+#: pour un défaut de saisie plutôt que pour ce qu'elle est, une affirmation
+#: incomplète.
+CAUSE_PANNE = "panne"
+CAUSE_PAR_DECISION = "par_decision"
+
+CAUSES_NON_COLLECTE: frozenset[str] = frozenset({CAUSE_PANNE, CAUSE_PAR_DECISION})
+
+
+def valider_couverture(couverture: Any) -> list[str]:
+    """Vérifie le bloc `couverture` d'un profil pivot (#539).
+
+    Isolée de `validate_profil` parce que la fabrique (`couverture_profil.py`)
+    s'en sert pour se contrôler elle-même, et que les tests l'exercent seule :
+    la règle est écrite une fois, appliquée aux deux bouts.
+
+    Renvoie la liste des erreurs ; liste vide = bloc conforme.
+    """
+    if not isinstance(couverture, dict):
+        return [f"'couverture' doit être un dict, reçu : {type(couverture).__name__}."]
+
+    errors: list[str] = []
+    inconnues = sorted(set(couverture) - set(LISTES_COUVERTES))
+    if inconnues:
+        errors.append(
+            f"'couverture' porte des listes hors nomenclature : {inconnues!r}. "
+            f"Listes connues : {list(LISTES_COUVERTES)}."
+        )
+    manquantes = sorted(set(LISTES_COUVERTES) - set(couverture))
+    if manquantes:
+        errors.append(
+            f"'couverture' est incomplète : {manquantes!r} sans entrée. La "
+            "complétude est obligatoire — un défaut implicite « pas d'entrée = "
+            "couvert » réintroduirait l'ambiguïté que le bloc retire."
+        )
+
+    for liste in LISTES_COUVERTES:
+        entrees = couverture.get(liste)
+        if entrees is None:
+            continue
+        if not isinstance(entrees, list):
+            errors.append(
+                f"couverture.{liste} doit être une liste d'entrées, reçu : "
+                f"{type(entrees).__name__}."
+            )
+            continue
+        if not entrees:
+            errors.append(
+                f"couverture.{liste} est vide : chaque liste métier porte au "
+                "moins une entrée."
+            )
+            continue
+        for i, entree in enumerate(entrees):
+            errors.extend(_valider_entree_couverture(liste, i, entree))
+    return errors
+
+
+def _valider_entree_couverture(liste: str, i: int, entree: Any) -> list[str]:
+    prefixe = f"couverture.{liste}[{i}]"
+    if not isinstance(entree, dict):
+        return [f"{prefixe} doit être un dict, reçu : {type(entree).__name__}."]
+
+    errors: list[str] = []
+    etat = entree.get("etat")
+    if etat not in ETATS_COUVERTURE:
+        errors.append(
+            f"{prefixe}.etat non reconnu : {etat!r}. "
+            f"Valeurs connues : {sorted(ETATS_COUVERTURE)}."
+        )
+
+    # Le « si et seulement si » de la cause, dans les deux sens.
+    cause = entree.get("cause")
+    if etat == ETAT_NON_COLLECTE:
+        if cause not in CAUSES_NON_COLLECTE:
+            errors.append(
+                f"{prefixe}.cause est obligatoire sur un '{ETAT_NON_COLLECTE}' et "
+                f"doit valoir l'une de {sorted(CAUSES_NON_COLLECTE)}, reçu : "
+                f"{cause!r}. Sans elle, « nous n'avons pas réussi à collecter » et "
+                "« nous avons choisi de ne pas collecter » se confondent."
+            )
+    elif cause is not None:
+        errors.append(
+            f"{prefixe}.cause ({cause!r}) n'a de sens que sur un "
+            f"'{ETAT_NON_COLLECTE}', pas sur {etat!r}."
+        )
+
+    preuve = entree.get("preuve")
+    if not (isinstance(preuve, str) and preuve.strip()):
+        errors.append(
+            f"{prefixe}.preuve est obligatoire : borne d'archive, identifiant de "
+            "source, entrée de la table de correspondance ou politique nommée. "
+            "Une entrée sans preuve est une affirmation sans source (§2.2)."
+        )
+
+    constate_le = entree.get("constate_le")
+    if not isinstance(constate_le, str):
+        errors.append(f"{prefixe}.constate_le est obligatoire (date ISO).")
+    else:
+        try:
+            _date.fromisoformat(constate_le)
+        except ValueError:
+            errors.append(
+                f"{prefixe}.constate_le n'est pas une date ISO : {constate_le!r}."
+            )
+
+    portee = entree.get("portee")
+    errors.extend(_valider_portee(prefixe, portee))
+    # `portee` est facultative en général — mais pas sur un `hors_couverture` :
+    # dire qu'une source ne couvre pas, sans dire QUOI, n'informe personne, et
+    # une entrée globale de cet état contredirait la liste entière.
+    if etat == ETAT_HORS_COUVERTURE and portee is None:
+        errors.append(
+            f"{prefixe} déclare '{ETAT_HORS_COUVERTURE}' sans portée : une source "
+            "qui ne couvre pas doit dire ce qu'elle ne couvre pas."
+        )
+    return errors
+
+
+def _valider_portee(prefixe: str, portee: Any) -> list[str]:
+    """`portee` est FACULTATIVE : absente, l'entrée vaut pour tout le profil."""
+    if portee is None:
+        return []
+    if not isinstance(portee, dict):
+        return [
+            f"{prefixe}.portee doit être un dict ou null, reçu : "
+            f"{type(portee).__name__}."
+        ]
+    if not portee:
+        return [
+            f"{prefixe}.portee est un dict vide : une portée qui ne borne rien "
+            "n'est pas une portée — l'omettre dit exactement la même chose."
+        ]
+
+    errors: list[str] = []
+    inconnues = sorted(set(portee) - {"legislature", "debut", "fin"})
+    if inconnues:
+        errors.append(
+            f"{prefixe}.portee porte des clés non reconnues : {inconnues!r}. "
+            "Formes admises : {'legislature': n} ou {'debut': ..., 'fin': ...}."
+        )
+    if "legislature" in portee:
+        legislature = portee["legislature"]
+        if not isinstance(legislature, int) or isinstance(legislature, bool) or legislature <= 0:
+            errors.append(
+                f"{prefixe}.portee.legislature doit être un entier positif, reçu : "
+                f"{legislature!r}."
+            )
+        if "debut" in portee or "fin" in portee:
+            errors.append(
+                f"{prefixe}.portee mêle 'legislature' et un intervalle de dates : "
+                "les deux formes disent la même chose de deux façons, et la "
+                "seconde ne dit pas laquelle croire."
+            )
+    for borne in ("debut", "fin"):
+        valeur = portee.get(borne)
+        if valeur is None:
+            continue
+        if not isinstance(valeur, str):
+            errors.append(
+                f"{prefixe}.portee.{borne} doit être une date ISO, reçu : "
+                f"{type(valeur).__name__}."
+            )
+            continue
+        try:
+            _date.fromisoformat(valeur)
+        except ValueError:
+            errors.append(
+                f"{prefixe}.portee.{borne} n'est pas une date ISO : {valeur!r}."
+            )
+    return errors
+
+
+#: Ordre de publication des clés d'`identifiants`. Stable d'un run à l'autre —
+#: sans lui git verrait une différence à chaque régénération.
+ORDRE_IDENTIFIANTS: tuple[str, ...] = ("an", "senat", "europarl", "hatvp")
+
+
+def identifiants_vides() -> dict[str, Optional[str]]:
+    """Bloc `identifiants` complet, toutes valeurs à `null` (#539)."""
+    return {cle: None for cle in ORDRE_IDENTIFIANTS}
+
+
+def poser_identifiant(profil: dict[str, Any], cle: str, valeur: Any) -> None:
+    """Écrit `identifiants[cle]` sur un profil, sans jamais l'écraser par `null`.
+
+    La seule fabrique du bloc, et le pendant de `_prefer_non_empty` côté fusion :
+    un profil AN + PE passe par deux normaliseurs, et le second ne doit pas
+    effacer ce que le premier a établi. Une valeur vide est ignorée, jamais
+    écrite — `null` veut dire « aucun identifiant connu », pas « le dernier
+    écrivain n'en avait pas » (§2.5).
+    """
+    if cle not in KNOWN_IDENTIFIANTS:
+        raise ValueError(
+            f"identifiants.{cle} n'est pas un référentiel connu "
+            f"({sorted(KNOWN_IDENTIFIANTS)}) — on étend KNOWN_IDENTIFIANTS, "
+            "on ne le contourne pas."
+        )
+    bloc = profil.get("identifiants")
+    if not isinstance(bloc, dict):
+        bloc = identifiants_vides()
+        profil["identifiants"] = bloc
+    for manquante in ORDRE_IDENTIFIANTS:
+        bloc.setdefault(manquante, None)
+    if valeur is None:
+        return
+    # Refus BRUYANT d'une valeur qui n'est pas une chaîne. Ce n'est pas de la
+    # rigueur gratuite : 186 des 476 profils publiés portent, dans
+    # `identite.uri_hatvp`, le marqueur XML brut `{"@xsi:nil": "true"}` — le
+    # « pas de déclaration » d'AMO30 recopié tel quel au lieu d'être lu. Un
+    # `str(valeur)` obligeant aurait publié cet objet comme identifiant HATVP
+    # sur 186 profils, et le schéma ne l'aurait pas rattrapé puisqu'il serait
+    # devenu une chaîne. L'appelant filtre, ou il apprend qu'il a un défaut.
+    if not isinstance(valeur, str):
+        raise TypeError(
+            f"identifiants.{cle} : une chaîne ou null, pas {type(valeur).__name__} "
+            f"({valeur!r}). Une valeur non normalisée par l'appelant n'est pas un "
+            "identifiant — voir les 186 `uri_hatvp` au format XML nil du corpus."
+        )
+    if not valeur.strip():
+        return
+    bloc[cle] = valeur.strip()
+
+
+def valider_identifiants(identifiants: Any) -> list[str]:
+    """Vérifie le bloc `identifiants` d'un profil pivot (#539)."""
+    if not isinstance(identifiants, dict):
+        return [
+            f"'identifiants' doit être un dict, reçu : {type(identifiants).__name__}."
+        ]
+
+    errors: list[str] = []
+    inconnues = sorted(set(identifiants) - KNOWN_IDENTIFIANTS)
+    if inconnues:
+        errors.append(
+            f"'identifiants' porte des référentiels non reconnus : {inconnues!r}. "
+            f"Valeurs connues : {sorted(KNOWN_IDENTIFIANTS)}."
+        )
+    manquants = sorted(KNOWN_IDENTIFIANTS - set(identifiants))
+    if manquants:
+        errors.append(
+            f"'identifiants' est incomplet : {manquants!r} absent(s). Les quatre "
+            "clés sont toujours présentes — `null` dit « pas d'identifiant connu », "
+            "une clé absente ne dit rien (§2.5)."
+        )
+    for cle, forme in _FORMES_IDENTIFIANTS.items():
+        valeur = identifiants.get(cle)
+        if valeur is None:
+            continue
+        if not isinstance(valeur, str):
+            errors.append(
+                f"identifiants.{cle} doit être une chaîne ou null, reçu : "
+                f"{type(valeur).__name__}."
+            )
+            continue
+        if forme and not re.match(forme, valeur):
+            errors.append(
+                f"identifiants.{cle} ne respecte pas la forme attendue "
+                f"({forme}) : {valeur!r}."
+            )
+    return errors
+
 
 def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") -> dict[str, Any]:
     """Crée un profil pivot v1 vide avec des valeurs par défaut.
@@ -663,6 +1062,10 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
         "parti": None,
         "groupe": None,
         "identite": None,
+        # #539 : les quatre clés sont toujours là, à `null` par défaut. Un bloc
+        # partiel laisserait un lecteur choisir entre « pas d'identifiant » et
+        # « le producteur n'y a pas pensé » — c'est ce que le bloc retire.
+        "identifiants": identifiants_vides(),
         "sources": [],
         "mandats": [],
         "votes": [],
@@ -783,6 +1186,34 @@ def validate_profil(
     identite = profil.get("identite")
     if identite is not None and not isinstance(identite, dict):
         errors.append(f"'identite' doit être un dict ou null, reçu : {type(identite).__name__}.")
+
+    # #539 — `identifiants` suit le précédent de `chambres` (#493) : la clé n'est
+    # PAS dans REQUIRED_TOP_LEVEL_KEYS, parce que les 476 profils publiés avant ce
+    # lot ne la portent pas et que les déclarer invalides ne dirait rien de vrai
+    # sur eux. Absente, on ne valide rien ; présente, elle est tenue à ses
+    # invariants — les quatre clés, et la forme de chaque identifiant.
+    if "identifiants" in profil:
+        errors.extend(valider_identifiants(profil.get("identifiants")))
+
+    # #539 — même précédent pour `couverture` : absente sur les 476 profils
+    # publiés avant ce lot, donc validée seulement si présente. Sa complétude
+    # (les cinq listes) est vérifiée DANS `valider_couverture` : un bloc partiel
+    # est une erreur, un bloc absent n'en est pas une.
+    if "couverture" in profil:
+        errors.extend(valider_couverture(profil.get("couverture")))
+
+    # L'invariant qui fait tout l'intérêt du couple : `identifiants.hatvp` est la
+    # RECOPIE de `identite.uri_hatvp`, jamais une seconde collecte. Deux valeurs
+    # différentes voudraient dire qu'une des deux est fausse, sans dire laquelle.
+    if isinstance(identite, dict) and isinstance(profil.get("identifiants"), dict):
+        uri_hatvp = identite.get("uri_hatvp")
+        publie = profil["identifiants"].get("hatvp")
+        if uri_hatvp and publie and uri_hatvp != publie:
+            errors.append(
+                f"identifiants.hatvp ({publie!r}) contredit identite.uri_hatvp "
+                f"({uri_hatvp!r}) : le premier est la recopie du second, pas une "
+                "seconde collecte."
+            )
 
     for key in _LIST_KEYS:
         val = profil.get(key)

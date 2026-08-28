@@ -541,6 +541,41 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
 
+    # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
+    #
+    # `_prefer_non_empty` sur le bloc entier ferait perdre un identifiant qu'un
+    # run précédent avait résolu et que celui-ci n'a pas : un profil AN + PE
+    # passe par deux normaliseurs, et une passe `--source an` ne rend pas
+    # l'`europarl`. La règle des scalaires, appliquée à chaque clé — la nouvelle
+    # valeur si elle est renseignée, l'ancienne sinon, jamais une régression
+    # vers `null` (AGENTS.md §2 règle 5).
+    identifiants = dict(old.get("identifiants") or {})
+    for cle, valeur in (new.get("identifiants") or {}).items():
+        identifiants[cle] = _prefer_non_empty(valeur, identifiants.get(cle))
+    if identifiants:
+        merged["identifiants"] = identifiants
+
+    # --- couverture : REMPLACÉE, jamais fusionnée (#539) ---------------------
+    #
+    # C'est le piège du bloc, et la seule exception à la règle de ce module. La
+    # fusion additive protège la donnée COLLECTÉE : une entrée acquise ne
+    # disparaît pas parce qu'un run l'a manquée. La couverture, elle, ne décrit
+    # pas la personne — elle décrit **le run** : ce qu'on a demandé à la source
+    # ce jour-là, et ce que cette source couvre. La fusionner ferait survivre
+    # indéfiniment un `couvert` établi le jour où la collecte tournait, à côté
+    # d'un `non_collecte` d'aujourd'hui : la panne serait masquée par son propre
+    # historique, exactement le contresens que #539 retire.
+    #
+    # `_prefer_non_empty` plutôt que `new` sec : un chemin qui ne dérive pas
+    # encore de couverture (un pivot construit par un outil autonome) ne doit
+    # pas effacer celle du corpus. Il ne peut pas non plus en inventer une — un
+    # bloc vide est vide, donc l'ancien est conservé.
+    couverture = _prefer_non_empty(new.get("couverture"), old.get("couverture"))
+    if couverture is not None:
+        merged["couverture"] = couverture
+    else:
+        merged.pop("couverture", None)
+
     merged["sources"] = _merge_pivot_sources(old.get("sources"), new.get("sources"))
     merged["mandats"] = backfill_mandat_chambre(
         merge_lists_by_key(old.get("mandats"), new.get("mandats"), _pivot_mandat_key),
