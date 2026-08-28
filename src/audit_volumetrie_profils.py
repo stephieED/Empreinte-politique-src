@@ -88,6 +88,14 @@ SEUIL_DEPOT_RECOMMANDE_GO = 5.0
 # fenêtre à quinze jours). Le step « Fenêtre de rétention » de
 # generate-data.yml affiche le compte à chaque run.
 #
+# Le COÛT de cette fenêtre, lui, ne se surveille pas à intervalle fixe (#551,
+# question 3) : mesurer la taille du dépôt coûte 1 min 52 s de temps réel et
+# 3 min 37 s de CPU, trop cher pour une alerte qui dirait « tout va bien » à
+# chaque run. Il se revérifie sur ÉVÉNEMENT — une décision qui change la taille
+# du corpus. Un seul est à l'horizon : la réouverture du Sénat (#528, +300
+# membres). Ce jour-là, relancer ce script hors CI et vérifier qu'un mois de
+# données tient toujours sous les 2 Go du critère de #429.
+#
 # Voir `docs/technical_decisions.md#fenetre-recalibrage-551`.
 FENETRE_COMMITS_DONNEES = 30
 

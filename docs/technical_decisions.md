@@ -1,9 +1,9 @@
 <a id="fenetre-recalibrage-551"></a>
 ## La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
-**Deux arbitrages sont rendus ici — les questions 1 et 2** (voir « Arbitrage
-rendu » dans chaque section, 28/08/2026). Les questions 3 et 4 restent
-ouvertes.** Cette entrée mesure, projette et recommande.
+**Trois arbitrages sont rendus ici — les questions 1, 2 et 3** (voir
+« Arbitrage rendu » dans chaque section, 28/08/2026). Seule la question 4,
+la destination de l'archive, reste ouverte.** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement
 et la destination de l'archive restent à trancher. `FENETRE=30` n'a pas été
 changé.
@@ -393,6 +393,56 @@ D'où la forme proposée, **à deux bornes** :
 Quand les deux bornes se contredisent, il n'y a pas de formule : c'est
 l'arbitrage. Aujourd'hui elles ne se contredisent pas ; à 752 membres avec une
 marge de × 2,0, la question sera moins confortable.
+
+#### Arbitrage rendu — 28/08/2026
+
+**La rétention se compte en temps. Les commits en sont la conversion, les octets
+ne sont qu'un contrôle — et ce contrôle se déclenche sur un événement, jamais sur
+une horloge.**
+
+La question telle qu'elle était posée — commits *ou* octets — est en partie
+dissoute par l'arbitrage de la question 1 : la rétention ne se compte ni en
+commits ni en octets, elle se compte en **mois**. Les commits sont l'unité de
+coupure parce que c'est celle qui est déterministe ; les octets restent une
+grandeur à surveiller, pas à définir.
+
+**Pourquoi la coupure reste en commits**, indépendamment de cela :
+
+- **la dispersion s'effondre quand on mesure ce qui compte.** En pack isolé, le
+  rapport entre le commit le moins cher (0,1 Mo) et le plus cher (78,6 Mo) est de
+  **1 à 603** — l'argument massif en faveur des octets. En **coût marginal réel**,
+  les quatre commits de production coûtent 9,9 / 15,1 / 15,3 / 15,2 Mo : **1 à
+  1,5**. En régime permanent, une fenêtre en commits *est déjà* une bonne
+  approximation d'une fenêtre en octets ;
+- **une coupure en octets ne serait pas déterministe.** « Le (N+1)<sup>e</sup>
+  commit de données » se vérifie de tête et rend toujours le même point. « Le
+  premier commit qui fait passer le cumul sous X Mo » se déplace à chaque run.
+
+**Ce qui est écarté, et pourquoi.** Une alerte de taille automatique en CI coûte
+**1 min 52 s de temps réel et 3 min 37 s de CPU** par mesure — elle clone le dépôt
+entier et le repacke deux fois. C'est exactement ce que le step armé en question 2
+évite en comptant des commits. Une alerte à ce prix, qui dit « tout va bien » à
+chaque run, finit par n'être plus lue : on paierait trois minutes de CPU pour
+fabriquer du bruit.
+
+**Ce qui est retenu : la revérification déclenchée par un événement.** On remesure
+quand une décision change la taille du corpus, pas à intervalle fixe. Aujourd'hui
+la marge est de ×3 à ×4 (un mois pèse ~450 Mo contre 2 Go), et **un seul événement
+de ce type est à l'horizon** :
+
+| Événement | Effet attendu | Décision qui le porte |
+| --- | --- | --- |
+| Réouverture du Sénat | +300 membres, corpus × 1,6 | #528 |
+| Passage du roster à pleine échelle au-delà de 752 | proportionnel | — |
+| Doublement de la cadence de runs | fenêtre plus courte, pas plus lourde | question 1 |
+
+Le jour où l'un survient : relancer `src/audit_volumetrie_profils.py` (hors CI) et
+vérifier que la fenêtre d'un mois tient toujours sous les 2 Go du critère de #429.
+
+**Ce que cet arbitrage n'affranchit pas** : la profondeur d'un mois ne vaut que si
+l'historique coupé est archivé. C'est la question 4, et elle reste entière.
+
+---
 
 ### Question 4 — où va l'archive, et qui garantit qu'elle a tourné
 
