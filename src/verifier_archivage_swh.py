@@ -794,7 +794,10 @@ def verifier(
     return verdict[0], donnees, texte
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def construire_parseur() -> argparse.ArgumentParser:
+    """Séparé de `main()` pour être inspectable sans exécuter quoi que ce soit :
+    une option citée dans la procédure de bornage et absente d'ici ferait perdre
+    le seul lancement disponible avant la coupure."""
     parseur = argparse.ArgumentParser(
         description=(
             "Vérifie que les SHA cités dans les .md suivis et les corps "
@@ -819,7 +822,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         ),
     )
     parseur.add_argument("--json", dest="json_out", help="écrit aussi le rapport JSON")
-    args = parseur.parse_args(argv)
+    return parseur
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    args = construire_parseur().parse_args(argv)
 
     racine = subprocess.run(
         ["git", "-C", args.racine, "rev-parse", "--show-toplevel"],
