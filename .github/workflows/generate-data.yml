@@ -609,6 +609,23 @@ jobs:
       # jour, y compris une partielle laissée par un shard précédent), puis le
       # repli historique. En mode par défaut la première ligne est vide et
       # `actions/cache` l'ignore — la liste redevient celle d'avant #550.
+      #
+      # LE PRÉFIXE NU RESTE (#555), et c'est délibéré. Il TRAVERSE les semaines :
+      # sur un miss de la clé exacte, `actions/cache` sert l'entrée la plus
+      # récente qui commence par lui, donc potentiellement celle de la semaine
+      # précédente. Mesuré, run 32738726729 (lundi 24/08, première exécution de
+      # W35, job 97468417763) : « Cache restored from key:
+      # public-data-cache-an-2026-W34 » à 14:28:54, extraction de 10,12 s sans
+      # qu'une seule archive soit rouverte, « Cache saved with key:
+      # public-data-cache-an-2026-W35 » à 14:29:12. Dix-huit secondes pour
+      # blanchir le contenu du 20/08 sous la clé du 24/08.
+      # Le retirer réglerait la fraîcheur en rouvrant #424 — le premier run de
+      # chaque semaine repartirait d'un cache vide — et jetterait avec les
+      # archives vivantes les index des législatures CLOSES, dont le
+      # réchauffement inter-semaines est légitime : 147 s de réindexation pour
+      # la 15e, 55 s pour la 16e, 42 s pour la 17e (mesures #550). Ce qui
+      # manquait n'est pas une clé mais un marqueur de fraîcheur — voir le step
+      # suivant, qui périme ce qui périme et conserve ce qui ne périme pas.
       - uses: actions/cache/restore@v5
         id: cache_an
         if: ${{ !inputs.cold_start }}
@@ -622,6 +639,37 @@ jobs:
           restore-keys: |
             ${{ inputs.collect_interventions && format('public-data-cache-an-{0}-interv', steps.week.outputs.week) || '' }}
             public-data-cache-an-
+
+      # #555 — PÉREMPTION SÉLECTIVE, job PRODUCTEUR.
+      #
+      # Le marqueur de fraîcheur n'est pas un fichier à écrire : c'est
+      # `cache-matched-key`, la clé effectivement restaurée, qui porte déjà sa
+      # semaine. Rien n'est donc ajouté au `path:` ci-dessus — un `path:` modifié
+      # change la *version* de l'entrée et ferait perdre une semaine de cache
+      # rien qu'à déployer la correction.
+      #
+      # Semaine restaurée = semaine courante → rien. Sinon, `--perimer` supprime
+      # les seuls chemins qui VIEILLISSENT : `acteurs_historique_an` en entier
+      # (aucune structure par législature, republié en continu) et les
+      # répertoires des législatures NON figées sous scrutins/questions/syceron.
+      # Les législatures closes restent en place : c'est ce qui distingue cette
+      # correction du retrait du préfixe nu, et ce qui fait tomber le coût
+      # hebdomadaire de 244 s (les trois législatures) à 42 s (la 17e seule).
+      # La frontière est dérivée de AN_SCRUTINS_LEGISLATURES_FIGEES et
+      # AN_AMENDEMENTS_LEGISLATURES_FIGEES, jamais recopiée ici — même règle que
+      # l'empreinte de #550, qui deviendrait fausse à la clôture de la 17e.
+      #
+      # Ne peut pas faire échouer le shard : la péremption est un
+      # rafraîchissement, pas une garde. Voir src/cache_an_fraicheur.py et
+      # docs/technical_decisions.md#cache-fraicheur-interventions-555.
+      - name: Fraîcheur du cache AN restauré — péremption sélective (#555)
+        if: ${{ !inputs.cold_start }}
+        continue-on-error: true
+        run: |
+          python3 src/cache_an_fraicheur.py \
+            --semaine "${{ steps.week.outputs.week }}" \
+            --cle-restauree "${{ steps.cache_an.outputs.cache-matched-key }}" \
+            --perimer
 
       # Clé DÉDIÉE aux dossiers législatifs (#427), séparée de la clé AN.
       # merge-and-pivot en a besoin pour générer les profils de gouvernement,
@@ -1545,7 +1593,16 @@ jobs:
       # une propriété du workflow.
       # Rien n'est perdu : les deux répertoires qu'il produit réellement
       # (acteurs_historique_an, scrutins_an) sont déjà persistés par extract-an.
+      #
+      # LE PRÉFIXE NU RESTE ICI AUSSI (#555) : même raison que côté extract-an,
+      # et une de plus. Ce job est en restauration seule — il ne sauvegarde
+      # rien. Y périmer le cache ferait retélécharger les ~40 Mo d'archives AN
+      # par chacun de ses 8 shards sans que rien ne soit persisté en retour :
+      # ce serait #424 recréé, pas corrigé. D'où l'asymétrie du step suivant —
+      # le PRODUCTEUR périme, le CONSOMMATEUR déclare. C'est la distinction de
+      # #424/#505 (qui produit / qui écrit la clé) appliquée à la fraîcheur.
       - uses: actions/cache/restore@v5
+        id: cache_an
         if: ${{ !inputs.cold_start }}
         with:
           path: |
@@ -1556,6 +1613,24 @@ jobs:
           key: public-data-cache-an-${{ steps.week.outputs.week }}
           restore-keys: |
             public-data-cache-an-
+
+      # #555 — DÉCLARATION SEULE, job CONSOMMATEUR (pas de `--perimer`).
+      #
+      # `needs: extract-an` place ce job derrière le producteur, qui a déjà
+      # rafraîchi et sauvegardé l'entrée de la semaine : la restauration ici
+      # devrait donc porter la semaine courante. « Devrait » — c'est un
+      # ordonnancement, pas une garantie (un `prepare-an-matrix` rendant une
+      # liste vide skippe extract-an, cf. le commentaire de #505 ci-dessus), et
+      # ce qui n'est pas garanti doit au moins être VISIBLE. Un `::warning::`
+      # nomme alors la semaine effectivement servie, ce que rien ne disait
+      # avant #555.
+      - name: Fraîcheur du cache AN restauré — déclaration (#555)
+        if: ${{ !inputs.cold_start }}
+        continue-on-error: true
+        run: |
+          python3 src/cache_an_fraicheur.py \
+            --semaine "${{ steps.week.outputs.week }}" \
+            --cle-restauree "${{ steps.cache_an.outputs.cache-matched-key }}"
 
       # Clé DÉDIÉE aux dossiers législatifs (#427), séparée de la clé AN.
       # merge-and-pivot en a besoin pour générer les profils de gouvernement,
