@@ -343,19 +343,19 @@ plus :
         Ils archivent ce qui est atteignable AU MOMENT du passage : après la
         coupure, c'est perdu. Cet ordre n'est pas négociable.
 
-     b. Attendre que la visite soit `full`, puis VÉRIFIER que les SHA cités
+     b. Attendre que la visite soit \`full\`, puis VÉRIFIER que les SHA cités
         résolvent — sans quoi l'archivage est un rituel :
-          for sha in $(git log --format=%H); do
-            curl -sf -o /dev/null \
-              "https://archive.softwareheritage.org/api/1/revision/$sha/" \
-              || echo "MANQUANT $sha"
+          for sha in \$(git log --format=%H); do
+            curl -sf -o /dev/null \\
+              "https://archive.softwareheritage.org/api/1/revision/\$sha/" \\
+              || echo "MANQUANT \$sha"
           done
         (API anonyme : 120 requêtes/heure.)
 
      c. Facultatif, pour le confort — un miroir local ADDITIF, qui rend une
         récupération immédiate là où le vault de SWH demande une cuisson :
           git push /chemin/vers/archive.git $TAG
-        JAMAIS `git remote update` ni `--prune` dessus : un miroir qui se
+        JAMAIS \`git remote update\` ni \`--prune\` dessus : un miroir qui se
         synchronise supprime exactement ce qu'on lui demandait de garder.
         Ce miroir n'est pas la sauvegarde — SWH l'est, et il survit au
         matériel. C'est un raccourci, pas une sécurité.
