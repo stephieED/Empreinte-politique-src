@@ -187,23 +187,23 @@ politique se lit sur la provenance seule.
 
 ### Ce que le corpus dit une fois le bloc publié
 
-477 profils, 2 385 couples (profil, liste) :
+479 profils, 2 395 couples (profil, liste), 3 754 entrées :
 
 | État | Entrées |
 | --- | ---: |
-| `hors_couverture` | 1 349 |
+| `hors_couverture` | 1 359 |
 | `couvert` | 1 339 |
 | `non_collecte` / `par_decision` | **936** |
 | `non_collecte` / `panne` | **100** |
-| `fait_etabli` | 10 |
+| `fait_etabli` | 20 |
 
-Et la mesure qui justifie le lot à elle seule : sur les **121 profils dont
+Et la mesure qui justifie le lot à elle seule : sur les **123 profils dont
 `amendements` est vide, 99 le sont parce que la source a échoué** (warning
-« amendements indisponibles » déclaré dans leur `meta`) et **22 sont un zéro
+« amendements indisponibles » déclaré dans leur `meta`) et **24 sont un zéro
 réellement mesuré**. Avant ce bloc, les deux étaient le même `[]`.
 
-Coût mesuré : **1 969 octets par profil** pour `couverture` + `identifiants`,
-**917,1 Kio pour 477 profils, soit 0,25 %** des 359,8 Mio de
+Coût mesuré : **1 974 octets par profil** pour `couverture` + `identifiants`,
+**923,4 Kio pour 479 profils, soit 0,25 %** des 359,8 Mio de
 `pivot_data/profiles`. Trois fois l'estimation de l'arbitrage (660 o), et la
 différence est la `preuve` — qui est justement ce qui rend le bloc relisible.
 La complétude ne coûte rien.
@@ -212,11 +212,11 @@ La complétude ne coûte rien.
 
 - **Le rendu des quatre états** appartient au lot #324/#328, bloqué par #326. Ce
   lot modélise et publie la donnée ; il ne touche aucun composant React.
-- **`fait_etabli` n'est aujourd'hui dérivé de personne** : les 10 entrées
-  viennent toutes de déclarations humaines (C5), et c'est correct — les cinq
-  personnes concernées sont sans date de naissance dans la table, donc C3
-  interdirait la dérivation. La branche C1/C2 est écrite, testée, et attend un
-  cas.
+- **`fait_etabli` n'est aujourd'hui dérivé de personne** : les 20 entrées (4
+  profils × 5 listes) viennent toutes de déclarations humaines (C5), et c'est
+  correct — les quatre personnes concernées sont sans date de naissance dans la
+  table, donc C3 interdirait la dérivation. La branche C1/C2 est écrite, testée,
+  et attend un cas.
 - **`non_collecte`/`panne` sur `amendements` (99 profils)** décrit un état du
   corpus publié, pas une fatalité : un run où `extract-amendements-an` réussit
   les fera basculer en `couvert`. C'est précisément ce que C4 attend d'un état
@@ -444,12 +444,15 @@ profil publié sont signalées, non bloquantes.
 
 ### Ce qui reste ouvert
 
-- **Les cinq pages ne sont pas dans ce lot.** Royal et Bertrand ont besoin des
-  index d'amendements et de scrutins que seule la CI construit ; les produire
-  ici publierait des `non_collecte — panne` qui décriraient mon cache, pas le
-  corpus. Le lot livre ce qui les rend productibles — slug, shard, branche
-  `hors_an`, couverture — et le prochain run les écrit. Le garde-fou qualité les
-  nomme en attendant (« Manquants : 5 »), sans bloquer.
+- **Deux pages sur cinq restent à écrire.** Arthaud, Tondelier et Lisnard ont la
+  leur : leur profil est entièrement déterministe hors ligne — le contenu sourcé
+  de `candidats.json`, plus une absence déclarée. Royal et Bertrand non : leurs
+  listes ont besoin des index d'amendements et de scrutins que seule la CI
+  construit, et les produire ici publierait des `non_collecte — panne` qui
+  décriraient un cache local, pas le corpus. Le lot livre ce qui les rend
+  productibles — slug, shard, branche, couverture — et le prochain run les
+  écrit. Le garde-fou qualité les nomme en attendant (« Manquants : 2 »), sans
+  bloquer.
 - **Les 186 `uri_hatvp` au format XML nil**, corrigés à la publication, pas à la
   source.
 - **Le rendu des états de couverture** appartient au lot #324/#328, bloqué par
