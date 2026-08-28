@@ -21,6 +21,11 @@ Les assertions ne sont pas que textuelles : le fragment de bash du step est
 réellement exécuté dans les deux modes, parce que c'est un garde-fou débranché
 — écrit mais jamais déclenché — qui est à l'origine de #460.
 
+#546 a ajouté la troisième valeur qui manquait au contrat : le budget est
+vérifié ENTRE deux unités de collecte, donc le timeout doit couvrir le budget
+PLUS l'unité en vol au moment où il expire. Sans elle, la paire (9 min, 240 s)
+passait ce test alors qu'elle provisionnait 575 s pour 540 s disponibles.
+
 Volontairement sans PyYAML (absent de `requirements.txt`), comme
 `test_ci_cache_paths.py` et `test_ci_garde_fou_interventions.py`.
 """
@@ -38,10 +43,33 @@ WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 # Provision de préambule de job : `actions/checkout`, `setup-python`, `pip
 # install`, restauration des deux caches, téléchargement de l'artifact
 # d'amendements. Mesurée entre 30 s et 193 s sur les 32 shards `extract-an`
-# des runs 32233766814, 32288588518, 32302557156 et 32379928098 — c'est ce
-# que le `timeout-minutes` couvre en plus de la collecte, et ce que le
-# budget interne, lui, ne couvre pas.
-PREAMBULE_PROVISIONNE_SECONDES = 240
+# des runs 32233766814, 32288588518, 32302557156 et 32379928098, et entre
+# 146 s et 197 s sur les 8 shards du run 33110395663 (27/08) — c'est ce que
+# le `timeout-minutes` couvre en plus de la collecte, et ce que le budget
+# interne, lui, ne couvre pas. La population n'a pas bougé, le maximum non
+# plus : 197 s. #546 ramène la provision de 240 s à 200 s, au plus près du
+# maximum mesuré, parce que les 40 s de confort étaient prises sur la marge
+# qui manquait ailleurs (voir DEPASSEMENT_UNITE_EN_VOL_SECONDES).
+PREAMBULE_PROVISIONNE_SECONDES = 200
+
+# Préambule du process Python (avant la première unité d'interventions) plus
+# écriture du profil, deux postes que le budget interne ne compte pas : mesurés
+# 5-6 s et 3-4 s sur les 7 shards porteurs du run 33110395663. Provision 15 s.
+HORS_BUDGET_DU_PROCESS_SECONDES = 15
+
+# CE QUE #546 A AJOUTÉ, ET QUI MANQUAIT. Le budget est vérifié ENTRE deux
+# unités, jamais au milieu de l'une : quand il expire, l'unité en vol va à son
+# terme. Le `timeout-minutes` doit donc couvrir le budget PLUS cette unité.
+# L'omettre est ce qui rendait la paire (9 min, 240 s) incohérente — 575 s de
+# somme provisionnée pour 540 s disponibles — alors que le test ci-dessous la
+# déclarait bonne.
+#
+# Quelle unité ? Pas une législature Syceron : elles sont engagées à l'horloge
+# 41-63 s (mesuré sur les 7 shards porteurs de 33110395663), très en deçà de
+# tout budget de cet ordre, donc jamais celle qui dépasse. C'est une législature
+# de questions officielles, mesurée 5-104 s — max jean-luc-melenchon,
+# législature 15, run 33110395663. Provision 120 s.
+DEPASSEMENT_UNITE_EN_VOL_SECONDES = 120
 
 
 def _yaml() -> str:
@@ -118,23 +146,51 @@ def _executer_script(collect_interventions: str) -> str:
 def test_le_mode_interventions_a_un_timeout_plus_large():
     sans, avec = _timeouts_extract_an()
     assert avec > sans, (
-        "Le mode interventions ajoute trois charges absentes du mode par défaut "
-        "(recherche NosDéputés, archives Syceron, archives de questions) : son "
-        "timeout ne peut pas être inférieur ou égal."
+        "Le mode interventions ajoute deux charges absentes du mode par défaut "
+        "— archives de débats Syceron et archives de questions officielles ; la "
+        "recherche NosDéputés qui en était une troisième est partie avec #529. "
+        "Son timeout ne peut pas être inférieur ou égal."
     )
 
 
 def test_le_budget_tient_dans_le_timeout_du_mode_ou_il_s_applique():
     """Le cœur du garde-fou. Le budget ne borne que la collecte ; le timeout
-    borne le job entier, préambule compris."""
+    borne le job entier — préambule, postes hors budget du process, et l'unité
+    en vol au moment où le budget expire (#546)."""
     _, avec = _timeouts_extract_an()
     budget = _budget_du_script()
     plafond = avec * 60
-    assert budget + PREAMBULE_PROVISIONNE_SECONDES <= plafond, (
+    somme = (
+        budget
+        + PREAMBULE_PROVISIONNE_SECONDES
+        + HORS_BUDGET_DU_PROCESS_SECONDES
+        + DEPASSEMENT_UNITE_EN_VOL_SECONDES
+    )
+    assert somme <= plafond, (
         f"budget={budget} s + préambule provisionné={PREAMBULE_PROVISIONNE_SECONDES} s "
+        f"+ hors budget du process={HORS_BUDGET_DU_PROCESS_SECONDES} s "
+        f"+ unité en vol={DEPASSEMENT_UNITE_EN_VOL_SECONDES} s = {somme} s "
         f"dépasse le timeout du mode interventions ({avec} min = {plafond} s). "
         "Le shard serait de nouveau tué avant d'écrire son profil — exactement "
         "le défaut de #498."
+    )
+
+
+def test_le_budget_ne_descend_pas_sous_les_horloges_de_collecte_mesurees():
+    """L'autre versant de l'arbitrage. Réduire le budget rend la paire trivialement
+    cohérente, au prix de troncatures : il ne doit pas passer sous les horloges de
+    collecte déjà mesurées sur des profils qui allaient au bout.
+
+    Horloges du run 33110395663 (27/08), 7 shards porteurs, en secondes :
+    166 (laurent-wauquiez), 200 (gabriel-attal), 208 (edouard-philippe),
+    208 (bruno-retailleau), 244 (marine-le-pen), 247* (jerome-guedj),
+    332* (jean-luc-melenchon) — * = tronqué par le budget de 240 s alors en place.
+    Descendre sous 244 s retirerait marine-le-pen du lot des profils complets.
+    """
+    assert _budget_du_script() >= 244, (
+        "Le budget passe sous l'horloge de collecte de marine-le-pen (244 s, run "
+        "33110395663) : un profil qui sortait complet sortirait tronqué. La "
+        "troncature est déclarée (#514), pas gratuite."
     )
 
 
