@@ -5,21 +5,27 @@
   "parti_nom": "Les Écologistes",
   "candidats": [
     {
-      "candidat_id": null,
+      "candidat_id": "marine-tondelier",
       "nom": "Marine Tondelier",
       "statut": "declare",
       "famille_politique": "gauche",
-      "a_un_profil_pivot": false
+      "a_un_profil_pivot": true
     }
   ],
   "tags_thematiques_agreges": [],
-  "sources": [],
+  "sources": [
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www.france24.com/fr/france/20260524-france-presidentielle-2027-qui-sont-les-candidats-officiellement-declares",
+      "synchro_le": "2026-08-28T12:02:43+0200"
+    }
+  ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-17T17:36:15+0200",
-    "licence_donnees": "",
+    "genere_le": "2026-08-28T12:06:44+0000",
+    "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr",
     "nb_candidats_declares": 1,
-    "nb_candidats_avec_pivot": 0,
+    "nb_candidats_avec_pivot": 1,
     "warnings": []
   }
 }

@@ -54,6 +54,24 @@
       "fin": "2010-11-13",
       "actif": false,
       "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "xavier-bertrand",
+      "nom": "Xavier Bertrand",
+      "portefeuille": "Ministère du travail, des relations sociales et de la solidarité",
+      "debut": "2007-06-19",
+      "fin": "2008-03-17",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "xavier-bertrand",
+      "nom": "Xavier Bertrand",
+      "portefeuille": "Ministère du travail, des relations sociales, de la famille et de la solidarité",
+      "debut": "2008-03-18",
+      "fin": "2009-01-14",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     }
   ],
   "textes": [],
@@ -89,12 +107,17 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267285",
-      "synchro_le": "2026-08-27T20:32:33+0000"
+      "synchro_le": "2026-08-28T11:48:01+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267080",
+      "synchro_le": "2026-08-28T11:38:53+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T12:06:59+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }
