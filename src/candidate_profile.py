@@ -1337,6 +1337,28 @@ def _extract_cosignataire_refs(cosignataires_bloc: Any) -> list[str]:
     return list(dict.fromkeys(refs))
 
 
+def _texte_an(valeur: Any) -> Optional[str]:
+    """Chaîne de l'open data AN, ou `None` quand la source ne publie rien.
+
+    L'open data AN est du XML converti en JSON, et un élément vide y arrive
+    sous la forme d'un **objet**, pas d'un `null` :
+    `{"@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "@xsi:nil": "true"}`. Recopié tel quel dans un enregistrement pivot, ce
+    marqueur fait passer un `dict` là où tout l'aval attend une chaîne — il ne
+    se voit pas à l'écriture, il casse à la lecture.
+
+    C'est la **troisième** fois que cet idiome mord dans ce dépôt : #539 l'a
+    trouvé dans `identite.uri_hatvp` (186 profils sur 476 portaient le marqueur
+    au lieu d'une URI, voir `normalize_profil._uri_hatvp_publiable`), et #562
+    dans `cycleDeVie.dateDepot` des amendements — 8 amendements sur les
+    624 180 des trois législatures figées, mais **99 profils publiés sur 481**
+    privés de tous leurs amendements par le `TypeError` que le tri par date en
+    tirait. Une valeur nil n'est pas une donnée : c'est une donnée manquante,
+    et le pivot l'écrit `null` (AGENTS.md §2.5).
+    """
+    return valeur if isinstance(valeur, str) and valeur else None
+
+
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
     """Extrait les enregistrements indexés par acteurRef d'un amendement brut.
 
@@ -1384,7 +1406,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
         # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
-        "texte_vise": amendement.get("texteLegislatifRef"),
+        "texte_vise": _texte_an(amendement.get("texteLegislatifRef")),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         # Prefixe "an:" : ce sont des identifiants Assemblee nationale bruts, pas
@@ -1393,8 +1415,10 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
-        "date": cycle_de_vie.get("dateDepot"),
-        "numero": (amendement.get("identification") or {}).get("numeroLong"),
+        # `_texte_an` et pas `.get()` nu : `dateDepot` est publié `xsi:nil` par
+        # l'AN quand la date de dépôt manque, ce qui arrive en pratique (#562).
+        "date": _texte_an(cycle_de_vie.get("dateDepot")),
+        "numero": _texte_an((amendement.get("identification") or {}).get("numeroLong")),
         "source_url": None,
     }
 
@@ -1468,19 +1492,19 @@ def _parse_amendement_legacy_single(
         # seulement 22 159 `numeroLong` distincts. Meme cle que le schema
         # moderne, voir `_parse_amendement_entry`.
         "uid": amendement.get("uid"),
-        "texte_vise": texte_ref,
+        "texte_vise": _texte_an(texte_ref),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
         "premier_signataire": f"an:{acteur_ref}",
         "co_signataires": [f"an:{ref}" for ref in cosign_refs if isinstance(ref, str)],
         "type_deposant": _AMENDEMENT_TYPE_AUTEUR_MAP.get(auteur.get("typeAuteur")),
-        "date": amendement.get("dateDepot"),
+        "date": _texte_an(amendement.get("dateDepot")),
         # `numeroLong` (ex. "7 (Rect)") est à la racine de l'amendement, pas
         # imbriqué sous `identifiant` (qui ne porte que le numéro nu "7" —
         # vérifié sur l'archive réelle le 15/08/2026 : lire depuis
         # `identifiant` ici perdait silencieusement le suffixe de
         # rectification sur tout amendement rectifié).
-        "numero": amendement.get("numeroLong") or identifiant.get("numero"),
+        "numero": _texte_an(amendement.get("numeroLong")) or _texte_an(identifiant.get("numero")),
         "source_url": None,
     }
 
@@ -3821,7 +3845,19 @@ def fetch_amendements_officiels(
                 )
             continue
         for record in records:
-            amendements.append({**record, "legislature": legislature})
+            # Normalisation À LA LECTURE, et pas seulement au parsing : les
+            # index des trois législatures figées sont COMMITTÉS
+            # (`AN_AMENDEMENTS_FIGEES_DIR`) et ne sont pas reconstruits par la
+            # CI — 8 d'entre eux portent déjà le marqueur `xsi:nil` en `date`,
+            # et il faudrait rejouer `build_amendements_index_figees.py` sur
+            # 350-650 Mo d'archives hors CI pour les en purger. Corriger la
+            # seule écriture laisserait donc les 99 profils de #562 cassés.
+            amendements.append({
+                **record,
+                "date": _texte_an(record.get("date")),
+                "texte_vise": _texte_an(record.get("texte_vise")),
+                "legislature": legislature,
+            })
 
     if amendements:
         titre_index = _build_texte_titre_index()
@@ -3831,6 +3867,10 @@ def fetch_amendements_officiels(
                 if titre:
                     record["texte_vise"] = titre
 
+    # Tri sûr parce que `date` vient d'être normalisée en `str | None` juste
+    # au-dessus : c'est CE tri qui levait
+    # `'<' not supported between instances of 'dict' and 'str'` sur 99 profils
+    # publiés sur 481 (#562), pour 8 amendements portant un `dateDepot` nil.
     amendements.sort(key=lambda a: a.get("date") or "", reverse=True)
     return amendements
 

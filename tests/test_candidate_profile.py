@@ -3118,6 +3118,120 @@ def test_fetch_amendements_officiels_returns_cached_amendements_when_index_prese
     assert matching[0]["numero"] == "1"
 
 
+# ---------------------------------------------------------------------------
+# #562 — la date `xsi:nil` des amendements, et le TypeError qu'elle levait
+# ---------------------------------------------------------------------------
+
+#: Le marqueur XML tel qu'il arrive dans l'open data AN converti en JSON : un
+#: élément vide n'y devient pas `null`, il devient un OBJET.
+NIL_AN = {"@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "@xsi:nil": "true"}
+
+
+def test_texte_an_lit_le_marqueur_xsi_nil_comme_une_donnee_manquante():
+    """Une valeur `xsi:nil` n'est pas une donnée : c'est une donnée manquante,
+    et le pivot l'écrit `null` (AGENTS.md §2.5). Troisième occurrence de
+    l'idiome dans ce dépôt après `identite.uri_hatvp` (#539)."""
+    from candidate_profile import _texte_an
+
+    assert _texte_an(NIL_AN) is None
+    assert _texte_an("2024-01-01") == "2024-01-01"
+    assert _texte_an("") is None
+    assert _texte_an(None) is None
+
+
+def test_parse_amendement_entry_normalise_une_date_de_depot_nil():
+    """Schéma moderne (légis 15/16/17) : `cycleDeVie.dateDepot` nil ne doit pas
+    entrer tel quel dans l'enregistrement pivot."""
+    from candidate_profile import _parse_amendement_entry
+
+    entrees = _parse_amendement_entry({"amendement": {
+        "uid": "U1",
+        "texteLegislatifRef": "PRJLANR5L16B0274",
+        "signataires": {"auteur": {"acteurRef": "PA1", "typeAuteur": "Député"}},
+        "cycleDeVie": {"dateDepot": NIL_AN},
+        "identification": {"numeroLong": "12"},
+    }})
+
+    assert entrees is not None
+    assert entrees[0][1]["date"] is None
+
+
+def test_parse_amendement_legacy_normalise_une_date_de_depot_nil():
+    """Même règle sur le schéma legacy de la XIVe (#299) : la source change de
+    forme, pas la règle."""
+    from candidate_profile import _parse_amendement_legacy_single
+
+    entrees = _parse_amendement_legacy_single(
+        {
+            "uid": "U1",
+            "signataires": {"auteur": {"acteurRef": "PA1", "typeAuteur": "Député"}},
+            "dateDepot": NIL_AN,
+            "numeroLong": "7 (Rect)",
+        },
+        "PRJLANR5L14B0001",
+    )
+
+    assert entrees[0][1]["date"] is None
+
+
+def test_fetch_amendements_officiels_tolere_une_date_xsi_nil_en_cache(tmp_path):
+    """**Le défaut de #562**, et le seul test qui le tienne vraiment.
+
+    `'<' not supported between instances of 'dict' and 'str'` : le tri par date
+    de `fetch_amendements_officiels` recevait le marqueur `xsi:nil` d'un
+    `dateDepot` absent. 8 amendements sur les 624 180 des trois législatures
+    figées le portent — mais ils sont cosignés, et **99 profils publiés sur
+    481** perdaient de ce fait la totalité de leurs amendements.
+
+    La normalisation est vérifiée **à la lecture du cache**, et c'est le point :
+    les index des trois législatures figées sont COMMITTÉS et ne sont pas
+    reconstruits par la CI. Un correctif limité au parsing laisserait le corpus
+    cassé jusqu'à un rejeu manuel de `build_amendements_index_figees.py` sur
+    350-650 Mo d'archives.
+    """
+    from candidate_profile import AN_AMENDEMENTS_PATH as _LEGISLATURES
+    from candidate_profile import fetch_amendements_officiels
+
+    legislature = next(iter(_LEGISLATURES))
+    _write_cache_amendements(
+        tmp_path,
+        legislature,
+        amendements={
+            "U1": {"uid": "U1", "numero": "1", "date": NIL_AN, "texte_vise": "T1", "sort": None},
+            "U2": {"uid": "U2", "numero": "2", "date": "2024-01-01", "texte_vise": "T2", "sort": None},
+        },
+        index_par_acteur={"PA1": [
+            {"uid": "U1", "role_signataire": "cosignataire"},
+            {"uid": "U2", "role_signataire": "auteur_principal"},
+        ]},
+    )
+
+    warnings: list[str] = []
+    with (
+        patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
+        patch("candidate_profile.requests.get") as mock_get,
+        patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
+        patch("candidate_profile._build_texte_titre_index", return_value={}),
+    ):
+        amendements = fetch_amendements_officiels(
+            "https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings
+        )
+
+    mock_get.assert_not_called()
+    assert len(amendements) == 2, "aucun amendement ne doit être perdu par une date absente"
+    par_uid = {a["uid"]: a for a in amendements}
+    assert par_uid["U1"]["date"] is None, "une date `xsi:nil` se publie `null`, pas en objet"
+    assert par_uid["U2"]["date"] == "2024-01-01"
+    assert amendements[0]["uid"] == "U2", "l'amendement daté reste en tête du tri décroissant"
+    # Les autres législatures n'ont pas de cache dans ce tmp_path et le disent :
+    # ce sont des absences d'index, pas des exceptions. Aucune ne doit porter la
+    # trace d'un défaut de code.
+    assert not any("not supported between instances" in w for w in warnings)
+    assert not any(f"(législature {legislature})" in w for w in warnings), (
+        "la législature effectivement en cache n'a rien à signaler"
+    )
+
+
 def test_build_profile_amendements_fetch_failure_is_tracked_in_warnings():
     """Quand fetch_amendements_officiels échoue de façon inattendue (ex. exception
     propagée), le try/except de build_profile doit ajouter un warning
