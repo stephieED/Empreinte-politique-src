@@ -725,8 +725,9 @@ est fait d'horodatages, d'identifiants de run GitHub et de sommes de contrôle.
 Les commentaires d'issues restent hors périmètre — `gh issue list` ne les rend
 pas —, et la sortie le dit désormais plutôt que de le laisser croire.
 
-**Résultat du premier lancement réel : 46 des 47 SHA cités résolvent.** Le
-quarante-septième est `efed279`, cité dans `docs/technical_decisions.md`, et il
+**Résultat sur l'état réel, 28/08/2026 : 46 des 47 SHA cités résolvent**, dans
+une visite `full` (snapshot `6ad9782`). Verdict VÉRIFIÉ : **aucun trou
+d'archive**. Le quarante-septième est `efed279`, cité dans ce fichier, et il
 révèle une situation que cette section n'avait pas prévue.
 
 **Une quatrième situation : la citation orpheline.** `efed279` est un commit de
@@ -768,16 +769,27 @@ plus : trois causes différentes d'un même symptôme, trois gestes différents.
 coûte 48 requêtes (1 visite + 47 révisions) sur les 120/heure : **deux passes par
 heure au plus**, et la fenêtre est une heure pleine, pas un débit lissé. Lancée
 sur un seau déjà entamé, la vérification a temporisé deux fois — 702 s puis
-1 504 s — et l'a annoncé à chaque fois, comme #568 le demandait. Deuxième
-constat du même relevé : la route `/origin/.../visit/latest/` a **son propre
-seau, à 700 requêtes/heure**. Lire ses en-têtes dans le compteur des révisions
-ferait croire à six fois plus de marge qu'il n'y en a.
+1 504 s — et l'a annoncé à chaque fois, comme #568 le demandait. La passe
+complète a duré **37 min 22 s** pour 3,7 s de CPU : c'est de l'attente, pas du
+calcul, et c'est le prix d'une vérification lancée sur un seau déjà entamé.
+
+Deuxième constat du même relevé : la route `/origin/.../visit/latest/` a **son
+propre seau, à 700 requêtes/heure**. Lire ses en-têtes dans le compteur des
+révisions ferait croire à six fois plus de marge qu'il n'y en a.
+
+Troisième, et c'est un défaut que seule l'exécution réelle pouvait sortir :
+`X-RateLimit-Remaining` est une **photographie de la réponse précédente**, et
+elle se périme à l'horodatage `reset`. Sans cette distinction, le script a
+annoncé vingt « quota épuisé — attente de 1 s » d'affilée après un reset,
+chacune suivie d'une requête qui passait très bien. Un garde-fou qui crie sans
+raison finit par n'être plus lu — et ce bavardage masquait précisément les deux
+temporisations réelles de la même exécution.
 
 **Rien de tout cela ne tourne en CI**, conformément à la question 2 : la
 vérification est un geste de pré-coupure, pas un contrôle de run. Un test
 l'interdit explicitement — la brancher dans un workflow consommerait à chaque
 push un quota anonyme partagé, et ferait échouer des jobs sur l'état d'un
-service tiers. Les 39 tests de `tests/test_verifier_archivage_swh.py` portent sur
+service tiers. Les 41 tests de `tests/test_verifier_archivage_swh.py` portent sur
 des entrées simulées ; aucun ne joint l'API.
 
 ---
