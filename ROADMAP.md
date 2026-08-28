@@ -16,12 +16,12 @@ une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
 | --- | --- | --- | --- |
 | 1 | **#546** | ouverte, mesure à faire | rien — mesurer avant de re-dimensionner |
 | 2 | **#545** | ouverte | rien — garde-fou manquant, révélé par #540 |
-| 3 | **#539** | `needs-human` | **décision de schéma** : comment naît un identifiant |
+| 3 | **#539** | arbitré, **livré** | rien — identité, `identifiants` et `couverture` publiés ; reste les 2 pages de Royal/Bertrand, que le prochain run écrit |
 | 4 | #326 | prêt | rien — bloque explicitement 328/329/330 |
 | 5 | #328 | prêt après #326 | #326 — #540 est corrigé et le corpus régénéré |
 | 5 | #329, #330 | prêts après #326 | #326 — parallélisables entre eux et avec #328 |
 | 6 | #331 | — | #328, #329, #330 |
-| 7 | #486 | à recadrer | prémisse changée par #528 ; à décider **après #539** |
+| 7 | #486 | à recadrer | prémisse changée par #528 ; **débloquée** — se branche sur le modèle de #539 au lieu d'en inventer un second |
 | 8 | #484 | non résolu | #486 — `identite` toujours `null`, vérifié le 27/08 |
 | 9 | #495 | — | #486 |
 | 10 | #429 | `needs-human` | 8/8 sous-issues closes ; ne reste qu'un arbitrage de critère |
@@ -33,9 +33,18 @@ gêner : **données/schéma** (`src/`, `raw_data/` — #539), **UI**
 **qualité** (`src/audit_*` — #545). #530 et #508 sont livrés (PR #543 et #542).
 #328/#329/#330 sont parallélisables entre elles une fois #326 mergée.
 
-**La seule sérialisation inter-voies** est #539 avant #486 : les deux décrivent la même
-distinction — *fait établi* / *hors couverture de source* / *non collecté* — et les
-trancher séparément produirait deux modèles concurrents pour un même problème.
+**La sérialisation inter-voies #539 avant #486 est levée** : #539 est livré, et le
+modèle qu'il publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte`
+(+ `cause`), par liste métier, avec portée facultative — est celui sur lequel #486 se
+branche au lieu d'en inventer un second. Les deux décrivaient la même distinction ;
+elle n'est plus tranchée qu'une fois, dans
+`docs/technical_decisions.md#couverture-listes-539`.
+
+**#484 est à re-vérifier plutôt qu'à rouvrir tel quel** : « `identite` toujours
+`null` » est faux — c'est **2 profils sur 476**, `jean-luc-melenchon` et le profil
+PE. Et le mécanisme qui l'a produit (un vide de collecte lu comme une donnée) est
+désormais nommé dans le pivot : la même situation publie `non_collecte` avec sa
+`cause`, jamais un fait.
 
 ## Known bugs
 

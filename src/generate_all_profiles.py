@@ -95,8 +95,11 @@ from candidate_profile import (
     WARNING_PREFIX_BUDGET_COLLECTE,
     RefusDrapeauInterventionsSyceron,
     build_profile,
+    nb_acteurs_referentiel_charge,
 )
 from candidate_profile_ue import build_profile_ue
+import correspondance_acteurs_an
+import couverture_profil
 from json_io import ecrire_profil_json
 from licences import LICENCE_AN
 from merge_profile import (
@@ -107,7 +110,7 @@ from merge_profile import (
 )
 from normalize_europarl import normalize_europarl
 from normalize_profil import normalize_profil
-from schema_pivot import appliquer_chambres
+from schema_pivot import appliquer_chambres, poser_identifiant
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     rafraichir as rafraichir_amendements,
@@ -618,6 +621,103 @@ def build_profile_any_chambre(
     return profil_retenu, chambre_retenue, warnings
 
 
+def _entree_correspondance(slug: str) -> Optional[dict[str, Any]]:
+    """Entrée committée du slug dans la table de correspondance (#525), ou None.
+
+    Ne lève jamais : une table absente ou invalide se signale déjà dans
+    `candidate_profile._correspondance_committee`, et un profil sans entrée
+    reste publiable — c'est le quality gate, sur le corpus **publié**, qui
+    transforme un slug non couvert en échec dur.
+    """
+    try:
+        return correspondance_acteurs_an.charger_correspondance().get(slug)
+    except correspondance_acteurs_an.CorrespondanceInvalide:
+        return None
+
+
+def _normaliser_en_pivot(
+    profile: dict[str, Any],
+    mandat_ue: Optional[dict[str, Any]],
+    *,
+    effective_slug: str,
+    parti: Optional[str],
+    provenance: str,
+    chambre: Optional[str],
+    scrutins_index: Optional[ScrutinsIndex],
+    decisions: Optional[tuple[str, ...]] = None,
+) -> Optional[dict[str, Any]]:
+    """Normalise le brut FR et/ou le mandat européen en un seul pivot.
+
+    Extraite des deux chemins de `process_candidat` (`--pivot-only` et mode
+    normal), qui en portaient deux copies : #539 leur ajoute trois traitements
+    identiques — l'`acteur_ref` publié, le slug transmis au normaliseur
+    européen, la couverture dérivée — et trois copies auraient divergé.
+
+    Le `slug=` passé à `normalize_europarl` est la correction durable du seul
+    `id` préfixé restant : sans lui, un profil sans identité française
+    (`jordan-bardella`) repartait à chaque run avec `europarl:131580` pour
+    identité, et une réécriture du corpus n'aurait tenu qu'un run (#487, #539).
+    """
+    entree = _entree_correspondance(effective_slug)
+    acteur_ref = entree.get("acteur_ref") if entree else None
+
+    # Le brut est normalisé quand une chambre FR a répondu — ou, depuis #539,
+    # quand il est le SEUL matériau disponible et que l'absence d'acteur AN est
+    # **déclarée** dans la table. Sans cette seconde branche, un candidat
+    # vérifié comme n'ayant jamais siégé (Arthaud, Tondelier, Lisnard) aurait un
+    # profil brut et aucun pivot : un « collecté mais non publié » (#511) créé
+    # par le lot censé le retirer.
+    declaree_hors_an = bool(entree) and entree.get("ecart") == "hors_an"
+    pivoter_le_brut = bool(chambre) or (mandat_ue is None and declaree_hors_an)
+    pivot_profile = (
+        normalize_profil(
+            profile,
+            parti=parti,
+            provenance=provenance,
+            scrutins_index=scrutins_index,
+            acteur_ref=acteur_ref,
+        )
+        if pivoter_le_brut
+        else None
+    )
+    if mandat_ue is not None:
+        ue_pivot = normalize_europarl(
+            mandat_ue, parti=parti, provenance=provenance, slug=effective_slug
+        )
+        if pivot_profile is None:
+            pivot_profile = ue_pivot
+        else:
+            pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
+            pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
+            # `identifiants` se complète, il ne se remplace pas : le bloc du
+            # normaliseur FR porte l'`an` et le `hatvp`, celui du normaliseur
+            # européen l'`europarl`. `poser_identifiant` n'écrase jamais par
+            # `null`, donc l'ordre des deux ne change rien.
+            for cle, valeur in (ue_pivot.get("identifiants") or {}).items():
+                poser_identifiant(pivot_profile, cle, valeur)
+            # #493 : `mandats[]` vient de changer, donc `chambres` aussi.
+            # Sans ce recalcul, un profil AN + PE publierait `["AN"]` et
+            # effacerait le mandat européen — le défaut même que #486
+            # reproche au scalaire, reconduit dans le champ censé le corriger.
+            appliquer_chambres(pivot_profile)
+
+    if pivot_profile is None:
+        return None
+
+    # #539 — la couverture est dérivée en DERNIER, une fois les listes et la
+    # provenance arrêtées, et elle n'est jamais fusionnée : elle décrit le run,
+    # pas la personne (voir merge_profile.merge_pivot_profile).
+    couverture_profil.appliquer(
+        pivot_profile,
+        decisions=decisions,
+        fait_hors_an=couverture_profil.etablir_fait_hors_an(
+            entree,
+            couverture_profil.SanteReferentiel(nb_acteurs_referentiel_charge()),
+        ),
+    )
+    return pivot_profile
+
+
 def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any]) -> dict[str, Any]:
     """Construit un profil minimal (structure identique à build_profile(), mais sans
     aucun appel réseau) pour un candidat sans mandat français connu — ex. Jordan
@@ -769,19 +869,15 @@ def process_candidat(
         mandat_ue = profile.get("mandat_europeen")
         parti = candidat.get("parti")
 
-        pivot_profile = normalize_profil(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
-        if mandat_ue is not None:
-            ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
-            if pivot_profile is None:
-                pivot_profile = ue_pivot
-            else:
-                pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
-                pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
-                # #493 : `mandats[]` vient de changer, donc `chambres` aussi.
-                # Sans ce recalcul, un profil AN + PE publierait `["AN"]` et
-                # effacerait le mandat européen — le défaut même que #486
-                # reproche au scalaire, reconduit dans le champ censé le corriger.
-                appliquer_chambres(pivot_profile)
+        # `decisions=None` : en `--pivot-only`, le run ne collecte rien et ses
+        # drapeaux ne décrivent donc rien. La décision se lit dans le brut
+        # (`meta.collecte_ecartee`, #539) et, à défaut, dans la provenance —
+        # le job roster porte les deux `--skip-*` en dur (#357).
+        pivot_profile = _normaliser_en_pivot(
+            profile, mandat_ue,
+            effective_slug=effective_slug, parti=parti, provenance=provenance,
+            chambre=chambre, scrutins_index=scrutins_index, decisions=None,
+        )
 
         if pivot_profile is None:
             _tprint(f"— {nom} ({effective_slug}) : aucune source normalisable en --pivot-only.")
@@ -926,12 +1022,29 @@ def process_candidat(
             # de la liste : une troncature de budget peut le précéder, et c'est
             # bien la panne qu'il faut lire dans l'onglet de résumé du job.
             _annoter_github(f"{effective_slug} : {en_echec[0]}")
-        return {
-            "nom": nom,
-            "slug": effective_slug,
-            "statut": "source_indisponible" if en_echec else "introuvable",
-            "parltrack": "n/a",
-        }
+        # #539 — l'exception, et une seule : un slug **déclaré hors AN** dans la
+        # table committée (`ecart: "hors_an"`, avec motif et preuve relus). Ce
+        # n'est pas une collecte manquée, c'est un fait vérifié — et sans profil,
+        # le candidat existerait dans le manifeste et disparaîtrait au clic.
+        #
+        # La condition est volontairement la déclaration, jamais l'absence de
+        # résultat : un référentiel en panne rend exactement le même vide, et
+        # écrire un squelette dessus serait le défaut de #484. Une panne déclarée
+        # (`en_echec`) écarte donc la branche.
+        declaree_hors_an = (_entree_correspondance(effective_slug) or {}).get("ecart") == "hors_an"
+        if not en_echec and declaree_hors_an:
+            _tprint(
+                f"  — {effective_slug} : absence d'acteur AN DÉCLARÉE dans la table "
+                "(#525) — profil écrit depuis raw_data/candidats.json seul (#539)."
+            )
+            profile = build_minimal_profile(nom, effective_slug, candidat)
+        else:
+            return {
+                "nom": nom,
+                "slug": effective_slug,
+                "statut": "source_indisponible" if en_echec else "introuvable",
+                "parltrack": "n/a",
+            }
     if profile is None:
         # Candidat sans mandat français connu, mais avec un mandat européen
         # (ex. Jordan Bardella) : on crée un profil minimal à partir de
@@ -977,19 +1090,21 @@ def process_candidat(
     # Optionnel : écriture du profil pivot v1 (--pivot)
     if args.pivot:
         parti = candidat.get("parti")
-        pivot_profile = normalize_profil(profile, parti=parti, provenance=provenance, scrutins_index=scrutins_index) if chambre else None
-        if mandat_ue is not None:
-            ue_pivot = normalize_europarl(mandat_ue, parti=parti, provenance=provenance)
-            if pivot_profile is None:
-                pivot_profile = ue_pivot
-            else:
-                # Fusionner les données UE dans le pivot principal :
-                # ajouter la source EP et les mandats européens.
-                pivot_profile["sources"].extend(ue_pivot.get("sources") or [])
-                pivot_profile["mandats"].extend(ue_pivot.get("mandats") or [])
-                # #493 : voir --pivot-only ci-dessus — `chambres` est dérivé de
-                # `mandats[]`, il se recalcule après chaque mutation de la liste.
-                appliquer_chambres(pivot_profile)
+        # Mode normal : les drapeaux du run décrivent VRAIMENT la collecte qui
+        # vient d'avoir lieu, donc ils sont la source de la décision (#539).
+        decisions = tuple(
+            drapeau
+            for drapeau, actif in (
+                ("skip_interventions", args.skip_interventions),
+                ("skip_dossiers_legislatifs", args.skip_dossiers_legislatifs),
+            )
+            if actif
+        )
+        pivot_profile = _normaliser_en_pivot(
+            profile, mandat_ue,
+            effective_slug=effective_slug, parti=parti, provenance=provenance,
+            chambre=chambre, scrutins_index=scrutins_index, decisions=decisions,
+        )
         if pivot_profile is not None:
             pivot_path = pivot_dir / f"{effective_slug}.pivot.json"
             existing_pivot = None

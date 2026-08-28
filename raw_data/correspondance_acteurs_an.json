@@ -1,10 +1,15 @@
 {
-  "schema_version": "correspondance-acteurs-an-v1",
+  "schema_version": "correspondance-acteurs-an-v2",
   "genere_le": "2026-08-26T14:31:35+0000",
   "source_referentiel": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
   "correspondances": {
     "adrien-quatennens": {
-      "acteur_ref": "PA720422",
+      "identifiants": {
+        "an": "PA720422",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Adrien",
@@ -18,7 +23,12 @@
       "verifie_le": "2026-08-26"
     },
     "alain-david": {
-      "acteur_ref": "PA1008",
+      "identifiants": {
+        "an": "PA1008",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/david-alain"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alain",
@@ -32,7 +42,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandra-martin": {
-      "acteur_ref": "PA793342",
+      "identifiants": {
+        "an": "PA793342",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Alexandra",
@@ -46,7 +61,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandra-martin-1": {
-      "acteur_ref": "PA793944",
+      "identifiants": {
+        "an": "PA793944",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Alexandra",
@@ -60,7 +80,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandra-masson": {
-      "acteur_ref": "PA793314",
+      "identifiants": {
+        "an": "PA793314",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Alexandra",
@@ -74,7 +99,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandre-holroyd": {
-      "acteur_ref": "PA721150",
+      "identifiants": {
+        "an": "PA721150",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexandre",
@@ -88,7 +118,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandre-loubet": {
-      "acteur_ref": "PA794590",
+      "identifiants": {
+        "an": "PA794590",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/loubet-alexandre-24155"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexandre",
@@ -102,7 +137,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandre-portier": {
-      "acteur_ref": "PA794994",
+      "identifiants": {
+        "an": "PA794994",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/portier-alexandre-24157"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexandre",
@@ -116,7 +156,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexandre-sabatou": {
-      "acteur_ref": "PA794570",
+      "identifiants": {
+        "an": "PA794570",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/sabatou-alexandre-24164"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexandre",
@@ -130,7 +175,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexis-corbiere": {
-      "acteur_ref": "PA721210",
+      "identifiants": {
+        "an": "PA721210",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/corbiere-alexis"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexis",
@@ -144,7 +194,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexis-izard": {
-      "acteur_ref": "PA795652",
+      "identifiants": {
+        "an": "PA795652",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexis",
@@ -158,7 +213,12 @@
       "verifie_le": "2026-08-26"
     },
     "alexis-jolly": {
-      "acteur_ref": "PA794030",
+      "identifiants": {
+        "an": "PA794030",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/jolly-alexis-24185"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Alexis",
@@ -172,7 +232,12 @@
       "verifie_le": "2026-08-26"
     },
     "alma-dufour": {
-      "acteur_ref": "PA795200",
+      "identifiants": {
+        "an": "PA795200",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dufour-alma-24267"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Alma",
@@ -186,7 +251,12 @@
       "verifie_le": "2026-08-26"
     },
     "amelia-lakrafi": {
-      "acteur_ref": "PA721004",
+      "identifiants": {
+        "an": "PA721004",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lakrafi-amelia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Amélia",
@@ -200,7 +270,12 @@
       "verifie_le": "2026-08-26"
     },
     "anais-sabatini": {
-      "acteur_ref": "PA794894",
+      "identifiants": {
+        "an": "PA794894",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/sabatini-anais-19137"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anaïs",
@@ -214,7 +289,12 @@
       "verifie_le": "2026-08-26"
     },
     "andree-taurinya": {
-      "acteur_ref": "PA794106",
+      "identifiants": {
+        "an": "PA794106",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/taurinya-andree-24273"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Andrée",
@@ -228,7 +308,12 @@
       "verifie_le": "2026-08-26"
     },
     "andy-kerbrat": {
-      "acteur_ref": "PA794130",
+      "identifiants": {
+        "an": "PA794130",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/kerbrat-andy-24190"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Andy",
@@ -242,7 +327,12 @@
       "verifie_le": "2026-08-26"
     },
     "angelique-ranc": {
-      "acteur_ref": "PA793230",
+      "identifiants": {
+        "an": "PA793230",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ranc-angelique-24274"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Angélique",
@@ -256,7 +346,12 @@
       "verifie_le": "2026-08-26"
     },
     "anna-pic": {
-      "acteur_ref": "PA794270",
+      "identifiants": {
+        "an": "PA794270",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pic-anna-20030"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anna",
@@ -270,7 +365,12 @@
       "verifie_le": "2026-08-26"
     },
     "annaig-le-meur": {
-      "acteur_ref": "PA719388",
+      "identifiants": {
+        "an": "PA719388",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-meur-annaig"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Annaïg",
@@ -284,7 +384,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-brugnera": {
-      "acteur_ref": "PA721328",
+      "identifiants": {
+        "an": "PA721328",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne",
@@ -298,7 +403,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-genetet": {
-      "acteur_ref": "PA721024",
+      "identifiants": {
+        "an": "PA721024",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/genetet-anne"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne",
@@ -312,7 +422,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-laure-blin": {
-      "acteur_ref": "PA774954",
+      "identifiants": {
+        "an": "PA774954",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/blin-anne-laure-20484"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne-Laure",
@@ -326,7 +441,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-laurence-petel": {
-      "acteur_ref": "PA718930",
+      "identifiants": {
+        "an": "PA718930",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne-Laurence",
@@ -340,7 +460,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-sophie-frigout": {
-      "acteur_ref": "PA794286",
+      "identifiants": {
+        "an": "PA794286",
+        "senat": null,
+        "europarl": "256876",
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne-Sophie",
@@ -354,7 +479,12 @@
       "verifie_le": "2026-08-26"
     },
     "anne-stambach-terrenoir": {
-      "acteur_ref": "PA793744",
+      "identifiants": {
+        "an": "PA793744",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/stambach-terrenoir-anne-24282"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Anne",
@@ -368,7 +498,12 @@
       "verifie_le": "2026-08-26"
     },
     "annick-cousin": {
-      "acteur_ref": "PA794222",
+      "identifiants": {
+        "an": "PA794222",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Annick",
@@ -382,7 +517,12 @@
       "verifie_le": "2026-08-26"
     },
     "annie-genevard": {
-      "acteur_ref": "PA605991",
+      "identifiants": {
+        "an": "PA605991",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Annie",
@@ -396,7 +536,12 @@
       "verifie_le": "2026-08-26"
     },
     "annie-vidal": {
-      "acteur_ref": "PA722102",
+      "identifiants": {
+        "an": "PA722102",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vidal-annie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Annie",
@@ -410,7 +555,12 @@
       "verifie_le": "2026-08-26"
     },
     "anthony-brosse": {
-      "acteur_ref": "PA794330",
+      "identifiants": {
+        "an": "PA794330",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brosse-anthony-24192"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Anthony",
@@ -424,7 +574,12 @@
       "verifie_le": "2026-08-26"
     },
     "antoine-armand": {
-      "acteur_ref": "PA795144",
+      "identifiants": {
+        "an": "PA795144",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Antoine",
@@ -438,7 +593,12 @@
       "verifie_le": "2026-08-26"
     },
     "antoine-leaument": {
-      "acteur_ref": "PA795746",
+      "identifiants": {
+        "an": "PA795746",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/leaument-antoine-24198"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Antoine",
@@ -452,7 +612,12 @@
       "verifie_le": "2026-08-26"
     },
     "antoine-vermorel-marques": {
-      "acteur_ref": "PA794118",
+      "identifiants": {
+        "an": "PA794118",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vermorel-marques-antoine-20369"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Antoine",
@@ -466,7 +631,12 @@
       "verifie_le": "2026-08-26"
     },
     "antoine-villedieu": {
-      "acteur_ref": "PA794946",
+      "identifiants": {
+        "an": "PA794946",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/villedieu-antoine-24226"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Antoine",
@@ -480,7 +650,12 @@
       "verifie_le": "2026-08-26"
     },
     "arnaud-le-gall": {
-      "acteur_ref": "PA795672",
+      "identifiants": {
+        "an": "PA795672",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-gall-arnaud-24227"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Arnaud",
@@ -494,7 +669,12 @@
       "verifie_le": "2026-08-26"
     },
     "arthur-delaporte": {
-      "acteur_ref": "PA793394",
+      "identifiants": {
+        "an": "PA793394",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/delaporte-arthur-24229"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Arthur",
@@ -508,7 +688,12 @@
       "verifie_le": "2026-08-26"
     },
     "astrid-panosyan-bouvet": {
-      "acteur_ref": "PA795050",
+      "identifiants": {
+        "an": "PA795050",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Astrid",
@@ -522,7 +707,12 @@
       "verifie_le": "2026-08-26"
     },
     "aurelie-trouve": {
-      "acteur_ref": "PA795164",
+      "identifiants": {
+        "an": "PA795164",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/trouve-aurelie-24222"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Aurélie",
@@ -536,7 +726,12 @@
       "verifie_le": "2026-08-26"
     },
     "aurelien-lopez-liguori": {
-      "acteur_ref": "PA793904",
+      "identifiants": {
+        "an": "PA793904",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Aurélien",
@@ -550,7 +745,12 @@
       "verifie_le": "2026-08-26"
     },
     "aurelien-pradie": {
-      "acteur_ref": "PA720100",
+      "identifiants": {
+        "an": "PA720100",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pradie-aurelien"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Aurélien",
@@ -564,7 +764,12 @@
       "verifie_le": "2026-08-26"
     },
     "aurelien-saintoul": {
-      "acteur_ref": "PA795982",
+      "identifiants": {
+        "an": "PA795982",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/saintoul-aurelien-24238"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Aurélien",
@@ -578,7 +783,12 @@
       "verifie_le": "2026-08-26"
     },
     "aurore-berge": {
-      "acteur_ref": "PA722046",
+      "identifiants": {
+        "an": "PA722046",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Aurore",
@@ -592,7 +802,12 @@
       "verifie_le": "2026-08-26"
     },
     "aymeric-caron": {
-      "acteur_ref": "PA796090",
+      "identifiants": {
+        "an": "PA796090",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/caron-aymeric-24243"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Aymeric",
@@ -606,7 +821,12 @@
       "verifie_le": "2026-08-26"
     },
     "barbara-pompili": {
-      "acteur_ref": "PA609520",
+      "identifiants": {
+        "an": "PA609520",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Barbara",
@@ -620,7 +840,12 @@
       "verifie_le": "2026-08-26"
     },
     "bastien-lachaud": {
-      "acteur_ref": "PA720846",
+      "identifiants": {
+        "an": "PA720846",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lachaud-bastien"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bastien",
@@ -634,7 +859,12 @@
       "verifie_le": "2026-08-26"
     },
     "bastien-marchive": {
-      "acteur_ref": "PA795730",
+      "identifiants": {
+        "an": "PA795730",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/marchive-bastien-24246"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bastien",
@@ -648,7 +878,12 @@
       "verifie_le": "2026-08-26"
     },
     "beatrice-piron": {
-      "acteur_ref": "PA721844",
+      "identifiants": {
+        "an": "PA721844",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/piron-beatrice"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Béatrice",
@@ -662,7 +897,12 @@
       "verifie_le": "2026-08-26"
     },
     "beatrice-roullaud": {
-      "acteur_ref": "PA795410",
+      "identifiants": {
+        "an": "PA795410",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/roullaud-beatrice-24224"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Béatrice",
@@ -676,7 +916,12 @@
       "verifie_le": "2026-08-26"
     },
     "belkhir-belhaddad": {
-      "acteur_ref": "PA720362",
+      "identifiants": {
+        "an": "PA720362",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/belhaddad-belkhir"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Belkhir",
@@ -690,7 +935,12 @@
       "verifie_le": "2026-08-26"
     },
     "benedicte-auzanot": {
-      "acteur_ref": "PA796118",
+      "identifiants": {
+        "an": "PA796118",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/auzanot-benedicte-24225"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Bénédicte",
@@ -704,7 +954,12 @@
       "verifie_le": "2026-08-26"
     },
     "benedicte-taurine": {
-      "acteur_ref": "PA718860",
+      "identifiants": {
+        "an": "PA718860",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Bénédicte",
@@ -718,7 +973,12 @@
       "verifie_le": "2026-08-26"
     },
     "benjamin-dirx": {
-      "acteur_ref": "PA722382",
+      "identifiants": {
+        "an": "PA722382",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dirx-benjamin"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Benjamin",
@@ -732,7 +992,12 @@
       "verifie_le": "2026-08-26"
     },
     "benjamin-haddad": {
-      "acteur_ref": "PA795958",
+      "identifiants": {
+        "an": "PA795958",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Benjamin",
@@ -746,7 +1011,12 @@
       "verifie_le": "2026-08-26"
     },
     "benoit-bordat": {
-      "acteur_ref": "PA793500",
+      "identifiants": {
+        "an": "PA793500",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Benoît",
@@ -760,7 +1030,12 @@
       "verifie_le": "2026-08-26"
     },
     "benoit-mournet": {
-      "acteur_ref": "PA794878",
+      "identifiants": {
+        "an": "PA794878",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Benoit",
@@ -774,7 +1049,12 @@
       "verifie_le": "2026-08-26"
     },
     "berangere-couillard": {
-      "acteur_ref": "PA719624",
+      "identifiants": {
+        "an": "PA719624",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Bérangère",
@@ -788,7 +1068,12 @@
       "verifie_le": "2026-08-26"
     },
     "bertrand-petit": {
-      "acteur_ref": "PA344201",
+      "identifiants": {
+        "an": "PA344201",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bertrand",
@@ -802,7 +1087,12 @@
       "verifie_le": "2026-08-26"
     },
     "bertrand-sorre": {
-      "acteur_ref": "PA720190",
+      "identifiants": {
+        "an": "PA720190",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/sorre-bertrand"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bertrand",
@@ -816,7 +1106,12 @@
       "verifie_le": "2026-08-26"
     },
     "boris-vallaud": {
-      "acteur_ref": "PA719930",
+      "identifiants": {
+        "an": "PA719930",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vallaud-boris"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Boris",
@@ -830,7 +1125,12 @@
       "verifie_le": "2026-08-26"
     },
     "brigitte-klinkert": {
-      "acteur_ref": "PA643184",
+      "identifiants": {
+        "an": "PA643184",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/klinkert-brigitte-13215"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Brigitte",
@@ -844,7 +1144,12 @@
       "verifie_le": "2026-08-26"
     },
     "brigitte-liso": {
-      "acteur_ref": "PA720446",
+      "identifiants": {
+        "an": "PA720446",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/liso-brigitte"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Brigitte",
@@ -858,7 +1163,12 @@
       "verifie_le": "2026-08-26"
     },
     "bruno-bilde": {
-      "acteur_ref": "PA720822",
+      "identifiants": {
+        "an": "PA720822",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bilde-bruno"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bruno",
@@ -872,7 +1182,12 @@
       "verifie_le": "2026-08-26"
     },
     "bruno-retailleau": {
-      "acteur_ref": "PA2538",
+      "identifiants": {
+        "an": "PA2538",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bruno",
@@ -886,7 +1201,12 @@
       "verifie_le": "2026-08-26"
     },
     "bruno-studer": {
-      "acteur_ref": "PA720754",
+      "identifiants": {
+        "an": "PA720754",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bruno",
@@ -900,7 +1220,12 @@
       "verifie_le": "2026-08-26"
     },
     "bryan-masson": {
-      "acteur_ref": "PA793330",
+      "identifiants": {
+        "an": "PA793330",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Bryan",
@@ -914,7 +1239,12 @@
       "verifie_le": "2026-08-26"
     },
     "carlos-martens-bilongo": {
-      "acteur_ref": "PA795616",
+      "identifiants": {
+        "an": "PA795616",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bilongo-carlos-martens-24272"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Carlos Martens",
@@ -928,7 +1258,12 @@
       "verifie_le": "2026-08-26"
     },
     "carole-grandjean": {
-      "acteur_ref": "PA720170",
+      "identifiants": {
+        "an": "PA720170",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Carole",
@@ -942,7 +1277,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-abadie": {
-      "acteur_ref": "PA719866",
+      "identifiants": {
+        "an": "PA719866",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -956,7 +1296,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-colombier": {
-      "acteur_ref": "PA793548",
+      "identifiants": {
+        "an": "PA793548",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/colombier-caroline-24233"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -970,7 +1315,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-fiat": {
-      "acteur_ref": "PA720286",
+      "identifiants": {
+        "an": "PA720286",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -984,7 +1334,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-janvier": {
-      "acteur_ref": "PA720074",
+      "identifiants": {
+        "an": "PA720074",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -998,7 +1353,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-parmentier": {
-      "acteur_ref": "PA794670",
+      "identifiants": {
+        "an": "PA794670",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/parmentier-caroline-24247"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -1012,7 +1372,12 @@
       "verifie_le": "2026-08-26"
     },
     "caroline-yadan": {
-      "acteur_ref": "PA795046",
+      "identifiants": {
+        "an": "PA795046",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/yadan-caroline-24503"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Caroline",
@@ -1026,7 +1391,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-belrhiti": {
-      "acteur_ref": "PA773891",
+      "identifiants": {
+        "an": "PA773891",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1040,7 +1410,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-couturier": {
-      "acteur_ref": "PA793680",
+      "identifiants": {
+        "an": "PA793680",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1054,7 +1429,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-deroche": {
-      "acteur_ref": "PA425322",
+      "identifiants": {
+        "an": "PA425322",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1068,7 +1448,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-dumas": {
-      "acteur_ref": "PA404656",
+      "identifiants": {
+        "an": "PA404656",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1082,7 +1467,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-jaouen": {
-      "acteur_ref": "PA796114",
+      "identifiants": {
+        "an": "PA796114",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1096,7 +1486,12 @@
       "verifie_le": "2026-08-26"
     },
     "catherine-procaccia": {
-      "acteur_ref": "PA304086",
+      "identifiants": {
+        "an": "PA304086",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Catherine",
@@ -1110,7 +1505,12 @@
       "verifie_le": "2026-08-26"
     },
     "cecile-rilhac": {
-      "acteur_ref": "PA720900",
+      "identifiants": {
+        "an": "PA720900",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Cécile",
@@ -1124,7 +1524,12 @@
       "verifie_le": "2026-08-26"
     },
     "cecile-untermaier": {
-      "acteur_ref": "PA608695",
+      "identifiants": {
+        "an": "PA608695",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Cécile",
@@ -1138,7 +1543,12 @@
       "verifie_le": "2026-08-26"
     },
     "celine-calvez": {
-      "acteur_ref": "PA721750",
+      "identifiants": {
+        "an": "PA721750",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/calvez-celine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Céline",
@@ -1152,7 +1562,12 @@
       "verifie_le": "2026-08-26"
     },
     "chantal-bouloux": {
-      "acteur_ref": "PA793528",
+      "identifiants": {
+        "an": "PA793528",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bouloux-chantal-24618"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Chantal",
@@ -1166,7 +1581,12 @@
       "verifie_le": "2026-08-26"
     },
     "chantal-jourdan": {
-      "acteur_ref": "PA643192",
+      "identifiants": {
+        "an": "PA643192",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/jourdan-chantal-20670"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Chantal",
@@ -1180,7 +1600,12 @@
       "verifie_le": "2026-08-26"
     },
     "charles-guene": {
-      "acteur_ref": "PA227078",
+      "identifiants": {
+        "an": "PA227078",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Charles",
@@ -1194,7 +1619,12 @@
       "verifie_le": "2026-08-26"
     },
     "charles-rodwell": {
-      "acteur_ref": "PA795528",
+      "identifiants": {
+        "an": "PA795528",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rodwell-charles-24279"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Charles",
@@ -1208,7 +1638,12 @@
       "verifie_le": "2026-08-26"
     },
     "charles-sitzenstuhl": {
-      "acteur_ref": "PA794802",
+      "identifiants": {
+        "an": "PA794802",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/sitzenstuhl-charles"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Charles",
@@ -1222,7 +1657,12 @@
       "verifie_le": "2026-08-26"
     },
     "charlotte-goetschy-bolognese": {
-      "acteur_ref": "PA794846",
+      "identifiants": {
+        "an": "PA794846",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Charlotte",
@@ -1236,7 +1676,12 @@
       "verifie_le": "2026-08-26"
     },
     "charlotte-leduc": {
-      "acteur_ref": "PA794402",
+      "identifiants": {
+        "an": "PA794402",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Charlotte",
@@ -1250,7 +1695,12 @@
       "verifie_le": "2026-08-26"
     },
     "charlotte-parmentier-lecocq": {
-      "acteur_ref": "PA720480",
+      "identifiants": {
+        "an": "PA720480",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/parmentier-lecocq-charlotte"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Charlotte",
@@ -1264,7 +1714,12 @@
       "verifie_le": "2026-08-26"
     },
     "christelle-d-intorni": {
-      "acteur_ref": "PA793322",
+      "identifiants": {
+        "an": "PA793322",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christelle",
@@ -1278,7 +1733,12 @@
       "verifie_le": "2026-08-26"
     },
     "christelle-petex-levet": {
-      "acteur_ref": "PA721442",
+      "identifiants": {
+        "an": "PA721442",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christelle",
@@ -1292,7 +1752,12 @@
       "verifie_le": "2026-08-26"
     },
     "christian-baptiste": {
-      "acteur_ref": "PA643143",
+      "identifiants": {
+        "an": "PA643143",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/baptiste-christian"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christian",
@@ -1306,7 +1771,12 @@
       "verifie_le": "2026-08-26"
     },
     "christian-girard": {
-      "acteur_ref": "PA793102",
+      "identifiants": {
+        "an": "PA793102",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/girard-christian-24287"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christian",
@@ -1320,7 +1790,12 @@
       "verifie_le": "2026-08-26"
     },
     "christine-decodts": {
-      "acteur_ref": "PA794510",
+      "identifiants": {
+        "an": "PA794510",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christine",
@@ -1334,7 +1809,12 @@
       "verifie_le": "2026-08-26"
     },
     "christine-engrand": {
-      "acteur_ref": "PA794718",
+      "identifiants": {
+        "an": "PA794718",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/engrand-christine-24281"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christine",
@@ -1348,7 +1828,12 @@
       "verifie_le": "2026-08-26"
     },
     "christine-le-nabour": {
-      "acteur_ref": "PA719756",
+      "identifiants": {
+        "an": "PA719756",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-nabour-christine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christine",
@@ -1362,7 +1847,12 @@
       "verifie_le": "2026-08-26"
     },
     "christine-loir": {
-      "acteur_ref": "PA793672",
+      "identifiants": {
+        "an": "PA793672",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/loir-christine-24283"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christine",
@@ -1376,7 +1866,12 @@
       "verifie_le": "2026-08-26"
     },
     "christine-pires-beaune": {
-      "acteur_ref": "PA608172",
+      "identifiants": {
+        "an": "PA608172",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pires-beaune-christine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Christine",
@@ -1390,7 +1885,12 @@
       "verifie_le": "2026-08-26"
     },
     "christophe-barthes": {
-      "acteur_ref": "PA793238",
+      "identifiants": {
+        "an": "PA793238",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christophe",
@@ -1404,7 +1904,12 @@
       "verifie_le": "2026-08-26"
     },
     "christophe-bentz": {
-      "acteur_ref": "PA794434",
+      "identifiants": {
+        "an": "PA794434",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bentz-christophe-24291"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christophe",
@@ -1418,7 +1923,12 @@
       "verifie_le": "2026-08-26"
     },
     "christophe-bex": {
-      "acteur_ref": "PA793772",
+      "identifiants": {
+        "an": "PA793772",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bex-christophe-24294"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christophe",
@@ -1432,7 +1942,12 @@
       "verifie_le": "2026-08-26"
     },
     "christophe-marion": {
-      "acteur_ref": "PA794206",
+      "identifiants": {
+        "an": "PA794206",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/marion-christophe-24296"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christophe",
@@ -1446,7 +1961,12 @@
       "verifie_le": "2026-08-26"
     },
     "christopher-weissberg": {
-      "acteur_ref": "PA795326",
+      "identifiants": {
+        "an": "PA795326",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/weissberg-christopher-20755"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Christopher",
@@ -1460,7 +1980,12 @@
       "verifie_le": "2026-08-26"
     },
     "claire-guichard": {
-      "acteur_ref": "PA795934",
+      "identifiants": {
+        "an": "PA795934",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Claire",
@@ -1474,7 +1999,12 @@
       "verifie_le": "2026-08-26"
     },
     "claire-pitollat": {
-      "acteur_ref": "PA718910",
+      "identifiants": {
+        "an": "PA718910",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Claire",
@@ -1488,7 +2018,12 @@
       "verifie_le": "2026-08-26"
     },
     "clara-chassaniol": {
-      "acteur_ref": "PA795068",
+      "identifiants": {
+        "an": "PA795068",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Clara",
@@ -1502,7 +2037,12 @@
       "verifie_le": "2026-08-26"
     },
     "claude-raynal": {
-      "acteur_ref": "PA703505",
+      "identifiants": {
+        "an": "PA703505",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Claude",
@@ -1516,7 +2056,12 @@
       "verifie_le": "2026-08-26"
     },
     "claudia-rouaux": {
-      "acteur_ref": "PA342196",
+      "identifiants": {
+        "an": "PA342196",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rouaux-claudia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Claudia",
@@ -1530,7 +2075,12 @@
       "verifie_le": "2026-08-26"
     },
     "clemence-guette": {
-      "acteur_ref": "PA795310",
+      "identifiants": {
+        "an": "PA795310",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/guette-clemence-24299"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Clémence",
@@ -1544,7 +2094,12 @@
       "verifie_le": "2026-08-26"
     },
     "clement-beaune": {
-      "acteur_ref": "PA774109",
+      "identifiants": {
+        "an": "PA774109",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Clément",
@@ -1558,7 +2113,12 @@
       "verifie_le": "2026-08-26"
     },
     "clementine-autain": {
-      "acteur_ref": "PA588884",
+      "identifiants": {
+        "an": "PA588884",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/autain-clementine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Clémentine",
@@ -1572,7 +2132,12 @@
       "verifie_le": "2026-08-26"
     },
     "constance-le-grip": {
-      "acteur_ref": "PA345722",
+      "identifiants": {
+        "an": "PA345722",
+        "senat": null,
+        "europarl": "101580",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-grip-constance"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Constance",
@@ -1586,7 +2151,12 @@
       "verifie_le": "2026-08-26"
     },
     "corinne-vignon": {
-      "acteur_ref": "PA719512",
+      "identifiants": {
+        "an": "PA719512",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vignon-corinne"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Corinne",
@@ -1600,7 +2170,12 @@
       "verifie_le": "2026-08-26"
     },
     "damien-abad": {
-      "acteur_ref": "PA605036",
+      "identifiants": {
+        "an": "PA605036",
+        "senat": null,
+        "europarl": "96850",
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Damien",
@@ -1614,7 +2189,12 @@
       "verifie_le": "2026-08-26"
     },
     "damien-adam": {
-      "acteur_ref": "PA722038",
+      "identifiants": {
+        "an": "PA722038",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Damien",
@@ -1628,7 +2208,12 @@
       "verifie_le": "2026-08-26"
     },
     "damien-maudet": {
-      "acteur_ref": "PA795422",
+      "identifiants": {
+        "an": "PA795422",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/maudet-damien-24300"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Damien",
@@ -1642,7 +2227,12 @@
       "verifie_le": "2026-08-26"
     },
     "daniel-grenon": {
-      "acteur_ref": "PA795540",
+      "identifiants": {
+        "an": "PA795540",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/grenon-daniel-24302"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Daniel",
@@ -1656,7 +2246,12 @@
       "verifie_le": "2026-08-26"
     },
     "daniel-labaronne": {
-      "acteur_ref": "PA719798",
+      "identifiants": {
+        "an": "PA719798",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/labaronne-daniel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Daniel",
@@ -1670,7 +2265,12 @@
       "verifie_le": "2026-08-26"
     },
     "daniele-obono": {
-      "acteur_ref": "PA721960",
+      "identifiants": {
+        "an": "PA721960",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/obono-daniele"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Danièle",
@@ -1684,7 +2284,12 @@
       "verifie_le": "2026-08-26"
     },
     "danielle-brulebois": {
-      "acteur_ref": "PA719890",
+      "identifiants": {
+        "an": "PA719890",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brulebois-danielle"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Danielle",
@@ -1698,7 +2303,12 @@
       "verifie_le": "2026-08-26"
     },
     "danielle-simonnet": {
-      "acteur_ref": "PA796018",
+      "identifiants": {
+        "an": "PA796018",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/simonnet-danielle-24313"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Danielle",
@@ -1712,7 +2322,12 @@
       "verifie_le": "2026-08-26"
     },
     "david-amiel": {
-      "acteur_ref": "PA795950",
+      "identifiants": {
+        "an": "PA795950",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "David",
@@ -1726,7 +2341,12 @@
       "verifie_le": "2026-08-26"
     },
     "david-guiraud": {
-      "acteur_ref": "PA794478",
+      "identifiants": {
+        "an": "PA794478",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "David",
@@ -1739,8 +2359,32 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794478",
       "verifie_le": "2026-08-26"
     },
+    "david-lisnard": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": "David",
+        "nom": "Lisnard",
+        "nom_complet": "David Lisnard",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidat déclaré à la présidentielle de 2027 (Nouvelle Énergie), il n'a jamais été élu·e à l'Assemblée nationale : aucun acteur d'AMO30 ne lui correspond. Fait négatif VÉRIFIÉ, pas une correspondance manquante — le référentiel historique a été lu en entier le 28/08/2026 (3 117 acteurs) et aucune entrée ne porte ce nom. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature (plus ancien mandat_debut d'acteur mesuré : 2002-06-19). Déclaré ici plutôt qu'absent de la table : un trou muet est ce qui a produit #510 et #501. L'état civil reste incomplet faute de source primaire collectée (AGENTS.md §2 règle 5) — sans date de naissance, la condition C3 de #539 interdit toute dérivation, et c'est cette déclaration humaine qui répond. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration : aucun référentiel dont la complétude soit prouvable n'existe pour eux, et « jamais élu » y resterait invérifiable. Son mandat de maire est hors périmètre du produit.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-08-28"
+    },
     "david-valence": {
-      "acteur_ref": "PA721482",
+      "identifiants": {
+        "an": "PA721482",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "David",
@@ -1754,7 +2398,12 @@
       "verifie_le": "2026-08-26"
     },
     "denis-bernaert": {
-      "acteur_ref": "PA795572",
+      "identifiants": {
+        "an": "PA795572",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Denis",
@@ -1768,7 +2417,12 @@
       "verifie_le": "2026-08-26"
     },
     "denis-masseglia": {
-      "acteur_ref": "PA720146",
+      "identifiants": {
+        "an": "PA720146",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/masseglia-denis"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Denis",
@@ -1782,7 +2436,12 @@
       "verifie_le": "2026-08-26"
     },
     "didier-le-gac": {
-      "acteur_ref": "PA719404",
+      "identifiants": {
+        "an": "PA719404",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-gac-didier-5234"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Didier",
@@ -1796,7 +2455,12 @@
       "verifie_le": "2026-08-26"
     },
     "didier-martin": {
-      "acteur_ref": "PA719154",
+      "identifiants": {
+        "an": "PA719154",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Didier",
@@ -1810,7 +2474,12 @@
       "verifie_le": "2026-08-26"
     },
     "didier-parakian": {
-      "acteur_ref": "PA793282",
+      "identifiants": {
+        "an": "PA793282",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Didier",
@@ -1824,7 +2493,12 @@
       "verifie_le": "2026-08-26"
     },
     "didier-paris": {
-      "acteur_ref": "PA719202",
+      "identifiants": {
+        "an": "PA719202",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Didier",
@@ -1838,7 +2512,12 @@
       "verifie_le": "2026-08-26"
     },
     "dino-cinieri": {
-      "acteur_ref": "PA267429",
+      "identifiants": {
+        "an": "PA267429",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Dino",
@@ -1852,7 +2531,12 @@
       "verifie_le": "2026-08-26"
     },
     "dominique-da-silva": {
-      "acteur_ref": "PA720932",
+      "identifiants": {
+        "an": "PA720932",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Dominique",
@@ -1866,7 +2550,12 @@
       "verifie_le": "2026-08-26"
     },
     "dominique-de-legge": {
-      "acteur_ref": "PA415467",
+      "identifiants": {
+        "an": "PA415467",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Dominique",
@@ -1880,7 +2569,12 @@
       "verifie_le": "2026-08-26"
     },
     "dominique-faure": {
-      "acteur_ref": "PA793788",
+      "identifiants": {
+        "an": "PA793788",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Dominique",
@@ -1894,7 +2588,12 @@
       "verifie_le": "2026-08-26"
     },
     "dominique-potier": {
-      "acteur_ref": "PA607553",
+      "identifiants": {
+        "an": "PA607553",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/potier-dominique"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Dominique",
@@ -1908,7 +2607,12 @@
       "verifie_le": "2026-08-26"
     },
     "edouard-philippe": {
-      "acteur_ref": "PA345619",
+      "identifiants": {
+        "an": "PA345619",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Édouard",
@@ -1922,7 +2626,12 @@
       "verifie_le": "2026-08-26"
     },
     "edwige-diaz": {
-      "acteur_ref": "PA793928",
+      "identifiants": {
+        "an": "PA793928",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/diaz-edwige-24319"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Edwige",
@@ -1936,7 +2645,12 @@
       "verifie_le": "2026-08-26"
     },
     "eleonore-caroit": {
-      "acteur_ref": "PA795330",
+      "identifiants": {
+        "an": "PA795330",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Eléonore",
@@ -1950,7 +2664,12 @@
       "verifie_le": "2026-08-26"
     },
     "elie-califer": {
-      "acteur_ref": "PA795762",
+      "identifiants": {
+        "an": "PA795762",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/califer-elie-24314"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Elie",
@@ -1964,7 +2683,12 @@
       "verifie_le": "2026-08-26"
     },
     "elisa-martin": {
-      "acteur_ref": "PA342384",
+      "identifiants": {
+        "an": "PA342384",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/martin-elisa"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Élisa",
@@ -1978,7 +2702,12 @@
       "verifie_le": "2026-08-26"
     },
     "elisabeth-borne": {
-      "acteur_ref": "PA717161",
+      "identifiants": {
+        "an": "PA717161",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Élisabeth",
@@ -1992,7 +2721,12 @@
       "verifie_le": "2026-08-26"
     },
     "elise-leboucher": {
-      "acteur_ref": "PA795108",
+      "identifiants": {
+        "an": "PA795108",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/leboucher-elise-24322"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Élise",
@@ -2006,7 +2740,12 @@
       "verifie_le": "2026-08-26"
     },
     "emeric-salmon": {
-      "acteur_ref": "PA794954",
+      "identifiants": {
+        "an": "PA794954",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/salmon-emeric-24315"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emeric",
@@ -2020,7 +2759,12 @@
       "verifie_le": "2026-08-26"
     },
     "emilie-bonnivard": {
-      "acteur_ref": "PA721410",
+      "identifiants": {
+        "an": "PA721410",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bonnivard-emilie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Émilie",
@@ -2034,7 +2778,12 @@
       "verifie_le": "2026-08-26"
     },
     "emilie-chandler": {
-      "acteur_ref": "PA795508",
+      "identifiants": {
+        "an": "PA795508",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Émilie",
@@ -2048,7 +2797,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-blairy": {
-      "acteur_ref": "PA720668",
+      "identifiants": {
+        "an": "PA720668",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/blairy-emmanuel-23519"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2062,7 +2816,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-fernandes": {
-      "acteur_ref": "PA794786",
+      "identifiants": {
+        "an": "PA794786",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/fernandes-emmanuel-24316"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2076,7 +2835,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-lacresse": {
-      "acteur_ref": "PA794450",
+      "identifiants": {
+        "an": "PA794450",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2090,7 +2854,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-maquet": {
-      "acteur_ref": "PA346054",
+      "identifiants": {
+        "an": "PA346054",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2104,7 +2873,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-pellerin": {
-      "acteur_ref": "PA795926",
+      "identifiants": {
+        "an": "PA795926",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2118,7 +2892,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuel-tache-de-la-pagerie": {
-      "acteur_ref": "PA793382",
+      "identifiants": {
+        "an": "PA793382",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Emmanuel",
@@ -2132,7 +2911,12 @@
       "verifie_le": "2026-08-26"
     },
     "emmanuelle-anthoine": {
-      "acteur_ref": "PA719318",
+      "identifiants": {
+        "an": "PA719318",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Emmanuelle",
@@ -2146,7 +2930,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-alauzet": {
-      "acteur_ref": "PA605963",
+      "identifiants": {
+        "an": "PA605963",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2160,7 +2949,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-bothorel": {
-      "acteur_ref": "PA642695",
+      "identifiants": {
+        "an": "PA642695",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bothorel-eric"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2174,7 +2968,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-ciotti": {
-      "acteur_ref": "PA330240",
+      "identifiants": {
+        "an": "PA330240",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ciotti-eric"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2188,7 +2987,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-coquerel": {
-      "acteur_ref": "PA721202",
+      "identifiants": {
+        "an": "PA721202",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/coquerel-eric"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2202,7 +3006,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-dolige": {
-      "acteur_ref": "PA1142",
+      "identifiants": {
+        "an": "PA1142",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2216,7 +3025,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-girardin": {
-      "acteur_ref": "PA720222",
+      "identifiants": {
+        "an": "PA720222",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2230,7 +3044,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-husson": {
-      "acteur_ref": "PA795708",
+      "identifiants": {
+        "an": "PA795708",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2244,7 +3063,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-pauget": {
-      "acteur_ref": "PA718784",
+      "identifiants": {
+        "an": "PA718784",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pauget-eric-6497"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2258,7 +3082,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-poulliat": {
-      "acteur_ref": "PA719600",
+      "identifiants": {
+        "an": "PA719600",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2272,7 +3101,12 @@
       "verifie_le": "2026-08-26"
     },
     "eric-woerth": {
-      "acteur_ref": "PA2960",
+      "identifiants": {
+        "an": "PA2960",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Éric",
@@ -2286,7 +3120,12 @@
       "verifie_le": "2026-08-26"
     },
     "ersilia-soudais": {
-      "acteur_ref": "PA795466",
+      "identifiants": {
+        "an": "PA795466",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/soudais-ersilia-24325"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Ersilia",
@@ -2300,7 +3139,12 @@
       "verifie_le": "2026-08-26"
     },
     "evelyne-renaud-garabedian": {
-      "acteur_ref": "PA736193",
+      "identifiants": {
+        "an": "PA736193",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Évelyne",
@@ -2314,7 +3158,12 @@
       "verifie_le": "2026-08-26"
     },
     "fabien-di-filippo": {
-      "acteur_ref": "PA720386",
+      "identifiants": {
+        "an": "PA720386",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Fabien",
@@ -2328,7 +3177,12 @@
       "verifie_le": "2026-08-26"
     },
     "fabienne-colboc": {
-      "acteur_ref": "PA719814",
+      "identifiants": {
+        "an": "PA719814",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Fabienne",
@@ -2342,7 +3196,12 @@
       "verifie_le": "2026-08-26"
     },
     "fabrice-brun": {
-      "acteur_ref": "PA718838",
+      "identifiants": {
+        "an": "PA718838",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brun-fabrice"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Fabrice",
@@ -2356,7 +3215,12 @@
       "verifie_le": "2026-08-26"
     },
     "fabrice-le-vigoureux": {
-      "acteur_ref": "PA719006",
+      "identifiants": {
+        "an": "PA719006",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Fabrice",
@@ -2370,7 +3234,12 @@
       "verifie_le": "2026-08-26"
     },
     "fadila-khattabi": {
-      "acteur_ref": "PA719186",
+      "identifiants": {
+        "an": "PA719186",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Fadila",
@@ -2384,7 +3253,12 @@
       "verifie_le": "2026-08-26"
     },
     "fanta-berete": {
-      "acteur_ref": "PA721828",
+      "identifiants": {
+        "an": "PA721828",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Fanta",
@@ -2398,7 +3272,12 @@
       "verifie_le": "2026-08-26"
     },
     "farida-amrani": {
-      "acteur_ref": "PA795588",
+      "identifiants": {
+        "an": "PA795588",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/amrani-farida-24328"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Farida",
@@ -2412,7 +3291,12 @@
       "verifie_le": "2026-08-26"
     },
     "fatiha-keloua-hachi": {
-      "acteur_ref": "PA795156",
+      "identifiants": {
+        "an": "PA795156",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/keloua-hachi-fatiha-24329"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Fatiha",
@@ -2426,7 +3310,12 @@
       "verifie_le": "2026-08-26"
     },
     "florence-goulet": {
-      "acteur_ref": "PA794418",
+      "identifiants": {
+        "an": "PA794418",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/goulet-florence-24331"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Florence",
@@ -2440,7 +3329,12 @@
       "verifie_le": "2026-08-26"
     },
     "florent-boudie": {
-      "acteur_ref": "PA606507",
+      "identifiants": {
+        "an": "PA606507",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Florent",
@@ -2454,7 +3348,12 @@
       "verifie_le": "2026-08-26"
     },
     "florian-chauche": {
-      "acteur_ref": "PA795580",
+      "identifiants": {
+        "an": "PA795580",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Florian",
@@ -2468,7 +3367,12 @@
       "verifie_le": "2026-08-26"
     },
     "francis-dubois": {
-      "acteur_ref": "PA793476",
+      "identifiants": {
+        "an": "PA793476",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Francis",
@@ -2482,7 +3386,12 @@
       "verifie_le": "2026-08-26"
     },
     "franck-allisio": {
-      "acteur_ref": "PA793432",
+      "identifiants": {
+        "an": "PA793432",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/allisio-franck-24180"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Franck",
@@ -2496,7 +3405,12 @@
       "verifie_le": "2026-08-26"
     },
     "franck-riester": {
-      "acteur_ref": "PA335758",
+      "identifiants": {
+        "an": "PA335758",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Franck",
@@ -2510,7 +3424,12 @@
       "verifie_le": "2026-08-26"
     },
     "francois-cormier-bouligeon": {
-      "acteur_ref": "PA719118",
+      "identifiants": {
+        "an": "PA719118",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/cormier-bouligeon-francois"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "François",
@@ -2524,7 +3443,12 @@
       "verifie_le": "2026-08-26"
     },
     "francois-piquemal": {
-      "acteur_ref": "PA793756",
+      "identifiants": {
+        "an": "PA793756",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/piquemal-francois-24200"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "François",
@@ -2538,7 +3462,12 @@
       "verifie_le": "2026-08-26"
     },
     "francois-ruffin": {
-      "acteur_ref": "PA722142",
+      "identifiants": {
+        "an": "PA722142",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ruffin-francois"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "François",
@@ -2552,7 +3481,12 @@
       "verifie_le": "2026-08-26"
     },
     "francoise-buffet": {
-      "acteur_ref": "PA794798",
+      "identifiants": {
+        "an": "PA794798",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/buffet-francoise"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Françoise",
@@ -2566,7 +3500,12 @@
       "verifie_le": "2026-08-26"
     },
     "frank-giletti": {
-      "acteur_ref": "PA796034",
+      "identifiants": {
+        "an": "PA796034",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/giletti-frank-24205"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frank",
@@ -2580,7 +3519,12 @@
       "verifie_le": "2026-08-26"
     },
     "freddy-sertin": {
-      "acteur_ref": "PA793416",
+      "identifiants": {
+        "an": "PA793416",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Freddy",
@@ -2594,7 +3538,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederic-boccaletti": {
-      "acteur_ref": "PA796042",
+      "identifiants": {
+        "an": "PA796042",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/boccaletti-frederic-24220"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frédéric",
@@ -2608,7 +3557,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederic-cabrolier": {
-      "acteur_ref": "PA795836",
+      "identifiants": {
+        "an": "PA795836",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frédéric",
@@ -2622,7 +3576,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederic-descrozaille": {
-      "acteur_ref": "PA720862",
+      "identifiants": {
+        "an": "PA720862",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frédéric",
@@ -2636,7 +3595,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederic-falcon": {
-      "acteur_ref": "PA793246",
+      "identifiants": {
+        "an": "PA793246",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/falcon-frederic-24248"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frédéric",
@@ -2650,7 +3614,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederic-mathieu": {
-      "acteur_ref": "PA794066",
+      "identifiants": {
+        "an": "PA794066",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Frédéric",
@@ -2664,7 +3633,12 @@
       "verifie_le": "2026-08-26"
     },
     "frederique-meunier": {
-      "acteur_ref": "PA719272",
+      "identifiants": {
+        "an": "PA719272",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/meunier-frederique-6851"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Frédérique",
@@ -2678,7 +3652,12 @@
       "verifie_le": "2026-08-26"
     },
     "gabriel-amard": {
-      "acteur_ref": "PA794906",
+      "identifiants": {
+        "an": "PA794906",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/amard-gabriel-516"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gabriel",
@@ -2692,7 +3671,12 @@
       "verifie_le": "2026-08-26"
     },
     "gabriel-attal": {
-      "acteur_ref": "PA722190",
+      "identifiants": {
+        "an": "PA722190",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/attal-gabriel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gabriel",
@@ -2706,7 +3690,12 @@
       "verifie_le": "2026-08-26"
     },
     "gerald-darmanin": {
-      "acteur_ref": "PA607846",
+      "identifiants": {
+        "an": "PA607846",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gérald",
@@ -2720,7 +3709,12 @@
       "verifie_le": "2026-08-26"
     },
     "geraldine-grangier": {
-      "acteur_ref": "PA793592",
+      "identifiants": {
+        "an": "PA793592",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/grangier-geraldine-24345"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Géraldine",
@@ -2734,7 +3728,12 @@
       "verifie_le": "2026-08-26"
     },
     "gerard-larcher": {
-      "acteur_ref": "PA1828",
+      "identifiants": {
+        "an": "PA1828",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gérard",
@@ -2748,7 +3747,12 @@
       "verifie_le": "2026-08-26"
     },
     "gerard-leseul": {
-      "acteur_ref": "PA774958",
+      "identifiants": {
+        "an": "PA774958",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/leseul-gerard-20487"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gérard",
@@ -2762,7 +3766,12 @@
       "verifie_le": "2026-08-26"
     },
     "gilles-le-gendre": {
-      "acteur_ref": "PA721466",
+      "identifiants": {
+        "an": "PA721466",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Gilles",
@@ -2776,7 +3785,12 @@
       "verifie_le": "2026-08-26"
     },
     "gisele-lelouis": {
-      "acteur_ref": "PA793290",
+      "identifiants": {
+        "an": "PA793290",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lelouis-gisele-24333"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Gisèle",
@@ -2790,7 +3804,12 @@
       "verifie_le": "2026-08-26"
     },
     "graziella-melchior": {
-      "acteur_ref": "PA719338",
+      "identifiants": {
+        "an": "PA719338",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/melchior-graziella"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Graziella",
@@ -2804,7 +3823,12 @@
       "verifie_le": "2026-08-26"
     },
     "gregoire-de-fournas": {
-      "acteur_ref": "PA793964",
+      "identifiants": {
+        "an": "PA793964",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Grégoire",
@@ -2818,7 +3842,12 @@
       "verifie_le": "2026-08-26"
     },
     "guillaume-garot": {
-      "acteur_ref": "PA333285",
+      "identifiants": {
+        "an": "PA333285",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/garot-guillaume"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Guillaume",
@@ -2832,7 +3861,12 @@
       "verifie_le": "2026-08-26"
     },
     "guillaume-gouffier-cha": {
-      "acteur_ref": "PA721296",
+      "identifiants": {
+        "an": "PA721296",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Guillaume",
@@ -2846,7 +3880,12 @@
       "verifie_le": "2026-08-26"
     },
     "guillaume-kasbarian": {
-      "acteur_ref": "PA719372",
+      "identifiants": {
+        "an": "PA719372",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/kasbarian-guillaume"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Guillaume",
@@ -2860,7 +3899,12 @@
       "verifie_le": "2026-08-26"
     },
     "guillaume-vuilletet": {
-      "acteur_ref": "PA721262",
+      "identifiants": {
+        "an": "PA721262",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Guillaume",
@@ -2874,7 +3918,12 @@
       "verifie_le": "2026-08-26"
     },
     "hadrien-clouet": {
-      "acteur_ref": "PA793736",
+      "identifiants": {
+        "an": "PA793736",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/clouet-hadrien-24301"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hadrien",
@@ -2888,7 +3937,12 @@
       "verifie_le": "2026-08-26"
     },
     "hadrien-ghomi": {
-      "acteur_ref": "PA721722",
+      "identifiants": {
+        "an": "PA721722",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hadrien",
@@ -2902,7 +3956,12 @@
       "verifie_le": "2026-08-26"
     },
     "helene-laporte": {
-      "acteur_ref": "PA794354",
+      "identifiants": {
+        "an": "PA794354",
+        "senat": null,
+        "europarl": "197597",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/laporte-helene-24647"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Hélène",
@@ -2916,7 +3975,12 @@
       "verifie_le": "2026-08-26"
     },
     "hendrik-davi": {
-      "acteur_ref": "PA793452",
+      "identifiants": {
+        "an": "PA793452",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/davi-hendrik-24305"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hendrik",
@@ -2930,7 +3994,12 @@
       "verifie_le": "2026-08-26"
     },
     "herve-berville": {
-      "acteur_ref": "PA719218",
+      "identifiants": {
+        "an": "PA719218",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hervé",
@@ -2944,7 +4013,12 @@
       "verifie_le": "2026-08-26"
     },
     "herve-de-lepinau": {
-      "acteur_ref": "PA642988",
+      "identifiants": {
+        "an": "PA642988",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/de-lepinau-herve-24309"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hervé",
@@ -2958,7 +4032,12 @@
       "verifie_le": "2026-08-26"
     },
     "herve-saulignac": {
-      "acteur_ref": "PA340343",
+      "identifiants": {
+        "an": "PA340343",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/saulignac-herve-8266"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hervé",
@@ -2972,7 +4051,12 @@
       "verifie_le": "2026-08-26"
     },
     "hubert-brigand": {
-      "acteur_ref": "PA793508",
+      "identifiants": {
+        "an": "PA793508",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brigand-hubert-22438"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hubert",
@@ -2986,7 +4070,12 @@
       "verifie_le": "2026-08-26"
     },
     "huguette-tiegna": {
-      "acteur_ref": "PA720014",
+      "identifiants": {
+        "an": "PA720014",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Huguette",
@@ -3000,7 +4089,12 @@
       "verifie_le": "2026-08-26"
     },
     "hussein-bourgi": {
-      "acteur_ref": "PA775196",
+      "identifiants": {
+        "an": "PA775196",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Hussein",
@@ -3014,7 +4108,12 @@
       "verifie_le": "2026-08-26"
     },
     "ian-boucard": {
-      "acteur_ref": "PA721816",
+      "identifiants": {
+        "an": "PA721816",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/boucard-ian"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Ian",
@@ -3028,7 +4127,12 @@
       "verifie_le": "2026-08-26"
     },
     "idir-boumertit": {
-      "acteur_ref": "PA794938",
+      "identifiants": {
+        "an": "PA794938",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/boumertit-idir-24344"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Idir",
@@ -3042,7 +4146,12 @@
       "verifie_le": "2026-08-26"
     },
     "inaki-echaniz": {
-      "acteur_ref": "PA794854",
+      "identifiants": {
+        "an": "PA794854",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/echaniz-iñaki-24343"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Iñaki",
@@ -3056,7 +4165,12 @@
       "verifie_le": "2026-08-26"
     },
     "ingrid-dordain": {
-      "acteur_ref": "PA795774",
+      "identifiants": {
+        "an": "PA795774",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Ingrid",
@@ -3070,7 +4184,12 @@
       "verifie_le": "2026-08-26"
     },
     "isabelle-perigault": {
-      "acteur_ref": "PA795406",
+      "identifiants": {
+        "an": "PA795406",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Isabelle",
@@ -3084,7 +4203,12 @@
       "verifie_le": "2026-08-26"
     },
     "isabelle-santiago": {
-      "acteur_ref": "PA774960",
+      "identifiants": {
+        "an": "PA774960",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/santiago-isabelle-8082"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Isabelle",
@@ -3098,7 +4222,12 @@
       "verifie_le": "2026-08-26"
     },
     "isabelle-valentin": {
-      "acteur_ref": "PA643134",
+      "identifiants": {
+        "an": "PA643134",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Isabelle",
@@ -3112,7 +4241,12 @@
       "verifie_le": "2026-08-26"
     },
     "jacqueline-maquet": {
-      "acteur_ref": "PA334116",
+      "identifiants": {
+        "an": "PA334116",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Jacqueline",
@@ -3126,7 +4260,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-carles-grelier": {
-      "acteur_ref": "PA267318",
+      "identifiants": {
+        "an": "PA267318",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/grelier-jean-carles-9591"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Carles",
@@ -3140,7 +4279,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-francois-coulomme": {
-      "acteur_ref": "PA795136",
+      "identifiants": {
+        "an": "PA795136",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/coulomme-jean-francois-24341"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-François",
@@ -3154,7 +4298,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-francois-lovisolo": {
-      "acteur_ref": "PA795216",
+      "identifiants": {
+        "an": "PA795216",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-François",
@@ -3168,7 +4317,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-francois-rousset": {
-      "acteur_ref": "PA793270",
+      "identifiants": {
+        "an": "PA793270",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rousset-jean-francois-24339"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-François",
@@ -3182,7 +4336,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-hugues-ratenon": {
-      "acteur_ref": "PA721062",
+      "identifiants": {
+        "an": "PA721062",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ratenon-jean-hugues"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Hugues",
@@ -3196,7 +4355,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-jacques-gaultier": {
-      "acteur_ref": "PA267324",
+      "identifiants": {
+        "an": "PA267324",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Jacques",
@@ -3210,7 +4374,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-jacques-panunzi": {
-      "acteur_ref": "PA703521",
+      "identifiants": {
+        "an": "PA703521",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Jacques",
@@ -3224,7 +4393,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-louis-thieriot": {
-      "acteur_ref": "PA643089",
+      "identifiants": {
+        "an": "PA643089",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/thieriot-jean-louis"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Louis",
@@ -3238,7 +4412,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-luc-bourgeaux": {
-      "acteur_ref": "PA342240",
+      "identifiants": {
+        "an": "PA342240",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bourgeaux-jean-luc-18806"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Luc",
@@ -3252,7 +4431,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-luc-fugit": {
-      "acteur_ref": "PA722366",
+      "identifiants": {
+        "an": "PA722366",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/fugit-jean-luc"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Luc",
@@ -3266,7 +4450,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-luc-melenchon": {
-      "acteur_ref": "PA2150",
+      "identifiants": {
+        "an": "PA2150",
+        "senat": null,
+        "europarl": "96742",
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Luc",
@@ -3280,7 +4469,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-marc-zulesi": {
-      "acteur_ref": "PA718962",
+      "identifiants": {
+        "an": "PA718962",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Marc",
@@ -3294,7 +4488,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-marie-fievet": {
-      "acteur_ref": "PA722134",
+      "identifiants": {
+        "an": "PA722134",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/fievet-jean-marie"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Marie",
@@ -3308,7 +4507,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-michel-jacques": {
-      "acteur_ref": "PA720354",
+      "identifiants": {
+        "an": "PA720354",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/jacques-jean-michel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Michel",
@@ -3322,7 +4526,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-philippe-ardouin": {
-      "acteur_ref": "PA719100",
+      "identifiants": {
+        "an": "PA719100",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Philippe",
@@ -3336,7 +4545,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-philippe-nilor": {
-      "acteur_ref": "PA610654",
+      "identifiants": {
+        "an": "PA610654",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/nilor-jean-philippe"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Philippe",
@@ -3350,7 +4564,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-philippe-tanguy": {
-      "acteur_ref": "PA795778",
+      "identifiants": {
+        "an": "PA795778",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/tanguy-jean-philippe-24338"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Philippe",
@@ -3364,7 +4583,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-pierre-bansard": {
-      "acteur_ref": "PA736180",
+      "identifiants": {
+        "an": "PA736180",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Pierre",
@@ -3378,7 +4602,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-pierre-pont": {
-      "acteur_ref": "PA2449",
+      "identifiants": {
+        "an": "PA2449",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Pierre",
@@ -3392,7 +4621,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-pierre-taite": {
-      "acteur_ref": "PA794178",
+      "identifiants": {
+        "an": "PA794178",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Pierre",
@@ -3406,7 +4640,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-pierre-vigier": {
-      "acteur_ref": "PA607090",
+      "identifiants": {
+        "an": "PA607090",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vigier-jean-pierre"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Pierre",
@@ -3420,7 +4659,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-raymond-hugonet": {
-      "acteur_ref": "PA736238",
+      "identifiants": {
+        "an": "PA736238",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Raymond",
@@ -3434,7 +4678,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-rene-cazeneuve": {
-      "acteur_ref": "PA719472",
+      "identifiants": {
+        "an": "PA719472",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/cazeneuve-jean-rene"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-René",
@@ -3448,7 +4697,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-terlier": {
-      "acteur_ref": "PA721584",
+      "identifiants": {
+        "an": "PA721584",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/terlier-jean"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean",
@@ -3462,7 +4716,12 @@
       "verifie_le": "2026-08-26"
     },
     "jean-yves-bony": {
-      "acteur_ref": "PA266793",
+      "identifiants": {
+        "an": "PA266793",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bony-jean-yves-1013"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jean-Yves",
@@ -3476,7 +4735,12 @@
       "verifie_le": "2026-08-26"
     },
     "jerome-buisson": {
-      "acteur_ref": "PA793134",
+      "identifiants": {
+        "an": "PA793134",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/buisson-jerome-24280"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jérôme",
@@ -3490,7 +4754,12 @@
       "verifie_le": "2026-08-26"
     },
     "jerome-guedj": {
-      "acteur_ref": "PA1567",
+      "identifiants": {
+        "an": "PA1567",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/guedj-jerome"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jérôme",
@@ -3504,7 +4773,12 @@
       "verifie_le": "2026-08-26"
     },
     "jerome-legavre": {
-      "acteur_ref": "PA795298",
+      "identifiants": {
+        "an": "PA795298",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/legavre-jerome-24276"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jérôme",
@@ -3518,7 +4792,12 @@
       "verifie_le": "2026-08-26"
     },
     "jerome-nury": {
-      "acteur_ref": "PA720644",
+      "identifiants": {
+        "an": "PA720644",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jérôme",
@@ -3532,7 +4811,12 @@
       "verifie_le": "2026-08-26"
     },
     "jocelyn-dessigny": {
-      "acteur_ref": "PA793166",
+      "identifiants": {
+        "an": "PA793166",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dessigny-jocelyn-24262"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jocelyn",
@@ -3546,7 +4830,12 @@
       "verifie_le": "2026-08-26"
     },
     "joel-aviragnet": {
-      "acteur_ref": "PA642764",
+      "identifiants": {
+        "an": "PA642764",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/aviragnet-joel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Joël",
@@ -3560,7 +4849,12 @@
       "verifie_le": "2026-08-26"
     },
     "joel-bigot": {
-      "acteur_ref": "PA736199",
+      "identifiants": {
+        "an": "PA736199",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Joël",
@@ -3574,7 +4868,12 @@
       "verifie_le": "2026-08-26"
     },
     "joel-giraud": {
-      "acteur_ref": "PA267336",
+      "identifiants": {
+        "an": "PA267336",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Joël",
@@ -3588,7 +4887,12 @@
       "verifie_le": "2026-08-26"
     },
     "joelle-melin": {
-      "acteur_ref": "PA793354",
+      "identifiants": {
+        "an": "PA793354",
+        "senat": null,
+        "europarl": "124765",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/melin-joelle"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Joëlle",
@@ -3602,7 +4906,12 @@
       "verifie_le": "2026-08-26"
     },
     "johnny-hajjar": {
-      "acteur_ref": "PA795828",
+      "identifiants": {
+        "an": "PA795828",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Johnny",
@@ -3616,7 +4925,12 @@
       "verifie_le": "2026-08-26"
     },
     "jordan-bardella": {
-      "acteur_ref": null,
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": "131580",
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": null,
         "prenom": "Jordan",
@@ -3630,7 +4944,12 @@
       "verifie_le": "2026-08-26"
     },
     "jordan-guitton": {
-      "acteur_ref": "PA793218",
+      "identifiants": {
+        "an": "PA793218",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/guitton-jordan-24258"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jordan",
@@ -3644,7 +4963,12 @@
       "verifie_le": "2026-08-26"
     },
     "joris-hebrard": {
-      "acteur_ref": "PA796110",
+      "identifiants": {
+        "an": "PA796110",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Joris",
@@ -3658,7 +4982,12 @@
       "verifie_le": "2026-08-26"
     },
     "jorys-bovet": {
-      "acteur_ref": "PA793182",
+      "identifiants": {
+        "an": "PA793182",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bovet-jorys-24137"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Jorys",
@@ -3672,7 +5001,12 @@
       "verifie_le": "2026-08-26"
     },
     "jose-beaurain": {
-      "acteur_ref": "PA793158",
+      "identifiants": {
+        "an": "PA793158",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/beaurain-jose-24140"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "José",
@@ -3686,7 +5020,12 @@
       "verifie_le": "2026-08-26"
     },
     "jose-gonzalez": {
-      "acteur_ref": "PA793362",
+      "identifiants": {
+        "an": "PA793362",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gonzalez-jose-24144"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "José",
@@ -3700,7 +5039,12 @@
       "verifie_le": "2026-08-26"
     },
     "josiane-corneloup": {
-      "acteur_ref": "PA722390",
+      "identifiants": {
+        "an": "PA722390",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/corneloup-josiane-2422"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Josiane",
@@ -3714,7 +5058,12 @@
       "verifie_le": "2026-08-26"
     },
     "julie-delpech": {
-      "acteur_ref": "PA794982",
+      "identifiants": {
+        "an": "PA794982",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/delpech-julie-24335"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Julie",
@@ -3728,7 +5077,12 @@
       "verifie_le": "2026-08-26"
     },
     "julie-lechanteux": {
-      "acteur_ref": "PA796026",
+      "identifiants": {
+        "an": "PA796026",
+        "senat": null,
+        "europarl": "197686",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lechanteux-julie-15939"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Julie",
@@ -3742,7 +5096,12 @@
       "verifie_le": "2026-08-26"
     },
     "julien-dive": {
-      "acteur_ref": "PA712015",
+      "identifiants": {
+        "an": "PA712015",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dive-julien"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Julien",
@@ -3756,7 +5115,12 @@
       "verifie_le": "2026-08-26"
     },
     "julien-odoul": {
-      "acteur_ref": "PA795552",
+      "identifiants": {
+        "an": "PA795552",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/odoul-julien-24148"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Julien",
@@ -3770,7 +5134,12 @@
       "verifie_le": "2026-08-26"
     },
     "julien-rancoule": {
-      "acteur_ref": "PA793254",
+      "identifiants": {
+        "an": "PA793254",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rancoule-julien-24149"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Julien",
@@ -3784,7 +5153,12 @@
       "verifie_le": "2026-08-26"
     },
     "justine-gruet": {
-      "acteur_ref": "PA794058",
+      "identifiants": {
+        "an": "PA794058",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gruet-justine-24336"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Justine",
@@ -3798,7 +5172,12 @@
       "verifie_le": "2026-08-26"
     },
     "karen-erodi": {
-      "acteur_ref": "PA795844",
+      "identifiants": {
+        "an": "PA795844",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/erodi-karen-24337"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Karen",
@@ -3812,7 +5191,12 @@
       "verifie_le": "2026-08-26"
     },
     "karl-olive": {
-      "acteur_ref": "PA795722",
+      "identifiants": {
+        "an": "PA795722",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/olive-karl"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Karl",
@@ -3826,7 +5210,12 @@
       "verifie_le": "2026-08-26"
     },
     "katiana-levavasseur": {
-      "acteur_ref": "PA793608",
+      "identifiants": {
+        "an": "PA793608",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/levavasseur-katiana-24133"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Katiana",
@@ -3840,7 +5229,12 @@
       "verifie_le": "2026-08-26"
     },
     "kevin-mauvieux": {
-      "acteur_ref": "PA793616",
+      "identifiants": {
+        "an": "PA793616",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/mauvieux-kevin-24160"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Kévin",
@@ -3854,7 +5248,12 @@
       "verifie_le": "2026-08-26"
     },
     "kevin-pfeffer": {
-      "acteur_ref": "PA794582",
+      "identifiants": {
+        "an": "PA794582",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pfeffer-kevin-24162"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Kévin",
@@ -3868,7 +5267,12 @@
       "verifie_le": "2026-08-26"
     },
     "laetitia-saint-paul": {
-      "acteur_ref": "PA720138",
+      "identifiants": {
+        "an": "PA720138",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/saint-paul-laetitia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laetitia",
@@ -3882,7 +5286,12 @@
       "verifie_le": "2026-08-26"
     },
     "laure-lavalette": {
-      "acteur_ref": "PA795912",
+      "identifiants": {
+        "an": "PA795912",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lavalette-laure-24134"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laure",
@@ -3896,7 +5305,12 @@
       "verifie_le": "2026-08-26"
     },
     "laure-miller": {
-      "acteur_ref": "PA817203",
+      "identifiants": {
+        "an": "PA817203",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/miller-laure"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laure",
@@ -3910,7 +5324,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurence-cristol": {
-      "acteur_ref": "PA793876",
+      "identifiants": {
+        "an": "PA793876",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laurence",
@@ -3924,7 +5343,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurence-heydel-grillere": {
-      "acteur_ref": "PA793190",
+      "identifiants": {
+        "an": "PA793190",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laurence",
@@ -3938,7 +5362,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurence-maillart-mehaignerie": {
-      "acteur_ref": "PA719718",
+      "identifiants": {
+        "an": "PA719718",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laurence",
@@ -3952,7 +5381,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurence-robert-dehault": {
-      "acteur_ref": "PA794442",
+      "identifiants": {
+        "an": "PA794442",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/robert-dehault-laurence-24136"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Laurence",
@@ -3966,7 +5400,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurent-alexandre": {
-      "acteur_ref": "PA793262",
+      "identifiants": {
+        "an": "PA793262",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/alexandre-laurent-24165"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Laurent",
@@ -3980,7 +5419,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurent-jacobelli": {
-      "acteur_ref": "PA794598",
+      "identifiants": {
+        "an": "PA794598",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/jacobelli-laurent-24167"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Laurent",
@@ -3994,7 +5438,12 @@
       "verifie_le": "2026-08-26"
     },
     "laurent-wauquiez": {
-      "acteur_ref": "PA267285",
+      "identifiants": {
+        "an": "PA267285",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/wauquiez-laurent"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Laurent",
@@ -4008,7 +5457,12 @@
       "verifie_le": "2026-08-26"
     },
     "leo-walter": {
-      "acteur_ref": "PA793110",
+      "identifiants": {
+        "an": "PA793110",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Léo",
@@ -4022,7 +5476,12 @@
       "verifie_le": "2026-08-26"
     },
     "liliana-tanguy": {
-      "acteur_ref": "PA719550",
+      "identifiants": {
+        "an": "PA719550",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/tanguy-liliana"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Liliana",
@@ -4036,7 +5495,12 @@
       "verifie_le": "2026-08-26"
     },
     "lionel-causse": {
-      "acteur_ref": "PA719922",
+      "identifiants": {
+        "an": "PA719922",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/causse-lionel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Lionel",
@@ -4050,7 +5514,12 @@
       "verifie_le": "2026-08-26"
     },
     "lionel-royer-perreaut": {
-      "acteur_ref": "PA340643",
+      "identifiants": {
+        "an": "PA340643",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Lionel",
@@ -4064,7 +5533,12 @@
       "verifie_le": "2026-08-26"
     },
     "lionel-tivoli": {
-      "acteur_ref": "PA793298",
+      "identifiants": {
+        "an": "PA793298",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/tivoli-lionel-24176"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Lionel",
@@ -4078,7 +5552,12 @@
       "verifie_le": "2026-08-26"
     },
     "lionel-vuibert": {
-      "acteur_ref": "PA793194",
+      "identifiants": {
+        "an": "PA793194",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vuibert-lionel-24177"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Lionel",
@@ -4092,7 +5571,12 @@
       "verifie_le": "2026-08-26"
     },
     "lisette-pollet": {
-      "acteur_ref": "PA793656",
+      "identifiants": {
+        "an": "PA793656",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pollet-lisette-24138"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Lisette",
@@ -4106,7 +5590,12 @@
       "verifie_le": "2026-08-26"
     },
     "loic-prud-homme": {
-      "acteur_ref": "PA719578",
+      "identifiants": {
+        "an": "PA719578",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Loïc",
@@ -4120,7 +5609,12 @@
       "verifie_le": "2026-08-26"
     },
     "louis-boyard": {
-      "acteur_ref": "PA795318",
+      "identifiants": {
+        "an": "PA795318",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/boyard-louis-24178"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Louis",
@@ -4134,7 +5628,12 @@
       "verifie_le": "2026-08-26"
     },
     "louis-margueritte": {
-      "acteur_ref": "PA794974",
+      "identifiants": {
+        "an": "PA794974",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Louis",
@@ -4148,7 +5647,12 @@
       "verifie_le": "2026-08-26"
     },
     "ludovic-mendes": {
-      "acteur_ref": "PA720370",
+      "identifiants": {
+        "an": "PA720370",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/mendes-ludovic"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Ludovic",
@@ -4162,7 +5666,12 @@
       "verifie_le": "2026-08-26"
     },
     "lysiane-metayer": {
-      "acteur_ref": "PA794386",
+      "identifiants": {
+        "an": "PA794386",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Lysiane",
@@ -4176,7 +5685,12 @@
       "verifie_le": "2026-08-26"
     },
     "manon-meunier": {
-      "acteur_ref": "PA795482",
+      "identifiants": {
+        "an": "PA795482",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/meunier-manon-24142"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Manon",
@@ -4190,7 +5704,12 @@
       "verifie_le": "2026-08-26"
     },
     "mansour-kamardine": {
-      "acteur_ref": "PA267901",
+      "identifiants": {
+        "an": "PA267901",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Mansour",
@@ -4204,7 +5723,12 @@
       "verifie_le": "2026-08-26"
     },
     "manuel-bompard": {
-      "acteur_ref": "PA793444",
+      "identifiants": {
+        "an": "PA793444",
+        "senat": null,
+        "europarl": "197521",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bompard-manuel-16003"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Manuel",
@@ -4218,7 +5742,12 @@
       "verifie_le": "2026-08-26"
     },
     "marc-ferracci": {
-      "acteur_ref": "PA795884",
+      "identifiants": {
+        "an": "PA795884",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ferracci-marc"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Marc",
@@ -4232,7 +5761,12 @@
       "verifie_le": "2026-08-26"
     },
     "marc-le-fur": {
-      "acteur_ref": "PA1874",
+      "identifiants": {
+        "an": "PA1874",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Marc",
@@ -4246,7 +5780,12 @@
       "verifie_le": "2026-08-26"
     },
     "marianne-maximi": {
-      "acteur_ref": "PA794686",
+      "identifiants": {
+        "an": "PA794686",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/maximi-marianne-24143"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marianne",
@@ -4260,7 +5799,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-christine-chauvin": {
-      "acteur_ref": "PA736172",
+      "identifiants": {
+        "an": "PA736172",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie-Christine",
@@ -4274,7 +5818,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-christine-dalloz": {
-      "acteur_ref": "PA332523",
+      "identifiants": {
+        "an": "PA332523",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dalloz-marie-christine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie-Christine",
@@ -4288,7 +5837,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-france-lorho": {
-      "acteur_ref": "PA721932",
+      "identifiants": {
+        "an": "PA721932",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lorho-marie-france"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie-France",
@@ -4302,7 +5856,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-guevenoux": {
-      "acteur_ref": "PA721880",
+      "identifiants": {
+        "an": "PA721880",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie",
@@ -4316,7 +5875,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-lebec": {
-      "acteur_ref": "PA721852",
+      "identifiants": {
+        "an": "PA721852",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lebec-marie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie",
@@ -4330,7 +5894,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-noelle-battistel": {
-      "acteur_ref": "PA342415",
+      "identifiants": {
+        "an": "PA342415",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/battistel-marie-noelle"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie-Noëlle",
@@ -4344,7 +5913,12 @@
       "verifie_le": "2026-08-26"
     },
     "marie-pierre-rixain": {
-      "acteur_ref": "PA722252",
+      "identifiants": {
+        "an": "PA722252",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rixain-marie-pierre"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marie-Pierre",
@@ -4358,7 +5932,12 @@
       "verifie_le": "2026-08-26"
     },
     "marietta-karamanli": {
-      "acteur_ref": "PA335054",
+      "identifiants": {
+        "an": "PA335054",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/karamanli-marietta"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marietta",
@@ -4372,7 +5951,12 @@
       "verifie_le": "2026-08-26"
     },
     "marine-hamelet": {
-      "acteur_ref": "PA795900",
+      "identifiants": {
+        "an": "PA795900",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/hamelet-marine-24151"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marine",
@@ -4386,7 +5970,12 @@
       "verifie_le": "2026-08-26"
     },
     "marine-le-pen": {
-      "acteur_ref": "PA720614",
+      "identifiants": {
+        "an": "PA720614",
+        "senat": null,
+        "europarl": "28210",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-pen-marine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marine",
@@ -4399,8 +5988,32 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720614",
       "verifie_le": "2026-08-26"
     },
+    "marine-tondelier": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": "Marine",
+        "nom": "Tondelier",
+        "nom_complet": "Marine Tondelier",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidate déclarée à la présidentielle de 2027 (Les Écologistes), elle n'a jamais été élu·e à l'Assemblée nationale : aucun acteur d'AMO30 ne lui correspond. Fait négatif VÉRIFIÉ, pas une correspondance manquante — le référentiel historique a été lu en entier le 28/08/2026 (3 117 acteurs) et aucune entrée ne porte ce nom. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature (plus ancien mandat_debut d'acteur mesuré : 2002-06-19). Déclaré ici plutôt qu'absent de la table : un trou muet est ce qui a produit #510 et #501. L'état civil reste incomplet faute de source primaire collectée (AGENTS.md §2 règle 5) — sans date de naissance, la condition C3 de #539 interdit toute dérivation, et c'est cette déclaration humaine qui répond. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration : aucun référentiel dont la complétude soit prouvable n'existe pour eux, et « jamais élue » y resterait invérifiable.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-08-28"
+    },
     "marjolaine-meynier-millefert": {
-      "acteur_ref": "PA719882",
+      "identifiants": {
+        "an": "PA719882",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Marjolaine",
@@ -4414,7 +6027,12 @@
       "verifie_le": "2026-08-26"
     },
     "martine-etienne": {
-      "acteur_ref": "PA794458",
+      "identifiants": {
+        "an": "PA794458",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Martine",
@@ -4428,7 +6046,12 @@
       "verifie_le": "2026-08-26"
     },
     "mathieu-lefevre": {
-      "acteur_ref": "PA795386",
+      "identifiants": {
+        "an": "PA795386",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Mathieu",
@@ -4442,7 +6065,12 @@
       "verifie_le": "2026-08-26"
     },
     "mathilde-hignet": {
-      "acteur_ref": "PA794082",
+      "identifiants": {
+        "an": "PA794082",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/hignet-mathilde-24156"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Mathilde",
@@ -4456,7 +6084,12 @@
       "verifie_le": "2026-08-26"
     },
     "mathilde-panot": {
-      "acteur_ref": "PA720892",
+      "identifiants": {
+        "an": "PA720892",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/panot-mathilde"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Mathilde",
@@ -4470,7 +6103,12 @@
       "verifie_le": "2026-08-26"
     },
     "mathilde-paris": {
-      "acteur_ref": "PA794314",
+      "identifiants": {
+        "an": "PA794314",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Mathilde",
@@ -4484,7 +6122,12 @@
       "verifie_le": "2026-08-26"
     },
     "matthias-tavel": {
-      "acteur_ref": "PA794166",
+      "identifiants": {
+        "an": "PA794166",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/tavel-matthias-24228"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Matthias",
@@ -4498,7 +6141,12 @@
       "verifie_le": "2026-08-26"
     },
     "matthieu-marchio": {
-      "acteur_ref": "PA794530",
+      "identifiants": {
+        "an": "PA794530",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/marchio-matthieu-24230"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Matthieu",
@@ -4512,7 +6160,12 @@
       "verifie_le": "2026-08-26"
     },
     "maud-bregeon": {
-      "acteur_ref": "PA795990",
+      "identifiants": {
+        "an": "PA795990",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Maud",
@@ -4526,7 +6179,12 @@
       "verifie_le": "2026-08-26"
     },
     "maxime-laisney": {
-      "acteur_ref": "PA795516",
+      "identifiants": {
+        "an": "PA795516",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/laisney-maxime-24231"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Maxime",
@@ -4540,7 +6198,12 @@
       "verifie_le": "2026-08-26"
     },
     "maxime-minot": {
-      "acteur_ref": "PA720630",
+      "identifiants": {
+        "an": "PA720630",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Maxime",
@@ -4554,7 +6217,12 @@
       "verifie_le": "2026-08-26"
     },
     "melanie-thomin": {
-      "acteur_ref": "PA793816",
+      "identifiants": {
+        "an": "PA793816",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/thomin-melanie-24161"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Mélanie",
@@ -4568,7 +6236,12 @@
       "verifie_le": "2026-08-26"
     },
     "meyer-habib": {
-      "acteur_ref": "PA695100",
+      "identifiants": {
+        "an": "PA695100",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Meyer",
@@ -4582,7 +6255,12 @@
       "verifie_le": "2026-08-26"
     },
     "michael-taverne": {
-      "acteur_ref": "PA794502",
+      "identifiants": {
+        "an": "PA794502",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/taverne-michael-24234"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Michaël",
@@ -4596,7 +6274,12 @@
       "verifie_le": "2026-08-26"
     },
     "michel-guiniot": {
-      "acteur_ref": "PA794734",
+      "identifiants": {
+        "an": "PA794734",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/guiniot-michel-24237"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Michel",
@@ -4610,7 +6293,12 @@
       "verifie_le": "2026-08-26"
     },
     "michel-herbillon": {
-      "acteur_ref": "PA1630",
+      "identifiants": {
+        "an": "PA1630",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/herbillon-michel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Michel",
@@ -4624,7 +6312,12 @@
       "verifie_le": "2026-08-26"
     },
     "michel-lauzzana": {
-      "acteur_ref": "PA720022",
+      "identifiants": {
+        "an": "PA720022",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lauzzana-michel"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Michel",
@@ -4638,7 +6331,12 @@
       "verifie_le": "2026-08-26"
     },
     "michel-sala": {
-      "acteur_ref": "PA793724",
+      "identifiants": {
+        "an": "PA793724",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Michel",
@@ -4652,7 +6350,12 @@
       "verifie_le": "2026-08-26"
     },
     "michele-martinez": {
-      "acteur_ref": "PA794770",
+      "identifiants": {
+        "an": "PA794770",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/martinez-michele-24163"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Michèle",
@@ -4666,7 +6369,12 @@
       "verifie_le": "2026-08-26"
     },
     "michele-peyron": {
-      "acteur_ref": "PA721710",
+      "identifiants": {
+        "an": "PA721710",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Michèle",
@@ -4680,7 +6388,12 @@
       "verifie_le": "2026-08-26"
     },
     "michele-tabarot": {
-      "acteur_ref": "PA267794",
+      "identifiants": {
+        "an": "PA267794",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/tabarot-michele"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Michèle",
@@ -4694,7 +6407,12 @@
       "verifie_le": "2026-08-26"
     },
     "mickael-bouloux": {
-      "acteur_ref": "PA794094",
+      "identifiants": {
+        "an": "PA794094",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bouloux-mickael-19909"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Mickaël",
@@ -4708,7 +6426,12 @@
       "verifie_le": "2026-08-26"
     },
     "mikaele-seo": {
-      "acteur_ref": "PA757225",
+      "identifiants": {
+        "an": "PA757225",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/seo-mikaele-24245"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Mikaele",
@@ -4722,7 +6445,12 @@
       "verifie_le": "2026-08-26"
     },
     "mireille-clapot": {
-      "acteur_ref": "PA719294",
+      "identifiants": {
+        "an": "PA719294",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Mireille",
@@ -4736,7 +6464,12 @@
       "verifie_le": "2026-08-26"
     },
     "monique-iborra": {
-      "acteur_ref": "PA331835",
+      "identifiants": {
+        "an": "PA331835",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Monique",
@@ -4750,7 +6483,12 @@
       "verifie_le": "2026-08-26"
     },
     "mounir-belhamiti": {
-      "acteur_ref": "PA719910",
+      "identifiants": {
+        "an": "PA719910",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Mounir",
@@ -4764,7 +6502,12 @@
       "verifie_le": "2026-08-26"
     },
     "murielle-lepvraud": {
-      "acteur_ref": "PA793532",
+      "identifiants": {
+        "an": "PA793532",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lepvraud-murielle-24168"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Murielle",
@@ -4778,7 +6521,12 @@
       "verifie_le": "2026-08-26"
     },
     "nadege-abomangoli": {
-      "acteur_ref": "PA795228",
+      "identifiants": {
+        "an": "PA795228",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/abomangoli-nadege-180"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nadège",
@@ -4792,7 +6540,12 @@
       "verifie_le": "2026-08-26"
     },
     "nadia-hai": {
-      "acteur_ref": "PA722054",
+      "identifiants": {
+        "an": "PA722054",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nadia",
@@ -4806,7 +6559,12 @@
       "verifie_le": "2026-08-26"
     },
     "natalia-pouzyreff": {
-      "acteur_ref": "PA721916",
+      "identifiants": {
+        "an": "PA721916",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pouzyreff-natalia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Natalia",
@@ -4819,8 +6577,32 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721916",
       "verifie_le": "2026-08-26"
     },
+    "nathalie-arthaud": {
+      "identifiants": {
+        "an": null,
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": "Nathalie",
+        "nom": "Arthaud",
+        "nom_complet": "Nathalie Arthaud",
+        "date_naissance": null
+      },
+      "ecart": "hors_an",
+      "motif": "Candidate déclarée à la présidentielle de 2027 (Lutte Ouvrière), elle n'a jamais été élu·e à l'Assemblée nationale : aucun acteur d'AMO30 ne lui correspond. Fait négatif VÉRIFIÉ, pas une correspondance manquante — le référentiel historique a été lu en entier le 28/08/2026 (3 117 acteurs) et aucune entrée ne porte ce nom. La portée de l'affirmation est celle du référentiel : AMO30 ne garantit la présence d'un acteur qu'à partir de la XIIe législature (plus ancien mandat_debut d'acteur mesuré : 2002-06-19). Déclaré ici plutôt qu'absent de la table : un trou muet est ce qui a produit #510 et #501. L'état civil reste incomplet faute de source primaire collectée (AGENTS.md §2 règle 5) — sans date de naissance, la condition C3 de #539 interdit toute dérivation, et c'est cette déclaration humaine qui répond. Le Sénat et le Parlement européen ne sont PAS couverts par cette déclaration : aucun référentiel dont la complétude soit prouvable n'existe pour eux, et « jamais élue » y resterait invérifiable.",
+      "preuve": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+      "verifie_le": "2026-08-28"
+    },
     "nathalie-da-conceicao-carvalho": {
-      "acteur_ref": "PA795644",
+      "identifiants": {
+        "an": "PA795644",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/da-conceicao-carvalho-nathalie-24181"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nathalie",
@@ -4834,7 +6616,12 @@
       "verifie_le": "2026-08-26"
     },
     "nathalie-oziol": {
-      "acteur_ref": "PA793872",
+      "identifiants": {
+        "an": "PA793872",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/oziol-nathalie-24182"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nathalie",
@@ -4848,7 +6635,12 @@
       "verifie_le": "2026-08-26"
     },
     "nathalie-serre": {
-      "acteur_ref": "PA722308",
+      "identifiants": {
+        "an": "PA722308",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nathalie",
@@ -4862,7 +6654,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-dragon": {
-      "acteur_ref": "PA793146",
+      "identifiants": {
+        "an": "PA793146",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dragon-nicolas-24250"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4876,7 +6673,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-forissier": {
-      "acteur_ref": "PA1327",
+      "identifiants": {
+        "an": "PA1327",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4890,7 +6692,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-meizonnet": {
-      "acteur_ref": "PA719436",
+      "identifiants": {
+        "an": "PA719436",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/meizonnet-nicolas-17348"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4904,7 +6711,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-metzdorf": {
-      "acteur_ref": "PA795176",
+      "identifiants": {
+        "an": "PA795176",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/metzdorf-nicolas"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4918,7 +6730,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-pacquot": {
-      "acteur_ref": "PA793588",
+      "identifiants": {
+        "an": "PA793588",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4932,7 +6749,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicolas-ray": {
-      "acteur_ref": "PA793094",
+      "identifiants": {
+        "an": "PA793094",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ray-nicolas-24253"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Nicolas",
@@ -4946,7 +6768,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicole-dubre-chirat": {
-      "acteur_ref": "PA720154",
+      "identifiants": {
+        "an": "PA720154",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dubre-chirat-nicole"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nicole",
@@ -4960,7 +6787,12 @@
       "verifie_le": "2026-08-26"
     },
     "nicole-le-peih": {
-      "acteur_ref": "PA720342",
+      "identifiants": {
+        "an": "PA720342",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-peih-nicole"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Nicole",
@@ -4974,7 +6806,12 @@
       "verifie_le": "2026-08-26"
     },
     "olga-givernet": {
-      "acteur_ref": "PA718674",
+      "identifiants": {
+        "an": "PA718674",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/givernet-olga"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Olga",
@@ -4988,7 +6825,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivia-gregoire": {
-      "acteur_ref": "PA721764",
+      "identifiants": {
+        "an": "PA721764",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gregoire-olivia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Olivia",
@@ -5002,7 +6844,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivier-becht": {
-      "acteur_ref": "PA642935",
+      "identifiants": {
+        "an": "PA642935",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/becht-olivier"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Olivier",
@@ -5016,7 +6863,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivier-dussopt": {
-      "acteur_ref": "PA330357",
+      "identifiants": {
+        "an": "PA330357",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Olivier",
@@ -5030,7 +6882,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivier-faure": {
-      "acteur_ref": "PA609332",
+      "identifiants": {
+        "an": "PA609332",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/faure-olivier"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Olivier",
@@ -5044,7 +6901,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivier-marleix": {
-      "acteur_ref": "PA606098",
+      "identifiants": {
+        "an": "PA606098",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Olivier",
@@ -5058,7 +6920,12 @@
       "verifie_le": "2026-08-26"
     },
     "olivier-veran": {
-      "acteur_ref": "PA642788",
+      "identifiants": {
+        "an": "PA642788",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Olivier",
@@ -5072,7 +6939,12 @@
       "verifie_le": "2026-08-26"
     },
     "pascal-lavergne": {
-      "acteur_ref": "PA719664",
+      "identifiants": {
+        "an": "PA719664",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pascal",
@@ -5086,7 +6958,12 @@
       "verifie_le": "2026-08-26"
     },
     "pascale-bordes": {
-      "acteur_ref": "PA793844",
+      "identifiants": {
+        "an": "PA793844",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Pascale",
@@ -5100,7 +6977,12 @@
       "verifie_le": "2026-08-26"
     },
     "pascale-boyer": {
-      "acteur_ref": "PA718710",
+      "identifiants": {
+        "an": "PA718710",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Pascale",
@@ -5114,7 +6996,12 @@
       "verifie_le": "2026-08-26"
     },
     "pascale-martin": {
-      "acteur_ref": "PA793688",
+      "identifiants": {
+        "an": "PA793688",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Pascale",
@@ -5128,7 +7015,12 @@
       "verifie_le": "2026-08-26"
     },
     "patrice-perrot": {
-      "acteur_ref": "PA720414",
+      "identifiants": {
+        "an": "PA720414",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Patrice",
@@ -5142,7 +7034,12 @@
       "verifie_le": "2026-08-26"
     },
     "patricia-lemoine": {
-      "acteur_ref": "PA721632",
+      "identifiants": {
+        "an": "PA721632",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lemoine-patricia"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Patricia",
@@ -5156,7 +7053,12 @@
       "verifie_le": "2026-08-26"
     },
     "patricia-miralles": {
-      "acteur_ref": "PA719668",
+      "identifiants": {
+        "an": "PA719668",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Patricia",
@@ -5170,7 +7072,12 @@
       "verifie_le": "2026-08-26"
     },
     "patrick-hetzel": {
-      "acteur_ref": "PA608416",
+      "identifiants": {
+        "an": "PA608416",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/hetzel-patrick"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Patrick",
@@ -5184,7 +7091,12 @@
       "verifie_le": "2026-08-26"
     },
     "patrick-vignal": {
-      "acteur_ref": "PA606639",
+      "identifiants": {
+        "an": "PA606639",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Patrick",
@@ -5198,7 +7110,12 @@
       "verifie_le": "2026-08-26"
     },
     "paul-midy": {
-      "acteur_ref": "PA795664",
+      "identifiants": {
+        "an": "PA795664",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/midy-paul-24266"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Paul",
@@ -5212,7 +7129,12 @@
       "verifie_le": "2026-08-26"
     },
     "paul-vannier": {
-      "acteur_ref": "PA795596",
+      "identifiants": {
+        "an": "PA795596",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vannier-paul-24268"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Paul",
@@ -5226,7 +7148,12 @@
       "verifie_le": "2026-08-26"
     },
     "perceval-gaillard": {
-      "acteur_ref": "PA796070",
+      "identifiants": {
+        "an": "PA796070",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gaillard-perceval-19040"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Perceval",
@@ -5240,7 +7167,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-ballard": {
-      "acteur_ref": "PA794562",
+      "identifiants": {
+        "an": "PA794562",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ballard-philippe-24271"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5254,7 +7186,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-brun": {
-      "acteur_ref": "PA793624",
+      "identifiants": {
+        "an": "PA793624",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/brun-philippe-24275"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5268,7 +7205,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-dunoyer": {
-      "acteur_ref": "PA721094",
+      "identifiants": {
+        "an": "PA721094",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5282,7 +7224,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-emmanuel": {
-      "acteur_ref": "PA795688",
+      "identifiants": {
+        "an": "PA795688",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5296,7 +7243,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-fait": {
-      "acteur_ref": "PA794658",
+      "identifiants": {
+        "an": "PA794658",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/fait-philippe-24277"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5310,7 +7262,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-frei": {
-      "acteur_ref": "PA719190",
+      "identifiants": {
+        "an": "PA719190",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5324,7 +7281,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-gosselin": {
-      "acteur_ref": "PA266797",
+      "identifiants": {
+        "an": "PA266797",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gosselin-philippe"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5338,7 +7300,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-guillemard": {
-      "acteur_ref": "PA720174",
+      "identifiants": {
+        "an": "PA720174",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5352,7 +7319,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-juvin": {
-      "acteur_ref": "PA346782",
+      "identifiants": {
+        "an": "PA346782",
+        "senat": null,
+        "europarl": "96884",
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/juvin-philippe"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5366,7 +7338,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-lottiaux": {
-      "acteur_ref": "PA795974",
+      "identifiants": {
+        "an": "PA795974",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/lottiaux-philippe-15882"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5380,7 +7357,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-naillet": {
-      "acteur_ref": "PA643157",
+      "identifiants": {
+        "an": "PA643157",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/naillet-philippe"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5394,7 +7376,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-schreck": {
-      "acteur_ref": "PA796050",
+      "identifiants": {
+        "an": "PA796050",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/schreck-philippe-24293"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5408,7 +7395,12 @@
       "verifie_le": "2026-08-26"
     },
     "philippe-sorez": {
-      "acteur_ref": "PA719672",
+      "identifiants": {
+        "an": "PA719672",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Philippe",
@@ -5422,7 +7414,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierre-cazeneuve": {
-      "acteur_ref": "PA795864",
+      "identifiants": {
+        "an": "PA795864",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/cazeneuve-pierre-19678"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierre",
@@ -5436,7 +7433,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierre-cordier": {
-      "acteur_ref": "PA718850",
+      "identifiants": {
+        "an": "PA718850",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/cordier-pierre-2482"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierre",
@@ -5450,7 +7452,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierre-henri-dumont": {
-      "acteur_ref": "PA720684",
+      "identifiants": {
+        "an": "PA720684",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierre-Henri",
@@ -5464,7 +7471,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierre-meurin": {
-      "acteur_ref": "PA793852",
+      "identifiants": {
+        "an": "PA793852",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/meurin-pierre-24150"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierre",
@@ -5478,7 +7490,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierre-vatin": {
-      "acteur_ref": "PA720586",
+      "identifiants": {
+        "an": "PA720586",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierre",
@@ -5492,7 +7509,12 @@
       "verifie_le": "2026-08-26"
     },
     "pierrick-berteloot": {
-      "acteur_ref": "PA794522",
+      "identifiants": {
+        "an": "PA794522",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pierrick",
@@ -5506,7 +7528,12 @@
       "verifie_le": "2026-08-26"
     },
     "pieyre-alexandre-anglade": {
-      "acteur_ref": "PA721158",
+      "identifiants": {
+        "an": "PA721158",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/anglade-pieyre-alexandre"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Pieyre-Alexandre",
@@ -5520,7 +7547,12 @@
       "verifie_le": "2026-08-26"
     },
     "prisca-thevenot": {
-      "acteur_ref": "PA795920",
+      "identifiants": {
+        "an": "PA795920",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/thevenot-prisca-24191"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Prisca",
@@ -5534,7 +7566,12 @@
       "verifie_le": "2026-08-26"
     },
     "quentin-bataillon": {
-      "acteur_ref": "PA794214",
+      "identifiants": {
+        "an": "PA794214",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Quentin",
@@ -5548,7 +7585,12 @@
       "verifie_le": "2026-08-26"
     },
     "rachel-keke": {
-      "acteur_ref": "PA795438",
+      "identifiants": {
+        "an": "PA795438",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Rachel",
@@ -5562,7 +7604,12 @@
       "verifie_le": "2026-08-26"
     },
     "raphael-gerard": {
-      "acteur_ref": "PA719108",
+      "identifiants": {
+        "an": "PA719108",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Raphaël",
@@ -5576,7 +7623,12 @@
       "verifie_le": "2026-08-26"
     },
     "raphael-schellenberger": {
-      "acteur_ref": "PA721314",
+      "identifiants": {
+        "an": "PA721314",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/schellenberger-raphael"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Raphaël",
@@ -5590,7 +7642,12 @@
       "verifie_le": "2026-08-26"
     },
     "raquel-garrido": {
-      "acteur_ref": "PA796132",
+      "identifiants": {
+        "an": "PA796132",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Raquel",
@@ -5604,7 +7661,12 @@
       "verifie_le": "2026-08-26"
     },
     "remy-rebeyrotte": {
-      "acteur_ref": "PA722398",
+      "identifiants": {
+        "an": "PA722398",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Rémy",
@@ -5618,7 +7680,12 @@
       "verifie_le": "2026-08-26"
     },
     "rene-pilato": {
-      "acteur_ref": "PA817211",
+      "identifiants": {
+        "an": "PA817211",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/pilato-rene-25157"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "René",
@@ -5632,7 +7699,12 @@
       "verifie_le": "2026-08-26"
     },
     "robin-reda": {
-      "acteur_ref": "PA721678",
+      "identifiants": {
+        "an": "PA721678",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Robin",
@@ -5646,7 +7718,12 @@
       "verifie_le": "2026-08-26"
     },
     "rodrigo-arenas": {
-      "acteur_ref": "PA795084",
+      "identifiants": {
+        "an": "PA795084",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/arenas-rodrigo-24170"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Rodrigo",
@@ -5660,7 +7737,12 @@
       "verifie_le": "2026-08-26"
     },
     "roger-chudeau": {
-      "acteur_ref": "PA794198",
+      "identifiants": {
+        "an": "PA794198",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/chudeau-roger-24171"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Roger",
@@ -5674,7 +7756,12 @@
       "verifie_le": "2026-08-26"
     },
     "roger-vicot": {
-      "acteur_ref": "PA794494",
+      "identifiants": {
+        "an": "PA794494",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/vicot-roger"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Roger",
@@ -5688,7 +7775,12 @@
       "verifie_le": "2026-08-26"
     },
     "roland-lescure": {
-      "acteur_ref": "PA721134",
+      "identifiants": {
+        "an": "PA721134",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Roland",
@@ -5702,7 +7794,12 @@
       "verifie_le": "2026-08-26"
     },
     "romain-baubry": {
-      "acteur_ref": "PA793374",
+      "identifiants": {
+        "an": "PA793374",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/baubry-romain-24174"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Romain",
@@ -5716,7 +7813,12 @@
       "verifie_le": "2026-08-26"
     },
     "sabrina-agresti-roubache": {
-      "acteur_ref": "PA793278",
+      "identifiants": {
+        "an": "PA793278",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sabrina",
@@ -5730,7 +7832,12 @@
       "verifie_le": "2026-08-26"
     },
     "sacha-houlie": {
-      "acteur_ref": "PA722150",
+      "identifiants": {
+        "an": "PA722150",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/houlie-sacha"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sacha",
@@ -5744,7 +7851,12 @@
       "verifie_le": "2026-08-26"
     },
     "sandra-marsaud": {
-      "acteur_ref": "PA719080",
+      "identifiants": {
+        "an": "PA719080",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/marsaud-sandra"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sandra",
@@ -5758,7 +7870,12 @@
       "verifie_le": "2026-08-26"
     },
     "sandrine-dogor-such": {
-      "acteur_ref": "PA794762",
+      "identifiants": {
+        "an": "PA794762",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dogor-such-sandrine-24201"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sandrine",
@@ -5772,7 +7889,12 @@
       "verifie_le": "2026-08-26"
     },
     "sandrine-le-feur": {
-      "acteur_ref": "PA719412",
+      "identifiants": {
+        "an": "PA719412",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/le-feur-sandrine"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sandrine",
@@ -5786,7 +7908,12 @@
       "verifie_le": "2026-08-26"
     },
     "sarah-legrain": {
-      "acteur_ref": "PA791824",
+      "identifiants": {
+        "an": "PA791824",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/legrain-sarah-24203"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sarah",
@@ -5800,7 +7927,12 @@
       "verifie_le": "2026-08-26"
     },
     "sarah-tanzilli": {
-      "acteur_ref": "PA794930",
+      "identifiants": {
+        "an": "PA794930",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sarah",
@@ -5814,7 +7946,12 @@
       "verifie_le": "2026-08-26"
     },
     "sebastien-chenu": {
-      "acteur_ref": "PA720468",
+      "identifiants": {
+        "an": "PA720468",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/chenu-sebastien"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sébastien",
@@ -5828,7 +7965,12 @@
       "verifie_le": "2026-08-26"
     },
     "sebastien-delogu": {
-      "acteur_ref": "PA793464",
+      "identifiants": {
+        "an": "PA793464",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/delogu-sebastien-24179"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sébastien",
@@ -5842,7 +7984,12 @@
       "verifie_le": "2026-08-26"
     },
     "sebastien-rome": {
-      "acteur_ref": "PA793884",
+      "identifiants": {
+        "an": "PA793884",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sébastien",
@@ -5856,7 +8003,12 @@
       "verifie_le": "2026-08-26"
     },
     "segolene-amiot": {
-      "acteur_ref": "PA794138",
+      "identifiants": {
+        "an": "PA794138",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/amiot-segolene-24206"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Ségolène",
@@ -5869,8 +8021,32 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794138",
       "verifie_le": "2026-08-26"
     },
+    "segolene-royal": {
+      "identifiants": {
+        "an": "PA2650",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "Mme",
+        "prenom": "Ségolène",
+        "nom": "Royal",
+        "nom_complet": "Ségolène Royal",
+        "date_naissance": "1953-09-22"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2650",
+      "verifie_le": "2026-08-28"
+    },
     "serge-muller": {
-      "acteur_ref": "PA793696",
+      "identifiants": {
+        "an": "PA793696",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/muller-serge-24188"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Serge",
@@ -5884,7 +8060,12 @@
       "verifie_le": "2026-08-26"
     },
     "servane-hugues": {
-      "acteur_ref": "PA794004",
+      "identifiants": {
+        "an": "PA794004",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Servane",
@@ -5898,7 +8079,12 @@
       "verifie_le": "2026-08-26"
     },
     "sophia-chikirou": {
-      "acteur_ref": "PA791812",
+      "identifiants": {
+        "an": "PA791812",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/chikirou-sophia-24207"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sophia",
@@ -5912,7 +8098,12 @@
       "verifie_le": "2026-08-26"
     },
     "sophie-blanc": {
-      "acteur_ref": "PA794886",
+      "identifiants": {
+        "an": "PA794886",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/blanc-sophie-19142"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sophie",
@@ -5926,7 +8117,12 @@
       "verifie_le": "2026-08-26"
     },
     "sophie-errante": {
-      "acteur_ref": "PA607193",
+      "identifiants": {
+        "an": "PA607193",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/errante-sophie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sophie",
@@ -5940,7 +8136,12 @@
       "verifie_le": "2026-08-26"
     },
     "sophie-panonacle": {
-      "acteur_ref": "PA719632",
+      "identifiants": {
+        "an": "PA719632",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/panonacle-sophie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sophie",
@@ -5954,7 +8155,12 @@
       "verifie_le": "2026-08-26"
     },
     "stanislas-guerini": {
-      "acteur_ref": "PA721498",
+      "identifiants": {
+        "an": "PA721498",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stanislas",
@@ -5968,7 +8174,12 @@
       "verifie_le": "2026-08-26"
     },
     "stella-dupont": {
-      "acteur_ref": "PA643175",
+      "identifiants": {
+        "an": "PA643175",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/dupont-stella"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Stella",
@@ -5982,7 +8193,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-buchou": {
-      "acteur_ref": "PA722000",
+      "identifiants": {
+        "an": "PA722000",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/buchou-stephane"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -5996,7 +8212,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-delautrette": {
-      "acteur_ref": "PA795430",
+      "identifiants": {
+        "an": "PA795430",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/delautrette-stephane-22744"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6010,7 +8231,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-mazars": {
-      "acteur_ref": "PA677483",
+      "identifiants": {
+        "an": "PA677483",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6024,7 +8250,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-rambaud": {
-      "acteur_ref": "PA795966",
+      "identifiants": {
+        "an": "PA795966",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rambaud-stephane-24208"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6038,7 +8269,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-travert": {
-      "acteur_ref": "PA607395",
+      "identifiants": {
+        "an": "PA607395",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/travert-stephane"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6052,7 +8288,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-viry": {
-      "acteur_ref": "PA721474",
+      "identifiants": {
+        "an": "PA721474",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/viry-stephane"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6066,7 +8307,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephane-vojetta": {
-      "acteur_ref": "PA721170",
+      "identifiants": {
+        "an": "PA721170",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Stéphane",
@@ -6080,7 +8326,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephanie-galzy": {
-      "acteur_ref": "PA793892",
+      "identifiants": {
+        "an": "PA793892",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/galzy-stephanie-24211"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Stéphanie",
@@ -6094,7 +8345,12 @@
       "verifie_le": "2026-08-26"
     },
     "stephanie-rist": {
-      "acteur_ref": "PA720066",
+      "identifiants": {
+        "an": "PA720066",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Stéphanie",
@@ -6108,7 +8364,12 @@
       "verifie_le": "2026-08-26"
     },
     "sylvain-carriere": {
-      "acteur_ref": "PA793912",
+      "identifiants": {
+        "an": "PA793912",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/carriere-sylvain-24217"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sylvain",
@@ -6122,7 +8383,12 @@
       "verifie_le": "2026-08-26"
     },
     "sylvain-maillard": {
-      "acteur_ref": "PA717379",
+      "identifiants": {
+        "an": "PA717379",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/maillard-sylvain"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Sylvain",
@@ -6136,7 +8402,12 @@
       "verifie_le": "2026-08-26"
     },
     "sylvie-bonnet": {
-      "acteur_ref": "PA719968",
+      "identifiants": {
+        "an": "PA719968",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bonnet-sylvie-26241"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sylvie",
@@ -6150,7 +8421,12 @@
       "verifie_le": "2026-08-26"
     },
     "sylvie-ferrer": {
-      "acteur_ref": "PA794870",
+      "identifiants": {
+        "an": "PA794870",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ferrer-sylvie-24213"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Sylvie",
@@ -6164,7 +8440,12 @@
       "verifie_le": "2026-08-26"
     },
     "thibault-bazin": {
-      "acteur_ref": "PA642847",
+      "identifiants": {
+        "an": "PA642847",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bazin-thibault"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thibault",
@@ -6178,7 +8459,12 @@
       "verifie_le": "2026-08-26"
     },
     "thibaut-francois": {
-      "acteur_ref": "PA794538",
+      "identifiants": {
+        "an": "PA794538",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thibaut",
@@ -6192,7 +8478,12 @@
       "verifie_le": "2026-08-26"
     },
     "thierry-cozic": {
-      "acteur_ref": "PA775210",
+      "identifiants": {
+        "an": "PA775210",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thierry",
@@ -6206,7 +8497,12 @@
       "verifie_le": "2026-08-26"
     },
     "thierry-frappe": {
-      "acteur_ref": "PA794678",
+      "identifiants": {
+        "an": "PA794678",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/frappe-thierry-24232"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thierry",
@@ -6220,7 +8516,12 @@
       "verifie_le": "2026-08-26"
     },
     "thomas-cazenave": {
-      "acteur_ref": "PA793940",
+      "identifiants": {
+        "an": "PA793940",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thomas",
@@ -6234,7 +8535,12 @@
       "verifie_le": "2026-08-26"
     },
     "thomas-gassilloud": {
-      "acteur_ref": "PA722358",
+      "identifiants": {
+        "an": "PA722358",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gassilloud-thomas"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thomas",
@@ -6248,7 +8554,12 @@
       "verifie_le": "2026-08-26"
     },
     "thomas-menage": {
-      "acteur_ref": "PA794322",
+      "identifiants": {
+        "an": "PA794322",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/menage-thomas-24239"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thomas",
@@ -6262,7 +8573,12 @@
       "verifie_le": "2026-08-26"
     },
     "thomas-portes": {
-      "acteur_ref": "PA796062",
+      "identifiants": {
+        "an": "PA796062",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/portes-thomas-24240"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thomas",
@@ -6276,7 +8592,12 @@
       "verifie_le": "2026-08-26"
     },
     "thomas-rudigoz": {
-      "acteur_ref": "PA722292",
+      "identifiants": {
+        "an": "PA722292",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Thomas",
@@ -6290,7 +8611,12 @@
       "verifie_le": "2026-08-26"
     },
     "timothee-houssin": {
-      "acteur_ref": "PA793632",
+      "identifiants": {
+        "an": "PA793632",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/houssin-timothee-24241"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Timothée",
@@ -6304,7 +8630,12 @@
       "verifie_le": "2026-08-26"
     },
     "ugo-bernalicis": {
-      "acteur_ref": "PA720430",
+      "identifiants": {
+        "an": "PA720430",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bernalicis-ugo"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Ugo",
@@ -6318,7 +8649,12 @@
       "verifie_le": "2026-08-26"
     },
     "valerie-bazin-malgras": {
-      "acteur_ref": "PA718884",
+      "identifiants": {
+        "an": "PA718884",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/bazin-malgras-valerie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Valérie",
@@ -6332,7 +8668,12 @@
       "verifie_le": "2026-08-26"
     },
     "valerie-rabault": {
-      "acteur_ref": "PA609590",
+      "identifiants": {
+        "an": "PA609590",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Valérie",
@@ -6346,7 +8687,12 @@
       "verifie_le": "2026-08-26"
     },
     "veronique-de-montchalin": {
-      "acteur_ref": "PA719376",
+      "identifiants": {
+        "an": "PA719376",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Véronique",
@@ -6360,7 +8706,12 @@
       "verifie_le": "2026-08-26"
     },
     "veronique-louwagie": {
-      "acteur_ref": "PA608016",
+      "identifiants": {
+        "an": "PA608016",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Véronique",
@@ -6374,7 +8725,12 @@
       "verifie_le": "2026-08-26"
     },
     "veronique-riotton": {
-      "acteur_ref": "PA721426",
+      "identifiants": {
+        "an": "PA721426",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/riotton-veronique"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Véronique",
@@ -6388,7 +8744,12 @@
       "verifie_le": "2026-08-26"
     },
     "victor-catteau": {
-      "acteur_ref": "PA794638",
+      "identifiants": {
+        "an": "PA794638",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Victor",
@@ -6402,7 +8763,12 @@
       "verifie_le": "2026-08-26"
     },
     "victor-habert-dassault": {
-      "acteur_ref": "PA783457",
+      "identifiants": {
+        "an": "PA783457",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Victor",
@@ -6416,7 +8782,12 @@
       "verifie_le": "2026-08-26"
     },
     "vincent-descoeur": {
-      "acteur_ref": "PA330909",
+      "identifiants": {
+        "an": "PA330909",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/descoeur-vincent-3159"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Vincent",
@@ -6430,7 +8801,12 @@
       "verifie_le": "2026-08-26"
     },
     "vincent-ledoux": {
-      "acteur_ref": "PA712014",
+      "identifiants": {
+        "an": "PA712014",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/ledoux-vincent"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Vincent",
@@ -6444,7 +8820,12 @@
       "verifie_le": "2026-08-26"
     },
     "vincent-rolland": {
-      "acteur_ref": "PA266808",
+      "identifiants": {
+        "an": "PA266808",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/rolland-vincent-7763"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Vincent",
@@ -6458,7 +8839,12 @@
       "verifie_le": "2026-08-26"
     },
     "vincent-seitlinger": {
-      "acteur_ref": "PA794410",
+      "identifiants": {
+        "an": "PA794410",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Vincent",
@@ -6472,7 +8858,12 @@
       "verifie_le": "2026-08-26"
     },
     "violette-spillebout": {
-      "acteur_ref": "PA794486",
+      "identifiants": {
+        "an": "PA794486",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/spillebout-violette-24216"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Violette",
@@ -6486,7 +8877,12 @@
       "verifie_le": "2026-08-26"
     },
     "virginie-duby-muller": {
-      "acteur_ref": "PA608826",
+      "identifiants": {
+        "an": "PA608826",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/duby-muller-virginie"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Virginie",
@@ -6500,7 +8896,12 @@
       "verifie_le": "2026-08-26"
     },
     "virginie-lanlo": {
-      "acteur_ref": "PA643048",
+      "identifiants": {
+        "an": "PA643048",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Virginie",
@@ -6514,7 +8915,12 @@
       "verifie_le": "2026-08-26"
     },
     "viviane-malet": {
-      "acteur_ref": "PA736185",
+      "identifiants": {
+        "an": "PA736185",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Viviane",
@@ -6528,7 +8934,12 @@
       "verifie_le": "2026-08-26"
     },
     "william-martinet": {
-      "acteur_ref": "PA795692",
+      "identifiants": {
+        "an": "PA795692",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "William",
@@ -6541,8 +8952,32 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795692",
       "verifie_le": "2026-08-26"
     },
+    "xavier-bertrand": {
+      "identifiants": {
+        "an": "PA267080",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
+      "etat_civil": {
+        "civilite": "M.",
+        "prenom": "Xavier",
+        "nom": "Bertrand",
+        "nom_complet": "Xavier Bertrand",
+        "date_naissance": "1965-03-21"
+      },
+      "ecart": null,
+      "motif": null,
+      "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267080",
+      "verifie_le": "2026-08-28"
+    },
     "xavier-breton": {
-      "acteur_ref": "PA330008",
+      "identifiants": {
+        "an": "PA330008",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/breton-xavier"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Xavier",
@@ -6556,7 +8991,12 @@
       "verifie_le": "2026-08-26"
     },
     "xavier-roseren": {
-      "acteur_ref": "PA721458",
+      "identifiants": {
+        "an": "PA721458",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/roseren-xavier"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Xavier",
@@ -6570,7 +9010,12 @@
       "verifie_le": "2026-08-26"
     },
     "yael-braun-pivet": {
-      "acteur_ref": "PA721908",
+      "identifiants": {
+        "an": "PA721908",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/braun-pivet-yael"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Yaël",
@@ -6584,7 +9029,12 @@
       "verifie_le": "2026-08-26"
     },
     "yael-menache": {
-      "acteur_ref": "PA795786",
+      "identifiants": {
+        "an": "PA795786",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/menache-yael-24218"
+      },
       "etat_civil": {
         "civilite": "Mme",
         "prenom": "Yaël",
@@ -6598,7 +9048,12 @@
       "verifie_le": "2026-08-26"
     },
     "yannick-chenevard": {
-      "acteur_ref": "PA795908",
+      "identifiants": {
+        "an": "PA795908",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/chenevard-yannick"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Yannick",
@@ -6612,7 +9067,12 @@
       "verifie_le": "2026-08-26"
     },
     "yannick-haury": {
-      "acteur_ref": "PA720054",
+      "identifiants": {
+        "an": "PA720054",
+        "senat": null,
+        "europarl": null,
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Yannick",
@@ -6626,7 +9086,12 @@
       "verifie_le": "2026-08-26"
     },
     "yannick-neuder": {
-      "acteur_ref": "PA794038",
+      "identifiants": {
+        "an": "PA794038",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/neuder-yannick"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Yannick",
@@ -6640,7 +9105,12 @@
       "verifie_le": "2026-08-26"
     },
     "yannick-vaugrenard": {
-      "acteur_ref": "PA429852",
+      "identifiants": {
+        "an": "PA429852",
+        "senat": null,
+        "europarl": "28175",
+        "hatvp": null
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Yannick",
@@ -6654,7 +9124,12 @@
       "verifie_le": "2026-08-26"
     },
     "yoann-gillet": {
-      "acteur_ref": "PA793832",
+      "identifiants": {
+        "an": "PA793832",
+        "senat": null,
+        "europarl": null,
+        "hatvp": "https://www.hatvp.fr/pages_nominatives/gillet-yoann"
+      },
       "etat_civil": {
         "civilite": "M.",
         "prenom": "Yoann",
@@ -6667,5 +9142,11 @@
       "preuve": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793832",
       "verifie_le": "2026-08-26"
     }
+  },
+  "sources_referentiels": {
+    "an": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
+    "senat": null,
+    "europarl": "https://www.europarl.europa.eu/meps/fr/",
+    "hatvp": "https://www.hatvp.fr/"
   }
 }
