@@ -441,7 +441,11 @@ def test_bout_en_bout_nomme_la_population_de_chaque_chiffre():
         {SHA_A: 200, SHA_B: 200}, {"status": "full", "snapshot": "x", "visit": 1}
     )
     assert "chaînes hexadécimales extraites" in texte
-    assert "fichiers .md suivis" in texte and "corps d'issues" in texte
+    assert "fichier .md suivi" in texte and "corps d'issue" in texte
+    assert "commentaires d'issues EXCLUS" in texte, (
+        "la réserve de périmètre doit être dans la sortie, pas seulement dans "
+        "le code : c'est la sortie qu'on lit avant de couper"
+    )
     assert donnees["population"] == {
         "chaines_extraites": 2,
         "fichiers_md": 1,

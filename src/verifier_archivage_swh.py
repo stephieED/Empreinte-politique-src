@@ -547,48 +547,61 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[i
     indetermines = [c for c in commits if c.etat in ("indetermine", "non_verifie")]
     visite_conclue = visite.get("connue") and visite.get("statut") == "full"
     reserve = (
-        f" ({len(orphelines)} citation(s) orpheline(s) signalée(s) à part : "
-        "commits atteignables depuis aucune ref de l'origine, donc jamais "
-        "archivables, et déjà irrésolvables pour un tiers.)"
+        f" ({_accord(len(orphelines), 'citation orpheline signalée à part', 'citations orphelines signalées à part')} : "
+        "ce qui n'est atteignable depuis aucune ref de l'origine n'a jamais pu "
+        "être archivé, et est déjà irrésolvable pour un tiers.)"
         if orphelines
         else ""
     )
+    archivables = len(commits) - len(orphelines)
 
     if indetermines:
         return INDETERMINE, (
-            f"{len(indetermines)} SHA sur {len(commits)} n'ont pas pu être "
-            "interrogés (quota, réseau, ou réponse inattendue). On n'a rien "
-            "établi : réessayer plus tard. NE PAS COUPER."
+            f"{_accord(len(indetermines), 'SHA')} sur {len(commits)} n'ont pas "
+            "pu être interrogés (quota, réseau, ou réponse inattendue). On n'a "
+            "rien établi : réessayer plus tard. NE PAS COUPER."
         )
     if not visite_conclue:
         statut = visite.get("statut") or visite.get("erreur") or "inconnu"
         if absents:
             return INDETERMINE, (
                 f"La visite n'est pas `full` (statut : {statut}) et "
-                f"{len(absents)} SHA sur {len(commits)} n'y résolvent pas "
-                "encore. Ce n'est PAS un échec d'archivage : l'ingestion peut "
-                "être en cours. Relancer cette vérification plus tard. "
-                "NE PAS COUPER."
+                f"{_accord(len(absents), 'SHA')} sur {len(commits)} n'y "
+                "résolvent pas encore. Ce n'est PAS un échec d'archivage : "
+                "l'ingestion peut être en cours. Relancer cette vérification "
+                "plus tard. NE PAS COUPER."
             )
         return VERIFIE, (
-            f"Les {len(commits) - len(orphelines)} SHA cités archivables "
-            f"résolvent tous, bien que "
-            f"la visite ne soit pas encore `full` (statut : {statut}). La "
-            "condition de l'étape 2b est remplie ; attendre `full` reste plus "
-            "prudent." + reserve
+            f"Les {_accord(archivables, 'SHA cité archivable', 'SHA cités archivables')} "
+            f"résolvent tous, bien que la visite ne soit pas encore `full` "
+            f"(statut : {statut}). La condition de l'étape 2b est remplie ; "
+            "attendre `full` reste plus prudent." + reserve
         )
     if absents:
+        un_seul = len(absents) == 1
         return MANQUANTS, (
-            f"{len(absents)} SHA cités sur {len(commits)} ne résolvent pas alors "
-            "qu'ils sont atteignables depuis une ref, et la visite est `full` : "
-            "ce sont de vrais manques, pas une ingestion en cours. NE PAS "
-            "COUPER — relancer « Save Code Now », puis revérifier." + reserve
+            f"{_accord(len(absents), 'SHA cité')} sur {len(commits)} "
+            + ("ne résout pas alors qu'il est atteignable"
+               if un_seul else "ne résolvent pas alors qu'ils sont atteignables")
+            + " depuis une ref de l'origine, et la visite est `full` : "
+            + ("c'est un vrai manque" if un_seul else "ce sont de vrais manques")
+            + ", pas une ingestion en cours. NE PAS COUPER — relancer "
+            "« Save Code Now », puis revérifier." + reserve
         )
     return VERIFIE, (
-        f"Les {len(commits) - len(orphelines)} SHA cités archivables résolvent "
-        "tous dans une visite `full`. L'archivage n'est pas un rituel : la "
-        "coupure peut suivre." + reserve
+        f"Les {_accord(archivables, 'SHA cité archivable', 'SHA cités archivables')} "
+        "résolvent tous dans une visite `full`. L'archivage n'est pas un "
+        "rituel : la coupure peut suivre." + reserve
     )
+
+
+def _accord(n: int, singulier: str, pluriel: Optional[str] = None) -> str:
+    """« 1 SHA cité ne résout pas » / « 3 SHA cités ne résolvent pas ».
+
+    Cette sortie est lue sous pression, juste avant une opération
+    irréversible : une faute d'accord fait relire la phrase au lieu d'agir.
+    """
+    return f"{n} {singulier if abs(n) <= 1 else (pluriel or singulier + 's')}"
 
 
 def _lieux(commit: CommitCite) -> str:
@@ -631,16 +644,17 @@ def formater_rapport(
 
     lignes += [
         "",
-        f"  population : {nb_chaines} chaînes hexadécimales extraites de "
-        f"{nb_md} fichiers .md suivis et {nb_issues} corps d'issues",
+        f"  population : {_accord(nb_chaines, 'chaîne hexadécimale extraite', 'chaînes hexadécimales extraites')} de "
+        f"{_accord(nb_md, 'fichier .md suivi', 'fichiers .md suivis')} et "
+        + _accord(nb_issues, "corps d'issue", "corps d'issues"),
         "               (commentaires d'issues EXCLUS : la population citée est "
         "un peu plus large),",
-        f"               dont {len(commits)} résolvent en commit du dépôt "
-        "(`git cat-file -t` == commit).",
-        f"  résultat   : {presents} résolvent dans l'archive, "
-        f"{len(absents)} manquent, {len(orphelines)} orphelines, "
-        f"{len(indetermines)} indéterminés.",
-        f"  quota      : {quota.requetes} requêtes émises"
+        f"               dont {len(commits)} "
+        + ("résout" if len(commits) <= 1 else "résolvent")
+        + " en commit du dépôt (`git cat-file -t` == commit).",
+        f"  résultat   : {presents} dans l'archive · {len(absents)} manquant(s) "
+        f"· {len(orphelines)} orpheline(s) · {len(indetermines)} indéterminé(s).",
+        f"  quota      : {_accord(quota.requetes, 'requête émise', 'requêtes émises')}"
         + (
             f", {quota.restant} restantes sur {quota.limite} par heure"
             if quota.restant is not None
@@ -657,9 +671,9 @@ def formater_rapport(
     groupes = (
         ("MANQUANTS — archivables et pourtant absents ; la coupure les perdrait",
          absents),
-        ("CITATIONS ORPHELINES — atteignables depuis aucune ref, donc jamais "
-         "archivables ;\n  déjà irrésolvables pour un tiers, la coupure n'y "
-         "change rien. Corriger la citation,\n  pas l'archive",
+        ("CITATIONS ORPHELINES — atteignables depuis aucune ref de l'origine, "
+         "donc jamais\n  archivables ; déjà irrésolvables pour un tiers, et la "
+         "coupure n'y change rien.\n  Corriger la citation, pas l'archive",
          orphelines),
         ("INDÉTERMINÉS — non conclus, ni présents ni absents", indetermines),
     )
@@ -795,8 +809,8 @@ def verifier(
             commit.detail += (
                 f" ; atteignable depuis {commit.ref} — l'archive a un trou"
                 if commit.atteignable
-                else " ; atteignable depuis AUCUNE ref du clone (branche de PR "
-                "récrite ?) : l'origine ne l'a jamais servi, donc Software "
+                else " ; atteignable depuis AUCUNE ref de l'origine (branche de "
+                "PR récrite ?) : elle ne l'a jamais servi, donc Software "
                 "Heritage n'a jamais pu le voir. Relancer « Save Code Now » n'y "
                 "changera rien — c'est la citation qu'il faut corriger"
             )
