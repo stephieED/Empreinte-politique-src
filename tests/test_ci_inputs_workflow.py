@@ -69,6 +69,42 @@ def test_chaque_sortie_lue_par_la_relance_est_ecrite():
     )
 
 
+def test_les_inputs_qui_rafraichissent_le_disent():
+    """Le défaut invisible qui a coûté deux runs le 28/08/2026.
+
+    Une extraction ne réécrit PAS un profil déjà présent. Sans
+    `overwrite_profiles`, un correctif de collecte n'atteint jamais les profils
+    existants — constaté sur #562 : deux runs, dont un à pleine échelle, et les
+    99 profils fautifs sont restés datés du 27/08.
+
+    Les libellés d'alors décrivaient le drapeau (« Overwrite profiles from
+    cache (no merge) ») et non l'effet. GitHub masquant le nom du champ, la
+    description est tout ce qu'on lit : elle doit dire ce qui change dans le
+    résultat, pas ce que le pipeline fait de l'option.
+    """
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc = contenu[contenu.index("  workflow_dispatch:"):contenu.index("\n# Moindre privilège")]
+    desc = dict(re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE))
+
+    for nom in ("cold_start", "overwrite_profiles"):
+        assert "refresh existing profiles" in desc[nom].lower(), (
+            f"`{nom}` doit dire qu'il RAFRAÎCHIT les profils existants : c'est "
+            "son effet, et c'est ce que le formulaire de lancement montre."
+        )
+
+    assert "never re-collected" in desc["overwrite_profiles"].lower(), (
+        "le défaut invisible — un profil déjà écrit n'est jamais recollecté — "
+        "doit être nommé là où on le lit, pas seulement dans la doc."
+    )
+
+    for nom in ("refresh_existing_only", "roster_limit"):
+        assert "does not refresh" in desc[nom].lower(), (
+            f"`{nom}` restreint la POPULATION traitée ; il ne rafraîchit rien. "
+            "Le dire évite la confusion avec les deux options ci-dessus — "
+            "celle qui a coûté deux runs."
+        )
+
+
 def test_aucune_description_d_input_n_est_un_essai():
     """Une description longue n'est pas lue dans un formulaire de lancement.
 

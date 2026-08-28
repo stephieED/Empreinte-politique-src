@@ -13,23 +13,23 @@ on:
       # by side in the two labels.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
       cold_start:
-        description: "Overwrite profiles from scratch (purge cache & output - no merge)"
+        description: "Refresh existing profiles from scratch: purge the cache and the output first, then re-collect. Slowest path. Anything the fresh collection does not return is lost."
         type: boolean
         default: false
       overwrite_profiles:
-        description: "Overwrite profiles from cache (no merge)"
+        description: "Refresh existing profiles, reusing the cache. Leave this off and a profile already written is never re-collected, so a collection fix never reaches it. Anything the fresh collection does not return is lost."
         type: boolean
         default: false
       refresh_existing_only:
-        description: "Limit roster to pre-existing members (no new ones)"
+        description: "Process only roster members that already have a profile, adding none. Restricts WHO is processed; does not refresh what is already written."
         type: boolean
         default: false
       roster_limit:
-        description: "Roster members to process. 0 = all"
+        description: "How many roster members enter the extraction matrix. 0 = all of them. Does not refresh profiles already written."
         type: number
         default: 20
       collect_interventions:
-        description: "Collect floor speeches (skipped for the group roster job)"
+        description: "Collect floor speeches for the declared candidates. The group roster job never collects them, whatever this is set to."
         type: boolean
         default: false
       incomplete_read_threshold:
