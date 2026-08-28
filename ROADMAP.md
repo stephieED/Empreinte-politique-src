@@ -8,40 +8,74 @@ something is pending, not *why*.
 
 ## Issues ouvertes — ordre d'exécution
 
-État au **28/08/2026 en fin de journée**. Le rang traduit l'ordre dans lequel je
-lancerais les chantiers, pas une urgence absolue ; la dernière colonne dit ce qui
-empêche de commencer. Le *sujet* est réécrit court — les titres d'issue de ce dépôt
-portent leur constat chiffré et ne tiennent pas dans un tableau.
+État au **28/08/2026, fin de journée** (`origin/main` = `9100eb7`). Le rang traduit
+l'ordre dans lequel je lancerais les chantiers, pas une urgence absolue ; la
+dernière colonne dit ce qui empêche de commencer. Le *sujet* est réécrit court —
+les titres d'issue de ce dépôt portent leur constat chiffré et ne tiennent pas
+dans un tableau.
 
-**15 issues ouvertes, aucune PR ouverte**, toutes rattachées à un milestone.
+**17 issues ouvertes, aucune PR ouverte**, toutes rattachées à un milestone.
 
 | Rang | Issue | Sujet | Milestone | État | Ce qui bloque |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **#539** | identité et couverture des profils | Modèle de données | PR #552 fusionnée — 479 profils, blocs `identifiants` et `couverture` publiés | **le run `33165786207`** : Royal et Bertrand n'ont pas leur page tant qu'il n'a pas fini |
-| 2 | **#326** | fondations UI partagées | Analytics | prêt | rien — et c'est la seule qui débloque quatre issues |
-| 3 | **#551** | rétention de l'historique de données | Maintenance | prêt, **arbitrage à rendre** : la fenêtre se compte-t-elle en commits ou en octets ? | rien — 28 commits de données sur une fenêtre de 30 |
-| 3 | **#555** | fraîcheur du cache AN | Maintenance | prêt | rien — indépendante de #551 |
-| 4 | **#556** | marqueur `nil` publié comme URI | Modèle de données | prêt | rien, mais la régénération des 186 profils suppose un run |
-| 5 | **#553** | 280 membres du roster sans profil | Full scale | à **diagnostiquer** avant d'agir | rien — la première étape n'est pas un run |
-| 6 | #328, #329, #330 | refonte des trois pages de profil | Analytics | après #326 | #326 — parallélisables entre elles |
-| 7 | #331 | documentation de la refonte | Analytics | — | #328, #329, #330 |
-| 8 | #486 | carrière sur deux chambres | Modèle de données | à recadrer | #539 |
-| 9 | #484 | Mélenchon basculé au Sénat | Modèle de données | non résolu | #486 |
-| 9 | #495 | affichage bicaméral | Modèle de données | — | #486 |
-| 10 | #305 | version anglaise | English version | — | stabilisation de l'UI (#324 entière) |
+| 1 | **#326** | fondations UI partagées | Analytics | prêt | rien — seule voie qui n'attend rien et en débloque quatre |
+| 2 | **#562** | `TypeError` publié comme preuve | Modèle de données | PR #563 fusionnée — **99 profils sur 481 portent encore la preuve fautive** | un run `generate-data` : le garde-fou est côté écriture |
+| 3 | **#558** | couverture muette sur le gel Sénat | Modèle de données | prêt — 20 profils, dont 9 aux cinq listes vides | rien |
+| 4 | **#556** | marqueur `nil` publié comme URI | Modèle de données | prêt — 186 profils sur 481 | rien ; la régénération suppose un run |
+| 5 | **#560** | « panne » là où c'est hors couverture | Modèle de données | prêt — 3 profils, bornes vérifiées à la source | rien |
+| 6 | **#486** | carrière sur deux chambres | Modèle de données | à recadrer sur le modèle de #539 | rien — #539 est close |
+| 7 | #484 | Mélenchon basculé au Sénat | Modèle de données | non résolu | #486 |
+| 7 | #495 | affichage bicaméral | Modèle de données | — | #486 |
+| 7 | **#567** | test d'exécution de la coupure | Maintenance | prêt | rien — sous-issue de #566 |
+| 7 | **#568** | outiller la vérification d'archivage | Maintenance | prêt | rien — sous-issue de #566 |
+| 8 | #569 | répétition du bornage sur un jetable | Maintenance | — | #567 et #568 |
+| 9 | #328, #329, #330 | refonte des trois pages de profil | Analytics | après #326 | #326 — parallélisables entre elles |
+| 10 | #331 | documentation de la refonte | Analytics | — | #328, #329, #330 |
+| 11 | #305 | version anglaise | English version | — | stabilisation de l'UI (#324 entière) |
 
 `#324` est l'épic qui chapeaute #326 → #331 ; il se ferme quand elles sont closes.
+`#566` est l'épic qui chapeaute #567 → #569.
 
-**Closes le 28/08** : #546 et #545 (PR #548 et #549), #539 côté code (PR #552),
-#550 (PR #554), et l'épic volumétrie **#429** — son critère de sortie était écrit
-sur l'arbre de travail, la seule grandeur qu'aucune limite GitHub ne touche ;
-récrit sur le dépôt et sur le push, il est atteint. Voir
-`docs/technical_decisions.md#critere-sortie-volumetrie-429`.
+**#566 livre une capacité, pas une exécution.** Les 12 tests de
+`test_borner_historique_donnees.py` sont des recherches de motifs dans le texte du
+script : la coupure elle-même n'a **jamais été exécutée**, ni en test ni en réel — et
+#551 en a fait l'unique frein à la croissance. Son critère de sortie exclut
+délibérément la coupure du dépôt réel : à 415 Mo contre 2 Go de critère, rien ne la
+demande, et fermer un épic sur un geste irréversible serait le pire des motifs.
 
-**Parallélisation.** Trois voies touchent des fichiers disjoints et avancent sans se
-gêner : **schéma/données** (`src/`, `raw_data/` — #539, #556), **UI**
-(`web/UI_finale/src/` — #326 puis les trois pages) et **CI** (`.github/` — #551,
-#555, #553). #328/#329/#330 sont parallélisables entre elles une fois #326 fusionnée.
+**Un run `generate-data` vaut plus que n'importe laquelle de ces issues.** Il finit
+#562 en matérialisant les amendements des 99 profils, et resservira à #556 une fois
+celle-ci corrigée. Sans lui, #562 reste ouverte quel que soit le code livré.
+
+**Closes le 28/08** : #546 et #545 (PR #548 et #549), #539 (PR #552), #550
+(PR #554), #555 (PR #559), #551 (PR #564), l'épic volumétrie **#429**, et **#553**
+`not planned` — son constat était faux du dénominateur au verbe, les « 280 membres
+manquants » étant les deux groupes Sénat gelés (#516) et hors périmètre (#528), et
+son dénominateur de 752 venant d'un fichier local **gitignoré**. Le roster que le
+pipeline utilise vaut **452 slugs, tous AN, et 452/452 ont un profil**.
+
+**Parallélisation.** Deux voies touchent des fichiers disjoints et avancent sans se
+gêner : **schéma/données** (`src/`, `raw_data/` — #562, #558, #556, #560, puis #486),
+**UI** (`web/UI_finale/src/` — #326 puis les trois pages) et **outillage du bornage**
+(`scripts/`, `tests/` — #567 et #568, parallélisables entre elles). #550, #551 et #555
+sont livrées ; ce qui reste de la voie CI est l'épic #566. #328/#329/#330 sont parallélisables entre elles une
+fois #326 fusionnée ; #558, #556 et #560 le sont entre elles, à la réserve habituelle
+près — l'entrée de `docs/technical_decisions.md` dans un commit final isolé, la
+convention « entrée la plus récente en tête » faisant converger tous les lots sur la
+ligne 1.
+
+**L'archivage Software Heritage est en place** depuis le 28/08/2026 : visite conclue
+en `full`, snapshot `6ad9782e`, et 12 SHA cités testés sur 12 résolvent. Le
+renouvellement est automatique — relevé sur `github.com/git/git`, une visite tous les
+11,3 jours sans qu'aucune soit demandée. Voir
+`docs/technical_decisions.md#fenetre-recalibrage-551`.
+
+**Quatre des issues ouvertes sont des résidus de #539, et c'est le bloc `couverture`
+qui les a rendues visibles** — #562, #558, #556 et #560. Elles ne sont pas des
+régressions : ce sont des silences qui vivaient dans `meta` sans que personne ne les
+y lise, et que la publication d'une cause a mis au jour. #562 et #556 sont même le
+**même idiome** — le marqueur XML `{"@xsi:nil": "true"}` d'AMO30 recopié tel quel là
+où une valeur était attendue.
 
 **La sérialisation inter-voies #539 avant #486 est levée** : #539 est livré, et le
 modèle qu'il publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte`
@@ -51,13 +85,13 @@ elle n'est plus tranchée qu'une fois, dans
 `docs/technical_decisions.md#couverture-listes-539`.
 
 **#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** « `identite` toujours
-`null` » est faux : mesuré le 28/08 sur les **479 profils publiés**, c'est **5** —
+`null` » est faux : mesuré le 28/08 sur les **481 profils publiés**, c'est **5** —
 `jean-luc-melenchon`, `jordan-bardella`, et les trois non-parlementaires
 (`david-lisnard`, `marine-tondelier`, `nathalie-arthaud`) créés par #539, dont
-l'`identite` nulle est **attendue** : aucune source parlementaire ne les décrit.
-Le cas résiduel est donc Mélenchon, plus le profil PE. Et le mécanisme qui l'a
-produit — un vide de collecte lu comme une donnée — est désormais nommé dans le
-pivot : la même situation publie `non_collecte` avec sa `cause`, jamais un fait.
+l'`identite` nulle est **attendue** : aucune source parlementaire ne les décrit. Le
+cas résiduel est donc Mélenchon, plus le profil PE. Et le mécanisme qui l'a produit —
+un vide de collecte lu comme une donnée — est désormais nommé dans le pivot : la même
+situation publie `non_collecte` avec sa `cause`, jamais un fait.
 
 ## Known bugs
 
