@@ -284,6 +284,41 @@ def test_le_seau_de_la_route_visite_ne_contamine_pas_celui_des_revisions():
     assert quota.limite is None and quota.restant is None
 
 
+def test_un_restant_perime_ne_declenche_pas_d_attente():
+    """Observé en conditions réelles le 28/08/2026 : vingt « quota épuisé —
+    attente de 1 s » d'affilée après un reset, chacun suivi d'une requête qui
+    passait très bien.
+
+    `restant` est une photographie de la réponse précédente ; passé
+    l'horodatage `reset`, elle est périmée et la seule façon de connaître le
+    nouveau compte est d'émettre une requête. Un garde-fou qui crie sans raison
+    finit par n'être plus lu — et ce bavardage masquait les deux VRAIES
+    temporisations de la même exécution (702 s et 1 504 s)."""
+    quota = v.Quota(limite=120, restant=0, reset=1000)
+    dodos, dits = [], []
+    etat, _ = v.interroger_revision(
+        SHA_A,
+        lambda url: v.Reponse(200, {}),
+        quota,
+        dormir=dodos.append,
+        horloge=lambda: 1500.0,  # le reset est PASSÉ
+        journal=dits.append,
+    )
+    assert etat == "presente"
+    assert dodos == [], "a dormi sur un compteur périmé"
+    assert dits == [], "a crié « quota épuisé » sans raison"
+
+
+def test_le_seau_vide_avant_son_reset_fait_bien_attendre():
+    """Le pendant du test précédent : tant que le reset est à venir, le compteur
+    est valide et l'attente est la bonne réponse. Sans les deux, la correction
+    du bavardage supprimerait la temporisation elle-même."""
+    assert v._seau_vide(v.Quota(restant=0, reset=1000), 900.0) is True
+    assert v._seau_vide(v.Quota(restant=0, reset=1000), 1100.0) is False
+    assert v._seau_vide(v.Quota(restant=5, reset=1000), 900.0) is False
+    assert v._seau_vide(v.Quota(restant=None), 900.0) is False
+
+
 def test_la_visite_est_lue_sans_confondre_inconnue_et_non_full():
     visite = v.interroger_visite(
         "https://exemple/x",

@@ -364,10 +364,11 @@ plus :
                           ferait renoncer à une coupure légitime.
 
         Il signale à part les « citations orphelines » : des SHA atteignables
-        depuis aucune ref de l'origine, venus d'une branche de PR récrite. L'origine ne les
-        a jamais servis, donc SWH n'a jamais pu les voir, et relancer 2a n'y
-        changera rien. Ils sont déjà irrésolvables pour un tiers : la coupure
-        ne leur fait rien perdre, c'est la citation qu'il faut corriger.
+        depuis aucune ref de l'origine, venus d'une branche de PR récrite.
+        L'origine ne les a jamais servis, donc SWH n'a jamais pu les voir,
+        et relancer 2a n'y changera rien. Ils sont déjà irrésolvables pour
+        un tiers : la coupure ne leur fait rien perdre, c'est la citation
+        qu'il faut corriger.
 
         \`--sans-issues\` si \`gh\` n'est pas authentifié ; \`--json <fichier>\`
         pour garder trace de ce qui a été constaté ce jour-là.

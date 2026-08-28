@@ -418,6 +418,24 @@ def _attente_avant_reset(quota: Quota, maintenant: float) -> float:
     return max(0.0, quota.reset - maintenant) + 1.0
 
 
+def _seau_vide(quota: Quota, maintenant: float) -> bool:
+    """Le seau est-il vide **et l'attente sert-elle encore à quelque chose** ?
+
+    `restant` est une photographie de la réponse précédente. Passé l'horodatage
+    `reset`, elle est PÉRIMÉE : le seau a roulé, et la seule façon de connaître
+    le nouveau compte est d'émettre une requête et de relire l'en-tête.
+
+    Ne pas faire cette distinction produit un bavardage inutile, observé en
+    conditions réelles le 28/08/2026 : vingt « quota épuisé — attente de 1 s »
+    d'affilée après un reset, chacun suivi d'une requête qui passait très bien.
+    Un garde-fou qui crie sans raison finit par n'être plus lu, et il masquait
+    ici les deux VRAIES temporisations de la même exécution (702 s et 1 504 s).
+    """
+    if quota.restant is None or quota.restant > 0:
+        return False
+    return quota.reset is None or quota.reset > maintenant
+
+
 def interroger_revision(
     sha: str,
     fetch: Callable[[str], Reponse],
@@ -439,7 +457,7 @@ def interroger_revision(
     for essai in range(1, essais + 1):
         # Temporisation PRÉVENTIVE : si la réponse précédente annonçait un seau
         # vide, on attend le reset au lieu d'aller chercher un 429.
-        if quota.restant is not None and quota.restant <= 0:
+        if _seau_vide(quota, horloge()):
             attente = _attente_avant_reset(quota, horloge())
             if quota.attente_totale + attente > attente_max:
                 return (
