@@ -478,6 +478,12 @@ def interroger_visite(
     Rend `{"connue": bool, "statut": str|None, "snapshot": str|None,
     "date": str|None, "erreur": str|None}`. `statut == "full"` est la seule
     valeur qui autorise à lire un 404 comme un vrai manque.
+
+    Ses en-têtes de quota sont comptés mais **pas lus** : cette route a son
+    propre seau, mesuré à 700 requêtes/heure le 28/08/2026 contre 120 pour
+    `/revision/`. Y recopier `restant` et `reset` ferait croire au reste du
+    script qu'il dispose de 700 requêtes, et la temporisation ne se
+    déclencherait qu'une fois le seau des révisions déjà vidé.
     """
     url = f"{BASE_SWH}/origin/{origine}/visit/latest/"
     try:
@@ -485,7 +491,6 @@ def interroger_visite(
     except Exception as err:
         return {"connue": False, "erreur": f"{type(err).__name__}: {err}"}
     quota.requetes += 1
-    quota.lire(rep.entetes)
     if rep.code == 404:
         return {"connue": False, "erreur": "origine inconnue de Software Heritage"}
     if rep.code != 200 or not isinstance(rep.corps, dict):
