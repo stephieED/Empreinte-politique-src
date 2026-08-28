@@ -2379,13 +2379,13 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T21:57:11+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720614",
+      "synchro_le": "2026-08-28T19:20:58+0000"
     },
     {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/28210",
-      "synchro_le": "2026-08-28T11:07:18+0000"
+      "synchro_le": "2026-08-28T19:21:10+0000"
     },
     {
       "type": "europarl",
@@ -2395,7 +2395,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T12:06:44+0000",
+    "genere_le": "2026-08-28T19:37:16+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "nb_candidats_declares": 2,
     "nb_candidats_avec_pivot": 2,

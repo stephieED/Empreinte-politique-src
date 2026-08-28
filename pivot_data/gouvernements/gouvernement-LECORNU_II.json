@@ -129,12 +129,12 @@
     },
     {
       "membre_id": "sabrina-agresti-roubache",
-      "nom": "Sabrina Agresti-Roubache",
-      "portefeuille": null,
+      "nom": "Sabrina Roubache",
+      "portefeuille": "Ministère délégué auprès du ministre du travail et des solidarités et du ministre de l'éducation nationale, chargé de l'enseignement et de la formation professionnels et de l'apprentissage",
       "debut": "2026-02-27",
       "fin": null,
       "actif": true,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "stephanie-rist",
@@ -1265,8 +1265,8 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-24T21:40:57+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
+      "synchro_le": "2026-08-28T19:25:01+0000"
     },
     {
       "type": "nosdeputes",
@@ -1274,9 +1274,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
+      "synchro_le": "2026-08-28T19:21:06+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
+      "synchro_le": "2026-08-28T19:24:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -1284,9 +1294,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
+      "synchro_le": "2026-08-28T19:24:47+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-amiel",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795950",
+      "synchro_le": "2026-08-28T19:24:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -1294,9 +1314,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795330",
+      "synchro_le": "2026-08-28T19:20:55+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gerald-darmanin",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-08-28T19:20:51+0000"
     },
     {
       "type": "nosdeputes",
@@ -1304,9 +1334,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795386",
+      "synchro_le": "2026-08-28T19:24:35+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/maud-bregeon",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795990",
+      "synchro_le": "2026-08-28T19:24:45+0000"
     },
     {
       "type": "nosdeputes",
@@ -1314,9 +1354,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1327",
+      "synchro_le": "2026-08-28T19:25:18+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/roland-lescure",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
+      "synchro_le": "2026-08-28T19:24:47+0000"
     },
     {
       "type": "nosdeputes",
@@ -1324,14 +1374,24 @@
       "synchro_le": "2026-08-19T22:14:10+0000"
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
+      "synchro_le": "2026-08-28T19:21:07+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/stephanie-rist",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720066",
+      "synchro_le": "2026-08-28T19:24:43+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T19:37:41+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

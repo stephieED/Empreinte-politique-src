@@ -82,7 +82,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA345619",
-      "synchro_le": "2026-08-27T20:13:03+0000"
+      "synchro_le": "2026-08-28T15:44:28+0000"
     },
     {
       "type": "nosdeputes",
@@ -91,18 +91,23 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T22:10:27+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
+      "synchro_le": "2026-08-28T19:21:05+0000"
     },
     {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gerald-darmanin",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-08-28T19:20:51+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T19:37:40+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

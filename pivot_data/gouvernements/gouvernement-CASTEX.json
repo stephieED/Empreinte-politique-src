@@ -3796,8 +3796,8 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T21:53:53+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA609520",
+      "synchro_le": "2026-08-28T19:21:04+0000"
     },
     {
       "type": "nosdeputes",
@@ -3805,9 +3805,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA643184",
+      "synchro_le": "2026-08-28T19:24:42+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/clement-beaune",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
+      "synchro_le": "2026-08-28T19:24:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -3815,9 +3825,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
+      "synchro_le": "2026-08-28T19:21:05+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/franck-riester",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
+      "synchro_le": "2026-08-28T19:24:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -3827,7 +3847,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-27T20:19:29+0000"
+      "synchro_le": "2026-08-28T19:24:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -3835,9 +3855,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-08-28T19:20:51+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/joel-giraud",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA267336",
+      "synchro_le": "2026-08-28T19:20:45+0000"
     },
     {
       "type": "nosdeputes",
@@ -3845,9 +3875,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722054",
+      "synchro_le": "2026-08-28T19:21:07+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivia-gregoire",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
+      "synchro_le": "2026-08-28T19:20:54+0000"
     },
     {
       "type": "nosdeputes",
@@ -3855,14 +3895,24 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
+      "synchro_le": "2026-08-28T19:24:19+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
+      "synchro_le": "2026-08-28T19:20:51+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T19:37:40+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

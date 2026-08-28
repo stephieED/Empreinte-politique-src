@@ -45,8 +45,8 @@
       "membre_id": "loic-prud-homme",
       "nom": "Loïc Prud'homme",
       "debut_dans_groupe": "2022-06-22",
-      "fin_dans_groupe": "2024-06-09",
-      "actif": false
+      "fin_dans_groupe": null,
+      "actif": true
     },
     {
       "membre_id": "caroline-fiat",
@@ -547,7 +547,7 @@
     }
   ],
   "effectif": {
-    "actuel": 59,
+    "actuel": 60,
     "min_historique": null,
     "max_historique": null
   },
@@ -60153,11 +60153,11 @@
     {
       "categorie": "commission",
       "label": "Commission des affaires sociales",
-      "nb_membres": 61,
+      "nb_membres": 62,
       "nb_membres_actifs": 9,
-      "poids_relatif": 0.8026,
+      "poids_relatif": 0.8158,
       "par_fonction": {
-        "membre": 61
+        "membre": 62
       },
       "membres": [
         {
@@ -60167,6 +60167,14 @@
           "debut": "2026-07-16",
           "fin": null,
           "actif": true
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2026-02-03",
+          "fin": "2026-02-03",
+          "actif": false
         },
         {
           "membre_id": "caroline-fiat",
@@ -61187,9 +61195,9 @@
         {
           "membre_id": "loic-prud-homme",
           "nom": "Loïc Prud'homme",
-          "fonction": "membre",
-          "debut": "2024-05-01",
-          "fin": "2024-05-06",
+          "fonction": "Membre",
+          "debut": "2025-10-24",
+          "fin": "2025-11-27",
           "actif": false
         },
         {
@@ -61629,11 +61637,11 @@
     {
       "categorie": "commission",
       "label": "Commission de la défense nationale et des forces armées",
-      "nb_membres": 52,
+      "nb_membres": 53,
       "nb_membres_actifs": 6,
-      "poids_relatif": 0.6842,
+      "poids_relatif": 0.6974,
       "par_fonction": {
-        "membre": 52
+        "membre": 53
       },
       "membres": [
         {
@@ -61658,6 +61666,14 @@
           "fonction": "Membre",
           "debut": "2025-04-11",
           "fin": "2025-04-11",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-12-03",
+          "fin": "2025-12-03",
           "actif": false
         },
         {
@@ -62057,11 +62073,11 @@
     {
       "categorie": "commission",
       "label": "Commission des lois constitutionnelles, de la législation et de l'administration générale de la République",
-      "nb_membres": 49,
+      "nb_membres": 50,
       "nb_membres_actifs": 8,
-      "poids_relatif": 0.6447,
+      "poids_relatif": 0.6579,
       "par_fonction": {
-        "membre": 49
+        "membre": 50
       },
       "membres": [
         {
@@ -62078,6 +62094,14 @@
           "fonction": "Membre",
           "debut": "2025-11-01",
           "fin": "2025-11-03",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2023-11-07",
+          "fin": "2023-11-07",
           "actif": false
         },
         {
@@ -62462,11 +62486,10 @@
       "categorie": "commission",
       "label": "Commission du développement durable et de l'aménagement du territoire",
       "nb_membres": 47,
-      "nb_membres_actifs": 7,
+      "nb_membres_actifs": 8,
       "poids_relatif": 0.6184,
       "par_fonction": {
-        "membre": 46,
-        "secrétaire": 1
+        "membre": 47
       },
       "membres": [
         {
@@ -62496,10 +62519,10 @@
         {
           "membre_id": "loic-prud-homme",
           "nom": "Loïc Prud'homme",
-          "fonction": "secrétaire",
-          "debut": "2024-05-06",
-          "fin": "2024-06-09",
-          "actif": false
+          "fonction": "Membre",
+          "debut": "2026-02-04",
+          "fin": null,
+          "actif": true
         },
         {
           "membre_id": "jean-hugues-ratenon",
@@ -63987,13 +64010,21 @@
     {
       "categorie": "extra_parlementaire",
       "label": "Commission départementale prévue à l'article L. 2334-37 du code général des collectivités territoriales",
-      "nb_membres": 19,
+      "nb_membres": 20,
       "nb_membres_actifs": 15,
-      "poids_relatif": 0.25,
+      "poids_relatif": 0.2632,
       "par_fonction": {
-        "membre titulaire": 19
+        "membre titulaire": 20
       },
       "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre titulaire",
+          "debut": "2022-11-10",
+          "fin": "2024-06-09",
+          "actif": false
+        },
         {
           "membre_id": "caroline-fiat",
           "nom": "Caroline Fiat",
@@ -64727,11 +64758,11 @@
     {
       "categorie": "groupe_amitie",
       "label": "France-Cuba",
-      "nb_membres": 13,
+      "nb_membres": 14,
       "nb_membres_actifs": 10,
-      "poids_relatif": 0.1711,
+      "poids_relatif": 0.1842,
       "par_fonction": {
-        "membre": 13
+        "membre": 14
       },
       "membres": [
         {
@@ -64740,6 +64771,14 @@
           "fonction": "Membre",
           "debut": "2017-10-11",
           "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2022-12-07",
+          "fin": "2024-06-09",
           "actif": false
         },
         {
@@ -65167,6 +65206,98 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Espagne",
+      "nb_membres": 10,
+      "nb_membres_actifs": 9,
+      "poids_relatif": 0.1316,
+      "par_fonction": {
+        "membre": 10
+      },
+      "membres": [
+        {
+          "membre_id": "benedicte-taurine",
+          "nom": "Bénédicte Taurine",
+          "fonction": "Membre",
+          "debut": "2017-10-11",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "eric-coquerel",
+          "nom": "Éric Coquerel",
+          "fonction": "Membre",
+          "debut": "2025-02-04",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-delogu",
+          "nom": "Sébastien Delogu",
+          "fonction": "Membre",
+          "debut": "2025-02-20",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "andree-taurinya",
+          "nom": "Andrée Taurinya",
+          "fonction": "Membre",
+          "debut": "2025-02-04",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "gabriel-amard",
+          "nom": "Gabriel Amard",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "rodrigo-arenas",
+          "nom": "Rodrigo Arenas",
+          "fonction": "Membre",
+          "debut": "2025-01-26",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "jean-francois-coulomme",
+          "nom": "Jean-François Coulomme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "perceval-gaillard",
+          "nom": "Perceval Gaillard",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Islande",
       "nb_membres": 10,
       "nb_membres_actifs": 8,
@@ -65244,6 +65375,98 @@
           "nom": "Clémence Guetté",
           "fonction": "Membre",
           "debut": "2025-03-18",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "perceval-gaillard",
+          "nom": "Perceval Gaillard",
+          "fonction": "Membre",
+          "debut": "2025-03-19",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Sénégal",
+      "nb_membres": 10,
+      "nb_membres_actifs": 9,
+      "poids_relatif": 0.1316,
+      "par_fonction": {
+        "membre": 10
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "bastien-lachaud",
+          "nom": "Bastien Lachaud",
+          "fonction": "Membre",
+          "debut": "2025-02-04",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "hendrik-davi",
+          "nom": "Hendrik Davi",
+          "fonction": "Membre",
+          "debut": "2025-02-19",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nathalie-oziol",
+          "nom": "Nathalie Oziol",
+          "fonction": "Membre",
+          "debut": "2025-03-26",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "idir-boumertit",
+          "nom": "Idir Boumertit",
+          "fonction": "Membre",
+          "debut": "2025-02-11",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-06",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "rachel-keke",
+          "nom": "Rachel Keke",
+          "fonction": "Membre",
+          "debut": "2023-03-03",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "farida-amrani",
+          "nom": "Farida Amrani",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "arnaud-le-gall",
+          "nom": "Arnaud Le Gall",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
           "fin": null,
           "actif": true
         },
@@ -65882,90 +66105,6 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Espagne",
-      "nb_membres": 9,
-      "nb_membres_actifs": 8,
-      "poids_relatif": 0.1184,
-      "par_fonction": {
-        "membre": 9
-      },
-      "membres": [
-        {
-          "membre_id": "benedicte-taurine",
-          "nom": "Bénédicte Taurine",
-          "fonction": "Membre",
-          "debut": "2017-10-11",
-          "fin": "2022-06-21",
-          "actif": false
-        },
-        {
-          "membre_id": "eric-coquerel",
-          "nom": "Éric Coquerel",
-          "fonction": "Membre",
-          "debut": "2025-02-04",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sebastien-delogu",
-          "nom": "Sébastien Delogu",
-          "fonction": "Membre",
-          "debut": "2025-02-20",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "andree-taurinya",
-          "nom": "Andrée Taurinya",
-          "fonction": "Membre",
-          "debut": "2025-02-04",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "gabriel-amard",
-          "nom": "Gabriel Amard",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "rodrigo-arenas",
-          "nom": "Rodrigo Arenas",
-          "fonction": "Membre",
-          "debut": "2025-01-26",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "jean-francois-coulomme",
-          "nom": "Jean-François Coulomme",
-          "fonction": "Membre",
-          "debut": "2025-01-28",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "perceval-gaillard",
-          "nom": "Perceval Gaillard",
-          "fonction": "Membre",
-          "debut": "2025-01-31",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
       "label": "France-Italie",
       "nb_membres": 9,
       "nb_membres_actifs": 6,
@@ -66119,90 +66258,6 @@
           "nom": "Thomas Portes",
           "fonction": "Membre",
           "debut": "2025-03-27",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "perceval-gaillard",
-          "nom": "Perceval Gaillard",
-          "fonction": "Membre",
-          "debut": "2025-03-19",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Sénégal",
-      "nb_membres": 9,
-      "nb_membres_actifs": 8,
-      "poids_relatif": 0.1184,
-      "par_fonction": {
-        "membre": 9
-      },
-      "membres": [
-        {
-          "membre_id": "bastien-lachaud",
-          "nom": "Bastien Lachaud",
-          "fonction": "Membre",
-          "debut": "2025-02-04",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "hendrik-davi",
-          "nom": "Hendrik Davi",
-          "fonction": "Membre",
-          "debut": "2025-02-19",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "nathalie-oziol",
-          "nom": "Nathalie Oziol",
-          "fonction": "Membre",
-          "debut": "2025-03-26",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "idir-boumertit",
-          "nom": "Idir Boumertit",
-          "fonction": "Membre",
-          "debut": "2025-02-11",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-06",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "rachel-keke",
-          "nom": "Rachel Keke",
-          "fonction": "Membre",
-          "debut": "2023-03-03",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "farida-amrani",
-          "nom": "Farida Amrani",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "arnaud-le-gall",
-          "nom": "Arnaud Le Gall",
-          "fonction": "Membre",
-          "debut": "2025-01-28",
           "fin": null,
           "actif": true
         },
@@ -66623,6 +66678,83 @@
       ]
     },
     {
+      "categorie": "delegation",
+      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
+      "nb_membres": 8,
+      "nb_membres_actifs": 5,
+      "poids_relatif": 0.1053,
+      "par_fonction": {
+        "secrétaire": 1,
+        "membre": 7
+      },
+      "membres": [
+        {
+          "membre_id": "benedicte-taurine",
+          "nom": "Bénédicte Taurine",
+          "fonction": "Secrétaire",
+          "debut": "2022-10-10",
+          "fin": "2023-01-27",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2022-09-07",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "sophia-chikirou",
+          "nom": "Sophia Chikirou",
+          "fonction": "Membre",
+          "debut": "2024-10-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "laurent-alexandre",
+          "nom": "Laurent Alexandre",
+          "fonction": "Membre",
+          "debut": "2024-10-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "andy-kerbrat",
+          "nom": "Andy Kerbrat",
+          "fonction": "Membre",
+          "debut": "2024-10-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "clemence-guette",
+          "nom": "Clémence Guetté",
+          "fonction": "Membre",
+          "debut": "2024-10-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "farida-amrani",
+          "nom": "Farida Amrani",
+          "fonction": "Membre",
+          "debut": "2024-10-15",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "raquel-garrido",
+          "nom": "Raquel Garrido",
+          "fonction": "Membre",
+          "debut": "2022-09-07",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "groupe_amitie",
       "label": "France-Chine",
       "nb_membres": 8,
@@ -66769,6 +66901,82 @@
           "nom": "Perceval Gaillard",
           "fonction": "Membre",
           "debut": "2025-02-23",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Japon",
+      "nb_membres": 8,
+      "nb_membres_actifs": 7,
+      "poids_relatif": 0.1053,
+      "par_fonction": {
+        "membre": 8
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "francois-piquemal",
+          "nom": "François Piquemal",
+          "fonction": "Membre",
+          "debut": "2025-05-05",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "christophe-bex",
+          "nom": "Christophe Bex",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-rome",
+          "nom": "Sébastien Rome",
+          "fonction": "Membre",
+          "debut": "2022-12-09",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "ersilia-soudais",
+          "nom": "Ersilia Soudais",
+          "fonction": "Membre",
+          "debut": "2025-01-24",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "aurelien-saintoul",
+          "nom": "Aurélien Saintoul",
+          "fonction": "Membre",
+          "debut": "2025-01-23",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "perceval-gaillard",
+          "nom": "Perceval Gaillard",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
           "fin": null,
           "actif": true
         }
@@ -67217,75 +67425,6 @@
       ]
     },
     {
-      "categorie": "delegation",
-      "label": "Groupe français de l'Union interparlementaire (U.I.P.)",
-      "nb_membres": 7,
-      "nb_membres_actifs": 5,
-      "poids_relatif": 0.0921,
-      "par_fonction": {
-        "secrétaire": 1,
-        "membre": 6
-      },
-      "membres": [
-        {
-          "membre_id": "benedicte-taurine",
-          "nom": "Bénédicte Taurine",
-          "fonction": "Secrétaire",
-          "debut": "2022-10-10",
-          "fin": "2023-01-27",
-          "actif": false
-        },
-        {
-          "membre_id": "sophia-chikirou",
-          "nom": "Sophia Chikirou",
-          "fonction": "Membre",
-          "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "laurent-alexandre",
-          "nom": "Laurent Alexandre",
-          "fonction": "Membre",
-          "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "andy-kerbrat",
-          "nom": "Andy Kerbrat",
-          "fonction": "Membre",
-          "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "clemence-guette",
-          "nom": "Clémence Guetté",
-          "fonction": "Membre",
-          "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "farida-amrani",
-          "nom": "Farida Amrani",
-          "fonction": "Membre",
-          "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "raquel-garrido",
-          "nom": "Raquel Garrido",
-          "fonction": "Membre",
-          "debut": "2022-09-07",
-          "fin": "2024-06-09",
-          "actif": false
-        }
-      ]
-    },
-    {
       "categorie": "groupe_amitie",
       "label": "France-Brésil",
       "nb_membres": 7,
@@ -67350,74 +67489,6 @@
           "debut": "2024-04-04",
           "fin": "2024-06-09",
           "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Japon",
-      "nb_membres": 7,
-      "nb_membres_actifs": 6,
-      "poids_relatif": 0.0921,
-      "par_fonction": {
-        "membre": 7
-      },
-      "membres": [
-        {
-          "membre_id": "francois-piquemal",
-          "nom": "François Piquemal",
-          "fonction": "Membre",
-          "debut": "2025-05-05",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "christophe-bex",
-          "nom": "Christophe Bex",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sebastien-rome",
-          "nom": "Sébastien Rome",
-          "fonction": "Membre",
-          "debut": "2022-12-09",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "ersilia-soudais",
-          "nom": "Ersilia Soudais",
-          "fonction": "Membre",
-          "debut": "2025-01-24",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "aurelien-saintoul",
-          "nom": "Aurélien Saintoul",
-          "fonction": "Membre",
-          "debut": "2025-01-23",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "perceval-gaillard",
-          "nom": "Perceval Gaillard",
-          "fonction": "Membre",
-          "debut": "2025-01-31",
-          "fin": null,
-          "actif": true
         }
       ]
     },
@@ -68614,6 +68685,66 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Nouvelle-Zélande",
+      "nb_membres": 6,
+      "nb_membres_actifs": 5,
+      "poids_relatif": 0.0789,
+      "par_fonction": {
+        "membre": 6
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nathalie-oziol",
+          "nom": "Nathalie Oziol",
+          "fonction": "Membre",
+          "debut": "2025-02-13",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-rome",
+          "nom": "Sébastien Rome",
+          "fonction": "Membre",
+          "debut": "2022-12-09",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "perceval-gaillard",
+          "nom": "Perceval Gaillard",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "aymeric-caron",
+          "nom": "Aymeric Caron",
+          "fonction": "Membre",
+          "debut": "2025-03-13",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Portugal",
       "nb_membres": 6,
       "nb_membres_actifs": 4,
@@ -68727,6 +68858,66 @@
           "nom": "Perceval Gaillard",
           "fonction": "Membre",
           "debut": "2025-03-19",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Condition et bien-être des animaux",
+      "nb_membres": 6,
+      "nb_membres_actifs": 6,
+      "poids_relatif": 0.0789,
+      "par_fonction": {
+        "membre": 6
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "bastien-lachaud",
+          "nom": "Bastien Lachaud",
+          "fonction": "Membre",
+          "debut": "2025-01-20",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "anne-stambach-terrenoir",
+          "nom": "Anne Stambach-Terrenoir",
+          "fonction": "Membre",
+          "debut": "2025-02-03",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "gabriel-amard",
+          "nom": "Gabriel Amard",
+          "fonction": "Membre",
+          "debut": "2025-01-08",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "ersilia-soudais",
+          "nom": "Ersilia Soudais",
+          "fonction": "Membre",
+          "debut": "2024-12-19",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "manon-meunier",
+          "nom": "Manon Meunier",
+          "fonction": "Membre",
+          "debut": "2025-01-20",
           "fin": null,
           "actif": true
         }
@@ -69067,6 +69258,58 @@
           "debut": "2025-03-19",
           "fin": "2025-07-09",
           "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Afrique du Sud",
+      "nb_membres": 5,
+      "nb_membres_actifs": 3,
+      "poids_relatif": 0.0658,
+      "par_fonction": {
+        "membre": 5
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "sebastien-rome",
+          "nom": "Sébastien Rome",
+          "fonction": "Membre",
+          "debut": "2022-12-09",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "rachel-keke",
+          "nom": "Rachel Keke",
+          "fonction": "Membre",
+          "debut": "2023-03-03",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "perceval-gaillard",
+          "nom": "Perceval Gaillard",
+          "fonction": "Membre",
+          "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
         }
       ]
     },
@@ -69439,58 +69682,6 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Nouvelle-Zélande",
-      "nb_membres": 5,
-      "nb_membres_actifs": 4,
-      "poids_relatif": 0.0658,
-      "par_fonction": {
-        "membre": 5
-      },
-      "membres": [
-        {
-          "membre_id": "nathalie-oziol",
-          "nom": "Nathalie Oziol",
-          "fonction": "Membre",
-          "debut": "2025-02-13",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "sebastien-rome",
-          "nom": "Sébastien Rome",
-          "fonction": "Membre",
-          "debut": "2022-12-09",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "perceval-gaillard",
-          "nom": "Perceval Gaillard",
-          "fonction": "Membre",
-          "debut": "2025-01-31",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "aymeric-caron",
-          "nom": "Aymeric Caron",
-          "fonction": "Membre",
-          "debut": "2025-03-13",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
       "label": "France-Royaume-Uni de Grande-Bretagne et d'Irlande du Nord",
       "nb_membres": 5,
       "nb_membres_actifs": 4,
@@ -69591,58 +69782,6 @@
           "debut": "2023-02-10",
           "fin": "2024-06-09",
           "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_etudes",
-      "label": "Condition et bien-être des animaux",
-      "nb_membres": 5,
-      "nb_membres_actifs": 5,
-      "poids_relatif": 0.0658,
-      "par_fonction": {
-        "membre": 5
-      },
-      "membres": [
-        {
-          "membre_id": "bastien-lachaud",
-          "nom": "Bastien Lachaud",
-          "fonction": "Membre",
-          "debut": "2025-01-20",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "anne-stambach-terrenoir",
-          "nom": "Anne Stambach-Terrenoir",
-          "fonction": "Membre",
-          "debut": "2025-02-03",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "gabriel-amard",
-          "nom": "Gabriel Amard",
-          "fonction": "Membre",
-          "debut": "2025-01-08",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "ersilia-soudais",
-          "nom": "Ersilia Soudais",
-          "fonction": "Membre",
-          "debut": "2024-12-19",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "manon-meunier",
-          "nom": "Manon Meunier",
-          "fonction": "Membre",
-          "debut": "2025-01-20",
-          "fin": null,
-          "actif": true
         }
       ]
     },
@@ -70214,50 +70353,6 @@
           "nom": "Emmanuel Fernandes",
           "fonction": "Membre titulaire",
           "debut": "2024-10-15",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Afrique du Sud",
-      "nb_membres": 4,
-      "nb_membres_actifs": 2,
-      "poids_relatif": 0.0526,
-      "par_fonction": {
-        "membre": 4
-      },
-      "membres": [
-        {
-          "membre_id": "sebastien-rome",
-          "nom": "Sébastien Rome",
-          "fonction": "Membre",
-          "debut": "2022-12-09",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        },
-        {
-          "membre_id": "rachel-keke",
-          "nom": "Rachel Keke",
-          "fonction": "Membre",
-          "debut": "2023-03-03",
-          "fin": "2024-06-09",
-          "actif": false
-        },
-        {
-          "membre_id": "perceval-gaillard",
-          "nom": "Perceval Gaillard",
-          "fonction": "Membre",
-          "debut": "2025-01-31",
           "fin": null,
           "actif": true
         }
@@ -71795,6 +71890,42 @@
     },
     {
       "categorie": "groupe_amitie",
+      "label": "France-Amérique centrale",
+      "nb_membres": 3,
+      "nb_membres_actifs": 2,
+      "poids_relatif": 0.0395,
+      "par_fonction": {
+        "membre": 3
+      },
+      "membres": [
+        {
+          "membre_id": "benedicte-taurine",
+          "nom": "Bénédicte Taurine",
+          "fonction": "Membre",
+          "debut": "2017-10-11",
+          "fin": "2022-06-21",
+          "actif": false
+        },
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
       "label": "France-Cameroun",
       "nb_membres": 3,
       "nb_membres_actifs": 3,
@@ -72837,6 +72968,34 @@
       ]
     },
     {
+      "categorie": "commission_enquete",
+      "label": "Commission d’enquête sur les causes de l’incapacité de la France à atteindre les objectifs des plans successifs de maîtrise des impacts des produits phytosanitaires sur la santé humaine et environnementale et notamment sur les conditions de l’exercice des missions des autorités publiques en charge de la sécurité sanitaire",
+      "nb_membres": 2,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2023-06-27",
+          "fin": "2023-12-14",
+          "actif": false
+        },
+        {
+          "membre_id": "michel-sala",
+          "nom": "Michel Sala",
+          "fonction": "Membre",
+          "debut": "2023-06-27",
+          "fin": "2023-12-14",
+          "actif": false
+        }
+      ]
+    },
+    {
       "categorie": "delegation",
       "label": "Délégation chargée de la communication, de la presse et du patrimoine artistique et culturel",
       "nb_membres": 2,
@@ -73035,6 +73194,34 @@
     },
     {
       "categorie": "extra_parlementaire",
+      "label": "Conseil d’administration de l’Institut national du cancer",
+      "nb_membres": 2,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre suppléant": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre suppléant",
+          "debut": "2022-10-21",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "segolene-amiot",
+          "nom": "Ségolène Amiot",
+          "fonction": "Membre suppléant",
+          "debut": "2024-11-06",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
       "label": "Haut Conseil à l'égalité entre les femmes et les hommes",
       "nb_membres": 2,
       "nb_membres_actifs": 1,
@@ -73107,34 +73294,6 @@
           "debut": "2025-01-23",
           "fin": null,
           "actif": true
-        },
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Amérique centrale",
-      "nb_membres": 2,
-      "nb_membres_actifs": 1,
-      "poids_relatif": 0.0263,
-      "par_fonction": {
-        "membre": 2
-      },
-      "membres": [
-        {
-          "membre_id": "benedicte-taurine",
-          "nom": "Bénédicte Taurine",
-          "fonction": "Membre",
-          "debut": "2017-10-11",
-          "fin": "2022-06-21",
-          "actif": false
         },
         {
           "membre_id": "nadege-abomangoli",
@@ -73225,6 +73384,34 @@
           "nom": "Perceval Gaillard",
           "fonction": "Membre",
           "debut": "2025-01-31",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Bolivie",
+      "nb_membres": 2,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2022-12-07",
+          "fin": "2024-06-09",
+          "actif": false
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
           "fin": null,
           "actif": true
         }
@@ -73339,6 +73526,34 @@
           "debut": "2023-03-03",
           "fin": "2024-04-04",
           "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_amitie",
+      "label": "France-Cap-Vert",
+      "nb_membres": 2,
+      "nb_membres_actifs": 2,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        },
+        {
+          "membre_id": "nadege-abomangoli",
+          "nom": "Nadège Abomangoli",
+          "fonction": "Membre",
+          "debut": "2025-02-10",
+          "fin": null,
+          "actif": true
         }
       ]
     },
@@ -74438,6 +74653,62 @@
     },
     {
       "categorie": "mission_information",
+      "label": "Mission d'information sur le rôle du pastoralisme dans l’aménagement du territoire, les causes de son déclin et les conséquences pour le développement durable des territoires ruraux",
+      "nb_membres": 2,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2024-09-25",
+          "fin": "2025-04-09",
+          "actif": false
+        },
+        {
+          "membre_id": "sylvie-ferrer",
+          "nom": "Sylvie Ferrer",
+          "fonction": "Membre",
+          "debut": "2024-09-25",
+          "fin": "2025-04-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "mission_information",
+      "label": "Mission d'information sur l’adaptation de la politique de l’eau au défi climatique",
+      "nb_membres": 2,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0263,
+      "par_fonction": {
+        "membre": 2
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2023-05-25",
+          "fin": "2024-01-17",
+          "actif": false
+        },
+        {
+          "membre_id": "catherine-couturier",
+          "nom": "Catherine Couturier",
+          "fonction": "Membre",
+          "debut": "2023-05-25",
+          "fin": "2024-01-17",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "mission_information",
       "label": "Mission d’information sur l'accès des Français à un logement digne et la réalisation d'un parcours résidentiel durable",
       "nb_membres": 2,
       "nb_membres_actifs": 0,
@@ -74918,26 +75189,6 @@
     },
     {
       "categorie": "commission_enquete",
-      "label": "Commission d’enquête sur les causes de l’incapacité de la France à atteindre les objectifs des plans successifs de maîtrise des impacts des produits phytosanitaires sur la santé humaine et environnementale et notamment sur les conditions de l’exercice des missions des autorités publiques en charge de la sécurité sanitaire",
-      "nb_membres": 1,
-      "nb_membres_actifs": 0,
-      "poids_relatif": 0.0132,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "michel-sala",
-          "nom": "Michel Sala",
-          "fonction": "Membre",
-          "debut": "2023-06-27",
-          "fin": "2023-12-14",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "commission_enquete",
       "label": "Commission d’enquête sur les manquements des politiques de protection de l’enfance",
       "nb_membres": 1,
       "nb_membres_actifs": 0,
@@ -75218,6 +75469,26 @@
     },
     {
       "categorie": "extra_parlementaire",
+      "label": "Comité de bassin Adour-Garonne",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0132,
+      "par_fonction": {
+        "membre suppléant": 1
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre suppléant",
+          "debut": "2022-10-21",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
       "label": "Comité de bassin Rhône-Méditerranée",
       "nb_membres": 1,
       "nb_membres_actifs": 0,
@@ -75373,6 +75644,26 @@
           "debut": "2022-08-06",
           "fin": "2024-06-09",
           "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "extra_parlementaire",
+      "label": "Commission nationale de la déontologie et des alertes en matière de santé publique et d'environnement",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 0.0132,
+      "par_fonction": {
+        "membre titulaire": 1
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre titulaire",
+          "debut": "2024-11-06",
+          "fin": null,
+          "actif": true
         }
       ]
     },
@@ -75573,26 +75864,6 @@
           "debut": "2021-01-05",
           "fin": "2022-06-21",
           "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "extra_parlementaire",
-      "label": "Conseil d’administration de l’Institut national du cancer",
-      "nb_membres": 1,
-      "nb_membres_actifs": 1,
-      "poids_relatif": 0.0132,
-      "par_fonction": {
-        "membre suppléant": 1
-      },
-      "membres": [
-        {
-          "membre_id": "segolene-amiot",
-          "nom": "Ségolène Amiot",
-          "fonction": "Membre suppléant",
-          "debut": "2024-11-06",
-          "fin": null,
-          "actif": true
         }
       ]
     },
@@ -75938,26 +76209,6 @@
     },
     {
       "categorie": "groupe_amitie",
-      "label": "France-Bolivie",
-      "nb_membres": 1,
-      "nb_membres_actifs": 1,
-      "poids_relatif": 0.0132,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
       "label": "France-Burundi",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
@@ -75999,26 +76250,6 @@
     {
       "categorie": "groupe_amitie",
       "label": "France-Cambodge",
-      "nb_membres": 1,
-      "nb_membres_actifs": 1,
-      "poids_relatif": 0.0132,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "nadege-abomangoli",
-          "nom": "Nadège Abomangoli",
-          "fonction": "Membre",
-          "debut": "2025-02-10",
-          "fin": null,
-          "actif": true
-        }
-      ]
-    },
-    {
-      "categorie": "groupe_amitie",
-      "label": "France-Cap-Vert",
       "nb_membres": 1,
       "nb_membres_actifs": 1,
       "poids_relatif": 0.0132,
@@ -76938,6 +77169,46 @@
     },
     {
       "categorie": "groupe_etudes",
+      "label": "Grande consommation et pratiques commerciales dans la distribution",
+      "nb_membres": 1,
+      "nb_membres_actifs": 0,
+      "poids_relatif": 0.0132,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2023-02-06",
+          "fin": "2024-06-09",
+          "actif": false
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
+      "label": "Grande distribution et grande consommation",
+      "nb_membres": 1,
+      "nb_membres_actifs": 1,
+      "poids_relatif": 0.0132,
+      "par_fonction": {
+        "membre": 1
+      },
+      "membres": [
+        {
+          "membre_id": "loic-prud-homme",
+          "nom": "Loïc Prud'homme",
+          "fonction": "Membre",
+          "debut": "2025-01-28",
+          "fin": null,
+          "actif": true
+        }
+      ]
+    },
+    {
+      "categorie": "groupe_etudes",
       "label": "Groupe d'études à vocation internationale France-Palestine",
       "nb_membres": 1,
       "nb_membres_actifs": 0,
@@ -77578,21 +77849,21 @@
     },
     {
       "categorie": "mission_information",
-      "label": "Mission d'information sur le rôle du pastoralisme dans l’aménagement du territoire, les causes de son déclin et les conséquences pour le développement durable des territoires ruraux",
+      "label": "Mission d'information sur le coût des canicules",
       "nb_membres": 1,
-      "nb_membres_actifs": 0,
+      "nb_membres_actifs": 1,
       "poids_relatif": 0.0132,
       "par_fonction": {
         "membre": 1
       },
       "membres": [
         {
-          "membre_id": "sylvie-ferrer",
-          "nom": "Sylvie Ferrer",
+          "membre_id": "eric-coquerel",
+          "nom": "Éric Coquerel",
           "fonction": "Membre",
-          "debut": "2024-09-25",
-          "fin": "2025-04-09",
-          "actif": false
+          "debut": "2026-08-26",
+          "fin": null,
+          "actif": true
         }
       ]
     },
@@ -77792,26 +78063,6 @@
           "fonction": "Membre",
           "debut": "2024-09-18",
           "fin": "2025-04-09",
-          "actif": false
-        }
-      ]
-    },
-    {
-      "categorie": "mission_information",
-      "label": "Mission d'information sur l’adaptation de la politique de l’eau au défi climatique",
-      "nb_membres": 1,
-      "nb_membres_actifs": 0,
-      "poids_relatif": 0.0132,
-      "par_fonction": {
-        "membre": 1
-      },
-      "membres": [
-        {
-          "membre_id": "catherine-couturier",
-          "nom": "Catherine Couturier",
-          "fonction": "Membre",
-          "debut": "2023-05-25",
-          "fin": "2024-01-17",
           "actif": false
         }
       ]
@@ -78118,28 +78369,28 @@
     }
   ],
   "amendements_agreges": {
-    "nb_amendements": 22856,
-    "nb_adoptes": 355,
-    "nb_rejetes": 12265,
-    "nb_irrecevables": 4116,
-    "nb_retires_ou_tombes": 3348,
-    "taux_adoption": 0.0155,
+    "nb_amendements": 2647601,
+    "nb_adoptes": 138121,
+    "nb_rejetes": 1057286,
+    "nb_irrecevables": 454381,
+    "nb_retires_ou_tombes": 395779,
+    "taux_adoption": 0.0522,
     "par_type_deposant": {
       "commission_rapporteur": {
-        "nb_amendements": 76,
-        "nb_adoptes": 30,
-        "nb_rejetes": 25,
-        "nb_irrecevables": 2,
-        "nb_retires_ou_tombes": 4,
-        "taux_adoption": 0.3947
+        "nb_amendements": 46836,
+        "nb_adoptes": 7833,
+        "nb_rejetes": 14126,
+        "nb_irrecevables": 4996,
+        "nb_retires_ou_tombes": 9819,
+        "taux_adoption": 0.1672
       },
       "depute": {
-        "nb_amendements": 22780,
-        "nb_adoptes": 325,
-        "nb_rejetes": 12240,
-        "nb_irrecevables": 4114,
-        "nb_retires_ou_tombes": 3344,
-        "taux_adoption": 0.0143
+        "nb_amendements": 2600765,
+        "nb_adoptes": 130288,
+        "nb_rejetes": 1043160,
+        "nb_irrecevables": 449385,
+        "nb_retires_ou_tombes": 385960,
+        "taux_adoption": 0.0501
       },
       "gouvernement": {
         "nb_amendements": 0,
@@ -78167,8 +78418,8 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-24T21:44:33+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA342384",
+      "synchro_le": "2026-08-28T19:21:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -78176,9 +78427,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA588884",
+      "synchro_le": "2026-08-28T19:21:22+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jean-philippe-nilor",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA610654",
+      "synchro_le": "2026-08-28T19:24:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -78186,9 +78447,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718860",
+      "synchro_le": "2026-08-28T19:25:01+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/loic-prud-homme",
       "synchro_le": "2026-08-24T21:44:22+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719578",
+      "synchro_le": "2026-08-28T19:25:11+0000"
     },
     {
       "type": "nosdeputes",
@@ -78196,9 +78467,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720286",
+      "synchro_le": "2026-08-28T19:24:54+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/adrien-quatennens",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720422",
+      "synchro_le": "2026-08-28T19:21:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -78206,9 +78487,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720430",
+      "synchro_le": "2026-08-28T19:21:15+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/bastien-lachaud",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720846",
+      "synchro_le": "2026-08-28T19:21:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -78216,9 +78507,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720892",
+      "synchro_le": "2026-08-28T19:21:23+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jean-hugues-ratenon",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721062",
+      "synchro_le": "2026-08-28T19:24:44+0000"
     },
     {
       "type": "nosdeputes",
@@ -78226,9 +78527,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721202",
+      "synchro_le": "2026-08-28T19:25:02+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/alexis-corbiere",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721210",
+      "synchro_le": "2026-08-28T19:25:13+0000"
     },
     {
       "type": "nosdeputes",
@@ -78236,9 +78547,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721960",
+      "synchro_le": "2026-08-28T19:24:54+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/francois-ruffin",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722142",
+      "synchro_le": "2026-08-28T19:21:12+0000"
     },
     {
       "type": "nosdeputes",
@@ -78246,9 +78567,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791812",
+      "synchro_le": "2026-08-28T19:21:17+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sarah-legrain",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA791824",
+      "synchro_le": "2026-08-28T19:21:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78256,9 +78587,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793110",
+      "synchro_le": "2026-08-28T19:21:24+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/laurent-alexandre",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793262",
+      "synchro_le": "2026-08-28T19:24:46+0000"
     },
     {
       "type": "nosdeputes",
@@ -78266,9 +78607,14 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793444",
+      "synchro_le": "2026-08-28T19:25:03+0000"
+    },
+    {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/197521",
-      "synchro_le": "2026-08-24T21:40:54+0000"
+      "synchro_le": "2026-08-28T19:25:16+0000"
     },
     {
       "type": "nosdeputes",
@@ -78276,9 +78622,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793452",
+      "synchro_le": "2026-08-28T19:25:13+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sebastien-delogu",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793464",
+      "synchro_le": "2026-08-28T19:24:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -78286,9 +78642,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793532",
+      "synchro_le": "2026-08-28T19:21:14+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/catherine-couturier",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793680",
+      "synchro_le": "2026-08-28T19:21:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78296,9 +78662,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793688",
+      "synchro_le": "2026-08-28T19:21:19+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/michel-sala",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793724",
+      "synchro_le": "2026-08-28T19:21:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -78306,9 +78682,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793736",
+      "synchro_le": "2026-08-28T19:24:46+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/anne-stambach-terrenoir",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793744",
+      "synchro_le": "2026-08-28T19:25:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -78316,9 +78702,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793756",
+      "synchro_le": "2026-08-28T19:25:14+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/christophe-bex",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793772",
+      "synchro_le": "2026-08-28T19:24:56+0000"
     },
     {
       "type": "nosdeputes",
@@ -78326,9 +78722,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793872",
+      "synchro_le": "2026-08-28T19:21:14+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sebastien-rome",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793884",
+      "synchro_le": "2026-08-28T19:21:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78336,9 +78742,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793912",
+      "synchro_le": "2026-08-28T19:21:19+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/frederic-mathieu",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794066",
+      "synchro_le": "2026-08-28T19:21:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -78346,9 +78762,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794082",
+      "synchro_le": "2026-08-28T19:24:47+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/andree-taurinya",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794106",
+      "synchro_le": "2026-08-28T19:25:17+0000"
     },
     {
       "type": "nosdeputes",
@@ -78356,9 +78782,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794130",
+      "synchro_le": "2026-08-28T19:25:14+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/segolene-amiot",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794138",
+      "synchro_le": "2026-08-28T19:24:57+0000"
     },
     {
       "type": "nosdeputes",
@@ -78366,9 +78802,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794166",
+      "synchro_le": "2026-08-28T19:21:15+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/charlotte-leduc",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794402",
+      "synchro_le": "2026-08-28T19:21:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78376,9 +78822,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794458",
+      "synchro_le": "2026-08-28T19:21:20+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/david-guiraud",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794478",
+      "synchro_le": "2026-08-28T19:21:24+0000"
     },
     {
       "type": "nosdeputes",
@@ -78386,9 +78842,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794686",
+      "synchro_le": "2026-08-28T19:24:47+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/emmanuel-fernandes",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794786",
+      "synchro_le": "2026-08-28T19:25:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78396,9 +78862,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794870",
+      "synchro_le": "2026-08-28T19:25:15+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/gabriel-amard",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794906",
+      "synchro_le": "2026-08-28T19:24:58+0000"
     },
     {
       "type": "nosdeputes",
@@ -78406,9 +78882,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794938",
+      "synchro_le": "2026-08-28T19:21:16+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/rodrigo-arenas",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795084",
+      "synchro_le": "2026-08-28T19:21:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -78416,9 +78902,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795108",
+      "synchro_le": "2026-08-28T19:21:20+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jean-francois-coulomme",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795136",
+      "synchro_le": "2026-08-28T19:21:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -78426,9 +78922,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795164",
+      "synchro_le": "2026-08-28T19:24:48+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/alma-dufour",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795200",
+      "synchro_le": "2026-08-28T19:25:18+0000"
     },
     {
       "type": "nosdeputes",
@@ -78436,9 +78942,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795228",
+      "synchro_le": "2026-08-28T19:25:16+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/jerome-legavre",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795298",
+      "synchro_le": "2026-08-28T19:24:58+0000"
     },
     {
       "type": "nosdeputes",
@@ -78446,9 +78962,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795310",
+      "synchro_le": "2026-08-28T19:21:16+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/louis-boyard",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795318",
+      "synchro_le": "2026-08-28T19:21:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -78456,9 +78982,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795422",
+      "synchro_le": "2026-08-28T19:21:21+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/rachel-keke",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795438",
+      "synchro_le": "2026-08-28T19:21:26+0000"
     },
     {
       "type": "nosdeputes",
@@ -78466,9 +79002,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795466",
+      "synchro_le": "2026-08-28T19:24:49+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/manon-meunier",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795482",
+      "synchro_le": "2026-08-28T19:25:19+0000"
     },
     {
       "type": "nosdeputes",
@@ -78476,9 +79022,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795516",
+      "synchro_le": "2026-08-28T19:25:17+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/florian-chauche",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795580",
+      "synchro_le": "2026-08-28T19:25:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -78486,9 +79042,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795588",
+      "synchro_le": "2026-08-28T19:21:17+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/paul-vannier",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795596",
+      "synchro_le": "2026-08-28T19:21:20+0000"
     },
     {
       "type": "nosdeputes",
@@ -78496,9 +79062,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795616",
+      "synchro_le": "2026-08-28T19:21:22+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/arnaud-le-gall",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795672",
+      "synchro_le": "2026-08-28T19:21:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -78506,9 +79082,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795692",
+      "synchro_le": "2026-08-28T19:24:50+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/antoine-leaument",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795746",
+      "synchro_le": "2026-08-28T19:25:20+0000"
     },
     {
       "type": "nosdeputes",
@@ -78516,9 +79102,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795844",
+      "synchro_le": "2026-08-28T19:25:18+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/aurelien-saintoul",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795982",
+      "synchro_le": "2026-08-28T19:25:00+0000"
     },
     {
       "type": "nosdeputes",
@@ -78526,9 +79122,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796018",
+      "synchro_le": "2026-08-28T19:21:18+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-portes",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796062",
+      "synchro_le": "2026-08-28T19:21:21+0000"
     },
     {
       "type": "nosdeputes",
@@ -78536,9 +79142,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796070",
+      "synchro_le": "2026-08-28T19:21:23+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/aymeric-caron",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796090",
+      "synchro_le": "2026-08-28T19:21:27+0000"
     },
     {
       "type": "nosdeputes",
@@ -78546,14 +79162,24 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA796132",
+      "synchro_le": "2026-08-28T19:24:50+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/rene-pilato",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA817211",
+      "synchro_le": "2026-08-28T19:25:21+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:42+0000",
+    "genere_le": "2026-08-28T19:37:31+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "elisa-martin",

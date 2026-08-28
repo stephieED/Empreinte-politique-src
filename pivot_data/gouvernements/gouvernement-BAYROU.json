@@ -758,8 +758,8 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-24T21:40:57+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605991",
+      "synchro_le": "2026-08-28T19:25:01+0000"
     },
     {
       "type": "nosdeputes",
@@ -767,14 +767,29 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795050",
+      "synchro_le": "2026-08-28T19:24:49+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/aurore-berge",
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
+      "synchro_le": "2026-08-28T19:21:06+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/benjamin-haddad",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795958",
+      "synchro_le": "2026-08-28T19:24:49+0000"
     },
     {
       "type": "nosdeputes",
@@ -789,7 +804,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2538",
-      "synchro_le": "2026-08-27T20:26:08+0000"
+      "synchro_le": "2026-08-28T11:45:11+0000"
     },
     {
       "type": "nosdeputes",
@@ -797,9 +812,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720480",
+      "synchro_le": "2026-08-28T19:24:47+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/elisabeth-borne",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
+      "synchro_le": "2026-08-28T19:21:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -807,9 +832,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-08-28T19:20:51+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/marc-ferracci",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795884",
+      "synchro_le": "2026-08-28T19:20:55+0000"
     },
     {
       "type": "nosdeputes",
@@ -817,19 +852,34 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
+      "synchro_le": "2026-08-28T19:21:05+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/veronique-louwagie",
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA608016",
+      "synchro_le": "2026-08-28T19:21:24+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/yannick-neuder",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA794038",
+      "synchro_le": "2026-08-28T19:25:24+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T19:37:41+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO)",
     "warnings": []
   }

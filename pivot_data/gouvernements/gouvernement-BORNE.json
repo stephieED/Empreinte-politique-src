@@ -255,12 +255,21 @@
     },
     {
       "membre_id": "sabrina-agresti-roubache",
-      "nom": "Sabrina Agresti-Roubache",
-      "portefeuille": null,
+      "nom": "Sabrina Roubache",
+      "portefeuille": "Secrétariat d’État auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargé de la ville",
       "debut": "2023-07-21",
+      "fin": "2023-10-10",
+      "actif": false,
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+    },
+    {
+      "membre_id": "sabrina-agresti-roubache",
+      "nom": "Sabrina Roubache",
+      "portefeuille": "Secrétariat d’État auprès du ministre de l’intérieur et des outre-mer, chargée de la citoyenneté, et auprès du ministre de l’intérieur et des outre-mer et du ministre de la transition écologique et de la cohésion des territoires, chargée de la ville",
+      "debut": "2023-10-11",
       "fin": "2024-01-09",
       "actif": false,
-      "source_url": null
+      "source_url": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
     },
     {
       "membre_id": "stanislas-guerini",
@@ -2477,8 +2486,8 @@
     },
     {
       "type": "assemblee_nationale",
-      "url": "https://data.assemblee-nationale.fr/",
-      "synchro_le": "2026-08-19T22:10:23+0000"
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722046",
+      "synchro_le": "2026-08-28T19:21:06+0000"
     },
     {
       "type": "nosdeputes",
@@ -2486,9 +2495,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719624",
+      "synchro_le": "2026-08-28T19:24:46+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/carole-grandjean",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA720170",
+      "synchro_le": "2026-08-28T19:24:33+0000"
     },
     {
       "type": "nosdeputes",
@@ -2496,14 +2515,24 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA774109",
+      "synchro_le": "2026-08-28T19:24:48+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/damien-abad",
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA605036",
+      "synchro_le": "2026-08-28T19:20:56+0000"
+    },
+    {
       "type": "europarl",
       "url": "https://www.europarl.europa.eu/meps/fr/96850",
-      "synchro_le": "2026-08-19T21:53:26+0000"
+      "synchro_le": "2026-08-28T19:21:04+0000"
     },
     {
       "type": "nosdeputes",
@@ -2511,9 +2540,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793788",
+      "synchro_le": "2026-08-28T19:20:54+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/elisabeth-borne",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA717161",
+      "synchro_le": "2026-08-28T19:21:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -2521,9 +2560,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719186",
+      "synchro_le": "2026-08-28T19:24:42+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/franck-riester",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA335758",
+      "synchro_le": "2026-08-28T19:24:31+0000"
     },
     {
       "type": "nosdeputes",
@@ -2533,7 +2582,7 @@
     {
       "type": "assemblee_nationale",
       "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA722190",
-      "synchro_le": "2026-08-27T20:19:29+0000"
+      "synchro_le": "2026-08-28T19:24:48+0000"
     },
     {
       "type": "nosdeputes",
@@ -2541,9 +2590,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA607846",
+      "synchro_le": "2026-08-28T19:20:51+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/herve-berville",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719218",
+      "synchro_le": "2026-08-28T19:21:05+0000"
     },
     {
       "type": "nosdeputes",
@@ -2551,9 +2610,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721764",
+      "synchro_le": "2026-08-28T19:20:54+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-becht",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642935",
+      "synchro_le": "2026-08-28T19:24:30+0000"
     },
     {
       "type": "nosdeputes",
@@ -2561,9 +2630,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA330357",
+      "synchro_le": "2026-08-28T19:24:19+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/olivier-veran",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA642788",
+      "synchro_le": "2026-08-28T19:20:51+0000"
     },
     {
       "type": "nosdeputes",
@@ -2571,9 +2650,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA719668",
+      "synchro_le": "2026-08-28T19:21:05+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/prisca-thevenot",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA795920",
+      "synchro_le": "2026-08-28T19:21:08+0000"
     },
     {
       "type": "nosdeputes",
@@ -2581,9 +2670,19 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721134",
+      "synchro_le": "2026-08-28T19:24:47+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/sabrina-agresti-roubache",
       "synchro_le": "2026-08-19T22:14:10+0000"
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793278",
+      "synchro_le": "2026-08-28T19:21:07+0000"
     },
     {
       "type": "nosdeputes",
@@ -2591,19 +2690,34 @@
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721498",
+      "synchro_le": "2026-08-28T19:21:06+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/thomas-cazenave",
       "synchro_le": null
     },
     {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA793940",
+      "synchro_le": "2026-08-28T19:21:07+0000"
+    },
+    {
       "type": "nosdeputes",
       "url": "https://www.nosdeputes.fr/yael-braun-pivet",
       "synchro_le": null
+    },
+    {
+      "type": "assemblee_nationale",
+      "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA721908",
+      "synchro_le": "2026-08-28T19:24:48+0000"
     }
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-27T21:00:48+0000",
+    "genere_le": "2026-08-28T19:37:41+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "warnings": []
   }
