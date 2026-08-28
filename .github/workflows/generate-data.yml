@@ -2944,6 +2944,25 @@ jobs:
           LU=$(python3 -c "import sys; sys.path.insert(0, 'src'); import audit_volumetrie_profils as a; print(a.FENETRE_COMMITS_DONNEES, a.MOTIF_COMMIT_DONNEES)")
           FENETRE=${LU%% *}
           MOTIF=${LU#* }
+
+          # `actions/checkout` cloue l'historique à UN commit (`fetch-depth: 1`
+          # par défaut), et ce job ne demande rien d'autre. Sans
+          # approfondissement, `git log --grep` ne voit que le commit de données
+          # que ce job vient d'écrire : le compteur rendait 1, l'alerte ne
+          # pouvait JAMAIS se déclencher, et le step affichait « non
+          # contraignante » à 30 commits sur 30. Constaté sur le run
+          # 33185097538 du 28/08/2026 — le step tournait et ne voyait rien, ce
+          # qui est pire que de ne pas tourner : ça a l'air de marcher.
+          #
+          # `--filter=blob:none` n'est pas un détail de performance : le corpus
+          # pèse 4,85 Go, et approfondir AVEC les blobs coûterait ~600 Mo pour
+          # ne lire que des sujets de commit. On veut le graphe, pas le contenu.
+          #
+          # `|| true` : un approfondissement qui échoue ne doit pas faire tomber
+          # un job qui vient de committer des données. Le compteur sera faux, et
+          # c'est au garde-fou de test de l'empêcher, pas au run de le subir.
+          git fetch --quiet --filter=blob:none --deepen=$(( FENETRE + 10 )) origin 2>/dev/null || true
+
           NB=$(git log --grep="$MOTIF" --oneline | wc -l)
           RESTE=$(( FENETRE - NB ))
 
