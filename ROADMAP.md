@@ -8,30 +8,40 @@ something is pending, not *why*.
 
 ## Issues ouvertes — ordre d'exécution
 
-État au 27/08/2026 en fin de journée, après la clôture de l'épic #523 (7 lots) et
-les deux runs complets `33100214165` et `33110395663`. Le rang traduit l'ordre dans lequel je lancerais les chantiers, pas
-une urgence absolue ; la dernière colonne dit ce qui empêche de commencer.
+État au **28/08/2026 en fin de journée**. Le rang traduit l'ordre dans lequel je
+lancerais les chantiers, pas une urgence absolue ; la dernière colonne dit ce qui
+empêche de commencer. Le *sujet* est réécrit court — les titres d'issue de ce dépôt
+portent leur constat chiffré et ne tiennent pas dans un tableau.
 
-| Rang | Issue | État | Ce qui bloque |
-| --- | --- | --- | --- |
-| 1 | **#546** | ouverte, mesure à faire | rien — mesurer avant de re-dimensionner |
-| 2 | **#545** | ouverte | rien — garde-fou manquant, révélé par #540 |
-| 3 | **#539** | arbitré, **livré** | rien — identité, `identifiants` et `couverture` publiés ; reste les 2 pages de Royal/Bertrand, que le prochain run écrit |
-| 4 | #326 | prêt | rien — bloque explicitement 328/329/330 |
-| 5 | #328 | prêt après #326 | #326 — #540 est corrigé et le corpus régénéré |
-| 5 | #329, #330 | prêts après #326 | #326 — parallélisables entre eux et avec #328 |
-| 6 | #331 | — | #328, #329, #330 |
-| 7 | #486 | à recadrer | prémisse changée par #528 ; **débloquée** — se branche sur le modèle de #539 au lieu d'en inventer un second |
-| 8 | #484 | non résolu | #486 — `identite` toujours `null`, vérifié le 27/08 |
-| 9 | #495 | — | #486 |
-| 10 | #429 | `needs-human` | 8/8 sous-issues closes ; ne reste qu'un arbitrage de critère |
-| 11 | #305 | — | stabilisation de l'UI (#324 entière) |
+**15 issues ouvertes, aucune PR ouverte**, toutes rattachées à un milestone.
 
-**Parallélisation.** Quatre voies touchent des fichiers disjoints et avancent sans se
-gêner : **données/schéma** (`src/`, `raw_data/` — #539), **UI**
-(`web/UI_finale/src/` — #326 puis les trois pages), **CI** (`.github/` — #546) et
-**qualité** (`src/audit_*` — #545). #530 et #508 sont livrés (PR #543 et #542).
-#328/#329/#330 sont parallélisables entre elles une fois #326 mergée.
+| Rang | Issue | Sujet | Milestone | État | Ce qui bloque |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **#539** | identité et couverture des profils | Modèle de données | PR #552 fusionnée — 479 profils, blocs `identifiants` et `couverture` publiés | **le run `33165786207`** : Royal et Bertrand n'ont pas leur page tant qu'il n'a pas fini |
+| 2 | **#326** | fondations UI partagées | Analytics | prêt | rien — et c'est la seule qui débloque quatre issues |
+| 3 | **#551** | rétention de l'historique de données | Maintenance | prêt, **arbitrage à rendre** : la fenêtre se compte-t-elle en commits ou en octets ? | rien — 28 commits de données sur une fenêtre de 30 |
+| 3 | **#555** | fraîcheur du cache AN | Maintenance | prêt | rien — indépendante de #551 |
+| 4 | **#556** | marqueur `nil` publié comme URI | Modèle de données | prêt | rien, mais la régénération des 186 profils suppose un run |
+| 5 | **#553** | 280 membres du roster sans profil | Full scale | à **diagnostiquer** avant d'agir | rien — la première étape n'est pas un run |
+| 6 | #328, #329, #330 | refonte des trois pages de profil | Analytics | après #326 | #326 — parallélisables entre elles |
+| 7 | #331 | documentation de la refonte | Analytics | — | #328, #329, #330 |
+| 8 | #486 | carrière sur deux chambres | Modèle de données | à recadrer | #539 |
+| 9 | #484 | Mélenchon basculé au Sénat | Modèle de données | non résolu | #486 |
+| 9 | #495 | affichage bicaméral | Modèle de données | — | #486 |
+| 10 | #305 | version anglaise | English version | — | stabilisation de l'UI (#324 entière) |
+
+`#324` est l'épic qui chapeaute #326 → #331 ; il se ferme quand elles sont closes.
+
+**Closes le 28/08** : #546 et #545 (PR #548 et #549), #539 côté code (PR #552),
+#550 (PR #554), et l'épic volumétrie **#429** — son critère de sortie était écrit
+sur l'arbre de travail, la seule grandeur qu'aucune limite GitHub ne touche ;
+récrit sur le dépôt et sur le push, il est atteint. Voir
+`docs/technical_decisions.md#critere-sortie-volumetrie-429`.
+
+**Parallélisation.** Trois voies touchent des fichiers disjoints et avancent sans se
+gêner : **schéma/données** (`src/`, `raw_data/` — #539, #556), **UI**
+(`web/UI_finale/src/` — #326 puis les trois pages) et **CI** (`.github/` — #551,
+#555, #553). #328/#329/#330 sont parallélisables entre elles une fois #326 fusionnée.
 
 **La sérialisation inter-voies #539 avant #486 est levée** : #539 est livré, et le
 modèle qu'il publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte`
@@ -40,11 +50,14 @@ branche au lieu d'en inventer un second. Les deux décrivaient la même distinct
 elle n'est plus tranchée qu'une fois, dans
 `docs/technical_decisions.md#couverture-listes-539`.
 
-**#484 est à re-vérifier plutôt qu'à rouvrir tel quel** : « `identite` toujours
-`null` » est faux — c'est **2 profils sur 476**, `jean-luc-melenchon` et le profil
-PE. Et le mécanisme qui l'a produit (un vide de collecte lu comme une donnée) est
-désormais nommé dans le pivot : la même situation publie `non_collecte` avec sa
-`cause`, jamais un fait.
+**#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** « `identite` toujours
+`null` » est faux : mesuré le 28/08 sur les **479 profils publiés**, c'est **5** —
+`jean-luc-melenchon`, `jordan-bardella`, et les trois non-parlementaires
+(`david-lisnard`, `marine-tondelier`, `nathalie-arthaud`) créés par #539, dont
+l'`identite` nulle est **attendue** : aucune source parlementaire ne les décrit.
+Le cas résiduel est donc Mélenchon, plus le profil PE. Et le mécanisme qui l'a
+produit — un vide de collecte lu comme une donnée — est désormais nommé dans le
+pivot : la même situation publie `non_collecte` avec sa `cause`, jamais un fait.
 
 ## Known bugs
 
