@@ -18,28 +18,114 @@
 #
 #   --fenetre N           nombre de commits de données conservés (défaut : 30).
 #
-# ── Ce que la mesure a établi (clone du 20/08/2026, main = 0466957) ───────────
+# ── Ce que la mesure a établi ────────────────────────────────────────────────
 #
-#   objets atteignables, après repack optimal ......... 284 Mo
-#   `.git` sur disque, avant repack ................... 853 Mo
-#   taille annoncée par l'API GitHub .................. 395 Mo
+#   Deux campagnes, et c'est leur ÉCART qui compte. La seconde a été faite pour
+#   #551, parce que l'hypothèse de calibrage de la première avait cessé d'être
+#   vraie — voir plus bas.
 #
-#   Le dépôt « pèse » donc trois chiffres différents, et un seul compte pour
-#   les seuils : 284 Mo. Les 569 Mo d'écart local et les 111 Mo d'écart côté
-#   GitHub sont des objets DEVENUS INACCESSIBLES par des rebases et des pushs
-#   forcés — pas de l'historique.
+#                                        20/08/2026     28/08/2026
+#                                        (0466957,      (dc3ba83,
+#                                        209 profils,   479 profils,
+#                                        23 c. données) 28 c. données)
+#     dépôt après `gc --prune=now` ....   284 Mo         434 Mo
+#     `.git` sur disque, avant repack .   853 Mo         (non relevé)
+#     taille annoncée par l'API GitHub    395 Mo         (non relevé)
 #
-#   Taille du dépôt selon la fenêtre (mesurée, gc --prune=now compris ;
-#   23 commits de données au total, donc « 23 » = historique complet) :
+#   Le dépôt « pèse » plusieurs chiffres différents, et un seul compte pour les
+#   seuils : celui d'après repack. Les 569 Mo d'écart local et les 111 Mo
+#   d'écart côté GitHub relevés le 20/08 étaient des objets DEVENUS
+#   INACCESSIBLES par des rebases et des pushs forcés — pas de l'historique.
 #
-#     fenêtre :    0     1     2     3     4     6     8    10    15    20   23
-#     dépôt   :  127   169   175   218   246   258   259   280   280   283  284  Mo
+#   ⚠ IL Y A DEUX TABLES, ET ELLES RÉPONDENT À DEUX QUESTIONS DIFFÉRENTES.
+#   Les confondre est l'erreur que #551 a failli commettre.
 #
-#   La courbe SATURE à partir de ~10 : les commits de données plus anciens ont
-#   été écrits quand le corpus faisait 14 à 30 profils, ils ne pèsent presque
-#   rien — tout ce qui précède le 10e commit de données vaut moins de 2 % du
-#   dépôt. Aujourd'hui, avec 23 commits de données, borner à 30 ne retire donc
-#   RIEN : c'est un plafond pour plus tard, pas un gain immédiat.
+#   ── (a) RÉTROSPECTIVE : « que gagnerais-je à resserrer AUJOURD'HUI ? » ──
+#
+#   Mesurée le 28/08/2026 sur un miroir de `dc3ba83` ramené à la SEULE ref
+#   `main`, gc --prune=now compris ; 28 commits de données, donc « 28 » =
+#   historique complet :
+#
+#     fenêtre :    0    1    2    3    4    6    8   10   12   15   20   24   27   28
+#     dépôt   :  180  194  208  219  225  312  364  394  405  430  430  433  433  434  Mo
+#
+#   Réponse : presque rien avant 6. Passer de 28 à 15 économise 4 Mo (1 %), à
+#   10 en économise 40 (9 %), et il faut descendre à 4 pour en économiser 209
+#   (48 %).
+#
+#   MAIS CETTE TABLE NE FONDE AUCUNE POLITIQUE. Elle sature par le bas
+#   uniquement parce que sa QUEUE est faite de commits écrits en phase de
+#   développement, quand le corpus faisait 8 à 48 profils. Ce n'est pas une
+#   propriété de la fenêtre, c'est une trace de l'histoire du projet — et ces
+#   commits-là ne reviendront pas. Le coût d'un commit de données, en packs
+#   isolés (`pack-objects` sur `rev-list --objects <c> --not <c>^`) :
+#
+#                                                médiane  moyenne   min   max
+#     14 plus anciens (01→17/08,   8→48 profils)     1,6      1,5   0,2   2,6  Mo
+#     14 plus récents (18→27/08, 129→476 profils)   29,3     34,6   0,1  78,6  Mo
+#
+#   (La table du 20/08, elle, saturait par le HAUT — queue ET tête bon marché.
+#   D'où le « borner à 30 ne retire RIEN » qui figurait ici. C'était vrai ;
+#   ça ne le sera plus.)
+#
+#   ── (b) PROSPECTIVE : « quel PLATEAU la fenêtre pose-t-elle ? » ──────────
+#
+#   C'est celle-ci qui fonde une politique. En régime permanent, les N commits
+#   de la fenêtre coûtent tous le même prix : la courbe devient LINÉAIRE,
+#   socle + N × coût marginal, et la fenêtre est le SEUL mécanisme qui borne
+#   la croissance.
+#
+#   Coût marginal RÉEL d'un commit conservé, mesuré le 28/08/2026 en empilant
+#   les arbres du plus récent vers le plus ancien et en repackant à chaque
+#   étape — le seul bloc en régime de production (476 → 481 profils) :
+#
+#     socle : arbre complet à f5e20b6 (481 profils) ..... 153,6 Mo
+#     + e87490c ......................................... + 9,9 Mo
+#     + 74c77c2 ......................................... +15,1 Mo
+#     + bf063f2 ......................................... +15,3 Mo
+#     + de23b62 (729 fichiers) .......................... +15,2 Mo
+#
+#   Soit 10 à 15 Mo par commit — et NON les 22 à 79 Mo des packs isolés, qui
+#   ne peuvent pas se déltifier contre les arbres voisins et surestiment d'un
+#   facteur 2 à 5. Projeter sur eux DOUBLERAIT le plateau.
+#
+#   Ce qui compte est le contenu RÉELLEMENT nouveau, pas le nombre de fichiers
+#   réécrits. Deux vérifications : `de23b62` réécrit 729 fichiers — tout le
+#   corpus — et ne coûte que 15,2 Mo ; `e4d71cf`, l'une des deux propagations
+#   `--no-merge` que #434 disait « structurellement exceptionnelles » et qui
+#   pèse 47 Mo en pack isolé, ne coûte que 7,7 Mo en marginal. Une propagation
+#   ne crée pas de contenu, elle le recopie, et git le sait.
+#
+#   Le marginal suit la taille du corpus, un peu moins que proportionnellement :
+#   7,7 Mo à 209 profils, 11,5 à 229, ~15,2 à 476 — le corpus fait × 2,28, le
+#   marginal × 1,97. C'est ce qui autorise l'extrapolation ci-dessous.
+#
+#   Plateau posé par la fenêtre (socle 180 Mo + N × marginal) :
+#
+#     fenêtre :          4    10    15    20    30
+#     bas     (10,4) : 222   284   336   388   492  Mo
+#     central (14,4) : 238   324   396   468   612  Mo
+#     haut    (16,0) : 244   340   420   500   660  Mo
+#
+#   À 30, le plateau vaut donc 490 à 660 Mo à 479 profils : marge × 3,3 contre
+#   les 2 Go du critère de sortie de #429, là où le dépôt d'aujourd'hui est
+#   à × 4,7. Extrapolé à 752 membres (facteur 1,58 de #429), 780 à 1 040 Mo,
+#   soit × 2,0 à × 2,6. C'est LÀ que le choix de la fenêtre se joue.
+#
+#   Et le défaut de 30 ne vient PAS d'un budget en octets : #434 l'a tiré d'une
+#   règle de latence — « cadence de pointe × période sans surveillance »,
+#   4 commits/jour × 7 jours = 28, arrondi à 30 — pour qu'une semaine d'absence
+#   reste réparable. La règle est intacte ; c'est son PRIX qui a changé, et il
+#   ne se lit que sur la table (b).
+#
+#   Le besoin forensique, lui, s'exprime en JOURS : les 42 SHA de commits cités
+#   dans les .md suivis et les corps d'issues s'étalent du 12 au 28/08/2026,
+#   seize jours. La fenêtre, elle, se compte en COMMITS. Le facteur de
+#   conversion est la cadence — c'est-à-dire exactement la règle de #434.
+#
+#   L'arbitrage (valeur, unité, déclenchement, destination de l'archive) est
+#   ouvert et n'est PAS rendu ici :
+#   voir docs/technical_decisions.md#fenetre-recalibrage-551.
 #
 # ── Trois pièges, tous rencontrés en mesurant ────────────────────────────────
 #
@@ -101,7 +187,9 @@ while [[ $# -gt 0 ]]; do
     --mesurer)  MODE=mesurer; shift ;;
     --preparer) MODE=preparer; shift ;;
     --fenetre)  FENETRE=$2; shift 2 ;;
-    -h|--help)  sed -n '2,80p' "$0"; exit 0 ;;
+    # L'en-tête entier, quelle que soit sa longueur : une plage de lignes en
+    # dur se périme au premier ajout, et tronque l'aide sans le dire.
+    -h|--help)  awk 'NR==1{next} /^#/{print; next} {exit}' "$0"; exit 0 ;;
     *) echo "[!] Option inconnue : $1" >&2; exit 2 ;;
   esac
 done
@@ -196,8 +284,9 @@ mesurer)
   APRES=$(du -sm "$TMP/m.git" | cut -f1)
   echo "   dépôt, historique borné à $FENETRE, après repack : ${APRES} Mo"
   echo "→ GAIN RÉEL : $((AVANT - APRES)) Mo ($(( (AVANT - APRES) * 100 / AVANT )) %)"
-  echo "  (à ne pas confondre avec la somme des coûts par run, qui surestime"
-  echo "   d'un facteur 2 à 15 — voir l'en-tête de ce script.)"
+  echo "  (à ne pas confondre avec la somme des coûts par run, qui surestime :"
+  echo "   au 28/08/2026, 506 Mo de packs isolés pour 254 Mo réellement ajoutés"
+  echo "   au dépôt, soit un facteur 2,0 — voir l'en-tête de ce script.)"
   ;;
 
 preparer)
