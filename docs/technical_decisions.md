@@ -1,7 +1,8 @@
 <a id="fenetre-recalibrage-551"></a>
 ## La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
-**Aucun arbitrage n'est rendu ici.** Cette entrée mesure, projette et recommande.
+**Un seul arbitrage est rendu ici, la question 2** (voir « Arbitrage rendu »
+dans sa section, 28/08/2026) ; les trois autres restent ouvertes.** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement
 et la destination de l'archive restent à trancher. `FENETRE=30` n'a pas été
 changé.
@@ -263,6 +264,43 @@ Ce qui est proposé, dans l'ordre de coût croissant :
 2. **Rendre le franchissement visible là où on regarde** — le résumé de run,
    plutôt qu'une alerte de plus.
 3. **Ne jamais automatiser `--preparer` ni le push.**
+
+#### Arbitrage rendu — 28/08/2026
+
+**La détection est armée ; la réécriture reste manuelle.**
+
+Un step `Fenêtre de rétention de l'historique de données (#551)` est branché dans
+`merge-and-pivot`, après le commit de données — compter ailleurs que là où l'on
+committe, c'est compter un état qui n'est pas encore celui du dépôt. Il écrit
+dans le résumé de run, et émet un `::warning::` quand la fenêtre est atteinte,
+un `::notice::` à trois commits ou moins.
+
+Trois propriétés, chacune verrouillée par `tests/test_ci_fenetre_retention.py`
+et vérifiée mordante par mutation :
+
+1. **La valeur de la fenêtre est lue, jamais recopiée.** Le step importe
+   `FENETRE_COMMITS_DONNEES` et `MOTIF_COMMIT_DONNEES` depuis
+   `src/audit_volumetrie_profils.py`. Un test interdit que la valeur apparaisse
+   en dur dans le step : elle vit déjà à deux endroits tenus égaux par
+   `tests/test_borner_historique_donnees.py`, un troisième domicile ferait
+   répondre deux valeurs différentes à « la fenêtre est-elle contraignante ? ».
+2. **Aucun workflow n'invoque `borner_historique_donnees.sh`.** La réécriture
+   d'historique est irréversible pour tous les clones existants ; l'appeler
+   depuis la CI contournerait la garantie que le script tient par test
+   (`test_le_script_ne_pousse_jamais`).
+3. **Aucun workflow n'appelle `--mesurer`.** Cette mesure clone le dépôt entier
+   et le repacke deux fois — 1 min 52 s de temps réel et 3 min 37 s de CPU pour
+   ~434 Mo au 28/08/2026. Compter des commits coûte une commande.
+
+**Ce que le message ne fait pas** : il ne recopie pas la procédure de bornage,
+il renvoie à cette entrée. Une procédure irréversible écrite à deux endroits
+diverge, et c'est la version la moins relue qu'on suit sous pression.
+
+État au moment de l'armement : **29 commits de données pour une fenêtre de 30** —
+le step émet donc un `::notice::` dès son premier run, et un `::warning::` au
+suivant.
+
+---
 
 ### Question 3 — la rétention se compte-t-elle en commits ou en octets
 
