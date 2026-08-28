@@ -693,6 +693,93 @@ fréquence. À revérifier sur ce dépôt-ci une fois quelques visites accumulé
 son passage ; après la coupure, c'est perdu. L'étape 2 de la procédure
 `--preparer` porte désormais ce déroulé.
 
+#### Outillage — et ce que la vérification a trouvé le premier jour (#568)
+
+Le point 3 de la recommandation ci-dessus — « une vérification après archivage,
+sinon c'est un rituel » — était **un geste décrit en prose**, à l'étape 2b de la
+procédure `--preparer`. Il est désormais une commande :
+`python3 src/verifier_archivage_swh.py`, que l'étape 2b appelle.
+
+**La boucle `curl` remplacée ne pouvait pas tourner telle quelle**, et deux
+raisons valent d'être notées parce qu'elles ne se voient qu'en essayant. Elle
+itérait sur `git log --format=%H`, soit les 677 commits de `main`, pour un quota
+de 120 requêtes/heure : près de six heures de temporisation pour une population
+qui n'est pas celle qui compte. Et le heredoc de la procédure est un `cat <<FIN`
+non quoté, donc `$(git log --format=%H)` y était **substitué à l'affichage** :
+la procédure imprimait la liste des 677 commits au milieu de ses propres
+instructions. Personne ne l'avait vu parce que personne n'a encore déroulé cette
+étape — ce qui est le sujet de #566.
+
+**La population, remesurée le 28/08/2026** — elle bouge, et c'est l'argument
+pour l'outiller plutôt que de la recopier :
+
+| | relevé ci-dessus (`dc3ba83`) | script, le même jour |
+| --- | ---: | ---: |
+| fichiers `.md` suivis | 42 | 42 |
+| corps d'issues | 253 | 260 |
+| chaînes hexadécimales de 7+ caractères | 124 | **135** |
+| dont résolvent en commit | 42 | **47** |
+
+Le tri est fait par `git cat-file --batch-check` en une invocation : le reste
+est fait d'horodatages, d'identifiants de run GitHub et de sommes de contrôle.
+Les commentaires d'issues restent hors périmètre — `gh issue list` ne les rend
+pas —, et la sortie le dit désormais plutôt que de le laisser croire.
+
+**Résultat du premier lancement réel : 46 des 47 SHA cités résolvent.** Le
+quarante-septième est `efed279`, cité dans `docs/technical_decisions.md`, et il
+révèle une situation que cette section n'avait pas prévue.
+
+**Une quatrième situation : la citation orpheline.** `efed279` est un commit de
+la PR #478 qui n'est atteignable depuis **aucune ref** — ni branche, ni tag, ni
+`origin/*`. La branche de la PR a été récrite avant fusion (`refs/pull/478/head`
+vaut `721cf64`), et le commit ne survit que comme objet pendant dans ce clone.
+GitHub ne l'a jamais servi depuis une ref ; Software Heritage archive ce qui est
+atteignable depuis les refs de l'origine ; il n'a donc **jamais pu être
+archivé**, et relancer « Save Code Now » n'y changera rien.
+
+Ce n'est pas un défaut d'archive, c'est un défaut de citation — et elle est
+**déjà cassée pour un tiers aujourd'hui**, sans qu'aucune coupure ait eu lieu.
+Le script la nomme à part, sous l'étiquette CITATIONS ORPHELINES, et **ne bloque
+pas** dessus : la coupure ne lui fait rien perdre, et un verdict rouge permanent
+finirait par ne plus être lu. Ce qui bloque, c'est un SHA atteignable depuis une
+ref et pourtant absent de l'archive — celui-là, la coupure le perdrait
+vraiment.
+
+**« Atteignable » veut dire quelque chose de précis, et s'y tromper coûte.** Le
+script ne balaie que `refs/heads`, `refs/tags` et `refs/remotes/origin` — ce
+qu'une origine offre à un archiveur. `refs/pull/<n>/head` en est exclue (GitHub
+la sert, Software Heritage ne l'archive pas), et `refs/claude/*` ou `refs/stash`
+aussi : les compter ferait passer pour un trou d'archive un commit que l'origine
+n'a jamais porté. Ça reste une approximation — une branche locale déjà supprimée
+en amont compte encore —, et **elle penche du bon côté** : elle peut rendre
+MANQUANT ce qui est orphelin, jamais l'inverse. Un blocage de trop, jamais une
+autorisation de trop.
+
+C'est la même discipline que la distinction visite/manque, appliquée une fois de
+plus : trois causes différentes d'un même symptôme, trois gestes différents.
+
+| verdict | code | ce qu'on fait |
+| --- | ---: | --- |
+| VÉRIFIÉ | 0 | visite `full`, tout ce qui est archivable résout. Couper. |
+| MANQUANTS | 1 | trou d'archive réel. Relancer 2a, revérifier. |
+| INDÉTERMINÉ | 2 | visite non conclue, quota, réseau. **Rien n'est établi** : réessayer. |
+
+**Le quota est plus serré qu'il n'y paraît, et c'est mesuré.** Une passe complète
+coûte 48 requêtes (1 visite + 47 révisions) sur les 120/heure : **deux passes par
+heure au plus**, et la fenêtre est une heure pleine, pas un débit lissé. Lancée
+sur un seau déjà entamé, la vérification a temporisé deux fois — 702 s puis
+1 504 s — et l'a annoncé à chaque fois, comme #568 le demandait. Deuxième
+constat du même relevé : la route `/origin/.../visit/latest/` a **son propre
+seau, à 700 requêtes/heure**. Lire ses en-têtes dans le compteur des révisions
+ferait croire à six fois plus de marge qu'il n'y en a.
+
+**Rien de tout cela ne tourne en CI**, conformément à la question 2 : la
+vérification est un geste de pré-coupure, pas un contrôle de run. Un test
+l'interdit explicitement — la brancher dans un workflow consommerait à chaque
+push un quota anonyme partagé, et ferait échouer des jobs sur l'état d'un
+service tiers. Les 39 tests de `tests/test_verifier_archivage_swh.py` portent sur
+des entrées simulées ; aucun ne joint l'API.
+
 ---
 
 ### Ce qui n'a pas pu être établi
@@ -719,6 +806,17 @@ son passage ; après la coupure, c'est perdu. L'étape 2 de la procédure
 - **La taille annoncée par l'API GitHub** n'a pas été relevée ce jour. Le rappel
   de #434 vaut toujours : un push forcé ne la fait pas baisser tant que GitHub n'a
   pas ramassé, et ce `gc` n'est ni annonçable ni déclenchable.
+- **On ne sait pas combien de citations orphelines s'écriront** (#568). Une sur
+  les 47 en est une aujourd'hui — `efed279`, commit d'une branche de PR récrite —
+  et rien ne mesure à quelle fréquence une décision se documente sur un SHA
+  qui ne survivra pas à la fusion de sa propre PR. Le script les nomme quand il
+  en trouve ; il ne les empêche pas. Le geste qui les éviterait — citer le
+  commit de fusion plutôt que celui de la branche — n'est écrit nulle part, et
+  n'est pas décidé ici.
+- **Les commentaires d'issues restent hors du périmètre vérifié** (#568), comme
+  du relevé de population ci-dessus. `gh issue list` ne les rend pas et les
+  tirer coûterait une requête API par issue. Un SHA cité uniquement dans un
+  commentaire n'est donc vérifié par rien.
 
 ---
 

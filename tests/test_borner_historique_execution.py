@@ -485,6 +485,12 @@ def test_la_preparation_rend_la_procedure_en_entier(banc):
     lançait une commande `full`, `$sha` était une variable sans liaison, et
     `set -u` tuait le script AVANT la première ligne du bloc. Le mode
     `--preparer` sortait en erreur 1 et n'avait jamais rien imprimé.
+
+    Les fragments cités ont changé avec #568, qui a remplacé le bloc `curl` en
+    prose par l'appel à `src/verifier_archivage_swh.py`. Ce qui est vérifié n'a
+    pas changé : ce qui est cité sort littéralement, ce qui est une variable est
+    substitué. C'est la sélectivité de l'échappement qui est le sujet, pas les
+    chaînes elles-mêmes.
     """
     sortie = banc.preparation.stdout
     for repere in ("RIEN n'a été poussé", "sauvegarde locale", "branche réécrite",
@@ -494,12 +500,18 @@ def test_la_preparation_rend_la_procedure_en_entier(banc):
     assert "unbound variable" not in banc.preparation.stderr
     assert "sans liaison" not in banc.preparation.stderr
     # Les fragments de shell CITÉS doivent sortir littéralement, non exécutés.
-    assert "for sha in $(git log --format=%H); do" in sortie
-    assert '"https://archive.softwareheritage.org/api/1/revision/$sha/" \\' in sortie
+    # Ce sont les backticks qui avaient le plus mordu : `full` était lancé comme
+    # une commande, d'où le « commande introuvable » vérifié plus haut.
+    assert "visite `full`, tout résout" in sortie
+    assert "`--sans-issues` si `gh` n'est pas authentifié" in sortie
     assert "JAMAIS `git remote update` ni `--prune` dessus" in sortie
-    # …et le bloc `curl` reste sur ses trois lignes : un `\\` de continuation
-    # non échappé les recollerait en une seule, illisible.
-    assert "curl -sf -o /dev/null \\\n" in sortie
+    # La procédure doit nommer l'outil de vérification (#568), pas le décrire.
+    assert "python3 src/verifier_archivage_swh.py" in sortie
+    # …et la preuve INVERSE : l'échappement est sélectif, pas global. Les vraies
+    # variables doivent encore être substituées, sinon la procédure imprimerait
+    # « $TAG » là où l'opératrice attend le nom du tag qu'elle vient de créer.
+    assert "archive/pre-borne-" in sortie
+    assert "$TAG" not in sortie and "$NEW" not in sortie
     # Les deux valeurs qui, elles, DOIVENT être substituées.
     assert _git(banc, banc.depot, "rev-parse", "main-borne") in sortie
 
