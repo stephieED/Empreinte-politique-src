@@ -268,6 +268,14 @@ def _report_coverage(
         return ("  [!] candidats.json illisible.", "")
     all_candidats: list[dict] = raw.get("candidats") or []
 
+    # « Sans slug » ne veut plus dire « non générable via NosDéputés/NosSénateurs »
+    # (#539) : ces plateformes sont hors pipeline depuis #529, et le slug est
+    # devenu l'identifiant du profil — fabriqué une fois par `slugify(nom)`, écrit
+    # dans `raw_data/candidats.json`, immuable ensuite. Un candidat sans slug est
+    # donc un candidat dont l'identité n'a pas encore été fabriquée, ce qui le
+    # rend invisible du matrix `extract-an` comme du manifeste de l'interface.
+    # Mesuré au 28/08/2026 : 0 sur 13 — les cinq derniers ont reçu la leur avec
+    # ce lot.
     with_slug = {c["slug"]: c for c in all_candidats if c.get("slug")}
     without_slug = [c for c in all_candidats if not c.get("slug")]
 
@@ -291,7 +299,7 @@ def _report_coverage(
         "",
         "┌─ 2/4  Candidats générés vs attendus ───────────────────────────────",
         f"│  Attendus (total) : {total_expected}   Avec slug : {len(with_slug)}"
-        f"   Sans slug (non générables) : {len(without_slug)}",
+        f"   Sans slug (identité non fabriquée) : {len(without_slug)}",
         f"│  Générés          : {total_generated}   Manquants : {len(missing)}"
         + (f"   Inattendus : {len(unexpected)}" if unexpected else ""),
         "│",
@@ -309,7 +317,7 @@ def _report_coverage(
             lines.append(f"│    • {slug}")
     if without_slug:
         lines.append("│")
-        lines.append("│  Sans slug (non générables via NosDéputés/NosSénateurs) :")
+        lines.append("│  Sans slug — identité de profil non fabriquée (#539) :")
         for c in without_slug:
             lines.append(f"│    · {c['nom']} ({c['parti']})")
     lines.append("└" + "─" * 67)
@@ -325,7 +333,7 @@ def _report_coverage(
         f"| {ok_icon} Générés | {total_generated} |",
         f"| 📋 Attendus (avec slug) | {len(with_slug)} |",
         f"| ❌ Manquants | {len(missing)} |",
-        f"| ⬜ Sans slug (non générables) | {len(without_slug)} |",
+        f"| ⬜ Sans slug (identité non fabriquée) | {len(without_slug)} |",
         "",
     ]
     if missing:

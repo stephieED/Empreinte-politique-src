@@ -71,8 +71,18 @@ for (const file of profileFiles) {
 }
 const availableSlugs = new Set(profileFiles.map((f) => f.replace(/\.pivot\.json$/, '')));
 
+// `c.slug &&` est retiré (#539) : il datait du jour où un slug valait
+// « référencé sur nosdeputes.fr », plateforme hors pipeline depuis #529. Le
+// slug est désormais l'identifiant du profil, renseigné pour les 13 candidats
+// déclarés — le test ne filtrait donc plus rien de vrai, il ne faisait que
+// perpétuer une prémisse fausse. Le manifeste liste les candidats DÉCLARÉS.
+//
+// `availableSlugs.has(...)` reste, et c'est délibéré : ce script copie les
+// fichiers de profil, et un candidat listé sans profil sur disque produirait
+// un lien qui casse au clic. Le rendu d'un candidat déclaré sans page relève
+// du lot UI #324/#328 ; ici on ne fabrique pas la promesse d'une page absente.
 const manifestCandidates = candidats
-  .filter((c) => c.slug && availableSlugs.has(c.slug))
+  .filter((c) => availableSlugs.has(c.slug))
   .map((c) => ({
     slug: c.slug,
     nom: c.nom,
