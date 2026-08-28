@@ -580,6 +580,12 @@ def _report_low_syceron_coverage(
 # Préfixe du warning émis par candidate_profile.py (fetch_amendements_officiels)
 # quand la collecte des amendements officiels échoue (téléchargement/parsing AN).
 _AMENDEMENTS_INDISPONIBLES_PREFIX = "amendements indisponibles"
+# #562 : depuis que « la source n'a pas répondu » et « notre code a échoué »
+# sont deux warnings distincts (candidate_profile.WARNING_PREFIX_DEFAUT_COLLECTE),
+# ne guetter que le premier rendrait le second invisible à cette section — et
+# c'est précisément le second qui a coûté leurs amendements à 99 profils sur 481.
+# Duplication du littéral assumée, même découplage que ci-dessus.
+_AMENDEMENTS_DEFAUT_COLLECTE_PREFIX = "défaut de collecte interne (amendements)"
 
 # Contrat avec candidate_profile.py : législatures couvertes (AN_AMENDEMENTS_PATH)
 # et nom du fichier d'indicateur de fraîcheur écrit par _write_amendements_fraicheur
@@ -720,7 +726,11 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
                 if isinstance(a, dict) and (a.get("amendement_id") or a.get("uid"))
             )
             warnings_list: list[str] = (data.get("meta") or {}).get("warnings") or []
-            has_fetch_error = any(w.startswith(_AMENDEMENTS_INDISPONIBLES_PREFIX) for w in warnings_list)
+            has_fetch_error = any(
+                w.startswith(_AMENDEMENTS_INDISPONIBLES_PREFIX)
+                or w.startswith(_AMENDEMENTS_DEFAUT_COLLECTE_PREFIX)
+                for w in warnings_list
+            )
             rows.append(
                 {
                     "slug": slug,
