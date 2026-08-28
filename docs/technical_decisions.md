@@ -1,8 +1,9 @@
 <a id="fenetre-recalibrage-551"></a>
 ## La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
-**Un seul arbitrage est rendu ici, la question 2** (voir « Arbitrage rendu »
-dans sa section, 28/08/2026) ; les trois autres restent ouvertes.** Cette entrée mesure, projette et recommande.
+**Deux arbitrages sont rendus ici — les questions 1 et 2** (voir « Arbitrage
+rendu » dans chaque section, 28/08/2026). Les questions 3 et 4 restent
+ouvertes.** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement
 et la destination de l'archive restent à trancher. `FENETRE=30` n'a pas été
 changé.
@@ -227,6 +228,55 @@ arbitrage qui n'en changerait qu'un donnerait deux réponses différentes à la
 question « la fenêtre est-elle contraignante ? » — `FENETRE=30` dans
 `scripts/borner_historique_donnees.sh` et `FENETRE_COMMITS_DONNEES = 30` dans
 `src/audit_volumetrie_profils.py`. Un test le verrouille désormais.
+
+#### Arbitrage rendu — 28/08/2026
+
+**La fenêtre vaut un mois de données. 30 en est la conversion, pas la décision.**
+
+La valeur ne change pas ; **sa justification, si**, et c'est le point.
+
+#434 avait dimensionné 30 sur une **latence de détection** — « cadence de pointe
+× période sans surveillance », une estimation de ce qui pourrait passer inaperçu.
+L'arbitrage la remplace par une question sur le produit : **jusqu'où veut-on
+pouvoir remonter dans les données publiées ?** Réponse : un mois.
+
+C'est un meilleur fondement pour trois raisons. Il se relit sans reconstituer un
+calcul ; il donne un critère de révision explicite (la cadence) ; et il ne
+dépend pas d'une hypothèse sur la surveillance, qui n'était vérifiable par
+personne.
+
+**La conversion, mesurée le 28/08/2026 sur `origin/main` :**
+
+| | |
+| --- | ---: |
+| Commits de données, 01/08 → 28/08 | **29 en 28 jours**, soit **1,04/jour** |
+| Jours distincts portant au moins un commit | 15 sur 28 |
+| Jour le plus chargé | 5 (18/08) |
+| `schedule: cron` de `generate-data.yml`, une fois réactivé | **1 run/jour** |
+
+Un mois fait donc **~30 commits dans les deux régimes** — le développement
+d'aujourd'hui, tout en `workflow_dispatch`, et la production de demain, cadencée
+par le cron. Que le chiffre soit inchangé n'est pas une coïncidence : le cron est
+quotidien.
+
+**Le plateau tient** : 490 à 660 Mo à 479 profils, 780 Mo à 1 Go extrapolés à
+752 membres — sous les 2 Go du critère de sortie récrit en #429. Il n'y a pas de
+conflit entre la profondeur voulue et le budget.
+
+**Condition de révision, nommée.** Le seul cas où 30 cesserait de valoir un mois
+est une cadence durablement supérieure à 1/jour — typiquement si les runs
+manuels restent aussi fréquents qu'en août **une fois le cron actif** : à 2/jour,
+la fenêtre ne couvrirait plus que quinze jours. Ça se voit sans effort, le step
+« Fenêtre de rétention de l'historique de données » affichant le compte à chaque
+run (question 2). Recalculer alors la conversion, pas la profondeur : c'est un
+mois qui est décidé, pas trente.
+
+**Ce que cet arbitrage ne dit pas** : ni l'unité dans laquelle la rétention se
+compte (question 3), ni la destination de l'archive (question 4). Un mois de
+profondeur ne vaut que si l'historique coupé est conservé quelque part — sans
+quoi c'est un mois de mémoire et rien avant.
+
+---
 
 ### Question 2 — borner automatiquement, ou rester manuel
 

@@ -178,6 +178,10 @@
 #
 set -euo pipefail
 
+# La fenêtre vaut UN MOIS de données (#551, 28/08/2026) ; 30 en est la
+# conversion à une cadence d'un run par jour, pas la décision. Tenue égale à
+# `FENETRE_COMMITS_DONNEES` de src/audit_volumetrie_profils.py, qui porte le
+# raisonnement complet, par tests/test_borner_historique_donnees.py.
 FENETRE=30
 MODE=mesurer
 MOTIF="mise à jour automatique des données"
