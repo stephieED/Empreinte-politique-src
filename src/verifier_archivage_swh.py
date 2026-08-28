@@ -283,21 +283,33 @@ def _dater_git(racine: str) -> Callable[[list[str]], dict[str, str]]:
     return executer
 
 
-def _refs_contenant_git(racine: str) -> Callable[[str], Optional[str]]:
-    """La première ref — locale, distante suivie, ou tag — d'où un commit est
-    atteignable, ou `None` s'il n'y en a aucune.
+# Les seules familles de refs qu'un archiveur peut voir depuis l'origine. Le
+# balayage est délibérément restreint :
+#   - `refs/pull/<n>/head` : GitHub la sert, mais Software Heritage n'archive
+#     pas les refs de pull request. La question posée est « l'origine a-t-elle
+#     jamais offert ce commit à un archiveur ? », pas « GitHub le sert-il ? » ;
+#   - `refs/claude/*`, `refs/stash`, `refs/notes/*` : elles n'existent que dans
+#     ce clone. Les compter ferait passer pour un trou d'archive un commit que
+#     l'origine n'a jamais porté — donc bloquer à tort une coupure légitime.
+# Ça reste une APPROXIMATION, et il faut savoir dans quel sens elle penche : une
+# branche locale déjà supprimée sur l'origine compte encore. L'erreur possible
+# est donc « MANQUANT » au lieu d'« orpheline », c'est-à-dire un blocage de
+# trop — jamais une autorisation de trop. C'est le bon sens pour un garde-fou
+# posé devant une opération irréversible.
+FAMILLES_DE_REFS_DE_L_ORIGINE = ("refs/heads", "refs/tags", "refs/remotes/origin")
 
-    `refs/pull/<n>/head` n'est délibérément pas interrogée : GitHub la sert,
-    mais Software Heritage n'archive pas les refs de pull request. La question
-    posée ici est « l'origine a-t-elle jamais offert ce commit à un
-    archiveur ? », pas « GitHub le sert-il encore ? ».
+
+def _refs_contenant_git(racine: str) -> Callable[[str], Optional[str]]:
+    """La première ref de l'origine d'où un commit est atteignable, ou `None`
+    s'il n'y en a aucune — auquel cas Software Heritage n'a jamais pu le voir.
     """
 
     def executer(sha: str) -> Optional[str]:
         try:
             sortie = subprocess.run(
                 ["git", "-C", racine, "for-each-ref",
-                 f"--contains={sha}", "--count=1", "--format=%(refname)"],
+                 f"--contains={sha}", "--count=1", "--format=%(refname)",
+                 *FAMILLES_DE_REFS_DE_L_ORIGINE],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -536,8 +548,8 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[i
     visite_conclue = visite.get("connue") and visite.get("statut") == "full"
     reserve = (
         f" ({len(orphelines)} citation(s) orpheline(s) signalée(s) à part : "
-        "commits atteignables depuis aucune ref, jamais archivables, et déjà "
-        "irrésolvables pour un tiers.)"
+        "commits atteignables depuis aucune ref de l'origine, donc jamais "
+        "archivables, et déjà irrésolvables pour un tiers.)"
         if orphelines
         else ""
     )
@@ -559,7 +571,8 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[i
                 "NE PAS COUPER."
             )
         return VERIFIE, (
-            f"Les {len(commits)} SHA cités archivables résolvent tous, bien que "
+            f"Les {len(commits) - len(orphelines)} SHA cités archivables "
+            f"résolvent tous, bien que "
             f"la visite ne soit pas encore `full` (statut : {statut}). La "
             "condition de l'étape 2b est remplie ; attendre `full` reste plus "
             "prudent." + reserve

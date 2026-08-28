@@ -368,6 +368,22 @@ def test_une_citation_orpheline_est_signalee_sans_bloquer():
     assert "orpheline" in message
 
 
+def test_la_recherche_de_ref_ignore_ce_que_l_origine_ne_sert_pas():
+    """« Atteignable » veut dire « atteignable depuis une ref que l'origine
+    offre à un archiveur », pas « présent dans ce clone ».
+
+    `refs/pull/<n>/head` en est exclue : GitHub la sert, Software Heritage ne
+    l'archive pas. `refs/claude/*` et `refs/stash` aussi : elles n'existent que
+    localement, et les compter ferait passer pour un trou d'archive un commit
+    que l'origine n'a jamais porté — donc bloquer à tort une coupure légitime.
+    """
+    familles = v.FAMILLES_DE_REFS_DE_L_ORIGINE
+    assert "refs/heads" in familles
+    assert "refs/remotes/origin" in familles
+    assert not [f for f in familles if f.startswith("refs/pull")]
+    assert not [f for f in familles if "claude" in f or "stash" in f]
+
+
 def test_une_population_vide_ne_vaut_pas_un_succes():
     """Si l'extraction rend zéro SHA, il n'y a rien à conclure — et surtout pas
     « tout va bien ». C'est le mode de panne d'une expression régulière cassée."""
