@@ -1,3 +1,304 @@
+<a id="fenetre-recalibrage-551"></a>
+## La courbe sur laquelle la fenêtre de 30 a été choisie s'est inversée (#551) (2026-08-28)
+
+**Aucun arbitrage n'est rendu ici.** Cette entrée re-mesure, corrige une hypothèse
+devenue fausse dans l'en-tête de `scripts/borner_historique_donnees.sh`, et pose
+quatre recommandations argumentées. La valeur de la fenêtre, l'unité dans laquelle
+elle se compte, son déclenchement et la destination de l'archive restent à
+trancher. `FENETRE=30` n'a pas été changé.
+
+### Population et méthode
+
+Tout ce qui suit est mesuré le 28/08/2026 sur `origin/main` = `dc3ba83`, qui porte
+**479 profils** dans `raw_data/profiles` (dont 476 au dernier commit de données,
+`e87490c` — trois profils ont été ajoutés hors run) et **28 commits de données**
+(sujet « mise à jour automatique des données »).
+
+Méthode, identique à celle de #434 : `git clone --mirror --no-hardlinks` dans un
+temporaire, **ramené à la seule ref `refs/heads/main`** — une ref oubliée
+ré-épingle l'ancien historique et le gain mesuré serait faux —, `reflog expire`,
+puis `gc --prune=now` et `du -sm`. Aucune écriture dans le dépôt de travail, aucun
+push. Les fonctions de coupure et de rejeu sont celles du script, extraites
+telles quelles.
+
+Le chiffre de référence est donc **434 Mo** (miroir de `dc3ba83`, une seule ref,
+après `gc`), à comparer aux 284 Mo mesurés le 20/08 à 209 profils. Il ne coïncide
+pas avec les 415 Mo de
+[l'entrée #429 ci-dessus](#critere-sortie-volumetrie-429), pris le même jour :
+deux variantes de la même méthode diffèrent ici — le commit mesuré et la
+réduction à une seule ref — et **l'écart n'a pas été instrumenté**. Les deux
+chiffres sont du même ordre et racontent la même chose ; aucun raisonnement de
+cette entrée ne repose sur leur différence.
+
+### La table, refaite
+
+Taille du dépôt selon la fenêtre, en mégaoctets, à 28 commits de données
+(« 28 » = historique complet) :
+
+| fenêtre | 0 | 1 | 2 | 3 | 4 | 6 | 8 | 10 | 12 | 15 | 20 | 24 | 27 | 28 (complet) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| dépôt (Mo) | 180 | 194 | 208 | 219 | 225 | 312 | 364 | 394 | 405 | 430 | 430 | 433 | 433 | 434 |
+
+Et celle du 20/08/2026, à 23 commits de données et 209 profils, pour comparaison :
+
+| fenêtre | 0 | 1 | 2 | 3 | 4 | 6 | 8 | 10 | 15 | 20 | 23 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| dépôt (Mo) | 127 | 169 | 175 | 218 | 246 | 258 | 259 | 280 | 280 | 284 | 284 |
+
+### L'inversion, qui est le vrai résultat
+
+**La courbe d'août saturait par le haut : celle d'aujourd'hui sature par le bas.**
+
+En août, tout ce qui précédait le 10<sup>e</sup> commit de données valait moins
+de 2 % du dépôt : la queue de l'historique était bon marché, et une fenêtre
+généreuse ne coûtait rien. Aujourd'hui c'est l'inverse — **la queue est bon
+marché et la tête est chère** :
+
+| fenêtre ramenée de 28 à… | 27 | 24 | 20 | 15 | 12 | 10 | 8 | 6 | 4 | 2 | 0 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| gain (Mo) | 1 | 1 | 4 | 4 | 29 | 40 | 70 | 122 | 209 | 226 | 254 |
+| soit | 0,2 % | 0,2 % | 0,9 % | 0,9 % | 6,7 % | 9,2 % | 16,1 % | 28,1 % | 48,2 % | 52,1 % | 58,5 % |
+
+Autrement dit : **borner à 30, ou même à 10, ne rend presque rien ; seule une
+fenêtre agressive rend quelque chose.** Le gain n'est plus atteignable sans
+toucher aux commits récents, qui sont précisément ceux dont on a besoin.
+
+La cause est mesurable commit par commit. Coût d'un commit de données — pack des
+objets qu'il introduit et que son premier parent n'a pas
+(`git pack-objects` sur `rev-list --objects <c> --not <c>^`) —, les 28 commits
+coupés en deux moitiés de 14 :
+
+| moitié | corpus | médiane | moyenne | min | max |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 14 plus anciens (01 → 17/08) | 8 → 48 profils | **1,6 Mo** | 1,5 | 0,2 | 2,6 |
+| 14 plus récents (18 → 27/08) | 129 → 476 profils | **29,3 Mo** | 34,6 | 0,1 | 78,6 |
+
+**Un facteur 18 sur la médiane, à l'intérieur du même historique.** L'hypothèse
+de calibrage écrite dans l'en-tête du script — « les commits de données […] ont
+été écrits quand le corpus faisait 14 à 30 profils, ils ne pèsent presque rien »
+— était juste pour la moitié basse et fausse pour la moitié haute. Elle est
+corrigée dans le script par ce commit.
+
+Un avertissement de #434 se vérifie au passage, avec un facteur à jour :
+**la somme des coûts par run surestime.** Les 28 packs isolés totalisent 506 Mo,
+alors que tout l'historique de données ne pèse que 434 − 180 = **254 Mo** dans le
+dépôt. Facteur **2,0** aujourd'hui : un pack isolé ne peut pas se déltifier
+contre les blobs restés hors du lot.
+
+### Ce que « 30 » voulait dire, et ce qui a changé
+
+Il faut lever un malentendu que l'issue installe : **30 n'a jamais été un budget
+en octets.** #434 l'a tiré d'une règle de latence, écrite dans
+[l'entrée #434](#fenetre-historique-donnees) :
+
+> fenêtre = cadence de pointe × période sans surveillance — 4 commits/jour ×
+> 7 jours = 28, arrondi à 30.
+
+Les octets n'intervenaient que dans la **conséquence** de ce choix : #434 en
+déduisait un plafond d'environ 2,9 Go à 752 profils — socle projeté 457 Mo plus
+30 × 81 Mo de coût moyen par run. Cette projection-là n'est pas démentie : le
+coût moyen mesuré aujourd'hui est de 34,6 Mo à 479 profils.
+
+Ce qui a changé n'est donc pas la règle, c'est son prix. Et la règle elle-même,
+re-mesurée aujourd'hui, ne pousse pas dans le sens qu'on croit :
+
+- **la cadence de pointe est passée de 4 à 5 commits de données par jour**
+  (le 18/08/2026) — la règle inchangée donnerait 5 × 7 = **35**, pas 30 ;
+- mais **la cadence courante est de 0,56 commit/jour** (5 commits de données
+  entre le 20/08 et le 28/08, soit 9 jours), parce que le `schedule: cron` de
+  `generate-data.yml` est **commenté** : le workflow ne part qu'en
+  `workflow_dispatch`. À ce régime, 30 commits couvrent une cinquantaine de
+  jours, pas sept.
+
+L'écart entre 4 et 35 selon la lecture qu'on fait de « cadence » est exactement
+ce qui reste à trancher. Ce n'est pas une mesure manquante, c'est un choix.
+
+### Question 1 — la valeur de la fenêtre
+
+**Recommandation : garder 30 pour l'instant, et ne pas la re-choisir sur la
+courbe.** Trois raisons mesurées.
+
+1. **Rien n'est menacé.** À fenêtre pleine dans le régime actuel, l'historique de
+   données vaut 30 × ~29 Mo ≈ 870 Mo au-dessus d'un socle de 180 Mo, soit de
+   l'ordre du gigaoctet — sous les 2 Go du critère de sortie récrit en #429, et
+   très loin des 5 Go déconseillés par GitHub. Le socle croît avec le corpus,
+   c'est lui qu'il faudra surveiller, pas la fenêtre.
+2. **Descendre la fenêtre ne rend presque rien tant qu'on ne descend pas très
+   bas.** Voir la table : passer de 28 à 10 économise 40 Mo (9 %) ; il faut
+   descendre à 4 pour économiser 209 Mo (48 %).
+3. **C'est exactement là que le coût forensique explose.** Voir la question 4 :
+   à fenêtre 10, 10 des 42 SHA cités dans la documentation et les issues cessent
+   de résoudre ; à fenêtre 4, 31 sur 42.
+
+Si la fenêtre doit changer, **la re-dériver de la règle** (cadence de pointe ×
+période sans surveillance) plutôt que de la lire sur la courbe : la courbe dit ce
+que ça coûte, elle ne dit pas ce dont on a besoin.
+
+**Attention à l'exécution :** la valeur 30 est écrite à **deux endroits**, et un
+arbitrage qui n'en changerait qu'un donnerait deux réponses différentes à la
+question « la fenêtre est-elle contraignante ? » — `FENETRE=30` dans
+`scripts/borner_historique_donnees.sh` et `FENETRE_COMMITS_DONNEES = 30` dans
+`src/audit_volumetrie_profils.py`.
+
+### Question 2 — borner automatiquement, ou rester manuel
+
+**Recommandation : la réécriture reste manuelle ; c'est la détection qui doit
+devenir automatique, et elle ne l'est pas.**
+
+Les trois raisons de #434 de ne pas automatiser la réécriture tiennent toujours,
+et la première est verrouillée par un test : `test_le_script_ne_pousse_jamais`.
+Automatiser le push contredirait la garantie centrale du script. S'ajoute ce que
+la procédure `--preparer` exige et qu'aucun script ne peut faire seul :
+choisir la destination de l'archive, supprimer les autres branches distantes,
+prévenir les porteurs de clones.
+
+En revanche, **une des trois raisons de #434 est en train de tomber** : « le gain
+est nul aujourd'hui » n'est vrai que tant que la fenêtre n'est pas contraignante.
+Il reste **2 commits de données** avant qu'elle le devienne, soit ~4 jours au
+régime courant, et bien moins si le `cron` est réactivé.
+
+Et l'automatisation qui manque n'est pas celle qu'on croit. #434 affirme :
+« ce qui est automatisé, c'est la **détection** ». **Le code existe, mais rien ne
+le lance** : `src/audit_volumetrie_profils.py` sait dire si la fenêtre est
+contraignante, et il n'est invoqué par **aucun workflow** — seulement par
+`scripts/mesure_volumetrie_roster.sh`, qui se lance à la main. La détection est
+outillée, pas armée.
+
+Ce qui est proposé, dans l'ordre de coût croissant :
+
+1. **Armer la détection.** Un pas dans un workflow qui compte les commits de
+   données (`git log --grep | wc -l`) et alerte au-delà d'un seuil. Coût : une
+   commande, pas de clone. Surtout pas `--mesurer` en CI : il clone le dépôt
+   entier et le repacke deux fois — le seul clone + `gc` a pris 1 min 52 s de
+   temps réel et 3 min 37 s de CPU au 28/08, pour ~434 Mo dans un temporaire.
+2. **Rendre le franchissement visible là où on regarde** — le résumé de run,
+   plutôt qu'une alerte de plus.
+3. **Ne jamais automatiser `--preparer` ni le push.**
+
+### Question 3 — la rétention se compte-t-elle en commits ou en octets
+
+**Recommandation : garder la coupure en commits, et déplacer le critère de
+déclenchement vers les octets.** Ce sont deux choses différentes, et les
+confondre est ce qui rend la question difficile.
+
+Ce qui plaide pour les octets : la mesure ci-dessus. Un facteur 18 sur la médiane
+entre les deux moitiés de l'historique, et un rapport de 1 à 603 entre le commit
+le moins cher (`8ff8ff2`, 3 fichiers, 0,1 Mo) et le plus cher (`de23b62`,
+729 fichiers, 78,6 Mo). Une fenêtre en commits n'est plus un proxy de rien.
+
+Ce qui plaide contre une **coupure** en octets, et qui est décisif :
+
+- **elle ne serait pas déterministe.** `_coupure` rend le (N+1)<sup>e</sup> commit
+  de données ; c'est reproductible et vérifiable de tête. Une coupure « au premier
+  commit qui fait passer le cumul sous X Mo » se déplace à chaque run et rend deux
+  réponses différentes selon la date de la mesure ;
+- **le cumul en octets qu'on saurait calculer est le mauvais.** Les packs isolés
+  totalisent 506 Mo pour 254 Mo réellement stockés — facteur 2,0. Une fenêtre en
+  octets bâtie sur ces coûts couperait deux fois trop tôt ;
+- **le budget réel ne se mesure qu'après coup**, par un `gc --prune=now` sur un
+  miroir, soit plusieurs minutes de calcul par point de la courbe.
+
+D'où la forme proposée, **à deux bornes** :
+
+- **un plancher en commits**, celui de la règle de latence — c'est un besoin
+  forensique, il se compte en incidents, pas en octets ;
+- **un plafond en octets**, celui déjà écrit en #429 : dépôt sous 2 Go après
+  `gc --prune=now`, push complet sous 1 Go. C'est lui qui doit **déclencher**
+  l'examen.
+
+Quand les deux bornes se contredisent — quand tenir le plancher ferait franchir le
+plafond — il n'y a pas de formule : c'est l'arbitrage. Aujourd'hui elles ne se
+contredisent pas (~1 Go projeté à fenêtre pleine contre 2 Go de plafond), et c'est
+pour ça que la question peut être posée calmement.
+
+### Question 4 — où va l'archive, et qui garantit qu'elle a tourné
+
+Cette question n'était pas dans l'issue ; elle change la nature des trois autres,
+parce qu'elle transforme le bornage d'une **suppression** en un **déplacement**.
+
+L'étape 2 de la procédure `--preparer` l'exige déjà — « archiver l'ancien
+historique AILLEURS, sinon les SHA cités dans `docs/technical_decisions.md` et
+dans les issues cessent de résoudre : `git push <depot-archive> $TAG` » — **sans
+dire où, ni comment on vérifie que ça a marché**. Et la solution facile est
+interdite juste au-dessus : pousser le tag sur le même dépôt garderait tout
+l'historique atteignable, et le gain serait nul.
+
+**Le périmètre, mesuré.** Sur les 42 fichiers `.md` suivis par git à `dc3ba83`
+et les 253 corps d'issues du dépôt au 28/08 (tous états, commentaires exclus —
+la vraie population est donc un peu plus large), 124 chaînes hexadécimales de
+7 caractères ou plus ont été extraites ; **42 résolvent en commit** du dépôt.
+`docs/technical_decisions.md` en porte 29 à lui seul. C'est ce que l'archive doit
+servir.
+
+**Combien en perd-on selon la fenêtre** — un SHA cité est perdu s'il est ancêtre
+strict de la coupure :
+
+| fenêtre | 0 | 2 | 4 | 6 | 8 | 10 | 12 | 15 | 20 | 24 | 27 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SHA cités qui cessent de résoudre (sur 42) | 39 | 35 | 31 | 14 | 10 | 10 | 10 | 6 | 2 | 0 | 0 |
+
+Deux lectures, et la seconde est celle qui compte :
+
+- **à la fenêtre actuelle de 30, on ne perd rien** — elle n'est pas
+  contraignante — et la perte reste nulle jusqu'à 24, parce que tous les commits
+  cités sont postérieurs au 03/08/2026. L'archivage n'est pas urgent ;
+- **c'est exactement la fenêtre agressive — la seule qui rende des octets — qui
+  détruit les citations.** Gain et coût forensique sont la même variable, du même
+  côté de la courbe. C'est ce qui fait de l'archivage la condition de tout
+  resserrement, et pas un accessoire de procédure.
+
+**La forme, évaluée contre la raison invoquée par le script** — que les SHA cités
+continuent de résoudre, pas que les données restent au chaud :
+
+| forme | les SHA résolvent | vérifiable par un tiers | coût |
+| --- | --- | --- | --- |
+| **dépôt nu privé sur GitHub** | oui, `git log` / `git show` normaux après ajout d'un remote | **oui** | un push de ~433 Mo, un dépôt de plus |
+| **bundle** (`git bundle create`) | seulement après un `git fetch` depuis le bundle | non, sauf à distribuer le fichier | un fichier de ~433 Mo à héberger |
+| **tarball des données** | **non** — perd le graphe et les SHA | non | — |
+
+Le tarball est à **écarter explicitement** : il ne sert pas la raison invoquée.
+
+**La distinction qui décide de l'ordre.** Un miroir sur le disque local répond à
+la capacité de récupération de l'humaine, mais **pas** à la raison écrite dans le
+script : quelqu'un qui lit « mesuré sur `de23b62` » dans une issue et veut
+vérifier n'est pas aidé par un disque qu'il n'a pas. Un dépôt d'archive privé sur
+GitHub coûte la même écriture et garde les citations vérifiables. Les deux ne
+s'excluent pas.
+
+**Recommandation, dans cet ordre :**
+
+1. **Un dépôt d'archive privé sur GitHub**, poussé en miroir avant tout push
+   forcé. C'est la forme qui sert la raison écrite. Son URL doit être consignée
+   dans cette entrée le jour où il existe, sinon l'archive est introuvable et ne
+   sert personne.
+2. **Un miroir local**, en second, pour la reprise après incident. Utile, mais il
+   ne remplace pas le premier.
+3. **Une vérification après archivage, sinon c'est un rituel.** Reprendre les
+   42 SHA effectivement cités et confirmer que chacun résout dans l'archive
+   (`git -C <archive> cat-file -t <sha>` = `commit`). Sans ça, on saura que le
+   push a réussi, pas que l'archive sert à quelque chose.
+4. **Jamais de tag d'archive sur `origin`** — l'étape 4 de la procédure le
+   rappelle déjà : n'importe quelle ref distante oubliée ré-épingle l'ancien
+   historique et annule le gain.
+
+### Ce qui n'a pas pu être établi
+
+- **Un fork GitHub est probablement disqualifié comme archive** : les forks
+  partagent leur réservoir d'objets avec le dépôt d'origine, donc un tag poussé
+  sur un fork pourrait garder l'ancien historique atteignable dans le réseau —
+  le cas même que le script interdit. **Non vérifié** : ça ne se mesure pas de
+  l'extérieur. À traiter comme une raison de choisir un dépôt indépendant, pas
+  comme un fait acquis.
+- **Le coût réel du dépôt d'archive dans la durée** n'est pas mesuré : ~433 Mo
+  aujourd'hui, mais chaque bornage ultérieur y repousse un historique plus gros.
+- **La taille annoncée par l'API GitHub** n'a pas été relevée ce jour ; seule ②
+  (après `gc`) l'a été. Le rappel de #434 vaut toujours : un push forcé ne fait
+  pas baisser ce chiffre tant que GitHub n'a pas ramassé, et ce `gc` n'est ni
+  annonçable ni déclenchable.
+- **La cadence future**, qui est le paramètre dont dépend tout le reste : elle
+  bascule d'un facteur ~10 selon que le `cron` de `generate-data.yml` est
+  réactivé ou non. Ça ne se mesure pas, ça se décide.
+
 <a id="critere-sortie-volumetrie-429"></a>
 ## Le critère de sortie de l'épic volumétrie était écrit sur la mauvaise grandeur (#429) (2026-08-28)
 
