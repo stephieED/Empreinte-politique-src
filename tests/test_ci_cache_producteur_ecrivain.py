@@ -74,7 +74,13 @@ JAMAIS_PRODUIT = "jamais produit (drapeau --skip-* en dur)"
 # `test_l_inventaire_des_steps_de_cache_est_a_jour` : le sens de lecture ou
 # d'écriture devient une décision écrite, pas un défaut hérité.
 INVENTAIRE_STEPS = {
-    ("extract-an", 0): True,   # cache AN : ce job est le SEUL producteur
+    # #550 : le cache AN est passé en restore + save explicites. La clé
+    # RESTAURÉE porte la complétude ATTENDUE, la clé SAUVEGARDÉE la complétude
+    # ATTEINTE : deux clés différentes, qu'un `actions/cache` combiné ne sait
+    # pas exprimer. C'est ce qui empêche une entrée partielle d'occuper la clé
+    # d'une entrée complète — et, une entrée de cache GitHub étant immuable, la
+    # seule façon de reprendre la main sur une clé déjà écrite dans la semaine.
+    ("extract-an", 0): False,  # cache AN : restauration
     ("extract-an", 1): True,   # cache dossiers : produit aussi
     ("extract-ue-officiel", 0): True,
     ("extract-parltrack", 0): True,
@@ -87,6 +93,10 @@ INVENTAIRE_STEPS = {
     ("extract-roster-groupes", 2): False,
     # Repli #424, même step côté extract-an.
     ("extract-an", 2): False,
+    # #550 : la sauvegarde du cache AN, placée APRÈS la publication du profil
+    # pour qu'un archivage coupé par `timeout-minutes` ne coûte jamais qu'une
+    # entrée de cache. Ce job reste le seul écrivain de la clé AN.
+    ("extract-an", 3): True,
     ("merge-and-pivot", 0): True,   # dossiers : produits par ce job (#427)
 }
 
