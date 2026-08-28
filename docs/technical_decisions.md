@@ -1,9 +1,8 @@
 <a id="fenetre-recalibrage-551"></a>
 ## La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
-**Trois arbitrages sont rendus ici — les questions 1, 2 et 3** (voir
-« Arbitrage rendu » dans chaque section, 28/08/2026). Seule la question 4,
-la destination de l'archive, reste ouverte.** Cette entrée mesure, projette et recommande.
+**Les quatre arbitrages sont rendus** (voir « Arbitrage rendu » dans chaque
+section, 28/08/2026).** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement
 et la destination de l'archive restent à trancher. `FENETRE=30` n'a pas été
 changé.
@@ -521,6 +520,66 @@ vérifier n'est pas aidé par un disque qu'il n'a pas.
    (`git -C <archive> cat-file -t <sha>` = `commit`).
 4. **Jamais de tag d'archive sur `origin`** — n'importe quelle ref distante
    oubliée ré-épingle l'ancien historique et annule le gain.
+
+#### Arbitrage rendu — 28/08/2026
+
+**L'archive de référence est Software Heritage. Un miroir local est un confort,
+pas une sécurité.**
+
+**Pourquoi pas un second dépôt GitHub**, qui était la recommandation initiale de
+cette section. Une archive accumule tout ce qu'on coupe, indéfiniment : elle a
+donc la même croissance que le dépôt principal, sans le coût de checkout. À
+~450 Mo par mois depuis les 415 Mo mesurés le 28/08 :
+
+| | Taille projetée | |
+| --- | ---: | --- |
+| aujourd'hui | 0,4 Go | |
+| +6 mois | 3,0 Go | dépasse les 2 Go du critère de #429 |
+| **+12 mois** | **5,7 Go** | **dépasse les 5 Go déconseillés par GitHub** |
+| +24 mois | 11,0 Go | |
+
+Un dépôt d'archive GitHub franchirait le seuil recommandé **en un an**, et il
+faudrait le borner à son tour. On aurait résolu le problème en le recopiant.
+**Une archive qui grandit sans borne ne peut pas vivre sous un hébergeur qui
+borne.**
+
+**Ce que Software Heritage apporte, vérifié le 28/08/2026 par l'API :**
+
+- **le SHA git EST l'identifiant.** Une révision interrogée par son SHA rend le
+  même hash : `/api/1/revision/<sha>/`. Une citation comme « mesuré sur
+  `deb28a7` » reste donc vérifiable **par un tiers**, après la coupure ;
+- **aucun plafond de taille annoncé.** La seule limite exposée est un débit de
+  **120 requêtes/heure** en anonyme — une limite de lecture, pas de stockage. Et
+  ils archivent `torvalds/linux` et `chromium/chromium`, tous deux `full` au
+  27 et 24/08 : l'échelle de ce dépôt ne pose aucune question ;
+- **c'est une sauvegarde complète, pas seulement une preuve.** La route
+  `/api/1/vault/git-bare/` reconstruit un **dépôt git nu** depuis une révision
+  archivée — testée `status: done`, `fetch_url` servie. Après récupération,
+  `git log`, `git diff` et `audit_diff_profils --ref` fonctionnent normalement.
+
+**Ce qui n'a pas pu être vérifié** : leur page de politique n'est pas
+récupérable automatiquement (protection anti-robot). Il n'existe donc **pas de
+garantie écrite** d'absence de quota — seulement l'absence de quota annoncé dans
+l'API et la preuve par l'usage. Consigné comme tel, pas comme un fait établi.
+
+**Le miroir local, et son rôle exact.** Il ne sauve de rien que SWH ne sauve
+déjà : il rend la récupération *immédiate* là où le vault demande une cuisson
+asynchrone. C'est un raccourci, pas une sécurité — et il ne survit pas au
+matériel, contrairement à SWH. Coût mesuré : ~5,7 Go la première année sur
+131 Go libres au 28/08. À prendre si l'on veut, à laisser sans risque.
+
+**La règle qui l'annule s'il est mal fait** : un miroir doit être **additif
+seulement**. `git clone --mirror` suivi d'un `git remote update` **supprime** les
+refs disparues en amont — exactement ce que l'archive existe pour garder. On y
+pousse le tag avant chaque coupure ; on n'y synchronise jamais. Le mot « miroir »
+suggère précisément l'inverse de ce qu'il faut faire.
+
+**L'ordre, non négociable** : archiver, vérifier que les SHA cités résolvent,
+**puis** couper. Software Heritage archive ce qui est atteignable au moment de
+son passage ; après la coupure, c'est perdu. L'étape 2 de la procédure
+`--preparer` porte désormais ce déroulé.
+
+---
 
 ### Ce qui n'a pas pu être établi
 
