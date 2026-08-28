@@ -375,7 +375,7 @@ plus :
      c. Facultatif, pour le confort — un miroir local ADDITIF, qui rend une
         récupération immédiate là où le vault de SWH demande une cuisson :
           git push /chemin/vers/archive.git $TAG
-        JAMAIS `git remote update` ni `--prune` dessus : un miroir qui se
+        JAMAIS \`git remote update\` ni \`--prune\` dessus : un miroir qui se
         synchronise supprime exactement ce qu'on lui demandait de garder.
         Ce miroir n'est pas la sauvegarde — SWH l'est, et il survit au
         matériel. C'est un raccourci, pas une sécurité.
