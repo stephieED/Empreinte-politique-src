@@ -18,8 +18,12 @@ temporisation pour vérifier une population qui n'est pas celle qui compte. Ce
 qui compte, ce sont les SHA **effectivement cités** — ceux qui cesseraient de
 résoudre pour un lecteur d'issue ou de journal de décision. Ils sont noyés dans
 la prose des fichiers `.md` suivis et des corps d'issues, et le tri manuel est
-le meilleur moyen d'en oublier : au 28/08/2026, 124 chaînes hexadécimales
-extraites pour **42 qui résolvent en commit**.
+le meilleur moyen d'en oublier : au 28/08/2026, **135 chaînes hexadécimales
+extraites de 42 fichiers `.md` et 260 corps d'issues, dont 47 résolvent en
+commit**. Le reste est fait d'horodatages, d'identifiants de run et de sommes
+de contrôle. (#551 relevait 124 pour 42, huit jours d'issues plus tôt : la
+population bouge, c'est précisément pourquoi on l'outille au lieu de la
+recopier.)
 
 **Trois états, pas deux.** Un SHA absent de l'archive et une visite qui n'a pas
 conclu ne se traitent pas pareil, et les confondre coûte dans les deux sens :
@@ -110,7 +114,7 @@ class Citation:
 
 
 @dataclass
-class CommiteCite:
+class CommitCite:
     """Un SHA qui résout en commit du dépôt, et tous ses lieux de citation."""
 
     sha: str
@@ -194,7 +198,7 @@ def resoudre_commits(
     citations: Iterable[Citation],
     batch_check: Callable[[list[str]], dict[str, Optional[str]]],
     dater: Callable[[list[str]], dict[str, str]] = lambda shas: {},
-) -> tuple[list[CommiteCite], int]:
+) -> tuple[list[CommitCite], int]:
     """Ne garde que les chaînes qui résolvent en **commit** du dépôt.
 
     Rend `(commits, nb_chaines_distinctes)`. L'écart entre les deux est le
@@ -210,11 +214,11 @@ def resoudre_commits(
 
     resolus = batch_check(sorted(par_chaine))
 
-    commits: dict[str, CommiteCite] = {}
+    commits: dict[str, CommitCite] = {}
     for chaine, sha in resolus.items():
         if sha is None:
             continue
-        commit = commits.setdefault(sha, CommiteCite(sha=sha))
+        commit = commits.setdefault(sha, CommitCite(sha=sha))
         for lieu in par_chaine.get(chaine, []):
             if lieu not in commit.lieux:
                 commit.lieux.append(lieu)
@@ -510,7 +514,7 @@ def interroger_visite(
 VERIFIE, MANQUANTS, INDETERMINE = 0, 1, 2
 
 
-def rendre_verdict(visite: dict[str, Any], commits: list[CommiteCite]) -> tuple[int, str]:
+def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[int, str]:
     """Le cœur de la distinction demandée par #568.
 
     Une visite en cours n'est pas un échec d'archivage. Un SHA absent d'une
@@ -574,7 +578,7 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommiteCite]) -> tuple[
     )
 
 
-def _lieux(commit: CommiteCite) -> str:
+def _lieux(commit: CommitCite) -> str:
     lieux = commit.lieux[:MAX_LIEUX_AFFICHES]
     reste = len(commit.lieux) - len(lieux)
     texte = ", ".join(lieux)
@@ -584,7 +588,7 @@ def _lieux(commit: CommiteCite) -> str:
 def formater_rapport(
     origine: str,
     visite: dict[str, Any],
-    commits: list[CommiteCite],
+    commits: list[CommitCite],
     nb_chaines: int,
     nb_md: int,
     nb_issues: int,
@@ -615,7 +619,9 @@ def formater_rapport(
     lignes += [
         "",
         f"  population : {nb_chaines} chaînes hexadécimales extraites de "
-        f"{nb_md} fichiers .md suivis et {nb_issues} corps d'issues,",
+        f"{nb_md} fichiers .md suivis et {nb_issues} corps d'issues",
+        "               (commentaires d'issues EXCLUS : la population citée est "
+        "un peu plus large),",
         f"               dont {len(commits)} résolvent en commit du dépôt "
         "(`git cat-file -t` == commit).",
         f"  résultat   : {presents} résolvent dans l'archive, "
@@ -661,7 +667,7 @@ def formater_rapport(
 def rapport_json(
     origine: str,
     visite: dict[str, Any],
-    commits: list[CommiteCite],
+    commits: list[CommitCite],
     nb_chaines: int,
     nb_md: int,
     nb_issues: int,
