@@ -13,19 +13,19 @@ on:
       # by side in the two labels.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
       cold_start:
-        description: "Refresh existing profiles from scratch: purge the cache and the output first, then re-collect. Slowest path. Anything the fresh collection does not return is lost."
+        description: "Re-collect and OVERWRITE existing profiles, purging the cache first. Slowest path. Drops whatever the fresh collection does not return."
         type: boolean
         default: false
       overwrite_profiles:
-        description: "Refresh existing profiles, reusing the cache. Leave this off and a profile already written is never re-collected, so a collection fix never reaches it. Anything the fresh collection does not return is lost."
+        description: "Re-collect and OVERWRITE existing profiles, reusing the cache. Drops whatever the fresh collection does not return. For a key correction; otherwise prefer the merging option below."
         type: boolean
         default: false
       refresh_existing_only:
-        description: "Process only roster members that already have a profile, adding none. Restricts WHO is processed; does not refresh what is already written."
+        description: "Re-collect roster profiles already written, MERGING the result — propagates a collection fix without losing anything. Adds no new member. Left off, an existing profile is never re-collected."
         type: boolean
         default: false
       roster_limit:
-        description: "How many roster members enter the extraction matrix. 0 = all of them. Does not refresh profiles already written."
+        description: "How many roster members enter the extraction matrix. 0 = all. Extends coverage to new members only; never re-collects a profile already written."
         type: number
         default: 20
       collect_interventions:

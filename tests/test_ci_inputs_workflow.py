@@ -69,40 +69,49 @@ def test_chaque_sortie_lue_par_la_relance_est_ecrite():
     )
 
 
-def test_les_inputs_qui_rafraichissent_le_disent():
-    """Le défaut invisible qui a coûté deux runs le 28/08/2026.
+def test_les_trois_modes_de_recollecte_se_nomment():
+    """Trois modes se cachent derrière deux booléens, et le formulaire de
+    lancement masque le nom du champ : la description est tout ce qu'on lit.
 
-    Une extraction ne réécrit PAS un profil déjà présent. Sans
-    `overwrite_profiles`, un correctif de collecte n'atteint jamais les profils
-    existants — constaté sur #562 : deux runs, dont un à pleine échelle, et les
-    99 profils fautifs sont restés datés du 27/08.
+    Le défaut invisible a coûté deux runs le 28/08/2026 sur #562 — un
+    progressif, puis un à pleine échelle avec `roster_limit=0`. Une extraction
+    ne recollecte PAS un profil déjà écrit, et l'en-tête du job roster le dit
+    depuis #445 : « un run à pleine échelle ne corrige RIEN de l'existant, il
+    ne fait qu'étendre la frontière ».
 
-    Les libellés d'alors décrivaient le drapeau (« Overwrite profiles from
-    cache (no merge) ») et non l'effet. GitHub masquant le nom du champ, la
-    description est tout ce qu'on lit : elle doit dire ce qui change dans le
-    résultat, pas ce que le pipeline fait de l'option.
+    Pire, le mode le plus utile était le moins découvrable : `refresh_existing_only`
+    recollecte l'existant EN FUSIONNANT — le geste sûr pour propager un
+    correctif — et s'annonçait « Limit roster to pre-existing members », c'est-à-dire
+    comme un filtre de population.
     """
     contenu = GENERATE.read_text(encoding="utf-8")
     bloc = contenu[contenu.index("  workflow_dispatch:"):contenu.index("\n# Moindre privilège")]
     desc = dict(re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE))
 
-    for nom in ("cold_start", "overwrite_profiles"):
-        assert "refresh existing profiles" in desc[nom].lower(), (
-            f"`{nom}` doit dire qu'il RAFRAÎCHIT les profils existants : c'est "
-            "son effet, et c'est ce que le formulaire de lancement montre."
+    # Les trois options qui recollectent le disent avec le même mot.
+    for nom in ("cold_start", "overwrite_profiles", "refresh_existing_only"):
+        assert "re-collect" in desc[nom].lower(), (
+            f"`{nom}` recollecte l'existant : le libellé doit le dire avec le "
+            "même mot que les deux autres, sinon on ne les compare pas."
         )
 
-    assert "never re-collected" in desc["overwrite_profiles"].lower(), (
-        "le défaut invisible — un profil déjà écrit n'est jamais recollecté — "
-        "doit être nommé là où on le lit, pas seulement dans la doc."
+    # Et ce qui les sépare — écraser ou fusionner — doit être lisible.
+    for nom in ("cold_start", "overwrite_profiles"):
+        assert "overwrite" in desc[nom].lower(), f"`{nom}` écrase : le dire"
+        assert "drops" in desc[nom].lower(), (
+            f"`{nom}` perd ce que la collecte du jour ne rend pas : le dire, "
+            "c'est la différence qui compte face à l'option fusionnante"
+        )
+    assert "merging" in desc["refresh_existing_only"].lower(), (
+        "`refresh_existing_only` FUSIONNE : c'est le mode sûr, et c'est ce qui "
+        "le distingue des deux autres"
     )
 
-    for nom in ("refresh_existing_only", "roster_limit"):
-        assert "does not refresh" in desc[nom].lower(), (
-            f"`{nom}` restreint la POPULATION traitée ; il ne rafraîchit rien. "
-            "Le dire évite la confusion avec les deux options ci-dessus — "
-            "celle qui a coûté deux runs."
-        )
+    # Le défaut invisible, nommé là où on le lit.
+    assert "never re-collect" in desc["roster_limit"].lower(), (
+        "`roster_limit` étend la couverture sans recollecter l'existant — "
+        "c'est la lecture de « 0 = all » qui a coûté deux runs"
+    )
 
 
 def test_aucune_description_d_input_n_est_un_essai():
