@@ -344,7 +344,7 @@ plus :
         coupure, c'est perdu. Cet ordre n'est pas négociable.
 
      b. VÉRIFIER que les SHA cités résolvent — sans quoi l'archivage est un
-        rituel (#551, question 4). Une commande, plus un geste (#568) :
+        rituel (#551, question 4). Une commande, et non plus un geste (#568) :
 
           python3 src/verifier_archivage_swh.py
 
@@ -356,14 +356,15 @@ plus :
         Trois verdicts, à ne pas confondre — c'est tout son intérêt :
           VÉRIFIÉ (0)     visite \`full\`, tout résout. La coupure peut suivre.
           MANQUANTS (1)   vrai trou d'archive : des SHA atteignables depuis
-                          une ref n'y sont pas. Relancer 2a, puis revérifier.
+                          une ref de l'origine n'y sont pas. Relancer 2a,
+                          puis revérifier.
           INDÉTERMINÉ (2) visite non conclue, quota épuisé, ou réseau : on n'a
                           RIEN établi. Réessayer. Une visite en cours n'est
                           PAS un échec d'archivage, et la traiter comme tel
                           ferait renoncer à une coupure légitime.
 
         Il signale à part les « citations orphelines » : des SHA atteignables
-        depuis aucune ref, venus d'une branche de PR récrite. L'origine ne les
+        depuis aucune ref de l'origine, venus d'une branche de PR récrite. L'origine ne les
         a jamais servis, donc SWH n'a jamais pu les voir, et relancer 2a n'y
         changera rien. Ils sont déjà irrésolvables pour un tiers : la coupure
         ne leur fait rien perdre, c'est la citation qu'il faut corriger.

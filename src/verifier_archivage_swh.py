@@ -21,9 +21,9 @@ la prose des fichiers `.md` suivis et des corps d'issues, et le tri manuel est
 le meilleur moyen d'en oublier : au 28/08/2026, **135 chaînes hexadécimales
 extraites de 42 fichiers `.md` et 260 corps d'issues, dont 47 résolvent en
 commit**. Le reste est fait d'horodatages, d'identifiants de run et de sommes
-de contrôle. (#551 relevait 124 pour 42, huit jours d'issues plus tôt : la
-population bouge, c'est précisément pourquoi on l'outille au lieu de la
-recopier.)
+de contrôle. (#551 relevait 124 pour 42 quelques heures plus tôt le même jour,
+sur `dc3ba83` et 253 issues. La population bouge d'un commit et d'une issue à
+l'autre : c'est précisément pourquoi on l'outille au lieu de la recopier.)
 
 **Trois états, pas deux.** Un SHA absent de l'archive et une visite qui n'a pas
 conclu ne se traitent pas pareil, et les confondre coûte dans les deux sens :
