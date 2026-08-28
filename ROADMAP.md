@@ -39,16 +39,22 @@ trancher séparément produirait deux modèles concurrents pour un même problè
 
 ## Known bugs
 
-- **Les deux budgets d'`extract-an` en mode `collect_interventions` sont calibrés sur
-  un pipeline disparu** (#546, mesuré sur les runs `33100214165` et `33110395663` du
-  27/08/2026). `--budget-interventions-secondes 240` **tronque déjà** : `jerome-guedj`
-  l'a épuisé à 247 s et a perdu une législature de questions officielles — perte
-  déclarée (#514), mais réelle. Et `timeout-minutes: 9` n'a plus que **~6 s de marge**
-  (`jean-luc-melenchon` à 8,9 min, sur deux runs consécutifs). Le calibrage du 20/08
-  provisionnait 90 s de recherche NosDéputés, retirée depuis (#529), et mesurait les
-  archives Syceron alors qu'elles rendaient **zéro** intervention (#510). Mesurer la
-  décomposition réelle d'un shard avant de reposer un chiffre. Voir
-  `technical_decisions.md#budgets-extract-an-perimes-546`.
+- **Chaque shard `extract-an` réindexe les archives Syceron 15 et 16 pour rien**
+  (dérivé de #546, mesuré sur le run `33110395663` du 27/08/2026) : **113 à 219 s par
+  shard**, le même travail refait par les 7 shards porteurs, soit 40 à 60 % de
+  l'horloge de collecte. La clé `public-data-cache-an-*-interv` a fait un *exact key
+  hit* sur une entrée écrite alors que ces deux archives étaient injoignables ;
+  `actions/cache` saute alors sa sauvegarde, et l'index reconstruit est jeté à chaque
+  fin de shard. C'est #505 sous une troisième forme — la clé porte le **mode**, jamais
+  la **complétude** du contenu. Tant que ça tient, aucune paire (budget, timeout) sous
+  le plafond de 10 min ne peut à la fois tout collecter et garantir l'écriture :
+  `jean-luc-melenchon` reste tronqué, perte déclarée. À ouvrir en issue propre. Voir
+  `technical_decisions.md#budgets-extract-an-remesures-546`.
+- **`meta.warnings[]` n'est pas un détecteur fiable de troncature** pour un candidat qui
+  porte aussi un profil UE (constaté sur `jean-luc-melenchon`, run `33110395663`) : la
+  fusion garde les interventions d'`extract-an` et le `meta` du profil minimal écrit
+  par `extract-ue-officiel`, avertissement de troncature compris. Le `::warning::` du
+  run, lui, est fiable. Voir `technical_decisions.md#budgets-extract-an-remesures-546`.
 - **Rien ne compare ce que la collecte rend à ce que la publication porte**, liste par
   liste (#545). Les trois garde-fous armés avant commit regardent ailleurs :
   `audit_diff_profils` surveille les pertes entre deux états publiés, pas deux étages

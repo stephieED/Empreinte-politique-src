@@ -4418,11 +4418,19 @@ def fetch_interventions_syceron(
     legislatures = sorted(SYCERON_AVAILABLE_LEGISLATURES, key=int, reverse=True)
     for rang, legislature in enumerate(legislatures):
         # #498 : même garde que pour les questions officielles — une législature
-        # Syceron, c'est une archive de 50 à 150 Mo (mesuré : 22 à 55 s quand
-        # data.assemblee-nationale.fr répond). Vérifié entre deux législatures,
-        # jamais au milieu de l'une d'elles. Les législatures sont parcourues de
-        # la plus récente à la plus ancienne : ce qui tombe en premier sous le
-        # budget est donc le plus ancien, pas le plus consulté.
+        # Syceron, c'est une archive de 50 à 150 Mo. Vérifié entre deux
+        # législatures, jamais au milieu de l'une d'elles. Les législatures sont
+        # parcourues de la plus récente à la plus ancienne : ce qui tombe en
+        # premier sous le budget est donc le plus ancien, pas le plus consulté.
+        #
+        # COÛT RÉEL, remesuré par #546 sur le run 33110395663 (27/08), 7 shards
+        # porteurs — le premier où les trois archives ont répondu. Les 22-55 s
+        # écrites ici jusque-là dataient de runs où Syceron rendait ZÉRO
+        # intervention (défaut #510) : téléchargement + indexation valent
+        # 34-55 s pour la 16e législature et **79-166 s pour la 15e**. C'est le
+        # poste le plus cher de la collecte, et cette garde ne peut rien pour
+        # lui : à l'horloge 41-63 s quand la 15e est engagée, le budget n'est
+        # jamais épuisé, donc jamais celle-ci qui est sautée.
         if budget_epuise(budget):
             budget_ignorer(budget, "législature(s) de débats Syceron", len(legislatures) - rang)
             break
