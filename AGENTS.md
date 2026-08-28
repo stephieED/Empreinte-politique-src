@@ -408,6 +408,31 @@ Guarded by `tests/test_audit_collecte_non_publiee.py`,
 `tests/test_ci_collecte_non_publiee.py` and `tests/test_generate_roster_candidats.py`.
 See `docs/technical_decisions.md#collecte-non-publiee`.
 
+**Each published list must carry what collection returned (#545)**: `merge-and-pivot`
+also runs `src/audit_collecte_vs_publie.py`, after both `--pivot-only` passes and before
+the commit. #511 reasons about **profiles**; this one reasons about the **contents of
+their lists** — a pivot that exists but lost its interventions is irreproachable to all
+three other guards, which is how #540 shipped (7 767 collected, 891 published, green run).
+It applies a committed **relations table** (`RELATIONS`), one entry per business list,
+because a naive "pivot must carry as much as raw" would raise two false positives out of
+five fields: `dossiers_legislatifs` is **renamed** to `textes_portes`
+(`normalize_profil.py:447`), and the pivot's `mandats` also receives the European mandates
+that raw files under `mandat_europeen.mandats_europeens`
+(`generate_all_profiles.py:779`, `:989`). Each published list therefore declares the raw
+**paths whose lengths it sums** — a named source, never a tolerated margin — which keeps
+the threshold at **0** everywhere. **Blocking**: a deficit (published < collected), and an
+unreadable profile. **Reported, not blocking**: a surplus (additive pivot merge keeps
+entries the day's collection did not return — AGENTS.md §3) and a raw list with **no
+declared relation**, which is the next source plugged in. Measured on the 476 profiles of
+`3104e37`: 0 deficit and 0 surplus across 2 380 (profile, relation) pairs; replayed on
+`deb28a7` it exits 1 and names the five profiles in deficit. Reading 4,3 Go of raw
+profiles without materialising one: an `object_pairs_hook` keeps only the table's keys,
+which takes the largest profile from 186,3 to 96,0 Mio — 58,7 s / 158,2 Mio for the whole
+corpus, a separate process. Fourth tolerance, still partitioned: `allow_publication_gaps`.
+Guarded by `tests/test_audit_collecte_vs_publie.py` and
+`tests/test_ci_collecte_vs_publie.py`.
+See `docs/technical_decisions.md#collecte-vs-publie-545`.
+
 **A progress file is not a profile — and `Path.glob` disagrees (#518, third incident)**:
 `pathlib.Path.glob("*.json")` **returns dotfiles**, unlike the `glob` module. Every
 inventory of `raw_data/profiles/` must therefore skip `name.startswith(".")` — the
