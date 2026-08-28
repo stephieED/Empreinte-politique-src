@@ -178,6 +178,10 @@
 #
 set -euo pipefail
 
+# La fenêtre vaut UN MOIS de données (#551, 28/08/2026) ; 30 en est la
+# conversion à une cadence d'un run par jour, pas la décision. Tenue égale à
+# `FENETRE_COMMITS_DONNEES` de src/audit_volumetrie_profils.py, qui porte le
+# raisonnement complet, par tests/test_borner_historique_donnees.py.
 FENETRE=30
 MODE=mesurer
 MOTIF="mise à jour automatique des données"
@@ -329,8 +333,32 @@ plus :
      qui n'existe plus.
 
   2. Archiver l'ancien historique AILLEURS, sinon les SHA cités dans
-     docs/technical_decisions.md et dans les issues cessent de résoudre :
-       git push <depot-archive> $TAG
+     docs/technical_decisions.md et dans les issues cessent de résoudre.
+     Archive de référence : Software Heritage (#551, question 4), gratuit,
+     public, sans plafond de taille annoncé, et où le SHA git EST
+     l'identifiant — une citation y reste vérifiable par un tiers.
+
+     a. Déclencher l'archivage (« Save Code Now ») :
+          https://archive.softwareheritage.org/save/
+        Ils archivent ce qui est atteignable AU MOMENT du passage : après la
+        coupure, c'est perdu. Cet ordre n'est pas négociable.
+
+     b. Attendre que la visite soit `full`, puis VÉRIFIER que les SHA cités
+        résolvent — sans quoi l'archivage est un rituel :
+          for sha in $(git log --format=%H); do
+            curl -sf -o /dev/null \
+              "https://archive.softwareheritage.org/api/1/revision/$sha/" \
+              || echo "MANQUANT $sha"
+          done
+        (API anonyme : 120 requêtes/heure.)
+
+     c. Facultatif, pour le confort — un miroir local ADDITIF, qui rend une
+        récupération immédiate là où le vault de SWH demande une cuisson :
+          git push /chemin/vers/archive.git $TAG
+        JAMAIS `git remote update` ni `--prune` dessus : un miroir qui se
+        synchronise supprime exactement ce qu'on lui demandait de garder.
+        Ce miroir n'est pas la sauvegarde — SWH l'est, et il survit au
+        matériel. C'est un raccourci, pas une sécurité.
 
   3. Pousser la branche bornée :
        git push --force-with-lease origin main-borne:main

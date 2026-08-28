@@ -71,8 +71,32 @@ SEUIL_PUSH_GO = 2.0
 SEUIL_DEPOT_RECOMMANDE_GO = 5.0
 
 # Fenêtre de commits de données au-delà de laquelle l'historique est borné
-# (#434, option D). Dimensionnée sur la latence de détection d'un incident, pas
-# sur un objectif de taille : voir `docs/technical_decisions.md#fenetre-historique-donnees`.
+# (#434, option D).
+#
+# **La fenêtre vaut UN MOIS de données** — arbitrage du 28/08/2026 (#551). Ce
+# n'est pas un objectif de taille, et ce n'est plus la latence de détection sur
+# laquelle #434 l'avait dimensionnée : c'est la profondeur de retour en arrière
+# qu'on veut garder sur les données publiées.
+#
+# 30 est la conversion, pas la décision. Mesuré le 28/08/2026 : 29 commits de
+# données en 28 jours, soit 1,04/jour ; et le `schedule: cron` de
+# generate-data.yml, quand il sera réactivé, vaut un run par jour. Un mois fait
+# donc ~30 commits dans les deux régimes.
+#
+# À recalculer si la cadence change — typiquement si les runs manuels restent
+# aussi fréquents qu'en août une fois le cron actif (2/jour ferait tomber la
+# fenêtre à quinze jours). Le step « Fenêtre de rétention » de
+# generate-data.yml affiche le compte à chaque run.
+#
+# Le COÛT de cette fenêtre, lui, ne se surveille pas à intervalle fixe (#551,
+# question 3) : mesurer la taille du dépôt coûte 1 min 52 s de temps réel et
+# 3 min 37 s de CPU, trop cher pour une alerte qui dirait « tout va bien » à
+# chaque run. Il se revérifie sur ÉVÉNEMENT — une décision qui change la taille
+# du corpus. Un seul est à l'horizon : la réouverture du Sénat (#528, +300
+# membres). Ce jour-là, relancer ce script hors CI et vérifier qu'un mois de
+# données tient toujours sous les 2 Go du critère de #429.
+#
+# Voir `docs/technical_decisions.md#fenetre-recalibrage-551`.
 FENETRE_COMMITS_DONNEES = 30
 
 # Nombre de runs récents sur lesquels la distribution du coût est calculée.

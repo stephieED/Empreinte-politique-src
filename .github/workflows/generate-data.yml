@@ -2913,6 +2913,61 @@ jobs:
       # Garde sur main : deploy-pages.yml publie le site de production. Un run
       # de génération lancé depuis une branche de travail ne doit jamais
       # publier — il committe sur sa branche, pas sur main.
+      # ── FENÊTRE DE RÉTENTION DE L'HISTORIQUE DE DONNÉES (#551) ───────────
+      #
+      # #434 a borné l'historique de données à une fenêtre de commits, et
+      # affirmait que « ce qui est automatisé, c'est la détection ». Le code
+      # existait — `src/audit_volumetrie_profils.py` sait dire si la fenêtre est
+      # contraignante — mais AUCUN workflow ne l'invoquait : la détection était
+      # outillée, pas armée (#551). Ce step l'arme.
+      #
+      # Il COMPTE, il ne borne pas. La réécriture d'historique reste manuelle et
+      # le restera : elle est irréversible pour tous les clones existants, et
+      # `scripts/borner_historique_donnees.sh` garantit par test
+      # (`test_le_script_ne_pousse_jamais`) qu'aucun script ne pousse à notre
+      # place. Ce step ne l'appelle donc jamais.
+      #
+      # Il n'appelle pas non plus `audit_volumetrie_profils.py --mesurer` :
+      # celui-ci clone le dépôt entier et le repacke deux fois — mesuré le
+      # 28/08/2026, 1 min 52 s de temps réel et 3 min 37 s de CPU pour ~434 Mo
+      # dans un temporaire. Un compteur de commits coûte une commande.
+      #
+      # La valeur de la fenêtre est LUE, jamais recopiée. Elle vit déjà à deux
+      # endroits (`FENETRE` du script de bornage, `FENETRE_COMMITS_DONNEES` de
+      # l'audit), dont un test verrouille l'égalité ; en écrire un troisième ici
+      # ferait répondre deux valeurs différentes à « la fenêtre est-elle
+      # contraignante ? ». Même raison pour le motif du commit.
+      - name: Fenêtre de rétention de l'historique de données (#551)
+        if: always()
+        run: |
+          set -euo pipefail
+          LU=$(python3 -c "import sys; sys.path.insert(0, 'src'); import audit_volumetrie_profils as a; print(a.FENETRE_COMMITS_DONNEES, a.MOTIF_COMMIT_DONNEES)")
+          FENETRE=${LU%% *}
+          MOTIF=${LU#* }
+          NB=$(git log --grep="$MOTIF" --oneline | wc -l)
+          RESTE=$(( FENETRE - NB ))
+
+          {
+            echo "### Fenêtre de rétention de l'historique (#551)"
+            echo ""
+            echo "| | |"
+            echo "|---|---:|"
+            echo "| Commits de données dans l'historique | ${NB} |"
+            echo "| Fenêtre (\`FENETRE_COMMITS_DONNEES\`) | ${FENETRE} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$NB" -ge "$FENETRE" ]]; then
+            echo "| État | **contraignante** |" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Borner est désormais la seule chose qui tienne le plateau. L'opération est **manuelle et irréversible pour tous les clones existants**, et elle exige d'archiver l'ancien historique **ailleurs** au préalable — sans quoi les SHA cités dans \`docs/technical_decisions.md\` et dans les issues cessent de résoudre. La procédure complète est dans \`docs/technical_decisions.md#fenetre-recalibrage-551\` ; ne pas la recopier ici." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Fenêtre de rétention atteinte : ${NB} commits de données pour une fenêtre de ${FENETRE}. Borner est une opération MANUELLE et irréversible, qui exige d'archiver l'ancien historique ailleurs au préalable — procédure dans docs/technical_decisions.md#fenetre-recalibrage-551."
+          elif [[ "$RESTE" -le 3 ]]; then
+            echo "| État | ${RESTE} commit(s) avant qu'elle morde |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Fenêtre de rétention : ${RESTE} commit(s) de données avant qu'elle devienne contraignante (${NB}/${FENETRE})."
+          else
+            echo "| État | non contraignante |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Déclencher le déploiement du site (données mises à jour)
         if: steps.commit.outputs.pushed == 'true' && github.ref == 'refs/heads/main'
         env:

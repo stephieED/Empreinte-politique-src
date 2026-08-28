@@ -1,7 +1,8 @@
 <a id="fenetre-recalibrage-551"></a>
 ## La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)
 
-**Aucun arbitrage n'est rendu ici.** Cette entrée mesure, projette et recommande.
+**Les quatre arbitrages sont rendus** (voir « Arbitrage rendu » dans chaque
+section, 28/08/2026).** Cette entrée mesure, projette et recommande.
 La valeur de la fenêtre, l'unité dans laquelle elle se compte, son déclenchement
 et la destination de l'archive restent à trancher. `FENETRE=30` n'a pas été
 changé.
@@ -227,6 +228,55 @@ question « la fenêtre est-elle contraignante ? » — `FENETRE=30` dans
 `scripts/borner_historique_donnees.sh` et `FENETRE_COMMITS_DONNEES = 30` dans
 `src/audit_volumetrie_profils.py`. Un test le verrouille désormais.
 
+#### Arbitrage rendu — 28/08/2026
+
+**La fenêtre vaut un mois de données. 30 en est la conversion, pas la décision.**
+
+La valeur ne change pas ; **sa justification, si**, et c'est le point.
+
+#434 avait dimensionné 30 sur une **latence de détection** — « cadence de pointe
+× période sans surveillance », une estimation de ce qui pourrait passer inaperçu.
+L'arbitrage la remplace par une question sur le produit : **jusqu'où veut-on
+pouvoir remonter dans les données publiées ?** Réponse : un mois.
+
+C'est un meilleur fondement pour trois raisons. Il se relit sans reconstituer un
+calcul ; il donne un critère de révision explicite (la cadence) ; et il ne
+dépend pas d'une hypothèse sur la surveillance, qui n'était vérifiable par
+personne.
+
+**La conversion, mesurée le 28/08/2026 sur `origin/main` :**
+
+| | |
+| --- | ---: |
+| Commits de données, 01/08 → 28/08 | **29 en 28 jours**, soit **1,04/jour** |
+| Jours distincts portant au moins un commit | 15 sur 28 |
+| Jour le plus chargé | 5 (18/08) |
+| `schedule: cron` de `generate-data.yml`, une fois réactivé | **1 run/jour** |
+
+Un mois fait donc **~30 commits dans les deux régimes** — le développement
+d'aujourd'hui, tout en `workflow_dispatch`, et la production de demain, cadencée
+par le cron. Que le chiffre soit inchangé n'est pas une coïncidence : le cron est
+quotidien.
+
+**Le plateau tient** : 490 à 660 Mo à 479 profils, 780 Mo à 1 Go extrapolés à
+752 membres — sous les 2 Go du critère de sortie récrit en #429. Il n'y a pas de
+conflit entre la profondeur voulue et le budget.
+
+**Condition de révision, nommée.** Le seul cas où 30 cesserait de valoir un mois
+est une cadence durablement supérieure à 1/jour — typiquement si les runs
+manuels restent aussi fréquents qu'en août **une fois le cron actif** : à 2/jour,
+la fenêtre ne couvrirait plus que quinze jours. Ça se voit sans effort, le step
+« Fenêtre de rétention de l'historique de données » affichant le compte à chaque
+run (question 2). Recalculer alors la conversion, pas la profondeur : c'est un
+mois qui est décidé, pas trente.
+
+**Ce que cet arbitrage ne dit pas** : ni l'unité dans laquelle la rétention se
+compte (question 3), ni la destination de l'archive (question 4). Un mois de
+profondeur ne vaut que si l'historique coupé est conservé quelque part — sans
+quoi c'est un mois de mémoire et rien avant.
+
+---
+
 ### Question 2 — borner automatiquement, ou rester manuel
 
 **Recommandation : la réécriture reste manuelle ; c'est la détection qui doit
@@ -263,6 +313,43 @@ Ce qui est proposé, dans l'ordre de coût croissant :
 2. **Rendre le franchissement visible là où on regarde** — le résumé de run,
    plutôt qu'une alerte de plus.
 3. **Ne jamais automatiser `--preparer` ni le push.**
+
+#### Arbitrage rendu — 28/08/2026
+
+**La détection est armée ; la réécriture reste manuelle.**
+
+Un step `Fenêtre de rétention de l'historique de données (#551)` est branché dans
+`merge-and-pivot`, après le commit de données — compter ailleurs que là où l'on
+committe, c'est compter un état qui n'est pas encore celui du dépôt. Il écrit
+dans le résumé de run, et émet un `::warning::` quand la fenêtre est atteinte,
+un `::notice::` à trois commits ou moins.
+
+Trois propriétés, chacune verrouillée par `tests/test_ci_fenetre_retention.py`
+et vérifiée mordante par mutation :
+
+1. **La valeur de la fenêtre est lue, jamais recopiée.** Le step importe
+   `FENETRE_COMMITS_DONNEES` et `MOTIF_COMMIT_DONNEES` depuis
+   `src/audit_volumetrie_profils.py`. Un test interdit que la valeur apparaisse
+   en dur dans le step : elle vit déjà à deux endroits tenus égaux par
+   `tests/test_borner_historique_donnees.py`, un troisième domicile ferait
+   répondre deux valeurs différentes à « la fenêtre est-elle contraignante ? ».
+2. **Aucun workflow n'invoque `borner_historique_donnees.sh`.** La réécriture
+   d'historique est irréversible pour tous les clones existants ; l'appeler
+   depuis la CI contournerait la garantie que le script tient par test
+   (`test_le_script_ne_pousse_jamais`).
+3. **Aucun workflow n'appelle `--mesurer`.** Cette mesure clone le dépôt entier
+   et le repacke deux fois — 1 min 52 s de temps réel et 3 min 37 s de CPU pour
+   ~434 Mo au 28/08/2026. Compter des commits coûte une commande.
+
+**Ce que le message ne fait pas** : il ne recopie pas la procédure de bornage,
+il renvoie à cette entrée. Une procédure irréversible écrite à deux endroits
+diverge, et c'est la version la moins relue qu'on suit sous pression.
+
+État au moment de l'armement : **29 commits de données pour une fenêtre de 30** —
+le step émet donc un `::notice::` dès son premier run, et un `::warning::` au
+suivant.
+
+---
 
 ### Question 3 — la rétention se compte-t-elle en commits ou en octets
 
@@ -305,6 +392,56 @@ D'où la forme proposée, **à deux bornes** :
 Quand les deux bornes se contredisent, il n'y a pas de formule : c'est
 l'arbitrage. Aujourd'hui elles ne se contredisent pas ; à 752 membres avec une
 marge de × 2,0, la question sera moins confortable.
+
+#### Arbitrage rendu — 28/08/2026
+
+**La rétention se compte en temps. Les commits en sont la conversion, les octets
+ne sont qu'un contrôle — et ce contrôle se déclenche sur un événement, jamais sur
+une horloge.**
+
+La question telle qu'elle était posée — commits *ou* octets — est en partie
+dissoute par l'arbitrage de la question 1 : la rétention ne se compte ni en
+commits ni en octets, elle se compte en **mois**. Les commits sont l'unité de
+coupure parce que c'est celle qui est déterministe ; les octets restent une
+grandeur à surveiller, pas à définir.
+
+**Pourquoi la coupure reste en commits**, indépendamment de cela :
+
+- **la dispersion s'effondre quand on mesure ce qui compte.** En pack isolé, le
+  rapport entre le commit le moins cher (0,1 Mo) et le plus cher (78,6 Mo) est de
+  **1 à 603** — l'argument massif en faveur des octets. En **coût marginal réel**,
+  les quatre commits de production coûtent 9,9 / 15,1 / 15,3 / 15,2 Mo : **1 à
+  1,5**. En régime permanent, une fenêtre en commits *est déjà* une bonne
+  approximation d'une fenêtre en octets ;
+- **une coupure en octets ne serait pas déterministe.** « Le (N+1)<sup>e</sup>
+  commit de données » se vérifie de tête et rend toujours le même point. « Le
+  premier commit qui fait passer le cumul sous X Mo » se déplace à chaque run.
+
+**Ce qui est écarté, et pourquoi.** Une alerte de taille automatique en CI coûte
+**1 min 52 s de temps réel et 3 min 37 s de CPU** par mesure — elle clone le dépôt
+entier et le repacke deux fois. C'est exactement ce que le step armé en question 2
+évite en comptant des commits. Une alerte à ce prix, qui dit « tout va bien » à
+chaque run, finit par n'être plus lue : on paierait trois minutes de CPU pour
+fabriquer du bruit.
+
+**Ce qui est retenu : la revérification déclenchée par un événement.** On remesure
+quand une décision change la taille du corpus, pas à intervalle fixe. Aujourd'hui
+la marge est de ×3 à ×4 (un mois pèse ~450 Mo contre 2 Go), et **un seul événement
+de ce type est à l'horizon** :
+
+| Événement | Effet attendu | Décision qui le porte |
+| --- | --- | --- |
+| Réouverture du Sénat | +300 membres, corpus × 1,6 | #528 |
+| Passage du roster à pleine échelle au-delà de 752 | proportionnel | — |
+| Doublement de la cadence de runs | fenêtre plus courte, pas plus lourde | question 1 |
+
+Le jour où l'un survient : relancer `src/audit_volumetrie_profils.py` (hors CI) et
+vérifier que la fenêtre d'un mois tient toujours sous les 2 Go du critère de #429.
+
+**Ce que cet arbitrage n'affranchit pas** : la profondeur d'un mois ne vaut que si
+l'historique coupé est archivé. C'est la question 4, et elle reste entière.
+
+---
 
 ### Question 4 — où va l'archive, et qui garantit qu'elle a tourné
 
@@ -383,6 +520,66 @@ vérifier n'est pas aidé par un disque qu'il n'a pas.
    (`git -C <archive> cat-file -t <sha>` = `commit`).
 4. **Jamais de tag d'archive sur `origin`** — n'importe quelle ref distante
    oubliée ré-épingle l'ancien historique et annule le gain.
+
+#### Arbitrage rendu — 28/08/2026
+
+**L'archive de référence est Software Heritage. Un miroir local est un confort,
+pas une sécurité.**
+
+**Pourquoi pas un second dépôt GitHub**, qui était la recommandation initiale de
+cette section. Une archive accumule tout ce qu'on coupe, indéfiniment : elle a
+donc la même croissance que le dépôt principal, sans le coût de checkout. À
+~450 Mo par mois depuis les 415 Mo mesurés le 28/08 :
+
+| | Taille projetée | |
+| --- | ---: | --- |
+| aujourd'hui | 0,4 Go | |
+| +6 mois | 3,0 Go | dépasse les 2 Go du critère de #429 |
+| **+12 mois** | **5,7 Go** | **dépasse les 5 Go déconseillés par GitHub** |
+| +24 mois | 11,0 Go | |
+
+Un dépôt d'archive GitHub franchirait le seuil recommandé **en un an**, et il
+faudrait le borner à son tour. On aurait résolu le problème en le recopiant.
+**Une archive qui grandit sans borne ne peut pas vivre sous un hébergeur qui
+borne.**
+
+**Ce que Software Heritage apporte, vérifié le 28/08/2026 par l'API :**
+
+- **le SHA git EST l'identifiant.** Une révision interrogée par son SHA rend le
+  même hash : `/api/1/revision/<sha>/`. Une citation comme « mesuré sur
+  `deb28a7` » reste donc vérifiable **par un tiers**, après la coupure ;
+- **aucun plafond de taille annoncé.** La seule limite exposée est un débit de
+  **120 requêtes/heure** en anonyme — une limite de lecture, pas de stockage. Et
+  ils archivent `torvalds/linux` et `chromium/chromium`, tous deux `full` au
+  27 et 24/08 : l'échelle de ce dépôt ne pose aucune question ;
+- **c'est une sauvegarde complète, pas seulement une preuve.** La route
+  `/api/1/vault/git-bare/` reconstruit un **dépôt git nu** depuis une révision
+  archivée — testée `status: done`, `fetch_url` servie. Après récupération,
+  `git log`, `git diff` et `audit_diff_profils --ref` fonctionnent normalement.
+
+**Ce qui n'a pas pu être vérifié** : leur page de politique n'est pas
+récupérable automatiquement (protection anti-robot). Il n'existe donc **pas de
+garantie écrite** d'absence de quota — seulement l'absence de quota annoncé dans
+l'API et la preuve par l'usage. Consigné comme tel, pas comme un fait établi.
+
+**Le miroir local, et son rôle exact.** Il ne sauve de rien que SWH ne sauve
+déjà : il rend la récupération *immédiate* là où le vault demande une cuisson
+asynchrone. C'est un raccourci, pas une sécurité — et il ne survit pas au
+matériel, contrairement à SWH. Coût mesuré : ~5,7 Go la première année sur
+131 Go libres au 28/08. À prendre si l'on veut, à laisser sans risque.
+
+**La règle qui l'annule s'il est mal fait** : un miroir doit être **additif
+seulement**. `git clone --mirror` suivi d'un `git remote update` **supprime** les
+refs disparues en amont — exactement ce que l'archive existe pour garder. On y
+pousse le tag avant chaque coupure ; on n'y synchronise jamais. Le mot « miroir »
+suggère précisément l'inverse de ce qu'il faut faire.
+
+**L'ordre, non négociable** : archiver, vérifier que les SHA cités résolvent,
+**puis** couper. Software Heritage archive ce qui est atteignable au moment de
+son passage ; après la coupure, c'est perdu. L'étape 2 de la procédure
+`--preparer` porte désormais ce déroulé.
+
+---
 
 ### Ce qui n'a pas pu être établi
 
