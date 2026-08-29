@@ -31,6 +31,7 @@ Volontairement sans PyYAML (absent de requirements.txt), comme les autres
 import os
 import pathlib
 import re
+import textwrap
 import subprocess
 
 WORKFLOWS = pathlib.Path(__file__).resolve().parents[1] / ".github" / "workflows"
@@ -96,31 +97,31 @@ def test_les_deux_axes_sont_deux_champs_distincts():
     réécriture de libellé ne le rendait lisible (#578).
 
     Axe 1 : ce qu'on fait des profils DÉJÀ écrits — trois états, donc un menu
-    et non un booléen. Axe 2 : si on en écrit de NOUVEAUX. Le cache est un
-    troisième champ, qui n'appartient à aucun des deux.
+    et non un booléen. Axe 2 : si on en écrit de NOUVEAUX — deux états, donc
+    une case. Le cache est un troisième champ, qui n'appartient à aucun des deux.
     """
     desc = _descriptions()
 
     assert _options("existing_profiles") == ["leave-as-is", "refresh", "overwrite"]
-    assert _options("roster_coverage") == ["current-members-only", "add-uncovered-members"]
+    assert "add_uncovered_members" in _inputs_declares()
+    assert "roster_coverage" not in _inputs_declares(), (
+        "l'axe 2 est une case depuis la refonte des libellés : un nom en "
+        "`_coverage` ne décrit plus ce que le champ vaut"
+    )
 
     # Le défaut est le mode SÛR : sur #562, le code était juste pendant deux
     # runs et la donnée restait fausse parce qu'il fallait le demander.
     contenu = GENERATE.read_text(encoding="utf-8")
-    bloc_axe1 = contenu[contenu.index("      existing_profiles:"):contenu.index("      roster_coverage:")]
+    bloc_axe1 = contenu[contenu.index("      existing_profiles:"):contenu.index("      cold_start:")]
     assert "default: refresh" in bloc_axe1, (
         "le mode le plus sûr doit être celui qu'on obtient sans rien cocher"
     )
 
     # Ce qui sépare les deux modes qui recollectent — fusionner ou remplacer —
-    # est ce qu'on lit à l'écran, pas ce qu'on devine.
-    axe1 = desc["existing_profiles"].lower()
-    assert "merges" in axe1, "`refresh` FUSIONNE : c'est ce qui le rend sûr"
-    assert "replaces" in axe1, "`overwrite` REMPLACE"
-    assert "drop" in axe1, (
-        "`overwrite` perd ce que la collecte du jour ne rend pas : c'est la "
-        "différence qui compte face au mode fusionnant"
-    )
+    # est porté par les VALEURS du menu, que GitHub affiche. Le libellé nomme
+    # le champ ; l'expliquer en prose est ce qui l'avait rendu illisible.
+    assert desc["existing_profiles"] == "Existing profiles treatment"
+    assert desc["add_uncovered_members"] == "Add uncovered members"
 
     # Les anciens champs ne doivent pas survivre : deux façons de demander la
     # même chose, c'est le défaut que #578 corrige.
@@ -170,7 +171,6 @@ def test_roster_limit_est_un_plafond_et_rien_d_autre():
     assert "default: 0" in bloc
 
     desc = _descriptions()["roster_limit"].lower()
-    assert "cap" in desc, "c'est un plafond, et le libellé doit le dire"
     assert "no cap" in desc, "`0` doit annoncer ce qu'il fait : pas de plafond"
 
 
@@ -201,7 +201,7 @@ def _script_decision_roster() -> str:
     return script
 
 
-def _flags(tmp_path, existing: str, coverage: str, limit: str = "0"):
+def _flags(tmp_path, existing: str, ajouter: bool, limit: str = "0"):
     # `OVERWRITE` est calculé par GHA (`inputs.existing_profiles == 'overwrite'`) :
     # la ligne est vérifiée juste en dessous pour que cette reproduction ne
     # puisse pas diverger en silence.
@@ -216,7 +216,7 @@ def _flags(tmp_path, existing: str, coverage: str, limit: str = "0"):
         env={
             "PATH": os.environ["PATH"],
             "EXISTING_PROFILES": existing,
-            "ROSTER_COVERAGE": coverage,
+            "ADD_UNCOVERED": "true" if ajouter else "false",
             "OVERWRITE": "true" if existing == "overwrite" else "false",
             "ROSTER_LIMIT": limit,
         },
@@ -239,19 +239,19 @@ def test_les_six_combinaisons_des_deux_axes_sont_atteignables(tmp_path):
     découpage, pas de vocabulaire, que #578 corrige.
     """
     attendu = {
-        ("leave-as-is", "add-uncovered-members"): ["--skip-existing"],
-        ("refresh", "add-uncovered-members"): [],
-        ("overwrite", "add-uncovered-members"): ["--no-merge"],
-        ("refresh", "current-members-only"): ["--refresh-existing"],
-        ("overwrite", "current-members-only"): ["--refresh-existing", "--no-merge"],
+        ("leave-as-is", True): ["--skip-existing"],
+        ("refresh", True): [],
+        ("overwrite", True): ["--no-merge"],
+        ("refresh", False): ["--refresh-existing"],
+        ("overwrite", False): ["--refresh-existing", "--no-merge"],
     }
     for (axe1, axe2), flags in attendu.items():
         obtenus, _ = _flags(tmp_path, axe1, axe2)
-        assert obtenus == flags, f"{axe1} × {axe2} → {obtenus}, attendu {flags}"
+        assert obtenus == flags, f"{axe1} × ajouter={axe2} → {obtenus}, attendu {flags}"
 
     # La sixième ne traite personne, et c'est une réponse, pas une panne : on
     # ne touche pas à l'existant et on n'étend pas la couverture.
-    obtenus, sortie = _flags(tmp_path, "leave-as-is", "current-members-only")
+    obtenus, sortie = _flags(tmp_path, "leave-as-is", False)
     assert obtenus == []
     assert "Aucun membre à traiter" in sortie
     # Manifeste VIDE et non absent : « ce job n'a écrit aucun profil » plutôt
@@ -267,15 +267,15 @@ def test_le_plafond_est_orthogonal_aux_deux_axes(tmp_path):
     rafraîchissait MOINS que `roster_limit=20`.
     """
     for axe1 in ("leave-as-is", "refresh", "overwrite"):
-        for axe2 in ("current-members-only", "add-uncovered-members"):
+        for axe2 in (False, True):
             # La case vide sort avant tout calcul de plafond : plafonner un
             # lot vide n'a pas de sens, et le dire coûterait un drapeau.
-            if (axe1, axe2) == ("leave-as-is", "current-members-only"):
+            if (axe1, axe2) == ("leave-as-is", False):
                 continue
             sans, _ = _flags(tmp_path, axe1, axe2, limit="0")
             avec, _ = _flags(tmp_path, axe1, axe2, limit="20")
             assert avec == sans + ["--limit", "20"], (
-                f"{axe1} × {axe2} : le plafond change la population "
+                f"{axe1} × ajouter={axe2} : le plafond change la population "
                 f"({sans} → {avec})"
             )
 
@@ -288,25 +288,42 @@ def test_les_deux_axes_sont_propages_par_la_relance():
     doublons que ce mode existe pour éviter (#440).
     """
     passes = set(re.findall(r"-f ([a-z_]+)=", RETRY.read_text(encoding="utf-8")))
-    for nom in ("existing_profiles", "roster_coverage", "cold_start", "roster_limit"):
+    for nom in ("existing_profiles", "add_uncovered_members", "cold_start", "roster_limit"):
         assert nom in passes, f"`{nom}` n'est pas propagé par la relance"
 
 
-def test_aucune_description_d_input_n_est_un_essai():
-    """Une description longue n'est pas lue dans un formulaire de lancement.
+def test_un_libelle_tient_sur_une_ligne():
+    """Un libellé est un TITRE, pas de la documentation.
 
-    Le seuil est délibérément permissif — il n'attrape que la sédimentation,
-    pas une phrase un peu longue. Le pourquoi appartient à
-    docs/technical_decisions.md, pas à l'écran de lancement.
+    Le test précédent comptait les MOTS, seuil 40. C'était un mauvais proxy :
+    des descriptions de trente mots l'ont passé deux fois, et se rendaient en
+    quatre ou cinq lignes dans le formulaire. Le défaut a été découvert les
+    deux fois par capture d'écran, pas par ce test.
+
+    Le vrai gabarit est la largeur de coupe de GitHub — 65 colonnes, relevée
+    sur le rendu réel le 29/08/2026. On mesure donc ce que la lectrice voit :
+    le nombre de LIGNES. Une seule, sinon c'est une phrase.
+
+    `scripts/rendu_formulaire.py` affiche le formulaire à ce gabarit : c'est
+    l'outil qui manquait pour voir le défaut sans capture d'écran.
     """
-    contenu = GENERATE.read_text(encoding="utf-8")
-    bloc = contenu[contenu.index("  workflow_dispatch:"):contenu.index("\n# Moindre privilège")]
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "rendu_formulaire", GENERATE.parents[2] / "scripts" / "rendu_formulaire.py")
+    rendu = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rendu)
+    LARGEUR, _inputs = rendu.LARGEUR, rendu._inputs
+
     trop_longues = []
-    for nom, desc in re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE):
-        mots = len(desc.split())
-        if mots > 40:
-            trop_longues.append(f"{nom} ({mots} mots)")
+    for nom, champ in _inputs(GENERATE).items():
+        lignes = textwrap.wrap(str(champ.get("description", "")), LARGEUR)
+        if len(lignes) > 1:
+            trop_longues.append(f"{nom} ({len(lignes)} lignes)")
+
     assert not trop_longues, (
-        "descriptions d'input trop longues pour un formulaire de lancement : "
-        f"{trop_longues}. Déplacer le rationale vers docs/technical_decisions.md."
+        "ces libellés se rendent sur plusieurs lignes dans le formulaire, "
+        f"donc ce sont des phrases : {trop_longues}. Nommer le champ, ne pas "
+        "l'expliquer — le pourquoi appartient à docs/technical_decisions.md. "
+        "Voir le rendu : python3 scripts/rendu_formulaire.py"
     )

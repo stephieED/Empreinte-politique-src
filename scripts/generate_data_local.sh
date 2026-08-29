@@ -23,7 +23,7 @@
 #                                     (défaut: refresh — recollecte l'existant
 #                                      en FUSIONNANT ; overwrite pose
 #                                      --no-merge, cf. #578)
-#   ROSTER_COVERAGE=current-members-only|add-uncovered-members
+#   ADD_UNCOVERED_MEMBERS=true|false
 #                                     (défaut: add-uncovered-members)
 #   COLD_START=false|true             (défaut: false — purge les caches de
 #                                      téléchargement, rien d'autre)
@@ -72,7 +72,7 @@ fi
 # Deux axes disjoints, mêmes noms et mêmes défauts qu'en CI (#578).
 # `FRESH_RUN` reste accepté comme alias historique de `COLD_START`.
 EXISTING_PROFILES="${EXISTING_PROFILES:-refresh}"
-ROSTER_COVERAGE="${ROSTER_COVERAGE:-add-uncovered-members}"
+ADD_UNCOVERED_MEMBERS="${ADD_UNCOVERED_MEMBERS:-true}"
 COLD_START="${COLD_START:-${FRESH_RUN:-false}}"
 THRESHOLD="${THRESHOLD:-3}"
 WORKERS="${WORKERS:-1}"
@@ -83,9 +83,9 @@ case "$EXISTING_PROFILES" in
   leave-as-is|refresh|overwrite) ;;
   *) echo "[!] EXISTING_PROFILES=$EXISTING_PROFILES inconnu (leave-as-is|refresh|overwrite)." >&2; exit 2 ;;
 esac
-case "$ROSTER_COVERAGE" in
-  current-members-only|add-uncovered-members) ;;
-  *) echo "[!] ROSTER_COVERAGE=$ROSTER_COVERAGE inconnu (current-members-only|add-uncovered-members)." >&2; exit 2 ;;
+case "$ADD_UNCOVERED_MEMBERS" in
+  true|false) ;;
+  *) echo "[!] ADD_UNCOVERED_MEMBERS=$ADD_UNCOVERED_MEMBERS inconnu (true|false)." >&2; exit 2 ;;
 esac
 
 if [ -f .venv/bin/activate ]; then
@@ -185,16 +185,16 @@ LIMIT_FLAG=()
 POP_FLAG=()
 SAUTER_ROSTER=false
 if [ "$EXISTING_PROFILES" = "leave-as-is" ]; then
-  if [ "$ROSTER_COVERAGE" = "current-members-only" ]; then
+  if [ "$ADD_UNCOVERED_MEMBERS" != "true" ]; then
     SAUTER_ROSTER=true
   else
     POP_FLAG=(--skip-existing)
   fi
-elif [ "$ROSTER_COVERAGE" = "current-members-only" ]; then
+elif [ "$ADD_UNCOVERED_MEMBERS" != "true" ]; then
   POP_FLAG=(--refresh-existing)
 fi
 if [ "$SAUTER_ROSTER" = "true" ]; then
-  echo "Aucun membre à traiter : EXISTING_PROFILES=leave-as-is et ROSTER_COVERAGE=current-members-only."
+  echo "Aucun membre à traiter : EXISTING_PROFILES=leave-as-is et ADD_UNCOVERED_MEMBERS=false."
 else
 python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
