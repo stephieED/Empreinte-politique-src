@@ -56,6 +56,45 @@ dessus : couper n'aggrave rien, et un verdict rouge permanent finirait par ne
 plus être lu. Ce qui bloque, c'est un SHA atteignable et pourtant absent de
 l'archive — celui-là, la coupure le perdrait vraiment.
 
+**Le périmètre suit la coupure, quand on la donne** (#575, quatrième cas de la nomenclature).
+Vérifier TOUS les SHA cités alors que seuls les ancêtres du point de coupure
+sont à risque produit un blocage presque systématique : Software Heritage
+repasse tous les ~11 jours, donc tout commit fusionné depuis sa dernière visite
+paraît « manquant » sans rien risquer. Mesuré le 28/08/2026 sur le banc de
+répétition de #569, fenêtre 5 : **38 SHA cités, 28 perdus par la coupure et 10
+conservés** — et le script a bloqué sur un des 10 conservés, c'est-à-dire pour
+une raison qui n'existait pas. C'est le raisonnement des orphelines appliqué à
+un autre axe, et personne ne l'avait vu parce que le script n'avait jamais
+tourné contre une coupure réelle.
+
+  CONSERVÉ PAR LA COUPURE   cité, non ancêtre du point de coupure. Il n'est pas
+                            interrogé et il ne bloque JAMAIS : après la coupure,
+                            le dépôt en reste la copie de référence.
+
+La nuance à ne pas perdre : ces SHA **tomberont sous une coupure future**, et
+l'archive les couvrira d'ici là — SWH repasse bien avant la prochaine coupure.
+Ce n'est donc pas « ils n'ont pas besoin d'archive », c'est « **pas pour cette
+coupure-ci** ». La sortie le dit ainsi, sinon on croira l'archive facultative.
+
+**Sans point de coupure, le périmètre reste TOUT — et la sortie le dit.** Une
+vérification sans coupure connue est un **audit d'archive**, pas un feu vert de
+coupure : les deux usages sont légitimes, ils ne rendent pas le même verdict.
+
+**L'origine est celle du dépôt, plus celle du code** (#575, second défaut).
+Lancé le 28/08/2026 sur un banc dont le remote est autre, le script interrogeait
+l'archive du dépôt RÉEL sans le signaler, et rendait un verdict confiant sur la
+mauvaise origine. Il n'échouait pas — c'est pire : un fork, un miroir, un dépôt
+renommé ou un clone de travail obtenaient un « VÉRIFIÉ » qui ne parlait pas
+d'eux, et c'est précisément dans ces situations qu'on lance une vérification.
+L'origine est maintenant dérivée de `git remote get-url origin`,
+`ORIGINE_PAR_DEFAUT` n'en est plus que le repli — **annoncé quand il
+s'applique** — et la provenance figure dans la sortie à côté du snapshot.
+
+Les formes sont **normalisées** avant interrogation : `git@github.com:o/r.git`,
+`ssh://git@github.com/o/r` et `https://github.com/o/r/` désignent la même
+origine pour Software Heritage, pas pour une comparaison de chaînes. Sans ça,
+la correction déplacerait le défaut au lieu de le corriger.
+
 **Quota.** L'API anonyme de Software Heritage limite la route
 `/api/1/revision/` à **120 requêtes/heure** (relevé le 28/08/2026 dans
 l'en-tête `X-RateLimit-Limit`). Le script lit `X-RateLimit-Remaining` et
@@ -68,11 +107,14 @@ d'une heure sans l'annoncer.
 lit, il interroge, il rend un verdict.
 
 Usage :
-    python3 src/verifier_archivage_swh.py
+    python3 src/verifier_archivage_swh.py                      # AUDIT d'archive
+    python3 src/verifier_archivage_swh.py --fenetre 30         # feu vert de coupure
+    python3 src/verifier_archivage_swh.py --coupure de23b62    # idem, point explicite
     python3 src/verifier_archivage_swh.py --sans-issues        # .md seulement
     python3 src/verifier_archivage_swh.py --json audit/swh.json
 
-Voir `docs/technical_decisions.md#fenetre-recalibrage-551`, question 4.
+Voir `docs/technical_decisions.md#fenetre-recalibrage-551`, question 4, et
+`docs/technical_decisions.md#perimetre-coupure-575`.
 """
 
 import argparse
@@ -85,6 +127,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
+from audit_volumetrie_profils import MOTIF_COMMIT_DONNEES
+
+# REPLI, et rien de plus (#575). L'origine interrogée est dérivée de
+# `git remote get-url origin` ; cette valeur ne sert que lorsqu'il n'y a aucun
+# remote, et la sortie l'annonce alors explicitement. Elle était le défaut
+# silencieux jusqu'au 28/08/2026, et faisait rendre un verdict confiant sur
+# l'archive d'un autre dépôt que celui qu'on tenait sous la main.
 ORIGINE_PAR_DEFAUT = "https://github.com/stephieED/Empreinte-politique-src"
 BASE_SWH = "https://archive.softwareheritage.org/api/1"
 
@@ -99,6 +148,13 @@ MOTIF_SHA = re.compile(r"(?<![0-9A-Za-z])([0-9a-f]{7,40})(?![0-9A-Za-z])")
 # le reste. Ne s'applique qu'aux LIEUX de citation d'un même SHA, jamais aux
 # SHA manquants eux-mêmes — ceux-là sont tous nommés, c'est l'objet du script.
 MAX_LIEUX_AFFICHES = 4
+
+# Même raison, pour les SHA conservés par la coupure. Ceux-là ne sont
+# ACTIONNABLES par personne — ils ne demandent rien — et une fenêtre non
+# contraignante les met tous dans ce cas : au 28/08/2026, ce serait les 47 SHA
+# cités du dépôt. Les compter et en nommer quelques-uns suffit ; le rapport
+# `--json` porte la liste entière pour qui la veut.
+MAX_CONSERVES_AFFICHES = 10
 
 
 # ── Extraction ───────────────────────────────────────────────────────────────
@@ -120,7 +176,8 @@ class CommitCite:
     sha: str
     lieux: list[str] = field(default_factory=list)
     date: Optional[str] = None
-    etat: str = "non_verifie"  # presente | absente | indetermine
+    # presente | absente | indetermine | conserve | non_verifie
+    etat: str = "non_verifie"
     detail: str = ""
     # Atteignable depuis une ref du clone local ? Calculé PARESSEUSEMENT, et
     # seulement pour les SHA absents de l'archive : c'est la seule question à
@@ -139,6 +196,17 @@ class CommitCite:
         atteignable depuis aucune ref, donc jamais servi par l'origine, donc
         jamais archivable."""
         return self.etat == "absente" and self.atteignable is False
+
+    @property
+    def conserve(self) -> bool:
+        """Hors du périmètre de CETTE coupure-ci (#575) : le commit n'est pas
+        ancêtre du point de coupure, donc le dépôt en reste la copie de
+        référence après l'opération. Il n'est pas interrogé, et il ne bloque
+        jamais.
+
+        À ne pas lire comme « pas besoin d'archive » : il tombera sous une
+        coupure FUTURE, et Software Heritage repasse bien avant."""
+        return self.etat == "conserve"
 
 
 def extraire_chaines(texte: str) -> list[str]:
@@ -319,6 +387,227 @@ def _refs_contenant_git(racine: str) -> Callable[[str], Optional[str]]:
         return sortie or None
 
     return executer
+
+
+# ── Origine : celle du dépôt, pas celle du code (#575) ───────────────────────
+
+# Les schémas qui désignent le même dépôt qu'un `https://`. Software Heritage
+# indexe une origine PAR SON URL : deux écritures de la même origine sont deux
+# origines pour une comparaison de chaînes, et une seule pour l'archive.
+SCHEMAS_EQUIVALENTS_A_HTTPS = ("ssh", "git", "git+ssh", "git+https")
+
+# La forme « scp » de git — `git@github.com:stephieED/x.git` — n'a ni schéma ni
+# `//`. Le `(?!//)` écarte `hote://…`, qui est un schéma mal écrit, pas un
+# chemin scp.
+MOTIF_ORIGINE_SCP = re.compile(r"^(?:[^@/]+@)?([^:/]+):(?!//)(.+)$")
+
+
+def normaliser_origine(url: Optional[str]) -> Optional[str]:
+    """Ramène les écritures d'une même origine à une seule.
+
+    `git@github.com:o/r.git`, `ssh://git@github.com/o/r`, `https://github.com/o/r/`
+    et `https://github.com/o/r.git` désignent le même dépôt pour Software
+    Heritage. Sans cette normalisation, dériver l'origine du remote
+    DÉPLACERAIT le défaut de #575 au lieu de le corriger : un clone en SSH
+    interrogerait une origine que l'archive ne connaît pas, et rendrait
+    « origine inconnue » sur un dépôt parfaitement archivé.
+    """
+    if not url:
+        return None
+    brut = url.strip()
+    if not brut:
+        return None
+    if "://" in brut:
+        schema, _, reste = brut.partition("://")
+        schema = schema.lower()
+        if schema in SCHEMAS_EQUIVALENTS_A_HTTPS:
+            schema = "https"
+    else:
+        scp = MOTIF_ORIGINE_SCP.match(brut)
+        if not scp:
+            # Un chemin local (`/srv/miroir.git`) : rien à normaliser au-delà
+            # du suffixe. Ce n'est pas une origine que SWH connaîtra, et c'est
+            # justement ce qu'il faut donner à voir dans la sortie.
+            return brut.rstrip("/").removesuffix(".git").rstrip("/") or None
+        schema, reste = "https", f"{scp.group(1)}/{scp.group(2)}"
+    hote, _, chemin = reste.partition("/")
+    hote = hote.rpartition("@")[2].lower()  # retire un `utilisateur[:mdp]@`
+    if schema == "https" and hote.endswith(":443"):
+        hote = hote.removesuffix(":443")
+    if schema == "http" and hote.endswith(":80"):
+        hote = hote.removesuffix(":80")
+    chemin = chemin.rstrip("/").removesuffix(".git").rstrip("/")
+    return f"{schema}://{hote}/{chemin}" if chemin else f"{schema}://{hote}"
+
+
+def _remote_git(racine: str) -> Callable[[], Optional[str]]:
+    """L'URL du remote `origin`, ou `None` — un dépôt tout neuf, un clone sans
+    remote, un banc monté par `git init` n'en ont pas."""
+
+    def executer() -> Optional[str]:
+        try:
+            sortie = subprocess.run(
+                ["git", "-C", racine, "remote", "get-url", "origin"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        except (subprocess.CalledProcessError, OSError):
+            return None
+        return sortie or None
+
+    return executer
+
+
+def resoudre_origine(
+    explicite: Optional[str], remote: Callable[[], Optional[str]]
+) -> tuple[str, str]:
+    """Rend `(origine interrogée, provenance)`.
+
+    La provenance est faite pour être IMPRIMÉE, et c'est elle qui manquait le
+    28/08/2026 : le script interrogeait l'archive du dépôt réel depuis un banc
+    de répétition, et rien dans sa sortie ne permettait de s'en apercevoir.
+    """
+    if explicite:
+        return (normaliser_origine(explicite) or explicite), "donnée par `--origine`"
+    brut = remote()
+    derivee = normaliser_origine(brut)
+    if derivee:
+        provenance = "dérivée de `git remote get-url origin`"
+        if brut and brut.strip() != derivee:
+            provenance += f" — {brut.strip()}, normalisée"
+        return derivee, provenance
+    return (
+        normaliser_origine(ORIGINE_PAR_DEFAUT) or ORIGINE_PAR_DEFAUT,
+        "REPLI sur ORIGINE_PAR_DEFAUT — aucun remote `origin` dans ce dépôt : "
+        "vérifier que c'est bien l'origine qu'on veut interroger",
+    )
+
+
+# ── Point de coupure (#575) ──────────────────────────────────────────────────
+
+
+@dataclass
+class Coupure:
+    """Le point de coupure que `borner_historique_donnees.sh` s'apprête à faire.
+
+    `sha is None` veut dire « fenêtre demandée mais NON CONTRAIGNANTE » : il n'y
+    a pas de coupure, donc rien à perdre. C'est autre chose qu'aucune coupure
+    demandée (`coupure is None`), qui laisse le script à son mode d'audit et
+    vérifie tout.
+    """
+
+    sha: Optional[str]
+    demande: str
+    fenetre: Optional[int] = None
+
+    @property
+    def contraignante(self) -> bool:
+        return self.sha is not None
+
+    @property
+    def court(self) -> str:
+        return self.sha[:7] if self.sha else "aucune"
+
+
+def _coupure_par_fenetre_git(racine: str) -> Callable[[int], Optional[str]]:
+    """Le MÊME calcul que la fonction `_coupure()` de
+    `scripts/borner_historique_donnees.sh` : les commits de données de `main`,
+    du plus récent au plus ancien, et le (N+1)-ième est le point de coupure.
+
+    Le motif vient d'`audit_volumetrie_profils.MOTIF_COMMIT_DONNEES`, pas d'une
+    copie locale : vérifier une coupure différente de celle qui sera faite
+    serait exactement le défaut que #575 corrige, avec un pas de côté de plus.
+    """
+
+    def executer(fenetre: int) -> Optional[str]:
+        try:
+            sortie = subprocess.run(
+                ["git", "-C", racine, "log", "--format=%H",
+                 f"--grep={MOTIF_COMMIT_DONNEES}", "main"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.split()
+        except (subprocess.CalledProcessError, OSError):
+            return None
+        return sortie[fenetre] if len(sortie) > fenetre else None
+
+    return executer
+
+
+def _est_ancetre_git(racine: str) -> Callable[[str, str], bool]:
+    """`git merge-base --is-ancestor` : 0 si oui, 1 si non. C'est la question
+    exacte — « la coupure emporterait-elle ce commit ? »"""
+
+    def executer(sha: str, coupure: str) -> bool:
+        return subprocess.run(
+            ["git", "-C", racine, "merge-base", "--is-ancestor", sha, coupure],
+            capture_output=True,
+            text=True,
+        ).returncode == 0
+
+    return executer
+
+
+def _resoudre_ref_git(racine: str) -> Callable[[str], Optional[str]]:
+    def executer(reference: str) -> Optional[str]:
+        try:
+            return subprocess.run(
+                ["git", "-C", racine, "rev-parse", "--verify",
+                 f"{reference}^{{commit}}"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip() or None
+        except (subprocess.CalledProcessError, OSError):
+            return None
+
+    return executer
+
+
+def resoudre_coupure(
+    fenetre: Optional[int],
+    commit: Optional[str],
+    par_fenetre: Callable[[int], Optional[str]],
+    resoudre_ref: Callable[[str], Optional[str]],
+) -> Optional[Coupure]:
+    """La coupure demandée, ou `None` si aucune ne l'a été (mode audit).
+
+    Lève `ValueError` si la coupure demandée ne résout pas. Refuser de conclure
+    vaut mieux que vérifier un autre périmètre que celui qu'on croit — c'est la
+    forme même du défaut corrigé ici.
+    """
+    if commit:
+        sha = resoudre_ref(commit)
+        if not sha:
+            raise ValueError(
+                f"--coupure {commit} ne résout en aucun commit de ce dépôt : "
+                "rien n'a été vérifié."
+            )
+        return Coupure(sha=sha, demande=f"--coupure {commit}")
+    if fenetre is None:
+        return None
+    return Coupure(
+        sha=par_fenetre(fenetre), demande=f"--fenetre {fenetre}", fenetre=fenetre
+    )
+
+
+def marquer_conserves(
+    commits: Iterable[CommitCite],
+    coupure: Optional[Coupure],
+    est_ancetre: Callable[[str, str], bool],
+) -> None:
+    """Sort du périmètre les SHA que la coupure NE perdrait pas.
+
+    Sans coupure connue, ne marque rien : le périmètre reste tout, et c'est le
+    rapport qui dit que c'est un audit et non un feu vert.
+    """
+    if coupure is None:
+        return
+    for commit in commits:
+        if not coupure.contraignante or not est_ancetre(commit.sha, coupure.sha):
+            commit.etat = "conserve"
 
 
 def fichiers_md_suivis(racine: str) -> list[str]:
@@ -544,12 +833,84 @@ def interroger_visite(
 VERIFIE, MANQUANTS, INDETERMINE = 0, 1, 2
 
 
-def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[int, str]:
-    """Le cœur de la distinction demandée par #568.
+def _population_chiffree(n: int, coupure: Optional["Coupure"]) -> str:
+    """Nommer la population de chaque chiffre : « 3 sur 28 » ne dit rien tant
+    qu'on ne sait pas de quels 28 il s'agit — et depuis #575, ces 28 ne sont
+    plus les SHA cités mais les SHA cités que la coupure emporterait."""
+    if coupure is not None and coupure.contraignante:
+        return (
+            f"{_accord(n, 'SHA cité', 'SHA cités')} ancêtre"
+            f"{'s' if abs(n) > 1 else ''} de la coupure {coupure.court}"
+        )
+    return _accord(n, "SHA cité", "SHA cités")
+
+
+def _reserve_orphelines(orphelines: list[CommitCite]) -> str:
+    if not orphelines:
+        return ""
+    return (
+        f" ({_accord(len(orphelines), 'citation orpheline signalée à part', 'citations orphelines signalées à part')} : "
+        "ce qui n'est atteignable depuis aucune ref de l'origine n'a jamais pu "
+        "être archivé, et est déjà irrésolvable pour un tiers.)"
+    )
+
+
+def _reserve_conserves(
+    conserves: list[CommitCite], coupure: Optional["Coupure"]
+) -> str:
+    """La nuance de #575, à ne pas perdre : « pas pour cette coupure-ci » n'est
+    pas « pas besoin d'archive ». Sans cette phrase, on croira l'archive
+    facultative pour ces SHA — alors qu'ils tomberont sous une coupure future.
+    """
+    if not conserves or coupure is None:
+        return ""
+    if not coupure.contraignante:
+        return (
+            f" ({_accord(len(conserves), 'SHA cité', 'SHA cités')} hors périmètre : "
+            f"la fenêtre demandée ({coupure.demande}) n'est PAS contraignante, "
+            "il n'y a donc pas de coupure et rien à perdre. Ces SHA tomberont "
+            "sous une coupure FUTURE : ce n'est pas « pas besoin d'archive », "
+            "c'est « pas pour cette coupure-ci ».)"
+        )
+    pluriel = abs(len(conserves)) > 1
+    return (
+        f" ({_accord(len(conserves), 'SHA cité conservé', 'SHA cités conservés')} "
+        f"par la coupure {coupure.court}, non interrogé{'s' if pluriel else ''} : "
+        "après l'opération, le dépôt en reste la copie de référence. "
+        + ("Ils tomberont" if pluriel else "Il tombera")
+        + " sous une coupure FUTURE, et l'archive "
+        + ("les" if pluriel else "le")
+        + " couvrira d'ici là — ce n'est pas « pas besoin d'archive », c'est "
+        "« pas pour cette coupure-ci ».)"
+    )
+
+
+def _reserve_perimetre(coupure: Optional["Coupure"]) -> str:
+    """Sans point de coupure, le comportement reste celui d'avant #575 — mais
+    la sortie dit désormais que le périmètre est plus large que le risque."""
+    if coupure is not None:
+        return ""
+    return (
+        " (AUDIT D'ARCHIVE, pas un feu vert de coupure : aucun point de coupure "
+        "n'a été donné, le périmètre vérifié est donc TOUS les SHA cités — plus "
+        "large que la population à risque, qui est celle des ancêtres de la "
+        "coupure. Relancer avec `--fenetre N` ou `--coupure <commit>` pour "
+        "obtenir un feu vert.)"
+    )
+
+
+def rendre_verdict(
+    visite: dict[str, Any],
+    commits: list[CommitCite],
+    coupure: Optional["Coupure"] = None,
+) -> tuple[int, str]:
+    """Le cœur de la distinction demandée par #568, sur le périmètre demandé
+    par #575.
 
     Une visite en cours n'est pas un échec d'archivage. Un SHA absent d'une
-    visite `full` en est un. Les confondre ferait renoncer à une coupure
-    légitime — ou l'autoriser à tort.
+    visite `full` en est un — À CONDITION que la coupure le perde. Un SHA
+    conservé par la coupure ne bloque jamais : c'est le blocage constaté le
+    28/08/2026, sur un des 10 SHA que la coupure gardait.
     """
     if not commits:
         return INDETERMINE, (
@@ -559,35 +920,46 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[i
 
     # Un absent atteignable depuis une ref est un vrai trou d'archive : la
     # coupure le perdrait. Un absent orphelin est déjà perdu aujourd'hui, et
-    # couper n'y change rien — il ne bloque donc pas, il se signale.
-    absents = [c for c in commits if c.etat == "absente" and not c.orpheline]
-    orphelines = [c for c in commits if c.orpheline]
-    indetermines = [c for c in commits if c.etat in ("indetermine", "non_verifie")]
+    # couper n'y change rien — il ne bloque donc pas, il se signale. Un
+    # conservé n'est même pas interrogé : la coupure ne le perd pas.
+    conserves = [c for c in commits if c.conserve]
+    a_risque = [c for c in commits if not c.conserve]
+    absents = [c for c in a_risque if c.etat == "absente" and not c.orpheline]
+    orphelines = [c for c in a_risque if c.orpheline]
+    indetermines = [c for c in a_risque if c.etat in ("indetermine", "non_verifie")]
     visite_conclue = visite.get("connue") and visite.get("statut") == "full"
     reserve = (
-        f" ({_accord(len(orphelines), 'citation orpheline signalée à part', 'citations orphelines signalées à part')} : "
-        "ce qui n'est atteignable depuis aucune ref de l'origine n'a jamais pu "
-        "être archivé, et est déjà irrésolvable pour un tiers.)"
-        if orphelines
-        else ""
+        _reserve_orphelines(orphelines)
+        + _reserve_conserves(conserves, coupure)
+        + _reserve_perimetre(coupure)
     )
-    archivables = len(commits) - len(orphelines)
+    archivables = len(a_risque) - len(orphelines)
 
+    if not a_risque:
+        return VERIFIE, (
+            f"Aucun des {_accord(len(commits), 'SHA cité')} ne tombe sous la "
+            "coupure : elle ne perdrait aucune citation, et il n'y avait rien "
+            "à interroger." + reserve
+        )
     if indetermines:
+        un_seul = len(indetermines) == 1
         return INDETERMINE, (
-            f"{_accord(len(indetermines), 'SHA')} sur {len(commits)} n'ont pas "
-            "pu être interrogés (quota, réseau, ou réponse inattendue). On n'a "
-            "rien établi : réessayer plus tard. NE PAS COUPER."
+            f"{len(indetermines)} des {_population_chiffree(len(a_risque), coupure)} "
+            + ("n'a pas pu être interrogé" if un_seul else "n'ont pas pu être interrogés")
+            + " (quota, réseau, ou réponse inattendue). On n'a rien établi : "
+            "réessayer plus tard. NE PAS COUPER."
         )
     if not visite_conclue:
         statut = visite.get("statut") or visite.get("erreur") or "inconnu"
         if absents:
+            un_seul = len(absents) == 1
             return INDETERMINE, (
                 f"La visite n'est pas `full` (statut : {statut}) et "
-                f"{_accord(len(absents), 'SHA')} sur {len(commits)} n'y "
-                "résolvent pas encore. Ce n'est PAS un échec d'archivage : "
-                "l'ingestion peut être en cours. Relancer cette vérification "
-                "plus tard. NE PAS COUPER."
+                f"{len(absents)} des "
+                f"{_population_chiffree(len(a_risque), coupure)} "
+                + ("n'y résout pas encore" if un_seul else "n'y résolvent pas encore")
+                + ". Ce n'est PAS un échec d'archivage : l'ingestion peut être "
+                "en cours. Relancer cette vérification plus tard. NE PAS COUPER."
             )
         return VERIFIE, (
             f"Les {_accord(archivables, 'SHA cité archivable', 'SHA cités archivables')} "
@@ -598,7 +970,8 @@ def rendre_verdict(visite: dict[str, Any], commits: list[CommitCite]) -> tuple[i
     if absents:
         un_seul = len(absents) == 1
         return MANQUANTS, (
-            f"{_accord(len(absents), 'SHA cité')} sur {len(commits)} "
+            f"{len(absents)} des "
+            f"{_population_chiffree(len(a_risque), coupure)} "
             + ("ne résout pas alors qu'il est atteignable"
                if un_seul else "ne résolvent pas alors qu'ils sont atteignables")
             + " depuis une ref de l'origine, et la visite est `full` : "
@@ -638,12 +1011,14 @@ def formater_rapport(
     nb_issues: int,
     quota: Quota,
     verdict: tuple[int, str],
+    provenance: str = "",
+    coupure: Optional["Coupure"] = None,
 ) -> str:
     code, message = verdict
     etiquette = {VERIFIE: "VÉRIFIÉ", MANQUANTS: "MANQUANTS", INDETERMINE: "INDÉTERMINÉ"}[code]
     lignes = [
-        "Vérification d'archivage Software Heritage (#568)",
-        f"  origine : {origine}",
+        "Vérification d'archivage Software Heritage (#568, #575)",
+        f"  origine : {origine}" + (f"\n            ({provenance})" if provenance else ""),
     ]
 
     if visite.get("connue"):
@@ -655,10 +1030,32 @@ def formater_rapport(
     else:
         lignes.append(f"  visite : NON ÉTABLIE — {visite.get('erreur')}")
 
-    presents = sum(1 for c in commits if c.etat == "presente")
-    orphelines = [c for c in commits if c.orpheline]
-    absents = [c for c in commits if c.etat == "absente" and not c.orpheline]
-    indetermines = [c for c in commits if c.etat in ("indetermine", "non_verifie")]
+    conserves = [c for c in commits if c.conserve]
+    a_risque = [c for c in commits if not c.conserve]
+    presents = sum(1 for c in a_risque if c.etat == "presente")
+    orphelines = [c for c in a_risque if c.orpheline]
+    absents = [c for c in a_risque if c.etat == "absente" and not c.orpheline]
+    indetermines = [c for c in a_risque if c.etat in ("indetermine", "non_verifie")]
+
+    # Le périmètre, avant les chiffres : c'est lui qui dit ce que le verdict
+    # engage. Le lire après les totaux, c'est le lire trop tard.
+    if coupure is None:
+        lignes += [
+            "  périmètre : TOUS les SHA cités — AUDIT D'ARCHIVE, pas un feu vert",
+            "              de coupure. La population à RISQUE est celle des ancêtres",
+            "              du point de coupure : `--fenetre N` ou `--coupure <commit>`.",
+        ]
+    elif coupure.contraignante:
+        lignes.append(
+            f"  périmètre : coupure {coupure.court} ({coupure.demande}) — "
+            f"{_accord(len(a_risque), 'SHA cité', 'SHA cités')} sous la coupure, "
+            f"{_accord(len(conserves), 'conservé', 'conservés')}."
+        )
+    else:
+        lignes.append(
+            f"  périmètre : fenêtre NON contraignante ({coupure.demande}) — aucune "
+            f"coupure, les {len(commits)} SHA cités sont tous conservés."
+        )
 
     lignes += [
         "",
@@ -670,8 +1067,15 @@ def formater_rapport(
         f"               dont {len(commits)} "
         + ("résout" if len(commits) <= 1 else "résolvent")
         + " en commit du dépôt (`git cat-file -t` == commit).",
-        f"  résultat   : {presents} dans l'archive · {len(absents)} manquant(s) "
-        f"· {len(orphelines)} orpheline(s) · {len(indetermines)} indéterminé(s).",
+        f"  résultat   : sur les {len(a_risque)} SHA du périmètre, {presents} dans "
+        f"l'archive · {len(absents)} manquant(s) · {len(orphelines)} orpheline(s) "
+        f"· {len(indetermines)} indéterminé(s)"
+        + (
+            f" ; {_accord(len(conserves), 'conservé', 'conservés')} hors "
+            "périmètre."
+            if conserves
+            else "."
+        ),
         f"  quota      : {_accord(quota.requetes, 'requête émise', 'requêtes émises')}"
         + (
             f", {quota.restant} restantes sur {quota.limite} par heure"
@@ -705,6 +1109,25 @@ def formater_rapport(
             if commit.detail:
                 lignes.append(f"        {commit.detail}")
 
+    if conserves:
+        lignes += [
+            "",
+            "  CONSERVÉS PAR LA COUPURE — cités, non ancêtres du point de coupure,",
+            "  donc NON interrogés : après l'opération, le dépôt en reste la copie de",
+            "  référence. Ils tomberont sous une coupure FUTURE et l'archive les",
+            "  couvrira d'ici là : ce n'est pas « pas besoin d'archive », c'est",
+            "  « pas pour cette coupure-ci ». Ne jamais bloquer dessus :",
+        ]
+        for commit in conserves[:MAX_CONSERVES_AFFICHES]:
+            date = f" ({commit.date[:10]})" if commit.date else ""
+            lignes.append(f"    {commit.court}{date} — cité dans {_lieux(commit)}")
+        reste = len(conserves) - MAX_CONSERVES_AFFICHES
+        if reste > 0:
+            lignes.append(
+                f"    (+{reste} autre{'s' if reste > 1 else ''} — la liste "
+                "entière est dans le rapport `--json`)"
+            )
+
     lignes += ["", f"  VERDICT : {etiquette}", f"  {message}"]
     return "\n".join(lignes)
 
@@ -718,15 +1141,31 @@ def rapport_json(
     nb_issues: int,
     quota: Quota,
     verdict: tuple[int, str],
+    provenance: str = "",
+    coupure: Optional["Coupure"] = None,
 ) -> dict[str, Any]:
+    conserves = [c for c in commits if c.conserve]
     return {
         "origine": origine,
+        "origine_provenance": provenance,
+        "coupure": (
+            None
+            if coupure is None
+            else {
+                "sha": coupure.sha,
+                "fenetre": coupure.fenetre,
+                "demande": coupure.demande,
+                "contraignante": coupure.contraignante,
+            }
+        ),
         "visite": visite,
         "population": {
             "chaines_extraites": nb_chaines,
             "fichiers_md": nb_md,
             "issues": nb_issues,
             "sha_resolus_en_commit": len(commits),
+            "sha_sous_la_coupure": len(commits) - len(conserves),
+            "sha_conserves_par_la_coupure": len(conserves),
         },
         "verdict": {"code": verdict[0], "message": verdict[1]},
         "quota": {
@@ -744,6 +1183,7 @@ def rapport_json(
                 "atteignable": c.atteignable,
                 "ref": c.ref,
                 "orpheline": c.orpheline,
+                "conserve": c.conserve,
                 "lieux": c.lieux,
             }
             for c in commits
@@ -756,8 +1196,10 @@ def rapport_json(
 
 def verifier(
     racine: str,
-    origine: str = ORIGINE_PAR_DEFAUT,
+    origine: Optional[str] = None,
     avec_issues: bool = True,
+    fenetre: Optional[int] = None,
+    commit_coupure: Optional[str] = None,
     fetch: Optional[Callable[[str], Reponse]] = None,
     lire: Optional[Callable[[str], str]] = None,
     lister_md: Optional[Callable[[], list[str]]] = None,
@@ -765,6 +1207,10 @@ def verifier(
     batch_check: Optional[Callable[[list[str]], dict[str, Optional[str]]]] = None,
     dater: Optional[Callable[[list[str]], dict[str, str]]] = None,
     ref_contenant: Optional[Callable[[str], Optional[str]]] = None,
+    remote: Optional[Callable[[], Optional[str]]] = None,
+    coupure_par_fenetre: Optional[Callable[[int], Optional[str]]] = None,
+    resoudre_ref: Optional[Callable[[str], Optional[str]]] = None,
+    est_ancetre: Optional[Callable[[str, str], bool]] = None,
     attente_max: float = 3900.0,
     dormir: Callable[[float], None] = time.sleep,
     horloge: Callable[[], float] = time.time,
@@ -773,7 +1219,12 @@ def verifier(
     """Le déroulé complet. Toutes les dépendances externes — git, `gh`, le
     disque, le réseau — sont injectables : c'est ce qui rend le script
     vérifiable sans jamais joindre l'API depuis la CI (#551 : aucune mesure
-    lourde en CI, et la vérification d'archivage est un geste de pré-coupure)."""
+    lourde en CI, et la vérification d'archivage est un geste de pré-coupure).
+
+    `origine=None` fait DÉRIVER l'origine du remote `origin` (#575) ; la passer
+    explicitement reste possible et l'emporte. `fenetre` ou `commit_coupure`
+    donnent le point de coupure ; sans eux, le périmètre reste tout et le
+    rapport dit que c'est un audit, pas un feu vert."""
     fetch = fetch or _fetch_reel()
     # `errors="replace"` : un .md mal encodé ne doit pas faire renoncer à toute
     # la vérification juste avant une opération irréversible.
@@ -784,6 +1235,15 @@ def verifier(
     batch_check = batch_check or _batch_check_git(racine)
     dater = dater or _dater_git(racine)
     ref_contenant = ref_contenant or _refs_contenant_git(racine)
+    remote = remote or _remote_git(racine)
+    coupure_par_fenetre = coupure_par_fenetre or _coupure_par_fenetre_git(racine)
+    resoudre_ref = resoudre_ref or _resoudre_ref_git(racine)
+    est_ancetre = est_ancetre or _est_ancetre_git(racine)
+
+    origine, provenance = resoudre_origine(origine, remote)
+    coupure = resoudre_coupure(
+        fenetre, commit_coupure, coupure_par_fenetre, resoudre_ref
+    )
 
     fichiers = lister_md()
     citations = citations_des_fichiers_md(racine, lire, fichiers)
@@ -806,10 +1266,30 @@ def verifier(
         f"et {len(issues)} corps d'issues."
     )
 
+    # Le périmètre AVANT les requêtes : c'est ce qui évite d'en émettre pour
+    # des SHA que la coupure ne perd pas — 28 au lieu de 38 sur le banc du
+    # 28/08/2026, et l'écart grandit avec la fenêtre.
+    marquer_conserves(commits, coupure, est_ancetre)
+    a_interroger = [c for c in commits if not c.conserve]
+    journal(
+        f"→ origine interrogée : {origine} ({provenance})."
+    )
+    if coupure is None:
+        journal(
+            "→ aucun point de coupure : AUDIT d'archive sur les "
+            f"{len(commits)} SHA cités, pas un feu vert de coupure."
+        )
+    else:
+        journal(
+            f"→ périmètre : {len(a_interroger)} SHA sous la coupure "
+            f"{coupure.court} ({coupure.demande}), "
+            f"{len(commits) - len(a_interroger)} conservés et non interrogés."
+        )
+
     quota = Quota()
     visite = interroger_visite(origine, fetch, quota)
 
-    for index, commit in enumerate(commits, start=1):
+    for index, commit in enumerate(a_interroger, start=1):
         commit.etat, commit.detail = interroger_revision(
             commit.sha,
             fetch,
@@ -833,14 +1313,16 @@ def verifier(
                 "changera rien — c'est la citation qu'il faut corriger"
             )
         if commit.etat != "presente":
-            journal(f"  [{index}/{len(commits)}] {commit.court} : {commit.etat}")
+            journal(f"  [{index}/{len(a_interroger)}] {commit.court} : {commit.etat}")
 
-    verdict = rendre_verdict(visite, commits)
+    verdict = rendre_verdict(visite, commits, coupure)
     texte = formater_rapport(
-        origine, visite, commits, nb_chaines, len(fichiers), len(issues), quota, verdict
+        origine, visite, commits, nb_chaines, len(fichiers), len(issues), quota,
+        verdict, provenance, coupure,
     )
     donnees = rapport_json(
-        origine, visite, commits, nb_chaines, len(fichiers), len(issues), quota, verdict
+        origine, visite, commits, nb_chaines, len(fichiers), len(issues), quota,
+        verdict, provenance, coupure,
     )
     return verdict[0], donnees, texte
 
@@ -852,11 +1334,42 @@ def construire_parseur() -> argparse.ArgumentParser:
     parseur = argparse.ArgumentParser(
         description=(
             "Vérifie que les SHA cités dans les .md suivis et les corps "
-            "d'issues résolvent dans Software Heritage (#568)."
+            "d'issues résolvent dans Software Heritage (#568, #575)."
         )
     )
     parseur.add_argument("--racine", default=".", help="racine du dépôt git")
-    parseur.add_argument("--origine", default=ORIGINE_PAR_DEFAUT)
+    parseur.add_argument(
+        "--origine",
+        default=None,
+        help=(
+            "origine à interroger. Par défaut, DÉRIVÉE de `git remote get-url "
+            f"origin` et normalisée ; à défaut de remote, repli sur "
+            f"{ORIGINE_PAR_DEFAUT}, annoncé dans la sortie (#575)."
+        ),
+    )
+    parseur.add_argument(
+        "--fenetre",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "nombre de commits de données conservés, comme "
+            "`borner_historique_donnees.sh --fenetre N`. Restreint la "
+            "vérification aux SHA cités ANCÊTRES du point de coupure — les "
+            "seuls que la coupure perdrait. Sans cette option ni `--coupure`, "
+            "le périmètre reste tout : c'est un audit d'archive, pas un feu "
+            "vert de coupure."
+        ),
+    )
+    parseur.add_argument(
+        "--coupure",
+        default=None,
+        metavar="COMMIT",
+        help=(
+            "point de coupure explicite, au lieu de le dériver d'une fenêtre. "
+            "S'emploie quand `--preparer` a déjà annoncé le sien."
+        ),
+    )
     parseur.add_argument(
         "--sans-issues",
         action="store_true",
@@ -886,12 +1399,20 @@ def main(argv: Optional[list[str]] = None) -> int:
         check=True,
     ).stdout.strip()
 
-    code, donnees, texte = verifier(
-        racine,
-        origine=args.origine,
-        avec_issues=not args.sans_issues,
-        attente_max=args.attente_max,
-    )
+    try:
+        code, donnees, texte = verifier(
+            racine,
+            origine=args.origine,
+            avec_issues=not args.sans_issues,
+            fenetre=args.fenetre,
+            commit_coupure=args.coupure,
+            attente_max=args.attente_max,
+        )
+    except ValueError as err:
+        # Une coupure qui ne résout pas : refuser de conclure vaut mieux que
+        # vérifier un autre périmètre que celui qu'on croit.
+        print(f"[!] {err}", file=sys.stderr)
+        return INDETERMINE
     print(texte)
     if args.json_out:
         Path(args.json_out).parent.mkdir(parents=True, exist_ok=True)
