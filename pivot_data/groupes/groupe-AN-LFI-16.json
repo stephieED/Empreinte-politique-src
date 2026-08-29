@@ -79179,7 +79179,7 @@
   ],
   "meta": {
     "schema_version": "1",
-    "genere_le": "2026-08-28T19:37:31+0000",
+    "genere_le": "2026-08-29T17:16:56+0000",
     "licence_donnees": "Licence Ouverte / Open Licence (Etalab) — data.assemblee-nationale.fr + ODbL v1.0 (NosDéputés.fr / NosSénateurs.fr — Regards Citoyens, à partir de l'Assemblée nationale / Sénat / JO) + CC BY 4.0 (Parlement européen, Open Data Portal - data.europarl.europa.eu)",
     "profils_sources": [
       "elisa-martin",
@@ -79265,7 +79265,8 @@
     ],
     "couverture_roster": {
       "roster_total": 76,
-      "profils_disponibles": 76
+      "profils_disponibles": 76,
+      "etat": "dans_le_perimetre"
     }
   }
 }
