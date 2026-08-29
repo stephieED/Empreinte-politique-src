@@ -289,16 +289,17 @@ jobs:
 
           # Lu d'abord dans le bloc env: résolu du step d'extraction roster
           # ("ROSTER_LIMIT: <valeur>"), seule source EXACTE de l'input : le
-          # stdout "Sélection …" ne rapporte que le nombre de candidats
+          # stdout de sélection ne rapporte que le nombre de candidats
           # effectivement retenus (min(limite, restants)), et surtout n'est pas
-          # émis du tout quand roster_extraction_limit=0 (run complet, aucun
-          # --limit) — ce cas retombait donc toujours à 20, relançant un run
-          # complet en run échantillonné. Le grep "Sélection" reste en repli si
-          # le bloc env: est absent du log.
+          # émis du tout quand roster_limit=0 (aucun --limit — le DÉFAUT depuis
+          # #578) : ce cas retombait toujours à 20, relançant un run complet en
+          # run échantillonné. Le grep sur le stdout reste en repli si le bloc
+          # env: est absent du log ; il couvre les deux libellés de sélection
+          # ("Plafond réparti par couverture", "Sélection réduite").
           roster_log=$(job_log "extract-roster-groupes")
           roster_limit=$(echo "$roster_log" | grep -oP 'ROSTER_LIMIT: \K[0-9]+' | head -1) || true
           if [[ ! "$roster_limit" =~ ^[0-9]+$ ]]; then
-            roster_limit=$(echo "$roster_log" | grep -oP 'Sélection.*: \K[0-9]+' | head -1) || true
+            roster_limit=$(echo "$roster_log" | grep -oP '(Plafond réparti|Sélection).*: \K[0-9]+' | head -1) || true
           fi
           [[ "$roster_limit" =~ ^[0-9]+$ ]] || roster_limit=""
 
