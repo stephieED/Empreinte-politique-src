@@ -183,7 +183,7 @@ jobs:
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
       # cold_start est lu de façon fiable via la conclusion du step conditionnel
       # dédié ; les autres valeurs sont extraites du texte résolu des steps
-      # (existing_profiles/roster_coverage/collect_interventions/roster_limit,
+      # (existing_profiles/add_uncovered_members/collect_interventions/roster_limit,
       # substitués directement par ${{ inputs.* }} dans le script ou dans son
       # bloc env:) ou du rapport stdout de check_quality_gate.py
       # (incomplete_read_threshold).
@@ -326,15 +326,18 @@ jobs:
               ;;
           esac
 
-          roster_coverage=$(echo "$roster_log" | grep -oP 'ROSTER_COVERAGE: \K[a-z-]+' | head -1) || true
-          case "$roster_coverage" in
-            current-members-only|add-uncovered-members) ;;
-            *) roster_coverage=add-uncovered-members ;;
+          # Axe 2, booléen depuis la refonte des libellés : `true` est le
+          # défaut déclaré, et c'est le repli sûr — étendre ne réécrit jamais
+          # un profil existant, donc un repli à `true` ne peut rien perdre.
+          add_uncovered_members=$(echo "$roster_log" | grep -oP 'ADD_UNCOVERED: \K(true|false)' | head -1) || true
+          case "$add_uncovered_members" in
+            true|false) ;;
+            *) add_uncovered_members=true ;;
           esac
 
           echo "cold_start=${cold_start}" >> "$GITHUB_OUTPUT"
           echo "existing_profiles=${existing_profiles}" >> "$GITHUB_OUTPUT"
-          echo "roster_coverage=${roster_coverage}" >> "$GITHUB_OUTPUT"
+          echo "add_uncovered_members=${add_uncovered_members}" >> "$GITHUB_OUTPUT"
           echo "incomplete_read_threshold=${incomplete_read_threshold:-3}" >> "$GITHUB_OUTPUT"
           echo "collect_interventions=${collect_interventions}" >> "$GITHUB_OUTPUT"
           echo "roster_limit=${roster_limit:-0}" >> "$GITHUB_OUTPUT"
@@ -359,7 +362,7 @@ jobs:
             --ref "${{ github.event.workflow_run.head_branch }}" \
             -f cold_start="${{ steps.inputs.outputs.cold_start || 'false' }}" \
             -f existing_profiles="${{ steps.inputs.outputs.existing_profiles || 'refresh' }}" \
-            -f roster_coverage="${{ steps.inputs.outputs.roster_coverage || 'add-uncovered-members' }}" \
+            -f add_uncovered_members="${{ steps.inputs.outputs.add_uncovered_members || 'true' }}" \
             -f incomplete_read_threshold="${{ steps.inputs.outputs.incomplete_read_threshold || '3' }}" \
             -f collect_interventions="${{ steps.inputs.outputs.collect_interventions || 'false' }}" \
             -f roster_limit="${{ steps.inputs.outputs.roster_limit || '0' }}"

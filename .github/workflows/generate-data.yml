@@ -9,56 +9,60 @@ on:
       # hides the input name. So they must be short, self-contained, and never
       # reference another field by a name nobody can see on screen.
       #
+      # THEY ARE TITLES, NOT DOCUMENTATION. GitHub wraps them at ~65 columns
+      # in a narrow column above their control, so a sentence becomes a wall
+      # nobody reads at the moment they are configuring a run. Name the field;
+      # do not explain it. A menu SHOWS its values, so the label never has to
+      # spell them out. Locked by test_un_libelle_tient_sur_une_ligne.
+      # Run `python3 scripts/rendu_formulaire.py` to SEE the form before
+      # changing a label — reading the YAML hides exactly this defect.
+      #
       # TWO DISJOINT AXES (#578), plus the cache on its own. One field used to
       # answer two questions at once, which is why no wording ever made it
-      # read straight. A menu also SHOWS its values, so the label no longer
-      # has to carry the whole meaning by itself.
+      # read straight.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
       existing_profiles:
-        description: "What happens to profiles already written. refresh re-collects and MERGES, so nothing acquired is lost. overwrite re-collects and REPLACES, dropping whatever today's collection does not return — for a key correction."
+        description: "Existing profiles treatment"
         type: choice
         options:
           - leave-as-is
           - refresh
           - overwrite
         default: refresh
-      roster_coverage:
-        description: "Whether this run also writes a first profile for parliamentary members who have none yet. Extending only ever creates; it never rewrites a profile that exists."
-        type: choice
-        options:
-          - current-members-only
-          - add-uncovered-members
-        default: add-uncovered-members
       cold_start:
-        description: "Purge the download caches and re-fetch every public source. Slowest path. Sets how fresh the source data is, and nothing about how profiles are written."
+        description: "Purge cache (slow)"
         type: boolean
         default: false
+      add_uncovered_members:
+        description: "Add uncovered members"
+        type: boolean
+        default: true
       roster_limit:
-        description: "Cap on how many parliamentary members this run processes, uncovered ones first then the stalest. 0 = no cap, the whole roster."
+        description: "Members per run (0 = no cap)"
         type: number
         default: 0
       collect_interventions:
-        description: "Collect floor speeches for the declared candidates. The group roster job never collects them, whatever this is set to."
+        description: "Collect candidate floor speeches (never the roster)"
         type: boolean
         default: false
       incomplete_read_threshold:
-        description: "IncompleteRead errors tolerated before the quality gate fails"
+        description: "Network issue threshold before the gate fails"
         type: number
         default: 3
       allow_declared_losses:
-        description: "INTENDED REMOVAL: allow commit despite lost entries"
+        description: "INTENDED REMOVAL: commit despite lost entries"
         type: boolean
         default: false
       allow_broken_references:
-        description: "EMERGENCY ONLY: allow keys that don't resolve in their shared index"
+        description: "EMERGENCY ONLY: commit despite broken references"
         type: boolean
         default: false
       allow_unpublished_profiles:
-        description: "LAST RESORT: allow commit while collected profiles have no pivot"
+        description: "LAST RESORT: commit despite unpublished profiles"
         type: boolean
         default: false
       allow_publication_gaps:
-        description: "BREAK GLASS: allow commit while published lists carry less than was collected"
+        description: "BREAK GLASS: commit despite publication gaps"
         type: boolean
         default: false
 
@@ -1808,18 +1812,18 @@ jobs:
           # reconstruire les inputs d'un run préempté (même mécanisme que
           # ROSTER_LIMIT).
           EXISTING_PROFILES: ${{ inputs.existing_profiles }}
-          ROSTER_COVERAGE: ${{ inputs.roster_coverage }}
+          ADD_UNCOVERED: ${{ inputs.add_uncovered_members }}
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
           ROSTER_LIMIT: ${{ inputs.roster_limit }}
         run: |
           # ── DEUX AXES DISJOINTS (#578) ──────────────────────────────────
           # Axe 1 (`existing_profiles`) : ce qu'on fait des profils DÉJÀ
-          # écrits. Axe 2 (`roster_coverage`) : si on en écrit de NOUVEAUX.
+          # écrits. Axe 2 (`add_uncovered_members`) : si on en écrit de NOUVEAUX.
           # Les six combinaisons sont atteignables, dont « recollecter
           # l'existant EN FUSIONNANT et ajouter les nouveaux », qu'aucun
           # réglage ne permettait de demander avant #578.
           #
-          #                        | current-members-only | add-uncovered-members
+          #                        | add_uncovered=false  | add_uncovered=true
           #   ---------------------+----------------------+----------------------
           #   leave-as-is          | rien à faire         | --skip-existing
           #   refresh              | --refresh-existing   | (aucun drapeau)
@@ -1839,22 +1843,22 @@ jobs:
           # jamais en espérant qu'un plafond de volume le fasse.
           POP_FLAG=()
           if [[ "$EXISTING_PROFILES" == "leave-as-is" ]]; then
-            if [[ "$ROSTER_COVERAGE" == "current-members-only" ]]; then
+            if [[ "$ADD_UNCOVERED" != "true" ]]; then
               # Combinaison licite et vide : on ne touche pas à l'existant et
               # on n'étend pas la couverture. Le manifeste vide dit « ce job
               # n'a écrit aucun profil » — et non « le job a échoué » (#450).
-              echo "Aucun membre à traiter : existing_profiles=leave-as-is et roster_coverage=current-members-only. Les profils écrits restent tels quels, la couverture n'est pas étendue."
+              echo "Aucun membre à traiter : existing_profiles=leave-as-is et add_uncovered_members=false. Les profils écrits restent tels quels, la couverture n'est pas étendue."
               mkdir -p _manifest && : > _manifest/profils-ecrits.txt
               exit 0
             fi
             POP_FLAG=(--skip-existing)
-          elif [[ "$ROSTER_COVERAGE" == "current-members-only" ]]; then
+          elif [[ "$ADD_UNCOVERED" != "true" ]]; then
             # --refresh-existing (#445) : ne traiter que l'existant. Il exclut
             # --skip-existing par construction (le script refuse la
             # combinaison, qui ne traiterait personne).
             POP_FLAG=(--refresh-existing)
           fi
-          echo "Population : existing_profiles=${EXISTING_PROFILES} × roster_coverage=${ROSTER_COVERAGE} → ${POP_FLAG[*]:-aucun drapeau (tout le roster)} ${MERGE_FLAG[*]:-(fusion additive)}"
+          echo "Population : existing_profiles=${EXISTING_PROFILES} × add_uncovered_members=${ADD_UNCOVERED} → ${POP_FLAG[*]:-aucun drapeau (tout le roster)} ${MERGE_FLAG[*]:-(fusion additive)}"
 
           # `--limit` est un PLAFOND, et rien d'autre (#578). Il ne commande
           # plus aucune politique de rafraîchissement : c'est ce couplage qui
