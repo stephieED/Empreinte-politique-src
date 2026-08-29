@@ -135,8 +135,8 @@ def test_cli_limit_and_sample_are_mutually_exclusive(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# _select_candidats_couverture : sélection progressive + rafraîchissement
-# pour --limit + --skip-existing (#224)
+# _select_candidats_couverture : répartition d'un PLAFOND de volume (#224),
+# découplée de toute politique de rafraîchissement (#578)
 # ---------------------------------------------------------------------------
 
 _REF_DATE = datetime(2026, 8, 12, tzinfo=timezone.utc)
@@ -158,18 +158,17 @@ def _write_pivot(pivot_dir: Path, slug: str, jours_anciennete: int) -> None:
 
 def test_select_candidats_couverture_progressive_no_pivots_takes_first_n(tmp_path):
     candidats = [{"slug": f"c{i}"} for i in range(30)]
-    selection, refresh = _select_candidats_couverture(
+    selection = _select_candidats_couverture(
         candidats, tmp_path, limit=10, staleness_days=30, reference_date=_REF_DATE
     )
     assert [c["slug"] for c in selection] == [f"c{i}" for i in range(10)]
-    assert refresh == set()
 
 
 def test_select_candidats_couverture_progresses_across_simulated_runs(tmp_path):
     candidats = [{"slug": f"c{i}"} for i in range(30)]
 
     # Run 1 : rien n'est couvert -> les 10 premiers.
-    run1, _ = _select_candidats_couverture(
+    run1 = _select_candidats_couverture(
         candidats, tmp_path, limit=10, staleness_days=30, reference_date=_REF_DATE
     )
     assert [c["slug"] for c in run1] == [f"c{i}" for i in range(10)]
@@ -179,11 +178,10 @@ def test_select_candidats_couverture_progresses_across_simulated_runs(tmp_path):
         _write_pivot(tmp_path, c["slug"], jours_anciennete=1)
 
     # Run 2 : sans correctif, --limit reprendrait les mêmes 10 premiers.
-    run2, refresh2 = _select_candidats_couverture(
+    run2 = _select_candidats_couverture(
         candidats, tmp_path, limit=10, staleness_days=30, reference_date=_REF_DATE
     )
     assert [c["slug"] for c in run2] == [f"c{i}" for i in range(10, 20)]
-    assert refresh2 == set()
 
 
 def test_select_candidats_couverture_prioritizes_non_couverts_then_fills_with_perimes(tmp_path):
@@ -193,7 +191,7 @@ def test_select_candidats_couverture_prioritizes_non_couverts_then_fills_with_pe
     _write_pivot(tmp_path, "old1", jours_anciennete=60)
     _write_pivot(tmp_path, "old2", jours_anciennete=90)
 
-    selection, refresh = _select_candidats_couverture(
+    selection = _select_candidats_couverture(
         candidats, tmp_path, limit=4, staleness_days=30, reference_date=_REF_DATE
     )
 
@@ -201,19 +199,17 @@ def test_select_candidats_couverture_prioritizes_non_couverts_then_fills_with_pe
     assert slugs[:3] == ["new1", "new2", "new3"]
     assert len(slugs) == 4
     assert slugs[3] in {"old1", "old2"}
-    assert refresh == {slugs[3]}
 
 
 def test_select_candidats_couverture_refreshes_stale_covered_profile(tmp_path):
     candidats = [{"slug": "old1"}]
     _write_pivot(tmp_path, "old1", jours_anciennete=60)
 
-    selection, refresh = _select_candidats_couverture(
+    selection = _select_candidats_couverture(
         candidats, tmp_path, limit=5, staleness_days=30, reference_date=_REF_DATE
     )
 
     assert [c["slug"] for c in selection] == ["old1"]
-    assert refresh == {"old1"}
 
 
 def test_select_candidats_couverture_does_not_reselect_fresh_covered_profile(tmp_path):
@@ -222,24 +218,41 @@ def test_select_candidats_couverture_does_not_reselect_fresh_covered_profile(tmp
     candidats = [{"slug": "fresh1"}]
     _write_pivot(tmp_path, "fresh1", jours_anciennete=5)
 
-    selection, refresh = _select_candidats_couverture(
+    selection = _select_candidats_couverture(
         candidats, tmp_path, limit=5, staleness_days=30, reference_date=_REF_DATE
     )
 
     assert selection == []
-    assert refresh == set()
 
 
 def test_select_candidats_couverture_budget_exhausted_by_non_couverts_ignores_perimes(tmp_path):
     candidats = [{"slug": "new1"}, {"slug": "new2"}, {"slug": "old1"}]
     _write_pivot(tmp_path, "old1", jours_anciennete=90)
 
-    selection, refresh = _select_candidats_couverture(
+    selection = _select_candidats_couverture(
         candidats, tmp_path, limit=2, staleness_days=30, reference_date=_REF_DATE
     )
 
     assert [c["slug"] for c in selection] == ["new1", "new2"]
-    assert refresh == set()
+
+
+def test_select_candidats_couverture_sans_existants_ne_depense_pas_le_budget_a_vide(tmp_path):
+    """`inclure_existants=False` = l'axe 1 vaut `leave-as-is` (--skip-existing).
+
+    Y faire entrer un couvert périmé le sélectionnerait pour que
+    `process_candidat` le saute : du budget dépensé à ne rien faire, et un
+    décompte de sélection qui ne correspond à rien d'écrit.
+    """
+    candidats = [{"slug": "new1"}, {"slug": "old1"}, {"slug": "old2"}]
+    _write_pivot(tmp_path, "old1", jours_anciennete=90)
+    _write_pivot(tmp_path, "old2", jours_anciennete=120)
+
+    selection = _select_candidats_couverture(
+        candidats, tmp_path, limit=5, staleness_days=30,
+        inclure_existants=False, reference_date=_REF_DATE,
+    )
+
+    assert [c["slug"] for c in selection] == ["new1"]
 
 
 # ---------------------------------------------------------------------------
@@ -364,9 +377,15 @@ def test_process_candidat_skip_existing_does_not_call_network(tmp_path, monkeypa
     assert call_count["n"] == 0
 
 
-def test_process_candidat_refresh_slugs_bypasses_skip_existing(tmp_path, monkeypatch):
-    # #224 : un slug listé dans refresh_slugs doit repasser par le fetch +
-    # merge additif même si --skip-existing est actif et le profil existe déjà.
+def test_process_candidat_sans_skip_existing_recollecte_le_profil_existant(tmp_path, monkeypatch):
+    """Recollecter l'existant se demande en ne posant PAS --skip-existing (#578).
+
+    C'était auparavant une exemption interne (`refresh_slugs`) que la seule
+    présence de `--limit` levait : un plafond de volume commandait, sans le
+    nommer, une politique de rafraîchissement. Le mode le plus complet
+    (« pas de plafond ») rafraîchissait donc strictement MOINS que le mode
+    échantillonné.
+    """
     call_count = {"n": 0}
 
     def fake_build_profile(*a, **k):
@@ -383,12 +402,32 @@ def test_process_candidat_refresh_slugs_bypasses_skip_existing(tmp_path, monkeyp
     (out_dir / "dave.json").write_text(json.dumps(_fake_raw_profile("dave")), encoding="utf-8")
 
     candidat = {"nom": "Dave", "slug": "dave", "statut": "roster_groupe"}
-    resultat = process_candidat(
-        candidat, _make_args(skip_existing=True), out_dir, pivot_dir, refresh_slugs={"dave"}
-    )
+    resultat = process_candidat(candidat, _make_args(skip_existing=False), out_dir, pivot_dir)
 
     assert resultat["statut"] == "ok"
     assert call_count["n"] == 1
+
+
+def test_process_candidat_skip_existing_est_strict(tmp_path, monkeypatch):
+    """`--skip-existing` n'a plus d'exemption (#578) : il dit ce qu'il fait.
+
+    Tant qu'une exemption existait, `--skip-existing` voulait dire « saute
+    l'existant, sauf ceux qu'un autre paramètre a discrètement exemptés » —
+    et ce paramètre était `--limit`, un plafond de volume.
+    """
+    monkeypatch.setattr(generate_all_profiles, "build_profile",
+                        lambda *a, **k: pytest.fail("aucun fetch ne doit avoir lieu"))
+
+    out_dir = tmp_path / "profiles"
+    pivot_dir = tmp_path / "pivots"
+    out_dir.mkdir()
+    pivot_dir.mkdir()
+    (out_dir / "dave.json").write_text(json.dumps(_fake_raw_profile("dave")), encoding="utf-8")
+
+    candidat = {"nom": "Dave", "slug": "dave", "statut": "roster_groupe"}
+    resultat = process_candidat(candidat, _make_args(skip_existing=True), out_dir, pivot_dir)
+
+    assert resultat["statut"] == "deja_present"
 
 
 # ---------------------------------------------------------------------------
@@ -748,6 +787,86 @@ def test_manifest_exclut_les_profils_sautes_par_skip_existing(tmp_path, monkeypa
     monkeypatch.setattr(sys, "argv", _argv_manifest(
         candidats_path, out_dir, tmp_path / "pivots", tmp_path / "cp.json", manifest_path,
         "--skip-existing",
+    ))
+    generate_all_profiles.main()
+
+    assert _manifest_lines(manifest_path) == ["bob.json"]
+
+
+# ── #578 : le PLAFOND ne commande plus le rafraîchissement ──────────────────
+#
+# Deux runs du 28/08/2026 ont été perdus sur ce couplage. `roster_limit=0`
+# (« pas de plafond ») avait été choisi précisément pour tout régénérer : sans
+# `--limit`, la branche de sélection par couverture n'était pas empruntée, et
+# `--skip-existing` sautait alors CHAQUE profil existant. Le mode le plus
+# complet corrigeait strictement moins que le mode échantillonné.
+
+def _stale_pivot(pivot_dir: Path, slug: str) -> None:
+    pivot_dir.mkdir(parents=True, exist_ok=True)
+    (pivot_dir / f"{slug}.pivot.json").write_text(
+        json.dumps({
+            "id": f"nosdeputes:{slug}",
+            "sources": [{"type": "nosdeputes", "url": f"https://x/{slug}",
+                         "synchro_le": "2025-01-01T00:00:00+00:00"}],
+        }),
+        encoding="utf-8",
+    )
+
+
+def test_run_sans_plafond_recollecte_les_profils_existants(tmp_path, monkeypatch):
+    """Sans plafond et sans `--skip-existing`, TOUT le monde est recollecté.
+
+    C'est ce que `existing_profiles=refresh` × `roster_coverage=add-uncovered-members`
+    demande, et c'est la combinaison qu'aucun réglage ne permettait d'obtenir
+    avant #578.
+    """
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "alice.json").write_text(json.dumps(_fake_raw_profile("alice")), encoding="utf-8")
+    pivot_dir = tmp_path / "pivots"
+    _stale_pivot(pivot_dir, "alice")
+    manifest_path = tmp_path / "manifest.txt"
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, pivot_dir, tmp_path / "cp.json", manifest_path,
+    ))
+    generate_all_profiles.main()
+
+    assert sorted(_manifest_lines(manifest_path)) == ["alice.json", "bob.json"]
+
+
+def test_le_plafond_ne_rafraichit_plus_ce_que_skip_existing_dit_de_sauter(tmp_path, monkeypatch):
+    """`--limit` est un plafond, pas une politique (#578).
+
+    Sous `--skip-existing` (axe 1 = `leave-as-is`), un profil existant reste
+    intouché, plafond ou pas. Avant #578, `--limit` exemptait discrètement les
+    profils périmés : le même drapeau produisait deux comportements selon
+    qu'un autre champ, sans rapport, était renseigné.
+    """
+    candidats_path = tmp_path / "roster_candidats.json"
+    _write_roster_candidats(candidats_path, ["alice", "bob"])
+    monkeypatch.setattr(
+        generate_all_profiles, "build_profile", lambda chambre, slug, **k: _fake_raw_profile(slug, chambre)
+    )
+    monkeypatch.setattr(generate_all_profiles.time, "sleep", lambda *_: None)
+
+    out_dir = tmp_path / "profiles"
+    out_dir.mkdir()
+    (out_dir / "alice.json").write_text(json.dumps(_fake_raw_profile("alice")), encoding="utf-8")
+    pivot_dir = tmp_path / "pivots"
+    _stale_pivot(pivot_dir, "alice")
+    manifest_path = tmp_path / "manifest.txt"
+
+    monkeypatch.setattr(sys, "argv", _argv_manifest(
+        candidats_path, out_dir, pivot_dir, tmp_path / "cp.json", manifest_path,
+        "--skip-existing", "--limit", "5",
     ))
     generate_all_profiles.main()
 

@@ -28,8 +28,10 @@ Volontairement sans PyYAML (absent de requirements.txt), comme les autres
 `test_ci_*`.
 """
 
+import os
 import pathlib
 import re
+import subprocess
 
 WORKFLOWS = pathlib.Path(__file__).resolve().parents[1] / ".github" / "workflows"
 GENERATE = WORKFLOWS / "generate-data.yml"
@@ -69,53 +71,225 @@ def test_chaque_sortie_lue_par_la_relance_est_ecrite():
     )
 
 
-def test_les_trois_modes_de_recollecte_se_nomment():
-    """Trois modes se cachent derrière deux booléens, et le formulaire de
-    lancement masque le nom du champ : la description est tout ce qu'on lit.
-
-    Le défaut invisible a coûté deux runs le 28/08/2026 sur #562 — un
-    progressif, puis un à pleine échelle avec `roster_limit=0`. Une extraction
-    ne recollecte PAS un profil déjà écrit, et l'en-tête du job roster le dit
-    depuis #445 : « un run à pleine échelle ne corrige RIEN de l'existant, il
-    ne fait qu'étendre la frontière ».
-
-    Pire, le mode le plus utile était le moins découvrable : `refresh_existing_only`
-    recollecte l'existant EN FUSIONNANT — le geste sûr pour propager un
-    correctif — et s'annonçait « Limit roster to pre-existing members », c'est-à-dire
-    comme un filtre de population.
-    """
+def _descriptions() -> dict[str, str]:
     contenu = GENERATE.read_text(encoding="utf-8")
     bloc = contenu[contenu.index("  workflow_dispatch:"):contenu.index("\n# Moindre privilège")]
-    desc = dict(re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE))
+    return dict(re.findall(r'^      ([a-z_]+):\n        description: "([^"]*)"', bloc, re.MULTILINE))
 
-    # Les trois options qui recollectent le disent avec le même mot.
-    for nom in ("cold_start", "overwrite_profiles", "refresh_existing_only"):
-        assert "re-collect" in desc[nom].lower(), (
-            f"`{nom}` recollecte l'existant : le libellé doit le dire avec le "
-            "même mot que les deux autres, sinon on ne les compare pas."
-        )
 
-    # Et ce qui les sépare — écraser ou fusionner — doit être lisible.
-    for nom in ("cold_start", "overwrite_profiles"):
-        assert "overwrite" in desc[nom].lower(), f"`{nom}` écrase : le dire"
-        assert "drops" in desc[nom].lower(), (
-            f"`{nom}` perd ce que la collecte du jour ne rend pas : le dire, "
-            "c'est la différence qui compte face à l'option fusionnante"
-        )
-    assert "merging" in desc["refresh_existing_only"].lower(), (
-        "`refresh_existing_only` FUSIONNE : c'est le mode sûr, et c'est ce qui "
-        "le distingue des deux autres"
+def _options(nom: str) -> list[str]:
+    """Valeurs d'un `type: choice`. Elles s'AFFICHENT dans le formulaire, donc
+    elles portent une part du sens que la description n'a plus à redire."""
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc = contenu[contenu.index(f"      {nom}:\n"):]
+    bloc = bloc[bloc.index("        options:\n") + len("        options:\n"):]
+    valeurs = []
+    for ligne in bloc.splitlines():
+        if not ligne.startswith("          - "):
+            break
+        valeurs.append(ligne[len("          - "):].strip())
+    return valeurs
+
+
+def test_les_deux_axes_sont_deux_champs_distincts():
+    """Un seul champ répondait à deux questions, et c'est pour ça qu'aucune
+    réécriture de libellé ne le rendait lisible (#578).
+
+    Axe 1 : ce qu'on fait des profils DÉJÀ écrits — trois états, donc un menu
+    et non un booléen. Axe 2 : si on en écrit de NOUVEAUX. Le cache est un
+    troisième champ, qui n'appartient à aucun des deux.
+    """
+    desc = _descriptions()
+
+    assert _options("existing_profiles") == ["leave-as-is", "refresh", "overwrite"]
+    assert _options("roster_coverage") == ["current-members-only", "add-uncovered-members"]
+
+    # Le défaut est le mode SÛR : sur #562, le code était juste pendant deux
+    # runs et la donnée restait fausse parce qu'il fallait le demander.
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc_axe1 = contenu[contenu.index("      existing_profiles:"):contenu.index("      roster_coverage:")]
+    assert "default: refresh" in bloc_axe1, (
+        "le mode le plus sûr doit être celui qu'on obtient sans rien cocher"
     )
 
-    # `roster_limit` dit ce qu'il fait, sans tenter d'expliquer l'anomalie du
-    # zéro : `0` rafraîchit MOINS que `20`, parce que sans `--limit` la branche
-    # d'exemption au saut n'est pas empruntée. Aucune formulation courte ne rend
-    # ça naturel — c'est un défaut de conception, suivi par #578, et un libellé
-    # de formulaire n'est pas l'endroit où on documente un piège réductible.
-    assert "new ones first" in desc["roster_limit"].lower(), (
-        "`roster_limit` est un budget de traitement, pas une borne sur le "
-        "roster : il va d'abord aux nouveaux, puis aux profils périmés"
+    # Ce qui sépare les deux modes qui recollectent — fusionner ou remplacer —
+    # est ce qu'on lit à l'écran, pas ce qu'on devine.
+    axe1 = desc["existing_profiles"].lower()
+    assert "merges" in axe1, "`refresh` FUSIONNE : c'est ce qui le rend sûr"
+    assert "replaces" in axe1, "`overwrite` REMPLACE"
+    assert "drop" in axe1, (
+        "`overwrite` perd ce que la collecte du jour ne rend pas : c'est la "
+        "différence qui compte face au mode fusionnant"
     )
+
+    # Les anciens champs ne doivent pas survivre : deux façons de demander la
+    # même chose, c'est le défaut que #578 corrige.
+    assert "overwrite_profiles" not in _inputs_declares()
+    assert "refresh_existing_only" not in _inputs_declares()
+
+
+def test_le_cache_ne_commande_plus_la_politique_d_ecriture():
+    """`cold_start` dit à quel point les données SOURCES doivent être fraîches.
+
+    Il portait aussi `--no-merge` et la purge de `raw_data/profiles/`, deux
+    politiques d'écriture. Conséquence : « écraser sans purger le cache » —
+    le cas courant, on réécrit à partir d'archives déjà téléchargées — était
+    demandable, mais « repartir de sources fraîches en fusionnant » ne l'était
+    pas.
+    """
+    contenu = GENERATE.read_text(encoding="utf-8")
+
+    for ligne in contenu.splitlines():
+        if "MERGE_FLAG=(--no-merge)" in ligne or "MERGE_FLAG=(--merge-existing)" in ligne:
+            assert "$FRESH" not in ligne and "cold_start" not in ligne, (
+                f"le cache commande encore la politique d'écriture : {ligne.strip()}"
+            )
+
+    assert "find raw_data/profiles -name \"*.json\" -delete" not in contenu, (
+        "cold_start effaçait les profils bruts : une politique d'écriture "
+        "déguisée en politique de fraîcheur — un profil effacé n'a plus rien "
+        "à fusionner."
+    )
+
+    assert "cold_start" not in _descriptions()["existing_profiles"], (
+        "les libellés sont les LIBELLÉS DU FORMULAIRE : ils ne renvoient "
+        "jamais à un autre champ par un nom que personne ne voit à l'écran"
+    )
+
+
+def test_roster_limit_est_un_plafond_et_rien_d_autre():
+    """`roster_limit` conflatait « combien » et « faut-il étendre » (#578).
+
+    Avec l'axe couverture explicite, il ne reste qu'un plafond. Son défaut
+    passe à 0 : le rollout progressif qu'il budgétait est fini (roster couvert
+    à 452/452), et un plafond ferait mentir le défaut `refresh`, qui promet
+    qu'un correctif atteint l'existant sans qu'on le demande.
+    """
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc = contenu[contenu.index("      roster_limit:"):contenu.index("      collect_interventions:")]
+    assert "default: 0" in bloc
+
+    desc = _descriptions()["roster_limit"].lower()
+    assert "cap" in desc, "c'est un plafond, et le libellé doit le dire"
+    assert "no cap" in desc, "`0` doit annoncer ce qu'il fait : pas de plafond"
+
+
+# ---------------------------------------------------------------------------
+# Les six combinaisons des deux axes
+# ---------------------------------------------------------------------------
+#
+# Le bloc de décision du job roster est EXÉCUTÉ, pas relu : c'est du bash, et
+# une table de correspondance vérifiée par lecture de texte ne prouve rien de
+# ce qui tourne. Le script est extrait du workflow et tronqué avant l'appel à
+# `generate_all_profiles.py` — aucune expression `${{ }}` ne s'y trouve avant
+# ce point, elles vivent toutes dans le bloc `env:`.
+
+def _script_decision_roster() -> str:
+    contenu = GENERATE.read_text(encoding="utf-8")
+    bloc = contenu[contenu.index("      - name: Extraction roster-driven (mode léger)"):]
+    bloc = bloc[bloc.index("        run: |\n") + len("        run: |\n"):]
+    lignes = []
+    for ligne in bloc.splitlines():
+        if ligne.strip().startswith("/usr/bin/time"):
+            break
+        lignes.append(ligne[10:] if ligne.startswith(" " * 10) else ligne)
+    script = "\n".join(lignes)
+    assert "${{" not in script, (
+        "le bloc de décision contient une expression GitHub Actions : elle "
+        "doit rester dans `env:`, sinon ce test ne peut plus l'exécuter."
+    )
+    return script
+
+
+def _flags(tmp_path, existing: str, coverage: str, limit: str = "0"):
+    # `OVERWRITE` est calculé par GHA (`inputs.existing_profiles == 'overwrite'`) :
+    # la ligne est vérifiée juste en dessous pour que cette reproduction ne
+    # puisse pas diverger en silence.
+    script = _script_decision_roster() + (
+        '\nprintf "FLAG:%s\\n" "${POP_FLAG[@]}" "${MERGE_FLAG[@]}" "${LIMIT_FLAG[@]}"\n'
+    )
+    resultat = subprocess.run(
+        ["bash", "-c", script],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        env={
+            "PATH": os.environ["PATH"],
+            "EXISTING_PROFILES": existing,
+            "ROSTER_COVERAGE": coverage,
+            "OVERWRITE": "true" if existing == "overwrite" else "false",
+            "ROSTER_LIMIT": limit,
+        },
+    )
+    assert resultat.returncode == 0, resultat.stderr
+    drapeaux = [l[len("FLAG:"):] for l in resultat.stdout.splitlines() if l.startswith("FLAG:")]
+    return [d for d in drapeaux if d], resultat.stdout
+
+
+def test_l_expression_overwrite_reste_alignee_sur_l_axe_1():
+    assert "OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}" in \
+        GENERATE.read_text(encoding="utf-8")
+
+
+def test_les_six_combinaisons_des_deux_axes_sont_atteignables(tmp_path):
+    """Deux axes DISJOINTS : 3 × 2, et les six se demandent.
+
+    Celle qui manquait : « recollecter l'existant EN FUSIONNANT et ajouter les
+    nouveaux ». Un seul champ ne pouvait pas la produire — c'est le défaut de
+    découpage, pas de vocabulaire, que #578 corrige.
+    """
+    attendu = {
+        ("leave-as-is", "add-uncovered-members"): ["--skip-existing"],
+        ("refresh", "add-uncovered-members"): [],
+        ("overwrite", "add-uncovered-members"): ["--no-merge"],
+        ("refresh", "current-members-only"): ["--refresh-existing"],
+        ("overwrite", "current-members-only"): ["--refresh-existing", "--no-merge"],
+    }
+    for (axe1, axe2), flags in attendu.items():
+        obtenus, _ = _flags(tmp_path, axe1, axe2)
+        assert obtenus == flags, f"{axe1} × {axe2} → {obtenus}, attendu {flags}"
+
+    # La sixième ne traite personne, et c'est une réponse, pas une panne : on
+    # ne touche pas à l'existant et on n'étend pas la couverture.
+    obtenus, sortie = _flags(tmp_path, "leave-as-is", "current-members-only")
+    assert obtenus == []
+    assert "Aucun membre à traiter" in sortie
+    # Manifeste VIDE et non absent : « ce job n'a écrit aucun profil » plutôt
+    # que « le job a échoué » (#450).
+    assert (tmp_path / "_manifest" / "profils-ecrits.txt").read_text(encoding="utf-8") == ""
+
+
+def test_le_plafond_est_orthogonal_aux_deux_axes(tmp_path):
+    """`roster_limit` ne déplace aucune des six cases : il les plafonne.
+
+    C'est le couplage que #578 supprime — la présence de `--limit` commandait
+    aussi la politique de rafraîchissement, si bien que `roster_limit=0`
+    rafraîchissait MOINS que `roster_limit=20`.
+    """
+    for axe1 in ("leave-as-is", "refresh", "overwrite"):
+        for axe2 in ("current-members-only", "add-uncovered-members"):
+            # La case vide sort avant tout calcul de plafond : plafonner un
+            # lot vide n'a pas de sens, et le dire coûterait un drapeau.
+            if (axe1, axe2) == ("leave-as-is", "current-members-only"):
+                continue
+            sans, _ = _flags(tmp_path, axe1, axe2, limit="0")
+            avec, _ = _flags(tmp_path, axe1, axe2, limit="20")
+            assert avec == sans + ["--limit", "20"], (
+                f"{axe1} × {axe2} : le plafond change la population "
+                f"({sans} → {avec})"
+            )
+
+
+def test_les_deux_axes_sont_propages_par_la_relance():
+    """Un run préempté doit repartir dans le MÊME mode (#414 §2).
+
+    Un input que la relance ne passe pas retombe sur son défaut sans erreur ni
+    trace : un run `overwrite` relancé en fusion additive, c'est le scénario de
+    doublons que ce mode existe pour éviter (#440).
+    """
+    passes = set(re.findall(r"-f ([a-z_]+)=", RETRY.read_text(encoding="utf-8")))
+    for nom in ("existing_profiles", "roster_coverage", "cold_start", "roster_limit"):
+        assert nom in passes, f"`{nom}` n'est pas propagé par la relance"
 
 
 def test_aucune_description_d_input_n_est_un_essai():

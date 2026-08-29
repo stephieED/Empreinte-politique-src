@@ -7,27 +7,36 @@ on:
     inputs:
       # These strings are the FORM LABELS: GitHub shows the description and
       # hides the input name. So they must be short, self-contained, and never
-      # reference another field by a name nobody can see on screen — the link
-      # between the first two reads from the text itself: both say "no merge",
-      # and what separates them — purging the cache vs keeping it — sits side
-      # by side in the two labels.
+      # reference another field by a name nobody can see on screen.
+      #
+      # TWO DISJOINT AXES (#578), plus the cache on its own. One field used to
+      # answer two questions at once, which is why no wording ever made it
+      # read straight. A menu also SHOWS its values, so the label no longer
+      # has to carry the whole meaning by itself.
       # The rationale lives in docs/technical_decisions.md, reachable by anchor.
+      existing_profiles:
+        description: "What happens to profiles already written. refresh re-collects and MERGES, so nothing acquired is lost. overwrite re-collects and REPLACES, dropping whatever today's collection does not return — for a key correction."
+        type: choice
+        options:
+          - leave-as-is
+          - refresh
+          - overwrite
+        default: refresh
+      roster_coverage:
+        description: "Whether this run also writes a first profile for parliamentary members who have none yet. Extending only ever creates; it never rewrites a profile that exists."
+        type: choice
+        options:
+          - current-members-only
+          - add-uncovered-members
+        default: add-uncovered-members
       cold_start:
-        description: "Re-collect and OVERWRITE existing profiles, purging the cache first. Slowest path. Drops whatever the fresh collection does not return."
-        type: boolean
-        default: false
-      overwrite_profiles:
-        description: "Re-collect and OVERWRITE existing profiles, reusing the cache. Drops whatever the fresh collection does not return. For a key correction; otherwise prefer the merging option below."
-        type: boolean
-        default: false
-      refresh_existing_only:
-        description: "Re-collect roster profiles already written, MERGING the result — propagates a collection fix without losing anything. Adds no new member. Left off, an existing profile is never re-collected."
+        description: "Purge the download caches and re-fetch every public source. Slowest path. Sets how fresh the source data is, and nothing about how profiles are written."
         type: boolean
         default: false
       roster_limit:
-        description: "How many roster members this run processes: new ones first, then profiles gone stale. 0 = no cap."
+        description: "Cap on how many parliamentary members this run processes, uncovered ones first then the stalest. 0 = no cap, the whole roster."
         type: number
-        default: 20
+        default: 0
       collect_interventions:
         description: "Collect floor speeches for the declared candidates. The group roster job never collects them, whatever this is set to."
         type: boolean
@@ -268,7 +277,7 @@ jobs:
           fi
 
       # ── Garde-fou #460 : écrasement sans collecte d'interventions ─────────
-      # `overwrite_profiles=true` (ou `cold_start=true`) lève `--no-merge` ;
+      # `existing_profiles=overwrite` lève `--no-merge` ;
       # `extract_interventions=false` lève `--skip-interventions`. Chacun est
       # correct isolément — l'un est le mode de correction de schéma, l'autre
       # le mode d'extraction rapide. Ensemble, ils réécrivent le profil SANS ce
@@ -287,8 +296,10 @@ jobs:
       # propager une correction de clé (#431/#432) sans repayer la collecte des
       # interventions est un choix valide dès lors qu'il est conscient. Ce qui
       # manquait n'était pas un veto, c'était de le rendre conscient AVANT
-      # d'engager une heure de runner. Même forme que le ::warning:: de
-      # `roster_refresh_existing` sans `overwrite_profiles` (#445).
+      # d'engager une heure de runner. C'est le SEUL ::warning:: qui reste sur
+      # cet axe (#578) : celui qui criait sur le mode fusionnant a été supprimé,
+      # le workflow ne pouvant pas savoir si un correctif porte sur une clé.
+      # Celui-ci, lui, chiffre la perte sur la baseline committée.
       #
       # Le signal porte sur une VARIATION, pas sur un niveau — c'est ce qui
       # manquait à la quality gate, dont la §3 se déclenchait sur 100 % du
@@ -297,16 +308,15 @@ jobs:
       # il n'y a rien à détruire, et un garde-fou qui crie à vide se fait ignorer.
       - name: Garde-fou — écrasement sans collecte d'interventions (#460)
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
           INTERVENTIONS: ${{ inputs.collect_interventions }}
         run: |
           set -euo pipefail
           # Condition alignée mot pour mot sur le calcul de MERGE_FLAG des jobs
           # d'extraction : c'est `--no-merge`, et lui seul, qui rend l'écrasement
           # destructeur. La désaligner rendrait ce garde-fou muet ou bavard.
-          if [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]]; then
-            echo "Fusion additive (ni fresh_run ni overwrite_profiles) : les interventions déjà acquises sont conservées."
+          if [[ "$OVERWRITE" != "true" ]]; then
+            echo "Fusion additive (existing_profiles != overwrite) : les interventions déjà acquises sont conservées."
             exit 0
           fi
           if [[ "$INTERVENTIONS" == "true" ]]; then
@@ -343,11 +353,11 @@ jobs:
             exit 0
           fi
 
-          echo "::warning::overwrite_profiles/fresh_run avec extract_interventions=false : ce run va EFFACER les ${TOTAL} interventions déjà acquises sur ${PROFILS} profil(s), ainsi que les tags_thematiques qui en dérivent et les tags_thematiques_agreges des groupes — deux champs publiés. Relancer avec extract_interventions=true pour les recollecter, ou assumer la perte via tolerer_pertes_profils (le contrôle de perte bloquera le commit sinon)."
+          echo "::warning::existing_profiles=overwrite avec extract_interventions=false : ce run va EFFACER les ${TOTAL} interventions déjà acquises sur ${PROFILS} profil(s), ainsi que les tags_thematiques qui en dérivent et les tags_thematiques_agreges des groupes — deux champs publiés. Relancer avec extract_interventions=true pour les recollecter, ou assumer la perte via tolerer_pertes_profils (le contrôle de perte bloquera le commit sinon)."
           {
             echo "### ⚠️ Interventions menacées par ce run"
             echo ""
-            echo "\`overwrite_profiles\`/\`fresh_run\` lève \`--no-merge\` et"
+            echo "\`existing_profiles=overwrite\` lève \`--no-merge\` et"
             echo "\`extract_interventions=false\` lève \`--skip-interventions\` :"
             echo "les profils seront réécrits **sans** les interventions que ce run"
             echo "ne collectera pas."
@@ -699,12 +709,19 @@ jobs:
           restore-keys: |
             public-data-cache-dossiers-
 
-      # cold_start=true → purge des profils bruts et du cache avant extraction.
-      - name: Nettoyage complet (cold_start uniquement)
+      # cold_start=true → purge des caches de téléchargement avant extraction.
+      # `cold_start` purge les CACHES DE TÉLÉCHARGEMENT, et rien d'autre
+      # (#578). Il supprimait aussi `raw_data/profiles/*.json`, ce qui est une
+      # politique d'écriture déguisée en politique de fraîcheur : un profil
+      # effacé n'a plus rien à fusionner, donc le mode écrivait par-dessus
+      # l'existant sans que personne ne l'ait demandé. Ce qu'on fait des
+      # profils déjà écrits se demande sur l'autre axe, `existing_profiles`.
+      # (Sans effet sur le corpus committé de toute façon : depuis #450 chaque
+      # job ne publie que ce qu'il a écrit, et `merge-and-pivot` refait son
+      # propre checkout.)
+      - name: Purge des caches de téléchargement (cold_start uniquement)
         if: ${{ inputs.cold_start }}
-        run: |
-          rm -rf .cache
-          find raw_data/profiles -name "*.json" -delete
+        run: rm -rf .cache
 
       # Cache-only : cet artifact provient du job extract-amendements-an (#251),
       # qui est bien en `needs:` de ce job (le commentaire disait l'inverse
@@ -712,8 +729,8 @@ jobs:
       # continue-on-error: true, donc il peut « réussir » sans avoir produit
       # d'artifact — en cas d'absence, on s'appuie sur ce que la restauration du
       # cache partagé public-data-cache-an-* contient déjà (#252). Placé après
-      # le nettoyage fresh_run (pas avant) : la lecture cache-only s'applique
-      # aussi en mode fresh_run, donc ne doit pas être effacée par le
+      # la purge cold_start (pas avant) : la lecture cache-only s'applique
+      # aussi en cold_start, donc ne doit pas être effacée par le
       # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
         id: amendements_artifact
@@ -748,8 +765,8 @@ jobs:
       # n'existe plus comme source depuis #528).
       # --only : un seul candidat par shard, donc --workers n'a plus d'effet
       # (le parallélisme inter-candidats est désormais porté par le matrix).
-      # cold_start=true  → --no-merge : écrasement complet.
-      # cold_start=false → fusion additive : données existantes préservées.
+      # existing_profiles=overwrite → --no-merge : écrasement complet.
+      # sinon                        → fusion additive : données existantes préservées.
       # /usr/bin/time -v : trace le pic de RSS (diagnostic OOM, voir le step
       # "Diagnostic mémoire runner" de ./.github/actions/bootstrap-extraction)
       # — n'apparaît dans les logs que si le process Python se termine
@@ -764,14 +781,16 @@ jobs:
       # extract-ue-officiel et extract-roster-groupes.
       - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |
           MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `existing_profiles=overwrite` écrase SANS purger le cache (#440,
+          # #578) : c'est le cas courant — on réécrit les profils à partir de
+          # données déjà téléchargées. Purger obligerait à re-télécharger
+          # ~300 Mo d'archives AN, sur une source dont l'indisponibilité a déjà
+          # bloqué trois chantiers. `cold_start` est l'autre axe, et il ne lève
+          # plus `--no-merge` : purger le cache ne dit rien de ce qu'on écrit.
+          [[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           INTERV_FLAG=()
           [[ "${{ inputs.collect_interventions }}" != "true" ]] && INTERV_FLAG=(--skip-interventions)
           # `--max-pages` a été RETIRÉ (#510) : il bornait la recherche
@@ -965,23 +984,32 @@ jobs:
           restore-keys: |
             public-data-cache-ue-
 
-      - name: Nettoyage complet (cold_start uniquement)
+      # `cold_start` purge les CACHES DE TÉLÉCHARGEMENT, et rien d'autre
+      # (#578). Il supprimait aussi `raw_data/profiles/*.json`, ce qui est une
+      # politique d'écriture déguisée en politique de fraîcheur : un profil
+      # effacé n'a plus rien à fusionner, donc le mode écrivait par-dessus
+      # l'existant sans que personne ne l'ait demandé. Ce qu'on fait des
+      # profils déjà écrits se demande sur l'autre axe, `existing_profiles`.
+      # (Sans effet sur le corpus committé de toute façon : depuis #450 chaque
+      # job ne publie que ce qu'il a écrit, et `merge-and-pivot` refait son
+      # propre checkout.)
+      - name: Purge des caches de téléchargement (cold_start uniquement)
         if: ${{ inputs.cold_start }}
-        run: |
-          rm -rf .cache
-          find raw_data/profiles -name "*.json" -delete
+        run: rm -rf .cache
 
       # --source ue → Open Data Portal Parlement européen uniquement (pas de FR).
       - name: Extraction UE (Open Data Portal EP)
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |
           MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `existing_profiles=overwrite` écrase SANS purger le cache (#440,
+          # #578) : c'est le cas courant — on réécrit les profils à partir de
+          # données déjà téléchargées. Purger obligerait à re-télécharger
+          # ~300 Mo d'archives AN, sur une source dont l'indisponibilité a déjà
+          # bloqué trois chantiers. `cold_start` est l'autre axe, et il ne lève
+          # plus `--no-merge` : purger le cache ne dit rien de ce qu'on écrit.
+          [[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           python3 src/generate_all_profiles.py --source ue --workers 1 --manifest-out _manifest/profils-ecrits.txt "${MERGE_FLAG[@]}"
 
       # #450 : n'uploader QUE ce que ce job a écrit. Le `path:` pointe sur le
@@ -1217,11 +1245,13 @@ jobs:
   # Déploiement progressif de l'extraction pilotée par la composition réelle
   # des groupes parlementaires (#188/#190), en alternative à la liste
   # éditoriale raw_data/candidats.json (~8 personnes) : le roster couvre
-  # ~750+ membres. `roster_extraction_limit` (défaut 20) borne le volume
-  # traité par run pour rester dans un budget CI raisonnable pendant le
-  # rollout — PAS de run complet dans cette sous-issue (voir #192, hors
-  # périmètre : l'activation d'un run complet planifié est une décision
-  # ultérieure distincte, schedule: cron toujours commenté ci-dessus).
+  # ~750+ membres. `roster_limit` PLAFONNE le volume traité par run ; son
+  # défaut est passé de 20 à 0 (pas de plafond) avec #578 — le rollout
+  # progressif qu'il budgétait est terminé (roster couvert à 452/452), et un
+  # plafond ferait mentir le défaut `existing_profiles=refresh`, qui promet
+  # qu'un correctif de collecte atteint l'existant sans qu'on le demande.
+  # L'activation d'un run PLANIFIÉ reste une décision distincte (schedule:
+  # cron toujours commenté ci-dessus).
   #
   # Séquencé après les autres jobs d'extraction (needs: ci-dessous, #222). Ce
   # séquencement avait deux justifications ; une seule tient encore (#412 §2.5,
@@ -1293,7 +1323,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # JOB PRÉPARATOIRE — Calcul du matrix de shards roster (#394)
   #
-  # Le nombre de shards dépend de roster_extraction_limit :
+  # Le nombre de shards dépend de roster_limit :
   #   - limite > 0 (rollout progressif, cas par défaut) : UN seul shard, pour
   #     une raison SÉMANTIQUE et non de coût — --shard précède --limit, donc la
   #     limite s'applique par shard et N shards feraient N fois le lot demandé.
@@ -1441,7 +1471,7 @@ jobs:
           set -euo pipefail
           if [[ -z "${ROSTER_LIMIT}" || "${ROSTER_LIMIT}" == "0" ]]; then
             TOTAL="${ROSTER_SHARDS}"
-            echo "Run complet (limite ${ROSTER_LIMIT:-0}) : ${TOTAL} shards."
+            echo "Aucun plafond (roster_limit=${ROSTER_LIMIT:-0}) : ${TOTAL} shards."
           else
             # TOTAL=1 en rollout progressif : raison SÉMANTIQUE, pas de coût
             # (documentée par #467, elle ne l'était nulle part). Dans
@@ -1449,7 +1479,7 @@ jobs:
             # la limite vaut donc PAR SHARD. `limite=100` sur 8 shards ne
             # traiterait pas 100 candidats mais jusqu'à 800 — on demanderait un
             # lot et on en obtiendrait huit. Forcer 1 shard est ce qui rend
-            # `roster_extraction_limit` exact.
+            # `roster_limit` exact.
             #
             # Alternative écartée (#471) — découper quand même en 8 tranches
             # de limite/8, en passant --limit ceil(L/N) à chaque shard.
@@ -1652,11 +1682,18 @@ jobs:
           restore-keys: |
             public-data-cache-dossiers-
 
-      - name: Nettoyage complet (cold_start uniquement)
+      # `cold_start` purge les CACHES DE TÉLÉCHARGEMENT, et rien d'autre
+      # (#578). Il supprimait aussi `raw_data/profiles/*.json`, ce qui est une
+      # politique d'écriture déguisée en politique de fraîcheur : un profil
+      # effacé n'a plus rien à fusionner, donc le mode écrivait par-dessus
+      # l'existant sans que personne ne l'ait demandé. Ce qu'on fait des
+      # profils déjà écrits se demande sur l'autre axe, `existing_profiles`.
+      # (Sans effet sur le corpus committé de toute façon : depuis #450 chaque
+      # job ne publie que ce qu'il a écrit, et `merge-and-pivot` refait son
+      # propre checkout.)
+      - name: Purge des caches de téléchargement (cold_start uniquement)
         if: ${{ inputs.cold_start }}
-        run: |
-          rm -rf .cache
-          find raw_data/profiles -name "*.json" -delete
+        run: rm -rf .cache
 
       # Cache-only : cet artifact provient du job extract-amendements-an (#251),
       # qui est bien en `needs:` de ce job (le commentaire disait l'inverse
@@ -1664,8 +1701,8 @@ jobs:
       # continue-on-error: true, donc il peut « réussir » sans avoir produit
       # d'artifact — en cas d'absence, on s'appuie sur ce que la restauration du
       # cache partagé public-data-cache-an-* contient déjà (#252). Placé après
-      # le nettoyage fresh_run (pas avant) : la lecture cache-only s'applique
-      # aussi en mode fresh_run, donc ne doit pas être effacée par le
+      # la purge cold_start (pas avant) : la lecture cache-only s'applique
+      # aussi en cold_start, donc ne doit pas être effacée par le
       # `rm -rf .cache` ci-dessus.
       - name: Download artifact amendements AN (optionnel)
         id: amendements_artifact
@@ -1742,8 +1779,7 @@ jobs:
           [[ "$CODE" == "0" ]] || exit "$CODE"
 
       # Même fan-out par membre que extract-an (coût par candidat identique,
-      # seul le volume change) — roster_extraction_limit borne ce
-      # volume pendant le rollout progressif.
+      # seul le volume change) — `roster_limit` plafonne ce volume.
       #
       # Mode d'extraction léger (#357, sous-issue 6/6 de #351) : --skip-interventions
       # --skip-dossiers-legislatifs sont *toujours* appliqués ici, indépendamment de
@@ -1767,46 +1803,64 @@ jobs:
       - name: Extraction roster-driven (mode léger)
         if: ${{ hashFiles('raw_data/roster_candidats.json') != '' }}
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          # Écrits en clair dans le log par la substitution GHA : c'est la
+          # seule source EXACTE dont dispose retry-generate-data.yml pour
+          # reconstruire les inputs d'un run préempté (même mécanisme que
+          # ROSTER_LIMIT).
+          EXISTING_PROFILES: ${{ inputs.existing_profiles }}
+          ROSTER_COVERAGE: ${{ inputs.roster_coverage }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
           ROSTER_LIMIT: ${{ inputs.roster_limit }}
-          REFRESH_EXISTING: ${{ inputs.refresh_existing_only }}
         run: |
+          # ── DEUX AXES DISJOINTS (#578) ──────────────────────────────────
+          # Axe 1 (`existing_profiles`) : ce qu'on fait des profils DÉJÀ
+          # écrits. Axe 2 (`roster_coverage`) : si on en écrit de NOUVEAUX.
+          # Les six combinaisons sont atteignables, dont « recollecter
+          # l'existant EN FUSIONNANT et ajouter les nouveaux », qu'aucun
+          # réglage ne permettait de demander avant #578.
+          #
+          #                        | current-members-only | add-uncovered-members
+          #   ---------------------+----------------------+----------------------
+          #   leave-as-is          | rien à faire         | --skip-existing
+          #   refresh              | --refresh-existing   | (aucun drapeau)
+          #   overwrite            | --refresh-existing   | (aucun drapeau)
+          #                        |   --no-merge         |   --no-merge
+          #
+          # `cold_start` n'apparaît pas : il purge le cache de téléchargement,
+          # ce qui ne dit rien de ce qu'on écrit. Écraser SANS purger le cache
+          # est le cas courant (#440) — purger obligerait à re-télécharger
+          # ~300 Mo d'archives AN, sur une source dont l'indisponibilité a
+          # déjà bloqué trois chantiers.
           MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          [[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+
+          # `--skip-existing` est STRICT depuis #578 : plus aucune exemption
+          # implicite. Recollecter l'existant se demande en ne le posant pas,
+          # jamais en espérant qu'un plafond de volume le fasse.
+          POP_FLAG=()
+          if [[ "$EXISTING_PROFILES" == "leave-as-is" ]]; then
+            if [[ "$ROSTER_COVERAGE" == "current-members-only" ]]; then
+              # Combinaison licite et vide : on ne touche pas à l'existant et
+              # on n'étend pas la couverture. Le manifeste vide dit « ce job
+              # n'a écrit aucun profil » — et non « le job a échoué » (#450).
+              echo "Aucun membre à traiter : existing_profiles=leave-as-is et roster_coverage=current-members-only. Les profils écrits restent tels quels, la couverture n'est pas étendue."
+              mkdir -p _manifest && : > _manifest/profils-ecrits.txt
+              exit 0
+            fi
+            POP_FLAG=(--skip-existing)
+          elif [[ "$ROSTER_COVERAGE" == "current-members-only" ]]; then
+            # --refresh-existing (#445) : ne traiter que l'existant. Il exclut
+            # --skip-existing par construction (le script refuse la
+            # combinaison, qui ne traiterait personne).
+            POP_FLAG=(--refresh-existing)
+          fi
+          echo "Population : existing_profiles=${EXISTING_PROFILES} × roster_coverage=${ROSTER_COVERAGE} → ${POP_FLAG[*]:-aucun drapeau (tout le roster)} ${MERGE_FLAG[*]:-(fusion additive)}"
+
+          # `--limit` est un PLAFOND, et rien d'autre (#578). Il ne commande
+          # plus aucune politique de rafraîchissement : c'est ce couplage qui
+          # faisait que `roster_limit=0` rafraîchissait MOINS que `20`.
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
-          # --skip-existing pilotable (#445). En rollout normal il porte le
-          # déploiement progressif (#224) : ne pas repayer le réseau pour un
-          # profil déjà écrit. Mais il s'applique AVANT MERGE_FLAG, donc un run
-          # `overwrite_profiles=true` sautait quand même tous les profils déjà
-          # committés — c'est-à-dire précisément ceux qu'une correction de fond
-          # doit atteindre. Aucune combinaison d'inputs ne pouvait alors
-          # propager la clé corrigée de #440 aux ~181 profils de roster déjà
-          # écrits sur la clé écrasée.
-          #
-          # Ne pas compter sur `roster_extraction_limit=0` pour y suppléer :
-          # sans --limit, le chemin de rafraîchissement de #224
-          # (_select_candidats_couverture) n'est pas emprunté du tout, et
-          # --skip-existing saute alors chaque profil existant. Un run à pleine
-          # échelle ne corrige donc RIEN de l'existant — il ne fait qu'étendre
-          # la frontière.
-          SKIP_FLAG=(--skip-existing)
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && SKIP_FLAG=()
-          # --refresh-existing (#445) : ne traiter que l'existant. Il exclut
-          # --skip-existing par construction (le script refuse la combinaison,
-          # qui ne traiterait personne), d'où la levée inconditionnelle ici.
-          REFRESH_FLAG=()
-          if [[ "$REFRESH_EXISTING" == "true" ]]; then
-            REFRESH_FLAG=(--refresh-existing)
-            SKIP_FLAG=()
-            if [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]]; then
-              echo "::warning::roster_refresh_existing=true sans overwrite_profiles : les profils existants seront FUSIONNÉS, pas écrasés. Une correction de clé laisserait alors les entrées erronées en place, à côté des corrigées."
-            fi
-          fi
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
@@ -1832,7 +1886,7 @@ jobs:
             --candidats raw_data/roster_candidats.json \
             --workers 1 \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
-            "${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume \
+            "${POP_FLAG[@]}" --resume \
             --skip-interventions --skip-dossiers-legislatifs \
             --budget-collecte-secondes 0 \
             --manifest-out _manifest/profils-ecrits.txt \
@@ -2048,13 +2102,13 @@ jobs:
       #   fichiers SOURCES et ne réécrit que ceux-là. La baseline n'a jamais eu
       #   besoin de transiter par un artifact, ce job faisant son propre
       #   checkout ;
-      # - `overwrite_profiles` n'est donc plus défait à cette étape : la version
+      # - un écrasement n'est donc plus défait à cette étape : la version
       #   périmée d'un profil régénéré n'est plus présente pour être réunie à la
       #   version corrigée.
       #
-      # Attention en lisant `fresh_run` : la purge de `raw_data/profiles/` que
-      # fait ce mode a lieu sur les runners d'EXTRACTION, pas ici. Un profil
-      # qu'aucun job d'extraction ne couvre survit donc à un `fresh_run` par le
+      # `cold_start` ne purge plus `raw_data/profiles/` depuis #578 : il ne
+      # touche que les caches de téléchargement des runners d'extraction. Un
+      # profil qu'aucun job d'extraction ne couvre survit de toute façon par le
       # checkout de ce job — c'était déjà le cas avant #450.
       # #528 : plus de `_artifacts/senat` — le job qui le produisait a été
       # retiré avec le Sénat. Un répertoire absent est un no-op pour
@@ -2071,18 +2125,20 @@ jobs:
       # --enrich-parltrack : enrichit les pivots MEP si .cache/parltrack/ est
       #                      disponible ; sinon ajoute un warning fallback.
       # --parltrack-status-out : fichier JSON lu par check_quality_gate.py §5.
-      # cold_start=true  → --no-merge : recréation complète des pivots.
-      # cold_start=false → fusion additive des pivots (défaut).
+      # existing_profiles=overwrite → --no-merge : recréation complète des pivots.
+      # sinon                        → fusion additive des pivots (défaut).
       - name: Normalisation pivot + enrichissement ParlTrack
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |
           MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `existing_profiles=overwrite` écrase SANS purger le cache (#440,
+          # #578) : c'est le cas courant — on réécrit les profils à partir de
+          # données déjà téléchargées. Purger obligerait à re-télécharger
+          # ~300 Mo d'archives AN, sur une source dont l'indisponibilité a déjà
+          # bloqué trois chantiers. `cold_start` est l'autre axe, et il ne lève
+          # plus `--no-merge` : purger le cache ne dit rien de ce qu'on écrit.
+          [[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           # --no-checkpoint : une passe --pivot-only n'a rien à reprendre (pas
           # de --resume ici, ni sur la passe roster qui suit). Sans ce drapeau,
           # elle écrit `raw_data/profiles/.generation_checkpoint.json` — un
@@ -2185,14 +2241,16 @@ jobs:
       - name: Normalisation pivot roster-driven
         if: ${{ hashFiles('raw_data/roster_candidats.json') != '' }}
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |
           MERGE_FLAG=()
-          # `overwrite_profiles` écrase sans purger le cache (#440) : purger
-          # obligerait à re-télécharger ~300 Mo d'archives AN, sur une source
-          # dont l'indisponibilité a déjà bloqué trois chantiers.
-          [[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
+          # `existing_profiles=overwrite` écrase SANS purger le cache (#440,
+          # #578) : c'est le cas courant — on réécrit les profils à partir de
+          # données déjà téléchargées. Purger obligerait à re-télécharger
+          # ~300 Mo d'archives AN, sur une source dont l'indisponibilité a déjà
+          # bloqué trois chantiers. `cold_start` est l'autre axe, et il ne lève
+          # plus `--no-merge` : purger le cache ne dit rien de ce qu'on écrit.
+          [[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)
           # --no-checkpoint : même raison que la passe précédente (#518).
           python3 src/generate_all_profiles.py \
             --pivot-only \
@@ -2208,13 +2266,14 @@ jobs:
             --profiles-dir pivot_data/profiles \
             --out-dir pivot_data/partis
 
-      # fresh_run / overwrite_profiles → recréation complète des groupes.
+      # existing_profiles=overwrite → recréation complète des groupes.
       # Sinon → --merge-existing : membres absents du roster live réintégrés
       #         depuis le fichier précédent (résilience réseau).
       #
-      # `overwrite_profiles` agit ici comme `fresh_run` (#440) : réintégrer des
-      # membres depuis un fichier de groupe produit avec l'ancien schéma
-      # ramènerait précisément les données que l'écrasement vise à remplacer.
+      # Réintégrer des membres depuis un fichier de groupe produit avec
+      # l'ancien schéma ramènerait précisément les données que l'écrasement
+      # vise à remplacer (#440). `cold_start` ne commande plus ce choix (#578) :
+      # il purge le cache de téléchargement, pas la politique d'écriture.
       #
       # `--rosters-bruts` : la composition vient du roster que
       # `prepare-roster-matrix` a collecté au début du run, pas d'un fetch
@@ -2255,11 +2314,10 @@ jobs:
       # hard-faile toujours sur une fiche de groupe absente ou invalide.
       - name: Générer les profils de groupe parlementaire réel
         env:
-          FRESH: ${{ inputs.cold_start }}
-          OVERWRITE: ${{ inputs.overwrite_profiles }}
+          OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |
           MERGE_FLAG=()
-          [[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]] && MERGE_FLAG=(--merge-existing)
+          [[ "$OVERWRITE" != "true" ]] && MERGE_FLAG=(--merge-existing)
           CODE=0
           python3 src/generate_group_profiles.py \
             --config raw_data/groupes_reels.json \
@@ -2349,7 +2407,7 @@ jobs:
           # (close) demandait de le calibrer « en fonction des résultats réels » ;
           # la décision prise en réponse est [[seuil-couverture-groupe]] :
           # conserver --groupe-min-members 1 et n'activer le seuil relatif QUE
-          # lorsqu'un run à pleine échelle (roster_extraction_limit=0, ~750
+          # lorsqu'un run à pleine échelle (roster_limit=0, ~750
           # membres) aura fourni des taux de couverture représentatifs. Les
           # chiffres à regarder pour trancher : taux_couverture_pct dans
           # coherence.ecart_couverture_roster (audit_groupe_dataset.py). Ce
@@ -2405,7 +2463,7 @@ jobs:
       # champs PUBLIÉS. Personne ne l'a vu.
       #
       # Ce n'est pas un défaut de collecte : `extract_interventions=false` a
-      # sauté la collecte (voulu, mode rapide) et `overwrite_profiles=true` a
+      # sauté la collecte (voulu, mode rapide) et `existing_profiles=overwrite` a
       # réécrit les profils sans elles (voulu aussi, c'est ce qui propage une
       # correction de clé). Deux comportements corrects dont la combinaison
       # détruit une donnée acquise — et qui ne se voit qu'en comparant l'avant

@@ -5,7 +5,7 @@ avec elles 647 `tags_thematiques` et 497 tags agrégés — des champs **publié
 Personne ne l'a vu.
 
 Ni la collecte ni l'écrasement n'étaient fautifs : `extract_interventions=false`
-saute la collecte (voulu), `overwrite_profiles=true` réécrit sans ce qui n'a pas
+saute la collecte (voulu), `existing_profiles=overwrite` réécrit sans ce qui n'a pas
 été collecté (voulu aussi — c'est ce qui propage une correction de clé). Deux
 comportements corrects dont la combinaison détruit une donnée acquise.
 

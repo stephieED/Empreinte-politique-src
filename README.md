@@ -756,17 +756,25 @@ Same tunables as the workflow's `workflow_dispatch` inputs, passed as
 environment variables:
 
 ```bash
-WORKERS=4 ROSTER_EXTRACTION_LIMIT=0 EXTRACT_INTERVENTIONS=true ./scripts/generate_data_local.sh
+WORKERS=4 EXISTING_PROFILES=overwrite EXTRACT_INTERVENTIONS=true ./scripts/generate_data_local.sh
 ```
 
 | Variable | Default | Same as `workflow_dispatch` input |
 |---|---|---|
-| `FRESH_RUN` | `false` | `cold_start` |
-| `THRESHOLD` | `3` | `threshold` |
-| `WORKERS` | `1` (sequential) | `workers` |
+| `EXISTING_PROFILES` | `refresh` | `existing_profiles` |
+| `ROSTER_COVERAGE` | `add-uncovered-members` | `roster_coverage` |
+| `COLD_START` (alias `FRESH_RUN`) | `false` | `cold_start` |
+| `THRESHOLD` | `3` | `incomplete_read_threshold` |
+| `WORKERS` | `1` (sequential) | *(local-only: frozen at 1 in CI)* |
 | `EXTRACT_INTERVENTIONS` | `false` | `collect_interventions` |
-| `ROSTER_EXTRACTION_LIMIT` | `20` | `roster_limit` |
+| `ROSTER_EXTRACTION_LIMIT` | `0` (no cap) | `roster_limit` |
 | `BACKGROUND` | `true` | *(local-only, no CI equivalent)* |
+
+Two disjoint axes (#578): `EXISTING_PROFILES` decides what happens to profiles
+already written (`leave-as-is` / `refresh`, merging / `overwrite`, replacing),
+`ROSTER_COVERAGE` decides whether members with no profile get one, and
+`COLD_START` only purges the download caches. See
+`docs/technical_decisions.md#deux-axes-formulaire-578`.
 
 Each stage keeps the CI job's `continue-on-error` behavior: a failure in one
 source (e.g. ParlTrack down) doesn't stop the rest. Unlike CI, nothing is

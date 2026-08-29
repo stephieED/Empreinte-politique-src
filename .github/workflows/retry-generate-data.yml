@@ -183,9 +183,9 @@ jobs:
       # (l'API Actions n'expose pas les inputs d'un workflow_dispatch passé).
       # cold_start est lu de façon fiable via la conclusion du step conditionnel
       # dédié ; les autres valeurs sont extraites du texte résolu des steps
-      # (collect_interventions/roster_limit, substitués
-      # directement par ${{ inputs.* }} dans le script ou dans son bloc env:)
-      # ou du rapport stdout de check_quality_gate.py
+      # (existing_profiles/roster_coverage/collect_interventions/roster_limit,
+      # substitués directement par ${{ inputs.* }} dans le script ou dans son
+      # bloc env:) ou du rapport stdout de check_quality_gate.py
       # (incomplete_read_threshold).
       # En cas d'échec d'extraction d'une valeur, retombe sur le défaut déclaré
       # de generate-data.yml pour cet input (dégradation documentée, pas un
@@ -198,7 +198,7 @@ jobs:
       # `select(.name==$n)`. Toute la reconstruction retombait donc
       # silencieusement sur les défauts — la « dégradation documentée » était
       # devenue systématique (un run cold_start=true était relancé en
-      # incrémental, un run roster_limit=0 relancé à 20). job_log()
+      # incrémental, un run sans plafond relancé avec un plafond). job_log()
       # matche désormais `<préfixe>` OU `<préfixe> (…)`, et privilégie un shard
       # ayant réussi (son log est complet ; celui d'un shard préempté peut être
       # tronqué avant même la ligne `Run ...`).
@@ -258,7 +258,7 @@ jobs:
           if jq -e '[.jobs[]
               | select(.name == "extract-an" or (.name | startswith("extract-an (")))
               | .steps[]
-              | select(.name == "Nettoyage complet (cold_start uniquement)")
+              | select(.name == "Purge des caches de téléchargement (cold_start uniquement)")
               | select(.conclusion == "success")] | length > 0' "$jobs_json" >/dev/null 2>&1; then
             cold_start=true
           fi
@@ -272,18 +272,6 @@ jobs:
           # coup les valeurs suivantes, correctement extractibles, plutôt que
           # de dégrader uniquement celle en cause vers son défaut.
           an_log=$(job_log "extract-an")
-          # overwrite_profiles : pas de step conditionnel dédié pour le détecter
-          # (il ne purge rien, c'est tout son intérêt). Il se déduit de la
-          # combinaison « --no-merge présent dans la commande d'extraction, mais
-          # fresh_run faux » — les deux seuls inputs qui posent ce flag.
-          #
-          # Sans cette reconstruction, un run overwrite_profiles=true préempté
-          # serait relancé en fusion additive : c'est exactement le scénario de
-          # doublons que ce mode existe pour éviter (#440).
-          overwrite_profiles=false
-          if [[ "$cold_start" != "true" ]] && echo "$an_log" | grep -q -- '--no-merge'; then
-            overwrite_profiles=true
-          fi
           # Le texte source "--skip-interventions" est toujours présent dans
           # le script échoué, que la condition ait été vraie ou non à
           # l'exécution (GitHub échoue le SOURCE bash substitué, pas la trace
@@ -314,11 +302,41 @@ jobs:
           fi
           [[ "$roster_limit" =~ ^[0-9]+$ ]] || roster_limit=""
 
+          # Les DEUX AXES de #578, lus dans le bloc env: résolu du step
+          # d'extraction roster — seule source EXACTE des deux valeurs. Un
+          # `choice` n'a pas de step conditionnel dédié qui trahirait sa
+          # valeur, et l'axe 1 n'est pas déductible de `--no-merge` seul :
+          # `leave-as-is` et `refresh` posent tous deux la fusion additive, et
+          # ne diffèrent que par la population traitée.
+          #
+          # Repli si le bloc env: manque : la présence de `--no-merge` dans la
+          # commande d'extraction AN prouve au moins l'écrasement — c'est le
+          # mode dont la perte silencieuse coûte le plus cher (#440). Sinon on
+          # retombe sur le défaut déclaré, `refresh`, qui est le mode sûr.
+          existing_profiles=$(echo "$roster_log" | grep -oP 'EXISTING_PROFILES: \K[a-z-]+' | head -1) || true
+          case "$existing_profiles" in
+            leave-as-is|refresh|overwrite) ;;
+            *)
+              if echo "$an_log" | grep -q -- '--no-merge'; then
+                existing_profiles=overwrite
+              else
+                existing_profiles=refresh
+              fi
+              ;;
+          esac
+
+          roster_coverage=$(echo "$roster_log" | grep -oP 'ROSTER_COVERAGE: \K[a-z-]+' | head -1) || true
+          case "$roster_coverage" in
+            current-members-only|add-uncovered-members) ;;
+            *) roster_coverage=add-uncovered-members ;;
+          esac
+
           echo "cold_start=${cold_start}" >> "$GITHUB_OUTPUT"
-          echo "overwrite_profiles=${overwrite_profiles}" >> "$GITHUB_OUTPUT"
+          echo "existing_profiles=${existing_profiles}" >> "$GITHUB_OUTPUT"
+          echo "roster_coverage=${roster_coverage}" >> "$GITHUB_OUTPUT"
           echo "incomplete_read_threshold=${incomplete_read_threshold:-3}" >> "$GITHUB_OUTPUT"
           echo "collect_interventions=${collect_interventions}" >> "$GITHUB_OUTPUT"
-          echo "roster_limit=${roster_limit:-20}" >> "$GITHUB_OUTPUT"
+          echo "roster_limit=${roster_limit:-0}" >> "$GITHUB_OUTPUT"
 
       # if: always() (#336) : ce step ne doit pas dépendre du succès du step
       # best-effort précédent. Ce dernier est documenté comme dégradable (cf.
@@ -339,10 +357,11 @@ jobs:
             --repo "${REPO}" \
             --ref "${{ github.event.workflow_run.head_branch }}" \
             -f cold_start="${{ steps.inputs.outputs.cold_start || 'false' }}" \
-            -f overwrite_profiles="${{ steps.inputs.outputs.overwrite_profiles || 'false' }}" \
+            -f existing_profiles="${{ steps.inputs.outputs.existing_profiles || 'refresh' }}" \
+            -f roster_coverage="${{ steps.inputs.outputs.roster_coverage || 'add-uncovered-members' }}" \
             -f incomplete_read_threshold="${{ steps.inputs.outputs.incomplete_read_threshold || '3' }}" \
             -f collect_interventions="${{ steps.inputs.outputs.collect_interventions || 'false' }}" \
-            -f roster_limit="${{ steps.inputs.outputs.roster_limit || '20' }}"
+            -f roster_limit="${{ steps.inputs.outputs.roster_limit || '0' }}"
 
       - name: Résumé — trace visible du résultat
         if: always()

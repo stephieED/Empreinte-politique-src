@@ -16,7 +16,7 @@ description: >
 #
 # Ce qui n'est PAS ici, volontairement : `actions/checkout` (préalable à
 # l'action elle-même), la « Semaine ISO courante », le « Nettoyage complet
-# (fresh_run) », `actions/cache` et les MERGE_FLAG/INTERV_FLAG/MAX_PAGES_FLAG —
+# (cold_start) », `actions/cache` et les MERGE_FLAG/INTERV_FLAG/MAX_PAGES_FLAG —
 # verdicts « garder dupliqué » de #412 §3, chacun pour une raison propre (clé de
 # cache variable par job, corps divergent, ou couplage au grep de logs de
 # retry-generate-data.yml).

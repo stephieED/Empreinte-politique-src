@@ -19,13 +19,20 @@
 # correspondant (voir commentaires) : un échec n'interrompt pas le reste.
 #
 # Options d'entrée, mêmes défauts que workflow_dispatch dans generate-data.yml :
-#   FRESH_RUN=false|true              (défaut: false — fusion additive)
+#   EXISTING_PROFILES=leave-as-is|refresh|overwrite
+#                                     (défaut: refresh — recollecte l'existant
+#                                      en FUSIONNANT ; overwrite pose
+#                                      --no-merge, cf. #578)
+#   ROSTER_COVERAGE=current-members-only|add-uncovered-members
+#                                     (défaut: add-uncovered-members)
+#   COLD_START=false|true             (défaut: false — purge les caches de
+#                                      téléchargement, rien d'autre)
 #   THRESHOLD=<n>                     (défaut: 3)
 #   WORKERS=<n>                       (défaut: 1 — séquentiel, cf. retour
 #                                      d'expérience utilisatrice sur la
 #                                      parallélisation, docs/technical_decisions.md)
 #   EXTRACT_INTERVENTIONS=false|true  (défaut: false)
-#   ROSTER_EXTRACTION_LIMIT=<n>       (défaut: 20, 0 = pas de limite)
+#   ROSTER_EXTRACTION_LIMIT=<n>       (défaut: 0 = pas de plafond)
 #   BACKGROUND=true|false             (défaut: true — se relance soi-même via
 #                                      nohup et rend la main immédiatement ;
 #                                      false = tourne au premier plan, logs
@@ -62,11 +69,24 @@ if [ "${BACKGROUND:-true}" = "true" ] && [ -z "${_GDL_CHILD:-}" ]; then
   exit 0
 fi
 
-FRESH_RUN="${FRESH_RUN:-false}"
+# Deux axes disjoints, mêmes noms et mêmes défauts qu'en CI (#578).
+# `FRESH_RUN` reste accepté comme alias historique de `COLD_START`.
+EXISTING_PROFILES="${EXISTING_PROFILES:-refresh}"
+ROSTER_COVERAGE="${ROSTER_COVERAGE:-add-uncovered-members}"
+COLD_START="${COLD_START:-${FRESH_RUN:-false}}"
 THRESHOLD="${THRESHOLD:-3}"
 WORKERS="${WORKERS:-1}"
 EXTRACT_INTERVENTIONS="${EXTRACT_INTERVENTIONS:-false}"
-ROSTER_EXTRACTION_LIMIT="${ROSTER_EXTRACTION_LIMIT:-20}"
+ROSTER_EXTRACTION_LIMIT="${ROSTER_EXTRACTION_LIMIT:-0}"
+
+case "$EXISTING_PROFILES" in
+  leave-as-is|refresh|overwrite) ;;
+  *) echo "[!] EXISTING_PROFILES=$EXISTING_PROFILES inconnu (leave-as-is|refresh|overwrite)." >&2; exit 2 ;;
+esac
+case "$ROSTER_COVERAGE" in
+  current-members-only|add-uncovered-members) ;;
+  *) echo "[!] ROSTER_COVERAGE=$ROSTER_COVERAGE inconnu (current-members-only|add-uncovered-members)." >&2; exit 2 ;;
+esac
 
 if [ -f .venv/bin/activate ]; then
   # shellcheck disable=SC1091
@@ -85,17 +105,18 @@ if [ -z "${_GDL_CHILD:-}" ]; then
 fi
 
 MERGE_FLAG=()
-[ "$FRESH_RUN" = "true" ] && MERGE_FLAG=(--no-merge)
+[ "$EXISTING_PROFILES" = "overwrite" ] && MERGE_FLAG=(--no-merge)
 
 INTERV_FLAG=()
 [ "$EXTRACT_INTERVENTIONS" != "true" ] && INTERV_FLAG=(--skip-interventions)
 # `MAX_PAGES`/`--max-pages` ont été retirés avec la recherche d'interventions
 # NosDéputés (#510) : elle n'alimentait que le repli, lui-même retiré.
 
-if [ "$FRESH_RUN" = "true" ]; then
-  echo "=== Nettoyage complet (fresh_run) ==="
+if [ "$COLD_START" = "true" ]; then
+  # Comme en CI (#578) : purge des CACHES DE TÉLÉCHARGEMENT, et rien d'autre.
+  # Ce qu'on fait des profils déjà écrits est l'autre axe.
+  echo "=== Purge des caches de téléchargement (cold_start) ==="
   rm -rf .cache
-  find raw_data/profiles -name "*.json" -delete
 fi
 
 echo "=== [1/6] extract-amendements-an : index amendements (17/16/15) ==="
@@ -133,7 +154,7 @@ for dump in [_DUMP_DOSSIERS, _DUMP_PLENARY_AMENDMENTS, _DUMP_COMMITTEE_AMENDMENT
         ok = False
 sys.exit(0 if ok else 1)
 PYEOF
-python3 "$PARLTRACK_SCRIPT" "$FRESH_RUN" || echo "[!] extract-parltrack en échec (continue-on-error, comme en CI)"
+python3 "$PARLTRACK_SCRIPT" "$COLD_START" || echo "[!] extract-parltrack en échec (continue-on-error, comme en CI)"
 rm -f "$PARLTRACK_SCRIPT"
 trap - EXIT
 
@@ -159,13 +180,30 @@ if [ "$ROSTER_CODE" != "0" ]; then
 else
 LIMIT_FLAG=()
 [ -n "$ROSTER_EXTRACTION_LIMIT" ] && [ "$ROSTER_EXTRACTION_LIMIT" != "0" ] && LIMIT_FLAG=(--limit "$ROSTER_EXTRACTION_LIMIT")
+# Même table que le job roster de generate-data.yml (#578) : la population
+# vient des deux axes, jamais de la présence d'un plafond.
+POP_FLAG=()
+SAUTER_ROSTER=false
+if [ "$EXISTING_PROFILES" = "leave-as-is" ]; then
+  if [ "$ROSTER_COVERAGE" = "current-members-only" ]; then
+    SAUTER_ROSTER=true
+  else
+    POP_FLAG=(--skip-existing)
+  fi
+elif [ "$ROSTER_COVERAGE" = "current-members-only" ]; then
+  POP_FLAG=(--refresh-existing)
+fi
+if [ "$SAUTER_ROSTER" = "true" ]; then
+  echo "Aucun membre à traiter : EXISTING_PROFILES=leave-as-is et ROSTER_COVERAGE=current-members-only."
+else
 python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
   --workers "$WORKERS" \
-  --skip-existing --resume \
+  "${POP_FLAG[@]}" --resume \
   --skip-interventions --skip-dossiers-legislatifs \
   "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}" \
   || echo "[!] extract-roster-groupes en échec (continue-on-error, comme en CI)"
+fi
 fi
 
 echo "=== [6/6] merge-and-pivot : pivots, groupes, gouvernements, quality gate ==="
@@ -215,7 +253,7 @@ python3 src/parti_profile.py \
   --out-dir pivot_data/partis
 
 GROUPE_MERGE_FLAG=()
-[ "$FRESH_RUN" != "true" ] && GROUPE_MERGE_FLAG=(--merge-existing)
+[ "$EXISTING_PROFILES" != "overwrite" ] && GROUPE_MERGE_FLAG=(--merge-existing)
 # Même filtrage qu'en CI, et pour la même raison (#518) : le code 2 dit « roster
 # indisponible, aucune fiche touchée » — le run continue. Tout autre code reste
 # un échec. Ne pas remplacer par un `|| true`, qui avalerait aussi le code 1.

@@ -16,10 +16,22 @@ python3 src/generate_all_profiles.py \
   [--limit <roster_limit>] [--no-merge]
 ```
 
-**`--skip-existing` n'est plus posé en dur (#445).** Il reste le défaut — le
-rollout progressif en dépend — mais il est levé par `cold_start` ou par
-`overwrite_profiles`, et remplacé par `--refresh-existing` quand l'input
-`refresh_existing_only` est actif. Voir §*Régénérer l'existant* ci-dessous.
+**La population vient de DEUX AXES DISJOINTS (#578).** `existing_profiles`
+(`leave-as-is` / `refresh` / `overwrite`) dit ce qu'on fait des profils déjà
+écrits ; `roster_coverage` (`current-members-only` / `add-uncovered-members`)
+dit si on en écrit de nouveaux. Les six combinaisons se demandent :
+
+| | `current-members-only` | `add-uncovered-members` |
+| --- | --- | --- |
+| `leave-as-is` | rien à faire (manifeste vide) | `--skip-existing` |
+| `refresh` *(défaut)* | `--refresh-existing` | *(aucun drapeau)* |
+| `overwrite` | `--refresh-existing --no-merge` | `--no-merge` |
+
+`--skip-existing` est **strict** : il ne saute rien conditionnellement. Pour
+recollecter l'existant, on ne le pose pas. `cold_start` n'entre plus dans ce
+calcul — il purge les caches de téléchargement, ce qui ne dit rien de ce qu'on
+écrit. Voir §*Régénérer l'existant* ci-dessous et
+`docs/technical_decisions.md#deux-axes-formulaire-578`.
 
 **Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
 --skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
@@ -50,36 +62,36 @@ membres), pas seulement les candidats déclarés/pressentis. Voir
 
 Une correction de fond — la clé `uid` de #440, par exemple — ne concerne que
 les profils **déjà écrits**. Or `--skip-existing` s'applique *avant*
-`--no-merge` : tant qu'il est posé, un run `overwrite_profiles=true` saute
-précisément les profils qu'il faudrait corriger.
+`--no-merge` : tant qu'il est posé, un run qui écrase saute précisément les
+profils qu'il faudrait corriger.
 
-Deux pièges vérifiés, tous deux contre-intuitifs :
-
-- **`roster_limit=0` n'y supplée pas.** Sans `--limit`, le chemin de
-  rafraîchissement de #224 (`_select_candidats_couverture`) n'est pas emprunté
-  du tout, et `--skip-existing` saute chaque profil existant. Un run à pleine
-  échelle n'aurait rien corrigé — il aurait seulement étendu la frontière.
-- **Lever `--skip-existing` ne suffit pas non plus.** Avec `--limit`, la
-  sélection retombe sur les N premiers du shard, et les profils couverts ne
-  forment pas un préfixe : mesuré au 19/08/2026, le dernier couvert se trouvait
-  à l'index 93 sur 94 dans deux des huit shards, pour ~26 couverts chacun.
-
-D'où `--refresh-existing` : sélection strictement inverse de `--skip-existing`,
+`--refresh-existing` est la sélection strictement inverse de `--skip-existing` :
 il ne retient que les candidats dont le profil JSON existe déjà. La combinaison
 des deux flags est **refusée** (`SystemExit`) plutôt que de laisser un job
-tourner sans écrire un seul profil.
+tourner sans écrire un seul profil ; depuis #578 le workflow ne peut plus la
+produire, une seule affectation de `POP_FLAG` étant atteinte par run.
 
 Le run correspondant :
 
 | input | valeur |
 | --- | --- |
-| `overwrite_profiles` | `true` |
-| `refresh_existing_only` | `true` |
+| `existing_profiles` | `overwrite` |
+| `roster_coverage` | `current-members-only` |
 | `roster_limit` | `0` |
 
-`refresh_existing_only` sans `overwrite_profiles` déclenche un `::warning::` :
-la fusion additive conserverait alors les entrées de l'ancienne clé **à côté**
-des corrigées, ce qui est pire que de n'avoir rien fait.
+**Le piège réductible a été supprimé (#578).** `roster_limit=0` rafraîchissait
+autrefois *moins* que `roster_limit=20` : sans `--limit`, le chemin de #224
+(`_select_candidats_couverture`) n'était pas emprunté, et `--skip-existing`
+sautait chaque profil existant. Un plafond de volume commandait donc une
+politique de rafraîchissement qu'il ne nommait pas. `--limit` n'est plus qu'un
+plafond, et recollecter l'existant se demande sur l'axe 1.
+
+Il n'y a plus d'avertissement sur « fusionner au lieu d'écraser ». Le workflow
+ne sait pas si le correctif porte sur une clé — il n'a ni le diff de `src/`, ni
+l'intention de qui lance le run — et l'avertissement traitait le mode le plus
+sûr, devenu le défaut, comme suspect. Le signal qui reste porte sur le mode
+destructeur (#460 : écraser sans collecter les interventions), et il chiffre la
+perte au lieu de la supposer.
 
 Contrôle après coup : `src/audit_diff_profils.py`, qui compare une ref git au
 disque champ par champ et sort en erreur sur toute perte dans les champs
@@ -91,7 +103,7 @@ Ce job est un **déploiement progressif**, pas encore un run complet :
 
 - `continue-on-error: true` — un échec ou dépassement de ce job ne bloque pas
   `merge-and-pivot` (même traitement que `extract-parltrack`).
-- `roster_limit` (input du workflow, défaut `20`) borne le nombre
+- `roster_limit` (input du workflow, défaut `0` depuis #578) borne le nombre
   de membres traités par run (`--limit`) pour rester dans un budget CI
   raisonnable pendant le rollout. **`--limit` est déterministe pour un fichier
   donné, mais l'ordre de `roster_candidats.json` ne l'est pas dans le temps :
@@ -99,8 +111,10 @@ Ce job est un **déploiement progressif**, pas encore un run complet :
   positionnelle ne désigne donc pas le même sous-ensemble d'un run à l'autre —
   d'où le fait que la sélection utile ne s'appuie jamais sur la position, mais
   sur la couverture (`_select_candidats_couverture`, #224) ou sur l'existence
-  du profil (`--refresh-existing`, #445). `0` = pas de limite
-  (déconseillé tant que le timeout n'a pas été recalibré sur un run complet).
+  du profil (`--refresh-existing`, #445). `0` = pas de plafond, et c'est le
+  **défaut depuis #578** : le rollout progressif que ce plafond budgétait est
+  terminé (roster couvert à 452/452), et un plafond ferait mentir le défaut
+  `existing_profiles=refresh`.
 - `timeout-minutes: 60` est provisoire, calibré pour
   `roster_limit=20` avec `--source` implicite (coût par membre
   comparable à `extract-an`) — à recalibrer après un premier run mesuré
