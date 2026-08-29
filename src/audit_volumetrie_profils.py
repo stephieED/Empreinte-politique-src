@@ -51,6 +51,8 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
+from profil_brut import PartitionIllisible, charger_profil_brut
+
 # Champs dont on mesure l'externalisation. `co_signataires` est imbriqué dans
 # chaque amendement, d'où un chemin en deux segments.
 CHAMPS_EXTERNALISABLES: tuple[tuple[str, ...], ...] = (
@@ -143,13 +145,46 @@ def _poids_champ(profil: dict[str, Any], chemin: tuple[str, ...]) -> int:
     )
 
 
+def fichiers_du_profil(chemin: Path) -> list[Path]:
+    """Tous les fichiers d'un profil : le socle, plus ses tranches (#580).
+
+    Un profil brut n'est plus un fichier depuis la partition par législature.
+    Toute mesure de volume qui continuerait de le croire rapporterait le seul
+    socle — 1,85 Mo pour un profil qui en pèse 56. Un profil monolithique, ou un
+    pivot, n'a pas de répertoire frère : la liste rend alors le seul fichier.
+    """
+    chemins = [chemin]
+    dossier = chemin.parent / chemin.name[: -len(".json")] if chemin.name.endswith(".json") else None
+    if dossier is not None and dossier.is_dir():
+        chemins.extend(sorted(dossier.glob("*.json")))
+    return chemins
+
+
+def octets_du_profil(chemin: Path) -> int:
+    """Poids disque d'un profil, tranches comprises."""
+    total = 0
+    for f in fichiers_du_profil(chemin):
+        try:
+            total += f.stat().st_size
+        except OSError:
+            continue
+    return total
+
+
 def analyser_profil(chemin: Path) -> Optional[dict[str, Any]]:
     """Mesures d'un profil. `None` si le fichier est illisible — un JSON
-    malformé ne doit pas interrompre le scan."""
+    malformé ne doit pas interrompre le scan.
+
+    Partition (#580) : `octets` et `octets_gzip` portent sur le socle **et** ses
+    tranches, et le poids des champs est mesuré sur le profil RECOMPOSÉ. Sans
+    cela, `externalise:amendements` rendrait 0 sur un profil partitionné — soit
+    exactement la conclusion inverse de la mesure qui a motivé la découpe.
+    """
     try:
-        brut = chemin.read_bytes()
-        profil = json.loads(brut)
-    except (OSError, ValueError):
+        fichiers = fichiers_du_profil(chemin)
+        brut = b"".join(f.read_bytes() for f in fichiers)
+        profil = charger_profil_brut(chemin)
+    except (OSError, ValueError, PartitionIllisible):
         return None
     if not isinstance(profil, dict):
         return None
@@ -569,8 +604,9 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
                 "| --- | --- | --- | --- |",
             ]
             for rep, octets in hist["par_repertoire"].items():
+                # `rglob` : les tranches de #580 sont un niveau plus bas.
                 arbre = sum(
-                    f.stat().st_size for f in Path(rep).glob("*.json")
+                    f.stat().st_size for f in Path(rep).rglob("*.json")
                     if not f.name.startswith(".")
                 ) if Path(rep).is_dir() else 0
                 facteur = f"× {arbre / octets:.1f}" if octets else "—"
@@ -710,7 +746,10 @@ def analyser_repertoires(
         tous.extend(sorted(
             c for c in repertoire.glob("*.json") if not c.name.startswith(".")))
 
-    tailles = [(c, c.stat().st_size) for c in tous]
+    # `octets_du_profil` et non `stat()` : depuis #580 un profil brut est un
+    # socle plus ses tranches. Le `glob` reste non récursif — il énumère les
+    # slugs, comme avant — et c'est la mesure qui descend dans le répertoire.
+    tailles = [(c, octets_du_profil(c)) for c in tous]
     tailles.sort(key=lambda ct: ct[1])
     exact = {
         "nb_profils": len(tailles),

@@ -35,7 +35,7 @@ Any schema/display change must preserve them:
 ## 3. Pipeline
 ```mermaid
 graph TD
-    A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json<br/>(candidate_profile.py / candidate_profile_ue.py)"]
+    A["Public sources (APIs/dumps)"] --> B["raw_data/profiles/&lt;slug&gt;.json (socle)<br/>+ &lt;slug&gt;/&lt;legislature&gt;.json (amendements, #580)<br/>(candidate_profile.py / candidate_profile_ue.py — lu par profil_brut.py)"]
     B -->|"normalize_profil.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(pivot schema — schema_pivot.py)"]
     C --> S["pivot_data/scrutins.json<br/>(build_scrutins_index.py — liste dédupliquée)"]
     C --> AM["pivot_data/amendements/&lt;legis&gt;.json<br/>(build_amendements_index_pivot.py — liste dédupliquée)"]
@@ -82,6 +82,37 @@ graph TD
   are written **compact** via `src/json_io.py` — 35 % of their volume was indentation
   alone (#433). Groupes, gouvernements, partis, rosters, audit reports stay `indent=2`.
   Never read a profile line by line; the format carries no meaning.
+- **A raw profile is no longer one file (#580)**. `amendements` was **96,7 % of the
+  biggest one** (54,15 of 56,00 MB) and eight files were past GitHub's 50 MB advisory,
+  **fifty-four** past 45 — the same MPs co-signing the same amendments, so they cross
+  the line *together* at every collection fix. Each amendment already carries its
+  `legislature`, so the list is **partitioned on a field that was already there**:
+  a socle `raw_data/profiles/<slug>.json` (the whole profile **minus** `amendements`,
+  plus an `amendements_partitionnes` manifest in its exact place) and one slice per
+  legislature under `raw_data/profiles/<slug>/<legislature>.json`. 56,0 → 23,4 MB,
+  **not one byte dropped**. This is **not** the normalisation #434 ruled out — nothing
+  is deduplicated, denormalised or trimmed; `raw_data/` stays source-near.
+  **Read raw profiles through `src/profil_brut.py`, never `json.load` directly** —
+  `charger_profil_brut()` accepts both the monolithic form (still committed during the
+  switchover) and the partitioned one, `iter_amendements_du_profil()` streams slice by
+  slice, and a broken partition raises `PartitionIllisible` instead of returning an
+  empty list. `votes`, `mandats`, `interventions` stay in the socle, so anything that
+  reads those is untouched — and 30× lighter. Writing always produces the partitioned
+  form, so a full data run migrates the corpus by itself. Migration script:
+  `src/migrer_profils_partitionnes_580.py` (idempotent, refuses to lose anything).
+  See `docs/technical_decisions.md#partition-profils-legislature-580`.
+- **Biggest versioned file: a watched guard-rail with a written course of action (#580)**.
+  It used to be the fourth clause of #429's exit criterion — but a criterion is
+  something you *reach*, and that one *triggers*; it was crossed the day it was
+  written, and GitHub's push warning went unnoticed **because nothing said what to do
+  about it**. `src/garde_fou_blobs.py`, wired as **§7 of `check_quality_gate.py`**,
+  now **warns at 50 MiB** and **fails the commit at 80 MiB** — deliberately below the
+  100 MiB hard refusal, so there is room to act rather than a blob already committed.
+  The course of action is printed with the finding, and it excludes both "raise the
+  threshold" (46 files sit between 45 and 50 MB — the threshold is planted mid-cliff)
+  and "delete data". It lives in the gate and not in the test suite because
+  `tests.yml` sparse-checks-out *without* the corpus (#473). See
+  `docs/technical_decisions.md#garde-fou-blob-580`.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 roster per `(chambre, legislature)`,
   and **zero fetch** in CI — the run's raw roster arrives by artifact (#518, see below).
   Since #527 the `deputes` key is **derived from AMO30**; since #529 that is the only

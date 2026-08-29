@@ -69,6 +69,7 @@ from typing import Any, Iterable, Iterator, Optional
 
 from json_io import ecrire_profil_json
 from licences import LICENCE_AN
+from profil_brut import iter_amendements_du_profil
 
 SCHEMA_VERSION = "amendements-v1"
 COSIGNATURES_SCHEMA_VERSION = "amendements-cosignatures-v1"
@@ -511,13 +512,18 @@ def ecrire(
 
 
 def iter_amendements_du_repertoire(profils_dir: Path) -> Iterator[dict[str, Any]]:
-    """Itère les amendements de tous les profils d'un répertoire, **un profil à
-    la fois**.
+    """Itère les amendements de tous les profils d'un répertoire, **une tranche
+    de législature à la fois** (#580).
 
     Le profil est relâché avant d'ouvrir le suivant : `raw_data/profiles` pèse
-    1,5 Go, et le charger d'un bloc fait tuer le process par l'OOM killer (#377,
-    #392). Un fichier illisible est signalé et sauté — il ne doit pas priver
-    l'index des amendements de tous les autres.
+    7,5 Go, et le charger d'un bloc fait tuer le process par l'OOM killer (#377,
+    #392). Depuis la partition par législature, le pic n'est même plus le profil
+    entier (56 Mo) mais sa plus grosse tranche (23,4 Mo) — `profil_brut` les
+    ouvre l'une après l'autre. La forme monolithique reste lue telle quelle,
+    au même pic qu'avant : les deux cohabitent tant que le dépôt n'est pas migré.
+
+    Un fichier illisible est signalé et sauté — il ne doit pas priver l'index
+    des amendements de tous les autres.
     """
     if not Path(profils_dir).is_dir():
         return
@@ -525,15 +531,10 @@ def iter_amendements_du_repertoire(profils_dir: Path) -> Iterator[dict[str, Any]
         if chemin.name.startswith("."):
             continue
         try:
-            with open(chemin, encoding="utf-8") as f:
-                profil = json.load(f)
-        except (json.JSONDecodeError, OSError) as exc:
+            yield from iter_amendements_du_profil(chemin)
+        except (json.JSONDecodeError, OSError, RuntimeError) as exc:
             print(f"  [!] Lecture impossible de {chemin}, ignoré : {exc}")
             continue
-        for amendement in (profil.get("amendements") or []):
-            if isinstance(amendement, dict):
-                yield amendement
-        del profil
 
 
 def rafraichir(

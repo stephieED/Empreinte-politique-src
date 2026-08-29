@@ -67,7 +67,7 @@ from gouvernement_textes import (
     ensure_dossiers_zips_downloaded,
     iter_dossiers_bruts,
 )
-from json_io import ecrire_profil_json
+from profil_brut import ecrire_profil_brut
 from licences import LICENCE_AN
 from parse_syceron import parse_syceron_xml
 from syceron_debates import (
@@ -5059,7 +5059,14 @@ def main():
     profile = build_profile(args.chambre, args.slug)
 
     out_path = Path(args.out) if args.out else Path("raw_data/profiles") / f"{args.slug}.json"
-    ecrire_profil_json(out_path, profile)
+    # #580 : écriture partitionnée — socle `<slug>.json` + `<slug>/<legislature>.json`.
+    # `--out` reste un chemin de SOCLE, comme avant : c'est le nom qui porte le
+    # slug, et les tranches sont son répertoire frère.
+    if out_path.suffix != ".json":
+        raise SystemExit(
+            f"--out doit désigner un fichier `.json` (socle du profil) : {out_path}"
+        )
+    ecrire_profil_brut(out_path.parent, out_path.stem, profile)
 
     nb_votes = len(profile["votes"])
     print(f"\n✓ Profil écrit dans {out_path}")

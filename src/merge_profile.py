@@ -40,9 +40,13 @@ from candidate_profile import (
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
     WARNING_PREFIX_DEFAUT_COLLECTE,
 )
-from json_io import ecrire_profil_json
 from licences import appliquer_licence_donnees
 from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
+from profil_brut import (
+    PartitionIllisible,
+    charger_profil_brut,
+    ecrire_profil_brut,
+)
 from schema_pivot import appliquer_chambres
 
 Key = Any
@@ -841,6 +845,14 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
 
     Les fichiers de checkpoint (nom commençant par '.') sont ignorés.
 
+    Partition par législature (#580) : chaque source est lue par
+    `charger_profil_brut`, qui accepte indifféremment un profil monolithique
+    (l'ancienne forme, encore committée) et un socle + ses tranches. La fusion
+    travaille donc sur le profil **complet**, exactement comme avant — la
+    découpe est une affaire de fichiers, pas de sémantique. La sortie, elle, est
+    toujours écrite partitionnée : c'est ici que la migration se fait d'elle-même
+    à chaque run.
+
     Args:
         source_dirs: liste de répertoires sources (certains peuvent être absents).
         out_dir: répertoire de sortie, créé si nécessaire.
@@ -864,14 +876,13 @@ def merge_raw_dirs(source_dirs: list[Path], out_dir: Path) -> int:
         merged: Optional[dict[str, Any]] = None
         for path in paths:
             try:
-                with open(path, encoding="utf-8") as f:
-                    profile = json.load(f)
-            except (json.JSONDecodeError, OSError) as exc:
+                profile = charger_profil_brut(path)
+            except (json.JSONDecodeError, OSError, PartitionIllisible) as exc:
                 print(f"  [!] Lecture impossible de {path}, ignoré : {exc}")
                 continue
             merged = merge_raw_profile(merged, profile)
         if merged is not None:
-            ecrire_profil_json(out_dir / filename, merged)
+            ecrire_profil_brut(out_dir, filename[: -len(".json")], merged)
             n_written += 1
 
     return n_written

@@ -291,6 +291,11 @@ def iter_votes_du_repertoire(profils_dir: Path) -> Iterator[dict[str, Any]]:
 
     Un fichier illisible est signalé et sauté — il ne doit pas priver l'index
     des scrutins de tous les autres.
+
+    Depuis la partition des profils bruts par législature (#580), `votes` reste
+    dans le **socle** `<slug>.json` : cette boucle est donc inchangée, et elle y
+    gagne — le socle pèse 1,85 Mo là où le profil monolithique en pesait 56.
+    Seuls `amendements` sont partitionnés ; les lire demande `profil_brut`.
     """
     if not Path(profils_dir).is_dir():
         return

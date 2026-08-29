@@ -105,6 +105,11 @@ from candidate_profile_ue import build_profile_ue
 import correspondance_acteurs_an
 import couverture_profil
 from json_io import ecrire_profil_json
+from profil_brut import (
+    PartitionIllisible,
+    charger_profil_brut,
+    ecrire_profil_brut,
+)
 from licences import LICENCE_AN
 from merge_profile import (
     merge_pivot_profile,
@@ -871,9 +876,12 @@ def process_candidat(
             return {"nom": nom, "slug": effective_slug, "statut": "absent_raw", "parltrack": "n/a"}
 
         try:
-            with open(json_path, encoding="utf-8") as f:
-                profile = json.load(f)
-        except (json.JSONDecodeError, OSError) as exc:
+            # `charger_profil_brut` (#580) : accepte le profil monolithique
+            # comme le socle + ses tranches de législature, et rend dans les
+            # deux cas le profil COMPLET. La normalisation pivot en aval lit
+            # `amendements` sans savoir comment le fichier est découpé.
+            profile = charger_profil_brut(json_path)
+        except (json.JSONDecodeError, OSError, PartitionIllisible) as exc:
             _tprint(f"  [!] Lecture impossible de {json_path} : {exc}")
             return {"nom": nom, "slug": effective_slug, "statut": "erreur", "parltrack": "n/a"}
 
@@ -1074,9 +1082,8 @@ def process_candidat(
     if json_path.exists():
         existing_profile = None
         try:
-            with open(json_path, encoding="utf-8") as f:
-                existing_profile = json.load(f)
-        except (json.JSONDecodeError, OSError) as exc:
+            existing_profile = charger_profil_brut(json_path)
+        except (json.JSONDecodeError, OSError, PartitionIllisible) as exc:
             _tprint(f"  [!] Lecture du profil existant impossible ({json_path}), écrasement : {exc}")
 
         if existing_profile is not None:
@@ -1096,7 +1103,12 @@ def process_candidat(
                         "Relancer avec --autoriser-collecte-vide pour forcer le vidage."
                     )
 
-    ecrire_profil_json(json_path, profile)
+    # #580 : l'écriture produit désormais la forme PARTITIONNÉE — un socle
+    # `<slug>.json` sans `amendements`, plus `<slug>/<legislature>.json`. Un
+    # profil relu monolithique et réécrit ici migre donc de lui-même, sans
+    # qu'aucun octet ne se perde : `charger_profil_brut` a rendu la liste
+    # entière, `ecrire_profil_brut` la range.
+    ecrire_profil_brut(out_dir, effective_slug, profile)
     _manifest_append(getattr(args, "manifest_out", None), json_path.name)
 
     # Optionnel : écriture du profil pivot v1 (--pivot)

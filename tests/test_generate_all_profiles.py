@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import generate_all_profiles
+from profil_brut import charger_profil_brut
 from generate_all_profiles import (
     _parse_shard,
     _select_candidats,
@@ -1114,7 +1115,9 @@ def test_ecrasement_ne_detruit_pas_sur_collecte_vide(tmp_path, monkeypatch, caps
     monkeypatch.setattr(sys, "argv", _argv_ecrasement(candidats_path, out_dir, tmp_path))
     generate_all_profiles.main()
 
-    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    # #580 : le profil brut est écrit partitionné — `charger_profil_brut`
+    # recompose, et accepte aussi l'ancienne forme monolithique.
+    apres = charger_profil_brut(out_dir / "jean-luc-melenchon.json")
     assert len(apres["votes"]) == 1016
     assert len(apres["amendements"]) == 18721
     assert len(apres["dossiers_legislatifs"]) == 33
@@ -1142,7 +1145,9 @@ def test_ecrasement_par_une_collecte_non_vide_aboutit(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", _argv_ecrasement(candidats_path, out_dir, tmp_path))
     generate_all_profiles.main()
 
-    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    # #580 : le profil brut est écrit partitionné — `charger_profil_brut`
+    # recompose, et accepte aussi l'ancienne forme monolithique.
+    apres = charger_profil_brut(out_dir / "jean-luc-melenchon.json")
     assert len(apres["amendements"]) == 944, "une collecte non vide doit écraser"
     assert apres["amendements"][0]["uid"].startswith("CORRIGE")
     assert len(apres["votes"]) == 1
@@ -1167,7 +1172,9 @@ def test_autoriser_collecte_vide_leve_le_garde_fou(tmp_path, monkeypatch):
         candidats_path, out_dir, tmp_path, "--autoriser-collecte-vide"))
     generate_all_profiles.main()
 
-    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    # #580 : le profil brut est écrit partitionné — `charger_profil_brut`
+    # recompose, et accepte aussi l'ancienne forme monolithique.
+    apres = charger_profil_brut(out_dir / "jean-luc-melenchon.json")
     assert apres["votes"] == []
     assert apres["amendements"] == []
 
@@ -1190,7 +1197,9 @@ def test_fusion_additive_reste_le_comportement_par_defaut(tmp_path, monkeypatch)
     monkeypatch.setattr(sys, "argv", argv)
     generate_all_profiles.main()
 
-    apres = json.loads((out_dir / "jean-luc-melenchon.json").read_text(encoding="utf-8"))
+    # #580 : le profil brut est écrit partitionné — `charger_profil_brut`
+    # recompose, et accepte aussi l'ancienne forme monolithique.
+    apres = charger_profil_brut(out_dir / "jean-luc-melenchon.json")
     assert len(apres["amendements"]) == 18721
 
 

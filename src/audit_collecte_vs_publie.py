@@ -146,6 +146,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import gha
+from profil_brut import CLE_PARTITIONNEE
 
 #: Suffixes des deux couches. Mêmes conventions que `audit_collecte_non_publiee` :
 #: le suffixe pivot contient le suffixe brut, donc le dépouillement se fait par
@@ -365,6 +366,52 @@ def compter_listes(chemin: Path, cles: frozenset[str] = CLES_SURVEILLEES) -> dic
     return releve
 
 
+def compter_listes_profil_brut(
+    raw_dir: Path, slug: str, cles: frozenset[str] = CLES_SURVEILLEES
+) -> dict[str, Any]:
+    """Relevé d'un profil brut, **partition par législature comprise** (#580).
+
+    Depuis #580 le socle `<slug>.json` ne porte plus `amendements` : la liste
+    vit en tranches sous `<slug>/<legislature>.json`. Sans cette fonction, ce
+    contrôle lirait « 0 amendement collecté » face à 6 millions publiés — il ne
+    signalerait aucun déficit et deviendrait aveugle sur 96,7 % du volume, ce
+    qui est exactement le genre de vert sans mesure que #545 traque.
+
+    Le compte est **mesuré**, tranche par tranche, jamais recopié du `total`
+    annoncé par le manifeste : un contrôle qui lit sa conclusion dans le
+    document qu'il contrôle ne contrôle rien (#576, #579). Chaque tranche passe
+    par le même `compter_listes`, donc la mémoire reste bornée comme avant —
+    aucune liste n'est matérialisée.
+
+    Un profil encore monolithique est relevé tel quel : les deux formes
+    cohabitent tant que le dépôt n'est pas migré.
+    """
+    releve = compter_listes(raw_dir / f"{slug}{SUFFIXE_BRUT}", cles)
+
+    # La forme se lit sur le DISQUE, pas dans le manifeste : `compter_listes`
+    # réduit délibérément les objets imbriqués, donc le manifeste n'arrive pas
+    # jusqu'ici — et surtout, le répertoire de tranches est un fait observable
+    # là où le manifeste est une déclaration.
+    dossier = raw_dir / slug
+    if not dossier.is_dir():
+        return releve
+
+    if CLE_PARTITIONNEE in releve:
+        raise ValueError(
+            f"{slug} : le socle porte encore `{CLE_PARTITIONNEE}` alors qu'un "
+            f"répertoire de tranches existe ({dossier}). La donnée serait "
+            "comptée deux fois."
+        )
+    tranches = sorted(dossier.glob("*.json"))
+    if not tranches:
+        raise ValueError(f"{slug} : répertoire de tranches vide ({dossier})")
+    releve[CLE_PARTITIONNEE] = sum(
+        _longueur(compter_listes(tranche, cles), (CLE_PARTITIONNEE,))
+        for tranche in tranches
+    )
+    return releve
+
+
 def _longueur(releve: dict[str, Any], chemin: tuple[str, ...]) -> int:
     """Longueur de la liste au bout d'un chemin, 0 si la route casse.
 
@@ -496,7 +543,7 @@ def auditer(
             sans_pivot.append(slug)
             continue
         try:
-            releve_brut = compter_listes(raw_dir / f"{slug}{SUFFIXE_BRUT}")
+            releve_brut = compter_listes_profil_brut(raw_dir, slug)
             releve_pivot = compter_listes(chemin_pivot)
         except (OSError, ValueError):
             # Un profil illisible n'est pas « 0 entrée » : c'est un

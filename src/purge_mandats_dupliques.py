@@ -60,6 +60,7 @@ from candidate_profile import (
     _extract_mandats_officiels,
 )
 from json_io import ecrire_profil_json
+from profil_brut import charger_socle
 
 DEFAULT_PROFILES_DIR = Path("raw_data") / "profiles"
 
@@ -219,9 +220,21 @@ def purge_profil(
 
 
 def _load(path: Path) -> Optional[dict[str, Any]]:
+    """Lit le SOCLE `<slug>.json`, et lui seul (#580).
+
+    Ce script ne touche que `mandats`, qui vit dans le socle. Recomposer les
+    amendements pour les réécrire à l'identique coûterait 56 Mo de mémoire par
+    profil sans rien changer. Le manifeste `amendements_partitionnes` est donc
+    relu et réécrit **tel quel**, et les tranches ne sont pas ouvertes.
+
+    Corollaire à ne pas casser : la lecture et l'écriture doivent rester
+    accordées. Lire par `charger_profil_brut` en continuant d'écrire par
+    `ecrire_profil_json` remettrait `amendements` dans le socle **à côté** du
+    manifeste — la donnée serait présente deux fois, et le profil pèserait de
+    nouveau ses 56 Mo.
+    """
     try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
+        data = charger_socle(path)
     except (json.JSONDecodeError, OSError) as exc:
         print(f"  [!] Lecture impossible ({path.name}) : {exc}", file=sys.stderr)
         return None
