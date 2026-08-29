@@ -1,5 +1,11 @@
 # EMPREINTE POLITIQUE
 
+> ⚠️ **Projet en construction.** Le pipeline et l'interface évoluent
+> quotidiennement. Les données publiées sont réelles et sourcées, mais peuvent
+> être incomplètes, et certaines absences portent encore une explication
+> imprécise. L'état courant se lit dans les
+> [issues ouvertes](https://github.com/stephieED/Empreinte-politique-src/issues).
+
 Generates structured "political CVs" (mandates, responsibilities, votes,
 legislative files, floor interventions) for candidates in the 2027 French
 presidential election, using open data from the
