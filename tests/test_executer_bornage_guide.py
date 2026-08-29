@@ -23,7 +23,8 @@ Ce fichier teste ce qui reste — et c'est l'essentiel de ce qu'un runner apport
     et la même raison de les garder.
 
 Aucun test de ce fichier ne pousse, ne supprime de ref, ni ne sort sur le
-réseau (AGENTS.md §3). Le seul `gh` invoqué est un faux, posé dans `PATH`.
+réseau (AGENTS.md §3). Le seul `gh` invoqué est un faux, posé dans `PATH`, et
+les dépôts distants sont des `--bare` fabriqués dans `tmp_path`.
 """
 
 import os
@@ -499,6 +500,328 @@ def test_la_fenetre_par_defaut_est_la_meme_que_celle_du_bornage():
     la_bas = re.search(r"^FENETRE=(\d+)$", BORNAGE.read_text(encoding="utf-8"),
                        flags=re.MULTILINE)
     assert ici and la_bas and ici.group(1) == la_bas.group(1)
+
+
+# ── Réserve 1 du déroulé du 29/08/2026 : l'étape 6 n'observait rien ─────────
+
+
+def _g(depot, *args):
+    return subprocess.run(["git", "-C", str(depot), *args],
+                          check=True, capture_output=True, text=True).stdout
+
+
+def _origine_locale(tmp_path):
+    """Un `--bare` dans `tmp_path` qui tient lieu d'origin, et une `main-borne`
+    LOCALE volontairement DIFFÉRENTE de ce que porte cette origine.
+
+    C'est la discrimination que l'étape 6 doit passer : lire le commit poussé
+    sur la ref distante, et non le supposer depuis ce qu'on a sous la main."""
+    travail = tmp_path / "travail"
+    subprocess.run(["git", "init", "--quiet", "-b", "main", str(travail)],
+                   check=True, capture_output=True)
+    _g(travail, "config", "user.email", "banc@test")
+    _g(travail, "config", "user.name", "banc")
+    _g(travail, "commit", "-q", "--allow-empty", "-m", "ce qui est poussé")
+    distant = _g(travail, "rev-parse", "HEAD").strip()
+    origine = tmp_path / "origine.git"
+    subprocess.run(["git", "clone", "--quiet", "--bare", str(travail), str(origine)],
+                   check=True, capture_output=True)
+    _g(travail, "commit", "-q", "--allow-empty", "-m", "ce qui est resté local")
+    _g(travail, "branch", "main-borne", "HEAD")
+    local = _g(travail, "rev-parse", "main-borne").strip()
+    _g(travail, "remote", "add", "origin", str(origine))
+    assert distant != local
+    return travail, distant, local
+
+
+def _faux_gh_lignes(tmp_path, lignes, code=0, nom="bin"):
+    """Un faux `gh` qui rend les lignes `statut<TAB>conclusion<TAB>workflow`
+    que `_etat_ci` demande à `--jq`."""
+    binaire = tmp_path / nom
+    binaire.mkdir(exist_ok=True)
+    # `%b` et non `%s` : ce sont de vraies TABULATIONS que `--jq` rendrait.
+    corps = "\n".join(f'printf "%b\\n" "{l}"' for l in lignes)
+    (binaire / "gh").write_text(f"#!/usr/bin/env bash\n{corps}\nexit {code}\n",
+                                encoding="utf-8")
+    (binaire / "gh").chmod(0o755)
+    return {"PATH": f"{binaire}:{os.environ['PATH']}"}
+
+
+@pytest.mark.parametrize(
+    "lignes, attendu",
+    [
+        ([r"completed\tsuccess\tTests (pytest)"], "vert"),
+        ([r"completed\tsuccess\tTests", r"completed\tskipped\tPages",
+          r"completed\tneutral\tLint"], "vert"),
+        ([r"completed\tfailure\tTests (pytest)"], "rouge"),
+        ([r"completed\tsuccess\tTests", r"completed\ttimed_out\tPages"], "rouge"),
+        ([r"completed\tcancelled\tTests"], "rouge"),
+        ([r"in_progress\t\tTests"], "encours"),
+        ([r"queued\t\tTests", r"completed\tsuccess\tPages"], "encours"),
+        # Un échec déjà constaté ne devient pas moins vrai parce qu'un autre
+        # run tourne encore.
+        ([r"in_progress\t\tPages", r"completed\tfailure\tTests"], "rouge"),
+        ([], "aucun"),
+    ],
+)
+def test_l_etat_de_la_ci_est_lu_dans_ce_que_gh_rend(tmp_path, lignes, attendu):
+    """« La phrase déclare le succès avant de regarder » (#576, réserve 1). Ces
+    neuf cas sont ce que « regarder » veut dire."""
+    res = _bash('_etat_ci "o/r" "abc123"', env=_faux_gh_lignes(tmp_path, lignes))
+    assert res.stdout.strip() == attendu, res.stderr
+
+
+def test_un_gh_muet_rend_la_ci_indeterminee_pas_verte(tmp_path):
+    """Même confusion que `_aucun_run_en_cours` refuse déjà à l'étape 4, et que
+    #568 a corrigée côté archive : « pas pu regarder » n'est pas « c'est vert »."""
+    res = _bash('if _etat_ci "o/r" "abc123"; then echo LU; else echo MUET; fi',
+                env=_faux_gh_lignes(tmp_path, ["erreur"], code=1))
+    assert res.stdout.strip() == "MUET"
+    assert "gh n'a pas répondu" in res.stderr
+
+
+def test_l_attente_rend_la_main_quand_le_plafond_est_atteint(tmp_path):
+    """Un run en cours n'est pas une conclusion, et attendre indéfiniment
+    bloquerait une session au point de non-retour déjà franchi."""
+    res = _bash('_attendre_ci "o/r" "abc123"',
+                env={**_faux_gh_lignes(tmp_path, [r"in_progress\t\tTests"]),
+                     "ATTENTE_CI": "0", "PAS_CI": "0"})
+    assert res.stdout.strip() == "encours"
+    assert "toujours en cours après 0 s" in res.stderr
+
+
+def test_l_attente_attend_vraiment_une_conclusion(tmp_path):
+    """Le pendant obligatoire : sans lui, « rendre encours tout de suite »
+    passerait le test précédent et l'étape 6 ne verrait jamais une CI verte qui
+    met dix secondes à conclure."""
+    binaire = tmp_path / "bin"
+    binaire.mkdir()
+    compteur = tmp_path / "appels"
+    (binaire / "gh").write_text(
+        "#!/usr/bin/env bash\n"
+        f'echo x >> "{compteur}"\n'
+        f'if [[ $(wc -l < "{compteur}") -lt 3 ]]; then\n'
+        '  printf "%s\\n" "in_progress\t\tTests"\n'
+        'else\n'
+        '  printf "%s\\n" "completed\tsuccess\tTests"\n'
+        'fi\n',
+        encoding="utf-8",
+    )
+    (binaire / "gh").chmod(0o755)
+    res = _bash('_attendre_ci "o/r" "abc123"',
+                env={"PATH": f"{binaire}:{os.environ['PATH']}",
+                     "ATTENTE_CI": "60", "PAS_CI": "0"})
+    assert res.stdout.strip() == "vert", res.stderr
+    assert compteur.read_text().count("x") == 3, "l'attente n'a pas réinterrogé"
+
+
+def test_le_commit_verifie_est_celui_de_la_ref_distante(tmp_path):
+    """Le SHA `f307be7` était CODÉ EN DUR et datait de la répétition de la
+    veille : l'étape citait un commit en regardant un autre historique. Le
+    commit à vérifier se lit sur la ref distante, seul endroit où « ce qui est
+    poussé » existe."""
+    travail, distant, local = _origine_locale(tmp_path)
+    res = _bash("_sha_pousse", cwd=travail)
+    assert res.stdout.strip() == distant, (
+        f"SHA lu {res.stdout.strip()!r} ; la branche locale main-borne vaut "
+        f"{local!r} — le runner suppose au lieu de lire"
+    )
+
+
+def test_sans_origine_joignable_le_repli_local_se_dit(tmp_path):
+    """Un repli silencieux serait la même faute d'un cran plus bas : rendre un
+    SHA plausible sans dire d'où il vient."""
+    travail, _distant, local = _origine_locale(tmp_path)
+    _g(travail, "remote", "set-url", "origin", str(tmp_path / "nulle-part.git"))
+    res = _bash("_sha_pousse", cwd=travail)
+    assert res.stdout.strip() == local
+    assert "C'est une supposition, pas une lecture" in res.stderr
+
+
+def test_l_etape_6_ne_declare_aucune_conclusion_en_dur():
+    """« La phrase déclare le succès avant de regarder, et le SHA est celui de
+    la veille » (#576, réserve 1). Ni l'un ni l'autre ne doit pouvoir revenir :
+    ce sont deux constantes là où il faut deux observations."""
+    corps = _corps_de_fonction(_texte(), "_etape_6_verifier_la_ci")
+    code = _hors_heredoc(corps)
+    assert "f307be7" not in corps, "le SHA de la répétition du 28/08 est encore cité"
+    assert not re.search(r"\b[0-9a-f]{7,40}\b", code), (
+        f"un SHA en dur subsiste dans le code de l'étape 6 : "
+        f"{re.findall(r'[0-9a-f]{7,40}', code)}"
+    )
+    assert "elle est passée" not in code, (
+        "l'étape écrit encore sa conclusion au lieu de la mesurer"
+    )
+    assert "|| true" not in code, (
+        "la sortie de l'interrogation est encore avalée"
+    )
+
+
+def test_l_etape_6_fait_de_la_conclusion_une_precondition():
+    """« Verte, rouge, ou indéterminée, avec un message différent pour
+    chacune » (#576). Une précondition au sens du runner : elle refuse
+    d'avancer, elle se contourne en toutes lettres, et le contournement se
+    consigne."""
+    code = _hors_heredoc(_corps_de_fonction(_texte(), "_etape_6_verifier_la_ci"))
+    assert "_precondition" in code, "la conclusion n'arrête rien"
+    assert "_sha_pousse" in code and "_attendre_ci" in code
+    for mot in ("vert)", "rouge)", "encours)", "aucun)"):
+        assert mot in code, f"la conclusion « {mot[:-1]} » n'a pas de message propre"
+    assert "--commit" in _texte(), (
+        "la CI est interrogée sans filtrer sur le commit poussé : les 5 derniers "
+        "runs du dépôt ne disent rien de CE commit"
+    )
+
+
+def _journal_jusqu_a_5(tmp_path):
+    journal = tmp_path / "j.journal"
+    journal.write_text(
+        "".join(f"[2026-08-29T10:0{n}:00+0000] ÉTAPE {n} — TERMINÉE\n"
+                for n in range(1, 6)),
+        encoding="utf-8",
+    )
+    return journal
+
+
+def _lancer_etape_6(tmp_path, lignes, entree, code_gh=0):
+    travail, distant, _local = _origine_locale(tmp_path)
+    journal = _journal_jusqu_a_5(tmp_path)
+    env = {**os.environ, **_faux_gh_lignes(tmp_path, lignes, code=code_gh),
+           "ATTENTE_CI": "0", "PAS_CI": "0", "GIT_TERMINAL_PROMPT": "0"}
+    res = subprocess.run(
+        [str(RUNNER), "--etape", "6", "--journal", str(journal)],
+        cwd=str(travail), capture_output=True, text=True, input=entree, env=env,
+    )
+    return res, journal.read_text(encoding="utf-8"), distant
+
+
+def test_une_ci_rouge_arrete_l_etape_6_et_se_consigne(tmp_path):
+    """« Une CI rouge n'est pas un échec du bornage : c'est un constat qui doit
+    s'afficher et se journaliser, pas se taire » (#576). L'ancienne étape
+    écrivait « elle est passée » et terminait."""
+    res, consigne, distant = _lancer_etape_6(
+        tmp_path, [r"completed\tfailure\tTests (pytest)"], entree="\n")
+    assert res.returncode == 1
+    assert "CI ROUGE" in consigne
+    assert distant in consigne, "le journal ne dit pas SUR QUEL commit"
+    assert "Tests (pytest) » : failure" in consigne, "le run fautif n'est pas nommé"
+    assert "PRÉCONDITION EN ÉCHEC" in consigne
+    assert "ÉTAPE 6 — TERMINÉE" not in consigne, (
+        "l'étape s'est déclarée terminée sur une CI rouge"
+    )
+
+
+def test_une_ci_rouge_se_contourne_en_toutes_lettres(tmp_path):
+    """Le pendant : le bornage n'est pas annulé par une CI rouge, mais passer
+    outre se tape et se consigne."""
+    res, consigne, _ = _lancer_etape_6(
+        tmp_path, [r"completed\tfailure\tTests"], entree=PHRASE_DEROGATION + "\n")
+    assert res.returncode == 0, res.stderr
+    assert "DÉROGATION" in consigne and "ÉTAPE 6 — TERMINÉE" in consigne
+
+
+def test_une_ci_verte_passe_sans_rien_demander(tmp_path):
+    """Sans ce test, « tout refuser » passerait les deux précédents et l'étape 6
+    ne pourrait plus jamais conclure."""
+    res, consigne, distant = _lancer_etape_6(
+        tmp_path, [r"completed\tsuccess\tTests (pytest)"], entree="")
+    assert res.returncode == 0, res.stderr
+    assert f"CI VERTE sur {distant}" in consigne
+    assert "ÉTAPE 6 — TERMINÉE" in consigne
+    assert "DÉROGATION" not in consigne
+
+
+def test_une_ci_qu_on_n_a_pas_pu_lire_ne_passe_pas(tmp_path):
+    """Le troisième message. `gh` muet, aucun run, run non conclu : trois
+    situations distinctes, toutes « indéterminées », et aucune n'est verte."""
+    res, consigne, _ = _lancer_etape_6(tmp_path, ["boum"], entree="\n", code_gh=1)
+    assert res.returncode == 1
+    assert "CI INDÉTERMINÉE" in consigne
+    assert "n'est pas « c'est vert »" in consigne
+
+
+def test_aucun_run_declenche_n_est_pas_une_ci_verte(tmp_path):
+    res, consigne, _ = _lancer_etape_6(tmp_path, [], entree="\n")
+    assert res.returncode == 1
+    assert "AUCUN run n'a été déclenché" in consigne
+
+
+# ── Réserve 2 : `--depuis` n'existait qu'à moitié ───────────────────────────
+
+
+def test_il_n_y_a_pas_d_option_depuis(tmp_path):
+    """L'arbitrage rendu (#576, réserve 2) : la variable morte est retirée, pas
+    finie. Le journal est la seule preuve de ce qui a été fait ; une option qui
+    l'affirmerait sans lui serait une seconde source de vérité, et le runner
+    devrait de toute façon la confronter au journal.
+
+    Lancé dans un dépôt jetable : si l'option était acceptée, le runner
+    déroulerait — et il n'a rien à dérouler dans le dépôt du projet."""
+    depot = tmp_path / "depot"
+    subprocess.run(["git", "init", "--quiet", "-b", "main", str(depot)],
+                   check=True, capture_output=True)
+    res = subprocess.run(
+        [str(RUNNER), "--depuis", "6", "--journal", str(tmp_path / "j.journal")],
+        cwd=str(depot), capture_output=True, text=True, input="",
+        env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+    )
+    assert res.returncode == 2 and "Option inconnue" in res.stderr
+    parsage = _corps_de_fonction(_texte(), "_principal").split("esac", 1)[0]
+    assert "--depuis" not in parsage, "l'option fantôme est revenue"
+
+
+def test_lister_designe_reprendre_comme_le_chemin_de_reprise():
+    """« `--reprendre` couvre le besoin et fonctionne, mais rien ne le désigne
+    comme le chemin pour reprendre à mi-parcours — `--lister` ne le mentionne
+    pas » (#576). C'est `--lister` qu'on lit le jour J."""
+    res = subprocess.run([str(RUNNER), "--lister"], capture_output=True, text=True)
+    assert res.returncode == 0, res.stderr
+    assert "--reprendre" in res.stdout, (
+        "la liste des étapes ne dit pas comment reprendre à mi-parcours"
+    )
+    assert "--depuis" in res.stdout and "pas de" in res.stdout.lower(), (
+        "l'absence de --depuis n'est pas dite : on la cherchera"
+    )
+    assert "REJOUE le push forcé" in res.stdout, (
+        "rien ne dit que `--jusqu-a 7` sans journal repart de l'étape 1"
+    )
+
+
+def test_le_point_de_depart_ne_se_fixe_que_par_etape():
+    """Une variable de départ qu'une autre option pourrait fixer redeviendrait
+    la demi-option de la réserve 2, sans que rien ne le dise."""
+    affectations = re.findall(r"PREMIERE_ETAPE=(\S+)", _texte())
+    assert affectations == ["1", "$2;"], (
+        f"PREMIERE_ETAPE est fixée ailleurs qu'à l'initialisation et par "
+        f"`--etape` : {affectations}"
+    )
+    assert "DEPUIS=" not in _texte(), "la variable morte est encore là"
+
+
+def test_reprendre_saute_ce_qui_est_deja_consigne(tmp_path):
+    """Vérifié en réel le 29/08/2026 — il a sauté les étapes 4 et 5 déjà faites.
+    Ce test le fige : sans le saut, l'étape 1 relancerait `--mesurer`, et sur
+    une session déjà passée par l'étape 4 ce serait le push forcé qu'on
+    rejouerait."""
+    depot = tmp_path / "depot"
+    subprocess.run(["git", "init", "--quiet", "-b", "main", str(depot)],
+                   check=True, capture_output=True)
+    journal = tmp_path / "j.journal"
+    journal.write_text(
+        "".join(f"[2026-08-29T10:0{n}:00+0000] ÉTAPE {n} — TERMINÉE\n"
+                for n in (1, 2, 3)),
+        encoding="utf-8",
+    )
+    res = subprocess.run(
+        [str(RUNNER), "--reprendre", str(journal), "--jusqu-a", "3"],
+        cwd=str(depot), capture_output=True, text=True, input="",
+        env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+    )
+    assert res.returncode == 0, res.stderr
+    consigne = journal.read_text(encoding="utf-8")
+    assert consigne.count("déjà consignée comme terminée, passée") == 3
+    assert "SESSION TERMINÉE" in consigne
+    assert "mesure du gain" not in consigne, "l'étape 1 a été rejouée"
 
 
 def test_l_aide_ne_tronque_pas_l_en_tete():
