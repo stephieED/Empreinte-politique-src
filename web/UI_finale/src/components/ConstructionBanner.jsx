@@ -12,17 +12,18 @@ import './ConstructionBanner.css';
  * Volontairement NON refermable : un bandeau qu'on ferme disparaît pour toute
  * la visite, y compris sur les pages de profil — là où il compte le plus.
  *
- * Couleur : inversion encre/blanc cassé, jamais le jaune signal. La charte le
- * réserve à la sélection, l'action et la source vérifiée — « jamais pour
- * indiquer un jugement » — et il échoue AA en texte sur fond clair (1.05:1,
- * DESIGN_SYSTEM.md §1 et §2). Le jaune n'apparaît ici qu'en soulignement du
- * mot « construction », c'est-à-dire en accent graphique non textuel.
+ * Couleur : cyan signal (--notice) sur encre. La charte ne définit aucune
+ * couleur d'alerte, et c'est ce qui rend ce choix sûr : le cyan n'appartient à
+ * aucun autre élément de l'interface, donc le bandeau ne peut pas se lire
+ * comme du contenu. Le jaune signal est exclu — la charte le réserve à la
+ * sélection, l'action et la source vérifiée, « jamais pour indiquer un
+ * jugement » (DESIGN_SYSTEM.md §1 et §2).
  */
 export default function ConstructionBanner() {
   return (
     <aside className="construction-banner" role="note" aria-label="État du projet">
       <p className="construction-banner__text">
-        <strong className="construction-banner__flag">En construction.</strong>{' '}
+        <strong>En construction.</strong>{' '}
         Ce site est publié pendant son développement. Ce qui s'affiche est sourcé
         et vérifiable, mais des données peuvent manquer, et certaines absences
         sont encore mal expliquées.

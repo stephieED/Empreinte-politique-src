@@ -1,9 +1,14 @@
 # EMPREINTE POLITIQUE
 
-> ⚠️ **Projet en construction.** Le pipeline et l'interface évoluent
+![Projet en construction](https://img.shields.io/badge/PROJET-EN%20CONSTRUCTION-00E5FF?style=for-the-badge&labelColor=17141F)
+
+> [!WARNING]
+> **Ce projet est en construction.** Le pipeline et l'interface évoluent
 > quotidiennement. Les données publiées sont réelles et sourcées, mais peuvent
 > être incomplètes, et certaines absences portent encore une explication
-> imprécise. L'état courant se lit dans les
+> imprécise — ne pas conclure d'une liste vide sans lire son bloc `couverture`.
+>
+> L'état courant se lit dans les
 > [issues ouvertes](https://github.com/stephieED/Empreinte-politique-src/issues).
 
 Generates structured "political CVs" (mandates, responsibilities, votes,
