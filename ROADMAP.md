@@ -44,12 +44,15 @@ publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte` (+ `ca
 par liste métier, avec portée facultative — est celui sur lequel #486 se branche au
 lieu d'en inventer un second. Voir `docs/technical_decisions.md#couverture-listes-539`.
 
-**Un correctif de collecte n'atteint pas les profils déjà écrits.** Une extraction
-saute un profil existant ; il faut `refresh_existing_only` pour l'atteindre, et
-`roster_limit=0` ne suffit **pas** — sans `--limit`, la branche d'exemption au saut
-n'est pas empruntée du tout. Trois runs ont été nécessaires pour le comprendre le
-28/08. Les libellés de lancement le disent désormais ; le découpage des paramètres,
-lui, reste à corriger.
+**Un paramètre commandait ce qu'il ne nommait pas.** Une extraction sautait les
+profils déjà écrits, et `roster_limit=0` ne suffisait **pas** à les atteindre :
+sans `--limit`, la branche d'exemption au saut n'était pas empruntée, si bien que
+le mode « pas de plafond » corrigeait strictement moins que le mode échantillonné.
+Trois runs ont été nécessaires pour le comprendre le 28/08. #577 a corrigé les
+libellés ; **#578 a corrigé le découpage** — deux axes disjoints
+(`existing_profiles` × `roster_coverage`), le cache à part, et `roster_limit`
+réduit à un plafond. Voir
+`docs/technical_decisions.md#deux-axes-formulaire-578`.
 
 **Ce qui n'a jamais été exécuté n'est pas connu.** L'épic #566 a sorti sept défauts
 d'une seule répétition de la procédure de bornage, dont deux introduits le matin

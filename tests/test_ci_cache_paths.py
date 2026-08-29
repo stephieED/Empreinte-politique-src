@@ -182,23 +182,33 @@ def test_les_dossiers_ont_leur_propre_cle():
 
 
 # ---------------------------------------------------------------------------
-# Découplage `overwrite_profiles` / purge du cache (#440)
+# Découplage écrasement / purge du cache (#440, redécoupé par #578)
+#
+# `existing_profiles=overwrite` écrit par-dessus l'existant ; `cold_start`
+# purge les caches de téléchargement. Ce sont deux axes, et les quatre
+# combinaisons ont un sens — « écraser sans purger le cache » étant la plus
+# courante : on réécrit à partir d'archives déjà téléchargées.
 # ---------------------------------------------------------------------------
 
 RETRY = RACINE / ".github" / "workflows" / "retry-generate-data.yml"
 
 
-def test_overwrite_profiles_existe_comme_input():
+def test_l_ecrasement_se_demande_sans_purger_le_cache():
     """Écraser les profils et purger le cache sont deux besoins distincts : la
     correction de clé de #440 impose le premier, alors que purger obligerait à
     re-télécharger ~300 Mo auprès d'une source dont l'indisponibilité a déjà
     bloqué trois chantiers."""
-    assert "overwrite_profiles:" in WORKFLOW.read_text(encoding="utf-8")
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert "      existing_profiles:" in workflow
+    assert "          - overwrite\n" in workflow, (
+        "l'écrasement n'est plus une valeur de l'axe 1 : la correction de clé "
+        "de #440 n'est plus demandable."
+    )
 
 
-def test_overwrite_profiles_ne_purge_jamais_le_cache():
+def test_l_axe_d_ecriture_ne_purge_jamais_le_cache():
     """L'invariant central de ce découplage. Un step de nettoyage conditionné à
-    `overwrite_profiles` annulerait tout l'intérêt du mode."""
+    `existing_profiles` annulerait tout l'intérêt du mode."""
     workflow = WORKFLOW.read_text(encoding="utf-8")
     for bloc in re.split(r"\n      - name: ", workflow):
         if not bloc.startswith("Nettoyage"):
@@ -206,86 +216,68 @@ def test_overwrite_profiles_ne_purge_jamais_le_cache():
         entete = bloc.split("\n", 1)[0]
         condition = re.search(r"if:\s*\$\{\{([^}]+)\}\}", bloc)
         assert condition, f"step de nettoyage sans condition : {entete}"
-        assert "overwrite_profiles" not in condition.group(1), (
-            f"le step « {entete} » purge sur overwrite_profiles — or ce mode "
-            "existe précisément pour écraser SANS re-télécharger (#440)."
+        assert "existing_profiles" not in condition.group(1), (
+            f"le step « {entete} » purge sur l'axe 1 — or l'écrasement existe "
+            "précisément pour réécrire SANS re-télécharger (#440)."
         )
 
 
-def test_tous_les_no_merge_considerent_les_deux_inputs():
-    """`--no-merge` doit être posé par fresh_run OU par overwrite_profiles.
-    Un job qui n'en regarderait qu'un fusionnerait alors que les autres
-    écrasent — donc produirait les doublons que #440 corrige, sur ce job-là
-    seulement, ce qui serait d'autant plus difficile à voir."""
+def test_tous_les_no_merge_suivent_le_meme_axe():
+    """`--no-merge` est posé par l'axe 1, et par lui seul (#578).
+
+    Un job qui regarderait un autre signal — `cold_start`, hier — fusionnerait
+    alors que les autres écrasent, ou l'inverse : les doublons que #440 corrige,
+    sur ce job-là seulement, ce qui est d'autant plus difficile à voir.
+    """
     workflow = WORKFLOW.read_text(encoding="utf-8")
     lignes = [l for l in workflow.split("\n") if "MERGE_FLAG=(--no-merge)" in l]
     assert lignes, "aucun MERGE_FLAG trouvé — le test ne vérifie plus rien"
     for ligne in lignes:
-        assert "$FRESH" in ligne and "$OVERWRITE" in ligne, (
-            f"condition incomplète : {ligne.strip()}"
+        assert ligne.strip() == '[[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)', (
+            f"condition divergente : {ligne.strip()}"
         )
 
 
-def test_le_retry_reconstruit_overwrite_profiles():
-    """Sans cette reconstruction, un run `overwrite_profiles=true` préempté
-    serait relancé en fusion additive — exactement le scénario de doublons que
-    ce mode existe pour éviter."""
+def test_le_retry_reconstruit_l_axe_1():
+    """Sans cette reconstruction, un run `overwrite` préempté serait relancé en
+    fusion additive — exactement le scénario de doublons que ce mode existe
+    pour éviter."""
     retry = RETRY.read_text(encoding="utf-8")
-    assert "overwrite_profiles=" in retry
-    assert "-f overwrite_profiles=" in retry, "l'input n'est pas transmis à la relance"
+    assert "existing_profiles=$(echo \"$roster_log\"" in retry
+    assert "-f existing_profiles=" in retry, "l'input n'est pas transmis à la relance"
 
 
-def test_le_retry_deduit_overwrite_apres_avoir_lu_le_log():
-    """La déduction s'appuie sur `an_log` : la placer avant sa définition la
-    rendrait toujours fausse, silencieusement."""
+def test_le_retry_lit_les_logs_avant_d_en_deduire_l_axe_1():
+    """La reconstruction s'appuie sur `roster_log` et sur `an_log` : les placer
+    avant leur définition la rendrait toujours fausse, silencieusement."""
     retry = RETRY.read_text(encoding="utf-8")
-    assert retry.index("an_log=$(job_log") < retry.index("overwrite_profiles=false")
+    deduction = retry.index("existing_profiles=$(echo \"$roster_log\"")
+    assert retry.index("an_log=$(job_log") < deduction
+    assert retry.index("roster_log=$(job_log") < deduction
 
 
-def test_skip_existing_est_leve_par_overwrite_profiles():
-    """`--skip-existing` s'applique AVANT `--no-merge` : tant qu'il est posé en
-    dur, un run `overwrite_profiles=true` saute les profils déjà committés,
-    c'est-à-dire exactement ceux qu'une correction de fond doit atteindre
-    (#445). Le remettre en dur rendrait la clé corrigée de #440 non
+def test_le_job_roster_ne_pose_jamais_skip_existing_en_dur():
+    """`--skip-existing` s'applique AVANT `--no-merge` : posé en dur, il saute
+    les profils déjà committés — exactement ceux qu'une correction de fond doit
+    atteindre (#445). Le remettre en dur rendrait la clé corrigée de #440 non
     propageable, sans qu'aucun log ne le signale."""
     workflow = WORKFLOW.read_text(encoding="utf-8")
     assert "--skip-existing --resume" not in workflow, (
         "--skip-existing est de nouveau posé en dur sur le job roster : "
         "aucune combinaison d'inputs ne peut plus régénérer l'existant."
     )
-    lignes = [l for l in workflow.split("\n") if "&& SKIP_FLAG=()" in l]
-    assert lignes, "aucune levée de SKIP_FLAG trouvée — le test ne vérifie plus rien"
-    for ligne in lignes:
-        assert "$FRESH" in ligne and "$OVERWRITE" in ligne, (
-            f"condition incomplète : {ligne.strip()}"
-        )
-
-
-def test_le_job_roster_pose_skip_existing_par_defaut():
-    """Le rollout progressif (#224) repose dessus : sans `--skip-existing` par
-    défaut, chaque run repaierait le réseau pour tous les profils déjà écrits."""
-    workflow = WORKFLOW.read_text(encoding="utf-8")
-    assert "SKIP_FLAG=(--skip-existing)" in workflow
-    assert '"${SKIP_FLAG[@]}" "${REFRESH_FLAG[@]}" --resume' in workflow, (
-        "SKIP_FLAG est calculé mais pas transmis à generate_all_profiles.py"
+    assert '"${POP_FLAG[@]}" --resume' in workflow, (
+        "la population n'est plus transmise à generate_all_profiles.py"
     )
 
 
-def test_refresh_existing_leve_toujours_skip_existing():
+def test_les_deux_drapeaux_de_population_ne_cohabitent_jamais():
     """`--refresh-existing` et `--skip-existing` s'annulent, et le script
-    refuse désormais la combinaison : les laisser cohabiter ferait échouer le
-    job roster au démarrage (#445)."""
+    refuse la combinaison : les laisser cohabiter ferait échouer le job roster
+    au démarrage (#445). Depuis #578 c'est structurel — une seule affectation
+    de `POP_FLAG` est atteinte par run."""
     workflow = WORKFLOW.read_text(encoding="utf-8")
-    assert "REFRESH_FLAG=(--refresh-existing)" in workflow
-    bloc = workflow[workflow.index("REFRESH_FLAG=(--refresh-existing)"):]
-    bloc = bloc[:bloc.index("fi")]
-    assert "SKIP_FLAG=()" in bloc, (
-        "REFRESH_FLAG est posé sans lever SKIP_FLAG : le job échouerait aussitôt."
+    lignes = [l.strip() for l in workflow.split("\n") if l.strip().startswith("POP_FLAG=")]
+    assert lignes == ["POP_FLAG=()", "POP_FLAG=(--skip-existing)", "POP_FLAG=(--refresh-existing)"], (
+        f"les affectations de POP_FLAG ont changé de forme : {lignes}"
     )
-
-
-def test_refresh_existing_sans_ecrasement_est_signale():
-    """Fusionner au lieu d'écraser laisserait les entrées de l'ancienne clé à
-    côté des corrigées — un run silencieusement inutile (#440/#445)."""
-    workflow = WORKFLOW.read_text(encoding="utf-8")
-    assert "::warning::roster_refresh_existing=true sans overwrite_profiles" in workflow

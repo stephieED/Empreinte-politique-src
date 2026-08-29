@@ -115,10 +115,18 @@ nothing failing.
 Test-only dependencies go in `requirements-dev.txt`.
 See `docs/technical_decisions.md#ci-tests-pytest`.
 
-**CI/CD (`.github/workflows/generate-data.yml`)**: `cold_start=true` = full purge, `--no-merge`.
-`cold_start=false` = additive merge, cache restored.
-In both modes, threshold = `inputs.threshold` (default 3).
-Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd`.
+**CI/CD (`.github/workflows/generate-data.yml`)**: the launch form is **two
+disjoint axes plus the cache** (#578). `existing_profiles` (`leave-as-is` /
+**`refresh`**, the default / `overwrite`) decides what happens to profiles
+already written — `overwrite` alone raises `--no-merge`. `roster_coverage`
+decides whether members with no profile get one. `cold_start` purges the
+download caches and re-fetches the public sources; it says nothing about how
+profiles are written, so "overwrite without purging the cache" — the common
+case — is one setting, not a side effect. `roster_limit` is a cap and nothing
+else (default `0` = no cap); it commands no refresh policy.
+In all modes, threshold = `inputs.incomplete_read_threshold` (default 3).
+Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd` and
+`docs/technical_decisions.md#deux-axes-formulaire-578`.
 
 **The data push goes out under a deploy key, not the `GITHUB_TOKEN` (#508)**: a repository
 ruleset enforces its `required_status_checks` on **direct pushes**, not only on PRs — and
@@ -185,9 +193,9 @@ entries (still `extraction_suspendue`, `condition_reprise` rewritten to the
 editorial reopening, no longer to a certificate), the Senate mandates already
 collected on the 2 bicameral profiles (additive merge removes nothing), and the
 NosSénateurs ODbL attribution in the legal notice. **Declared loss**: the 2
-`sources[]` entries at the next regeneration (non-blocking, #460); a `cold_start`
-run additionally drops 1 `mandat` on each of the 2 profiles — a **watched stable
-list**, so that run needs `allow_declared_losses`. Three loud refusals guard the
+`sources[]` entries at the next regeneration (non-blocking, #460); an
+`existing_profiles=overwrite` run additionally drops 1 `mandat` on each of the 2
+profiles — a **watched stable list**, so that run needs `allow_declared_losses`. Three loud refusals guard the
 non-return (`build_profile`, `_base_url_for`, argparse), frozen by
 `tests/test_retrait_senat_528.py`. Reopening requires the three written
 conditions of `docs/technical_decisions.md#retrait-senat-528` §7 — a renewed
@@ -355,7 +363,7 @@ normalisation. A run may legitimately lose entries — declare it with the
 `allow_declared_losses` input, never by removing the check. Guarded by
 `tests/test_ci_controle_perte_profils.py` and `tests/test_audit_diff_agregats.py`.
 Why it exists: `collect_interventions=false` (skip collection, intended) combined with
-`overwrite_profiles=true` (rewrite without what wasn't collected, also intended) erased the
+`existing_profiles=overwrite` (rewrite without what wasn't collected, also intended) erased the
 corpus's 789 interventions — and with them 647 `tags_thematiques` and 497 aggregated tags,
 all **published** fields. The quality gate could not catch it: it measures a *level*, not a
 *variation*. Why the scope grew: with only profile list-lengths watched, SOC-16's

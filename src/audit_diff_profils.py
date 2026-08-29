@@ -9,7 +9,7 @@ elle préserve les données d'un run à l'autre quand une collecte échoue. On l
 constaté le 18/08/2026 — les 283 textes de la XV d'Édouard Philippe ont
 survécu à une collecte ratée uniquement grâce à elle.
 
-Un run `--no-merge` (ou `fresh_run`) abandonne cette mémoire : tout ce que la
+Un run `--no-merge` (`existing_profiles=overwrite`) abandonne cette mémoire : tout ce que la
 collecte du jour ne récupère pas est définitivement perdu, **silencieusement**.
 Ce script est le contrôle qui manque avant de committer une telle
 régénération.

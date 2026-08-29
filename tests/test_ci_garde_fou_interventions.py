@@ -1,7 +1,7 @@
 """Garde-fou #460 : signaler, avant de lancer le run, qu'un écrasement sans
 collecte d'interventions va détruire des données déjà acquises.
 
-Contexte. `overwrite_profiles=true` (ou `fresh_run=true`) lève `--no-merge` ;
+Contexte. `existing_profiles=overwrite` lève `--no-merge` ;
 `extract_interventions=false` lève `--skip-interventions`. Chacun est correct
 isolément — l'un est le mode de correction de schéma, l'autre le mode
 d'extraction rapide. Ensemble, ils réécrivent le profil **sans** ce que le run
@@ -16,8 +16,12 @@ perte d'un champ stable. Refuser ici la combinaison ferait double emploi et
 casserait un usage légitime — propager une correction de clé sans repayer la
 collecte des interventions est un choix valide dès lors qu'il est conscient.
 Ce qui manquait n'était pas un veto, c'était de rendre le choix conscient
-**avant** d'engager une heure de runner. Même forme que le `::warning::` de
-`roster_refresh_existing` sans `overwrite_profiles` (#445).
+**avant** d'engager une heure de runner.
+
+Depuis #578, `cold_start` ne lève plus `--no-merge` : il purge le cache de
+téléchargement, ce qui ne détruit aucune donnée acquise. Le garde-fou suit —
+un signal qui crie sur un mode inoffensif est un signal qu'on apprend à
+ignorer.
 
 Ces tests exécutent réellement le script du step, extrait du workflow : une
 assertion purement textuelle sur le YAML dirait que l'avertissement est écrit,
@@ -80,7 +84,7 @@ def _corpus(repertoire: Path, interventions_par_profil: dict[str, int]) -> None:
         )
 
 
-def _executer(tmp_path: Path, *, fresh: str, overwrite: str, interventions: str,
+def _executer(tmp_path: Path, *, overwrite: str, interventions: str,
               corpus: dict[str, int]) -> tuple[int, str, str]:
     """Lance le step dans un corpus jetable. Retourne (code, sortie, résumé)."""
     _corpus(tmp_path, corpus)
@@ -93,7 +97,6 @@ def _executer(tmp_path: Path, *, fresh: str, overwrite: str, interventions: str,
         text=True,
         env={
             "PATH": "/usr/bin:/bin:/usr/local/bin",
-            "FRESH": fresh,
             "OVERWRITE": overwrite,
             "INTERVENTIONS": interventions,
             "GITHUB_STEP_SUMMARY": str(resume),
@@ -125,10 +128,10 @@ def test_le_step_existe_dans_prepare_an_matrix():
 def test_avertit_quand_overwrite_ecrase_des_interventions(tmp_path):
     """Le cas de #460 lui-même : c'est ce run-là qui a effacé 789 interventions."""
     code, sortie, resume = _executer(
-        tmp_path, fresh="false", overwrite="true", interventions="false", corpus=CORPUS_TEMOIN
+        tmp_path, overwrite="true", interventions="false", corpus=CORPUS_TEMOIN
     )
     assert "::warning::" in sortie, (
-        "Aucun avertissement alors que overwrite_profiles=true et "
+        "Aucun avertissement alors que existing_profiles=overwrite et "
         f"extract_interventions=false détruiraient {TOTAL_TEMOIN} interventions."
     )
     assert str(TOTAL_TEMOIN) in sortie, (
@@ -148,29 +151,20 @@ def test_avertit_quand_overwrite_ecrase_des_interventions(tmp_path):
     )
 
 
-def test_avertit_aussi_pour_fresh_run(tmp_path):
-    """`fresh_run=true` lève `--no-merge` au même titre qu'`overwrite_profiles`
-    (`[[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]]`). L'ignorer laisserait
-    ouverte la moitié du chemin qui a détruit les données."""
-    _, sortie, _ = _executer(
-        tmp_path, fresh="true", overwrite="false", interventions="false", corpus=CORPUS_TEMOIN
-    )
-    assert "::warning::" in sortie, "fresh_run=true écrase aussi, et n'avertit pas."
-
-
 @pytest.mark.parametrize(
-    "fresh, overwrite, interventions, raison",
+    "overwrite, interventions, raison",
     [
-        ("false", "false", "false", "fusion additive : rien n'est écrasé"),
-        ("false", "true", "true", "l'écrasement est accompagné de la collecte"),
-        ("true", "false", "true", "idem en démarrage à froid"),
+        ("false", "false", "fusion additive : rien n'est écrasé, "
+                           "y compris en cold_start, qui ne purge que le cache (#578)"),
+        ("true", "true", "l'écrasement est accompagné de la collecte"),
+        ("false", "true", "ni écrasement ni saut de collecte"),
     ],
 )
-def test_silencieux_quand_rien_n_est_menace(tmp_path, fresh, overwrite, interventions, raison):
+def test_silencieux_quand_rien_n_est_menace(tmp_path, overwrite, interventions, raison):
     """Un garde-fou qui crie à tort se fait ignorer — c'est le mécanisme même
     par lequel la §3 de la quality gate est devenue inaudible (#460)."""
     _, sortie, resume = _executer(
-        tmp_path, fresh=fresh, overwrite=overwrite, interventions=interventions, corpus=CORPUS_TEMOIN
+        tmp_path, overwrite=overwrite, interventions=interventions, corpus=CORPUS_TEMOIN
     )
     assert "::warning::" not in sortie, f"Avertissement injustifié alors que {raison}."
     assert resume.strip() == "", f"Résumé de run pollué alors que {raison}."
@@ -182,7 +176,7 @@ def test_silencieux_si_le_corpus_ne_porte_aucune_intervention(tmp_path):
     ne détruit rien et le garde-fou se tait — c'est l'exact symétrique du
     « 209 profils sous le seuil » qui ne disait rien de ce qui avait changé."""
     _, sortie, resume = _executer(
-        tmp_path, fresh="false", overwrite="true", interventions="false",
+        tmp_path, overwrite="true", interventions="false",
         corpus={"a": 0, "b": 0},
     )
     assert "::warning::" not in sortie, (
@@ -197,11 +191,15 @@ def test_la_condition_suit_le_calcul_de_merge_flag():
     est levé. Si la condition des jobs d'extraction change sans que celle-ci
     suive, l'avertissement devient muet ou bavard — sans que rien ne casse."""
     texte = WORKFLOW.read_text(encoding="utf-8")
-    condition_merge = '[[ "$FRESH" == "true" || "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)'
+    condition_merge = '[[ "$OVERWRITE" == "true" ]] && MERGE_FLAG=(--no-merge)'
     assert condition_merge in texte, (
         "Le calcul de MERGE_FLAG a changé de forme : revoir la condition du "
         "garde-fou de #460, qui la reproduit en négatif."
     )
-    assert '[[ "$FRESH" != "true" && "$OVERWRITE" != "true" ]]' in _script_du_garde_fou(), (
+    assert '[[ "$OVERWRITE" != "true" ]]' in _script_du_garde_fou(), (
         "La condition du garde-fou n'est plus le négatif de celle de MERGE_FLAG."
     )
+    # Et `OVERWRITE` vaut exactement l'axe 1 du formulaire (#578) : si les deux
+    # divergeaient, le garde-fou avertirait sur un autre mode que celui qui
+    # écrase.
+    assert "OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}" in texte

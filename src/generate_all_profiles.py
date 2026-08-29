@@ -47,7 +47,7 @@ Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py --pivot            # aussi écrire <slug>.pivot.json
     python src/generate_all_profiles.py --workers 4        # nb de candidats traités en parallèle (défaut: 4)
     python src/generate_all_profiles.py --resume            # reprendre depuis le dernier point de sauvegarde après une interruption
-    python src/generate_all_profiles.py --limit 20          # ne traiter que les 20 premiers candidats (déploiement progressif)
+    python src/generate_all_profiles.py --limit 20          # plafonner ce run à 20 candidats (non couverts d'abord)
     python src/generate_all_profiles.py --sample 20         # ne traiter qu'un échantillon aléatoire de 20 candidats
     python src/generate_all_profiles.py --manifest-out F    # consigner les profils écrits par CE run (publication CI scopée, #450)
 
@@ -58,10 +58,14 @@ plutôt que par la liste éditoriale par défaut (raw_data/candidats.json) :
     python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing \
         --skip-interventions --skip-dossiers-legislatifs
 
-Avec --limit ET --skip-existing combinés (cas ci-dessus), la sélection est
-progressive et rafraîchissante plutôt que de reprendre systématiquement les N
-premiers candidats du fichier source (#224) : voir _select_candidats_couverture
-et --staleness-days.
+Trois populations, trois intentions NOMMÉES (#578) — jamais déduites de la
+présence d'un plafond :
+  --skip-existing     : les candidats sans profil (on étend la couverture) ;
+  --refresh-existing  : les candidats qui en ont déjà un (on propage un
+                        correctif) ;
+  ni l'un ni l'autre  : tout le monde, l'existant recollecté et fusionné.
+--limit ne fait que PLAFONNER cette population ; sous plafond, le budget va
+d'abord aux non-couverts puis aux couverts périmés (#224, --staleness-days).
 
 --skip-interventions + --skip-dossiers-legislatifs combinés forment le mode
 d'extraction léger (#357) : identité + mandats + votes + amendements
@@ -340,15 +344,20 @@ def _select_candidats_couverture(
     pivot_dir: Path,
     limit: int,
     staleness_days: int,
+    inclure_existants: bool = True,
     reference_date: Optional[datetime] = None,
-) -> tuple[list[dict[str, Any]], set[str]]:
-    """Sélection progressive + rafraîchissement pour --limit combiné à
-    --skip-existing (#224).
+) -> list[dict[str, Any]]:
+    """Répartition d'un PLAFOND de volume entre non-couverts et couverts (#224).
 
-    Sans cela, --limit sélectionne toujours les N premiers candidats du
-    fichier source (ordre déterministe) ; dès qu'ils existent tous (run 2),
-    --skip-existing les saute tous et le job ne traite plus jamais personne.
-    Les profils déjà couverts, eux, ne sont alors plus jamais rafraîchis.
+    Appelée dès que `--limit` est posé, et **seulement** pour lui : depuis
+    #578 elle ne commande plus aucune politique de rafraîchissement. Qui est
+    dans la population est décidé en amont, par une intention nommée
+    (`--refresh-existing`, `--skip-existing`, ou ni l'un ni l'autre) ; cette
+    fonction ne fait que dépenser le budget.
+
+    Sans elle, --limit sélectionne toujours les N premiers candidats du
+    fichier source (ordre déterministe) : dès le run 2, le budget repart sur
+    les mêmes, et personne d'autre n'est jamais atteint.
 
     Partitionne `candidats` en "non couverts" (pas de pivot dans `pivot_dir`)
     et "couverts" (pivot existant), avant toute troncature par `limit` : le
@@ -358,15 +367,20 @@ def _select_candidats_couverture(
     `staleness_days`. Un profil couvert et frais n'est jamais resélectionné :
     pas de gaspillage de budget sur des profils déjà à jour.
 
+    `inclure_existants=False` (le job roster quand l'axe 1 vaut `leave-as-is`,
+    c'est-à-dire `--skip-existing`) : le budget ne va QU'aux non-couverts. Y
+    faire entrer des couverts périmés reviendrait à les sélectionner pour que
+    `process_candidat` les saute — du budget dépensé à ne rien faire.
+
     L'ordre des couverts périmés au sein du budget restant suit celui renvoyé
     par `compute_profils_perimes` (tri alphabétique par `id`), pas un tri par
     degré de péremption — choix volontairement simple, cf. #224.
 
-    Returns:
-        (selection, slugs_a_rafraichir) : `slugs_a_rafraichir` est le
-        sous-ensemble de `selection` (slugs effectifs) à exempter de
-        --skip-existing dans `process_candidat` — ces profils existent déjà
-        et doivent repasser par le merge additif plutôt que d'être sautés.
+    NB : la péremption est une règle de PRIORITÉ sous plafond, jamais une
+    politique de rafraîchissement. Un correctif de code ne rend aucun profil
+    périmé au sens des dates : c'est pourquoi « rafraîchir » se demande
+    désormais en retirant le plafond, pas en espérant que la date le veuille
+    (#578).
     """
     non_couverts: list[dict[str, Any]] = []
     couverts: list[tuple[dict[str, Any], dict[str, Any]]] = []
@@ -380,8 +394,7 @@ def _select_candidats_couverture(
     selection = non_couverts[:limit]
     restant = limit - len(selection)
 
-    slugs_a_rafraichir: set[str] = set()
-    if restant > 0 and couverts:
+    if inclure_existants and restant > 0 and couverts:
         pivots_par_id = {
             pivot["id"]: candidat for candidat, pivot in couverts if pivot.get("id")
         }
@@ -391,11 +404,9 @@ def _select_candidats_couverture(
             reference_date=reference_date,
         )
         for pid in perimes_ids[:restant]:
-            candidat = pivots_par_id[pid]
-            selection.append(candidat)
-            slugs_a_rafraichir.add(_effective_slug(candidat))
+            selection.append(pivots_par_id[pid])
 
-    return selection, slugs_a_rafraichir
+    return selection
 
 
 def valider_budgets(args: argparse.Namespace) -> None:
@@ -810,7 +821,6 @@ def process_candidat(
     args: argparse.Namespace,
     out_dir: Path,
     pivot_dir: Path,
-    refresh_slugs: Optional[set[str]] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
     budget_job: Optional[BudgetCollecte] = None,
 ) -> dict[str, Any]:
@@ -824,10 +834,12 @@ def process_candidat(
     - Normal (défaut) : fetch réseau FR et/ou UE selon --source, écriture raw, pivot optionnel.
     - --pivot-only    : charge le profil brut existant, normalise en pivot (pas de réseau).
 
-    `refresh_slugs` (#224) : sous-ensemble de slugs à traiter normalement
-    (fetch + merge additif) même si --skip-existing est actif et que le
-    profil existe déjà — utilisé par `_select_candidats_couverture` pour
-    rafraîchir les profils couverts mais périmés sans jamais les sauter.
+    `--skip-existing` est STRICT depuis #578 : un profil déjà écrit n'est
+    jamais recollecté, sans exemption. L'exemption d'avant (`refresh_slugs`,
+    #224) était posée par la seule présence de `--limit` — un plafond de
+    volume qui commandait, sans le nommer, une politique de rafraîchissement.
+    Recollecter l'existant se demande maintenant en ne posant PAS
+    `--skip-existing`.
 
     `budget_job` (#514) : budget de temps mur pour la collecte réseau du
     process entier. Épuisé, les candidats restants sortent en
@@ -910,7 +922,7 @@ def process_candidat(
         }
 
     # ── Mode normal : skip-existing ─────────────────────────────────────────
-    if args.skip_existing and json_path.exists() and effective_slug not in (refresh_slugs or ()):
+    if args.skip_existing and json_path.exists():
         _tprint(f"— {nom} ({effective_slug}) : profil déjà présent, ignoré (--skip-existing).")
         return {"nom": nom, "slug": effective_slug, "statut": "deja_present", "parltrack": "n/a"}
 
@@ -1264,7 +1276,11 @@ def main() -> None:
              "candidats restants sortent en `budget_job_epuise` sans aucune requête et le "
              "run se termine normalement (résumé, annotations, publication) au lieu d'être "
              "tué par le `timeout-minutes` du job. 0 (défaut) = aucun budget. Voir #514.")
-    parser.add_argument("--skip-existing", action="store_true", help="Ne pas régénérer un profil dont le fichier JSON existe déjà")
+    parser.add_argument("--skip-existing", action="store_true",
+                        help="Ne JAMAIS régénérer un profil dont le fichier JSON existe déjà. Strict "
+                             "depuis #578 : plus aucune exemption implicite (--limit posait autrefois "
+                             "une exemption pour les profils périmés, sans le nommer). Pour recollecter "
+                             "l'existant, ne pas poser ce drapeau.")
     parser.add_argument("--refresh-existing", action="store_true",
                         help="Ne traiter QUE les candidats dont le profil JSON existe déjà (#445) : "
                              "l'inverse exact de --skip-existing. Sert à propager une correction de "
@@ -1395,18 +1411,21 @@ def main() -> None:
                              "un candidat retombe toujours dans le même shard. Appliqué avant "
                              "--limit/--sample/--skip-existing (#394).")
     limit_group.add_argument("--limit", type=int, default=None, metavar="N",
-                        help="Ne traiter que les N premiers candidats de la liste (déploiement progressif "
-                             "contrôlé, ex. avant d'ouvrir l'extraction à un roster complet). "
+                        help="PLAFOND de volume : ne traiter que N candidats de la population "
+                             "sélectionnée. Le budget va d'abord aux non-couverts, puis aux couverts "
+                             "périmés (#224) — sauf sous --skip-existing, où il ne va qu'aux "
+                             "non-couverts. Ne commande AUCUNE politique de rafraîchissement (#578). "
                              "Mutuellement exclusif avec --sample.")
     limit_group.add_argument("--sample", type=int, default=None, metavar="N",
                         help="Ne traiter qu'un échantillon aléatoire de N candidats. "
                              "Mutuellement exclusif avec --limit.")
     parser.add_argument("--staleness-days", type=int, default=30, metavar="JOURS",
-                        help="Utilisé seulement quand --limit et --skip-existing sont combinés (#224, lot "
-                             "roster) : seuil d'ancienneté (jours) au-delà duquel un candidat déjà couvert "
-                             "(pivot existant) est considéré périmé et resélectionné pour rafraîchissement "
-                             "par merge additif plutôt que sauté par --skip-existing. Même sémantique et "
-                             "défaut que audit_pivot_dataset.py --staleness-days (défaut: 30).")
+                        help="Utilisé seulement quand --limit plafonne la population (#224) : seuil "
+                             "d'ancienneté (jours) au-delà duquel un candidat déjà couvert (pivot "
+                             "existant) devient PRIORITAIRE pour le budget restant. Règle de priorité "
+                             "sous plafond, pas une politique de rafraîchissement — un correctif de code "
+                             "ne périme aucune date (#578). Même sémantique et défaut que "
+                             "audit_pivot_dataset.py --staleness-days (défaut: 30).")
     args = parser.parse_args()
 
     # --refresh-existing sélectionne exactement ce que --skip-existing écarte :
@@ -1481,22 +1500,36 @@ def main() -> None:
             print("Aucun profil existant dans cette tranche : rien à régénérer.")
             return
 
-    refresh_slugs: set[str] = set()
+    # ── Plafond de volume (#578) ────────────────────────────────────────────
+    # `--limit` est un PLAFOND, et rien d'autre. Jusqu'à #578, sa seule
+    # présence décidait aussi si les profils déjà écrits étaient recollectés :
+    # `--limit 20 --skip-existing` rafraîchissait les périmés, `--skip-existing`
+    # seul n'en rafraîchissait aucun. Un run à pleine échelle (« 0 = pas de
+    # plafond ») corrigeait donc STRICTEMENT MOINS qu'un run échantillonné —
+    # l'inverse de ce que le formulaire annonçait, et le second run raté du
+    # 28/08/2026.
+    #
+    # Qui est dans la population se décide maintenant plus haut, par une
+    # intention nommée : `--refresh-existing` (l'existant seul),
+    # `--skip-existing` (les non-couverts seuls), ni l'un ni l'autre (tout le
+    # monde, l'existant recollecté et fusionné). Ne rien poser ici ne dégrade
+    # donc plus rien : c'est le run complet.
     if args.limit is not None or args.sample is not None:
         avant = len(candidats)
-        if args.limit is not None and args.skip_existing:
-            # Sélection progressive + rafraîchissement (#224) : voir
-            # _select_candidats_couverture. Ne s'applique qu'à cette
-            # combinaison précise de flags (--limit + --skip-existing,
-            # utilisée par le job roster de generate-data.yml) ; --sample ou
-            # --limit seul gardent le comportement historique ci-dessous.
-            candidats, refresh_slugs = _select_candidats_couverture(
-                candidats, pivot_dir, limit=args.limit, staleness_days=args.staleness_days,
+        if args.limit is not None and not args.refresh_existing:
+            # Répartition du budget : aux non-couverts d'abord, puis aux
+            # couverts périmés (#224). `inclure_existants=False` sous
+            # `--skip-existing` : les couverts seraient sélectionnés pour être
+            # sautés, c'est-à-dire du budget dépensé à ne rien faire.
+            candidats = _select_candidats_couverture(
+                candidats, pivot_dir, limit=args.limit,
+                staleness_days=args.staleness_days,
+                inclure_existants=not args.skip_existing,
             )
-            print(f"Sélection progressive + rafraîchissement (--limit + --skip-existing, #224) : "
+            print(f"Plafond réparti par couverture (--limit {args.limit}, #224) : "
                   f"{len(candidats)}/{avant} candidat(s) retenu(s) "
-                  f"({len(candidats) - len(refresh_slugs)} non couvert(s), "
-                  f"{len(refresh_slugs)} périmé(s) à rafraîchir).")
+                  f"(non couverts d'abord"
+                  f"{', puis couverts périmés' if not args.skip_existing else ' uniquement'}).")
         else:
             candidats = _select_candidats(candidats, limit=args.limit, sample=args.sample)
             print(f"Sélection réduite ({'--limit' if args.limit is not None else '--sample'}) : "
@@ -1534,7 +1567,7 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=nb_workers) as pool:
         futures = {
             pool.submit(
-                process_candidat, candidat, args, out_dir, pivot_dir, refresh_slugs,
+                process_candidat, candidat, args, out_dir, pivot_dir,
                 scrutins_index, budget_job,
             ): candidat
             for candidat in candidats
