@@ -1,68 +1,67 @@
 # ROADMAP — Empreinte politique
 
-Short backlog: known bugs and ideas not yet scheduled. Not automatically
-re-read by coding agents (unlike `AGENTS.md`) — consult on request.
-Rationale for deferred items lives in
-`docs/technical_decisions.md#hors-perimetre`; this file only tracks *that*
-something is pending, not *why*.
+Ce que GitHub ne sait pas tenir : les défauts connus, les pistes non planifiées,
+et les **constats de cadrage** qu'il ne faut pas re-trancher. La liste des issues
+ouvertes, elle, vit dans GitHub — voir « Où en est le projet » ci-dessous.
 
-## Issues ouvertes — ordre d'exécution
+Non relu automatiquement par les agents (contrairement à `AGENTS.md`) : à
+consulter sur demande. Le rationale complet d'un élément différé vit dans
+`docs/technical_decisions.md#hors-perimetre` ; ici on garde ce qu'une session
+qui démarre à froid doit savoir avant de rouvrir un sujet.
 
-État au **29/08/2026** (`origin/main` = `6beb729`). Le rang traduit l'ordre dans
-lequel je lancerais les chantiers, pas une urgence absolue ; la dernière colonne dit
-ce qui empêche de commencer. Le *sujet* est réécrit court — les titres d'issue de ce
-dépôt portent leur constat chiffré et ne tiennent pas dans un tableau.
+## Où en est le projet
 
-**18 issues ouvertes, aucune PR ouverte**, toutes rattachées à un milestone.
+**La liste des issues ouvertes n'est plus tenue ici.** Elle l'a été, et elle
+dérivait en moins d'une heure : un tableau qui recopie l'état de GitHub se périme
+à chaque lot livré, et un tableau faux est pire qu'un tableau absent — on le croit.
 
-| Rang | Issue | Sujet | Milestone | État | Ce qui bloque |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **#326** | fondations UI partagées | Analytics | prêt | rien — seule voie qui n'attend rien et en débloque quatre |
-| 2 | **#579** | la détection de fenêtre reste muette | Maintenance | **32 commits sur 30, aucune alerte** — deuxième échec du même step | rien |
-| 3 | **#580** | neuf blobs au-dessus de 50 Mo | Maintenance | prêt — arbitrage à rendre sur le seuil | rien |
-| 4 | **#556** | marqueur `nil` publié comme URI | Modèle de données | prêt — 186 profils sur 481 | rien |
-| 5 | **#558** | couverture muette sur le gel Sénat | Modèle de données | prêt — 20 profils, dont 9 aux cinq listes vides | rien |
-| 6 | **#560** | « panne » là où c'est hors couverture | Modèle de données | prêt — 3 profils, bornes vérifiées à la source | rien |
-| 7 | **#578** | découplage des paramètres de lancement | Maintenance | **arbitrage à rendre** : deux booléens, ou un mode à trois valeurs | rien |
-| 8 | **#486** | carrière sur deux chambres | Modèle de données | à recadrer sur le modèle de #539 | rien |
-| 9 | #576 | runner guidé du bornage | Maintenance | **livré** (PR #582) ; reste sa validation de bout en bout | un banc public avec son ruleset |
-| 10 | #484 | Mélenchon basculé au Sénat | Modèle de données | non résolu | #486 |
-| 10 | #495 | affichage bicaméral | Modèle de données | — | #486 |
-| 11 | #328, #329, #330 | refonte des trois pages de profil | Analytics | après #326 | #326 — parallélisables entre elles |
-| 12 | #331 | documentation de la refonte | Analytics | — | #328, #329, #330 |
-| 13 | #305 | version anglaise | English version | — | stabilisation de l'UI (#324 entière) |
+- **L'état à jour** : les [issues](https://github.com/stephieED/Empreinte-politique-src/issues)
+  et les [milestones](https://github.com/stephieED/Empreinte-politique-src/milestones)
+  du dépôt, qui sont la source de vérité.
+- **En session Claude Code** : `/etat-issues` rend la synthèse par milestone et par
+  priorité, mesurée à l'instant.
 
-Deux épics chapeautent ces lots : **#324** (#326 → #331) et **#566** (bornage), dont
-quatre sous-issues sur cinq sont closes — reste la validation de #576.
+Ce fichier garde ce que GitHub ne sait pas tenir : le **pourquoi**. Les sections
+ci-dessous — défauts connus, pistes non planifiées — et les constats de cadrage
+qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 
-**Closes le 28-29/08** : #546, #545, #539, #550, #555, #551, #562, #567, #568, #569,
-#575, l'épic volumétrie #429, et #553 `not planned`.
+### Constats de cadrage, à ne pas re-trancher
 
-**Parallélisation.** Trois voies touchent des fichiers disjoints : **schéma/données**
-(`src/`, `raw_data/` — #556, #558, #560, puis #486), **UI** (`web/UI_finale/src/` —
-#326 puis les trois pages) et **CI** (`.github/`, `scripts/` — #579, #580, #578).
-Réserve habituelle : l'entrée de `docs/technical_decisions.md` dans un commit final
-isolé — la convention « entrée la plus récente en tête » fait converger tous les lots
-sur la ligne 1, et trois conflits ont été résolus pour cette seule raison le 28/08.
+**#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** Son constat — « `identite`
+toujours `null` » — est faux : mesuré le 28/08/2026 sur les **481 profils publiés**,
+c'est **5**. Trois d'entre eux sont les non-parlementaires créés par #539, dont
+l'`identite` nulle est **attendue** : aucune source parlementaire ne les décrit. Le
+cas résiduel est `jean-luc-melenchon`, plus le profil PE.
 
-**Trois des issues ouvertes sont des résidus de #539**, rendues visibles par le bloc
-`couverture` — #556, #558, #560. Ce ne sont pas des régressions : ce sont des
-silences qui vivaient dans `meta` sans que personne ne les y lise. #556 partage même
-son idiome avec #562 (close) — le marqueur XML `{"@xsi:nil": "true"}` d'AMO30
-recopié là où une valeur était attendue.
+**Plusieurs issues ouvertes sont des résidus de #539, pas des régressions.** Le bloc
+`couverture` publie désormais la *cause* d'une liste vide ; il a donc rendu visibles
+des silences qui vivaient dans `meta` sans que personne ne les y lise. Deux d'entre
+elles partagent un même idiome : le marqueur XML `{"@xsi:nil": "true"}` d'AMO30,
+recopié tel quel là où une valeur était attendue.
 
-**Ce que l'épic #566 a établi, et qui vaut au-delà du bornage.** Sept défauts sont
-sortis d'une seule répétition (#569), dont aucun n'était atteignable par relecture ou
-par test unitaire — y compris deux introduits le matin même. Deux affirmations de la
-documentation ont été infirmées : le push forcé **fait** baisser la taille annoncée
-par GitHub, immédiatement (513 → 240 Mo constatés). La prémisse — *ce qui n'a jamais
-été exécuté n'est pas connu* — s'applique à la configuration autant qu'au code.
+**La sérialisation #539 avant #486 est levée.** #539 est livré, et le modèle qu'il
+publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte` (+ `cause`),
+par liste métier, avec portée facultative — est celui sur lequel #486 se branche au
+lieu d'en inventer un second. Voir `docs/technical_decisions.md#couverture-listes-539`.
 
-**#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** « `identite` toujours
-`null` » est faux : mesuré sur les **481 profils publiés**, c'est **5** —
-`jean-luc-melenchon`, `jordan-bardella`, et les trois non-parlementaires créés par
-#539, dont l'`identite` nulle est **attendue**. Le cas résiduel est Mélenchon, plus
-le profil PE.
+**Un correctif de collecte n'atteint pas les profils déjà écrits.** Une extraction
+saute un profil existant ; il faut `refresh_existing_only` pour l'atteindre, et
+`roster_limit=0` ne suffit **pas** — sans `--limit`, la branche d'exemption au saut
+n'est pas empruntée du tout. Trois runs ont été nécessaires pour le comprendre le
+28/08. Les libellés de lancement le disent désormais ; le découpage des paramètres,
+lui, reste à corriger.
+
+**Ce qui n'a jamais été exécuté n'est pas connu.** L'épic #566 a sorti sept défauts
+d'une seule répétition de la procédure de bornage, dont deux introduits le matin
+même, et a infirmé deux affirmations de la documentation — le push forcé **fait**
+baisser la taille annoncée par GitHub, immédiatement (513 → 240 Mo constatés). La
+règle vaut pour la configuration autant que pour le code : un test qui vérifie qu'un
+script *contient* la bonne chaîne ne dit rien de ce qu'il *fait*.
+
+**Une convention coûte trois conflits par jour.** `docs/technical_decisions.md`
+range l'entrée la plus récente en tête : tous les lots convergent donc sur la
+ligne 1. Mettre cette entrée dans un **commit final isolé** rend le rebase
+mécanique — ça ne l'évite pas.
 
 ## Known bugs
 
