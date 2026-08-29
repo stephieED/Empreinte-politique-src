@@ -258,7 +258,9 @@
     ],
     "couverture_roster": {
       "roster_total": 65,
-      "profils_disponibles": 5
+      "profils_disponibles": 5,
+      "etat": "hors_perimetre",
+      "preuve": "Senat:SER : extraction suspendue depuis 2026-08-24 — Même cause que Senat:LR — la panne était la clé de fetch ('senateurs', None) entière, pas un groupe, et #528 a depuis sorti le Sénat du périmètre éditorial. Ce groupe est de surcroît clos depuis le 13/07/2009 (periode.fin), donc sans composition à rafraîchir. [#528, #516, run 32463926808 (21/08/2026), run 32548486495 (22/08/2026), #511]. Les membres non publiés le sont par cette décision, pas par un défaut de collecte : 5 profils sur 65 est un périmètre, pas une perte. Condition de reprise : Identique à Senat:LR — les deux entrées partagent la même décision éditoriale (#528) et se réactiveraient ensemble. Voir docs/technical_decisions.md#retrait-senat-528 §7."
     }
   }
 }

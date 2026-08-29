@@ -569,7 +569,9 @@
     ],
     "couverture_roster": {
       "roster_total": 235,
-      "profils_disponibles": 15
+      "profils_disponibles": 15,
+      "etat": "hors_perimetre",
+      "preuve": "Senat:LR : extraction suspendue depuis 2026-08-24 — Certificat TLS expiré sur archive.nossenateurs.fr, seul domaine servant le roster sénatorial : le fetch ('senateurs', None) échoue de façon déterministe, et le refus d'écrire un roster incomplet (#511) fait échouer tout le run — y compris la collecte des membres AN, qui, eux, alimentent des agrégats publiés. Depuis #528 la suspension n'attend plus cette source : le Sénat est sorti du périmètre éditorial du produit, et cette entrée reste suspendue parce que la retirer supprimerait un fichier publié (groupe-Senat-LR.json), ce que audit_diff_profils bloque (#460/#470). [#528, #516, run 32463926808 (21/08/2026, 6 shards roster sur 8 en échec), run 32548486495 (22/08/2026, 8 shards sur 8), #511, #488, #501]. Les membres non publiés le sont par cette décision, pas par un défaut de collecte : 15 profils sur 235 est un périmètre, pas une perte. Condition de reprise : Décision éditoriale, PAS un état de source (#528). Un certificat valide sur archive.nossenateurs.fr ne rouvre plus rien. La reprise exige les trois conditions écrites dans docs/technical_decisions.md#retrait-senat-528 §7, dans cet ordre : (1) une source Sénat établie et sondée pour de vrai (data.senat.fr / www.senat.fr : contenu publié et licence constatés, pas supposés) ; (2) au moins un agrégat publiable qu'elle rend — un cohesion_votes non nul sur une fiche de groupe sénatorial, ou des interventions rattachables à un orateur, cette fiche portant aujourd'hui cohesion_votes: 0 ; (3) la décision éditoriale reprise explicitement et datée dans docs/technical_decisions.md. Sans les trois, cette entrée reste suspendue et sa fiche publiée reste figée."
     }
   }
 }
