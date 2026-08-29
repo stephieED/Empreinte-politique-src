@@ -47,9 +47,15 @@ from schema_pivot import (  # noqa: E402
 
 #: Le marqueur `xsi:nil` d'AMO30, tel qu'il arrive dans `identite.uri_hatvp`
 #: après conversion XML→JSON. Ce n'est pas une hypothèse : 186 des 476 profils
-#: publiés le portent, contre 279 vraies URI et 11 champs vides. La mesure de
-#: « 465 profils avec `uri_hatvp` » qui circulait comptait les 186 comme
-#: renseignés.
+#: publiés le portaient au 27/08/2026, contre 279 vraies URI et 11 champs vides
+#: — **191 sur 481** à la re-mesure du 29/08. La mesure de « 465 profils avec
+#: `uri_hatvp` » qui circulait comptait les marqueurs comme renseignés.
+#:
+#: Le défaut a été fermé **à l'extraction** par #556 (`_champ_identite_an`), qui
+#: a aussi trouvé le marqueur dans `profession` et `lieu_naissance`. Les tests de
+#: ce fichier restent : ils tiennent le comportement du normaliseur face à une
+#: valeur fautive, qui est ce qui protège le corpus tant qu'un profil non
+#: régénéré porte encore l'ancienne.
 NIL_AMO30 = {"@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "@xsi:nil": "true"}
 
 

@@ -142,7 +142,7 @@ def _poser_cache(racine: Path) -> None:
     cache capture."""
     (racine / "acteurs_historique_an").mkdir(parents=True)
     (racine / "acteurs_historique_an" / "acteurs_historique.zip").write_bytes(b"PK")
-    (racine / "acteurs_historique_an" / "index_identite.json").write_text("{}", encoding="utf-8")
+    (racine / "acteurs_historique_an" / cp.NOM_INDEX_IDENTITE).write_text("{}", encoding="utf-8")
     for legislature in ("14", "15", "16", "17"):
         (racine / "scrutins_an" / legislature / "index_par_acteur").mkdir(parents=True)
         (racine / "questions_an" / legislature).mkdir(parents=True)

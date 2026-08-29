@@ -124,12 +124,20 @@ def _uri_hatvp_publiable(valeur: Any) -> Optional[str]:
     `null` ; **11** sont vides. La mesure de 465 qui circulait comptait les 186
     comme renseignés.
 
-    `identite.uri_hatvp` n'est PAS corrigé ici : ce lot le recopie, il ne
-    répare pas la collecte qui l'écrit (le défaut est dans l'extraction
-    d'identité, en amont, et sa correction réécrira 186 profils publiés — un
-    lot à part). Ce qui est corrigé, c'est ce qui est **publié** : un
-    identifiant qui ne mène nulle part ne vaut pas mieux qu'une absence, il vaut
-    moins (AGENTS.md §2 règles 2 et 5).
+    `identite.uri_hatvp` n'est PAS corrigé ici, et ce n'est pas un oubli : le
+    défaut est dans l'**extraction** d'identité, en amont, et réparer dans la
+    normalisation laisserait `raw_data/profiles` porter une valeur qui n'a jamais
+    existé chez la source. Ce qui est corrigé ici, c'est ce qui est **publié** :
+    un identifiant qui ne mène nulle part ne vaut pas mieux qu'une absence, il
+    vaut moins (AGENTS.md §2 règles 2 et 5).
+
+    **#556 a fermé l'amont** (`candidate_profile._champ_identite_an`), et la
+    re-mesure du 29/08/2026 sur 481 profils dit 285 vraies URI, **191**
+    marqueurs, 0 vides et 5 profils sans bloc `identite`. Elle a aussi trouvé
+    deux autres champs au marqueur — `profession` (20) et `lieu_naissance` (28,
+    en chaîne interpolée) —, ce qui a fait passer le correctif d'un champ à la
+    règle de lecture. Cette fonction reste en place : elle protège le champ
+    publié tant qu'un profil non régénéré porte encore l'ancienne valeur.
     """
     if isinstance(valeur, str) and valeur.startswith(("http://", "https://")):
         return valeur
@@ -501,9 +509,11 @@ def normalize_profil(
     # c'est le même fait, à la même source, et ne rien écrire quand on le
     # connaît serait une donnée perdue, pas une donnée manquante.
     #
-    # `hatvp` est la RECOPIE de `identite.uri_hatvp`, qui reste en place : 465
-    # profils sur 476 le portent et l'interface le lit là-bas. Une seule
-    # fabrique écrit les deux, donc ils ne peuvent pas diverger.
+    # `hatvp` est la RECOPIE de `identite.uri_hatvp`, qui reste en place et que
+    # l'interface lit là-bas. Une seule fabrique écrit les deux, donc ils ne
+    # peuvent pas diverger. Le compte réel est **285 profils sur 481** au
+    # 29/08/2026 : la mesure de 465 qui a circulé comptait les 191 marqueurs
+    # `xsi:nil` comme des présences (#556).
     poser_identifiant(profil, "an", acteur_ref or _acteur_ref_de_l_url(
         identite.get("url_an_ou_senat")))
     poser_identifiant(profil, "hatvp", _uri_hatvp_publiable(identite_champs["uri_hatvp"]))

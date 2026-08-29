@@ -41,7 +41,13 @@ Format d'un profil pivot v1 :
         "num_circo": "13",                    # numéro de circonscription tel que fourni par la
                                              # source ; absent pour un sénateur ou un mandat sans circonscription
         "uri_hatvp": null,                   # lien vers la déclaration HATVP (Haute Autorité pour
-                                             # la Transparence de la Vie Publique), source AN (acteurs)
+                                             # la Transparence de la Vie Publique), source AN (acteurs).
+                                             # Une URI ou `null` — JAMAIS un objet (#556) : AMO30
+                                             # rend `{"@xsi:nil": "true"}` pour « pas de
+                                             # déclaration », et un dict non vide est truthy, donc
+                                             # un consommateur qui teste `if uri_hatvp` croit tenir
+                                             # un lien. 191 profils sur 481 le publiaient ainsi.
+                                             # `validate_profil` le refuse désormais.
         "source_url": null                   # URL de la fiche source utilisée pour ce bloc
     },
     "identifiants": {                        # #539 — identifiants de SOURCE, publiés.
@@ -64,10 +70,13 @@ Format d'un profil pivot v1 :
                                              # de chiffres. C'est lui qui préfixait l'`id` de
                                              # `jordan-bardella`.
         "hatvp": null                        # URI de la déclaration HATVP. RECOPIÉ depuis
-                                             # `identite.uri_hatvp`, qui reste en place : 465
-                                             # profils sur 476 le portent et l'interface le lit
-                                             # là-bas. Deux emplacements, une seule fabrique —
-                                             # `normalize_profil` écrit les deux d'un coup.
+                                             # `identite.uri_hatvp`, qui reste en place et que
+                                             # l'interface lit là-bas. Deux emplacements, une seule
+                                             # fabrique — `normalize_profil` écrit les deux d'un
+                                             # coup. Le compte réel est **279 profils sur 479** au
+                                             # 28/08 (285 sur 481 au 29/08) : la mesure de 465 qui
+                                             # circulait comptait les 191 marqueurs `xsi:nil`
+                                             # comme des présences (#556).
     },
     "couverture": {                          # #539 — POURQUOI une liste est vide. Indexé par
                                              # liste métier (LISTES_COUVERTES), chaque liste
@@ -735,6 +744,11 @@ _FORMES_IDENTIFIANTS: dict[str, Optional[str]] = {
     "hatvp": r"^https?://",
 }
 
+#: Compilée une fois : `validate_profil` s'en sert aussi pour `identite.uri_hatvp`
+#: (#556), qui est la MÊME valeur que `identifiants.hatvp` — donc la même forme,
+#: lue au même endroit. Deux motifs pour un seul champ divergeraient en silence.
+_RE_HATVP = re.compile(_FORMES_IDENTIFIANTS["hatvp"] or "")
+
 #: Listes métier dont la couverture est déclarée (#539). **Cinq**, et pas six :
 #: `tags_thematiques` n'en est pas une — c'est une aide à la lecture DÉRIVÉE des
 #: autres listes (AGENTS.md §2.8), sans source propre donc sans borne propre.
@@ -1275,6 +1289,40 @@ def validate_profil(
     if "couverture" in profil:
         errors.extend(valider_couverture(profil.get("couverture")))
 
+    # `identite.uri_hatvp` porte un LIEN, donc une chaîne ou `null` — jamais un
+    # objet (#556).
+    #
+    # Cette règle est écrite AVANT celle de la recopie, et c'est le correctif de
+    # fond : la règle de recopie ci-dessous ne se déclenche que si les deux
+    # champs sont truthy et différents. Or `_uri_hatvp_publiable` ramène le
+    # marqueur XML d'AMO30 à `None` avant d'alimenter `identifiants.hatvp`. Le
+    # couple était donc (marqueur, `None`) — le second membre falsy, la
+    # comparaison sautée, **le défaut silencieux**. La contrainte censée
+    # signaler la divergence la NEUTRALISAIT : 191 profils sur 481 publiaient
+    # `identite.uri_hatvp = {"@xsi:nil": "true"}` et passaient la validation.
+    #
+    # Le contrôle porte sur la forme du champ lui-même, pas sur son accord avec
+    # un autre : un champ ne peut pas être validé par ce qu'un voisin en a fait.
+    if isinstance(identite, dict) and "uri_hatvp" in identite:
+        uri_hatvp = identite.get("uri_hatvp")
+        if uri_hatvp is not None and not isinstance(uri_hatvp, str):
+            errors.append(
+                f"identite.uri_hatvp doit être une URI (chaîne) ou null, reçu : "
+                f"{type(uri_hatvp).__name__} ({uri_hatvp!r}). Une absence "
+                "déclarée par la source — le marqueur XML `xsi:nil` d'AMO30 — "
+                "n'est pas une valeur : un consommateur qui teste "
+                "`if profil['identite']['uri_hatvp']` obtient True sur un dict "
+                "non vide et croit tenir un lien HATVP (§2.5, #556)."
+            )
+        elif isinstance(uri_hatvp, str) and uri_hatvp.strip() and not _RE_HATVP.match(
+            uri_hatvp
+        ):
+            errors.append(
+                f"identite.uri_hatvp n'est pas une URI : {uri_hatvp!r}. Même "
+                "règle que identifiants.hatvp — un lien qui ne mène nulle part "
+                "ne vaut pas mieux qu'une absence, il vaut moins (#556)."
+            )
+
     # L'invariant qui fait tout l'intérêt du couple : `identifiants.hatvp` est la
     # RECOPIE de `identite.uri_hatvp`, jamais une seconde collecte. Deux valeurs
     # différentes voudraient dire qu'une des deux est fausse, sans dire laquelle.
@@ -1286,6 +1334,19 @@ def validate_profil(
                 f"identifiants.hatvp ({publie!r}) contredit identite.uri_hatvp "
                 f"({uri_hatvp!r}) : le premier est la recopie du second, pas une "
                 "seconde collecte."
+            )
+        # L'autre moitié de la divergence, et celle que le corpus porte
+        # réellement : une `uri_hatvp` renseignée et un `identifiants.hatvp`
+        # vide. Les deux champs sortent de la même fabrique
+        # (`normalize_profil`), donc l'écart ne peut venir que d'une
+        # `uri_hatvp` que `_uri_hatvp_publiable` a refusée. Le dire ici évite
+        # qu'un futur filtre plus large rétablisse le silence.
+        if isinstance(uri_hatvp, str) and uri_hatvp.strip() and not publie:
+            errors.append(
+                f"identite.uri_hatvp est renseignée ({uri_hatvp!r}) et "
+                "identifiants.hatvp est vide : le second est la recopie du "
+                "premier, donc l'écart signale que la valeur a été jugée "
+                "impubliable sans que le champ d'origine soit corrigé (#556)."
             )
 
     for key in _LIST_KEYS:

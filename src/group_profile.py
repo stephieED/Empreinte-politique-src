@@ -87,6 +87,7 @@ from licences import appliquer_licence_donnees
 from schema_groupe import (
     SCHEMA_GROUPE_VERSION,
     AMENDEMENTS_TYPES_DEPOSANT,
+    ETAT_ROSTER_DANS_LE_PERIMETRE,
     make_empty_profil_groupe,
     make_empty_amendements_stats,
     validate_profil_groupe,
@@ -1433,7 +1434,17 @@ def generate_groupe_profile_from_roster(
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
 
-    couverture_roster = {"roster_total": len(roster), "profils_disponibles": len(profils)}
+    # `etat` (#558) — ce que le ratio veut dire. Toujours `dans_le_perimetre`
+    # ici, et ce n'est pas un défaut par défaut : ce chemin ne s'exécute QUE
+    # pour un groupe activement collecté. `generate_group_profiles.py` écarte
+    # les entrées `extraction_suspendue` (#516), donc une fiche gelée n'est
+    # jamais réécrite — le `hors_perimetre` des deux fiches `groupe-Senat-*` est
+    # posé une fois, par migration, et rien ici ne peut le reprendre en silence.
+    couverture_roster = {
+        "roster_total": len(roster),
+        "profils_disponibles": len(profils),
+        "etat": ETAT_ROSTER_DANS_LE_PERIMETRE,
+    }
     if missing_slugs:
         print(
             f"  [!] {len(missing_slugs)} membre(s) du roster sans profil pivot local "

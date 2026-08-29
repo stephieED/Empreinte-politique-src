@@ -39,7 +39,9 @@ jamais « à moitié » suspendu : la granularité est l'entrée de config enti�
 
 from __future__ import annotations
 
-from typing import Any
+import json
+from pathlib import Path
+from typing import Any, Optional
 
 #: Clé portant la suspension dans une entrée de `groupes_reels.json`.
 #: Nommée `extraction_suspendue` et non `suspendu` : c'est l'**extraction**
@@ -108,6 +110,75 @@ def anomalies_suspension(groupe: dict[str, Any]) -> list[str]:
             "motif ni condition de reprise devient permanente par oubli (#516)."
         ]
     return []
+
+
+#: Fichier de configuration des groupes. Il vit ICI depuis #558, et non plus
+#: dans `an_roster` : ce module est celui qui dit ce que `groupes_reels.json`
+#: pilote, et trois consommateurs le lisent sans avoir la moindre raison de
+#: dépendre du dérivateur de roster AN. `an_roster` le réexporte pour ses
+#: propres appelants.
+CHEMIN_CONFIG_GROUPES = Path("raw_data") / "groupes_reels.json"
+
+#: Répertoire des fiches de groupe publiées.
+GROUPES_PUBLIES_DIR = Path("pivot_data") / "groupes"
+
+
+def index_membres_de_groupes_suspendus(
+    groupes: list[dict[str, Any]],
+    groupes_dir: Optional[Path] = None,
+) -> dict[str, dict[str, Any]]:
+    """`membre_id` → entrée de config du groupe **suspendu** qui l'explique.
+
+    ## Pourquoi la fiche publiée, et pas le roster
+
+    Un groupe suspendu n'est plus interrogé : `generate_roster_candidats.py` ne
+    construit même pas sa clé de fetch (#516). Sa composition n'existe donc plus
+    nulle part **sauf** dans la fiche déjà publiée et gelée,
+    `pivot_data/groupes/<fichier>` — qui est précisément la source sur laquelle
+    #558 a mesuré sa population. Lire ailleurs reviendrait à ne rien lire.
+
+    ## Pourquoi pas la provenance, et pourquoi pas `chambre`
+
+    Deux pièges, tous deux mesurés le 29/08/2026 sur les 481 profils publiés :
+
+    1. **`chambre` ne dit pas la chambre.** Les 20 membres des deux fiches
+       `groupe-Senat-*` publient `chambre: "AN"` (défaut distinct, tenu par
+       #486). Compter les sénateurs par ce champ en rend **zéro**, et fait
+       conclure que la population a disparu.
+    2. **La provenance ne recouvre pas la population.** 19 des 20 sont
+       `roster_groupe` ; le vingtième est `bruno-retailleau`, de provenance
+       `candidat_declare` — et c'est le plus visible des vingt. Un correctif
+       branché sur la provenance seule l'aurait manqué.
+
+    L'appartenance, elle, se lit sans ambiguïté et pour les vingt.
+
+    Une fiche absente ou illisible ne lève pas : un groupe suspendu dont la
+    fiche a disparu ne rend simplement aucun membre, et les profils concernés
+    retombent sur la dérivation générale. Ce module n'est pas le garde-fou du
+    fichier publié — `audit_diff_profils` l'est déjà (#460/#470).
+    """
+    racine = Path(groupes_dir) if groupes_dir is not None else GROUPES_PUBLIES_DIR
+    index: dict[str, dict[str, Any]] = {}
+    for groupe in groupes:
+        if not est_suspendu(groupe):
+            continue
+        fichier = groupe.get("fichier")
+        if not fichier:
+            continue
+        chemin = racine / str(fichier)
+        try:
+            fiche = json.loads(chemin.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, ValueError):
+            continue
+        if not isinstance(fiche, dict):
+            continue
+        for membre in fiche.get("membres") or ():
+            if not isinstance(membre, dict):
+                continue
+            membre_id = membre.get("membre_id")
+            if isinstance(membre_id, str) and membre_id:
+                index.setdefault(membre_id, groupe)
+    return index
 
 
 def resume_suspension(groupe: dict[str, Any]) -> str:

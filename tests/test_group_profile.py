@@ -23,7 +23,7 @@ from group_profile import (
     generate_groupe_profile_from_roster,
     main as group_profile_main,
 )
-from schema_groupe import validate_profil_groupe
+from schema_groupe import ETAT_ROSTER_DANS_LE_PERIMETRE, validate_profil_groupe
 from scrutins_index import ScrutinsIndex, cle_scrutin
 
 
@@ -1146,7 +1146,12 @@ def test_main_from_roster_builds_group_and_reports_couverture(tmp_path, monkeypa
 
     assert rc == 0
     profil_groupe = json.loads(out_path.read_text(encoding="utf-8"))
-    assert profil_groupe["meta"]["couverture_roster"] == {"roster_total": 2, "profils_disponibles": 1}
+    # `etat` (#558) : un groupe généré par ce chemin est un groupe activement
+    # collecté — `generate_group_profiles` écarte les entrées suspendues.
+    assert profil_groupe["meta"]["couverture_roster"] == {
+        "roster_total": 2, "profils_disponibles": 1,
+        "etat": ETAT_ROSTER_DANS_LE_PERIMETRE,
+    }
     assert len(profil_groupe["membres"]) == 1
     assert validate_profil_groupe(profil_groupe) == []
 

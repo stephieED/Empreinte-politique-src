@@ -104,6 +104,10 @@ from candidate_profile import (
 from candidate_profile_ue import build_profile_ue
 import correspondance_acteurs_an
 import couverture_profil
+from groupes_config import (
+    CHEMIN_CONFIG_GROUPES,
+    index_membres_de_groupes_suspendus,
+)
 from json_io import ecrire_profil_json
 from profil_brut import (
     PartitionIllisible,
@@ -651,6 +655,42 @@ def _entree_correspondance(slug: str) -> Optional[dict[str, Any]]:
         return None
 
 
+#: Index `membre_id` → entrée de config d'un groupe suspendu, construit une
+#: seule fois par process. `None` = pas encore construit ; `{}` = construit et
+#: vide (aucun groupe suspendu, ou aucune fiche lisible), ce qui est un résultat
+#: et non un échec à retenter.
+_MEMBRES_GROUPES_SUSPENDUS: Optional[dict[str, dict[str, Any]]] = None
+_VERROU_GROUPES_SUSPENDUS = threading.Lock()
+
+
+def _groupe_suspendu_du_slug(slug: str) -> Optional[couverture_profil.GroupeSuspendu]:
+    """Le gel d'extraction qui explique les listes vides de ce profil (#558).
+
+    Rend `None` pour l'écrasante majorité des profils — c'est le cas normal. Ne
+    lève jamais : une config absente ou illisible n'est pas une raison de faire
+    échouer une génération de profil, et son absence est déjà signalée ailleurs
+    (`generate_roster_candidats`, `check_quality_gate._report_groupes`).
+    """
+    global _MEMBRES_GROUPES_SUSPENDUS
+    if _MEMBRES_GROUPES_SUSPENDUS is None:
+        with _VERROU_GROUPES_SUSPENDUS:
+            if _MEMBRES_GROUPES_SUSPENDUS is None:
+                try:
+                    config = json.loads(
+                        CHEMIN_CONFIG_GROUPES.read_text(encoding="utf-8")
+                    )
+                    groupes = config.get("groupes") if isinstance(config, dict) else config
+                    _MEMBRES_GROUPES_SUSPENDUS = index_membres_de_groupes_suspendus(
+                        groupes if isinstance(groupes, list) else []
+                    )
+                except (OSError, json.JSONDecodeError, ValueError, AttributeError):
+                    _MEMBRES_GROUPES_SUSPENDUS = {}
+    groupe = _MEMBRES_GROUPES_SUSPENDUS.get(slug)
+    if groupe is None:
+        return None
+    return couverture_profil.groupe_suspendu_depuis_config(groupe)
+
+
 def _normaliser_en_pivot(
     profile: dict[str, Any],
     mandat_ue: Optional[dict[str, Any]],
@@ -730,6 +770,10 @@ def _normaliser_en_pivot(
             entree,
             couverture_profil.SanteReferentiel(nb_acteurs_referentiel_charge()),
         ),
+        # #558 — le gel du groupe se lit sur l'APPARTENANCE, pas sur la
+        # provenance ni sur `chambre` : voir
+        # `groupes_config.index_membres_de_groupes_suspendus`.
+        groupe_suspendu=_groupe_suspendu_du_slug(effective_slug),
     )
     return pivot_profile
 

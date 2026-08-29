@@ -239,6 +239,25 @@ REQUIRED_META_KEYS: frozenset[str] = frozenset({
     "warnings",
 })
 
+# États de `meta.couverture_roster.etat` (#558).
+#
+# Le ratio seul ne dit pas de quoi il est le ratio. `groupe-Senat-LR.json`
+# publie `{"roster_total": 235, "profils_disponibles": 15}` — 6,4 % — et rien à
+# côté ne dit si les 220 manquants sont une collecte en retard ou un périmètre
+# assumé. Ce sont les seconds : le Sénat est hors du périmètre éditorial du
+# produit depuis #528, et l'extraction des deux groupes est suspendue depuis
+# #516. Lu sans cet état, 15/235 se lit comme une perte.
+#
+# C'est la même règle que celle des cinq listes d'un profil (#539) appliquée au
+# niveau du groupe : une absence produite par une décision se publie comme une
+# décision, jamais comme un fait.
+ETAT_ROSTER_DANS_LE_PERIMETRE = "dans_le_perimetre"
+ETAT_ROSTER_HORS_PERIMETRE = "hors_perimetre"
+ETATS_COUVERTURE_ROSTER: tuple[str, ...] = (
+    ETAT_ROSTER_DANS_LE_PERIMETRE,
+    ETAT_ROSTER_HORS_PERIMETRE,
+)
+
 # Champs dont la valeur doit être une liste.
 _LIST_KEYS: tuple[str, ...] = (
     "historique_noms",
@@ -328,6 +347,43 @@ def make_empty_profil_groupe(
     }
 
 
+def _valider_couverture_roster(couverture: dict[str, Any]) -> list[str]:
+    """Vérifie `meta.couverture_roster` (#558).
+
+    `etat` reste **facultatif** : les fiches publiées avant ce lot n'en portent
+    pas, et les déclarer invalides ne dirait rien de vrai sur elles — même
+    précédent que `identifiants` et `couverture` côté pivot (#539). Présent, il
+    est tenu à ses invariants.
+
+    `preuve` est exigée sur `hors_perimetre`, et seulement là : dire qu'un
+    groupe est hors périmètre sans dire par quelle décision est exactement le
+    défaut que cet état existe pour corriger. Sur `dans_le_perimetre`, il n'y a
+    rien à prouver — c'est le cas par défaut de tous les groupes collectés.
+    """
+    errors: list[str] = []
+    etat = couverture.get("etat")
+    if etat is None:
+        return errors
+    if etat not in ETATS_COUVERTURE_ROSTER:
+        errors.append(
+            f"'meta.couverture_roster.etat' non reconnu : {etat!r}. "
+            f"Valeurs connues : {list(ETATS_COUVERTURE_ROSTER)}."
+        )
+        return errors
+    preuve = couverture.get("preuve")
+    if etat == ETAT_ROSTER_HORS_PERIMETRE:
+        if not (isinstance(preuve, str) and preuve.strip()):
+            errors.append(
+                "'meta.couverture_roster.preuve' est obligatoire sur un "
+                f"'{ETAT_ROSTER_HORS_PERIMETRE}' : elle nomme la décision qui "
+                "sort ce groupe du périmètre (#516/#528). Sans elle, le ratio "
+                "publié redevient indistinct d'une collecte en échec."
+            )
+    elif preuve is not None and not isinstance(preuve, str):
+        errors.append("'meta.couverture_roster.preuve' doit être une chaîne.")
+    return errors
+
+
 def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma de groupe v1.
 
@@ -406,5 +462,7 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
         couverture_roster = meta.get("couverture_roster")
         if couverture_roster is not None and not isinstance(couverture_roster, dict):
             errors.append("'meta.couverture_roster' doit être un dict.")
+        elif isinstance(couverture_roster, dict):
+            errors.extend(_valider_couverture_roster(couverture_roster))
 
     return errors

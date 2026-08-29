@@ -483,7 +483,9 @@ def est_mandat_de_transit(fin: Optional[str], constitution: Optional[str]) -> bo
 #: (`raw_data/groupes_reels.json`) : un sigle publié et sa correspondance AN
 #: sont deux faces du même choix éditorial, et les séparer garantit qu'un jour
 #: l'un bougera sans l'autre.
-CHEMIN_CONFIG_GROUPES = Path("raw_data") / "groupes_reels.json"
+# Porté par `groupes_config` depuis #558 — réexporté ici pour les appelants
+# historiques. Deux définitions du même chemin divergeraient en silence.
+from groupes_config import CHEMIN_CONFIG_GROUPES  # noqa: E402
 
 #: Clé portant la table dans ce fichier.
 CLE_CORRESPONDANCE_SIGLES = "correspondance_sigles_an"

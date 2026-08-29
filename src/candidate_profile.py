@@ -435,6 +435,19 @@ AN_ACTEURS_HISTORIQUE_ZIP_URL = (
 )
 ACTEURS_HISTORIQUE_CACHE_DIR = Path(".cache") / "acteurs_historique_an"
 
+# Noms des index dérivés du zip AMO30, **versionnés** (#556). Le suffixe n'est
+# pas cosmétique : ces index sont mis en cache sur disque ET restaurés d'un run
+# à l'autre par le cache GitHub Actions (#550/#555). Un correctif portant sur ce
+# qui est *écrit* dans l'index — ici le filtrage du marqueur `xsi:nil` par
+# `_champ_identite_an` — reste donc sans effet tant que l'ancien fichier est
+# relu : le code corrigé ne s'exécute jamais. Changer le nom force la
+# reconstruction, une fois, et laisse une trace lisible de la raison.
+#
+# Règle : **on incrémente le suffixe dès que le CONTENU écrit change**, jamais
+# pour un changement de lecture.
+NOM_INDEX_IDENTITE = "index_identite_v2.json"
+NOM_INDEX_ORGANES = "index_organes_v2.json"
+
 # Questions parlementaires (écrites, au gouvernement, orales sans débat).
 # Même pattern d'URL que scrutins/amendements. Un seul parseur générique suffit
 # pour les 3 types (seul @xsi:type diffère). URLs confirmées pour les 16e et 17e
@@ -588,7 +601,7 @@ def nb_acteurs_referentiel_charge() -> Optional[int]:
     l'état du cache, pas le fabriquer. Un référentiel non chargé est un fait sur
     le run, et le run a le droit de le dire.
     """
-    index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
+    index_path = ACTEURS_HISTORIQUE_CACHE_DIR / NOM_INDEX_IDENTITE
     memoise = _index_historique_memoise(index_path)
     if isinstance(memoise, dict):
         return len(memoise)
@@ -638,6 +651,22 @@ WARNING_PREFIX_QUESTIONS_INDISPONIBLES = "questions indisponibles"
 # laisse `_prune_stale_warnings` reconnaître les warnings déjà écrits dans le
 # corpus publié.
 WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES = "interventions syceron indisponibles"
+# #560 : le préfixe ci-dessus recouvrait DEUX états du modèle de #539, et le
+# code choisissait le pire des deux. Il était écrit par les deux branches de
+# l'étape 9 :
+#
+#   - l'archive n'a pas répondu (exception, `_tracer_echec_collecte`) — une
+#     **panne**, un incident dont un prochain run peut sortir ;
+#   - l'archive a répondu et ne contient rien pour cet acteurRef — un **constat**
+#     de zéro, publiable tel quel (AGENTS.md §2.5).
+#
+# La preuve publiée l'avouait elle-même : « identifiant absent des trois
+# archives, **ou** archive indisponible ». C'est la leçon déjà tirée pour
+# `WARNING_PREFIX_VOTES_INTROUVABLES` pendant #539, dont la table de causes a dû
+# être indexée par motif parce qu'un préfixe couvrait une panne *et* un constat.
+# Ici on ne contourne pas le préfixe : on le scinde, pour qu'aucune table n'ait
+# à rattraper une ambiguïté qu'on aurait pu ne pas écrire.
+WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE = "aucune intervention syceron"
 # #498 : collecte d'interventions interrompue par son budget de temps mur. JAMAIS
 # retiré par _prune_stale_warnings : contrairement à « votes introuvables », que
 # la fusion peut démentir en restaurant les votes de l'ancien fichier, celui-ci
@@ -1357,16 +1386,45 @@ def _texte_an(valeur: Any) -> Optional[str]:
     marqueur fait passer un `dict` là où tout l'aval attend une chaîne — il ne
     se voit pas à l'écriture, il casse à la lecture.
 
-    C'est la **troisième** fois que cet idiome mord dans ce dépôt : #539 l'a
+    C'est la **quatrième** fois que cet idiome mord dans ce dépôt : #539 l'a
     trouvé dans `identite.uri_hatvp` (186 profils sur 476 portaient le marqueur
-    au lieu d'une URI, voir `normalize_profil._uri_hatvp_publiable`), et #562
-    dans `cycleDeVie.dateDepot` des amendements — 8 amendements sur les
-    624 180 des trois législatures figées, mais **99 profils publiés sur 481**
-    privés de tous leurs amendements par le `TypeError` que le tri par date en
-    tirait. Une valeur nil n'est pas une donnée : c'est une donnée manquante,
-    et le pivot l'écrit `null` (AGENTS.md §2.5).
+    au lieu d'une URI, voir `normalize_profil._uri_hatvp_publiable`), #562 dans
+    `cycleDeVie.dateDepot` des amendements — 8 amendements sur les 624 180 des
+    trois législatures figées, mais **99 profils publiés sur 481** privés de
+    tous leurs amendements par le `TypeError` que le tri par date en tirait —,
+    et #556 dans **trois** champs d'identité à la fois (voir
+    `_champ_identite_an`). Une valeur nil n'est pas une donnée : c'est une
+    donnée manquante, et le pivot l'écrit `null` (AGENTS.md §2.5).
     """
     return valeur if isinstance(valeur, str) and valeur else None
+
+
+#: Alias de lecture pour les champs d'identité d'AMO30 (#556). Même fonction que
+#: `_texte_an` — le nom dit seulement *où* elle s'applique, et il est le seul
+#: point de lecture autorisé sur `json/acteur/*.json`.
+#:
+#: ## Pourquoi un passage systématique, et pas un correctif champ par champ
+#:
+#: Le convertisseur XML → JSON d'AMO30 **ne connaît pas le nom du champ** : il
+#: rend `{"@xmlns:xsi": …, "@xsi:nil": "true"}` pour *n'importe quel* élément
+#: déclaré vide. Corriger `uri_hatvp` seul aurait donc réparé le champ mesuré et
+#: laissé les autres — ce qu'a montré la mesure du 29/08/2026 sur les 481
+#: profils publiés, en croisant `raw_data/profiles` et `pivot_data/profiles` :
+#:
+#: | Champ publié | Profils touchés | Forme publiée |
+#: | --- | ---: | --- |
+#: | `identite.uri_hatvp` | **191** | l'objet marqueur, tel quel |
+#: | `identite.profession` | **20** | l'objet marqueur, tel quel |
+#: | `identite.lieu_naissance` | **28** | le `repr` Python du marqueur, **en chaîne** |
+#:
+#: Le troisième est le pire des trois, et c'est lui qui justifie la règle plutôt
+#: que trois correctifs : `_format_lieu_naissance` **interpole** ses arguments,
+#: donc le marqueur y devient une chaîne. Aucun `isinstance(..., str)` en aval
+#: ne peut plus le rattraper, et 18 profils publient un lieu de naissance qui
+#: est intégralement de la plomberie XML —
+#: `"{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', …} ({…})"`.
+#: Un dict truthy se repère ; une chaîne non vide se lit comme une donnée.
+_champ_identite_an = _texte_an
 
 
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
@@ -2989,7 +3047,17 @@ def _format_lieu_naissance(ville: Optional[str], departement: Optional[str], pay
     Le département n'est pertinent que pour une naissance en France : pour un
     pays étranger, on l'omet au profit du pays (ex. "Alger (Algérie)" plutôt
     que d'ignorer l'information géographique disponible).
+
+    **Les trois arguments repassent par `_champ_identite_an`** (#556) bien que
+    l'appelant les filtre déjà. Ce n'est pas une redondance : cette fonction
+    **interpole** ses arguments, donc un marqueur `xsi:nil` qui l'atteint ne
+    ressort pas en `dict` repérable mais en **chaîne** — 28 profils publiés
+    portaient un lieu de naissance fait de plomberie XML, dont 18 entièrement.
+    La garde vit ici parce que c'est ici que le dict devient indétectable.
     """
+    ville = _texte_an(ville)
+    departement = _texte_an(departement)
+    pays = _texte_an(pays)
     if pays and pays != "France":
         complement = pays
     else:
@@ -3016,14 +3084,23 @@ def _extract_contact(adresses: list[Any]) -> dict[str, Optional[str]]:
     for adresse in adresses:
         if not isinstance(adresse, dict):
             continue
-        key = _CONTACT_TYPE_LIBELLE_MAP.get(adresse.get("typeLibelle"))
+        key = _CONTACT_TYPE_LIBELLE_MAP.get(_champ_identite_an(adresse.get("typeLibelle")))
         if key and not contact[key]:
-            contact[key] = adresse.get("valElec")
+            # #556 : une adresse déclarée vide rend le marqueur `xsi:nil`, et un
+            # `valElec` non filtré publierait un dict là où l'interface fait un
+            # `mailto:`.
+            contact[key] = _champ_identite_an(adresse.get("valElec"))
     return contact
 
 
 def _format_nom_complet(prenom: Optional[str], nom: Optional[str]) -> Optional[str]:
-    """Formate prénom/nom (etatCivil.ident) en un nom complet lisible."""
+    """Formate prénom/nom (etatCivil.ident) en un nom complet lisible.
+
+    Même garde que `_format_lieu_naissance`, pour la même raison : elle
+    interpole (#556).
+    """
+    prenom = _texte_an(prenom)
+    nom = _texte_an(nom)
     if prenom and nom:
         return f"{prenom} {nom}"
     return prenom or nom or None
@@ -3095,7 +3172,7 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
 
     Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_IDENTITE_LOCK:
-        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_identite.json"
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / NOM_INDEX_IDENTITE
         memoise = _index_historique_memoise(index_path)
         if memoise is not None:
             return memoise
@@ -3134,10 +3211,18 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     if not isinstance(acteur_ref, str) or not acteur_ref:
                         continue
 
+                    # #556 — TOUT champ lu ici passe par `_champ_identite_an` :
+                    # le convertisseur XML → JSON d'AMO30 ne connaît pas le nom
+                    # du champ, donc aucun n'est à l'abri du marqueur `xsi:nil`.
+                    # Trois l'ont porté jusqu'au corpus publié (`uri_hatvp` 191,
+                    # `profession` 20, `lieu_naissance` 28 profils sur 481) ;
+                    # rien ne disait que ce seraient les trois derniers.
                     etat_civil = acteur.get("etatCivil") or {}
                     ident = etat_civil.get("ident") or {}
                     info_naissance = etat_civil.get("infoNaissance") or {}
-                    profession = (acteur.get("profession") or {}).get("libelleCourant")
+                    profession = _champ_identite_an(
+                        (acteur.get("profession") or {}).get("libelleCourant")
+                    )
 
                     adresses = (acteur.get("adresses") or {}).get("adresse")
                     if isinstance(adresses, dict):
@@ -3154,11 +3239,13 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     mandat_assemblee = _select_mandat_assemblee_courant(mandats)
                     if mandat_assemblee is not None:
                         lieu = (mandat_assemblee.get("election") or {}).get("lieu") or {}
-                        numero_departement = lieu.get("numDepartement")
-                        numero_circo = lieu.get("numCirco")
-                        place_hemicycle = (mandat_assemblee.get("mandature") or {}).get("placeHemicycle")
-                        mandat_debut = mandat_assemblee.get("dateDebut")
-                        mandat_fin = mandat_assemblee.get("dateFin")
+                        numero_departement = _champ_identite_an(lieu.get("numDepartement"))
+                        numero_circo = _champ_identite_an(lieu.get("numCirco"))
+                        place_hemicycle = _champ_identite_an(
+                            (mandat_assemblee.get("mandature") or {}).get("placeHemicycle")
+                        )
+                        mandat_debut = _champ_identite_an(mandat_assemblee.get("dateDebut"))
+                        mandat_fin = _champ_identite_an(mandat_assemblee.get("dateFin"))
                     nb_mandats = sum(1 for m in mandats if isinstance(m, dict) and m.get("typeOrgane") == "ASSEMBLEE")
 
                     # Groupe politique actuel (#369) : sans ça, le seul champ
@@ -3173,24 +3260,26 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                             groupe_sigle = organe_gp.get("sigle")
                             groupe_nom = organe_gp.get("nom")
 
+                    prenom = _champ_identite_an(ident.get("prenom"))
+                    nom_famille = _champ_identite_an(ident.get("nom"))
                     index[acteur_ref] = {
-                        "civilite": ident.get("civ"),
-                        "prenom": ident.get("prenom"),
-                        "nom": ident.get("nom"),
-                        "nom_complet": _format_nom_complet(ident.get("prenom"), ident.get("nom")),
+                        "civilite": _champ_identite_an(ident.get("civ")),
+                        "prenom": prenom,
+                        "nom": nom_famille,
+                        "nom_complet": _format_nom_complet(prenom, nom_famille),
                         "profession": profession,
                         "groupe_sigle": groupe_sigle,
                         "groupe_nom": groupe_nom,
                         "mandat_debut": mandat_debut,
                         "mandat_fin": mandat_fin,
                         "nb_mandats": nb_mandats,
-                        "date_naissance": info_naissance.get("dateNais"),
+                        "date_naissance": _champ_identite_an(info_naissance.get("dateNais")),
                         "lieu_naissance": _format_lieu_naissance(
-                            info_naissance.get("villeNais"),
-                            info_naissance.get("depNais"),
-                            info_naissance.get("paysNais"),
+                            _champ_identite_an(info_naissance.get("villeNais")),
+                            _champ_identite_an(info_naissance.get("depNais")),
+                            _champ_identite_an(info_naissance.get("paysNais")),
                         ),
-                        "uri_hatvp": acteur.get("uri_hatvp"),
+                        "uri_hatvp": _champ_identite_an(acteur.get("uri_hatvp")),
                         "contact": contact,
                         "numero_departement": numero_departement,
                         "numero_circo": numero_circo,
@@ -3573,7 +3662,7 @@ def _build_organe_index() -> dict[str, dict[str, Any]]:
     "COMPER", "GP", "GA", "MISINFO", "GOUVERNEMENT"...). Non-fatal en cas
     d'échec (retourne {})."""
     with _ACTEURS_ORGANES_LOCK:
-        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / "index_organes.json"
+        index_path = ACTEURS_HISTORIQUE_CACHE_DIR / NOM_INDEX_ORGANES
         memoise = _index_historique_memoise(index_path)
         if memoise is not None:
             return memoise
@@ -3604,10 +3693,14 @@ def _build_organe_index() -> dict[str, dict[str, Any]]:
                     organe_ref = organe.get("uid")
                     if not isinstance(organe_ref, str) or not organe_ref:
                         continue
+                    # `_champ_identite_an` sur les trois : un organe dont le
+                    # libellé abrégé est déclaré vide rend le marqueur `xsi:nil`
+                    # comme partout ailleurs, et ce sigle finit dans le libellé
+                    # d'un mandat publié (#556).
                     index[organe_ref] = {
-                        "sigle": organe.get("libelleAbrege"),
-                        "nom": organe.get("libelle"),
-                        "type": organe.get("codeType"),
+                        "sigle": _champ_identite_an(organe.get("libelleAbrege")),
+                        "nom": _champ_identite_an(organe.get("libelle")),
+                        "type": _champ_identite_an(organe.get("codeType")),
                     }
         except zipfile.BadZipFile as exc:
             print(f"  [!] Archive de l'historique des acteurs invalide : {exc}")
@@ -4986,11 +5079,18 @@ def build_profile(
             profile["interventions"] = syceron_interventions
             profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         else:
+            # #560 — CE chemin n'est pas une panne : la collecte est allée au
+            # bout sans lever, donc les archives ont répondu. Ce qu'on constate
+            # est un zéro, et un zéro constaté est publiable. La disjonction que
+            # portait l'ancien message (« absent des archives, OU archive
+            # indisponible ») n'a plus lieu d'être : l'autre terme a son propre
+            # préfixe, écrit par la branche `except` ci-dessus.
             warnings.append(
-                f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES} : "
-                "aucune intervention Syceron pour cet acteurRef (identifiant absent "
-                "des trois archives, ou archive indisponible). Le repli NosDéputés a "
-                "été retiré (#510) : aucune autre source ne comble ce silence."
+                f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE} : les archives "
+                "Syceron ont répondu et ne portent aucune intervention pour cet "
+                "acteurRef. Ce n'est pas une panne : c'est un zéro constaté dans "
+                "le périmètre de la source. Le repli NosDéputés a été retiré "
+                "(#510) : aucune autre source ne comble ce silence."
             )
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
