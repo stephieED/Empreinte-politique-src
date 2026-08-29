@@ -390,9 +390,30 @@ def lire_collection_git(
     if listing.returncode != 0:
         if not collection.obligatoire:
             return None
+        # Deux causes très différentes derrière le même échec de `ls-tree`, et
+        # le conseil n'est pas le même. Les confondre coûte cher au pire
+        # moment : après un bornage d'historique, ce contrôle est justement
+        # celui qu'on vient vérifier, et on chercherait un problème de chemin
+        # là où le commit entier a disparu (#569).
+        if subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
+            capture_output=True, text=True,
+        ).returncode != 0:
+            raise SystemExit(
+                f"[!] Référence git introuvable : {ref}\n"
+                "    Ce n'est pas un problème de chemin : le commit lui-même est "
+                "absent de ce dépôt.\n"
+                "    Causes possibles — une faute de frappe, une branche "
+                "supprimée, un clone superficiel, ou un bornage d'historique\n"
+                "    (docs/technical_decisions.md#fenetre-recalibrage-551) qui a "
+                "retiré un commit antérieur à la coupure. Dans ce dernier cas\n"
+                "    l'ancien historique est archivé sur Software Heritage ; il "
+                "ne sera pas retrouvé ici."
+            )
         raise SystemExit(
             f"[!] Chemin introuvable dans la référence git : {ref}:{repertoire}\n"
-            "    `--ref-dir` vaut par défaut `--profils-dir`. Si les profils "
+            "    La référence existe ; c'est le chemin qui n'y est pas. "
+            "`--ref-dir` vaut par défaut `--profils-dir`. Si les profils "
             "régénérés sont hors du dépôt (répertoire de mesure, worktree...), "
             "préciser le chemin côté référence :\n"
             "      --profils-dir /chemin/hors/depot --ref-dir pivot_data/profiles"
