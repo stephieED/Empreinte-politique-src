@@ -117,12 +117,30 @@
 #                           bornage et `audit_volumetrie_profils.py`).
 #   --journal FICHIER       journal de la session (défaut :
 #                           audit/bornage-<horodatage>.journal).
-#   --reprendre FICHIER     reprend une session interrompue : les étapes déjà
-#                           consignées comme TERMINÉES ne sont pas refaites, et
-#                           l'ordre reste imposé.
+#   --reprendre FICHIER     LE CHEMIN POUR REPRENDRE À MI-PARCOURS. Les étapes
+#                           déjà consignées comme TERMINÉES ne sont pas
+#                           refaites, et l'ordre reste imposé.
 #   --etape N               n'exécute QUE l'étape N — et refuse si les
 #                           précédentes ne sont pas consignées comme terminées.
 #   --jusqu-a N             s'arrête après l'étape N (défaut : 7).
+#
+#   IL N'Y A PAS DE `--depuis N`, ET C'EST DÉLIBÉRÉ (#576, réserve 2 du déroulé
+#   du 29/08/2026). Une variable `DEPUIS` traînait, initialisée à 1 et fixée par
+#   rien d'autre que `--etape` : une option à moitié là, ce qui est pire que pas
+#   d'option. L'arbitrage rendu est de la retirer, pas de la finir.
+#
+#     · `--depuis 6` serait une DÉCLARATION — « les cinq premières sont
+#       faites » — et le runner devrait quand même la confronter au journal,
+#       seul endroit où cette information existe (`_exiger_etapes_precedentes`).
+#       Deux sources de vérité pour une même question, dont une invérifiable.
+#     · `--reprendre <journal>` DÉRIVE le point de reprise de la trace, et il
+#       fonctionne : vérifié le 29/08/2026, relancé après l'étape 5, il a sauté
+#       4 et 5 sans qu'aucune phrase ne soit redonnée.
+#     · sans journal, `--depuis 6` n'aiderait de toute façon pas : il faudrait
+#       déroger cinq fois pour franchir l'ordre.
+#
+#   Ce qui manquait n'était donc pas l'option, c'était de DIRE que `--reprendre`
+#   est ce chemin. `--lister` le dit maintenant.
 #
 #   Le runner est INTERACTIF. Il n'a pas de mode « tout automatique », et c'est
 #   délibéré : chaque geste irréversible attend une phrase tapée à la main.
@@ -133,7 +151,20 @@ FENETRE=30
 JOURNAL=""
 ETAPE_UNIQUE=""
 JUSQU_A=7
-DEPUIS=1
+# Interne, et fixée par `--etape` SEULEMENT. Il n'existe pas de `--depuis` :
+# reprendre à mi-parcours passe par `--reprendre <journal>`, qui dérive le point
+# de reprise de la trace au lieu de le croire sur parole (voir l'en-tête).
+PREMIERE_ETAPE=1
+
+# ── Étape 6 : attendre une conclusion, pas la supposer ───────────────────────
+#
+# Un run de CI déclenché par le push forcé n'est pas conclu à la seconde où
+# l'étape 5 se termine. Attendre est donc la règle, et le plafond existe pour
+# que « toujours en cours » finisse par se dire au lieu de bloquer.
+# Surchargeables par l'environnement : c'est ce qui permet aux tests d'exercer
+# l'attente sans attendre.
+ATTENTE_CI=${ATTENTE_CI:-900}
+PAS_CI=${PAS_CI:-15}
 
 # La phrase à taper pour chaque geste irréversible. Elles sont LONGUES et elles
 # NOMMENT le geste : c'est ce qui empêche de les taper sans les lire.
@@ -219,6 +250,88 @@ _depot_cible() {
   printf '%s\n' "$url"
 }
 
+# ── Ce qui a RÉELLEMENT été poussé (#576, réserve 1) ─────────────────────────
+#
+# L'étape 6 citait un SHA en dur — `f307be7`, celui de la répétition de la
+# veille — pendant qu'elle regardait un autre historique. Le commit à vérifier
+# se LIT sur la ref distante : c'est le seul endroit où « ce qui est poussé »
+# existe. La branche locale `main-borne` est un repli, et il se dit.
+_sha_pousse() {
+  local sha
+  # `|| sha=""` : sous `set -e` avec `pipefail`, une origine injoignable ferait
+  # sortir la fonction AVANT le repli — et l'étape 6 conclurait « indéterminée »
+  # sans avoir essayé ce qu'elle a sous la main.
+  sha=$(git ls-remote origin refs/heads/main 2>/dev/null | awk 'NR == 1 {print $1}') || sha=""
+  if [[ -z "$sha" ]]; then
+    sha=$(git rev-parse --verify --quiet refs/heads/main-borne) || return 1
+    _journaliser "ÉTAPE 6 — origin injoignable : SHA repris de la branche LOCALE main-borne ($sha). C'est une supposition, pas une lecture."
+  fi
+  printf '%s\n' "$sha"
+}
+
+# ── L'état de la CI sur un commit, OBSERVÉ ───────────────────────────────────
+#
+# Rend UN MOT sur stdout — vert, rouge, encours, aucun — et le détail au
+# journal. Code 1 si `gh` n'a pas répondu : « pas pu regarder » n'est pas
+# « c'est vert », la confusion que `_aucun_run_en_cours` refuse déjà à l'étape 4
+# et que #568 a corrigée sur le versant archive.
+_etat_ci() {
+  local cible=$1 sha=$2 lignes statut conclusion nom
+  lignes=$(gh run list --repo "$cible" --commit "$sha" --limit 20 \
+             --json status,conclusion,workflowName \
+             --jq '.[] | "\(.status)\t\(.conclusion)\t\(.workflowName)"' 2>&1) || {
+    _journaliser "ÉTAPE 6 — gh n'a pas répondu pour $cible : $lignes"
+    return 1
+  }
+  if [[ -z "${lignes//[[:space:]]/}" ]]; then
+    printf 'aucun\n'
+    return 0
+  fi
+  local encours=0 rouge=0
+  while IFS=$'\t' read -r statut conclusion nom; do
+    [[ -z "$statut" ]] && continue
+    if [[ "$statut" != "completed" ]]; then
+      encours=1
+      _journaliser "ÉTAPE 6 — run « $nom » : $statut (pas encore conclu)."
+      continue
+    fi
+    case "$conclusion" in
+      # `skipped` et `neutral` ne sont pas des échecs, et les compter comme
+      # tels rendrait l'étape rouge en permanence sur un dépôt à conditions.
+      success|skipped|neutral)
+        _journaliser "ÉTAPE 6 — run « $nom » : $conclusion." ;;
+      *)
+        rouge=1
+        _journaliser "ÉTAPE 6 — run « $nom » : $conclusion — C'EST UN ÉCHEC." ;;
+    esac
+  done <<< "$lignes"
+  # Rouge d'abord : un échec déjà constaté ne devient pas moins vrai parce
+  # qu'un autre run tourne encore.
+  if ((rouge)); then printf 'rouge\n'
+  elif ((encours)); then printf 'encours\n'
+  else printf 'vert\n'; fi
+}
+
+# Attendre une conclusion, avec un plafond — pour que « toujours en cours »
+# finisse par se DIRE au lieu de bloquer la session.
+_attendre_ci() {
+  local cible=$1 sha=$2 etat="" limite=$(( SECONDS + ATTENTE_CI ))
+  while :; do
+    etat=$(_etat_ci "$cible" "$sha") || { printf 'indetermine\n'; return 0; }
+    if [[ "$etat" != "encours" ]]; then
+      printf '%s\n' "$etat"
+      return 0
+    fi
+    if (( SECONDS >= limite )); then
+      _journaliser "ÉTAPE 6 — toujours en cours après ${ATTENTE_CI} s d'attente : la conclusion reste inconnue."
+      printf 'encours\n'
+      return 0
+    fi
+    _journaliser "ÉTAPE 6 — CI en cours sur $sha ; nouvelle interrogation dans ${PAS_CI} s."
+    sleep "$PAS_CI"
+  done
+}
+
 _aucun_run_en_cours() {
   local cible=$1 encours
   encours=$(gh run list --repo "$cible" --workflow=generate-data.yml \
@@ -247,8 +360,21 @@ Les sept étapes du bornage (#576, telles que la répétition de #569 les a éta
    7  re-mesurer et consigner    oui         —
 
 Les étapes 4 et 5 demandent une PHRASE tapée, pas un « y ».
+L'étape 6 interroge la CI sur le commit RÉELLEMENT poussé et attend une
+conclusion : verte, rouge ou indéterminée. Une CI rouge n'est pas un échec du
+bornage, mais elle ne se tait pas — c'est une précondition, donc contournable
+en toutes lettres et consignée.
 Coût d'entrée à connaître avant l'étape 3 : `--preparer` exige un arbre propre,
 donc un checkout complet — 4,9 Go et 45 s sur ce corpus (mesuré le 28/08/2026).
+
+REPRENDRE À MI-PARCOURS : `--reprendre <journal>`, et rien d'autre. Les étapes
+consignées comme TERMINÉES sont sautées, l'ordre reste imposé, et aucune phrase
+n'est redemandée pour ce qui est déjà fait. Il n'existe volontairement pas de
+`--depuis N` : le journal est la seule preuve de ce qui a été fait, et une
+option qui l'affirmerait sans lui serait une seconde source de vérité — la
+raison complète est dans l'en-tête du script (`--help`).
+Sans journal, `--jusqu-a 7` repart de l'étape 1, donc REJOUE le push forcé :
+c'est la commande à ne pas taper pour reprendre.
 FIN
 }
 
@@ -409,8 +535,49 @@ _etape_6_verifier_la_ci() {
   # Pas de backtick dans une chaîne entre guillemets : le shell l'EXÉCUTE.
   # C'est le défaut trouvé par #567 — trois substitutions involontaires dans un
   # heredoc non quoté, et `--preparer` mourait avant d'imprimer sa procédure.
-  _journaliser "ÉTAPE 6 — la CI sur l'historique borné. C'était la case centrale de #569, et elle est passée : Tests (pytest) vert sur f307be7."
-  gh run list --repo "$cible" --limit 5 2>&1 | tee -a "$JOURNAL" || true
+  cat <<'FIN' >&2
+
+ÉTAPE 6 — la CI sur l'historique borné. C'est la case centrale de #569.
+
+  Jusqu'au 29/08/2026, cette étape ÉCRIVAIT SA CONCLUSION SANS LA MESURER : la
+  phrase « et elle est passée » était en dur, le SHA cité était celui de la
+  répétition de la veille, et la sortie de `gh` était affichée sans être lue.
+  Un jour où la CI casse, elle aurait écrit exactement la même chose. C'était
+  la seule étape du runner qui n'observait pas ce qu'elle annonçait.
+
+  Elle interroge maintenant la CI sur le commit RÉELLEMENT poussé, lu sur la
+  ref distante, et elle attend une conclusion. Trois issues, trois messages :
+  VERTE, ROUGE, INDÉTERMINÉE. Une CI rouge n'est pas un échec du bornage — la
+  coupure a tenu — mais c'est un constat, et un constat se lit avant qu'on
+  passe outre.
+FIN
+  local sha etat
+  if [[ -z "$cible" ]]; then
+    _journaliser "ÉTAPE 6 — remote origin introuvable : la CI ne peut pas être interrogée."
+    sha="(inconnu)"; etat="indetermine"
+  elif ! sha=$(_sha_pousse); then
+    _journaliser "ÉTAPE 6 — commit poussé introuvable sur $cible : ni la ref distante refs/heads/main, ni la branche locale main-borne."
+    sha="(inconnu)"; etat="indetermine"
+  else
+    _journaliser "ÉTAPE 6 — CI interrogée sur $cible, commit $sha (LU sur la ref distante, pas supposé)."
+    etat=$(_attendre_ci "$cible" "$sha")
+  fi
+
+  case "$etat" in
+    vert)
+      _journaliser "ÉTAPE 6 — CI VERTE sur $sha : tous les runs de ce commit sont conclus, aucun en échec." ;;
+    rouge)
+      _journaliser "ÉTAPE 6 — CI ROUGE sur $sha. Ce n'est PAS un échec du bornage : la coupure a tenu, l'historique borné est en place. C'est un constat sur ce qui tourne dessus, et les runs fautifs sont nommés ci-dessus." ;;
+    encours)
+      _journaliser "ÉTAPE 6 — CI INDÉTERMINÉE sur $sha : encore en cours après ${ATTENTE_CI} s. Rien n'est conclu — ni vert, ni rouge." ;;
+    aucun)
+      _journaliser "ÉTAPE 6 — CI INDÉTERMINÉE sur $sha : AUCUN run n'a été déclenché sur ce commit. Vérifier que les workflows sont toujours là sur l'historique borné — un push forcé n'en déclenche pas nécessairement." ;;
+    *)
+      _journaliser "ÉTAPE 6 — CI INDÉTERMINÉE sur $sha : la question n'a pas pu être posée. « Pas pu regarder » n'est pas « c'est vert »." ;;
+  esac
+
+  _precondition "la CI est verte sur $sha (constat : $etat)" \
+      test "$etat" = vert || return 1
   cat <<'FIN' >&2
 
   À vérifier aussi, et qu'aucun test unitaire n'atteint :
@@ -460,7 +627,7 @@ _principal() {
       --fenetre)   FENETRE=$2; shift 2 ;;
       --journal)   JOURNAL=$2; shift 2 ;;
       --reprendre) JOURNAL=$2; shift 2 ;;
-      --etape)     ETAPE_UNIQUE=$2; DEPUIS=$2; JUSQU_A=$2; shift 2 ;;
+      --etape)     ETAPE_UNIQUE=$2; PREMIERE_ETAPE=$2; JUSQU_A=$2; shift 2 ;;
       --jusqu-a)   JUSQU_A=$2; shift 2 ;;
       -h|--help)   awk 'NR==1{next} /^#/{print; next} {exit}' "$0"; exit 0 ;;
       *) echo "[!] Option inconnue : $1" >&2; exit 2 ;;
@@ -473,11 +640,11 @@ _principal() {
     JOURNAL="audit/bornage-$(date +%Y%m%dT%H%M%S).journal"
   fi
   : >> "$JOURNAL"
-  _journaliser "SESSION — fenêtre $FENETRE, étapes $DEPUIS à $JUSQU_A, journal $JOURNAL."
+  _journaliser "SESSION — fenêtre $FENETRE, étapes $PREMIERE_ETAPE à $JUSQU_A, journal $JOURNAL."
   _journaliser "Ce runner porte les gestes irréversibles ; borner_historique_donnees.sh ne pousse toujours JAMAIS (#551)."
 
   local n
-  for ((n = DEPUIS; n <= JUSQU_A; n++)); do
+  for ((n = PREMIERE_ETAPE; n <= JUSQU_A; n++)); do
     if [[ -z "$ETAPE_UNIQUE" ]] && _etape_terminee "$n"; then
       _journaliser "ÉTAPE $n — déjà consignée comme terminée, passée."
       continue
@@ -493,7 +660,7 @@ _principal() {
       *) echo "[!] Étape inconnue : $n" >&2; exit 2 ;;
     esac || { _journaliser "SESSION INTERROMPUE à l'étape $n. Le journal est $JOURNAL ; reprendre avec --reprendre $JOURNAL."; exit 1; }
   done
-  _journaliser "SESSION TERMINÉE — étapes $DEPUIS à $JUSQU_A."
+  _journaliser "SESSION TERMINÉE — étapes $PREMIERE_ETAPE à $JUSQU_A."
 }
 
 # Exécuté, il déroule ; SOURCÉ, il ne fait que définir ses fonctions. C'est ce
