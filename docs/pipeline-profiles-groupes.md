@@ -207,7 +207,10 @@ Détail complet du job : [`extract-roster-groupes.md`](./extract-roster-groupes.
          sont la source primaire ; le scraping NosDéputés reste un fallback si
          Syceron ne retourne rien pour l'acteurRef du candidat. Voir
          `docs/an_opendata.md` (section Syceron).
-     - Sortie: `raw_data/profiles/<slug>.json`.
+     - Sortie: `raw_data/profiles/<slug>.json` (socle) + une tranche
+         `raw_data/profiles/<slug>/<legislature>.json` par législature pour
+         `amendements` (#580). Relecture par `src/profil_brut.py`, qui accepte
+         aussi l'ancienne forme monolithique.
 
 3. Collecte du volet européen
      - `candidate_profile_ue.py` cherche un mandat PE par correspondance de nom

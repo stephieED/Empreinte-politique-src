@@ -122,6 +122,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+from profil_brut import CLE_MANIFESTE, CLE_PARTITIONNEE
+
 
 @dataclass(frozen=True)
 class Collection:
@@ -349,8 +351,30 @@ def relever(doc: Any, collection: Collection) -> dict[str, Any]:
     """
     if not isinstance(doc, dict):
         raise ValueError("document JSON qui n'est pas un objet")
+
+    # #580 — un profil brut partitionné ne porte plus `amendements` dans son
+    # socle : la liste vit en tranches sous `<slug>/<legislature>.json`. Sans
+    # ceci, ce contrôle lirait 0 amendement des deux côtés d'un diff et
+    # rapporterait une chute de plusieurs millions d'entrées à la migration.
+    #
+    # Le compte est pris au manifeste, et c'est ici — et seulement ici —
+    # légitime : cet audit compare deux DÉCLARATIONS, une par référence, et il
+    # lit les deux côtés de la même façon, y compris depuis un blob git où les
+    # tranches ne sont pas atteignables sans un second parcours de l'arbre. Un
+    # manifeste qui mentirait ne survivrait pas jusqu'ici : `recomposer()`
+    # refuse un profil dont les tranches ne rendent pas le compte annoncé, et
+    # `audit_collecte_vs_publie` mesure ce compte, tranche par tranche, avant
+    # le commit.
+    partition = doc.get(CLE_MANIFESTE)
+    total_partitionne = (
+        partition.get("total") if isinstance(partition, dict) else None
+    )
+
     listes: dict[str, int] = {}
     for champ in collection.tous_champs:
+        if champ == CLE_PARTITIONNEE and isinstance(total_partitionne, int):
+            listes[champ] = total_partitionne
+            continue
         valeur = doc.get(champ)
         listes[champ] = len(valeur) if isinstance(valeur, (list, dict)) else 0
     scalaires = {

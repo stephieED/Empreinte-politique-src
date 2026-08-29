@@ -287,6 +287,8 @@ flowchart TD
    publiées en artifact `raw-profiles-roster-groupes` (`if-no-files-found:
    warn` — ce job peut légitimement ne produire aucun fichier si le fetch
    roster échoue).
+   Depuis #580, « les données » = le socle `<slug>.json` **et** ses tranches
+   `<slug>/<legislature>.json` — l'action de publication copie les deux.
 8. Dans `merge-and-pivot`, cet artifact est fusionné avec ceux de
    `extract-an`/`extract-ue-officiel`
    (`merge_profile.py --dirs`), puis re-normalisé en pivot spécifiquement

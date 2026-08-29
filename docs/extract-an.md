@@ -21,6 +21,14 @@ Le profil brut produit par chaque shard va dans `raw_data/profiles/<slug>.json`,
 artifact `raw-profiles-an-<slug>` — `merge-and-pivot` télécharge tous les artifacts `raw-profiles-an-*`
 d'un coup (`download-artifact` en mode `pattern`/`merge-multiple`).
 
+> **#580 — un profil brut n'est plus un fichier.** `<slug>.json` est le
+> **socle** (le profil sauf `amendements`) ; les amendements vivent en tranches
+> sous `raw_data/profiles/<slug>/<legislature>.json`. L'artifact transporte les
+> deux (`publish-written-profiles`), et la relecture passe par
+> `src/profil_brut.py`, jamais par un `json.load` direct. Voir
+> [`docs/technical_decisions.md#partition-profils-legislature-580`](technical_decisions.md#partition-profils-legislature-580).
+
+
 **Pourquoi un shard par candidat plutôt qu'un seul job séquentiel** : le runner GitHub peut recevoir un
 `shutdown signal` d'infrastructure qui gèle le job entier, y compris ses steps `if: always()`
 (angle mort documenté dans `docs/technical_decisions.md#resilience-generate-data-shutdown-signal`

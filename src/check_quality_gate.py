@@ -84,6 +84,13 @@ from couverture_dossiers import (  # noqa: E402
 # `raw_data/correspondance_acteurs_an.json`. Le gate est le seul contrôle
 # d'avant-commit qui voie à la fois le corpus PUBLIÉ et la table — c'est donc
 # lui qui refuse un profil publié sans correspondance relue.
+from garde_fou_blobs import (  # noqa: E402
+    REPERTOIRES_SURVEILLES,
+    SEUIL_AVERTISSEMENT_OCTETS,
+    SEUIL_BLOQUANT_OCTETS,
+    evaluer as evaluer_blobs,
+    rapport as rapport_blobs,
+)
 from correspondance_acteurs_an import (  # noqa: E402
     CHEMIN_PAR_DEFAUT as CORRESPONDANCE_PAR_DEFAUT,
     CorrespondanceInvalide,
@@ -1984,6 +1991,23 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--groupes-dir", type=Path, default=Path("pivot_data/groupes"))
     parser.add_argument("--partis-dir", type=Path, default=Path("pivot_data/partis"))
     parser.add_argument("--raw-dir", type=Path, default=Path("raw_data/profiles"))
+    parser.add_argument(
+        "--blob-warn-mo", type=float, default=SEUIL_AVERTISSEMENT_OCTETS / (1024 * 1024),
+        metavar="MO",
+        help=(
+            "Seuil d'AVERTISSEMENT sur la taille d'un fichier versionné, en Mo "
+            "(défaut : 50, le seuil recommandé par GitHub). 0 désactive la §7."
+        ),
+    )
+    parser.add_argument(
+        "--blob-fail-mo", type=float, default=SEUIL_BLOQUANT_OCTETS / (1024 * 1024),
+        metavar="MO",
+        help=(
+            "Seuil BLOQUANT sur la taille d'un fichier versionné, en Mo "
+            "(défaut : 80). Volontairement sous la limite dure de 100 Mo : au-delà, "
+            "GitHub refuse le push et le blob est déjà committé."
+        ),
+    )
     parser.add_argument("--candidats", type=Path, default=Path("raw_data/candidats.json"))
     parser.add_argument(
         "--correspondance-acteurs",
@@ -2189,13 +2213,47 @@ def main() -> int:
     if args.parltrack_status_file is not None:
         pt_console, pt_md = _report_parltrack_status(args.parltrack_status_file)
 
+    # ── Section 7 : Garde-fou taille de blob (#580) ────────────────────────
+    # Le seuil de 50 Mo était la quatrième clause du critère de sortie de #429.
+    # Ce n'était pas un critère — un critère s'atteint, celui-là se déclenche —
+    # et il a été franchi le jour même de son écriture sans que personne ne le
+    # voie : l'avertissement de GitHub au push n'était rattaché à aucune
+    # conduite à tenir. Il devient ici un contrôle qui AVERTIT à 50 Mo, BLOQUE
+    # à 80, et imprime quoi faire dans les deux cas.
+    #
+    # Placé dans le quality gate et pas dans la suite de tests : `tests.yml`
+    # sparse-checkout délibérément SANS `raw_data/profiles` (#473), donc aucun
+    # test ne peut mesurer le corpus. Le gate, lui, tourne juste avant le
+    # commit de données, sur le corpus réel — c'est le seul endroit d'où le
+    # constat est possible.
+    blob_erreurs: list[str] = []
+    blob_avertissements: list[str] = []
+    blob_console = ""
+    blob_md = ""
+    blob_exit = 0
+    if args.blob_warn_mo > 0:
+        mio = 1024 * 1024
+        blob_repertoires = [Path(r) for r in REPERTOIRES_SURVEILLES]
+        # `--raw-dir`/`--profiles-dir` peuvent pointer ailleurs (tests, corpus
+        # hors dépôt) : ce qu'ils désignent est surveillé aussi.
+        for supplementaire in (args.raw_dir, args.profiles_dir):
+            if supplementaire not in blob_repertoires:
+                blob_repertoires.append(supplementaire)
+        blob_constat = evaluer_blobs(
+            blob_repertoires,
+            seuil_avertissement=int(args.blob_warn_mo * mio),
+            seuil_bloquant=int(args.blob_fail_mo * mio),
+        )
+        blob_erreurs, blob_avertissements, blob_console, blob_md = rapport_blobs(blob_constat)
+        blob_exit = 1 if blob_erreurs else 0
+
     # Les sections 3c/3d n'entrent PAS dans exit_code : « 0 amendement collecté »
     # et « index jamais construit » restent des signaux non bloquants, décision
     # #378 (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Le
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (
         ir_exit == 1 or grp_exit == 1 or gouv_exit == 1 or amdfmt_exit == 1
-        or corr_exit == 1
+        or corr_exit == 1 or blob_exit == 1
     ) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
@@ -2221,6 +2279,8 @@ def main() -> int:
     print(corr_console)
     if pt_console:
         print(pt_console)
+    if blob_console:
+        print(blob_console)
     print()
 
     # ── GitHub Step Summary (Markdown) ────────────────────────────────────
@@ -2251,6 +2311,7 @@ def main() -> int:
         gouv_md,
         corr_md,
         pt_md,
+        blob_md,
     ])
     _write_step_summary(md)
 
@@ -2290,6 +2351,10 @@ def main() -> int:
             _gha_annotation("warning", f"Amendements — {warn}")
     for warn in amdf_soft:
         _gha_annotation("warning", f"Amendements fraîcheur — {warn}")
+    for err in blob_erreurs:
+        _gha_annotation("error", f"Garde-fou blob — {err}")
+    for warn in blob_avertissements:
+        _gha_annotation("warning", f"Garde-fou blob — {warn}")
 
     return exit_code
 

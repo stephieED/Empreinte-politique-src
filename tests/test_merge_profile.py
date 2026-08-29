@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from profil_brut import charger_profil_brut, est_partitionne
 from merge_profile import (
     preserver_collectes_non_vides,
     clean_stale_textes_portes,
@@ -710,7 +711,7 @@ def test_publication_du_repertoire_entier_reinjecte_les_donnees_perimees(tmp_pat
     out = tmp_path / "out"
     merge_raw_dirs(dirs, out)
 
-    alice = json.loads((out / "alice.json").read_text(encoding="utf-8"))
+    alice = charger_profil_brut(out / "alice.json")
     assert len(alice["amendements"]) == 4, "attendu : 2 périmés + 2 corrigés, l'union"
     assert sum(1 for a in alice["amendements"] if not a.get("uid")) == 2
 
@@ -736,11 +737,11 @@ def test_publication_scopee_laisse_aboutir_la_correction_de_cle(tmp_path):
     merge_raw_dirs(dirs, out)
 
     for slug in ("alice", "bob"):
-        profil = json.loads((out / f"{slug}.json").read_text(encoding="utf-8"))
+        profil = charger_profil_brut(out / f"{slug}.json")
         assert all(a.get("uid") for a in profil["amendements"]), (
             f"{slug} porte encore des entrées sans uid : la version périmée a été réinjectée."
         )
-    assert len(json.loads((out / "alice.json").read_text(encoding="utf-8"))["amendements"]) == 2
+    assert len(charger_profil_brut(out / "alice.json")["amendements"]) == 2
 
 
 def test_publication_scopee_preserve_un_profil_qu_aucun_job_n_a_touche(tmp_path):
@@ -755,8 +756,31 @@ def test_publication_scopee_preserve_un_profil_qu_aucun_job_n_a_touche(tmp_path)
 
     merge_raw_dirs([staging], out)
 
-    carla = json.loads((out / "carla.json").read_text(encoding="utf-8"))
+    carla = charger_profil_brut(out / "carla.json")
     assert carla["amendements"] == [_amendement(numero=9)]
+
+
+def test_merge_raw_dirs_ecrit_la_forme_partitionnee(tmp_path):
+    """#580 — c'est ici que la migration se fait d'elle-même : `merge-and-pivot`
+    relit une source monolithique (l'ancienne forme, encore committée) et
+    réécrit toujours partitionné, sans perdre un amendement."""
+    source = tmp_path / "shard"
+    _ecrire(source, "alice", {
+        "slug": "alice", "chambre": "deputes",
+        "amendements": [
+            {"uid": "A1", "legislature": "16"},
+            {"uid": "A2", "legislature": "17"},
+        ],
+    })
+
+    out = tmp_path / "out"
+    merge_raw_dirs([source], out)
+
+    socle = json.loads((out / "alice.json").read_text(encoding="utf-8"))
+    assert est_partitionne(socle)
+    assert "amendements" not in socle
+    assert sorted(p.name for p in (out / "alice").glob("*.json")) == ["16.json", "17.json"]
+    assert [a["uid"] for a in charger_profil_brut(out / "alice.json")["amendements"]] == ["A1", "A2"]
 
 
 def test_publication_scopee_conserve_l_union_entre_sources_differentes(tmp_path):
@@ -772,7 +796,7 @@ def test_publication_scopee_conserve_l_union_entre_sources_differentes(tmp_path)
     out = tmp_path / "out"
     merge_raw_dirs([dir_an, dir_roster], out)
 
-    alice = json.loads((out / "alice.json").read_text(encoding="utf-8"))
+    alice = charger_profil_brut(out / "alice.json")
     assert sorted(a["uid"] for a in alice["amendements"]) == ["AMANR5L17-1", "AMANR5L17-2"]
 
 

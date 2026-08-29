@@ -90,7 +90,21 @@ runs:
         fi
 
         COPIES=0
+        TRANCHES=0
         MANQUANTS=0
+        # UN PROFIL N'EST PLUS UN FICHIER (#580). Le manifeste liste toujours
+        # le SOCLE `<slug>.json` — le nom qui porte le slug, et la clé de
+        # `merge_raw_dirs` — mais les amendements vivent désormais à côté, dans
+        # `<slug>/<legislature>.json`. Copier le seul socle publierait un profil
+        # amputé de 96,7 % de son poids : `merge_raw_dirs` le relirait sans ses
+        # tranches et `charger_profil_brut` refuserait, bruyamment (« tranche
+        # annoncée mais absente ») — le shard n'aurait rien publié.
+        #
+        # Les tranches partent donc avec leur socle, dans le même staging et
+        # sous la même arborescence relative. Les jeux de fichiers restent
+        # DISJOINTS entre shards, l'invariant de #450 : un slug n'est écrit que
+        # par le shard qui le traite, donc son répertoire de tranches non plus.
+        #
         # `sort -u` : un slug peut apparaître deux fois si --resume a relancé un
         # candidat déjà consigné. Copier deux fois serait sans conséquence, mais
         # le décompte servirait alors de faux indicateur de couverture.
@@ -99,17 +113,35 @@ runs:
           if [[ -f "$SOURCE_DIR/$NOM" ]]; then
             cp "$SOURCE_DIR/$NOM" "$STAGING_DIR/$NOM"
             COPIES=$((COPIES + 1))
+
+            SLUG="${NOM%.json}"
+            if [[ "$SLUG" != "$NOM" && -d "$SOURCE_DIR/$SLUG" ]]; then
+              mkdir -p "$STAGING_DIR/$SLUG"
+              N=0
+              for TRANCHE in "$SOURCE_DIR/$SLUG"/*.json; do
+                [[ -f "$TRANCHE" ]] || continue
+                cp "$TRANCHE" "$STAGING_DIR/$SLUG/"
+                N=$((N + 1))
+              done
+              TRANCHES=$((TRANCHES + N))
+              # Un répertoire de tranches vide n'est pas « un profil sans
+              # amendement » : celui-là n'aurait pas de répertoire du tout.
+              if [[ "$N" -eq 0 ]]; then
+                echo "::warning::Répertoire de tranches vide pour $SLUG — profil publié sans ses amendements."
+              fi
+            fi
           else
             MANQUANTS=$((MANQUANTS + 1))
             echo "::warning::Profil listé au manifeste mais absent du disque : $SOURCE_DIR/$NOM"
           fi
         done < <(sort -u "$MANIFEST")
 
-        echo "Publication : $COPIES profil(s) écrits par ce job → $STAGING_DIR"
+        echo "Publication : $COPIES profil(s) écrits par ce job, $TRANCHES tranche(s) de législature → $STAGING_DIR"
         {
           echo "### 📤 Profils publiés par ce job"
           echo ""
           echo "- écrits et publiés : **$COPIES**"
+          echo "- tranches de législature publiées (#580) : **$TRANCHES**"
           [[ "$MANQUANTS" -gt 0 ]] && echo "- listés au manifeste mais absents du disque : **$MANQUANTS**"
           echo ""
           echo "L'artifact ne contient que la contribution de ce job (#450) : la"

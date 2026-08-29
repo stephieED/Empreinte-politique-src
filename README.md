@@ -163,12 +163,15 @@ The Senate left the product's scope in #528: `--chambre senateurs` is refused,
 and so is `--source senat` on `generate_all_profiles.py`. Reopening condition:
 [`docs/technical_decisions.md#retrait-senat-528`](docs/technical_decisions.md#retrait-senat-528).
 
-Default output: `raw_data/profiles/<slug>.json`.
+Default output: `raw_data/profiles/<slug>.json` — the **socle**, plus one
+`raw_data/profiles/<slug>/<legislature>.json` slice per legislature holding the
+amendments (#580). `--out` still names the socle; the slices are its sibling
+directory. Read them back with `src/profil_brut.py`, never `json.load` alone.
 
 | Option | Effect |
 |---|---|
 | `--chambre {deputes}` | Parliament chamber (only value since #528) |
-| `--out path.json` | Change output file |
+| `--out path.json` | Change output file (must end in `.json` — it is the socle) |
 
 ## 2. Add the "European mandate" section
 
@@ -684,7 +687,15 @@ committed fallback store the deduplicated form — scrutin metadata once in
 flat. See `docs/technical_decisions.md#votes-multi-legislature`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
-the gate exits with code 0. Before that step, the `merge-and-pivot` job also
+the gate exits with code 0. Its **§7 is the blob guard-rail of #580**: it
+measures the biggest versioned file, **warns at 50 MiB**, **fails the commit at
+80 MiB** — below GitHub's 100 MiB hard refusal, so there is still room to act —
+and prints the course of action with the finding. `--blob-warn-mo 0` disables
+the section. It lives here and not in the test suite because `tests.yml`
+sparse-checks-out without the corpus (#473), so no test can measure it. See
+`docs/technical_decisions.md#garde-fou-blob-580`.
+
+Before that step, the `merge-and-pivot` job also
 downloads the `amendements-index-an` artifact into `.cache/amendements_an`
 (optional, `continue-on-error: true`, same cache-only pattern as `extract-an`/
 `extract-roster-groupes`) so the gate's amendements freshness section (3d) can
@@ -963,7 +974,21 @@ directory (any of the three) is a hard error (explicit message + exit code
 
 ## Raw profile content (Nos* format)
 
-Each `raw_data/profiles/<slug>.json` includes:
+**A raw profile is two things since #580**: the socle
+`raw_data/profiles/<slug>.json`, and — for `amendements` only — one slice per
+legislature under `raw_data/profiles/<slug>/<legislature>.json`. `amendements`
+weighed 96,7 % of the biggest profile (54,15 of 56,00 MB), and every amendment
+already carried its `legislature`, so the list is partitioned on a field that
+was already there: 56,0 → 23,4 MB with **not one byte dropped**, nothing
+deduplicated and no field trimmed. The socle carries an
+`amendements_partitionnes` manifest in the exact place `amendements` occupied,
+and **omits** the key itself — absent, never empty (§2.5). Load a profile with
+`profil_brut.charger_profil_brut()`, which accepts both this form and the older
+monolithic one; stream just the amendments with
+`profil_brut.iter_amendements_du_profil()`. Details:
+[`docs/technical_decisions.md#partition-profils-legislature-580`](docs/technical_decisions.md#partition-profils-legislature-580).
+
+Each profile includes:
 
 - `identite`: name, political group, profession, constituency, ...
 - `mandats`: base elected mandate + real responsibilities with role, dates,
