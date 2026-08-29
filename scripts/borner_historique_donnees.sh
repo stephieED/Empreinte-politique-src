@@ -346,12 +346,27 @@ plus :
      b. VÉRIFIER que les SHA cités résolvent — sans quoi l'archivage est un
         rituel (#551, question 4). Une commande, et non plus un geste (#568) :
 
-          python3 src/verifier_archivage_swh.py
+          python3 src/verifier_archivage_swh.py --fenetre $FENETRE
+
+        \`--fenetre\` N'EST PAS FACULTATIF ICI (#575). Sans elle, la commande
+        vérifie TOUS les SHA cités au lieu des seuls que cette coupure
+        perdrait : c'est un audit d'archive, pas un feu vert de coupure, et
+        elle bloquerait presque à chaque fois — Software Heritage repasse tous
+        les ~11 jours, donc tout commit fusionné depuis sa dernière visite
+        paraît « manquant » sans rien risquer. Mesuré le 28/08/2026 sur le banc
+        de #569, fenêtre 5 : 38 SHA cités, 28 perdus par la coupure et 10
+        conservés — et un blocage sur un des 10 conservés.
+        (\`--coupure <commit>\` si l'on préfère nommer le point rendu par
+        l'étape 3 plutôt que le redériver d'une fenêtre.)
 
         Il extrait les SHA cités dans les .md suivis et les corps d'issues,
-        ne garde que ceux qui résolvent en commit, les interroge un par un et
-        NOMME les manquants avec l'endroit où chacun est cité. Il temporise
-        sur le quota anonyme (120 requêtes/heure) en le disant.
+        ne garde que ceux qui résolvent en commit, restreint le périmètre aux
+        ANCÊTRES de la coupure, les interroge un par un et NOMME les manquants
+        avec l'endroit où chacun est cité. Il temporise sur le quota anonyme
+        (120 requêtes/heure) en le disant. Et il interroge l'origine du dépôt
+        SOUS LA MAIN — dérivée de \`git remote get-url origin\`, plus une valeur
+        codée en dur : lancé sur un banc, il rendait jusqu'ici un verdict
+        confiant sur l'archive du dépôt réel.
 
         Trois verdicts, à ne pas confondre — c'est tout son intérêt :
           VÉRIFIÉ (0)     visite \`full\`, tout résout. La coupure peut suivre.
@@ -369,6 +384,12 @@ plus :
         et relancer 2a n'y changera rien. Ils sont déjà irrésolvables pour
         un tiers : la coupure ne leur fait rien perdre, c'est la citation
         qu'il faut corriger.
+
+        Et à part également les CONSERVÉS PAR LA COUPURE : cités, non ancêtres
+        du point de coupure, donc non interrogés — après l'opération le dépôt
+        en reste la copie de référence. À ne pas lire comme « pas besoin
+        d'archive » : ils tomberont sous une coupure FUTURE, et l'archive les
+        couvrira d'ici là. C'est « pas pour cette coupure-ci ».
 
         \`--sans-issues\` si \`gh\` n'est pas authentifié ; \`--json <fichier>\`
         pour garder trace de ce qui a été constaté ce jour-là.
