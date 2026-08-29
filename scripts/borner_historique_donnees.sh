@@ -324,8 +324,20 @@ Préparé, RIEN n'a été poussé et « main » est intacte.
                        et le gain serait nul)
   branche réécrite   : main-borne ($NEW)
 
-À faire à la main, dans cet ordre — chaque étape est un point de non-retour de
-plus :
+CE TEXTE SE SAUTE. La répétition du 28/08/2026 (#569) l'a montré : les sept
+étapes déroulées à la main, et une oubliée — la suppression du tag
+\`amendements-figes-v1\`, qui ré-épinglait 386 commits. Pour le dérouler sans
+en sauter, et en garder trace :
+
+  scripts/executer_bornage_guide.sh --fenetre $FENETRE
+
+Le runner impose l'ordre, refuse d'avancer sur une précondition en échec,
+fait TAPER UNE PHRASE avant chaque geste irréversible, et tient un journal
+(#576). Ce script-ci ne pousse toujours JAMAIS : c'est le runner qui porte les
+gestes irréversibles, et cette frontière est un test.
+
+À faire à la main si l'on n'utilise pas le runner, dans cet ordre — chaque
+étape est un point de non-retour de plus :
 
   1. Vérifier qu'aucun run de données n'est en cours ni programmé :
        gh run list --workflow=generate-data.yml --limit 5
