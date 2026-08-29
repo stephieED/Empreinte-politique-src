@@ -1349,11 +1349,18 @@ def test_build_profile_ne_retombe_plus_sur_nosdeputes_quand_syceron_est_vide():
 
     assert profile["interventions"] == []
     assert profile["meta"]["synchro_sources"]["assemblee_nationale_syceron"] is None
+    # #560 — le silence est déclaré, mais sous le préfixe du CONSTAT et non
+    # celui de la panne : la collecte est allée au bout sans lever, donc les
+    # archives ont répondu. Un préfixe ne recouvre plus deux états.
     warnings_syceron = [
         w for w in profile["meta"]["warnings"]
-        if w.startswith("interventions syceron indisponibles")
+        if w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE)
     ]
     assert warnings_syceron, "le silence de la source primaire doit être déclaré (§2.5)"
+    assert not any(
+        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        for w in profile["meta"]["warnings"]
+    ), "une collecte qui aboutit à vide n'est pas une panne (#560)"
     assert not any("fallback" in w.lower() for w in profile["meta"]["warnings"])
 
 
@@ -1645,8 +1652,9 @@ def test_integration_sans_syceron_le_pivot_ne_fabrique_aucune_intervention():
         raw_profile = build_profile("deputes", "jean-dupont")
 
     assert raw_profile["meta"]["synchro_sources"].get("assemblee_nationale_syceron") is None
+    # #560 : préfixe du constat, pas celui de la panne.
     assert any(
-        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE)
         for w in raw_profile["meta"]["warnings"]
     )
 
@@ -1660,7 +1668,7 @@ def test_integration_sans_syceron_le_pivot_ne_fabrique_aucune_intervention():
     # Le warning brut voyage jusqu'au pivot : c'est lui qui rend le vide lisible
     # dans le corpus publié.
     assert any(
-        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        w.startswith(candidate_profile.WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE)
         for w in pivot["meta"]["warnings"]
     )
 
@@ -3426,7 +3434,7 @@ def test_build_organe_index_uses_disk_cache_without_download(tmp_path):
 
     cached_index = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
     tmp_path.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "index_organes.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / candidate_profile.NOM_INDEX_ORGANES).write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
 
     with (
         patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),
@@ -3454,7 +3462,7 @@ def test_index_historique_lu_une_seule_fois_par_process(tmp_path):
     relisait, il verrait le nouveau contenu."""
     from candidate_profile import _build_organe_index
 
-    chemin = tmp_path / "index_organes.json"
+    chemin = tmp_path / candidate_profile.NOM_INDEX_ORGANES
     premier = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
     chemin.write_text(json.dumps(premier, ensure_ascii=False), encoding="utf-8")
 
@@ -3484,8 +3492,8 @@ def test_index_historique_memoise_par_chemin_pas_globalement(tmp_path):
     b.mkdir()
     index_a = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
     index_b = {"PO393167": {"sigle": "Malaisie", "nom": "France-Malaisie", "type": "GA"}}
-    (a / "index_organes.json").write_text(json.dumps(index_a, ensure_ascii=False), encoding="utf-8")
-    (b / "index_organes.json").write_text(json.dumps(index_b, ensure_ascii=False), encoding="utf-8")
+    (a / candidate_profile.NOM_INDEX_ORGANES).write_text(json.dumps(index_a, ensure_ascii=False), encoding="utf-8")
+    (b / candidate_profile.NOM_INDEX_ORGANES).write_text(json.dumps(index_b, ensure_ascii=False), encoding="utf-8")
 
     with patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", a):
         assert _build_organe_index() == index_a
@@ -3498,7 +3506,7 @@ def test_purge_du_memo_index_historique_rend_la_relecture(tmp_path):
     sans quoi le garde-fou ci-dessus protégerait un mécanisme inerte."""
     from candidate_profile import _build_organe_index, _clear_acteurs_historique_index_memo
 
-    chemin = tmp_path / "index_organes.json"
+    chemin = tmp_path / candidate_profile.NOM_INDEX_ORGANES
     premier = {"PO59048": {"sigle": "Finances", "nom": "Commission des finances", "type": "COMPER"}}
     second = {"PO1": {"sigle": "X", "nom": "X", "type": "GA"}}
     chemin.write_text(json.dumps(premier, ensure_ascii=False), encoding="utf-8")
@@ -3527,7 +3535,7 @@ def test_index_historique_memoise_apres_construction_depuis_le_zip(tmp_path):
               return_value=_FakeActeursHistoriqueStreamResponse(zip_bytes)),
     ):
         premier = _build_organe_index()
-        (tmp_path / "index_organes.json").unlink()
+        (tmp_path / candidate_profile.NOM_INDEX_ORGANES).unlink()
         assert _build_organe_index() is premier
 
 
@@ -3821,7 +3829,7 @@ def test_build_acteur_identite_index_uses_disk_cache_without_download(tmp_path):
 
     cached_index = {"PA1": {"nom_complet": "Jane Doe"}}
     tmp_path.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "index_identite.json").write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / candidate_profile.NOM_INDEX_IDENTITE).write_text(json.dumps(cached_index, ensure_ascii=False), encoding="utf-8")
 
     with (
         patch("candidate_profile.ACTEURS_HISTORIQUE_CACHE_DIR", tmp_path),

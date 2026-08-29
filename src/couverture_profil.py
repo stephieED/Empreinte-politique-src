@@ -45,6 +45,20 @@ aussi deux faits différents. `'<' not supported between instances of 'dict' and
 qu'aucune source n'était en défaut. `MOTIFS_DEFAUT_COLLECTE` sépare ce cas, et
 sa preuve n'est jamais recopiée d'un message d'exception : elle est construite.
 
+Corollaire ajouté par #558 : une décision de pipeline dont la table n'a pas
+d'entrée n'est pas une décision **absente**, c'est une décision publiée comme un
+**fait**. `DECISIONS_PIPELINE` ne connaissait que les deux drapeaux de #357 ; le
+gel d'un groupe (`extraction_suspendue`, #516) n'y figurait pas, donc les 20
+membres des deux fiches `groupe-Senat-*` retombaient sur le défaut — « couvert »,
+borné par le référentiel — alors que rien n'avait été demandé à aucune source
+pour eux. « Couvert depuis 2002, zéro mandat » se lit « cette personne n'a pas
+de mandat », et c'est faux.
+
+Corollaire ajouté par #560 : une **frontière de source** n'est pas une avarie.
+Publier `panne` là où nos archives ne remontent simplement pas assez loin fait
+porter à la donnée un défaut qui n'existe pas, et laisse croire qu'un prochain
+run comblera le silence. Voir l'étape 1ter de `deriver`.
+
 ## La forme à deux entrées, et pourquoi elle est la forme générale
 
 Chaque liste collectée porte **deux** entrées : ce que la source couvre, et ce
@@ -52,6 +66,12 @@ qu'elle ne couvre pas. Elle ne dépend d'aucune connaissance de la carrière de 
 personne — donc elle est publiable pour les 9 profils dont les cinq listes sont
 déjà vides et dont `mandats` est vide aussi (`eric-dolige`, `charles-guene`,
 `thierry-cozic`…), où toute dérivation par mandats serait muette.
+
+#560 ajoute une dérivation qui, elle, LIT la carrière (`legislatures_du_profil`)
+— mais elle ne remplace pas la forme générale, elle s'y ajoute **sous
+condition** : elle ne s'arme que si les mandats du profil sont connus et datés,
+et se tait sinon. La forme à deux entrées reste donc le cas par défaut, y
+compris pour les neuf profils ci-dessus.
 
 Elle dit exactement ce qui est vrai : « dans la fenêtre couverte, le compte
 publié est ce que la source contient ; avant, nous ne couvrons pas ». Le mandat
@@ -75,6 +95,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any, Iterable, NamedTuple, Optional
 
+from groupes_config import CLE_SUSPENSION, libelle_groupe
 from schema_pivot import (
     CAUSE_DEFAUT_COLLECTE,
     CAUSE_PANNE,
@@ -141,12 +162,39 @@ _verifier_calendrier()
 # ---------------------------------------------------------------------------
 
 class Borne(NamedTuple):
-    """Ce qu'une source couvre, et la preuve de cette borne."""
+    """Ce qu'une source couvre, et la preuve de cette borne.
+
+    La `preuve` se lit dans cet ordre, et l'ordre est le correctif de #560 :
+    **d'abord ce que la source publie, ensuite la constante du dépôt**.
+
+    Avant, une preuve disait « `candidate_profile.AN_SCRUTINS_LEGISLATURES = 17,
+    16, 15, 14` — 17 748 scrutins ingérés ». Elle décrivait donc **notre
+    ingestion**, ce qui se lit comme un choix de notre part, révisable au
+    prochain run. La phrase juste est « l'Assemblée nationale ne publie pas de
+    scrutins avant la XIVe » : une limite de la source, que rien de ce que nous
+    ferons ne déplacera.
+
+    Pour une page comme celle de Ségolène Royal, la différence n'est pas
+    cosmétique — l'une suggère qu'on pourrait collecter davantage, l'autre dit
+    qu'on ne le pourra jamais. Et AGENTS.md §2.2 demande qu'un fait renvoie à sa
+    source primaire : une constante du code n'est la source que de notre
+    configuration. Elle reste nommée, en second, comme **trace
+    d'implémentation** — c'est elle qui rend l'entrée vérifiable en relecture, et
+    c'est sur elle que porte
+    `test_couverture_profil_539.test_la_borne_publiee_suit_la_constante_qui_la_porte`.
+    """
 
     #: Législatures réellement ingérées, croissantes.
     legislatures: tuple[int, ...]
-    #: Preuve : la constante du dépôt qui porte la borne, et sa mesure.
-    preuve: str
+    #: Ce que la source PUBLIE, vérifié à la source, avec la date de vérification.
+    limite_source: str
+    #: La constante du dépôt qui porte la borne, et sa mesure.
+    constante: str
+
+    @property
+    def preuve(self) -> str:
+        """La limite de la source d'abord, la constante du dépôt ensuite."""
+        return f"{self.limite_source} — borne portée par {self.constante}"
 
     @property
     def debut(self) -> str:
@@ -159,10 +207,18 @@ class Borne(NamedTuple):
         return (date.fromisoformat(self.debut) - timedelta(days=1)).isoformat()
 
 
-# Une entrée par liste métier. Chaque `preuve` NOMME la constante du dépôt qui
+# Une entrée par liste métier. Chaque `constante` NOMME la constante du dépôt qui
 # porte la borne : c'est ce qui rend l'entrée relisible, et ce qui fait tomber le
 # test `test_couverture_profil.py` le jour où une archive est ajoutée sans que la
 # couverture publiée le dise.
+#
+# Les `limite_source` ont été vérifiées le 28/08/2026 sur le portail open data de
+# l'Assemblée nationale (#560) : la page « archives antérieures » ne liste que la
+# XVe et la XIVe, et celle de la XIVe porte amendements, dossiers, scrutins,
+# questions et agendas — **pas de comptes rendus de séance**. Interrogée
+# explicitement sur les XIIe et XIIIe : aucun jeu de données. Seuls l'état civil
+# et les mandats remontent plus loin, à la XIe (juin 1997) — c'est l'exception qui
+# explique qu'un profil publie légitimement 11 mandats et zéro vote.
 BORNES: dict[str, Borne] = {
     # AMO30 est un référentiel HISTORIQUE, pas un roster : sa borne n'est pas
     # celle des autres. Mesurée sur `.cache/acteurs_historique_an/` le
@@ -175,36 +231,63 @@ BORNES: dict[str, Borne] = {
     # publiable n'est pas « jamais élue » mais « jamais élue depuis la XIIe ».
     "mandats": Borne(
         legislatures=(12, 13, 14, 15, 16, 17),
-        preuve=(
+        limite_source=(
+            "l'Assemblée nationale publie l'état civil et les mandats de ses "
+            "élu·es depuis la XIe législature (juin 1997), mais son référentiel "
+            "historique AMO30 ne rattache aucun acteur à un mandat antérieur à "
+            "la XIIe"
+        ),
+        constante=(
             "AMO30 (référentiel historique des acteurs AN) — mesuré le 28/08/2026 : "
             "3 117 acteurs, plus ancien mandat_debut d'acteur 2002-06-19 (XIIe)"
         ),
     ),
     "votes": Borne(
         legislatures=(14, 15, 16, 17),
-        preuve=(
+        limite_source=(
+            "l'Assemblée nationale ne publie pas de scrutins avant la XIVe "
+            "législature — vérifié le 28/08/2026 sur data.assemblee-nationale.fr, "
+            "dont la page d'archives ne remonte pas au-delà"
+        ),
+        constante=(
             "candidate_profile.AN_SCRUTINS_LEGISLATURES = 17, 16, 15, 14 — "
             "17 748 scrutins ingérés (792 / 4 417 / 4 105 / 8 434)"
         ),
     ),
     "amendements": Borne(
         legislatures=(14, 15, 16, 17),
-        preuve=(
+        limite_source=(
+            "l'Assemblée nationale ne publie pas d'amendements avant la XIVe "
+            "législature — vérifié le 28/08/2026 sur data.assemblee-nationale.fr, "
+            "dont la page d'archives ne remonte pas au-delà"
+        ),
+        constante=(
             "candidate_profile.AN_AMENDEMENTS_PATH = 14, 15, 16, 17 — un shard "
             "pivot_data/amendements/<legislature>.json par législature ingérée"
         ),
     ),
     "textes_portes": Borne(
         legislatures=(15, 16, 17),
-        preuve=(
-            "couverture_dossiers.AN_DOSSIERS_ARCHIVES = XV, XVI, XVII — la XIVe et "
-            "antérieures sont hors d'atteinte (structure de jeu de données "
-            "incompatible, cf. couverture_dossiers.py)"
+        limite_source=(
+            "l'Assemblée nationale publie des dossiers législatifs à partir de la "
+            "XIVe, mais dans une structure de jeu de données incompatible avec "
+            "celle des XVe et suivantes — établi le 18/08/2026 par requêtes "
+            "réelles sur les index 11 à 18 (couverture_dossiers.py)"
+        ),
+        constante=(
+            "couverture_dossiers.AN_DOSSIERS_ARCHIVES = XV, XVI, XVII"
         ),
     ),
     "interventions": Borne(
         legislatures=(15, 16, 17),
-        preuve="syceron_debates.SYCERON_AVAILABLE_LEGISLATURES = {15, 16, 17}",
+        limite_source=(
+            "l'Assemblée nationale ne publie pas de comptes rendus de séance "
+            "(Syceron) avant la XVe législature — vérifié le 28/08/2026 sur "
+            "data.assemblee-nationale.fr : la page d'archives de la XIVe porte "
+            "amendements, dossiers, scrutins, questions et agendas, mais aucun "
+            "compte rendu"
+        ),
+        constante="syceron_debates.SYCERON_AVAILABLE_LEGISLATURES = {15, 16, 17}",
     ),
 }
 
@@ -218,19 +301,38 @@ assert set(BORNES) == set(LISTES_COUVERTES), (
 # Décisions de pipeline
 # ---------------------------------------------------------------------------
 
-#: Drapeau de `generate_all_profiles.py` → liste métier qu'il écarte, et preuve.
+#: Nom de la décision « le groupe parlementaire de ce profil est gelé » (#558).
+#: Elle est à part des deux autres : sa portée est **les cinq listes**, et sa
+#: preuve n'est pas connue de ce module — elle est lue dans le bloc
+#: `extraction_suspendue` du groupe (voir `GroupeSuspendu`).
+DECISION_GROUPE_SUSPENDU = "groupe_suspendu"
+
+#: Décision de pipeline → (listes métier qu'elle écarte, preuve).
 #: La preuve d'une décision est la DÉCISION, pas une URL : elle nomme le drapeau
 #: et l'issue qui l'a posé.
-DECISIONS_PIPELINE: dict[str, tuple[str, str]] = {
+#:
+#: Le second membre était une liste **unique** jusqu'à #558 ; il est devenu un
+#: tuple parce qu'une décision peut parfaitement écarter les cinq listes d'un
+#: coup. La forme précédente n'était pas seulement étroite : elle rendait
+#: `groupe_suspendu` inexprimable, et une décision inexprimable retombe sur le
+#: défaut — « couvert ». C'est ce qu'ont publié 20 profils de sénateurs, sur des
+#: listes vides que le gel de leur groupe explique entièrement.
+DECISIONS_PIPELINE: dict[str, tuple[tuple[str, ...], str]] = {
     "skip_interventions": (
-        "interventions",
+        ("interventions",),
         "generate-data.yml:1641 — --skip-interventions appliqué en dur au job "
         "extract-roster-groupes, indépendamment des inputs (#357)",
     ),
     "skip_dossiers_legislatifs": (
-        "textes_portes",
+        ("textes_portes",),
         "generate-data.yml:1641 — --skip-dossiers-legislatifs appliqué en dur au "
         "job extract-roster-groupes, indépendamment des inputs (#357)",
+    ),
+    DECISION_GROUPE_SUSPENDU: (
+        tuple(LISTES_COUVERTES),
+        "groupes_config.CLE_SUSPENSION — l'extraction du groupe parlementaire de "
+        "ce profil est suspendue (#516), et le Sénat est hors périmètre éditorial "
+        "depuis #528 : aucune des cinq listes n'a été demandée à une source",
     ),
 }
 
@@ -239,7 +341,71 @@ DECISIONS_PIPELINE: dict[str, tuple[str, str]] = {
 #: provenance seule, sans avoir à rejouer le run. C'est ce qui rend la couverture
 #: dérivable sur les 469 profils déjà publiés, dont aucun ne porte la trace des
 #: drapeaux du run qui les a écrits.
+#:
+#: `groupe_suspendu` n'y est **pas**, et c'est délibéré : la provenance ne
+#: recouvre pas la population. Sur les 20 membres des deux fiches
+#: `groupe-Senat-*`, 19 sont `roster_groupe` et le vingtième — `bruno-retailleau`,
+#: le plus visible des vingt — est `candidat_declare`. Un correctif branché sur
+#: la provenance seule l'aurait manqué. L'appartenance se lit donc au groupe, pas
+#: au profil : voir `groupes_config.index_membres_de_groupes_suspendus`.
 DECISIONS_ROSTER: tuple[str, ...] = ("skip_interventions", "skip_dossiers_legislatifs")
+
+
+class GroupeSuspendu(NamedTuple):
+    """Le gel d'extraction d'un groupe, tel que sa config le documente (#558).
+
+    La preuve est **lue** dans `raw_data/groupes_reels.json`, jamais codée en
+    dur ici : les quatre champs de `groupes_config.CHAMPS_SUSPENSION_REQUIS` sont
+    exigés justement pour qu'une suspension soit relisible, et une preuve qui les
+    recopierait à la main divergerait le jour où la suspension est levée.
+    """
+
+    #: `groupe_id` de la config (ex. `"Senat:LR"`).
+    groupe_id: str
+    #: Date de la suspension (`extraction_suspendue.depuis`).
+    depuis: Optional[str] = None
+    #: Motif écrit (`extraction_suspendue.motif`).
+    motif: Optional[str] = None
+    #: Références (`extraction_suspendue.references`), déjà mises en forme.
+    references: Optional[str] = None
+
+    @property
+    def preuve(self) -> str:
+        """Preuve publiable : la décision, sa date, son motif, ses références."""
+        morceaux = [
+            f"extraction du groupe {self.groupe_id} suspendue"
+            + (f" depuis le {self.depuis}" if self.depuis else "")
+        ]
+        if self.motif:
+            morceaux.append(str(self.motif))
+        if self.references:
+            morceaux.append(f"références : {self.references}")
+        return (
+            " — ".join(morceaux)
+            + ". Aucune des cinq listes n'a été demandée à une source pour ce "
+            "profil : ce vide est une décision, pas un constat."
+        )
+
+
+def groupe_suspendu_depuis_config(groupe: dict[str, Any]) -> GroupeSuspendu:
+    """Construit un `GroupeSuspendu` depuis une entrée de `groupes_reels.json`.
+
+    Tolérante par construction : une suspension mal documentée est déjà une
+    erreur dure du quality gate (`groupes_config.anomalies_suspension`), et ce
+    n'est pas ici qu'on la redécouvre. Ce qui manque manque, et la preuve le dit
+    en creux plutôt que d'inventer.
+    """
+    bloc = groupe.get(CLE_SUSPENSION)
+    bloc = bloc if isinstance(bloc, dict) else {}
+    references = bloc.get("references") or []
+    if isinstance(references, str):
+        references = [references]
+    return GroupeSuspendu(
+        groupe_id=libelle_groupe(groupe),
+        depuis=bloc.get("depuis") or None,
+        motif=bloc.get("motif") or None,
+        references=", ".join(str(r) for r in references) or None,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -259,6 +425,11 @@ DECISIONS_ROSTER: tuple[str, ...] = ("skip_interventions", "skip_dossiers_legisl
 #:   C'est pourquoi la table est indexée par motif et non par préfixe : traiter
 #:   le préfixe comme un signal produirait #484 à l'identique, en publiant
 #:   « jamais élu » sur une panne réseau.
+#:
+#: `interventions syceron indisponibles` y reste, et c'est correct depuis #560 :
+#: le préfixe a été SCINDÉ, et seule la branche `except` l'écrit désormais. Le
+#: constat qui le portait aussi a son propre préfixe — mais le corpus déjà
+#: committé porte encore l'ancien message, d'où `MOTIFS_JAMAIS_PANNE` ci-dessous.
 MOTIFS_PANNE: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("index des scrutins indisponible", ("votes",)),
     ("cache d'index des scrutins illisible", ("votes",)),
@@ -269,6 +440,24 @@ MOTIFS_PANNE: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("collecte tronquée (budget de temps)", tuple(LISTES_COUVERTES)),
     ("textes portés officiels (Assemblée nationale) indisponibles", ("textes_portes",)),
     ("chambre en échec", tuple(LISTES_COUVERTES)),
+)
+
+#: Motifs qui INTERDISENT de lire un warning comme une panne, même quand il
+#: porte par ailleurs un préfixe de `MOTIFS_PANNE` (#560).
+#:
+#: Une seule entrée, et elle est un **pont vers le corpus déjà publié**. Le
+#: constat « les archives ont répondu, elles ne portent rien pour cet acteurRef »
+#: a son propre préfixe depuis #560
+#: (`WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE`) ; mais les 481 profils bruts
+#: committés portent encore l'ancien message, écrit sous le préfixe de panne. La
+#: passe pivot les relit à chaque run, et sans cette table elle republierait
+#: « panne » sur un zéro constaté jusqu'à la prochaine collecte complète.
+#:
+#: Ce n'est pas un contournement du préfixe : c'est la reconnaissance d'une
+#: phrase qui dit explicitement que la source A répondu. Le critère reste le
+#: même — la santé de la source, jamais l'absence de résultat.
+MOTIFS_JAMAIS_PANNE: tuple[str, ...] = (
+    "aucune intervention syceron pour cet acteurref",
 )
 
 #: Motifs de `meta.warnings[]` qui nomment un défaut de CE DÉPÔT, et la liste
@@ -492,6 +681,8 @@ def _pannes_declarees(warnings: Iterable[Any]) -> dict[str, str]:
         if not isinstance(warning, str):
             continue
         minuscule = warning.lower()
+        if any(motif in minuscule for motif in MOTIFS_JAMAIS_PANNE):
+            continue
         for motif, listes in MOTIFS_PANNE:
             if motif.lower() not in minuscule:
                 continue
@@ -500,23 +691,84 @@ def _pannes_declarees(warnings: Iterable[Any]) -> dict[str, str]:
     return pannes
 
 
+# ---------------------------------------------------------------------------
+# Les législatures d'un profil
+# ---------------------------------------------------------------------------
+
+def legislatures_du_profil(profil: dict[str, Any]) -> tuple[int, ...]:
+    """Législatures que les mandats **publiés** du profil recouvrent.
+
+    Rendue **vide quand rien n'est connu**, et c'est la moitié importante du
+    contrat : un profil sans mandat daté ne dit rien de sa carrière, donc rien
+    ne doit en être dérivé. C'est ce qui préserve la propriété que #539 avait
+    obtenue — la couverture reste publiable pour les 9 profils dont `mandats`
+    est vide, où toute dérivation par mandats serait muette.
+
+    Un mandat sans `fin` est **en cours** : il court jusqu'à la dernière
+    législature du calendrier. Un mandat dont la période déborde le calendrier
+    est retenu pour les seules législatures qu'il recoupe réellement.
+    """
+    mandats = profil.get("mandats")
+    if not isinstance(mandats, list):
+        return ()
+
+    trouvees: set[int] = set()
+    for mandat in mandats:
+        if not isinstance(mandat, dict):
+            continue
+        debut = mandat.get("debut")
+        if not isinstance(debut, str) or not debut.strip():
+            continue
+        fin = mandat.get("fin")
+        fin = fin if isinstance(fin, str) and fin.strip() else None
+        for legislature, (ouverture, cloture) in CALENDRIER_LEGISLATURES.items():
+            # Deux intervalles se recoupent si chacun commence avant que
+            # l'autre ne finisse. `None` = pas de fin connue, donc ouvert.
+            if cloture is not None and debut > cloture:
+                continue
+            if fin is not None and fin < ouverture:
+                continue
+            trouvees.add(legislature)
+    return tuple(sorted(trouvees))
+
+
+def _romain(legislature: int) -> str:
+    """`14` → `"XIVe"`. Les preuves publiées nomment les législatures comme
+    l'Assemblée les nomme, pas comme le code les indexe."""
+    chiffres = (
+        (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
+    )
+    reste, texte = legislature, ""
+    for valeur, symbole in chiffres:
+        while reste >= valeur:
+            texte += symbole
+            reste -= valeur
+    return f"{texte}e"
+
+
 def deriver(
     profil: dict[str, Any],
     *,
     constate_le: Optional[str] = None,
     decisions: Optional[Iterable[str]] = None,
     fait_hors_an: Optional[FaitHorsAn] = None,
+    groupe_suspendu: Optional[GroupeSuspendu] = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """Construit le bloc `couverture` d'un profil pivot.
 
     Args:
-        profil: le profil pivot, lu pour `meta.provenance` et `meta.warnings`.
+        profil: le profil pivot, lu pour `meta.provenance`, `meta.warnings` et
+            — depuis #560 — `mandats[]`, dont les dates disent quelles
+            législatures la carrière recouvre.
         constate_le: date ISO du constat (défaut : aujourd'hui).
         decisions: drapeaux de `DECISIONS_PIPELINE` appliqués à CE run. `None`
             = déduit de la provenance : un profil `roster_groupe` vient du job
             qui porte les deux drapeaux en dur (#357).
         fait_hors_an: verdict d'`etablir_fait_hors_an`, ou `None` si la question
             ne se pose pas.
+        groupe_suspendu: le gel d'extraction du groupe de ce profil (#558), ou
+            `None`. Fourni par l'appelant, qui seul connaît l'appartenance —
+            elle ne se lit ni sur la provenance ni sur `chambre`.
 
     Returns:
         `{liste: [entrée, ...]}`, complet sur les cinq listes métier.
@@ -527,11 +779,25 @@ def deriver(
 
     if decisions is None:
         decisions = DECISIONS_ROSTER if provenance == "roster_groupe" else ()
-    ecartees = {
-        DECISIONS_PIPELINE[drapeau][0]: DECISIONS_PIPELINE[drapeau][1]
-        for drapeau in decisions
-        if drapeau in DECISIONS_PIPELINE
-    }
+    decisions = tuple(decisions)
+    if groupe_suspendu is not None and DECISION_GROUPE_SUSPENDU not in decisions:
+        # EN TÊTE, pas à la suite : sur un profil `roster_groupe` d'un groupe
+        # gelé, les deux drapeaux de #357 sont vrais aussi, mais ils n'expliquent
+        # que deux listes sur cinq. Le gel les englobe, et c'est lui que le
+        # lecteur doit trouver en preuve — sur les cinq.
+        decisions = (DECISION_GROUPE_SUSPENDU,) + decisions
+    ecartees: dict[str, str] = {}
+    for drapeau in decisions:
+        if drapeau not in DECISIONS_PIPELINE:
+            continue
+        listes, preuve = DECISIONS_PIPELINE[drapeau]
+        # La preuve d'un gel de groupe est celle que le groupe DOCUMENTE : la
+        # phrase générique de la table ne sert que si l'appelant n'a pas su
+        # dire de quel groupe il s'agit.
+        if drapeau == DECISION_GROUPE_SUSPENDU and groupe_suspendu is not None:
+            preuve = groupe_suspendu.preuve
+        for liste in listes:
+            ecartees.setdefault(liste, preuve)
     # `meta.collecte_ecartee` (#539) est la trace écrite PAR LA COLLECTE des
     # listes qu'elle a délibérément sautées. Elle prime sur toute inférence :
     # la passe pivot de la CI est un `--pivot-only` sans drapeau, donc elle ne
@@ -545,6 +811,7 @@ def deriver(
             )
     pannes = _pannes_declarees(meta.get("warnings") or ())
     defauts = _defauts_declares(meta.get("warnings") or ())
+    legislatures = set(legislatures_du_profil(profil))
 
     couverture: dict[str, list[dict[str, Any]]] = {}
     for liste in LISTES_COUVERTES:
@@ -557,6 +824,39 @@ def deriver(
             couverture[liste] = [
                 _entree(ETAT_NON_COLLECTE, ecartees[liste], constate_le,
                         cause=CAUSE_PAR_DECISION)
+            ]
+            continue
+
+        # 1ter. Puis la FRONTIÈRE DE SOURCE, avant toute cause (#560).
+        #
+        #    Si aucune législature du profil n'intersecte ce que la source
+        #    publie, il n'y a rien à collecter — et il n'y aura jamais rien. Une
+        #    panne survenue par ailleurs ne dit rien de cette liste-là ; un
+        #    défaut de notre code non plus. Le seul fait vrai est celui de notre
+        #    couverture, et il a son état : `hors_couverture`.
+        #
+        #    C'est le correctif de fond de #560 : `segolene-royal` publiait
+        #    `non_collecte`/`panne` sur ses interventions, sous une preuve qui
+        #    avouait son ambiguïté (« identifiant absent des trois archives, OU
+        #    archive indisponible »). Son mandat relève de la XIIe et Syceron
+        #    commence à la XVe : la panne était fausse **par construction**, et
+        #    elle laissait croire qu'un prochain run comblerait le silence.
+        #
+        #    La condition n'est armée que si `legislatures` est non vide : un
+        #    profil dont les mandats sont inconnus ne permet aucune dérivation
+        #    (voir `legislatures_du_profil`).
+        if legislatures and not legislatures & set(borne.legislatures):
+            couverture[liste] = [
+                _entree(
+                    ETAT_HORS_COUVERTURE,
+                    f"{borne.preuve}. Les mandats publiés de ce profil relèvent "
+                    f"des législatures "
+                    f"{', '.join(_romain(n) for n in sorted(legislatures))} : "
+                    "aucune n'est couverte par cette source, et aucun run ne "
+                    "peut le changer.",
+                    constate_le,
+                    portee={"debut": None, "fin": borne.veille},
+                )
             ]
             continue
 
@@ -620,6 +920,7 @@ def appliquer(
     constate_le: Optional[str] = None,
     decisions: Optional[Iterable[str]] = None,
     fait_hors_an: Optional[FaitHorsAn] = None,
+    groupe_suspendu: Optional[GroupeSuspendu] = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """Écrit `profil["couverture"]` et le renvoie.
 
@@ -627,7 +928,11 @@ def appliquer(
     fabrique se contrôle avec la même règle que le schéma, écrite une fois.
     """
     couverture = deriver(
-        profil, constate_le=constate_le, decisions=decisions, fait_hors_an=fait_hors_an
+        profil,
+        constate_le=constate_le,
+        decisions=decisions,
+        fait_hors_an=fait_hors_an,
+        groupe_suspendu=groupe_suspendu,
     )
     erreurs = valider_couverture(couverture)
     if erreurs:

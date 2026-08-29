@@ -43,9 +43,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from schema_groupe import validate_profil_groupe as _validate_groupe  # type: ignore[import]
+    from schema_groupe import ETAT_ROSTER_HORS_PERIMETRE  # type: ignore[import]
     _SCHEMA_GROUPE_AVAILABLE = True
 except ImportError:
     _SCHEMA_GROUPE_AVAILABLE = False
+    # Repli littéral, et seulement ici : le gate doit rester exécutable sans le
+    # module de schéma (c'est ce que dit le `try` au-dessus, depuis toujours).
+    ETAT_ROSTER_HORS_PERIMETRE = "hors_perimetre"  # type: ignore[assignment]
 try:
     from schema_gouvernement import validate_profil_gouvernement as _validate_gouvernement  # type: ignore[import]
     _SCHEMA_GOUVERNEMENT_AVAILABLE = True
@@ -1250,6 +1254,11 @@ def _report_groupes(
         couverture = meta.get("couverture_roster") or {}
         roster_total = couverture.get("roster_total", 0)
         profils_dispo = couverture.get("profils_disponibles", 0)
+        # #558 — l'état dit ce que le ratio VEUT DIRE. Sans lui, 15/235 se lit
+        # comme une perte de collecte ; avec, comme un périmètre assumé. Il est
+        # remonté dans la ligne du rapport pour que le tableau porte la même
+        # distinction que la fiche publiée.
+        etat_roster = couverture.get("etat")
         nb_membres = len(data.get("membres") or [])
         nb_cohesion = len(data.get("cohesion_votes") or [])
         groupe_nom = data.get("groupe_nom") or groupe_id
@@ -1280,6 +1289,7 @@ def _report_groupes(
                 "status": "suspendu",
                 "soft_flags": "extraction suspendue",
                 "suspension": resume_suspension(grp),
+                "etat_roster": etat_roster,
             })
             continue
 
@@ -1449,6 +1459,11 @@ def _report_groupes(
         )
         coverage_pct = r.get("coverage_pct")
         coverage_pct_cell = f"{coverage_pct}%" if coverage_pct is not None else "—"
+        # #558 — le taux ne se lit pas sans savoir de quoi il est le taux. Un
+        # groupe hors périmètre affiche « 6,4 % (périmètre) » : le chiffre reste
+        # exact, et cesse de se lire comme un échec de collecte.
+        if r.get("etat_roster") == ETAT_ROSTER_HORS_PERIMETRE and coverage_pct is not None:
+            coverage_pct_cell = f"{coverage_pct}% (périmètre)"
         flags = r.get("soft_flags", "—") if r["status"] != "hard" else r.get("detail", "—")
         md_lines.append(
             f"| {status_icon} {r['nom']} | {r.get('chambre','?')} | {coverage} | {coverage_pct_cell} "
