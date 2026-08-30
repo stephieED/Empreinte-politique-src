@@ -96,6 +96,7 @@ from budget_collecte import (
     section as budget_section,
 )
 from candidate_profile import (
+    WARNING_AUCUN_MANDAT_FR,
     WARNING_PREFIX_BUDGET_COLLECTE,
     RefusDrapeauInterventionsSyceron,
     build_profile,
@@ -807,7 +808,10 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
             # mandat français connu — il ne porte aucune donnée, et surtout
             # aucune donnée de Regards Citoyens.
             "licence_donnees": LICENCE_AN,
-            "warnings": ["aucun mandat français connu (slug absent du référentiel Assemblée nationale, ou identité introuvable)"],
+            "warnings": [
+            f"{WARNING_AUCUN_MANDAT_FR} (slug absent du référentiel Assemblée "
+            "nationale, ou identité introuvable)"
+        ],
         },
     }
 
