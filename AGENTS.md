@@ -846,26 +846,86 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `README.md` | New setup step, script, or user-visible workflow/command. |
 | `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
 | `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
-| `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `technical_decisions.md` instead. |
+| `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
 | `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
 | `requirements-dev.txt` | A new **test-only** package is imported. Same pinning rule; it already pulls `requirements.txt` via `-r`. |
 
 Never create a missing file from this list without flagging it first.
 
-## 9. Agent chat verbosity
+## 9. Reporting to the owner
 
-Keep chat replies short — this file and `docs/` already hold the rationale;
-don't restate it in the chat.
+The rationale lives in this file and in `docs/decisions/`. Don't restate it in
+chat. What follows is about the **shape** of a reply, not its length: a
+ten-row table reads fine, a ten-line paragraph does not.
 
-- 1-3 sentences per turn, no preamble, no "in summary" recap.
-- Report changes as: files touched + one-line reason. Skip what you read/considered.
+- **A table whenever two things compare.** Prose forces a reread to compare two
+  lines; a table is scanned. Applies to issue rundowns, before/after
+  measurements, options with their costs.
+- **No paragraph over four lines.** Break it, or turn it into a table.
+- **Every figure names its population.** "20 members of the two Senate group
+  files", never "20 senators". A correct figure on the wrong population is an
+  error, not an approximation.
+- **Never restate what the previous turn established.** No preamble, no "in
+  summary" recap, no list of files read or alternatives discarded.
+- **One recommendation, not a survey.** If two options are open, say which one
+  and why in a sentence — then let the owner overrule.
 - Test/command output: pass/fail counts only, unless something failed.
-- Always flag in the chat: schema/validation changes, anything touching
-  rules in Section 2, new warnings/errors introduced, or a choice between
-  multiple valid approaches — even briefly.
-- Everything else (files read, intermediate reasoning, alternatives
-  considered but discarded) can be omitted from the chat.
-  
+- Always flag, even briefly: schema/validation changes, anything touching
+  Section 2, new warnings or errors introduced.
+
+## 10. A subagent's report is a claim, not a result
+
+Before relaying **any** figure, file path, test name or measurement produced by
+a subagent, re-run the check yourself. Say what you verified, and say what you
+could not.
+
+This is not precautionary. Three drifts in a single day, 29-30/08/2026:
+
+- an issue cited `test_les_inputs_du_retry_sont_tous_ecrits`; **that test does
+  not exist**, and the name was passed on into agent instructions before anyone
+  checked;
+- a review reported "680 of 1 016 positions"; re-measured, it was **715** — the
+  substance held, the figure did not;
+- an agent reported a repo state that a second agent had already changed under
+  it, and the collision only surfaced because the state was re-read.
+
+A subagent that reports honestly still reports from a corpus that moved, a
+grep that missed a case, or an instruction that was wrong. Verification is the
+main agent's job, and it is the only place it can happen.
+
+## 11. What to ask the owner, and what to decide alone
+
+**Ask when the answer changes what gets built, and cannot be derived** from the
+code, from Section 2, or from a decision already recorded in `docs/decisions/`.
+A form's shape, a threshold's fate, a trade-off with a measured cost, deleting
+unmerged work, pushing to a public repo: those are hers.
+
+**Show before implementing anything a human will read on screen** — input
+labels, published copy, page text. She has asked for this explicitly, and it is
+the one case where reviewing draft wording is wanted. Render it as it will
+appear (`scripts/rendu_formulaire.py` for workflow inputs), not as source.
+
+**Do not ask her to review your own work.** Sub-issue bodies, commit messages,
+agent instructions, which files to touch, how to name a branch: that is the
+agent's job. Bad work gets corrected, not pre-approved. A report listing every
+draft produced buries the two or three decisions that are genuinely hers —
+sorting is the agent's work, not the owner's.
+
+**One "awaiting your decision" section per report, and nothing else pending.**
+
+### The shape of an arbitration
+
+When something does need deciding, five parts, in this order:
+
+1. **The concrete problem, with the measurement that makes it real.** Not "the
+   labels are unclear" but "22 rendered lines for 10 fields".
+2. **The question, on one bold line of its own.** This is the part most often
+   lost: a question buried in exposition reads as commentary.
+3. **Each option with its cost.** A table beyond two options.
+4. **"My recommendation", and its reason in one sentence.**
+5. **What follows regardless of the choice**, so the decision isn't taken
+   under the impression that everything hangs on it.
+
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
