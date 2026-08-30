@@ -29,6 +29,6 @@ profil. `candidate_profile.py` appelle ces modules via `_build_acteur_interventi
 et `fetch_interventions_syceron`, ce qui reste cohérent avec le pattern déjà établi pour
 les autres jeux AN (scrutins, amendements, dossiers).
 
-Voir [`docs/an_opendata.md`](./an_opendata.md) (section Syceron) pour la
+Voir [`docs/an_opendata.md`](../an_opendata.md) (section Syceron) pour la
 cartographie des URLs, la structure XML utile et la stratégie de téléchargement.
 

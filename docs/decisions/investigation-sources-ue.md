@@ -1,4 +1,20 @@
-# Données UE - Investigation des sources (2026-08-04)
+# Données UE — investigation des sources (2026-08-04)
+<a id="investigation-sources-ue"></a>
+
+**Ce fichier n'est pas une doc de job.** C'est le rapport d'investigation qui a
+tranché la source des données UE — trois pistes mesurées sur le même échantillon
+de 3 candidats, un tableau comparatif, un verdict. Il vit sous `docs/decisions/`
+depuis le 30/08/2026 pour cette raison : ce qu'il documente est un **choix**, pas
+le fonctionnement d'`extract-ue-officiel` ni celui d'`extract-parltrack`. Ce que
+ces deux jobs font aujourd'hui est décrit dans
+[`docs/workflow-generate-data.md`](../workflow-generate-data.md) §1.
+
+**Décision appliquée** : piste ParlTrack via dumps, implémentée dans
+`src/parltrack_dumps.py` et `src/normalize_parltrack_dumps.py`. La §*Instructions
+d'implémentation* et le prompt qui suivent sont conservés **tels qu'écrits le
+04/08/2026** : ce sont les consignes d'origine, pas l'état du code. Ce que les
+profils UE deviennent aujourd'hui est dans
+[`docs/pipeline-profiles-groupes.md`](../pipeline-profiles-groupes.md).
 
 ## Contexte
 

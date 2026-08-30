@@ -1,5 +1,13 @@
 # extract-roster-groupes
 
+**Le point d'entrée des huit jobs est
+[`workflow-generate-data.md`](./workflow-generate-data.md) §1** — ce que chacun
+fait, consomme, produit, et les décisions derrière sa forme. Ce fichier-ci est
+le seul job d'extraction à garder une page à lui, parce qu'il a de la
+profondeur qui ne tient pas en un bloc : le rollout, la régénération de
+l'existant, les six combinaisons des deux axes du formulaire, les trois codes
+de sortie du roster.
+
 ## Ce que fait ce job
 
 Il installe l'environnement Python, restaure éventuellement le cache `.cache`,
@@ -140,8 +148,7 @@ Ce job est un **déploiement progressif**, pas encore un run complet :
 flowchart TD
     G0["raw_data/groupes_reels.json\nListe des groupes a produire"] --> RC["generate_roster_candidats.py"]
 
-    AMO["data.assemblee-nationale.fr\nAMO30 (archive deja en cache) - cle deputes, #527"] --> GR["group_roster.py\nfetch_full_roster (aiguillage) + filter_roster_by_sigle"]
-    NS["NosSenateurs.fr\n/senateurs/json - cle senateurs, et repli AN"] --> GR
+    AMO["data.assemblee-nationale.fr\nAMO30 (archive deja en cache) - SEULE source, #527/#529"] --> GR["group_roster.py\nfetch_full_roster (refus hors deputes) + filter_roster_by_sigle"]
     GR --> RC
 
     RC --> RCJ["raw_data/roster_candidats.json\n(non committe, produit UNE fois par run)"]
@@ -163,9 +170,12 @@ flowchart TD
 > **Un roster par `(chambre, legislature)` distinct** :
 > `generate_roster_candidats.py` le mutualise entre tous les groupes de la
 > config (même optimisation que `generate_group_profiles.py` /
-> `group_roster.fetch_full_roster`), puis filtre côté client par
-> `groupe_sigle` (l'endpoint `/groupe/<SIGLE>/json` de NosDéputés renvoie
-> systématiquement une erreur HTTP 500).  
+> `group_roster.fetch_full_roster`), puis filtre **côté client** par
+> `groupe_sigle`. Le filtrage côté client est né d'une contrainte de
+> NosDéputés — son endpoint `/groupe/<SIGLE>/json` renvoyait
+> systématiquement un HTTP 500 — mais il lui a survécu : AMO30 rend une
+> archive d'acteurs, pas une liste par groupe, et le filtre par sigle reste
+> donc le seul chemin. Histoire assumée, plus une dépendance.  
 > **La clé `deputes` n'est plus un appel réseau depuis #527** : elle est
 > **dérivée d'AMO30**, l'archive que `candidate_profile.py` télécharge et met
 > déjà en cache pour quatre autres index. Il ne reste donc, côté roster, que la
@@ -191,11 +201,16 @@ flowchart TD
 > refetcher la liste — et le fetch sur lequel le run `32750929942` a perdu son
 > commit. Ce n'est pas qu'une requête de moins : la fiche de groupe était bâtie
 > sur une composition lue ~7 min après celle qui avait servi à collecter les
-> profils. Le plafond de lecture de `fetch_full_roster_nosdeputes` lui est
-> désormais propre — `(15, 90)` au lieu des 15 s des pages par candidat, aucune
-> réponse de `/deputes/json` n'ayant été mesurée sous 10 s ; depuis #527 il ne
-> couvre plus que le Sénat et le repli AN. Voir
-> `docs/decisions/plafond-roster-et-commit-518.md`.  
+> profils. **Le plafond de lecture qui allait avec est un chemin mort** :
+> `fetch_full_roster_nosdeputes` a été supprimé par #529, et avec lui toute
+> la machinerie de reprise qui l'entourait (`_erreur_retentable`,
+> `_ROSTER_MAX_ATTEMPTS`, `_ROSTER_RETRY_BACKOFF_SECONDS`,
+> `_ROSTER_TIMEOUT`). Il ne part plus **aucune** requête HTTP de
+> `group_roster.py` ; le téléchargement de l'archive AMO30 a ses propres
+> reprises, dans `candidate_profile._ensure_acteurs_historique_zip_downloaded`.
+> Ce qui reste de #518, et qui n'a pas bougé, c'est le transit du roster brut
+> par artifact. Voir `docs/decisions/plafond-roster-et-commit-518.md` et
+> `docs/decisions/retrait-nosdeputes-529.md`.  
 > **Provenance** : chaque profil produit ici porte `meta.provenance =
 > "roster_groupe"` — ne rétrograde jamais un profil `candidat_declare`
 > existant lors de la fusion (`merge_pivot_profile`), voir
@@ -219,24 +234,26 @@ flowchart TD
    groupes **actifs** de la config, il obtient **un seul** roster
    (`group_roster.fetch_full_roster`) — partagé entre tous les groupes de la
    même chambre/législature.
-   - Clé `deputes` (#527) : **dérivée d'AMO30**, aucune requête vers
-     NosDéputés. Une archive absente, illisible ou sans organe `GP` lève
-     `RosterAnIndisponible` ; une législature sans entrée dans
-     `correspondance_sigles_an` lève `CorrespondanceSiglesInvalide` en
-     **nommant** le couple. Les deux sont dans `group_roster.ERREURS_ROSTER`,
-     donc traitées comme un « roster indisponible » ordinaire : rien n'est
-     écrit, la clé est annotée, le run ne meurt pas sur une trace de pile.
-   - Clé `senateurs` (et repli AN) : fetch réseau, qui reprend jusqu'à 3 fois
-     sur un échec **transitoire** (timeout, `ConnectionError`, 502/503/504) et
-     **jamais** sur un verdict déterministe (`SSLError`, 4xx, **500**) : #518,
-     #524. Un 500 de `nosdeputes.fr` est une signature de panne applicative —
-     l'endpoint `/groupe/<SIGLE>/json` en renvoie un systématiquement —, pas un
-     hoquet d'infrastructure : le retenter ne change pas le verdict, il retarde
-     le message qui le nomme.
+   **Une seule clé est servie** : `deputes`, **dérivée d'AMO30** (#527), sans
+   aucune requête réseau propre — `fetch_full_roster` lit une archive que
+   `candidate_profile` télécharge et met déjà en cache pour quatre autres
+   index. Une archive absente, illisible ou sans organe `GP` lève
+   `RosterAnIndisponible` ; une législature sans entrée dans
+   `correspondance_sigles_an` lève `CorrespondanceSiglesInvalide` en
+   **nommant** le couple. Les deux sont dans `group_roster.ERREURS_ROSTER`,
+   donc traitées comme un « roster indisponible » ordinaire : rien n'est
+   écrit, la clé est annotée, le run ne meurt pas sur une trace de pile.
+
+   Toute autre chambre **lève en nommant #528**, plutôt que de rendre un
+   roster vide : la clé `senateurs` et son repli AN sont partis avec
+   NosDéputés (#529), et ce chemin ne serait atteint que si quelqu'un levait
+   la suspension des deux groupes Sénat. `session=` reste dans la signature
+   parce que trois appelants la passent encore, et n'a plus aucun effet.
 3. Chaque roster brut est filtré côté client par `groupe_sigle`
-   (`group_roster.filter_roster_by_sigle`), avec filtrage temporel
-   additionnel pour le Sénat (`senat_periode_debut`, domaine d'archive
-   unique sans sous-domaine par législature).
+   (`group_roster.filter_roster_by_sigle`). Le filtrage temporel additionnel
+   qu'il portait pour le Sénat (`senat_periode_debut`) est parti avec #528 ;
+   `chambre` reste dans la signature du filtre parce qu'une chambre qui
+   disparaît d'un filtre est une information perdue le jour où il y en a deux.
 4. Les membres de tous les groupes sont aplatis en une liste unique de
    candidats (dédupliquée par `slug`, garde-fou en cas de config
    incohérente), écrite dans `raw_data/roster_candidats.json` au même format
@@ -279,8 +296,11 @@ flowchart TD
    `docs/decisions/cloisonnement-branche-roster-524.md`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`
-   (`candidate_profile.py`, identité/mandats/votes/amendements via
-   NosDéputés + AN Open Data), candidat par candidat, chambre déterminée par
+   (`candidate_profile.py`, identité/mandats/votes/amendements depuis le
+   seul open data AN — NosDéputés est sorti du pipeline avec #529, et un slug
+   que le référentiel AN ne résout pas sort avec `identite: None` et un
+   `WARNING_PREFIX_IDENTITE_INTROUVABLE`, sans repli), candidat par candidat,
+   chambre déterminée par
    `roster_chambre` du groupe d'origine — qui ne vaut plus que `deputes`
    depuis #528 — en mode léger
    (`--skip-interventions --skip-dossiers-legislatifs`, #357) : dossiers
@@ -313,10 +333,9 @@ flowchart TD
 |---|---|
 | `raw_data/groupes_reels.json` | Liste des groupes à couvrir (chambre, législature, sigle) |
 | AMO30 (`data.assemblee-nationale.fr`, Licence Ouverte) | Composition des groupes AN, dérivée par `src/an_roster.py` depuis #527 — même archive que les scrutins et les amendements |
-| NosSénateurs.fr (`/senateurs/json`) | Liste complète des sénateur·rice·s, filtrée côté client par `groupe_sigle`. Sert aussi de repli AN si `AN_ROSTER_ACTIF` retombe |
-| `src/group_roster.py` | Choix de la source (aiguillage #527), mutualisation par clé + filtrage roster par sigle |
+| `src/group_roster.py` | Mutualisation par clé + filtrage du roster par sigle. **Aucun appel réseau propre depuis #529** : `AN_ROSTER_ACTIF` baissé lève `RosterAnInactif`, il n'aiguille plus vers rien |
 | `src/generate_roster_candidats.py` | Aplatissement du roster en liste de candidats (`raw_data/roster_candidats.json`) |
-| AN Open Data / NosDéputés / NosSénateurs (via `candidate_profile.py`) | Identité, mandats, votes, amendements — mode léger (#357) : dossiers législatifs/interventions/questions officielles jamais extraits ici |
+| AN Open Data (via `candidate_profile.py`) | Identité, mandats, votes, amendements — **source unique depuis #529**. Mode léger (#357) : dossiers législatifs/interventions/questions officielles jamais extraits ici |
 
 Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-profiles-groupes.md).
 
@@ -326,7 +345,7 @@ Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-prof
 
 | Job | Périmètre |
 |---|---|
-| `extract-an` | AN / NosDéputés, liste éditoriale `candidats.json` |
+| `extract-an` | Assemblée nationale, liste éditoriale `candidats.json` |
 | `extract-ue-officiel` | Parlement européen, liste éditoriale `candidats.json` |
 | `extract-parltrack` | Téléchargement des dumps ParlTrack (`.zst`) |
 | **extract-roster-groupes** | Extraction individuelle pilotée par la composition réelle des groupes (`groupes_reels.json`), rollout progressif borné par `roster_limit`, mode léger (#357) |

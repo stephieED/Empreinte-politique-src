@@ -376,7 +376,7 @@ Convention d'écriture : `AGENTS.md` §8.
   captured), confirmed in `docs/decisions/gouvernement-doc-cloture.md`.
 - EU textes_portés/amendements via the official API — superseded by the
   Parltrack approach, see `docs/decisions/hors-perimetre.md` and
-  `docs/extract-ue.md`.
+  `docs/decisions/investigation-sources-ue.md`.
 - Precise ministerial portfolio title — no source identified, see
   `docs/decisions/hors-perimetre.md`.
 - Extra-parliamentary bodies matching — homonym risk, see

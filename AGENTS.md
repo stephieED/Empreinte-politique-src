@@ -185,8 +185,8 @@ tolerance is **partitioned** — no input disarms another's check.
   it must never be merged with `allow_broken_references`.
   → `docs/decisions/integrite-referentielle-pivot.md`
 - **Collected must equal published (#511)**: `audit_collecte_non_publiee.py`, run
-  **between the two `--pivot-only` passes** — placement is half the control, earlier would
-  flag every roster member as a phantom gap. Threshold **0**; a pivot with no raw is
+  **after both `--pivot-only` passes** — placement is half the control; run between them,
+  every roster member would be a phantom gap. Threshold **0**; a pivot with no raw is
   non-blocking. Tolerance `allow_unpublished_profiles`. `generate_roster_candidats.py`
   refuses to write on a failed fetch, on a configured group returning 0 members, or on an
   empty roster.
@@ -465,7 +465,8 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `AGENTS.md` | New agent-facing rule, command, or constraint. Rare edit; stay terse. |
 | `README.md` | New setup step, script, or user-visible workflow/command. |
 | `docs/pipeline-profiles-groupes.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
-| `docs/workflow-generate-data.md` | A job is added or removed, a form input changes, a cache key or artifact name changes, a budget is re-measured, or the retry contract is touched. |
+| `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
+| `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
 | `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
 | `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
 | `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
@@ -557,11 +558,12 @@ When something does need deciding, five parts, in this order:
   Amendements coverage/freshness are deliberately never hard fails — see
   `docs/decisions/amendements-zero-pas-de-hard-fail.md`.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
-- `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
+- `docs/extract-roster-groupes.md`: the roster-driven job, in depth (the other seven jobs are blocks in `docs/workflow-generate-data.md` §1).
 - `docs/pipeline-profiles-groupes.md`: what the data becomes — the six outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
-- `docs/workflow-generate-data.md`: what a run does — jobs, form, caches, artifacts,
-  budgets, push, automatic retry.
+- `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
+  form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
+  that job again, and why like that".**
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
