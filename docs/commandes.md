@@ -68,7 +68,7 @@ python3 src/generate_all_profiles.py --pivot-only --no-checkpoint
 ```
 
 → `docs/workflow-generate-data.md` pour ce que le run fait job par job,
-`docs/pipeline-profiles-groupes.md` pour ce que la donnée devient.
+`docs/data-architecture.md` pour ce que la donnée devient.
 
 ### La couverture complète des groupes (extraction pilotée par roster)
 
@@ -320,7 +320,7 @@ python3 src/check_quality_gate.py --amendements-staleness-days 14
 python3 src/check_quality_gate.py --blob-warn-mo 0
 ```
 
-→ `docs/pipeline-profiles-groupes.md` (le tableau des sections, dur/souple).
+→ `docs/data-architecture.md` (le tableau des sections, dur/souple).
 
 ### Contrôle de perte — une régénération ne retire jamais de la donnée
 
@@ -530,4 +530,4 @@ dans la décision qui les porte.
 
 Les deux index partagés, eux, se reconstruisent à la main quand un run a été
 interrompu : la commande et **l'ordre à respecter** sont dans
-`docs/pipeline-profiles-groupes.md`, avec la raison de cet ordre.
+`docs/data-architecture.md`, avec la raison de cet ordre.

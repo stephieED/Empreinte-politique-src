@@ -14,7 +14,7 @@ ces deux jobs font aujourd'hui est décrit dans
 d'implémentation* et le prompt qui suivent sont conservés **tels qu'écrits le
 04/08/2026** : ce sont les consignes d'origine, pas l'état du code. Ce que les
 profils UE deviennent aujourd'hui est dans
-[`docs/pipeline-profiles-groupes.md`](../pipeline-profiles-groupes.md).
+[`docs/data-architecture.md`](../data-architecture.md).
 
 ## Contexte
 

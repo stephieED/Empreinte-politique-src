@@ -40,7 +40,7 @@ Any schema/display change must preserve them:
 Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
-volumetry: `docs/pipeline-profiles-groupes.md` — the six outputs of `pivot_data/`,
+volumetry: `docs/data-architecture.md` — the six outputs of `pivot_data/`,
 rewritten from the code on 30/08/2026 (#606). **What a run does** — the eight
 jobs, caches, artifacts, budgets, the launch form, the push, the automatic
 retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
@@ -503,7 +503,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `AGENTS.md` | New agent-facing rule, command, or constraint. Rare edit; stay terse. |
 | `README.md` | **The front door, one page.** A new setup step, a change to the editorial line or to a coverage limit, a doc that becomes an entry point. Never a command — that is the row below. |
 | `docs/commandes.md` | **An option is added or removed, a script is renamed or retired, a command's output moves.** Not when the pipeline changes: the file says what to type, never how the run works. `tests/test_commandes_documentees.py` fails on a script or a long option that no longer exists. |
-| `docs/pipeline-profiles-groupes.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
+| `docs/data-architecture.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
 | `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
 | `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
 | `docs/sources/` | **External-source references — the only docs that drift with their provider, not with our code.** Update when the provider moves a dataset, a URL pattern or a field, never because our pipeline changed. Each file states its own status in its header (`an-opendata.md`: live, the pipeline's single source; `nosdeputes/`: historical, not queried since #529) — the directory names the category, the header names the status. |
@@ -607,7 +607,7 @@ When something does need deciding, five parts, in this order:
   intention (generate, audit, check before committing, operate, see what the user
   sees). 32 of the repo's 44 executables; the other 12 are pipeline-internal and
   the file says so. Locked by `tests/test_commandes_documentees.py`.
-- `docs/pipeline-profiles-groupes.md`: what the data becomes — the six outputs of
+- `docs/data-architecture.md`: what the data becomes — the six outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was

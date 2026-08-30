@@ -127,14 +127,14 @@ tests/         La suite pytest
 Un profil pivot ne se lit **plus seul** : ses votes et ses amendements ne sont
 que des renvois (`{scrutin_id, position}`, `{amendement_id, role_signataire}`)
 vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
-[`docs/pipeline-profiles-groupes.md`](docs/pipeline-profiles-groupes.md).
+[`docs/data-architecture.md`](docs/data-architecture.md).
 
 ## Où aller pour le reste
 
 | Question | Fichier |
 |---|---|
 | **« Quelle était la commande, déjà ? »** | [`docs/commandes.md`](docs/commandes.md) |
-| **« Que devient la donnée ? »** — flux, schémas, les six sorties de `pivot_data/`, volumétrie | [`docs/pipeline-profiles-groupes.md`](docs/pipeline-profiles-groupes.md) |
+| **« Que devient la donnée ? »** — flux, schémas, les six sorties de `pivot_data/`, volumétrie | [`docs/data-architecture.md`](docs/data-architecture.md) |
 | **« Que fait un run ? »** — les huit jobs, le formulaire de lancement, caches, artifacts, budgets, le push, la relance automatique | [`docs/workflow-generate-data.md`](docs/workflow-generate-data.md) |
 | **« Comment marche l'extraction pilotée par roster ? »** — le seul job qui a une page à lui | [`docs/extract-roster-groupes.md`](docs/extract-roster-groupes.md) |
 | **« Pourquoi c'est fait comme ça ? »** — une décision par fichier | [`docs/decisions/`](docs/decisions/), indexées par [`docs/technical_decisions.md`](docs/technical_decisions.md) |

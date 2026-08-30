@@ -29,6 +29,6 @@ consolide par renvoi :
 **Hors périmètre de cette entrée** : aucun changement de code ; voir la table
 `AGENTS.md §8` appliquée dans la PR de #214 pour le détail fichier par
 fichier. `docs/pipeline-gouvernement.md` (miroir de
-`docs/pipeline-profiles-groupes.md`) n'est pas créé ici : proposition
+`docs/data-architecture.md`) n'est pas créé ici : proposition
 soumise à validation explicite (hors table d'upkeep existante), voir la PR.
 
