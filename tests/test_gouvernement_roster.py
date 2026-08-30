@@ -1395,8 +1395,8 @@ def test_le_pic_memoire_du_chargement_reste_sous_le_plafond_declare(tmp_path):
 
     Ce que le test ne prouve pas
     ----------------------------
-    Ni la vitesse, ni le pic absolu sur le corpus réel (mesuré à 133 Mio pour
-    les 481 profils committés, et nulle part en CI : `pivot_data` est hors du
+    Ni la vitesse, ni le pic absolu sur le corpus réel (mesuré à 133 et 141 Mio
+    sur deux exécutions, pour les 481 profils committés, et nulle part en CI : `pivot_data` est hors du
     sparse-checkout de `tests.yml`, #473).
     """
     dossier, poids_relache = _corpus_de_mesure_memoire(tmp_path)

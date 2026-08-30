@@ -134,7 +134,7 @@ encadrant la lecture ; « plafond » = `RLIMIT_AS` du sous-processus.
 
 | Lecture | Avant | Après |
 | --- | --- | --- |
-| `load_profils_from_dir`, 481 profils | `MemoryError` au **362e**, 2 004 Mio de croissance pour 500,9 Mo lus (× 4,2) — **~2,67 Gio** extrapolés ; plafond 2,0 Gio | **133 Mio**, 481/481 |
+| `load_profils_from_dir`, 481 profils | `MemoryError` au **362e**, 2 004 Mio de croissance pour 500,9 Mo lus (× 4,2) — **~2,67 Gio** extrapolés ; plafond 2,0 Gio | **133 et 141 Mio** sur deux exécutions, 481/481 |
 | `load_pivot_directory`, 481 profils, index partagés chargés | `MemoryError` au **293e**, 1 496,6 Mio pour 397,0 Mo lus (× 3,95) — **~2,5 Gio** extrapolés pour le corpus seul ; plafond 2,0 Gio | **22,1 Mio** de corpus ; pic total 539 Mio, dont **517 d'index des amendements** |
 | Fiche de groupe LFI (76 profils, 253,5 Mo), index chargés | **985,8 Mio** | **82,3 Mio** |
 | Fiche de groupe REN (193 profils, 97,2 Mo), index chargés | 372,4 Mio | 128,1 Mio |
