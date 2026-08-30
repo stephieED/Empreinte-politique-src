@@ -33,10 +33,20 @@ qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 ### Constats de cadrage, à ne pas re-trancher
 
 **#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** Son constat — « `identite`
-toujours `null` » — est faux : mesuré le 28/08/2026 sur les **481 profils publiés**,
-c'est **5**. Trois d'entre eux sont les non-parlementaires créés par #539, dont
-l'`identite` nulle est **attendue** : aucune source parlementaire ne les décrit. Le
-cas résiduel est `jean-luc-melenchon`, plus le profil PE.
+toujours `null` » — était faux : mesuré le 28/08/2026 sur les **481 profils publiés**,
+c'était **5**, dont trois non-parlementaires créés par #539 pour qui l'`identite` nulle
+est **attendue** — aucune source parlementaire ne les décrit.
+
+**Re-mesuré le 30/08/2026, toujours sur les 481 profils pivot publiés : c'est 4, et ce
+sont exactement les quatre attendus** — `nathalie-arthaud`, `marine-tondelier`,
+`david-lisnard` (non-parlementaires #539) et `jordan-bardella` (mandat européen seul).
+`jean-luc-melenchon` n'en fait plus partie : le lot #484/#597 a corrigé la fusion, et le
+run `33307905880` a restauré son identité **par une collecte**. Il ne reste donc aucun
+cas résiduel de ce défaut.
+
+Ce que le constat garde de vrai, et pourquoi il n'est pas supprimé : **un constat chiffré
+recopié d'une issue vieillit**, et celui-ci avait déjà été démenti une fois avant de
+l'être une seconde. Re-mesurer reste le geste, pas relire.
 
 **Plusieurs issues ouvertes sont des résidus de #539, pas des régressions.** Le bloc
 `couverture` publie désormais la *cause* d'une liste vide ; il a donc rendu visibles
@@ -97,11 +107,17 @@ Convention d'écriture : `AGENTS.md` §8.
   **construit** l'index paie toujours 244 s de construction à froid et reste tronqué —
   au plus un par semaine, contre `jean-luc-melenchon` à chaque run jusqu'ici. Voir
   `docs/decisions/cache-completude-interventions-550.md`.
-- **`meta.warnings[]` n'est pas un détecteur fiable de troncature** pour un candidat qui
-  porte aussi un profil UE (constaté sur `jean-luc-melenchon`, run `33110395663`) : la
-  fusion garde les interventions d'`extract-an` et le `meta` du profil minimal écrit
-  par `extract-ue-officiel`, avertissement de troncature compris. Le `::warning::` du
-  run, lui, est fiable. Voir `docs/decisions/budgets-extract-an-remesures-546.md`.
+- ~~**`meta.warnings[]` n'est pas un détecteur fiable de troncature**~~ pour un candidat
+  qui porte aussi un profil UE (constaté sur `jean-luc-melenchon`, run `33110395663`) —
+  **corrigé le 30/08/2026 par le lot #600**. La cause était que la fusion gardait les
+  interventions d'`extract-an` et le `meta` du profil minimal écrit par
+  `extract-ue-officiel`, avertissement de troncature compris : `merged = dict(new)`
+  prenait le bloc du **dernier écrivain** en entier. Depuis, `meta` est composé clé par
+  clé et les avertissements sont **unis par famille** — le profil minimal ne remplace
+  plus rien en bloc, et un avertissement démenti par les données s'éteint explicitement.
+  Le `::warning::` du run reste fiable, comme avant. Voir
+  `docs/decisions/union-warnings-extinction-600.md` et
+  `docs/decisions/budgets-extract-an-remesures-546.md`.
 - **Rien ne compare ce que la collecte rend à ce que la publication porte**, liste par
   liste (#545). Les trois garde-fous armés avant commit regardent ailleurs :
   `audit_diff_profils` surveille les pertes entre deux états publiés, pas deux étages
