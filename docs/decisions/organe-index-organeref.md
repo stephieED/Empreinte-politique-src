@@ -18,7 +18,7 @@ qu'un sous-ensemble des organes référencés par des mandats plus anciens —
 élu, pas seulement ses mandats en cours. `_build_organe_index` indexe donc
 `organeRef -> {sigle, nom, type}` = `{libelleAbrege, libelle, codeType}`
 sans filtrer par `codeType`, contrairement à `_build_organe_positions_index`
-— voir `docs/an_opendata.md`, section "Actors / mandates / bodies", pour le
+— voir `docs/sources/an-opendata.md`, section "Actors / mandates / bodies", pour le
 détail des champs.
 
 **Refactor associé : téléchargement du zip mutualisé.**

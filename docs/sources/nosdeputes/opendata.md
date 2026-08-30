@@ -1,5 +1,12 @@
 # Données parlementaires en OpenData
 
+> **Statut : référence historique.** Le pipeline a cessé d'interroger
+> NosDéputés.fr / NosSénateurs.fr à #529 : plus aucun code de ce dépôt
+> n'appelle cette plateforme. Conservé comme documentation d'une source
+> externe, non entretenu — il dérive avec Regards Citoyens, pas avec notre
+> code. La source vivante et unique du pipeline est
+> `docs/sources/an-opendata.md`.
+
 Cette page présente une liste non exhaustive des contenus et données réutilisables de [NosDéputés.fr](https://NosDéputés.fr) et [NosSénateurs.fr](https://NosSénateurs.fr) ainsi que diverses sources de données parlementaires utiles.
 
 ## Données directement accessibles par l'API

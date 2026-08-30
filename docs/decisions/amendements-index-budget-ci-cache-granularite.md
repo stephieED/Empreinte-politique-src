@@ -13,14 +13,14 @@ job lui-même (sous-issue 3, hors périmètre ici).
 
 1. Tailles exactes (vérifiées en direct, requêtes `Range` sur l'origine,
    13/08 11:31 UTC — affinent les approximations « 283-618 Mo » déjà
-   présentes dans `docs/an_opendata.md`) :
+   présentes dans `docs/sources/an-opendata.md`) :
    ```
    $ curl -sS --http1.1 -D - -o /dev/null -r 0-4194303 \
      https://data.assemblee-nationale.fr/static/openData/repository/<leg>/loi/<segment>/<fichier>
    ```
    | Législature | Content-Range total | ~MiB | Cache CDN |
    |---|---|---|---|
-   | 17 | 296 735 207 o | 283,0 | `Cacheable: force cache` (rafraîchi quotidiennement, cf. `docs/an_opendata.md`) |
+   | 17 | 296 735 207 o | 283,0 | `Cacheable: force cache` (rafraîchi quotidiennement, cf. `docs/sources/an-opendata.md`) |
    | 16 | 363 306 362 o | 346,5 | `Not cacheable: too big` (confirmé, cohérent avec [[amendements-retry-blocage-legislature]]) |
    | 15 | 648 539 281 o | 618,6 | `Not cacheable: too big` |
 
@@ -99,7 +99,7 @@ quotidienne dédiée aux amendements. Justification :
    déjà un seul répertoire `.cache` et une seule clé hebdomadaire pour
    plusieurs jeux de données également documentés comme rafraîchis
    quotidiennement côté AN Open Data (acteurs actifs, dossiers législatifs —
-   cf. `docs/an_opendata.md`), sans que cela ait posé de problème identifié
+   cf. `docs/sources/an-opendata.md`), sans que cela ait posé de problème identifié
    dans l'historique de ce fichier. Une clé quotidienne spécifique aux
    amendements introduirait une incohérence de granularité au sein du même
    répertoire de cache sans bénéfice démontré.

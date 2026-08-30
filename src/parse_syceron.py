@@ -8,7 +8,7 @@ produits par le système Syceron de l'Assemblée nationale.
 
 Format source :
     ZIP par législature disponible sur data.assemblee-nationale.fr
-    (voir docs/an_opendata.md, section Syceron, pour URLs et structure détaillée).
+    (voir docs/sources/an-opendata.md, section Syceron, pour URLs et structure détaillée).
 
 Usage :
     from parse_syceron import parse_syceron_xml

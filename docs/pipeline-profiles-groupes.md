@@ -512,8 +512,15 @@ Distincts du gate, sans score ni classement (AGENTS.md §2.1) :
   agrégés. Pure composition des rapports, aucune logique de calcul nouvelle.
 
 `audit_pipeline.py` n'est **pas** intégré à `.github/workflows/generate-data.yml`
-— choix explicite (#178) : usage manuel uniquement. Voir `README.md` §11 et §12,
-et `docs/examples/audit_groupe_report_sample.md` pour un exemple de rapport.
+— choix explicite (#178) : usage manuel uniquement. Voir `README.md` §11 et §12.
+Pour voir à quoi ressemble un rapport, régénérez-en un sur les fixtures figées
+plutôt que de lire un exemple committé (une commande ne peut pas être périmée,
+un fichier figé si) :
+
+```bash
+python3 src/audit_groupe_dataset.py --input-dir tests/fixtures/audit_groupe \
+        --output-json audit_groupe_exemple.json --output-md audit_groupe_exemple.md
+```
 
 ## Commandes usuelles
 

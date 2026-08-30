@@ -1,8 +1,13 @@
 # ROADMAP — Empreinte politique
 
-Ce que GitHub ne sait pas tenir : les défauts connus, les pistes non planifiées,
-et les **constats de cadrage** qu'il ne faut pas re-trancher. La liste des issues
-ouvertes, elle, vit dans GitHub — voir « Où en est le projet » ci-dessous.
+Ce que GitHub ne sait pas tenir : les défauts connus, les **gros chantiers à
+prévoir**, et les **constats de cadrage** qu'il ne faut pas re-trancher. La liste
+des issues ouvertes, elle, vit dans GitHub — voir « Où en est le projet » ci-dessous.
+
+**Pas les petits correctifs.** Un correctif de quelques lignes va dans une issue
+GitHub, pas ici : un fichier qui accueille les petits fix redevient une liste de
+tâches, c'est-à-dire ce que GitHub fait déjà mieux — et c'est exactement ainsi que
+le tableau d'issues qui vivait ici s'est périmé.
 
 Non relu automatiquement par les agents (contrairement à `AGENTS.md`) : à
 consulter sur demande. Le rationale complet d'un élément différé vit dans
@@ -381,7 +386,7 @@ Convention d'écriture : `AGENTS.md` §8.
   `docs/decisions/hors-perimetre.md`.
 - Extra-parliamentary bodies matching — homonym risk, see
   `docs/decisions/hors-perimetre.md`.
-- Syceron (comptes rendus de séance) AN open data — fetch/caching, parse XML -> `interventions[]` et index `acteurRef -> interventions` implémentés ; intégration éditoriale aval encore à planifier. Voir `docs/an_opendata.md`.
+- Syceron (comptes rendus de séance) AN open data — fetch/caching, parse XML -> `interventions[]` et index `acteurRef -> interventions` implémentés ; intégration éditoriale aval encore à planifier. Voir `docs/sources/an-opendata.md`.
 - Agenda/committee meetings dataset — low priority, see
   `docs/decisions/hors-perimetre.md`.
 - Mayors — no dedicated collection module yet.

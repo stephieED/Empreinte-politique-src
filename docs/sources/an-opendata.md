@@ -1,5 +1,10 @@
 # National Assembly Open Data (votes, amendments)
 
+> **Status: live — the pipeline's single source.** External reference: it drifts
+> with `data.assemblee-nationale.fr`, not with this repository's code. Re-check it
+> when the provider moves a dataset, a URL pattern or a field — not when our code
+> changes. Sibling: `docs/sources/nosdeputes/` (historical, no longer queried).
+
 This project downloads two large datasets directly from the official National
 Assembly Open Data catalog (<http://data.assemblee-nationale.fr>): votes
 (roll-call records) and amendments. This page gathers practical references to

@@ -21,7 +21,7 @@ from gouvernement_textes import (
 
 # ---------------------------------------------------------------------------
 # Fixtures (structures calquées sur le JSON réel observé dans
-# Dossiers_Legislatifs.json.zip, voir docs/an_opendata.md)
+# Dossiers_Legislatifs.json.zip, voir docs/sources/an-opendata.md)
 # ---------------------------------------------------------------------------
 
 def _acte(code_acte, date_acte=None, statut_conclusion=None, enfants=None,
@@ -355,7 +355,7 @@ def test_conclusion_conseil_constitutionnel_nest_pas_une_decision_de_seance():
     """CC-CONCLUSION porte un statutConclusion mais n'est pas un `-DEBATS-DEC` :
     la dernière vraie décision de séance (adoption) doit rester déterminante,
     même si la conclusion du Conseil constitutionnel est chronologiquement
-    postérieure (cas réel DLR5L17N50588, voir docs/an_opendata.md)."""
+    postérieure (cas réel DLR5L17N50588, voir docs/sources/an-opendata.md)."""
     dossier = _dossier("TEST-CC", "Projet de loi ordinaire test", [
         _acte("AN1-DEPOT", "2024-01-10"),
         _acte("AN1-DEBATS-DEC", "2024-03-01", {"fam_code": "TSORTF01", "libelle": "adoptée"}),
@@ -369,7 +369,7 @@ def test_conclusion_conseil_constitutionnel_nest_pas_une_decision_de_seance():
 def test_derniere_decision_de_seance_chronologique_prevaut_sur_une_decision_anterieure():
     """Une première lecture adoptée, puis modifiée en seconde chambre : le
     dossier est toujours en navette, pas 'adopté' (cas réel DLR5L17N54196,
-    voir docs/an_opendata.md)."""
+    voir docs/sources/an-opendata.md)."""
     dossier = _dossier("TEST-NAVETTE-2", "Projet de loi ordinaire test", [
         _acte("AN1-DEPOT", "2024-01-10"),
         _acte("AN1-DEBATS-DEC", "2024-03-01", {"fam_code": "TSORTF07", "libelle": "rejetée"}),
@@ -491,7 +491,7 @@ def test_initiateurs_dedoublonnes_et_entrees_illisibles_ignorees():
 # ---------------------------------------------------------------------------
 # Texte réel vérifié manuellement (PLFSS 2025, DLR5L17N50588 — structure et
 # dates constatées en direct sur data.assemblee-nationale.fr le 2026-08-14,
-# voir docs/an_opendata.md) : engagement de responsabilité rejeté en 1ère
+# voir docs/sources/an-opendata.md) : engagement de responsabilité rejeté en 1ère
 # lecture (49.3 + motion de censure adoptée, chute du gouvernement Barnier),
 # puis nouvel engagement en nouvelle lecture, considéré comme adopté.
 # ---------------------------------------------------------------------------

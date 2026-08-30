@@ -62,7 +62,7 @@ dédié, indicateur de fraîcheur), alors que #253 avait explicitement laissé
    `.github/workflows/`, bloquée par les permissions de l'app GitHub),
    modifier un fichier existant a fonctionné pour #237 ; à vérifier au
    prochain retour humain si ce n'est pas le cas ici.
-5. `docs/an_opendata.md` : **laissé inchangé** — ce fichier documente les
+5. `docs/sources/an-opendata.md` : **laissé inchangé** — ce fichier documente les
    points d'accès AN Open Data (URLs, tailles d'archives), jamais la structure
    du cache local ni le contrat `fraicheur.json` ; cette issue ne change ni
    l'un ni l'autre, seulement un nouveau consommateur d'un fichier déjà livré
