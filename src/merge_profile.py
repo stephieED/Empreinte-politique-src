@@ -17,6 +17,14 @@ Pour les champs scalaires (identité, source des votes, synthèse d'activité...
 on garde la nouvelle valeur si elle est renseignée, sinon on retombe sur
 l'ancienne (pour ne pas régresser vers `null` suite à un échec transitoire).
 
+Le bloc `meta` est **composé clé par clé** (`fusionner_meta`, #600), et non pris
+au dernier écrivain : `warnings` est l'union par famille des deux côtés,
+`synchro_sources` est fusionné par source à la valeur la plus récente,
+`genere_le` est le plus récent des deux, et chaque autre clé a une règle nommée
+dans `REGLES_META`. Sans cela, l'ordre des jobs du workflow décidait quels
+avertissements étaient publiés — et `meta.warnings[]` est le véhicule de la
+règle « donnée manquante = donnée manquante » (AGENTS.md §2.5).
+
 Usage :
     from merge_profile import merge_raw_profile, merge_pivot_profile
     profile = merge_raw_profile(old_profile, new_profile)
@@ -39,6 +47,10 @@ from candidate_profile import (
     WARNING_PREFIX_MANDATS_INTROUVABLES,
     WARNING_PREFIX_VOTES_INTROUVABLES,
     WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+    WARNING_PREFIX_BUDGET_COLLECTE,
+    WARNING_PREFIX_BUDGET_INTERVENTIONS,
+    WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE,
+    WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES,
     WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
     WARNING_PREFIX_DEFAUT_COLLECTE,
 )
@@ -218,6 +230,39 @@ def _aucun_mandat_fr_dementi(profile: dict[str, Any], warning: str) -> bool:
     )
 
 
+def _interventions_syceron_dementies(profile: dict[str, Any], warning: str) -> bool:
+    """Les deux avertissements Syceron, démentis par les interventions publiées.
+
+    L'union des warnings (#600) peut faire **ressusciter** l'avertissement d'un
+    écrivain qui n'a pas obtenu l'archive Syceron, sur un profil où l'autre
+    écrivain — ou la fusion additive — a rendu les interventions. Le laisser
+    passer publierait une panne que le fichier dément, exactement ce que
+    `_defaut_collecte_dementi_par_les_donnees` évite déjà pour les autres listes.
+    C'est donc l'extension du mécanisme existant, pas un second mécanisme.
+
+    Les deux familles de #560 sont couvertes ensemble, et le critère les
+    distingue sans avoir à les séparer : `..._INDISPONIBLES` est une **panne**
+    (l'archive n'a pas répondu), `..._AUCUNE` est un **constat de zéro**
+    (l'archive a répondu, rien pour cet acteurRef) ; une intervention Syceron
+    publiée dément l'un comme l'autre.
+
+    Le critère est « une intervention qui n'est PAS une question », et non « des
+    interventions » : les questions parlementaires viennent de l'open data AN,
+    pas de Syceron (#510). Les compter éteindrait le constat Syceron avec la
+    preuve d'une autre source — c'est le symétrique exact du critère que
+    `_prune_stale_warnings` applique déjà à `WARNING_PREFIX_QUESTIONS_INDISPONIBLES`.
+    """
+    if not (
+        warning.startswith(WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES)
+        or warning.startswith(WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE)
+    ):
+        return False
+    return any(
+        isinstance(i, dict) and i.get("type_detail") != "question"
+        for i in (profile.get("interventions") or [])
+    )
+
+
 def _prune_stale_warnings(profile: dict[str, Any]) -> None:
     """Retire les avertissements devenus obsolètes après fusion (ex. "votes
     introuvables" alors que les votes ont en fait été restaurés depuis
@@ -238,6 +283,8 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
         if _defaut_collecte_dementi_par_les_donnees(profile, w):
             continue
         if _aucun_mandat_fr_dementi(profile, w):
+            continue
+        if _interventions_syceron_dementies(profile, w):
             continue
         if (
             w.startswith(WARNING_PREFIX_QUESTIONS_INDISPONIBLES)
@@ -421,6 +468,250 @@ def _synchro_la_plus_recente(new_value: Any, old_value: Any) -> Any:
     return max(candidats, key=_instant_synchro)
 
 
+# ---------------------------------------------------------------------------
+# `meta` : composé clé par clé, jamais pris au dernier écrivain (#600)
+# ---------------------------------------------------------------------------
+#
+# Aux deux étages, `meta` était `dict(new)` : le bloc du DERNIER écrivain, pris
+# entier. Conséquence mesurée par #599 sur le corpus committé — un profil sur les
+# 477 de la population du défaut, `jean-luc-melenchon`, publie pour tout `meta`
+# celui de `build_minimal_profile` : un `warnings` réduit à « aucun mandat
+# français connu », pas de `collecte_ecartee`, et une synchro AN antérieure de
+# 9,9 jours à son propre `genere_le`. Les avertissements de l'écrivain qui a
+# collecté ses 1 016 votes ont disparu **sans trace**, et `meta.warnings[]` est
+# le véhicule de la règle §2.5.
+#
+# La forme retenue est celle qui existait déjà pour `identifiants` (#539) : une
+# règle par clé, et **aucune clé au hasard**. La règle par défaut n'est pas
+# « prendre le nouveau » mais `_prefer_non_empty`, qui ne régresse jamais vers
+# `null` — c'est la même règle que pour les scalaires du profil.
+
+#: Le préfixe de `generate_all_profiles.WARNING_PREFIX_CHAMBRE_EN_ECHEC`,
+#: recopié plutôt qu'importé : `generate_all_profiles` importe ce module, donc
+#: l'importer d'ici serait circulaire. `test_merge_meta_600` vérifie que les
+#: deux chaînes n'ont pas divergé — c'est le prix de la recopie, et il est payé.
+_PREFIXE_CHAMBRE_EN_ECHEC = "collecte de chambre en échec"
+_PREFIXE_DEUX_CHAMBRES = "carrière sur deux chambres"
+
+#: Familles d'avertissements. Un warning appartient à la famille dont il porte
+#: le préfixe ; à défaut, **il est sa propre famille** (dédoublonnage exact).
+#:
+#: La famille compte parce que l'union est par famille, pas par texte : plusieurs
+#: de ces messages portent des COMPTEURS calculés sur le profil qui les émet
+#: (« 2 mandat(s) électif(s) sans chambre », « chambres=['AN', 'Senat'] »). Une
+#: union par texte publierait les deux comptes côte à côte, dont un faux — et
+#: c'est exactement pour l'éviter que `merge_pivot_profile` teste déjà
+#: `startswith` avant d'ajouter le warning de non-corroboration.
+FAMILLES_WARNINGS: tuple[str, ...] = (
+    WARNING_PREFIX_IDENTITE_INTROUVABLE,
+    WARNING_PREFIX_MANDATS_INTROUVABLES,
+    WARNING_PREFIX_VOTES_INTROUVABLES,
+    WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES,
+    WARNING_PREFIX_DEFAUT_COLLECTE,
+    WARNING_PREFIX_QUESTIONS_INDISPONIBLES,
+    WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE,
+    WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES,
+    WARNING_PREFIX_BUDGET_INTERVENTIONS,
+    WARNING_PREFIX_BUDGET_COLLECTE,
+    WARNING_AUCUN_MANDAT_FR,
+    WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+    _PREFIXE_CHAMBRE_EN_ECHEC,
+    _PREFIXE_DEUX_CHAMBRES,
+)
+
+
+def _famille_warning(warning: str) -> str:
+    """La famille d'un avertissement, ou son texte s'il n'en a pas de connue.
+
+    L'ordre de `FAMILLES_WARNINGS` compte : `WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE`
+    et `..._INDISPONIBLES` sont deux préfixes distincts (#560) et aucun n'est le
+    préfixe de l'autre, mais la recherche est faite du plus long au plus court
+    pour qu'un futur préfixe emboîté ne rattache pas un message à la mauvaise
+    famille.
+    """
+    for prefixe in sorted(FAMILLES_WARNINGS, key=len, reverse=True):
+        if warning.startswith(prefixe):
+            return prefixe
+    return warning
+
+
+def unir_warnings(
+    new_warnings: Optional[list[Any]], old_warnings: Optional[list[Any]]
+) -> list[str]:
+    """**Union par famille** des avertissements des deux écrivains (#600).
+
+    Le nouvel écrivain passe en premier et garde l'ordre dans lequel il a écrit
+    ses messages ; ceux de l'ancien dont la famille n'est pas déjà représentée
+    sont ajoutés à la suite. Deux propriétés en découlent, et ce sont les deux
+    qu'on veut :
+
+    1. **Rien ne disparaît sans être remplacé.** Un avertissement du job AN
+       survit au passage du job UE, qui n'en sait rien. C'est le défaut de #600.
+    2. **Rien n'est publié en double.** Un message à compteur — « 2 mandat(s)
+       électif(s) sans chambre » — n'apparaît qu'une fois, dans la version du
+       dernier écrivain, qui est celle calculée sur le profil le plus complet.
+
+    Ce que cette fonction NE fait pas : décider si un avertissement est encore
+    vrai. C'est le rôle de `_prune_stale_warnings` (étage brut) et du filtre de
+    `merge_pivot_profile`, qui tournent **après** et que ce lot étend — un
+    warning ressuscité de l'ancien fichier doit pouvoir s'éteindre comme les
+    autres.
+    """
+    unis: list[str] = []
+    familles: set[str] = set()
+    for source in (new_warnings or [], old_warnings or []):
+        for warning in source:
+            if not isinstance(warning, str):
+                continue
+            famille = _famille_warning(warning)
+            if famille in familles:
+                continue
+            familles.add(famille)
+            unis.append(warning)
+    return unis
+
+
+def _horodatage_le_plus_recent(new_value: Any, old_value: Any) -> Any:
+    """Le plus récent des deux horodatages, jamais celui du dernier écrivain.
+
+    Même raison que `_synchro_la_plus_recente` : `genere_le` dit quand le travail
+    publié a été fait, et le profil fusionné porte le travail des DEUX côtés.
+    Prendre celui de `new` publierait la date d'un écrivain minimal sur un profil
+    dont l'essentiel vient d'un autre — ou, dans l'autre sens, ferait *reculer*
+    la date quand l'artifact fusionné est plus vieux que le fichier committé.
+    """
+    return _synchro_la_plus_recente(new_value, old_value)
+
+
+def _fusionner_synchro_sources(new_value: Any, old_value: Any) -> Any:
+    """`synchro_sources` fusionné **par source**, jamais recopié en bloc (#600).
+
+    Le bloc était repris entier quand le nouveau profil n'en avait pas, et
+    fusionné par clé sinon (#484/PR #597) : deux comportements pour une même
+    clé, dont un qui recopie une fraîcheur qu'aucune source n'a confirmée. Ici,
+    une seule règle — l'union des sources connues des deux côtés, chacune à sa
+    valeur la plus récente. Une source qu'un seul écrivain connaît est donc
+    conservée, et aucune ne régresse.
+    """
+    if not isinstance(new_value, dict):
+        return dict(old_value) if isinstance(old_value, dict) else new_value
+    if not isinstance(old_value, dict):
+        return dict(new_value)
+    return {
+        source: _synchro_la_plus_recente(new_value.get(source), old_value.get(source))
+        for source in sorted(set(old_value) | set(new_value))
+    }
+
+
+#: Sentinelle : la clé n'existe pas chez cet écrivain. Distincte de `None`, qui
+#: est une valeur publiée (§2.5 : `null` dit « pas de déclaration », l'absence de
+#: clé dit « ce producteur n'en parle pas »).
+_ABSENTE = object()
+
+
+def _declaration_du_run(new_value: Any, old_value: Any) -> Any:
+    """La déclaration du nouvel écrivain **dès qu'il en fait une**, même vide.
+
+    C'est la règle de `collecte_ecartee` (#539), et elle ne peut pas être
+    `_prefer_non_empty` : une liste `[]` y signifie « ce run n'a rien écarté »,
+    ce qui est une **affirmation**, pas une absence. `_prefer_non_empty` la
+    prendrait pour un vide et rendrait la déclaration d'un run précédent — une
+    liste écartée survivrait au run qui l'a collectée, et `couverture_profil`
+    publierait `non_collecte` sur une liste pleine.
+
+    L'ancienne valeur n'est rendue que si le nouvel écrivain **n'a pas la clé**,
+    c'est-à-dire s'il n'a rien décidé qu'on sache : c'est le cas du chemin
+    minimal, qui n'écrit pas `collecte_ecartee` du tout.
+    """
+    if new_value is _ABSENTE:
+        return old_value
+    return new_value
+
+
+def _du_producteur_courant(new_value: Any, old_value: Any) -> Any:
+    """La valeur du nouvel écrivain dès qu'il la porte, sans regarder l'ancienne.
+
+    Pour `schema_version` : elle décrit le FORMAT qu'on écrit maintenant, pas la
+    donnée. Retomber sur l'ancienne au motif que la nouvelle serait « vide »
+    publierait une version de schéma que le fichier ne respecte pas.
+    """
+    if new_value is _ABSENTE:
+        return old_value
+    return new_value
+
+
+def _regle_par_defaut(new_value: Any, old_value: Any) -> Any:
+    """La règle des scalaires : la valeur neuve si elle est renseignée, l'ancienne
+    sinon. Jamais une régression vers `null` (§2.5).
+
+    C'est la règle de toute clé de `meta` que `REGLES_META` ne nomme pas — donc
+    d'aucune clé du schéma publié aujourd'hui, mais de celles qu'un producteur
+    ajouterait demain. Le défaut n'est **pas** « prendre le nouveau » : c'est
+    précisément ce défaut-là que #600 corrige.
+    """
+    if new_value is _ABSENTE:
+        return old_value
+    if old_value is _ABSENTE:
+        return new_value
+    return _prefer_non_empty(new_value, old_value)
+
+
+#: Une règle par clé de `meta`, et la raison de chacune. Le tableau couvre les
+#: deux étages : `synchro_sources`/`collecte_ecartee` côté brut,
+#: `schema_version`/`provenance` côté pivot, le reste des deux côtés.
+#:
+#: `provenance` n'est pas ici : elle a sa propre règle, plus forte que toutes
+#: celles-ci (#189 — un `candidat_declare` n'est jamais rétrogradé), appliquée
+#: par `merge_pivot_profile` APRÈS la composition. Le défaut la protège déjà
+#: d'une régression vers `null`, ce qui est ce que surveille `audit_diff_profils`.
+REGLES_META: dict[str, Callable[[Any, Any], Any]] = {
+    "genere_le": _horodatage_le_plus_recent,
+    "warnings": lambda new, old: unir_warnings(
+        None if new is _ABSENTE else new, None if old is _ABSENTE else old
+    ),
+    "synchro_sources": lambda new, old: _fusionner_synchro_sources(
+        None if new is _ABSENTE else new, None if old is _ABSENTE else old
+    ),
+    "collecte_ecartee": _declaration_du_run,
+    "schema_version": _du_producteur_courant,
+    # `licence_donnees` : la règle des scalaires, et rien de plus — elle est
+    # RECALCULÉE après la fusion par `appliquer_licence_donnees` à l'étage pivot
+    # (#530), qui a le dernier mot. La composer ici ne sert qu'à ne pas publier
+    # un `null` transitoire à l'étage brut, où plus personne ne la relit depuis
+    # que `normalize_profil` la dérive de `sources[]`.
+    "licence_donnees": _regle_par_defaut,
+    "provenance": _regle_par_defaut,
+}
+
+
+def fusionner_meta(
+    old_meta: Optional[dict[str, Any]], new_meta: Optional[dict[str, Any]]
+) -> Optional[dict[str, Any]]:
+    """Compose deux blocs `meta` clé par clé (#600).
+
+    Aucune clé n'est prise « parce que son écrivain est passé en dernier » :
+    chaque clé de l'union des deux blocs passe par la règle que `REGLES_META` lui
+    donne, ou par `_regle_par_defaut` qui ne régresse jamais vers `null`.
+
+    L'ordre des clés est celui du nouvel écrivain, complété par les clés que lui
+    seul l'ancien portait : le diff git d'un profil publié ne bouge donc pas
+    quand rien ne change.
+    """
+    if not isinstance(new_meta, dict):
+        return dict(old_meta) if isinstance(old_meta, dict) else new_meta
+    if not isinstance(old_meta, dict):
+        return dict(new_meta)
+
+    cles = list(new_meta) + [c for c in old_meta if c not in new_meta]
+    fusionne: dict[str, Any] = {}
+    for cle in cles:
+        regle = REGLES_META.get(cle, _regle_par_defaut)
+        fusionne[cle] = regle(
+            new_meta.get(cle, _ABSENTE), old_meta.get(cle, _ABSENTE)
+        )
+    return fusionne
+
+
 def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
     """Fusionne un profil brut nouvellement généré (`new`) avec la version
     déjà présente sur disque (`old`, ou None si aucun fichier existant).
@@ -430,19 +721,13 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
 
     merged = dict(new)
 
-    # Préserver aussi la traçabilité de synchro si la nouvelle collecte a échoué
-    # (sinon `synchro_sources.*` peut redevenir None alors que les données sont restaurées depuis l'ancien profil).
-    if isinstance(merged.get("meta"), dict) and isinstance(old.get("meta"), dict):
-        old_synchro = old["meta"].get("synchro_sources")
-        new_synchro = merged["meta"].get("synchro_sources")
-        if isinstance(old_synchro, dict):
-            if not isinstance(new_synchro, dict):
-                merged["meta"]["synchro_sources"] = dict(old_synchro)
-            else:
-                merged["meta"]["synchro_sources"] = {
-                    k: _synchro_la_plus_recente(new_synchro.get(k), old_synchro.get(k))
-                    for k in set(old_synchro) | set(new_synchro)
-                }
+    # `meta` composé clé par clé (#600), là où c'était `dict(new)` : le bloc du
+    # dernier écrivain, warnings compris. Le rattrapage de `synchro_sources` qui
+    # vivait ici est absorbé par `_fusionner_synchro_sources`, qui applique la
+    # même règle que le bloc soit présent des deux côtés ou d'un seul.
+    meta_fusionne = fusionner_meta(old.get("meta"), new.get("meta"))
+    if meta_fusionne is not None:
+        merged["meta"] = meta_fusionne
 
     merged["identite"] = _preferer_bloc_avec_fond(
         new.get("identite"), old.get("identite"), "identite"
@@ -719,6 +1004,13 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
 
     merged = dict(new)
 
+    # `meta` composé clé par clé (#600) — même règle qu'à l'étage brut, et pour
+    # la même raison : sans elle, `merged["meta"]` est celui du dernier écrivain,
+    # et les avertissements de l'autre disparaissent sans trace.
+    meta_fusionne = fusionner_meta(old.get("meta"), new.get("meta"))
+    if meta_fusionne is not None:
+        merged["meta"] = meta_fusionne
+
     merged["parti"] = _prefer_non_empty(new.get("parti"), old.get("parti"))
     merged["groupe"] = _prefer_non_empty(new.get("groupe"), old.get("groupe"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
@@ -869,6 +1161,8 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if _defaut_collecte_dementi_par_les_donnees(merged, w):
                 continue
             if _aucun_mandat_fr_dementi(merged, w):
+                continue
+            if _interventions_syceron_dementies(merged, w):
                 continue
             # #493 : le warning de non-corroboration est calculé par
             # `normalize_profil` sur les seuls mandats du profil neuf. La
