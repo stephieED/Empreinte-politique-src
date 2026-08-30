@@ -231,12 +231,14 @@ Convention d'écriture : `AGENTS.md` §8.
   `candidat_declare`. They now carry a `chambres du profil non corroborée` warning that
   says so. Correcting them is a **collection** matter, not a schema one. See
   `docs/decisions/deux-chambres-interrogees.md` and `docs/decisions/chambres-profil-derivees.md`.
-- `mandats[].chambre` is `null` on 214 of the 228 published `mandat_electif` (189 profiles,
-  measured on `f5a828b`): the stamp is written at collection (#492) and is not
-  reconstructible for already-collected mandates. They fill in at their next real
-  collection, via `merge_profile.backfill_mandat_chambre`. Each affected profile carries one
-  `chambre de mandat électif non résolue` warning until then — the count is the migration's
-  progress bar, not an anomaly. See `docs/decisions/chambre-par-mandat-electif.md`.
+- `mandats[].chambre` is `null` on **29 of the 511 published `mandat_electif`** (28 of the
+  481 profiles, measured 2026-08-30 — down from 214 of 228 on `f5a828b`), and **those 29
+  will never fill in**: 14 duplicate a mandate the same profile already publishes stamped
+  (the source moved the merge key `label`/`debut`), 15 belong to a closed legislature the
+  source no longer serves, so `merge_profile.backfill_mandat_chambre` has nothing to match.
+  Each affected profile carries one `chambre de mandat électif non résolue` warning. A
+  `--no-merge` run would clear them at the cost of deleting the 15 real mandates. See
+  `docs/decisions/corroboration-chambres-publiees-486.md`.
 - The UI still shows one parliamentary experience per candidate. The data model no longer
   stands in the way — #492 carries the chamber on each mandate, #493 publishes the
   profile-level `chambres` list — but the values only become real after a full
