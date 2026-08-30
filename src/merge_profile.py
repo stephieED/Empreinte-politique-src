@@ -424,10 +424,37 @@ def fusionner_identite(
     C'est cette seconde règle qui remplace le « choix » : elle dit ce qu'un bloc
     pauvre n'a pas le droit d'écraser, au lieu de dire lequel des deux gagne.
     """
+    return _composer_identite(old_bloc, new_bloc, nom_bloc)[0]
+
+
+#: Origine d'un champ composé, telle que `_composer_identite` la rend. Ce sont
+#: les seuls verdicts possibles, et ils ne décrivent pas une source : ils disent
+#: **de quel côté de la fusion** la valeur publiée vient. Nommer la source est le
+#: travail de `deriver_provenance_champs`, qui lit ces verdicts (#603).
+ORIGINE_NOUVELLE = "nouvelle"
+ORIGINE_ANCIENNE = "ancienne"
+
+
+def _composer_identite(
+    old_bloc: Any, new_bloc: Any, nom_bloc: str = "identite"
+) -> tuple[Any, dict[str, str]]:
+    """La composition de #601, qui dit **en plus** d'où vient chaque champ.
+
+    Une seule implémentation des trois branches : la provenance par champ (#603)
+    ne peut pas être un second calcul qui rejoue les mêmes règles à côté. Deux
+    lectures d'une même décision divergent — c'est exactement le piège que
+    `_accorder_hatvp` a dû rattraper au #601, et il ne se rattrape que parce
+    qu'un invariant le rendait détectable. Ici, rien ne le rendrait détectable :
+    une provenance fausse est une provenance, et elle se lit comme une preuve.
+
+    `fusionner_identite` reste la porte d'entrée pour qui n'a besoin que du bloc.
+    """
     if not isinstance(new_bloc, dict):
-        return old_bloc if isinstance(old_bloc, dict) and old_bloc else new_bloc
+        if isinstance(old_bloc, dict) and old_bloc:
+            return old_bloc, {c: ORIGINE_ANCIENNE for c in old_bloc}
+        return new_bloc, {}
     if not isinstance(old_bloc, dict) or not old_bloc:
-        return dict(new_bloc)
+        return dict(new_bloc), {c: ORIGINE_NOUVELLE for c in new_bloc}
 
     champs_sans_source = BLOCS_PROTEGES_DU_VIDE.get(nom_bloc, ())
     reserve = bloc_sans_fond(new_bloc, champs_sans_source) and not bloc_sans_fond(
@@ -436,16 +463,20 @@ def fusionner_identite(
 
     cles = list(new_bloc) + [c for c in old_bloc if c not in new_bloc]
     fusionne: dict[str, Any] = {}
+    origines: dict[str, str] = {}
     for cle in cles:
         neuve = valeur_de_source(new_bloc.get(cle))
         ancienne = valeur_de_source(old_bloc.get(cle))
         if neuve is None:
             fusionne[cle] = ancienne
+            origines[cle] = ORIGINE_ANCIENNE
         elif reserve and cle in champs_sans_source and ancienne is not None:
             fusionne[cle] = ancienne
+            origines[cle] = ORIGINE_ANCIENNE
         else:
             fusionne[cle] = neuve
-    return fusionne
+            origines[cle] = ORIGINE_NOUVELLE
+    return fusionne, origines
 
 
 def _accorder_hatvp(profil: dict[str, Any]) -> None:
@@ -802,6 +833,13 @@ REGLES_META: dict[str, Callable[[Any, Any], Any]] = {
     # que `normalize_profil` la dérive de `sources[]`.
     "licence_donnees": _regle_par_defaut,
     "provenance": _regle_par_defaut,
+    # `provenance_champs` (#603) : même statut que `licence_donnees` ci-dessus —
+    # la règle des scalaires ici, et RECALCULÉE après la fusion à l'étage pivot
+    # par `deriver_provenance_champs`, qui a le dernier mot. Elle est nommée
+    # quand même, parce que #600 refuse qu'une clé de `meta` soit prise « au
+    # hasard » : le jour où un producteur en écrit une à l'étage brut, elle doit
+    # avoir une règle plutôt qu'hériter du défaut sans que personne l'ait choisi.
+    "provenance_champs": _regle_par_defaut,
 }
 
 
@@ -1113,6 +1151,156 @@ def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_source
 
 
 # ---------------------------------------------------------------------------
+# `meta.provenance_champs` : quelle source a rempli quel champ, et quand (#603)
+# ---------------------------------------------------------------------------
+#
+# AGENTS.md §2.2 demande qu'un fait publié remonte à sa source primaire. Sur les
+# listes, c'est acquis : une entrée porte son `source_url`, et la fusion est
+# additive — personne n'écrase personne. Sur `identite`, non : depuis #601 le
+# bloc est composé CHAMP PAR CHAMP à partir de deux écrivains, et rien dans le
+# fichier publié ne dit lequel a rempli quoi.
+#
+# Portée de ce lot, et c'est une décision (voir `BLOCS_PROVENANCE_CHAMPS`) :
+# **`identite` seule**. La provenance par champ ne répond à une question que là
+# où plusieurs sources écrivent le même champ ; sur un membre de roster alimenté
+# par l'AN seule, il n'y a rien à départager.
+#
+# Où vit le bloc : **à côté d'`identite`, pas dedans.** Trois raisons, dans
+# l'ordre où elles pèsent :
+#
+#   1. `identite` est un dictionnaire champ → VALEUR, et l'interface l'itère
+#      comme tel. Y ajouter des clés qui ne sont pas des valeurs publiables
+#      obligerait chaque lecteur à connaître la liste des clés à sauter.
+#   2. `fusionner_identite` compose le bloc champ par champ : une clé de
+#      provenance rangée dedans passerait par la règle des valeurs, et une
+#      provenance obsolète survivrait à la valeur qu'elle décrit — la règle « une
+#      absence n'écrase pas » (#601) est faite pour des valeurs, pas pour des
+#      métadonnées qui doivent au contraire suivre.
+#   3. `meta` est déjà l'endroit où vit la traçabilité de ce run
+#      (`synchro_sources`, `collecte_ecartee`, `warnings`), et depuis #600 c'est
+#      le seul bloc dont chaque clé est OBLIGÉE de nommer sa règle de fusion.
+#      Une clé posée ailleurs n'aurait rien à déclarer.
+#
+# Ce que le bloc n'est PAS : `couverture` (#539) dit *pourquoi cette liste est
+# vide*, à la maille de la liste métier ; celui-ci dit *d'où vient cette valeur*,
+# à la maille du champ. Les deux coexistent et ne se remplacent pas.
+
+
+def source_ecrivain(profil: Any) -> tuple[Optional[str], Optional[str]]:
+    """La source que ce profil déclare comme la sienne, `(None, None)` sinon.
+
+    **Une seule lecture, et elle est stricte : `sources[]` doit ne nommer qu'un
+    seul `type`.** Un profil frais, tel qu'un normaliseur le rend, en nomme un
+    seul — `assemblee_nationale` pour `normalize_profil` (y compris quand il
+    ajoute une seconde entrée pour la source des votes, du même type),
+    `europarl` pour `normalize_europarl`. Un profil déjà fusionné en nomme
+    plusieurs : `_merge_pivot_sources` unit par type, et 475 des 481 profils
+    publiés portent encore une entrée `nosdeputes` que #529 n'a pas retirée.
+
+    C'est la strictesse qui fait la valeur du champ. `sources[0]` aurait
+    « marché » — et aurait attribué 2 597 des 2 612 champs d'identité des 481
+    profils publiés à `nosdeputes`, source retirée du pipeline depuis #529, sur
+    la seule foi de l'ordre d'une liste. Une provenance fausse ne se distingue
+    pas d'une provenance vraie : elle se lit comme une preuve. Mesure faite le
+    30/08/2026 en rejouant la fusion sur le corpus committé.
+
+    Rien n'est deviné : sources vides, illisibles, sans `type`, ou de plusieurs
+    types → l'inconnu, qui se publie tel quel (§2.5).
+    """
+    sources = profil.get("sources") if isinstance(profil, dict) else None
+    if not isinstance(sources, list) or not sources:
+        return None, None
+    entrees = [s for s in sources if isinstance(s, dict)]
+    if len(entrees) != len(sources):
+        return None, None
+    types = {s.get("type") for s in entrees}
+    if len(types) != 1:
+        return None, None
+    type_source = types.pop()
+    if not isinstance(type_source, str) or not type_source:
+        return None, None
+    synchros = [
+        s.get("synchro_le") for s in entrees
+        if s.get("type") == type_source
+        and isinstance(s.get("synchro_le"), str) and s.get("synchro_le")
+    ]
+    if not synchros:
+        return type_source, None
+    return type_source, max(synchros, key=_instant_synchro)
+
+
+def _entree_provenance(source: Optional[str], synchro_le: Optional[str]) -> dict[str, Any]:
+    return {"source": source, "synchro_le": synchro_le if source else None}
+
+
+def deriver_provenance_champs(
+    bloc_fusionne: Any,
+    origines: dict[str, str],
+    provenance_ancienne: Any,
+    profil_neuf: Any,
+    nom_bloc: str = "identite",
+) -> dict[str, Any]:
+    """Nomme la source de chaque champ publié de `bloc_fusionne` (#603).
+
+    Le verdict vient de `_composer_identite`, qui a réellement pris la décision —
+    il n'est pas rejoué ici. Deux cas, et un seul repli :
+
+    - champ retenu du **nouvel** écrivain → sa source déclarée
+      (`source_ecrivain`), avec l'horodatage de cette synchro ;
+    - champ retenu de l'**ancien** profil → la provenance que l'ancien profil
+      consignait déjà pour ce champ. C'est ce qui fait tenir la chaîne : la
+      valeur et son origine traversent les runs ensemble.
+    - à défaut — un profil publié avant ce lot, qui ne consigne rien — la
+      provenance est **inconnue**, et se publie `{"source": null}`. Elle ne se
+      devine pas depuis `sources[]` de l'ancien profil : celui-ci est un
+      surensemble des sources des deux côtés (`_merge_pivot_sources`), et lui
+      attribuer un champ serait inventer une preuve. §2.5, appliqué à la
+      traçabilité elle-même.
+
+    Un champ nul n'a pas d'entrée : il n'y a pas de valeur dont nommer l'origine.
+    """
+    if not isinstance(bloc_fusionne, dict):
+        return {}
+    ancienne = {}
+    if isinstance(provenance_ancienne, dict):
+        candidat = provenance_ancienne.get(nom_bloc)
+        if isinstance(candidat, dict):
+            ancienne = candidat
+
+    source, synchro = source_ecrivain(profil_neuf)
+    entrees: dict[str, Any] = {}
+    for champ, valeur in bloc_fusionne.items():
+        if valeur in (None, "", [], {}):
+            continue
+        if origines.get(champ) == ORIGINE_NOUVELLE:
+            entrees[champ] = _entree_provenance(source, synchro)
+            continue
+        heritee = ancienne.get(champ)
+        if isinstance(heritee, dict) and "source" in heritee:
+            entrees[champ] = _entree_provenance(
+                heritee.get("source"), heritee.get("synchro_le")
+            )
+        else:
+            entrees[champ] = _entree_provenance(None, None)
+    return {nom_bloc: entrees} if entrees else {}
+
+
+def _poser_provenance_champs(profil: dict[str, Any], provenance: dict[str, Any]) -> None:
+    """Écrit — ou retire — `meta.provenance_champs` sur un profil pivot.
+
+    Retirer plutôt que publier un bloc vide : un `{}` dirait « aucun champ n'a de
+    provenance » là où la vérité est « ce profil n'a pas d'identité publiée ».
+    """
+    meta = profil.get("meta")
+    if not isinstance(meta, dict):
+        return
+    if provenance:
+        meta["provenance_champs"] = provenance
+    else:
+        meta.pop("provenance_champs", None)
+
+
+# ---------------------------------------------------------------------------
 # `couverture` : fusionnée PAR LISTE MÉTIER (#602)
 # ---------------------------------------------------------------------------
 #
@@ -1283,6 +1471,16 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         # `sources[]`, et un premier pivot doit publier la même chaîne qu'un
         # pivot régénéré au même contenu (#530).
         appliquer_licence_donnees(new)
+        # #603 : même raison. Un profil écrit pour la première fois a une
+        # provenance — celle de son unique écrivain — et la lui refuser
+        # publierait deux profils de même contenu dont un seul est traçable.
+        identite_neuve = new.get("identite")
+        _poser_provenance_champs(new, deriver_provenance_champs(
+            identite_neuve,
+            {c: ORIGINE_NOUVELLE for c in identite_neuve} if isinstance(identite_neuve, dict) else {},
+            None,
+            new,
+        ))
         return new
 
     merged = dict(new)
@@ -1297,7 +1495,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["parti"] = _prefer_non_empty(new.get("parti"), old.get("parti"))
     merged["groupe"] = _prefer_non_empty(new.get("groupe"), old.get("groupe"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
-    merged["identite"] = fusionner_identite(old.get("identite"), new.get("identite"))
+    # `_composer_identite` plutôt que `fusionner_identite` : la provenance par
+    # champ (#603) est déduite du verdict que la composition VIENT de rendre, pas
+    # d'un second calcul qui rejouerait les mêmes règles à côté.
+    merged["identite"], origines_identite = _composer_identite(
+        old.get("identite"), new.get("identite")
+    )
 
     # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
     #
@@ -1319,6 +1522,24 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # refuse la divergence. Il est posé ICI, après les deux, parce qu'il ne
     # décrit ni l'une ni l'autre — il décrit leur invariant.
     _accorder_hatvp(merged)
+
+    # --- provenance par champ : DÉRIVÉE, jamais fusionnée (#603) -------------
+    #
+    # Même patron que `chambres` (#493) et `licence_donnees` (#530) : un champ
+    # dérivé se recalcule après la fusion de ce dont il dérive, il ne se fusionne
+    # pas. Fusionner `provenance_champs` clé par clé publierait la provenance
+    # d'un écrivain à côté de la valeur d'un autre — soit exactement l'inverse de
+    # ce que ce bloc existe pour dire.
+    #
+    # Posée ICI, après `_accorder_hatvp` : cet accord peut encore renseigner
+    # `identite.uri_hatvp` depuis `identifiants`, et un champ publié sans entrée
+    # de provenance est refusé par `valider_provenance_champs`.
+    _poser_provenance_champs(merged, deriver_provenance_champs(
+        merged.get("identite"),
+        origines_identite,
+        (old.get("meta") or {}).get("provenance_champs"),
+        new,
+    ))
 
     # --- couverture : REMPLACÉE liste par liste, jamais en bloc (#539, #602) --
     #
