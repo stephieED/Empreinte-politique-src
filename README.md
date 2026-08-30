@@ -130,8 +130,9 @@ See:
 
 - `docs/an_opendata.md` - practical AN Open Data references (dataset URLs,
   key fields).
-- `docs/pipeline-profiles-groupes.md` - end-to-end profiles/groups pipeline
-  maps and implementation notes.
+- `docs/pipeline-profiles-groupes.md` - what the data becomes: sources, flow,
+  schemas, volumetry and the six `pivot_data/` outputs (`profiles`, `groupes`,
+  `partis`, `gouvernements`, `scrutins.json`, `amendements/`).
 - `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
 - `docs/extract-ue.md` - UE source investigation report and implementation context.
 - `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
@@ -781,7 +782,7 @@ WORKERS=4 EXISTING_PROFILES=overwrite EXTRACT_INTERVENTIONS=true ./scripts/gener
 | Variable | Default | Same as `workflow_dispatch` input |
 |---|---|---|
 | `EXISTING_PROFILES` | `refresh` | `existing_profiles` |
-| `ROSTER_COVERAGE` | `add-uncovered-members` | `roster_coverage` |
+| `ADD_UNCOVERED_MEMBERS` | `true` | `add_uncovered_members` |
 | `COLD_START` (alias `FRESH_RUN`) | `false` | `cold_start` |
 | `THRESHOLD` | `3` | `incomplete_read_threshold` |
 | `WORKERS` | `1` (sequential) | *(local-only: frozen at 1 in CI)* |
@@ -791,9 +792,12 @@ WORKERS=4 EXISTING_PROFILES=overwrite EXTRACT_INTERVENTIONS=true ./scripts/gener
 
 Two disjoint axes (#578): `EXISTING_PROFILES` decides what happens to profiles
 already written (`leave-as-is` / `refresh`, merging / `overwrite`, replacing),
-`ROSTER_COVERAGE` decides whether members with no profile get one, and
-`COLD_START` only purges the download caches. See
-`docs/decisions/deux-axes-formulaire-578.md`.
+`ADD_UNCOVERED_MEMBERS` (a boolean, `true` by default) decides whether members
+with no profile get one, and `COLD_START` only purges the download caches. The
+axis-2 field was a `roster_coverage` menu when #578 shipped it; #590 turned it
+into the `add_uncovered_members` checkbox, and the old name is dead — see
+`docs/decisions/deux-axes-formulaire-578.md` and
+`docs/workflow-generate-data.md` §2.
 
 Each stage keeps the CI job's `continue-on-error` behavior: a failure in one
 source (e.g. ParlTrack down) doesn't stop the rest. Unlike CI, nothing is

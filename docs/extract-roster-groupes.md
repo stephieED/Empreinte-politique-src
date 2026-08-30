@@ -17,15 +17,22 @@ python3 src/generate_all_profiles.py \
 ```
 
 **La population vient de DEUX AXES DISJOINTS (#578).** `existing_profiles`
-(`leave-as-is` / `refresh` / `overwrite`) dit ce qu'on fait des profils déjà
-écrits ; `roster_coverage` (`current-members-only` / `add-uncovered-members`)
-dit si on en écrit de nouveaux. Les six combinaisons se demandent :
+(menu `leave-as-is` / `refresh` / `overwrite`) dit ce qu'on fait des profils déjà
+écrits ; `add_uncovered_members` (**une case à cocher**, cochée par défaut) dit
+si on en écrit de nouveaux. Les six combinaisons se demandent :
 
-| | `current-members-only` | `add-uncovered-members` |
+| | `add_uncovered_members` décoché | `add_uncovered_members` coché *(défaut)* |
 | --- | --- | --- |
 | `leave-as-is` | rien à faire (manifeste vide) | `--skip-existing` |
 | `refresh` *(défaut)* | `--refresh-existing` | *(aucun drapeau)* |
 | `overwrite` | `--refresh-existing --no-merge` | `--no-merge` |
+
+L'axe 2 était un menu `roster_coverage` (`current-members-only` /
+`add-uncovered-members`) quand #578 l'a livré ; **#590 en a fait une case**, deux
+états n'ayant jamais eu besoin d'un menu. `roster_coverage` est un nom **mort**,
+et `test_les_deux_axes_sont_deux_champs_distincts` échoue s'il réapparaît dans
+les inputs. `python3 scripts/rendu_formulaire.py` rend le formulaire tel qu'il
+s'affiche — lire le YAML masque exactement le défaut que #578 a corrigé.
 
 `--skip-existing` est **strict** : il ne saute rien conditionnellement. Pour
 recollecter l'existant, on ne le pose pas. `cold_start` n'entre plus dans ce
@@ -41,9 +48,10 @@ amendements, seules données consommées par les agrégats de groupe (§4,
 `build_groupe_profile()`, #349). `dossiers_legislatifs`/`interventions`/
 `questions_officielles` ne sont donc jamais extraits par ce job : ni
 consommés par les agrégats de groupe actuels, ni prévus. Voir
-`--skip-dossiers-legislatifs` dans `generate_all_profiles.py` (skip aussi bien
-le chemin NosDéputés pour les sénateurs que `fetch_textes_portes_officiels`
-pour les députés, `candidate_profile.build_profile`).
+`--skip-dossiers-legislatifs` dans `generate_all_profiles.py` : il saute
+`fetch_textes_portes_officiels` (`candidate_profile.build_profile`, étape 8),
+**seule** source de `dossiers_legislatifs` depuis #528 — l'étape qui triait la
+liste NosDéputés collectée pour les sénateurs est partie avec le Sénat.
 
 Voir `.github/workflows/generate-data.yml` (job `extract-roster-groupes`).
 
@@ -76,7 +84,7 @@ Le run correspondant :
 | input | valeur |
 | --- | --- |
 | `existing_profiles` | `overwrite` |
-| `roster_coverage` | `current-members-only` |
+| `add_uncovered_members` | décoché (`false`) |
 | `roster_limit` | `0` |
 
 **Le piège réductible a été supprimé (#578).** `roster_limit=0` rafraîchissait

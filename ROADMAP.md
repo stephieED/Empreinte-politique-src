@@ -50,8 +50,9 @@ sans `--limit`, la branche d'exemption au saut n'était pas empruntée, si bien 
 le mode « pas de plafond » corrigeait strictement moins que le mode échantillonné.
 Trois runs ont été nécessaires pour le comprendre le 28/08. #577 a corrigé les
 libellés ; **#578 a corrigé le découpage** — deux axes disjoints
-(`existing_profiles` × `roster_coverage`), le cache à part, et `roster_limit`
-réduit à un plafond. Voir
+(`existing_profiles` × `add_uncovered_members`, ce second champ étant un menu
+`roster_coverage` jusqu'à ce que #590 en fasse une case), le cache à part, et
+`roster_limit` réduit à un plafond. Voir
 `docs/decisions/deux-axes-formulaire-578.md`.
 
 **Ce qui n'a jamais été exécuté n'est pas connu.** L'épic #566 a sorti sept défauts
