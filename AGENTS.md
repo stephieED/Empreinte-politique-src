@@ -4,7 +4,8 @@ Non-negotiable rules, schema conventions, validation constraints for every sessi
 "Why" behind each decision: **one file per decision** under `docs/decisions/`,
 indexed newest-first by `docs/technical_decisions.md`. Write a new one, never
 edit that index in place — see Section 8.
-Commands, structure, coverage limits: `README.md`.
+Every command the owner may have to type: `docs/commandes.md`.
+Front door, editorial line, coverage limits: `README.md`.
 
 ---
 
@@ -463,7 +464,8 @@ Before finishing a task, update only what actually changed — skip a file if no
 | File | Update when |
 |---|---|
 | `AGENTS.md` | New agent-facing rule, command, or constraint. Rare edit; stay terse. |
-| `README.md` | New setup step, script, or user-visible workflow/command. |
+| `README.md` | **The front door, one page.** A new setup step, a change to the editorial line or to a coverage limit, a doc that becomes an entry point. Never a command — that is the row below. |
+| `docs/commandes.md` | **An option is added or removed, a script is renamed or retired, a command's output moves.** Not when the pipeline changes: the file says what to type, never how the run works. `tests/test_commandes_documentees.py` fails on a script or a long option that no longer exists. |
 | `docs/pipeline-profiles-groupes.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
 | `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
 | `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
@@ -563,6 +565,10 @@ When something does need deciding, five parts, in this order:
   `nosdeputes/` (historical, not queried since #529). Status is in each file's header,
   not in the directory name.
 - `docs/extract-roster-groupes.md`: the roster-driven job, in depth (the other seven jobs are blocks in `docs/workflow-generate-data.md` §1).
+- `docs/commandes.md`: every command the owner may have to type, grouped by
+  intention (generate, audit, check before committing, operate, see what the user
+  sees). 32 of the repo's 44 executables; the other 12 are pipeline-internal and
+  the file says so. Locked by `tests/test_commandes_documentees.py`.
 - `docs/pipeline-profiles-groupes.md`: what the data becomes — the six outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the

@@ -179,6 +179,23 @@ disponible.
 
 → `docs/decisions/partition-profils-legislature-580.md`
 
+### Ce que porte un profil brut
+
+Le socle, champ par champ — c'est la matière que la normalisation pivot
+reprend :
+
+| Champ | Contenu |
+|---|---|
+| `identite` | nom, groupe politique, profession, circonscription… |
+| `mandats` | le mandat électif de base **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
+| `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
+| `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot |
+| `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]` |
+| `amendements_partitionnes` | le manifeste des tranches, à la place exacte qu'occupait `amendements` (#580) |
+| `mandat_europeen` | présent seulement si le candidat a des enregistrements au Parlement européen |
+| `meta.warnings` | la transparence sur les collectes manquantes ou incomplètes |
+| `meta.synchro_sources` | un horodatage ISO-8601 par source |
+
 ## Format d'écriture JSON
 
 Les profils individuels (`raw_data/profiles/`, `pivot_data/profiles/`) sont
@@ -227,7 +244,54 @@ autant : un réseau de cosignatures est de la matière d'analyse (#324).
 Législatures 14/15/16 : dossiers clos, index AN bruts committés sous
 `raw_data/amendements_an_figes/` et jamais re-téléchargés
 (`docs/decisions/amendements-legislatures-figees.md`) ; même principe pour
-`raw_data/scrutins_an_figes/`.
+`raw_data/scrutins_an_figes/`. Ces index-là se construisent **une fois, hors
+ligne** (`src/build_amendements_index_figees.py`,
+`src/build_scrutins_index_figes.py`) : la procédure et ses modes de défaillance
+sont dans `docs/decisions/amendements-legislatures-figees.md` et
+`docs/decisions/votes-multi-legislature.md`.
+
+### Ce que les deux index ont fait gagner
+
+Mesuré sur les **209 profils committés** du corpus de #431/#432 — la population
+est celle-là, pas le corpus d'aujourd'hui :
+
+| Scrutins (#432) | avant | après |
+| --- | --- | --- |
+| `votes[]` dans les profils | 179,8 Mo | 17,9 Mo |
+| index partagé | — | 8,1 Mo |
+| **total** | **179,8 Mo** | **26,0 Mo (−85,5 %)** |
+| `cohesion_votes` des groupes | 6,23 Mo | 3,41 Mo (−45,3 %) |
+
+| Amendements (#431) | avant | après |
+| --- | --- | --- |
+| `amendements[]` dans les profils | 1 342,4 Mo | 73,8 Mo de mapping |
+| index partagé (méta) | — | 54,4 Mo |
+| index partagé (cosignatures) | — | 75,7 Mo |
+| **total** | **1 342,4 Mo** | **203,8 Mo (−84,8 %)** |
+
+Le même index de scrutins sert les profils **et** les groupes : les 4 104
+scrutins des groupes sont tous inclus dans les 17 422 des profils. Un fichier
+d'amendements global unique pèserait déjà 130,1 Mo — au-delà de la limite
+GitHub de 100 Mo par blob — et une législature portant aussi ses cosignatures
+atteindrait 120,3 Mo pour la XV<sup>e</sup> à couverture complète : d'où un
+fichier par législature, plus un compagnon.
+
+### La `legislature` d'un scrutin, et pourquoi elle se résout
+
+`votes[].numero_scrutin` repart à 1 à chaque législature : la clé d'un scrutin
+est `(legislature, numero_scrutin)`. Or **22,5 % des votes collectés ne portent
+aucune législature** (chemin de collecte antérieur à #403). `src/scrutins_legislature.py`
+la résout par deux mécanismes, jamais confondus : jointure sur un **jumeau
+étiqueté** (la donnée existe déjà ailleurs, étiquetée), puis **calendrier des
+législatures** (une dérivation, tracée comme telle). Ce qu'ils ne résolvent pas
+**échoue bruyamment** — jamais de valeur par défaut (AGENTS.md §2.5), et l'index
+n'est pas écrit amputé.
+
+Avant de se fier à la clé, `src/audit_legislature_votes.py` fait la passe de
+corpus qui dit si elle est utilisable (voir
+[`commandes.md`](./commandes.md)). Rapport de référence :
+`audit/legislature_votes_20260819.md`.
+→ `docs/decisions/resolution-legislature-votes.md`
 
 → `docs/decisions/normalisation-votes.md`,
 `docs/decisions/normalisation-amendements.md`
@@ -290,6 +354,49 @@ profils bruts. Les données manquantes restent `null`, jamais `0` (AGENTS.md
 §2.5). L'`id` d'un pivot est son **slug**, sans préfixe de provenance (#487) : la
 provenance vit dans `sources[].type`, `identite.source_url` et
 `meta.provenance`.
+
+Le schéma pivot v1 est défini dans `src/schema_pivot.py` ; **le contrat clé par
+clé est dans `AGENTS.md` §4**, avec les contraintes de validation en §5. À quoi
+ressemble un fichier :
+
+```json
+{
+  "schema_version": "1",
+  "id": "jean-luc-melenchon",
+  "nom": "Jean-Luc Melenchon",
+  "chambres": ["AN"],
+  "chambre": "AN",
+  "parti": null,
+  "groupe": "La France Insoumise",
+  "sources": [
+    {"type": "assemblee_nationale", "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1234", "synchro_le": "2026-07-29T..."},
+    {"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr/", "synchro_le": "2026-07-29T..."}
+  ],
+  "identite": { },
+  "mandats": [ ],
+  "votes": [ ],
+  "textes_portes": [ ],
+  "amendements": [ ],
+  "interventions": [ ],
+  "tags_thematiques": ["budget", "fiscalite"],
+  "meta": {"schema_version": "1", "genere_le": "...", "warnings": [],
+           "provenance": "candidat_declare", "licence_donnees": "..."}
+}
+```
+
+Deux pièges de lecture, sur ce fichier précisément :
+
+- **`sources[].type` peut valoir `nosdeputes` / `nossenateurs` sur un profil
+  publié**, alors qu'une collecte fraîche ne produit plus qu'`assemblee_nationale`
+  depuis #529. Ce sont des valeurs **valides** de `KNOWN_SOURCE_TYPES` : les
+  retirer ferait rejeter par `validate_profil()` le corpus qu'on vient de
+  publier. #530 a mesuré qu'elles ne disparaissent pas d'elles-mêmes —
+  `merge_pivot_profile` unit `sources[]` par type, donc une entrée déjà publiée
+  survit à une collecte AN, et l'attribution ODbL reste due.
+- **`meta.licence_donnees` est dérivé, jamais constant** : `src/licences.py` le
+  recompose depuis `sources[]` après chaque étape qui les change. Ne jamais
+  écrire un libellé de licence en dur ailleurs.
+  → `docs/decisions/licence-lot-6-530.md`
 
 ### `pivot_data/groupes/` — les groupes parlementaires réels
 
@@ -512,49 +619,28 @@ Distincts du gate, sans score ni classement (AGENTS.md §2.1) :
   agrégés. Pure composition des rapports, aucune logique de calcul nouvelle.
 
 `audit_pipeline.py` n'est **pas** intégré à `.github/workflows/generate-data.yml`
-— choix explicite (#178) : usage manuel uniquement. Voir `README.md` §11 et §12.
-Pour voir à quoi ressemble un rapport, régénérez-en un sur les fixtures figées
-plutôt que de lire un exemple committé (une commande ne peut pas être périmée,
-un fichier figé si) :
+— choix explicite (#178) : usage manuel uniquement.
+
+Les commandes de ces quatre audits, et celle qui régénère un rapport d'exemple
+sur les fixtures figées plutôt que de lire un exemple committé (une commande ne
+peut pas être périmée, un fichier figé si) : [`commandes.md`](./commandes.md),
+section « Auditer ».
+
+## Les commandes
+
+Toutes regroupées par intention dans **[`commandes.md`](./commandes.md)** :
+générer, auditer, vérifier avant de committer, opérer, voir ce que voit
+l'utilisatrice.
+
+Une seule mérite d'être rappelée ici, parce que c'est **l'ordre** qui compte et
+qu'il est expliqué plus haut : quand un run a été interrompu, les deux index
+partagés se reconstruisent à la main, les scrutins **avant** la passe pivot et
+les amendements **après**.
 
 ```bash
-python3 src/audit_groupe_dataset.py --input-dir tests/fixtures/audit_groupe \
-        --output-json audit_groupe_exemple.json --output-md audit_groupe_exemple.md
-```
-
-## Commandes usuelles
-
-```bash
-# Profils bruts candidats (liste éditoriale)
-python src/generate_all_profiles.py
-
-# … et les pivots
-python src/generate_all_profiles.py --pivot
-
-# Un seul candidat
-python src/generate_all_profiles.py --only jean-luc-melenchon --pivot
-
-# Reprendre après interruption
-python src/generate_all_profiles.py --resume --pivot
-
-# Renormaliser sans réseau (les deux index sont reconstruits au passage)
-python src/generate_all_profiles.py --pivot-only --no-checkpoint
-
-# Couverture de groupe complète (mode d'extraction léger, #357)
-python src/generate_roster_candidats.py
-python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json \
-  --pivot --skip-existing --skip-interventions --skip-dossiers-legislatifs
-
-# Index partagés, hors run
 python3 src/build_scrutins_index.py
 python3 src/build_amendements_index_pivot.py
-
-# Agrégats
-python src/parti_profile.py --candidats raw_data/candidats.json \
-  --profiles-dir pivot_data/profiles --out-dir pivot_data/partis
-python src/generate_group_profiles.py --validate
-python src/generate_gouvernement_profiles.py --validate
-
-# Gate
-python src/check_quality_gate.py
 ```
+
+Les deux fusionnent additivement avec l'existant ; `--no-merge` reconstruit à
+partir de zéro et exige donc le corpus **complet**.
