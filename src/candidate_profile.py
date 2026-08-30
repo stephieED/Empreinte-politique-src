@@ -2885,7 +2885,7 @@ def _stade_from_code_acte(code_acte: Optional[str], statut_libelle: Optional[str
     """Déduit un stade procédural (nomenclature du schéma pivot) à partir du
     code d'acte officiel (`codeActe`) d'un dossier législatif. Volontairement
     conservateur : ne retient que des signaux non ambigus (voir
-    docs/an_opendata.md, section dossiers législatifs)."""
+    docs/sources/an-opendata.md, section dossiers législatifs)."""
     if not code_acte:
         return None
     if "PROM" in code_acte:
@@ -2984,7 +2984,7 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     Contrairement à la liste NosDéputés `dossiers/nom/json` — retirée par #528
     avec le Sénat, seule chambre qui l'appelait — qui renvoyait l'intégralité
     des dossiers d'une législature identiquement pour tous les élus (role
-    toujours null, voir docs/an_opendata.md), cet index est réellement propre à
+    toujours null, voir docs/sources/an-opendata.md), cet index est réellement propre à
     chaque acteur. Non-fatal en cas d'échec (retourne {})."""
     with _DOSSIERS_TEXTES_PORTES_LOCK:
         index_path = DOSSIERS_CACHE_DIR / "index_acteur_textes_v2.json"  # cf. #400

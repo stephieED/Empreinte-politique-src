@@ -225,7 +225,7 @@ _PROCEDURE_CODES_PARLEMENTAIRES = frozenset({
 # la seule justification acceptable d'un mapping, et elle est vérifiable en
 # relisant l'archive.
 _FAM_CODE_STATUT_MAP: dict[str, tuple[str, bool]] = {
-    # Confirmés par le spike #207 (docs/an_opendata.md).
+    # Confirmés par le spike #207 (docs/sources/an-opendata.md).
     "TSORTF01": ("adopte", False),           # « adopté » / « adoptée »
     "TSORTF07": ("rejete", False),           # « rejeté » / « rejetée »
     "TSORTF06": ("adopte_49_3", True),       # « considéré comme adopté […] 49 al. 3 »

@@ -91,8 +91,9 @@ CV_CandidatFR/
 |  |- pipeline-profiles-groupes.md   # What the data becomes
 |  |- extract-roster-groupes.md      # The roster-driven job, in depth
 |  |- decisions/                     # One file per architectural decision
-|  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference — historical, no longer used by the pipeline (#529)
-|  `- an_opendata.md                 # Notes on AN open data (votes, amendments, Syceron)
+|  `- sources/                       # External-source references — they drift with their provider, not with our code
+|     |- an-opendata.md              # AN open data (votes, amendments, Syceron) — live, the pipeline's single source
+|     `- nosdeputes/                 # NosDeputes/NosSenateurs API reference — historical, no longer queried since #529
 |- tests/
 |  |- test_candidate_profile.py
 |  |- test_candidate_profile_ue.py
@@ -132,7 +133,7 @@ CV_CandidatFR/
 
 See:
 
-- `docs/an_opendata.md` - practical AN Open Data references (dataset URLs,
+- `docs/sources/an-opendata.md` - practical AN Open Data references (dataset URLs,
   key fields).
 - `docs/pipeline-profiles-groupes.md` - what the data becomes: sources, flow,
   schemas, volumetry and the six `pivot_data/` outputs (`profiles`, `groupes`,
@@ -861,9 +862,16 @@ python src/audit_pivot_dataset.py \
 
 `--output-json`/`--output-md` default to unset (JSON prints to stdout, Markdown is
 skipped if `--output-md` is omitted). `--staleness-days` (default 30) sets the
-threshold beyond which a profile with only stale sources is flagged. See
-`docs/examples/audit_pivot_report_sample.json` / `.md` for a sample report
-generated on `tests/fixtures/audit_pivot/`.
+threshold beyond which a profile with only stale sources is flagged.
+
+To see what a report looks like, generate one on the frozen fixtures — a
+command cannot go stale, a committed sample can (the last one drifted from the
+tool by a whole section before it was dropped):
+
+```bash
+python3 src/audit_pivot_dataset.py --input-dir tests/fixtures/audit_pivot \
+        --output-json audit_pivot_exemple.json --output-md audit_pivot_exemple.md
+```
 
 Instead of naming both files, `--output-dir DOSSIER` writes both under a
 timestamped name (`audit_pivot_<horodatage-UTC>.json`/`.md`) — incompatible
@@ -900,9 +908,14 @@ default to unset (JSON prints to stdout, Markdown is skipped if `--output-md`
 is omitted). `--staleness-days` (default 30) sets the threshold beyond which
 a group with only stale sources is flagged — same option contract as
 `audit_pivot_dataset.py` for combined use, including `--output-dir DOSSIER`
-(timestamped `audit_groupe_<horodatage-UTC>.json`/`.md`). See
-`docs/examples/audit_groupe_report_sample.json` / `.md` for a sample report
-generated on `tests/fixtures/audit_groupe/`.
+(timestamped `audit_groupe_<horodatage-UTC>.json`/`.md`).
+
+To see what a report looks like, generate one on the frozen fixtures:
+
+```bash
+python3 src/audit_groupe_dataset.py --input-dir tests/fixtures/audit_groupe \
+        --output-json audit_groupe_exemple.json --output-md audit_groupe_exemple.md
+```
 
 ## 13. Audit the gouvernement dataset
 
@@ -943,9 +956,14 @@ python src/audit_gouvernement_dataset.py \
 if `--output-md` is omitted). `--staleness-days` (default 30) sets the
 threshold beyond which a government with only stale sources is flagged —
 same option contract as the other audit scripts, including `--output-dir
-DOSSIER` (timestamped `audit_gouvernement_<horodatage-UTC>.json`/`.md`). See
-`docs/examples/audit_gouvernement_report_sample.json` / `.md` for a sample
-report generated on `tests/fixtures/audit_gouvernement/`.
+DOSSIER` (timestamped `audit_gouvernement_<horodatage-UTC>.json`/`.md`).
+
+To see what a report looks like, generate one on the frozen fixtures:
+
+```bash
+python3 src/audit_gouvernement_dataset.py --input-dir tests/fixtures/audit_gouvernement \
+        --output-json audit_gouvernement_exemple.json --output-md audit_gouvernement_exemple.md
+```
 
 ## 14. Combined audit pipeline (manual tool)
 
@@ -1151,7 +1169,7 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
   and a `--no-merge` run that lost them would be blocked by `audit_diff_profils`.
 - **Mayors**: no dedicated module/source.
 - **Coverage bias**: former MPs usually have richer traces than non-MP profiles.
-- **API docs**: `docs/nosdeputes_doc/` is historical reference material only —
+- **API docs**: `docs/sources/nosdeputes/` is historical reference material only —
   the pipeline stopped querying that platform at #529.
 
 ## Data freshness

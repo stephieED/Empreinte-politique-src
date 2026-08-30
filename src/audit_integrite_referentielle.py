@@ -65,7 +65,7 @@ résolue — échouer bruyamment) :
 ## Le drapeau, et pourquoi il n'est pas celui du contrôle de perte
 
 `--tolerer-orphelins` est **distinct** de `--tolerer-pertes` d'`audit_diff_profils`
-(input `tolerer_pertes_profils` du workflow), et les deux ne doivent jamais
+(input `allow_declared_losses` du workflow), et les deux ne doivent jamais
 fusionner. #470 a documenté le piège : rendre bloquant un contrôle grossier
 force l'opérateur à relancer avec la tolérance, ce qui **désarme du même coup**
 les contrôles précis. Une perte peut être légitime et se déclare ; une référence

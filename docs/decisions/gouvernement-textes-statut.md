@@ -4,7 +4,7 @@
 **Contexte** : #210 (sous-issue de #184) demandait la collecte des dossiers
 législatifs d'origine gouvernementale et l'extraction de leur statut, en
 s'appuyant sur le mapping `statutConclusion.fam_code` confirmé par le spike
-#207 (déjà reporté dans `docs/an_opendata.md`, section « Spike : origine »).
+#207 (déjà reporté dans `docs/sources/an-opendata.md`, section « Spike : origine »).
 Vérification sur données réelles (téléchargement direct de
 `Dossiers_Legislatifs.json.zip` le 2026-08-14, mêmes deux dossiers cités par
 le spike, `DLR5L17N50588`/`DLR5L17N54196`) : un dossier accumule souvent

@@ -176,7 +176,7 @@ cache-only** dans `.cache/amendements_an/`, textes portés depuis les dossiers
 législatifs (rôle factuel auteur / rapporteur / co-rapporteur), interventions
 depuis les comptes rendus Syceron (15/16/17) puis les questions QE/QG/QOSD.
 Les URL de jeux de données et les schémas JSON de chacune de ces archives sont
-dans [`an_opendata.md`](./an_opendata.md) — référence de la source, qui dérive
+dans [`an-opendata.md`](./sources/an-opendata.md) — référence de la source, qui dérive
 avec l'Assemblée et non avec notre code.
 
 **L'AN est source unique, et il n'y a plus aucun repli.** Un slug que le

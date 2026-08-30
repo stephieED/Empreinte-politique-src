@@ -1,5 +1,12 @@
 # API de NosDéputés.fr & NosSénateurs.fr
 
+> **Statut : référence historique.** Le pipeline a cessé d'interroger
+> NosDéputés.fr / NosSénateurs.fr à #529 : plus aucun code de ce dépôt
+> n'appelle cette plateforme. Conservé comme documentation d'une source
+> externe, non entretenu — il dérive avec Regards Citoyens, pas avec notre
+> code. La source vivante et unique du pipeline est
+> `docs/sources/an-opendata.md`.
+
 Une API a été développée pour offrir un accès Open Data simplifié aux données de NosDéputés.fr et NosSénateurs.fr aux formats XML, JSON et CSV.
 
 

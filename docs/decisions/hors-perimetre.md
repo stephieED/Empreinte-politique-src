@@ -102,3 +102,21 @@ today.
 ## Mayors
 
 No dedicated collection module or source identified yet.
+
+## HATVP lobby register
+
+`AGENTS.md` pointed at a `docs/hatvp_opendata.md` that **never existed** —
+removed on 30/08/2026, same family as the three phantom anchors (`#positionnement`,
+`#fusion`, `#cas-limites`). The subject itself is real and stays out of scope,
+so the verdict is recorded here instead of in a file nobody can open.
+
+The HATVP register lists **interest representatives** (lobbies), not elected
+officials' records: it describes who lobbies whom, which is a different object
+from a factual political CV (§1). No collection module, no source explored, no
+expressed need.
+
+Not to be confused with the **only** HATVP datum the pipeline does carry:
+`identite.uri_hatvp` (and its `identifiants.hatvp` twin, #539), a URI to a
+member's own declaration of interests, read from AN open data's AMO30
+referential — never from the lobby register. See
+[[identite-profils-539]] and [[absences-publiees-comme-faits-556-558-560]].

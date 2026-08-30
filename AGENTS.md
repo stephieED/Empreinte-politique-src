@@ -467,9 +467,10 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `docs/pipeline-profiles-groupes.md` | A file under `pivot_data/`/`raw_data/` appears or changes shape, a schema changes, a source is added or removed, a normalisation or aggregation step moves. |
 | `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
 | `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
+| `docs/sources/` | **External-source references — the only docs that drift with their provider, not with our code.** Update when the provider moves a dataset, a URL pattern or a field, never because our pipeline changed. Each file states its own status in its header (`an-opendata.md`: live, the pipeline's single source; `nosdeputes/`: historical, not queried since #529) — the directory names the category, the header names the status. |
 | `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
 | `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
-| `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
+| `ROADMAP.md` | **A large piece of work to plan for**, or a known defect that stays open. **Never a small fix — that is a GitHub issue.** It holds what GitHub cannot: the scoping findings that must not be re-litigated, and the known defects a cold-start session has to read. **Never a list of issues**: one was removed on purpose, because a table copying GitHub's state goes stale with every lot shipped, and a wrong table is worse than none. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
 | `CLAUDE.md`, `.github/copilot-instructions.md` | **Never — they are symlinks to this file.** One source, several names, so the instructions cannot drift between tools. Adding a tool that expects another name: create the symlink and add it to `ALIAS` in `tests/test_instructions_agents.py`. |
 | `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
 | `requirements-dev.txt` | A new **test-only** package is imported. Same pinning rule; it already pulls `requirements.txt` via `-r`. |
@@ -557,14 +558,20 @@ When something does need deciding, five parts, in this order:
   The `n/4` denominators printed are themselves stale. Hard vs soft fail logic.
   Amendements coverage/freshness are deliberately never hard fails — see
   `docs/decisions/amendements-zero-pas-de-hard-fail.md`.
-- `docs/an_opendata.md`: AN open-data JSON schemas.
+- `docs/sources/`: external-source references, which drift with their provider and not
+  with our code. `an-opendata.md` (AN open-data JSON schemas — live, our single source);
+  `nosdeputes/` (historical, not queried since #529). Status is in each file's header,
+  not in the directory name.
 - `docs/extract-roster-groupes.md`: the roster-driven job, in depth (the other seven jobs are blocks in `docs/workflow-generate-data.md` §1).
 - `docs/pipeline-profiles-groupes.md`: what the data becomes — the six outputs of
   `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**
-- `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
+- HATVP lobby-register: out of scope, and **there is no file for it** — this
+  line named `docs/hatvp_opendata.md`, which never existed. The verdict now
+  lives in `docs/decisions/hors-perimetre.md`, with the distinction from
+  `identite.uri_hatvp`, the one HATVP datum the pipeline does carry.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
   `normalize_nosdeputes.py` until #529).
