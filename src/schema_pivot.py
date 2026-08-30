@@ -422,10 +422,18 @@ class ChambresDerivees(NamedTuple):
     #: `chambres[0]`, ou `None` si `chambres` est vide. Jamais autre chose.
     chambre: Optional[str]
     #: `True` si **chaque** entrée de `chambres` est étayée par un
-    #: `mandat_electif` estampillé et qu'aucun mandat électif ne reste à `null` :
-    #: la liste est alors la liste vérifiée des chambres où la personne a siégé.
-    #: `False` partout ailleurs. C'est ce booléen qui déclenche le warning, et
-    #: c'est son passage à `True` sur tout le corpus qui clôt la migration.
+    #: `mandat_electif` estampillé — donc vrai, vide de sens mais vrai, sur une
+    #: liste vide, qui ne publie aucune chambre. `False` seulement quand une
+    #: chambre est publiée sans qu'aucun mandat ne la dise, c'est-à-dire quand
+    #: la chambre de collecte figure sur sa seule parole. C'est ce booléen qui
+    #: déclenche le warning de #493, et son passage à `True` sur tout le corpus
+    #: est la condition 2 du retrait de `chambre`.
+    #:
+    #: Il ne dit **rien** de la complétude des mandats : un `mandat_electif`
+    #: sans estampille est déclaré par le warning de #492, qui le compte
+    #: (#486 — jusque-là, ce prédicat le redéclarait, ce qui gageait le retrait
+    #: d'un champ de niveau profil sur une complétude de niveau mandat que la
+    #: fusion additive ne peut pas atteindre).
     corroboree: bool
     #: Les entrées de `chambres` qu'aucun mandat estampillé n'étaye — en pratique
     #: la seule chambre de collecte. Nommées dans le warning : « on publie AN
@@ -524,7 +532,32 @@ def deriver_chambres(
 
     chambres = [c for c in ORDRE_CHAMBRES if c in toutes]
     non_corroborees = [c for c in chambres if c not in estampillees]
-    corroboree = bool(chambres) and not non_corroborees and not n_non_estampilles
+    # `corroboree` porte sur ce qui est PUBLIÉ dans `chambres`, et sur rien
+    # d'autre (#486). Deux clauses ont été retirées de ce prédicat, chacune
+    # parce qu'elle faisait déclarer non corroborée une liste que rien ne
+    # contredit — mesuré sur les 481 profils pivot publiés du 30/08/2026, où le
+    # warning est publié 31 fois et où **30 de ces 31 occurrences énoncent un
+    # problème que leur propre phrase dénie** :
+    #
+    # - `bool(chambres)` : une liste vide ne publie aucune chambre, donc aucune
+    #   chambre non étayée. Sur 3 des 481 profils (`david-lisnard`,
+    #   `marine-tondelier`, `nathalie-arthaud` — aucun mandat parlementaire,
+    #   aucune chambre de collecte), le warning se lisait « chambres=[], dont
+    #   aucune sans mandat électif estampillé pour l'étayer, et 0 mandat(s)
+    #   électif(s) encore sans chambre » : il ne nommait aucun problème.
+    # - `not n_non_estampilles` : un `mandat_electif` sans estampille est un
+    #   manque de la COLLECTE d'un mandat, pas un défaut d'étai de la liste. Il
+    #   a déjà son propre avertissement, celui de #492, qui le nomme et le
+    #   compte. Sur 27 des 481 profils, cette clause faisait publier « chambres
+    #   du profil non corroborée : chambres=['AN'], dont aucune sans mandat
+    #   électif estampillé pour l'étayer » — la liste était intégralement
+    #   étayée, et le titre disait le contraire.
+    #
+    # Ce que le prédicat ne dit toujours pas — et #493 l'écrivait déjà :
+    # « chaque chambre publiée est étayée » n'a jamais voulu dire « voici toute
+    # la carrière ». Un mandat non estampillé peut cacher une chambre absente de
+    # la liste ; c'est le warning de #492 qui le déclare, pas celui-ci.
+    corroboree = not non_corroborees
 
     return ChambresDerivees(
         chambres,

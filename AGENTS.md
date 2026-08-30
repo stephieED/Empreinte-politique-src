@@ -284,8 +284,14 @@ tolerance is **partitioned** — no input disarms another's check.
   one `chambres du profil non corroborée` warning per profile (§2.5), whose corpus count
   is the migration meter. `chambre`'s retirement condition is written down; without a
   written criterion a transitional becomes permanent, as #431's and #432's read fallbacks
-  did.
-  → `docs/decisions/chambres-profil-derivees.md`
+  did. **That warning declares one thing only: a published chamber that no stamped mandate
+  backs (#486).** It does not restate the completeness of `mandats[]` — that is #492's own
+  warning, recomputed on the **merged** mandates in both directions. Conflating the two
+  gaged a profile-level field's retirement on a mandate-level completeness the additive
+  merge cannot reach: 29 of the 511 published `mandat_electif` are entries the source no
+  longer serves, so `backfill_mandat_chambre` can never match them.
+  → `docs/decisions/chambres-profil-derivees.md`,
+  `docs/decisions/corroboration-chambres-publiees-486.md`
 - **A group's eligibility window is chamber-scoped (#492)** — a union over all
   `mandat_electif` counted a member absent on ballots he could no longer vote, a false
   cohesion denominator (§2.7). A mandate with `chambre: null` is **kept** (excluding it
