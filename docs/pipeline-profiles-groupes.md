@@ -380,11 +380,24 @@ ressemble un fichier :
   "interventions": [ ],
   "tags_thematiques": ["budget", "fiscalite"],
   "meta": {"schema_version": "1", "genere_le": "...", "warnings": [],
-           "provenance": "candidat_declare", "licence_donnees": "..."}
+           "provenance": "candidat_declare", "licence_donnees": "...",
+           "provenance_champs": {"identite": {"profession": {
+               "source": "assemblee_nationale", "synchro_le": "..."}}}}
 }
 ```
 
-Deux pièges de lecture, sur ce fichier précisément :
+Trois pièges de lecture, sur ce fichier précisément :
+
+- **`meta.provenance_champs` et `meta.provenance` ne disent pas la même chose**
+  (#603). Le second dit *pourquoi ce profil existe* (`candidat_declare` /
+  `roster_groupe`) ; le premier dit *d'où vient chaque valeur d'`identite`, et
+  de quand*. Il ne décrit **que** `identite`, seul bloc composé champ par champ
+  (#601), et il est **facultatif** : les 481 profils publiés avant ce lot ne le
+  portent pas. Une provenance inconnue s'y lit `{"source": null,
+  "synchro_le": null}` — elle ne s'omet jamais.
+  Ne pas le confondre non plus avec `couverture`, qui dit *pourquoi une liste
+  est vide*, à la maille de la liste métier et non du champ.
+  → `docs/decisions/provenance-par-champ-603.md`
 
 - **`sources[].type` peut valoir `nosdeputes` / `nossenateurs` sur un profil
   publié**, alors qu'une collecte fraîche ne produit plus qu'`assemblee_nationale`
