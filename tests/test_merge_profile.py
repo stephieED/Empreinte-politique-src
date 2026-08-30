@@ -951,14 +951,24 @@ def test_la_meme_regle_vaut_sur_le_pivot():
     assert merged["identite"] == _IDENTITE_AN
 
 
-def test_une_identite_qui_apporte_un_seul_champ_de_fond_ecrase_normalement():
+def test_une_valeur_corrigee_gagne_champ_par_champ_sans_emporter_les_autres():
     """La règle de #465 n'est pas devenue « la nouvelle valeur ne gagne
-    jamais » : seul le passage à RIEN est refusé."""
+    jamais » : une valeur réellement collectée gagne.
+
+    Depuis #601, elle gagne **sur son champ** et sur lui seul : la fusion
+    compose au lieu de choisir un bloc entier. La correction aboutit donc — la
+    profession publiée est la neuve — sans que les cinq champs que le nouvel
+    écrivain ne renseigne pas régressent vers `null` (§2.5). Avant #601, ce même
+    scénario publiait le bloc neuf en entier, et les cinq disparaissaient.
+    """
     corrigee = dict(_IDENTITE_SQUELETTE, profession="Professeur certifié")
     merged = merge_raw_profile(
         {"identite": dict(_IDENTITE_AN)}, {"identite": corrigee}
     )
-    assert merged["identite"] == corrigee
+    assert merged["identite"]["profession"] == "Professeur certifié"
+    assert merged["identite"]["date_naissance"] == _IDENTITE_AN["date_naissance"]
+    assert merged["identite"]["num_circo"] == _IDENTITE_AN["num_circo"]
+    assert merged["identite"]["url_an_ou_senat"] == _IDENTITE_AN["url_an_ou_senat"]
 
 
 def test_un_squelette_nefface_pas_un_squelette_et_ne_casse_rien():
