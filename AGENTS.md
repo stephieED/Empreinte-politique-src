@@ -365,7 +365,7 @@ tolerance is **partitioned** — no input disarms another's check.
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
 | `interventions[]` | Speeches, questions (`type_detail`) |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
-| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/decisions/provenance-pivot.md`) |
+| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/decisions/provenance-pivot.md`), `provenance_champs` (#603). **`provenance` says why the profile exists; `provenance_champs` says which source filled which field of `identite`, and when** — optional (absent from the 481 profiles published before the lot), `identite`-only, and an unknown origin is published `{"source": null, "synchro_le": null}`, never omitted. Derived after the merge like `chambres` and `licence_donnees`, never merged. Not to be confused with `couverture` either: that one says *why a business list is empty*, per list, not per field. See `docs/decisions/provenance-par-champ-603.md` |
 
 Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed values in
 `frozenset KNOWN_*`, validated by `validate_profil()` — extend the frozenset, never bypass.

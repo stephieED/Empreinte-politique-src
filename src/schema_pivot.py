@@ -315,8 +315,23 @@ Format d'un profil pivot v1 :
         "genere_le": "2026-07-29T...",
         "licence_donnees": "ODbL ...",
         "warnings": [],
-        "provenance": "candidat_declare"          # "candidat_declare" | "roster_groupe" ;
+        "provenance": "candidat_declare",         # "candidat_declare" | "roster_groupe" ;
                                              # voir KNOWN_PROVENANCES
+        "provenance_champs": {               # #603 — D'OÙ VIENT CETTE VALEUR, et de quand.
+                                             # À ne pas confondre avec `provenance` ci-dessus,
+                                             # qui dit pourquoi ce profil existe. Facultatif :
+                                             # absent des 481 profils publiés avant ce lot.
+                                             # Ni à confondre avec `couverture`, qui dit
+                                             # POURQUOI UNE LISTE EST VIDE : les deux coexistent
+                                             # et n'ont pas la même maille — par liste métier
+                                             # pour l'une, par champ pour l'autre.
+            "identite": {                    # seul bloc décrit ; voir BLOCS_PROVENANCE_CHAMPS
+                "profession": {
+                    "source": "assemblee_nationale",  # KNOWN_SOURCE_TYPES, ou null si inconnue
+                    "synchro_le": "2026-08-30T..."    # null si la source est inconnue
+                }
+            }
+        }
     }
 }
 
@@ -849,6 +864,127 @@ def marqueur_defaut_code(preuve: str) -> Optional[str]:
             return marqueur
     trouve = _PREUVE_CADRE_PYTHON.search(preuve)
     return trouve.group(0) if trouve else None
+
+
+#: Blocs de champs dont la provenance est publiée champ par champ (#603).
+#:
+#: **Un seul pour l'instant, et c'est une décision, pas un début d'inventaire.**
+#: La provenance par champ ne répond à une question que là où PLUSIEURS SOURCES
+#: écrivent le même champ. Mesuré le 30/08/2026 : `src/group_profile.py` ne lit
+#: jamais `identite` (zéro occurrence) et ne consomme que des listes, déjà
+#: fusionnées additivement — sur une liste, l'entrée porte déjà sa source. Le
+#: seul bloc composé champ par champ est `identite` (#601), et c'est là que le
+#: conflit de sources existe : un profil peut avoir un mandat européen en plus
+#: de son mandat national.
+#:
+#: `identifiants` est composé clé par clé lui aussi (#539) mais n'entre pas ici :
+#: chacune de ses clés EST le nom de sa source (`an`, `europarl`, `hatvp`), donc
+#: sa provenance est déjà lisible sans second bloc.
+BLOCS_PROVENANCE_CHAMPS: tuple[str, ...] = ("identite",)
+
+
+def valider_provenance_champs(provenance: Any, profil: dict[str, Any]) -> list[str]:
+    """Vérifie `meta.provenance_champs` d'un profil pivot (#603).
+
+    Trois invariants, et le troisième est celui qui fait travailler le bloc :
+
+    1. **Forme fermée.** Les blocs décrits sont ceux de `BLOCS_PROVENANCE_CHAMPS`,
+       chaque entrée porte exactement `source` et `synchro_le`, et `source` est
+       `null` ou l'un des `KNOWN_SOURCE_TYPES`.
+    2. **Une date sans source n'est pas une traçabilité.** `synchro_le` renseigné
+       avec `source` à `null` publierait un horodatage que rien ne rattache — la
+       forme même d'une preuve qui n'en est pas une (§2.2).
+    3. **Complétude, dans les deux sens.** Tout champ publié et renseigné du bloc
+       décrit a son entrée ; aucune entrée ne décrit un champ que le bloc ne
+       publie pas. Sans le premier sens, l'absence d'entrée deviendrait une
+       seconde façon de dire « on ne sait pas », à côté de `source: null` qui le
+       dit déjà — et deux façons de dire la même chose, c'est celle qu'on oublie
+       de lire qui gagne. Sans le second, on publierait la provenance d'une
+       valeur qui n'existe pas.
+    """
+    if not isinstance(provenance, dict):
+        return [
+            "'meta.provenance_champs' doit être un dict, reçu : "
+            f"{type(provenance).__name__}."
+        ]
+
+    errors: list[str] = []
+    inconnus = sorted(set(provenance) - set(BLOCS_PROVENANCE_CHAMPS))
+    if inconnus:
+        errors.append(
+            f"meta.provenance_champs décrit des blocs hors nomenclature : "
+            f"{inconnus!r}. Blocs connus : {list(BLOCS_PROVENANCE_CHAMPS)}."
+        )
+
+    for nom_bloc in BLOCS_PROVENANCE_CHAMPS:
+        if nom_bloc not in provenance:
+            continue
+        entrees = provenance.get(nom_bloc)
+        if not isinstance(entrees, dict):
+            errors.append(
+                f"meta.provenance_champs.{nom_bloc} doit être un dict, reçu : "
+                f"{type(entrees).__name__}."
+            )
+            continue
+
+        bloc = profil.get(nom_bloc)
+        publies = {
+            champ
+            for champ, valeur in (bloc.items() if isinstance(bloc, dict) else ())
+            if valeur not in (None, "", [], {})
+        }
+        manquants = sorted(publies - set(entrees))
+        if manquants:
+            errors.append(
+                f"meta.provenance_champs.{nom_bloc} est incomplète : {manquants!r} "
+                "sont publiés et renseignés sans provenance. Une provenance "
+                "inconnue se déclare (source: null), elle ne s'omet pas (§2.5)."
+            )
+        orphelins = sorted(set(entrees) - publies)
+        if orphelins:
+            errors.append(
+                f"meta.provenance_champs.{nom_bloc} décrit des champs que "
+                f"'{nom_bloc}' ne publie pas : {orphelins!r}."
+            )
+
+        for champ, entree in entrees.items():
+            errors.extend(_valider_entree_provenance(nom_bloc, champ, entree))
+    return errors
+
+
+def _valider_entree_provenance(nom_bloc: str, champ: str, entree: Any) -> list[str]:
+    prefixe = f"meta.provenance_champs.{nom_bloc}.{champ}"
+    if not isinstance(entree, dict):
+        return [f"{prefixe} doit être un dict, reçu : {type(entree).__name__}."]
+
+    errors: list[str] = []
+    attendues = {"source", "synchro_le"}
+    if set(entree) != attendues:
+        errors.append(
+            f"{prefixe} porte {sorted(entree)!r}, attendu exactement "
+            f"{sorted(attendues)!r}."
+        )
+
+    source = entree.get("source")
+    if source is not None and source not in KNOWN_SOURCE_TYPES:
+        errors.append(
+            f"{prefixe}.source non reconnue : {source!r}. "
+            f"Valeurs connues : {sorted(KNOWN_SOURCE_TYPES)}, ou null."
+        )
+
+    synchro_le = entree.get("synchro_le")
+    if synchro_le is not None and not isinstance(synchro_le, str):
+        errors.append(
+            f"{prefixe}.synchro_le doit être un horodatage (chaîne) ou null, "
+            f"reçu : {type(synchro_le).__name__}."
+        )
+    if source is None and synchro_le is not None:
+        errors.append(
+            f"{prefixe} date une provenance qu'elle ne nomme pas : "
+            f"synchro_le={synchro_le!r} avec source=null. Un horodatage que rien "
+            "ne rattache à une source n'est pas une traçabilité (§2.2)."
+        )
+    return errors
 
 
 def valider_couverture(couverture: Any) -> list[str]:
@@ -1546,6 +1682,16 @@ def validate_profil(
             errors.append(
                 f"meta.provenance non reconnue : {provenance!r}. "
                 f"Valeurs connues : {sorted(KNOWN_PROVENANCES)}."
+            )
+
+        # #603 — même précédent que `identifiants` (#539) et `couverture` :
+        # absent des 481 profils publiés avant ce lot, donc validé seulement s'il
+        # est présent. Présent, il est tenu à sa complétude : un champ publié
+        # sans provenance ferait de l'absence d'entrée une seconde façon de dire
+        # « on ne sait pas », à côté de `source: null` qui le dit déjà.
+        if "provenance_champs" in meta:
+            errors.extend(
+                valider_provenance_champs(meta.get("provenance_champs"), profil)
             )
 
     return errors
