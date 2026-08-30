@@ -520,9 +520,20 @@ Never create a missing file from this list without flagging it first.
 ## 9. Reporting to the owner
 
 The rationale lives in this file and in `docs/decisions/`. Don't restate it in
-chat. What follows is about the **shape** of a reply, not its length: a
-ten-row table reads fine, a ten-line paragraph does not.
+chat.
 
+**Length is a rule, not only shape — aim for ten lines.** Formatting buys no
+extra room: a forty-line reply, tables and short paragraphs included, still makes
+the owner reread everything to find the one thing that needs her decision.
+Measured on three consecutive reports, 30/08/2026, each well-formatted and each
+too long. Sorting is the agent's work, not hers.
+
+- **One arbitration per reply.** When several points need a decision, raise the
+  first and wait. Sequenced replies beat one complete report — she asked for this
+  explicitly.
+- **The detail lives in the deliverable, not in chat.** The document, the issue,
+  the decision file carry the full reasoning; the reply carries the conclusion
+  and the question.
 - **A table whenever two things compare.** Prose forces a reread to compare two
   lines; a table is scanned. Applies to issue rundowns, before/after
   measurements, options with their costs.
