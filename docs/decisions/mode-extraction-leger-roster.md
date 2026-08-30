@@ -36,3 +36,7 @@ Candidats avec peu d'interventions » de `check_quality_gate.py` — déjà le
 cas aujourd'hui pour la quasi-totalité d'entre eux (l'input
 `extract_interventions` vaut `false` par défaut) ; ce warning reste un soft
 warning (§6 `AGENTS.md`), jamais un hard fail.
+
+> **Deux noms de ce paragraphe ont changé depuis (30/08/2026).** La section s'appelle désormais « Profils avec peu d'interventions » — elle portait sur les 481 profils et non sur les seuls candidats, et son ancien libellé enseignait la confusion que #630 corrige. Et l'input `extract_interventions` s'appelle `collect_interventions` : le nom cité ici n'existe plus dans `generate-data.yml`.
+>
+> Le raisonnement du paragraphe reste juste ; seuls ses deux renvois étaient morts.

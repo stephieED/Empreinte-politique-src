@@ -6,7 +6,7 @@ signal de fraîcheur des index de législature (issue #254, sous-issue 6/6 de
 en s'appuyant sur `fraicheur.json` écrit par `_write_amendements_fraicheur`,
 candidate_profile.py, issue #253).
 
-Le signal global de la §3c (« aucun candidat AN n'a d'amendements ») reste un
+Le signal global de la §3c (« aucun profil AN n'a d'amendements ») reste un
 avertissement non bloquant : il n'entre jamais dans le code de sortie, mais est
 remonté à part et affiché en tête de rapport (décision #378, voir
 docs/decisions/amendements-zero-pas-de-hard-fail.md). Les tests
@@ -116,7 +116,7 @@ def test_report_amendements_coverage_flags_per_candidate_fetch_failure(tmp_path)
 
     assert any("jean-dupont" in w for w in soft)
     # Pas de régression globale puisque marie-martin a bien des amendements.
-    assert not any("aucun candidat AN" in w for w in soft)
+    assert not any("aucun profil AN" in w for w in soft)
 
 
 def test_report_amendements_coverage_ignores_candidates_without_identite(tmp_path):
@@ -165,8 +165,8 @@ def test_report_amendements_coverage_signal_global_non_duplique(tmp_path):
     # Deux avertissements (un par candidat en échec + le global), mais le
     # global n'est listé qu'une fois, dans le bandeau.
     assert len(soft) == 2
-    assert console.count("aucun candidat AN") == 1
-    assert md.count("aucun candidat AN") == 1
+    assert console.count("aucun profil AN") == 1
+    assert md.count("aucun profil AN") == 1
     # L'avertissement par candidat reste listé normalement.
     assert "jean-dupont" in console
 
@@ -304,7 +304,7 @@ def test_main_zero_amendement_ne_bloque_pas_le_commit(tmp_path, monkeypatch, cap
     # Affiché en tête (bandeau), avant même la section 3c.
     entete, _, corps = sortie.partition("┌─ 1/4")
     assert _AMENDEMENTS_ZERO_ICONE in entete
-    assert "aucun candidat AN sur 2" in entete
+    assert "aucun profil AN sur 2" in entete
     assert "non bloquant" in entete.lower()
 
 
@@ -713,7 +713,9 @@ def test_report_amendements_coverage_couvre_les_amendements_hors_population_an(t
 
 def test_report_amendements_coverage_hors_population_an_ne_fausse_pas_les_compteurs(tmp_path):
     """Contrepartie du test précédent : les lignes ajoutées pour leurs seuls
-    amendements ne doivent ni gonfler « Candidats AN avec identité », ni
+    amendements ne doivent ni gonfler « Profils AN avec identité » — le compteur
+    s'appelait « Candidats AN avec identité » jusqu'à #630, alors qu'il compte
+    477 profils dont 468 membres de roster —, ni
     éteindre le signal de régression globale « amendements[] vide partout »,
     qui porte sur la population dont on ATTEND des amendements."""
     _write_pivot(tmp_path, "jean-dupont", "AN", {"nom_complet": "Jean Dupont"}, amendements=[], warnings=[])
@@ -728,8 +730,8 @@ def test_report_amendements_coverage_hors_population_an_ne_fausse_pas_les_compte
 
     soft, regression, console, md = _report_amendements_coverage(tmp_path)
 
-    assert regression is not None and "aucun candidat AN sur 1" in regression
-    assert "| ⚠️ Candidats AN avec identité | 1 |" in md
+    assert regression is not None and "aucun profil AN sur 1" in regression
+    assert "| ⚠️ Profils AN avec identité | 1 (1 candidats déclarés · 0 membres de roster) |" in md
     # Chaque compteur garde un sens unique : l'apport hors population AN est
     # rendu explicite au lieu d'être fondu dans les compteurs « candidats AN ».
     assert "| Avec ≥ 1 amendement | 0 |" in md

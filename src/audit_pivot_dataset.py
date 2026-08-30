@@ -62,6 +62,12 @@ from amendements_index import (
     charger as charger_amendements,
 )
 from scrutins_index import DEFAULT_SCRUTINS_PATH, charger as charger_scrutins
+# Les deux populations de `pivot_data/profiles/` (#630). Ce module CALCULAIT
+# déjà la répartition par provenance ; ce qu'il ne faisait pas, c'est la rendre
+# visible à côté des comptes que l'on recopie — « → 481 profil(s) chargé(s) »
+# sur la console, « Total profils : 481 » en tête du rapport. Une ventilation
+# calculée deux sections plus bas n'empêche personne d'écrire « 481 profils ».
+from population_profils import Ventilation, ventiler
 
 # Types de sources attendus par chambre pour compute_coherence_chambre_sources :
 # chaque chambre doit avoir déclaré au moins une source de l'un de ces types.
@@ -611,16 +617,23 @@ def compute_profils_sans_activite(profils: list[dict[str, Any]]) -> dict[str, An
     absent ou `null` compte comme "aucun élément", au même titre qu'une
     liste vide.
     """
-    ids = [
-        profil.get("id")
+    sans_activite = [
+        profil
         for profil in profils
         if all(_taille_liste(profil, champ) == 0 for champ in CHAMPS_ACTIVITE)
     ]
+    ids = [profil.get("id") for profil in sans_activite]
 
     return {
         "total_profils": len(profils),
         "nb_profils_sans_activite": len(ids),
         "profils_sans_activite": ids,
+        # #630 — « 12 / 481 » ne dit pas si le trou est sur les 13 fiches
+        # publiées ou sur les 468 membres de roster, et les deux appellent des
+        # suites différentes : la première est une fiche vide en ligne, la
+        # seconde un agrégat de groupe amputé de son numérateur.
+        "ventilation_provenance": ventiler(sans_activite).as_dict(),
+        "ventilation_provenance_total": ventiler(profils).as_dict(),
     }
 
 
@@ -1012,6 +1025,7 @@ def build_report(
         "meta": {
             "genere_le": reference.isoformat(),
             "total_profils": len(profils),
+            "ventilation_provenance": ventiler(profils).as_dict(),
             "total_erreurs_lecture": len(erreurs_lecture),
             "staleness_days": staleness_days,
         },
@@ -1074,6 +1088,13 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
 
     par_provenance = volumetrie["repartition_provenance"]["par_provenance"]
     lignes_provenance = [[provenance, effectif] for provenance, effectif in par_provenance.items()]
+    # #630 — la table de provenance existait déjà, mais deux sections plus bas
+    # que le total. Le total la porte désormais lui-même.
+    ventilation = Ventilation(
+        candidats_declares=par_provenance.get("candidat_declare", 0),
+        membres_roster=par_provenance.get("roster_groupe", 0),
+        provenance_autre=par_provenance.get("null", 0),
+    )
 
     repartition = volumetrie["repartition_chambre"]
     # #494 — la répartition n'est plus une partition : un profil bicaméral est
@@ -1081,7 +1102,7 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
     # affiché à côté du nombre de profils, jamais à sa place (§2.7).
     return (
         "## Volumétrie\n\n"
-        f"Total profils : {repartition['total_profils']}\n\n"
+        f"Total profils : {ventilation.cellule_markdown()}\n\n"
         "### Répartition par chambre\n\n"
         "Un profil est compté dans **chacune** des chambres où il a siégé "
         f"(`chambres`, #493) : {repartition['total_attributions']} attributions "
@@ -1114,7 +1135,10 @@ def _md_section_completude(completude: dict[str, Any]) -> str:
             lignes_remplissage, "Aucun profil.",
         )
         + "\n### Profils sans activité (aucun vote, amendement ni intervention)\n\n"
-        f"{sans_activite['nb_profils_sans_activite']} / {sans_activite['total_profils']} profil(s).\n\n"
+        f"{Ventilation.depuis_dict(sans_activite.get('ventilation_provenance')).cellule_markdown()}"
+        " sur "
+        f"{Ventilation.depuis_dict(sans_activite.get('ventilation_provenance_total')).cellule_markdown()}"
+        " profil(s).\n\n"
         "### Présence des métadonnées\n\n"
         + _md_table(
             ["Critère", f"Profils en défaut (sur {presence_meta['total_profils']})"],
@@ -1325,7 +1349,8 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         (
             "# Rapport d'audit du jeu de données pivot\n\n"
             f"Généré le {meta['genere_le']}. "
-            f"{meta['total_profils']} profil(s) analysé(s), "
+            f"{Ventilation.depuis_dict(meta.get('ventilation_provenance')).cellule_markdown()}"
+            " profil(s) analysé(s), "
             f"{meta['total_erreurs_lecture']} erreur(s) de lecture. "
             f"Seuil de péremption des sources : {meta['staleness_days']} jour(s).\n\n"
             "Ce rapport est un outil de qualité interne : il présente des "
@@ -1439,8 +1464,12 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     profils, erreurs_lecture = load_pivot_directory(input_dir)
+    # La ligne lue avant toute mesure : elle porte la ventilation, sans quoi
+    # « 481 » repart seul dans le rapport de qui la lit (#630).
     print(
-        f"→ {len(profils)} profil(s) chargé(s), {len(erreurs_lecture)} erreur(s) de lecture.",
+        f"→ {len(profils)} profil(s) chargé(s) "
+        f"{ventiler(profils).detail()}, "
+        f"{len(erreurs_lecture)} erreur(s) de lecture.",
         file=sys.stderr,
     )
 

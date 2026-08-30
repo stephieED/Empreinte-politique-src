@@ -52,6 +52,11 @@ from pathlib import Path
 from typing import Any, Optional
 
 from profil_brut import PartitionIllisible, charger_profil_brut
+# Les deux populations de `pivot_data/profiles/` (#630). Ce script accepte
+# `--profils-dir` plusieurs fois, et le brut n'a jamais porté `meta.provenance` :
+# `ventiler_chemins` ne ventile donc que les `*.pivot.json` et rend les autres,
+# que le rapport nomme au lieu de les fondre dans un poste.
+from population_profils import Ventilation, ventiler_chemins
 
 # Champs dont on mesure l'externalisation. `co_signataires` est imbriqué dans
 # chaque amendement, d'où un chemin en deux segments.
@@ -235,6 +240,10 @@ def compute_volumetrie(
 
     return {
         "nb_profils": nb,
+        # #630 — la ventilation vient de la passe 1 (tous les fichiers), donc du
+        # même comptage que `nb_profils` ; elle est absente si `exact` l'est.
+        "ventilation_provenance": (exact or {}).get("ventilation_provenance"),
+        "nb_profils_sans_provenance": (exact or {}).get("nb_profils_sans_provenance", 0),
         "nb_echantillon": len(mesures),
         "extrapole": facteur != 1.0,
         "octets_total": total,
@@ -522,7 +531,8 @@ def _avertissement_representativite(vol: dict[str, Any], proj: dict[str, Any]) -
     """
     if vol["nb_profils"] >= proj["cible"]:
         return (
-            f"> Population **complète** ({vol['nb_profils']} profils pour une "
+            f"> Population **complète** ({vol['nb_profils']} profils "
+            f"{_libelle_ventilation(vol)} pour une "
             f"cible de {proj['cible']}) : le total est mesuré, pas extrapolé."
         )
     return (
@@ -530,6 +540,25 @@ def _avertissement_representativite(vol: dict[str, Any], proj: dict[str, Any]) -
         "que des profils déjà générés, elle peut être biaisée — les profils "
         "générés en premier ne sont pas forcément de poids médian."
     )
+
+
+def _libelle_ventilation(vol: dict[str, Any]) -> str:
+    """Ventilation par provenance d'une volumétrie, brut compris (#630).
+
+    Les profils bruts n'ont pas de `meta.provenance` : ils sont comptés à part
+    et **nommés**, jamais rangés d'office parmi les candidats déclarés. Sans
+    cette distinction, `--profils-dir raw_data/profiles` afficherait « 476
+    candidats déclarés » — un chiffre juste sur la mauvaise population.
+    """
+    ventilation = Ventilation.depuis_dict(vol.get("ventilation_provenance"))
+    sans_provenance = vol.get("nb_profils_sans_provenance") or 0
+    if not ventilation.total and not sans_provenance:
+        return ""
+    postes = [f"{effectif} {libelle}" for effectif, libelle in ventilation.postes()
+              ] if ventilation.total else []
+    if sans_provenance:
+        postes.append(f"{sans_provenance} profils bruts, sans meta.provenance")
+    return "(" + " · ".join(postes) + ")"
 
 
 def generate_markdown_report(rapport: dict[str, Any]) -> str:
@@ -542,7 +571,8 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
     lignes = [
         "# Volumétrie des profils et leviers d'allègement",
         "",
-        f"Population : **{vol['nb_profils']} profils**, **{_mo(total)}** au "
+        f"Population : **{vol['nb_profils']} profils** "
+        f"{_libelle_ventilation(vol)}, **{_mo(total)}** au "
         f"total — mesuré sur tous les fichiers.",
         "",
         f"Ratios (compact, gzip, poids par champ) calculés sur "
@@ -749,10 +779,14 @@ def analyser_repertoires(
     # `octets_du_profil` et non `stat()` : depuis #580 un profil brut est un
     # socle plus ses tranches. Le `glob` reste non récursif — il énumère les
     # slugs, comme avant — et c'est la mesure qui descend dans le répertoire.
+    ventilation, hors_pivot = ventiler_chemins(tous)
+
     tailles = [(c, octets_du_profil(c)) for c in tous]
     tailles.sort(key=lambda ct: ct[1])
     exact = {
         "nb_profils": len(tailles),
+        "ventilation_provenance": ventilation.as_dict(),
+        "nb_profils_sans_provenance": len(hors_pivot),
         "octets_total": sum(t for _c, t in tailles),
         "octets_median": tailles[len(tailles) // 2][1] if tailles else 0,
         "octets_max": tailles[-1][1] if tailles else 0,
