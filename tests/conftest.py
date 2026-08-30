@@ -37,6 +37,13 @@ import pytest
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# `tests/` sur le chemin d'import **avant** `_outils_ci` : le seul analyseur du
+# bloc `sparse-checkout:` du dépôt y vit, et un conftest ne peut pas importer un
+# module de test. Poser le chemin ici plutôt que compter sur l'`--import-mode`
+# de pytest fait que les tests qui importent le même module voient le même objet.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import _outils_ci  # noqa: E402  (l'import dépend du sys.path ci-dessus)
 
 HOTES_AUTORISES = frozenset({"127.0.0.1", "localhost", "::1", "[::1]"})
 
@@ -71,11 +78,11 @@ def _reseau_coupe(monkeypatch):
 # Second garde-fou du fichier : diagnostiquer le piège du sparse-checkout.
 # ---------------------------------------------------------------------------
 
-#: Racine du dépôt, telle que la voit la suite.
-RACINE_DEPOT = Path(__file__).resolve().parents[1]
-
-#: Le seul endroit où la liste blanche existe. Jamais recopiée ici.
-WORKFLOW_TESTS = RACINE_DEPOT / ".github" / "workflows" / "tests.yml"
+#: Racine du dépôt et fichier de workflow : repris de `_outils_ci`, le seul
+#: analyseur du bloc `sparse-checkout:`. Les réexporter ici garde le hook
+#: lisible et laisse un test pointer `WORKFLOW_TESTS` ailleurs.
+RACINE_DEPOT = _outils_ci.RACINE_DEPOT
+WORKFLOW_TESTS = _outils_ci.WORKFLOW_TESTS
 
 MESSAGE_HORS_LISTE_BLANCHE = (
     "Ce chemin n'est pas dans le `sparse-checkout` de "
@@ -108,27 +115,11 @@ def _liste_blanche_sparse_checkout() -> frozenset[str] | None:
     `.github` quitte la liste blanche. Il y est (et `tests/test_ci_perimetre_
     sparse_checkout.py` le vérifie) ; s'il en sortait, ce hook deviendrait muet
     sans rien casser d'autre.
+
+    L'analyse vit dans `tests/_outils_ci.py`, partagée avec les deux tests qui
+    lisent le même bloc : ici, seule la mise en cache est locale.
     """
-    try:
-        texte = WORKFLOW_TESTS.read_text(encoding="utf-8")
-        debut = texte.index("sparse-checkout: |")
-        entrees: list[str] = []
-        indentation_du_bloc: int | None = None
-        for ligne in texte[debut:].split("\n")[1:]:
-            nu = ligne.strip()
-            if not nu:
-                continue
-            indentation = len(ligne) - len(ligne.lstrip())
-            if indentation_du_bloc is None:
-                indentation_du_bloc = indentation
-            elif indentation < indentation_du_bloc:
-                break  # première ligne moins indentée : fin du scalaire
-            if nu.startswith("#"):
-                continue
-            entrees.append(nu.strip("/"))
-        return frozenset(entrees) or None
-    except Exception:
-        return None
+    return _outils_ci.lire_liste_blanche(WORKFLOW_TESTS)
 
 
 def _chemin_du_fichier_absent(exception: BaseException | None) -> str | None:
@@ -179,6 +170,23 @@ def _relatif_hors_liste_blanche(chemin: str) -> str | None:
     return relatif.as_posix()
 
 
+#: Titre de la section ajoutée au rapport d'échec.
+TITRE_SECTION = "Chemin hors du sparse-checkout de la CI"
+
+
+def _corps_du_diagnostic(relatif: str) -> str:
+    """Le texte ajouté au rapport, pour un chemin relatif hors liste blanche.
+
+    Séparé du hook pour être éprouvable sans provoquer d'échec réel
+    (`tests/test_hook_diagnostic_sparse_checkout.py`).
+    """
+    corps = f"{relatif}\n\n{MESSAGE_HORS_LISTE_BLANCHE}"
+    if any(relatif == exclu or relatif.startswith(exclu + "/")
+           for exclu in CORPUS_HORS_CHECKOUT):
+        corps = f"{corps}\n\n{RAPPEL_CORPUS}"
+    return corps
+
+
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_makereport(item, call):
     """Ajoute au rapport d'échec la cause probable : le fichier n'a jamais été téléchargé.
@@ -224,6 +232,12 @@ def pytest_runtest_makereport(item, call):
     autre situation — assertion ordinaire, chemin couvert, chemin hors dépôt,
     liste illisible — le laisse muet. En local le fichier existe : il ne se
     déclenche pas, et c'est le comportement attendu.
+
+    CE QUI LE VERROUILLE. `tests/test_hook_diagnostic_sparse_checkout.py`, qui
+    appelle les fonctions ci-dessus et pilote ce hook directement, sans faire
+    échouer de test. Une aide au diagnostic qui cesse de fonctionner sans le
+    dire est pire que pas d'aide : on finit par faire confiance à un silence
+    qui ne veut plus rien dire.
     """
     rapport = yield
     try:
@@ -232,12 +246,8 @@ def pytest_runtest_makereport(item, call):
             if chemin is not None:
                 relatif = _relatif_hors_liste_blanche(chemin)
                 if relatif is not None:
-                    corps = f"{relatif}\n\n{MESSAGE_HORS_LISTE_BLANCHE}"
-                    if any(relatif == exclu or relatif.startswith(exclu + "/")
-                           for exclu in CORPUS_HORS_CHECKOUT):
-                        corps = f"{corps}\n\n{RAPPEL_CORPUS}"
                     rapport.sections.append(
-                        ("Chemin hors du sparse-checkout de la CI", corps))
+                        (TITRE_SECTION, _corps_du_diagnostic(relatif)))
     except Exception:
         pass  # un diagnostic ne masque jamais l'échec qu'il commente
     return rapport

@@ -32,6 +32,8 @@ from pathlib import Path
 
 import pytest
 
+import _outils_ci
+
 RACINE = Path(__file__).resolve().parent.parent
 SOURCE = "AGENTS.md"
 
@@ -100,11 +102,16 @@ def test_chaque_alias_est_dans_la_liste_blanche_du_sparse_checkout():
 
     Il ne couvre que les alias de ce fichier. Le cas général — tout chemin lu
     par un test doit être dans la liste — demanderait une analyse statique.
+
+    Le bloc est analysé par `tests/_outils_ci.py`, partagé avec `conftest.py`
+    et `test_ci_perimetre_sparse_checkout.py`.
     """
-    workflow = (RACINE / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8")
-    debut = workflow.index("sparse-checkout: |")
-    bloc = workflow[debut:workflow.index("\n\n", debut)]
-    liste = {l.strip() for l in bloc.splitlines()[1:] if l.strip()}
+    liste = _outils_ci.lire_liste_blanche(
+        RACINE / ".github" / "workflows" / "tests.yml")
+    assert liste, (
+        "bloc `sparse-checkout: |` absent, vide ou de forme inattendue dans "
+        "tests.yml — sans lui ce test serait vrai par vacuité. Voir "
+        "`tests/_outils_ci.lire_liste_blanche`.")
 
     for alias in sorted(ALIAS):
         racine_du_chemin = alias.split("/")[0]
