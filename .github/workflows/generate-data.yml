@@ -87,7 +87,7 @@ concurrency:
 # perte en cas de shutdown signal runner (#228, angle mort de if: always()) à
 # un seul candidat au lieu de tout le job. max-parallel: 1 sur ce matrix :
 # conservé par #412, mais PLUS pour la raison écrite jusqu'ici — voir
-# docs/technical_decisions.md#concurrence-shards-extraction-412 et
+# docs/decisions/concurrence-shards-extraction-412.md et
 # #matrix-extract-an-par-candidat. En deux lignes : le pic de jobs simultanés
 # n'est plus 4 mais 6 (six jobs démarrent sans needs: depuis #344/#394), et
 # l'hypothèse de plafond de dépense Actions qui fondait #222 a été infirmée
@@ -99,7 +99,7 @@ concurrency:
 # est déjà chaude, ses shards ne se réchauffent rien mutuellement (mesuré :
 # « not saving cache » sur les 8 shards du run 32288588518) et #467 l'a donc
 # ouverte à max-parallel: 4. Voir
-# docs/technical_decisions.md#budget-execution-pleine-echelle-467.
+# docs/decisions/budget-execution-pleine-echelle-467.md.
 #
 # ── LES 8 JOBS ──────────────────────────────────────────────────────────────
 # 2 préparatoires (prepare-an-matrix, prepare-roster-matrix), 5 d'extraction
@@ -111,7 +111,7 @@ concurrency:
 # `extract-senat` a été RETIRÉ par #528 : le Sénat est sorti du périmètre
 # éditorial du produit, et ce job tournait, échouait sur 8 candidats sur 8 et
 # concluait vert depuis le 24/08/2026. Voir
-# docs/technical_decisions.md#retrait-senat-528 — la condition de réouverture y
+# docs/decisions/retrait-senat-528.md — la condition de réouverture y
 # est écrite, et un certificat renouvelé ne suffit pas.
 #
 # ── BUDGET DE TEMPS MUR ─────────────────────────────────────────────────────
@@ -202,7 +202,7 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────────────────
   # JOB PRÉPARATOIRE — Calcul du matrix extract-an, un shard par candidat
-  # (#344 — voir docs/technical_decisions.md#matrix-extract-an-par-candidat)
+  # (#344 — voir docs/decisions/matrix-extract-an-par-candidat.md)
   #
   # Un shard par candidat à *slug résolvable* uniquement : un candidat sans
   # slug (raw_data/candidats.json) est un no-op silencieux dans extract-an
@@ -491,7 +491,7 @@ jobs:
       # Data. L'argument *concurrence* de #222 (« préserve le pic de 4 jobs »)
       # est mort deux fois : le pic réel est 6 depuis #344/#394, et l'hypothèse
       # de plafond de dépense qui le motivait a été infirmée. Voir
-      # docs/technical_decisions.md#concurrence-shards-extraction-412.
+      # docs/decisions/concurrence-shards-extraction-412.md.
       #
       # #467 a ouvert le matrix ROSTER à 4 sans toucher à celui-ci, et
       # l'asymétrie est délibérée : ici les shards écrivent réellement la clé
@@ -500,7 +500,7 @@ jobs:
       # réparé. Le job roster, lui, démarre derrière ce job par `needs:` : sa
       # clé est déjà chaude quand sa matrice commence, ses shards ne se passent
       # rien et n'ont donc rien à sérialiser. Voir
-      # docs/technical_decisions.md#budget-execution-pleine-echelle-467.
+      # docs/decisions/budget-execution-pleine-echelle-467.md.
       max-parallel: 1
       matrix:
         # `|| '[]'` : garde-fou de forme (#412 §2.1). Un prepare-an-matrix en
@@ -532,7 +532,7 @@ jobs:
       # `AN_QUESTIONS_PATH`), jamais recopiée ici : recopiée, elle deviendrait
       # fausse à l'ouverture de la 18e législature et l'entrée complète ne
       # serait plus jamais atteinte. Voir src/cache_an_empreinte.py et
-      # docs/technical_decisions.md#cache-completude-interventions-550.
+      # docs/decisions/cache-completude-interventions-550.md.
       #
       # Calculée dans les DEUX modes : en mode par défaut son résultat n'entre
       # pas dans la clé (le contenu concerné n'y est pas produit), mais le step
@@ -675,7 +675,7 @@ jobs:
       #
       # Ne peut pas faire échouer le shard : la péremption est un
       # rafraîchissement, pas une garde. Voir src/cache_an_fraicheur.py et
-      # docs/technical_decisions.md#cache-fraicheur-interventions-555.
+      # docs/decisions/cache-fraicheur-interventions-555.md.
       - name: Fraîcheur du cache AN restauré — péremption sélective (#555)
         if: ${{ !inputs.cold_start }}
         continue-on-error: true
@@ -1165,7 +1165,7 @@ jobs:
   #
   # Granularité de clé HEBDOMADAIRE et non quotidienne — décision et
   # justification complète dans
-  # docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite
+  # docs/decisions/amendements-index-budget-ci-cache-granularite.md
   # (sous-issue 1 de #248). Ce qui a changé depuis : la clé n'est plus la clé
   # partagée `public-data-cache-an-*` mais `public-data-cache-amendements-*`
   # (#424) ; seule la granularité de #248 subsiste.
@@ -1177,7 +1177,7 @@ jobs:
   # src/build_amendements_index.py et son test dédié).
   #
   # Timeout 30 min : budget mesuré par le spike sans code de la sous-issue 1
-  # de #248 (voir docs/technical_decisions.md#amendements-index-budget-ci-cache-granularite)
+  # de #248 (voir docs/decisions/amendements-index-budget-ci-cache-granularite.md)
   # — valeur provisoire, à recalibrer sur le premier run réel
   # (workflow_dispatch), aucune mesure de débit GitHub Actions authentique
   # n'ayant pu être obtenue lors du spike.
@@ -1259,7 +1259,7 @@ jobs:
   #
   # Séquencé après les autres jobs d'extraction (needs: ci-dessous, #222). Ce
   # séquencement avait deux justifications ; une seule tient encore (#412 §2.5,
-  # docs/technical_decisions.md#concurrence-shards-extraction-412) :
+  # docs/decisions/concurrence-shards-extraction-412.md) :
   #   - CACHE (valide) : il garantit que la clé public-data-cache-an-* est déjà
   #     chaude (écrite en amont) au moment de sa restauration ici, évitant que
   #     les jobs se disputent le même téléchargement des dumps AN Open Data.
@@ -1287,7 +1287,7 @@ jobs:
   # `.cache/acteurs_historique_an/index_*.json` (2 255 relectures d'index_organes
   # pour 24 membres) et une temporisation de courtoisie payée envers une source
   # qui n'était plus appelée. Même remède que #392 sur les amendements et #403
-  # sur les scrutins — voir docs/technical_decisions.md#budget-execution-pleine-echelle-467.
+  # sur les scrutins — voir docs/decisions/budget-execution-pleine-echelle-467.md.
   #
   # Ce que couvre 60 min APRÈS #467 : plusieurs milliers de membres, sur un
   # roster de 752. Le timeout n'est plus une contrainte dimensionnante dans
@@ -1317,12 +1317,12 @@ jobs:
   # Raison éditoriale, indépendante du coût : aucun groupe sénatorial n'est
   # agrégé (les deux groupe-Senat-*.json publiés portent cohesion_votes: 0),
   # donc le passé sénatorial d'un membre de roster n'alimente aucun agrégat.
-  # Voir docs/technical_decisions.md#deux-chambres-interrogees.
+  # Voir docs/decisions/deux-chambres-interrogees.md.
   #
   # ATTENTION, le shardage n'est pas gratuit : ~130 s de frais fixes par shard
   # (mesuré), dont ~110 s de `actions/checkout`. À max-parallel: 1 c'était
   # 8 × 130 s = ~17 min de temps mur pour zéro travail utile — c'est ce que
-  # max-parallel: 4 (#467) recouvre. Voir docs/technical_decisions.md#budget-roster-mesure.
+  # max-parallel: 4 (#467) recouvre. Voir docs/decisions/budget-roster-mesure.md.
   # ──────────────────────────────────────────────────────────────────────────
   # ──────────────────────────────────────────────────────────────────────────
   # JOB PRÉPARATOIRE — Calcul du matrix de shards roster (#394)
@@ -1572,7 +1572,7 @@ jobs:
       # et chaque shard retélécharge ~40 Mo d'archives AN (acteurs historiques
       # 13,6 Mo + scrutins XVII 26,3 Mo, relevé le 20/08/2026). 4 borne cette
       # rafale à la moitié pour ~3 min de temps mur en plus à pleine échelle.
-      # Voir docs/technical_decisions.md#budget-execution-pleine-echelle-467.
+      # Voir docs/decisions/budget-execution-pleine-echelle-467.md.
       max-parallel: 4
       matrix:
         # `|| '[0]'` : repli sur un shard unique si prepare-roster-matrix a
@@ -1590,7 +1590,7 @@ jobs:
       # particulièrement ici : ce job est shardé par tranche de roster, pas par
       # candidat, donc plusieurs membres sont traités dans le même process —
       # exposition plus forte au risque OOM que extract-an
-      # (docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
+      # (docs/decisions/oom-lecture-amendements-par-candidat.md).
       - uses: ./.github/actions/bootstrap-extraction
 
       - name: Semaine ISO courante (clé de cache AN, partagée avec extract-an)
@@ -1677,7 +1677,7 @@ jobs:
       # qu'extract-an y a mis, pour le passer à l'agrégation de groupe.
       # Le commentaire qui vivait ici affirmait le contraire : voir sa
       # correction dans extract-an et
-      # docs/technical_decisions.md#cache-mode-interventions-505.
+      # docs/decisions/cache-mode-interventions-505.md.
       - uses: actions/cache/restore@v5
         if: ${{ !inputs.cold_start }}
         with:
@@ -2004,7 +2004,7 @@ jobs:
       # ÉMET un événement `push`, là où le GITHUB_TOKEN n'en émet aucun
       # (protection anti-boucle). Deux workflows le voient désormais passer —
       # `tests.yml` et `deploy-pages.yml` ; voir la dernière étape de ce job et
-      # docs/technical_decisions.md#push-donnees-cle-de-deploiement-508.
+      # docs/decisions/push-donnees-cle-de-deploiement-508.md.
       - uses: actions/checkout@v5
         with:
           ssh-key: ${{ secrets.DATA_PUSH_SSH_KEY }}
@@ -2346,7 +2346,7 @@ jobs:
       # (gouvernement_textes.py, ~10 Mo), mutualisé une seule fois pour tous
       # les gouvernements du batch. Coût mesuré négligeable au regard du
       # budget de 60 min de ce job (#215) — pas de job dédié nécessaire, voir
-      # docs/technical_decisions.md#gouvernement-ci-integration.
+      # docs/decisions/gouvernement-ci-integration.md.
       # continue-on-error : le code de sortie 2 signale une collecte incomplète
       # — aucun profil n'a été touché, les versions committées restent en
       # place. Faire échouer tout le job priverait le run du commit des
@@ -2423,7 +2423,7 @@ jobs:
           # restent des signaux NON bloquants dans tous les modes, y compris
           # cold_start=true, et sont affichés en tête du rapport plutôt que
           # d'échouer le run (#378, arbitrage tranché dans
-          # docs/technical_decisions.md#amendements-zero-pas-de-hard-fail :
+          # docs/decisions/amendements-zero-pas-de-hard-fail.md :
           # la collecte dépend d'un CDN AN chroniquement défaillant sur la
           # législature 17, bloquer ferait perdre tout le reste du run).
 
@@ -2932,7 +2932,7 @@ jobs:
           set -e
 
           if [ "$push_status" = "regle" ]; then
-            echo "::error::Push refusé par une règle du dépôt (GH013), pas par de la concurrence — la ligne \`remote:\` ci-dessus nomme la règle. Un rebase n'y peut rien. Si c'est un check requis : ce job pousse sans PR, aucun check ne peut être attaché à son commit ; vérifier que le secret DATA_PUSH_SSH_KEY est renseigné et que la clé de déploiement correspondante figure bien dans les bypass_actors du ruleset (#508, docs/technical_decisions.md#push-donnees-cle-de-deploiement-508)."
+            echo "::error::Push refusé par une règle du dépôt (GH013), pas par de la concurrence — la ligne \`remote:\` ci-dessus nomme la règle. Un rebase n'y peut rien. Si c'est un check requis : ce job pousse sans PR, aucun check ne peut être attaché à son commit ; vérifier que le secret DATA_PUSH_SSH_KEY est renseigné et que la clé de déploiement correspondante figure bien dans les bypass_actors du ruleset (#508, docs/decisions/push-donnees-cle-de-deploiement-508.md)."
           elif [ "$push_status" = "conflit" ]; then
             echo "::error::Conflit de rebase sur les fichiers générés — un retry ne peut pas le résoudre. Les deux côtés ont régénéré les mêmes fichiers (voir #390). Intervention manuelle requise."
           else
@@ -3145,8 +3145,8 @@ jobs:
           if [[ "$NB" -ge "$FENETRE" ]]; then
             echo "| État | **contraignante** |" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Borner est désormais la seule chose qui tienne le plateau. L'opération est **manuelle et irréversible pour tous les clones existants**, et elle exige d'archiver l'ancien historique **ailleurs** au préalable — sans quoi les SHA cités dans \`docs/technical_decisions.md\` et dans les issues cessent de résoudre. La procédure complète est dans \`docs/technical_decisions.md#fenetre-recalibrage-551\`, avec le runner qui la déroule ; ne pas la recopier ici." >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning::Fenêtre de rétention atteinte : ${NB} commits de données pour une fenêtre de ${FENETRE}. Borner est une opération MANUELLE et irréversible, qui exige d'archiver l'ancien historique ailleurs au préalable — procédure dans docs/technical_decisions.md#fenetre-recalibrage-551."
+            echo "Borner est désormais la seule chose qui tienne le plateau. L'opération est **manuelle et irréversible pour tous les clones existants**, et elle exige d'archiver l'ancien historique **ailleurs** au préalable — sans quoi les SHA cités dans \`docs/technical_decisions.md\` et dans les issues cessent de résoudre. La procédure complète est dans \`docs/decisions/fenetre-recalibrage-551.md\`, avec le runner qui la déroule ; ne pas la recopier ici." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Fenêtre de rétention atteinte : ${NB} commits de données pour une fenêtre de ${FENETRE}. Borner est une opération MANUELLE et irréversible, qui exige d'archiver l'ancien historique ailleurs au préalable — procédure dans docs/decisions/fenetre-recalibrage-551.md."
           elif [[ "$RESTE" -le 3 ]]; then
             echo "| État | ${RESTE} commit(s) avant qu'elle morde |" >> "$GITHUB_STEP_SUMMARY"
             echo "::notice::Fenêtre de rétention : ${RESTE} commit(s) de données avant qu'elle devienne contraignante (${NB}/${FENETRE})."

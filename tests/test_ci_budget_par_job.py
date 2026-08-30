@@ -27,7 +27,7 @@ reste permis — c'est le cas d'`extract-an` et du job roster — mais il faut
 l'écrire, `--budget-collecte-secondes 0`, et non l'obtenir en ne tapant rien.
 
 **#528 — le job qui a produit cette issue n'existe plus.** `extract-senat` a été
-retiré avec le Sénat (docs/technical_decisions.md#retrait-senat-528), et les
+retiré avec le Sénat (docs/decisions/retrait-senat-528.md), et les
 quatre tests qui vérifiaient la cohérence de SES deux chiffres (160 s par
 candidat, 600 s pour le job, contre un `timeout-minutes` de 15) sont partis avec
 lui : ils portaient sur des valeurs, pas sur une règle. Les constantes mesurées

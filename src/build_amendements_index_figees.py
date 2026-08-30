@@ -7,7 +7,7 @@ close (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`, candidate_profile.py) à partir
 d'une archive téléchargée localement (manuellement ou via `--download`), hors
 du budget réseau/temps de la CI qui échoue de façon récurrente sur ces deux
 archives (350-650 Mo, IncompleteRead / HTTP2 PROTOCOL_ERROR répétés — voir
-docs/technical_decisions.md#amendements-legislatures-figees).
+docs/decisions/amendements-legislatures-figees.md).
 
 Usage (depuis la racine du dépôt) :
     # Téléchargement automatique (segments HTTP Range, retries — même logique
@@ -41,14 +41,14 @@ Même dédupliqué, `index_par_acteur.json` mesure encore 177 Mo en clair pour
 la législature 16 — toujours au-delà de la limite de 100 Mo — d'où l'écriture
 gzip (10,4 Mo mesurés, la structure très répétitive {uid, role_signataire}
 compressant très bien). Voir la révision de
-docs/technical_decisions.md#amendements-legislatures-figees.
+docs/decisions/amendements-legislatures-figees.md.
 
 **Un index construit avant le 18/08/2026 doit être reconstruit** : il référence
 les amendements par `numero`, qui n'est pas unique (le `numeroLong` repart à
 chaque texte), ce qui écrasait 74,9 % des amendements et attribuait les autres
 au mauvais texte. `_load_frozen_amendement_index` refuse désormais ces index
 hérités plutôt que de les servir — voir
-docs/technical_decisions.md#amendements-cle-uid.
+docs/decisions/amendements-cle-uid.md.
 
 `fraicheur.json` porte un marqueur `figee: true`, lu par `check_quality_gate.py`
 (section 3d) pour ne jamais signaler ces législatures comme périmées :
@@ -216,7 +216,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     # Compressés gzip : `index_par_acteur.json` en clair mesure jusqu'à 177 Mo
     # pour la législature 16 (dépasse la limite GitHub de 100 Mo par blob),
-    # 10,4 Mo une fois gzippé (voir docs/technical_decisions.md#amendements-legislatures-figees).
+    # 10,4 Mo une fois gzippé (voir docs/decisions/amendements-legislatures-figees.md).
     with gzip.open(out_dir / AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME, "wt", encoding="utf-8") as f:
         json.dump(amendements, f, ensure_ascii=False)
     with gzip.open(out_dir / AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME, "wt", encoding="utf-8") as f:

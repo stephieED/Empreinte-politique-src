@@ -18,7 +18,7 @@ name: Claude Code
 # que le token OAuth Claude y est exposé au contenu d'une PR potentiellement
 # hostile (diff, titre, description) — a été tranché en #415 : les deux fichiers
 # portent désormais la **même** isolation réseau. Rationale complète et réserves
-# restantes : `docs/technical_decisions.md#workflows-claude-securite`.
+# restantes : `docs/decisions/workflows-claude-securite.md`.
 #
 # Garde d'auteur (`author_association`) : ce dépôt est **public**. La garde des
 # `if:` ci-dessous est un **pré-filtre**, pas la sécurité elle-même —

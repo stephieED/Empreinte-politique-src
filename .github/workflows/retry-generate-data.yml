@@ -3,7 +3,7 @@ name: Retry automatique — generate-data.yml (préemption runner)
 # Se déclenche après chaque run (réussi ou non) de "Génération des données"
 # (generate-data.yml) et, en cas d'échec, tente de reconnaître la signature
 # précise d'une préemption transitoire du runner hébergé GitHub (cause
-# retenue pour #217/#221/#228, cf. docs/technical_decisions.md#verification-billing-actions)
+# retenue pour #217/#221/#228, cf. docs/decisions/verification-billing-actions.md)
 # plutôt que de retry aveuglément sur tout échec (#218 : un échec peut aussi
 # être un vrai bug applicatif, qu'un retry masquerait au lieu de le signaler).
 #
@@ -113,7 +113,7 @@ jobs:
       # de ce fichier (#236) : sans ce flag, gh api échoue silencieusement
       # dès que le log contient des couleurs ANSI (quasi systématique),
       # ce qui a rendu ce mécanisme inopérant sur les runs #26-28 sans
-      # jamais le signaler — cf. docs/technical_decisions.md#retry-preemption-logs.
+      # jamais le signaler — cf. docs/decisions/retry-preemption-logs.md.
       - name: Collecter les jobs du run et classer les échecs
         id: collect
         if: steps.cap.outputs.already_retried == 'false'

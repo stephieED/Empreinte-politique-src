@@ -36,7 +36,7 @@ les cosignatures :
     pivot_data/amendements/<legislature>.cosignatures.json  (cosignatures)
 
 Ce n'est pas une préférence, c'est une contrainte mesurée — voir
-docs/technical_decisions.md#normalisation-amendements. Un fichier global
+docs/decisions/normalisation-amendements.md. Un fichier global
 unique pèserait **128,8 Mo** sur les seuls 209 profils actuels, au-delà de la
 limite GitHub de 100 Mo par blob ; et un fichier par législature contenant
 aussi les cosignatures atteindrait ~166 Mo pour la XVe à couverture complète
@@ -459,7 +459,7 @@ def ecrire(
 
     Le découpage n'est pas cosmétique : un fichier global unique pèse 128,8 Mo
     sur les seuls profils actuels, au-delà de la limite GitHub de 100 Mo par
-    blob. Voir docs/technical_decisions.md#normalisation-amendements.
+    blob. Voir docs/decisions/normalisation-amendements.md.
 
     Les amendements sont stockés **en dictionnaire** `{id: amendement}` et non
     en liste d'objets portant leur `id` (choix inverse de `scrutins-v1`) : à

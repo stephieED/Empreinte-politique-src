@@ -20,7 +20,7 @@ seule fois, et les profils n'en gardent que le mapping
     pivot_data/amendements/17.cosignatures.json
 
 Un fichier global unique pèserait 128,8 Mo, au-delà de la limite GitHub de
-100 Mo par blob — voir docs/technical_decisions.md#normalisation-amendements.
+100 Mo par blob — voir docs/decisions/normalisation-amendements.md.
 
 Contrairement à l'index des scrutins, la construction n'est **pas** une passe de
 corpus : la clé d'un amendement est son `uid` AN, porté par l'enregistrement

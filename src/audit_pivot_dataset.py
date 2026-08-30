@@ -38,7 +38,7 @@ Allègement du rapport (2026-08-18) : les deux tableaux croisés ne détaillent
 que les candidats déclarés et n'exposent les profils de roster qu'agrégés par
 groupe ; les indicateurs « distribution des listes métier » et « sources
 déclarées », qui mélangeaient ces deux populations, ont été retirés — voir
-`docs/technical_decisions.md#audit-rapport-perimetre-candidats`.
+`docs/decisions/audit-rapport-perimetre-candidats.md`.
 
 Aucune dépendance lourde : stdlib uniquement.
 """
@@ -181,7 +181,7 @@ def compute_repartition_provenance(profils: list[dict[str, Any]]) -> dict[str, A
     Un profil sans `meta.provenance` (pivot généré avant #189) est compté
     sous `"candidat_declare"`, la valeur de repli rétro-compatible retenue
     par `validate_profil()` (voir
-    `docs/technical_decisions.md#provenance-pivot`). Les valeurs hors
+    `docs/decisions/provenance-pivot.md`). Les valeurs hors
     `KNOWN_PROVENANCES` sont comptées sous la clé `"null"`, pour garantir un
     rapport toujours sérialisable en JSON quelle que soit la donnée.
     """

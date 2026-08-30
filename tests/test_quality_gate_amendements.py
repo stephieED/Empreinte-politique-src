@@ -9,7 +9,7 @@ candidate_profile.py, issue #253).
 Le signal global de la §3c (« aucun candidat AN n'a d'amendements ») reste un
 avertissement non bloquant : il n'entre jamais dans le code de sortie, mais est
 remonté à part et affiché en tête de rapport (décision #378, voir
-docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Les tests
+docs/decisions/amendements-zero-pas-de-hard-fail.md). Les tests
 ci-dessous verrouillent les deux moitiés de cette décision : la visibilité du
 signal, et l'absence d'échec dur."""
 
@@ -475,7 +475,7 @@ def test_report_amendements_freshness_mixed_states_across_legislatures(tmp_path)
 
 # ---------------------------------------------------------------------------
 # État « figé » (légis 15/16 : dossier clos, fallback committé, jamais
-# reconstruit — docs/technical_decisions.md#amendements-legislatures-figees).
+# reconstruit — docs/decisions/amendements-legislatures-figees.md).
 # ---------------------------------------------------------------------------
 
 def test_report_amendements_freshness_frozen_legislature_no_warning_even_when_very_old(tmp_path):
@@ -527,7 +527,7 @@ def test_report_amendements_freshness_disabled_via_zero_threshold_is_caller_resp
 
 # ---------------------------------------------------------------------------
 # §3e — format de clé des index figés committés (correction du 18/08/2026,
-# docs/technical_decisions.md#amendements-cle-uid). Échec DUR, contrairement au
+# docs/decisions/amendements-cle-uid.md). Échec DUR, contrairement au
 # reste de la section : un index keyé par `numero` ne porte pas des données
 # périmées mais des amendements attribués au mauvais texte.
 # ---------------------------------------------------------------------------

@@ -33,7 +33,7 @@ déclarant** plutôt que de se faire tuer par un `timeout-minutes`, et **le
 garde-fou de ligne de commande** qui refuse un budget mort au lieu de le
 neutraliser en silence.
 
-Voir docs/technical_decisions.md#retrait-nosdeputes-529.
+Voir docs/decisions/retrait-nosdeputes-529.md.
 """
 
 import argparse
@@ -292,5 +292,5 @@ def test_le_warning_de_source_injoignable_a_disparu():
         assert not hasattr(candidate_profile, nom), (
             f"`candidate_profile.{nom}` est de retour alors qu'aucune requête "
             "ne peut plus l'alimenter (#529). Voir "
-            "docs/technical_decisions.md#retrait-nosdeputes-529."
+            "docs/decisions/retrait-nosdeputes-529.md."
         )

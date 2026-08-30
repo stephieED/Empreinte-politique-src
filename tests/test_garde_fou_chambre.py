@@ -5,7 +5,7 @@ Sous-issue **E** de l'épic **#486**, après #493 (D, PR #504) qui a créé
 scalaire, « le temps de reprendre les consommateurs un par un ».
 
 #493 a écrit la condition de retrait dans
-`docs/technical_decisions.md#chambres-profil-derivees` :
+`docs/decisions/chambres-profil-derivees.md` :
 
 > 1. **les consommateurs ont migré** — et le garde-fou de #494 le vérifie ;
 > 2. **le champ n'a plus rien de propre à dire** — le warning
@@ -374,7 +374,7 @@ def test_condition_1_de_retrait_etat_global():
         "L'inventaire des consommateurs du champ profil a changé :\n"
         + "\n".join(f"  - {a} :: {b}" for a, b in restants)
         + "\n\nS'il est vide, la condition 1 de retrait de `chambre` est remplie "
-        "(docs/technical_decisions.md#chambres-profil-derivees) : reste à vérifier "
+        "(docs/decisions/chambres-profil-derivees.md) : reste à vérifier "
         "la condition 2 sur le corpus, puis à retirer le scalaire et la branche de "
         "repli de `lire_chambres()`."
     )

@@ -100,7 +100,7 @@ def test_le_module_n_a_plus_aucune_lecture_nosdeputes():
         assert not hasattr(group_roster, nom), (
             f"`group_roster.{nom}` est de retour : c'est un morceau du chemin "
             "NosDéputés, retiré par #529. Voir "
-            "docs/technical_decisions.md#retrait-nosdeputes-529."
+            "docs/decisions/retrait-nosdeputes-529.md."
         )
 
 
@@ -249,7 +249,7 @@ def test_filter_roster_by_sigle_empty_when_no_match():
 # trier les membres sur `mandat_fin`. L'Assemblée n'en a jamais eu besoin — sa
 # législature était un sous-domaine du temps de NosDéputés, elle est une donnée
 # du référentiel avec AMO30 (#526). Voir
-# docs/technical_decisions.md#retrait-senat-528.
+# docs/decisions/retrait-senat-528.md.
 # ---------------------------------------------------------------------------
 
 def test_filter_roster_by_sigle_ne_filtre_que_sur_le_sigle():

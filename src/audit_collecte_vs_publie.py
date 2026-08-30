@@ -109,7 +109,7 @@ porteurs d'interventions de cet état, `jean-luc-melenchon` (15) et
 nommés, et c'est correct. Les quatre autres relations y sont vertes, sur les
 mêmes 476 profils — la même invariance tient donc sur **deux** états du corpus.
 Les chiffres des deux états sont dans
-`docs/technical_decisions.md#collecte-vs-publie-545`.
+`docs/decisions/collecte-vs-publie-545.md`.
 
 ## Dimensionnement
 
@@ -197,7 +197,7 @@ class Relation:
 
 
 #: La table. Une entrée par liste métier publiée, chacune avec sa justification.
-#: Documentée dans `docs/technical_decisions.md#collecte-vs-publie-545`, avec
+#: Documentée dans `docs/decisions/collecte-vs-publie-545.md`, avec
 #: les chiffres qui l'établissent.
 RELATIONS: tuple[Relation, ...] = (
     Relation(

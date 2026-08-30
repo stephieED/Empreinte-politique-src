@@ -55,7 +55,7 @@ travers, alors qu'il tournait :
 
 Le contrôle couvre donc désormais les cinq répertoires de `pivot_data/` et les
 index partagés. Ce qu'il ne couvre toujours pas est énuméré dans
-`docs/technical_decisions.md#perimetre-controle-perte`.
+`docs/decisions/perimetre-controle-perte.md`.
 
 ## Pourquoi un changement de valeur ne bloque pas
 
@@ -429,7 +429,7 @@ def lire_collection_git(
                 "absent de ce dépôt.\n"
                 "    Causes possibles — une faute de frappe, une branche "
                 "supprimée, un clone superficiel, ou un bornage d'historique\n"
-                "    (docs/technical_decisions.md#fenetre-recalibrage-551) qui a "
+                "    (docs/decisions/fenetre-recalibrage-551.md) qui a "
                 "retiré un commit antérieur à la coupure. Dans ce dernier cas\n"
                 "    l'ancien historique est archivé sur Software Heritage ; il "
                 "ne sera pas retrouvé ici."

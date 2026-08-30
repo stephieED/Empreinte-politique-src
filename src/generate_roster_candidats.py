@@ -43,7 +43,7 @@ fichier : une donnée non résolue ne reçoit pas de valeur par défaut, elle
 3. **un roster total vide** — le filet de dernier recours, celui de l'incident.
 
 Un seuil de rétrécissement chiffré a été écarté, pas oublié : voir
-docs/technical_decisions.md#roster-jamais-ecrit-vide.
+docs/decisions/collecte-non-publiee.md#roster-jamais-ecrit-vide.
 
 ## Un groupe à l'extraction suspendue n'est pas interrogé (#516)
 
@@ -53,7 +53,7 @@ sont pas collectés, et son absence n'est **pas** une anomalie — ce n'est pas
 une panne, c'est une décision écrite. Les deux entrées Sénat le sont depuis le
 24/08/2026 (certificat TLS expiré sur `archive.nossenateurs.fr`), ce qui
 faisait échouer tout le run, collecte AN comprise. Voir `groupes_config.py` et
-docs/technical_decisions.md#extraction-groupe-suspendue-516.
+docs/decisions/extraction-groupe-suspendue-516.md.
 
 ## Une seule construction par run en CI, et des anomalies annotées (#518)
 
@@ -70,7 +70,7 @@ Chaque anomalie ci-dessus part aussi en annotation GitHub Actions
 (`::error::`, voir `gha.py`) : trois runs sont morts ici en une semaine, et la
 seule trace qu'en gardait l'onglet de résumé était
 `Process completed with exit code 1`. Voir
-docs/technical_decisions.md#roster-unique-par-run-518.
+docs/decisions/roster-unique-par-run-518.md.
 
 ## Une anomalie nomme sa cause, et la suspension totale n'en est pas une (#524)
 

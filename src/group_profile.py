@@ -1485,7 +1485,7 @@ def generate_groupe_profile_from_roster(
     # avertissements : la suspension d'extraction de #516 les empêche d'être
     # régénérées, et les retirer supprimerait un fichier publié — ce que
     # `audit_diff_profils` bloque (#460/#470). Voir
-    # docs/technical_decisions.md#retrait-senat-528.
+    # docs/decisions/retrait-senat-528.md.
     if roster_chambre == "deputes":
         profil_groupe["meta"]["warnings"].append(_avertissement_fraicheur_an())
 

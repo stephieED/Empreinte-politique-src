@@ -6,7 +6,7 @@ gouvernementale et extraction de leur statut, depuis le dump bulk
 
 Suit le même principe que `syceron_debates.py`/`parse_syceron.py`
 (téléchargement/cache réseau séparé du parsing pur, pour un parseur testable
-sans réseau — voir docs/technical_decisions.md#syceron), mais dans un seul
+sans réseau — voir docs/decisions/syceron.md), mais dans un seul
 fichier : `ensure_dossiers_zip_downloaded()` est la seule fonction de ce
 module à toucher le réseau ou le disque ; le reste opère sur un
 `zipfile.ZipFile` déjà ouvert (fixture locale possible pour les tests).
@@ -79,7 +79,7 @@ ici : elle demande la composition du gouvernement, connue de
 `gouvernement_profile.py` seulement. `acteurRef` n'est PAS utilisé comme
 signal d'origine (la chaîne `acteurRef -> mandat GOUVERNEMENT -> organeRef` a
 été écartée pour cela, ~15 % de faux positifs mesurés par le spike #207, voir
-docs/technical_decisions.md#gouvernement-textes-statut) : ici la source dit
+docs/decisions/gouvernement-textes-statut-210-version-initiale.md#gouvernement-textes-statut) : ici la source dit
 qui a déposé, pas de quelle origine est le texte.
 
 Retrait : `codeActe` dédié (`AN1-RTRINI`/`ANLUNI-RTRINI`), sans
@@ -102,7 +102,7 @@ code reste inconnu et mérite d'être signalé.
 `sort_49_3 = True`, symétrique d'`adopte_49_3` — le 49.3 reste un fait
 procédural distinct de l'issue du vote, jamais fusionné avec elle (règle
 AGENTS.md §2.4). `rejete_49_3` a été ajouté à la nomenclature fermée de #208
-après coup (docs/technical_decisions.md#gouvernement-textes-statut-49-3-rejete),
+après coup (docs/decisions/gouvernement-textes-statut-49-3-rejete.md),
 donc cette combinaison est représentable par
 `schema_gouvernement.validate_profil_gouvernement` sans warning.
 
@@ -148,11 +148,11 @@ Rattachement à un gouvernement (hors périmètre de ce module, implémenté dan
 calculée ici), jamais par date de statut final — décision actée dans le plan
 d'implémentation de #184 (issue #210) : un texte déposé sous un gouvernement A
 puis conclu sous un gouvernement B reste crédité au gouvernement A, qui l'a
-initié. Voir `docs/technical_decisions.md#gouvernement-profile-rattachement`.
+initié. Voir `docs/decisions/gouvernement-profile-rattachement.md`.
 
 Hors périmètre : couverture Sénat comme chambre de dépôt *primaire* d'un
 dossier (le Sénat n'a pas de dataset équivalent exploitable — voir
-docs/technical_decisions.md#hors-perimetre) ; seuls les dossiers du dump AN
+docs/decisions/hors-perimetre.md) ; seuls les dossiers du dump AN
 sont vus ici, y compris ceux transmis en 2e lecture au Sénat (`chambre_depot_initial`
 peut valoir `"Senat"` si un dossier AN a été déposé au Sénat en 1ère lecture).
 """

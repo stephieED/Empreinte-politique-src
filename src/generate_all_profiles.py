@@ -52,7 +52,7 @@ Usage (depuis la racine du dépôt) :
     python src/generate_all_profiles.py --manifest-out F    # consigner les profils écrits par CE run (publication CI scopée, #450)
 
 Extraction pilotée par roster (composition réelle des groupes parlementaires,
-cf. generate_roster_candidats.py et docs/technical_decisions.md#provenance-pivot)
+cf. generate_roster_candidats.py et docs/decisions/provenance-pivot.md)
 plutôt que par la liste éditoriale par défaut (raw_data/candidats.json) :
     python src/generate_roster_candidats.py
     python src/generate_all_profiles.py --candidats raw_data/roster_candidats.json --pivot --skip-existing \
@@ -145,7 +145,7 @@ DEFAULT_CHECKPOINT_PATH = "raw_data/profiles/.generation_checkpoint.json"
 # retiré est une SOURCE, pas la possibilité qu'il y en ait plusieurs (le PE en
 # est déjà une autre, collectée à part). Rouvrir le Sénat, c'est rajouter une
 # entrée ici ET une source dans `candidate_profile.BASE_URLS` : lire d'abord
-# docs/technical_decisions.md#retrait-senat-528.
+# docs/decisions/retrait-senat-528.md.
 CHAMBRES = ["deputes"]
 
 # Préfixes de warnings publiés dans `meta.warnings` du profil (#488). Même
@@ -487,7 +487,7 @@ def build_profile_any_chambre(
     publiés (`collecte de chambre en échec`, `carrière sur deux chambres`)
     restent produits par le même code ; le second ne peut simplement plus se
     déclencher tant qu'il n'y a qu'une chambre. Condition de réouverture :
-    `docs/technical_decisions.md#retrait-senat-528`.
+    `docs/decisions/retrait-senat-528.md`.
 
     Deux régimes, séparés par `collecte_bicamerale`, conservés pour cette raison :
 
@@ -1360,7 +1360,7 @@ def main() -> None:
             "Avec 'an', la source UE est ignorée. Avec 'ue', la source FR (AN) est "
             "ignorée. La valeur 'senat' a été retirée par #528 : le Sénat est hors "
             "périmètre, et argparse refuse la valeur plutôt que de laisser une passe "
-            "tourner à vide (docs/technical_decisions.md#retrait-senat-528)."
+            "tourner à vide (docs/decisions/retrait-senat-528.md)."
         ),
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_PROFILES_DIR), help=f"Dossier de sortie des profils JSON bruts (défaut: {DEFAULT_PROFILES_DIR})")
@@ -1450,7 +1450,7 @@ def main() -> None:
                              "En extraction légère AN (--skip-interventions --skip-dossiers-legislatifs, "
                              "mode du job roster), monter cette valeur RALENTIT : la charge y est du "
                              "parsing JSON sous GIL, pas du réseau — mesuré +41 %% à 4 workers (#467, "
-                             "docs/technical_decisions.md#budget-execution-pleine-echelle-467).")
+                             "docs/decisions/budget-execution-pleine-echelle-467.md).")
     parser.add_argument("--checkpoint-file", default=DEFAULT_CHECKPOINT_PATH,
                         help=f"Fichier de point de sauvegarde de la progression, mis à jour après chaque "
                              f"candidat traité (défaut: {DEFAULT_CHECKPOINT_PATH}).")

@@ -46,7 +46,7 @@ Format d'un profil de gouvernement v1 :
             "nom": "Bruno Le Maire",
             "portefeuille": None,            # jamais de placeholder textuel : null tant que la
                                               # source primaire n'a pas été vérifiée (voir
-                                              # docs/technical_decisions.md#hors-perimetre,
+                                              # docs/decisions/hors-perimetre.md,
                                               # § "Ministerial function")
             "debut": "2025-09-09",
             "fin": None,

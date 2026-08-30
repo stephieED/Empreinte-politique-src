@@ -98,7 +98,7 @@ SEUIL_DEPOT_RECOMMANDE_GO = 5.0
 # membres). Ce jour-là, relancer ce script hors CI et vérifier qu'un mois de
 # données tient toujours sous les 2 Go du critère de #429.
 #
-# Voir `docs/technical_decisions.md#fenetre-recalibrage-551`.
+# Voir `docs/decisions/fenetre-recalibrage-551.md`.
 FENETRE_COMMITS_DONNEES = 30
 
 # Nombre de runs récents sur lesquels la distribution du coût est calculée.
@@ -595,7 +595,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
             "mesuré 39 % plus bas le 20/08/2026 (409 Mo annoncés ici, 295 Mo "
             "après repack). Le mesurer sans toucher au dépôt de travail : "
             "`scripts/borner_historique_donnees.sh --mesurer` "
-            "(#434, `docs/technical_decisions.md#fenetre-historique-donnees`).",
+            "(#434, `docs/decisions/fenetre-historique-donnees.md`).",
             "",
         ]
         if hist.get("par_repertoire"):

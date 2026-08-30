@@ -17,12 +17,12 @@ lot (#369 l'identité, #392/#403 les votes et amendements, #400 les textes
 portés, #526/#527 le roster de groupe, #528 le Sénat), et ce qui restait ici
 était la dernière branche encore appelée : la recherche d'interventions.
 Motivation, mesures et conséquence déclarée :
-docs/technical_decisions.md#retrait-nosdeputes-529.
+docs/decisions/retrait-nosdeputes-529.md.
 
 Le Sénat est HORS PÉRIMÈTRE depuis #528 : `chambre` ne connaît plus que
 "deputes", et toute autre valeur est refusée bruyamment (voir `build_profile`).
 Décision éditoriale et condition de réouverture :
-docs/technical_decisions.md#retrait-senat-528.
+docs/decisions/retrait-senat-528.md.
 
 Usage (depuis la racine du dépôt) :
     python src/candidate_profile.py jean-luc-melenchon --chambre deputes
@@ -87,7 +87,7 @@ from syceron_debates import (
 # 24/08/2026, le Senat est sorti du perimetre editorial du produit et aucune
 # source de remplacement (data.senat.fr / www.senat.fr) n'est etablie a ce jour.
 # Remettre une entree ici n'est PAS un geste technique : lire d'abord la
-# condition de reouverture dans docs/technical_decisions.md#retrait-senat-528.
+# condition de reouverture dans docs/decisions/retrait-senat-528.md.
 CHAMBRES_COLLECTEES: tuple[str, ...] = ("deputes",)
 
 HEADERS = {
@@ -133,7 +133,7 @@ SCRUTINS_CACHE_DIR = Path(".cache") / "scrutins_an"
 # souffrent pas des IncompleteRead chroniques des archives d'amendements
 # (283-618 Mo) — le gel evite ici un cout repete inutilement par chaque shard
 # CI, pas un echec de telechargement. Voir
-# docs/technical_decisions.md#votes-multi-legislature.
+# docs/decisions/votes-multi-legislature.md.
 AN_SCRUTINS_LEGISLATURES_FIGEES: frozenset[str] = frozenset({"14", "15", "16"})
 AN_SCRUTINS_FIGES_DIR = Path("raw_data") / "scrutins_an_figes"
 # Forme dedupliquee du cache de votes (#403, remede repris de #377) : le meta
@@ -175,7 +175,7 @@ AN_SCRUTIN_PAGE_URL = "https://www.assemblee-nationale.fr/dyn/{legislature}/scru
 # donnerait donc une source primaire fausse (verifie le 18/08/2026 :
 # /dyn/16/scrutins/1 renvoie bien la motion de censure) et le confondrait avec
 # elle dans la cohesion de groupe, qui indexe par numero a legislature donnee.
-# Voir docs/technical_decisions.md#votes-multi-legislature et ROADMAP.
+# Voir docs/decisions/votes-multi-legislature.md et ROADMAP.
 AN_SCRUTIN_UID_PREFIXE = "VTANR"
 
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
@@ -209,7 +209,7 @@ AMENDEMENTS_CACHE_DIR = Path(".cache") / "amendements_an"
 # nationale. Le telechargement en CI de ces archives (350-650 Mo pour la
 # 15e/16e) echoue de facon recurrente dans le budget reseau/temps disponible
 # (IncompleteRead/HTTP2 PROTOCOL_ERROR repetes, meme en dehors de la CI - voir
-# docs/technical_decisions.md#amendements-legislatures-figees) : leur index
+# docs/decisions/amendements-legislatures-figees.md) : leur index
 # est construit une fois pour toutes hors CI (build_amendements_index_figees.py)
 # et committe dans AN_AMENDEMENTS_FIGEES_DIR, lu par _load_frozen_amendement_index
 # au lieu d'un nouveau telechargement reseau. La 14e (~99 Mo, marquee
@@ -232,7 +232,7 @@ AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # blob — contre 10,4 Mo une fois gzippé, la structure très répétitive
 # {uid, role_signataire} compressant très bien). `amendements.json`
 # regroupe les enregistrements dédupliqués (voir `_aggregate_amendements_index`
-# et docs/technical_decisions.md#amendements-legislatures-figees) ; le
+# et docs/decisions/amendements-legislatures-figees.md) ; le
 # contenu JSON est identique, seule la compression change.
 AMENDEMENTS_FIGEES_AMENDEMENTS_FILENAME = "amendements.json.gz"
 AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
@@ -244,7 +244,7 @@ AMENDEMENTS_FIGEES_INDEX_PAR_ACTEUR_FILENAME = "index_par_acteur.json.gz"
 # 4,67 Go pour la forme plate, soit ~21x — la forme plate approchait a elle
 # seule la RAM totale d'un runner GitHub Actions standard (~7 Gio) comme
 # d'une machine de developpement modeste, et a declenche l'OOM killer en
-# pratique (voir docs/technical_decisions.md#oom-lecture-amendements-par-candidat).
+# pratique (voir docs/decisions/oom-lecture-amendements-par-candidat.md).
 # Un cache ecrit avant #377 ne contient que `index_par_acteur.json` sous
 # forme plate, sans `amendements.json` : les deux fichiers sont donc exiges
 # ensemble pour qu'un cache soit considere valide (voir
@@ -712,7 +712,7 @@ WARNING_AUCUN_MANDAT_FR = "aucun mandat français connu"
 # La résolution est ACTIVE depuis le 27/08/2026, sans drapeau : c'est le
 # comportement de collecte, et le repli NosDéputés qui comblait le silence a été
 # retiré du chemin interventions dans le même mouvement (décision d'opérateur
-# prise sur les mesures ci-dessous, cf. docs/technical_decisions.md#syceron-actif-510).
+# prise sur les mesures ci-dessous, cf. docs/decisions/syceron-actif-510.md).
 #
 # Les deux défauts de parseur qui bloquaient l'activation sont corrigés depuis le
 # 26/08/2026 (parcours récursif des `<point>`, sujet lu là où la source le publie)
@@ -747,7 +747,7 @@ WARNING_AUCUN_MANDAT_FR = "aucun mandat français connu"
 # cet environnement : le coût par candidat et le pic de RSS de la nouvelle forme.
 # Ils sont bornés par CONSTRUCTION (une tranche d'acteur lue, jamais l'index),
 # pas par une mesure — la mesure reste à faire au premier run réel, et c'est
-# écrit tel quel dans docs/technical_decisions.md#syceron-actif-510.
+# écrit tel quel dans docs/decisions/syceron-actif-510.md.
 SYCERON_INDEX_PAR_ACTEUR_DIRNAME = "index_par_acteur"
 
 # Index plats hérités, supprimés dès qu'une tranche par acteur est publiée. Le
@@ -767,7 +767,7 @@ _AIDE_REFUS_DRAPEAU_SYCERON = (
     "le comportement de collecte, et le repli NosDéputés du chemin interventions "
     "a été retiré avec le drapeau. Il n'y a plus rien à activer — retirer "
     "l'option. Pour ne pas collecter d'interventions du tout : "
-    "--skip-interventions. Voir docs/technical_decisions.md#syceron-actif-510."
+    "--skip-interventions. Voir docs/decisions/syceron-actif-510.md."
 )
 
 
@@ -862,7 +862,7 @@ def _is_empty_payload(value: Any) -> bool:
 # La temporisation de courtoisie de `process_candidat` qu'ils pilotaient part
 # aussi : elle ménageait une API publique tierce, pas le CDN de l'Assemblée.
 #
-# Voir docs/technical_decisions.md#retrait-nosdeputes-529.
+# Voir docs/decisions/retrait-nosdeputes-529.md.
 
 
 def _extract_acteur_ref(url_an_ou_senat: Optional[str]) -> Optional[str]:
@@ -1133,7 +1133,7 @@ def _load_frozen_scrutins_index(legislature: str) -> bool:
     Retourne False si le fallback committé est absent ou illisible : l'appelant
     retombe alors sur le chemin réseau standard (l'archive reste téléchargeable,
     le gel n'est ici qu'une économie de CI — voir
-    docs/technical_decisions.md#votes-multi-legislature)."""
+    docs/decisions/votes-multi-legislature.md)."""
     frozen_dir = AN_SCRUTINS_FIGES_DIR / legislature
     frozen_scrutins_path = frozen_dir / SCRUTINS_FIGES_SCRUTINS_FILENAME
     frozen_index_path = frozen_dir / SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME
@@ -1453,7 +1453,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
     législature 14 utilise un schéma « legacy » distinct (un unique fichier
     JSON agrégeant tous les amendements, racine `{"textesEtAmendements":
     {...}}`), géré par `_parse_amendement_entry_legacy` — voir #299,
-    docs/technical_decisions.md#amendements-legislatures-figees. Le choix
+    docs/decisions/amendements-legislatures-figees.md. Le choix
     entre les deux se fait dans `_parse_amendements_zip`, par entrée, selon
     la clé racine du contenu.
     """
@@ -1483,7 +1483,7 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         # 30 616 numeroLong distincts, "AE12" porte par 7 textes), et keyer un
         # store par numero ecrase 74,9 % des amendements. Meme role que l'uid de
         # scrutin, unique toutes legislatures confondues — voir
-        # docs/technical_decisions.md#amendements-cle-uid.
+        # docs/decisions/amendements-cle-uid.md.
         "uid": amendement.get("uid"),
         # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
         # titre lisible : resolu en titre humain a posteriori si possible, voir
@@ -2274,7 +2274,7 @@ def _read_cached_amendements_acteur(
     # correction du 18/08/2026) : traitée comme un cache absent, jamais relue.
     # Ses références résolvent vers un autre amendement que le leur dans 40,5 %
     # des cas — voir `_aggregate_amendements_index` et
-    # docs/technical_decisions.md#amendements-cle-uid.
+    # docs/decisions/amendements-cle-uid.md.
     if not _index_par_acteur_au_format_uid({acteur_ref: refs}):
         return None
 
@@ -2429,7 +2429,7 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     compressée gzip (`amendements.json.gz` + `index_par_acteur.json.gz`
     allégé, voir `_aggregate_amendements_index` — nécessaire pour rester sous
     la limite GitHub de 100 Mo par blob, voir la révision du 15/08/2026 de
-    docs/technical_decisions.md#amendements-legislatures-figees), et le
+    docs/decisions/amendements-legislatures-figees.md), et le
     matérialise dans le cache disque (`AMENDEMENTS_CACHE_DIR`) en clair, sous
     la MEME forme dédupliquée (`amendements.json` + `index_par_acteur.json`,
     seule la compression change) — depuis #377, plus aucune expansion vers la
@@ -2459,7 +2459,7 @@ def _load_frozen_amendement_index(legislature: str) -> Optional[dict[str, list[d
     # reconstruit un index correct — mieux vaut re-télécharger une archive que
     # servir des amendements attribués au mauvais texte (voir
     # `_aggregate_amendements_index` et
-    # docs/technical_decisions.md#amendements-cle-uid).
+    # docs/decisions/amendements-cle-uid.md).
     if not _index_par_acteur_au_format_uid(index_par_acteur):
         print(
             f"  [!] Index figé législature {legislature} au format hérité "
@@ -2539,7 +2539,7 @@ def _aggregate_amendements_index(
     cosignataires, le même contenu est donc dupliqué N+1 fois dans `index`
     (mesuré : 3,86 Go décompressés pour la législature 16, committable
     uniquement une fois dédupliqué — voir la révision de
-    docs/technical_decisions.md#amendements-legislatures-figees).
+    docs/decisions/amendements-legislatures-figees.md).
 
     Retourne (amendements, index_par_acteur) :
     - `amendements` : chaque amendement stocké une seule fois, sous la clé
@@ -2549,7 +2549,7 @@ def _aggregate_amendements_index(
       une référence légère vers `amendements` au lieu d'une copie complète.
 
     **La clé est l'`uid`, jamais le `numero`** (corrigé le 18/08/2026, voir
-    docs/technical_decisions.md#amendements-cle-uid). Le `numeroLong` de l'AN
+    docs/decisions/amendements-cle-uid.md). Le `numeroLong` de l'AN
     repart à chaque texte : sur l'archive de la législature 17, 121 805
     amendements ne portent que 30 616 `numeroLong` distincts (`AE12` est porté
     par 7 textes sans rapport). Keyer par `numero` écrasait donc 74,9 % des
@@ -2666,7 +2666,7 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
     Pour une législature figée (`AN_AMENDEMENTS_LEGISLATURES_FIGEES`), aucun
     appel réseau n'a lieu : l'index committé est chargé par
     `_load_frozen_amendement_index` (voir aussi
-    `docs/technical_decisions.md#amendements-legislatures-figees`).
+    `docs/decisions/amendements-legislatures-figees.md`).
 
     Contrairement à `_build_acteur_vote_index`, les ~120k fichiers individuels de
     l'archive ne sont jamais extraits sur disque (uniquement lus en mémoire un par
@@ -3753,7 +3753,7 @@ def fetch_organe(organe_ref: Optional[str]) -> Optional[dict[str, Any]]:
 # entrees heritees de l'ere NosDeputes, ou _extract_mandats les mappait
 # TOUTES en dur vers "commission" : d'ou 197 libelles sur 246 classes
 # "Commission" sans en etre (voir #379 et
-# docs/technical_decisions.md#taxonomie-mandats-typeorgane-an).
+# docs/decisions/taxonomie-mandats-typeorgane-an.md).
 #
 # Granularite retenue : une categorie par nature institutionnelle reellement
 # distincte pour le lecteur, pas une par typeOrgane - les variantes internes
@@ -4690,7 +4690,7 @@ def fetch_interventions_syceron(
 # de longue date. Le Sénat sorti du périmètre, il ne restait aucun appelant, et
 # la branche de repli « utiliser votes_raw » de l'étape 6 est devenue
 # inatteignable — elle a été retirée avec.
-# Voir docs/technical_decisions.md#retrait-senat-528.
+# Voir docs/decisions/retrait-senat-528.md.
 
 
 # ── La lecture du profil brut NosDéputés vivait ici (#529, lot 5) ───────────
@@ -4716,7 +4716,7 @@ def fetch_interventions_syceron(
 # La source primaire des interventions reste Syceron
 # (`fetch_interventions_syceron`), complétée par les questions officielles
 # (`fetch_questions_officielles`). Voir
-# docs/technical_decisions.md#retrait-nosdeputes-529.
+# docs/decisions/retrait-nosdeputes-529.md.
 
 
 def build_profile(
@@ -4786,7 +4786,7 @@ def build_profile(
             f"chambre invalide : {chambre} (attendu: {list(CHAMBRES_COLLECTEES)}). "
             "Le Sénat a été retiré du périmètre par #528 — source morte, aucune "
             "source de remplacement établie ; voir "
-            "docs/technical_decisions.md#retrait-senat-528."
+            "docs/decisions/retrait-senat-528.md."
         )
 
     # #514 : la phase d'interventions est bornée par SON budget quand il existe

@@ -1,7 +1,7 @@
 """Garde-fou #528 : le Sénat ne rentre pas par la fenêtre.
 
 Le Sénat est sorti du périmètre du produit par une **décision éditoriale**
-(`docs/technical_decisions.md#retrait-senat-528`). Une décision éditoriale ne se
+(`docs/decisions/retrait-senat-528.md`). Une décision éditoriale ne se
 défait pas en rajoutant une clé dans un dict : elle se reprend explicitement,
 datée, en satisfaisant les trois conditions écrites au §7 de cette section.
 
@@ -83,7 +83,7 @@ def test_les_fetchs_senatoriaux_nont_plus_de_definition():
     for nom in ("fetch_votes", "fetch_dossiers", "fetch_dossiers_for_legislatures"):  # noqa: E501
         assert not hasattr(candidate_profile, nom), (
             f"`candidate_profile.{nom}` est de retour : c'est un chemin de "
-            f"collecte sénatorial. Voir docs/technical_decisions.md#{ANCRE}."
+            f"collecte sénatorial. Voir docs/decisions/{ANCRE}.md."
         )
 
 
@@ -138,7 +138,7 @@ def test_le_job_extract_senat_nexiste_plus():
     assert "extract-senat" not in jobs, (
         "`extract-senat` est de retour dans generate-data.yml. Ce job tournait, "
         "échouait sur 8 candidats sur 8 et concluait vert : c'est le motif de "
-        f"#501, #510 et #528. Voir docs/technical_decisions.md#{ANCRE}."
+        f"#501, #510 et #528. Voir docs/decisions/{ANCRE}.md."
     )
     assert jobs, "aucun job détecté — le découpage ne lit plus le workflow"
 
@@ -166,7 +166,7 @@ def test_le_workflow_ne_lance_plus_de_collecte_senatoriale():
                      "public-data-cache-senat"):
         assert interdit not in corps, (
             f"`{interdit}` est de retour dans generate-data.yml (hors commentaire). "
-            f"Voir docs/technical_decisions.md#{ANCRE}."
+            f"Voir docs/decisions/{ANCRE}.md."
         )
 
 

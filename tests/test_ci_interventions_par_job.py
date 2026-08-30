@@ -22,7 +22,7 @@ interventions fait échouer `test_l_inventaire_est_a_jour` — le mode doit êtr
 choisi et inscrit, pas hérité par défaut.
 
 **#528 — `extract-senat` n'existe plus.** Le job qui a motivé cette issue a été
-retiré avec le Sénat (docs/technical_decisions.md#retrait-senat-528). Son entrée
+retiré avec le Sénat (docs/decisions/retrait-senat-528.md). Son entrée
 d'inventaire et les quatre tests portant sur SON `timeout-minutes` et SON budget
 sont partis avec lui ; l'inventaire lui-même reste armé, et c'est ce qui compte —
 c'est la forme, pas ce job-là, qui empêche la prochaine divergence tacite.
@@ -236,7 +236,7 @@ def test_la_description_de_l_input_nomme_les_jobs_qui_l_ignorent():
 # `--skip-interventions` (#514). Elle est aujourd'hui sans job à surveiller —
 # `extract-roster-groupes`, seul autre `MODE_JAMAIS`, n'en pose pas. Le jour où
 # une invocation combine les deux, c'est ce test-là qu'il faut réécrire, avec
-# les mesures de ce job-là. Voir docs/technical_decisions.md#retrait-senat-528.
+# les mesures de ce job-là. Voir docs/decisions/retrait-senat-528.md.
 # ---------------------------------------------------------------------------
 
 

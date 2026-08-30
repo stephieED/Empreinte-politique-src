@@ -137,7 +137,7 @@ def test_le_prefixe_nu_reste_la_derniere_cle_de_repli(job):
         f"{job} : le préfixe nu `{fr.PREFIXE_CLE_AN}` a disparu des `restore-keys`. "
         "Retirer la ligne règle la fraîcheur en rouvrant #424 (~438 Mo par run) et "
         "en jetant chaque semaine 202 s d'index de législatures closes. "
-        "Voir docs/technical_decisions.md#cache-fraicheur-interventions-555."
+        "Voir docs/decisions/cache-fraicheur-interventions-555.md."
     )
 
 

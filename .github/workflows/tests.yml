@@ -10,7 +10,7 @@ name: Tests (pytest)
 # cassaient depuis une mise à jour du corpus, découverts par hasard.
 #
 # Chaque arbitrage ci-dessous est justifié dans
-# docs/technical_decisions.md#ci-tests-pytest — les commentaires ici ne font
+# docs/decisions/ci-tests-pytest.md — les commentaires ici ne font
 # que rappeler le verdict, pas le raisonnement.
 
 on:
@@ -80,9 +80,19 @@ jobs:
           # tel quel avec #520 — suite verte en local, `FileNotFoundError` en CI
           # sur le push vers `main` (run 32773016491). Un fichier de premier
           # niveau compte autant qu'un répertoire.
+          #
+          # `AGENTS.md`, `README.md`, `ROADMAP.md`, `docs/` : lus par
+          # `tests/test_index_decisions.py`, qui vérifie que toute décision citée
+          # dans le dépôt existe bien sous `docs/decisions/` et que l'index les
+          # connaît toutes. Sans eux le test passerait en CI **sans rien lire** —
+          # d'où son premier cas, qui échoue si `docs/decisions/` est vide.
           sparse-checkout: |
             .github
             .gitignore
+            AGENTS.md
+            README.md
+            ROADMAP.md
+            docs
             raw_data/gouvernements_reels.json
             raw_data/groupes_reels.json
             requirements.txt

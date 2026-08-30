@@ -14,7 +14,7 @@ corpus est sous Licence Ouverte* — est fausse deux fois :
    `type`, elle ne la remplace pas.
 
 Ce fichier verrouille les deux, sur le code comme sur les pages publiées.
-Voir `docs/technical_decisions.md#licence-lot-6-530`.
+Voir `docs/decisions/licence-lot-6-530.md`.
 """
 
 import re
