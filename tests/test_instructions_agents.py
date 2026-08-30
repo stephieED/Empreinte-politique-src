@@ -17,8 +17,13 @@ Ce que ce test attrape, et qu'un lien seul ne dit pas :
 3. un nouvel outil ajouté avec son fichier, sans lien.
 
 Il ne dit RIEN de ce que chaque outil fait du lien : qu'un chargeur le suive
-est une propriété de l'outil, vérifiable seulement en l'exécutant. Ce test
+est une propriété de l'outil, constatable seulement en l'exécutant. Ce test
 garantit la source unique, pas la lecture.
+
+Constaté le 30/08/2026, hors de ce test : **Claude Code suit le lien** — une
+session neuve charge `CLAUDE.md` et porte les onze sections d'`AGENTS.md`.
+**Copilot n'a pas été vérifié.** Voir
+`docs/decisions/instructions-une-source-plusieurs-noms.md`.
 """
 from __future__ import annotations
 
