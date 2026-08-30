@@ -103,7 +103,10 @@ source-near; `pivot_data/` is the only layer `web/` reads.
   in CI** — #434, then #518 twice. Whitelisting the file is half of it; the other half is
   `tests/test_ci_perimetre_sparse_checkout.py`, which fails **locally** on an uncovered
   path literal and checks the reverse too. **A top-level file counts as much as a
-  directory.**
+  directory.** When it slips through anyway (three times now: #434, #520, `CLAUDE.md` on
+  30/08/2026), the `pytest_runtest_makereport` hook of `tests/conftest.py` names the cause
+  in the CI log — it diagnoses, it does not prevent, and it stays silent on any other
+  failure.
   → `docs/decisions/point-de-sauvegarde-dans-les-profils-518.md`
 - **The launch form is two disjoint axes plus the cache (#578).** `existing_profiles`
   decides what happens to profiles already written (`overwrite` alone raises
