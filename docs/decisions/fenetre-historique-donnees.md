@@ -2,6 +2,8 @@
 # Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)
 
 Décision : **option D**, borner l'historique de données plutôt que son contenu.
+
+> **Ce que cette décision ne tranche pas.** Ses quatre options partent toutes de la même hypothèse : la donnée est versionnée dans le dépôt. **Pourquoi** elle y est n'a été écrit que le 30/08/2026 — voir [`donnees-versionnees-integrite.md`](donnees-versionnees-integrite.md). Un lot de volumétrie qui rencontre cette contrainte doit la peser contre l'intégrité de ce que le site montre, jamais contre le confort.
 Variante retenue : **squash déclenché par la mesure, fenêtre de 30 commits de
 données**, jamais de réécriture automatique. Rien à exécuter aujourd'hui — le
 dépôt porte 23 commits de données, la fenêtre n'est pas contraignante.
