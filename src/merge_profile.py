@@ -346,25 +346,125 @@ def bloc_sans_fond(bloc: Any, champs_sans_source: tuple[str, ...]) -> bool:
     )
 
 
-def _preferer_bloc_avec_fond(new_bloc: Any, old_bloc: Any, nom_bloc: str) -> Any:
-    """`_prefer_non_empty` pour un bloc structuré : un bloc **sans fond** ne
-    remplace jamais un bloc qui en a (#484, extension de #465).
+def _est_marqueur_nil(valeur: Any) -> bool:
+    """Le marqueur d'absence XML d'AMO30, sous ses deux formes publiées (#556).
 
-    Le bloc n'est jamais fusionné champ par champ, et c'est délibéré : ses
-    champs décrivent UNE personne telle qu'UNE source la décrit, et
-    `url_an_ou_senat` en porte la provenance. Panacher un `groupe_nom` de
-    `raw_data/candidats.json` avec un `groupe_sigle` d'AMO30 publierait une
-    identité qu'aucune source ne dit. C'est l'inverse d'`identifiants`, dont
-    chaque clé EST une source distincte et qui se fusionne donc clé par clé
-    (#539).
+    L'objet — `{"@xmlns:xsi": …, "@xsi:nil": "true"}` — et la **chaîne** dans
+    laquelle `_format_lieu_naissance` l'a interpolé : la seconde est la pire des
+    deux, parce qu'un `isinstance(..., str)` la laisse passer pour une donnée.
+
+    La définition canonique vit dans
+    `migrer_absences_publiees_556_558_560.est_marqueur_nil` / `nettoyer_valeur`.
+    Elle est recopiée ici plutôt qu'importée : ce module est dans le chemin
+    chaud du pipeline et n'a pas à dépendre d'un script de migration ponctuel.
+    `test_merge_identite_601` vérifie que les deux lectures n'ont pas divergé.
     """
+    if isinstance(valeur, dict):
+        return str(valeur.get("@xsi:nil", "")).lower() == "true"
+    return isinstance(valeur, str) and "@xsi:nil" in valeur
+
+
+def valeur_de_source(valeur: Any) -> Any:
+    """La valeur si une source l'a dite, `None` sinon.
+
+    Trois formes d'absence, une seule réponse : le vide littéral, le marqueur
+    XML d'AMO30 et la chaîne qui l'a interpolé. « Donnée manquante = donnée
+    manquante » (§2.5) — et un marqueur n'est pas une donnée, c'est la façon
+    dont AMO30 dit qu'il n'y en a pas.
+    """
+    if valeur in (None, "", [], {}):
+        return None
+    if _est_marqueur_nil(valeur):
+        return None
+    return valeur
+
+
+def fusionner_identite(
+    old_bloc: Any, new_bloc: Any, nom_bloc: str = "identite"
+) -> Any:
+    """`identite` composée **champ par champ**, jamais choisie en bloc (#601).
+
+    Absorbe le palliatif de #597 (`_preferer_bloc_avec_fond`), qui rendait le
+    *choix du gagnant* plus fin — « a du fond » plutôt que « n'est pas vide » —
+    sans en changer la forme : un seul des deux blocs survivait. Si le job AN
+    connaissait la `profession` et le job UE le `groupe_nom`, l'une des deux
+    contributions était perdue. Le patron appliqué ici est celui qu'`identifiants`
+    suit déjà depuis #539 : une règle de scalaire, par champ.
+
+    Deux règles, et la seconde est ce qui reste de #484 :
+
+    1. **Une absence n'écrase jamais une valeur connue** (§2.5). Un champ que le
+       nouvel écrivain ne renseigne pas garde la valeur de l'ancien. Un marqueur
+       `xsi:nil` compte comme une absence des deux côtés — s'il ressurgissait, il
+       ne gagnerait pas, et un champ dont c'est le seul candidat est publié
+       `null` plutôt que republié en plomberie XML.
+    2. **Un bloc sans fond n'écrase pas les champs qu'il remplit sans source.**
+       `BLOCS_PROTEGES_DU_VIDE` les nomme — `nom_complet`, `groupe_nom` — parce
+       qu'ils viennent de `raw_data/candidats.json` chez l'écrivain minimal, pas
+       d'une source parlementaire. Composer sans cette réserve laisserait le
+       `groupe_nom` éditorial (« La France Insoumise (LFI) ») écraser le groupe
+       parlementaire déclaré à l'AN, sur le seul motif que le job UE passe en
+       dernier.
+
+       La réserve ne s'applique **que** si l'ancien bloc, lui, a du fond : deux
+       blocs pauvres face à face, il n'y a rien de mieux à protéger, et c'est le
+       neuf qui parle. C'est exactement la condition de #597
+       (`bloc_sans_fond(new) and not bloc_sans_fond(old)`), portée du bloc au
+       champ.
+
+    C'est cette seconde règle qui remplace le « choix » : elle dit ce qu'un bloc
+    pauvre n'a pas le droit d'écraser, au lieu de dire lequel des deux gagne.
+    """
+    if not isinstance(new_bloc, dict):
+        return old_bloc if isinstance(old_bloc, dict) and old_bloc else new_bloc
+    if not isinstance(old_bloc, dict) or not old_bloc:
+        return dict(new_bloc)
+
     champs_sans_source = BLOCS_PROTEGES_DU_VIDE.get(nom_bloc, ())
-    if bloc_sans_fond(new_bloc, champs_sans_source) and not bloc_sans_fond(
+    reserve = bloc_sans_fond(new_bloc, champs_sans_source) and not bloc_sans_fond(
         old_bloc, champs_sans_source
-    ):
-        if isinstance(old_bloc, dict) and old_bloc:
-            return old_bloc
-    return _prefer_non_empty(new_bloc, old_bloc)
+    )
+
+    cles = list(new_bloc) + [c for c in old_bloc if c not in new_bloc]
+    fusionne: dict[str, Any] = {}
+    for cle in cles:
+        neuve = valeur_de_source(new_bloc.get(cle))
+        ancienne = valeur_de_source(old_bloc.get(cle))
+        if neuve is None:
+            fusionne[cle] = ancienne
+        elif reserve and cle in champs_sans_source and ancienne is not None:
+            fusionne[cle] = ancienne
+        else:
+            fusionne[cle] = neuve
+    return fusionne
+
+
+def _accorder_hatvp(profil: dict[str, Any]) -> None:
+    """`identite.uri_hatvp` et `identifiants.hatvp` disent la même chose (#601).
+
+    Le second est la **recopie** du premier, jamais une seconde collecte : c'est
+    l'invariant que `validate_profil` fait respecter, et deux valeurs différentes
+    voudraient dire qu'une des deux est fausse sans dire laquelle. Or ce sont
+    désormais deux compositions indépendantes — `identite` champ par champ,
+    `identifiants` clé par clé — et rien ne garantissait qu'elles retiennent la
+    même valeur.
+
+    L'accord se fait dans les deux sens, parce que chacun peut être le seul à
+    savoir : la composition d'`identite` peut restaurer une URI qu'`identifiants`
+    n'a pas, et l'inverse est vrai depuis que `identifiants` existe (#539). Rien
+    n'est inventé — les deux champs sortent de la même fabrique, et l'accord ne
+    fait que le republier.
+    """
+    identite = profil.get("identite")
+    identifiants = profil.get("identifiants")
+    if not isinstance(identite, dict) or not isinstance(identifiants, dict):
+        return
+    uri = valeur_de_source(identite.get("uri_hatvp"))
+    publie = valeur_de_source(identifiants.get("hatvp"))
+    if uri is not None:
+        identifiants["hatvp"] = uri
+    elif publie is not None and "uri_hatvp" in identite:
+        identite["uri_hatvp"] = publie
 
 
 def preserver_collectes_non_vides(
@@ -729,9 +829,7 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
     if meta_fusionne is not None:
         merged["meta"] = meta_fusionne
 
-    merged["identite"] = _preferer_bloc_avec_fond(
-        new.get("identite"), old.get("identite"), "identite"
-    )
+    merged["identite"] = fusionner_identite(old.get("identite"), new.get("identite"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
@@ -1014,9 +1112,7 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["parti"] = _prefer_non_empty(new.get("parti"), old.get("parti"))
     merged["groupe"] = _prefer_non_empty(new.get("groupe"), old.get("groupe"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
-    merged["identite"] = _preferer_bloc_avec_fond(
-        new.get("identite"), old.get("identite"), "identite"
-    )
+    merged["identite"] = fusionner_identite(old.get("identite"), new.get("identite"))
 
     # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
     #
@@ -1031,6 +1127,13 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         identifiants[cle] = _prefer_non_empty(valeur, identifiants.get(cle))
     if identifiants:
         merged["identifiants"] = identifiants
+
+    # `identite.uri_hatvp` et `identifiants.hatvp` sont deux noms d'une même
+    # valeur, et depuis #601 ce sont deux compositions distinctes : sans cet
+    # accord, elles peuvent retenir chacune la sienne, et `validate_profil`
+    # refuse la divergence. Il est posé ICI, après les deux, parce qu'il ne
+    # décrit ni l'une ni l'autre — il décrit leur invariant.
+    _accorder_hatvp(merged)
 
     # --- couverture : REMPLACÉE, jamais fusionnée (#539) ---------------------
     #
