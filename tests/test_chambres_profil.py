@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from merge_profile import merge_pivot_profile  # noqa: E402
 from normalize_europarl import normalize_europarl  # noqa: E402
 from normalize_profil import (  # noqa: E402
+    WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
     normalize_profil,
 )
@@ -125,6 +126,13 @@ def _warnings_chambres(pivot):
     ]
 
 
+def _warnings_mandat_sans_chambre(pivot):
+    return [
+        w for w in pivot["meta"]["warnings"]
+        if w.startswith(WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE)
+    ]
+
+
 # ---------------------------------------------------------------------------
 # 1. deriver_chambres — la fabrique unique
 # ---------------------------------------------------------------------------
@@ -190,9 +198,18 @@ def test_le_scalaire_est_toujours_le_premier_element():
 
 
 def test_sans_mandat_ni_repli_la_liste_est_vide_et_le_scalaire_nul():
-    """Aucune valeur par défaut (§2.5) : rien à dériver, rien sur quoi se replier."""
+    """Aucune valeur par défaut (§2.5) : rien à dériver, rien sur quoi se replier.
+
+    Et rien à corroborer : une liste vide ne publie aucune chambre, donc aucune
+    chambre non étayée (#486). La déclarer « non corroborée » faisait publier,
+    sur 3 des 481 profils pivot du 30/08/2026 (`david-lisnard`,
+    `marine-tondelier`, `nathalie-arthaud`), un warning dont la phrase même
+    disait qu'il n'y avait rien à signaler.
+    """
     d = deriver_chambres([], repli=None)
-    assert d.chambres == [] and d.chambre is None and d.corroboree is False
+    assert d.chambres == [] and d.chambre is None
+    assert d.corroboree is True
+    assert d.chambres_non_corroborees == []
 
 
 # ---------------------------------------------------------------------------
@@ -246,10 +263,24 @@ def test_un_repli_hors_nomenclature_est_ignore():
     assert deriver_chambres([], repli="").chambres == []
 
 
-def test_un_mandat_non_estampille_empeche_la_corroboration_meme_avec_un_repli_etaye():
+def test_un_mandat_non_estampille_nempeche_plus_la_corroboration_dune_liste_etayee():
+    """La corroboration porte sur ce que `chambres` PUBLIE, pas sur la
+    complétude de `mandats[]` (#486).
+
+    Ici `AN` est étayée par un mandat estampillé : la liste publiée est
+    entièrement fondée. Le mandat resté à `null` est un manque de collecte,
+    déclaré par le warning de #492 — qui le nomme et le compte. Confondre les
+    deux gageait le retrait d'un champ de niveau profil sur une complétude de
+    niveau mandat que la fusion additive ne peut pas atteindre : sur les 481
+    profils pivot publiés du 30/08/2026, **27** étaient dans ce cas exact, et
+    leur warning se lisait « chambres du profil non corroborée : chambres=['AN'],
+    dont aucune sans mandat électif estampillé pour l'étayer ».
+    """
     d = deriver_chambres([_mandat_electif("AN"), _mandat_electif(None)], repli="AN")
     assert d.chambres == ["AN"]
-    assert d.corroboree is False
+    assert d.corroboree is True
+    assert d.chambres_non_corroborees == []
+    # Le fait n'est pas perdu : il reste compté, pour le warning de #492.
     assert d.mandats_non_estampilles == 1
 
 
@@ -439,7 +470,14 @@ def test_la_fusion_profite_du_backfill_de_chambre_de_492():
     assert _warnings_chambres(fusionne) == []
 
 
-def test_la_fusion_garde_le_warning_tant_quun_mandat_reste_non_estampille():
+def test_la_fusion_confie_le_mandat_non_estampille_au_warning_de_492():
+    """Un mandat fossile — conservé par la fusion, que la source ne rend plus —
+    ne rend pas la liste publiée non fondée (#486).
+
+    `AN` est étayée par le mandat neuf. Ce qui reste vrai, et doit rester dit,
+    c'est qu'un `mandat_electif` n'a pas de chambre : c'est le warning de #492,
+    et il est désormais le seul à le déclarer.
+    """
     ancien = normalize_profil(
         _brut(chambre="deputes", mandats=[_mandat_brut(None, label="Ancien", debut="2012-06-20")])
     )
@@ -447,7 +485,9 @@ def test_la_fusion_garde_le_warning_tant_quun_mandat_reste_non_estampille():
         _brut(chambre="deputes", mandats=[_mandat_brut("deputes", label="Neuf", debut="2017-06-21")])
     )
     fusionne = merge_pivot_profile(ancien, neuf)
-    assert len(_warnings_chambres(fusionne)) == 1
+    assert _warnings_chambres(fusionne) == []
+    assert len(_warnings_mandat_sans_chambre(fusionne)) == 1
+    assert "1 mandat(s)" in _warnings_mandat_sans_chambre(fusionne)[0]
 
 
 def test_la_fusion_nintroduit_aucune_divergence_entre_les_deux_champs():

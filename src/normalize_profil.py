@@ -631,12 +631,11 @@ def normalize_profil(
         profil["meta"]["warnings"].append(
             f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
             f"chambres={derivation_chambres.chambres}, dont "
-            f"{derivation_chambres.chambres_non_corroborees or 'aucune'} sans mandat "
-            f"électif estampillé pour l'étayer, et "
-            f"{derivation_chambres.mandats_non_estampilles} mandat(s) électif(s) "
-            "encore sans chambre (#493). Une chambre non corroborée est celle de la "
-            "collecte : elle dit quel jeu de données a répondu, pas où la personne a "
-            "siégé — l'épic #486 a mesuré qu'elle peut être fausse dans les deux sens."
+            f"{derivation_chambres.chambres_non_corroborees} sans mandat "
+            "électif estampillé pour l'étayer (#493). Une chambre non corroborée est "
+            "celle de la collecte : elle dit quel jeu de données a répondu, pas où la "
+            "personne a siégé — l'épic #486 a mesuré qu'elle peut être fausse dans les "
+            "deux sens."
         )
 
     return profil

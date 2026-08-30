@@ -55,7 +55,10 @@ from candidate_profile import (
     WARNING_PREFIX_DEFAUT_COLLECTE,
 )
 from licences import appliquer_licence_donnees
-from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
+from normalize_profil import (
+    WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
+    WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+)
 from profil_brut import (
     PartitionIllisible,
     charger_profil_brut,
@@ -663,6 +666,11 @@ FAMILLES_WARNINGS: tuple[str, ...] = (
     WARNING_PREFIX_BUDGET_COLLECTE,
     WARNING_AUCUN_MANDAT_FR,
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+    # #486 : porte un compteur de mandats, donc une famille, pour la même
+    # raison que celui de #493 juste au-dessus — sans elle, deux écrivains qui
+    # comptent sur des `mandats[]` différents publient leurs deux comptes côte
+    # à côte, dont un faux. Cette famille manquait depuis #600.
+    WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
     # #602 : porte la liste des listes divergentes, donc un compteur. Sans sa
     # famille, deux fusions successives publieraient deux énumérations côte à
     # côte, dont une périmée — le cas exact que cette table existe pour éviter.
@@ -1645,12 +1653,43 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             warnings_merged.append(
                 f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
                 f"chambres={derivation.chambres}, dont "
-                f"{derivation.chambres_non_corroborees or 'aucune'} sans mandat électif "
-                f"estampillé pour l'étayer, et {derivation.mandats_non_estampilles} "
-                "mandat(s) électif(s) encore sans chambre, après fusion additive (#493). "
+                f"{derivation.chambres_non_corroborees} sans mandat électif "
+                "estampillé pour l'étayer, après fusion additive (#493). "
                 "Une chambre non corroborée est celle de la collecte : elle dit quel jeu "
                 "de données a répondu, pas où la personne a siégé."
             )
+
+    # #486 : le warning de #492 est désormais le SEUL à déclarer qu'un
+    # `mandat_electif` n'a pas de chambre — celui de #493 a cessé de le
+    # redéclarer. Il doit donc survivre à la fusion dans les deux sens, comme
+    # celui de #493 juste au-dessus, et pour la même raison : `normalize_profil`
+    # le calcule sur les seuls mandats du profil NEUF, quand la fusion additive
+    # publie un surensemble des deux côtés.
+    #
+    # Le trou n'est pas théorique : mesuré sur les 481 profils pivot publiés du
+    # 30/08/2026, **1 profil** (`yannick-vaugrenard`) publie un `mandat_electif`
+    # à `chambre: null` sans aucun warning pour le dire — son pivot est
+    # antérieur à #492, et la fusion a conservé son mandat sans jamais
+    # reconstruire l'avertissement qui l'accompagne. Les 27 autres portaient un
+    # compte juste, par coïncidence de périmètre et non par construction.
+    n_sans_chambre_fusion = sum(
+        1 for m in merged.get("mandats") or []
+        if isinstance(m, dict) and m.get("categorie") == "mandat_electif"
+        and not m.get("chambre")
+    )
+    texte_mandat_sans_chambre = (
+        f"{WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE} : "
+        f"{n_sans_chambre_fusion} mandat(s) électif(s) sans chambre déterminée, "
+        "publiés à null, après fusion additive (#492). La chambre est estampillée "
+        "à la collecte ; un mandat conservé par la fusion et que la source ne rend "
+        "plus n'en portera jamais, et elle n'est pas reconstituable a posteriori — "
+        "ni depuis `source_url` (jamais renseignée sur un mandat électif AN/Sénat), "
+        "ni depuis la chambre du profil."
+    ) if n_sans_chambre_fusion else None
+    if isinstance(merged.get("meta"), dict) and texte_mandat_sans_chambre:
+        warnings_merged = merged["meta"].setdefault("warnings", [])
+        if texte_mandat_sans_chambre not in warnings_merged:
+            warnings_merged.append(texte_mandat_sans_chambre)
 
     # #602 : une couverture que deux écrivains constatent le même jour, au même
     # rang d'interrogation, et différemment, n'est tranchée par aucune règle. Le
@@ -1691,6 +1730,16 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             # n'a pas recollectés : la liste est alors corroborée, et le dire
             # encore serait faux.
             if w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE) and derivation.corroboree:
+                continue
+            # #486, symétrique et pour la même raison : le warning de #492 est
+            # calculé sur les mandats du profil NEUF. Un warning ramené de
+            # l'ancien profil compte sur un autre `mandats[]` — il s'éteint
+            # quand la fusion n'a plus aucun mandat électif sans chambre, et il
+            # cède la place au texte recalculé ci-dessus quand il en reste. Un
+            # compte faux est aussi trompeur qu'un compte absent : le premier
+            # fait croire la migration plus avancée qu'elle n'est.
+            if (w.startswith(WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE)
+                    and w != texte_mandat_sans_chambre):
                 continue
             # #602, même patron : la divergence est un fait sur CETTE fusion. Un
             # warning ramené de l'ancien profil par `unir_warnings` décrirait un
