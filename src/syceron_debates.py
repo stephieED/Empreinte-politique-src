@@ -8,6 +8,23 @@ https://data.assemblee-nationale.fr/static/openData/repository/{legislature}/vp/
 
 Les archives sont mises en cache sous .cache/syceron_an/<legislature>/ afin
 d'éviter un re-téléchargement complet à chaque exécution.
+
+Les décisions à relire avant de toucher à `SYCERON_AVAILABLE_LEGISLATURES`
+ou au cache
+--------------------------------------------------------------------------
+Six décisions nomment ce module ; la liste complète et à jour est dans
+`docs/decisions-par-module.md`. Trois portent les contraintes :
+
+- `docs/decisions/syceron-archives-verifiees-parseur-510.md` — les **trois**
+  archives ont été téléchargées et vérifiées au `content-length` (2 768 comptes
+  rendus) : l'ensemble ci-dessous est un fait mesuré, pas une hypothèse.
+- `docs/decisions/absences-publiees-comme-faits-556-558-560.md` — au-delà de ces
+  trois législatures il n'y a pas d'avarie, il y a une **frontière de source**.
+  `couverture_profil` la publie comme telle ; ne pas la faire passer pour une
+  panne que le prochain run comblerait.
+- `docs/decisions/cache-completude-interventions-550.md` — quatrième reprise de
+  la même forme : une clé de cache qui ne décrit pas ce qu'elle protège fait
+  rejouer (ou pire, fait croire complet) ce qui ne l'est pas.
 """
 
 import shutil

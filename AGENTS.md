@@ -484,6 +484,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `docs/workflow-generate-data.md` | **The entry point for all eight jobs** (§1: what each one does, consumes, produces, and its structuring decisions). Update when a job is added or removed, when what a job does or touches changes, when a form input, cache key or artifact name changes, when a budget is re-measured, or when the retry contract is touched. |
 | `docs/extract-roster-groupes.md` | The only extraction job with a page of its own — it has depth a block cannot hold (rollout, regenerating existing profiles, the roster's three exit codes). A new job does **not** get a file: it gets a block in `docs/workflow-generate-data.md` §1. Eight files drift independently; one is reread in a single pass. |
 | `docs/sources/` | **External-source references — the only docs that drift with their provider, not with our code.** Update when the provider moves a dataset, a URL pattern or a field, never because our pipeline changed. Each file states its own status in its header (`an-opendata.md`: live, the pipeline's single source; `nosdeputes/`: historical, not queried since #529) — the directory names the category, the header names the status. |
+| `docs/decisions-par-module.md` | **Never by hand — it is generated.** Run `python3 scripts/generer_decisions_par_module.py` whenever a decision is added or edited, a `src/` module is added, renamed or removed, or a top-level function/constant a decision names is renamed. `tests/test_decisions_par_module.py` fails when the committed file has drifted, and when a module governed by 5 or more decisions cites none. |
 | `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
 | `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
 | `ROADMAP.md` | **A large piece of work to plan for**, or a known defect that stays open. **Never a small fix — that is a GitHub issue.** It holds what GitHub cannot: the scoping findings that must not be re-litigated, and the known defects a cold-start session has to read. **Never a list of issues**: one was removed on purpose, because a table copying GitHub's state goes stale with every lot shipped, and a wrong table is worse than none. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
@@ -596,6 +597,11 @@ When something does need deciding, five parts, in this order:
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
   `normalize_nosdeputes.py` until #529).
 - `src/licences.py`: canonical licence labels + the derivation of `meta.licence_donnees` (#530).
+- `docs/decisions-par-module.md`: the same decisions read the other way round —
+  **this module → these decisions**, generated from the symbols each decision
+  names. Open it when you are about to change a file under `src/` and want to
+  know what governs it. `docs/decisions/table-inversee-decisions-par-module.md`
+  holds the criterion and what it misses.
 - `docs/technical_decisions.md`: the index of the 158 decision files under
   `docs/decisions/`, newest first — the chronological read. Frequent entry points:
   `docs/decisions/direction-artistique-empreinte.md` (positioning, naming, targets),

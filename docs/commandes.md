@@ -390,6 +390,20 @@ slug non résolu est **nommé sur stderr** plutôt qu'inventé. C'est le remède
 quand le quality gate §5b échoue en nommant un slug.
 → `docs/decisions/correspondance-acteurs-an-525.md`.
 
+### Régénérer la table « ce module → ces décisions »
+
+```bash
+python3 scripts/generer_decisions_par_module.py --verifier
+python3 scripts/generer_decisions_par_module.py
+```
+
+`--verifier` n'écrit rien et sort 1 si le fichier committé a dérivé du dépôt ;
+sans lui, `docs/decisions-par-module.md` est réécrit. À relancer après avoir
+ajouté ou modifié une décision, ajouté ou renommé un module de `src/`, ou
+renommé une fonction qu'une décision nomme. `tests/test_decisions_par_module.py`
+fait la même vérification dans la suite.
+→ `docs/decisions/table-inversee-decisions-par-module.md`.
+
 ### Vérifier que les SHA cités sont archivés dans Software Heritage
 
 ```bash

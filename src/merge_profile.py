@@ -25,6 +25,28 @@ dans `REGLES_META`. Sans cela, l'ordre des jobs du workflow décidait quels
 avertissements étaient publiés — et `meta.warnings[]` est le véhicule de la
 règle « donnée manquante = donnée manquante » (AGENTS.md §2.5).
 
+Les trois décisions à relire avant de toucher à une règle de fusion
+--------------------------------------------------------------------
+Trente-neuf décisions nomment une fonction de ce module ; la liste complète et à
+jour est dans `docs/decisions-par-module.md`. Ces trois-là portent la politique,
+pas un cas :
+
+- `docs/decisions/bloc-sans-fond-484.md` — **« vide » n'est pas « sans fond ».**
+  `_prefer_non_empty` ne testait que la vacuité : un squelette à huit clés dont
+  sept valent `null` était « renseigné », donc il gagnait, et un job d'extraction
+  a publié `identite: null` par-dessus une identité collectée. D'où
+  `bloc_sans_fond` et `BLOCS_PROTEGES_DU_VIDE`.
+- `docs/decisions/cle-fusion-interventions-540.md` — **une URL de source n'est pas
+  un identifiant.** `merge_lists_by_key` est purement additive et ne peut rien
+  perdre, sauf par sa clé : une clé qui colle fusionne des entrées distinctes
+  sans qu'aucun garde-fou réagisse (7 767 interventions collectées, 891
+  publiées). Ce qu'une clé `_pivot_*_key` a le droit d'être se lit là.
+- `docs/decisions/couverture-listes-539.md` (décision 4) — **la seule exception à
+  la règle additive.** `couverture` décrit le run, pas la personne : l'unir
+  ferait survivre un `couvert` d'hier à côté de la panne d'aujourd'hui. Elle est
+  remplacée, à la maille de la liste métier depuis
+  `docs/decisions/couverture-remplacee-par-liste-602.md` (`fusionner_couverture`).
+
 Usage :
     from merge_profile import merge_raw_profile, merge_pivot_profile
     profile = merge_raw_profile(old_profile, new_profile)
