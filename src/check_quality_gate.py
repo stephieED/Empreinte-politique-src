@@ -6,8 +6,9 @@ Produit cinq sections de rapport :
      les JSON générés (une lecture reprise avec succès après retry n'y
      figure pas — le log du run peut donc signaler une instabilité réseau
      sans qu'aucune erreur ne soit comptée ici).
-  2. Candidats générés vs attendus (d'après raw_data/candidats.json).
-  3. Candidats avec un faible nombre d'interventions.
+  2. Profils générés vs candidats déclarés attendus (d'après
+     raw_data/candidats.json).
+  3. Profils avec un faible nombre d'interventions.
   4. Groupes parlementaires : hard fail sur structure cassée, soft fail sur
      qualité dégradée (couverture, signaux réseau).
   5. Gouvernements : hard fail sur structure cassée, soft fail sur qualité
@@ -99,6 +100,19 @@ from correspondance_acteurs_an import (  # noqa: E402
     CHEMIN_PAR_DEFAUT as CORRESPONDANCE_PAR_DEFAUT,
     CorrespondanceInvalide,
     charger_correspondance,
+)
+
+# Les deux populations de `pivot_data/profiles/` (#630) : stdlib pure. Tout
+# compte de profils affiché par ce gate passe par `Ventilation` — un agent qui
+# lit « 481 » dans une section intitulée « Candidats » apprend que les 481 sont
+# des candidats, et le libellé ment à chaque exécution.
+from population_profils import (  # noqa: E402
+    CANDIDAT_DECLARE,
+    LIBELLE_ROSTER,
+    ROSTER_GROUPE,
+    lire_provenances,
+    provenance_du_profil,
+    ventiler_provenances,
 )
 
 INCOMPLETE_READ_MARKER = "IncompleteRead"
@@ -265,13 +279,35 @@ def _report_incomplete_reads(
 
 
 # ---------------------------------------------------------------------------
-# Section 2 — Candidats générés vs attendus
+# Section 2 — Profils générés vs candidats déclarés attendus
 # ---------------------------------------------------------------------------
 
 def _report_coverage(
-    candidats_path: Path, profiles_dir: Path
+    candidats_path: Path,
+    profiles_dir: Path,
+    provenances: dict[str, str] | None = None,
 ) -> tuple[str, str]:
-    """Retourne (console_text, markdown_text)."""
+    """Retourne (console_text, markdown_text).
+
+    Cette section rapproche **deux populations différentes**, et son ancien
+    titre — « Candidats générés vs attendus » — le cachait (#630) :
+
+      - `raw_data/candidats.json` liste les **13 candidats déclarés** attendus ;
+      - `pivot_data/profiles/` porte **481** profils, dont 468 membres de
+        roster qui n'ont jamais eu vocation à figurer dans `candidats.json`.
+
+    Conséquence mesurée le 30/08/2026 : les 468 membres de roster étaient
+    affichés comme « Inattendus » et **nommés un par un** — 468 lignes de fausse
+    alerte sur les 1 054 du rapport. Un garde-fou qui crie pour rien finit
+    désactivé : les membres de roster sont désormais comptés comme la population
+    attendue qu'ils sont, et « inattendu » ne désigne plus qu'un profil qui se
+    dit `candidat_declare` sans figurer dans `candidats.json`.
+
+    `provenances` (`{slug: meta.provenance}`) est passée par `main()` — la §3
+    charge déjà le corpus entier, donc la lecture y est gratuite. Absente, elle
+    est relue ici : un appelant isolé (test, script) doit obtenir le même
+    rapport, pas un rapport amputé.
+    """
 
     # Candidats attendus
     raw = _load_json(candidats_path)
@@ -296,22 +332,39 @@ def _report_coverage(
         for p in profiles_dir.glob("*.pivot.json")
     } if profiles_dir.exists() else set()
 
+    if provenances is None:
+        provenances, illisibles = lire_provenances(profiles_dir)
+    else:
+        illisibles = []
+    ventilation = ventiler_provenances(
+        (provenances.get(slug, CANDIDAT_DECLARE) for slug in generated_slugs),
+        illisibles=len(illisibles),
+    )
+
     expected_slugs = set(with_slug.keys())
     missing = sorted(expected_slug for expected_slug in expected_slugs if expected_slug not in generated_slugs)
-    unexpected = sorted(slug for slug in generated_slugs if slug not in expected_slugs)
-    generated_expected = sorted(expected_slugs & generated_slugs)
+    # Un membre de roster hors `candidats.json` est la normale, pas une
+    # anomalie : `generate_roster_candidats.py` le produit précisément parce
+    # qu'il n'est pas un candidat déclaré. Ne reste « inattendu » qu'un profil
+    # qui se DIT `candidat_declare` sans figurer dans la liste éditoriale —
+    # celui-là, personne ne sait d'où il vient.
+    hors_liste = sorted(slug for slug in generated_slugs if slug not in expected_slugs)
+    roster = sorted(slug for slug in hors_liste
+                    if provenances.get(slug, CANDIDAT_DECLARE) == ROSTER_GROUPE)
+    unexpected = [slug for slug in hors_liste if slug not in set(roster)]
 
     total_expected = len(all_candidats)
-    total_generated = len(generated_slugs)
 
     # ── Console ──────────────────────────────────────────────────────────────
     icon = "✓" if not missing else "⚠"
     lines = [
         "",
-        "┌─ 2/4  Candidats générés vs attendus ───────────────────────────────",
-        f"│  Attendus (total) : {total_expected}   Avec slug : {len(with_slug)}"
+        "┌─ 2/4  Profils générés vs candidats déclarés attendus ──────────────",
+        "│  " + ventilation.ligne("Profils générés"),
+        f"│  Candidats déclarés attendus (candidats.json) : {total_expected}"
+        f"   Avec slug : {len(with_slug)}"
         f"   Sans slug (identité non fabriquée) : {len(without_slug)}",
-        f"│  Générés          : {total_generated}   Manquants : {len(missing)}"
+        f"│  Manquants : {len(missing)}"
         + (f"   Inattendus : {len(unexpected)}" if unexpected else ""),
         "│",
     ]
@@ -321,9 +374,19 @@ def _report_coverage(
             c = with_slug[slug]
             lines.append(f"│    • {c['nom']} ({c['parti']}) — {c['statut']}")
     else:
-        lines.append(f"│  {icon} Tous les candidats avec slug ont un profil généré.")
+        lines.append(f"│  {icon} Tous les candidats déclarés avec slug ont un profil généré.")
+    if roster:
+        lines.append(
+            f"│  ℹ {len(roster)} {LIBELLE_ROSTER} hors candidats.json — attendu : "
+            "ils alimentent les agrégats"
+        )
+        lines.append(
+            "│    de groupe et de gouvernement, pas une fiche publiée (#630)."
+        )
     if unexpected:
-        lines.append("│  ⚠ Fichiers sans correspondance dans candidats.json :")
+        lines.append(
+            f"│  ⚠ Profils se déclarant `{CANDIDAT_DECLARE}` et absents de candidats.json :"
+        )
         for slug in unexpected:
             lines.append(f"│    • {slug}")
     if without_slug:
@@ -337,19 +400,20 @@ def _report_coverage(
     # ── Markdown ──────────────────────────────────────────────────────────
     ok_icon = "✅" if not missing else "⚠️"
     md_lines = [
-        "### 2 · Candidats générés vs attendus",
+        "### 2 · Profils générés vs candidats déclarés attendus",
         "",
         "| | Nb |",
         "|---|---|",
-        f"| {ok_icon} Générés | {total_generated} |",
-        f"| 📋 Attendus (avec slug) | {len(with_slug)} |",
+        f"| {ok_icon} Profils générés | {ventilation.cellule_markdown()} |",
+        f"| 📋 Candidats déclarés attendus (avec slug) | {len(with_slug)} |",
         f"| ❌ Manquants | {len(missing)} |",
         f"| ⬜ Sans slug (identité non fabriquée) | {len(without_slug)} |",
+        f"| ℹ️ {LIBELLE_ROSTER.capitalize()} hors candidats.json (attendu) | {len(roster)} |",
         "",
     ]
     if missing:
         md_lines += [
-            "**Candidats manquants**",
+            "**Candidats déclarés manquants**",
             "",
             "| Nom | Parti | Statut |",
             "|---|---|---|",
@@ -360,7 +424,8 @@ def _report_coverage(
         md_lines.append("")
     if unexpected:
         md_lines += [
-            "**Fichiers inattendus** (présents mais absents de candidats.json)",
+            f"**Profils inattendus** (`meta.provenance = {CANDIDAT_DECLARE}` "
+            "mais absents de candidats.json)",
             "",
             "| Slug |",
             "|---|",
@@ -380,8 +445,18 @@ def _report_low_interventions(
     profiles_dir: Path,
     candidats_path: Path,
     threshold: int,
-) -> tuple[str, str]:
-    """Retourne (console_text, markdown_text)."""
+) -> tuple[str, str, dict[str, str]]:
+    """Retourne (console_text, markdown_text, provenances).
+
+    La section porte sur **tout le corpus** — 481 profils, pas 13 candidats
+    déclarés —, et son ancien titre disait « Candidats » (#630).
+
+    Elle est la seule section à charger le corpus entier ; c'est donc elle qui
+    rend `{slug: meta.provenance}`, que `main()` repasse aux §2 et §5b, qui ne
+    lisent que des noms de fichiers. Sans ce partage, chacune rescannerait les
+    623 Mo du répertoire (7,6 s mesurées le 30/08/2026, sur un gate qui en dure
+    40).
+    """
 
     # Index candidats pour enrichissement (nom → chambre depuis pivot)
     raw = _load_json(candidats_path)
@@ -392,12 +467,18 @@ def _report_low_interventions(
                 candidats_by_slug[c["slug"]] = c
 
     rows: list[dict] = []
+    provenances: dict[str, str] = {}
+    illisibles = 0
     if profiles_dir.exists():
         for path in sorted(profiles_dir.glob("*.pivot.json")):
+            if path.name.startswith("."):
+                continue
             data = _load_json(path)
             if data is None:
+                illisibles += 1
                 continue
             slug = _slug_from_stem(path.stem)
+            provenances[slug] = provenance_du_profil(data)
             n_interv = len(data.get("interventions") or [])
             # #494 — `chambres` (liste) plutôt que le scalaire : un profil
             # bicaméral s'affichait sous une seule chambre, celle du site qui
@@ -418,16 +499,22 @@ def _report_low_interventions(
     low = [r for r in rows if r["nb_interventions"] < threshold]
     low.sort(key=lambda r: r["nb_interventions"])
 
+    ventilation = ventiler_provenances(provenances.values(), illisibles=illisibles)
+    ventilation_low = ventiler_provenances(
+        provenances.get(r["slug"], CANDIDAT_DECLARE) for r in low
+    )
+
     # ── Console ──────────────────────────────────────────────────────────────
     icon = "✓" if not low else "⚠"
     lines = [
         "",
-        f"┌─ 3/4  Candidats avec peu d'interventions (< {threshold}) ───────────",
-        f"│  Profils analysés : {len(rows)}   Sous le seuil : {len(low)}",
+        f"┌─ 3/4  Profils avec peu d'interventions (< {threshold}) ─────────────",
+        "│  " + ventilation.ligne("Profils analysés"),
+        f"│  Sous le seuil : {ventilation_low.compte()}",
         "│",
     ]
     if low:
-        header = f"│  {'Candidat':<30} {'Chambres':<8} {'Interventions':>13}  Warnings"
+        header = f"│  {'Profil':<30} {'Chambres':<8} {'Interventions':>13}  Warnings"
         lines.append(header)
         lines.append("│  " + "─" * 60)
         for r in low:
@@ -436,24 +523,24 @@ def _report_low_interventions(
                 f"│  {r['nom']:<30} {r['chambres']:<8} {r['nb_interventions']:>13}{warn_flag}"
             )
     else:
-        lines.append(f"│  {icon} Tous les candidats ont ≥ {threshold} interventions.")
+        lines.append(f"│  {icon} Tous les profils ont ≥ {threshold} interventions.")
     lines.append("└" + "─" * 67)
     console = "\n".join(lines)
 
     # ── Markdown ──────────────────────────────────────────────────────────
     ok_icon = "✅" if not low else "⚠️"
     md_lines = [
-        f"### 3 · Candidats avec peu d'interventions (seuil : {threshold})",
+        f"### 3 · Profils avec peu d'interventions (seuil : {threshold})",
         "",
         f"| Métrique | Valeur |",
         f"|---|---|",
-        f"| {ok_icon} Profils analysés | {len(rows)} |",
-        f"| Sous le seuil (< {threshold}) | {len(low)} |",
+        f"| {ok_icon} Profils analysés | {ventilation.cellule_markdown()} |",
+        f"| Sous le seuil (< {threshold}) | {ventilation_low.cellule_markdown()} |",
         "",
     ]
     if low:
         md_lines += [
-            "| Candidat | Chambres | Interventions | Warnings API |",
+            "| Profil | Chambres | Interventions | Warnings API |",
             "|---|---|---|---|",
         ]
         for r in low:
@@ -463,9 +550,9 @@ def _report_low_interventions(
             )
         md_lines.append("")
     else:
-        md_lines.append(f"_Tous les candidats ont au moins {threshold} interventions._\n")
+        md_lines.append(f"_Tous les profils ont au moins {threshold} interventions._\n")
 
-    return console, "\n".join(md_lines)
+    return console, "\n".join(md_lines), provenances
 
 
 # ---------------------------------------------------------------------------
@@ -480,15 +567,19 @@ def _report_low_syceron_coverage(
     profiles_dir: Path,
     threshold: int,
 ) -> tuple[list[str], str, str]:
-    """Détecte les candidats AN ayant des mandats actifs sur une législature
+    """Détecte les **profils** AN ayant des mandats actifs sur une législature
     couverte par Syceron mais un nombre de débats Syceron inférieur au seuil.
 
     Retourne (soft_warnings, console_text, markdown_text).
 
     Soft fail uniquement : n'empêche pas le commit (exit_code inchangé).
     Un avertissement est émis si le nombre d'interventions dont
-    `source.type == "syceron"` est < threshold pour un candidat dont les
+    `source.type == "syceron"` est < threshold pour un profil dont les
     mandats couvrent au moins une législature Syceron.
+
+    La population n'a jamais été « les candidats » : elle est faite en très
+    grande majorité de membres de roster (#630). Le compteur porte donc sa
+    ventilation, et le libellé dit « profils ».
     """
     rows: list[dict] = []
     if profiles_dir.exists():
@@ -527,11 +618,14 @@ def _report_low_syceron_coverage(
                     "nom": nom,
                     "legislatures": sorted(legislatures_syceron),
                     "n_syceron": n_syceron,
+                    "provenance": provenance_du_profil(data),
                 }
             )
 
     low = [r for r in rows if r["n_syceron"] < threshold]
     low.sort(key=lambda r: r["n_syceron"])
+
+    ventilation = ventiler_provenances(r["provenance"] for r in rows)
 
     soft_warnings: list[str] = []
     for r in low:
@@ -544,18 +638,19 @@ def _report_low_syceron_coverage(
     lines = [
         "",
         f"┌─ 3b/4  Couverture Syceron (< {threshold} débat(s)) ─────────────────",
-        f"│  Candidats AN avec législature Syceron : {len(rows)}   Sous le seuil : {len(low)}",
+        "│  " + ventilation.ligne("Profils AN avec législature Syceron"),
+        f"│  Sous le seuil : {len(low)}",
         "│",
     ]
     if low:
-        header = f"│  {'Candidat':<30} {'Législatures':<15} {'Débats Syceron':>14}"
+        header = f"│  {'Profil':<30} {'Législatures':<15} {'Débats Syceron':>14}"
         lines.append(header)
         lines.append("│  " + "─" * 60)
         for r in low:
             legs = ", ".join(r["legislatures"])
             lines.append(f"│  {r['nom']:<30} {legs:<15} {r['n_syceron']:>14}")
     else:
-        lines.append(f"│  {icon} Tous les candidats AN ont ≥ {threshold} débat(s) Syceron.")
+        lines.append(f"│  {icon} Tous les profils AN ont ≥ {threshold} débat(s) Syceron.")
     lines.append("└" + "─" * 67)
     console = "\n".join(lines)
 
@@ -565,13 +660,13 @@ def _report_low_syceron_coverage(
         "",
         "| Métrique | Valeur |",
         "|---|---|",
-        f"| {ok_icon} Candidats AN avec législature Syceron | {len(rows)} |",
+        f"| {ok_icon} Profils AN avec législature Syceron | {ventilation.cellule_markdown()} |",
         f"| Sous le seuil (< {threshold}) | {len(low)} |",
         "",
     ]
     if low:
         md_lines += [
-            "| Candidat | Législatures | Débats Syceron |",
+            "| Profil | Législatures | Débats Syceron |",
             "|---|---|---|",
         ]
         for r in low:
@@ -579,7 +674,7 @@ def _report_low_syceron_coverage(
             md_lines.append(f"| {r['nom']} | {legs} | {r['n_syceron']} |")
         md_lines.append("")
     else:
-        md_lines.append(f"_Tous les candidats AN ont au moins {threshold} débat(s) Syceron._\n")
+        md_lines.append(f"_Tous les profils AN ont au moins {threshold} débat(s) Syceron._\n")
 
     return soft_warnings, console, "\n".join(md_lines)
 
@@ -637,7 +732,7 @@ def _index_par_acteur_au_format_uid(index_par_acteur: object) -> bool:
                 return False
             return bool(ref.get("uid"))
     return True
-# Décision #378 : le signal global « aucun candidat AN n'a d'amendements » reste
+# Décision #378 : le signal global « aucun profil AN n'a d'amendements » reste
 # un soft warning — jamais un échec dur, dans aucun mode (y compris fresh_run).
 # Il est en revanche remonté à part par `_report_amendements_coverage` pour être
 # affiché en tête de rapport plutôt que noyé dans la liste des avertissements
@@ -675,18 +770,22 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     (docs/decisions/amendements-zero-pas-de-hard-fail.md).
 
     Deux signaux distincts :
-      - par candidat : un warning `amendements indisponibles` est présent dans
+      - par profil : un warning `amendements indisponibles` est présent dans
         meta.warnings (échec de collecte tracé côté candidate_profile.py).
-      - global : aucun des candidats AN avec identité (éligibles à la collecte
+      - global : aucun des profils AN avec identité (éligibles à la collecte
         d'amendements) n'a la moindre entrée dans amendements[], alors que
-        plusieurs candidats sont analysés — signal d'une régression touchant
+        plusieurs profils sont analysés — signal d'une régression touchant
         toute la chaîne, y compris silencieuse (cf. issue #185).
+
+    La population « AN avec identité » est faite à 98 % de membres de roster
+    (468 sur 477, mesuré le 30/08/2026) : elle s'appelait « candidats AN », et
+    ce libellé enseignait la confusion que #630 corrige.
 
     `regression_globale` porte le message du second signal (ou `None`). Il est
     aussi présent dans `soft_warnings` — il n'est pas d'une autre nature, il est
     seulement retourné à part pour que l'appelant puisse l'afficher en tête de
     rapport (#378) au lieu de le laisser en dernière ligne d'une liste
-    d'avertissements par candidat.
+    d'avertissements par profil.
     """
     rows: list[dict] = []
     if profiles_dir.exists():
@@ -698,7 +797,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
             # Deux populations distinctes, délibérément (#447) :
             #
             # - `population_an` — les députés identifiés — porte les compteurs
-            #   « candidats AN » et le signal de régression « amendements[] vide
+            #   « profils AN » et le signal de régression « amendements[] vide
             #   partout » : ce sont les profils dont on ATTEND des amendements ;
             # - la mesure de couverture `uid`, elle, porte sur tout profil qui
             #   PUBLIE des amendements, quelle que soit sa `chambre`.
@@ -750,6 +849,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
                     "n_uid": n_uid,
                     "has_fetch_error": has_fetch_error,
                     "population_an": population_an,
+                    "provenance": provenance_du_profil(data),
                 }
             )
 
@@ -780,16 +880,21 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     # hors population AN n'entre dans `rows` que s'il a des amendements, il ne
     # peut donc jamais faire basculer un « vide partout ».
     rows_an = [r for r in rows if r["population_an"]]
+    # #630 — « Candidats AN avec identité » comptait 477 profils dont 468
+    # membres de roster. Le compteur porte désormais sa ventilation, et le
+    # libellé dit ce qu'il mesure : des profils.
+    ventilation_an = ventiler_provenances(r["provenance"] for r in rows_an)
     n_avec_amendements = sum(1 for r in rows_an if r["n_amendements"] > 0)
     regression_globale: str | None = None
     if rows_an and not any(r["n_amendements"] > 0 for r in rows_an):
         regression_globale = (
-            f"aucun candidat AN sur {len(rows_an)} n'a d'amendements collectés (amendements[] vide partout) "
+            f"aucun profil AN sur {len(rows_an)} {ventilation_an.detail()} "
+            "n'a d'amendements collectés (amendements[] vide partout) "
             "— possible régression de collecte (candidate_profile.fetch_amendements_officiels)"
         )
         soft_warnings.append(regression_globale)
 
-    # Avertissements par candidat : le signal global est affiché à part
+    # Avertissements par profil : le signal global est affiché à part
     # ci-dessous, ne pas le répéter dans la liste.
     warnings_par_candidat = [w for w in soft_warnings if w != regression_globale]
 
@@ -798,7 +903,8 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     lines = [
         "",
         "┌─ 3c/4  Couverture amendements (AN) ────────────────────────────────",
-        f"│  Candidats AN avec identité : {len(rows_an)}   Avec amendements : {n_avec_amendements}"
+        "│  " + ventilation_an.ligne("Profils AN avec identité"),
+        f"│  Avec amendements : {n_avec_amendements}"
         f"   Avertissements : {len(soft_warnings)}",
         f"│  Amendements : {n_amendements_total}   dont uid : {n_uid_total} ({pct_uid})"
         f"   Profils mixtes : {len(rows_mixtes)}",
@@ -842,7 +948,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
         "",
         "| Métrique | Valeur |",
         "|---|---|",
-        f"| {ok_icon} Candidats AN avec identité | {len(rows_an)} |",
+        f"| {ok_icon} Profils AN avec identité | {ventilation_an.cellule_markdown()} |",
         f"| Avec ≥ 1 amendement | {n_avec_amendements} |",
         f"| Amendements | {n_amendements_total} |",
         f"| dont portant un `uid` | {n_uid_total} ({pct_uid}) |",
@@ -1800,7 +1906,9 @@ def _report_gouvernements(
 # ---------------------------------------------------------------------------
 
 def _report_correspondance_acteurs(
-    profiles_dir: Path, chemin_table: Path
+    profiles_dir: Path,
+    chemin_table: Path,
+    provenances: dict[str, str] | None = None,
 ) -> tuple[list[str], str, str]:
     """Vérifie que **tout profil publié** a son entrée dans
     `raw_data/correspondance_acteurs_an.json` (#525).
@@ -1828,6 +1936,10 @@ def _report_correspondance_acteurs(
     trou déclaré n'est pas un trou (AGENTS.md §2 règle 5).
 
     Retourne (hard_errors, console_text, markdown_text).
+
+    `provenances` (`{slug: meta.provenance}`) vient de la §3, qui a déjà lu le
+    corpus. « Profils publiés : 481 » est le compte que tout le monde recopie :
+    il porte désormais sa ventilation (#630). Absente, elle est relue ici.
     """
     hard_errors: list[str] = []
     manquants: list[str] = []
@@ -1864,9 +1976,19 @@ def _report_correspondance_acteurs(
                 "les slugs que la correspondance par nom résout seule (#525)."
             )
 
+    if provenances is None:
+        provenances, illisibles_provenance = lire_provenances(profiles_dir)
+    else:
+        illisibles_provenance = []
+    ventilation = ventiler_provenances(
+        (provenances.get(slug, CANDIDAT_DECLARE) for slug in publies),
+        illisibles=len(illisibles_provenance),
+    )
+
     lignes = [
         "┌─ 5b/6  Correspondance slug ↔ acteur AN ────────────────────────────",
-        f"│  Profils publiés : {len(publies)}   Entrées : {total_table}   "
+        "│  " + ventilation.ligne("Profils publiés"),
+        f"│  Entrées : {total_table}   "
         f"Sans acteur AN (déclaré) : {hors_an}   Sans entrée : {len(manquants)}",
     ]
     if non_publies:
@@ -1884,7 +2006,7 @@ def _report_correspondance_acteurs(
         "",
         "| Indicateur | Valeur |",
         "| --- | --- |",
-        f"| Profils publiés | {len(publies)} |",
+        f"| Profils publiés | {ventilation.cellule_markdown()} |",
         f"| Entrées de la table | {total_table} |",
         f"| Déclarés sans acteur AN | {hors_an} |",
         f"| Publiés sans entrée | {len(manquants)} |",
@@ -2099,7 +2221,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=1,
         dest="low_syceron_coverage",
         help=(
-            "Seuil de débats Syceron 'faibles' à signaler pour les candidats AN "
+            "Seuil de débats Syceron 'faibles' à signaler pour les profils AN "
             "avec un mandat sur une législature couverte (défaut : 1). 0 = désactivé."
         ),
     )
@@ -2165,12 +2287,20 @@ def main() -> int:
     ir_hits = _collect_incomplete_reads(ir_dirs)
     ir_console, ir_md, ir_exit = _report_incomplete_reads(ir_hits, args.threshold)
 
-    # ── Section 2 : Couverture candidats ──────────────────────────────────
-    cov_console, cov_md = _report_coverage(args.candidats, args.profiles_dir)
-
     # ── Section 3 : Interventions faibles ─────────────────────────────────
-    low_console, low_md = _report_low_interventions(
+    # Calculée AVANT la §2 bien qu'imprimée après : c'est la seule section qui
+    # charge déjà les 481 profils, et la ventilation par provenance qu'elle en
+    # tire alimente les §2 et §5b, qui ne lisent que des noms de fichiers.
+    # Chacune la relirait sinon — 7,6 s mesurées le 30/08/2026 pour 623 Mo, sur
+    # un gate qui en dure 40. Les deux appelantes savent la relire seules
+    # (paramètre `None`) : l'ordre optimise, il ne conditionne pas.
+    low_console, low_md, provenances = _report_low_interventions(
         args.profiles_dir, args.candidats, args.low_interventions
+    )
+
+    # ── Section 2 : Profils générés vs candidats déclarés attendus ─────────
+    cov_console, cov_md = _report_coverage(
+        args.candidats, args.profiles_dir, provenances
     )
 
     # ── Section 3b : Couverture Syceron ───────────────────────────────────
@@ -2218,7 +2348,7 @@ def main() -> int:
 
     # ── Section 5b : Correspondance slug ↔ acteur AN ───────────────────────
     corr_hard, corr_console, corr_md = _report_correspondance_acteurs(
-        args.profiles_dir, args.correspondance_acteurs,
+        args.profiles_dir, args.correspondance_acteurs, provenances,
     )
     corr_exit = 1 if corr_hard else 0
 

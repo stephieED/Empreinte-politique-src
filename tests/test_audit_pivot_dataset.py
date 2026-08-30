@@ -822,8 +822,17 @@ def test_compute_taux_remplissage_tous_champs_renseignes():
 def test_compute_profils_sans_activite_liste_vide():
     resultat = compute_profils_sans_activite([])
 
+    # #630 — le relevé porte désormais la ventilation par provenance : « 24 sur
+    # 481 » ne dit pas si le trou est sur les 13 fiches publiées ou sur les 468
+    # membres de roster. Sur une population vide, tous les postes sont à 0 — un
+    # compte absent n'est jamais omis, il vaut 0 parce qu'il a été mesuré.
+    vide = {
+        "total": 0, "candidat_declare": 0, "roster_groupe": 0,
+        "provenance_autre": 0, "illisibles": 0,
+    }
     assert resultat == {
         "total_profils": 0, "nb_profils_sans_activite": 0, "profils_sans_activite": [],
+        "ventilation_provenance": vide, "ventilation_provenance_total": vide,
     }
 
 
@@ -1295,6 +1304,14 @@ def test_build_report_meta_section():
     assert rapport["meta"] == {
         "genere_le": REFERENCE.isoformat(),
         "total_profils": 1,
+        # #630 — `total_profils` ne voyage plus seul : l'en-tête du rapport
+        # Markdown affiche le compte AVEC sa ventilation, et il la lit ici.
+        # Un pivot sans `meta.provenance` vaut `candidat_declare`
+        # (rétro-compatibilité, docs/decisions/provenance-pivot.md).
+        "ventilation_provenance": {
+            "total": 1, "candidat_declare": 1, "roster_groupe": 0,
+            "provenance_autre": 0, "illisibles": 0,
+        },
         "total_erreurs_lecture": 1,
         "staleness_days": 15,
     }

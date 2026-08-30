@@ -147,6 +147,18 @@ from typing import Any, Optional
 
 import gha
 from profil_brut import CLE_PARTITIONNEE
+# Les deux populations de `pivot_data/profiles/` (#630) : « 476 profils
+# rapprochés » ne dit pas si le déficit porte sur les 13 fiches publiées ou sur
+# les 468 membres de roster, et ce n'est pas la même suite. La ventilation est
+# relue sur le répertoire pivot — `compter_listes` réduit chaque objet à ses
+# clés surveillées et ne rend donc jamais la chaîne `meta.provenance`, et
+# élargir ce crochet pour une chaîne toucherait la borne mémoire qu'il tient.
+from population_profils import (
+    CANDIDAT_DECLARE,
+    Ventilation,
+    lire_provenances,
+    ventiler_provenances,
+)
 
 #: Suffixes des deux couches. Mêmes conventions que `audit_collecte_non_publiee` :
 #: le suffixe pivot contient le suffixe brut, donc le dépouillement se fait par
@@ -533,7 +545,10 @@ def auditer(
                  for chemin in relation.sources
                  for segment in chemin[:1]}
 
+    provenances, _ = lire_provenances(pivot_dir)
+
     nb_compares = 0
+    slugs_compares: list[str] = []
     for slug in _slugs_bruts(raw_dir):
         chemin_pivot = pivot_dir / f"{slug}{SUFFIXE_PIVOT}"
         if not chemin_pivot.is_file():
@@ -553,6 +568,7 @@ def auditer(
             continue
 
         nb_compares += 1
+        slugs_compares.append(slug)
         non_declarees = _listes_du_brut(releve_brut) - declarees
         if non_declarees:
             listes_non_declarees[slug] = non_declarees
@@ -586,6 +602,9 @@ def auditer(
         "repertoire_brut_absent": repertoire_brut_absent,
         "repertoire_pivot_absent": repertoire_pivot_absent,
         "nb_profils_compares": nb_compares,
+        "ventilation_provenance": ventiler_provenances(
+            provenances.get(slug, CANDIDAT_DECLARE) for slug in slugs_compares
+        ).as_dict(),
         "nb_sans_pivot": len(sans_pivot),
         "sans_pivot": sans_pivot[:plafond_exemples],
         "nb_illisibles": len(illisibles),
@@ -649,6 +668,7 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
         "#511 raisonne sur des profils, #485 ne compte rien.",
         "",
         f"Population : **{rapport['nb_profils_compares']} profil(s)** "
+        f"{Ventilation.depuis_dict(rapport.get('ventilation_provenance')).detail()} "
         f"rapproché(s) entre `{rapport['raw_dir']}` et `{rapport['pivot_dir']}`.",
         "",
         "## Relations attendues",
@@ -692,7 +712,9 @@ def generate_markdown_report(rapport: dict[str, Any]) -> str:
     else:
         lignes += [
             f"**Chaque liste publiée porte ce que la collecte a rendu**, sur "
-            f"les {rapport['nb_profils_compares']} profil(s) rapproché(s) et "
+            f"les {rapport['nb_profils_compares']} profil(s) "
+            f"{Ventilation.depuis_dict(rapport.get('ventilation_provenance')).detail()} "
+            f"rapproché(s) et "
             f"les {len(rapport['relations'])} relations déclarées.",
             "",
         ]
@@ -912,9 +934,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
         return 0 if args.tolerer_ecarts else 1
 
-    print(f"✓ {rapport['nb_profils_compares']} profil(s) rapproché(s) sur "
-          f"{len(rapport['relations'])} relation(s) : chaque liste publiée porte "
-          "ce que la collecte a rendu.", file=sys.stderr)
+    print(f"✓ {rapport['nb_profils_compares']} profil(s) "
+          f"{Ventilation.depuis_dict(rapport.get('ventilation_provenance')).detail()} "
+          f"rapproché(s) sur {len(rapport['relations'])} relation(s) : chaque liste "
+          "publiée porte ce que la collecte a rendu.", file=sys.stderr)
     return 0
 
 

@@ -51,6 +51,20 @@ slices → `pivot_data/profiles/<slug>.pivot.json` → groupes / partis /
 gouvernements → `check_quality_gate.py`, which gates every commit. `raw_data/` is
 source-near; `pivot_data/` is the only layer `web/` reads.
 
+**`pivot_data/profiles/` holds two populations, and nothing on disk says so
+(#630).** 481 files, one directory, one naming pattern — a `glob` returns 481.
+`meta.provenance == "candidat_declare"` marks the **13** declared candidates,
+the ones `web/` publishes a page for; `meta.provenance == "roster_groupe"` marks
+the **468** group members, collected **to feed the group and government
+aggregates** — `group_profile.py` never reads their `identite` block, it
+consumes `nom`, `mandats`, `votes`, `interventions`, `amendements`, all lists.
+**What differs is the use, not the standard**: an identity **merge** fix covers
+13 profiles, an identity **quality** fix covers 481 (#556's 191 HATVP markers
+were in the roster). Name the population before you quote a figure — and the
+tools now do it for you: every profile count they print carries its breakdown,
+via `src/population_profils.py`.
+→ `docs/decisions/populations-profils-portees-par-les-outils-630.md`
+
 ### 3a. Files, indexes, merge
 
 - **Build `pivot_data/scrutins.json` before any pivot pass, and merge it additively.**

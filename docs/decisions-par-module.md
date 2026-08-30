@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 170 décisions
+gouverne sans avoir à fouiller les 171 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -82,7 +82,7 @@ Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cl
 | --- | --- |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `compter_listes_profil_brut` |
 
-Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`defaut-collecte-vs-panne-562`](decisions/defaut-collecte-vs-panne-562.md).
+Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`defaut-collecte-vs-panne-562`](decisions/defaut-collecte-vs-panne-562.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md).
 
 ## `src/audit_diff_profils.py`
 
@@ -150,7 +150,7 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `compute_profils_perimes` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `MAPPING_CHAMBRE_SOURCES`, `compute_agregation_warnings` |
 
-Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/audit-pipeline-gouvernement.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md), [`quality-gate-gouvernements`](decisions/quality-gate-gouvernements.md), [`retrait-senat-528`](decisions/retrait-senat-528.md).
+Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/audit-pipeline-gouvernement.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`quality-gate-gouvernements`](decisions/quality-gate-gouvernements.md), [`retrait-senat-528`](decisions/retrait-senat-528.md).
 
 ## `src/audit_volumetrie_profils.py`
 
@@ -161,7 +161,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [La coupure d'historique a tourné pour la première fois — et `--preparer` n'avait jamais imprimé sa procédure (#567) (2026-08-28)](decisions/bornage-execute-567.md) | `MOTIF_COMMIT_DONNEES` |
 | [La fenêtre de 30 ne pose pas le plateau qu'on croit, et la table mesurée ne le dit pas (#551) (2026-08-28)](decisions/fenetre-recalibrage-551.md) | `FENETRE_COMMITS_DONNEES`, `MOTIF_COMMIT_DONNEES` |
 
-Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-coupure-575`](decisions/perimetre-coupure-575.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md), [`profils-json-compact`](decisions/profils-json-compact.md), [`volumetrie-arbre-de-travail-nest-pas-depot`](decisions/volumetrie-arbre-de-travail-nest-pas-depot.md).
+Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`perimetre-coupure-575`](decisions/perimetre-coupure-575.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profils-json-compact`](decisions/profils-json-compact.md), [`volumetrie-arbre-de-travail-nest-pas-depot`](decisions/volumetrie-arbre-de-travail-nest-pas-depot.md).
 
 ## `src/budget_collecte.py`
 
@@ -305,7 +305,7 @@ Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/c
 | [Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)](decisions/roster-unique-par-run-518.md) | `_gha_annotation` |
 | [Seuil de couverture de groupe (`--groupe-min-members`) : conservé faute de chiffres réels à pleine échelle (2026-08-12)](decisions/seuil-couverture-groupe.md) | `_report_groupes` |
 
-Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`test-adosse-au-corpus-vivant`](decisions/test-adosse-au-corpus-vivant.md).
+Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`test-adosse-au-corpus-vivant`](decisions/test-adosse-au-corpus-vivant.md).
 
 ## `src/correspondance_acteurs_an.py`
 
@@ -501,7 +501,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `MANDATS_AGREGES_CATEGORIES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `_compute_cohesion_votes` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
+Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
 
 ## `src/group_roster.py`
 
@@ -648,6 +648,14 @@ Le mentionnent sans le gouverner : [`cle-fusion-interventions-540`](decisions/cl
 
 Le mentionnent sans le gouverner : [`freshness-timestamps-groupes-gouvernements-partis`](decisions/freshness-timestamps-groupes-gouvernements-partis.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md).
 
+## `src/population_profils.py`
+
+1 décision(s) le gouvernent ; le module en cite 2.
+
+| Décision | Nomme |
+| --- | --- |
+| [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `Ventilation`, `ventiler_chemins` |
+
 ## `src/profil_brut.py`
 
 1 décision(s) le gouvernent ; le module en cite 0.
@@ -694,7 +702,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-19 décision(s) le gouvernent ; le module en cite 4.
+20 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -711,6 +719,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `validate_amendements_index`, `validate_profil` |
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `validate_profil`, `validate_scrutins_index` |
 | [`genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)](decisions/pivot-freshness-timestamps-stables.md) | `make_empty_profil` |
+| [Les deux populations de `pivot_data/profiles/` sont portées par les outils, pas par une consigne (#630, 2026-08-30)](decisions/populations-profils-portees-par-les-outils-630.md) | `KNOWN_PROVENANCES` |
 | [Quelle source a rempli quel champ, et quand — un bloc à côté d'`identite` (#603) (2026-08-30)](decisions/provenance-par-champ-603.md) | `BLOCS_PROVENANCE_CHAMPS`, `valider_provenance_champs` |
 | [Provenance des profils pivot : candidat_declare vs roster_groupe (2026-08-10)](decisions/provenance-pivot.md) | `KNOWN_PROVENANCES`, `validate_profil` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `validate_profil` |
