@@ -898,3 +898,220 @@ def test_le_profil_source_nest_pas_modifie():
     nouveau = {"votes": []}
     preserver_collectes_non_vides({"votes": [{"numero_scrutin": "1"}]}, nouveau)
     assert nouveau["votes"] == [], "la fonction doit être pure vis-à-vis de son entrée"
+
+
+# ---------------------------------------------------------------------------
+# #484 — un bloc structuré sans fond n'écrase jamais un bloc renseigné
+# ---------------------------------------------------------------------------
+#
+# Le run 33262372122 (29/08/2026) est la scène de crime, et elle est
+# reproductible sans réseau : trois jobs écrivent le même slug, le dernier est
+# `extract-ue-officiel`, qui n'interroge JAMAIS l'Assemblée nationale
+# (`--source ue`) et écrit donc le squelette de `build_minimal_profile`. Il
+# gagnait la fusion finale parce que son bloc `identite` est truthy.
+
+_IDENTITE_AN = {
+    "nom_complet": "Jean-Luc Mélenchon",
+    "groupe_sigle": "FI",
+    "groupe_nom": "La France insoumise",
+    "profession": "Professeur",
+    "date_naissance": "1951-08-19",
+    "num_circo": "4",
+    "nb_mandats": 1,
+    "url_an_ou_senat": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA2150",
+}
+
+#: Ce que `build_minimal_profile` produit : deux champs, tous deux recopiés de
+#: `raw_data/candidats.json`, et rien d'autre.
+_IDENTITE_SQUELETTE = {
+    "nom_complet": "Jean-Luc Mélenchon",
+    "groupe_sigle": None,
+    "groupe_nom": "La France Insoumise (LFI)",
+    "profession": None,
+    "date_naissance": None,
+    "num_circo": None,
+    "nb_mandats": None,
+    "url_an_ou_senat": None,
+}
+
+
+def test_le_squelette_du_profil_minimal_nefface_pas_une_identite_collectee():
+    merged = merge_raw_profile(
+        {"slug": "jean-luc-melenchon", "identite": dict(_IDENTITE_AN)},
+        {"slug": "jean-luc-melenchon", "identite": dict(_IDENTITE_SQUELETTE)},
+    )
+    assert merged["identite"] == _IDENTITE_AN
+
+
+def test_la_meme_regle_vaut_sur_le_pivot():
+    merged = merge_pivot_profile(
+        {"id": "jean-luc-melenchon", "identite": dict(_IDENTITE_AN)},
+        {"id": "jean-luc-melenchon", "identite": dict(_IDENTITE_SQUELETTE)},
+    )
+    assert merged["identite"] == _IDENTITE_AN
+
+
+def test_une_identite_qui_apporte_un_seul_champ_de_fond_ecrase_normalement():
+    """La règle de #465 n'est pas devenue « la nouvelle valeur ne gagne
+    jamais » : seul le passage à RIEN est refusé."""
+    corrigee = dict(_IDENTITE_SQUELETTE, profession="Professeur certifié")
+    merged = merge_raw_profile(
+        {"identite": dict(_IDENTITE_AN)}, {"identite": corrigee}
+    )
+    assert merged["identite"] == corrigee
+
+
+def test_un_squelette_nefface_pas_un_squelette_et_ne_casse_rien():
+    """Bardella : aucune identité AN d'aucun côté. Le bloc neuf passe."""
+    merged = merge_raw_profile(
+        {"identite": dict(_IDENTITE_SQUELETTE)},
+        {"identite": dict(_IDENTITE_SQUELETTE, nom_complet="Jordan Bardella")},
+    )
+    assert merged["identite"]["nom_complet"] == "Jordan Bardella"
+
+
+def test_une_identite_absente_ne_regresse_pas_vers_null():
+    """Le comportement historique de `_prefer_non_empty` est conservé."""
+    merged = merge_raw_profile({"identite": dict(_IDENTITE_AN)}, {"identite": None})
+    assert merged["identite"] == _IDENTITE_AN
+
+
+def test_les_champs_sans_source_du_squelette_sont_ceux_que_le_profil_minimal_remplit():
+    """Le garde-fou de la table : si `build_minimal_profile` apprend à remplir
+    un champ de plus sans source, `BLOCS_PROTEGES_DU_VIDE` doit le savoir —
+    sinon le squelette redevient « renseigné » et le défaut revient."""
+    from generate_all_profiles import build_minimal_profile
+    from merge_profile import BLOCS_PROTEGES_DU_VIDE, bloc_sans_fond
+
+    minimal = build_minimal_profile(
+        "Jean-Luc Mélenchon", "jean-luc-melenchon", {"parti": "La France Insoumise (LFI)"}
+    )
+    assert bloc_sans_fond(minimal["identite"], BLOCS_PROTEGES_DU_VIDE["identite"]), (
+        "le profil minimal remplit un champ que BLOCS_PROTEGES_DU_VIDE ne "
+        "déclare pas comme rempli sans source"
+    )
+
+
+def test_le_mode_ecrasement_protege_aussi_les_blocs():
+    """#465 ne couvrait que des listes : `identite` y passait au travers."""
+    profil, preserves = preserver_collectes_non_vides(
+        {"identite": dict(_IDENTITE_AN)}, {"identite": dict(_IDENTITE_SQUELETTE)}
+    )
+    assert preserves == ["identite"]
+    assert profil["identite"] == _IDENTITE_AN
+
+    profil, preserves = preserver_collectes_non_vides(
+        {"identite": dict(_IDENTITE_AN)}, {"identite": None}
+    )
+    assert preserves == ["identite"]
+
+
+def test_aucun_mandat_francais_connu_est_retire_quand_lidentite_le_dement():
+    from candidate_profile import WARNING_AUCUN_MANDAT_FR
+
+    merged = merge_raw_profile(
+        {"identite": dict(_IDENTITE_AN), "meta": {"warnings": []}},
+        {
+            "identite": dict(_IDENTITE_SQUELETTE),
+            "meta": {"warnings": [f"{WARNING_AUCUN_MANDAT_FR} (slug absent…)"]},
+        },
+    )
+    assert merged["meta"]["warnings"] == []
+
+
+def test_aucun_mandat_francais_connu_survit_a_un_profil_purement_europeen():
+    """`jordan-bardella` : 22 mandats européens, et l'avertissement reste VRAI.
+    Le critère de purge est l'identité AN, jamais `mandats`."""
+    from candidate_profile import WARNING_AUCUN_MANDAT_FR
+
+    w = f"{WARNING_AUCUN_MANDAT_FR} (slug absent…)"
+    merged = merge_raw_profile(
+        {"identite": dict(_IDENTITE_SQUELETTE), "mandats": [], "meta": {"warnings": [w]}},
+        {
+            "identite": dict(_IDENTITE_SQUELETTE),
+            "mandats": [{"categorie": "mandat_electif", "label": "PE", "debut": "2019-07-02"}],
+            "meta": {"warnings": [w]},
+        },
+    )
+    assert merged["meta"]["warnings"] == [w]
+
+
+def test_un_horodatage_de_synchro_ne_recule_jamais():
+    """Le champ qui a fait passer un correctif de fusion pour une panne CI.
+
+    L'artifact UE, fusionné APRÈS l'artifact AN, portait le 19/08 recopié du
+    profil committé ; il gagnait sur le 29/08 que le job AN venait d'écrire.
+    """
+    merged = merge_raw_profile(
+        {"meta": {"synchro_sources": {"assemblee_nationale": "2026-08-29T16:22:05+0000"}}},
+        {"meta": {"synchro_sources": {"assemblee_nationale": "2026-08-19T18:43:46+0000"}}},
+    )
+    assert merged["meta"]["synchro_sources"]["assemblee_nationale"] == "2026-08-29T16:22:05+0000"
+
+    # et dans l'autre sens : l'ordre de fusion ne doit rien changer
+    merged = merge_raw_profile(
+        {"meta": {"synchro_sources": {"assemblee_nationale": "2026-08-19T18:43:46+0000"}}},
+        {"meta": {"synchro_sources": {"assemblee_nationale": "2026-08-29T16:22:05+0000"}}},
+    )
+    assert merged["meta"]["synchro_sources"]["assemblee_nationale"] == "2026-08-29T16:22:05+0000"
+
+
+def test_un_horodatage_de_synchro_illisible_ne_fait_pas_lever_la_fusion():
+    merged = merge_raw_profile(
+        {"meta": {"synchro_sources": {"an": "pas une date"}}},
+        {"meta": {"synchro_sources": {"an": "2026-08-29T16:22:05+0000"}}},
+    )
+    assert merged["meta"]["synchro_sources"]["an"] == "2026-08-29T16:22:05+0000"
+    merged = merge_raw_profile(
+        {"meta": {"synchro_sources": {"an": "2026-08-29T16:22:05+0000"}}},
+        {"meta": {"synchro_sources": {"an": None}}},
+    )
+    assert merged["meta"]["synchro_sources"]["an"] == "2026-08-29T16:22:05+0000"
+
+
+def test_la_scene_de_crime_du_run_33262372122_ne_se_rejoue_plus():
+    """Reproduction bout en bout de l'ordre `--dirs _artifacts/an _artifacts/ue`.
+
+    Chaque job fusionne d'abord avec le profil committé de son checkout, puis
+    `merge_raw_dirs` fusionne les artifacts dans l'ordre des répertoires.
+    """
+    committe = {
+        "slug": "jean-luc-melenchon",
+        "chambre": "senateurs",
+        "identite": dict(_IDENTITE_SQUELETTE),
+        "mandats": [],
+        "meta": {
+            "synchro_sources": {"assemblee_nationale": "2026-08-19T18:43:46+0000"},
+            "warnings": ["aucun mandat français connu (slug absent…)"],
+        },
+    }
+    collecte_an = {
+        "slug": "jean-luc-melenchon",
+        "chambre": "deputes",
+        "identite": dict(_IDENTITE_AN),
+        "mandats": [
+            {"categorie": "mandat_electif", "type": "mandat",
+             "label": "Mandat parlementaire (La France insoumise)",
+             "debut": "2017-06-18", "chambre": "deputes"}
+        ],
+        "meta": {
+            "synchro_sources": {"assemblee_nationale": "2026-08-29T16:22:05+0000"},
+            "warnings": [],
+        },
+    }
+    minimal_ue = {
+        "slug": "jean-luc-melenchon",
+        "chambre": None,
+        "identite": dict(_IDENTITE_SQUELETTE),
+        "mandats": [],
+        "meta": {"warnings": ["aucun mandat français connu (slug absent…)"]},
+    }
+
+    artefact_an = merge_raw_profile(json.loads(json.dumps(committe)), collecte_an)
+    artefact_ue = merge_raw_profile(json.loads(json.dumps(committe)), minimal_ue)
+    final = merge_raw_profile(merge_raw_profile(None, artefact_an), artefact_ue)
+
+    assert final["identite"]["profession"] == "Professeur"
+    assert final["meta"]["synchro_sources"]["assemblee_nationale"] == "2026-08-29T16:22:05+0000"
+    assert final["meta"]["warnings"] == []
+    assert len(final["mandats"]) == 1

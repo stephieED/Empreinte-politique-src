@@ -677,6 +677,20 @@ WARNING_PREFIX_BUDGET_INTERVENTIONS = "collecte d'interventions tronquée (budge
 # interrompue par le budget de temps mur du candidat. Même raison qu'au-dessus
 # de n'être jamais retiré par _prune_stale_warnings.
 WARNING_PREFIX_BUDGET_COLLECTE = "collecte tronquée (budget de temps)"
+# #484 : phrase du profil MINIMAL, écrit par
+# `generate_all_profiles.build_minimal_profile` pour un candidat sans mandat
+# français connu — sans aucune source parlementaire, depuis
+# `raw_data/candidats.json` seul. Elle vit ici, avec les autres, parce que
+# `candidate_profile` est le module que l'émetteur ET `merge_profile` importent
+# déjà (l'inverse serait un import circulaire).
+#
+# Contrairement aux préfixes de budget juste au-dessus, celui-ci EST retiré par
+# `_prune_stale_warnings` : il ne décrit pas ce que le run n'a pas collecté, il
+# affirme un FAIT sur la carrière — « aucun mandat français connu ». Un profil
+# qui, après fusion, porte des mandats ou une identité collectée le dément.
+# `jean-luc-melenchon` publie 86 mandats sous cette phrase depuis le run
+# 33262372122 (29/08/2026).
+WARNING_AUCUN_MANDAT_FR = "aucun mandat français connu"
 # `WARNING_PREFIX_SOURCE_INJOIGNABLE` (#514) a été RETIRÉ par #529. Il
 # distinguait « la source a répondu qu'il n'y a rien » de « la source n'a rien
 # dit », sur les seules requêtes qui passaient par `_get_payload` —

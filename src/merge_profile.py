@@ -29,10 +29,12 @@ CLI (fusion de répertoires d'extraction parallèles) :
 
 import json
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
 
 from candidate_profile import (
+    WARNING_AUCUN_MANDAT_FR,
     WARNING_PREFIX_IDENTITE_INTROUVABLE,
     WARNING_PREFIX_MANDATS_INTROUVABLES,
     WARNING_PREFIX_VOTES_INTROUVABLES,
@@ -194,6 +196,28 @@ def _defaut_collecte_dementi_par_les_donnees(profile: dict[str, Any], warning: s
     return False
 
 
+def _aucun_mandat_fr_dementi(profile: dict[str, Any], warning: str) -> bool:
+    """Le profil minimal de #484, démenti par l'identité que la fusion a gardée.
+
+    `WARNING_AUCUN_MANDAT_FR` n'est pas une trace de ce qu'un run n'a pas
+    collecté (comme les préfixes de budget, jamais retirés) : c'est une
+    AFFIRMATION sur la personne — « slug absent du référentiel Assemblée
+    nationale, ou identité introuvable ». Une identité AN présente dans le
+    profil fusionné dément ses deux membres à la fois.
+
+    Le critère est l'identité, jamais `mandats` : un profil PE en publie
+    (`jordan-bardella`, 22 mandats européens après normalisation) sans qu'aucun
+    mandat FRANÇAIS soit connu. Purger sur `mandats` retirerait un avertissement
+    vrai.
+    """
+    if not warning.startswith(WARNING_AUCUN_MANDAT_FR):
+        return False
+    identite = profile.get("identite")
+    return isinstance(identite, dict) and not bloc_sans_fond(
+        identite, BLOCS_PROTEGES_DU_VIDE["identite"]
+    )
+
+
 def _prune_stale_warnings(profile: dict[str, Any]) -> None:
     """Retire les avertissements devenus obsolètes après fusion (ex. "votes
     introuvables" alors que les votes ont en fait été restaurés depuis
@@ -213,6 +237,8 @@ def _prune_stale_warnings(profile: dict[str, Any]) -> None:
             continue
         if _defaut_collecte_dementi_par_les_donnees(profile, w):
             continue
+        if _aucun_mandat_fr_dementi(profile, w):
+            continue
         if (
             w.startswith(WARNING_PREFIX_QUESTIONS_INDISPONIBLES)
             and any(i.get("type_detail") == "question" for i in profile.get("interventions", []))
@@ -229,6 +255,69 @@ CHAMPS_PROTEGES_DU_VIDE: tuple[str, ...] = (
     "votes", "mandats", "amendements", "dossiers_legislatifs",
     "interventions", "textes_portes",
 )
+
+
+# Même décision que ci-dessus (#465), étendue aux BLOCS STRUCTURÉS (#484).
+#
+# `CHAMPS_PROTEGES_DU_VIDE` ne couvrait que des listes, et une liste vide se
+# reconnaît : `[]` est falsy. Un bloc, lui, peut être **vide de fond et truthy
+# en même temps** — c'est le trou par lequel l'identité de `jean-luc-melenchon`
+# a été écrasée le 29/08/2026 (run 33262372122). Le squelette écrit par
+# `generate_all_profiles.build_minimal_profile` porte deux champs, et ces deux
+# champs viennent de `raw_data/candidats.json`, pas d'une source parlementaire :
+# `nom_complet` et `groupe_nom` (recopié de `parti`). Tout le reste est `null`.
+# `_prefer_non_empty` voyait un dict non vide, donc « renseigné », et il gagnait
+# sur un bloc collecté à l'AN.
+#
+# Un bloc n'a donc de « fond » que hors de ces champs-là : la valeur est la
+# liste des champs qu'un profil minimal sait remplir **sans avoir rien demandé
+# à personne**. Le jour où `build_minimal_profile` en remplit un de plus, il
+# s'ajoute ici — et le test `test_merge_profile` le fait tomber sinon.
+#
+# La règle reste celle de #465, et pas une seconde règle en parallèle : seul le
+# passage à **rien** est refusé. Un bloc qui apporte ne serait-ce qu'un champ de
+# fond écrase normalement, ce qui laisse une correction aboutir.
+BLOCS_PROTEGES_DU_VIDE: dict[str, tuple[str, ...]] = {
+    "identite": ("nom_complet", "groupe_nom"),
+}
+
+
+def bloc_sans_fond(bloc: Any, champs_sans_source: tuple[str, ...]) -> bool:
+    """Vrai si `bloc` est un dict dont aucun champ HORS `champs_sans_source`
+    n'est renseigné — c'est-à-dire un bloc qui n'a rien appris d'une source.
+
+    Un bloc absent (`None`) n'est pas « sans fond » : il est absent, et
+    `_prefer_non_empty` sait déjà quoi en faire. La distinction compte, sinon
+    ce prédicat répondrait la même chose à deux situations différentes.
+    """
+    if not isinstance(bloc, dict) or not bloc:
+        return False
+    return not any(
+        valeur not in (None, "", [], {})
+        for champ, valeur in bloc.items()
+        if champ not in champs_sans_source
+    )
+
+
+def _preferer_bloc_avec_fond(new_bloc: Any, old_bloc: Any, nom_bloc: str) -> Any:
+    """`_prefer_non_empty` pour un bloc structuré : un bloc **sans fond** ne
+    remplace jamais un bloc qui en a (#484, extension de #465).
+
+    Le bloc n'est jamais fusionné champ par champ, et c'est délibéré : ses
+    champs décrivent UNE personne telle qu'UNE source la décrit, et
+    `url_an_ou_senat` en porte la provenance. Panacher un `groupe_nom` de
+    `raw_data/candidats.json` avec un `groupe_sigle` d'AMO30 publierait une
+    identité qu'aucune source ne dit. C'est l'inverse d'`identifiants`, dont
+    chaque clé EST une source distincte et qui se fusionne donc clé par clé
+    (#539).
+    """
+    champs_sans_source = BLOCS_PROTEGES_DU_VIDE.get(nom_bloc, ())
+    if bloc_sans_fond(new_bloc, champs_sans_source) and not bloc_sans_fond(
+        old_bloc, champs_sans_source
+    ):
+        if isinstance(old_bloc, dict) and old_bloc:
+            return old_bloc
+    return _prefer_non_empty(new_bloc, old_bloc)
 
 
 def preserver_collectes_non_vides(
@@ -275,7 +364,61 @@ def preserver_collectes_non_vides(
             continue
         resultat[champ] = anciennes
         preserves.append(champ)
+    # Les BLOCS structurés, même règle (#484). Deux vides à couvrir, et le
+    # second est celui qui a coûté l'identité de `jean-luc-melenchon` : le bloc
+    # ABSENT (`identite: None`, collecte d'identité en échec) et le bloc SANS
+    # FOND (le squelette du profil minimal, truthy). Le premier était déjà un
+    # trou de #465 — sa propre mesure du 19/08/2026 le cite —, il n'était
+    # simplement pas couvert par une boucle qui n'acceptait que des listes.
+    for bloc, champs_sans_source in BLOCS_PROTEGES_DU_VIDE.items():
+        ancien_bloc = ancien.get(bloc)
+        if not isinstance(ancien_bloc, dict) or not ancien_bloc:
+            continue
+        if bloc_sans_fond(ancien_bloc, champs_sans_source):
+            continue
+        nouveau_bloc = resultat.get(bloc)
+        if nouveau_bloc and not bloc_sans_fond(nouveau_bloc, champs_sans_source):
+            continue
+        resultat[bloc] = ancien_bloc
+        preserves.append(bloc)
     return resultat, preserves
+
+
+def _instant_synchro(valeur: str) -> tuple[int, str]:
+    """Ordonne deux horodatages de synchro, offset compris.
+
+    Le repli lexicographique n'est pas une commodité : le corpus publié porte
+    des horodatages écrits par `time.strftime('%Y-%m-%dT%H:%M:%S%z')`, que
+    `fromisoformat` accepte depuis 3.11 mais qui n'a pas toujours été le cas.
+    Une chaîne illisible ne doit pas faire lever une fusion — elle passe
+    derrière tout ce qui se parse.
+    """
+    try:
+        return (1, datetime.fromisoformat(valeur).astimezone(timezone.utc).isoformat())
+    except (TypeError, ValueError):
+        return (0, valeur)
+
+
+def _synchro_la_plus_recente(new_value: Any, old_value: Any) -> Any:
+    """Un horodatage de synchro est une BORNE HAUTE, pas un scalaire (#484).
+
+    `_prefer_non_empty` prend la valeur NEUVE dès qu'elle est renseignée. Sur
+    `synchro_sources`, cette règle est à l'envers : le champ dit « la dernière
+    fois que cette source a répondu », et un profil fusionné porte les données
+    des DEUX côtés. Le run 33262372122 en donne la démonstration exacte — le job
+    `extract-an` a resynchronisé AMO30 le 29/08 à 16:22, l'artifact du job
+    `extract-ue-officiel`, fusionné après lui, portait le 19/08 recopié du
+    profil committé, et c'est le 19/08 qui a été publié. La date publiée
+    affirmait une panne de collecte que le run démentait.
+
+    Prendre le plus récent des deux est la seule règle qui décrive le fichier
+    écrit, quel que soit l'ordre de fusion — et l'ordre de fusion est un détail
+    de la CI (`--dirs an ue roster`), pas un fait sur la donnée.
+    """
+    candidats = [v for v in (new_value, old_value) if isinstance(v, str) and v]
+    if not candidats:
+        return _prefer_non_empty(new_value, old_value)
+    return max(candidats, key=_instant_synchro)
 
 
 def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
@@ -297,11 +440,13 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
                 merged["meta"]["synchro_sources"] = dict(old_synchro)
             else:
                 merged["meta"]["synchro_sources"] = {
-                    k: _prefer_non_empty(new_synchro.get(k), old_synchro.get(k))
+                    k: _synchro_la_plus_recente(new_synchro.get(k), old_synchro.get(k))
                     for k in set(old_synchro) | set(new_synchro)
                 }
 
-    merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
+    merged["identite"] = _preferer_bloc_avec_fond(
+        new.get("identite"), old.get("identite"), "identite"
+    )
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
     merged["source"] = _prefer_non_empty(new.get("source"), old.get("source"))
     merged["votes_source"] = _prefer_non_empty(new.get("votes_source"), old.get("votes_source"))
@@ -577,7 +722,9 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["parti"] = _prefer_non_empty(new.get("parti"), old.get("parti"))
     merged["groupe"] = _prefer_non_empty(new.get("groupe"), old.get("groupe"))
     merged["chambre"] = _prefer_non_empty(new.get("chambre"), old.get("chambre"))
-    merged["identite"] = _prefer_non_empty(new.get("identite"), old.get("identite"))
+    merged["identite"] = _preferer_bloc_avec_fond(
+        new.get("identite"), old.get("identite"), "identite"
+    )
 
     # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
     #
@@ -720,6 +867,8 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             if w.startswith(WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES) and merged.get("amendements"):
                 continue
             if _defaut_collecte_dementi_par_les_donnees(merged, w):
+                continue
+            if _aucun_mandat_fr_dementi(merged, w):
                 continue
             # #493 : le warning de non-corroboration est calculé par
             # `normalize_profil` sur les seuls mandats du profil neuf. La
