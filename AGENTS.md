@@ -106,8 +106,13 @@ source-near; `pivot_data/` is the only layer `web/` reads.
   directory.** When it slips through anyway (three times now: #434, #520, `CLAUDE.md` on
   30/08/2026), the `pytest_runtest_makereport` hook of `tests/conftest.py` names the cause
   in the CI log — it diagnoses, it does not prevent, and it stays silent on any other
-  failure.
-  → `docs/decisions/point-de-sauvegarde-dans-les-profils-518.md`
+  failure. It is locked by `tests/test_hook_diagnostic_sparse_checkout.py`, which drives
+  it without failing anything: **a diagnostic that goes mute without saying so is worse
+  than none.** The block itself is parsed in **one** place, `tests/_outils_ci.py` — a
+  conftest cannot import a test module, so the shared parser lives beside it, unparsed by
+  pytest and imported by path.
+  → `docs/decisions/point-de-sauvegarde-dans-les-profils-518.md`,
+  `docs/decisions/hook-diagnostic-sparse-checkout.md`
 - **The launch form is two disjoint axes plus the cache (#578).** `existing_profiles`
   decides what happens to profiles already written (`overwrite` alone raises
   `--no-merge`); `add_uncovered_members` decides whether members with no profile get one;

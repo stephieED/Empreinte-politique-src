@@ -31,6 +31,8 @@ gardes-fous de workflow de ce dépôt.
 import re
 from pathlib import Path
 
+import _outils_ci
+
 RACINE = Path(__file__).resolve().parents[1]
 WORKFLOW = RACINE / ".github" / "workflows" / "tests.yml"
 
@@ -43,25 +45,19 @@ _ANCRES = r"(?:RACINE|ROOT|REPO_ROOT|parents\[1\])"
 _LITTERAL = re.compile(_ANCRES + r'\s*/\s*"([^"/]+)"(?:\s*/\s*"([^"/]+)")?')
 
 
-def _liste_blanche() -> list[str]:
-    """Entrées du bloc `sparse-checkout: |` de `tests.yml`."""
-    texte = WORKFLOW.read_text(encoding="utf-8")
-    debut = texte.find("sparse-checkout: |")
-    assert debut > 0, "bloc `sparse-checkout:` absent de tests.yml"
-    entrees = []
-    for ligne in texte[debut:].split("\n")[1:]:
-        nu = ligne.strip()
-        if not nu:
-            continue
-        # Fin du bloc scalaire : la première ligne moins indentée que ses
-        # entrées. Les entrées sont indentées de 12 espaces, `- name:` de 6.
-        if len(ligne) - len(ligne.lstrip()) < 12:
-            break
-        if nu.startswith("#"):
-            continue
-        entrees.append(nu)
-    assert entrees, "liste blanche vide"
-    return entrees
+def _liste_blanche() -> frozenset[str]:
+    """Entrées du bloc `sparse-checkout: |` de `tests.yml`.
+
+    L'analyse est celle de `tests/_outils_ci.py`, partagée avec `conftest.py`
+    et `test_instructions_agents.py` — trois lecteurs, un seul format à
+    corriger le jour où le bloc change. Elle rend `None` au lieu de lever :
+    ici, un bloc devenu illisible doit échouer, et bruyamment.
+    """
+    blanche = _outils_ci.lire_liste_blanche(WORKFLOW)
+    assert blanche, (
+        "bloc `sparse-checkout: |` absent, vide ou de forme inattendue dans "
+        "tests.yml — voir `tests/_outils_ci.lire_liste_blanche`.")
+    return blanche
 
 
 def _chemins_lus() -> set[tuple[str, ...]]:
@@ -75,7 +71,7 @@ def _chemins_lus() -> set[tuple[str, ...]]:
 
 
 def test_la_liste_blanche_couvre_tout_ce_que_la_suite_lit():
-    blanche = set(_liste_blanche())
+    blanche = _liste_blanche()
     non_couverts = sorted(
         "/".join(chemin) for chemin in _chemins_lus()
         if chemin[0] not in blanche and "/".join(chemin) not in blanche
