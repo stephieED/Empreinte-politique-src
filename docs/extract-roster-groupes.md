@@ -68,7 +68,7 @@ ne part pas de la liste éditoriale `raw_data/candidats.json` mais de la
 composition réelle des groupes parlementaires configurés dans
 `raw_data/groupes_reels.json` — couverture de groupe complète (~750+
 membres), pas seulement les candidats déclarés/pressentis. Voir
-`docs/pipeline-profiles-groupes.md` (tableau des deux sources d'entrée).
+`docs/data-architecture.md` (tableau des deux sources d'entrée).
 
 ---
 
@@ -337,7 +337,7 @@ flowchart TD
 | `src/generate_roster_candidats.py` | Aplatissement du roster en liste de candidats (`raw_data/roster_candidats.json`) |
 | AN Open Data (via `candidate_profile.py`) | Identité, mandats, votes, amendements — **source unique depuis #529**. Mode léger (#357) : dossiers législatifs/interventions/questions officielles jamais extraits ici |
 
-Référentiel pipeline global : [`pipeline-profiles-groupes.md`](./pipeline-profiles-groupes.md).
+Référentiel pipeline global : [`data-architecture.md`](./data-architecture.md).
 
 ---
 

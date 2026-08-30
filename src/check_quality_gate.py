@@ -1593,7 +1593,7 @@ def _report_gouvernements(
     Miroir de `_report_groupes` (§4) — mêmes catégories hard/soft, adaptées
     au schéma `schema_gouvernement.py` (pas de notion de roster réseau : un
     gouvernement est agrégé localement depuis les profils pivot déjà
-    présents, voir `docs/pipeline-profiles-groupes.md`).
+    présents, voir `docs/data-architecture.md`).
 
     Retourne (hard_errors, soft_warnings, console_text, markdown_text).
 

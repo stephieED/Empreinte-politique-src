@@ -2,7 +2,7 @@
 
 Ce que fait un **run** — les jobs, leur ordre, les caches, les artifacts, le
 formulaire de lancement, le push, et la relance automatique. Ce que devient la
-**donnée** est décrit ailleurs : `docs/pipeline-profiles-groupes.md`. Les
+**donnée** est décrit ailleurs : `docs/data-architecture.md`. Les
 **règles** que ces mécanismes imposent restent dans `AGENTS.md` §3 ; le
 **pourquoi** de chacune est un fichier de `docs/decisions/`.
 
