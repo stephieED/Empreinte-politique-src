@@ -83,6 +83,15 @@ via `src/population_profils.py`.
 - **Individual profiles are written compact, everything else `indent=2`** (`src/json_io.py`).
   Never read a profile line by line — the format carries no meaning.
   → `docs/decisions/profils-json-compact.md`
+- **A tool that walks the corpus reads it by projection, and never keeps a document
+  (#628).** 623 Mo of JSON on disk is ~2,6 Gio of Python objects (measured inflation:
+  × 4,2), and the machine has 4 Gio free with the swap full — an accumulating loop is
+  `exit 137`, not a slowdown. Read one profile, reduce it to the blocks your measures
+  actually open (declare them in a whitelist), release it. **A ceiling that is not in a
+  test is a ceiling nobody re-checks**: measure `ru_maxrss` in a subprocess over fixtures
+  and derive the ceiling from the on-disk weight of the blocks you must not keep — never
+  from what you observed. Three accumulations remain, named and measured in the decision.
+  → `docs/decisions/audit-599-projection-blocs-lus-628.md`
 - **Read raw profiles through `src/profil_brut.py`, never `json.load` directly (#580)** —
   a raw profile is a socle plus one amendment slice per legislature, and a broken
   partition must raise `PartitionIllisible`, never return an empty list.

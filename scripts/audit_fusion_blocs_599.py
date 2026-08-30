@@ -103,9 +103,37 @@ WARNING_CHEMIN_MINIMAL = "aucun mandat français connu"
 #: Listes métier dont la présence prouve qu'un écrivain parlementaire a travaillé
 #: sur ce profil. `amendements` est exclu : il est partitionné (#580) et sa
 #: lecture coûte 600 Mo pour une information que les quatre autres portent déjà.
+#: De ces listes l'audit ne lit que **deux choses** : « y a-t-il quelque
+#: chose ? » et « combien ? ». Jamais une entrée. C'est ce qui rend la
+#: projection ci-dessous possible sans changer un seul chiffre du rapport.
 LISTES_PARLEMENTAIRES: tuple[str, ...] = (
     "votes", "mandats", "interventions", "dossiers_legislatifs",
 )
+
+#: Les blocs du profil **pivot** que les mesures lisent, et rien d'autre —
+#: relevés dans le code, pas dans l'énoncé : `identite` (mesure 1),
+#: `identifiants.hatvp` (mesure 1) et `meta.warnings` (mesure 2). #628 citait
+#: aussi `couverture` : **aucune mesure ne l'ouvre**, il n'est donc pas retenu.
+#: Ajouter une mesure qui lirait un autre bloc, c'est ajouter ce bloc ici.
+BLOCS_PIVOT_LUS: tuple[str, ...] = ("identite", "identifiants", "meta")
+
+#: Idem côté **brut**, hors les listes ci-dessus : `identite` (mesure 1),
+#: `meta` (mesures 2 et 3).
+BLOCS_BRUT_LUS: tuple[str, ...] = ("identite", "meta")
+
+#: Ce que pèsent, sur le corpus committé du 30/08/2026, les blocs qu'on retient
+#: et ceux qu'on relâche — mesuré bloc par bloc, pas estimé :
+#:
+#:   `amendements`  577,3 Mo    relâché
+#:   `votes`         67,1 Mo    relâché
+#:   `interventions` 22,2 Mo    relâché
+#:   `mandats`       12,6 Mo    relâché
+#:   `couverture`     1,6 Mo    relâché (aucune mesure ne l'ouvre)
+#:   `meta`           0,21 Mo   **retenu**
+#:   `identite`       0,13 Mo   **retenu**
+#:   `identifiants`   0,05 Mo   **retenu**
+#:
+#: Soit 0,39 Mo retenus sur 681,6 Mo — 0,06 %.
 
 #: `identite` brut -> `identite` pivot (`normalize_profil`, lignes 488-494).
 #: `source_url` a deux origines possibles côté pivot ; il est traité à part.
@@ -140,6 +168,25 @@ def valeur_de_fond(valeur: Any) -> Any:
     return valeur
 
 
+def nombre_d_entrees(valeur: Any) -> int:
+    """Combien d'entrées porte cette liste — liste réelle **ou** décompte.
+
+    Les profils chargés par `charger_corpus` ne portent plus les listes métier
+    mais leur seul cardinal (voir `projeter_socle`) : c'est tout ce que l'audit
+    en lit, et les retenir coûtait 1,3 Gio. Les tests, eux, construisent des
+    corpus minuscules avec les vraies listes. Cette fonction accepte les deux
+    formes, pour que la mesure ne dépende pas de la façon dont on l'a nourrie.
+    """
+    if isinstance(valeur, bool):
+        return 0
+    if isinstance(valeur, int):
+        return valeur
+    try:
+        return len(valeur)
+    except TypeError:
+        return 0
+
+
 def instant(valeur: Any) -> Optional[datetime]:
     """Horodatage ISO -> instant UTC, ou `None` s'il est illisible.
 
@@ -162,15 +209,72 @@ def ecart_jours(recent: datetime, ancien: datetime) -> float:
 # Chargement du corpus
 # ---------------------------------------------------------------------------
 
+def projeter_socle(socle: dict[str, Any]) -> dict[str, Any]:
+    """Le socle brut réduit à ce que les mesures en lisent.
+
+    Deux blocs (`identite`, `meta`) et, des quatre listes parlementaires, leur
+    seul **cardinal** — `porte_des_donnees_parlementaires` teste « non vide »
+    et les constats publient « combien ». Aucune entrée n'est jamais lue.
+    """
+    projection: dict[str, Any] = {
+        bloc: socle[bloc] for bloc in BLOCS_BRUT_LUS if bloc in socle
+    }
+    for champ in LISTES_PARLEMENTAIRES:
+        if champ in socle:
+            projection[champ] = nombre_d_entrees(socle[champ])
+    return projection
+
+
+def projeter_pivot(document: dict[str, Any]) -> dict[str, Any]:
+    """Le pivot publié réduit à ses trois blocs lus (`BLOCS_PIVOT_LUS`).
+
+    Le document complet ne vit que le temps de l'appel ; les listes qui font
+    99,94 % de son poids meurent avec lui, à la sortie.
+    """
+    return {bloc: document[bloc] for bloc in BLOCS_PIVOT_LUS if bloc in document}
+
+
+def _lire_pivot(chemin: Path) -> Optional[dict[str, Any]]:
+    """Lit **un** pivot et n'en rend que la projection.
+
+    Le `json.loads` complet reste nécessaire — un profil est écrit compact, sur
+    une seule ligne (#433), il n'y a pas de lecture incrémentale possible sans
+    dépendance nouvelle. Ce qui change, c'est la **durée de vie** : le document
+    entier est local à cette fonction et relâché à son retour, au lieu d'être
+    rangé dans un dictionnaire indexé par slug pour tout le reste du run.
+    """
+    document = json.loads(chemin.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        return None
+    return projeter_pivot(document)
+
+
 def charger_corpus(
     profils_bruts: Path, profils_pivot: Path
 ) -> tuple[dict[str, dict], dict[str, dict], list[str]]:
-    """Charge les socles bruts et les pivots publiés, indexés par slug.
+    """Charge les socles bruts et les pivots publiés, **projetés**, par slug.
 
     Les bruts passent par `profil_brut.charger_socle` — jamais `json.load` sur
     `<slug>.json` : le profil est partitionné par législature depuis #580, et
     seul ce module sait le lire. Le socle suffit ici : aucune mesure ne porte
     sur les amendements.
+
+    **Aucun document n'est conservé entier (#628).** Un profil est lu, projeté
+    sur les blocs que les mesures ouvrent (`BLOCS_BRUT_LUS`, `BLOCS_PIVOT_LUS`,
+    et le cardinal des listes), puis relâché. Conserver les documents entiers
+    coûtait ~3,9 Gio de pic sur le corpus committé — 1,3 Gio pour les socles,
+    2,6 Gio pour les pivots — et l'audit était tué par l'OOM avant de rendre son
+    rapport : livré « rejouable » par #599, il ne l'était que sur une machine
+    reposée. C'est le motif de
+    `docs/decisions/oom-lecture-amendements-par-candidat.md`, ici sur un chemin
+    neuf : 623 Mo de JSON sur disque valent 3 à 10 fois plus une fois
+    désérialisés en objets Python, chaque dict et chaque chaîne portant son
+    en-tête (facteur mesuré ici : × 4,2).
+
+    La projection ne change **aucun chiffre** : elle retire ce qu'aucune mesure
+    n'ouvre. `tests/test_audit_fusion_blocs_599.py` le verrouille des deux côtés
+    — le rapport est identique à celui tiré des documents entiers, et le pic
+    mémoire reste sous un plafond déclaré.
 
     Les fichiers de service (nom commençant par un point) sont écartés des deux
     côtés : `.generation_checkpoint.json` n'est pas un profil.
@@ -184,19 +288,20 @@ def charger_corpus(
             illisibles.append(f"brut {slug} : {exc}")
             continue
         if isinstance(socle, dict):
-            bruts[slug] = socle
+            bruts[slug] = projeter_socle(socle)
+        del socle
 
     pivots: dict[str, dict] = {}
     for chemin in sorted(profils_pivot.glob(f"*{SUFFIXE_PIVOT}")):
         if chemin.name.startswith("."):
             continue
         try:
-            document = json.loads(chemin.read_text(encoding="utf-8"))
+            projection = _lire_pivot(chemin)
         except (OSError, json.JSONDecodeError) as exc:
             illisibles.append(f"pivot {chemin.name} : {exc}")
             continue
-        if isinstance(document, dict):
-            pivots[chemin.name[: -len(SUFFIXE_PIVOT)]] = document
+        if projection is not None:
+            pivots[chemin.name[: -len(SUFFIXE_PIVOT)]] = projection
 
     return bruts, pivots, illisibles
 
@@ -271,7 +376,7 @@ def mesurer_identite(
                 constats["brut_squelette_minimal"].append({
                     "slug": slug,
                     "listes_non_vides": {
-                        champ: len(brut.get(champ) or [])
+                        champ: nombre_d_entrees(brut.get(champ))
                         for champ in LISTES_PARLEMENTAIRES
                         if brut.get(champ)
                     },
@@ -374,7 +479,7 @@ def mesurer_warnings(
                     "slug": slug,
                     "warnings_publies": warnings,
                     "listes_non_vides": {
-                        champ: len(brut.get(champ) or [])
+                        champ: nombre_d_entrees(brut.get(champ))
                         for champ in LISTES_PARLEMENTAIRES
                         if brut.get(champ)
                     },

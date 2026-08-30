@@ -16,6 +16,7 @@ mesure fausse dans ce dépôt :
 """
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,14 +27,20 @@ sys.path.insert(0, str(_RACINE / "src"))
 sys.path.insert(0, str(_RACINE / "scripts"))
 
 from audit_fusion_blocs_599 import (  # noqa: E402
+    BLOCS_BRUT_LUS,
+    BLOCS_PIVOT_LUS,
     HORS_DEFAUT,
+    LISTES_PARLEMENTAIRES,
     charger_corpus,
     construire_rapport,
     identite_du_chemin_minimal,
     mesurer_identite,
     mesurer_synchro,
     mesurer_warnings,
+    nombre_d_entrees,
     porte_des_donnees_parlementaires,
+    projeter_pivot,
+    projeter_socle,
     rendre_markdown,
     valeur_de_fond,
 )
@@ -459,3 +466,275 @@ def test_rapport_complet_est_serialisable_et_nomme_ses_populations(tmp_path):
     markdown = rendre_markdown(rapport)
     assert "Population du défaut" in markdown
     assert "`depute`" in markdown
+
+
+# ---------------------------------------------------------------------------
+# Mémoire : le plafond est dans le test (#628)
+# ---------------------------------------------------------------------------
+#
+# Cet audit a été livré « rejouable » par #599 et ne l'était pas : il rangeait
+# chaque profil pivot **entier** dans un dictionnaire indexé par slug, soit
+# 623 Mo de JSON désérialisés puis conservés. Mesuré sur le corpus committé du
+# 30/08/2026 : le pic dépassait 2,5 Gio avant même le 235e des 481 pivots, pour
+# un pic complet extrapolé à ~3,9 Gio (facteur de gonflement mesuré : × 4,2).
+# Sur une machine à 7,6 Gio dont 4 disponibles et le swap saturé, le noyau le
+# tuait — `exit 137`, aucun rapport.
+#
+# Le défaut est **latent** : il ne se voit que sur une machine chargée. C'est
+# exactement ce qu'un test doit rattraper, sinon on ne le réapprend qu'en
+# relançant l'outil le jour où on en a besoin.
+
+#: Profils du corpus-fixture de mesure. Assez nombreux pour que le coût
+#: **transitoire** d'un seul document (celui qu'on désérialise puis relâche)
+#: soit un ordre de grandeur sous le plafond.
+NB_PROFILS_FIXTURE = 24
+
+#: Poids visé, par profil, des blocs que l'audit doit relâcher — côté pivot
+#: (`amendements`, `interventions`, `couverture`) et côté brut (`votes`).
+POIDS_LOURD_PIVOT = 2 * 1024 * 1024
+POIDS_LOURD_BRUT = 1 * 1024 * 1024
+
+#: Plancher de vraisemblance du corpus-fixture. Rétrécir les fixtures
+#: rétrécirait le plafond avec elles, et le test finirait par passer sur un
+#: corpus si petit qu'il ne prouverait plus rien. 40 Mio est la limite basse
+#: sous laquelle ce test doit refuser de se prononcer.
+PLANCHER_POIDS_RELACHE = 40 * 1024 * 1024
+
+#: Ce que le processus enfant exécute : il mesure **son propre** pic mémoire
+#: (`ru_maxrss`, sans dépendance externe) de part et d'autre de l'audit, et
+#: rend la croissance. Un sous-processus est nécessaire : dans le processus
+#: pytest, `ru_maxrss` porterait aussi le pic de tous les tests précédents.
+_PILOTE = """\
+import json, resource, sys
+from pathlib import Path
+
+depot, dossier_bruts, dossier_pivots = sys.argv[1], sys.argv[2], sys.argv[3]
+sys.path.insert(0, str(Path(depot) / "src"))
+sys.path.insert(0, str(Path(depot) / "scripts"))
+import audit_fusion_blocs_599 as audit
+
+depart = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+rapport = audit.construire_rapport(Path(dossier_bruts), Path(dossier_pivots))
+pic = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print(json.dumps({
+    "depart": depart,
+    "pic": pic,
+    "nb_bruts": rapport["mesure_1_identite"]["population_bruts"],
+    "nb_pivots": rapport["mesure_1_identite"]["population_pivots"],
+}))
+"""
+
+
+def _liste_lourde(octets_vises: int, gabarit: dict) -> list:
+    """Une liste métier pesant environ `octets_vises` une fois sérialisée.
+
+    Les entrées sont **petites**, et c'est le point : depuis #431 et #432 un
+    `amendements[]` ou un `votes[]` publié est un mapping à deux clés. C'est
+    cette forme-là qui gonfle d'un facteur 3 à 10 en objets Python (× 4,2
+    mesuré sur le corpus committé) — chaque dict, chaque clé, chaque chaîne
+    porte son en-tête. Une fixture bâtie sur de longues chaînes ne gonflerait
+    que d'environ × 1,5 et le garde-fou ne séparerait plus grand-chose.
+    """
+    (cle_id, _), = [(k, v) for k, v in gabarit.items() if k.endswith("_id")]
+    unite = len(json.dumps(gabarit, ensure_ascii=False)) + 1
+    return [
+        dict(gabarit, **{cle_id: f"{gabarit[cle_id]}{i:07d}"})
+        for i in range(max(1, octets_vises // unite))
+    ]
+
+
+def _corpus_de_mesure(tmp_path: Path) -> tuple[Path, Path, int]:
+    """Écrit un corpus-fixture dont les blocs lourds dominent le poids.
+
+    Rend les deux répertoires et le **poids sur disque des blocs que l'audit
+    doit relâcher** — c'est de ce poids, et non d'une observation, que le
+    plafond est déduit.
+    """
+    bruts = tmp_path / "raw_profiles"
+    pivots = tmp_path / "pivot_profiles"
+    bruts.mkdir()
+    pivots.mkdir()
+
+    lourd_pivot = _liste_lourde(
+        POIDS_LOURD_PIVOT // 2,
+        {"amendement_id": "an:AMANR5L16PO0000B0000P0D0N", "role_signataire": "cosignataire"},
+    )
+    lourd_brut = _liste_lourde(
+        POIDS_LOURD_BRUT, {"scrutin_id": "an:16:", "position": "pour"},
+    )
+    poids_relache = NB_PROFILS_FIXTURE * (
+        2 * len(json.dumps(lourd_pivot, ensure_ascii=False))
+        + len(json.dumps(lourd_brut, ensure_ascii=False))
+    )
+
+    for i in range(NB_PROFILS_FIXTURE):
+        slug = f"depute-{i:03d}"
+        socle = {
+            "identite": _identite_an(),
+            "meta": {
+                "genere_le": "2026-08-30T11:00:00+0000",
+                "collecte_ecartee": [],
+                "warnings": [],
+                "synchro_sources": {"assemblee_nationale": "2026-08-30T10:59:00+0000"},
+            },
+            "votes": lourd_brut,
+            "mandats": [{"label": "Députée"}],
+        }
+        pivot = {
+            "id": slug,
+            "identite": _identite_an(),
+            "identifiants": {"hatvp": "https://www.hatvp.fr/fiche/jean-test"},
+            "meta": {"warnings": [], "provenance": "roster_groupe"},
+            "amendements": lourd_pivot,
+            "interventions": lourd_pivot,
+            "couverture": {"amendements": {"motif": None}},
+        }
+        (bruts / f"{slug}.json").write_text(
+            json.dumps(socle, ensure_ascii=False), encoding="utf-8")
+        (pivots / f"{slug}.pivot.json").write_text(
+            json.dumps(pivot, ensure_ascii=False), encoding="utf-8")
+
+    return bruts, pivots, poids_relache
+
+
+def test_la_projection_ne_retient_aucun_bloc_que_les_mesures_n_ouvrent_pas(tmp_path):
+    """Le fond du défaut : un document lu n'est jamais un document gardé.
+
+    Le pic mémoire dépend de la machine ; **ce que la projection retient** n'en
+    dépend pas. C'est donc ici que l'invariant est verrouillé, et le test de
+    plafond qui suit ne fait que confirmer qu'il a l'effet annoncé.
+    """
+    bruts_dir = tmp_path / "raw"
+    pivots_dir = tmp_path / "pivot"
+    bruts_dir.mkdir()
+    pivots_dir.mkdir()
+    (bruts_dir / "depute.json").write_text(
+        json.dumps({
+            "identite": _identite_an(),
+            "meta": {"genere_le": "2026-08-30T11:00:00+0000", "warnings": []},
+            "votes": [{"n": 1}, {"n": 2}, {"n": 3}],
+            "interventions": [],
+            "sources": [{"type": "assemblee_nationale"}],
+        }),
+        encoding="utf-8",
+    )
+    (pivots_dir / "depute.pivot.json").write_text(
+        json.dumps({
+            "id": "depute",
+            "identite": _identite_an(),
+            "identifiants": {"hatvp": "https://www.hatvp.fr/fiche/jean-test"},
+            "meta": {"warnings": []},
+            "amendements": [{"amendement_id": "an:X"}],
+            "votes": [{"scrutin_id": "s1"}],
+            "interventions": [{"titre": "t"}],
+            "couverture": {"amendements": {"motif": None}},
+        }),
+        encoding="utf-8",
+    )
+
+    charges_bruts, charges_pivots, illisibles = charger_corpus(bruts_dir, pivots_dir)
+    assert illisibles == []
+
+    pivot = charges_pivots["depute"]
+    assert sorted(pivot) == sorted(BLOCS_PIVOT_LUS)
+    for bloc in ("amendements", "votes", "interventions", "couverture"):
+        assert bloc not in pivot
+
+    brut = charges_bruts["depute"]
+    assert sorted(brut) == sorted(set(BLOCS_BRUT_LUS) | {"votes", "interventions"})
+    assert brut["votes"] == 3, "des listes brutes on ne garde que le cardinal"
+    assert brut["interventions"] == 0
+    assert "sources" not in brut, "aucun bloc qu'aucune mesure n'ouvre"
+
+
+def test_les_mesures_lisent_le_meme_chiffre_sur_la_liste_et_sur_son_cardinal():
+    """La projection ne peut pas changer un chiffre : les mesures ne lisent des
+    listes métier que leur présence et leur taille, et `nombre_d_entrees` rend
+    la même valeur des deux formes."""
+    entier = {"identite": _identite_an(), "votes": [{"n": 1}, {"n": 2}]}
+    projete = projeter_socle(entier)
+    assert projete["votes"] == 2
+    assert porte_des_donnees_parlementaires(entier) is True
+    assert porte_des_donnees_parlementaires(projete) is True
+    assert nombre_d_entrees(entier["votes"]) == nombre_d_entrees(projete["votes"])
+
+    vide = projeter_socle({"votes": [], "mandats": []})
+    assert porte_des_donnees_parlementaires(vide) is False
+    assert set(LISTES_PARLEMENTAIRES) >= set(vide)
+
+    assert projeter_pivot({"identite": {"a": 1}, "amendements": [1, 2]}) == {
+        "identite": {"a": 1}
+    }
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="`resource` est POSIX")
+def test_le_pic_memoire_de_l_audit_reste_sous_le_plafond_declare(tmp_path):
+    """L'audit ne doit pas croître de plus que le poids **sur disque** des blocs
+    qu'il est censé relâcher.
+
+    D'où vient le plafond
+    ---------------------
+    Il n'est pas relevé sur une exécution puis arrondi — ce serait un plafond
+    qui ne protège de rien, puisqu'il suivrait la dérive qu'il doit signaler.
+    C'est une **règle** : la croissance mémoire de l'audit doit rester sous le
+    poids en octets, sur disque, des blocs qu'il lit et ne doit pas garder
+    (`amendements`, `interventions`, `couverture` côté pivot, `votes` côté
+    brut). Le raisonnement tient en une ligne : la désérialisation JSON ne
+    **réduit** jamais — une liste de petits dictionnaires occupe 3 à 10 fois le
+    texte qui la décrit (× 4,2 mesuré sur le corpus committé). Donc si l'audit
+    croît de moins que ce texte, il ne peut pas le détenir. Au-dessus, il en
+    garde quelque chose.
+
+    Pourquoi une mesure sur fixtures vaut quelque chose
+    --------------------------------------------------
+    La CI ne télécharge pas le corpus : `pivot_data` est hors de la liste
+    blanche du sparse-checkout de `tests.yml`, et un garde-fou (#473) échoue
+    s'il réapparaît. Le plafond ne peut donc pas porter sur les 623 Mo réels.
+
+    Mais le défaut de #628 n'est pas un défaut de **volume**, c'est un défaut de
+    **rétention** — et la rétention ne dépend pas de l'échelle : un chargeur qui
+    range les documents entiers dans un dictionnaire les range à toutes les
+    tailles. Le corpus-fixture est bâti pour que ce comportement-là soit
+    impossible à manquer : ses blocs lourds font l'essentiel de son poids, et
+    les retenir dépasserait le plafond à lui seul, plusieurs fois. Ce que ce
+    test certifie est donc la **propriété** — aucun document n'est conservé —
+    et non le pic sur le corpus réel, qui est mesuré ailleurs et consigné dans
+    `docs/decisions/audit-599-projection-blocs-lus-628.md` (113 Mio).
+
+    Ce que le test ne prouve pas
+    ----------------------------
+    Ni la vitesse, ni le pic absolu sur le vrai corpus, ni la mémoire consommée
+    par le reste de la suite. `ru_maxrss` est un maximum historique du
+    processus : mesuré dans le processus pytest il porterait le pic de tous les
+    tests déjà passés, d'où le sous-processus.
+    """
+    bruts, pivots, poids_relache = _corpus_de_mesure(tmp_path)
+    assert poids_relache >= PLANCHER_POIDS_RELACHE, (
+        f"corpus-fixture trop léger ({poids_relache / 1024**2:.0f} Mio de blocs "
+        f"à relâcher) : sous ce plancher le plafond qu'il déduit ne prouve plus "
+        f"rien. Regonfler les fixtures, jamais desserrer le plancher.")
+
+    pilote = tmp_path / "pilote_mesure.py"
+    pilote.write_text(_PILOTE, encoding="utf-8")
+    acheve = subprocess.run(
+        [sys.executable, str(pilote), str(_RACINE), str(bruts), str(pivots)],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert acheve.returncode == 0, (
+        f"l'audit n'a pas rendu son rapport (code {acheve.returncode}) — un 137 "
+        f"est un OOM, le défaut même de #628 :\n{acheve.stderr[-2000:]}")
+    mesure = json.loads(acheve.stdout.strip().splitlines()[-1])
+
+    assert mesure["nb_bruts"] == NB_PROFILS_FIXTURE
+    assert mesure["nb_pivots"] == NB_PROFILS_FIXTURE
+
+    # `ru_maxrss` est en Kio sous Linux, en octets sous macOS.
+    facteur = 1 if sys.platform == "darwin" else 1024
+    croissance = (mesure["pic"] - mesure["depart"]) * facteur
+    assert croissance < poids_relache, (
+        f"l'audit a grossi de {croissance / 1024**2:.1f} Mio en lisant "
+        f"{NB_PROFILS_FIXTURE} profils dont {poids_relache / 1024**2:.0f} Mio de "
+        f"blocs qu'il ne doit pas garder. Au-dessus de ce plafond il en retient "
+        f"une partie : c'est le défaut de #628, qui faisait tuer l'audit par "
+        f"l'OOM sur le corpus réel (623 Mo, pic ~3,9 Gio, exit 137).")
