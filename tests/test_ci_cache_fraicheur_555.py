@@ -54,7 +54,7 @@ JOB_CONSOMMATEUR = "extract-roster-groupes"
 #: doit le PRÉCÉDER : placée après, elle jetterait ce que le job vient de
 #: construire.
 STEP_EXTRACTION = {
-    JOB_PRODUCTEUR: "Extraction AN (NosDéputés)",
+    JOB_PRODUCTEUR: "Extraction AN",
     JOB_CONSOMMATEUR: "Extraction roster-driven",
 }
 
