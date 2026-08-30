@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 172 décisions
+gouverne sans avoir à fouiller les 173 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -40,13 +40,13 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/budget_collecte.py` | 3 |
 | `src/audit_gouvernement_dataset.py` | 2 |
 | `src/audit_pipeline.py` | 2 |
+| `src/gouvernement_profile.py` | 2 |
 | `src/groupes_config.py` | 2 |
 | `src/normalize_parltrack_dumps.py` | 2 |
 | `src/parse_syceron.py` | 2 |
 | `src/profil_brut.py` | 2 |
 | `src/build_amendements_index.py` | 1 |
 | `src/candidate_profile_ue.py` | 1 |
-| `src/gouvernement_profile.py` | 1 |
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
 | `src/purge_mandats_dupliques.py` | 1 |
@@ -57,7 +57,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 
 ## `src/amendements_index.py`
 
-Le mentionnent sans le gouverner : [`normalisation-amendements`](decisions/normalisation-amendements.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
+Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md), [`normalisation-amendements`](decisions/normalisation-amendements.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`point-de-sauvegarde-dans-les-profils-518`](decisions/point-de-sauvegarde-dans-les-profils-518.md).
 
 ## `src/an_roster.py`
 
@@ -133,9 +133,11 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 | [`audit_pipeline.py` : intégration du rapport gouvernement (#321, sous-issue 5/6 de #316) (2026-08-15)](decisions/audit-pipeline-gouvernement.md) | `compute_vue_ensemble` |
 | [Épic #316 — tableaux croisés des plages temporelles (#317/#318/#320/#321) : bilan et décisions transverses (2026-08-15)](decisions/audit-plages-temporelles.md) | `compute_vue_ensemble` |
 
+Le mentionnent sans le gouverner : [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
+
 ## `src/audit_pivot_dataset.py`
 
-10 décision(s) le gouvernent ; le module en cite 2.
+11 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -147,6 +149,7 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 | [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `MAPPING_CHAMBRE_SOURCES` |
 | [Un paramètre commandait ce qu'il ne nommait pas (#578) (2026-08-29)](decisions/deux-axes-formulaire-578.md) | `compute_profils_perimes` |
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `compute_agregation_warnings` |
+| [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_AUDIT`, `ListeReduite`, `_cle_groupe`, `_plage_dates_champ_simple`, `_plage_dates_textes_portes`, `compute_plage_dates_candidats`, `compute_taux_remplissage`, `load_pivot_directory`, `reduire_liste` |
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `compute_profils_perimes` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `MAPPING_CHAMBRE_SOURCES`, `compute_agregation_warnings` |
 
@@ -402,7 +405,7 @@ Le mentionnent sans le gouverner : [`amendements-legislatures-figees`](decisions
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `COLLECTE_INCOMPLETE` |
 | [Le plafond de lecture du roster, et le commit qui ne paie plus pour une source lente (#518, second incident) (2026-08-24)](decisions/plafond-roster-et-commit-518.md) | `EXIT_COLLECTE_INCOMPLETE` |
 
-Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md).
+Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`gouvernement-ci-integration`](decisions/gouvernement-ci-integration.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`lectures-pipeline-par-projection-635`](decisions/lectures-pipeline-par-projection-635.md).
 
 ## `src/generate_group_profiles.py`
 
@@ -436,17 +439,18 @@ Le mentionnent sans le gouverner : [`plafond-roster-et-commit-518`](decisions/pl
 
 ## `src/gouvernement_profile.py`
 
-1 décision(s) le gouvernent ; le module en cite 0.
+2 décision(s) le gouvernent ; le module en cite 0.
 
 | Décision | Nomme |
 | --- | --- |
 | [`gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)](decisions/gouvernement-profile-rattachement.md) | `build_gouvernement_profile` |
+| [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `_index_acteur_ref_vers_membre`, `build_gouvernement_profile` |
 
 Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisions/audit-599-projection-blocs-lus-628.md), [`audit-pipeline-gouvernement`](decisions/audit-pipeline-gouvernement.md), [`freshness-timestamps-groupes-gouvernements-partis`](decisions/freshness-timestamps-groupes-gouvernements-partis.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`gouvernement-textes-fam-codes-archives`](decisions/gouvernement-textes-fam-codes-archives.md), [`gouvernement-textes-fam-codes-manquants`](decisions/gouvernement-textes-fam-codes-manquants.md), [`gouvernement-textes-initiateurs`](decisions/gouvernement-textes-initiateurs.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`parlementaire-en-mission-nest-pas-ministre`](decisions/parlementaire-en-mission-nest-pas-ministre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md).
 
 ## `src/gouvernement_roster.py`
 
-9 décision(s) le gouvernent ; le module en cite 1.
+10 décision(s) le gouvernent ; le module en cite 3.
 
 | Décision | Nomme |
 | --- | --- |
@@ -456,6 +460,7 @@ Le mentionnent sans le gouverner : [`audit-599-projection-blocs-lus-628`](decisi
 | [`gouvernement_roster.py` : désambiguïsation par libellé exact + garde-fou de période, pas l'inverse (#209) (2026-08-14)](decisions/gouvernement-roster-desambiguisation.md) | `build_gouvernement_roster` |
 | [Profils de gouvernement : le lien ministre → texte (#435) (2026-08-18)](decisions/gouvernement-textes-initiateurs.md) | `acteur_ref_depuis_profil` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `build_gouvernement_roster` |
+| [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_COMPOSITION`, `acteur_ref_depuis_profil`, `build_premier_ministre`, `load_profils_from_dir` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `FONCTIONS_MINISTERIELLES`, `FONCTIONS_MINISTERIELLES_OBSERVEES`, `_est_mandat_appartenance_gouvernement`, `_normalise_fonction`, `_portefeuilles_du_mandat`, `_qualite_portefeuille`, `build_gouvernement_roster`, `build_premier_ministre` |
 | [`check_quality_gate.py` : section gouvernements (§5), couverture ministérielle proxy par `portefeuille` (#212) (2026-08-14)](decisions/quality-gate-gouvernements.md) | `build_gouvernement_roster` |
 | [Un test d'acceptation adossé au corpus vivant rougit quand la donnée s'améliore (#457) (2026-08-20)](decisions/test-adosse-au-corpus-vivant.md) | `build_gouvernement_roster` |
@@ -482,7 +487,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 
 ## `src/group_profile.py`
 
-16 décision(s) le gouvernent ; le module en cite 4.
+17 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -491,6 +496,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `_aggregate_mandats`, `_compute_cohesion_votes`, `_is_eligible_at`, `_mandats_electifs`, `_member_eligibility_intervals`, `build_groupe_profile`, `compute_ecarts_cohesion_internes` |
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `_is_eligible_at`, `_member_eligibility_intervals` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `generate_groupe_profile_from_roster` |
+| [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `BLOCS_LUS_MEMBRE`, `_aggregate_amendements`, `_aggregate_mandats`, `_is_pivot_v1`, `aggregate_tags_thematiques`, `build_groupe_profile`, `compute_ecarts_cohesion_internes`, `contribution_amendements`, `generate_groupe_profile_from_roster`, `load_profil_from_file` |
 | [Un mandat électif perdu ne manque pas seulement sur la fiche : il sort le membre du dénominateur de son groupe (#465) (2026-08-20)](decisions/mandat-electif-perdu-fausse-le-denominateur.md) | `_aggregate_amendements`, `_member_eligibility_intervals` |
 | [`mandats_agreges` : agrégation catégorielle sur `mandats[]`, famille 1 (#361, sous-issue de #349) (2026-08-16)](decisions/mandats-agreges-famille-1.md) | `MANDATS_AGREGES_CATEGORIES`, `_aggregate_mandats`, `_compute_cohesion_votes`, `_intervals_overlap`, `_is_eligible_at`, `_member_eligibility_intervals`, `_select_mandat_entree_unique` |
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `_aggregate_amendements` |
@@ -705,7 +711,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-20 décision(s) le gouvernent ; le module en cite 4.
+21 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -719,6 +725,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Comment naît l'identité d'un profil, et où vont les identifiants de source (#539) (2026-08-28)](decisions/identite-profils-539.md) | `KNOWN_SOURCE_TYPES`, `poser_identifiant`, `validate_profil` |
 | [Rien ne vérifiait que les clés publiées résolvent : le contrôle d'invariance (#485) (2026-08-20)](decisions/integrite-referentielle-pivot.md) | `validate_profil` |
 | [Données UE — investigation des sources (2026-08-04)](decisions/investigation-sources-ue.md) | `validate_profil` |
+| [Trois lectures du corpus passent à la projection, et chacune a son plafond dans un test (#635, 2026-08-30)](decisions/lectures-pipeline-par-projection-635.md) | `lire_chambres` |
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `validate_amendements_index`, `validate_profil` |
 | [Normaliser les votes : une liste partagée, un mapping, et deux invariants devenus des jointures (#432) (2026-08-19)](decisions/normalisation-votes.md) | `validate_profil`, `validate_scrutins_index` |
 | [`genere_le`/`synchro_le` des pivots ne doivent avancer que si le contenu change réellement (#343) (2026-08-16)](decisions/pivot-freshness-timestamps-stables.md) | `make_empty_profil` |

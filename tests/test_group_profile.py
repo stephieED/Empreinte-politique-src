@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -7,6 +8,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from group_profile import (
+    BLOCS_LUS_MEMBRE,
+    ContributionAmendements,
+    contribution_amendements,
+    load_profil_from_file,
     _parse_date,
     _member_eligible_at,
     _derive_membre_entry,
@@ -1521,3 +1526,231 @@ def test_build_groupe_profile_transmet_sa_legislature_a_la_cohesion():
     )
 
     assert [c["scrutin_id"] for c in profil["cohesion_votes"]] == ["an:16:10"]
+
+
+# ---------------------------------------------------------------------------
+# Mémoire : le plafond est dans le test (#635)
+# ---------------------------------------------------------------------------
+#
+# `generate_groupe_profile_from_roster` gardait le profil **entier** de chaque
+# membre du roster. Mesuré sur les 5 fiches AN publiées, index partagés déjà
+# chargés, chaque groupe dans son propre processus :
+#
+#   LFI  76 membres  253,5 Mo sur disque   985,8 Mio -> 82,3 Mio
+#   REN 193 membres   97,2 Mo              372,4 Mio -> 128,1 Mio
+#   RN   90 membres  128,1 Mo              471,7 Mio -> 59,7 Mio
+#
+# `amendements[]` fait l'essentiel de ce poids (577,3 des 651,5 Mo du corpus
+# committé du 30/08/2026) et la fiche n'en tire que des **compteurs additifs**.
+# Ils sont donc calculés au chargement, membre par membre, et les entrées
+# meurent — `votes` et `mandats`, eux, sont réellement parcourus et restent.
+
+NB_PROFILS_FIXTURE_MEMOIRE = 24
+
+#: Poids visé, par membre, de l'`amendements[]` que le chargement doit relâcher.
+POIDS_AMENDEMENTS_RELACHES = 2 * 1024 * 1024
+
+#: Plancher de vraisemblance du corpus-fixture : sous ce poids, le plafond
+#: qu'il déduit ne prouve plus rien. Regonfler les fixtures, jamais desserrer
+#: le plancher.
+PLANCHER_POIDS_RELACHE = 40 * 1024 * 1024
+
+_PILOTE_MEMOIRE = """\
+import json, resource, sys
+from pathlib import Path
+
+depot, dossier = sys.argv[1], sys.argv[2]
+sys.path.insert(0, str(Path(depot) / "src"))
+import group_profile
+
+depart = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+profils = [group_profile.load_profil_from_file(p)
+           for p in sorted(Path(dossier).glob("*.pivot.json"))]
+fiche = group_profile.build_groupe_profile(
+    groupe_id="AN:TEST", groupe_sigle="TEST", groupe_nom="Test",
+    chambre="AN", legislature="16", profils=profils,
+)
+pic = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print(json.dumps({
+    "depart": depart, "pic": pic, "nb": len(profils),
+    "nb_amendements": fiche["amendements_agreges"]["nb_amendements"],
+    "nb_membres": len(fiche["membres"]),
+}))
+"""
+
+
+def _liste_lourde_memoire(octets_vises: int, gabarit: dict) -> list:
+    """Une liste métier pesant environ `octets_vises` une fois sérialisée.
+
+    Entrées **petites** à dessein : depuis #431 un `amendements[]` publié est un
+    mapping à deux clés, et c'est cette forme-là qui gonfle d'un facteur 3 à 10
+    en objets Python (× 4,47 mesuré sur les 76 profils du groupe LFI). Une
+    fixture bâtie sur de longues chaînes ne gonflerait que d'environ × 1,5 et
+    le garde-fou ne séparerait plus rien.
+    """
+    (cle_id, _), = [(k, v) for k, v in gabarit.items() if k.endswith("_id")]
+    unite = len(json.dumps(gabarit, ensure_ascii=False)) + 1
+    return [
+        dict(gabarit, **{cle_id: f"{gabarit[cle_id]}{i:07d}"})
+        for i in range(max(1, octets_vises // unite))
+    ]
+
+
+def _corpus_de_mesure_memoire(tmp_path: Path) -> tuple[Path, int]:
+    """Écrit un corpus-fixture de membres et rend le **poids sur disque des
+    `amendements[]` que le chargement doit relâcher** — c'est de ce poids, et
+    non d'une observation, que le plafond est déduit.
+
+    Les listes réellement parcourues (`votes`, `mandats`) y sont volontairement
+    minuscules : elles sont **gardées**, et les compter dans le plafond
+    reviendrait à tolérer qu'on garde autre chose.
+    """
+    dossier = tmp_path / "profiles"
+    dossier.mkdir()
+
+    amendements = _liste_lourde_memoire(
+        POIDS_AMENDEMENTS_RELACHES,
+        {"amendement_id": "an:AMANR5L16PO0000B0000P0D0N", "role_signataire": "cosignataire"},
+    )
+    poids_relache = NB_PROFILS_FIXTURE_MEMOIRE * len(
+        json.dumps(amendements, ensure_ascii=False))
+
+    for i in range(NB_PROFILS_FIXTURE_MEMOIRE):
+        profil = _pivot(
+            f"an:depute-{i:03d}", f"Députée {i:03d}",
+            mandats=[_mandat_electif("2022-06-22")],
+            votes=[{"scrutin_id": f"an:16:{n}", "position": "pour"} for n in range(20)],
+            tags=["sante"],
+            interventions=[{"theme_officiel": "Santé"}],
+            amendements=amendements,
+        )
+        (dossier / f"depute-{i:03d}.pivot.json").write_text(
+            json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    return dossier, poids_relache
+
+
+def test_load_profil_from_file_ne_retient_que_ce_que_la_fiche_lit(tmp_path):
+    """Le fond du défaut : un document lu n'est jamais un document gardé.
+
+    Le pic mémoire dépend de la machine ; **ce que la projection retient** n'en
+    dépend pas. C'est donc ici que l'invariant est verrouillé, et le test de
+    plafond qui suit ne fait que confirmer qu'il a l'effet annoncé.
+    """
+    profil = _pivot(
+        "an:depute", "Députée",
+        mandats=[dict(_mandat_electif("2022-06-22"), source_url="https://x",
+                      position_dans_hemicycle="12")],
+        votes=[{"scrutin_id": "an:16:1", "position": "pour", "numero_scrutin": 1}],
+        tags=["sante"],
+        interventions=[{"theme_officiel": "Santé", "texte": "x" * 500,
+                        "mots_cles": ["climat"]}],
+        amendements=[{"amendement_id": "an:X", "role_signataire": "auteur"}],
+    )
+    profil["identite"] = {"nom_complet": "Députée"}
+    profil["identifiants"] = {"hatvp": "https://www.hatvp.fr/fiche/x"}
+    profil["couverture"] = {"amendements": {"motif": None}}
+    (tmp_path / "depute.pivot.json").write_text(
+        json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    charge = load_profil_from_file(tmp_path / "depute.pivot.json")
+
+    for bloc in ("identite", "identifiants", "couverture", "meta",
+                 "textes_portes", "chambre", "parti", "groupe", "schema_version"):
+        assert bloc not in charge, f"{bloc} n'est lu par aucune ligne de la fiche"
+    assert sorted(charge) == sorted(BLOCS_LUS_MEMBRE)
+
+    # Les listes parcourues restent des listes, de même longueur…
+    assert len(charge["votes"]) == 1
+    assert len(charge["mandats"]) == 1
+    assert len(charge["interventions"]) == 1
+    # … mais leurs entrées ne portent que les clés lues.
+    assert charge["votes"][0] == {"scrutin_id": "an:16:1", "position": "pour"}
+    assert "source_url" not in charge["mandats"][0]
+    assert "texte" not in charge["interventions"][0]
+    assert charge["interventions"][0]["theme_officiel"] == "Santé"
+    # `sources` est recopié tel quel dans la fiche publiée : jamais projeté.
+    assert charge["sources"] == profil["sources"]
+    # `amendements` est réduit à sa contribution, pas à un cardinal muet.
+    assert isinstance(charge["amendements"], ContributionAmendements)
+    assert len(charge["amendements"]) == 1
+
+
+def test_l_agregat_amendements_est_le_meme_sur_la_liste_et_sur_sa_contribution():
+    """Une contribution est une somme partielle : agréger membre par membre puis
+    sommer rend les mêmes compteurs que parcourir les listes entières."""
+    amendements_a = [
+        {"amendement_id": None, "amendement_non_resolu": {"sort": "adopte", "type_deposant": "depute"}},
+        {"amendement_id": None, "amendement_non_resolu": {"sort": "rejete", "type_deposant": "depute"}},
+    ]
+    amendements_b = [
+        {"amendement_id": None, "amendement_non_resolu": {"sort": "irrecevable", "type_deposant": "gouvernement"}},
+        {"amendement_id": None},
+    ]
+    entiers = [_pivot("an:a", "A", amendements=amendements_a),
+               _pivot("an:b", "B", amendements=amendements_b)]
+    reduits = [
+        dict(p, amendements=contribution_amendements(p["amendements"]))
+        for p in entiers
+    ]
+
+    assert _aggregate_amendements(reduits) == _aggregate_amendements(entiers)
+    total, non_resolus = _aggregate_amendements(reduits)
+    assert total["nb_amendements"] == 3
+    assert non_resolus == 1
+    assert total["taux_adoption"] == round(1 / 3, 4)
+
+
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="`resource` est POSIX")
+def test_le_pic_memoire_d_une_fiche_de_groupe_reste_sous_le_plafond_declare(tmp_path):
+    """La construction d'une fiche ne doit pas croître de plus que le poids
+    **sur disque** des `amendements[]` qu'elle est censée relâcher.
+
+    D'où vient le plafond
+    ---------------------
+    Il n'est pas relevé sur une exécution puis arrondi — ce serait un plafond
+    qui suit la dérive qu'il doit signaler. C'est une **règle** : la croissance
+    mémoire doit rester sous le poids en octets, sur disque, des entrées lues et
+    non gardées. La désérialisation JSON ne **réduit** jamais : si la fiche
+    croît de moins que le texte qu'elle a lu, elle ne peut pas le détenir.
+
+    Ce que le test ne prouve pas
+    ----------------------------
+    Ni la vitesse, ni le pic absolu d'un vrai groupe — mesuré à 82,3 Mio pour
+    les 76 profils de la fiche LFI, contre 985,8 avant, et nulle part en CI :
+    `pivot_data` est hors du sparse-checkout de `tests.yml` (#473).
+    """
+    dossier, poids_relache = _corpus_de_mesure_memoire(tmp_path)
+    assert poids_relache >= PLANCHER_POIDS_RELACHE, (
+        f"corpus-fixture trop léger ({poids_relache / 1024**2:.0f} Mio "
+        f"d'amendements à relâcher) : sous ce plancher le plafond qu'il déduit "
+        f"ne prouve plus rien. Regonfler les fixtures, jamais desserrer le "
+        f"plancher.")
+
+    pilote = tmp_path / "pilote_memoire.py"
+    pilote.write_text(_PILOTE_MEMOIRE, encoding="utf-8")
+    acheve = subprocess.run(
+        [sys.executable, str(pilote),
+         str(Path(__file__).resolve().parents[1]), str(dossier)],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert acheve.returncode == 0, (
+        f"la fiche n'a pas été construite (code {acheve.returncode}) — un 137 "
+        f"est un OOM, le défaut même de #635 :\n{acheve.stderr[-2000:]}")
+    mesure = json.loads(acheve.stdout.strip().splitlines()[-1])
+
+    assert mesure["nb"] == NB_PROFILS_FIXTURE_MEMOIRE
+    assert mesure["nb_membres"] == NB_PROFILS_FIXTURE_MEMOIRE
+    assert mesure["nb_amendements"] == 0, (
+        "sans index partagé et sans enregistrement autoporté, aucune entrée "
+        "n'est résolue — ce que la fiche compte, ce sont les non-résolues")
+
+    # `ru_maxrss` est en Kio sous Linux, en octets sous macOS.
+    facteur = 1 if sys.platform == "darwin" else 1024
+    croissance = (mesure["pic"] - mesure["depart"]) * facteur
+    assert croissance < poids_relache, (
+        f"la fiche a grossi de {croissance / 1024**2:.1f} Mio en lisant "
+        f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
+        f"d'amendements qu'elle ne doit pas garder. Au-dessus de ce plafond elle "
+        f"en retient une partie : c'est le défaut de #635, qui coûtait 985,8 Mio "
+        f"sur la seule fiche LFI.")

@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -9,6 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from audit_pivot_dataset import (
     _build_arg_parser,
+    BLOCS_LUS_AUDIT,
+    ListeReduite,
     build_report,
     compute_agregation_warnings,
     compute_fraicheur_sources,
@@ -1543,3 +1546,255 @@ def test_main_output_dir_incompatible_avec_output_json(tmp_path):
 
     assert code == 1
     assert list(tmp_path.glob("*.json")) == []
+
+
+# ---------------------------------------------------------------------------
+# Mémoire : le plafond est dans le test (#635)
+# ---------------------------------------------------------------------------
+#
+# `load_pivot_directory` rangeait chaque profil pivot **entier** dans une liste.
+# Mesuré sur les 481 profils committés du 30/08/2026 (651,5 Mo), sous un
+# plafond `RLIMIT_AS` de 2,0 Gio, index partagés chargés : `MemoryError` au
+# **293e** profil, 1 496,6 Mio de croissance pour 397,0 Mo de JSON lus —
+# facteur × 3,95, donc ~2,5 Gio pour le corpus seul, en plus des ~517 Mio de
+# l'index des amendements. L'audit ne rendait pas son rapport.
+#
+# Ce que l'audit lit de ces listes est pourtant deux choses seulement : leur
+# cardinal, et la plage de dates de leurs entrées. Ce sont ces deux résultats
+# qui sont désormais retenus (`ListeReduite`), pas les 6,09 millions d'entrées
+# qui les portent. Une projection par clés ne suffisait pas : réduite à
+# `{amendement_id}`, une entrée pèse encore 184 octets de `dict` — 1,6 Gio pour
+# le seul corpus.
+
+#: Profils du corpus-fixture de mesure.
+NB_PROFILS_FIXTURE_MEMOIRE = 24
+
+#: Poids visé, par profil, de chacune des trois listes métier dont les entrées
+#: doivent être relâchées (`amendements`, `votes`, `interventions`).
+POIDS_LISTE_RELACHEE = 800 * 1024
+
+#: Plancher de vraisemblance du corpus-fixture : sous ce poids, le plafond
+#: qu'il déduit ne prouve plus rien. Regonfler les fixtures, jamais desserrer
+#: le plancher.
+PLANCHER_POIDS_RELACHE = 40 * 1024 * 1024
+
+_PILOTE_MEMOIRE = """\
+import json, resource, sys
+from pathlib import Path
+
+depot, dossier = sys.argv[1], sys.argv[2]
+sys.path.insert(0, str(Path(depot) / "src"))
+import audit_pivot_dataset as audit
+
+depart = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+profils, erreurs = audit.load_pivot_directory(Path(dossier))
+rapport = audit.build_report(profils, erreurs)
+pic = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print(json.dumps({
+    "depart": depart, "pic": pic,
+    "nb": rapport["meta"]["total_profils"],
+    "amendements": rapport["tableau_croise_candidats"]["lignes"][0]["amendements"],
+}))
+"""
+
+
+def _liste_lourde_memoire(octets_vises: int, gabarit: dict) -> list:
+    """Une liste métier pesant environ `octets_vises` une fois sérialisée.
+
+    Entrées **petites** à dessein : depuis #431 et #432 un `amendements[]` ou un
+    `votes[]` publié est un mapping à deux clés, et c'est cette forme-là qui
+    gonfle d'un facteur 3 à 10 en objets Python (× 3,95 mesuré ici sur le
+    corpus committé). Une fixture bâtie sur de longues chaînes ne gonflerait
+    que d'environ × 1,5 et le garde-fou ne séparerait plus rien.
+    """
+    (cle_id, _), = [(k, v) for k, v in gabarit.items() if k.endswith("_id")]
+    unite = len(json.dumps(gabarit, ensure_ascii=False)) + 1
+    return [
+        dict(gabarit, **{cle_id: f"{gabarit[cle_id]}{i:07d}"})
+        for i in range(max(1, octets_vises // unite))
+    ]
+
+
+def _corpus_de_mesure_memoire(tmp_path: Path) -> tuple[Path, int]:
+    """Écrit un corpus-fixture et rend le **poids sur disque des entrées que
+    l'audit doit relâcher** — c'est de ce poids, et non d'une observation, que
+    le plafond est déduit."""
+    dossier = tmp_path / "pivot_profiles"
+    dossier.mkdir()
+
+    amendements = _liste_lourde_memoire(
+        POIDS_LISTE_RELACHEE,
+        {"amendement_id": "an:AMANR5L16PO0000B0000P0D0N", "role_signataire": "cosignataire"},
+    )
+    votes = _liste_lourde_memoire(
+        POIDS_LISTE_RELACHEE, {"scrutin_id": "an:16:", "position": "pour"},
+    )
+    interventions = _liste_lourde_memoire(
+        POIDS_LISTE_RELACHEE, {"intervention_id": "an:seance:", "date": "2024-03-12"},
+    )
+    poids_relache = NB_PROFILS_FIXTURE_MEMOIRE * sum(
+        len(json.dumps(bloc, ensure_ascii=False))
+        for bloc in (amendements, votes, interventions)
+    )
+
+    for i in range(NB_PROFILS_FIXTURE_MEMOIRE):
+        profil = {
+            "schema_version": "1",
+            "id": f"depute-{i:03d}",
+            "nom": f"Députée {i:03d}",
+            "chambres": ["AN"],
+            "parti": "Parti",
+            "groupe": "Groupe",
+            "tags_thematiques": ["sante"],
+            "sources": [{"type": "assemblee_nationale",
+                         "url": "https://data.assemblee-nationale.fr",
+                         "synchro_le": "2026-08-30T10:00:00+0000"}],
+            "mandats": [{"categorie": "mandat_electif", "debut": "2022-06-22"}],
+            "votes": votes,
+            "amendements": amendements,
+            "interventions": interventions,
+            "textes_portes": [],
+            "couverture": {"amendements": {"motif": None}},
+            "identite": {"nom_complet": f"Députée {i:03d}"},
+            "meta": {"schema_version": "1", "genere_le": "2026-08-30T11:00:00+0000",
+                     "licence_donnees": "Licence Ouverte", "warnings": [],
+                     "provenance": "candidat_declare"},
+        }
+        (dossier / f"depute-{i:03d}.pivot.json").write_text(
+            json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    return dossier, poids_relache
+
+
+def test_load_pivot_directory_ne_retient_que_ce_que_les_mesures_lisent(tmp_path):
+    """Le fond du défaut : un document lu n'est jamais un document gardé.
+
+    Le pic mémoire dépend de la machine ; **ce que la projection retient** n'en
+    dépend pas. C'est donc ici que l'invariant est verrouillé, et le test de
+    plafond qui suit ne fait que confirmer qu'il a l'effet annoncé.
+    """
+    profil = {
+        "schema_version": "1", "id": "depute", "nom": "Députée",
+        "chambres": ["AN"], "parti": "P", "groupe": "G",
+        "tags_thematiques": ["sante", "climat"],
+        "sources": [{"type": "assemblee_nationale", "url": "u", "synchro_le": "2026-08-30T10:00:00+0000"}],
+        "mandats": [{"categorie": "mandat_electif"}, {"categorie": "commission"}],
+        "votes": [{"scrutin_id": "an:16:1", "position": "pour"}],
+        "amendements": [{"amendement_id": "an:X", "role_signataire": "auteur"}],
+        "interventions": [{"date": "2024-03-12"}, {"date": "2024-05-02"}],
+        "textes_portes": [{"date_min": "2023-01-01", "date_max": "2023-06-01"}],
+        "couverture": {"amendements": {"motif": None}},
+        "identite": {"nom_complet": "Députée"},
+        "identifiants": {"hatvp": "https://www.hatvp.fr/fiche/x"},
+        "meta": {"schema_version": "1", "genere_le": "2026-08-30T11:00:00+0000",
+                 "licence_donnees": "Licence Ouverte", "warnings": []},
+    }
+    (tmp_path / "depute.pivot.json").write_text(
+        json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    profils, erreurs = load_pivot_directory(tmp_path)
+    assert erreurs == []
+    projete = profils[0]
+
+    for bloc in ("identite", "identifiants", "couverture"):
+        assert bloc not in projete, f"{bloc} n'est ouvert par aucune mesure"
+    for bloc in BLOCS_LUS_AUDIT:
+        if bloc in profil:
+            assert bloc in projete
+
+    # Les listes métier ne survivent que par ce que les mesures en lisent.
+    for champ in ("mandats", "tags_thematiques", "votes", "amendements",
+                  "interventions", "textes_portes"):
+        assert isinstance(projete[champ], ListeReduite)
+    assert len(projete["mandats"]) == 2
+    assert projete["amendements"].nb == 1
+    assert projete["interventions"].date_min == "2024-03-12"
+    assert projete["interventions"].date_max == "2024-05-02"
+    assert projete["textes_portes"].date_min == "2023-01-01"
+    assert projete["textes_portes"].date_max == "2023-06-01"
+
+
+def test_les_mesures_lisent_le_meme_chiffre_sur_la_liste_et_sur_sa_reduction(tmp_path):
+    """La projection ne peut pas changer un chiffre : le rapport tiré des
+    profils projetés est celui qu'on tire des profils entiers."""
+    profil = {
+        "schema_version": "1", "id": "depute", "nom": "Députée", "chambres": ["AN"],
+        "parti": "P", "groupe": None, "tags_thematiques": [],
+        "sources": [{"type": "assemblee_nationale", "url": "u",
+                     "synchro_le": "2026-08-20T10:00:00+0000"}],
+        "mandats": [{"categorie": "mandat_electif"}],
+        "votes": [{"scrutin_id": "an:16:1", "position": "pour",
+                   "scrutin_non_resolu": {"date": "2024-02-01"}}],
+        "amendements": [{"amendement_id": None,
+                         "amendement_non_resolu": {"date": "2024-04-01"}},
+                        {"amendement_id": None,
+                         "amendement_non_resolu": {"date": "pas-une-date"}}],
+        "interventions": [{"date": "2024-03-12"}],
+        "textes_portes": [],
+        "meta": {"schema_version": "1", "genere_le": "2026-08-30T11:00:00+0000",
+                 "licence_donnees": "Licence Ouverte", "warnings": ["a : b"]},
+    }
+    (tmp_path / "depute.pivot.json").write_text(
+        json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    reference = datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc)
+    projetes, _ = load_pivot_directory(tmp_path)
+    depuis_projection = build_report(projetes, [], reference_date=reference)
+    depuis_entiers = build_report([profil], [], reference_date=reference)
+
+    assert depuis_projection == depuis_entiers
+    # Le cas qui compte : une date illisible reste **comptée**, jamais masquée.
+    assert depuis_projection["plage_dates_candidats"]["dates_ignorees"]["amendements"] == 1
+
+
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="`resource` est POSIX")
+def test_le_pic_memoire_de_l_audit_reste_sous_le_plafond_declare(tmp_path):
+    """L'audit ne doit pas croître de plus que le poids **sur disque** des
+    entrées qu'il est censé relâcher.
+
+    D'où vient le plafond
+    ---------------------
+    Il n'est pas relevé sur une exécution puis arrondi — ce serait un plafond
+    qui suit la dérive qu'il doit signaler. C'est une **règle** : la croissance
+    mémoire de l'audit doit rester sous le poids en octets, sur disque, des
+    entrées qu'il lit et ne doit pas garder. Le raisonnement tient en une
+    ligne : la désérialisation JSON ne **réduit** jamais — donc si l'audit
+    croît de moins que le texte qu'il a lu, il ne peut pas le détenir.
+
+    Ce que le test ne prouve pas
+    ----------------------------
+    Ni la vitesse, ni le pic absolu sur le corpus réel — mesuré à 539 Mio pour
+    les 481 profils committés, dont **517 Mio d'index des amendements partagé**,
+    que #635 ne touche pas. Et rien de tout cela n'est mesuré en CI :
+    `pivot_data` est hors du sparse-checkout de `tests.yml` (#473).
+    """
+    dossier, poids_relache = _corpus_de_mesure_memoire(tmp_path)
+    assert poids_relache >= PLANCHER_POIDS_RELACHE, (
+        f"corpus-fixture trop léger ({poids_relache / 1024**2:.0f} Mio d'entrées "
+        f"à relâcher) : sous ce plancher le plafond qu'il déduit ne prouve plus "
+        f"rien. Regonfler les fixtures, jamais desserrer le plancher.")
+
+    pilote = tmp_path / "pilote_memoire.py"
+    pilote.write_text(_PILOTE_MEMOIRE, encoding="utf-8")
+    acheve = subprocess.run(
+        [sys.executable, str(pilote), str(Path(__file__).resolve().parents[1]), str(dossier)],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert acheve.returncode == 0, (
+        f"l'audit n'a pas rendu son rapport (code {acheve.returncode}) — un 137 "
+        f"est un OOM, le défaut même de #635 :\n{acheve.stderr[-2000:]}")
+    mesure = json.loads(acheve.stdout.strip().splitlines()[-1])
+
+    assert mesure["nb"] == NB_PROFILS_FIXTURE_MEMOIRE
+    assert mesure["amendements"] > 0, (
+        "le cardinal doit survivre à la réduction : c'est une mesure publiée")
+
+    # `ru_maxrss` est en Kio sous Linux, en octets sous macOS.
+    facteur = 1 if sys.platform == "darwin" else 1024
+    croissance = (mesure["pic"] - mesure["depart"]) * facteur
+    assert croissance < poids_relache, (
+        f"l'audit a grossi de {croissance / 1024**2:.1f} Mio en lisant "
+        f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
+        f"d'entrées qu'il ne doit pas garder. Au-dessus de ce plafond il en "
+        f"retient une partie : c'est le défaut de #635, qui faisait atteindre le "
+        f"plafond de 2,0 Gio au 293e des 481 profils committés.")

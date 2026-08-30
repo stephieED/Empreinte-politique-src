@@ -672,19 +672,82 @@ def build_premier_ministre(
 # Chargement des pivots
 # ---------------------------------------------------------------------------
 
+#: Les blocs du profil pivot que la composition ministérielle lit, et rien
+#: d'autre — relevés dans le code des **trois** consommateurs de cette liste,
+#: pas dans l'énoncé (#635) :
+#:
+#:   `id`        `_derive_membre_entry` (membre_id), `build_premier_ministre`,
+#:               `gouvernement_profile._index_acteur_ref_vers_membre`
+#:   `nom`       les mêmes, plus les warnings qui nomment le profil en cause
+#:   `mandats`   **parcouru** : c'est lui qui porte les `fonction_gouvernementale`
+#:               et les `MINISTERE` — jamais réduit à son cardinal
+#:   `identite`  `acteur_ref_depuis_profil`, qui n'y lit que `source_url`
+#:   `sources`   `gouvernement_profile.build_gouvernement_profile`, qui agrège
+#:               celles des membres retenus
+#:
+#: Ce que personne n'ouvre : `amendements` (577,3 Mo sur le corpus committé du
+#: 30/08/2026), `votes` (67,1), `interventions` (22,2), `couverture` (1,6),
+#: `meta`, `textes_portes`, `identifiants`, `tags_thematiques`, `chambres`,
+#: `parti`, `groupe`. Soit 12,9 Mo retenus sur 651,5 — 2,0 %.
+#:
+#: Ajouter une lecture qui ouvre un autre bloc, c'est ajouter ce bloc ici.
+BLOCS_LUS_COMPOSITION: tuple[str, ...] = ("id", "nom", "identite", "mandats", "sources")
+
+
+def projeter_profil(document: dict[str, Any]) -> dict[str, Any]:
+    """Le profil pivot réduit à ses cinq blocs lus (`BLOCS_LUS_COMPOSITION`)."""
+    return {bloc: document[bloc] for bloc in BLOCS_LUS_COMPOSITION if bloc in document}
+
+
+def _lire_profil_projete(path: Path) -> Optional[dict[str, Any]]:
+    """Lit **un** pivot et n'en rend que la projection.
+
+    Le `json.load` complet reste nécessaire — un profil est écrit compact, sur
+    une seule ligne (#433), il n'y a pas de lecture incrémentale sans
+    dépendance nouvelle. Ce qui change est la **durée de vie** : le document
+    entier est local à cette fonction et meurt à son retour.
+    """
+    with open(path, encoding="utf-8") as f:
+        document = json.load(f)
+    if not isinstance(document, dict):
+        return None
+    return projeter_profil(document)
+
+
 def load_profils_from_dir(profiles_dir: Path) -> list[dict[str, Any]]:
-    """Charge tous les profils pivot v1 (`*.pivot.json`) d'un dossier.
+    """Charge tous les profils pivot v1 (`*.pivot.json`) d'un dossier, **projetés**.
 
     Un fichier illisible ou invalide est ignoré (signalé sur stderr), sans
-    interrompre le chargement des autres profils.
+    interrompre le chargement des autres profils. Un document dont la racine
+    n'est pas un objet JSON est traité comme illisible : la composition
+    ministérielle n'a rien à y lire, et le laisser passer faisait lever un
+    `AttributeError` au premier `profil.get(...)`.
+
+    **Aucun document n'est conservé entier (#635).** Un profil est lu, projeté
+    sur `BLOCS_LUS_COMPOSITION`, puis relâché. Les garder entiers coûtait 2,67 Gio
+    extrapolés sur les 481 profils committés du 30/08/2026 — mesuré sous un
+    plafond `RLIMIT_AS` de 2,0 Gio, atteint au 362e profil, facteur de
+    gonflement × 4,2 (2 004 Mio de croissance pour 500,9 Mo de JSON lus).
+    C'est le motif de `docs/decisions/oom-lecture-amendements-par-candidat.md`
+    sur un chemin de plus, et le même patron que #628 :
+    `docs/decisions/audit-599-projection-blocs-lus-628.md`.
+
+    La projection ne change **aucune sortie** : elle retire ce qu'aucun des
+    trois consommateurs n'ouvre. `tests/test_gouvernement_roster.py` le
+    verrouille des deux côtés — ce qui est retenu, et un plafond de mémoire
+    déduit du poids des blocs relâchés.
     """
     profils: list[dict[str, Any]] = []
     for path in sorted(profiles_dir.glob("*.pivot.json")):
         try:
-            with open(path, encoding="utf-8") as f:
-                profils.append(json.load(f))
+            profil = _lire_profil_projete(path)
         except (OSError, json.JSONDecodeError) as exc:
             print(f"  [!] {path} : {exc}", file=sys.stderr)
+            continue
+        if profil is None:
+            print(f"  [!] {path} : racine JSON non-objet, ignoré.", file=sys.stderr)
+            continue
+        profils.append(profil)
     return profils
 
 

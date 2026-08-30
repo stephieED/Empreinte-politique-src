@@ -98,6 +98,7 @@ import json
 import sys
 import time
 import unicodedata
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any, Optional
@@ -835,6 +836,83 @@ _SORTS_REJETES = frozenset({"rejete"})
 _SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non soutenu"})
 
 
+@dataclass(frozen=True)
+class ContributionAmendements:
+    """Ce qu'un `amendements[]` de membre laisse derrière lui, relâché (#635).
+
+    Exactement ce que `_aggregate_amendements` en tire : des compteurs additifs.
+    Le cardinal est conservé pour que `len()` rende la même valeur que sur la
+    liste elle-même, comme `nombre_d_entrees` accepte les deux formes dans
+    l'audit de #628.
+
+    **Additif, donc exact** : agréger membre par membre puis sommer donne les
+    mêmes compteurs que parcourir la liste concaténée. `taux_adoption` n'est
+    calculé qu'après la somme, jamais par contribution.
+    """
+
+    nb: int
+    total: dict[str, Any]
+    par_type: dict[str, dict[str, Any]]
+    non_resolus: int
+
+    def __len__(self) -> int:
+        return self.nb
+
+
+#: Les compteurs que `ContributionAmendements` additionne. `taux_adoption` n'en
+#: est **pas** : c'est un quotient, il ne se somme pas.
+_COMPTEURS_AMENDEMENTS: tuple[str, ...] = (
+    "nb_amendements", "nb_adoptes", "nb_rejetes",
+    "nb_irrecevables", "nb_retires_ou_tombes",
+)
+
+
+def contribution_amendements(
+    amendements: Any, amendements_index: Optional[AmendementsIndex] = None,
+) -> ContributionAmendements:
+    """Réduit l'`amendements[]` d'UN membre aux compteurs que l'agrégat en tire.
+
+    C'est le seul endroit qui lit une entrée d'amendement, et il ne la lit
+    qu'une fois : appelé au chargement (#635), il permet de relâcher les
+    entrées au lieu de les garder pour les 76 membres du plus gros groupe
+    publié — 253,5 Mo sur disque, 1 079 Mio de mémoire mesurés.
+
+    Repli de lecture transitoire : une entrée d'avant #431 porte encore ses
+    champs, une entrée non résolue les porte sous `amendement_non_resolu`. Les
+    deux sont lues sur place — sans quoi tout l'agrégat tomberait à zéro entre
+    le déploiement du code et la régénération des données.
+    """
+    total = make_empty_amendements_stats()
+    par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    non_resolus = 0
+
+    for entree, amendement in joindre_amendements(amendements, amendements_index):
+        if amendement is None:
+            amendement = entree.get("amendement_non_resolu")
+        if amendement is None and "sort" in entree:
+            # Entrée d'avant #431, encore autoportante.
+            amendement = entree
+        if not isinstance(amendement, dict):
+            non_resolus += 1
+            continue
+        sort_norm = _normalize_sort_amendement(amendement.get("sort"))
+        type_deposant = amendement.get("type_deposant")
+        bucket = par_type[type_deposant] if type_deposant in par_type else par_type["inconnu"]
+        for stats in (total, bucket):
+            stats["nb_amendements"] += 1
+            if sort_norm in _SORTS_ADOPTES:
+                stats["nb_adoptes"] += 1
+            elif sort_norm in _SORTS_IRRECEVABLES:
+                stats["nb_irrecevables"] += 1
+            elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
+                stats["nb_retires_ou_tombes"] += 1
+            elif sort_norm in _SORTS_REJETES:
+                stats["nb_rejetes"] += 1
+
+    nb = len(amendements) if isinstance(amendements, list) else 0
+    return ContributionAmendements(nb, total, par_type, non_resolus)
+
+
 def _aggregate_amendements(
     profils: list[dict[str, Any]],
     amendements_index: Optional[AmendementsIndex] = None,
@@ -855,15 +933,18 @@ def _aggregate_amendements(
     jointe : ce serait reconstruire la forme plate que la normalisation vient de
     supprimer, avec le facteur ~21 et l'OOM de #377.
 
-    Repli de lecture transitoire : une entrée d'avant #431 porte encore ses
-    champs, une entrée non résolue les porte sous `amendement_non_resolu`. Les
-    deux sont lues sur place — sans quoi tout l'agrégat tomberait à zéro entre le
-    déploiement du code et la régénération des données.
+    Depuis #635 l'agrégation est la **somme de contributions par membre**, et le
+    profil chargé peut porter directement la sienne (`ContributionAmendements`)
+    au lieu de ses entrées. Les deux formes sont acceptées : les tests
+    nourrissent la mesure avec de vraies listes, le chargeur avec leur
+    réduction, et le résultat est le même — les compteurs sont additifs.
 
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
         amendements_index: index partagé (#431). Sans lui, seuls les
             enregistrements encore portés par le profil sont exploitables.
+            Ignoré pour un profil qui porte déjà sa contribution : elle a été
+            calculée au chargement, avec l'index d'alors.
 
     Returns:
         `(amendements_agreges, nb_non_resolus)`. `nb_non_resolus` compte les
@@ -876,30 +957,16 @@ def _aggregate_amendements(
     non_resolus = 0
 
     for profil in profils:
-        for entree, amendement in joindre_amendements(
-            profil.get("amendements"), amendements_index
-        ):
-            if amendement is None:
-                amendement = entree.get("amendement_non_resolu")
-            if amendement is None and "sort" in entree:
-                # Entrée d'avant #431, encore autoportante.
-                amendement = entree
-            if not isinstance(amendement, dict):
-                non_resolus += 1
-                continue
-            sort_norm = _normalize_sort_amendement(amendement.get("sort"))
-            type_deposant = amendement.get("type_deposant")
-            bucket = par_type[type_deposant] if type_deposant in par_type else par_type["inconnu"]
-            for stats in (total, bucket):
-                stats["nb_amendements"] += 1
-                if sort_norm in _SORTS_ADOPTES:
-                    stats["nb_adoptes"] += 1
-                elif sort_norm in _SORTS_IRRECEVABLES:
-                    stats["nb_irrecevables"] += 1
-                elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
-                    stats["nb_retires_ou_tombes"] += 1
-                elif sort_norm in _SORTS_REJETES:
-                    stats["nb_rejetes"] += 1
+        amendements = profil.get("amendements")
+        contribution = (
+            amendements if isinstance(amendements, ContributionAmendements)
+            else contribution_amendements(amendements, amendements_index)
+        )
+        non_resolus += contribution.non_resolus
+        for compteur in _COMPTEURS_AMENDEMENTS:
+            total[compteur] += contribution.total[compteur]
+            for type_deposant, stats in par_type.items():
+                stats[compteur] += contribution.par_type[type_deposant][compteur]
 
     for stats in (total, *par_type.values()):
         stats["taux_adoption"] = (
@@ -1025,17 +1092,101 @@ def _is_pivot_v1(profil: dict[str, Any]) -> bool:
     return "schema_version" in profil and "id" in profil
 
 
-def load_profil_from_file(path: Path) -> dict[str, Any]:
+#: Les blocs du profil d'un membre que la fiche de groupe lit, et rien d'autre —
+#: relevés dans le code de `build_groupe_profile` et de
+#: `compute_ecarts_cohesion_internes`, pas dans l'énoncé (#635) :
+#:
+#:   `id`, `nom`         `_derive_membre_entry`, `_aggregate_mandats`,
+#:                       `meta.profils_sources`, le rapport interne
+#:   `mandats`           **parcouru** — éligibilité (§2 règle 7), mandats agrégés
+#:   `votes`             **parcouru** — cohésion, dénominateurs publiés
+#:   `interventions`     **parcouru** — repli de `tags_thematiques`
+#:   `amendements`       **parcouru**, mais réduit à sa contribution (voir plus bas)
+#:   `tags_thematiques`  `aggregate_tags_thematiques`
+#:   `sources`           recopiées **telles quelles** dans la fiche publiée, donc
+#:                       jamais projetées par clés : ce sont des données publiées
+#:
+#: Ce que personne n'ouvre — et ce que CLAUDE.md §3 annonçait déjà pour
+#: `identite` : `identite`, `identifiants`, `couverture`, `meta`,
+#: `textes_portes`, `chambres`, `chambre`, `parti`, `groupe`. `schema_version`
+#: est lu **avant** la projection, par `_is_pivot_v1`, et personne après.
+BLOCS_LUS_MEMBRE: tuple[str, ...] = (
+    "id", "nom", "tags_thematiques", "sources",
+    "mandats", "votes", "interventions", "amendements",
+)
+
+#: Les clés que la fiche de groupe lit dans les entrées de chaque liste
+#: parcourue. Une liste réellement parcourue n'est jamais réduite à son
+#: cardinal — mais ses entrées n'ont pas à porter ce que personne n'ouvre :
+#: `interventions[].texte` pèse 9,8 des 22,2 Mo du bloc sur le corpus committé
+#: du 30/08/2026, et aucune ligne d'ici ne le lit.
+CLES_LUES_PAR_ENTREE: dict[str, tuple[str, ...]] = {
+    "mandats": ("categorie", "chambre", "debut", "fin", "actif", "label", "fonction"),
+    "votes": ("scrutin_id", "position"),
+    "interventions": ("theme_officiel", "mots_cles"),
+}
+
+
+def projeter_profil_membre(
+    document: dict[str, Any],
+    amendements_index: Optional[AmendementsIndex] = None,
+) -> dict[str, Any]:
+    """Le profil d'un membre réduit à ce que la fiche de groupe en lit.
+
+    `amendements[]` est **réduit** et non projeté : c'est le bloc qui pèse
+    577,3 des 651,5 Mo du corpus, et 6,09 millions de mappings à deux clés ne
+    tiennent dans aucune projection par clés (184 octets de `dict` par entrée).
+    Ce que l'agrégat en tire — des compteurs additifs — est calculé ici, une
+    fois, puis les entrées meurent.
+
+    `amendements_index` doit être celui qui sera passé à
+    `build_groupe_profile` : c'est lui qui résout `sort` et `type_deposant`.
+    Ne rien passer des deux côtés est également cohérent ; passer l'un et pas
+    l'autre ne l'est pas.
+    """
+    projection: dict[str, Any] = {}
+    for bloc in BLOCS_LUS_MEMBRE:
+        if bloc not in document:
+            continue
+        valeur = document[bloc]
+        cles = CLES_LUES_PAR_ENTREE.get(bloc)
+        if cles is not None and isinstance(valeur, list):
+            projection[bloc] = [
+                {c: e[c] for c in cles if c in e} if isinstance(e, dict) else e
+                for e in valeur
+            ]
+        elif bloc == "amendements":
+            projection[bloc] = contribution_amendements(valeur, amendements_index)
+        else:
+            projection[bloc] = valeur
+    return projection
+
+
+def load_profil_from_file(
+    path: Path,
+    amendements_index: Optional[AmendementsIndex] = None,
+    projeter: bool = True,
+) -> dict[str, Any]:
     """Charge un profil depuis un fichier JSON et le normalise en pivot v1 si nécessaire.
 
     Les profils au format brut (produits par candidate_profile.py) sont
     convertis automatiquement via normalize_profil.
 
+    **Le document entier ne survit pas à cet appel (#635)** : il est projeté sur
+    `BLOCS_LUS_MEMBRE`, ses entrées réduites aux clés lues, son `amendements[]`
+    réduit à sa contribution — puis relâché. Garder les documents entiers
+    coûtait 1 079 Mio pour la seule fiche du plus gros groupe publié (LFI, 76
+    profils, 253,5 Mo sur disque, facteur de gonflement mesuré × 4,47), et il y
+    a sept fiches. `projeter=False` rend le document entier, pour un appelant
+    qui a besoin d'autre chose que d'une fiche de groupe.
+
     Args:
         path: chemin vers le fichier JSON.
+        amendements_index: index partagé (#431), voir `projeter_profil_membre`.
+        projeter: réduire le document à ce que la fiche de groupe en lit.
 
     Returns:
-        Profil pivot v1 (dict).
+        Profil pivot v1 (dict), projeté sauf demande contraire.
 
     Raises:
         FileNotFoundError: si le fichier n'existe pas.
@@ -1051,16 +1202,17 @@ def load_profil_from_file(path: Path) -> dict[str, Any]:
         raise ValueError(f"Attendu un dict JSON, reçu {type(data).__name__} dans {path}.")
 
     if _is_pivot_v1(data):
-        return data
+        profil = data
+    elif "slug" in data:
+        # Format brut de collecte (champ "slug" présent, pas de "schema_version")
+        profil = normalize_profil(data)
+    else:
+        raise ValueError(
+            f"Format non reconnu dans {path} : ni pivot v1 (schema_version + id) "
+            "ni format brut de collecte (slug)."
+        )
 
-    # Format brut de collecte (champ "slug" présent, pas de "schema_version")
-    if "slug" in data:
-        return normalize_profil(data)
-
-    raise ValueError(
-        f"Format non reconnu dans {path} : ni pivot v1 (schema_version + id) "
-        "ni format brut de collecte (slug)."
-    )
+    return projeter_profil_membre(profil, amendements_index) if projeter else profil
 
 
 # ---------------------------------------------------------------------------
@@ -1439,7 +1591,7 @@ def generate_groupe_profile_from_roster(
             missing_slugs.append(slug or member.get("nom") or "?")
             continue
         try:
-            profils.append(load_profil_from_file(pivot_path))
+            profils.append(load_profil_from_file(pivot_path, amendements_index))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
             missing_slugs.append(slug)
@@ -1449,7 +1601,7 @@ def generate_groupe_profile_from_roster(
         if not pivot_path.exists():
             continue
         try:
-            profils.append(load_profil_from_file(pivot_path))
+            profils.append(load_profil_from_file(pivot_path, amendements_index))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
 
@@ -1588,21 +1740,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(json.dumps(profil_groupe, ensure_ascii=False, indent=2))
         return 0
 
-    profils: list[dict[str, Any]] = []
-    for path_str in args.profils:
-        path = Path(path_str)
-        print(f"→ Chargement : {path}", file=sys.stderr)
-        try:
-            profils.append(load_profil_from_file(path))
-        except (FileNotFoundError, ValueError) as exc:
-            print(f"  [!] {exc}", file=sys.stderr)
-            return 1
-
-    print(
-        f"→ {len(profils)} profil(s) chargé(s). Calcul en cours…",
-        file=sys.stderr,
-    )
-
+    # Les index sont chargés AVANT les profils depuis #635 : c'est l'index des
+    # amendements qui résout `sort` et `type_deposant`, et la lecture d'un
+    # profil réduit désormais son `amendements[]` à sa contribution au lieu d'en
+    # garder les entrées. Le même index est passé ici et à
+    # `build_groupe_profile` — l'un sans l'autre ferait diverger l'agrégat.
     scrutins_index = charger_scrutins(Path(args.scrutins))
     if len(scrutins_index) == 0:
         # Sans index, la cohésion sort vide plutôt que fausse : mieux vaut le
@@ -1631,6 +1773,21 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
     else:
         print(f"→ Index des amendements : {len(amendements_index)} amendement(s).", file=sys.stderr)
+
+    profils: list[dict[str, Any]] = []
+    for path_str in args.profils:
+        path = Path(path_str)
+        print(f"→ Chargement : {path}", file=sys.stderr)
+        try:
+            profils.append(load_profil_from_file(path, amendements_index))
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"  [!] {exc}", file=sys.stderr)
+            return 1
+
+    print(
+        f"→ {len(profils)} profil(s) chargé(s). Calcul en cours…",
+        file=sys.stderr,
+    )
 
     profil_groupe = build_groupe_profile(
         groupe_id=args.groupe_id,

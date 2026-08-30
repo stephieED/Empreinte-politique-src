@@ -47,6 +47,7 @@ import argparse
 import json
 import statistics
 import sys
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -102,16 +103,131 @@ CHAMPS_COMPLETUDE: tuple[str, ...] = ("parti", "groupe", "tags_thematiques", "ma
 CHAMPS_ACTIVITE: tuple[str, ...] = ("votes", "amendements", "interventions")
 
 
-def load_pivot_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+#: Les blocs du profil pivot que les indicateurs lisent **entiers** — relevés
+#: dans le code des quinze `compute_*`, pas dans l'énoncé (#635) :
+#:
+#:   `id`               presque tous les indicateurs (c'est la clé publiée)
+#:   `nom`              les deux tableaux croisés
+#:   `parti`, `groupe`  `compute_taux_remplissage`, `_cle_groupe`
+#:   `schema_version`   `compute_coherence_schema_version`
+#:   `chambres`,        `schema_pivot.lire_chambres` — les deux, le scalaire
+#:   `chambre`          étant le repli déclaré de #493
+#:   `sources`          fraîcheur, validité des dates, cohérence chambre/sources
+#:   `meta`             provenance, warnings, schema_version, genere_le, licence
+#:
+#: Ce que personne n'ouvre : `identite`, `identifiants`, `couverture`.
+BLOCS_LUS_AUDIT: tuple[str, ...] = (
+    "id", "nom", "parti", "groupe", "schema_version",
+    "chambres", "chambre", "sources", "meta",
+)
+
+#: Listes métier dont l'audit ne lit que le **cardinal** — `_est_renseigne`
+#: n'y teste que « y a-t-il quelque chose ? ». `mandats` pèse 12,6 Mo sur le
+#: corpus committé du 30/08/2026 pour cette seule question.
+LISTES_REDUITES_AU_CARDINAL: tuple[str, ...] = ("mandats", "tags_thematiques")
+
+#: Listes métier que l'audit parcourt **réellement** — mais dont il ne tire que
+#: deux choses : leur cardinal (`_taille_liste`) et la plage de dates de leurs
+#: entrées (`compute_plage_dates_candidats`). Ce sont ces deux résultats qui
+#: sont retenus, pas les entrées : `amendements` seul pèse 577,3 Mo sur le
+#: corpus committé, et 6,09 millions de mappings à deux clés ne tiennent dans
+#: aucune projection par clés — seule leur **réduction** tient.
+LISTES_REDUITES_A_LEUR_PLAGE: tuple[str, ...] = CHAMPS_LISTES_VOLUMETRIE
+
+
+@dataclass(frozen=True)
+class ListeReduite:
+    """Ce qu'une liste métier laisse derrière elle une fois relâchée (#635).
+
+    Exactement ce que les indicateurs en lisent : son cardinal, la plage de
+    dates de ses entrées, et le nombre de dates présentes mais illisibles.
+    `__len__` la rend interchangeable avec la liste elle-même pour
+    `_taille_liste` et `_est_renseigne`, comme `nombre_d_entrees` accepte les
+    deux formes dans l'audit de #628.
+    """
+
+    nb: int
+    date_min: str | None = None
+    date_max: str | None = None
+    dates_ignorees: int = 0
+
+    def __len__(self) -> int:
+        return self.nb
+
+
+def reduire_liste(
+    champ: str, entrees: Any, scrutins_index: Any = None,
+    amendements_index: Any = None,
+) -> Any:
+    """Réduit une liste métier à ce que les indicateurs en lisent.
+
+    La réduction **appelle les mesures elles-mêmes** (`_plage_dates_*`) plutôt
+    que de les réimplémenter : c'est ce qui garantit, par construction, que le
+    rapport tiré des listes réduites est celui qu'on aurait tiré des listes
+    entières. Une valeur qui n'est pas une liste est rendue telle quelle — la
+    projection ne doit rien inventer sur une donnée malformée.
+    """
+    if not isinstance(entrees, list):
+        return entrees
+    ignorees = {champ: 0}
+    if champ in LISTES_REDUITES_A_LEUR_PLAGE:
+        if champ == "textes_portes":
+            plage = _plage_dates_textes_portes({champ: entrees}, ignorees)
+        else:
+            plage = _plage_dates_champ_simple(
+                {champ: entrees}, champ, ignorees, scrutins_index, amendements_index
+            )
+        return ListeReduite(len(entrees), plage["min"], plage["max"], ignorees[champ])
+    return ListeReduite(len(entrees))
+
+
+def projeter_profil(
+    document: dict[str, Any], scrutins_index: Any = None,
+    amendements_index: Any = None,
+) -> dict[str, Any]:
+    """Le profil pivot réduit à ce que les indicateurs en lisent."""
+    projection: dict[str, Any] = {
+        bloc: document[bloc] for bloc in BLOCS_LUS_AUDIT if bloc in document
+    }
+    for champ in (*LISTES_REDUITES_AU_CARDINAL, *LISTES_REDUITES_A_LEUR_PLAGE):
+        if champ in document:
+            projection[champ] = reduire_liste(
+                champ, document[champ], scrutins_index, amendements_index
+            )
+    return projection
+
+
+def load_pivot_directory(
+    input_dir: Path, scrutins_index: Any = None, amendements_index: Any = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Scanne récursivement `input_dir` à la recherche de fichiers `*.pivot.json`.
+
+    **Aucun document n'est conservé entier (#635).** Un profil est lu, projeté
+    sur `BLOCS_LUS_AUDIT` et sur la réduction de ses listes métier, puis
+    relâché. Les garder entiers coûtait ~2,7 Gio sur les 481 profils committés
+    du 30/08/2026 (651,5 Mo) : sous un plafond `RLIMIT_AS` de 2,0 Gio, la même
+    boucle `json.loads` accumulée n'atteignait pas le 363e profil — facteur de
+    gonflement mesuré × 4,2. C'est le motif de
+    `docs/decisions/oom-lecture-amendements-par-candidat.md`, et le patron de
+    `docs/decisions/audit-599-projection-blocs-lus-628.md`.
+
+    **Les index sont demandés ici parce que la réduction résout des dates.**
+    Depuis #431 et #432 un amendement et un vote ne portent plus la leur : elle
+    vit dans l'index partagé. Passer ici les index qui seront passés à
+    `build_report` est donc la condition pour que le rapport soit celui des
+    listes entières ; ne rien passer des deux côtés est également cohérent
+    (c'est ce que font les tests), passer l'un et pas l'autre ne l'est pas.
 
     Args:
         input_dir: répertoire racine à scanner (récursif).
+        scrutins_index: index des scrutins (#432), pour dater les votes.
+        amendements_index: index des amendements (#431), pour dater les
+            amendements.
 
     Returns:
         Tuple (profils_valides, erreurs_lecture) :
-          - profils_valides : liste des profils pivot chargés avec succès,
-            triés par chemin de fichier pour un résultat déterministe.
+          - profils_valides : liste des profils pivot **projetés** chargés avec
+            succès, triés par chemin de fichier pour un résultat déterministe.
           - erreurs_lecture : liste de {"fichier": str, "erreur": str} pour
             chaque fichier n'ayant pas pu être chargé (JSON invalide, objet
             racine non-dict, erreur de lecture...). Un fichier problématique
@@ -134,13 +250,20 @@ def load_pivot_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[di
             })
             continue
 
-        profils_valides.append(data)
+        profils_valides.append(
+            projeter_profil(data, scrutins_index, amendements_index))
+        del data
 
     return profils_valides, erreurs_lecture
 
 
 def _taille_liste(profil: dict[str, Any], champ: str) -> int:
-    """Longueur de `profil[champ]`, `0` si absent ou `null` (donnée manquante)."""
+    """Longueur de `profil[champ]`, `0` si absent ou `null` (donnée manquante).
+
+    Accepte indifféremment la liste réelle et sa `ListeReduite` (#635) : les
+    tests nourrissent les mesures avec de vraies listes, le chargeur avec leur
+    réduction, et le chiffre lu doit être le même des deux formes.
+    """
     valeur = profil.get(champ)
     return len(valeur) if valeur else 0
 
@@ -584,7 +707,9 @@ def _est_renseigne(valeur: Any) -> bool:
     """
     if valeur is None:
         return False
-    if isinstance(valeur, (str, list)):
+    if isinstance(valeur, (str, list, ListeReduite)):
+        # `ListeReduite` (#635) : une liste relâchée dont il ne reste que le
+        # cardinal répond la même chose que la liste elle-même.
         return len(valeur) > 0
     return True
 
@@ -785,6 +910,12 @@ def _plage_dates_champ_simple(
     échouer le calcul.
     """
     entrees = profil.get(champ)
+    if isinstance(entrees, ListeReduite):
+        # La liste a été relâchée au chargement (#635) : sa plage a été calculée
+        # par cette fonction même, sur les entrées, avant qu'elles ne meurent.
+        dates_ignorees[champ] += entrees.dates_ignorees
+        return {"min": entrees.date_min, "max": entrees.date_max}
+
     dates: list[date] = []
 
     if isinstance(entrees, list):
@@ -817,6 +948,10 @@ def _plage_dates_textes_portes(
     invalides ignorées et comptabilisées dans `dates_ignorees["textes_portes"]`.
     """
     entrees = profil.get("textes_portes")
+    if isinstance(entrees, ListeReduite):
+        dates_ignorees["textes_portes"] += entrees.dates_ignorees
+        return {"min": entrees.date_min, "max": entrees.date_max}
+
     dates_min: list[date] = []
     dates_max: list[date] = []
 
@@ -1463,16 +1598,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[!] Dossier introuvable : {input_dir}", file=sys.stderr)
         return 1
 
-    profils, erreurs_lecture = load_pivot_directory(input_dir)
-    # La ligne lue avant toute mesure : elle porte la ventilation, sans quoi
-    # « 481 » repart seul dans le rapport de qui la lit (#630).
-    print(
-        f"→ {len(profils)} profil(s) chargé(s) "
-        f"{ventiler(profils).detail()}, "
-        f"{len(erreurs_lecture)} erreur(s) de lecture.",
-        file=sys.stderr,
-    )
-
+    # Les index sont chargés AVANT le corpus depuis #635 : c'est eux qui datent
+    # un vote et un amendement, et la lecture du corpus réduit chaque liste à sa
+    # plage de dates au lieu d'en garder les entrées. Les mêmes index sont
+    # ensuite passés à `build_report` — les passer ici et pas là (ou l'inverse)
+    # ferait diverger le rapport de ce que les listes entières auraient donné.
+    #
     # Index des scrutins (#432) : sans lui, la plage de dates des votes
     # tomberait à `null` partout, silencieusement — un audit qui perd une mesure
     # sans le dire est pire que pas d'audit.
@@ -1493,6 +1624,18 @@ def main(argv: list[str] | None = None) -> int:
               "la plage de dates des amendements ne sera calculée que sur les entrées "
               "portant encore leur enregistrement (#431).",
               file=sys.stderr)
+
+    profils, erreurs_lecture = load_pivot_directory(
+        input_dir, scrutins_index, amendements_index)
+    # La ligne lue avant toute mesure : elle porte la ventilation, sans quoi
+    # « 481 » repart seul dans le rapport de qui la lit (#630).
+    print(
+        f"→ {len(profils)} profil(s) chargé(s) "
+        f"{ventiler(profils).detail()}, "
+        f"{len(erreurs_lecture)} erreur(s) de lecture.",
+        file=sys.stderr,
+    )
+
     rapport = build_report(
         profils, erreurs_lecture, staleness_days=args.staleness_days,
         scrutins_index=scrutins_index,

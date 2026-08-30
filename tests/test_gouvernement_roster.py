@@ -1,6 +1,9 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -22,6 +25,7 @@ from gouvernement_roster import (
     QUALITE_NON_MINISTERIELLE,
     build_gouvernement_roster,
     build_premier_ministre,
+    BLOCS_LUS_COMPOSITION,
     load_profils_from_dir,
     load_gouvernement_config,
     main as gouvernement_roster_main,
@@ -1221,3 +1225,207 @@ def test_cli_main_unknown_gouvernement_id_returns_error(tmp_path):
         "--gouvernement-id", "gouvernement:INCONNU",
     ])
     assert rc == 1
+
+
+# ---------------------------------------------------------------------------
+# Mémoire : le plafond est dans le test (#635)
+# ---------------------------------------------------------------------------
+#
+# `load_profils_from_dir` rangeait chaque profil pivot **entier** dans une
+# liste, pour n'en lire que `id`, `nom`, `identite`, `mandats` et `sources`.
+# Mesuré sur les 481 profils committés du 30/08/2026 (651,5 Mo), sous un
+# plafond `RLIMIT_AS` de 2,0 Gio : `MemoryError` au **362e** profil, 2 004 Mio
+# de croissance pour 500,9 Mo de JSON lus — facteur de gonflement × 4,2, donc
+# ~2,67 Gio pour le corpus entier. Les trois appelants
+# (`generate_gouvernement_profiles.py`, `gouvernement_profile.py`, la CLI de ce
+# module) ne pouvaient donc pas aller au bout sur une machine à 4 Gio libres.
+#
+# Le défaut est un défaut de **rétention**, pas de volume : un chargeur qui
+# range les documents entiers les range à toutes les tailles. C'est pourquoi la
+# propriété se vérifie sur des fixtures, la CI ne téléchargeant jamais le
+# corpus (#473).
+
+#: Profils du corpus-fixture de mesure. Assez nombreux pour que le coût
+#: **transitoire** d'un seul document soit un ordre de grandeur sous le plafond.
+NB_PROFILS_FIXTURE_MEMOIRE = 24
+
+#: Poids visé, par profil, de chacun des trois blocs que le chargeur doit
+#: relâcher (`amendements`, `votes`, `interventions`).
+POIDS_BLOC_RELACHE = 800 * 1024
+
+#: Plancher de vraisemblance du corpus-fixture. Rétrécir les fixtures
+#: rétrécirait le plafond avec elles, et le test finirait par passer sur un
+#: corpus si petit qu'il ne prouverait plus rien.
+PLANCHER_POIDS_RELACHE = 40 * 1024 * 1024
+
+#: Ce que le processus enfant exécute : il mesure **son propre** pic mémoire
+#: (`ru_maxrss`, sans dépendance externe) de part et d'autre du chargement.
+#: Un sous-processus est nécessaire : dans le processus pytest, `ru_maxrss`
+#: porterait aussi le pic de tous les tests précédents.
+_PILOTE_MEMOIRE = """\
+import json, resource, sys
+from pathlib import Path
+
+depot, dossier = sys.argv[1], sys.argv[2]
+sys.path.insert(0, str(Path(depot) / "src"))
+import gouvernement_roster
+
+depart = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+profils = gouvernement_roster.load_profils_from_dir(Path(dossier))
+pic = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print(json.dumps({
+    "depart": depart, "pic": pic, "nb": len(profils),
+    "mandats": sum(len(p.get("mandats") or []) for p in profils),
+}))
+"""
+
+
+def _liste_lourde_memoire(octets_vises: int, gabarit: dict) -> list:
+    """Une liste métier pesant environ `octets_vises` une fois sérialisée.
+
+    Les entrées sont **petites**, et c'est le point : depuis #431 et #432 un
+    `amendements[]` ou un `votes[]` publié est un mapping à deux clés, et c'est
+    cette forme-là qui gonfle d'un facteur 3 à 10 en objets Python (× 4,2
+    mesuré sur le corpus committé). Une fixture bâtie sur de longues chaînes ne
+    gonflerait que d'environ × 1,5 et le garde-fou ne séparerait plus rien.
+    """
+    (cle_id, _), = [(k, v) for k, v in gabarit.items() if k.endswith("_id")]
+    unite = len(json.dumps(gabarit, ensure_ascii=False)) + 1
+    return [
+        dict(gabarit, **{cle_id: f"{gabarit[cle_id]}{i:07d}"})
+        for i in range(max(1, octets_vises // unite))
+    ]
+
+
+def _corpus_de_mesure_memoire(tmp_path: Path) -> tuple[Path, int]:
+    """Écrit un corpus-fixture dont les blocs relâchés font l'essentiel du poids.
+
+    Rend le dossier et le **poids sur disque des blocs que le chargeur doit
+    relâcher** — c'est de ce poids, et non d'une observation, que le plafond
+    est déduit.
+    """
+    dossier = tmp_path / "pivot_profiles"
+    dossier.mkdir()
+
+    amendements = _liste_lourde_memoire(
+        POIDS_BLOC_RELACHE,
+        {"amendement_id": "an:AMANR5L16PO0000B0000P0D0N", "role_signataire": "cosignataire"},
+    )
+    votes = _liste_lourde_memoire(
+        POIDS_BLOC_RELACHE, {"scrutin_id": "an:16:", "position": "pour"},
+    )
+    interventions = _liste_lourde_memoire(
+        POIDS_BLOC_RELACHE, {"intervention_id": "an:seance:", "type_detail": "question"},
+    )
+    poids_relache = NB_PROFILS_FIXTURE_MEMOIRE * sum(
+        len(json.dumps(bloc, ensure_ascii=False))
+        for bloc in (amendements, votes, interventions)
+    )
+
+    for i in range(NB_PROFILS_FIXTURE_MEMOIRE):
+        profil = _pivot(
+            f"depute-{i:03d}", f"Députée {i:03d}",
+            mandats=[_mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09")],
+        )
+        profil["identite"] = {"source_url": "https://www.assemblee-nationale.fr/dyn/deputes/PA722190"}
+        profil["sources"] = [{"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr"}]
+        profil["amendements"] = amendements
+        profil["votes"] = votes
+        profil["interventions"] = interventions
+        profil["couverture"] = {"amendements": {"motif": None}}
+        (dossier / f"depute-{i:03d}.pivot.json").write_text(
+            json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    return dossier, poids_relache
+
+
+def test_load_profils_from_dir_ne_retient_que_les_blocs_lus(tmp_path):
+    """Le fond du défaut : un document lu n'est jamais un document gardé.
+
+    Le pic mémoire dépend de la machine ; **ce que la projection retient** n'en
+    dépend pas. C'est donc ici que l'invariant est verrouillé, et le test de
+    plafond qui suit ne fait que confirmer qu'il a l'effet annoncé.
+    """
+    profil = _pivot("depute", "Députée", mandats=[_mandat_gouv("Gouvernement (BAYROU)", "2024-12-24", "2025-09-09")])
+    profil["identite"] = {"source_url": "https://www.assemblee-nationale.fr/dyn/deputes/PA722190"}
+    profil["sources"] = [{"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr"}]
+    profil["amendements"] = [{"amendement_id": "an:X", "role_signataire": "auteur"}]
+    profil["votes"] = [{"scrutin_id": "an:16:1", "position": "pour"}]
+    profil["interventions"] = [{"intervention_id": "an:1"}]
+    profil["couverture"] = {"amendements": {"motif": None}}
+    (tmp_path / "depute.pivot.json").write_text(
+        json.dumps(profil, ensure_ascii=False), encoding="utf-8")
+
+    charges = load_profils_from_dir(tmp_path)
+    assert len(charges) == 1
+    assert sorted(charges[0]) == sorted(BLOCS_LUS_COMPOSITION)
+    for bloc in ("amendements", "votes", "interventions", "couverture", "meta",
+                 "textes_portes", "tags_thematiques", "chambre"):
+        assert bloc not in charges[0], f"{bloc} n'est lu par aucun consommateur"
+    # `mandats` est **parcouru** : jamais réduit à son cardinal.
+    assert charges[0]["mandats"] == profil["mandats"]
+
+
+def test_load_profils_from_dir_ignore_une_racine_non_objet(tmp_path):
+    """Une racine JSON qui n'est pas un objet n'a aucun bloc à projeter — et la
+    laisser passer faisait lever un `AttributeError` au premier `profil.get()`."""
+    (tmp_path / "liste.pivot.json").write_text("[1, 2, 3]", encoding="utf-8")
+    (tmp_path / "ok.pivot.json").write_text(
+        json.dumps(_pivot("nosdeputes:ok", "OK")), encoding="utf-8")
+
+    profils = load_profils_from_dir(tmp_path)
+    assert [p["id"] for p in profils] == ["nosdeputes:ok"]
+
+
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="`resource` est POSIX")
+def test_le_pic_memoire_du_chargement_reste_sous_le_plafond_declare(tmp_path):
+    """Le chargement ne doit pas croître de plus que le poids **sur disque** des
+    blocs qu'il est censé relâcher.
+
+    D'où vient le plafond
+    ---------------------
+    Il n'est pas relevé sur une exécution puis arrondi — ce serait un plafond
+    qui suit la dérive qu'il doit signaler. C'est une **règle** : la croissance
+    mémoire du chargement doit rester sous le poids en octets, sur disque, des
+    blocs qu'il lit et ne doit pas garder (`amendements`, `votes`,
+    `interventions`). Le raisonnement tient en une ligne : la désérialisation
+    JSON ne **réduit** jamais — une liste de petits dictionnaires occupe 3 à 10
+    fois le texte qui la décrit. Donc si le chargement croît de moins que ce
+    texte, il ne peut pas le détenir.
+
+    Ce que le test ne prouve pas
+    ----------------------------
+    Ni la vitesse, ni le pic absolu sur le corpus réel (mesuré à 133 et 141 Mio
+    sur deux exécutions, pour les 481 profils committés, et nulle part en CI : `pivot_data` est hors du
+    sparse-checkout de `tests.yml`, #473).
+    """
+    dossier, poids_relache = _corpus_de_mesure_memoire(tmp_path)
+    assert poids_relache >= PLANCHER_POIDS_RELACHE, (
+        f"corpus-fixture trop léger ({poids_relache / 1024**2:.0f} Mio de blocs "
+        f"à relâcher) : sous ce plancher le plafond qu'il déduit ne prouve plus "
+        f"rien. Regonfler les fixtures, jamais desserrer le plancher.")
+
+    pilote = tmp_path / "pilote_memoire.py"
+    pilote.write_text(_PILOTE_MEMOIRE, encoding="utf-8")
+    acheve = subprocess.run(
+        [sys.executable, str(pilote), str(REPO_ROOT), str(dossier)],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert acheve.returncode == 0, (
+        f"le chargement n'a pas abouti (code {acheve.returncode}) — un 137 est "
+        f"un OOM, le défaut même de #635 :\n{acheve.stderr[-2000:]}")
+    mesure = json.loads(acheve.stdout.strip().splitlines()[-1])
+
+    assert mesure["nb"] == NB_PROFILS_FIXTURE_MEMOIRE
+    assert mesure["mandats"] == NB_PROFILS_FIXTURE_MEMOIRE, (
+        "les mandats doivent survivre à la projection : ils sont parcourus")
+
+    # `ru_maxrss` est en Kio sous Linux, en octets sous macOS.
+    facteur = 1 if sys.platform == "darwin" else 1024
+    croissance = (mesure["pic"] - mesure["depart"]) * facteur
+    assert croissance < poids_relache, (
+        f"le chargement a grossi de {croissance / 1024**2:.1f} Mio en lisant "
+        f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
+        f"de blocs qu'il ne doit pas garder. Au-dessus de ce plafond il en "
+        f"retient une partie : c'est le défaut de #635, qui faisait atteindre "
+        f"le plafond de 2,0 Gio au 362e des 481 profils committés.")
