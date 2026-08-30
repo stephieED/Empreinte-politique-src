@@ -24,7 +24,9 @@
 #                                      en FUSIONNANT ; overwrite pose
 #                                      --no-merge, cf. #578)
 #   ADD_UNCOVERED_MEMBERS=true|false
-#                                     (défaut: add-uncovered-members)
+#                                     (défaut: true — écrit un premier profil
+#                                      pour les membres qui n'en ont pas ;
+#                                      axe 2 du formulaire, cf. #578/#590)
 #   COLD_START=false|true             (défaut: false — purge les caches de
 #                                      téléchargement, rien d'autre)
 #   THRESHOLD=<n>                     (défaut: 3)

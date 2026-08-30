@@ -22,6 +22,16 @@ champ**.
 **Axe 2 — `roster_coverage`** : si on écrit un premier profil pour les membres
 qui n'en ont pas. `current-members-only` ou `add-uncovered-members` (défaut).
 
+> **Mise à jour (#590, 29/08/2026)** : ce champ est **renommé
+> `add_uncovered_members`** et passe de menu à **case à cocher**, cochée par
+> défaut — deux états n'ont jamais eu besoin d'un menu. `roster_coverage`,
+> `current-members-only` et `add-uncovered-members` sont des noms **morts** ;
+> `test_les_deux_axes_sont_deux_champs_distincts` échoue si `roster_coverage`
+> réapparaît dans les inputs. Le découpage en deux axes, lui, est inchangé :
+> lire ci-dessous « décoché » pour `current-members-only` et « coché » pour
+> `add-uncovered-members`. État courant du formulaire :
+> `docs/workflow-generate-data.md` §2, et `python3 scripts/rendu_formulaire.py`.
+
 Les deux sont **disjoints**, donc les six combinaisons se demandent — dont
 « recollecter l'existant **en fusionnant** ET ajouter les nouveaux », qu'aucun
 réglage ne permettait d'obtenir avant. Traduction en drapeaux, dans le job
@@ -154,7 +164,8 @@ les entrées fautives à côté des corrigées.
 
 `retry-generate-data.yml` reconstruit les inputs d'un run préempté en grepant
 les logs. Les deux axes sont lus dans le bloc `env:` résolu du step
-d'extraction roster (`EXISTING_PROFILES:`, `ROSTER_COVERAGE:`) — seule source
+d'extraction roster (`EXISTING_PROFILES:`, `ROSTER_COVERAGE:` — devenu
+`ADD_UNCOVERED:` avec le renommage de #590) — seule source
 exacte : un `choice` n'a pas de step conditionnel qui trahirait sa valeur, et
 l'axe 1 n'est pas déductible de `--no-merge` seul, `leave-as-is` et `refresh`
 posant tous deux la fusion additive. Repli : `--no-merge` dans la commande
