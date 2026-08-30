@@ -783,7 +783,7 @@ jobs:
       # factoriser casserait ce mécanisme. `--max-pages` en faisait partie
       # jusqu'à #510, qui l'a retiré avec la recherche NosDéputés. Même remarque pour les steps homonymes de
       # extract-ue-officiel et extract-roster-groupes.
-      - name: Extraction AN (NosDéputés) — ${{ matrix.slug }}
+      - name: Extraction AN — ${{ matrix.slug }}
         env:
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
         run: |

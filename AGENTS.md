@@ -39,10 +39,8 @@ Any schema/display change must preserve them:
 Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
-volumetry: `docs/pipeline-profiles-groupes.md` (**caveat**: its flow diagram and
-parts of its body still name NosDéputés/NosSénateurs as a collection source,
-which #529 and #528 removed — it is the right home, not an authority on the
-current state; a separate lot corrects it). **What a run does** — the eight
+volumetry: `docs/pipeline-profiles-groupes.md` — the six outputs of `pivot_data/`,
+rewritten from the code on 30/08/2026 (#606). **What a run does** — the eight
 jobs, caches, artifacts, budgets, the launch form, the push, the automatic
 retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
 behind a link is a rule that gets missed.
@@ -553,12 +551,16 @@ When something does need deciding, five parts, in this order:
 ## References
 
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
-- `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
+- `src/check_quality_gate.py`: quality gate, eleven blocks (1, 2, 3, 3b-3e, 4, 5, 5b, §7).
+  The `n/4` denominators printed are themselves stale. Hard vs soft fail logic.
   Amendements coverage/freshness are deliberately never hard fails — see
   `docs/decisions/amendements-zero-pas-de-hard-fail.md`.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
 - `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
-- `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
+- `docs/pipeline-profiles-groupes.md`: what the data becomes — the six outputs of
+  `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
+- `docs/workflow-generate-data.md`: what a run does — jobs, form, caches, artifacts,
+  budgets, push, automatic retry.
 - `docs/hatvp_opendata.md`: HATVP lobby-register — out of short-term scope.
 - `src/json_io.py`: profile JSON write format (compact vs indented, #433).
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
