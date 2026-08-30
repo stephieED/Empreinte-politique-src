@@ -1,6 +1,10 @@
 <a id="critere-sortie-volumetrie-429"></a>
 # Le critère de sortie de l'épic volumétrie était écrit sur la mauvaise grandeur (#429) (2026-08-28)
 
+> **La contrainte de volume a une raison, et elle est écrite depuis le 30/08/2026** :
+> [`donnees-versionnees-integrite.md`](donnees-versionnees-integrite.md). Ce critère
+> mesure le coût d'une propriété d'intégrité, il ne la remet pas en cause.
+
 L'épic #429 portait ce critère :
 
 > « Profils versionnés **sous 500 Mo à 752 membres** »
