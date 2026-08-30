@@ -31,6 +31,23 @@ Concrètement, avec les archives XV/XVI/XVII ingérées, la borne est le
 `statut_couverture_textes()` ne dit donc pas « il n'y a pas de texte », mais
 « la source ne permet pas de l'affirmer » — la distinction que #399 demande
 de rendre lisible dans les rapports et dans l'UI.
+
+Les décisions qui gouvernent ce module
+--------------------------------------
+Cinq le nomment ; la liste complète et à jour est dans
+`docs/decisions-par-module.md`. Ces trois-là portent le contrat :
+
+- `docs/decisions/couverture-dossiers-hors-couverture-vs-zero.md` (#399) — la
+  décision fondatrice : dériver la borne des législatures **ingérées**, pour que
+  `borne_couverture_textes` / `statut_couverture_textes` cessent de publier une
+  limite de source comme un « 0 texte porté » mesuré (AGENTS.md §2.5).
+- `docs/decisions/dossiers-multi-archives-origine-document.md` (#400) — d'où
+  vient `AN_DOSSIERS_ARCHIVES` : l'inventaire des archives, les deux conventions
+  de nommage de l'AN, et pourquoi une archive multi-législature ne couvre pas
+  les législatures dont elle ne garde qu'une traîne résiduelle.
+- `docs/decisions/couverture-listes-539.md` — le vocabulaire voisin, côté
+  profils. Le cinquième état `partielle` de ce module n'y a **volontairement**
+  pas été repris ; les deux modèles doivent rester distincts.
 """
 
 from datetime import date

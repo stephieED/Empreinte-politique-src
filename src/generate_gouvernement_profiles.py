@@ -25,6 +25,23 @@ Usage (depuis la racine du dépôt) :
         --profiles-dir pivot_data/profiles \\
         --out-dir pivot_data/gouvernements \\
         --validate
+
+Les décisions qui gouvernent ce module
+--------------------------------------
+Cinq le nomment ; la liste complète et à jour est dans
+`docs/decisions-par-module.md`. Ces trois-là portent le contrat :
+
+- `docs/decisions/gouvernement-textes-non-ecrasement.md` (#427) — **ne jamais
+  réécrire un profil sur une collecte incomplète.** `fetch_dossiers_gouvernementaux`
+  est non-fatal et rend `{"dossiers": []}` en cas de coupure ; sans la sentinelle
+  `COLLECTE_INCOMPLETE`, l'écriture publiait ce vide comme un fait.
+- `docs/decisions/plafond-roster-et-commit-518.md` — pourquoi l'incomplétude
+  sort par un **code de retour dédié** (`EXIT_COLLECTE_INCOMPLETE`) et non par un
+  échec : le workflow doit pouvoir distinguer « rien à publier » de « le job a
+  cassé ».
+- `docs/decisions/cloisonnement-branche-roster-524.md` — le même code 2, vu
+  depuis la CI : toléré là où il doit l'être, pour qu'une panne de source ne
+  transforme pas un run entier en perte.
 """
 
 from __future__ import annotations

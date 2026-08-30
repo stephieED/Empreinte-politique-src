@@ -39,6 +39,25 @@ Cas limites gérés :
     réélu·e à la même commission) → une seule entrée retenue, priorité à
     actif=true sinon la plus récente par date de fin.
 
+Les trois décisions à relire avant de toucher à une agrégation
+--------------------------------------------------------------
+Quinze décisions nomment une fonction de ce module ; la liste complète et à jour
+est dans `docs/decisions-par-module.md`. Ces trois-là portent l'éligibilité, donc
+les dénominateurs publiés (AGENTS.md §2.7) :
+
+- `docs/decisions/mandat-electif-perdu-fausse-le-denominateur.md` — un
+  `mandats[].categorie == "mandat_electif"` perdu ne manque pas seulement sur la
+  fiche : `_member_eligibility_intervals` en dérive la période d'éligibilité, et
+  le membre sort du **dénominateur** d'un ratio publié. Mesuré : `groupe-AN-SOC-16`
+  publiait 0 scrutin de cohésion sur 814, sans qu'aucune donnée manque.
+- `docs/decisions/mandats-agreges-famille-1.md` — le périmètre de
+  `MANDATS_AGREGES_CATEGORIES` et ce qui en est **exclu exprès** (`mandat_electif`
+  serait circulaire, `groupe_politique` redondant), plus la règle de chevauchement
+  d'intervalles de `_intervals_overlap`.
+- `docs/decisions/chambre-par-mandat-electif.md` — la chambre est un fait du
+  **mandat**, jamais du profil. Un agrégat qui la relit sur le profil mélange les
+  chambres d'un membre passé d'une assemblée à l'autre.
+
 Usage (depuis la racine du dépôt) :
     python src/group_profile.py \\
         --groupe-id "AN:SOC" \\

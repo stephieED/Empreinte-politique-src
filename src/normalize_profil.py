@@ -25,6 +25,25 @@ données (AGENTS.md §2 règle 5).
 Ce module est volontairement découplé de la collecte : il ne fait aucun
 appel réseau et ne connaît pas le mécanisme de téléchargement.
 
+## Les décisions à relire avant de toucher à une normalisation
+
+La liste complète et à jour est dans `docs/decisions-par-module.md`. Ces
+trois-là portent le contrat de ce module :
+
+- `docs/decisions/collecte-vs-publie-545.md` — **ce que la normalisation a le
+  droit de faire** : la table de relations collecté → publié, liste par liste
+  (égalité, renommage `textes_portes` → `dossiers_legislatifs`, dérivation), et
+  le garde-fou `audit_collecte_vs_publie` qui la tient. Toute relation nouvelle
+  s'écrit là avant de s'écrire ici.
+- `docs/decisions/cle-fusion-interventions-540.md` — pourquoi
+  `_normalize_intervention` propage `intervention_id` **verbatim** depuis l'`id`
+  du brut : sans identifiant, la fusion pivot repliait 7 767 interventions
+  collectées sur 891 publiées, en silence.
+- `docs/decisions/normalisation-amendements.md` — pourquoi
+  `_normalize_amendement` ne recopie pas la liste des cosignataires par
+  signataire, et pourquoi la clé d'un amendement est son `uid`, jamais son
+  `numero`.
+
 Usage :
     from normalize_profil import normalize_profil
     pivot = normalize_profil(raw_profile)

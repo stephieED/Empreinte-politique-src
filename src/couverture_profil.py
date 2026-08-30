@@ -7,6 +7,24 @@ quatre états, les **trois** causes depuis #562, les cinq listes) vit dans
 `schema_pivot` avec le reste du contrat de structure ; ce module porte les
 **bornes mesurées** et la **dérivation**.
 
+## Les décisions qui gouvernent ce module
+
+Trois, et le module n'en a jamais cité aucune — les numéros d'issue ci-dessous
+ne disent pas où lire. La liste complète et à jour :
+`docs/decisions-par-module.md`.
+
+- `docs/decisions/couverture-listes-539.md` — les quatre états, la `cause`
+  obligatoire sur `non_collecte` et interdite ailleurs, les cinq listes, et la
+  décision 4 : `couverture` est **remplacée**, jamais fusionnée additivement.
+- `docs/decisions/defaut-collecte-vs-panne-562.md` — `MOTIFS_PANNE` contre
+  `MOTIFS_DEFAUT_COLLECTE` : une source en bonne santé et un code cassé ne se
+  publient pas de la même façon, et la preuve d'un défaut se construit
+  (`_preuve_defaut_collecte`), elle ne se recopie pas d'un message d'exception.
+- `docs/decisions/absences-publiees-comme-faits-556-558-560.md` — pourquoi
+  `DECISIONS_PIPELINE` doit connaître toute décision de pipeline (#558), pourquoi
+  `MOTIFS_JAMAIS_PANNE` retire l'avarie d'une frontière de source (#560), et ce
+  que `legislatures_du_profil` a le droit de dériver de la carrière.
+
 ## Le défaut qu'il retire
 
 Une liste vide ne dit rien par elle-même. Mesuré sur les 476 profils publiés au
