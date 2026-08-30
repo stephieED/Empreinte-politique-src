@@ -78,3 +78,35 @@ def test_chaque_alias_rend_le_contenu_de_la_source(alias: str):
         f"`{alias}` ne rend pas le contenu de {SOURCE} — lien cassé, ou cible "
         "déplacée."
     )
+
+
+def test_chaque_alias_est_dans_la_liste_blanche_du_sparse_checkout():
+    """Un test qui lit un fichier hors du checkout CI échoue là, et nulle part ailleurs.
+
+    `tests.yml` ne matérialise qu'une liste blanche : tout ce qui n'y figure pas
+    est absent du disque du runner. Un test portant sur un fichier hors liste
+    passe en local et échoue en CI — sur un `FileNotFoundError` qui ne dit rien
+    de la vraie cause.
+
+    Le piège s'est produit **trois fois** : #434 (les tests du bornage), #520
+    (`.gitignore`, run 32773016491), puis ce lot-ci avec `CLAUDE.md`. Le
+    commentaire du workflow l'annonçait déjà les deux dernières fois. Un
+    avertissement en prose ne suffit pas ; celui-ci échoue.
+
+    Il ne couvre que les alias de ce fichier. Le cas général — tout chemin lu
+    par un test doit être dans la liste — demanderait une analyse statique.
+    """
+    workflow = (RACINE / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8")
+    debut = workflow.index("sparse-checkout: |")
+    bloc = workflow[debut:workflow.index("\n\n", debut)]
+    liste = {l.strip() for l in bloc.splitlines()[1:] if l.strip()}
+
+    for alias in sorted(ALIAS):
+        racine_du_chemin = alias.split("/")[0]
+        assert racine_du_chemin in liste, (
+            f"`{alias}` n'est couvert par aucune entrée de la liste blanche de "
+            f"`tests.yml` (cherché « {racine_du_chemin} »). Le runner ne le "
+            "matérialisera pas, et les tests ci-dessus échoueront en CI en "
+            "passant en local. Ajouter l'entrée dans le `sparse-checkout:` du "
+            "workflow."
+        )

@@ -90,6 +90,7 @@ jobs:
             .github
             .gitignore
             AGENTS.md
+            CLAUDE.md
             README.md
             ROADMAP.md
             docs
