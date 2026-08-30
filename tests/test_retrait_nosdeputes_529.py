@@ -151,7 +151,7 @@ def test_le_code_execute_ne_nomme_plus_la_plateforme():
         "Ces modules nomment NosDéputés/NosSénateurs dans du code EXÉCUTÉ "
         f"(chaînes ou identifiants) : { {k: sorted(set(v)) for k, v in inattendus.items()} }. "
         "L'historique en commentaire est le bienvenu ; un chemin de collecte, "
-        f"non. Voir docs/technical_decisions.md#{ANCRE}."
+        f"non. Voir docs/decisions/{ANCRE}.md."
     )
     manquants = set(OCCURRENCES_ADMISES) - set(porteurs)
     assert not manquants, (
@@ -228,7 +228,7 @@ CHEMINS_RETIRES_GROUP_ROSTER = (
 def test_candidate_profile_na_plus_de_chemin_nosdeputes(nom):
     assert not hasattr(candidate_profile, nom), (
         f"`candidate_profile.{nom}` est de retour. Voir "
-        f"docs/technical_decisions.md#{ANCRE}."
+        f"docs/decisions/{ANCRE}.md."
     )
 
 
@@ -236,7 +236,7 @@ def test_candidate_profile_na_plus_de_chemin_nosdeputes(nom):
 def test_group_roster_na_plus_de_chemin_nosdeputes(nom):
     assert not hasattr(group_roster, nom), (
         f"`group_roster.{nom}` est de retour. Voir "
-        f"docs/technical_decisions.md#{ANCRE}."
+        f"docs/decisions/{ANCRE}.md."
     )
 
 

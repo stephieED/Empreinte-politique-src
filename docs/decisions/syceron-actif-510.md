@@ -111,7 +111,7 @@ Donc, à vérifier au premier run réel :
   solde de la bascule est positif. **Corrigé par le second run** — cette
   conclusion ne vaut que pour un corpus où Syceron n'était pas encore publié :
   une fois la collecte complète, un shard monte à **8,9 min** et un profil sort
-  **tronqué**. Voir [#budgets-extract-an-perimes-546](#budgets-extract-an-perimes-546) ;
+  **tronqué**. Voir [#budgets-extract-an-perimes-546](budgets-extract-an-perimes-546.md) ;
 - **entrée de cache de #505** : `.cache/syceron_an/*/index_par_acteur` pèse
   **109 Mo**, pas « l'ordre du Go » redouté ci-dessus, face au quota de 10 Go
   du dépôt. La mise en cache de l'index n'a pas à être tranchée ;
@@ -130,7 +130,7 @@ publiées sur 7 767 collectées**. La hausse attendue a bien eu lieu (789 entré
 publiées avant l'activation, 891 après), et c'est elle qui a masqué un
 effondrement d'un facteur 8,7 : un contrôle qui ne sait lire que le signe d'une
 variation ne peut pas voir ça. Voir
-[#cle-fusion-interventions-540](#cle-fusion-interventions-540).
+[#cle-fusion-interventions-540](cle-fusion-interventions-540.md).
 
 ## Ce que le retrait coûte ailleurs
 

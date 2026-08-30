@@ -493,7 +493,7 @@ def compute_ecart_couverture_roster(groupes: list[dict[str, Any]]) -> dict[str, 
         Triés par `groupe_id`. Ce taux rend visible, dans le temps, la
         progression de la couverture roster (avant/après activation de
         l'extraction roster-driven, voir
-        `docs/technical_decisions.md#provenance-pivot`).
+        `docs/decisions/provenance-pivot.md`).
     """
     resultat: list[dict[str, Any]] = []
 

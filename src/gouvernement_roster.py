@@ -49,7 +49,7 @@ portefeuille en cours de gouvernement produit une entrée `membres[]` par
 période, jamais un portefeuille choisi arbitrairement parmi les siens.
 `portefeuille` retombe à `null` (avec un warning) si aucune `source_url`
 n'est traçable, le schéma l'exigeant dès que l'intitulé est renseigné. La
-limite inverse est levée : `docs/technical_decisions.md#hors-perimetre`
+limite inverse est levée : `docs/decisions/hors-perimetre.md`
 § "Ministerial function" est marquée RÉSOLU.
 
 `premier_ministre` (#398, `build_premier_ministre`) se dérive du même

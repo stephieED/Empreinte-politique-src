@@ -31,7 +31,7 @@ dit si on en écrit de nouveaux. Les six combinaisons se demandent :
 recollecter l'existant, on ne le pose pas. `cold_start` n'entre plus dans ce
 calcul — il purge les caches de téléchargement, ce qui ne dit rien de ce qu'on
 écrit. Voir §*Régénérer l'existant* ci-dessous et
-`docs/technical_decisions.md#deux-axes-formulaire-578`.
+`docs/decisions/deux-axes-formulaire-578.md`.
 
 **Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
 --skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
@@ -165,7 +165,7 @@ flowchart TD
 > `group_roster.fetch_full_roster`, seul endroit du dépôt qui choisisse une
 > source de roster, et il tient en une condition sur
 > `an_roster.AN_ROSTER_ACTIF`. Voir
-> `docs/technical_decisions.md#bascule-roster-an-amo30-527`.  
+> `docs/decisions/bascule-roster-an-amo30-527.md`.  
 > **`raw_data/roster_candidats.json` n'est pas committé** : source de vérité
 > = `raw_data/groupes_reels.json`, produit à chaque run.  
 > **UNE construction par run depuis #518** : `prepare-roster-matrix` la fait et
@@ -176,7 +176,7 @@ flowchart TD
 > position, `merge-and-pivot` normalise en pivot **sa** liste — deux listes qui
 > divergent produisent un « collecté mais non publié » (#511) sans qu'aucune
 > étape n'échoue. Voir
-> `docs/technical_decisions.md#roster-unique-par-run-518`.  
+> `docs/decisions/roster-unique-par-run-518.md`.  
 > **ZÉRO fetch résiduel depuis le second incident de #518** : le même artifact
 > porte aussi le roster **brut** (`--rosters-bruts-out` →
 > `generate_group_profiles.py --rosters-bruts`), qui était le dernier à
@@ -187,11 +187,11 @@ flowchart TD
 > désormais propre — `(15, 90)` au lieu des 15 s des pages par candidat, aucune
 > réponse de `/deputes/json` n'ayant été mesurée sous 10 s ; depuis #527 il ne
 > couvre plus que le Sénat et le repli AN. Voir
-> `docs/technical_decisions.md#plafond-roster-et-commit-518`.  
+> `docs/decisions/plafond-roster-et-commit-518.md`.  
 > **Provenance** : chaque profil produit ici porte `meta.provenance =
 > "roster_groupe"` — ne rétrograde jamais un profil `candidat_declare`
 > existant lors de la fusion (`merge_pivot_profile`), voir
-> `docs/technical_decisions.md#provenance-pivot`.  
+> `docs/decisions/provenance-pivot.md`.  
 > **Même fan-out par membre que `extract-an`** : coût par
 > candidat identique, seul le volume traité change (borné par
 > `roster_limit`).
@@ -206,7 +206,7 @@ flowchart TD
    une anomalie. Les **2 groupes Sénat** le sont depuis le 24/08/2026, ce qui
    retire la clé `('senateurs', None)` — donc, aujourd'hui, **1 seul appel
    réseau** au lieu de 2. Voir
-   `docs/technical_decisions.md#extraction-groupe-suspendue-516`.
+   `docs/decisions/extraction-groupe-suspendue-516.md`.
 2. Pour chaque `(roster_chambre, legislature)` distinct référencé par les
    groupes **actifs** de la config, il obtient **un seul** roster
    (`group_roster.fetch_full_roster`) — partagé entre tous les groupes de la
@@ -250,7 +250,7 @@ flowchart TD
    itéré sur le vide — run `32405297873`, conclu en `success`. Ce n'est pas un
    seuil de rétrécissement : la granularité d'une panne est la clé de fetch
    entière, soit 452 ou 300 membres sur 752. Voir
-   `docs/technical_decisions.md#roster-jamais-ecrit-vide`. Chaque anomalie part
+   `docs/decisions/collecte-non-publiee.md#roster-jamais-ecrit-vide`. Chaque anomalie part
    aussi en annotation `::error::` depuis #518 — un run mort ici ne laissait
    sinon que `Process completed with exit code 1` —, et **nomme sa cause**
    depuis #524 (`HTTPError: 500 …`, `SSLError: …`, `Timeout: …`) : l'exception
@@ -268,7 +268,7 @@ flowchart TD
    rien du tout. Le filtrage se fait **sur le code, dans le shell** — jamais
    par un `continue-on-error: true`, qui avalerait aussi un code non
    documenté. Voir
-   `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
+   `docs/decisions/cloisonnement-branche-roster-524.md`.
 5. `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
    pilote ensuite la même chaîne de collecte que `extract-an`
    (`candidate_profile.py`, identité/mandats/votes/amendements via

@@ -87,7 +87,7 @@ aurait exigé cette lecture ; la propriété démontrée plus haut la rend inuti
 
 Conséquence : la RSS ne dépend ni du volume des profils ni de leur nombre, et
 le passage à 752 membres ne multiplie que la longueur de deux listes de chaînes.
-Mesures dans docs/technical_decisions.md#collecte-non-publiee.
+Mesures dans docs/decisions/collecte-non-publiee.md.
 
 Usage :
     python3 src/audit_collecte_non_publiee.py

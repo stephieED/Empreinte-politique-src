@@ -177,7 +177,7 @@ rendent désormais l'index partiel à l'appelant (le candidat en cours n'a pas �
 > seule des trois législatures de débats, sur laquelle le run suivant a fait un
 > *exact key hit*. La règle qui manquait n'est pas dans le constructeur d'index,
 > elle est dans la clé. Voir
-> [#cache-completude-interventions-550](#cache-completude-interventions-550).
+> [#cache-completude-interventions-550](cache-completude-interventions-550.md).
 
 ## Ce qui reste latent, et le garde-fou
 

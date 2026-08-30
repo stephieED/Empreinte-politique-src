@@ -29,7 +29,7 @@ Format d'un profil pivot v1 :
                                              # tous ses consommateurs du pipeline, il n'en reste
                                              # qu'un dans l'interface (#495). Condition de
                                              # retrait écrite dans
-                                             # docs/technical_decisions.md#chambres-profil-derivees,
+                                             # docs/decisions/chambres-profil-derivees.md,
                                              # vérifiée par tests/test_garde_fou_chambre.py.
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
@@ -248,13 +248,13 @@ Format d'un profil pivot v1 :
                                              # signataire : 810 552 paires pour 207 238
                                              # amendements distincts, et 77,7 M entrées de
                                              # cosignatures pour 4,96 M distinctes.
-                                             # Voir docs/technical_decisions.md#normalisation-amendements
+                                             # Voir docs/decisions/normalisation-amendements.md
         {
             "amendement_id": "an:AMANR5L17PO59047BTC1376P0D1N000012",  # <source>:<uid AN>.
                                              # L'uid est la seule clé unique : le `numero`
                                              # repart à chaque texte (121 805 amendements pour
                                              # 30 616 numéros distincts en législature 17) —
-                                             # docs/technical_decisions.md#amendements-cle-uid
+                                             # docs/decisions/amendements-cle-uid.md
             "role_signataire": "auteur_principal"  # SEUL champ propre au membre :
                                              # "auteur_principal" | "cosignataire"
         },
@@ -457,7 +457,7 @@ def deriver_chambres(
                reprise telle quelle. Mais elle n'est **pas étayée par un mandat**,
                et l'appelant doit le déclarer dans `meta.warnings` dès que
                `corroboree` est faux. Justification mesurée :
-               docs/technical_decisions.md#chambres-profil-derivees.
+               docs/decisions/chambres-profil-derivees.md.
 
                « Toujours ajoutée » est le point que deux simulations en lecture
                seule sur les 209 profils publiés de `b2c34f4` ont dû corriger, et
@@ -568,7 +568,7 @@ def lire_chambres(profil: Any) -> list[str]:
 
     **Ce repli-ci a une fin écrite**, contrairement à ceux de #431 et #432 qui
     sont devenus permanents faute de critère : il disparaît avec le scalaire, à la
-    condition de retrait de docs/technical_decisions.md#chambres-profil-derivees.
+    condition de retrait de docs/decisions/chambres-profil-derivees.md.
 
     Args:
         profil: un profil pivot. Un objet non-dict rend `[]` — cette fonction
@@ -636,7 +636,7 @@ KNOWN_POSITIONS: frozenset[str] = frozenset({
 # catégorie pour les accueillir — commissions d'enquête, missions
 # d'information, groupes d'études et délégations se retrouvaient tous rangés
 # sous `commission` par l'ancien mapping NosDéputés, ce qui trompait sur leur
-# nature (voir docs/technical_decisions.md#taxonomie-mandats-typeorgane-an).
+# nature (voir docs/decisions/taxonomie-mandats-typeorgane-an.md).
 # Choix de granularité : une catégorie par nature institutionnelle
 # réellement distincte pour l'utilisateur, pas une par `typeOrgane` — les
 # variantes internes (MISINFO/MISINFOCOM/MISINFOPRE, CNPE/CNPS, GE/GEVI,
@@ -1234,7 +1234,7 @@ def validate_profil(
     # REQUIRED_TOP_LEVEL_KEYS : les profils publiés avant #493 ne la portent pas,
     # et les déclarer invalides ne dirait rien de vrai sur eux. Elle le devient
     # quand `chambre` est retiré — c'est l'autre moitié de la condition de retrait
-    # (docs/technical_decisions.md#chambres-profil-derivees).
+    # (docs/decisions/chambres-profil-derivees.md).
     #
     # Absente, on ne valide rien. Présente, elle est tenue à l'invariant qui fait
     # tout l'intérêt du couple : `chambre == chambres[0]`. Sans cette

@@ -36,7 +36,7 @@ appel peut lever — c'est elle qui fait d'une archive absente un « roster
 indisponible » nommé (`exit 2`, fiches publiées intactes) plutôt qu'une trace
 de pile qui coûte le commit du run.
 
-Voir docs/technical_decisions.md#retrait-nosdeputes-529.
+Voir docs/decisions/retrait-nosdeputes-529.md.
 
 ## Le Sénat n'est plus une chambre servie ici (#528)
 
@@ -44,7 +44,7 @@ Toute chambre autre que `deputes` **lève**, en nommant la décision. Les deux
 entrées Sénat de `raw_data/groupes_reels.json` restent `extraction_suspendue`
 — leurs fiches publiées ne bougent pas — et ce chemin n'est atteint que si
 quelqu'un lève cette suspension : il doit alors échouer bruyamment plutôt que
-rendre un roster vide. Voir docs/technical_decisions.md#retrait-senat-528.
+rendre un roster vide. Voir docs/decisions/retrait-senat-528.md.
 
 Usage (depuis la racine du dépôt) :
     python src/group_roster.py --chambre deputes --sigle LR --legislature 16
@@ -182,7 +182,7 @@ def fetch_full_roster(
       `an_roster`), et ne rend **jamais** une liste vide. Le drapeau n'est plus
       un aiguillage vers une autre source, c'est un interrupteur : baissé, il
       n'y a plus de roster du tout, bruyamment. Sa condition de retrait est
-      écrite dans docs/technical_decisions.md#roster-an-derive-amo30-526 §9.
+      écrite dans docs/decisions/roster-an-derive-amo30-526.md §9.
 
     `session` n'a plus aucun effet : aucune requête HTTP ne part d'ici.
     Conservée dans la signature parce que trois appelants la passent encore et
@@ -206,7 +206,7 @@ def fetch_full_roster(
             "Le Sénat a été retiré par #528 (archive.nossenateurs.fr ne sert plus "
             "de certificat valide, aucune source de remplacement établie) ; les "
             "2 groupes Sénat restent suspendus, voir "
-            "docs/technical_decisions.md#retrait-senat-528."
+            "docs/decisions/retrait-senat-528.md."
         )
     return an_roster.fetch_full_roster_an(legislature)
 

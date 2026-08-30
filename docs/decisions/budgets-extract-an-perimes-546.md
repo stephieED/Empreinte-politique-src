@@ -88,7 +88,7 @@ décomposition réelle d'un shard doit être mesurée d'abord. Suivi en #546.
 > à 332 s), et les durées des deux runs ne sont pas comparables — au run
 > `33100214165` les archives Syceron des 15e et 16e législatures étaient
 > injoignables. Voir
-> [#budgets-extract-an-remesures-546](#budgets-extract-an-remesures-546).
+> [#budgets-extract-an-remesures-546](budgets-extract-an-remesures-546.md).
 
 ---
 

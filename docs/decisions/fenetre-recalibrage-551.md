@@ -43,7 +43,7 @@ telles quelles.
 
 Le chiffre de référence est **434 Mo** (miroir de `dc3ba83`, une seule ref, après
 `gc`), contre 284 Mo le 20/08 à 209 profils. Il ne coïncide pas avec les 415 Mo
-de [l'entrée #429 ci-dessous](#critere-sortie-volumetrie-429), pris le même jour :
+de [l'entrée #429 ci-dessous](critere-sortie-volumetrie-429.md), pris le même jour :
 deux variantes de la même méthode diffèrent — le commit mesuré et la réduction à
 une seule ref — et **l'écart n'a pas été instrumenté**. Aucun raisonnement de
 cette entrée ne repose dessus.
@@ -174,7 +174,7 @@ seul mécanisme empêchant la croissance, et sa valeur décidera du plateau.
 
 Il faut lever un malentendu que l'issue installe : **30 n'a jamais été un budget
 en octets.** #434 l'a tiré d'une règle de latence, écrite dans
-[l'entrée #434](#fenetre-historique-donnees) :
+[l'entrée #434](fenetre-historique-donnees.md) :
 
 > fenêtre = cadence de pointe × période sans surveillance — 4 commits/jour ×
 > 7 jours = 28, arrondi à 30.

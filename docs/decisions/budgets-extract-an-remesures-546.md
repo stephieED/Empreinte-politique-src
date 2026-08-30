@@ -1,7 +1,7 @@
 <a id="budgets-extract-an-remesures-546"></a>
 # La décomposition d'un shard `extract-an`, et les deux budgets recalés dessus (#546) (2026-08-27)
 
-Suite de [#budgets-extract-an-perimes-546](#budgets-extract-an-perimes-546), qui
+Suite de [#budgets-extract-an-perimes-546](budgets-extract-an-perimes-546.md), qui
 constatait que les deux budgets ne valaient plus sans dire par quoi les
 remplacer. Voici la mesure, puis l'arbitrage.
 
@@ -122,7 +122,7 @@ injoignables ; `actions/cache` saute alors sa sauvegarde
 (« Cache hit occurred on the primary key ..., not saving cache »), et l'index
 reconstruit à chaque shard est jeté à la fin de chaque shard.
 
-C'est [#cache-mode-interventions-505](#cache-mode-interventions-505) sous une
+C'est [#cache-mode-interventions-505](cache-mode-interventions-505.md) sous une
 troisième forme : la clé porte le **mode**, jamais la **complétude** du contenu.
 Le refus de mettre en cache une législature illisible est juste pris isolément —
 mais il produit une entrée partielle que la clé déclare complète.
@@ -135,7 +135,7 @@ gain, pas dans un chiffre plus grand. À ouvrir en issue propre.
 
 > **Ouvert en #550 et corrigé** (2026-08-28) : la clé porte désormais la
 > complétude et la sauvegarde est explicite. Voir
-> [#cache-completude-interventions-550](#cache-completude-interventions-550).
+> [#cache-completude-interventions-550](cache-completude-interventions-550.md).
 > Une nuance de cette section y est corrigée sur mesure : « ferait rentrer les
 > sept profils dans le budget actuel » vaut pour les runs qui **restaurent** un
 > index complet, pas pour celui qui le **construit**. La construction à froid

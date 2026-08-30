@@ -128,7 +128,7 @@ python3 src/generate_all_profiles.py --source an --workers "$WORKERS" "${MERGE_F
 
 # L'étape « extract-senat » a été retirée par #528, en même temps que le job CI :
 # le Sénat est sorti du périmètre du produit et `--source senat` n'existe plus.
-# Voir docs/technical_decisions.md#retrait-senat-528.
+# Voir docs/decisions/retrait-senat-528.md.
 
 echo "=== [3/6] extract-ue-officiel : Parlement européen (Open Data Portal) ==="
 python3 src/generate_all_profiles.py --source ue --workers "$WORKERS" "${MERGE_FLAG[@]}" \

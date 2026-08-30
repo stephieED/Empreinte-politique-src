@@ -6,7 +6,7 @@ ouvertes, elle, vit dans GitHub — voir « Où en est le projet » ci-dessous.
 
 Non relu automatiquement par les agents (contrairement à `AGENTS.md`) : à
 consulter sur demande. Le rationale complet d'un élément différé vit dans
-`docs/technical_decisions.md#hors-perimetre` ; ici on garde ce qu'une session
+`docs/decisions/hors-perimetre.md` ; ici on garde ce qu'une session
 qui démarre à froid doit savoir avant de rouvrir un sujet.
 
 ## Où en est le projet
@@ -42,7 +42,7 @@ recopié tel quel là où une valeur était attendue.
 **La sérialisation #539 avant #486 est levée.** #539 est livré, et le modèle qu'il
 publie — `couvert` / `fait_etabli` / `hors_couverture` / `non_collecte` (+ `cause`),
 par liste métier, avec portée facultative — est celui sur lequel #486 se branche au
-lieu d'en inventer un second. Voir `docs/technical_decisions.md#couverture-listes-539`.
+lieu d'en inventer un second. Voir `docs/decisions/couverture-listes-539.md`.
 
 **Un paramètre commandait ce qu'il ne nommait pas.** Une extraction sautait les
 profils déjà écrits, et `roster_limit=0` ne suffisait **pas** à les atteindre :
@@ -52,7 +52,7 @@ Trois runs ont été nécessaires pour le comprendre le 28/08. #577 a corrigé l
 libellés ; **#578 a corrigé le découpage** — deux axes disjoints
 (`existing_profiles` × `roster_coverage`), le cache à part, et `roster_limit`
 réduit à un plafond. Voir
-`docs/technical_decisions.md#deux-axes-formulaire-578`.
+`docs/decisions/deux-axes-formulaire-578.md`.
 
 **Ce qui n'a jamais été exécuté n'est pas connu.** L'épic #566 a sorti sept défauts
 d'une seule répétition de la procédure de bornage, dont deux introduits le matin
@@ -61,10 +61,16 @@ baisser la taille annoncée par GitHub, immédiatement (513 → 240 Mo constaté
 règle vaut pour la configuration autant que pour le code : un test qui vérifie qu'un
 script *contient* la bonne chaîne ne dit rien de ce qu'il *fait*.
 
-**Une convention coûte trois conflits par jour.** `docs/technical_decisions.md`
-range l'entrée la plus récente en tête : tous les lots convergent donc sur la
-ligne 1. Mettre cette entrée dans un **commit final isolé** rend le rebase
-mécanique — ça ne l'évite pas.
+**Ce constat-ci est périmé depuis le 30/08/2026, et c'est la découpe qui l'a
+périmé.** Il disait : « une convention coûte trois conflits par jour »,
+`docs/technical_decisions.md` rangeant l'entrée la plus récente en tête, tous les
+lots convergeaient sur la ligne 1, et il fallait isoler cette entrée dans un commit
+final pour rendre le rebase mécanique. Depuis, **une décision = un fichier neuf**
+sous `docs/decisions/` : deux lots simultanés écrivent deux fichiers différents et
+n'entrent plus jamais en conflit dessus. Reste une ligne à ajouter en tête de
+l'index — un conflit d'une ligne, trivial. Ne re-fusionnez pas les fichiers en
+croyant simplifier : c'est exactement ce qui ramènerait les trois conflits par jour.
+Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
@@ -84,12 +90,12 @@ mécanique — ça ne l'évite pas.
   7 shards porteurs ne réindexent plus). Ce que ça ne règle pas : le shard qui
   **construit** l'index paie toujours 244 s de construction à froid et reste tronqué —
   au plus un par semaine, contre `jean-luc-melenchon` à chaque run jusqu'ici. Voir
-  `technical_decisions.md#cache-completude-interventions-550`.
+  `docs/decisions/cache-completude-interventions-550.md`.
 - **`meta.warnings[]` n'est pas un détecteur fiable de troncature** pour un candidat qui
   porte aussi un profil UE (constaté sur `jean-luc-melenchon`, run `33110395663`) : la
   fusion garde les interventions d'`extract-an` et le `meta` du profil minimal écrit
   par `extract-ue-officiel`, avertissement de troncature compris. Le `::warning::` du
-  run, lui, est fiable. Voir `technical_decisions.md#budgets-extract-an-remesures-546`.
+  run, lui, est fiable. Voir `docs/decisions/budgets-extract-an-remesures-546.md`.
 - **Rien ne compare ce que la collecte rend à ce que la publication porte**, liste par
   liste (#545). Les trois garde-fous armés avant commit regardent ailleurs :
   `audit_diff_profils` surveille les pertes entre deux états publiés, pas deux étages
@@ -106,7 +112,7 @@ mécanique — ça ne l'évite pas.
   est due — mais l'échéance annoncée par #529 §4 (« la première entrée passe à
   `assemblee_nationale` au prochain run ») est fausse. Seul un run `cold_start` /
   `--no-merge` la ferait tomber, et c'est déjà un run à perte déclarée (#528).
-  Voir `technical_decisions.md#licence-lot-6-530` §3.
+  Voir `docs/decisions/licence-lot-6-530.md` §3.
 - ~~**La clé de fusion pivot des interventions prend l'URL d'archive Syceron pour un
   identifiant**~~ (#540, découvert sur le run `33100214165` du 27/08/2026) —
   **corrigé (PR #544) et vérifié en conditions réelles** : sur le run
@@ -125,19 +131,19 @@ mécanique — ça ne l'évite pas.
   clés pivot sont saines. Ce n'était pas une régression de #510, qui a seulement
   rendu le défaut atteignable. Aucune passe de migration n'est nécessaire : les
   7 767 entrées sont déjà dans `raw_data/`, un run `--pivot-only` les publie. Voir
-  `technical_decisions.md#cle-fusion-interventions-540`.
+  `docs/decisions/cle-fusion-interventions-540.md`.
 
 - ~~**#529 laisse deux retraits à faire dans `.github/workflows/`**~~ — **soldé le
   27/08/2026** au rebasage de la PR #538 : `debug-network-shutdown-signal.yml` est
   supprimé, et `--max-pages` avait déjà été retiré de `generate-data.yml` **et** du
   code par #510. Le compromis « accepter le drapeau mais le signaler » est parti avec
   lui plutôt que d'être livré désarmé. Voir
-  `technical_decisions.md#retrait-nosdeputes-529` §7.
+  `docs/decisions/retrait-nosdeputes-529.md` §7.
 - Les deux groupes Sénat ont leur extraction **suspendue** depuis le 24/08/2026
   (certificat TLS expiré sur `archive.nossenateurs.fr`, runs `32463926808` et
   `32548486495`, #516) : leurs fiches publiées sont gelées. Reprise conditionnée à
   un certificat valide ou à une source de remplacement — sinon, trancher le retrait
-  définitif. Voir `technical_decisions.md#extraction-groupe-suspendue-516`.
+  définitif. Voir `docs/decisions/extraction-groupe-suspendue-516.md`.
 - `fetch_full_roster` faisait **un seul essai** (timeout 15 s, aucun backoff) et
   chacune des 9 invocations d'un run reconstruisait le roster pour elle-même : le run
   `32738726729` (24/08/2026) y a perdu 4 shards sur 8, la même URL répondant aux 4
@@ -145,7 +151,7 @@ mécanique — ça ne l'évite pas.
   (timeout/`ConnectionError`/5xx, jamais `SSLError` ni 4xx), et roster unique par run
   transité par artifact depuis `prepare-roster-matrix` — ce qui ferme aussi la
   divergence possible entre la liste des shards et celle de `merge-and-pivot`. Voir
-  `technical_decisions.md#roster-unique-par-run-518`.
+  `docs/decisions/roster-unique-par-run-518.md`.
 - Le run `32750929942` (24/08/2026) a perdu son commit sur le **dernier** fetch de
   roster du run, celui de `generate_group_profiles.py` : `fetch_full_roster` héritait
   du plafond de 15 s des pages par candidat, alors qu'aucune réponse de
@@ -153,13 +159,13 @@ mécanique — ça ne l'évite pas.
   **Corrigé en #518** : plafond propre `(15, 90)`, roster **brut** transité par le
   même artifact, code de sortie 2 « roster indisponible » toléré par le step (et lui
   seul), annotations `::error::` nommant la clé et les fiches sautées. Voir
-  `technical_decisions.md#plafond-roster-et-commit-518`.
+  `docs/decisions/plafond-roster-et-commit-518.md`.
 - Le run `32773067295` (24/08/2026) a perdu son commit sur `.generation_checkpoint`,
   le point de sauvegarde de `generate_all_profiles.py` écrit **dans**
   `raw_data/profiles/` : le garde-fou #511 l'a compté comme un profil brut sans pivot.
   Aucun run n'avait jamais franchi ce step. **Corrigé en #518** (`--no-checkpoint` sur
   les passes `--pivot-only`, et les fichiers cachés écartés des inventaires — `Path.glob`
-  les remonte). Voir `technical_decisions.md#point-de-sauvegarde-dans-les-profils-518`.
+  les remonte). Voir `docs/decisions/point-de-sauvegarde-dans-les-profils-518.md`.
 - **Reste à faire** : sortir `DEFAULT_CHECKPOINT_PATH` de `raw_data/profiles/`, pour que
   chaque nouvel inventaire n'ait plus à se souvenir de l'écarter. La destination n'est pas
   triviale — `.cache/` est restauré d'un run à l'autre par `actions/cache`, et un
@@ -177,7 +183,7 @@ mécanique — ça ne l'évite pas.
   déclarés (165 s) était verte. **Corrigé en #524** : l'exception remonte jusqu'à
   l'annotation, `merge-and-pivot` saute la branche roster au lieu d'annuler le commit,
   « tous les groupes suspendus » rend 2 (toléré par les 3 appelants), et un 500 n'est
-  plus retenté. Voir `technical_decisions.md#cloisonnement-branche-roster-524`.
+  plus retenté. Voir `docs/decisions/cloisonnement-branche-roster-524.md`.
 - **Sans objet depuis #529** : la panne visée était celle de
   `www.nosdeputes.fr/deputes/json`, qui n'est plus interrogé — le roster AN vient
   d'AMO30. Une suspension d'entrée AN reste possible, mais sur une autre cause.
@@ -189,7 +195,7 @@ mécanique — ça ne l'évite pas.
   quand un budget de collecte de job est épuisé par une source dégradée, ce sont
   toujours les mêmes premiers slugs qui l'ont consommé. Constaté sur `extract-senat`,
   retiré depuis (#528) ; le défaut de conception, lui, n'est pas propre à ce job. Voir
-  `technical_decisions.md#budget-collecte-source-injoignable-514`.
+  `docs/decisions/budget-collecte-source-injoignable-514.md`.
 - `extract-roster-groupes` déclare `--budget-collecte-secondes 0` (absence de budget
   assumée, #514) faute d'une mesure sur ses 752 membres. À dimensionner si un shard
   roster meurt sur une source dégradée.
@@ -202,13 +208,13 @@ mécanique — ça ne l'évite pas.
   back a chamber for them, and #488 restricts bicameral collection to the 8
   `candidat_declare`. They now carry a `chambres du profil non corroborée` warning that
   says so. Correcting them is a **collection** matter, not a schema one. See
-  `technical_decisions.md#deux-chambres-interrogees` and `#chambres-profil-derivees`.
+  `docs/decisions/deux-chambres-interrogees.md` and `docs/decisions/chambres-profil-derivees.md`.
 - `mandats[].chambre` is `null` on 214 of the 228 published `mandat_electif` (189 profiles,
   measured on `f5a828b`): the stamp is written at collection (#492) and is not
   reconstructible for already-collected mandates. They fill in at their next real
   collection, via `merge_profile.backfill_mandat_chambre`. Each affected profile carries one
   `chambre de mandat électif non résolue` warning until then — the count is the migration's
-  progress bar, not an anomaly. See `technical_decisions.md#chambre-par-mandat-electif`.
+  progress bar, not an anomaly. See `docs/decisions/chambre-par-mandat-electif.md`.
 - The UI still shows one parliamentary experience per candidate. The data model no longer
   stands in the way — #492 carries the chamber on each mandate, #493 publishes the
   profile-level `chambres` list — but the values only become real after a full
@@ -228,20 +234,20 @@ mécanique — ça ne l'évite pas.
   sort. The key is fixed and the frozen indexes rebuilt, but **the profiles
   themselves need a full regeneration** to be correct — no in-place migration is
   possible (the lost amendements were never written). See
-  `technical_decisions.md#amendements-cle-uid`.
+  `docs/decisions/amendements-cle-uid.md`.
 - `generate-data.yml`: `if: always()` upload/cache steps still don't survive
   a runner infrastructure `shutdown signal` (#228) for jobs that aren't
   matrix-sharded. `extract-an` is now sharded per-candidate (#344, see
-  `technical_decisions.md#matrix-extract-an-par-candidat`) — the same
+  `docs/decisions/matrix-extract-an-par-candidat.md`) — the same
   mitigation for `extract-roster-groupes` (~750 members) remains deferred to
-  the full-scale roster rollout, see `technical_decisions.md#seuil-couverture-groupe`.
+  the full-scale roster rollout, see `docs/decisions/seuil-couverture-groupe.md`.
 - `generate-data.yml`: the weekly AN cache key may no longer be written back by
   `extract-an` / `extract-roster-groupes`. `extract-amendements-an` writes the
   exact key first, and `actions/cache` skips its post-job save after an exact
   key hit — so the ~290 MB of AN dumps each shard downloads would never be
   persisted. **Confirmed by run 32136438841 and fixed in #424**: amendements
   moved to their own `public-data-cache-amendements-*` key, AN jobs now list
-  their cached directories explicitly (`technical_decisions.md#cache-cle-amendements-separee`).
+  their cached directories explicitly (`docs/decisions/cache-cle-amendements-separee.md`).
 - `generate-data.yml`: the same #424 defect had reappeared on the two cache
   directories only `collect_interventions=true` ever fills. **Fixed in #505**,
   with a different mechanism than the one first diagnosed: `extract-roster-groupes`
@@ -250,7 +256,7 @@ mécanique — ça ne l'évite pas.
   ISO week, two possible contents. The key now carries the mode, the `path:`
   keeps only the per-legislature indexes (never the 650,5 MB of archives, measured),
   and the roster job is `actions/cache/restore` on both its cache steps.
-  See `technical_decisions.md#cache-mode-interventions-505`.
+  See `docs/decisions/cache-mode-interventions-505.md`.
 - `generate-data.yml`: a `Read timed out` on NosDéputés made
   `generate_roster_candidats.py` overwrite the roster with **0 candidate** and exit 0,
   so the roster pivot pass iterated on nothing — run `32405297873` concluded
@@ -260,7 +266,7 @@ mécanique — ça ne l'évite pas.
   was measured and rejected — a partial failure drops 452 or 300 of 752 at once, and
   is observable at its cause); and `src/audit_collecte_non_publiee.py` now reconciles
   collected against published before every commit. See
-  `technical_decisions.md#collecte-non-publiee`.
+  `docs/decisions/collecte-non-publiee.md`.
 - `minoritaire` position unhandled in JS: `classifyDateInHemicycle` /
   `classifyTexteInHemicycle` (in `web/UI_finale/src/data/pivotAdapter.js` and
   archived `web/old/v3/js/render.js`) only handle `"majorite"` and `"opposition"`.
@@ -272,7 +278,7 @@ mécanique — ça ne l'évite pas.
   an `astrid-panosyan-bouvet` entry (`debut: 2026-02-04`, `actif: true`) the
   code no longer reproduces. The pre-commit loss check blocks on it, and will at
   the next `merge-and-pivot` run, independently of #487 that measured it (see
-  `technical_decisions.md#id-pivot-sans-prefixe`).
+  `docs/decisions/id-pivot-sans-prefixe.md`).
 
 ## Ideas not yet scheduled
 
@@ -296,7 +302,7 @@ mécanique — ça ne l'évite pas.
   sur disque est indiscernable d'un groupe dissous (#511/#524). Ce qui reste ouvert
   de #526 §9 est la clause 3 : décider comment naît un slug quand la source n'en
   publie pas. Décision de schéma, pas passe de collecte. Voir
-  `technical_decisions.md#retrait-nosdeputes-529` §5.
+  `docs/decisions/retrait-nosdeputes-529.md` §5.
 - `raw_data/correspondance_acteurs_an.json` n'est pas dans le sparse-checkout de
   `tests.yml` : sa couverture réelle est contrôlée par le quality gate à l'exécution,
   pas par la suite (les tests tournent sur fixture). L'y ajouter permettrait un test
@@ -316,7 +322,7 @@ mécanique — ça ne l'évite pas.
     `--skip-interventions` in hard (light extraction mode, #357), so the 468 roster
     profiles collect none. That was the right call when the roster only fed group
     aggregates; it is worth re-deciding now that those profiles are the published
-    product. See `technical_decisions.md#syceron-actif-510`.
+    product. See `docs/decisions/syceron-actif-510.md`.
 
 - Senate speeches were collectable but never attributed: `fetch_intervention_details`
   resolves a speaker through the document's `url_nosdeputes` key, which
@@ -324,11 +330,11 @@ mécanique — ça ne l'évite pas.
   Senate intervention was therefore classified `mention` and dropped, which is why
   `extract-senat` hard-coded `--skip-interventions` (#501). **#528 retired the job and
   the chamber**: this is now a reopening cost, not a defect to fix — see the three
-  conditions in `technical_decisions.md#retrait-senat-528` §7.
+  conditions in `docs/decisions/retrait-senat-528.md` §7.
   The tripwire `tests/test_interventions_senat_non_retenues.py` was **deleted** on
   27/08/2026 with the chain it measured — `fetch_intervention_details` no longer
   exists (#510). Reopening is now harder, not easier: there is no Senate intervention
-  path left to fix a key in. See `technical_decisions.md#interventions-senat-501`.
+  path left to fix a key in. See `docs/decisions/interventions-senat-501.md`.
 
 - `actions/checkout` is now the dominant per-shard cost in `generate-data.yml`:
   93–117 s measured per roster shard on run 32288588518, i.e. ~55 % of a shard,
@@ -336,7 +342,7 @@ mécanique — ça ne l'évite pas.
   sharding multiplies it. A shallow/partial checkout (`fetch-depth`, sparse
   paths) would attack it, but the extraction jobs read the committed profile
   baseline, so what can be pruned has to be established first. Measure before
-  deciding, see `technical_decisions.md#budget-execution-pleine-echelle-467`.
+  deciding, see `docs/decisions/budget-execution-pleine-echelle-467.md`.
 
 - `tests/test_amendements_download_modes.py` now dominates the suite: eleven
   teardowns wait 0.5 s each for a local HTTP server to stop — ~5.5 s of the
@@ -349,14 +355,14 @@ mécanique — ça ne l'évite pas.
   between runs. The premise behind that deletion ("the archive is never reread
   to resume a download") stopped being true with cross-invocation resume.
   Reversing it trades weekly cache volume for resume — measure before deciding,
-  see `technical_decisions.md#telechargement-an-trois-modes-defaillance`.
+  see `docs/decisions/telechargement-an-trois-modes-defaillance.md`.
 
 - Congrès scrutins (AN + Sénat at Versailles) are excluded from `votes[]`
   (`AN_SCRUTIN_UID_PREFIXE`): their numbering restarts at 1 inside the AN
   number space, so the only one published to date — the 2024-03-04 IVG
   constitutional vote — would cite the wrong source page and collide with AN
   scrutin n° 1 in group cohesion. Publishing it needs its own identifier and
-  source URL, see `technical_decisions.md#votes-multi-legislature`.
+  source URL, see `docs/decisions/votes-multi-legislature.md`.
 
 - Refine thematic classifier: handle cross-theme items (e.g. tagged both
   `budget` and `sante`), add an explicit "non classifié" bucket instead of
@@ -364,19 +370,19 @@ mécanique — ça ne l'évite pas.
 - Evaluate surfacing `pivot_data/partis/` aggregates in a comparison panel
   (non-navigation context) rather than as a top-level tab.
 - Senate adapter (votes/amendments/sponsored texts) — deferred, see
-  `technical_decisions.md#hors-perimetre`. Also applies to the gouvernement
+  `docs/decisions/hors-perimetre.md`. Also applies to the gouvernement
   view's `textes[]` (AN dossiers dump only, Senate-initiated bills not
-  captured), confirmed in `technical_decisions.md#gouvernement-doc-cloture`.
+  captured), confirmed in `docs/decisions/gouvernement-doc-cloture.md`.
 - EU textes_portés/amendements via the official API — superseded by the
-  Parltrack approach, see `technical_decisions.md#hors-perimetre` and
+  Parltrack approach, see `docs/decisions/hors-perimetre.md` and
   `docs/extract-ue.md`.
 - Precise ministerial portfolio title — no source identified, see
-  `technical_decisions.md#hors-perimetre`.
+  `docs/decisions/hors-perimetre.md`.
 - Extra-parliamentary bodies matching — homonym risk, see
-  `technical_decisions.md#hors-perimetre`.
+  `docs/decisions/hors-perimetre.md`.
 - Syceron (comptes rendus de séance) AN open data — fetch/caching, parse XML -> `interventions[]` et index `acteurRef -> interventions` implémentés ; intégration éditoriale aval encore à planifier. Voir `docs/an_opendata.md`.
 - Agenda/committee meetings dataset — low priority, see
-  `technical_decisions.md#hors-perimetre`.
+  `docs/decisions/hors-perimetre.md`.
 - Mayors — no dedicated collection module yet.
 - Consolidate `test_quality_gate_syceron.py` and `test_quality_gate_groupes.py`
   (added by #193 for `_report_groupes`) into a single `test_check_quality_gate.py`
@@ -385,26 +391,26 @@ mécanique — ça ne l'évite pas.
   on dossiers without a "Projet de loi"/"Proposition de loi" title prefix
   (2355/3044 dossiers, mostly motions/résolutions/rapports) — needs mandate-date
   vs. deposit-date filtering to avoid the ~15% false-positive rate measured
-  in #207 (ex-minister co-signatories). See `technical_decisions.md#gouvernement-textes-statut`.
+  in #207 (ex-minister co-signatories). See `docs/decisions/gouvernement-textes-statut-210-version-initiale.md#gouvernement-textes-statut`.
 - Surface `textes[].initiateurs` (minister → bill link, #435) in the
   gouvernement view: the data layer carries it, `web/` does not display it yet.
   Also unmeasured by `audit_gouvernement_dataset.py`/`check_quality_gate.py`
   (no coverage indicator for resolved vs. raw-`acteurRef` links, 556/1213
-  today). See `technical_decisions.md#gouvernement-textes-initiateurs`.
+  today). See `docs/decisions/gouvernement-textes-initiateurs.md`.
 - #431 (normalising `amendements[]` in profiles) is unblocked now that the store
   is keyed by `uid`, but its baseline must be re-measured: its 4 246 026 pairs /
   67 058 distinct amendements were counted on collapsed data. The shared
   deduplicated list is to be a single global file (arbitrated 2026-08-18); it
   will exceed GitHub's 100 MB blob limit, so it needs the same treatment already
   applied twice in this repo — per-actor sharding (#392) or gzip as for the
-  frozen legislatures. See `technical_decisions.md#amendements-cle-uid`.
+  frozen legislatures. See `docs/decisions/amendements-cle-uid.md`.
 - Audit temporal-range cross-tables (`compute_plage_dates_*`, #316): no
   alerting on threshold yet (e.g. "profile doesn't cover the current
   legislature") — raw min/max indicator only. See
-  `technical_decisions.md#audit-plages-temporelles`.
+  `docs/decisions/audit-plages-temporelles.md`.
 - `schema_groupe.py`: `amendements_agreges` has no date field, so its audit
   temporal-range cell is always `null` — schema change, out of scope for
-  #316. See `technical_decisions.md#audit-plages-temporelles`.
+  #316. See `docs/decisions/audit-plages-temporelles.md`.
 - Same unconditional `meta.genere_le` re-stamping pattern as #343 (fixed for
   candidate pivots via `preserve_stable_freshness_timestamps`) likely applies
   to `group_profile.py`/`gouvernement_profile.py`/`parti_profile.py`, which
@@ -414,4 +420,4 @@ mécanique — ça ne l'évite pas.
   député (commissions avec rôle, groupes d'amitié, engagements
   extra-parlementaires, groupe déclaré) : ces champs restent sourcés
   uniquement depuis NosDéputés après #355 (identité bio seule basculée vers
-  l'AN). Voir `technical_decisions.md#bascule-identite-an-primaire`.
+  l'AN). Voir `docs/decisions/bascule-identite-an-primaire.md`.

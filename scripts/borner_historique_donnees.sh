@@ -125,7 +125,7 @@
 #
 #   L'arbitrage (valeur, unité, déclenchement, destination de l'archive) est
 #   ouvert et n'est PAS rendu ici :
-#   voir docs/technical_decisions.md#fenetre-recalibrage-551.
+#   voir docs/decisions/fenetre-recalibrage-551.md.
 #
 # ── Trois pièges, tous rencontrés en mesurant ────────────────────────────────
 #

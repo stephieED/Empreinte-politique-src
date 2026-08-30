@@ -2,7 +2,7 @@
 du timeout `requests` (#370).
 
 Généralise le pattern déjà en place sur `candidate_profile.py::_get_with_watchdog`
-(#340, voir docs/technical_decisions.md#get-payload-retry) aux téléchargements
+(#340, voir docs/decisions/resilience-generate-data-shutdown-signal.md#get-payload-retry) aux téléchargements
 de fichier en streaming, partagé entre les modules qui en ont besoin
 (`candidate_profile.py`, `gouvernement_textes.py`, `parltrack_dumps.py`,
 `mep_profile.py`, `syceron_debates.py`). Module dédié plutôt que réexporté

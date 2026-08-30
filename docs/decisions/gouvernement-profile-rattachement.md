@@ -16,7 +16,7 @@ gouvernement complet conforme à `schema_gouvernement.py`.
    docstring `gouvernement_textes.py`). Une `date_depot` absente exclut
    silencieusement le dossier (jamais de rattachement par défaut).
 2. Un dossier dont `statut` est `None` (fam_code inconnu côté
-   `gouvernement_textes.py`, voir [#gouvernement-textes-statut](#gouvernement-textes-statut))
+   `gouvernement_textes.py`, voir [#gouvernement-textes-statut](gouvernement-textes-statut-210-version-initiale.md#gouvernement-textes-statut))
    ou dont `chambre_depot_initial` est `None` (aucun acte `-DEPOT`
    identifiable) est exclu de `textes[]`, avec un warning explicite dans
    `meta.warnings` : le schéma n'admet aucune valeur `null` sur ces deux
@@ -54,7 +54,7 @@ du 23/10/2025.
 **Hors périmètre** : `premier_ministre` reste `null` (aucune source encore
 câblée pour le déterminer) ; intégration à `check_quality_gate.py` (#6) et
 CI/CD (#9) non traitées ici.
-*Périmé depuis #398 — voir [la section dédiée](#gouvernement-premier-ministre-portefeuille) :
+*Périmé depuis #398 — voir [la section dédiée](gouvernement-premier-ministre-portefeuille.md) :
 `premier_ministre` et `membres[].portefeuille` sont câblés depuis les mandats
 `MINISTERE`. La source existait déjà, elle n'était pas consommée.*
 

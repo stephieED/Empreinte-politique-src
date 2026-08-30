@@ -67,7 +67,7 @@ Ce qui échoue bruyamment, c'est le **contrôle de couverture** sur le corpus
 bloque le commit.
 
 Rationale complet et condition de retrait :
-`docs/technical_decisions.md#correspondance-acteurs-an-525`.
+`docs/decisions/correspondance-acteurs-an-525.md`.
 """
 
 from __future__ import annotations

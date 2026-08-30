@@ -159,7 +159,7 @@ def _reset_amendements_failed_legislatures_cache():
 # `test_build_profile_reports_empty_api_payloads` est en revanche conservé,
 # réécrit sur la seule source restante : c'est lui qui vérifie qu'un slug
 # introuvable sort avec des warnings plutôt qu'avec un profil d'apparence
-# normale. Voir docs/technical_decisions.md#retrait-nosdeputes-529.
+# normale. Voir docs/decisions/retrait-nosdeputes-529.md.
 # ---------------------------------------------------------------------------
 
 def test_build_profile_reports_empty_api_payloads():
@@ -582,7 +582,7 @@ def test_parse_amendements_zip_warns_explicitly_on_unknown_schema(tmp_path, caps
 # la forme plate attendue par le reste du pipeline.
 #
 # La clé est l'`uid`, jamais le `numero` (corrigé le 18/08/2026, voir
-# docs/technical_decisions.md#amendements-cle-uid) : le `numeroLong` repart à
+# docs/decisions/amendements-cle-uid.md) : le `numeroLong` repart à
 # chaque texte, et keyer par lui écrasait 74,9 % des amendements de la
 # législature 17.
 # ---------------------------------------------------------------------------
@@ -1423,7 +1423,7 @@ def test_les_fetchs_nosdeputes_nont_plus_de_definition():
         assert not hasattr(candidate_profile, nom), (
             f"`candidate_profile.{nom}` est de retour : c'est un morceau du "
             "chemin NosDéputés, retiré par #529. Voir "
-            "docs/technical_decisions.md#retrait-nosdeputes-529."
+            "docs/decisions/retrait-nosdeputes-529.md."
         )
 
 
@@ -2258,7 +2258,7 @@ def test_download_and_build_amendement_index_uses_existing_cache_without_downloa
 
 # ---------------------------------------------------------------------------
 # Législatures figées (15/16) : fallback committé, aucun accès réseau
-# (docs/technical_decisions.md#amendements-legislatures-figees).
+# (docs/decisions/amendements-legislatures-figees.md).
 # ---------------------------------------------------------------------------
 
 def test_download_and_build_amendement_index_uses_frozen_fallback_without_download(tmp_path):

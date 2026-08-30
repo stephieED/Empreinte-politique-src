@@ -113,8 +113,8 @@ Usage :
     python3 src/verifier_archivage_swh.py --sans-issues        # .md seulement
     python3 src/verifier_archivage_swh.py --json audit/swh.json
 
-Voir `docs/technical_decisions.md#fenetre-recalibrage-551`, question 4, et
-`docs/technical_decisions.md#perimetre-coupure-575`.
+Voir `docs/decisions/fenetre-recalibrage-551.md`, question 4, et
+`docs/decisions/perimetre-coupure-575.md`.
 """
 
 import argparse

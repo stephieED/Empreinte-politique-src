@@ -29,7 +29,7 @@ confondu des grandeurs différentes jusqu'à finir par les nommer.
 > un critère : un critère s'atteint, celui-là se déclenche, et il a été franchi
 > le jour même de son écriture. Il est devenu un **garde-fou surveillé, avec
 > une conduite à tenir écrite** et un contrôle qui échoue :
-> [#garde-fou-blob-580](#garde-fou-blob-580). Les trois clauses ci-dessus, elles,
+> [#garde-fou-blob-580](partition-profils-legislature-580.md#garde-fou-blob-580). Les trois clauses ci-dessus, elles,
 > sont des propriétés du dépôt, mesurables — et **atteintes** au 29/08/2026 sur
 > le corpus doublé : dépôt **627 Mo** après `gc` (× 8), push **204 Mo** (× 10),
 > mapping préservé.
@@ -99,8 +99,8 @@ La clause a donc basculé, et elle a basculé **le jour même de son écriture**
 huit fichiers dépassent 50 Mo au 29/08, cinquante-quatre dépassent 45. Ce n'était
 pas un fil de détente, c'était un fil déjà tendu. La suite — pourquoi il sort du
 critère, ce qui le remplace, et ce qui a fait tomber ce blob à 23,4 Mo — est
-en [#garde-fou-blob-580](#garde-fou-blob-580) et
-[#partition-profils-legislature-580](#partition-profils-legislature-580).
+en [#garde-fou-blob-580](partition-profils-legislature-580.md#garde-fou-blob-580) et
+[#partition-profils-legislature-580](partition-profils-legislature-580.md).
 
 ## Ce qui reste, et qui n'est pas un quota
 
@@ -113,7 +113,7 @@ en [#garde-fou-blob-580](#garde-fou-blob-580) et
 
 Ni l'un ni l'autre n'est une limite GitHub. Le budget d'exécution à pleine échelle,
 lui, **a été mesuré** — 54,9 min contre 630 annoncées, voir
-[#budget-execution-pleine-echelle-467](#budget-execution-pleine-echelle-467) : ne pas
+[#budget-execution-pleine-echelle-467](budget-execution-pleine-echelle-467.md) : ne pas
 le redire « projeté ».
 
 ---

@@ -106,7 +106,7 @@ INVENTAIRE_STEPS = {
 # l'ensemble redevient **vide** — pas conservé « au cas où ». Une tolérance qui
 # survit à son bénéficiaire est une porte ouverte que personne ne relit ; la
 # règle, elle, porte toujours sur les clés PARTAGÉES.
-# Voir docs/technical_decisions.md#retrait-senat-528.
+# Voir docs/decisions/retrait-senat-528.md.
 JOBS_CACHE_LARGE_TOLERES: set[str] = set()
 
 # Clés partagées par plus d'un job. Pour chacune, un seul job doit sauvegarder.

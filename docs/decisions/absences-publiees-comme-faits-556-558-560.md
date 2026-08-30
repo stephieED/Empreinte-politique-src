@@ -8,7 +8,7 @@ Un seul lot pour trois issues, et pas par commodité : elles partagent
 `src/candidate_profile.py` et `src/couverture_profil.py`, et surtout la **même
 faute de fond**. Une absence produite par une **décision**, par une **frontière
 de source** ou par un **marqueur XML** était publiée comme un **fait** — le
-contresens exact que [#couverture-listes-539](#couverture-listes-539) existe
+contresens exact que [#couverture-listes-539](couverture-listes-539.md) existe
 pour empêcher. Trois PR séparées seraient entrées en conflit sur les mêmes
 lignes.
 
@@ -73,8 +73,8 @@ règle **aux deux couches**.
 Conséquence non évidente, et qui aurait rendu le correctif inopérant : les index
 `index_identite.json` / `index_organes.json` sont mis en cache sur disque **et**
 restaurés d'un run à l'autre par le cache GitHub Actions
-([#cache-completude-interventions-550](#cache-completude-interventions-550),
-[#cache-fraicheur-interventions-555](#cache-fraicheur-interventions-555)).
+([#cache-completude-interventions-550](cache-completude-interventions-550.md),
+[#cache-fraicheur-interventions-555](cache-fraicheur-interventions-555.md)).
 Un correctif portant sur ce qui est *écrit* dans l'index reste sans effet tant
 que l'ancien fichier est relu : **le code corrigé ne s'exécute jamais**. Ils
 portent désormais un nom versionné (`NOM_INDEX_IDENTITE`, `NOM_INDEX_ORGANES`),

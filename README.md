@@ -135,7 +135,10 @@ See:
 - `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
 - `docs/extract-ue.md` - UE source investigation report and implementation context.
 - `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
-- `docs/technical_decisions.md` - full rationale and edge-case history.
+- `docs/decisions/<anchor>.md` - one file per architectural decision: full rationale,
+  alternatives rejected, edge-case history.
+- `docs/technical_decisions.md` - their index, newest first. A new decision is a **new
+  file** plus one index line, never an edit inside an existing file (`AGENTS.md` §8).
 - `AGENTS.md` - condensed non-negotiable rules for agents.
 
 ## Installation
@@ -161,7 +164,7 @@ python src/candidate_profile.py jean-luc-melenchon --chambre deputes
 
 The Senate left the product's scope in #528: `--chambre senateurs` is refused,
 and so is `--source senat` on `generate_all_profiles.py`. Reopening condition:
-[`docs/technical_decisions.md#retrait-senat-528`](docs/technical_decisions.md#retrait-senat-528).
+[`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md).
 
 Default output: `raw_data/profiles/<slug>.json` — the **socle**, plus one
 `raw_data/profiles/<slug>/<legislature>.json` slice per legislature holding the
@@ -303,7 +306,7 @@ celui-ci vérifie une **invariance dans un seul**. Leurs tolérances sont
 cloisonnées — `allow_declared_losses` ne désarme pas
 `allow_broken_references`. Mesuré sur les 209 profils committés : 0
 référence orpheline sur 1 347 451, 3,02 s / 162,0 Mio. Voir
-`docs/technical_decisions.md#integrite-referentielle-pivot`.
+`docs/decisions/integrite-referentielle-pivot.md`.
 
 ### Régénérer la table slug ↔ acteur AN (#525)
 
@@ -324,7 +327,7 @@ script sort en 1 : il n'invente jamais une entrée. Mesuré le 26/08/2026 sur le
 476 profils publiés et les 3 119 acteurs d'AMO30 : 466 résolus par le nom, 10 à
 arbitrer (2 homonymes, 2 apostrophes, 5 noms divergents, 1 hors AN). La
 couverture est un **échec dur** du quality gate (§5b), qui nomme le slug
-manquant. Voir `docs/technical_decisions.md#correspondance-acteurs-an-525`.
+manquant. Voir `docs/decisions/correspondance-acteurs-an-525.md`.
 
 ### La composition des groupes AN vient d'AMO30 (#526 → bascule #527)
 
@@ -362,7 +365,7 @@ plutôt que de rendre une liste vide, qui serait indiscernable d'un groupe
 dissous. La 17e législature, absente de NosDéputés,
 est servie par le module (461 membres sur les 5 familles publiées, 305 ont déjà
 un profil) mais **n'est pas encore publiée** — voir `ROADMAP.md`. Détail et
-mesures : `docs/technical_decisions.md#bascule-roster-an-amo30-527`.
+mesures : `docs/decisions/bascule-roster-an-amo30-527.md`.
 
 ### Vérifier que tout ce qui est collecté est publié (#511)
 
@@ -381,7 +384,7 @@ Sortie non nulle dès qu'un `raw_data/profiles/<slug>.json` n'a pas son
 mesuré : 0 écart sur les 12 commits de run du 16 au 20/08/2026, pendant que le
 corpus passait de 48 à 209 profils. Le contrôle ne parse aucun profil (deux
 listes de noms de fichiers) : 0,08 s / 13,9 Mio mesurés à 752 profils. Voir
-`docs/technical_decisions.md#collecte-non-publiee`.
+`docs/decisions/collecte-non-publiee.md`.
 
 ### Vérifier que chaque liste publiée porte ce qui a été collecté (#545)
 
@@ -410,7 +413,7 @@ deux passes de normalisation pivot. Mesuré : 0 déficit sur les 2 380 couples
 (profil, relation) de `3104e37` ; rejoué sur `deb28a7`, il sort en erreur et
 nomme les cinq profils en déficit. 58,7 s / 158,2 Mio sur les 4,3 Go de profils
 bruts — aucun profil n'est matérialisé. Voir
-`docs/technical_decisions.md#collecte-vs-publie-545`.
+`docs/decisions/collecte-vs-publie-545.md`.
 
 ## 3. Generate all candidate profiles (batch)
 
@@ -440,7 +443,7 @@ décision écrite : un avertissement le signale, `0` déclare l'absence de budge
 `--budget-job-secondes` fait la même chose pour le run entier — les candidats non
 atteints sortent en `budget_job_epuise`, déclarés et comptés au résumé, au lieu
 d'être emportés sans trace par le `timeout-minutes` du job.
-Voir `docs/technical_decisions.md#budget-collecte-source-injoignable-514`.
+Voir `docs/decisions/budget-collecte-source-injoignable-514.md`.
 
 `--manifest-out` consigne, une ligne par nom de fichier, les profils bruts que
 CE run a réellement écrits — ni ceux qu'il a sautés, ni ceux qui étaient déjà
@@ -448,13 +451,13 @@ dans `--out-dir`. C'est ce qui permet à un job d'extraction CI de ne publier qu
 sa propre contribution : `raw_data/profiles/` contient aussi la baseline
 committée déposée par son `actions/checkout`, et la republier réinjectait des
 données périmées à la fusion (#450, voir
-[`docs/technical_decisions.md#publication-scopee-artifacts`](docs/technical_decisions.md#publication-scopee-artifacts)).
+[`docs/decisions/publication-scopee-artifacts.md`](docs/decisions/publication-scopee-artifacts.md)).
 Le fichier est écrit au fil de l'eau et tronqué au démarrage : il décrit une
 exécution, pas un répertoire.
 
 Extraction pilotée par roster (composition réelle des groupes parlementaires,
 au lieu de la liste éditoriale `raw_data/candidats.json`, voir
-[`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot)) :
+[`docs/decisions/provenance-pivot.md`](docs/decisions/provenance-pivot.md)) :
 
 ```bash
 python src/generate_roster_candidats.py
@@ -599,7 +602,7 @@ even if concluded under government B). A text whose `statut` or
 `chambre_depot_initial` can't be determined is excluded from `textes[]` (never
 a guessed default), with a warning kept in `meta.warnings`; `comptages.par_statut`
 is a raw count of the retained texts only — no rate is ever computed (see
-[`docs/technical_decisions.md#gouvernement-profile-rattachement`](docs/technical_decisions.md#gouvernement-profile-rattachement)).
+[`docs/decisions/gouvernement-profile-rattachement.md`](docs/decisions/gouvernement-profile-rattachement.md)).
 
 ```bash
 python src/gouvernement_profile.py \
@@ -654,7 +657,7 @@ indexes unconditionally and pre-warm the shared `.cache/amendements_an/`
 cache (artifact `amendements-index-an`), instead of leaving that
 construction to lazy per-candidate calls in `extract-an`/
 `extract-roster-groupes`. `continue-on-error: true`, same pattern as
-`extract-parltrack` — see `docs/technical_decisions.md#amendements-index-job-dedie-ci`.
+`extract-parltrack` — see `docs/decisions/amendements-index-job-dedie-ci.md`.
 Legislatures 15/16 are excluded from this network path: their dossier is
 closed and the CI download budget can't reliably fetch their 350-650 MB
 archive (recurring `IncompleteRead`, reproduced outside CI too). Their index
@@ -664,14 +667,14 @@ segmented/retried fetch as the CI job, writing into gitignored
 `.cache/amendements_an/`; `--stall-cycles` / `--stall-wait-seconds` widen the
 wait when the source serves nothing at all — offline, waiting is the only
 remedy that works, see
-`docs/technical_decisions.md#telechargement-an-trois-modes-defaillance`) and
+`docs/decisions/telechargement-an-trois-modes-defaillance.md`) and
 committed under `raw_data/amendements_an_figes/`
 — the script deduplicates the raw per-signataire index into
 `amendements.json` + a slim `index_par_acteur.json` before writing, since the
 undeduplicated form is multiple GB uncompressed (measured on legislature 16)
 and can't be committed. `candidate_profile.py` reads that fallback (expanding
 it back to the standard flat shape) instead of hitting the network for those
-two — see `docs/technical_decisions.md#amendements-legislatures-figees`.
+two — see `docs/decisions/amendements-legislatures-figees.md`.
 
 Nominal votes follow the same shape since #403. `fetch_votes_officiels()`
 aggregates **all four AN legislatures** (14 to 17, `AN_SCRUTINS_LEGISLATURES`)
@@ -684,7 +687,7 @@ only downloads the active 17th (26 MB). Both the on-disk cache and the
 committed fallback store the deduplicated form — scrutin metadata once in
 `scrutins.json`, one `[uid, position]` reference per voter, sharded per
 `acteurRef` — which keeps the four legislatures at 68 MB instead of 741 MB
-flat. See `docs/technical_decisions.md#votes-multi-legislature`.
+flat. See `docs/decisions/votes-multi-legislature.md`.
 
 The merge stage runs `src/check_quality_gate.py`; commit/push occurs only if
 the gate exits with code 0. Its **§7 is the blob guard-rail of #580**: it
@@ -693,7 +696,7 @@ measures the biggest versioned file, **warns at 50 MiB**, **fails the commit at
 and prints the course of action with the finding. `--blob-warn-mo 0` disables
 the section. It lives here and not in the test suite because `tests.yml`
 sparse-checks-out without the corpus (#473), so no test can measure it. See
-`docs/technical_decisions.md#garde-fou-blob-580`.
+`docs/decisions/partition-profils-legislature-580.md#garde-fou-blob-580`.
 
 Before that step, the `merge-and-pivot` job also
 downloads the `amendements-index-an` artifact into `.cache/amendements_an`
@@ -705,7 +708,7 @@ built".
 `merge-and-pivot` also runs `src/generate_gouvernement_profiles.py --validate`
 right after the groupe step, on the same model, writing `pivot_data/gouvernements/`
 (included in the automatic commit alongside `pivot_data/groupes`) — see
-`docs/technical_decisions.md#gouvernement-ci-integration` for the timeout
+`docs/decisions/gouvernement-ci-integration.md` for the timeout
 budget measurement (no dedicated job needed, unlike the AN extraction jobs).
 
 To run the gate locally:
@@ -720,7 +723,7 @@ python src/check_quality_gate.py --amendements-staleness-days 14  # laxer amende
 
 `--groupe-min-coverage-pct` (default `0`, disabled) is a relative alternative/complement
 to `--groupe-min-members` (default `1`, absolute count) for the groupe coverage soft
-warning — see `docs/technical_decisions.md#seuil-couverture-groupe` for why the absolute
+warning — see `docs/decisions/seuil-couverture-groupe.md` for why the absolute
 default is kept until full-scale roster-driven extraction (#188/#190/#191) produces real
 coverage numbers.
 
@@ -729,8 +732,8 @@ coverage numbers.
 legislature, an amendements index that was never built from one that is present but stale
 (no successful rebuild within the threshold, per the `fraicheur.json` indicator written by
 `candidate_profile.py`, #253), or frozen (légis 15/16, `fraicheur.json` carries `figee: true`
-— never staleness-checked, see `docs/technical_decisions.md#amendements-legislatures-figees`) — see
-`docs/technical_decisions.md#amendements-index-quality-gate-fraicheur`.
+— never staleness-checked, see `docs/decisions/amendements-legislatures-figees.md`) — see
+`docs/decisions/amendements-index-quality-gate-fraicheur.md`.
 
 `--gouvernements-dir` (default `pivot_data/gouvernements`) / `--gouvernements-config`
 (default `raw_data/gouvernements_reels.json`) drive section 5 (gouvernements), mirroring
@@ -790,7 +793,7 @@ Two disjoint axes (#578): `EXISTING_PROFILES` decides what happens to profiles
 already written (`leave-as-is` / `refresh`, merging / `overwrite`, replacing),
 `ROSTER_COVERAGE` decides whether members with no profile get one, and
 `COLD_START` only purges the download caches. See
-`docs/technical_decisions.md#deux-axes-formulaire-578`.
+`docs/decisions/deux-axes-formulaire-578.md`.
 
 Each stage keeps the CI job's `continue-on-error` behavior: a failure in one
 source (e.g. ParlTrack down) doesn't stop the rest. Unlike CI, nothing is
@@ -986,7 +989,7 @@ and **omits** the key itself — absent, never empty (§2.5). Load a profile wit
 `profil_brut.charger_profil_brut()`, which accepts both this form and the older
 monolithic one; stream just the amendments with
 `profil_brut.iter_amendements_du_profil()`. Details:
-[`docs/technical_decisions.md#partition-profils-legislature-580`](docs/technical_decisions.md#partition-profils-legislature-580).
+[`docs/decisions/partition-profils-legislature-580.md`](docs/decisions/partition-profils-legislature-580.md).
 
 Each profile includes:
 
@@ -1030,7 +1033,7 @@ With `--pivot`, `generate_all_profiles.py` writes `<slug>.pivot.json`:
     // just published. #530 measured that they do NOT go away on their own:
     // merge_pivot_profile unions sources[] by type, so an already-published
     // "nosdeputes" entry survives an AN collection, and the ODbL attribution
-    // stays due (docs/technical_decisions.md#licence-lot-6-530).
+    // stays due (docs/decisions/licence-lot-6-530.md).
     {"type": "assemblee_nationale", "url": "https://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA1234", "synchro_le": "2026-07-29T..."},
     {"type": "assemblee_nationale", "url": "https://data.assemblee-nationale.fr/", "synchro_le": "2026-07-29T..."}
   ],
@@ -1071,7 +1074,7 @@ collection did not make it so (#530): Parltrack is still collected under ODbL, a
 published fields derived from NosDeputes/NosSenateurs are still published. Each profile
 lists the licences its own content falls under in `meta.licence_donnees`, derived from its
 `sources[]` by `src/licences.py`. Details: `AGENTS.md` §7 and
-`docs/technical_decisions.md#licence-lot-6-530`.
+`docs/decisions/licence-lot-6-530.md`.
 
 ## Tests
 
@@ -1090,7 +1093,7 @@ this structurally — it sparse-checks-out only what the suite actually reads, s
 the corpus is not on disk at all. A test that re-couples to it fails there with
 a `FileNotFoundError` naming the path. Acceptance tests that need real profiles
 use the frozen fixtures under `tests/fixtures/`. Rationale:
-`docs/technical_decisions.md#ci-tests-pytest`.
+`docs/decisions/ci-tests-pytest.md`.
 
 ## Coverage limits
 
@@ -1103,9 +1106,9 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
   longer waiting on a certificate — it waits on an explicit editorial
   reopening. Their published files stay in place, frozen (removing a published
   file is a disappearance, which `audit_diff_profils` blocks). See
-  [`docs/technical_decisions.md#retrait-senat-528`](docs/technical_decisions.md#retrait-senat-528)
+  [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md)
   and
-  [`#extraction-groupe-suspendue-516`](docs/technical_decisions.md#extraction-groupe-suspendue-516).
+  [`docs/decisions/extraction-groupe-suspendue-516.md`](docs/decisions/extraction-groupe-suspendue-516.md).
 - **Government scope**: profile generation only covers the governments
   declared in `raw_data/gouvernements_reels.json` (10 as of this writing,
   Fillon II through Lecornu II) — not every government in the Fifth
@@ -1119,11 +1122,11 @@ use the frozen fixtures under `tests/fixtures/`. Rationale:
   in both cases (rule 5, `AGENTS.md`).
 - **Roster-driven candidate/member coverage**: `generate_roster_candidats.py`
   + `generate_all_profiles.py --candidats raw_data/roster_candidats.json`
-  (see [`docs/technical_decisions.md#provenance-pivot`](docs/technical_decisions.md#provenance-pivot))
+  (see [`docs/decisions/provenance-pivot.md`](docs/decisions/provenance-pivot.md))
   aims for near-complete coverage of the ~750 roster members of the 7
   configured groups, but no full-scale run had landed in CI as of this
   writing — see
-  [`docs/technical_decisions.md#seuil-couverture-groupe`](docs/technical_decisions.md#seuil-couverture-groupe)
+  [`docs/decisions/seuil-couverture-groupe.md`](docs/decisions/seuil-couverture-groupe.md)
   for the latest real coverage numbers. Until coverage is consistently
   near-100%, `web/UI_finale` shows an explicit "no data" state instead of a
   misleading zero (rule 5, `AGENTS.md`).

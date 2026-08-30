@@ -1,9 +1,9 @@
 {
   "_meta": {
     "description": "Liste validée manuellement (voir README §6) des groupes parlementaires réels à générer via generate_group_profiles.py / group_profile.py --from-roster. Couvre les candidats actuellement identifiés dans raw_data/candidats.json ayant un mandat parlementaire réel (AN/Sénat).",
-    "suspension": "Une entrée portant `extraction_suspendue` n'est ni interrogée en réseau (generate_roster_candidats.py) ni régénérée (generate_group_profiles.py) : son fichier de groupe déjà publié reste en place, gelé à sa dernière génération réussie, et le quality gate le contrôle toujours structurellement mais ne mesure plus sa couverture. Le bloc exige `depuis`, `motif`, `references` et `condition_reprise` — voir docs/technical_decisions.md#extraction-groupe-suspendue-516.",
+    "suspension": "Une entrée portant `extraction_suspendue` n'est ni interrogée en réseau (generate_roster_candidats.py) ni régénérée (generate_group_profiles.py) : son fichier de groupe déjà publié reste en place, gelé à sa dernière génération réussie, et le quality gate le contrôle toujours structurellement mais ne mesure plus sa couverture. Le bloc exige `depuis`, `motif`, `references` et `condition_reprise` — voir docs/decisions/extraction-groupe-suspendue-516.md.",
     "avertissement": "Les données sources (NosDéputés.fr, NosSénateurs.fr) reflètent la dernière composition connue avant la dissolution du 9 juin 2024 (16e législature) ou avant l'arrêt du site — voir l'avertissement meta.warnings de chaque profil de groupe généré.",
-    "correspondance_sigles": "La clé `correspondance_sigles_an` est la table sigle publié → sigle(s) AN (#526), lue par src/an_roster.py. Elle n'est PAS consommée par le pipeline tant que le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé : la bascule est le lot 1b. Les entrées de la 17e législature n'ont pas encore de fiche publiée — c'est un périmètre décidé, pas un écart (voir docs/technical_decisions.md#roster-an-derive-amo30-526)."
+    "correspondance_sigles": "La clé `correspondance_sigles_an` est la table sigle publié → sigle(s) AN (#526), lue par src/an_roster.py. Elle n'est PAS consommée par le pipeline tant que le drapeau `an_roster.AN_ROSTER_ACTIF` est baissé : la bascule est le lot 1b. Les entrées de la 17e législature n'ont pas encore de fiche publiée — c'est un périmètre décidé, pas un écart (voir docs/decisions/roster-an-derive-amo30-526.md)."
   },
   "correspondance_sigles_an": {
     "_description": "Sigle publié par ce dépôt → sigle(s) AN (`organe.libelleAbrev` du référentiel AMO30), par législature. Committée et relue, jamais devinée : `RE` ne se déduit pas de `REN`, ni `DR` de `LR`. `libelleAbrev` et non `libelleAbrege`, parce que lui seul distingue les deux organes SOC successifs de la 16e (`SOC` puis `SOC-A`) et les deux UDR de la 17e (`UDR` puis `UDDPLR`).",
@@ -227,7 +227,7 @@
           "#488",
           "#501"
         ],
-        "condition_reprise": "Décision éditoriale, PAS un état de source (#528). Un certificat valide sur archive.nossenateurs.fr ne rouvre plus rien. La reprise exige les trois conditions écrites dans docs/technical_decisions.md#retrait-senat-528 §7, dans cet ordre : (1) une source Sénat établie et sondée pour de vrai (data.senat.fr / www.senat.fr : contenu publié et licence constatés, pas supposés) ; (2) au moins un agrégat publiable qu'elle rend — un cohesion_votes non nul sur une fiche de groupe sénatorial, ou des interventions rattachables à un orateur, cette fiche portant aujourd'hui cohesion_votes: 0 ; (3) la décision éditoriale reprise explicitement et datée dans docs/technical_decisions.md. Sans les trois, cette entrée reste suspendue et sa fiche publiée reste figée."
+        "condition_reprise": "Décision éditoriale, PAS un état de source (#528). Un certificat valide sur archive.nossenateurs.fr ne rouvre plus rien. La reprise exige les trois conditions écrites dans docs/decisions/retrait-senat-528.md §7, dans cet ordre : (1) une source Sénat établie et sondée pour de vrai (data.senat.fr / www.senat.fr : contenu publié et licence constatés, pas supposés) ; (2) au moins un agrégat publiable qu'elle rend — un cohesion_votes non nul sur une fiche de groupe sénatorial, ou des interventions rattachables à un orateur, cette fiche portant aujourd'hui cohesion_votes: 0 ; (3) la décision éditoriale reprise explicitement et datée dans docs/technical_decisions.md. Sans les trois, cette entrée reste suspendue et sa fiche publiée reste figée."
       }
     },
     {
@@ -248,7 +248,7 @@
           "run 32548486495 (22/08/2026)",
           "#511"
         ],
-        "condition_reprise": "Identique à Senat:LR — les deux entrées partagent la même décision éditoriale (#528) et se réactiveraient ensemble. Voir docs/technical_decisions.md#retrait-senat-528 §7."
+        "condition_reprise": "Identique à Senat:LR — les deux entrées partagent la même décision éditoriale (#528) et se réactiveraient ensemble. Voir docs/decisions/retrait-senat-528.md §7."
       }
     }
   ]

@@ -44,7 +44,7 @@ Trois charges, dont deux que l'issue n'avait pas identifiées :
    se déclenche que si Syceron ne rend rien pour cet `acteurRef`.
 
 **Les points 1 et 4 ont été retirés le 27/08/2026** avec le repli NosDéputés
-([#syceron-actif-510](#syceron-actif-510)) : il ne reste que les deux charges
+([#syceron-actif-510](syceron-actif-510.md)) : il ne reste que les deux charges
 d'archives AN, et les 90 s de recherche sont rendues au budget. Ce qui suit
 décrit le mode tel qu'il était quand le budget a été dimensionné — le solde
 n'est pas remesuré.

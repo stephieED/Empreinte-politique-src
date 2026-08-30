@@ -26,7 +26,7 @@ défaut raw_data/groupes_reels.json), validée manuellement (voir README §6).
 Une entrée portant `extraction_suspendue` est ignorée, sans compter comme un
 échec : sa fiche de groupe déjà publiée reste en place, gelée à sa dernière
 génération réussie (#516, voir groupes_config.py et
-docs/technical_decisions.md#extraction-groupe-suspendue-516).
+docs/decisions/extraction-groupe-suspendue-516.md).
 
 ## Le roster du run est réutilisé, pas refetché (#518, second incident)
 

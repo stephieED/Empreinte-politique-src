@@ -165,7 +165,7 @@ texts* et #488. Consigné dans `ROADMAP.md`.
 `tests/test_interventions_senat_non_retenues.py` fixait l'asymétrie plutôt que le
 zéro. **Ce fichier a été supprimé le 27/08/2026** avec la chaîne qu'il mesurait :
 `fetch_intervention_details` n'existe plus, le repli NosDéputés ayant été retiré
-du chemin interventions ([#syceron-actif-510](#syceron-actif-510)). La condition
+du chemin interventions ([#syceron-actif-510](syceron-actif-510.md)). La condition
 de réouverture n'en est pas affaiblie mais durcie : il ne s'agirait plus de faire
 lire `url_nossenateurs` à un lecteur existant, mais de construire un chemin
 d'interventions sénatoriales qui n'existe plus du tout.

@@ -1293,7 +1293,7 @@ def test_aucune_temporisation_entre_deux_candidats(tmp_path, monkeypatch):
 # du nombre de chambres — le scope de `--source`, le warning publié quand une
 # collecte de chambre échoue, l'absence de bruit en régime nominal — plus un
 # garde-fou de non-retour : aucune passe ne doit réintroduire le Sénat sans
-# passer par la décision écrite (docs/technical_decisions.md#retrait-senat-528).
+# passer par la décision écrite (docs/decisions/retrait-senat-528.md).
 #
 # Toutes les doublures ci-dessous sont locales : aucun appel réseau, aucune
 # lecture de `pivot_data/` ni de `raw_data/profiles/`.
@@ -1365,7 +1365,7 @@ def test_le_senat_nest_plus_interroge_meme_pour_un_candidat_declare(tmp_path, mo
 
     assert generate_all_profiles.CHAMBRES == ["deputes"], (
         "CHAMBRES a regagné une chambre. Le Sénat est hors périmètre depuis "
-        "#528 — voir docs/technical_decisions.md#retrait-senat-528."
+        "#528 — voir docs/decisions/retrait-senat-528.md."
     )
     assert appelees == ["deputes"]
     assert resultat["statut"] == "ok"

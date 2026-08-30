@@ -41,7 +41,7 @@ runs:
       run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
     # Mémoire disponible sur le runner au démarrage (diagnostic OOM, voir
-    # docs/technical_decisions.md#oom-lecture-amendements-par-candidat) : un
+    # docs/decisions/oom-lecture-amendements-par-candidat.md) : un
     # runner ubuntu-latest standard n'a que ~7 Gio de RAM, le même ordre de
     # grandeur que la législature amendements 16 une fois désérialisée (mesuré
     # ~4,35 Gio en local) — un OOM côté runner hébergé n'apparaît jamais comme

@@ -46,7 +46,7 @@ def test_aucun_site_ne_lit_l_input_workers():
     assert "inputs.workers" not in contenu, (
         "generate-data.yml relit `inputs.workers` : l'input a été réintroduit ou "
         "un site a été rebranché dessus. Voir "
-        "docs/technical_decisions.md#workers-fige-a-1 — augmenter cette valeur "
+        "docs/decisions/workers-fige-a-1.md — augmenter cette valeur "
         "ralentit l'extraction (+41 % mesuré)."
     )
 
@@ -66,7 +66,7 @@ def test_l_input_workers_n_est_pas_de_retour_dans_le_formulaire():
         "l'input `workers` est de retour dans workflow_dispatch. Il a été retiré "
         "délibérément : un paramètre dont la description dit qu'il nuit est un "
         "piège dans un formulaire de lancement. "
-        "Voir docs/technical_decisions.md#workers-fige-a-1."
+        "Voir docs/decisions/workers-fige-a-1.md."
     )
 
 

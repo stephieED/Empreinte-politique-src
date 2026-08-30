@@ -4,7 +4,7 @@ Comble un trou de couverture identifié par #193 : `_report_groupes` n'avait
 jusqu'ici aucun test dédié (seul `tests/test_quality_gate_syceron.py` couvre
 une autre section du même module). Couvre le seuil absolu historique
 (`min_members`) et le nouveau seuil relatif optionnel (`min_coverage_pct`,
-voir docs/technical_decisions.md#seuil-couverture-groupe).
+voir docs/decisions/seuil-couverture-groupe.md).
 """
 
 import json

@@ -126,7 +126,7 @@ ne sont pas mappés — `TSORTF02` (« adoptée avec modifications », 53),
 `TSORTF14` (« voté par les deux assemblées en termes identiques »), `TSORTF13`
 (« rejeté définitivement »). Ils ne coûtent que 2 exclusions, la promulgation
 déterminant le statut des autres. Même nature que #397.
-*Traité en #402 — voir [la section dédiée](#gouvernement-textes-fam-codes-archives) :
+*Traité en #402 — voir [la section dédiée](gouvernement-textes-fam-codes-archives.md) :
 les 3 codes sont mappés, `TSORTF02` tranché sur données réelles.*
 
 ---

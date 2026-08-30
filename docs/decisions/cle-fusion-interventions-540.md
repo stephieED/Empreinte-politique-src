@@ -144,7 +144,7 @@ exact dans lequel ce défaut a vécu, et il manquera à la prochaine source. Il
 mérite son propre lot — il touche `audit_diff_profils` et
 `audit_collecte_non_publiee`, dont aucun n'est en défaut ici. Le raisonnement
 qui a laissé cet angle mort ouvert est daté et cité dans
-[#syceron-actif-510](#syceron-actif-510), section « Ce qui est mesuré, et ce
+[#syceron-actif-510](syceron-actif-510.md), section « Ce qui est mesuré, et ce
 qui ne l'est pas » : la prédiction « le contrôle de perte verra une hausse, pas
 une perte, donc il ne bloquera pas » était juste, et sa conséquence — plus rien
 n'attrape alors un effondrement de clé — n'avait pas été tirée.

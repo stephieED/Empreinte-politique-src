@@ -48,7 +48,7 @@ AN number space and are excluded — see `AN_SCRUTIN_UID_PREFIXE`.
 
 See `AN_SCRUTINS_ZIP_NAME` / `_parse_scrutins_zip` / `fetch_votes_officiels` in
 `src/candidate_profile.py`, and
-`docs/technical_decisions.md#votes-multi-legislature`.
+`docs/decisions/votes-multi-legislature.md`.
 
 ## Amendments
 
@@ -63,7 +63,7 @@ See `AN_SCRUTINS_ZIP_NAME` / `_parse_scrutins_zip` / `fetch_votes_officiels` in
 The ZIP contains one JSON per amendment (~123k files for legislature 17),
 under `json/{dataset}/{text}/AMANR5L{legislature}...json` — except
 legislature 14, published via a separate archives page (not the standard
-openData path, see `docs/technical_decisions.md#amendements-legislatures-figees`),
+openData path, see `docs/decisions/amendements-legislatures-figees.md`),
 whose single JSON entry (`Amendements_XIV.json`) nests all amendments under
 a different schema (`textesEtAmendements.texteleg[].amendements.amendement[]`,
 see "Legacy schema (legislature 14)" below).
@@ -148,7 +148,7 @@ an extra network round-trip per profile, on top of covering more legislatures
 than the `AMO20_dep_sen_min_tous_mandats_et_organes*` archives considered
 initially in the issue (confirmed to exist for legislatures 15/16/17 only,
 one file per legislature to combine) — see
-`docs/technical_decisions.md#identite-acteurs-amo30` for the full comparison.
+`docs/decisions/identite-acteurs-amo30.md` for the full comparison.
 
 Empirically documented structure (identical on both datasets, `AMO30` verified
 directly by downloading the 13.6 MB archive and sampling `json/acteur/*.json`
@@ -237,7 +237,7 @@ Implemented path:
   (`initiateurs_acteur_refs`); `gouvernement_profile.py` resolves them against
   the government's own `membres[]` to fill `textes[].initiateurs` — the
   minister → bill link (723/725 government bills carry one, 1213 links, 556
-  resolved). See `technical_decisions.md#gouvernement-textes-initiateurs`.
+  resolved). See `docs/decisions/gouvernement-textes-initiateurs.md`.
 - `merge_profile.py` drops `dossiers_legislatifs`/`textes_portes` entries that
   have no factual `role` during migration/merge.
 
@@ -284,7 +284,7 @@ assemblées du Parlement en termes identiques »), absents de cette archive et
 apparus avec les XV/XVI. `TSORTF19` n'apparaît sur aucune décision de séance de
 dossier gouvernemental et n'est donc pas mappé. Les arbitrages — en particulier
 `TSORTF02`, tranché en `navette_en_cours` sur données réelles — sont dans
-`docs/technical_decisions.md#gouvernement-textes-fam-codes-archives`.
+`docs/decisions/gouvernement-textes-fam-codes-archives.md`.
 
 Le retrait a son propre `codeActe` dédié, sans `statutConclusion` associé :
 `AN1-RTRINI` (53 occurrences, ex. `DLR5L17N51314`) / `ANLUNI-RTRINI`

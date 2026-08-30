@@ -1,7 +1,7 @@
 <a id="couverture-listes-539"></a>
 # Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)
 
-Second volet de [#identite-profils-539](#identite-profils-539), qui réglait
+Second volet de [#identite-profils-539](identite-profils-539.md), qui réglait
 l'identité. Celui-ci règle la question que l'issue posait derrière : **une liste
 vide, ça veut dire quoi ?**
 
@@ -48,14 +48,14 @@ mesuré avec une absence, pas de publier le premier.
 `cause` ∈ { `panne`, `par_decision` }, **obligatoire si et seulement si**
 `etat == "non_collecte"`, interdite ailleurs. *(Une troisième valeur,
 `defaut_collecte`, a été ajoutée par #562 — voir
-[#defaut-collecte-vs-panne-562](#defaut-collecte-vs-panne-562) : ranger un
+[#defaut-collecte-vs-panne-562](defaut-collecte-vs-panne-562.md) : ranger un
 défaut de notre code sous `panne` impute une faute à la source.)* Le « si et seulement si » est ce
 qui empêche la cause d'être omise en silence. La preuve d'une `par_decision`
 **nomme la politique** — le drapeau et l'issue —, pas une URL : la preuve d'une
 décision est la décision.
 
 *(Amendement de #558 — voir
-[#groupe-gele-couverture-558](#groupe-gele-couverture-558). Les seules
+[#groupe-gele-couverture-558](absences-publiees-comme-faits-556-558-560.md#groupe-gele-couverture-558). Les seules
 `par_decision` que cette section connaisse sont les deux drapeaux de #357. Le
 **gel d'un groupe** (`extraction_suspendue`, #516) en est une troisième, et son
 absence de `DECISIONS_PIPELINE` a fait publier « couvert » à 20 profils de
@@ -239,7 +239,7 @@ La complétude ne coûte rien.
   aucun run n'aurait fait basculer ces 99 profils. Le warning
   « amendements indisponibles » qu'ils portaient était le texte d'un `TypeError`
   du dépôt, converti en indisponibilité de source par un `except Exception` nu —
-  voir [#defaut-collecte-vs-panne-562](#defaut-collecte-vs-panne-562). Le bloc
+  voir [#defaut-collecte-vs-panne-562](defaut-collecte-vs-panne-562.md). Le bloc
   `couverture` n'a pas produit ce défaut : il l'a rendu **lisible**, après des
   mois où il ne vivait que dans `meta.warnings`.
 

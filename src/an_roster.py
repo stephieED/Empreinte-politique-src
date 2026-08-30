@@ -96,8 +96,8 @@ NosDéputés a été retiré du dépôt. L'écart par groupe se lit toujours ave
 **compteur de migration**, et il reste le seul moyen de relire ce que la
 bascule a changé. La condition de retrait du double calcul — les trois clauses
 qui autorisent à supprimer le drapeau et le repli — est écrite dans
-`docs/technical_decisions.md#roster-an-derive-amo30-526` §9, et son état du
-jour dans `#bascule-roster-an-amo30-527`.
+`docs/decisions/roster-an-derive-amo30-526.md` §9, et son état du
+jour dans `docs/decisions/bascule-roster-an-amo30-527.md`.
 
 Usage (depuis la racine du dépôt) :
     python src/an_roster.py --legislature 17 --sigle REN
@@ -131,7 +131,7 @@ import correspondance_acteurs_an  # noqa: E402
 # et c'est très exactement le défaut que #511 puis #524 ont payé. Voir
 # `_exiger_actif`. Sa condition de retrait est celle du double calcul, #526 §9,
 # dont la clause 3 reste ouverte (voir
-# docs/technical_decisions.md#retrait-nosdeputes-529).
+# docs/decisions/retrait-nosdeputes-529.md).
 AN_ROSTER_ACTIF = True
 
 AIDE_ROSTER_AN = (

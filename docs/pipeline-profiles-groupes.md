@@ -145,7 +145,7 @@ Repères d'implémentation UI_finale :
   du run (artifact `roster-candidats`). C'est ce qui garantit que la
   composition publiee est celle du corpus collecte, et non une liste relue
   ~7 min plus tard (#518, voir
-  `technical_decisions.md#plafond-roster-et-commit-518`).
+  `docs/decisions/plafond-roster-et-commit-518.md`).
 - Un roster indisponible fait sortir `generate_group_profiles.py` en **2**, pas
   en 1 : aucune fiche n'a ete touchee, donc le run peut committer le reste. Un
   vrai plantage de generation reste en 1 et fait echouer le step.
@@ -178,7 +178,7 @@ deux sources (un membre de groupe qui est aussi candidat déclaré) : la
 politique de fusion (`merge_profile.merge_pivot_profile()`) ne rétrograde
 jamais un profil `candidat_declare` vers `roster_groupe`, la source éditoriale
 prime toujours. Détail complet de cette décision :
-[`docs/technical_decisions.md#provenance-pivot`](./technical_decisions.md#provenance-pivot).
+[`docs/decisions/provenance-pivot.md`](./decisions/provenance-pivot.md).
 
 En CI/CD, la voie roster-driven est un job dédié, distinct de
 `extract-an`/`extract-ue-officiel` : `extract-roster-groupes`
@@ -281,7 +281,7 @@ Entrées / sorties de la pipeline candidats
 Comment ça marche concrètement
 
 La liste des groupes à produire est définie dans groupes_reels.json.
-Une entrée portant extraction_suspendue (#516) est ignorée : ni fetch, ni régénération, et ce n'est pas un échec — sa fiche déjà publiée reste en place, gelée à sa dernière génération réussie. Voir technical_decisions.md#extraction-groupe-suspendue-516.
+Une entrée portant extraction_suspendue (#516) est ignorée : ni fetch, ni régénération, et ce n'est pas un échec — sa fiche déjà publiée reste en place, gelée à sa dernière génération réussie. Voir docs/decisions/extraction-groupe-suspendue-516.md.
 Le batch generate_group_profiles.py fait un seul fetch réseau par couple (chambre, législature) (optimisation clé).
 Ce fetch passe par group_roster.py:
   - récupération de la liste complète députés/sénateurs,
@@ -292,7 +292,7 @@ group_profile.py agrège les faits:
   - membres et périodes,
   - cohésion de vote par scrutin,
   - tags thématiques agrégés,
-  - mandats agrégés (catégoriel : commission, commission_enquete, mission_information, groupe_etudes, delegation, groupe_amitie, extra_parlementaire — voir MANDATS_AGREGES_CATEGORIES ; périmètre élargi par #382, voir docs/technical_decisions.md#taxonomie-mandats-typeorgane-an),
+  - mandats agrégés (catégoriel : commission, commission_enquete, mission_information, groupe_etudes, delegation, groupe_amitie, extra_parlementaire — voir MANDATS_AGREGES_CATEGORIES ; périmètre élargi par #382, voir docs/decisions/taxonomie-mandats-typeorgane-an.md),
   - amendements agrégés (avec ventilation par type de déposant).
 Le JSON final est contraint par schema_groupe.py, puis contrôlé par check_quality_gate.py.
 

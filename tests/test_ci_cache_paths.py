@@ -32,7 +32,7 @@ WORKFLOW = RACINE / ".github" / "workflows" / "generate-data.yml"
 # l'avait laissée en l'état plutôt que de la supprimer en effet de bord ; #528
 # a retiré le job, donc l'entrée, donc la tolérance. L'ensemble redevient
 # **vide** : une tolérance qui survit à son bénéficiaire est une porte ouverte
-# que personne ne relit. Voir docs/technical_decisions.md#retrait-senat-528.
+# que personne ne relit. Voir docs/decisions/retrait-senat-528.md.
 JOBS_CACHE_LARGE_TOLERES: set[str] = set()
 
 

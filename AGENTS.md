@@ -1,7 +1,9 @@
 # AGENTS.md - Instructions for AI agents
 
 Non-negotiable rules, schema conventions, validation constraints for every session.
-"Why" behind each decision: `docs/technical_decisions.md` (anchors below).
+"Why" behind each decision: **one file per decision** under `docs/decisions/`,
+indexed newest-first by `docs/technical_decisions.md`. Write a new one, never
+edit that index in place — see Section 8.
 Commands, structure, coverage limits: `README.md`.
 
 ---
@@ -11,11 +13,11 @@ Commands, structure, coverage limits: `README.md`.
 **Empreinte politique** — "Politics made clear". Factual, sourced political CVs
 (mandates, votes, texts, interventions) for 2027 presidential candidates.
 `CONTRECHAMP` (`web/`) is the interface design lab. `web/UI_finale` (React 19 + Vite) is
-the current production interface, wired to real pivot data (`#web-v3-ui`). Earlier design
+the current production interface, wired to real pivot data (`docs/decisions/web-v3-ui.md`). Earlier design
 generations — `v1`-`v7`, including the `v3` editorial reference — are archived under `web/old/`.
 `web/UI_finale` navigation: **Candidats** · **Groupes** (real parliamentary groups) ·
 **Gouvernement** (real governments) — no Partis tab.
-Positioning, naming, target audience: `docs/technical_decisions.md#positionnement`.
+Positioning, naming, target audience: `docs/decisions/direction-artistique-empreinte.md`.
 
 ## 2. Non-negotiable editorial rules
 
@@ -100,7 +102,7 @@ graph TD
   reads those is untouched — and 30× lighter. Writing always produces the partitioned
   form, so a full data run migrates the corpus by itself. Migration script:
   `src/migrer_profils_partitionnes_580.py` (idempotent, refuses to lose anything).
-  See `docs/technical_decisions.md#partition-profils-legislature-580`.
+  See `docs/decisions/partition-profils-legislature-580.md`.
 - **Biggest versioned file: a watched guard-rail with a written course of action (#580)**.
   It used to be the fourth clause of #429's exit criterion — but a criterion is
   something you *reach*, and that one *triggers*; it was crossed the day it was
@@ -112,7 +114,7 @@ graph TD
   threshold" (46 files sit between 45 and 50 MB — the threshold is planted mid-cliff)
   and "delete data". It lives in the gate and not in the test suite because
   `tests.yml` sparse-checks-out *without* the corpus (#473). See
-  `docs/technical_decisions.md#garde-fou-blob-580`.
+  `docs/decisions/partition-profils-legislature-580.md#garde-fou-blob-580`.
 - Groups from `groupes_reels.json`; `group_roster.py` = 1 roster per `(chambre, legislature)`,
   and **zero fetch** in CI — the run's raw roster arrives by artifact (#518, see below).
   Since #527 the `deputes` key is **derived from AMO30**; since #529 that is the only
@@ -129,7 +131,8 @@ graph TD
   An amendment's merge key is its `amendement_id`, or — for an unresolved entry — the record kept
   under `amendement_non_resolu`; keying on the mapping alone would collapse every unresolved entry into one.
 - Scalars: new value if populated, else keep old (never regress to `null`).
-Full rationale + exceptions: `docs/technical_decisions.md#fusion`.
+Full rationale + exceptions: `docs/decisions/collecte-vide-necrase-jamais.md`,
+and the other merge entries listed in `docs/technical_decisions.md`.
 
 **Tests in CI (`.github/workflows/tests.yml`, #473)**: the full suite runs on every PR
 and every push to `main`, and a failure fails the job. **No test may read `pivot_data/`
@@ -144,7 +147,7 @@ serve fixtures from `127.0.0.1`; the criterion is leaving the machine, not speak
 It exists because one per-process request turned 62 existing tests into a 13,4 s file with
 nothing failing.
 Test-only dependencies go in `requirements-dev.txt`.
-See `docs/technical_decisions.md#ci-tests-pytest`.
+See `docs/decisions/ci-tests-pytest.md`.
 
 **CI/CD (`.github/workflows/generate-data.yml`)**: the launch form is **two
 disjoint axes plus the cache** (#578). `existing_profiles` (`leave-as-is` /
@@ -156,8 +159,8 @@ profiles are written, so "overwrite without purging the cache" — the common
 case — is one setting, not a side effect. `roster_limit` is a cap and nothing
 else (default `0` = no cap); it commands no refresh policy.
 In all modes, threshold = `inputs.incomplete_read_threshold` (default 3).
-Commit only if `check_quality_gate.py` exits 0. See `docs/technical_decisions.md#ci-cd` and
-`docs/technical_decisions.md#deux-axes-formulaire-578`.
+Commit only if `check_quality_gate.py` exits 0. See `docs/decisions/ci-cd.md` and
+`docs/decisions/deux-axes-formulaire-578.md`.
 
 **The data push goes out under a deploy key, not the `GITHUB_TOKEN` (#508)**: a repository
 ruleset enforces its `required_status_checks` on **direct pushes**, not only on PRs — and
@@ -170,7 +173,7 @@ listed in the ruleset's `bypass_actors`. Two consequences worth knowing: a deplo
 data commits — it never did before — and `deploy-pages.yml` fires twice, serialised by its
 `pages` concurrency group. Missing secret ⇒ checkout falls back to the token and the push is
 rejected **loudly**, naming the rule. See
-`docs/technical_decisions.md#push-donnees-cle-de-deploiement-508`.
+`docs/decisions/push-donnees-cle-de-deploiement-508.md`.
 
 **A job never writes a cache key for a directory it does not fill (#412 §2.3 → #424 →
 #505, same defect three times)**: `actions/cache` skips the post-job save on an exact key
@@ -181,7 +184,7 @@ input must carry that input — `public-data-cache-an-<week>` alone let one defa
 starve every interventions run of the week. Two jobs sharing a key must also share the
 exact same `path:`, since the entry's version is a hash of it. A collection index is only
 cached once **complete**: a truncated one served to every shard is a missing value turned
-into a measured `0` (§2.5). See `docs/technical_decisions.md#cache-mode-interventions-505`.
+into a measured `0` (§2.5). See `docs/decisions/cache-mode-interventions-505.md`.
 
 **`collect_interventions=true` is a different job (#498)**: it adds the Syceron
 debate archives and the QE/QG/QOSD archives — extraction measured at **8-18 s**
@@ -197,7 +200,7 @@ killed shards of runs 32302557156 and 32379928098), while an exhausted budget
 writes the partial profile and declares the truncation in `meta.warnings[]`
 (§2.5). Guarded by
 `tests/test_ci_budget_interventions.py`.
-See `docs/technical_decisions.md#budget-collecte-interventions`.
+See `docs/decisions/budget-collecte-interventions.md`.
 
 **Every collection path must declare what it does with interventions (#501)**:
 `extract-an` follows the input, `extract-roster-groupes` hard-codes
@@ -206,7 +209,7 @@ added to the inventory in `tests/test_ci_interventions_par_job.py` with its mode
 and any job that ignores the input must be named in the input's description.
 The third path, `extract-senat`, is **gone** (#528, below): it collected nothing
 because nothing it collected was ever kept.
-See `docs/technical_decisions.md#interventions-senat-501`.
+See `docs/decisions/interventions-senat-501.md`.
 
 **The Senate is out of scope, and the job that concluded green without producing
 anything is retired (#528, lot 3)**: `archive.nossenateurs.fr` has served an
@@ -229,7 +232,7 @@ NosSénateurs ODbL attribution in the legal notice. **Declared loss**: the 2
 profiles — a **watched stable list**, so that run needs `allow_declared_losses`. Three loud refusals guard the
 non-return (`build_profile`, `_base_url_for`, argparse), frozen by
 `tests/test_retrait_senat_528.py`. Reopening requires the three written
-conditions of `docs/technical_decisions.md#retrait-senat-528` §7 — a renewed
+conditions of `docs/decisions/retrait-senat-528.md` §7 — a renewed
 certificate changes nothing.
 
 **Syceron publishes the speaker id BARE, and never indexed anything (#510)**:
@@ -303,7 +306,7 @@ declare it), and the #500 balance. `tests/test_interventions_senat_non_retenues.
 is **deleted** with the chain it measured: #528's reopening condition is harder
 now, not weaker. Guarded by `tests/test_syceron_acteur_ref.py`,
 `tests/test_parse_syceron.py`, `tests/test_index_interventions_cache_partiel.py`.
-See `docs/technical_decisions.md#syceron-actif-510`.
+See `docs/decisions/syceron-actif-510.md`.
 
 **One artifact = one job's contribution (#450)**: an extraction job publishes only the
 profiles it actually wrote — never `raw_data/profiles/`, which its `actions/checkout` also
@@ -313,7 +316,7 @@ Republishing the baseline made the additive merge reunite a profile's stale and 
 versions, defeating `--no-merge` and inflating volumes every run, and made sharded jobs
 collide under `merge-multiple` so only one shard's work survived. The baseline needs no
 artifact: `merge-and-pivot` checks out the repo and `merge_raw_dirs` only rewrites slugs
-present in the artifacts. See `docs/technical_decisions.md#publication-scopee-artifacts`.
+present in the artifacts. See `docs/decisions/publication-scopee-artifacts.md`.
 
 **An empty collection never overwrites a non-empty one (#465)**: under `--no-merge`, a field
 that comes back with **zero** entries never replaces one that had some — per field, not per
@@ -323,7 +326,7 @@ always printed, never silent. Same principle as #427 on governments: *distinguis
 from "incomplete collection"* — a `[]` returned by a failing API is not a measured fact (rule 5).
 Profiles were the only place not applying it, which cost 18 721 amendements and 1 016 votes on
 `jean-luc-melenchon`, and 23 textes portés on `marine-le-pen` **with no warning in the profile**.
-See `docs/technical_decisions.md#collecte-vide-necrase-jamais`.
+See `docs/decisions/collecte-vide-necrase-jamais.md`.
 
 **Bicameral collection is for candidates only (#488)**: `build_profile_any_chambre` queries
 **both** chambers — instead of stopping at the first that returns an identity — only when
@@ -339,7 +342,7 @@ an outage is exactly §2.5). When both answer, the **first of `CHAMBRES` wins by
 convention** — deriving `chambre` from the mandates is #486's sub-issue D and would erase the
 other career. No mandate is ever merged across chambers here, and #492 merged none either.
 `--source an`/`--source senat` stay scoped whatever the provenance, tested.
-See `docs/technical_decisions.md#deux-chambres-interrogees`.
+See `docs/decisions/deux-chambres-interrogees.md`.
 
 **A profile's chambers are derived, and the fallback is declared (#493)**:
 `chambres` is recomputed from `mandats[].chambre` by `schema_pivot.deriver_chambres()`;
@@ -359,7 +362,7 @@ both pipeline paths: **0** scalar divergence, `population_an` 207 → 207,
 `MAPPING_CHAMBRE_SOURCES` 209 → 209, loss check non-blocking. Consumers are **not** migrated
 here (#494). `chambre`'s retirement condition — both consumers migrated *and* the warning
 gone from the whole corpus — is written in
-`docs/technical_decisions.md#chambres-profil-derivees`; without a written criterion this
+`docs/decisions/chambres-profil-derivees.md`; without a written criterion this
 transitional would become permanent, as #431's and #432's read fallbacks did.
 Guarded by `tests/test_chambres_profil.py`.
 
@@ -375,7 +378,7 @@ missing data, so on today's unstamped corpus the filter changes **no** published
 denominator — and "no elective mandate at all" (`None` → eligible by default) stays distinct
 from "elective mandates, none in this chamber" (`[]` → never eligible). Falling back on
 `groupe_politique` mandates does **not** work: 398 of them on 188 profiles, **0 open**.
-See `docs/technical_decisions.md#chambre-par-mandat-electif`.
+See `docs/decisions/chambre-par-mandat-electif.md`.
 
 **Loss check before commit (#460, scope extended by #470)**: `merge-and-pivot` runs
 `src/audit_diff_profils.py --ref HEAD` **before** the commit step, over **all of
@@ -400,8 +403,8 @@ all **published** fields. The quality gate could not catch it: it measures a *le
 *variation*. Why the scope grew: with only profile list-lengths watched, SOC-16's
 `cohesion_votes` fell 814 → 0 (a **published denominator**, §2.7) and `parti` regressed to
 `null` on three profiles, both while the check was running.
-See `docs/technical_decisions.md#controle-de-perte-avant-commit` and
-`#perimetre-controle-perte`.
+See `docs/decisions/controle-de-perte-avant-commit.md` and
+`docs/decisions/perimetre-controle-perte.md`.
 
 **Referential integrity before commit (#485)**: `merge-and-pivot` also runs
 `src/audit_integrite_referentielle.py --pivot-dir pivot_data`, right after the
@@ -423,7 +426,7 @@ legitimate, an orphan reference cannot. This is an **invariance in one state**,
 not a variation over time — which is why `audit_diff_profils` cannot cover it.
 Guarded by `tests/test_audit_integrite_referentielle.py` and
 `tests/test_ci_integrite_referentielle.py`.
-See `docs/technical_decisions.md#integrite-referentielle-pivot`.
+See `docs/decisions/integrite-referentielle-pivot.md`.
 
 **Collected must equal published (#511)**: `merge-and-pivot` also runs
 `src/audit_collecte_non_publiee.py`, **after both `--pivot-only` passes** (declared
@@ -445,7 +448,7 @@ group returning 0 members, or on an empty roster — a `Read timed out` wrote a 
 roster and the roster pivot pass iterated on nothing, in a run that concluded `success`.
 Guarded by `tests/test_audit_collecte_non_publiee.py`,
 `tests/test_ci_collecte_non_publiee.py` and `tests/test_generate_roster_candidats.py`.
-See `docs/technical_decisions.md#collecte-non-publiee`.
+See `docs/decisions/collecte-non-publiee.md`.
 
 **Each published list must carry what collection returned (#545)**: `merge-and-pivot`
 also runs `src/audit_collecte_vs_publie.py`, after both `--pivot-only` passes and before
@@ -470,7 +473,7 @@ which takes the largest profile from 186,3 to 96,0 Mio — 58,7 s / 158,2 Mio fo
 corpus, a separate process. Fourth tolerance, still partitioned: `allow_publication_gaps`.
 Guarded by `tests/test_audit_collecte_vs_publie.py` and
 `tests/test_ci_collecte_vs_publie.py`.
-See `docs/technical_decisions.md#collecte-vs-publie-545`.
+See `docs/decisions/collecte-vs-publie-545.md`.
 
 **A progress file is not a profile — and `Path.glob` disagrees (#518, third incident)**:
 `pathlib.Path.glob("*.json")` **returns dotfiles**, unlike the `glob` module. Every
@@ -486,7 +489,7 @@ cleared this step.** The filter is safe by construction, not by exception list:
 cause is fixed too — **`--no-checkpoint` on every `--pivot-only` pass** (nothing to
 resume there; the roster shards keep `--resume`, and their checkpoint never leaves the
 runner since #450 stages from the manifest). Threshold stays 0, no tolerance added.
-See `docs/technical_decisions.md#point-de-sauvegarde-dans-les-profils-518`.
+See `docs/decisions/point-de-sauvegarde-dans-les-profils-518.md`.
 
 **A test reading a file outside `tests.yml`'s sparse-checkout passes locally and fails
 in CI (#518, third incident)**: second occurrence after #434 — #520 shipped a test
@@ -511,7 +514,7 @@ suspended since 24/08/2026 (expired TLS certificate on
 `archive.nossenateurs.fr`, the only domain left serving the Senate roster;
 runs `32463926808` and `32548486495` died on it, AN collection included).
 Guarded by `tests/test_groupes_suspendus.py`.
-See `docs/technical_decisions.md#extraction-groupe-suspendue-516`.
+See `docs/decisions/extraction-groupe-suspendue-516.md`.
 
 **One roster per run, and failures you can read (#518)**: `raw_data/roster_candidats.json`
 is built **once**, by `prepare-roster-matrix`, and shipped to the 8 roster shards and to
@@ -527,7 +530,7 @@ of `generate_roster_candidats.py` and `audit_collecte_non_publiee.py` are now `:
 annotations via `src/gha.py` — **stdout only** (GitHub reads workflow commands nowhere
 else) and single-line. Guarded by `tests/test_ci_roster_unique_par_run.py`,
 `tests/test_roster_reprise_reseau.py`, `tests/test_annotations_gha.py`.
-See `docs/technical_decisions.md#roster-unique-par-run-518`.
+See `docs/decisions/roster-unique-par-run-518.md`.
 
 **Retrying under a ceiling set too low does not buy back the ceiling (#518, second
 incident)**: run `32750929942` lost its commit on the **last** roster fetch of the run —
@@ -551,7 +554,7 @@ and commit a stale sheet with nothing blocking. Failures are `::error::` annotat
 naming the fetch key and every skipped `groupe_id`. Guarded by
 `tests/test_roster_timeout_lecture.py`, `tests/test_rosters_bruts_transit.py`,
 `tests/test_groupes_roster_indisponible.py`.
-See `docs/technical_decisions.md#plafond-roster-et-commit-518`.
+See `docs/decisions/plafond-roster-et-commit-518.md`.
 
 **A source outage costs the roster branch, never the commit (#524)**: three
 amplifiers turned one 500 into a fully lost run (`32876863499`, 3 red jobs, the
@@ -575,7 +578,7 @@ config keeps code 1. And a **500 is deterministic** on this platform
 verdict the suspension decision rides on. Guarded by
 `tests/test_roster_cause_echec.py` and
 `tests/test_ci_cloisonnement_branche_roster.py`.
-See `docs/technical_decisions.md#cloisonnement-branche-roster-524`.
+See `docs/decisions/cloisonnement-branche-roster-524.md`.
 
 **The slug ↔ AN actor correspondence is a committed artifact, not a heuristic (#525)**:
 `raw_data/correspondance_acteurs_an.json` maps each of the **476 published slugs** to
@@ -598,7 +601,7 @@ non-blocking. `build_correspondance_acteurs_an.py` reconducts reviewed entries v
 and **refuses to invent** — unresolved slugs are named on stderr, exit 1, never filled
 from `identite.source_url`. Guarded by `tests/test_correspondance_acteurs_an.py`
 (fixture only — the table is not in `tests.yml`'s sparse-checkout).
-See `docs/technical_decisions.md#correspondance-acteurs-an-525`.
+See `docs/decisions/correspondance-acteurs-an-525.md`.
 
 **NosDéputés is out of the pipeline (#529, lot 5 — the epic's last)**: the raw
 profile now comes **entirely** from AN open data. Each path had already migrated,
@@ -629,7 +632,7 @@ is lot 6, with the ODbL attribution), `normalize_profil`'s fallback read of
 still accepted (the workflow passes it) but **loudly declared without effect**.
 Guarded by `tests/test_retrait_nosdeputes_529.py`, which reads the *executed* code —
 strings and identifiers, never comments: history stays readable.
-See `docs/technical_decisions.md#retrait-nosdeputes-529`.
+See `docs/decisions/retrait-nosdeputes-529.md`.
 
 **The AN group roster now comes from AMO30 (#527, lot 1b)**: the flag below is
 `True`, and `group_roster.fetch_full_roster` delegates every `deputes` key to
@@ -662,7 +665,7 @@ and `--divergence` is still not wired in CI. Guarded by
 `tests/test_bascule_roster_an_527.py` and the two **reversed** freeze tests of
 `tests/test_an_roster.py` (flag `True`; the set of `src/` importers is
 `{group_roster.py, group_profile.py}`, named, not empty).
-See `docs/technical_decisions.md#bascule-roster-an-amo30-527`.
+See `docs/decisions/bascule-roster-an-amo30-527.md`.
 
 **The AN group roster is derivable from AMO30, and shipped inactive (#526)**:
 `src/an_roster.py` rebuilds a legislature's group composition from the archive
@@ -694,7 +697,7 @@ Migration meter = `--divergence`'s `ecart_total`, **4** at 26/08/2026 (four
 deputies who left before 2024-06-09). Retirement condition of the double
 computation, and the measured cost of the 17th-legislature perimeter (461
 members, 305 already carrying a slug, 156 profiles to collect), are written in
-`docs/technical_decisions.md#roster-an-derive-amo30-526`. Guarded by
+`docs/decisions/roster-an-derive-amo30-526.md`. Guarded by
 `tests/test_an_roster.py`, on a **reduction** of the real archive — never a
 hand-written fixture (#510).
 
@@ -711,11 +714,11 @@ that *publishes* `amendements[]`, whatever its `chambre` — a profile can stop 
 counted without stopping being published, and 18 721 published amendments were invisible
 to it until then. The "AN candidates" counters and the "empty everywhere" regression
 signal keep the narrower population, the one amendments are *expected* from. See
-`docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`),
+`docs/decisions/cache-amendements-existence-nest-pas-conformite.md`),
 and amendements index freshness (§3d: distinguishes "never built" from "present but stale
 beyond N days without a successful rebuild" from "frozen" — légis 14/15/16 are closed
 dossiers, their index is committed under `raw_data/amendements_an_figes/` and never
-re-fetched, see `docs/technical_decisions.md#amendements-legislatures-figees`). Gouvernement
+re-fetched, see `docs/decisions/amendements-legislatures-figees.md`). Gouvernement
 section (§5) mirrors groupes (§4): couverture ministérielle (portefeuille attribution),
 empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212.
 
@@ -723,17 +726,17 @@ empty `textes[]`, IncompleteRead are soft; broken structure is hard — see #212
 
 | Key | Content |
 |---|---|
-| `id` | The profile's **slug** — its filename, **no provenance prefix** (#487). `nosdeputes:`/`nossenateurs:` derived from whichever chamber answered the collection, so it *changed value* on an unchanged career (two profiles flipped, in opposite directions, between `25f7bc7` and `01ffa7f`). Provenance stays where it is true: `sources[].type`, `identite.source_url`, `meta.provenance`. Standalone tools with no slug (`mep_profile.py --ep-id`) keep an explicit source id — better that than a slug invented from a collected name. See `docs/technical_decisions.md#id-pivot-sans-prefixe`. |
-| `nom`, `chambres`, `chambre`, `parti`, `groupe` | `chambres` (#493) is the **derived list** of chambers the person sat in, values from `KNOWN_CHAMBRES`, ordered by `ORDRE_CHAMBRES` (`AN`, `Senat`, `PE`, `mairie`). `chambre` is `chambres[0]` — never collected, never able to contradict it (`validate_profil` enforces it). Both come from `schema_pivot.deriver_chambres()`, the single factory. See `docs/technical_decisions.md#chambres-profil-derivees` |
+| `id` | The profile's **slug** — its filename, **no provenance prefix** (#487). `nosdeputes:`/`nossenateurs:` derived from whichever chamber answered the collection, so it *changed value* on an unchanged career (two profiles flipped, in opposite directions, between `25f7bc7` and `01ffa7f`). Provenance stays where it is true: `sources[].type`, `identite.source_url`, `meta.provenance`. Standalone tools with no slug (`mep_profile.py --ep-id`) keep an explicit source id — better that than a slug invented from a collected name. See `docs/decisions/id-pivot-sans-prefixe.md`. |
+| `nom`, `chambres`, `chambre`, `parti`, `groupe` | `chambres` (#493) is the **derived list** of chambers the person sat in, values from `KNOWN_CHAMBRES`, ordered by `ORDRE_CHAMBRES` (`AN`, `Senat`, `PE`, `mairie`). `chambre` is `chambres[0]` — never collected, never able to contradict it (`validate_profil` enforces it). Both come from `schema_pivot.deriver_chambres()`, the single factory. See `docs/decisions/chambres-profil-derivees.md` |
 | `identite` | Nullable bio block |
 | `sources[]` | `{type, url, synchro_le}` |
-| `mandats[]` | Elections, committees... + sensitive fields (Section 5). `mandats[].chambre` (#492) is written **only on `mandat_electif`**: `AN`/`Senat`/`PE`/`null`, meaning *the chamber whose dataset returned this mandate*, stamped at collection. Never derived from `source_url` (0 of 214 AN/Senate elective mandates carry one) nor from the profile's `chambre` (additive merge accumulates mandates from both chambers in one profile). `null` + one aggregated warning per profile, never a default. See `docs/technical_decisions.md#chambre-par-mandat-electif` |
+| `mandats[]` | Elections, committees... + sensitive fields (Section 5). `mandats[].chambre` (#492) is written **only on `mandat_electif`**: `AN`/`Senat`/`PE`/`null`, meaning *the chamber whose dataset returned this mandate*, stamped at collection. Never derived from `source_url` (0 of 214 AN/Senate elective mandates carry one) nor from the profile's `chambre` (additive merge accumulates mandates from both chambers in one profile). `null` + one aggregated warning per profile, never a default. See `docs/decisions/chambre-par-mandat-electif.md` |
 | `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
 | `interventions[]` | Speeches, questions (`type_detail`) |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
-| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/technical_decisions.md#provenance-pivot`) |
+| `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/decisions/provenance-pivot.md`) |
 
 Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed values in
 `frozenset KNOWN_*`, validated by `validate_profil()` — extend the frozenset, never bypass.
@@ -746,12 +749,12 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
 - `votes[].numero_scrutin` restarts at 1 in each legislature: never a key on its own.
   Dedupe by AN `uid` **at index level** (`raw_data/scrutins_an_figes/`, where the AN
   `uid` exists); key group cohesion by `(legislature, numero)` — see
-  `docs/technical_decisions.md#votes-multi-legislature`. A profile's `votes[]` carries no
+  `docs/decisions/votes-multi-legislature.md`. A profile's `votes[]` carries no
   `uid`: its key is `(legislature, numero_scrutin)`, and 22,5 % of collected votes have no
   `legislature` at all. Resolve it with `src/scrutins_legislature.py` — labelled-twin join
   first, legislature calendar second, loud failure third; never a default (rule 5). Audit
   the corpus with `src/audit_legislature_votes.py` before relying on the key
-  (`docs/technical_decisions.md#resolution-legislature-votes`).
+  (`docs/decisions/resolution-legislature-votes.md`).
 - `amendements[].sort == "irrecevable"` requires `base_juridique_irrecevabilite` (`"art. 40"` or `"art. 45"`).
   Since `#431` both fields live in the shared index: the invariant followed them, into
   `validate_amendements_index()` — checked once per amendment, not once per signatory.
@@ -767,21 +770,22 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
   never filled in place: a half-written directory reads as "this member has no amendments"
   instead of "index unavailable". That atomicity is what makes the single-shard format
   check legitimate — do not fill in place.
-  See `docs/technical_decisions.md#cache-amendements-existence-nest-pas-conformite`.
+  See `docs/decisions/cache-amendements-existence-nest-pas-conformite.md`.
 - **A disk cache prevents a re-download, never a re-parse.** Any shared index read
   once per candidate must be memoised in-process — third occurrence of the same
   cost at the same spot (#392 amendements, #403 scrutins, #467 AN acteurs/organes:
   2 255 re-reads of one index for 24 members, 59 % of wall time). Key the memo on the
   index **path**, never on a logical name: tests patch the cache dir per case, and a
   global memo leaks one test's index into the next (the trap that reverted #377).
-  See `docs/technical_decisions.md#budget-execution-pleine-echelle-467`.
+  See `docs/decisions/budget-execution-pleine-echelle-467.md`.
 - An amendment with no AN `uid` gets **no invented key**: `amendement_id: null` plus its full
   record under `amendement_non_resolu`. That is the normal shape for European Parliament
   amendments, which ParlTrack ships without an AN uid.
 - **Never re-materialise the flat form.** `joindre()` is a generator and `get()` returns the
   shared object itself, never a copy — expanding index × mapping cost a ~21 × factor and an
   OOM in `#377`. Locked by `tests/test_amendements_index.py`.
-Edge-case history: `docs/technical_decisions.md#cas-limites`.
+Edge-case history: the amendments and votes entries of `docs/technical_decisions.md`
+(the index is chronological, newest first).
 
 ## 6. Metrics: public vs internal
 
@@ -818,7 +822,7 @@ is under Licence Ouverte" (#530).** Share-alike survives on two counts: Parltrac
 `sources[].type` of `nosdeputes`/`nossenateurs` (511 published interventions still link to
 `www.nosdeputes.fr`) — `merge_pivot_profile` unions `sources[]` by type, so additive
 regeneration never drops them. Attribution stays due while the fields stay published
-(§2 rule 2), exactly as `#retrait-senat-528` §4 already ruled.
+(§2 rule 2), exactly as `docs/decisions/retrait-senat-528.md` §4 already ruled.
 
 `meta.licence_donnees` is therefore a **derived** field, never a constant: `src/licences.py`
 holds the four canonical labels and `appliquer_licence_donnees(profil)` recomposes the
@@ -830,7 +834,7 @@ Never hardcode a licence label elsewhere; import it from `src/licences.py`, and 
 `AGENTS.md` §7, `sources.config.js` and `LegalNoticePage.jsx` saying the same thing.
 
 Site HTML = ODbL "Produced Work" (attribution sufficient). Downloadable raw data → share-alike.
-Full details: `docs/technical_decisions.md#licences`, `docs/technical_decisions.md#licence-lot-6-530`.
+Full details: `docs/decisions/licences.md`, `docs/decisions/licence-lot-6-530.md`.
 
 ## 8. End-of-task documentation upkeep
 
@@ -840,7 +844,8 @@ Before finishing a task, update only what actually changed — skip a file if no
 |---|---|
 | `AGENTS.md` | New agent-facing rule, command, or constraint. Rare edit; stay terse. |
 | `README.md` | New setup step, script, or user-visible workflow/command. |
-| `docs/technical_decisions.md` | New architectural choice or trade-off. Dated entry: context, decision, alternative rejected. |
+| `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
+| `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
 | `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `technical_decisions.md` instead. |
 | `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
 | `requirements-dev.txt` | A new **test-only** package is imported. Same pinning rule; it already pulls `requirements.txt` via `-r`. |
@@ -866,7 +871,7 @@ don't restate it in the chat.
 - `src/schema_pivot.py`, `schema_groupe.py`, `schema_parti.py`, `schema_gouvernement.py`: structure contracts.
 - `src/check_quality_gate.py`: quality gate (4 sections). Hard vs soft fail logic.
   Amendements coverage/freshness are deliberately never hard fails — see
-  `docs/technical_decisions.md#amendements-zero-pas-de-hard-fail`.
+  `docs/decisions/amendements-zero-pas-de-hard-fail.md`.
 - `docs/an_opendata.md`: AN open-data JSON schemas.
 - `docs/extract-*.md`: per-source extraction jobs (sources, chain, artifacts).
 - `docs/pipeline-profiles-groupes.md`: profile→groupe pipeline details.
@@ -875,7 +880,16 @@ don't restate it in the chat.
 - `src/normalize_profil.py`: raw FR profile → pivot adapter (named
   `normalize_nosdeputes.py` until #529).
 - `src/licences.py`: canonical licence labels + the derivation of `meta.licence_donnees` (#530).
-- `docs/technical_decisions.md`: full rationale (`#positionnement`, `#fusion`, `#cas-limites`, `#licences`, `#licence-lot-6-530`, `#ci-cd`, `#ci-tests-pytest`, `#web-v3-ui`, `#hors-perimetre`, `#profils-json-compact`).
+- `docs/technical_decisions.md`: the index of the 158 decision files under
+  `docs/decisions/`, newest first — the chronological read. Frequent entry points:
+  `docs/decisions/direction-artistique-empreinte.md` (positioning, naming, targets),
+  `docs/decisions/collecte-vide-necrase-jamais.md` (merge), `docs/decisions/licences.md`,
+  `docs/decisions/licence-lot-6-530.md`, `docs/decisions/ci-cd.md`,
+  `docs/decisions/ci-tests-pytest.md`, `docs/decisions/web-v3-ui.md`,
+  `docs/decisions/hors-perimetre.md`, `docs/decisions/profils-json-compact.md`.
+- `docs/archive/`: the pre-split copy of the old single file, frozen at 30/08/2026.
+  **Never cite it** — its anchors are prefixed `archive-` on purpose, and
+  `tests/test_index_decisions.py` refuses any path pointing into it.
 - `ROADMAP.md`: known bugs + unscheduled ideas, kept short (not read
   automatically — consult on request). Rationale for deferred items lives
-  in `docs/technical_decisions.md#hors-perimetre`, not duplicated here.
+  in `docs/decisions/hors-perimetre.md`, not duplicated here.

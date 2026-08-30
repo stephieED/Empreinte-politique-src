@@ -4,7 +4,7 @@ Version finale, réconciliée avec le code de production. Cette v2 part de la di
 
 `docs/design_intent.md` (pistes cartographie/géologie/archéologie/architecture pour `web/v4`-`v7`) reste **obsolète et non retenu**, sans lien avec ce document.
 
-Le brief et les itérations qui ont mené à cette DA (cibles, socle « SaaS analytique », pivot loin d'une première direction façon Revolut, alternatives explicitement écartées) sont documentés dans `docs/technical_decisions.md#direction-artistique-empreinte`.
+Le brief et les itérations qui ont mené à cette DA (cibles, socle « SaaS analytique », pivot loin d'une première direction façon Revolut, alternatives explicitement écartées) sont documentés dans `docs/decisions/direction-artistique-empreinte.md`.
 
 ---
 

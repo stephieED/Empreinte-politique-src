@@ -18,7 +18,7 @@ Deux choses sont verrouillées ici, et elles ne se remplacent pas :
 Volontairement sans PyYAML (absent de requirements.txt), comme les autres
 gardes-fous de workflow de ce dépôt.
 
-Voir docs/technical_decisions.md#push-donnees-cle-de-deploiement-508.
+Voir docs/decisions/push-donnees-cle-de-deploiement-508.md.
 """
 
 import re

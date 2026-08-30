@@ -96,7 +96,7 @@ d'AMO30 a traversé la conversion XML→JSON sans être lu.
 *(Re-mesure du 29/08/2026, sur 481 profils : **285** vraies URI, **191**
 marqueurs, **0** `null`, 5 profils sans bloc `identite`. La nature du défaut n'a
 pas changé, sa population a grandi. Il a été corrigé **à l'extraction** par
-#556 — voir [#marqueur-nil-identite-556](#marqueur-nil-identite-556) —, qui a
+#556 — voir [#marqueur-nil-identite-556](absences-publiees-comme-faits-556-558-560.md#marqueur-nil-identite-556) —, qui a
 aussi trouvé que le marqueur touchait `profession` et `lieu_naissance`, et que
 la contrainte de `validate_profil` censée signaler la divergence la
 **neutralisait**.)*
@@ -181,7 +181,7 @@ Les 0 de Ségolène Royal sont **mesurés** (collecte rejouée en local sur le c
 AMO30 le 28/08/2026), et ils ne sont pas la même chose : ses mandats sont un
 zéro d'archive, pas un zéro de carrière. C'est exactement ce que le bloc
 `couverture` publie — voir
-[#couverture-listes-539](#couverture-listes-539).
+[#couverture-listes-539](couverture-listes-539.md).
 
 ## Un profil écrit depuis `candidats.json` seul, et sa condition
 

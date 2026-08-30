@@ -13,7 +13,7 @@ critère de sortie qui ne peut structurellement jamais être atteint.
 ### Ce qui n'allait pas
 
 Le critère de sortie de l'épic volumétrie #429
-([#critere-sortie-volumetrie-429](#critere-sortie-volumetrie-429)) portait
+([#critere-sortie-volumetrie-429](critere-sortie-volumetrie-429.md)) portait
 quatre clauses. Trois décrivent des **propriétés du dépôt** — sa taille après
 `gc`, le coût d'un push, la préservation du mapping. La quatrième décrivait un
 **événement** : le franchissement d'un seuil par un fichier.

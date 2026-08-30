@@ -85,7 +85,7 @@ REPERTOIRES_SURVEILLES: tuple[str, ...] = (
 
 #: Ancre de la décision, citée dans chaque message : un contrôle qui dit
 #: « trop gros » sans dire où lire la suite reproduit le défaut qu'il corrige.
-REF_DECISION = "docs/technical_decisions.md#garde-fou-blob-580"
+REF_DECISION = "docs/decisions/partition-profils-legislature-580.md#garde-fou-blob-580"
 
 CONDUITE_A_TENIR: tuple[str, ...] = (
     "Identifier le champ qui pèse : `python3 src/audit_volumetrie_profils.py "

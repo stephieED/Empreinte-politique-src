@@ -65,7 +65,7 @@ pour mot le mécanisme du 27/08, avec un nom plus long.
 
 **Passer en `restore` + `save` explicite, et rien d'autre.** Une entrée de cache
 GitHub est identifiée par `(clé, version)` et n'est **jamais réécrite** — la
-table de [#cache-mode-interventions-505](#cache-mode-interventions-505) le montre
+table de [#cache-mode-interventions-505](cache-mode-interventions-505.md) le montre
 déjà en creux, avec trois entrées coexistant sous `public-data-cache-an-2026-W34`
 parce que leurs `path`, donc leurs versions, diffèrent. Sauvegarder explicitement
 sous la clé fautive de la semaine serait donc refusé jusqu'au lundi suivant. Et
@@ -121,7 +121,7 @@ celle restaurée.
 
 Population : les 7 shards porteurs du run `33110395663`, colonne
 « réindexation » (Syceron 16 + Syceron 15) de
-[#budgets-extract-an-remesures-546](#budgets-extract-an-remesures-546).
+[#budgets-extract-an-remesures-546](budgets-extract-an-remesures-546.md).
 
 | | Aujourd'hui | Après #550 |
 | --- | ---: | ---: |
@@ -214,7 +214,7 @@ c'est une autre mesure, pas un ajout gratuit.
 ## Ce qui reste latent, et n'est pas traité ici
 
 > **TRAITÉ depuis, par #555** :
-> [#cache-fraicheur-interventions-555](#cache-fraicheur-interventions-555). Le
+> [#cache-fraicheur-interventions-555](cache-fraicheur-interventions-555.md). Le
 > phénomène décrit ci-dessous a été mesuré (run `32738726729`, 24/08, une entrée
 > du 20/08 resauvegardée sous la clé du 24/08 en 18 s) et borné. Une nuance de
 > ce paragraphe y est corrigée : le modèle d'`AMENDEMENTS_FRAICHEUR_FILENAME`

@@ -169,7 +169,7 @@ sujet, mesurés uniquement sur des réductions verbatim de l'archive.
 retiré le 27/08/2026 : ce qui reste vrai (mesures d'archive, forme de
 l'identifiant, défauts de parseur) et ce qui ne l'est plus (les deux modes, les
 deux fichiers d'index, l'inactivité par défaut) sont départagés par la section
-[#syceron-actif-510](#syceron-actif-510).
+[#syceron-actif-510](syceron-actif-510.md).
 
 ---
 

@@ -12,7 +12,7 @@ name: Déploiement GitHub Pages (web/UI_finale)
 # pivot_data/ + raw_data/candidats.json dans public/data/, embarqué dans
 # dist/). Un run de génération qui met à jour les données n'est donc publié
 # que par un nouveau build. Deux chemins mènent ici, complémentaires (#416,
-# cf. docs/technical_decisions.md#deploy-pages-declencheur-donnees) :
+# cf. docs/decisions/deploy-pages-declencheur-donnees.md) :
 #   1. push sur main touchant les chemins listés ci-dessous — couvre les
 #      commits humains (merge de PR) qui modifient l'UI ou les données ;
 #   2. workflow_dispatch déclenché explicitement par le job merge-and-pivot
@@ -25,7 +25,7 @@ name: Déploiement GitHub Pages (web/UI_finale)
 # déclenchent donc tous les deux sur un commit de données, et la concurrence
 # `pages` ci-dessous les sérialise. Le point 2 est conservé délibérément :
 # il est le seul des deux qui ne dépende pas de l'identité qui pousse. Voir
-# docs/technical_decisions.md#push-donnees-cle-de-deploiement-508.
+# docs/decisions/push-donnees-cle-de-deploiement-508.md.
 on:
   push:
     branches: [main]

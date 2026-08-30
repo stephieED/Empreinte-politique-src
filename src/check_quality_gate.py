@@ -607,14 +607,14 @@ _AMENDEMENTS_LEGISLATURES = ("17", "16", "15", "14")
 _AMENDEMENTS_FRAICHEUR_FILENAME = "fraicheur.json"
 # Seuil par défaut (en jours) au-delà duquel un index présent mais sans
 # reconstruction réussie récente est signalé comme périmé — voir
-# docs/technical_decisions.md#amendements-index-quality-gate-fraicheur.
+# docs/decisions/amendements-index-quality-gate-fraicheur.md.
 _AMENDEMENTS_STALENESS_DAYS_DEFAULT = 7
 # Législatures dont l'archive AN source est définitivement close — même
 # duplication délibérée que ci-dessus vis-à-vis de
 # AN_AMENDEMENTS_LEGISLATURES_FIGEES (candidate_profile.py). Leur index,
 # committé par build_amendements_index_figees.py, ne sera plus jamais
 # reconstruit : la fraîcheur n'a pas de sens pour elles (voir
-# docs/technical_decisions.md#amendements-legislatures-figees).
+# docs/decisions/amendements-legislatures-figees.md).
 _AMENDEMENTS_LEGISLATURES_FIGEES = frozenset({"14", "15", "16"})
 # Répertoire des index figés committés (AN_AMENDEMENTS_FIGEES_DIR côté
 # candidate_profile.py) — même duplication délibérée que les constantes
@@ -642,10 +642,10 @@ def _index_par_acteur_au_format_uid(index_par_acteur: object) -> bool:
 # Il est en revanche remonté à part par `_report_amendements_coverage` pour être
 # affiché en tête de rapport plutôt que noyé dans la liste des avertissements
 # de la §3c : détecté et affiché, mais ignoré, était précisément le mode d'échec
-# de #265. Voir docs/technical_decisions.md#amendements-zero-pas-de-hard-fail.
+# de #265. Voir docs/decisions/amendements-zero-pas-de-hard-fail.md.
 _AMENDEMENTS_ZERO_ICONE = "🚨"
 _AMENDEMENTS_ZERO_DECISION_REF = (
-    "docs/technical_decisions.md#amendements-zero-pas-de-hard-fail"
+    "docs/decisions/amendements-zero-pas-de-hard-fail.md"
 )
 
 # Couverture `uid` partielle dans un même profil (#447). Rien ne signalait ce
@@ -662,7 +662,7 @@ _AMENDEMENTS_ZERO_DECISION_REF = (
 # pas un verrou, c'était un signal.
 _AMENDEMENTS_UID_MIXTE_ICONE = "🔀"
 _AMENDEMENTS_UID_DECISION_REF = (
-    "docs/technical_decisions.md#publication-scopee-artifacts"
+    "docs/decisions/publication-scopee-artifacts.md"
 )
 
 
@@ -672,7 +672,7 @@ def _report_amendements_coverage(profiles_dir: Path) -> tuple[list[str], str | N
     Retourne (soft_warnings, regression_globale, console_text, markdown_text).
     Soft fail uniquement (n'empêche pas le commit) — y compris pour le signal
     global, cf. décision #378
-    (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail).
+    (docs/decisions/amendements-zero-pas-de-hard-fail.md).
 
     Deux signaux distincts :
       - par candidat : un warning `amendements indisponibles` est présent dans
@@ -907,7 +907,7 @@ def _parse_amendements_horodatage(valeur: object) -> datetime | None:
 def _report_amendements_figes_format(figees_dir: Path) -> tuple[list[str], str, str]:
     """Vérifie que les index amendements committés référencent les amendements
     par `uid` et non par `numero` (correction du 18/08/2026, voir
-    docs/technical_decisions.md#amendements-cle-uid).
+    docs/decisions/amendements-cle-uid.md).
 
     **Hard fail**, contrairement au reste de la section 3d : un index au format
     hérité n'est pas une donnée périmée mais une donnée fausse. Le `numeroLong`
@@ -979,7 +979,7 @@ def _report_amendements_figes_format(figees_dir: Path) -> tuple[list[str], str, 
         md_lines.append(
             "> ✗ **Index au format hérité** — les références par `numero` écrasent "
             "75 % des amendements et en attribuent 40 % au mauvais texte "
-            "(`technical_decisions.md#amendements-cle-uid`). À reconstruire avant commit.\n"
+            "(`docs/decisions/amendements-cle-uid.md`). À reconstruire avant commit.\n"
         )
         for e in hard_errors:
             md_lines.append(f"> - {e}")
@@ -1006,7 +1006,7 @@ def _report_amendements_freshness(
     Quatre états par législature :
       - jamais construit : aucun `index_par_acteur.json` en cache — jamais
         construit avec succès, ou pas encore présent dans ce job CI (voir
-        `docs/technical_decisions.md#amendements-index-job-dedie-ci` pour le
+        `docs/decisions/amendements-index-job-dedie-ci.md` pour le
         job dédié qui l'alimente).
       - périmé : index présent, mais soit `fraicheur.json` est absent/illisible
         (fraîcheur non garantie), soit sa dernière tentative connue a échoué
@@ -1016,7 +1016,7 @@ def _report_amendements_freshness(
         index dont `fraicheur.json` porte `figee: true` (committé par
         `build_amendements_index_figees.py`, jamais reconstruit) — aucune
         notion de péremption, jamais de warning (voir
-        `docs/technical_decisions.md#amendements-legislatures-figees`).
+        `docs/decisions/amendements-legislatures-figees.md`).
       - frais : index présent, dernière tentative connue réussie et récente —
         pas de warning.
     """
@@ -1167,7 +1167,7 @@ def _report_groupes(
 
     Args:
         min_members: seuil absolu (nombre de profils chargés). Voir
-            `docs/technical_decisions.md#seuil-couverture-groupe` pour la
+            `docs/decisions/seuil-couverture-groupe.md` pour la
             justification du défaut conservé (1) : les chiffres réels de
             couverture à pleine échelle de l'extraction roster-driven
             (#188/#190/#191) ne sont pas encore disponibles au moment de
@@ -2077,7 +2077,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "Nombre minimum de profils candidats attendus dans chaque groupe "
             "(soft fail si inférieur, défaut : 1). 0 = désactivé. Seuil "
             "absolu conservé par défaut faute de chiffres réels de couverture "
-            "à pleine échelle (voir docs/technical_decisions.md#seuil-couverture-groupe)."
+            "à pleine échelle (voir docs/decisions/seuil-couverture-groupe.md)."
         ),
     )
     parser.add_argument(
@@ -2090,7 +2090,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "attendu dans chaque groupe (soft fail si inférieur, défaut : 0 = "
             "désactivé). Seuil relatif complémentaire de --groupe-min-members, "
             "à activer une fois des chiffres réels de couverture à pleine "
-            "échelle disponibles (voir docs/technical_decisions.md#seuil-couverture-groupe)."
+            "échelle disponibles (voir docs/decisions/seuil-couverture-groupe.md)."
         ),
     )
     parser.add_argument(
@@ -2197,7 +2197,7 @@ def main() -> int:
     # ── Section 3e : Format des index amendements figés ────────────────────
     # Échec dur, contrairement à 3c/3d : un index keyé par `numero` porte des
     # amendements attribués au mauvais texte, pas des données simplement
-    # périmées (docs/technical_decisions.md#amendements-cle-uid).
+    # périmées (docs/decisions/amendements-cle-uid.md).
     amdfmt_hard, amdfmt_console, amdfmt_md = _report_amendements_figes_format(
         args.amendements_figes_dir
     )
@@ -2264,7 +2264,7 @@ def main() -> int:
 
     # Les sections 3c/3d n'entrent PAS dans exit_code : « 0 amendement collecté »
     # et « index jamais construit » restent des signaux non bloquants, décision
-    # #378 (docs/technical_decisions.md#amendements-zero-pas-de-hard-fail). Le
+    # #378 (docs/decisions/amendements-zero-pas-de-hard-fail.md). Le
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (
         ir_exit == 1 or grp_exit == 1 or gouv_exit == 1 or amdfmt_exit == 1
