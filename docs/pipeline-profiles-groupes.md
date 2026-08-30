@@ -330,3 +330,172 @@ CI) et n'est **pas** intégré à `.github/workflows/generate-data.yml` — choi
 explicite (issue #178) : jamais appelé automatiquement par la CI, usage
 manuel uniquement. Voir `README.md` §12 pour la commande CLI.
 
+
+---
+
+# Ce que devient la donnée — état au 30/08/2026
+
+Section ajoutée par le dégraissage d'`AGENTS.md` §3 : la **description** du
+pipeline vient ici, les **règles** restent dans `AGENTS.md` §3, le **pourquoi**
+est un fichier de `docs/decisions/`.
+
+> ⚠️ Les sections plus haut dans ce fichier (schéma de flux, « Détails: pipeline
+> profils candidats ») décrivent encore NosDéputés / NosSénateurs comme source de
+> collecte et le Sénat comme périmètre. **C'est périmé** : #529 (27/08/2026) a
+> retiré NosDéputés du pipeline et #528 a mis le Sénat hors périmètre. Un lot
+> séparé les corrigera. Ce qui suit décrit l'état réel du code ; en cas de
+> contradiction, c'est cette section qui vaut.
+
+## Le flux courant
+
+```mermaid
+graph TD
+    A["Sources publiques (APIs/dumps AN, Europarl, ParlTrack)"] --> B["raw_data/profiles/&lt;slug&gt;.json (socle)<br/>+ &lt;slug&gt;/&lt;legislature&gt;.json (amendements, #580)<br/>(candidate_profile.py / candidate_profile_ue.py — lu par profil_brut.py)"]
+    B -->|"normalize_profil.py /<br/>normalize_europarl.py"| C["pivot_data/profiles/&lt;slug&gt;.pivot.json<br/>(schéma pivot — schema_pivot.py)"]
+    C --> S["pivot_data/scrutins.json<br/>(build_scrutins_index.py — liste dédupliquée)"]
+    C --> AM["pivot_data/amendements/&lt;legis&gt;.json<br/>(build_amendements_index_pivot.py — liste dédupliquée)"]
+    S --> D
+    AM --> D
+    S --> W["web/UI_finale"]
+    AM --> W
+    C --> D["group_profile.py"]
+    C --> E["parti_profile.py"]
+    C --> I["gouvernement_roster.py<br/>(aucun réseau — pivots locaux)"]
+    J["Dump AN dossiers-legislatifs<br/>(gouvernement_textes.py)"] --> K["gouvernement_profile.py"]
+    I --> K
+    D --> F["pivot_data/groupes/<br/>(schema_groupe.py)"]
+    E --> G["pivot_data/partis/<br/>(schema_parti.py)"]
+    K --> L["pivot_data/gouvernements/<br/>(schema_gouvernement.py)"]
+    F --> H["check_quality_gate.py<br/>(gate avant commit)"]
+    G --> H
+    L --> H
+```
+
+Deux couches, et une seule est lue par le web : `raw_data/` est **au plus près
+de la source** (les votes y restent dénormalisés) ; `pivot_data/` est la seule
+couche que `web/` lit.
+
+Depuis #529, la source française unique du profil brut est **l'open data de
+l'Assemblée nationale** (référentiel acteurs AMO30, scrutins, amendements,
+dossiers législatifs, comptes rendus Syceron). Le Sénat est hors périmètre
+(#528). Le volet européen vient du portail Open Data du Parlement européen et
+des dumps ParlTrack.
+
+## Le profil brut n'est plus un fichier (#580)
+
+`amendements` pesait **96,7 % du plus gros profil** (54,15 des 56,00 Mo), huit
+fichiers dépassaient l'avis GitHub à 50 Mo et **cinquante-quatre** les 45 Mo —
+les mêmes députés cosignant les mêmes amendements, ils franchissent la ligne
+*ensemble* à chaque correction de collecte.
+
+Chaque amendement portant déjà sa `legislature`, la liste est **partitionnée sur
+un champ déjà présent** :
+
+- `raw_data/profiles/<slug>.json` — le profil **moins** `amendements`, plus un
+  manifeste `amendements_partitionnes` à sa place exacte ;
+- `raw_data/profiles/<slug>/<legislature>.json` — une tranche par législature.
+
+56,0 → 23,4 Mo, **pas un octet perdu**. Ce n'est **pas** la normalisation
+écartée par #434 : rien n'est dédupliqué, dénormalisé ni élagué. `votes`,
+`mandats`, `interventions` restent dans le socle — tout ce qui les lit est
+inchangé, et 30× plus léger.
+
+Lecture : `src/profil_brut.py`. `charger_profil_brut()` accepte les deux formes
+(monolithique et partitionnée), `iter_amendements_du_profil()` diffuse tranche
+par tranche. Écriture : toujours la forme partitionnée, donc un run complet
+migre le corpus tout seul. Migration hors run :
+`src/migrer_profils_partitionnes_580.py`, idempotent.
+
+Voir `docs/decisions/partition-profils-legislature-580.md`.
+
+## Format d'écriture JSON
+
+Les profils individuels (`raw_data/profiles/`, `pivot_data/profiles/`) sont
+écrits **compacts** via `src/json_io.py` : l'indentation représentait 35 % de
+leur volume (#433). Groupes, gouvernements, partis, rosters et rapports d'audit
+restent en `indent=2`, parce qu'ils se relisent à l'œil.
+
+Un profil ne se lit jamais ligne à ligne : le format ne porte aucun sens.
+Voir `docs/decisions/profils-json-compact.md`.
+
+## Les deux index partagés de `pivot_data/`
+
+Ce sont les **seules dépendances entre fichiers** de `pivot_data/` : un profil ne
+se lit plus seul, ni pour ses votes ni pour ses amendements. Les deux doivent
+entrer dans le `git add` du workflow — un index non committé laisse chaque
+mapping pointer sur rien, silencieusement.
+
+### `pivot_data/scrutins.json` (schéma `scrutins-v1`, #432)
+
+La liste dédupliquée des scrutins, partagée par les **profils et les groupes** :
+les 4 104 scrutins des groupes sont entièrement inclus dans les 17 422 des
+profils, une seule liste sert donc les deux. Construite par
+`src/build_scrutins_index.py`, **avant** toute passe pivot : résoudre la
+`legislature` d'un scrutin est une jointure à l'échelle du corpus
+(`src/scrutins_legislature.py`), pas un calcul par profil. Fusion additive — une
+passe partielle ne doit jamais retirer des scrutins que d'autres profils
+référencent encore.
+
+Voir `docs/decisions/normalisation-votes.md`.
+
+### `pivot_data/amendements/<legislature>.json` (schéma `amendements-v1`, #431)
+
+La liste dédupliquée des amendements, plus un compagnon
+`<legislature>.cosignatures.json`. Volumétrie mesurée : 810 552 paires
+(membre, amendement) pour 207 238 amendements distincts, et **77,7 M entrées de
+cosignature pour 4,96 M distinctes** (× 15,7) — ce N² représente 1 083,9 des
+1 342,4 Mo pesés sur `amendements[]`.
+
+Un profil ne garde que `{amendement_id, role_signataire}`. `amendement_id` vaut
+`an:<uid AN>`, et la législature se lit **dans** l'uid, jamais depuis la date.
+
+**Shardé par législature** : un fichier global unique pèserait déjà 130,1 Mo,
+au-delà de la limite de blob de 100 Mo de GitHub. Les cosignatures vivent à part
+parce qu'elles font 59 % de l'index et qu'**aucun consommateur ne les lit** —
+elles ne sont pas supprimées pour autant, un réseau de cosignatures est de la
+matière d'analyse (#324).
+
+Construction : `src/build_amendements_index_pivot.py` (à ne pas confondre avec
+`build_amendements_index.py`, qui est l'index AN **brut**), **après** la passe
+pivot et une seule fois : rien ici ne demande de jointure à l'échelle du corpus.
+Fusion additive, même raison que pour les scrutins.
+
+Législatures 14/15/16 : dossiers clos, index committé sous
+`raw_data/amendements_an_figes/` et jamais re-téléchargé
+(`docs/decisions/amendements-legislatures-figees.md`).
+
+Voir `docs/decisions/normalisation-amendements.md`.
+
+## Fusion additive : ce que la régénération ne retire jamais
+
+`merge_profile.py`, appelé à chaque régénération :
+
+| Champ | Règle |
+|---|---|
+| `votes`, `mandats`, `interventions` | additif, l'ancienne entrée gagne (`merge_lists_by_key`) |
+| `amendements`, `textes_portes` | la nouvelle entrée gagne (`merge_dossier_records`) — permet de corriger un stade ou une issue |
+| scalaires | nouvelle valeur si renseignée, sinon on garde l'ancienne — jamais de régression vers `null` |
+
+Clé de fusion d'un amendement : son `amendement_id`, ou — pour une entrée non
+résolue — l'enregistrement conservé sous `amendement_non_resolu`. Se clé sur le
+seul mapping ferait s'effondrer toutes les entrées non résolues en une seule.
+
+Voir `docs/decisions/collecte-vide-necrase-jamais.md`, et les autres entrées de
+fusion indexées par `docs/technical_decisions.md`.
+
+## Les couches publiées
+
+| Couche | Produite par | Schéma |
+|---|---|---|
+| `pivot_data/profiles/` | `normalize_profil.py`, `normalize_europarl.py` | `src/schema_pivot.py` |
+| `pivot_data/groupes/` | `group_profile.py` (roster réel + pivots locaux) | `src/schema_groupe.py` |
+| `pivot_data/partis/` | `parti_profile.py` (agrégation éditoriale) | `src/schema_parti.py` |
+| `pivot_data/gouvernements/` | `gouvernement_roster.py` (aucun réseau, pivots locaux) + `gouvernement_textes.py` (dump AN dossiers-législatifs, une fois par batch) → `gouvernement_profile.py` | `src/schema_gouvernement.py` |
+| `pivot_data/scrutins.json`, `pivot_data/amendements/` | index partagés, ci-dessus | `scrutins-v1`, `amendements-v1` |
+
+Les groupes à produire sont déclarés dans `raw_data/groupes_reels.json`, les
+gouvernements dans `raw_data/gouvernements_reels.json`. `group_roster.py` produit
+un roster par couple `(chambre, législature)` et fait **zéro fetch en CI** — le
+roster brut du run lui arrive par artifact (#518). Depuis #527 la clé `deputes`
+est dérivée d'AMO30, et depuis #529 c'est la seule source : `AN_ROSTER_ACTIF`
+est un coupe-circuit (refus bruyant), plus un aiguillage entre deux sources.
