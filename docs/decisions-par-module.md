@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 169 décisions
+gouverne sans avoir à fouiller les 170 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -135,7 +135,7 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 
 ## `src/audit_pivot_dataset.py`
 
-9 décision(s) le gouvernent ; le module en cite 2.
+10 décision(s) le gouvernent ; le module en cite 2.
 
 | Décision | Nomme |
 | --- | --- |
@@ -144,6 +144,7 @@ Le mentionnent sans le gouverner : [`partition-profils-legislature-580`](decisio
 | [La chambre est un fait du mandat, pas du profil : `mandats[].chambre` estampillée à la collecte (#492) (2026-08-20)](decisions/chambre-par-mandat-electif.md) | `compute_agregation_warnings` |
 | [`chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)](decisions/chambres-profil-derivees.md) | `MAPPING_CHAMBRE_SOURCES`, `compute_agregation_warnings`, `compute_coherence_chambre_sources` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `MAPPING_CHAMBRE_SOURCES`, `compute_coherence_chambre_sources`, `compute_plage_dates_candidats`, `compute_repartition_chambre`, `compute_tableau_croise_candidats` |
+| [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `MAPPING_CHAMBRE_SOURCES` |
 | [Un paramètre commandait ce qu'il ne nommait pas (#578) (2026-08-29)](decisions/deux-axes-formulaire-578.md) | `compute_profils_perimes` |
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `compute_agregation_warnings` |
 | [`--limit` + `--skip-existing` sur `extract-roster-groupes` : sélection progressive + rafraîchissement (2026-08-12)](decisions/limit-skip-existing-roster-groupes.md) | `compute_profils_perimes` |
@@ -304,7 +305,7 @@ Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/c
 | [Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)](decisions/roster-unique-par-run-518.md) | `_gha_annotation` |
 | [Seuil de couverture de groupe (`--groupe-min-members`) : conservé faute de chiffres réels à pleine échelle (2026-08-12)](decisions/seuil-couverture-groupe.md) | `_report_groupes` |
 
-Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`test-adosse-au-corpus-vivant`](decisions/test-adosse-au-corpus-vivant.md).
+Le mentionnent sans le gouverner : [`absences-publiees-comme-faits-556-558-560`](decisions/absences-publiees-comme-faits-556-558-560.md), [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`deux-chambres-interrogees`](decisions/deux-chambres-interrogees.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-profile-rattachement`](decisions/gouvernement-profile-rattachement.md), [`mode-extraction-leger-roster`](decisions/mode-extraction-leger-roster.md), [`oom-reconstruction-amendements-figees`](decisions/oom-reconstruction-amendements-figees.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`retry-generate-data-preemption`](decisions/retry-generate-data-preemption.md), [`test-adosse-au-corpus-vivant`](decisions/test-adosse-au-corpus-vivant.md).
 
 ## `src/correspondance_acteurs_an.py`
 
@@ -553,7 +554,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-39 décision(s) le gouvernent ; le module en cite 4.
+40 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -564,6 +565,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Une URL de source n'est pas un identifiant : la clé de fusion des interventions (#540) (2026-08-27)](decisions/cle-fusion-interventions-540.md) | `_intervention_key`, `_pivot_amendement_key`, `_pivot_intervention_key`, `_pivot_mandat_key`, `_pivot_texte_key`, `_pivot_vote_key`, `clean_stale_interventions`, `clean_stale_textes_portes`, `merge_lists_by_key` |
 | [Ce que la normalisation a le droit de faire : la table de relations collecté → publié (#545) (2026-08-28)](decisions/collecte-vs-publie-545.md) | `_pivot_vote_key` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `_prefer_non_empty`, `merge_pivot_profile`, `merge_raw_profile` |
+| [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `backfill_mandat_chambre`, `merge_pivot_profile` |
 | [Ce qu'une liste vide veut dire : les quatre états de couverture (#539) (2026-08-28)](decisions/couverture-listes-539.md) | `_prefer_non_empty` |
 | [La couverture se remplace à la maille où #539 la publie, et un cas non tranchable se déclare (#602) (2026-08-30)](decisions/couverture-remplacee-par-liste-602.md) | `FAMILLES_WARNINGS`, `_prefer_non_empty`, `fusionner_couverture` |
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `_prefer_non_empty`, `merge_raw_profile` |
@@ -625,7 +627,7 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `_normalize_amendement` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `_normalize_intervention` |
 
-Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md).
+Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md).
 
 ## `src/parltrack_dumps.py`
 
@@ -692,13 +694,14 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-18 décision(s) le gouvernent ; le module en cite 4.
+19 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `validate_profil` |
 | [`chambres` au niveau profil : une liste dérivée, et `chambre` qui n'en est plus que le premier élément (#493) (2026-08-20)](decisions/chambres-profil-derivees.md) | `ChambresDerivees`, `KNOWN_CHAMBRES`, `ORDRE_CHAMBRES`, `appliquer_chambres`, `deriver_chambres`, `validate_profil` |
 | [Les consommateurs de `chambre` migrés vers `chambres`, et le garde-fou qui datera son retrait (#494) (2026-08-20)](decisions/consommateurs-chambres-migres.md) | `appliquer_chambres`, `deriver_chambres`, `lire_chambres` |
+| [La corroboration porte sur les chambres publiées, pas sur la complétude des mandats — et la condition de retrait de `chambre` devient atteignable (#486) (2026-08-30)](decisions/corroboration-chambres-publiees-486.md) | `ChambresDerivees`, `ORDRE_CHAMBRES`, `deriver_chambres`, `lire_chambres` |
 | [La couverture se remplace à la maille où #539 la publie, et un cas non tranchable se déclare (#602) (2026-08-30)](decisions/couverture-remplacee-par-liste-602.md) | `LISTES_COUVERTES`, `valider_couverture` |
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `marqueur_defaut_code`, `validate_profil`, `valider_couverture` |
 | [Deferred / out-of-scope investigations](decisions/hors-perimetre.md) | `KNOWN_CATEGORIES` |
