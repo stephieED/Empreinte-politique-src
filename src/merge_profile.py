@@ -61,7 +61,16 @@ from profil_brut import (
     charger_profil_brut,
     ecrire_profil_brut,
 )
-from schema_pivot import appliquer_chambres
+from schema_pivot import (
+    CAUSE_DEFAUT_COLLECTE,
+    CAUSE_PANNE,
+    ETAT_COUVERT,
+    ETAT_FAIT_ETABLI,
+    ETAT_HORS_COUVERTURE,
+    ETAT_NON_COLLECTE,
+    LISTES_COUVERTES,
+    appliquer_chambres,
+)
 
 Key = Any
 
@@ -593,6 +602,14 @@ def _synchro_la_plus_recente(new_value: Any, old_value: Any) -> Any:
 _PREFIXE_CHAMBRE_EN_ECHEC = "collecte de chambre en échec"
 _PREFIXE_DEUX_CHAMBRES = "carrière sur deux chambres"
 
+#: Déclaré quand deux écrivains constatent LE MÊME JOUR, au même rang
+#: d'interrogation de la source, des couvertures différentes pour une même liste
+#: métier. Le cas n'est tranchable par aucune règle sur la donnée : il se
+#: déclare, plutôt que de se choisir en silence sur l'ordre des jobs (#602).
+#: Il est défini ici, et non dans la section `couverture` qui l'émet, parce que
+#: `FAMILLES_WARNINGS` juste en dessous doit le connaître.
+WARNING_PREFIX_COUVERTURE_DIVERGENTE = "couverture divergente non tranchée"
+
 #: Familles d'avertissements. Un warning appartient à la famille dont il porte
 #: le préfixe ; à défaut, **il est sa propre famille** (dédoublonnage exact).
 #:
@@ -615,6 +632,10 @@ FAMILLES_WARNINGS: tuple[str, ...] = (
     WARNING_PREFIX_BUDGET_COLLECTE,
     WARNING_AUCUN_MANDAT_FR,
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+    # #602 : porte la liste des listes divergentes, donc un compteur. Sans sa
+    # famille, deux fusions successives publieraient deux énumérations côte à
+    # côte, dont une périmée — le cas exact que cette table existe pour éviter.
+    WARNING_PREFIX_COUVERTURE_DIVERGENTE,
     _PREFIXE_CHAMBRE_EN_ECHEC,
     _PREFIXE_DEUX_CHAMBRES,
 )
@@ -1091,6 +1112,170 @@ def _merge_pivot_sources(old_sources: Optional[list[dict[str, Any]]], new_source
     return [by_type[t] for t in order]
 
 
+# ---------------------------------------------------------------------------
+# `couverture` : fusionnée PAR LISTE MÉTIER (#602)
+# ---------------------------------------------------------------------------
+#
+# `couverture` était pris en BLOC — `_prefer_non_empty(new, old)` — sur un modèle
+# que #539 a organisé **par liste métier**. Un écrivain qui ne sait rien dire
+# d'`interventions` mais qui publie une couverture de `votes` remplaçait les cinq
+# listes, et les états établis par l'autre écrivain disparaissaient sans trace.
+# C'est le défaut de #484, sur le bloc dont la raison d'être est précisément de
+# ne pas publier un silence comme un fait.
+#
+# La maille de #539 fait autorité et n'est pas réinventée : la fusion se fait
+# **par liste**, et l'unité échangée est le **jeu d'entrées entier** de cette
+# liste, jamais une entrée recomposée. C'est ce qui fait que la `cause` et la
+# `portee` suivent l'état auquel elles se rapportent : la forme générale de #539
+# est à deux entrées (`couvert` sur la fenêtre couverte, `hors_couverture`
+# avant), et prendre l'état d'un écrivain avec la portée de l'autre publierait
+# une frontière que personne n'a constatée.
+#
+# Ce que ce lot NE change PAS : `couverture` reste **remplacée**, jamais fusionnée
+# additivement (#539, décision 4). Une entrée de couverture décrit le RUN, pas la
+# personne ; l'unir aux anciennes ferait survivre indéfiniment un `couvert` à
+# côté d'un `non_collecte` d'aujourd'hui — la panne masquée par son propre
+# historique. Le remplacement descend d'un cran, du bloc à la liste.
+
+#: Ce que le jeu d'entrées d'une liste dit de **ce que son écrivain a demandé à
+#: la source**, et non de ce qu'il y a trouvé. C'est la règle qui gouverne tout
+#: `couverture_profil` — « la condition porte sur la santé de la source, jamais
+#: sur l'absence de résultat » (#539) — relue au moment de la fusion.
+#:
+#: L'ordre entre les deux causes de `non_collecte` est celui de #562, déjà rendu :
+#: elles disent toutes deux que la source a été interrogée, et se valent donc ici.
+#: Ce qui les sépare de `par_decision`, c'est qu'on n'a rien demandé du tout.
+_RANGS_INTERROGATION: dict[tuple[Any, Any], int] = {
+    (ETAT_COUVERT, None): 3,          # la source a répondu
+    (ETAT_FAIT_ETABLI, None): 3,      # idem, et le référentiel étaye un fait négatif
+    (ETAT_HORS_COUVERTURE, None): 2,  # la source ne couvre pas : frontière connue
+    (ETAT_NON_COLLECTE, CAUSE_DEFAUT_COLLECTE): 1,  # demandé, notre code a échoué
+    (ETAT_NON_COLLECTE, CAUSE_PANNE): 1,            # demandé, la source n'a pas répondu
+}
+
+
+def _rang_interrogation(entrees: Any) -> int:
+    """Le rang le plus haut atteint par les entrées d'une liste.
+
+    Un `non_collecte`/`par_decision` — « nous n'avons rien demandé » — vaut 0 :
+    cet écrivain ne sait rien de la liste, donc il ne peut rien y écraser. Une
+    entrée illisible vaut 0 aussi : elle n'atteste d'aucune interrogation.
+    """
+    rang = 0
+    for entree in entrees if isinstance(entrees, list) else ():
+        if not isinstance(entree, dict):
+            continue
+        etat = entree.get("etat")
+        cle = (etat, entree.get("cause") if etat == ETAT_NON_COLLECTE else None)
+        rang = max(rang, _RANGS_INTERROGATION.get(cle, 0))
+    return rang
+
+
+def _dernier_constat(entrees: Any) -> str:
+    """La date de constat la plus récente du jeu d'entrées, `""` si aucune.
+
+    Les dates sont ISO — `schema_pivot._valider_entree_couverture` le fait
+    respecter —, donc l'ordre lexicographique est l'ordre chronologique. Une
+    valeur illisible passe derrière tout ce qui se lit, comme dans
+    `_instant_synchro`.
+    """
+    dates = [
+        e.get("constate_le")
+        for e in (entrees if isinstance(entrees, list) else ())
+        if isinstance(e, dict) and isinstance(e.get("constate_le"), str)
+    ]
+    return max(dates) if dates else ""
+
+
+def _entrees_presentes(bloc: Any, liste: str) -> Optional[list[Any]]:
+    """Le jeu d'entrées de `liste` chez cet écrivain, ou `None` s'il n'en a pas.
+
+    Une liste absente et une liste vide disent la même chose — cet écrivain n'a
+    rien à dire de cette liste — et `schema_pivot` refuse déjà une liste vide.
+    Les confondre ici est ce qui empêche un `[]` d'écraser un état établi.
+    """
+    if not isinstance(bloc, dict):
+        return None
+    entrees = bloc.get(liste)
+    if not isinstance(entrees, list) or not entrees:
+        return None
+    return entrees
+
+
+def fusionner_couverture(
+    old_bloc: Any, new_bloc: Any
+) -> tuple[Optional[dict[str, Any]], list[str]]:
+    """`couverture` composée **liste par liste** (#602).
+
+    Renvoie `(bloc, listes_non_tranchees)`. La seconde valeur nomme les listes
+    sur lesquelles aucune règle n'a départagé les deux écrivains : l'appelant en
+    fait une déclaration, parce qu'un cas non tranchable qui se choisit en
+    silence est exactement ce que ce lot retire.
+
+    Quatre règles, dans cet ordre, et chacune porte sur la donnée — jamais sur
+    l'ordre des jobs de `generate-data.yml`, qui est un détail de la CI :
+
+    1. **Une liste dont un écrivain ne dit rien garde ce que l'autre en dit.**
+       C'est la règle de #465 et de #484, descendue à la maille de #539.
+    2. **Le constat le plus récent l'emporte.** C'est la garde de #539 décision
+       4 : une couverture décrit le run, et un `couvert` d'hier ne masque pas un
+       `non_collecte` d'aujourd'hui. Elle passe donc AVANT le rang, sans quoi une
+       collecte réussie hier enterrerait la panne de ce matin.
+    3. **À date de constat égale, l'écrivain qui a interrogé la source
+       l'emporte** sur celui qui ne l'a pas fait (`_rang_interrogation`). Dans un
+       même run les deux écrivains constatent le même jour : c'est cette règle-là
+       qui travaille. Le job roster porte `--skip-interventions` en dur (#357) et
+       publie donc `non_collecte`/`par_decision` sur une liste que le job AN a
+       réellement collectée ; sans ce rang, l'ordre `--dirs an ue roster`
+       décidait laquelle des deux vérités était publiée.
+    4. **À date et rang égaux, contenus différents : non tranchable.** La
+       couverture DÉJÀ PUBLIÉE est conservée — ne rien changer est le seul geste
+       qui ne prétende pas avoir tranché — et la liste est déclarée à l'appelant.
+    """
+    if not isinstance(new_bloc, dict) or not new_bloc:
+        return (old_bloc if isinstance(old_bloc, dict) and old_bloc else None), []
+    if not isinstance(old_bloc, dict) or not old_bloc:
+        return dict(new_bloc), []
+
+    # L'ordre de #539 d'abord, puis toute clé hors nomenclature : la fusion ne
+    # doit pas être ce qui fait disparaître une liste inconnue, sans quoi
+    # `valider_couverture` cesserait de la signaler.
+    cles: list[str] = list(LISTES_COUVERTES)
+    cles += [c for c in list(new_bloc) + list(old_bloc) if c not in LISTES_COUVERTES]
+
+    vues: set[str] = set()
+    fusionne: dict[str, Any] = {}
+    non_tranchees: list[str] = []
+    for liste in cles:
+        if liste in vues:
+            continue
+        vues.add(liste)
+        ancien = _entrees_presentes(old_bloc, liste)
+        neuf = _entrees_presentes(new_bloc, liste)
+        if neuf is None and ancien is None:
+            continue
+        if neuf is None:
+            fusionne[liste] = ancien
+            continue
+        if ancien is None or ancien == neuf:
+            fusionne[liste] = neuf
+            continue
+
+        constat_neuf, constat_ancien = _dernier_constat(neuf), _dernier_constat(ancien)
+        if constat_neuf != constat_ancien:
+            fusionne[liste] = neuf if constat_neuf > constat_ancien else ancien
+            continue
+
+        rang_neuf, rang_ancien = _rang_interrogation(neuf), _rang_interrogation(ancien)
+        if rang_neuf != rang_ancien:
+            fusionne[liste] = neuf if rang_neuf > rang_ancien else ancien
+            continue
+
+        fusionne[liste] = ancien
+        non_tranchees.append(liste)
+    return (fusionne or None), non_tranchees
+
+
 def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dict[str, Any]:
     """Équivalent de `merge_raw_profile` pour le format pivot v1."""
     if not old:
@@ -1135,22 +1320,16 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # décrit ni l'une ni l'autre — il décrit leur invariant.
     _accorder_hatvp(merged)
 
-    # --- couverture : REMPLACÉE, jamais fusionnée (#539) ---------------------
+    # --- couverture : REMPLACÉE liste par liste, jamais en bloc (#539, #602) --
     #
-    # C'est le piège du bloc, et la seule exception à la règle de ce module. La
-    # fusion additive protège la donnée COLLECTÉE : une entrée acquise ne
-    # disparaît pas parce qu'un run l'a manquée. La couverture, elle, ne décrit
-    # pas la personne — elle décrit **le run** : ce qu'on a demandé à la source
-    # ce jour-là, et ce que cette source couvre. La fusionner ferait survivre
-    # indéfiniment un `couvert` établi le jour où la collecte tournait, à côté
-    # d'un `non_collecte` d'aujourd'hui : la panne serait masquée par son propre
-    # historique, exactement le contresens que #539 retire.
-    #
-    # `_prefer_non_empty` plutôt que `new` sec : un chemin qui ne dérive pas
-    # encore de couverture (un pivot construit par un outil autonome) ne doit
-    # pas effacer celle du corpus. Il ne peut pas non plus en inventer une — un
-    # bloc vide est vide, donc l'ancien est conservé.
-    couverture = _prefer_non_empty(new.get("couverture"), old.get("couverture"))
+    # Le remplacement reste la règle — une couverture décrit le run, pas la
+    # personne (#539 décision 4) — mais il descend du bloc à la **liste métier**,
+    # la maille à laquelle #539 publie. Prendre le bloc entier faisait
+    # disparaître les cinq listes d'un écrivain dès qu'un autre en décrivait une.
+    # Voir `fusionner_couverture` pour les quatre règles et leur ordre.
+    couverture, couverture_non_tranchee = fusionner_couverture(
+        old.get("couverture"), new.get("couverture")
+    )
     if couverture is not None:
         merged["couverture"] = couverture
     else:
@@ -1252,6 +1431,24 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
                 "de données a répondu, pas où la personne a siégé."
             )
 
+    # #602 : une couverture que deux écrivains constatent le même jour, au même
+    # rang d'interrogation, et différemment, n'est tranchée par aucune règle. Le
+    # lot refuse de la choisir en silence sur l'ordre des jobs : il conserve la
+    # couverture déjà publiée et le DIT. Le texte est recalculé à chaque fusion,
+    # jamais repris de l'ancien profil — il nomme les listes de CE constat.
+    if isinstance(merged.get("meta"), dict) and couverture_non_tranchee:
+        warnings_merged = merged["meta"].setdefault("warnings", [])
+        if not any(w.startswith(WARNING_PREFIX_COUVERTURE_DIVERGENTE)
+                   for w in warnings_merged if isinstance(w, str)):
+            warnings_merged.append(
+                f"{WARNING_PREFIX_COUVERTURE_DIVERGENTE} : deux écrivains constatent "
+                f"le même jour des couvertures différentes pour "
+                f"{', '.join(couverture_non_tranchee)}, sans que l'un ait interrogé "
+                "la source plus que l'autre. La couverture déjà publiée est "
+                "conservée : aucune règle ne départage ces constats, et l'ordre des "
+                "jobs n'en est pas une (#602)."
+            )
+
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
         for w in merged["meta"]["warnings"]:
@@ -1273,6 +1470,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
             # n'a pas recollectés : la liste est alors corroborée, et le dire
             # encore serait faux.
             if w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE) and derivation.corroboree:
+                continue
+            # #602, même patron : la divergence est un fait sur CETTE fusion. Un
+            # warning ramené de l'ancien profil par `unir_warnings` décrirait un
+            # constat que la fusion courante ne retrouve pas — donc il s'éteint.
+            if (w.startswith(WARNING_PREFIX_COUVERTURE_DIVERGENTE)
+                    and not couverture_non_tranchee):
                 continue
             filtered.append(w)
         merged["meta"]["warnings"] = filtered
