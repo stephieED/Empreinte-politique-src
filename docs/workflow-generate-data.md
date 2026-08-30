@@ -35,6 +35,251 @@ non-bloquant mais ne fait rien contre un maillon amont *skipped* (#412 §2.1).
 `prepare-roster-matrix` n'en porte pas et ne doit pas en recevoir : sa sortie
 dimensionne la matrice.
 
+### Ce que fait chaque job, et pourquoi comme ça
+
+Ce qu'un job **déclare**, le YAML le dit, et il le dit mieux. Ce qui suit est ce
+qu'on ne relira pas dans le YAML dans un an : ce que le job fait, ce qu'il
+touche, et les deux ou trois décisions qui expliquent sa forme. Le reste du
+« pourquoi » vit dans `docs/decisions/` — chaque job y a des dizaines de
+fichiers, et ceux cités ici sont les structurants, pas la liste.
+
+#### `prepare-an-matrix`
+
+Lit `raw_data/candidats.json`, en tire la liste des slugs résolvables et la
+publie comme matrice d'`extract-an` — **un shard par candidat**. Il ne collecte
+rien. Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
+16 shards (ils s'exécutent en série, donc 16 shards = 16 fois le timeout d'un
+shard), et le décompte chiffré des interventions qu'un run
+`existing_profiles=overwrite` sans `collect_interventions` effacerait.
+
+**Consomme** `raw_data/candidats.json`. **Produit** la sortie `slugs`.
+**Ni `continue-on-error`, ni `if:`** : un `candidats.json` illisible doit
+échouer *ici*, lisiblement. Une matrice vide fait *skipper* `extract-an`, et un
+job sauté n'est pas un job en échec — `continue-on-error` ne le rattrape pas.
+
+**Pourquoi comme ça** : un runner GitHub peut recevoir un `shutdown signal`
+d'infrastructure qui gèle le job entier, steps `if: always()` compris
+([résilience au `shutdown signal`](decisions/resilience-generate-data-shutdown-signal.md)) ;
+un job séquentiel unique aurait alors perdu la progression de tous les candidats
+déjà traités, tandis que le sharding par candidat borne la perte à un seul
+([une matrice par candidat](decisions/matrix-extract-an-par-candidat.md)).
+
+#### `extract-amendements-an`
+
+Construit l'index amendements AN **par acteur**, sans condition et
+indépendamment de toute liste de candidats :
+`python3 src/build_amendements_index.py` sur les législatures
+d'`AN_AMENDEMENTS_PATH` (17, 16, 15, 14). Une législature dont l'index est
+**figé** — 14, 15 et 16, committés gzippés sous
+`raw_data/amendements_an_figes/` — est sautée sans être rechargée : en pratique
+la CI ne télécharge que la 17e. Un échec est isolé par législature ; le script
+sort en 1 si l'une a échoué, et c'est le `continue-on-error` du job, pas le
+script, qui empêche cela de bloquer le run.
+
+**Consomme** les archives amendements de l'open data AN. **Produit**
+`.cache/amendements_an/` → artifact `amendements-index-an`, et écrit la clé de
+cache `public-data-cache-amendements-<semaine>` (§3).
+
+**Pourquoi comme ça** : la construction paresseuse, au niveau candidat, faisait
+télécharger 350 à 650 Mo à l'intérieur d'un shard de 5 minutes, à chaque shard
+([un job dédié](decisions/amendements-index-job-dedie-ci.md)) ; ses consommateurs
+lisent donc `.cache/amendements_an/` en **cache-only** et ne téléchargent plus
+jamais, une législature absente produisant un `meta.warnings` et non un
+téléchargement
+([consommateurs cache-only](decisions/amendements-index-cache-only-consumers.md)) ;
+et un dossier législatif clos ne se re-télécharge pas
+([législatures figées](decisions/amendements-legislatures-figees.md)).
+
+#### `extract-ue-officiel`
+
+`python3 src/generate_all_profiles.py --source ue --workers 1` : Open Data
+Portal du Parlement européen **uniquement**, aucune source française. Écrit les
+profils bruts des candidats dont le MEP ID est résolu, et ne publie que ceux
+qu'il a **effectivement écrits** (manifeste + `publish-written-profiles`, §4).
+
+**Consomme** l'Open Data Portal EP. **Produit** l'artifact
+`raw-profiles-ue-officiel`, et écrit `public-data-cache-ue-<semaine>` sur
+`.cache/europarl` **seul** — cacher `.cache` en bloc lui faisait ré-embarquer
+les données AN et amendements, et le quota de cache du dépôt étant partagé,
+l'entrée surdimensionnée provoquait l'éviction LRU des autres (#424).
+
+**Pourquoi comme ça** : l'API officielle EP ne permet pas d'attribuer rapports
+et amendements à un député européen donné — pas de filtre auteur, ~10-15k
+documents sans titre dans la réponse de liste, 1 h 30 et plus de scan par run à
+la limite de débit ([périmètre écarté](decisions/hors-perimetre.md)). C'est
+l'[investigation des sources UE](decisions/investigation-sources-ue.md) qui a
+tranché pour les dumps ParlTrack, d'où le job suivant.
+
+#### `extract-parltrack`
+
+Restaure `.cache/parltrack`, puis télécharge trois dumps `.zst` via
+`ensure_dump()` de `src/parltrack_dumps.py` : `ep_dossiers`,
+`ep_plenary_amendments`, `ep_amendments`. **Il n'écrit aucun profil** — il
+prépare la matière que `merge-and-pivot` consomme à la passe pivot
+(`--enrich-parltrack` → `src/normalize_parltrack_dumps.py` → `textes_portes[]`
+et `amendements[]` des profils MEP).
+
+**Consomme** `https://parltrack.org/dumps`. **Produit** l'artifact
+`parltrack-dumps` — hors de la famille `raw-profiles-*` exprès, puisqu'il ne
+contient pas de profils (#412 §4) — et la clé
+`public-data-cache-parltrack-<semaine>`.
+
+**Pourquoi comme ça** : source tierce non officielle, donc traitée comme
+faillible de bout en bout. Dumps absents ⇒ la passe pivot ajoute un warning de
+repli **déclaré** et n'invente rien ; `--parltrack-status-out` écrit le fichier
+JSON que `check_quality_gate.py` §5 relit. La licence est ODbL, ce que
+`src/licences.py` répercute dans `meta.licence_donnees`
+([licences](decisions/licences.md), [lot 6](decisions/licence-lot-6-530.md)).
+
+#### `prepare-roster-matrix`
+
+Construit **une fois pour tout le run** `raw_data/roster_candidats.json` (la
+liste roster-driven, filtrée par sigle) *et* `raw_data/rosters_bruts.json` (la
+**même** collecte, avant filtrage), publiés dans **un seul** artifact
+`roster-candidats` ; puis calcule la liste des 8 shards roster.
+
+**Consomme** `raw_data/groupes_reels.json`. **Produit** l'artifact
+`roster-candidats` et les sorties `shards` / `shard_total`. Le filtrage se fait
+**sur le code de sortie, dans le shell** : seul le code 2 (« extraction de tous
+les groupes suspendue ») est toléré, le code 1 (collecte incomplète) ne l'est
+pas — un `continue-on-error: true` avalerait les deux.
+
+**Pourquoi comme ça** : neuf constructions indépendantes du même roster étaient
+fragiles et **incorrectes** — les shards se partagent le roster par position,
+`merge-and-pivot` normalise **sa** liste, et deux listes divergentes produisent
+un « collecté mais non publié » sans qu'aucune étape n'échoue
+([un roster par run](decisions/roster-unique-par-run-518.md)) ; le roster brut
+voyage dans le même artifact parce que la fiche de groupe était sinon bâtie sur
+une composition lue ~7 min après celle qui avait servi à collecter les profils
+([plafond roster et commit](decisions/plafond-roster-et-commit-518.md)) ; et un
+code de sortie qui distingue « panne » de « rien à collecter » est ce qui permet
+au run de conclure vert quand la source est délibérément suspendue
+([cloisonnement de la branche roster](decisions/cloisonnement-branche-roster-524.md)).
+
+#### `extract-an`
+
+Un shard par candidat, séquencés un par un (`max-parallel: 1`) :
+
+```
+python3 src/generate_all_profiles.py --source an --only <slug> \
+  --budget-collecte-secondes 0 --manifest-out _manifest/profils-ecrits.txt \
+  [--no-merge] [--skip-interventions] [--budget-interventions-secondes 250]
+```
+
+`--source an` force une collecte **Assemblée nationale uniquement**. Un candidat
+sans slug est un no-op dans ce scope et n'a donc pas de shard. La chaîne, dans
+`src/candidate_profile.py::build_profile(chambre="deputes")` : identité et
+mandats depuis le référentiel AMO30 (étape 0, résolue en tout premier),
+positions dans l'hémicycle depuis les dumps acteurs historiques, votes depuis
+les scrutins nominatifs (législatures 17/16/15/14), amendements lus **en
+cache-only** dans `.cache/amendements_an/`, textes portés depuis les dossiers
+législatifs (rôle factuel auteur / rapporteur / co-rapporteur), interventions
+depuis les comptes rendus Syceron (15/16/17) puis les questions QE/QG/QOSD.
+Les URL de jeux de données et les schémas JSON de chacune de ces archives sont
+dans [`an_opendata.md`](./an_opendata.md) — référence de la source, qui dérive
+avec l'Assemblée et non avec notre code.
+
+**L'AN est source unique, et il n'y a plus aucun repli.** Un slug que le
+référentiel AN ne résout pas sort avec `identite: None` et un
+`WARNING_PREFIX_IDENTITE_INTROUVABLE` nommant la seule source consultée : il ne
+bascule sur rien. Le couple slug ↔ acteur `PA######` est résolu par la table
+committée `raw_data/correspondance_acteurs_an.json`, et §5b du garde-fou qualité
+échoue déjà sur tout slug publié qui n'y a pas d'entrée.
+
+**Consomme** la matrice de `prepare-an-matrix`, l'open data AN (acteurs actifs et
+historiques, scrutins nominatifs, dossiers législatifs, questions, Syceron) et
+l'index amendements téléchargé depuis l'artifact `amendements-index-an` — à
+défaut, `actions/cache/restore` sur la clé amendements, jamais de sauvegarde,
+puisque ce job ne produit pas d'amendements. **Produit** un artifact
+`raw-profiles-an-<slug>` par shard, et écrit les clés
+`public-data-cache-an-<semaine>[-interv-<empreinte>]` et
+`public-data-cache-dossiers-<semaine>`.
+
+**Un profil brut n'est plus un fichier** : `<slug>.json` est le **socle** (le
+profil sauf `amendements`), les amendements vivant en tranches sous
+`raw_data/profiles/<slug>/<legislature>.json`. L'artifact transporte les deux, et
+la relecture passe par `src/profil_brut.py`, jamais par un `json.load` direct
+([partition par législature](decisions/partition-profils-legislature-580.md)).
+
+**Pourquoi comme ça** :
+[NosDéputés est sorti du pipeline](decisions/retrait-nosdeputes-529.md) — le
+profil brut vient entièrement de l'open data AN, et un compteur structurellement
+à zéro laissé sous surveillance est un trou muet ;
+[Syceron est la seule source de débats](decisions/syceron-actif-510.md) — le
+drapeau a été *retiré*, pas baissé, et une collecte vide reste vide en le
+déclarant ; [le budget d'interventions](decisions/budget-collecte-interventions.md)
+et `timeout-minutes` bougent ensemble, un shard tué par le timeout n'écrivant
+**aucun** profil là où un budget épuisé écrit le profil partiel et déclare la
+troncature ; et [l'identité AN est primaire](decisions/bascule-identite-an-primaire.md),
+adossée à la table [slug ↔ acteur AN](decisions/correspondance-acteurs-an-525.md).
+
+#### `extract-roster-groupes`
+
+La même chaîne de collecte qu'`extract-an`, mais pilotée par la **composition
+réelle** des groupes parlementaires (~750 membres) plutôt que par la liste
+éditoriale `raw_data/candidats.json` (~8 personnes), et en **mode léger** :
+`--skip-interventions --skip-dossiers-legislatifs` sont toujours posés ici,
+quelle que soit la valeur de `collect_interventions` (qui ne pilote
+qu'`extract-an`). 8 shards découpés par modulo, `max-parallel: 4`.
+
+**Consomme** l'artifact `roster-candidats` — régénéré seulement s'il manque — et
+les mêmes sources qu'`extract-an`, dont les caches AN et amendements en
+**restauration seule**. **Produit** un artifact
+`raw-profiles-roster-groupes-<shard>` par shard, tous en
+`meta.provenance = "roster_groupe"`, une provenance qui ne rétrograde jamais un
+profil `candidat_declare` existant à la fusion
+([provenance pivot](decisions/provenance-pivot.md)).
+
+**Pourquoi comme ça** : un membre de roster n'alimente que des agrégats de
+groupe, qui ne consomment ni interventions, ni dossiers législatifs, ni questions
+([mode d'extraction léger](decisions/mode-extraction-leger-roster.md)) ; la
+composition vient d'AMO30 et non plus d'un endpoint tiers, `AN_ROSTER_ACTIF`
+étant un interrupteur et non un aiguillage
+([bascule vers AMO30](decisions/bascule-roster-an-amo30-527.md)) ; et le
+découpage en 8 tranches arbitre entre la borne de perte sur préemption et les
+frais fixes de `actions/checkout`, pas le temps de calcul
+([shardage en 8 tranches](decisions/shardage-extract-roster-groupes.md)).
+
+**Ce job a de la profondeur** — rollout, régénération de l'existant, les six
+combinaisons des deux axes du formulaire, les trois codes de sortie du roster :
+→ [`extract-roster-groupes.md`](./extract-roster-groupes.md)
+
+#### `merge-and-pivot`
+
+**Le seul job qui écrit dans le dépôt.** Il enchaîne, dans cet ordre : fusion
+additive des profils bruts des trois familles d'artifacts
+(`src/merge_profile.py --dirs _artifacts/an _artifacts/ue _artifacts/roster`) ;
+**première** passe `--pivot-only` sur `raw_data/candidats.json`, avec
+`--enrich-parltrack` ; **seconde** passe `--pivot-only` sur le
+`roster_candidats.json` du run ; profils de parti, de groupe parlementaire réel,
+de gouvernement ; `check_quality_gate.py` ; les **quatre contrôles** de la §8 ;
+la vérification que `src/` et `raw_data/*.json` n'ont pas bougé sur la branche
+pendant le run ; le commit et le push ; la fenêtre de rétention de l'historique
+de données ; le déclenchement de `deploy-pages.yml`.
+
+**Consomme** tous les artifacts ci-dessus — mais **aucun** pour la ligne de
+base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présents
+dans les artifacts. **Produit** le commit de données sur `main`, poussé sous
+`secrets.DATA_PUSH_SSH_KEY` (§6). C'est le seul job à porter
+`permissions: contents: write`.
+
+**Pourquoi comme ça** : les quatre contrôles sont **cloisonnés**, aucune
+tolérance ne désarmant celui d'un autre — un contrôle grossier rendu bloquant
+forcerait à relancer avec sa tolérance, ce qui désarmerait du même coup les
+contrôles précis
+([contrôle de perte](decisions/controle-de-perte-avant-commit.md)) ; la fusion
+est **additive**, une régénération ne retirant jamais de donnée collectée
+([une collecte vide n'écrase jamais](decisions/collecte-vide-necrase-jamais.md)) ;
+le push passe par une clé de déploiement parce que le ruleset du dépôt applique
+ses `required_status_checks` aux pushes directs et qu'une App Actions ne peut pas
+être `bypass_actor` sur un dépôt personnel
+([clé de déploiement](decisions/push-donnees-cle-de-deploiement-508.md)) ; et un
+build dont les entrées ont changé pendant le run ne se committe pas
+([ne jamais committer un build périmé](decisions/ne-jamais-committer-un-build-perime.md)).
+Le détail est dans la §8 pour les contrôles, la §6 pour le push,
+[la fenêtre de rétention](decisions/fenetre-historique-donnees.md) et
+[le déclencheur de déploiement](decisions/deploy-pages-declencheur-donnees.md).
+
 ## 2. Le formulaire de lancement
 
 Deux axes **disjoints**, plus le cache à part (#578,
@@ -251,7 +496,7 @@ pour que le pic mémoire du job reste celui du plus gourmand et non leur somme.
 
 | Ordre | Contrôle | Placement | Coût mesuré |
 |---|---|---|---|
-| 1 | `audit_collecte_non_publiee.py` (#511) | **entre les deux passes `--pivot-only`** — plus tôt, les 543 membres du roster seraient autant de faux manques | 0,08 s / 13,9 Mio à 752 profils ; ne parse aucun profil (deux listages de noms de fichiers) |
+| 1 | `audit_collecte_non_publiee.py` (#511) | **après les deux passes `--pivot-only`**, celle de `candidats.json` et celle du roster — placé *entre* elles, tout membre de roster serait un faux manque, puisqu'il est alors légitimement sans pivot. Emplacement vérifié par `tests/test_ci_collecte_non_publiee.py::test_le_controle_suit_les_deux_passes_de_normalisation_pivot` | 0,08 s / 13,9 Mio à 752 profils ; ne parse aucun profil (deux listages de noms de fichiers) |
 | 2 | `audit_diff_profils.py --ref HEAD` (#460/#470) | après les deux passes, avant le commit, sur **tout** `pivot_data/` | pic du job à 186,6 Mio |
 | 3 | `audit_integrite_referentielle.py` (#485) | juste après le contrôle de perte | 3,02 s / 162,0 Mio ; 0 orphelin sur 1 347 451 références à `01ffa7f` |
 | 4 | `audit_collecte_vs_publie.py` (#545) | après les deux passes, avant le commit | 58,7 s / 158,2 Mio sur 4,3 Go de profils bruts, sans en matérialiser un seul (`object_pairs_hook`) ; 0 déficit et 0 surplus sur 2 380 paires à `3104e37` |

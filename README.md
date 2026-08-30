@@ -87,6 +87,10 @@ CV_CandidatFR/
 |  |- UI_finale/                     # Production interface: React 19 + Vite (Candidats · Groupes · Gouvernement)
 |  `- old/                           # Archived design generations (v1–v7, atlas, studies…)
 |- docs/
+|  |- workflow-generate-data.md      # The run, job by job — the entry point
+|  |- pipeline-profiles-groupes.md   # What the data becomes
+|  |- extract-roster-groupes.md      # The roster-driven job, in depth
+|  |- decisions/                     # One file per architectural decision
 |  |- nosdeputes_doc/                # NosDeputes/NosSenateurs API reference — historical, no longer used by the pipeline (#529)
 |  `- an_opendata.md                 # Notes on AN open data (votes, amendments, Syceron)
 |- tests/
@@ -133,9 +137,11 @@ See:
 - `docs/pipeline-profiles-groupes.md` - what the data becomes: sources, flow,
   schemas, volumetry and the six `pivot_data/` outputs (`profiles`, `groupes`,
   `partis`, `gouvernements`, `scrutins.json`, `amendements/`).
-- `docs/extract-an.md` - CI job `extract-an` (scope, extraction chain, sources).
-- `docs/extract-ue.md` - UE source investigation report and implementation context.
-- `docs/extract-parltrack.md` - CI job `extract-parltrack` (dumps, cache, fallback).
+- `docs/workflow-generate-data.md` - what a run does: the eight jobs (what each one
+  does, what it consumes and produces, and the decisions behind its shape), the
+  launch form, caches, artifacts, budgets, the push, the automatic retry.
+- `docs/extract-roster-groupes.md` - the one extraction job with depth of its own:
+  rollout, regenerating existing profiles, the roster's three exit codes.
 - `docs/decisions/<anchor>.md` - one file per architectural decision: full rationale,
   alternatives rejected, edge-case history.
 - `docs/technical_decisions.md` - their index, newest first. A new decision is a **new
@@ -647,10 +653,10 @@ on GitHub Actions and is triggered manually (`workflow_dispatch`).
 
 Detailed extraction and merge flow is documented in:
 
-- `docs/pipeline-profiles-groupes.md`
-- `docs/extract-an.md`
-- `docs/extract-ue.md`
-- `docs/extract-parltrack.md`
+- `docs/workflow-generate-data.md` (the run: the eight jobs, form, caches,
+  artifacts, budgets, push, retry)
+- `docs/pipeline-profiles-groupes.md` (what the data becomes)
+- `docs/extract-roster-groupes.md` (the roster-driven job, in depth)
 
 The `extract-amendements-an` job runs `src/build_amendements_index.py`
 independently (no `needs:`) to build the 3 AN amendements legislature
