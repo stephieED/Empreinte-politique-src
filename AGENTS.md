@@ -469,6 +469,7 @@ Before finishing a task, update only what actually changed — skip a file if no
 | `docs/decisions/<anchor>.md` | New architectural choice or trade-off. **One decision = one new file**, never an insertion into an existing one. Level-1 `#` title carrying the issue number and the date, then context, decision, alternative rejected. Name it in kebab-case with the issue number (`retrait-senat-528`). |
 | `docs/technical_decisions.md` | The index of the above, and nothing else. Add **one line at the top** of the list: the anchors, the date, the title, the link, and one sentence saying what the decision settles. Adding the file without the line (or the reverse) fails `tests/test_index_decisions.py`. |
 | `ROADMAP.md` | Task closes a known bug, or a new idea is identified but not acted on now. Keep entries to one line; put rationale in `docs/decisions/<anchor>.md` instead. |
+| `CLAUDE.md`, `.github/copilot-instructions.md` | **Never — they are symlinks to this file.** One source, several names, so the instructions cannot drift between tools. Adding a tool that expects another name: create the symlink and add it to `ALIAS` in `tests/test_instructions_agents.py`. |
 | `requirements.txt` | A new package is imported that isn't already listed. Pin the version actually installed/tested (`==`), don't add unpinned entries. |
 | `requirements-dev.txt` | A new **test-only** package is imported. Same pinning rule; it already pulls `requirements.txt` via `-r`. |
 
