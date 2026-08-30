@@ -101,7 +101,7 @@ def _script_extraction() -> str:
     """Le shell du step « Extraction AN », tel que GitHub Actions l'exécutera."""
     texte = _yaml()
     motif = re.search(
-        r"^      - name: Extraction AN \(NosD.*?\n        run: \|\n(.*?)(?=\n      [-#])",
+        r"^      - name: Extraction AN\b.*?\n        run: \|\n(.*?)(?=\n      [-#])",
         texte,
         flags=re.S | re.M,
     )
