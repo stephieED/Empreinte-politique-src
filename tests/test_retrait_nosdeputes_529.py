@@ -84,6 +84,12 @@ OCCURRENCES_ADMISES = {
     "schema_pivot.py": "KNOWN_SOURCE_TYPES — 476 profils publiés en portent un",
     "audit_pivot_dataset.py": "MAPPING_CHAMBRE_SOURCES — l'audit lit ce corpus",
     "normalize_profil.py": "repli de lecture sur synchro_sources.nosdeputes",
+    "avertissements.py": (
+        "AVERTISSEMENTS_HERITES — le message `synchro_sources.nosdeputes` "
+        "qu'aucun code n'écrit plus mais que 19 des 115 avertissements publiés "
+        "portent encore : sans lui, ces 19-là n'auraient jamais de destinataire "
+        "(#642)"
+    ),
     # (c) attribution due au corpus publié — le lot 6 lui-même (#530)
     "licences.py": (
         "LICENCE_PAR_TYPE_SOURCE et _MOTIFS_URL_REGARDS_CITOYENS : c'est la "

@@ -53,6 +53,12 @@ from xml.etree import ElementTree as ET
 
 import requests
 import urllib3
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    DESTINATAIRE_LECTEUR,
+    avertissement,
+    deriver_avertissements,
+)
 from budget_collecte import (
     BudgetCollecte,
     annoncer_troncature,
@@ -1414,18 +1420,23 @@ def fetch_votes_officiels(
     for legislature in AN_SCRUTINS_LEGISLATURES:
         if not _ensure_scrutins_index(legislature):
             if warnings is not None:
-                warnings.append(
+                warnings.append(avertissement(
                     f"{WARNING_PREFIX_VOTES_INTROUVABLES} (législature {legislature}) : "
-                    "index des scrutins indisponible (archive open data non téléchargée ou invalide)."
-                )
+                    "index des scrutins indisponible (archive open data non téléchargée ou invalide).",
+                    # Une panne de NOTRE cache, que `couverture` publie déjà au
+                    # lecteur sous `panne` avec sa preuve : ici c'est le
+                    # diagnostic, pas l'explication (#642).
+                    DESTINATAIRE_INTERNE,
+                ))
             continue
         records = _read_cached_votes_acteur(legislature, acteur_ref)
         if records is None:
             if warnings is not None:
-                warnings.append(
+                warnings.append(avertissement(
                     f"{WARNING_PREFIX_VOTES_INTROUVABLES} (législature {legislature}) : "
-                    "cache d'index des scrutins illisible."
-                )
+                    "cache d'index des scrutins illisible.",
+                    DESTINATAIRE_INTERNE,
+                ))
             continue
         retenus = 0
         for record in records:
@@ -1890,15 +1901,20 @@ def _tracer_echec_collecte(
     Le détail technique reste dans `meta.warnings` et sur la sortie d'erreur du
     run — jamais dans une `preuve` publiée (`schema_pivot.valider_couverture`).
     """
+    # #642 : les deux branches sont internes, et pour deux raisons distinctes.
+    # La panne porte le texte brut de l'exception ; le défaut de collecte
+    # accuse notre code. Ni l'un ni l'autre ne se lit sur une page publique, et
+    # `couverture` dit déjà au lecteur, avec sa preuve, ce que la liste vaut.
     if isinstance(exc, ERREURS_SOURCE):
-        warnings.append(f"{prefixe_panne} : {exc}")
+        warnings.append(avertissement(f"{prefixe_panne} : {exc}", DESTINATAIRE_INTERNE))
         return
     traceback.print_exc()
-    warnings.append(
+    warnings.append(avertissement(
         f"{WARNING_PREFIX_DEFAUT_COLLECTE} ({liste}) : {etape} a échoué sur une "
         f"anomalie de ce dépôt ({type(exc).__name__}) — aucune source de "
-        "l'Assemblée nationale n'est en cause. Trace complète au journal de run."
-    )
+        "l'Assemblée nationale n'est en cause. Trace complète au journal de run.",
+        DESTINATAIRE_INTERNE,
+    ))
 
 
 def _content_range_total(resp: "requests.Response") -> Optional[int]:
@@ -4366,11 +4382,13 @@ def fetch_amendements_officiels(
     acteur_ref = _extract_acteur_ref(url_an_ou_senat)
     if not acteur_ref:
         if warnings is not None:
-            warnings.append(
+            warnings.append(avertissement(
                 f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} : identifiant Assemblée nationale "
                 f"introuvable pour ce profil (url_an_ou_senat={url_an_ou_senat!r}) — "
-                "aucun amendement ne peut être collecté"
-            )
+                "aucun amendement ne peut être collecté",
+                # Nomme une variable du dépôt : c'est un diagnostic (#642).
+                DESTINATAIRE_INTERNE,
+            ))
         return []
 
     amendements: list[dict[str, Any]] = []
@@ -4378,10 +4396,12 @@ def fetch_amendements_officiels(
         records = _read_cached_amendements_acteur(legislature, acteur_ref)
         if records is None:
             if warnings is not None:
-                warnings.append(
+                warnings.append(avertissement(
                     f"{WARNING_PREFIX_AMENDEMENTS_INDISPONIBLES} (législature {legislature}) : "
-                    "index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)"
-                )
+                    "index en cache absent (job extract-amendements-an non exécuté ou en échec pour cette législature)",
+                    # Nomme un job de CI : diagnostic (#642).
+                    DESTINATAIRE_INTERNE,
+                ))
             continue
         for record in records:
             # Normalisation À LA LECTURE, et pas seulement au parsing : les
@@ -5178,7 +5198,10 @@ def build_profile(
         try:
             identite_an, acteur_ref_an = fetch_identite_officielle_par_slug(slug)
         except Exception as exc:
-            pre_profile_warnings.append(f"identité officielle (Assemblée nationale) indisponible : {exc}")
+            pre_profile_warnings.append(avertissement(
+                f"identité officielle (Assemblée nationale) indisponible : {exc}",
+                DESTINATAIRE_INTERNE,
+            ))
 
     # --- 4. Structure de base du profil, valeurs par défaut si une source manque. ---
     profile: dict[str, Any] = {
@@ -5254,11 +5277,15 @@ def build_profile(
     # Le repli NosDéputés — un député absent des archives AN combinées — est
     # parti avec la source. ---
     if identite_an is None:
-        warnings.append(
+        warnings.append(avertissement(
             f"{WARNING_PREFIX_IDENTITE_INTROUVABLE} : le référentiel officiel "
             "Assemblée nationale ne renvoie pas de profil exploitable pour ce "
-            "slug (seule source depuis #529)."
-        )
+            "slug (seule source depuis #529).",
+            # Explique un bloc `identite` vide, que `couverture` ne couvre pas
+            # (elle porte les cinq listes métier, pas l'identité) : c'est au
+            # lecteur que ce constat manque (#642).
+            DESTINATAIRE_LECTEUR,
+        ))
     else:
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
@@ -5328,10 +5355,13 @@ def build_profile(
         profile["mandats"] = mandats_an
 
         if _is_empty_payload(profile["mandats"]):
-            warnings.append(
+            warnings.append(avertissement(
                 f"{WARNING_PREFIX_MANDATS_INTROUVABLES} : aucun mandat/responsabilité "
-                "trouvé dans le référentiel officiel Assemblée nationale."
-            )
+                "trouvé dans le référentiel officiel Assemblée nationale.",
+                # Un constat de la source, qui nomme sa source (§2 règle 2) et
+                # explique une liste vide plus précisément que `couverture`.
+                DESTINATAIRE_LECTEUR,
+            ))
 
         # --- 5bis. Positions dans l'hémicycle (Assemblée nationale, référentiel
         # officiel des organes — voir fetch_positions_hemicycle_officielles). Ne
@@ -5344,7 +5374,10 @@ def build_profile(
         try:
             positions_hemicycle = fetch_positions_hemicycle_officielles(profile["identite"].get("url_an_ou_senat"))
         except Exception as exc:
-            warnings.append(f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}")
+            warnings.append(avertissement(
+                f"positions dans l'hémicycle (Assemblée nationale) indisponibles : {exc}",
+                DESTINATAIRE_INTERNE,
+            ))
             positions_hemicycle = []
         for periode in positions_hemicycle:
             sigle = periode.get("groupe_sigle")
@@ -5377,7 +5410,10 @@ def build_profile(
                 profile["identite"].get("url_an_ou_senat"), warnings
             )
         except Exception as exc:
-            warnings.append(f"votes officiels (Assemblée nationale) indisponibles : {exc}")
+            warnings.append(avertissement(
+                f"votes officiels (Assemblée nationale) indisponibles : {exc}",
+                DESTINATAIRE_INTERNE,
+            ))
 
     if official_votes:
         profile["votes"] = [
@@ -5422,11 +5458,15 @@ def build_profile(
         )
         profile["meta"]["synchro_sources"]["assemblee_nationale"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     else:
-        warnings.append(
+        warnings.append(avertissement(
             f"{WARNING_PREFIX_VOTES_INTROUVABLES} : aucune correspondance officielle "
             "Assemblée nationale n'a été trouvée pour ce parlementaire/cette "
-            "législature (voir fetch_votes_officiels)."
-        )
+            "législature (voir fetch_votes_officiels).",
+            # Le cas qui a motivé #642 : sur /candidats/bruno-retailleau, c'est
+            # la seule phrase qui dise POURQUOI la page est vide, et elle est
+            # plus précise que `couverture`, qui n'en dit que `non_collecte`.
+            DESTINATAIRE_LECTEUR,
+        ))
 
     # --- 6bis. Amendements officiels (Assemblée nationale, auteur principal uniquement,
     # toutes législatures disponibles — voir fetch_amendements_officiels). ---
@@ -5500,13 +5540,19 @@ def build_profile(
             # portait l'ancien message (« absent des archives, OU archive
             # indisponible ») n'a plus lieu d'être : l'autre terme a son propre
             # préfixe, écrit par la branche `except` ci-dessus.
-            warnings.append(
+            warnings.append(avertissement(
                 f"{WARNING_PREFIX_INTERVENTIONS_SYCERON_AUCUNE} : les archives "
                 "Syceron ont répondu et ne portent aucune intervention pour cet "
                 "acteurRef. Ce n'est pas une panne : c'est un zéro constaté dans "
                 "le périmètre de la source. Le repli NosDéputés a été retiré "
-                "(#510) : aucune autre source ne comble ce silence."
-            )
+                "(#510) : aucune autre source ne comble ce silence.",
+                # Un zéro constaté, qui nomme sa source et sa borne — même
+                # registre que « votes introuvables ». Le texte porte encore
+                # `acteurRef` et un numéro d'issue : c'est la dette nommée dans
+                # `docs/decisions/destinataire-avertissements-642.md`, à traiter
+                # par le lot d'affichage, pas par une réécriture silencieuse.
+                DESTINATAIRE_LECTEUR,
+            ))
 
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
@@ -5535,7 +5581,11 @@ def build_profile(
     # un `timeout-minutes` qui, lui, tue le process avant l'écriture.
     message_budget = annoncer_troncature(budget_interventions, f"{chambre}/{slug}")
     if message_budget:
-        warnings.append(f"{WARNING_PREFIX_BUDGET_INTERVENTIONS} : {message_budget}")
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_BUDGET_INTERVENTIONS} : {message_budget}",
+            # Troncature de CE run, que `couverture` publie déjà en `panne`.
+            DESTINATAIRE_INTERNE,
+        ))
 
     # L'étape 9quater de #514 (« la source a-t-elle répondu ? ») et le canal
     # `journal` qui la remontait à `build_profile_any_chambre` sont partis avec
@@ -5545,6 +5595,13 @@ def build_profile(
     # déjà en cache — et il n'y a donc plus de silence à qualifier. Une archive
     # absente ou illisible, elle, lève : c'est l'exception de l'étape 0, qui est
     # nommée dans `meta.warnings`, pas un compteur.
+
+    # #642 : le jumeau typé de `meta.warnings`, écrit en dernier — c'est un
+    # champ DÉRIVÉ, comme `chambres` (#493) et `licence_donnees` (#530), et il
+    # doit être recomposé après la dernière mutation de la liste, pas avant.
+    # Ici, il fait franchir au typage l'aller-retour JSON du profil brut : la
+    # passe pivot relit des chaînes nues, ce bloc est ce qui les retype.
+    deriver_avertissements(profile["meta"])
 
     return profile
 

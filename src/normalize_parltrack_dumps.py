@@ -13,8 +13,27 @@ Usage :
 import time
 from typing import Any, Optional
 
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    DESTINATAIRE_LECTEUR,
+    avertissement,
+    deriver_avertissements,
+)
 from licences import LICENCE_PARLTRACK, appliquer_licence_donnees
 from parltrack_dumps import get_amendments_for_mep, get_dossiers_for_mep
+
+#: #642 — les deux familles du constat ParlTrack, une par destinataire.
+#: Aucune n'est le préfixe de l'autre : sans quoi l'union par famille (#600)
+#: n'en publierait qu'une, et le lot aurait retiré un avertissement au lieu
+#: d'en typer deux.
+#:
+#: Le préfixe lecteur est **volontairement un préfixe du message publié avant
+#: le lot** (« ParlTrack: aucune donnée trouvée pour le MEP ID … ») : les deux
+#: sont donc une seule famille, et la nouvelle forme remplace l'ancienne au
+#: lieu de cohabiter avec elle. Même geste qu'au #510 pour
+#: `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`.
+WARNING_PREFIX_PARLTRACK_AUCUNE_DONNEE = "ParlTrack: aucune donnée"
+WARNING_PREFIX_PARLTRACK_DIAGNOSTIC = "ParlTrack (diagnostic) :"
 
 #: Alias historique. Le libellé vit dans `licences` depuis #530 (lot 6) : les
 #: mentions d'attribution du pipeline n'ont qu'une seule fabrique.
@@ -191,7 +210,30 @@ def enrich_pivot_with_parltrack(
 
     # Warning si aucune donnée retournée (dumps peut-être indisponibles)
     if not dossiers and not amendments:
-        warnings.append(
-            f"ParlTrack: aucune donnée trouvée pour le MEP ID {mep_id}. "
-            "Vérifier la disponibilité des dumps ou la validité du MEP ID."
-        )
+        # #642 — LE cas que l'issue nomme : un seul message disait deux
+        # choses, à deux personnes différentes. « Vérifier la disponibilité des
+        # dumps ou la validité du MEP ID » est une consigne qui nous est
+        # adressée ; ce que le lecteur attend, c'est de savoir pourquoi la page
+        # est vide, avec la source et la borne (§2 règle 2).
+        #
+        # Il n'existe pas de destinataire « mixte » : l'avertissement s'écrit
+        # DEUX FOIS, dans les termes de chacun. Les deux préfixes sont
+        # volontairement distincts — aucun n'est le préfixe de l'autre — pour
+        # que l'union par famille de #600 les garde tous les deux. Le premier
+        # reste un préfixe du message publié avant ce lot, ce qui range
+        # l'ancienne forme dans la même famille et évite qu'elle survive à côté
+        # de la nouvelle.
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_PARLTRACK_AUCUNE_DONNEE} trouvée pour le député européen "
+            f"(identifiant ParlTrack {mep_id}) dans les dumps publiés sur "
+            "parltrack.org/dumps.",
+            DESTINATAIRE_LECTEUR,
+        ))
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_PARLTRACK_DIAGNOSTIC} aucune donnée pour le MEP ID {mep_id}. "
+            "Vérifier la disponibilité des dumps ou la validité du MEP ID.",
+            DESTINATAIRE_INTERNE,
+        ))
+
+    # #642 : jumeau typé recomposé en fin d'enrichissement — champ dérivé.
+    deriver_avertissements(meta)
