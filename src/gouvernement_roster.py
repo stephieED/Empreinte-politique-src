@@ -724,10 +724,11 @@ def load_profils_from_dir(profiles_dir: Path) -> list[dict[str, Any]]:
     `AttributeError` au premier `profil.get(...)`.
 
     **Aucun document n'est conservé entier (#635).** Un profil est lu, projeté
-    sur `BLOCS_LUS_COMPOSITION`, puis relâché. Les garder entiers coûtait 2,67 Gio
-    extrapolés sur les 481 profils committés du 30/08/2026 — mesuré sous un
-    plafond `RLIMIT_AS` de 2,0 Gio, atteint au 362e profil, facteur de
-    gonflement × 4,2 (2 004 Mio de croissance pour 500,9 Mo de JSON lus).
+    sur `BLOCS_LUS_COMPOSITION`, puis relâché. Les garder entiers coûtait 2,4 à
+    2,7 Gio extrapolés sur les 481 profils committés du 30/08/2026 — mesuré
+    sous un plafond `RLIMIT_AS` de 2,0 Gio, atteint autour du 370e profil
+    (362e, 381e et 383e sur trois exécutions : le rang dépend de l'empreinte
+    de départ du processus, pas de la lecture), facteur × 3,8 à × 4,2.
     C'est le motif de `docs/decisions/oom-lecture-amendements-par-candidat.md`
     sur un chemin de plus, et le même patron que #628 :
     `docs/decisions/audit-599-projection-blocs-lus-628.md`.

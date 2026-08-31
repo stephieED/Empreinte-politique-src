@@ -206,8 +206,8 @@ def load_pivot_directory(
     sur `BLOCS_LUS_AUDIT` et sur la réduction de ses listes métier, puis
     relâché. Les garder entiers coûtait ~2,7 Gio sur les 481 profils committés
     du 30/08/2026 (651,5 Mo) : sous un plafond `RLIMIT_AS` de 2,0 Gio, la même
-    boucle `json.loads` accumulée n'atteignait pas le 363e profil — facteur de
-    gonflement mesuré × 4,2. C'est le motif de
+    boucle `json.loads` accumulée n'atteignait pas le 300e profil (293e et 304e
+    sur deux exécutions) — facteur de gonflement mesuré × 3,6 à × 4,0. C'est le motif de
     `docs/decisions/oom-lecture-amendements-par-candidat.md`, et le patron de
     `docs/decisions/audit-599-projection-blocs-lus-628.md`.
 

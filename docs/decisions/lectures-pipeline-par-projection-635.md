@@ -140,6 +140,37 @@ encadrant la lecture ; « plafond » = `RLIMIT_AS` du sous-processus.
 | Fiche de groupe REN (193 profils, 97,2 Mo), index chargés | 372,4 Mio | 128,1 Mio |
 | Fiche de groupe RN (90 profils, 128,1 Mo), index chargés | 471,7 Mio | 59,7 Mio |
 
+### Le rang du `MemoryError` varie d'une exécution à l'autre, et deux décisions le disaient autrement
+
+Le tableau ci-dessus a d'abord porté **un** rang par lecture, comme s'il en
+était une propriété. Il n'en est pas une : le rang atteint est celui où la
+**somme** du plafond `RLIMIT_AS` et de l'empreinte de départ du processus est
+franchie, et cette empreinte de départ varie — imports, index partagés déjà
+chargés, fragmentation de l'espace d'adressage. Deux décisions du dépôt
+donnaient donc deux rangs différents pour la même lecture et le même corpus :
+**381e** dans [[audit-599-projection-blocs-lus-628]] (× 3,79, ~2,42 Gio),
+**362e** ici (× 4,2, ~2,67 Gio).
+
+Rejoué le 31/08/2026 sur le même corpus committé, même méthode, même plafond
+de 2,0 Gio :
+
+| Lecture | Rang du `MemoryError` | Croissance / octets lus | Après |
+| --- | ---: | --- | ---: |
+| `load_profils_from_dir` | **383e** sur 481 | 2 003,2 Mio pour 524,4 Mo (× 3,82) — ~2,46 Gio extrapolés | 481/481, croissance **142,8 et 148,8 Mio**, RSS max 156 et 163 Mio, 6,1 et 6,7 s |
+| `load_pivot_directory` | **304e** sur 481 | 1 515,7 Mio pour 418,0 Mo (× 3,63) — ~2,34 Gio extrapolés pour le corpus seul | 481/481, croissance de corpus **11,6 Mio**, pic total 494,9 Mio, 19,3 s |
+| Fiche LFI (76 profils, 253,5 Mo) | — | croissance **932,6 Mio**, pic 1 433,4 Mio, 17,2 s | croissance **66,7 Mio**, pic 568,4 Mio, 16,5 s |
+
+Les cinq fiches AN, avant → après, en croissance : LFI 932,6 → 66,7 ; REN
+348,3 → 113,0 ; RN 446,6 → 50,1 ; LR 308,6 → 8,7 ; SOC 188,9 → 0,0 Mio.
+
+**Ce qui tient d'une exécution à l'autre**, et c'est ce sur quoi la décision
+repose : la lecture d'avant n'atteint jamais le 481e profil sous 2,0 Gio, celle
+d'après le fait toujours, et le facteur de gonflement reste entre × 3,6 et
+× 4,2. **Ce qui ne tient pas** : le rang exact, à ±6 %, et le facteur au
+dixième près — il dépend aussi de la convention d'unités, Mio de RSS divisés
+par Mo de JSON. Les rangs cités ailleurs dans le dépôt (docstrings, messages
+d'assertion) sont donc à lire comme « autour du 370e », jamais comme un seuil.
+
 ## L'identité de sortie est prouvée, pas supposée
 
 Un correctif de mémoire qui change le résultat n'est pas un correctif de
@@ -150,6 +181,12 @@ mémoire. Chacune des trois lectures a été rejouée avant/après.
 | `gouvernement_roster` | **Quatre quarts disjoints** du corpus (121 + 120 + 120 + 120 = 481, méthode #628, la version d'avant ne tenant pas en entier sous plafond) × les **10** gouvernements de `raw_data/gouvernements_reels.json` : `membres[]`, `premier_ministre`, warnings, index `acteurRef → membre_id`, `sources[]` dédoublonnées. 127 entrées `membres[]`, 3 premiers ministres résolus, 215 sources au total | **identiques** sur les quatre quarts |
 | `audit_pivot_dataset` | Les mêmes quatre quarts, **rapport complet** de `build_report` (les quinze indicateurs), avec l'index des scrutins et celui des amendements chargés des deux côtés, `reference_date` figée | **identiques** sur les quatre quarts |
 | `group_profile` | Les **5 fiches AN publiées** (LFI 76, REN 193, RN 90, LR 62, SOC 31 profils), fiche complète hors `meta.genere_le` **et** rapport interne d'écarts de cohésion | **identiques** sur les cinq |
+
+Les trois rejeux ont été refaits à l'identique le 31/08/2026, sur le même
+corpus committé : quatre quarts × 10 gouvernements (127 entrées `membres[]`,
+3 premiers ministres, 215 sources), quatre quarts × le rapport complet de
+`build_report`, et les cinq fiches AN avec leur rapport interne — **identiques
+octet pour octet** à chaque fois.
 
 Les deux fiches `groupe-Senat-*` sont hors de cette preuve : leur extraction est
 suspendue ([[extraction-groupe-suspendue-516]]) et 1 de leurs 20 membres a un

@@ -1537,6 +1537,7 @@ def test_build_groupe_profile_transmet_sa_legislature_a_la_cohesion():
 # chargés, chaque groupe dans son propre processus :
 #
 #   LFI  76 membres  253,5 Mo sur disque   985,8 Mio -> 82,3 Mio
+#                                          (932,6 -> 66,7 au rejeu du 31/08)
 #   REN 193 membres   97,2 Mo              372,4 Mio -> 128,1 Mio
 #   RN   90 membres  128,1 Mo              471,7 Mio -> 59,7 Mio
 #
@@ -1717,7 +1718,7 @@ def test_le_pic_memoire_d_une_fiche_de_groupe_reste_sous_le_plafond_declare(tmp_
     Ce que le test ne prouve pas
     ----------------------------
     Ni la vitesse, ni le pic absolu d'un vrai groupe — mesuré à 82,3 Mio pour
-    les 76 profils de la fiche LFI, contre 985,8 avant, et nulle part en CI :
+    les 76 profils de la fiche LFI, contre 0,9 à 1,1 Gio avant, et nulle part en CI :
     `pivot_data` est hors du sparse-checkout de `tests.yml` (#473).
     """
     dossier, poids_relache = _corpus_de_mesure_memoire(tmp_path)
@@ -1752,5 +1753,5 @@ def test_le_pic_memoire_d_une_fiche_de_groupe_reste_sous_le_plafond_declare(tmp_
         f"la fiche a grossi de {croissance / 1024**2:.1f} Mio en lisant "
         f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
         f"d'amendements qu'elle ne doit pas garder. Au-dessus de ce plafond elle "
-        f"en retient une partie : c'est le défaut de #635, qui coûtait 985,8 Mio "
-        f"sur la seule fiche LFI.")
+        f"en retient une partie : c'est le défaut de #635, qui coûtait près "
+        f"d'un Gio sur la seule fiche LFI.")
