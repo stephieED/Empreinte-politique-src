@@ -96,12 +96,38 @@ donc aussi dans le journal du run, pas seulement dans le YAML.
    consigné, et l'interlock est vérifié par
    `tests/test_ci_budget_interventions.py`.
 
+## Première application incomplète, corrigée le jour même
+
+**La première application n'a couvert qu'`extract-an`, et c'était faux.**
+`prepare-an-matrix` porte le même `timeout-minutes: 5` : le run
+`33414042623`, lancé une heure après la fusion, l'a vu tué à **5 min 00 dans
+`actions/checkout`**, donc matrice jamais publiée, donc `extract-an` **skippé** —
+le job réparé n'a même pas démarré, et le run n'a rien collecté côté AN.
+
+L'erreur de raisonnement est nommable : le run précédent avait vu
+`prepare-an-matrix` réussir **à 4 min 52**, huit secondes sous le plafond. J'ai
+lu ce succès comme une propriété du job alors qu'il n'était qu'une marge, et
+j'ai réparé le seul job qui avait échoué. **La cause n'est propre à aucun job**
+— c'est le poids de l'arbre, et tout job au budget serré la rencontre.
+
+Le garde-fou en tire la règle générale plutôt que la liste des coupables :
+`test_tout_job_au_budget_serre_porte_une_liste_blanche` exige une liste blanche
+de **tout** job dont le `timeout-minutes` littéral est ≤ 10 — seuil posé à 10 et
+non à 5 pour garder une marge, aucun job ne se situant entre 6 et 15 minutes. Un
+`timeout-minutes` calculé par expression n'est pas évaluable là : il est signalé
+**non vérifiable** plutôt que supposé conforme.
+
+`prepare-an-matrix` ne lit qu'un fichier, `raw_data/candidats.json`, en `python3`
+système, sans dépendance ni action locale.
+
 ## Ce que ce lot ne traite pas, et le dit
 
-`extract-roster-groupes` et `merge-and-pivot` paient le même checkout. Ils y
-survivent (`timeout-minutes: 60`), mais la dépense est identique.
-`merge-and-pivot` a besoin du corpus entier — sa réduction, si elle est
-possible, n'est pas la même question. Instruire séparément.
+`extract-roster-groupes` (60 min), `merge-and-pivot` (60), `extract-ue-officiel`
+(60), `extract-parltrack` (30), `extract-amendements-an` (30) et
+`prepare-roster-matrix` (15) paient le même checkout. Ils y survivent, mais la
+dépense est identique, et `prepare-roster-matrix` est le plus proche du seuil.
+`merge-and-pivot` a besoin du corpus entier — sa réduction, si elle est possible,
+n'est pas la même question. Instruire séparément.
 
 **Et le total du dépôt reste sans garde-fou.** #580 surveille le plus gros
 fichier ; personne ne surveille les 8 483 Mio. Ce lot rend le symptôme

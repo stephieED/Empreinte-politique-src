@@ -49,11 +49,41 @@ _LITTERAL_COMPOSE = re.compile(r'"raw_data"\s*(?:/\s*"([^"/]+)")')
 _LITTERAL_PLAT = re.compile(r'"raw_data/([\w./-]+)"?')
 
 
-def _liste_blanche() -> frozenset[str]:
-    blanche = _outils_ci.lire_liste_blanche(WORKFLOW)
+#: Les jobs de ce workflow qui portent une liste blanche. Deux au 31/08/2026 :
+#: `extract-an`, et `prepare-an-matrix` que la première application du lot avait
+#: oublié — la cause n'est pas propre à un job, c'est le poids de l'arbre.
+JOBS_AVEC_LISTE_BLANCHE = ("prepare-an-matrix", "extract-an")
+
+
+def _tranche_du_job(job: str) -> str:
+    """Le texte YAML du seul job nommé.
+
+    Le workflow porte plusieurs blocs `sparse-checkout: |` et le parseur
+    partagé rend le **premier** du fichier. Sans ce découpage, ce test croirait
+    vérifier un job en lisant la liste d'un autre — et il serait vert sur une
+    liste qu'il n'a jamais regardée.
+    """
+    texte = WORKFLOW.read_text(encoding="utf-8")
+    debut = texte.index(f"\n  {job}:\n")
+    suite = re.search(r"\n  [a-z][a-z0-9-]*:\n", texte[debut + 1:])
+    return texte[debut:debut + 1 + suite.start()] if suite else texte[debut:]
+
+
+def _liste_blanche(job: str, tmp_path) -> frozenset[str]:
+    """Entrées du bloc `sparse-checkout: |` d'un job, via le parseur partagé.
+
+    La tranche est écrite dans un fichier temporaire plutôt que ré-analysée
+    ici : `tests/_outils_ci.py` existe précisément pour qu'il n'y ait **qu'un**
+    analyseur de ce bloc dans le dépôt, et en redéfinir un ici rejouerait la
+    divergence qu'il a été écrit pour clore.
+    """
+    tranche = tmp_path / f"{job}.yml"
+    tranche.write_text(_tranche_du_job(job), encoding="utf-8")
+    blanche = _outils_ci.lire_liste_blanche(tranche)
     assert blanche, (
-        "bloc `sparse-checkout: |` absent, vide ou de forme inattendue dans "
-        "generate-data.yml — voir `tests/_outils_ci.lire_liste_blanche`.")
+        f"bloc `sparse-checkout: |` absent, vide ou de forme inattendue dans "
+        f"le job `{job}` de generate-data.yml — voir "
+        "`tests/_outils_ci.lire_liste_blanche`.")
     return blanche
 
 
@@ -123,15 +153,34 @@ def _couvert(chemin: str, blanche: frozenset[str]) -> bool:
     return any("/".join(parts[:i]) in blanche for i in range(1, len(parts) + 1))
 
 
-def test_un_seul_bloc_sparse_checkout_dans_le_workflow():
-    """`lire_liste_blanche` rend le PREMIER bloc du fichier. Le jour où un
-    second job en reçoit un, ce test lirait celui d'un autre job sans rien
-    dire — et validerait une liste blanche qui n'est pas celle d'`extract-an`.
-    Ajouter un bloc ailleurs oblige donc à donner son workflow à ce test."""
+def test_chaque_bloc_sparse_checkout_est_declare_ici():
+    """Un bloc ajouté à un job que ce test ignore ne serait vérifié par
+    personne. Le parseur partagé rend le PREMIER bloc du fichier : c'est le
+    découpage par job qui rend l'ajout visible, et ce cas qui rend l'oubli
+    bruyant. C'est exactement l'oubli qui a coûté le run `33414042623` —
+    `extract-an` réparé, `prepare-an-matrix` non, et la matrice jamais
+    publiée."""
     texte = WORKFLOW.read_text(encoding="utf-8")
-    assert texte.count("sparse-checkout: |") == 1, (
-        "plusieurs blocs `sparse-checkout: |` dans generate-data.yml : ce "
-        "garde-fou lit le premier et croirait vérifier extract-an")
+    assert texte.count("sparse-checkout: |") == len(JOBS_AVEC_LISTE_BLANCHE), (
+        f"{texte.count('sparse-checkout: |')} blocs `sparse-checkout: |` pour "
+        f"{len(JOBS_AVEC_LISTE_BLANCHE)} job(s) déclaré(s) dans "
+        "JOBS_AVEC_LISTE_BLANCHE : ajouter le job ici, sinon sa liste blanche "
+        "n'est vérifiée par rien")
+    for job in JOBS_AVEC_LISTE_BLANCHE:
+        assert "sparse-checkout: |" in _tranche_du_job(job), (
+            f"`{job}` est déclaré ici mais n'a plus de liste blanche")
+
+
+def test_prepare_an_matrix_materialise_le_fichier_de_candidats(tmp_path):
+    """Ce job ne lit qu'un fichier, et sans lui il ne publie aucune matrice —
+    donc `extract-an` est skippé et le run ne collecte rien côté AN, sans
+    qu'aucune étape n'échoue autrement qu'en s'annulant."""
+    blanche = _liste_blanche("prepare-an-matrix", tmp_path)
+    assert "raw_data/candidats.json" in blanche
+    assert "raw_data" not in blanche
+    assert not any(e.startswith("raw_data/profiles") for e in blanche), (
+        "prepare-an-matrix ne lit aucun profil : l'y inscrire ramènerait les "
+        "7 525 Mio qui l'ont tué")
 
 
 def test_la_fermeture_des_imports_atteint_bien_le_coeur_de_la_collecte():
@@ -145,8 +194,8 @@ def test_la_fermeture_des_imports_atteint_bien_le_coeur_de_la_collecte():
             "fermeture des imports ne décrit plus ce que le shard exécute.")
 
 
-def test_la_liste_blanche_couvre_les_referentiels_que_la_collecte_lit():
-    blanche = _liste_blanche()
+def test_la_liste_blanche_couvre_les_referentiels_que_la_collecte_lit(tmp_path):
+    blanche = _liste_blanche("extract-an", tmp_path)
     # `raw_data/profiles` est couvert **partiellement et exprès** : le shard ne
     # matérialise que son propre profil, via les deux entrées `matrix.slug`.
     # C'est tout l'objet du lot — l'y inscrire en entier ramènerait 7 525 Mio.
@@ -160,10 +209,10 @@ def test_la_liste_blanche_couvre_les_referentiels_que_la_collecte_lit():
         f"runner, et la collecte se repliera en silence : {non_couverts}")
 
 
-def test_le_shard_materialise_son_propre_profil_brut():
+def test_le_shard_materialise_son_propre_profil_brut(tmp_path):
     """Socle **et** tranches (#580). Sans le socle, la fusion additive repart de
     zéro et republie un profil amputé sans que rien n'échoue (#465)."""
-    blanche = _liste_blanche()
+    blanche = _liste_blanche("extract-an", tmp_path)
     assert "raw_data/profiles/${{ matrix.slug }}.json" in blanche, (
         "le socle du profil du shard n'est pas dans la liste blanche")
     assert "raw_data/profiles/${{ matrix.slug }}" in blanche, (
@@ -172,27 +221,72 @@ def test_le_shard_materialise_son_propre_profil_brut():
         "amendements")
 
 
-def test_le_corpus_entier_reste_hors_de_la_liste_blanche():
+def test_le_corpus_entier_reste_hors_de_la_liste_blanche(tmp_path):
     """L'autre sens de la liste. `raw_data` entier, ou `raw_data/profiles`
     entier, rendrait le lot inutile et le timeout se refermerait."""
-    blanche = _liste_blanche()
+    blanche = _liste_blanche("extract-an", tmp_path)
     assert "raw_data" not in blanche
     assert "raw_data/profiles" not in blanche
     assert "pivot_data" not in blanche, (
         "extract-an ne lit pas le pivot : l'y inscrire ajouterait 894 Mio")
 
 
-def test_le_filtre_de_blobs_accompagne_la_liste_blanche():
+def test_le_filtre_de_blobs_accompagne_chaque_liste_blanche():
     """Sans `filter: blob:none`, git télécharge les blobs de tout l'arbre avant
-    de n'en matérialiser qu'une fraction — le coût qu'on supprime revient."""
+    de n'en matérialiser qu'une fraction — le coût qu'on supprime revient.
+    Vérifié **job par job** : la liste blanche seule ne suffit pas, et un job
+    qui l'oublie paierait le checkout complet sans que rien ne le dise."""
+    for job in JOBS_AVEC_LISTE_BLANCHE:
+        tranche = _tranche_du_job(job)
+        entete = tranche[:tranche.index("sparse-checkout: |")]
+        assert "filter: blob:none" in entete, (
+            f"`filter: blob:none` manque au checkout de `{job}`")
+        assert "sparse-checkout-cone-mode: false" in entete, (
+            f"`{job}` : le mode cône ne sait pas exprimer un chemin de fichier "
+            "comme `raw_data/candidats.json` ni `raw_data/profiles/<slug>.json` "
+            "— la liste blanche serait silencieusement élargie au répertoire")
+
+
+#: Au-dessous de ce plafond, le checkout complet (4 min 52 à 6 min 03, mesuré
+#: sur le run `33404236969`) mange une part inacceptable du budget du job. Le
+#: seuil est à 10 et non à 5 pour garder une marge : aucun job du workflow ne
+#: se situe aujourd'hui entre 6 et 15 minutes.
+PLAFOND_SANS_LISTE_BLANCHE = 10
+
+
+def test_tout_job_au_budget_serre_porte_une_liste_blanche():
+    """La règle générale, celle qui évite la troisième occurrence.
+
+    Nommer les jobs un par un a déjà échoué une fois : `extract-an` réparé,
+    `prepare-an-matrix` oublié, run `33414042623` perdu le jour même. Le
+    critère n'est pas l'identité du job, c'est son budget — un job à
+    `timeout-minutes` serré ne peut pas payer 6 minutes de checkout.
+
+    Un `timeout-minutes` exprimé en expression `${{ }}` n'est pas évaluable
+    ici : il est signalé comme non vérifiable plutôt que supposé conforme.
+    """
     texte = WORKFLOW.read_text(encoding="utf-8")
-    debut = texte.index("sparse-checkout: |")
-    entete = texte[max(0, debut - 400):debut]
-    assert "filter: blob:none" in entete, (
-        "`filter: blob:none` manque au checkout d'extract-an")
-    assert "sparse-checkout-cone-mode: false" in entete, (
-        "le mode cône ne sait pas exprimer `raw_data/profiles/<slug>.json` : "
-        "la liste blanche serait silencieusement élargie au répertoire")
+    for job in re.findall(r"\n  ([a-z][a-z0-9-]*):\n", texte):
+        tranche = _tranche_du_job(job)
+        trouve = re.search(r"\n    timeout-minutes:\s*(.+)", tranche)
+        if not trouve:
+            continue
+        # Un commentaire de fin de ligne suit parfois la valeur
+        # (`timeout-minutes: 30   # ← même valeur que ...`) : sans cette coupe,
+        # un job conforme serait signalé comme non vérifiable.
+        brut = trouve.group(1).split("#")[0].strip()
+        if not brut.isdigit():
+            # Expression : la couverture se vérifie par la déclaration.
+            assert job in JOBS_AVEC_LISTE_BLANCHE, (
+                f"`{job}` a un `timeout-minutes` calculé et aucune liste "
+                "blanche : sa conformité n'est pas vérifiable ici")
+            continue
+        if int(brut) <= PLAFOND_SANS_LISTE_BLANCHE:
+            assert "sparse-checkout: |" in tranche, (
+                f"`{job}` a `timeout-minutes: {brut}` et aucune liste "
+                "blanche : le checkout complet coûte 4 min 52 à 6 min 03 "
+                "(run 33404236969) et le tuera, sans écrire quoi que ce soit "
+                "(#498). Ajouter la liste blanche, pas relever le plafond.")
 
 
 def test_le_timeout_du_shard_est_inchange():

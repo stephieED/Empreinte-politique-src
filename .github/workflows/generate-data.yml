@@ -218,7 +218,27 @@ jobs:
       slugs: ${{ steps.slugs.outputs.slugs }}
 
     steps:
+      # SPARSE-CHECKOUT — MÊME CAUSE QUE DANS `extract-an`, MÊME CORRECTIF (#674).
+      #
+      # Ce job a été oublié par la première application du lot, et le run
+      # `33414042623` l'a montré le jour même : `prepare-an-matrix` tué à
+      # 5 min 00 **dans `actions/checkout`**, donc matrice jamais publiée, donc
+      # `extract-an` skippé — le job réparé n'a même pas démarré. La leçon est
+      # écrite dans la décision : la cause n'est pas propre à un job, c'est le
+      # poids de l'arbre (8 483 Mio, dont 7 525 pour `raw_data/profiles/`), et
+      # tout job à `timeout-minutes: 5` la rencontre.
+      #
+      # CE JOB NE LIT QU'UN FICHIER : `raw_data/candidats.json`, en `python3`
+      # système, sans dépendance et sans action locale. `.github` est conservé
+      # pour qu'une action locale ajoutée plus tard ne disparaisse pas du
+      # disque sans que rien ne le dise.
       - uses: actions/checkout@v5
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github
+            raw_data/candidats.json
 
       # set -euo pipefail (#412 §2.1) : sans lui, un python3 en échec
       # (candidats.json illisible/malformé) laissait SLUGS_JSON vide, écrivait
