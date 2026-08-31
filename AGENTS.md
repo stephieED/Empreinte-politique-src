@@ -405,6 +405,47 @@ tolerance is **partitioned** — no input disarms another's check.
 Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed values in
 `frozenset KNOWN_*`, validated by `validate_profil()` — extend the frozenset, never bypass.
 
+### 4a. Group fiches: every count is taken at one published date (#653)
+
+**A group fiche describes a legislature, and none of the 7 published describes
+the one in progress. No counter on it may mean "today".** Three did, and all
+three measured the members' *later careers* instead of the group:
+`effectif.actuel` equalled, exactly, the number of members holding an **open
+elective mandate** (38/38, 85/85, 60/60 on `LR`, `REN`, `LFI` — re-elected in
+2024, not group members in June 2024), and `nb_membres_actifs` counted their
+**present-day** committee.
+
+- **`date_reference` is published in the fiche** — `{date, origine}`, `origine`
+  in `ORIGINES_DATE_REFERENCE`. **Derived, never guessed**: the latest
+  `fin_dans_groupe` when every membership is closed (`cloture_legislature`,
+  `2024-06-09` for the XVIᵉ), the generation date while one is still open
+  (`generation`). A dated counter the reader cannot date is a bare counter
+  (§2 rule 2).
+- **The three counters are named for it**: `effectif.a_la_date_de_reference`,
+  `mandats_agreges[].nb_membres_a_la_date_de_reference`,
+  `membres[].present_a_la_date_de_reference`. The names are long on purpose —
+  a short name that reads "today" is what produced the defect.
+- **`periode.actif` is *not* rebased on it.** It describes the *period*, not a
+  headcount at an instant; `false` on a closed legislature is exact.
+- **Selecting the entry matters as much as the flag.** A duplicate
+  `(categorie, label)` must be resolved to the mandate **open at the reference
+  date** (`_select_mandat_a_la_date`) before `_select_mandat_entree_unique`'s
+  rule applies: that one prefers the `actif` entry, i.e. a re-elected member's
+  committee in the **next** legislature. 1 000 of `AN:LFI-16`'s 2 384 entries
+  have several candidates; without the preference, its `affaires sociales`
+  drops from 9 sitting members to 3.
+- **A mandate with no `debut` is open at no date.** `_intervals_overlap` treats
+  an absent bound as unbounded, which would make it cover every date (§2 rule 5).
+- **`date_reference` is optional, never required.** The 2 frozen `groupe-Senat-*`
+  fiches (#516) will not be regenerated and keep the old names; requiring the
+  key would hard-fail the quality gate on already-published files. Readers must
+  therefore accept both names — `audit_groupe_dataset.CHAMPS_EFFECTIF` does.
+
+→ `docs/decisions/date-de-reference-des-comptes-de-groupe-653.md`,
+`docs/decisions/dates-appartenance-groupe-653.md` (where the membership dates
+themselves come from), `docs/decisions/mandats-agreges-siege-vs-passe-656.md`
+(the two counters they feed).
+
 ## 5. Sensitive institutional fields (validation constraints)
 
 - `mandats[].position_dans_hemicycle`: requires `source_url` (rule 6).

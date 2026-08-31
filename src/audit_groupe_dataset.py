@@ -55,7 +55,13 @@ from typing import Any
 from schema_groupe import AMENDEMENTS_TYPES_DEPOSANT, validate_profil_groupe
 
 # Sous-champs de `effectif` dont on mesure la distribution.
-CHAMPS_EFFECTIF: tuple[str, ...] = ("actuel", "min_historique", "max_historique")
+# `a_la_date_de_reference` remplace `actuel` (#653). Les deux sont lus : les 2
+# fiches `groupe-Senat-*` gelées par #516 portent encore `actuel`, et un audit
+# qui cesserait de les lire publierait « 2 groupes non renseignés » au lieu de
+# leur valeur.
+CHAMPS_EFFECTIF: tuple[str, ...] = (
+    "a_la_date_de_reference", "actuel", "min_historique", "max_historique",
+)
 
 # Compteurs de `amendements_agreges` (bloc global et chaque bloc de
 # `par_type_deposant`) dont on mesure la distribution.
@@ -140,7 +146,7 @@ def _stats_entiers(valeurs: list[int]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def compute_effectifs(groupes: list[dict[str, Any]]) -> dict[str, Any]:
-    """Distribution de `effectif.actuel`/`min_historique`/`max_historique`.
+    """Distribution de `effectif.a_la_date_de_reference`/`actuel`/`min_historique`/`max_historique`.
 
     Pour chaque sous-champ, min/max/médiane/moyenne sur les groupes où la
     valeur est un entier renseigné. `min_historique`/`max_historique` sont
@@ -852,7 +858,7 @@ def _md_section_volumetrie(volumetrie: dict[str, Any]) -> str:
 
     return (
         "## Volumétrie\n\n"
-        "### Effectifs (`effectif.actuel` / `min_historique` / `max_historique`)\n\n"
+        "### Effectifs (`effectif.a_la_date_de_reference` / `actuel` / `min_historique` / `max_historique`)\n\n"
         + _md_table(
             ["Champ", "Groupes renseignés", "Min", "Max", "Médiane", "Moyenne"],
             lignes_effectifs, "Aucun groupe.",

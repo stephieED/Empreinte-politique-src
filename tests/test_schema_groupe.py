@@ -68,7 +68,8 @@ def test_make_empty_periode_defaults():
 
 def test_make_empty_effectif_defaults():
     g = make_empty_profil_groupe("AN:SOC", "SOC", "Socialistes", "AN", "16")
-    assert g["effectif"]["actuel"] == 0
+    assert g["effectif"]["a_la_date_de_reference"] == 0
+    assert g["date_reference"] is None
     assert g["effectif"]["min_historique"] is None
     assert g["effectif"]["max_historique"] is None
 

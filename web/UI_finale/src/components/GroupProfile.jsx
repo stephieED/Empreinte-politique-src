@@ -41,11 +41,15 @@ export default function GroupProfile({ group }) {
     quorumNote: v.quorum ? '' : ' · quorum non atteint',
   }));
 
+  // #653 : le statut se lit À LA DATE DE RÉFÉRENCE de la fiche, pas aujourd'hui.
+  // « Actif » sur un groupe de la XVIe législature disait « encore député⋅e en
+  // 2026 » — une propriété de la carrière de la personne, pas du groupe.
+  const dateRefLabel = group.dateReferenceLabel || null;
   const members = group.members.map((m) => ({
     nom: m.nom,
     initials: initialsOf(m.nom),
-    statusLabel: m.actif ? 'Actif' : 'Ancien',
-    statusClass: m.actif ? 'gp-member-status-actif' : 'gp-member-status-ancien',
+    statusLabel: m.present ? 'Membre' : 'Parti avant',
+    statusClass: m.present ? 'gp-member-status-actif' : 'gp-member-status-ancien',
   }));
 
   const amendmentSegments = group.amendmentSegments.map((s) => ({ ...s, color: OUTCOME_COLOR[s.key] }));
@@ -142,8 +146,8 @@ export default function GroupProfile({ group }) {
                   et dénominateur, jamais un pourcentage (DESIGN_SYSTEM.md §6). */}
               <p className="gp-mandat-count">
                 {m.nbMembresActifs > 0
-                  ? `${m.nbMembresActifs} / ${m.effectifReference ?? group.profilsDisponibles} membres y siègent`
-                  : "Aucun membre n'y siège actuellement"}
+                  ? `${m.nbMembresActifs} / ${m.effectifReference ?? group.profilsDisponibles} membres y siégeaient${dateRefLabel ? ` au ${dateRefLabel}` : ''}`
+                  : `Aucun membre n'y siégeait${dateRefLabel ? ` au ${dateRefLabel}` : ''}`}
               </p>
               <p className="gp-mandat-count gp-mandat-count-cumul">
                 {m.nbMembresCumul > 1
@@ -207,7 +211,9 @@ export default function GroupProfile({ group }) {
           </div>
         </div>
 
-        <p className="gp-section-title">Membres couverts</p>
+        <p className="gp-section-title">
+          Membres couverts{dateRefLabel ? ` — appartenance au ${dateRefLabel}` : ''}
+        </p>
         {members.length === 0 ? (
           <p className="gp-empty">Aucun membre couvert pour ce groupe.</p>
         ) : (

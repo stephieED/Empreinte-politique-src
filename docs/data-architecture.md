@@ -499,12 +499,23 @@ l'entrée dans un groupe de la XVIe à 2002 (#653,
 membre qu'il ne rend pas, les deux dates sortent `null` et `meta.warnings` les
 compte : jamais de repli sur le mandat électif.
 
-`effectif.actuel` compte les membres **sans date de fin d'appartenance dans
-cette législature**, ce qui n'est pas « les élu·es en fonction aujourd'hui ».
-Une législature close referme toutes ses appartenances : les cinq fiches AN de
-la XVIe y valent **0**, et la composition du groupe à sa clôture se lit dans
-`membres[]`. L'interface prend `meta.couverture_roster.roster_total` pour son
-compteur, jamais `effectif.actuel`.
+**Tous les comptes d'une fiche se rapportent à `date_reference`**, publiée dans
+la fiche (#653) : la clôture de la période du groupe quand toutes les
+appartenances sont refermées (`cloture_legislature`, `2024-06-09` pour les cinq
+fiches AN de la XVIe), la date de génération tant qu'une reste ouverte
+(`generation`). Trois compteurs s'y rapportent et le disent dans leur nom —
+`effectif.a_la_date_de_reference`,
+`mandats_agreges[].nb_membres_a_la_date_de_reference`,
+`membres[].present_a_la_date_de_reference`. Ils s'appelaient `actuel`, `actifs`
+et `actif` et se lisaient « aujourd'hui », ce qui, sur une fiche de législature
+close, mesurait la carrière ultérieure des membres et non le groupe :
+`effectif.actuel` valait exactement le nombre de membres encore député⋅es (85
+des 193 de `AN:REN-16`, quand 169 y siégeaient à la clôture). `periode.actif`
+n'est pas concerné : il décrit la période, pas un effectif à un instant.
+
+`date_reference` est **optionnelle** : les 2 fiches `groupe-Senat-*` gelées par
+#516 ne seront pas régénérées et gardent les anciens noms. Tout lecteur doit
+accepter les deux (`audit_groupe_dataset.CHAMPS_EFFECTIF` le fait).
 
 À ne pas confondre avec le job CI `extract-roster-groupes`, qui utilise aussi
 `group_roster.py` (via `generate_roster_candidats.py`) mais pour produire des

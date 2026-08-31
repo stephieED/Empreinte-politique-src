@@ -443,7 +443,14 @@ export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null, a
 
 /** Construit l'objet consommé par GroupProfile.jsx à partir d'un profil de groupe v1. */
 export function buildGroupView(groupe, scrutinsIndex = null) {
-  const rosterTotal = groupe.meta?.couverture_roster?.roster_total ?? groupe.effectif?.actuel ?? 0;
+  const rosterTotal = groupe.meta?.couverture_roster?.roster_total
+    ?? groupe.effectif?.a_la_date_de_reference ?? 0;
+  // #653 : tous les comptes de la fiche se rapportent à cette date, publiée à
+  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface retombe
+  // alors sur une formulation sans date plutôt que d'en inventer une.
+  const dateReference = groupe.date_reference?.date ?? null;
+  const dateReferenceEstCloture = groupe.date_reference?.origine === 'cloture_legislature';
+  const dateReferenceLabel = formatFrDate(dateReference);
   const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? (groupe.membres || []).length;
   const coveragePct = rosterTotal ? Math.round((profilsDisponibles / rosterTotal) * 100) : 0;
 
@@ -479,7 +486,7 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
     .slice(0, 20) // mots-clés bruts, non harmonisés (voir schema_pivot.py) : échantillon, pas une liste exhaustive
     .map((t) => ({ label: t.tag, count: t.nb_membres_porteurs }));
 
-  // mandats_agreges : le backend trie par nb_membres_actifs desc, puis
+  // mandats_agreges : le backend trie par nb_membres_a_la_date_de_reference desc, puis
   // nb_membres_cumul_historique desc, puis categorie/label asc (#656). Depuis
   // #382/#386 le volume et la diversité de catégories ont fortement augmenté
   // (7 catégories au lieu de 3) : on re-trie ici par rang de catégorie
@@ -496,7 +503,7 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
       categorie: m.categorie,
       categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
       label: m.label,
-      nbMembresActifs: m.nb_membres_actifs,
+      nbMembresActifs: m.nb_membres_a_la_date_de_reference,
       nbMembresCumul: m.nb_membres_cumul_historique,
       effectifReference: m.effectif_reference,
       parFonction: Object.entries(m.par_fonction || {})
@@ -534,9 +541,15 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
     amendmentSegments,
     amendmentsDeposedTotal: parDepute?.nb_amendements ?? 0,
     amendmentsAllDeposantsTotal: agg.nb_amendements ?? 0,
+    dateReference,
+    dateReferenceLabel,
+    dateReferenceEstCloture,
     members: (groupe.membres || []).map((m) => ({
       nom: m.nom,
-      actif: m.actif,
+      // `present_a_la_date_de_reference` remplace `actif` (#653) : sur une fiche
+      // de législature close, « actif » désignait les membres encore députés
+      // aujourd'hui, pas ceux qui appartenaient au groupe.
+      present: m.present_a_la_date_de_reference,
     })),
   };
 }
