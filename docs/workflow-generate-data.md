@@ -179,15 +179,29 @@ Les URL de jeux de données et les schémas JSON de chacune de ces archives sont
 dans [`an-opendata.md`](./sources/an-opendata.md) — référence de la source, qui dérive
 avec l'Assemblée et non avec notre code.
 
-**Budget réseau des scrutins, transitoirement en hausse (#639).** Les index
-figés committés de `raw_data/scrutins_an_figes/{14,15,16}` portent la projection
-à cinq champs d'avant #639 et sont désormais **refusés** :
-`_load_frozen_scrutins_index` retombe sur le téléchargement des trois archives
-(20,0 Mo au total : 0,7 + 9,2 + 10,1 Mo, mesurés le 31/08/2026), et le dit en `[!]` en nommant la remédiation. Le cache
-`.cache/scrutins_an` écrit avant #639 est refusé pour la même raison, donc la
-première exécution après ce lot le reconstruit intégralement. Relancer
-`python3 src/build_scrutins_index_figes.py --toutes` hors CI, committer les
-trois index, et le budget revient à son niveau d'avant.
+**Budget réseau des scrutins, revenu à la normale (#639).** Les trois index
+figés committés de `raw_data/scrutins_an_figes/{14,15,16}` ont été reconstruits
+le 31/08/2026 et **portent la qualification** : `_load_frozen_scrutins_index` ne
+les refuse plus, et les 20,0 Mo d'archives ne sont plus retéléchargés. Relevé le
+31/08/2026 — 14 : 1 354 scrutins (`public_ordinaire` 1 213, `solennel` 128,
+`tribune` 9, **`motion_censure` 4**) ; 15 : 4 417 (4 288 · 124 · **5**) ; 16 :
+4 105 (4 034 · 37 · **34**). Un cache `.cache/scrutins_an` écrit avant #639 reste
+refusé, lui, et la première exécution le reconstruit — existence n'est pas
+conformité, la règle d'`AGENTS.md` §5.
+
+**Un shard ne matérialise que son propre profil (#674).** Le checkout de ce job
+porte une **liste blanche** et `filter: blob:none` : le code, les référentiels de
+premier niveau, les index figés, et le seul `raw_data/profiles/<slug>` du shard —
+socle et tranches (#580). Le run `33404236969` avait tué ses 13 shards à
+5 min 00 **dans `actions/checkout`**, l'étape d'extraction restant `skipped` :
+aucun profil écrit, le défaut de #498. L'arbre pesait alors 8 483 Mio, dont
+**7 525 pour le seul `raw_data/profiles/`**, quand le plus gros candidat en pèse
+16,4. Le `timeout-minutes: 5` n'a **pas** été relevé — le lot supprime la cause.
+**Tout nouveau chemin lu par la collecte AN doit entrer dans cette liste** :
+oublié, il ne fait pas échouer le checkout, il rend un fichier absent et la
+collecte se replie en silence. `tests/test_ci_sparse_checkout_extract_an.py`
+échoue localement sur un littéral non couvert, et une étape « Périmètre du
+checkout » imprime le poids matérialisé.
 
 **L'AN est source unique, et il n'y a plus aucun repli.** Un slug que le
 référentiel AN ne résout pas sort avec `identite: None` et un

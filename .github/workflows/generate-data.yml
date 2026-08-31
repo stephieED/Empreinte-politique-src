@@ -516,7 +516,79 @@ jobs:
     continue-on-error: true
 
     steps:
+      # SPARSE-CHECKOUT — LE CHECKOUT COMPLET NE TIENT PLUS DANS `timeout-minutes`.
+      #
+      # Run 33404236969 (31/08/2026) : les 13 shards ont été tués l'un après
+      # l'autre à 5 min 00 **dans `actions/checkout`**, l'étape « Extraction AN »
+      # restant `skipped`. Ce n'est pas un incident réseau : le checkout mesuré
+      # ce jour-là valait 4 min 52 à 6 min 03 dans TOUS les jobs du run — seul
+      # `extract-an` en meurt, parce qu'il est le seul à `timeout-minutes: 5`.
+      # Un shard tué par `timeout-minutes` n'écrit AUCUN profil (#498) : le run
+      # a donc coûté 40 minutes pour rien.
+      #
+      # LA CAUSE EST LE POIDS DE L'ARBRE, PAS CELUI D'UN FICHIER. À `501c6997`,
+      # l'arbre pèse 8 483 Mio, dont 7 566 dans `raw_data/` et **7 525 dans le
+      # seul `raw_data/profiles/`** (1 503 fichiers). Le garde-fou #580
+      # (`src/garde_fou_blobs.py`, §7 du quality gate) surveille le PLUS GROS
+      # FICHIER — 50 Mio d'alerte, 80 Mio d'échec — et n'a rien à dire sur un
+      # total qui grossit à chaque run. Relever `timeout-minutes` ne ferait que
+      # reporter la date du prochain franchissement.
+      #
+      # CE QU'UN SHARD LIT VRAIMENT. `generate_all_profiles.py --source an
+      # --only <slug>` filtre les candidats sur `raw_data/candidats.json`, pas
+      # sur le répertoire de profils : la seule énumération de ce répertoire,
+      # `profil_brut.slugs_du_repertoire`, n'est appelée que par des scripts de
+      # migration et d'audit, jamais par le chemin de collecte. Un shard n'a
+      # donc besoin que du code, des référentiels de premier niveau, des index
+      # figés — et de SON PROPRE profil brut, socle `<slug>.json` plus tranches
+      # `<slug>/<legislature>.json` (#580), qu'il doit lire pour que la fusion
+      # additive ne perde rien.
+      #
+      # `filter: blob:none` complète la liste blanche, comme dans `tests.yml` :
+      # sans lui git téléchargerait les blobs de tout l'arbre avant de n'en
+      # matérialiser qu'une fraction — c'est-à-dire exactement le coût qu'on
+      # cherche à supprimer.
+      #
+      # AJOUTER ICI TOUT NOUVEAU CHEMIN QUE LA COLLECTE AN LIT. Un chemin
+      # oublié ne casse pas le checkout : il rend un fichier absent, et la
+      # collecte échoue ou se replie en silence — le scénario #434, #518 (deux
+      # fois) et #520. `tests/test_ci_sparse_checkout_extract_an.py` échoue
+      # LOCALEMENT sur un littéral de `src/` non couvert.
       - uses: actions/checkout@v5
+        with:
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github
+            .gitignore
+            requirements.txt
+            scripts
+            src
+            raw_data/candidats.json
+            raw_data/correspondance_acteurs_an.json
+            raw_data/gouvernements_reels.json
+            raw_data/groupes_reels.json
+            raw_data/amendements_an_figes
+            raw_data/scrutins_an_figes
+            raw_data/profiles/${{ matrix.slug }}.json
+            raw_data/profiles/${{ matrix.slug }}
+
+      # Le checkout n'a matérialisé qu'une fraction de l'arbre : on le dit, et
+      # on vérifie que les référentiels indispensables en font partie. Sans ce
+      # relevé, un profil absent se lit plus bas comme « ce candidat n'avait
+      # rien de collecté » — une collecte vide qui n'écrase rien (#465) mais qui
+      # ferait repartir la fusion additive de zéro, en silence.
+      - name: Périmètre du checkout — ${{ matrix.slug }}
+        run: |
+          echo "Arbre matérialisé : $(du -sh . 2>/dev/null | cut -f1)"
+          if [ -f "raw_data/profiles/${{ matrix.slug }}.json" ]; then
+            echo "Socle brut présent : $(du -sh "raw_data/profiles/${{ matrix.slug }}.json" | cut -f1)"
+          else
+            echo "::notice::Aucun socle brut committé pour ${{ matrix.slug }} — première collecte, ou slug absent du corpus publié."
+          fi
+          for chemin in raw_data/candidats.json raw_data/correspondance_acteurs_an.json; do
+            [ -f "$chemin" ] || { echo "::error::$chemin absent du checkout : la liste blanche sparse-checkout de extract-an est incomplète."; exit 1; }
+          done
 
       # Horodatage de démarrage + relevé mémoire runner (OOM) + setup-python +
       # pip install, factorisés par #412 §3.
