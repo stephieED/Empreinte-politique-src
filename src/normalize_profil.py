@@ -163,6 +163,63 @@ def _uri_hatvp_publiable(valeur: Any) -> Optional[str]:
     return None
 
 
+#: Code de catégorie socioprofessionnelle en tête d'une profession AMO30 :
+#: `"(33) - Cadre de la fonction publique"` (#641). Recopié depuis
+#: `candidate_profile._PREFIXE_CODE_CSP_AN` plutôt qu'importé, comme
+#: `_ACTEUR_REF_DANS_URL` : `normalize_profil` est volontairement découplé de la
+#: collecte et n'a aucune raison d'en tirer 5 000 lignes et ses dépendances
+#: réseau.
+_PREFIXE_CODE_CSP_AN = re.compile(r"^\(\s*(\d+)\s*\)\s*-\s*")
+_MARQUEUR_ABSENCE_PROFESSION = "sans activité professionnelle"
+
+
+def _profession_publiable(valeur: Any) -> Optional[str]:
+    """Profession réelle, ou `None` — jamais un code de nomenclature, jamais
+    l'énoncé d'une absence de profession (#641).
+
+    **Mesure du 31/08/2026 sur les 481 profils publiés** : 8 des 457 qui
+    renseignent `identite.profession` publient un code brut. Trois portent
+    `"(33) - Cadre de la fonction publique"` — le préfixe est du bruit, le
+    libellé est bon. Cinq portent `"(85) - Personne diverse sans activité
+    professionnelle de moins de 60 ans…"` : la valeur restante **n'est pas une
+    profession**, c'est l'énoncé d'une absence, publié comme une profession sur
+    une page consultable. Même idiome que #556, et il passe le seul contrôle
+    existant — « chaîne non vide ».
+
+    ## Pourquoi cette fonction existe EN PLUS de `candidate_profile._profession_an`
+
+    Ce n'est pas une ceinture-bretelles, c'est la seule des deux qui répare les
+    cinq profils déjà collectés. `merge_profile` prend la nouvelle valeur d'un
+    scalaire **seulement si elle est renseignée, et ne régresse jamais vers
+    `null`** (`docs/decisions/collecte-vide-necrase-jamais.md`) : une collecte
+    corrigée qui rend `None` laisserait donc le libellé de la source en place,
+    indéfiniment. Les trois profils au préfixe seul se réparent, eux, par la
+    collecte — la nouvelle valeur est renseignée, elle gagne.
+
+    C'est exactement l'argument de `_uri_hatvp_publiable` (#539) : ce qui est
+    corrigé ici, c'est ce qui est **publié**.
+
+    Le critère de l'absence est en deux parties, et les deux sont nécessaires :
+    la **famille du code** (8x, « personnes sans activité professionnelle » dans
+    la nomenclature) et le **libellé de la source elle-même**. La famille seule
+    nullerait `"(84) - Elève, étudiant"`, qui nomme une situation et non une
+    absence ; le libellé seul s'appuierait sur des mots là où la nomenclature
+    offre une structure.
+    """
+    if not isinstance(valeur, str) or not valeur.strip():
+        return None
+    texte = valeur.strip()
+    trouve = _PREFIXE_CODE_CSP_AN.match(texte)
+    if trouve is None:
+        return texte
+    libelle = texte[trouve.end():].strip()
+    if not libelle:
+        return None
+    if trouve.group(1).startswith("8") and _MARQUEUR_ABSENCE_PROFESSION in libelle.lower():
+        return None
+    return libelle
+
+
 # ---------------------------------------------------------------------------
 # Normaliseurs de sections individuelles
 # ---------------------------------------------------------------------------
@@ -505,7 +562,12 @@ def normalize_profil(
     # --- Identité (profession/naissance/HATVP) : uniquement si au moins un champ
     # est renseigné, sinon on laisse `identite` à None (valeur par défaut). ---
     identite_champs = {
-        "profession": identite.get("profession"),
+        # #641 : le code de nomenclature est retiré et l'énoncé d'une absence de
+        # profession devient `null` — la fusion ne régressant jamais un scalaire
+        # vers `null`, c'est ici, et pas à la collecte, que les cinq profils
+        # concernés cessent de publier « Personne diverse sans activité
+        # professionnelle » comme une profession.
+        "profession": _profession_publiable(identite.get("profession")),
         "date_naissance": identite.get("date_naissance"),
         "lieu_naissance": identite.get("lieu_naissance"),
         "num_circo": identite.get("num_circo"),

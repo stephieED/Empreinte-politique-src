@@ -444,7 +444,9 @@ ACTEURS_HISTORIQUE_CACHE_DIR = Path(".cache") / "acteurs_historique_an"
 # reconstruction, une fois, et laisse une trace lisible de la raison.
 #
 # Règle : **on incrémente le suffixe dès que le CONTENU écrit change**, jamais
-# pour un changement de lecture.
+# pour un changement de lecture. `v3` porte deux changements de contenu livrés
+# ensemble : `mandats_assemblee` (#640) et la profession lue par `_profession_an`
+# (#641).
 NOM_INDEX_IDENTITE = "index_identite_v3.json"
 NOM_INDEX_ORGANES = "index_organes_v2.json"
 
@@ -1439,6 +1441,74 @@ def _texte_an(valeur: Any) -> Optional[str]:
 #: `"{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', …} ({…})"`.
 #: Un dict truthy se repère ; une chaîne non vide se lit comme une donnée.
 _champ_identite_an = _texte_an
+
+
+#: Code de catégorie socioprofessionnelle en tête du libellé de profession
+#: d'AMO30 : `"(33) - Cadre de la fonction publique"` (#641).
+_PREFIXE_CODE_CSP_AN = re.compile(r"^\(\s*(\d+)\s*\)\s*-\s*")
+
+#: Le libellé d'un code de la famille 8x qui **énonce une absence** de
+#: profession. Le critère est en deux parties, et les deux sont nécessaires :
+#: la **famille du code** (8x, « personnes sans activité professionnelle » dans
+#: la nomenclature socioprofessionnelle) et le **libellé de la source
+#: elle-même**. La famille seule nullerait `"(84) - Elève, étudiant"`, qui nomme
+#: une situation et non une absence ; le libellé seul s'appuierait sur des mots
+#: là où la nomenclature offre une structure.
+_MARQUEUR_ABSENCE_PROFESSION = "sans activité professionnelle"
+
+
+def _profession_an(valeur: Any) -> Optional[str]:
+    """Profession publiable d'un acteur AMO30, ou `None` — jamais un code de
+    nomenclature, jamais l'énoncé d'une absence de profession (#641).
+
+    ## Ce que la source publie réellement
+
+    `acteur.profession.libelleCourant` porte deux formes. La plupart du temps
+    un libellé nu (`"Avocat"`). **128 fois sur les 3 117 acteurs** de l'archive,
+    le libellé est préfixé du code de catégorie socioprofessionnelle :
+    `"(33) - Cadre de la fonction publique"`. Le motif n'apparaît **nulle part
+    ailleurs** dans `json/acteur/*.json` — mesuré champ par champ sur l'archive
+    entière au 31/08/2026, 128 occurrences, toutes sur ce seul champ. C'est ce
+    qui rend légitime de traiter la profession et elle seule, là où #556 devait
+    traiter tous les champs : le marqueur `xsi:nil` vient du **convertisseur
+    XML**, qui ne connaît pas le nom du champ ; ce préfixe-ci vient d'une
+    **nomenclature**, qui n'existe que pour ce champ.
+
+    ## Deux cas sous un même motif, et ils ne se traitent pas pareil
+
+    Mesuré sur les 481 profils publiés : 8 des 457 qui renseignent
+    `identite.profession` publient un code brut.
+
+    | Cas | Corpus | Traitement |
+    | --- | ---: | --- |
+    | `"(33) - Cadre de la fonction publique"` | 3 profils | le préfixe est du bruit, le libellé est bon : on retire le préfixe |
+    | `"(85) - Personne diverse sans activité professionnelle de moins de 60 ans…"` | 5 profils | **ce n'est pas une profession**, c'est l'énoncé d'une absence : `None` |
+
+    Le second est le vrai sujet, et c'est l'idiome de #556 : une valeur
+    technique de la source recopiée là où une valeur métier était attendue, qui
+    passe le seul contrôle existant — « chaîne non vide ». Une absence n'est pas
+    une donnée (AGENTS.md §2 règle 5), et la page dit « profession non
+    renseignée » plutôt que de la nommer.
+
+    Aucune profession de remplacement n'est inventée : le libellé nulle ici est
+    perdu, pas remplacé.
+    """
+    texte = _champ_identite_an(valeur)
+    if texte is None or not texte.strip():
+        return None
+    texte = texte.strip()
+    trouve = _PREFIXE_CODE_CSP_AN.match(texte)
+    if trouve is None:
+        return texte
+    code = trouve.group(1)
+    libelle = texte[trouve.end():].strip()
+    if not libelle:
+        # Un code sans libellé ne dit rien de publiable, et le code seul n'est
+        # pas une profession.
+        return None
+    if code.startswith("8") and _MARQUEUR_ABSENCE_PROFESSION in libelle.lower():
+        return None
+    return libelle
 
 
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
@@ -3379,7 +3449,10 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     etat_civil = acteur.get("etatCivil") or {}
                     ident = etat_civil.get("ident") or {}
                     info_naissance = etat_civil.get("infoNaissance") or {}
-                    profession = _champ_identite_an(
+                    # #641 — la profession passe par SON lecteur, qui retire le
+                    # code de nomenclature et refuse de publier l'énoncé d'une
+                    # absence de profession comme s'il en était une.
+                    profession = _profession_an(
                         (acteur.get("profession") or {}).get("libelleCourant")
                     )
 
