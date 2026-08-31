@@ -48,6 +48,15 @@ les audits. Les isoler leur évite de télécharger 59 % d'un index dont ils
 n'utilisent rien, tout en les gardant accessibles — un réseau de cosignatures
 est de la matière première d'analyse (#324). Elles ne sont **jamais** supprimées.
 
+LE DOSSIER LÉGISLATIF, UNE FOIS PAR TEXTE (#639). `texte_vise` porte l'uid du
+**document** amendé (`PRJLANR5L15B1088`), et la table `textes` du fichier le
+joint à son **dossier** (`DLR5L15N36030`) et au titre lisible de celui-ci. Elle
+est une table, pas un champ par amendement : les 484 132 amendements publiés ne
+visent que 2 248 textes distincts, et recopier le `dossier_id` dans chacun
+coûterait 5,7 Mio là où la table en coûte 0,10 — le raisonnement de #431 pour
+les cosignataires, un cran plus loin. Un amendement dont le texte n'est pas dans
+la table reste **sans dossier**, et il s'en compte : voir `resoudre_textes`.
+
 CE QUI N'EST PAS NORMALISÉ. `raw_data/profiles` garde ses amendements
 dénormalisés : c'est la couche source-near, et c'est **d'elle** que l'index est
 reconstruit. Même décision que pour les votes ([[normalisation-votes]]).
@@ -185,9 +194,16 @@ class AmendementsIndex:
         cosignatures: Optional[dict[str, list[str]]] = None,
         *,
         cosignatures_chargees: bool = True,
+        textes: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         self.par_id: dict[str, dict[str, Any]] = dict(amendements or {})
         self.par_id_cosignatures: dict[str, list[str]] = dict(cosignatures or {})
+        #: `texte_vise` -> `{dossier_id, titre}` (#639). Table de FICHIER, pas
+        #: de champ par amendement : 484 132 amendements ne visent que 2 248
+        #: textes distincts, et recopier le `dossier_id` dans chacun coûterait
+        #: 5,7 Mio de plus là où la table en coûte 0,10. Même raisonnement que
+        #: #431 pour les cosignataires, un cran plus loin.
+        self.par_texte: dict[str, dict[str, Any]] = dict(textes or {})
         # Distingue « chargé sans les cosignatures » de « chargé, aucun
         # cosignataire ». Sans ce drapeau, `co_signataires()` rendrait `[]` dans
         # les deux cas et un appelant conclurait à tort à une absence de
@@ -225,6 +241,29 @@ class AmendementsIndex:
         if amendement_id not in self.par_id:
             return None
         return self.par_id_cosignatures.get(amendement_id, [])
+
+    def texte(self, texte_vise: Optional[str]) -> Optional[dict[str, Any]]:
+        """Entrée de la table des textes, `None` si le texte n'y est pas.
+
+        Rend l'objet stocké, **sans copie** — même règle que `get()`.
+        """
+        return self.par_texte.get(texte_vise) if texte_vise else None
+
+    def dossier_de(self, amendement: Optional[dict[str, Any]]) -> Optional[str]:
+        """Identifiant de dossier législatif d'un amendement, `None` s'il est
+        inconnu.
+
+        `None` couvre trois situations distinctes et volontairement non
+        confondues à l'écriture — mais indiscernables ici, faute d'être des
+        faits différents pour l'appelant : l'amendement est absent, son
+        `texte_vise` est un libellé et non un code (état du corpus d'avant
+        #639), ou son code n'est dans aucune archive de dossiers ingérée
+        (toute la XIVe législature). Jamais un rattachement par défaut.
+        """
+        if not isinstance(amendement, dict):
+            return None
+        entree = self.texte(amendement.get("texte_vise"))
+        return entree.get("dossier_id") if isinstance(entree, dict) else None
 
     def legislatures(self) -> list[str]:
         """Législatures représentées, triées. `LEGISLATURE_INCONNUE` en dernier."""
@@ -339,6 +378,69 @@ def construire_index(amendements: Iterable[dict[str, Any]]) -> AmendementsIndex:
     return AmendementsIndex(par_id, cosignatures)
 
 
+def resoudre_textes(
+    index: AmendementsIndex, table: dict[str, dict[str, Any]]
+) -> dict[str, int]:
+    """Renseigne `index.par_texte` pour les textes que l'index référence.
+
+    `table` est celle de `textes_dossiers_an.charger_table()` : uid de document
+    AN -> `{dossier_id, titre}`, construite d'identifiant à identifiant depuis
+    les archives de dossiers.
+
+    **Additif, jamais destructeur** : une table vide (archives indisponibles) ne
+    retire rien de ce qui est déjà publié — c'est la règle « une collecte vide
+    n'écrase jamais » appliquée à un index dérivé.
+
+    Ne retient que les textes réellement visés par un amendement de l'index :
+    écrire les 21 936 documents des archives dans chaque fichier de législature
+    y ajouterait 20 000 entrées que personne ne référence.
+
+    Retourne le compte, pour que l'appelant le publie plutôt que de le taire :
+    `textes_resolus`, `textes_sans_dossier`, `amendements_rattaches`,
+    `amendements_sans_dossier`.
+    """
+    resolus = 0
+    sans_dossier = 0
+    rattaches = 0
+    orphelins = 0
+    intern = sys.intern
+    vus: dict[str, bool] = {}
+
+    for amendement in index.par_id.values():
+        texte_vise = amendement.get("texte_vise")
+        if not isinstance(texte_vise, str) or not texte_vise:
+            orphelins += 1
+            continue
+        connu = vus.get(texte_vise)
+        if connu is None:
+            entree = table.get(texte_vise)
+            connu = isinstance(entree, dict) and bool(entree.get("dossier_id"))
+            if connu:
+                index.par_texte[intern(texte_vise)] = {
+                    "dossier_id": intern(str(entree["dossier_id"])),
+                    "titre": entree.get("titre"),
+                }
+                resolus += 1
+            elif texte_vise not in index.par_texte:
+                sans_dossier += 1
+            else:
+                # Déjà rattaché par un run précédent : la table de ce run-ci ne
+                # le connaît pas (archive absente), on garde l'acquis.
+                connu = True
+            vus[texte_vise] = connu
+        if connu:
+            rattaches += 1
+        else:
+            orphelins += 1
+
+    return {
+        "textes_resolus": resolus,
+        "textes_sans_dossier": sans_dossier,
+        "amendements_rattaches": rattaches,
+        "amendements_sans_dossier": orphelins,
+    }
+
+
 def merge_amendements_index(
     ancien: AmendementsIndex, nouveau: AmendementsIndex
 ) -> AmendementsIndex:
@@ -385,8 +487,20 @@ def merge_amendements_index(
             if liste:
                 cosignatures[amendement_id] = list(liste)
 
+    # Union additive des tables de textes : la nouvelle entrée gagne si elle
+    # est renseignée, l'ancienne survit sinon. Un run partiel ne voit qu'une
+    # partie des textes ; effacer les autres laisserait des amendements publiés
+    # sans dossier alors que leur rattachement était acquis.
+    textes = dict(ancien.par_texte)
+    for texte_vise, entree in nouveau.par_texte.items():
+        if isinstance(entree, dict) and entree.get("dossier_id"):
+            textes[texte_vise] = dict(entree)
+
     return AmendementsIndex(
-        fusionnes, cosignatures, cosignatures_chargees=cosignatures_chargees
+        fusionnes,
+        cosignatures,
+        cosignatures_chargees=cosignatures_chargees,
+        textes=textes,
     )
 
 
@@ -414,6 +528,7 @@ def charger(
     if not dossier.is_dir():
         return AmendementsIndex(cosignatures_chargees=avec_cosignatures)
 
+    textes: dict[str, dict[str, Any]] = {}
     demandees = set(legislatures) if legislatures is not None else None
     for chemin in sorted(dossier.glob("*.json")):
         if chemin.name.endswith(_SUFFIXE_COSIGNATURES):
@@ -425,6 +540,12 @@ def charger(
         for amendement_id, amendement in (donnees.get("amendements") or {}).items():
             if isinstance(amendement, dict):
                 par_id[amendement_id] = amendement
+        # La table des textes est portée par chaque fichier, restreinte aux
+        # textes que ses amendements visent : un même texte peut donc figurer
+        # dans deux fichiers, avec la même valeur (l'uid du dossier est unique).
+        for texte_vise, entree in (donnees.get("textes") or {}).items():
+            if isinstance(entree, dict):
+                textes[texte_vise] = entree
         if not avec_cosignatures:
             continue
         chemin_cosign = _fichier_cosignatures(dossier, legislature)
@@ -435,7 +556,9 @@ def charger(
             if isinstance(refs, list):
                 cosignatures[amendement_id] = refs
 
-    return AmendementsIndex(par_id, cosignatures, cosignatures_chargees=avec_cosignatures)
+    return AmendementsIndex(
+        par_id, cosignatures, cosignatures_chargees=avec_cosignatures, textes=textes
+    )
 
 
 def _lire_json(chemin: Path) -> dict[str, Any]:
@@ -469,6 +592,11 @@ def ecrire(
 
     La `legislature` est portée **une fois par fichier**, jamais par entrée :
     toutes les entrées d'un fichier ont la même, et la répéter coûterait 4 Mo.
+
+    Même raison pour la table `textes` (#639) : le `dossier_id` recopié dans
+    chaque amendement coûterait 5,7 Mio sur les quatre fichiers, la table 0,10.
+    Elle est restreinte aux textes que le fichier vise réellement, pour qu'un
+    fichier de législature se lise seul.
     """
     if not index.cosignatures_chargees:
         raise CosignaturesNonChargees(
@@ -481,11 +609,24 @@ def ecrire(
     for legislature in index.legislatures():
         ids = index.ids_de_legislature(legislature)
         chemin = _fichier_meta(dossier, legislature)
+        # Table des textes restreinte à ceux que CE fichier vise (#639) : un
+        # fichier doit se lire seul, et recopier les 21 936 documents des
+        # archives dans chacun coûterait sans rien rattacher de plus.
+        vises = {index.par_id[i].get("texte_vise") for i in ids}
+        textes = {
+            texte_vise: index.par_texte[texte_vise]
+            for texte_vise in sorted(v for v in vises if isinstance(v, str) and v)
+            if texte_vise in index.par_texte
+        }
         ecrire_profil_json(chemin, {
             "schema_version": SCHEMA_VERSION,
             "legislature": legislature,
             "genere_le": genere_le,
             "licence_donnees": LICENCE_DONNEES,
+            # `textes` avant `amendements` : un fichier de 51 Mio se lit en
+            # streaming, et la table doit être atteignable sans traverser les
+            # 206 771 entrées qui la référencent.
+            "textes": textes,
             "amendements": {i: index.par_id[i] for i in ids},
         })
         ecrits.append(chemin)
@@ -543,6 +684,8 @@ def rafraichir(
     *,
     fusionner: bool = True,
     genere_le: Optional[str] = None,
+    table_textes: Optional[dict[str, dict[str, Any]]] = None,
+    comptes: Optional[dict[str, int]] = None,
 ) -> AmendementsIndex:
     """Reconstruit l'index depuis `profils_dir` et l'écrit, en fusionnant avec
     l'existant par défaut.
@@ -554,9 +697,20 @@ def rafraichir(
 
     `fusionner=False` correspond à `--no-merge` : reconstruction complète, à
     n'utiliser que sur un corpus complet.
+
+    `table_textes` (#639) est la table `texte AN -> dossier législatif` de
+    `textes_dossiers_an.charger_table()`. `None` (le défaut) laisse l'index tel
+    quel : les rattachements déjà publiés sont conservés, aucun n'est ajouté —
+    un run sans archives de dossiers ne perd rien et n'invente rien.
     """
     index = construire_index(iter_amendements_du_repertoire(profils_dir))
     if fusionner:
         index = merge_amendements_index(charger(dossier), index)
+    # Résolution APRÈS la fusion : les amendements des profils non retraités
+    # sont déjà là, et ils ont autant droit à leur dossier que les nouveaux.
+    if table_textes is not None:
+        releve = resoudre_textes(index, table_textes)
+        if comptes is not None:
+            comptes.update(releve)
     ecrire(dossier, index, genere_le=genere_le)
     return index

@@ -269,7 +269,10 @@ de données ; le déclenchement de `deploy-pages.yml`.
 
 **Consomme** tous les artifacts ci-dessus — mais **aucun** pour la ligne de
 base : il checkoute le dépôt, et la fusion ne réécrit que les slugs présents
-dans les artifacts. **Produit** le commit de données sur `main`, poussé sous
+dans les artifacts. Il lit aussi `.cache/dossiers_an` (restauré par son propre
+`actions/cache`, §5) : depuis #639, la construction de `pivot_data/amendements/`
+y joint chaque `texte_vise` à son dossier législatif. Archives absentes → aucun
+rattachement ajouté, aucun retiré, et le job le dit dans son log. **Produit** le commit de données sur `main`, poussé sous
 `secrets.DATA_PUSH_SSH_KEY` (§6). C'est le seul job à porter
 `permissions: contents: write`.
 

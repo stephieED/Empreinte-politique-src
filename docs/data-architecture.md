@@ -241,6 +241,18 @@ un fichier compagnon `<legislature>.cosignatures.json` (schéma
 qu'**aucun consommateur ne les lit** — elles ne sont **jamais supprimées** pour
 autant : un réseau de cosignatures est de la matière d'analyse (#324).
 
+**Chaque fichier porte une table `textes`** (#639) : `texte_vise` → `{dossier_id,
+titre}`, restreinte aux textes que ses amendements visent. `texte_vise` est l'uid
+du **document** AN amendé (`PIONANR5L17BTC0699`), `dossier_id` celui de son
+**dossier** législatif (`DLR5L17N50879`), lu dans `document.dossierRef` des
+mêmes archives que les textes portés (`src/textes_dossiers_an.py`). La table est
+**optionnelle** — les fichiers publiés avant #639 n'en ont pas — et un texte non
+résolu n'y a **pas d'entrée** : `AmendementsIndex.dossier_de()` rend alors `None`,
+jamais un rattachement par défaut. Une table plutôt qu'un champ par amendement
+parce que 484 132 amendements ne visent que 2 248 textes distincts : +0,10 Mio
+mesuré sur les quatre index, contre +5,7 Mio pour un `dossier_id` par entrée.
+→ `docs/decisions/dossier-des-amendements-639.md`
+
 Législatures 14/15/16 : dossiers clos, index AN bruts committés sous
 `raw_data/amendements_an_figes/` et jamais re-téléchargés
 (`docs/decisions/amendements-legislatures-figees.md`) ; même principe pour

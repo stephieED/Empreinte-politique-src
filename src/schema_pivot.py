@@ -2062,6 +2062,30 @@ def validate_amendements_index(index: dict[str, Any]) -> list[str]:
             "et jamais par entrée, donc son absence rend les entrées inclassables."
         )
 
+    # `textes` (#639) : table de fichier `texte_vise -> {dossier_id, titre}`.
+    # OPTIONNELLE — les quatre fichiers publiés avant #639 n'en ont pas, et
+    # l'exiger ferait échouer la validation de tout le corpus avant sa
+    # régénération. Un texte sans dossier résolu n'a pas d'entrée du tout :
+    # une entrée à `dossier_id: null` coûterait des octets pour ne rien dire de
+    # plus qu'une absence.
+    textes = index.get("textes")
+    if textes is not None:
+        if not isinstance(textes, dict):
+            errors.append(
+                "Clé 'textes' de mauvais type (objet {texte_vise: {dossier_id, titre}} attendu)."
+            )
+        else:
+            for texte_vise, entree in textes.items():
+                if not isinstance(entree, dict):
+                    errors.append(f"textes[{texte_vise!r}] n'est pas un objet.")
+                    continue
+                dossier_id = entree.get("dossier_id")
+                if not isinstance(dossier_id, str) or not dossier_id:
+                    errors.append(
+                        f"textes[{texte_vise!r}].dossier_id manquant : un texte "
+                        "sans dossier résolu n'a pas d'entrée dans la table."
+                    )
+
     amendements = index.get("amendements")
     if not isinstance(amendements, dict):
         return errors + [

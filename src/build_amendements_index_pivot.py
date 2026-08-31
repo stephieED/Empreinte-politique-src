@@ -27,10 +27,18 @@ corpus : la clé d'un amendement est son `uid` AN, porté par l'enregistrement
 lui-même, et sa législature se lit dans cet `uid`. Rien n'a besoin d'être résolu
 par jointure — d'où une seule reconstruction par run, après la passe pivot.
 
+Une seule jointure, depuis #639 : le `texte_vise` d'un amendement (uid de
+document AN) vers le dossier législatif de ce document, lu dans les archives
+déjà en cache (`.cache/dossiers_an/`, restauré par le job `merge-and-pivot`).
+Elle est publiée sous forme de **table de fichier** — voir
+`amendements_index.resoudre_textes`. `--sans-dossiers` s'en passe : les
+rattachements déjà publiés sont alors conservés, aucun n'est ajouté.
+
 Usage :
     python3 src/build_amendements_index_pivot.py
     python3 src/build_amendements_index_pivot.py --profils-dir raw_data/profiles --out pivot_data/amendements
     python3 src/build_amendements_index_pivot.py --no-merge     # reconstruction complète
+    python3 src/build_amendements_index_pivot.py --sans-dossiers  # sans la jointure dossiers
 """
 
 import argparse
@@ -44,6 +52,7 @@ from amendements_index import (  # noqa: E402
     DEFAULT_AMENDEMENTS_DIR,
     rafraichir,
 )
+from textes_dossiers_an import charger_table  # noqa: E402
 
 DEFAUT_PROFILS_DIR = Path("raw_data") / "profiles"
 
@@ -61,19 +70,38 @@ def main(argv: list[str] | None = None) -> int:
                              "l'index existant. À réserver à un corpus COMPLET : sur une "
                              "tranche, les amendements des profils non retraités disparaîtraient "
                              "et leurs mappings pointeraient dans le vide.")
+    parser.add_argument("--sans-dossiers", action="store_true",
+                        help="N'établit pas la jointure texte → dossier législatif (#639). "
+                             "Les rattachements déjà publiés sont conservés, aucun n'est "
+                             "ajouté : à réserver aux exécutions sans archives de dossiers.")
     args = parser.parse_args(argv)
 
+    table_textes = None if args.sans_dossiers else charger_table()
+    if table_textes is not None and not table_textes:
+        # Nommer l'absence plutôt que de publier un index muet : sans archive,
+        # aucun amendement ne gagne de dossier, et les anciens gardent le leur.
+        print("  [!] Archives de dossiers indisponibles : aucun rattachement "
+              "texte → dossier ajouté à ce run (les rattachements publiés sont conservés).")
+
+    comptes: dict[str, int] = {}
     index = rafraichir(
         Path(args.profils_dir),
         Path(args.out),
         fusionner=not args.no_merge,
         genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        table_textes=table_textes,
+        comptes=comptes,
     )
 
     print(f"  ✓ {len(index)} amendement(s) distinct(s) → {args.out}")
     for legislature in index.legislatures():
         n = len(index.ids_de_legislature(legislature))
         print(f"      législature {legislature} : {n} amendement(s)")
+    if comptes:
+        print(f"      dossiers : {comptes['amendements_rattaches']} amendement(s) rattaché(s), "
+              f"{comptes['amendements_sans_dossier']} sans dossier "
+              f"({comptes['textes_resolus']} texte(s) résolu(s), "
+              f"{comptes['textes_sans_dossier']} sans dossier dans les archives lues)")
     return 0
 
 

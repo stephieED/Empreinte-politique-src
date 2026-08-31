@@ -264,7 +264,12 @@ Spike documentaire pour #207 (préparation de #184), exécuté avec accès rése
 confirmé vers `data.assemblee-nationale.fr` : téléchargement et inspection
 réelle de `Dossiers_Legislatifs.json.zip` (10,25 Mo ; **3044 vrais dossiers**
 sous `json/dossierParlementaire/*.json` — le ZIP contient aussi 7056 fichiers
-`json/document/*.json` sans rapport, à filtrer) et de
+`json/document/*.json`, **décrits ici comme « sans rapport » jusqu'à #639 : c'est
+faux**, chacun porte `dossierRef`, la seule clé sourcée qui rattache un texte
+déposé à son dossier, et c'est celle dont le `texteLegislatifRef` d'un amendement
+a besoin ; 21 936 des 21 937 uid distincts des trois archives en portent une, avec
+0 divergence entre archives — voir `src/textes_dossiers_an.py` et
+`docs/decisions/dossier-des-amendements-639.md`) et de
 `AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`
 (historique complet des acteurs/mandats, ~13,6 Mo,
 `.../17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`).
