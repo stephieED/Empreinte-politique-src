@@ -88,17 +88,33 @@ Format d'un profil de groupe v1 :
     "mandats_agreges": [                # agrégation catégorielle des mandats[] (commission,
                                          # groupe_amitie, extra_parlementaire — voir
                                          # group_profile.MANDATS_AGREGES_CATEGORIES), liste plate
-                                         # triée nb_membres desc puis categorie/label asc.
+                                         # triée nb_membres_actifs desc, puis
+                                         # nb_membres_cumul_historique desc, puis
+                                         # categorie/label asc (#656).
                                          # mandat_electif/groupe_politique/fonction_gouvernementale/
                                          # autre volontairement exclus (voir group_profile.py).
         {
             "categorie": "commission",
             "label": "Commission des affaires étrangères",
-            "nb_membres": 5,             # membres distincts (éligibles, cf. chevauchement
-                                         # mandat/appartenance) ayant occupé ce mandat
-            "nb_membres_actifs": 2,      # sous-ensemble encore actif (mandat + appartenance groupe)
-            "poids_relatif": 0.078,      # nb_membres / len(membres) — couverture disponible,
-                                         # jamais confondue avec meta.couverture_roster.roster_total
+            # Deux grandeurs qui ne se confondent pas (#656) : « qui y siège »
+            # et « qui y est passé ». 43 % des adhésions de commission publiées
+            # durent une journée ou moins — un⋅e député⋅e n'appartient qu'à une
+            # commission permanente à la fois, tout passage temporaire y est
+            # donc écrit comme un mandat à part entière.
+            "nb_membres_actifs": 2,      # QUI Y SIÈGE : mandat encore ouvert ET
+                                         # appartenance au groupe encore active
+            "nb_membres_cumul_historique": 5,
+                                         # QUI Y EST PASSÉ : membres distincts (éligibles, cf.
+                                         # chevauchement mandat/appartenance) ayant occupé ce
+                                         # mandat au moins une fois, adhésions d'un jour
+                                         # comprises. Cumul, jamais un effectif.
+            "effectif_reference": 64,    # dénominateur des deux compteurs = len(membres),
+                                         # couverture disponible — jamais confondue avec
+                                         # meta.couverture_roster.roster_total. Publié plutôt
+                                         # que pré-divisé : « 2 / 64 », jamais « 3 % »
+                                         # (AGENTS.md §2.7). Remplace poids_relatif, qui ne
+                                         # disait pas de laquelle des deux grandeurs il
+                                         # était le poids.
             "par_fonction": {            # une entrée par membre (tie-break sur doublon
                                          # (categorie, label) : actif=true prioritaire,
                                          # sinon la plus récente par date de fin)

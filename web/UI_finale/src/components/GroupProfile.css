@@ -274,8 +274,15 @@
 }
 
 .gp-mandat-count {
-  margin: 0 0 12px;
+  margin: 0 0 2px;
   font-size: 12px;
+  color: var(--ink);
+}
+
+/* Le cumul historique est un fait de second plan : il reste lisible, il ne
+   doit pas se lire comme l'effectif de la commission (#656). */
+.gp-mandat-count-cumul {
+  margin: 0 0 12px;
   color: var(--muted);
 }
 

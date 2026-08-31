@@ -466,7 +466,19 @@ mandats agrégés (catégoriel : `commission`, `commission_enquete`,
 `mission_information`, `groupe_etudes`, `delegation`, `groupe_amitie`,
 `extra_parlementaire` — voir `MANDATS_AGREGES_CATEGORIES`, périmètre élargi par
 #382, `docs/decisions/taxonomie-mandats-typeorgane-an.md`), amendements agrégés
-avec ventilation par sort et par type de déposant. `amendements_agreges` compte
+avec ventilation par sort et par type de déposant. Une entrée de
+`mandats_agreges` porte **deux comptages distincts et un dénominateur**, jamais
+un nombre unique (#656,
+`docs/decisions/mandats-agreges-siege-vs-passe-656.md`) : `nb_membres_actifs`
+— **qui y siège** —, `nb_membres_cumul_historique` — **qui y est passé**,
+adhésions d'un jour comprises — et `effectif_reference`, la couverture
+disponible du groupe qui sert de dénominateur aux deux. 1 165 des 2 708
+adhésions de commission publiées par les 7 fiches (43 %) durent une journée ou
+moins, parce qu'un⋅e député⋅e n'appartient qu'à une commission permanente à la
+fois et que toute bascule temporaire y est écrite comme un mandat à part
+entière : sous le seul `nb_membres` d'avant, la fiche `AN-LFI-16` faisait siéger
+67 de ses 76 membres à la commission des finances, quand ils sont 5. `poids_relatif` a disparu avec
+lui — il ne disait plus de laquelle des deux grandeurs il était le poids. `amendements_agreges` compte
 les amendements **distincts** portés par au moins un membre — un amendement
 cosigné par trois d'entre eux en est un — et les **signatures** apposées par les
 membres vivent à côté, sous `signatures` (#643,

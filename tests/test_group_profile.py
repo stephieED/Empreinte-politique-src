@@ -713,7 +713,8 @@ def test_mandats_agreges_compte_membres_par_categorie_label():
     entry = result[0]
     assert entry["categorie"] == "commission"
     assert entry["label"] == "Commission des affaires étrangères"
-    assert entry["nb_membres"] == 2
+    assert entry["nb_membres_cumul_historique"] == 2
+    assert "nb_membres" not in entry  # #656 : plus de nombre unique ambigu
 
 
 def test_mandats_agreges_exclut_categories_hors_perimetre():
@@ -760,7 +761,7 @@ def test_mandats_agreges_inclut_mandat_chevauchant_mandat_electif():
     membres = [_derive_membre_entry(p1)]
     result = _aggregate_mandats([p1], membres)
     assert len(result) == 1
-    assert result[0]["nb_membres"] == 1
+    assert result[0]["nb_membres_cumul_historique"] == 1
 
 
 def test_mandats_agreges_membre_sans_mandat_electif_est_eligible_par_defaut():
@@ -769,7 +770,7 @@ def test_mandats_agreges_membre_sans_mandat_electif_est_eligible_par_defaut():
     membres = [_derive_membre_entry(p1)]
     result = _aggregate_mandats([p1], membres)
     assert len(result) == 1
-    assert result[0]["nb_membres"] == 1
+    assert result[0]["nb_membres_cumul_historique"] == 1
 
 
 def test_mandats_agreges_tie_break_doublon_priorite_actif():
@@ -782,7 +783,7 @@ def test_mandats_agreges_tie_break_doublon_priorite_actif():
     membres = [_derive_membre_entry(p1)]
     result = _aggregate_mandats([p1], membres)
     assert len(result) == 1
-    assert result[0]["nb_membres"] == 1
+    assert result[0]["nb_membres_cumul_historique"] == 1
     assert result[0]["membres"][0]["fonction"] == "président"
 
 
@@ -854,24 +855,34 @@ def test_mandats_agreges_nb_membres_actifs_requiert_mandat_et_appartenance_actif
     ])
     membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
     result = _aggregate_mandats([p1, p2], membres)
-    assert result[0]["nb_membres"] == 2
+    assert result[0]["nb_membres_cumul_historique"] == 2
     assert result[0]["nb_membres_actifs"] == 1
 
 
-def test_mandats_agreges_poids_relatif_sur_couverture_disponible():
-    """poids_relatif = nb_membres / len(profils) -- couverture disponible, pas roster_total."""
+def test_mandats_agreges_effectif_reference_est_la_couverture_disponible():
+    """#656 : le dénominateur est publié, pas pré-divisé.
+
+    `effectif_reference` vaut `len(profils)` — la couverture disponible du
+    groupe, jamais `meta.couverture_roster.roster_total`. Il remplace
+    `poids_relatif`, qui valait `nb_membres / len(membres)` et ne disait pas
+    de laquelle des deux grandeurs il était le poids. Publier le dénominateur
+    permet de lire « 1 / 2 » plutôt qu'un pourcentage seul (AGENTS.md §2.7).
+    """
     p1 = _pivot(mandats=[_mandat_electif("2022-06-22"), _mandat_categoriel()])
     p2 = _pivot(mandats=[_mandat_electif("2022-06-22")])
     membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
     result = _aggregate_mandats([p1, p2], membres)
-    assert result[0]["poids_relatif"] == 0.5
+    assert result[0]["effectif_reference"] == 2
+    assert "poids_relatif" not in result[0]
 
 
 def test_mandats_agreges_vide_si_profils_vide():
     assert _aggregate_mandats([], []) == []
 
 
-def test_mandats_agreges_trie_par_nb_membres_desc_puis_categorie_label():
+def test_mandats_agreges_le_cumul_departage_a_egalite_de_membres_siegeant():
+    """À nombre égal de membres siégeant (ici 0), le cumul départage, puis
+    (categorie, label) — l'ordre historique de #361 est préservé."""
     p1 = _pivot(mandats=[
         _mandat_electif("2022-06-22"),
         _mandat_categoriel(categorie="commission", label="Commission A"),
@@ -886,10 +897,94 @@ def test_mandats_agreges_trie_par_nb_membres_desc_puis_categorie_label():
     ])
     membres = [_derive_membre_entry(p) for p in (p1, p2, p3)]
     result = _aggregate_mandats([p1, p2, p3], membres)
-    assert [(r["label"], r["nb_membres"]) for r in result] == [
+    assert [(r["label"], r["nb_membres_cumul_historique"]) for r in result] == [
         ("Commission A", 2),
         ("Commission B", 1),
     ]
+
+
+def test_mandats_agreges_trie_par_membres_siegeant_avant_le_cumul():
+    """#656 : trier sur le cumul faisait remonter la commission traversée par
+    beaucoup de monde au-dessus de celle où l'on siège vraiment.
+
+    Mesuré sur `groupe-AN-LFI-16` : la commission des finances cumule
+    67 passages dont 44 d'une journée ou moins, et 5 membres siégeant ; la
+    commission des affaires sociales 66 passages et 9 siégeant — le tri sur le
+    cumul mettait donc les finances en tête. Ici, en réduction : « Traversée »
+    cumule 2 passages clos, « Siège » 1 seul mandat mais encore ouvert — c'est
+    « Siège » qui doit être en tête.
+    """
+    traversee = dict(categorie="commission", label="Traversée")
+    siege = dict(categorie="commission", label="Siège")
+    p1 = _pivot("nosdeputes:alice", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(**traversee, debut="2023-10-27", fin="2023-10-27", actif=False),
+    ])
+    p2 = _pivot("nosdeputes:bob", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(**traversee, debut="2024-01-24", fin="2024-01-24", actif=False),
+    ])
+    p3 = _pivot("nosdeputes:carol", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(**siege, debut="2022-06-30", fin=None, actif=True),
+    ])
+    membres = [_derive_membre_entry(p) for p in (p1, p2, p3)]
+
+    result = _aggregate_mandats([p1, p2, p3], membres)
+
+    assert [
+        (r["label"], r["nb_membres_actifs"], r["nb_membres_cumul_historique"])
+        for r in result
+    ] == [
+        ("Siège", 1, 1),
+        ("Traversée", 0, 2),
+    ]
+
+
+def test_mandats_agreges_adhesion_dun_jour_comptee_dans_le_cumul_jamais_filtree():
+    """#656 : distinguer, pas nettoyer.
+
+    Une adhésion d'un jour est un fait — 43 % des 2 708 adhésions de commission
+    publiées par les 7 fiches durent une journée ou moins, parce qu'un⋅e
+    député⋅e n'appartient qu'à une commission permanente à la fois et que tout
+    passage temporaire y est écrit comme un mandat à part entière. Elle reste comptée dans le cumul, absente
+    du décompte de celles et ceux qui y siègent, et sa durée reste lisible
+    dans `membres[]`.
+    """
+    p1 = _pivot("nosdeputes:alice", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(debut="2022-06-30", fin=None, actif=True),
+    ])
+    p2 = _pivot("nosdeputes:bob", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(debut="2023-10-27", fin="2023-10-27", actif=False),
+    ])
+    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+
+    result = _aggregate_mandats([p1, p2], membres)
+
+    assert result[0]["nb_membres_cumul_historique"] == 2
+    assert result[0]["nb_membres_actifs"] == 1
+    passage = [m for m in result[0]["membres"] if m["membre_id"] == "nosdeputes:bob"]
+    assert len(passage) == 1
+    assert (passage[0]["debut"], passage[0]["fin"]) == ("2023-10-27", "2023-10-27")
+
+
+def test_mandats_agreges_ne_publie_aucun_taux_de_rotation():
+    """Aucun indice dérivé des adhésions courtes (AGENTS.md §2.1) : un « taux
+    de rotation » serait comparable entre groupes, donc un classement."""
+    p1 = _pivot("nosdeputes:alice", mandats=[
+        _mandat_electif("2022-06-22"),
+        _mandat_categoriel(debut="2023-10-27", fin="2023-10-27", actif=False),
+    ])
+    membres = [_derive_membre_entry(p1)]
+
+    result = _aggregate_mandats([p1], membres)
+
+    assert set(result[0]) == {
+        "categorie", "label", "nb_membres_actifs", "nb_membres_cumul_historique",
+        "effectif_reference", "par_fonction", "membres",
+    }
 
 
 def test_build_groupe_profile_inclut_mandats_agreges():

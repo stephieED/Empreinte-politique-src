@@ -133,9 +133,22 @@ export default function GroupProfile({ group }) {
             <div className="gp-mandat-card" key={`${m.categorie}-${m.label}`}>
               <span className="gp-mandat-category">{m.categorieLabel}</span>
               <p className="gp-mandat-label">{m.label}</p>
+              {/* Deux grandeurs, deux lignes (#656). « Qui y siège » d'abord :
+                  c'est la réponse à « ce groupe travaille sur quoi ». Le cumul
+                  reste publié, nommé comme un cumul — 43 % des adhésions de
+                  commission publiées durent une journée ou moins, et lire le
+                  cumul comme un effectif faisait dire à la fiche que 67 des 76
+                  membres LFI siègent aux finances quand ils sont 5. Numérateur
+                  et dénominateur, jamais un pourcentage (DESIGN_SYSTEM.md §6). */}
               <p className="gp-mandat-count">
-                {m.nbMembres} / {group.profilsDisponibles} membres
-                {m.nbMembresActifs > 0 && ` · ${m.nbMembresActifs} actif${m.nbMembresActifs > 1 ? 's' : ''}`}
+                {m.nbMembresActifs > 0
+                  ? `${m.nbMembresActifs} / ${m.effectifReference ?? group.profilsDisponibles} membres y siègent`
+                  : "Aucun membre n'y siège actuellement"}
+              </p>
+              <p className="gp-mandat-count gp-mandat-count-cumul">
+                {m.nbMembresCumul > 1
+                  ? `${m.nbMembresCumul} membres y ont siégé au moins une fois`
+                  : `${m.nbMembresCumul} membre y a siégé au moins une fois`}
               </p>
               <div className="gp-mandat-fonctions">
                 {m.parFonction.map((f) => (

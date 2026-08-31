@@ -42,6 +42,9 @@ Cas limites gérés :
   - mandats_agreges : doublon (categorie, label) pour un même membre (ex.
     réélu·e à la même commission) → une seule entrée retenue, priorité à
     actif=true sinon la plus récente par date de fin.
+  - mandats_agreges : adhésion d'une journée ou moins (43 % des adhésions de
+    commission publiées) → comptée dans nb_membres_cumul_historique, absente de
+    nb_membres_actifs. Distinguée, jamais filtrée (#656).
 
 Les trois décisions à relire avant de toucher à une agrégation
 --------------------------------------------------------------
@@ -746,10 +749,49 @@ def _aggregate_mandats(
                  (même ordre que ``profils``), utilisée pour déterminer si un
                  membre est actuellement actif dans le groupe.
 
+    Deux grandeurs distinctes, jamais un seul nombre (#656) :
+
+    - ``nb_membres_actifs`` — **qui y siège** : membres dont le mandat est
+      encore ouvert *et* qui appartiennent encore au groupe. C'est la réponse
+      à « ce groupe travaille sur quoi ».
+    - ``nb_membres_cumul_historique`` — **qui y est passé** : membres distincts
+      ayant occupé ce mandat au moins une fois, si brièvement que ce soit.
+      Cumul, jamais un effectif.
+
+    L'écart n'est pas du bruit, et il est concentré sur ``commission`` : 1 165
+    des 2 708 adhésions de commission publiées par les 7 fiches (43 %) durent
+    une journée ou moins, contre 0 à 5 % dans les six autres catégories. La
+    cause est institutionnelle : un⋅e député⋅e
+    n'appartient qu'à **une** commission permanente à la fois, si bien que
+    l'AN modélise tout passage temporaire dans une autre commission comme la
+    fin d'un mandat et le début d'un autre. Mesuré sur les 452 acteurs AN des
+    7 fiches (10 562 mandats ``COMPER`` du référentiel AMO30, dont 3 389 de
+    durée ≤ 1 jour, soit 32 %) : 93,2 % des paires de mandats ``COMPER``
+    consécutifs d'un même acteur sont **contiguës** (fin + 1 jour = début du
+    suivant), et 440 des 452 acteurs n'ont jamais deux commissions permanentes
+    ouvertes le même jour. Rien dans AMO30 ne distingue le passage du siège :
+    ni ``nominPrincipale`` (à 1 dans les deux cas), ni
+    ``infosQualite.codeQualite`` (``Membre`` dans les deux cas). Seule la durée
+    le dit — d'où deux compteurs, et non un filtre.
+
+    Les adhésions courtes ne sont donc **jamais retirées** du décompte : les
+    écarter en silence recréerait le problème dans l'autre sens. Leur durée
+    reste lisible entrée par entrée dans ``membres[].debut``/``fin``. Aucun
+    taux de rotation n'en est dérivé : ce serait un indice comparable entre
+    groupes (AGENTS.md §2.1).
+
+    ``effectif_reference`` est le dénominateur des deux compteurs
+    (``len(profils)``, la couverture disponible du groupe) : il est publié
+    plutôt que pré-divisé, pour que le lecteur voie « 5 / 76 » et non un
+    pourcentage seul (AGENTS.md §2.7). Il remplace l'ancien ``poids_relatif``,
+    qui valait ``nb_membres / len(membres)`` et ne disait pas de quelle des
+    deux grandeurs il était le poids.
+
     Returns:
         Liste de dicts conformes à la structure ``mandats_agreges`` du schéma
-        de groupe, triée par ``nb_membres`` décroissant puis
-        ``(categorie, label)`` croissant.
+        de groupe, triée par ``nb_membres_actifs`` décroissant, puis
+        ``nb_membres_cumul_historique`` décroissant, puis ``(categorie,
+        label)`` croissant.
     """
     n = len(profils)
     if n == 0:
@@ -807,14 +849,23 @@ def _aggregate_mandats(
         result.append({
             "categorie": categorie,
             "label": label,
-            "nb_membres": len(entries),
             "nb_membres_actifs": sum(1 for e in entries if e["actif"]),
-            "poids_relatif": round(len(entries) / n, 4),
+            "nb_membres_cumul_historique": len(entries),
+            "effectif_reference": n,
             "par_fonction": par_fonction,
             "membres": entries,
         })
 
-    result.sort(key=lambda x: (-x["nb_membres"], x["categorie"], x["label"]))
+    # Tri : « qui y siège » d'abord (#656). Trier par le cumul faisait remonter
+    # une commission que 44 membres ont traversée un jour au-dessus d'une
+    # commission où 9 siègent réellement — le cumul ne départage plus qu'à
+    # égalité de membres siégeant.
+    result.sort(key=lambda x: (
+        -x["nb_membres_actifs"],
+        -x["nb_membres_cumul_historique"],
+        x["categorie"],
+        x["label"],
+    ))
     return result
 
 
