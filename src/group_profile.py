@@ -13,10 +13,14 @@ Calculs produits :
   2. Thèmes dominants : agrégation des tags_thematiques de tous les membres.
   3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
      électifs des profils individuels).
-  4. Amendements agrégés (amendements_agreges) : taux d'adoption groupe/chambre,
-     ventilé par type de déposant (par_type_deposant) — le total tous déposants
-     confondus ne doit jamais servir de comparateur direct, seul le sous-total
-     "depute" est de même nature que les amendements d'un⋅e élu⋅e.
+  4. Amendements agrégés (amendements_agreges) : les amendements **distincts**
+     portés par au moins un membre — un amendement cosigné par trois d'entre eux
+     en est un (#643) —, leur ventilation par sort et par type de déposant, et
+     le taux d'adoption qui en découle. Les **signatures** apposées par les
+     membres sont une autre grandeur, tout aussi réelle : elles vivent sous
+     `signatures`, sous leur nom. Le total tous déposants confondus ne sert
+     jamais de comparateur direct, seul le sous-total "depute" est de même
+     nature que les amendements d'un⋅e élu⋅e (AGENTS.md §6).
   5. Mandats agrégés (mandats_agreges) : agrégation catégorielle sur mandats[]
      (commission, groupe_amitie, extra_parlementaire — voir
      MANDATS_AGREGES_CATEGORIES), par (categorie, label). Éligibilité par
@@ -835,56 +839,247 @@ _SORTS_IRRECEVABLES = frozenset({"irrecevable"})
 _SORTS_REJETES = frozenset({"rejete"})
 _SORTS_RETIRES_OU_TOMBES = frozenset({"retire", "tombe", "non_soutenu", "non soutenu"})
 
+#: Le compteur qu'incrémente un `sort` normalisé. Deux bandes de plus que les
+#: quatre historiques, et elles ne disent pas la même chose (#643) :
+#:
+#:   `nb_sort_non_renseigne`  le `sort` est **absent**. 44 243 des 132 960
+#:                            amendements distincts d'`AN:LFI`, soit 33,3 %
+#:                            (mesuré le 31/08/2026 sur `f50a9439`). Les taire
+#:                            publierait un tiers d'absences comme des zéros —
+#:                            AGENTS.md §2 règle 5 ;
+#:   `nb_sort_non_reconnu`    le `sort` est **présent** mais hors nomenclature.
+#:                            Structurellement à 0 : les 484 132 amendements de
+#:                            l'index ne portent que sept libellés, tous
+#:                            rangés ci-dessus. Compteur **sous surveillance**
+#:                            (AGENTS.md §3d) et non donnée : le jour où l'AN
+#:                            en ajoute un, le ranger sous « non renseigné »
+#:                            publierait une valeur présente comme une absence,
+#:                            l'erreur exactement symétrique.
+#:
+#: Avec elles, les six bandes somment à `nb_amendements` — un invariant
+#: vérifiable, et ce qui rend une barre empilée honnête.
+BANDE_SORT_ABSENT = "nb_sort_non_renseigne"
+BANDE_SORT_INCONNU = "nb_sort_non_reconnu"
+
+_BANDE_PAR_SORT: dict[str, str] = {
+    **{s: "nb_adoptes" for s in _SORTS_ADOPTES},
+    **{s: "nb_irrecevables" for s in _SORTS_IRRECEVABLES},
+    **{s: "nb_rejetes" for s in _SORTS_REJETES},
+    **{s: "nb_retires_ou_tombes" for s in _SORTS_RETIRES_OU_TOMBES},
+}
+
+#: Les six bandes, dans l'ordre publié.
+BANDES_DE_SORT: tuple[str, ...] = (
+    "nb_adoptes", "nb_rejetes", "nb_irrecevables", "nb_retires_ou_tombes",
+    BANDE_SORT_ABSENT, BANDE_SORT_INCONNU,
+)
+
+
+def _bande_de_sort(sort: Any) -> str:
+    """Le compteur qu'un `sort` d'amendement incrémente. Jamais aucun."""
+    norm = _normalize_sort_amendement(sort)
+    if not norm:
+        return BANDE_SORT_ABSENT
+    return _BANDE_PAR_SORT.get(norm, BANDE_SORT_INCONNU)
+
+
+def _seau_de_type_deposant(type_deposant: Any) -> str:
+    """Le seau de `par_type_deposant` d'un `type_deposant` collecté.
+
+    Un type absent ou hors nomenclature va dans `inconnu`, jamais sous
+    `depute` par défaut : ce serait ranger une donnée manquante dans le seul
+    seau qui sert de comparateur (AGENTS.md §6).
+    """
+    return type_deposant if type_deposant in AMENDEMENTS_TYPES_DEPOSANT else "inconnu"
+
+
+def _stats_amendements_vides() -> dict[str, Any]:
+    """`make_empty_amendements_stats()` plus les deux bandes de #643.
+
+    Composée depuis la fabrique du schéma plutôt que réécrite : les quatre
+    compteurs historiques n'ont qu'une définition. `taux_adoption` est remis en
+    dernier — il n'est pas un compteur mais leur quotient.
+    """
+    stats = make_empty_amendements_stats()
+    taux = stats.pop("taux_adoption")
+    stats[BANDE_SORT_ABSENT] = 0
+    stats[BANDE_SORT_INCONNU] = 0
+    stats["taux_adoption"] = taux
+    return stats
+
+
+#: Les couples (bande, seau) publiés, partagés. 24 au plus : les deux membres
+#: viennent d'ensembles fermés, seul le tuple serait neuf à chaque amendement.
+_COUPLES: dict[tuple[str, str], tuple[str, str]] = {}
+
+
+def _couple(bande: str, seau: str) -> tuple[str, str]:
+    couple = (bande, seau)
+    return _COUPLES.setdefault(couple, couple)
+
+
+class CumulAmendementsDistincts:
+    """Les amendements **distincts** d'une fiche, dédupliqués sur `amendement_id` (#643).
+
+    ## Pourquoi un état partagé, et pas un compteur de plus
+
+    `ContributionAmendements` est additive : agréger membre par membre puis
+    sommer rend les mêmes compteurs que parcourir la liste concaténée. La
+    déduplication ne l'est pas — deux membres qui cosignent le même amendement
+    doivent le compter **une** fois —, elle demande donc un état commun aux
+    membres d'une même fiche. Cet objet ne porte que ça.
+
+    C'est ce qui manquait à `_aggregate_amendements`, qui faisait
+    `nb_amendements += 1` par entrée de profil, donc une fois par signataire :
+    92,2 % des entrées du corpus sont des cosignatures, et `AN:LFI` publiait
+    « 2 600 765 amendements déposés » pour 76 députés (#643).
+
+    ## Ce qu'il retient d'un amendement, et pourquoi si peu
+
+    Une bande de sort et un seau de type de déposant, l'un et l'autre pris dans
+    un ensemble fermé : les deux chaînes sont partagées et le couple aussi,
+    seule l'entrée de dictionnaire est neuve. La plus grosse fiche mesurée
+    (`AN:LR`, 159 143 amendements distincts) tient dans ~25 Mo, quand ses
+    928 832 signatures — ou un ensemble d'identifiants **par membre** — en
+    coûteraient la mémoire que #635 vient tout juste de rendre.
+
+    ## Une entrée sans identifiant n'est pas dédoublonnable
+
+    Elle est comptée **telle quelle**, une fois par signataire, dans
+    `sans_identifiant` : la fusionner avec une autre demanderait une clé, et on
+    n'en invente pas (AGENTS.md §2 règle 5). Le compte est publié
+    (`nb_sans_identifiant`) et remonté en `meta.warnings` dès qu'il n'est pas
+    nul, faute de quoi `nb_amendements` mélangerait en silence des amendements
+    dédoublonnés et des signatures. Zéro cas sur les 7 fiches publiées au
+    31/08/2026 ; c'est en revanche la forme normale des amendements du
+    Parlement européen, que ParlTrack livre sans `uid` AN, et celle de toute
+    entrée d'avant #431 restée autoportante.
+    """
+
+    __slots__ = ("par_id", "sans_identifiant")
+
+    def __init__(self) -> None:
+        self.par_id: dict[str, tuple[str, str]] = {}
+        self.sans_identifiant: dict[tuple[str, str], int] = {}
+
+    def retenir(self, amendement_id: Optional[str], sort: Any, type_deposant: Any) -> None:
+        """Retient un amendement vu chez un membre.
+
+        Le dernier lu l'emporte sur la clé : deux copies d'un même amendement
+        portent les mêmes champs partagés depuis #431 (`sort` et
+        `type_deposant` vivent dans l'index, pas dans le profil). Le seul cas
+        où elles pourraient diverger est celui d'entrées d'avant #431 restées
+        autoportantes chez deux signataires — et il n'y a alors pas de clé pour
+        les rapprocher, donc pas d'écrasement possible.
+        """
+        couple = _couple(_bande_de_sort(sort), _seau_de_type_deposant(type_deposant))
+        if amendement_id is None:
+            self.sans_identifiant[couple] = self.sans_identifiant.get(couple, 0) + 1
+            return
+        self.par_id[amendement_id] = couple
+
+    def fusionner(self, autre: "CumulAmendementsDistincts") -> None:
+        """Absorbe un autre cumul. Idempotent sur les identifiants, additif sur
+        ce qui n'en a pas — les deux propriétés que la déduplication demande."""
+        self.par_id.update(autre.par_id)
+        for couple, n in autre.sans_identifiant.items():
+            self.sans_identifiant[couple] = self.sans_identifiant.get(couple, 0) + n
+
+    @property
+    def nb_sans_identifiant(self) -> int:
+        return sum(self.sans_identifiant.values())
+
+    def __len__(self) -> int:
+        return len(self.par_id) + self.nb_sans_identifiant
+
+    def __eq__(self, autre: object) -> bool:
+        if not isinstance(autre, CumulAmendementsDistincts):
+            return NotImplemented
+        return (self.par_id == autre.par_id
+                and self.sans_identifiant == autre.sans_identifiant)
+
+    def compter(self) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+        """`(total, par_type_deposant)` sur les amendements distincts.
+
+        `taux_adoption` n'est pas posé ici : c'est un quotient, et il n'a de
+        sens qu'une fois tous les cumuls fusionnés.
+        """
+        total = _stats_amendements_vides()
+        par_type = {t: _stats_amendements_vides() for t in AMENDEMENTS_TYPES_DEPOSANT}
+        occurrences: list[tuple[tuple[str, str], int]] = [
+            (couple, 1) for couple in self.par_id.values()
+        ]
+        occurrences += list(self.sans_identifiant.items())
+        for (bande, seau), n in occurrences:
+            for stats in (total, par_type[seau]):
+                stats["nb_amendements"] += n
+                stats[bande] += n
+        return total, par_type
+
 
 @dataclass(frozen=True)
 class ContributionAmendements:
     """Ce qu'un `amendements[]` de membre laisse derrière lui, relâché (#635).
 
-    Exactement ce que `_aggregate_amendements` en tire : des compteurs additifs.
+    Exactement ce que `_aggregate_amendements` en tire. Deux natures, et c'est
+    #643 qui les a séparées :
+
+    - des **compteurs de signatures**, additifs : agréger membre par membre
+      puis sommer donne les mêmes valeurs que parcourir la liste concaténée ;
+    - le **cumul des amendements distincts**, qui ne l'est pas — un amendement
+      cosigné par trois membres ne se compte qu'une fois. Il est porté par
+      référence, et le chargeur en partage **un seul** entre tous les membres
+      d'une fiche : c'est ce qui empêche la déduplication de racheter la
+      mémoire que #635 vient de rendre.
+
     Le cardinal est conservé pour que `len()` rende la même valeur que sur la
     liste elle-même, comme `nombre_d_entrees` accepte les deux formes dans
     l'audit de #628.
-
-    **Additif, donc exact** : agréger membre par membre puis sommer donne les
-    mêmes compteurs que parcourir la liste concaténée. `taux_adoption` n'est
-    calculé qu'après la somme, jamais par contribution.
     """
 
     nb: int
     total: dict[str, Any]
     par_type: dict[str, dict[str, Any]]
     non_resolus: int
+    distincts: CumulAmendementsDistincts
 
     def __len__(self) -> int:
         return self.nb
 
 
-#: Les compteurs que `ContributionAmendements` additionne. `taux_adoption` n'en
-#: est **pas** : c'est un quotient, il ne se somme pas.
-_COMPTEURS_AMENDEMENTS: tuple[str, ...] = (
-    "nb_amendements", "nb_adoptes", "nb_rejetes",
-    "nb_irrecevables", "nb_retires_ou_tombes",
-)
+#: Les compteurs de signatures que `ContributionAmendements` additionne.
+#: `taux_adoption` n'en est **pas** : c'est un quotient, il ne se somme pas —
+#: et depuis #643 il ne se calcule plus sur les signatures du tout.
+_COMPTEURS_AMENDEMENTS: tuple[str, ...] = ("nb_amendements", *BANDES_DE_SORT)
 
 
 def contribution_amendements(
-    amendements: Any, amendements_index: Optional[AmendementsIndex] = None,
+    amendements: Any,
+    amendements_index: Optional[AmendementsIndex] = None,
+    distincts: Optional[CumulAmendementsDistincts] = None,
 ) -> ContributionAmendements:
-    """Réduit l'`amendements[]` d'UN membre aux compteurs que l'agrégat en tire.
+    """Réduit l'`amendements[]` d'UN membre à ce que l'agrégat en tire.
 
     C'est le seul endroit qui lit une entrée d'amendement, et il ne la lit
     qu'une fois : appelé au chargement (#635), il permet de relâcher les
     entrées au lieu de les garder pour les 76 membres du plus gros groupe
-    publié — 253,5 Mo sur disque, 0,9 à 1,1 Gio de mémoire selon
-    l'exécution.
+    publié — 253,5 Mo sur disque, 0,9 à 1,1 Gio de mémoire selon l'exécution.
+
+    `distincts` est le cumul **de la fiche** (#643). En passer un partagé entre
+    tous ses membres est ce qui garde la déduplication au prix des amendements
+    distincts (159 143 au plus haut) plutôt qu'à celui des signatures
+    (2 647 601). Ne rien passer reste **correct** — `_aggregate_amendements`
+    fusionne les cumuls qu'il trouve —, seulement plus coûteux : c'est le
+    chemin des tests et d'un appelant qui charge un profil isolé.
 
     Repli de lecture transitoire : une entrée d'avant #431 porte encore ses
     champs, une entrée non résolue les porte sous `amendement_non_resolu`. Les
     deux sont lues sur place — sans quoi tout l'agrégat tomberait à zéro entre
     le déploiement du code et la régénération des données.
     """
-    total = make_empty_amendements_stats()
-    par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    total = _stats_amendements_vides()
+    par_type = {t: _stats_amendements_vides() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    cumul = distincts if distincts is not None else CumulAmendementsDistincts()
     non_resolus = 0
 
     for entree, amendement in joindre_amendements(amendements, amendements_index):
@@ -896,22 +1091,17 @@ def contribution_amendements(
         if not isinstance(amendement, dict):
             non_resolus += 1
             continue
-        sort_norm = _normalize_sort_amendement(amendement.get("sort"))
+        sort = amendement.get("sort")
         type_deposant = amendement.get("type_deposant")
-        bucket = par_type[type_deposant] if type_deposant in par_type else par_type["inconnu"]
+        cumul.retenir(entree.get("amendement_id"), sort, type_deposant)
+        bande = _bande_de_sort(sort)
+        bucket = par_type[_seau_de_type_deposant(type_deposant)]
         for stats in (total, bucket):
             stats["nb_amendements"] += 1
-            if sort_norm in _SORTS_ADOPTES:
-                stats["nb_adoptes"] += 1
-            elif sort_norm in _SORTS_IRRECEVABLES:
-                stats["nb_irrecevables"] += 1
-            elif sort_norm in _SORTS_RETIRES_OU_TOMBES:
-                stats["nb_retires_ou_tombes"] += 1
-            elif sort_norm in _SORTS_REJETES:
-                stats["nb_rejetes"] += 1
+            stats[bande] += 1
 
     nb = len(amendements) if isinstance(amendements, list) else 0
-    return ContributionAmendements(nb, total, par_type, non_resolus)
+    return ContributionAmendements(nb, total, par_type, non_resolus, cumul)
 
 
 def _aggregate_amendements(
@@ -920,13 +1110,37 @@ def _aggregate_amendements(
 ) -> tuple[dict[str, Any], int]:
     """Agrège les amendements de tous les profils membres pour servir de comparateur.
 
+    ## Deux grandeurs, deux noms (#643)
+
+    `amendements_agreges` compte des **amendements distincts** : un amendement
+    cosigné par trois membres du groupe en est **un**. Il en comptait un par
+    signataire, ce qui publiait « 2 600 765 amendements déposés » pour les 76
+    députés d'`AN:LFI` — et le facteur allait de × 5,0 à × 31,7 selon la
+    fiche, si bien que les chiffres publiés n'étaient même pas comparables
+    entre eux.
+
+    Les signatures ne sont pas perdues pour autant : elles décrivent une
+    activité réelle du groupe, et vivent sous `signatures`, à côté. Ce qui
+    était faux, c'était de les nommer « amendements ».
+
+    `taux_adoption` se calcule sur les **distincts**, jamais sur les
+    signatures : un taux dont le numérateur et le dénominateur sont gonflés par
+    des nombres de cosignataires différents ne décrit rien, et il bougeait dans
+    les deux sens (`AN:SOC` 7,24 % → 14,54 %, `AN:LFI` 5,01 % → 2,99 %,
+    mesuré le 31/08/2026 sur le seau `depute`). C'est ce que la §2 règle 7
+    protège.
+
+    ## Le total ne compare rien
+
     Le total (tous types de déposants confondus) sert de vue d'ensemble mais ne
     doit PAS être utilisé comme comparateur direct du taux d'adoption d'un⋅e
     élu⋅e : les amendements gouvernementaux ou du rapporteur sont adoptés quasi
     systématiquement par construction (ils portent le texte), ce qui gonflerait
     artificiellement la référence. Comparer un⋅e élu⋅e à
     ``par_type_deposant["depute"]``, seule catégorie de même nature que les
-    amendements qu'un⋅e député⋅e dépose en son nom propre.
+    amendements qu'un⋅e député⋅e dépose en son nom propre (AGENTS.md §6).
+
+    ## Comment la donnée arrive ici
 
     Depuis #431, `sort` et `type_deposant` vivent dans l'index partagé et non
     dans le profil : l'agrégation est une **jointure**, faite entrée par entrée
@@ -938,7 +1152,8 @@ def _aggregate_amendements(
     profil chargé peut porter directement la sienne (`ContributionAmendements`)
     au lieu de ses entrées. Les deux formes sont acceptées : les tests
     nourrissent la mesure avec de vraies listes, le chargeur avec leur
-    réduction, et le résultat est le même — les compteurs sont additifs.
+    réduction. Les compteurs de signatures sont additifs, donc identiques ; les
+    distincts sont fusionnés, et un cumul partagé n'est absorbé qu'une fois.
 
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
@@ -953,8 +1168,20 @@ def _aggregate_amendements(
         décomptes, et ce nombre est remonté en `meta.warnings` — une exclusion
         muette transformerait un dénominateur en donnée fausse (AGENTS.md §2.7).
     """
-    total = make_empty_amendements_stats()
-    par_type = {t: make_empty_amendements_stats() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    signatures = _stats_amendements_vides()
+    signatures_par_type = {t: _stats_amendements_vides() for t in AMENDEMENTS_TYPES_DEPOSANT}
+    cumul = CumulAmendementsDistincts()
+    # Cumuls déjà absorbés : le chargeur en partage **un** entre tous les
+    # membres d'une fiche, et le fusionner une fois par membre serait sans
+    # effet mais trompeur à lire.
+    #
+    # Le dictionnaire **retient l'objet**, pas seulement son `id()` : un profil
+    # qui porte encore ses entrées voit sa contribution calculée ici même, et
+    # relâchée à l'itération suivante — CPython réattribue alors l'adresse, et
+    # un `set` d'entiers déclarerait « déjà absorbé » un cumul jamais vu. Mesuré
+    # : trois membres portant chacun un amendement sans identifiant en
+    # publiaient deux.
+    cumuls_absorbes: dict[int, CumulAmendementsDistincts] = {}
     non_resolus = 0
 
     for profil in profils:
@@ -965,17 +1192,32 @@ def _aggregate_amendements(
         )
         non_resolus += contribution.non_resolus
         for compteur in _COMPTEURS_AMENDEMENTS:
-            total[compteur] += contribution.total[compteur]
-            for type_deposant, stats in par_type.items():
+            signatures[compteur] += contribution.total[compteur]
+            for type_deposant, stats in signatures_par_type.items():
                 stats[compteur] += contribution.par_type[type_deposant][compteur]
+        if id(contribution.distincts) not in cumuls_absorbes:
+            cumuls_absorbes[id(contribution.distincts)] = contribution.distincts
+            cumul.fusionner(contribution.distincts)
 
+    total, par_type = cumul.compter()
     for stats in (total, *par_type.values()):
         stats["taux_adoption"] = (
             round(stats["nb_adoptes"] / stats["nb_amendements"], 4)
             if stats["nb_amendements"] else None
         )
 
+    total["nb_sans_identifiant"] = cumul.nb_sans_identifiant
     total["par_type_deposant"] = par_type
+    # Les signatures ne portent que leur compte. Un `nb_adoptes` de signatures
+    # inviterait exactement le taux que #643 retire : le sort est une propriété
+    # de l'amendement, pas de la signature.
+    total["signatures"] = {
+        "nb_signatures": signatures["nb_amendements"],
+        "par_type_deposant": {
+            type_deposant: {"nb_signatures": stats["nb_amendements"]}
+            for type_deposant, stats in signatures_par_type.items()
+        },
+    }
     return total, non_resolus
 
 
@@ -1131,6 +1373,7 @@ CLES_LUES_PAR_ENTREE: dict[str, tuple[str, ...]] = {
 def projeter_profil_membre(
     document: dict[str, Any],
     amendements_index: Optional[AmendementsIndex] = None,
+    distincts: Optional[CumulAmendementsDistincts] = None,
 ) -> dict[str, Any]:
     """Le profil d'un membre réduit à ce que la fiche de groupe en lit.
 
@@ -1144,6 +1387,13 @@ def projeter_profil_membre(
     `build_groupe_profile` : c'est lui qui résout `sort` et `type_deposant`.
     Ne rien passer des deux côtés est également cohérent ; passer l'un et pas
     l'autre ne l'est pas.
+
+    `distincts` (#643) est le cumul **de la fiche**, partagé par tous ses
+    membres : c'est lui qui rend la déduplication possible une fois les entrées
+    relâchées, et le partager la fait tenir dans les amendements distincts
+    plutôt que dans les signatures. L'omettre reste correct — chaque membre
+    reçoit alors le sien et `_aggregate_amendements` les fusionne —, mais
+    ramène le coût mémoire à ce que #635 venait d'écarter.
     """
     projection: dict[str, Any] = {}
     for bloc in BLOCS_LUS_MEMBRE:
@@ -1157,7 +1407,9 @@ def projeter_profil_membre(
                 for e in valeur
             ]
         elif bloc == "amendements":
-            projection[bloc] = contribution_amendements(valeur, amendements_index)
+            projection[bloc] = contribution_amendements(
+                valeur, amendements_index, distincts
+            )
         else:
             projection[bloc] = valeur
     return projection
@@ -1167,6 +1419,7 @@ def load_profil_from_file(
     path: Path,
     amendements_index: Optional[AmendementsIndex] = None,
     projeter: bool = True,
+    distincts: Optional[CumulAmendementsDistincts] = None,
 ) -> dict[str, Any]:
     """Charge un profil depuis un fichier JSON et le normalise en pivot v1 si nécessaire.
 
@@ -1185,6 +1438,9 @@ def load_profil_from_file(
         path: chemin vers le fichier JSON.
         amendements_index: index partagé (#431), voir `projeter_profil_membre`.
         projeter: réduire le document à ce que la fiche de groupe en lit.
+        distincts: cumul des amendements distincts de la fiche (#643), voir
+            `projeter_profil_membre`. Un seul pour tous les membres d'une même
+            fiche, sans quoi rien ne dédoublonne entre eux à peu de frais.
 
     Returns:
         Profil pivot v1 (dict), projeté sauf demande contraire.
@@ -1213,7 +1469,10 @@ def load_profil_from_file(
             "ni format brut de collecte (slug)."
         )
 
-    return projeter_profil_membre(profil, amendements_index) if projeter else profil
+    return (
+        projeter_profil_membre(profil, amendements_index, distincts)
+        if projeter else profil
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1339,6 +1598,18 @@ def build_groupe_profile(
             f"amendements_agreges : {n_amendements_non_resolus} amendement(s) "
             "introuvable(s) dans l'index partagé et sans enregistrement de repli, "
             "écarté(s) (#431). Le dénominateur publié ne les compte pas."
+        )
+    # Sans identifiant, pas de déduplication (#643) : ces entrées sont comptées
+    # une fois par signataire au milieu d'amendements qui, eux, ne le sont
+    # qu'une. Le taire ferait de `nb_amendements` un mélange des deux natures,
+    # exactement le défaut que ce lot corrige (AGENTS.md §2.5).
+    n_sans_identifiant = amendements_agreges.get("nb_sans_identifiant") or 0
+    if n_sans_identifiant:
+        warnings.append(
+            f"amendements_agreges : {n_sans_identifiant} amendement(s) sans "
+            "`amendement_id`, donc non dédoublonnables entre membres — comptés une "
+            "fois par signataire (#643). Aucune clé ne s'invente (AGENTS.md §2 "
+            "règle 5) ; `nb_amendements` les compte tels quels."
         )
 
     # --- Assemblage ---
@@ -1583,6 +1854,11 @@ def generate_groupe_profile_from_roster(
                     file=sys.stderr,
                 )
 
+    # Un seul cumul pour toute la fiche (#643) : c'est lui qui dédoublonne les
+    # amendements entre membres, et le partager le fait tenir dans les
+    # amendements distincts (159 143 au plus haut) plutôt que dans leurs
+    # signatures (2 647 601).
+    distincts = CumulAmendementsDistincts()
     profils: list[dict[str, Any]] = []
     missing_slugs: list[str] = []
     for member in roster:
@@ -1592,7 +1868,9 @@ def generate_groupe_profile_from_roster(
             missing_slugs.append(slug or member.get("nom") or "?")
             continue
         try:
-            profils.append(load_profil_from_file(pivot_path, amendements_index))
+            profils.append(load_profil_from_file(
+                pivot_path, amendements_index, distincts=distincts
+            ))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
             missing_slugs.append(slug)
@@ -1602,7 +1880,9 @@ def generate_groupe_profile_from_roster(
         if not pivot_path.exists():
             continue
         try:
-            profils.append(load_profil_from_file(pivot_path, amendements_index))
+            profils.append(load_profil_from_file(
+                pivot_path, amendements_index, distincts=distincts
+            ))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
 
@@ -1775,12 +2055,15 @@ def main(argv: Optional[list[str]] = None) -> int:
     else:
         print(f"→ Index des amendements : {len(amendements_index)} amendement(s).", file=sys.stderr)
 
+    distincts = CumulAmendementsDistincts()
     profils: list[dict[str, Any]] = []
     for path_str in args.profils:
         path = Path(path_str)
         print(f"→ Chargement : {path}", file=sys.stderr)
         try:
-            profils.append(load_profil_from_file(path, amendements_index))
+            profils.append(load_profil_from_file(
+                path, amendements_index, distincts=distincts
+            ))
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
             return 1

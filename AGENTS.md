@@ -453,6 +453,9 @@ Edge-case history: the amendments and votes entries of `docs/technical_decisions
 | `textes_portes[]` below threshold | Via explicit user toggle — not published by default |
 | `amendements[]` raw counts + `par_type_deposant` | Public |
 | Adoption rate across all submitter types | **Never** (misleading) |
+| `amendements_agreges` on a group sheet | Public — **distinct amendments**, deduplicated on `amendement_id`. A co-signed amendment is **one** |
+| Signatures laid by a group's members | Public, under `amendements_agreges.signatures`, never under the word "amendments" |
+| Adoption rate over signatures | **Never** — numerator and denominator are inflated by different co-signatory counts, so the bias has no known direction (§2 rule 7) |
 | `votes[]` bill vote (`vote_texte`, latest reading) | Public |
 | 49.3 / no-confidence motion | Public, labeled as procedural fact |
 | Individual attendance/presence | **Never public** (rule 3) |

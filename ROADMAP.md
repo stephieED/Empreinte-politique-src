@@ -93,6 +93,25 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **`amendements_agreges` est un dénominateur publié qu'aucun contrôle pré-commit
+  ne regarde** (relevé pendant #643, 31/08/2026). `audit_diff_profils.py` ne compare
+  que les champs déclarés dans ses `Collection`, et `COLLECTION_GROUPES` ne nomme
+  `amendements_agreges` ni dans ses listes ni dans ses scalaires : la correction de
+  #643 fait tomber `AN:LFI` de 2 600 765 à 132 960 sans qu'aucune ligne du contrôle
+  s'en aperçoive — et une régression future passerait tout aussi silencieusement.
+  C'est la faille que #470 avait payée sur `tags_thematiques`, sur un autre champ.
+  `allow_declared_losses` n'a donc rien à déclarer pour #643, contrairement à ce que
+  son issue annonçait.
+- **`membres_eligibles` sous-estime massivement l'effectif éligible tant que les 5
+  fiches AN n'ont pas été régénérées depuis #647** (mesuré le 31/08/2026 en rejouant
+  `_periodes_mandats_assemblee` sur l'archive AMO30 en cache) : `AN:SOC` publie 4,8
+  membres éligibles en moyenne sur 3 843 scrutins pour 31 membres, contre **30,9**
+  après ; `AN:RN` 10,6 contre **88,6** (× 8,4). `taux_participation`,
+  `taux_coherence` et `quorum_atteint` en dépendent tous. Rien à corriger dans
+  `_compute_cohesion_votes`, qui lisait fidèlement des mandats incomplets — le
+  tableau des cinq fiches est dans
+  `docs/decisions/amendements-distincts-et-signatures-643.md`.
+
 - **Chaque shard `extract-an` réindexe les archives Syceron 15 et 16 pour rien**
   (dérivé de #546, mesuré sur le run `33110395663` du 27/08/2026) : **113 à 219 s par
   shard**, le même travail refait par les 7 shards porteurs, soit 40 à 60 % de
