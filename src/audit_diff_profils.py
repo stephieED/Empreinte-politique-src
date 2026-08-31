@@ -81,6 +81,36 @@ D'où l'arbitrage, explicite : **faux négatif assumé sur le changement de
 valeur, faux positif refusé**. Un changement suspect (Mélenchon passant de
 `AN` à `Senat`) est relevé dans le rapport, à charge de relecture humaine.
 
+## Pourquoi une chute d'agrégat ne bloque pas non plus (#649)
+
+Le run `33351244845` du 31/08/2026 a divisé par 5 à 32 le compteur principal de
+cinq fiches de groupe (`AN:RN` 1 175 535 → 37 093, `AN:LFI` 2 600 765 →
+131 202) et le commit `3c8e1f0c` est passé sans qu'aucun contrôle ne bloque ni
+ne signale. La question posée était : faut-il une **quatrième** famille de
+constats bloquants, sur l'ordre de grandeur d'un compteur ?
+
+Non, et la raison est une mesure, pas une prudence. Les deux seules chutes
+d'ordre de grandeur du corpus se rangent dans le mauvais sens :
+
+  - `a125e9e` — **défaut réel** (#460 / #470) : `AN:LFI-16` × 0,00,
+    `AN:SOC-16` × 0,52, `AN:LR-16` × 0,64 ;
+  - `3c8e1f0c` — **correction juste** (#643, un amendement cosigné n'est pas N
+    amendements) : les cinq fiches entre × 0,03 et × 0,21.
+
+La chute légitime est **plus forte que la chute défectueuse sur chacune des
+fiches**. Aucun seuil de ratio ne les sépare : réglé pour attraper `a125e9e`
+(× 0,64) il aurait bloqué `3c8e1f0c`, c'est-à-dire le run qui corrigeait le
+défaut, et il aurait fallu cocher `allow_declared_losses` — une tolérance de
+corpus, qui désarme du même coup les contrôles précis par profil. C'est
+l'échange que ce fichier refuse déjà pour les index partagés.
+
+Ce qui change, c'est le **silence** : ces compteurs sont désormais des
+scalaires surveillés, donc une chute de × 20 apparaît comme un changement de
+valeur dans le rapport, à charge de relecture humaine — et leur disparition ou
+leur passage à `null`, lui, bloque. Un compteur à **zéro** n'est pas une
+absence de compteur : `_resume_scalaire` rend `0` tel quel et ne teste que
+`is None`, comme il le fait pour `False`.
+
 ## Dimensionnement
 
 Ce script tourne AVANT le commit : s'il meurt, rien n'est publié. Il s'est
@@ -218,15 +248,56 @@ COLLECTION_PROFILS = Collection(
 # `meta.couverture_roster.roster_total` en revanche est surveillé : c'est le
 # dénominateur réel du groupe, issu d'un fetch réseau, et le seul champ dont la
 # disparition rendrait un ratio publié incalculable sans que rien ne le dise.
+#
+# ## `amendements_agreges` (#649)
+#
+# Le raisonnement ci-dessus ne disait rien des AGRÉGATS — les chiffres que la
+# fiche affiche en gros. Ils n'avaient pas été écartés : ils n'avaient pas été
+# vus. Ce qui est surveillé ici, et ce qui ne l'est pas, est mesuré sur les 23
+# transitions committées de `pivot_data/groupes` entre le 17/08 et le
+# 31/08/2026 :
+#
+#   - `amendements_agreges` (présence du bloc), `nb_amendements`,
+#     `taux_adoption` et `par_type_deposant.depute.nb_amendements` sont des
+#     **scalaires surveillés** : seule la régression renseigné → `null` bloque.
+#     La mesure qui justifie l'inclusion est le run `a125e9e` — celui de #460 /
+#     #470 : `AN:LFI-16` y perd ses 11 561 amendements (→ 0) et son
+#     `taux_adoption` passe de `0.0476` à `null`, pendant que `membres` (3),
+#     `cohesion_votes` (1 996) et `mandats_agreges` (50) restent identiques au
+#     bit près. Aucune liste stable ne bouge : le contrôle se taisait sur cette
+#     fiche. La régression vers `null` de `taux_adoption`, elle, tombe
+#     exactement dans la catégorie bloquante qui existe déjà.
+#   - `par_type_deposant` est une **liste stable** : `len()` y rend le nombre de
+#     types de déposant publiés. L'ensemble est fermé
+#     (`schema_groupe.AMENDEMENTS_TYPES_DEPOSANT`, 4 valeurs) et
+#     `validate_profil_groupe` ne vérifie que son type, jamais ses clés — une
+#     ventilation qui perd une catégorie ne serait vue par rien d'autre.
+#   - `nb_adoptes`, `nb_rejetes`, `nb_irrecevables`, `nb_retires_ou_tombes`,
+#     `nb_sort_non_renseigne`, `nb_sort_non_reconnu`, `nb_sans_identifiant`
+#     sont **écartés** : ils sortent tous de la même fabrique
+#     (`schema_groupe.make_empty_amendements_stats`) que `nb_amendements`, donc
+#     ils ne peuvent pas disparaître seuls. Les surveiller n'ajouterait aucun
+#     événement, seulement des lignes de rapport.
+#   - `signatures` (#643) est **écarté** : ce bloc n'a qu'un seul état commité
+#     au 31/08/2026, celui de son apparition. Surveiller un champ dont la seule
+#     transition observée est sa propre naissance serait une intuition, pas une
+#     mesure.
+#   - `effectif.min_historique` / `max_historique` restent écartés pour la
+#     raison déjà donnée sur `effectif.actuel`.
 COLLECTION_GROUPES = Collection(
     nom="groupes",
     sous_chemin="groupes",
     listes_stables=("membres", "cohesion_votes", "mandats_agreges",
-                    "tags_thematiques_agreges", "historique_noms"),
+                    "tags_thematiques_agreges", "historique_noms",
+                    "amendements_agreges.par_type_deposant"),
     listes_signalees=("sources",),
     scalaires=("groupe_id", "groupe_sigle", "groupe_nom", "chambre",
                "legislature", "periode.debut",
-               "meta.couverture_roster.roster_total"),
+               "meta.couverture_roster.roster_total",
+               "amendements_agreges",
+               "amendements_agreges.nb_amendements",
+               "amendements_agreges.taux_adoption",
+               "amendements_agreges.par_type_deposant.depute.nb_amendements"),
 )
 
 COLLECTION_PARTIS = Collection(
@@ -240,12 +311,43 @@ COLLECTION_PARTIS = Collection(
 # `premier_ministre` est un bloc nullable : sa perte a été observée dans
 # l'autre sens (null → renseigné, run `d96799c`), ce qui prouve qu'il peut
 # aussi repartir.
+#
+# ## `comptages` (#649)
+#
+# Même angle mort que sur les groupes, et une porte laissée ouverte en amont :
+# `comptages` figure bien dans `REQUIRED_TOP_LEVEL_KEYS`, mais
+# `validate_profil_gouvernement` accepte `comptages: null` sans un mot — la clé
+# est là, le bloc est vide, et les neuf compteurs publiés ont disparu. C'est
+# `comptages` **présent mais nul** qui est surveillé ici, avec
+# `comptages.par_statut` pour la même raison d'un cran plus bas.
+#
+# `adopte_49_3` et `rejete_49_3` sont surveillés nommément : le 49.3 est le
+# fait procédural que la ligne éditoriale publie (AGENTS.md §2 règle 4, §6), et
+# `BORNE` en porte 6. Un bloc disparu y publierait « aucun 49.3 » là où la
+# mesure disait 6, ce qu'interdit §2 règle 5.
+#
+# Les **sept autres statuts** sont écartés, et leur VALEUR aussi, pour deux
+# raisons mesurées sur les 27 transitions committées de
+# `pivot_data/gouvernements` (14/08 → 28/08/2026) :
+#
+#   - aucune clé de `par_statut` n'y a jamais disparu, et elle ne le pourrait
+#     pas en silence : `validate_profil_gouvernement` compare les clés à
+#     `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` et fait échouer la porte de qualité
+#     sur une clé manquante. Un second verrou sur le même événement n'ajoute
+#     rien — c'est l'argument qui écarte déjà `chambres` côté profils ;
+#   - une baisse par statut est la contrepartie NORMALE d'une requalification :
+#     le run `720110d2` a déplacé 27 textes de `BORNE` vers `adopte_cmp` et 19
+#     vers `promulgue` en une passe. La perte réelle serait que `textes`
+#     rétrécisse, et `textes` est déjà une liste stable bloquante.
 COLLECTION_GOUVERNEMENTS = Collection(
     nom="gouvernements",
     sous_chemin="gouvernements",
     listes_stables=("membres", "textes"),
     listes_signalees=("sources",),
-    scalaires=("gouvernement_id", "nom", "premier_ministre", "periode.debut"),
+    scalaires=("gouvernement_id", "nom", "premier_ministre", "periode.debut",
+               "comptages", "comptages.par_statut",
+               "comptages.par_statut.adopte_49_3",
+               "comptages.par_statut.rejete_49_3"),
 )
 
 # --- Index partagés (#431, #432) --------------------------------------------
@@ -348,6 +450,11 @@ def relever(doc: Any, collection: Collection) -> dict[str, Any]:
     `len()` et non `len(list)` : les index partagés indexent leurs entrées dans
     un **dict** (`amendements` par `amendement_id`), les profils dans une
     liste. Le nombre d'entrées distinctes est `len()` des deux côtés.
+
+    Un champ de liste peut être un **chemin pointé**
+    (`amendements_agreges.par_type_deposant`, #649), comme un scalaire l'est
+    depuis #470 : un nom simple est un chemin d'un seul segment, et une route
+    qui casse rend `None`, donc 0 — exactement ce que rendait `doc.get()`.
     """
     if not isinstance(doc, dict):
         raise ValueError("document JSON qui n'est pas un objet")
@@ -375,7 +482,7 @@ def relever(doc: Any, collection: Collection) -> dict[str, Any]:
         if champ == CLE_PARTITIONNEE and isinstance(total_partitionne, int):
             listes[champ] = total_partitionne
             continue
-        valeur = doc.get(champ)
+        valeur = _chemin_pointe(doc, champ)
         listes[champ] = len(valeur) if isinstance(valeur, (list, dict)) else 0
     scalaires = {
         chemin: _resume_scalaire(_chemin_pointe(doc, chemin))
@@ -759,7 +866,14 @@ def generate_markdown_report(rapport: dict[str, Any], ref: str) -> str:
         "celui-ci — une invariance dans un état donné n'est pas une variation "
         "dans le temps, et sa tolérance est cloisonnée de celle-ci ;",
         "- la **valeur** des entrées d'une liste : seule leur cardinalité est "
-        "comparée.",
+        "comparée. `cohesion_votes[].membres_eligibles` en relève — il a bougé "
+        "de 4,8 à 30,9 en moyenne sur `AN:SOC` au run `3c8e1f0c` sans qu'aucun "
+        "compteur de fiche ne le montre (#649) ;",
+        "- l'**ordre de grandeur** d'un compteur d'agrégat : une chute y est "
+        "relevée comme un changement de valeur, jamais bloquée — aucun seuil "
+        "de ratio ne sépare la chute défectueuse de `a125e9e` (× 0,52 à × 0,00) "
+        "de la chute juste de `3c8e1f0c` (× 0,21 à × 0,03), la seconde étant "
+        "la plus forte (#649).",
         "",
     ]
     return "\n".join(lignes)

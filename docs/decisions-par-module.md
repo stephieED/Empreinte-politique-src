@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 177 décisions
+gouverne sans avoir à fouiller les 178 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -51,6 +51,7 @@ Ce que ce fichier existe pour rendre visible. `tests/test_decisions_par_module.p
 | `src/json_io.py` | 1 |
 | `src/licences.py` | 1 |
 | `src/purge_mandats_dupliques.py` | 1 |
+| `src/schema_groupe.py` | 1 |
 | `src/scrutins_legislature.py` | 1 |
 
 ---
@@ -86,10 +87,11 @@ Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte
 
 ## `src/audit_diff_profils.py`
 
-2 décision(s) le gouvernent ; le module en cite 2.
+3 décision(s) le gouvernent ; le module en cite 2.
 
 | Décision | Nomme |
 | --- | --- |
+| [Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)](decisions/agregats-publies-controle-perte-649.md) | `_resume_scalaire` |
 | [Un amendement cosigné n'est pas N amendements : deux grandeurs, deux noms (#643) (2026-08-31)](decisions/amendements-distincts-et-signatures-643.md) | `COLLECTION_GROUPES`, `Collection` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `COLLECTION_PROFILS` |
 
@@ -698,10 +700,11 @@ Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte
 
 ## `src/schema_gouvernement.py`
 
-8 décision(s) le gouvernent ; le module en cite 1.
+9 décision(s) le gouvernent ; le module en cite 1.
 
 | Décision | Nomme |
 | --- | --- |
+| [Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)](decisions/agregats-publies-controle-perte-649.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`, `validate_profil_gouvernement` |
 | [`gouvernement_profile.py` : rattachement des textes par `date_depot`, exclusion silencieuse des dossiers non classifiables (#211) (2026-08-14)](decisions/gouvernement-profile-rattachement.md) | `KNOWN_CHAMBRES_DEPOT_TEXTE`, `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL` |
 | [`gouvernement_textes` : 3 `fam_code` manquants excluaient 42 % des textes ; `adopte_cmp` ajouté à la nomenclature (#397) (2026-08-18)](decisions/gouvernement-textes-fam-codes-manquants.md) | `KNOWN_STATUTS_TEXTE_GOUVERNEMENTAL`, `make_empty_comptages_statuts` |
 | [Profils de gouvernement : le lien ministre → texte (#435) (2026-08-18)](decisions/gouvernement-textes-initiateurs.md) | `REQUIRED_TEXTE_KEYS`, `validate_profil_gouvernement` |
@@ -714,6 +717,12 @@ Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte
 Le mentionnent sans le gouverner : [`deduplication-entrees-membres`](decisions/deduplication-entrees-membres.md), [`gouvernement-doc-cloture`](decisions/gouvernement-doc-cloture.md), [`gouvernement-premier-ministre-portefeuille`](decisions/gouvernement-premier-ministre-portefeuille.md), [`hors-perimetre`](decisions/hors-perimetre.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`web-v3-ui`](decisions/web-v3-ui.md).
 
 ## `src/schema_groupe.py`
+
+1 décision(s) le gouvernent ; le module en cite 0.
+
+| Décision | Nomme |
+| --- | --- |
+| [Les agrégats publiés entrent dans le contrôle de perte, et l'ordre de grandeur reste hors contrat (#649) (2026-08-31)](decisions/agregats-publies-controle-perte-649.md) | `make_empty_amendements_stats` |
 
 Le mentionnent sans le gouverner : [`audit-plages-temporelles`](decisions/audit-plages-temporelles.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`plage-dates-groupes`](decisions/plage-dates-groupes.md).
 
