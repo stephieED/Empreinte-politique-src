@@ -1025,17 +1025,70 @@ def _pivot_mandat_key(m: dict[str, Any]) -> Key:
     return (m.get("label"), m.get("categorie"), m.get("fonction"), m.get("debut"))
 
 
-def _pivot_texte_key(t: dict[str, Any]) -> Key:
-    """Identité d'un dossier législatif porté, indépendante de `role`.
+def _repli_texte_key(t: dict[str, Any]) -> Key:
+    """Le repli d'identité d'un texte porté : titre + date_min + législature.
 
-    `role`/`type_rapport`/`stade_procedural` ne sont aujourd'hui jamais
-    renseignés par la source de collecte (voir normalize_profil.py) : les
-    inclure dans la clé ferait fusionner en double une même entrée dès qu'une
-    régénération produit une valeur différente (ex. données historiques
-    erronées conservées indéfiniment). L'identité du dossier repose donc sur
-    son URL source (stable) ou, à défaut, sur titre+date_min+législature.
+    Extrait de `_pivot_texte_key` pour que la reprise `clean_stale_textes_portes`
+    interroge **exactement** la branche sur laquelle les entrées héritées sont
+    keyées — une reprise qui recalcule le repli de son côté dérive de la clé
+    qu'elle est censée réconcilier.
+
+    `date_max` en est volontairement absent : c'est un agrégat qui avance au fil
+    de la procédure, et l'inclure ferait apparaître le même dossier comme neuf à
+    chaque étape franchie.
     """
-    return t.get("source_url") or (t.get("titre"), t.get("date_min"), t.get("legislature"))
+    return ("repli", t.get("titre"), t.get("date_min"), t.get("legislature"))
+
+
+def _pivot_texte_key(t: dict[str, Any]) -> Key:
+    """Identité d'un dossier législatif porté : son `dossier_id` AN (#668).
+
+    `role`/`type_rapport`/`stade_procedural` sont hors de la clé : les inclure
+    ferait fusionner en double une même entrée dès qu'une régénération produit
+    une valeur différente (ex. données historiques erronées conservées
+    indéfiniment).
+
+    **`source_url` en est sorti, et c'est la correction de #668.** La clé était
+    `source_url or (titre, date_min, legislature)`. Le rang 2 de #639 a réparé
+    `_normalize_texte_porte`, qui publiait `source_url: null` sur 472 / 472
+    entrées ; au run suivant, les entrées déjà publiées étaient keyées sur le
+    **repli** et leurs jumelles renormalisées sur **`source_url`**. Deux clés
+    incomparables pour un même dossier : `merge_dossier_records` a conservé les
+    deux, et le corpus a publié 940 entrées pour 472 dossiers réels — 468
+    doublons sur 22 profils, en ligne. C'est le mode de défaillance que #540
+    décrit déjà pour les interventions, à ceci près qu'ici la clé n'est pas
+    *collante* mais **volatile** : ce n'est pas la donnée qui a changé, c'est la
+    branche du `or` que l'objet emprunte.
+
+    **Une URL n'est de toute façon pas un identifiant** (#540). `dossier_id`
+    (`DLR5L15N37607`, publié depuis #639) est l'identifiant AN du dossier, le
+    même que `dossiers_legislatifs[].id` au brut — les deux étages disent donc
+    la même chose de ce qu'est un dossier, la seule forme qui garantisse qu'une
+    entrée collectée arrive publiée une fois et une seule. Mesuré sur
+    `origin/main` le 31/08/2026 : 472 / 472 entrées issues du brut le portent,
+    et `source_url` ne discrimine rien de plus (0 repli portant deux
+    `dossier_id` distincts sur les 940 entrées publiées).
+
+    **Ce que deviennent les entrées sans `dossier_id`** : elles gardent le
+    repli. Le `or` — donc le risque de bascule — subsiste, parce qu'aucune clé
+    ne peut lire un identifiant qu'une entrée ne porte pas ; le supprimer
+    reviendrait à réduire toutes ces entrées à une seule clé `None`, la perte
+    silencieuse que `_pivot_vote_key` décrit (#432). Ce qui neutralise la
+    bascule n'est pas la clé, c'est la **reprise** : voir
+    `clean_stale_textes_portes`, qui réconcilie une entrée sans identifiant avec
+    sa jumelle identifiée au lieu de laisser les deux cohabiter.
+
+    **Alternative écartée : keyer *toujours* sur le repli**, ce qui supprimerait
+    le `or` par construction. Mesuré discriminant aujourd'hui (0 collision),
+    mais il rend l'identité du dossier otage de son libellé : une correction
+    typographique du titre à l'AN, ou un `date_min` qui recule d'un document
+    versé après coup, republierait le dossier comme une entrée neuve — le même
+    doublon, sans identifiant pour le rattraper cette fois.
+    """
+    dossier_id = t.get("dossier_id")
+    if dossier_id:
+        return ("dossier_id", dossier_id)
+    return _repli_texte_key(t)
 
 
 def merge_dossier_records(
@@ -1062,26 +1115,68 @@ def merge_dossier_records(
     return [by_key[k] for k in order]
 
 
-def clean_stale_textes_portes(textes: Optional[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """Nettoyage ponctuel des doublons hérités d'un ancien bug de fusion (clé
-    incluant `role`, cf. `_pivot_texte_key`) : avant l'ajout de type_rapport/
-    stade_procedural au schéma, un `role` (souvent "rapporteur") était
-    appliqué à tort à tout dossier, produisant deux entrées pour un même
-    dossier une fois régénéré avec `role=null`. Conserve l'entrée la plus
-    complète (schéma actuel) pour chaque identité de dossier."""
-    by_key: dict[Key, dict[str, Any]] = {}
-    order: list[Key] = []
-    for t in textes or []:
-        if not isinstance(t, dict):
-            continue
-        k = _pivot_texte_key(t)
-        is_current_schema = "type_rapport" in t and "stade_procedural" in t
-        if k not in by_key:
-            order.append(k)
-            by_key[k] = t
-        elif is_current_schema and not ("type_rapport" in by_key[k] and "stade_procedural" in by_key[k]):
-            by_key[k] = t
-    return [by_key[k] for k in order]
+def clean_stale_textes_portes(
+    textes: Optional[list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    """Reprise des entrées écrites avant #639, sur le patron de
+    `clean_stale_interventions` (#540).
+
+    **La fonction existait déjà, sous ce nom, pour le même motif** — les
+    doublons hérités d'une clé incluant `role`, avant que `type_rapport` et
+    `stade_procedural` rejoignent le schéma. Deux choses ont changé avec #668.
+
+    D'abord son critère de départage : « conserver l'entrée la plus complète au
+    sens du schéma » (`type_rapport` et `stade_procedural` présents) **ne
+    discrimine plus rien**. Mesuré sur `origin/main` le 31/08/2026, les 940
+    entrées publiées portent toutes les deux clés ; les deux versions d'un même
+    dossier auraient été départagées au hasard de l'ordre de la liste. Le
+    départage se fait donc sur l'**identifiant** : `dossier_id`, et avec lui
+    `source_url`, que porte la seule version renormalisée.
+
+    Ensuite son appel : elle n'était **appelée nulle part** — ni par
+    `merge_pivot_profile`, ni par la passe pivot, ni par un script. Un
+    nettoyage que rien n'exécute n'a jamais nettoyé quoi que ce soit ; c'est la
+    seconde moitié de la régression, et pourquoi les 468 doublons ont survécu à
+    chaque run depuis. `merge_pivot_profile` l'appelle désormais, à
+    l'emplacement exact où il appelle `clean_stale_interventions`.
+
+    Règle appliquée : une entrée **sans** `dossier_id` est écartée quand au
+    moins une entrée **avec** `dossier_id` porte le même repli d'identité
+    `(titre, date_min, legislature)`. Elle est alors, par construction, la même
+    entrée avant sa renormalisation : c'est exactement la clé sur laquelle la
+    fusion l'avait rangée.
+
+    Elle ne peut donc rien perdre. Sans jumelle identifiée sur ce repli —
+    collecte en échec, dossier disparu de l'open data AN, entrée héritée d'une
+    source qui ne publiait pas d'identifiant — rien n'est écarté et l'ancienne
+    entrée reste publiée (`docs/decisions/collecte-vide-necrase-jamais.md`). Et
+    elle ne confond pas un doublon avec un texte réellement porté deux fois :
+    deux dossiers de même titre à des dates ou législatures différentes ont des
+    replis différents, et deux `dossier_id` distincts n'ont jamais été mesurés
+    sur un même repli (0 sur les 940 entrées publiées).
+
+    Effet mesuré sur les 22 profils qui publient des textes portés : 940 → 472
+    entrées, soit exactement les 472 dossiers que porte le brut, 468 retirées.
+    C'est une perte sur une liste **stable** au sens d'`audit_diff_profils` :
+    elle se déclare par `allow_declared_losses`, jamais en désarmant le
+    contrôle (AGENTS.md §3c).
+    """
+    replis_repris = {
+        _repli_texte_key(t)
+        for t in textes or []
+        if isinstance(t, dict) and t.get("dossier_id")
+    }
+    if not replis_repris:
+        return list(textes or [])
+    return [
+        t
+        for t in textes or []
+        if not (
+            isinstance(t, dict)
+            and not t.get("dossier_id")
+            and _repli_texte_key(t) in replis_repris
+        )
+    ]
 
 
 def _pivot_amendement_key(a: dict[str, Any]) -> Key:
@@ -1657,9 +1752,17 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         merge_lists_by_key(old.get("votes"), new.get("votes"), _pivot_vote_key),
         key=lambda v: str(v.get("scrutin_id") or ""),
     )
+    # `clean_stale_textes_portes` : reprise des entrées d'avant #639, qui n'ont
+    # pas de `dossier_id` et sont republiées EN DOUBLE à côté de leur
+    # renormalisation identifiée — la clé de fusion a changé de branche sous
+    # elles (#668). Voir sa docstring pour la preuve de non-perte.
     merged["textes_portes"] = sorted(
         (
-            t for t in merge_dossier_records(old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key)
+            t for t in clean_stale_textes_portes(
+                merge_dossier_records(
+                    old.get("textes_portes"), new.get("textes_portes"), _pivot_texte_key
+                )
+            )
             if t.get("role")  # écarte la liste globale héritée de NosDéputés (role toujours
                               # null) — voir candidate_profile.fetch_textes_portes_officiels
         ),
