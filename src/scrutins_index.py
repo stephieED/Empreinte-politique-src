@@ -55,7 +55,35 @@ DEFAULT_SCRUTINS_PATH = Path("pivot_data") / "scrutins.json"
 # Champs du scrutin, communs à tous ses votants. Le mapping du profil ne porte
 # aucun d'eux : les y laisser, c'est le facteur 22,8 × que #432 supprime.
 CHAMPS_SCRUTIN = (
-    "date", "texte", "sort", "type_scrutin", "type_vote", "texte_lie_id", "source_url",
+    "date", "texte", "sort", "type_scrutin", "type_vote", "demandeur",
+    "texte_lie_id", "source_url",
+)
+
+# Motif publié sur une motion de censure dont le texte lié n'est pas résoluble.
+#
+# POURQUOI UNE DÉCLARATION ET PAS UN CHAMP VIDE (#639). AGENTS.md §5 exige
+# qu'un `type_vote == "motion_censure"` porte un `texte_lie_id` — invariant que
+# rien ne satisfaisait tant que `type_vote` valait « vote_texte » pour tout le
+# monde. Il devient exigible dès que les 66 motions de censure sont qualifiées,
+# et il n'est PAS satisfiable : le scrutin AN ne porte aucune référence
+# législative. Ni `objet.referenceLegislative` ni `demandeur.referenceLegislative`
+# ne sont renseignés sur **0 / 18 311** scrutins bruts des législatures 14 à 17
+# (relevé du 31/08/2026 sur les archives réelles, les quatre législatures).
+#
+# Une part des motions n'a d'ailleurs aucun texte à lier : une motion de
+# l'article 49 alinéa 2 est spontanée, sans 49.3 en regard. Exiger la clé
+# reviendrait à exiger un fait inexistant.
+#
+# On applique donc le patron `*_non_resolu` déjà écrit du dépôt (AGENTS.md §5,
+# amendements sans uid AN) : clé `null`, enregistrement de déclaration à côté.
+# Ce n'est pas un assouplissement de la règle 4 — la motion reste un fait
+# procédural distinct, et aucune position n'est dérivée d'un type.
+MOTIF_TEXTE_LIE_NON_SOURCE = (
+    "le scrutin AN ne publie aucune référence législative : "
+    "objet.referenceLegislative et demandeur.referenceLegislative sont nuls sur "
+    "0/18311 scrutins bruts des législatures 14 à 17 (relevé du 31/08/2026). "
+    "Le rattachement au dossier n'existe qu'en lien inverse, depuis "
+    "actesLegislatifs[].voteRefs du dossier législatif — non collecté (#639, rang 4)."
 )
 
 
@@ -209,8 +237,22 @@ def construire_index(
             "numero_scrutin": cle.numero_scrutin,
             **champs,
         }
+        _declarer_texte_lie_non_resolu(scrutins[scrutin_id])
 
     return ScrutinsIndex(scrutins), echecs
+
+
+def _declarer_texte_lie_non_resolu(scrutin: dict[str, Any]) -> None:
+    """Pose (ou retire) la déclaration d'absence de texte lié sur un scrutin.
+
+    Retirée dès que `texte_lie_id` est renseigné : garder une déclaration
+    « non résolu » à côté d'une clé résolue serait un fait faux, et c'est
+    exactement ce que le rang 4 de #639 viendra corriger scrutin par scrutin.
+    """
+    if scrutin.get("type_vote") != "motion_censure" or scrutin.get("texte_lie_id"):
+        scrutin.pop("texte_lie_non_resolu", None)
+        return
+    scrutin["texte_lie_non_resolu"] = {"motif": MOTIF_TEXTE_LIE_NON_SOURCE}
 
 
 def _valeur_scrutin(champ: str, vote: dict[str, Any]) -> Any:
@@ -252,6 +294,12 @@ def merge_scrutins_index(ancien: ScrutinsIndex, nouveau: ScrutinsIndex) -> Scrut
         for champ, valeur in scrutin.items():
             if valeur is not None:
                 existant[champ] = valeur
+    # Champ dérivé, jamais fusionné : un scrutin requalifié `motion_censure`
+    # par un run récent doit gagner sa déclaration, et un scrutin dont le rang 4
+    # aura résolu le texte lié doit la perdre. Même règle que `chambres` ou
+    # `licence_donnees` côté profil (AGENTS.md §4).
+    for scrutin in fusionnes.values():
+        _declarer_texte_lie_non_resolu(scrutin)
     return ScrutinsIndex(fusionnes)
 
 

@@ -226,6 +226,11 @@ Format d'un profil pivot v1 :
     "textes_portes": [                       # dossiers dont l'élu est auteur ou rapporteur
         {
             "titre": "Proposition de loi ...",
+            "dossier_id": "DLR5L15N37607",   # identifiant AN du dossier législatif (#639).
+                                             # Même nom que gouvernements textes[].dossier_id :
+                                             # c'est la seule clé qui rattache un texte porté
+                                             # autrement que par son libellé. null si la source
+                                             # n'en donne pas — jamais reconstruit d'un titre.
             "role": "rapporteur",            # "auteur" | "rapporteur" | "co-rapporteur"
             "type_rapport": null,            # nomenclature officielle, descriptive uniquement :
                                              # "rapporteur_fond" | "rapporteur_avis" |
@@ -729,8 +734,15 @@ KNOWN_STADES_PROCEDURAUX: frozenset[str] = frozenset({
 # permet pas de distinguer auteur, rapporteur et co-rapporteur.
 KNOWN_ROLES_TEXTE: frozenset[str] = frozenset({"auteur", "rapporteur", "co-rapporteur"})
 
-# Type de scrutin, métadonnée du vote indépendante de son résultat.
-KNOWN_TYPES_SCRUTIN: frozenset[str] = frozenset({"public_ordinaire", "solennel"})
+# Type de scrutin, métadonnée du vote indépendante de son résultat. Image 1:1
+# du `codeTypeVote` de l'open data AN depuis #639 : SPO -> public_ordinaire,
+# SPS -> solennel, SAT -> tribune, MOC -> motion_censure. Mesuré sur les
+# 17 748 scrutins publiés : 17 312 · 361 · 9 · 66. `null` reste possible — un
+# code inconnu n'est jamais rangé d'office dans le plus fréquent (§2 règle 5).
+# SSG (Congrès) est absent : ces scrutins sont écartés en amont sur leur uid.
+KNOWN_TYPES_SCRUTIN: frozenset[str] = frozenset({
+    "public_ordinaire", "solennel", "tribune", "motion_censure",
+})
 
 # Type d'entrée de vote : un vote sur motion de censure liée à un 49.3 est
 # toujours une entrée de vote séparée, jamais fusionnée avec la position sur
@@ -1809,12 +1821,23 @@ def validate_scrutins_index(index: dict[str, Any]) -> list[str]:
                 f"scrutins[{i}].type_vote non reconnu : {type_vote!r}. "
                 f"Valeurs connues : {sorted(KNOWN_TYPES_VOTE)}."
             )
+        # Un vote de motion de censure doit dire à quel texte il se rapporte,
+        # ou dire pourquoi il ne le peut pas. La seconde branche a été ouverte
+        # par #639 : le scrutin AN ne publie AUCUNE référence législative
+        # (0/18 311 sur les législatures 14-17), et une motion de l'article 49
+        # alinéa 2 n'a de toute façon pas de texte à lier. Exiger la clé sans
+        # alternative aurait laissé le seul choix entre publier un fait faux
+        # (`vote_texte` sur 66 motions) et taire une qualification sourcée.
+        # Patron `*_non_resolu` du dépôt : clé nulle + déclaration à côté.
         if type_vote == "motion_censure" and not scrutin.get("texte_lie_id"):
-            errors.append(
-                f"scrutins[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
-                "(le texte 49.3 concerné doit être identifié, jamais fusionné "
-                "avec le vote sur le texte)."
-            )
+            declaration = scrutin.get("texte_lie_non_resolu")
+            if not isinstance(declaration, dict) or not declaration.get("motif"):
+                errors.append(
+                    f"scrutins[{i}] : type_vote='motion_censure' sans 'texte_lie_id' "
+                    "ni 'texte_lie_non_resolu.motif' (le texte 49.3 concerné doit être "
+                    "identifié, ou son absence déclarée — jamais fusionné avec le vote "
+                    "sur le texte)."
+                )
 
     return errors
 
