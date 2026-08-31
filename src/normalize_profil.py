@@ -594,6 +594,19 @@ def normalize_profil(
         # concernés cessent de publier « Personne diverse sans activité
         # professionnelle » comme une profession.
         "profession": _profession_publiable(identite.get("profession")),
+        # #659 — la civilité déclarée par l'état civil d'AMO30, et rien d'autre.
+        # Elle n'est JAMAIS dérivée d'un prénom : sans `etatCivil.ident.civ`,
+        # c'est `null` (AGENTS.md §2 règle 5). Le champ était lu par l'index
+        # d'identité depuis #556 et s'arrêtait au collecteur.
+        "civilite": identite.get("civilite"),
+        # #659 — les deux niveaux de la nomenclature PCS de l'INSEE, tels que
+        # l'Assemblée nationale les applique. Publiés verbatim : c'est la
+        # source qui classe. `null` quand elle ne classe pas — le marqueur
+        # `xsi:nil` d'AMO30 est filtré à la LECTURE (#556), et « non classé »
+        # reste distinct de la famille « Sans profession déclarée », qui est,
+        # elle, une valeur de la nomenclature.
+        "famille_socioprofessionnelle": identite.get("famille_socioprofessionnelle"),
+        "categorie_socioprofessionnelle": identite.get("categorie_socioprofessionnelle"),
         "date_naissance": identite.get("date_naissance"),
         "lieu_naissance": identite.get("lieu_naissance"),
         "num_circo": identite.get("num_circo"),

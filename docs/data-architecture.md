@@ -186,7 +186,7 @@ reprend :
 
 | Champ | Contenu |
 |---|---|
-| `identite` | nom, groupe politique, profession, circonscription… |
+| `identite` | nom, civilité, groupe politique, profession, circonscription… Depuis #659 le bloc porte `civilite` (`etatCivil.ident.civ` d'AMO30, 3 117/3 117 fiches) et les deux niveaux de la nomenclature PCS de l'INSEE — `famille_socioprofessionnelle`/`categorie_socioprofessionnelle`, depuis `profession.socProcINSEE` (2 177/3 117) —, recopiés verbatim et `null` quand la source ne classe pas, ce qui n'est **pas** la famille « Sans profession déclarée » |
 | `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
 | `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id` |

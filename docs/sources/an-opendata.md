@@ -175,7 +175,19 @@ entries for deputies/senators from legislatures 12-17):
   `dateDebut`. Not needed on `AMO10` (single active mandate per acteur, by
   construction of that dataset's scope).
 - `acteur.etatCivil.ident.{civ,prenom,nom}`: full name (used by
-  `_build_acteur_identite_index` to build `nom_complet`).
+  `_build_acteur_identite_index` to build `nom_complet`). `civ` is filled on
+  **all 3 117 fiches** of the historical archive, with two values — `"M."`
+  (2 106) and `"Mme"` (1 011); it is the profile's only source of `civilite`
+  (#659), never a first-name heuristic.
+- `acteur.profession.socProcINSEE.{famSocPro,catSocPro}`: the INSEE
+  socio-professional nomenclature (PCS) as the Assembly itself applies it —
+  family and category. The block is present on all 3 117 fiches with exactly
+  those two keys, and the two levels are **always filled or absent together**:
+  2 177 fiches carry a pair of labels, 940 carry the `xsi:nil` marker on both.
+  Labels come with typographic variants (`"Professions Intermédiaires"` 107 vs
+  `"Professions intermédiaires"` 58), and one category label contains a double
+  space. Distinct from `acteur.profession.libelleCourant`, which is free text
+  (#641). Measured 31/08/2026.
 - `acteur.adresses.adresse[]` (single dict, not a list, when there is only
   one entry — normalize like `mandats.mandat`): each entry has a
   `typeLibelle` (`"Adresse officielle"`, `"Adresse publiée de

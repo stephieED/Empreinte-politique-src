@@ -34,7 +34,30 @@ Format d'un profil pivot v1 :
     "parti": null,                           # parti politique (depuis candidats.json si dispo)
     "groupe": "La France Insoumise",         # groupe parlementaire déclaré par la source
     "identite": {                            # bloc biographique, tout est nullable/optionnel
+        "civilite": "Mme",                   # #659 — civilité de l'état civil AMO30
+                                             # (`etatCivil.ident.civ`), renseignée sur les
+                                             # 3 117 fiches : « M. » 2 106, « Mme » 1 011.
+                                             # JAMAIS dérivée d'un prénom : sans la source,
+                                             # `null` (§2 règle 5). Facultative — absente des
+                                             # 477 profils qui publiaient `identite` avant ce
+                                             # lot, comme `identifiants` (#539) l'a été.
         "profession": "Avocat",              # activité professionnelle déclarée (référentiel AN)
+                                             # TEXTE LIBRE, et il le reste : c'est
+                                             # `famille_socioprofessionnelle` ci-dessous qui
+                                             # porte la nomenclature (#641, #659)
+        "famille_socioprofessionnelle": "Employés",   # #659 — nomenclature PCS de l'INSEE,
+                                             # niveau famille (`profession.socProcINSEE.famSocPro`),
+                                             # telle que l'Assemblée nationale l'applique.
+                                             # 2 177 fiches sur 3 117 (70 %) ; `null` sur les 940
+                                             # que la source ne classe pas — et « non classé »
+                                             # n'est PAS la famille « Sans profession déclarée »,
+                                             # qui est, elle, une valeur de la nomenclature
+                                             # (85 fiches). Publiée VERBATIM, variantes
+                                             # typographiques comprises : regrouper est
+                                             # l'affaire de qui agrège.
+        "categorie_socioprofessionnelle": "Employés de commerce",  # #659 — second niveau
+                                             # (`socProcINSEE.catSocPro`), 37 libellés distincts.
+                                             # Renseigné exactement quand la famille l'est.
         "date_naissance": "1951-08-19",       # ISO-8601, date seule (référentiel AN)
         "lieu_naissance": null,              # ville + département/pays, texte libre ; fourni
                                              # par le référentiel AN (acteurs)
@@ -923,6 +946,33 @@ def marqueur_defaut_code(preuve: str) -> Optional[str]:
     return trouve.group(0) if trouve else None
 
 
+#: Champs d'`identite` qui portent un LIBELLÉ recopié d'AMO30 (#659), donc une
+#: chaîne ou `null` — jamais un objet.
+#:
+#: `uri_hatvp` n'est pas dans la liste : il a sa propre règle, plus étroite
+#: (c'est une URI, et sa forme est vérifiée). `num_circo` et `date_naissance`
+#: non plus, et c'est mesuré : le corpus publié les écrit en chaîne, mais
+#: `num_circo` arrive en `int` de certains profils bruts, et refuser un entier
+#: là où la source dit un numéro serait une règle de type déguisée en règle
+#: d'absence. Ce qui réunit les champs retenus, c'est l'origine — `json/acteur/*.json`, dont le convertisseur XML rend
+#: `{"@xsi:nil": "true"}` pour n'importe quel élément déclaré vide, sans
+#: connaître le nom du champ (#556). Un dict non vide est truthy : un
+#: consommateur qui teste `if identite["civilite"]` croit tenir une civilité.
+#:
+#: La règle porte sur le TYPE, pas sur le contenu : elle refuse le marqueur, pas
+#: un libellé inattendu. Fermer les valeurs de `civilite` en `frozenset KNOWN_*`
+#: aurait été possible — la source n'en écrit que deux, `M.` et `Mme`, sur ses
+#: 3 117 fiches — mais ferait échouer le contrôle qualité en dur le jour où
+#: l'Assemblée en écrit une troisième, sur une donnée qu'elle seule décide.
+CHAMPS_IDENTITE_TEXTE_LIBRE: tuple[str, ...] = (
+    "civilite",
+    "profession",
+    "famille_socioprofessionnelle",
+    "categorie_socioprofessionnelle",
+    "lieu_naissance",
+)
+
+
 #: Blocs de champs dont la provenance est publiée champ par champ (#603).
 #:
 #: **Un seul pour l'instant, et c'est une décision, pas un début d'inventaire.**
@@ -1604,6 +1654,31 @@ def validate_profil(
                 "règle que identifiants.hatvp — un lien qui ne mène nulle part "
                 "ne vaut pas mieux qu'une absence, il vaut moins (#556)."
             )
+
+    # #659 — même contrainte de FORME sur les trois champs d'identité que ce lot
+    # ajoute, et pour la même raison qu'`uri_hatvp` : ils sont recopiés d'AMO30,
+    # dont le convertisseur XML rend `{"@xsi:nil": "true"}` pour tout élément
+    # vide. Le filtrage vit à la lecture (`candidate_profile._champ_identite_an`,
+    # #556) ; ce contrôle-ci est ce qui le rend VÉRIFIABLE côté publié, là où
+    # `audit_diff_profils` ne compare que la PRÉSENCE du bloc `identite` et ne
+    # verrait jamais une clé ajoutée, retirée, ni son contenu changé (#649).
+    #
+    # Et l'enjeu est plus qu'esthétique : la fusion ne fait jamais régresser un
+    # scalaire vers `null` (`collecte-vide-necrase-jamais.md`), donc un marqueur
+    # publié une fois y resterait, indéfiniment, même après correction de la
+    # collecte. Le refus est donc à l'entrée, pas après.
+    if isinstance(identite, dict):
+        for cle in CHAMPS_IDENTITE_TEXTE_LIBRE:
+            if cle not in identite:
+                continue
+            valeur = identite.get(cle)
+            if valeur is not None and not isinstance(valeur, str):
+                errors.append(
+                    f"identite.{cle} doit être un libellé (chaîne) ou null, reçu : "
+                    f"{type(valeur).__name__} ({valeur!r}). Une absence déclarée "
+                    "par la source — le marqueur XML `xsi:nil` d'AMO30 — n'est "
+                    "pas une valeur (§2 règle 5, #556/#659)."
+                )
 
     # L'invariant qui fait tout l'intérêt du couple : `identifiants.hatvp` est la
     # RECOPIE de `identite.uri_hatvp`, jamais une seconde collecte. Deux valeurs
