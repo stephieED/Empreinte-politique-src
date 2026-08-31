@@ -991,16 +991,20 @@ def test_aggregate_amendements_par_type_deposant_ne_pollue_pas_depute():
     assert agg["taux_adoption"] == round(2 / 3, 4)
 
 
-def test_aggregate_amendements_identique_avant_apres_normalisation():
-    """Critère d'acceptation #431 : `amendements_agreges` ne change pas.
+def test_aggregate_amendements_signatures_identiques_avant_apres_normalisation():
+    """Critère d'acceptation #431, restreint aux **signatures** par #643.
 
     Même population, deux formes : l'ancienne (chaque signataire porte
-    l'enregistrement complet) et la nouvelle (mapping + index partagé). Les 20
-    champs de décompte doivent coïncider — c'est ce qui prouve qu'aucune
-    information utile n'a été perdue en route.
+    l'enregistrement complet) et la nouvelle (mapping + index partagé). Le
+    décompte des signatures doit coïncider — c'est ce qui prouve qu'aucune
+    information utile n'a été perdue en route. Vérifié aussi sur les données
+    réelles au moment de la bascule : 810 552 paires, 7 groupes committés,
+    **0 écart**.
 
-    Vérifié aussi sur les données réelles au moment de la bascule : 810 552
-    paires, 7 groupes committés, **0 écart**.
+    Les **amendements distincts**, eux, ne peuvent pas coïncider, et ce n'est
+    pas un défaut : la forme plate ne porte aucun `amendement_id`, donc rien ne
+    permet de rapprocher deux copies d'un même amendement. Le test le dit au
+    lieu de le masquer — c'est exactement ce que `nb_sans_identifiant` publie.
     """
     from amendements_index import cle_amendement, construire_index
 
@@ -1014,8 +1018,8 @@ def test_aggregate_amendements_identique_avant_apres_normalisation():
             a["role_signataire"] = "auteur_principal" if j == 0 else "cosignataire"
             plats.append(a)
     # Un même amendement recopié chez trois signataires : la duplication que
-    # #431 supprime. L'agrégat, lui, compte bien trois paires dans les deux
-    # formes — c'est une paire (membre, amendement), pas un amendement.
+    # #431 supprime. C'est une paire (membre, amendement), donc trois
+    # signatures — et **un** amendement.
     plats += [dict(plats[0]), dict(plats[0])]
 
     avant, non_resolus_avant = _aggregate_amendements([_pivot(amendements=plats)])
@@ -1029,7 +1033,16 @@ def test_aggregate_amendements_identique_avant_apres_normalisation():
     apres, non_resolus_apres = _aggregate_amendements([_pivot(amendements=mapping)], index)
 
     assert non_resolus_apres == 0
-    assert apres == avant
+    assert apres["signatures"] == avant["signatures"]
+    assert apres["signatures"]["nb_signatures"] == 23
+
+    # 21 amendements distincts, la copie triple ramenée à une.
+    assert apres["nb_amendements"] == 21
+    assert apres["nb_sans_identifiant"] == 0
+    # La forme plate n'a pas de clé : chaque entrée compte pour un amendement,
+    # et le champ qui le dit n'est pas nul.
+    assert avant["nb_amendements"] == 23
+    assert avant["nb_sans_identifiant"] == 23
 
 
 def test_aggregate_amendements_entree_non_resolue_est_comptee_pas_ignoree():
@@ -1080,6 +1093,255 @@ def test_build_groupe_profile_amendements_agreges_par_type_deposant_valide():
     assert g["amendements_agreges"]["par_type_deposant"]["depute"]["nb_amendements"] == 1
     assert g["amendements_agreges"]["par_type_deposant"]["gouvernement"]["nb_amendements"] == 1
     assert validate_profil_groupe(g) == []
+
+
+# ---------------------------------------------------------------------------
+# #643 — un amendement cosigné n'est pas N amendements
+#
+# `_aggregate_amendements` faisait `nb_amendements += 1` par entrée de profil,
+# donc une fois par signataire, et publiait le résultat sous le mot
+# « amendements ». 92,2 % des entrées du corpus étant des cosignatures,
+# `AN:LFI` annonçait 2 600 765 amendements déposés pour 76 députés.
+#
+# Les fixtures qui suivent sont minuscules mais leurs formes viennent des
+# données : un amendement cosigné (le cas dominant), un `sort` absent (33,3 %
+# des 132 960 amendements distincts d'`AN:LFI`), une entrée sans identifiant
+# (la forme normale d'un amendement du Parlement européen).
+# ---------------------------------------------------------------------------
+
+def _mapping(uid: str, role: str = "cosignataire") -> dict:
+    return {"amendement_id": f"an:{uid}", "role_signataire": role}
+
+
+def _index_amendements(*specs) -> "object":
+    """Index partagé bâti depuis `(uid, sort, type_deposant)`."""
+    from amendements_index import construire_index
+
+    plats = []
+    for uid, sort, deposant in specs:
+        a = _amendement(sort, deposant=deposant)
+        a["uid"] = uid
+        plats.append(a)
+    return construire_index(plats)
+
+
+def test_aggregate_amendements_un_amendement_cosigne_ne_compte_quune_fois():
+    """Le défaut de #643, dans sa plus petite forme."""
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"))
+    profils = [_pivot(f"nosdeputes:m{i}", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")])
+               for i in range(3)]
+    agg, _ = _aggregate_amendements(profils, index)
+    assert agg["nb_amendements"] == 1
+    assert agg["par_type_deposant"]["depute"]["nb_amendements"] == 1
+
+
+def test_aggregate_amendements_signatures_comptent_chaque_signataire():
+    """L'autre grandeur n'est pas perdue : elle est nommée."""
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"))
+    profils = [_pivot(f"nosdeputes:m{i}", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")])
+               for i in range(3)]
+    agg, _ = _aggregate_amendements(profils, index)
+    assert agg["signatures"]["nb_signatures"] == 3
+    assert agg["signatures"]["par_type_deposant"]["depute"]["nb_signatures"] == 3
+
+
+def test_aggregate_amendements_taux_dadoption_baisse_quand_ladopte_est_le_plus_cosigne():
+    """Le cas `AN:LFI` : 5,01 % publié → 2,99 % sur les distincts (seau `depute`)."""
+    index = _index_amendements(
+        ("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000002", "rejeté", "depute"),
+    )
+    profils = [
+        _pivot("nosdeputes:a", amendements=[
+            _mapping("AMANR5L17PO0B0000P0D1N000001"), _mapping("AMANR5L17PO0B0000P0D1N000002"),
+        ]),
+        _pivot("nosdeputes:b", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+        _pivot("nosdeputes:c", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+    ]
+    agg, _ = _aggregate_amendements(profils, index)
+    assert agg["signatures"]["nb_signatures"] == 4  # dont 3 sur l'adopté
+    assert agg["nb_amendements"] == 2
+    assert agg["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_taux_dadoption_monte_quand_le_rejete_est_le_plus_cosigne():
+    """Le cas `AN:SOC`, en sens inverse : 7,24 % publié → 14,54 % sur les distincts.
+
+    C'est cette bidirectionnalité qui rend le défaut publiable-mais-faux : le
+    taux n'était pas biaisé dans une direction connue (AGENTS.md §2 règle 7).
+    """
+    index = _index_amendements(
+        ("AMANR5L17PO0B0000P0D1N000001", "rejeté", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000002", "adopté", "depute"),
+    )
+    profils = [
+        _pivot("nosdeputes:a", amendements=[
+            _mapping("AMANR5L17PO0B0000P0D1N000001"), _mapping("AMANR5L17PO0B0000P0D1N000002"),
+        ]),
+        _pivot("nosdeputes:b", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+        _pivot("nosdeputes:c", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+    ]
+    agg, _ = _aggregate_amendements(profils, index)
+    assert agg["signatures"]["nb_signatures"] == 4  # dont 1 seule sur l'adopté
+    assert agg["nb_amendements"] == 2
+    assert agg["taux_adoption"] == 0.5
+
+
+def test_aggregate_amendements_sort_absent_a_sa_bande():
+    """33,3 % des amendements distincts d'`AN:LFI` n'ont pas de `sort`.
+
+    Sans bande, une barre empilée publierait un tiers d'absences comme des
+    zéros (AGENTS.md §2 règle 5).
+    """
+    index = _index_amendements(
+        ("AMANR5L17PO0B0000P0D1N000001", None, "depute"),
+        ("AMANR5L17PO0B0000P0D1N000002", "adopté", "depute"),
+    )
+    profils = [_pivot(amendements=[
+        _mapping("AMANR5L17PO0B0000P0D1N000001"), _mapping("AMANR5L17PO0B0000P0D1N000002"),
+    ])]
+    agg, _ = _aggregate_amendements(profils, index)
+    assert agg["nb_sort_non_renseigne"] == 1
+    assert agg["nb_sort_non_reconnu"] == 0
+    assert agg["par_type_deposant"]["depute"]["nb_sort_non_renseigne"] == 1
+
+
+def test_aggregate_amendements_sort_hors_nomenclature_nest_pas_une_absence():
+    """Compteur sous surveillance (AGENTS.md §3d) : 0 sur les 484 132
+    amendements de l'index au 31/08/2026, sept libellés seulement.
+
+    Le ranger sous « non renseigné » publierait une valeur présente comme une
+    absence — l'erreur exactement symétrique de celle que la bande corrige.
+    """
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "satisfait", "depute"))
+    agg, _ = _aggregate_amendements(
+        [_pivot(amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")])], index
+    )
+    assert agg["nb_sort_non_reconnu"] == 1
+    assert agg["nb_sort_non_renseigne"] == 0
+
+
+@pytest.mark.parametrize("bloc", ["total", "depute"])
+def test_aggregate_amendements_les_six_bandes_somment_au_total(bloc):
+    """L'invariant qui rend une barre empilée honnête."""
+    from group_profile import BANDES_DE_SORT
+
+    index = _index_amendements(
+        ("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000002", "rejeté", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000003", "irrecevable", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000004", "tombé", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000005", None, "depute"),
+        ("AMANR5L17PO0B0000P0D1N000006", "satisfait", "depute"),
+    )
+    profils = [_pivot(amendements=[
+        _mapping(f"AMANR5L17PO0B0000P0D1N00000{i}") for i in range(1, 7)
+    ])]
+    agg, _ = _aggregate_amendements(profils, index)
+    stats = agg if bloc == "total" else agg["par_type_deposant"]["depute"]
+    assert sum(stats[b] for b in BANDES_DE_SORT) == stats["nb_amendements"] == 6
+
+
+def test_aggregate_amendements_entree_sans_identifiant_est_comptee_par_signataire():
+    """Aucune clé ne s'invente (AGENTS.md §2 règle 5).
+
+    Un amendement sans `amendement_id` — la forme normale côté Parlement
+    européen — n'est rapprochable d'aucun autre : il est compté tel quel, et le
+    champ qui le dit est publié pour que `nb_amendements` ne mélange pas en
+    silence deux natures de compte.
+    """
+    entree = {
+        "amendement_id": None,
+        "role_signataire": "cosignataire",
+        "amendement_non_resolu": _amendement("adopté"),
+    }
+    profils = [_pivot(f"nosdeputes:m{i}", amendements=[dict(entree)]) for i in range(3)]
+    agg, non_resolus = _aggregate_amendements(profils)
+    assert non_resolus == 0
+    assert agg["nb_amendements"] == 3
+    assert agg["nb_sans_identifiant"] == 3
+
+
+def test_build_groupe_profile_avertit_sur_les_amendements_non_dedoublonnables():
+    entree = {
+        "amendement_id": None,
+        "role_signataire": "cosignataire",
+        "amendement_non_resolu": _amendement("adopté"),
+    }
+    profils = [_pivot(f"nosdeputes:m{i}", amendements=[dict(entree)]) for i in range(2)]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils,
+                             scrutins_index=_index())
+    assert any("non dédoublonnables" in w for w in g["meta"]["warnings"])
+
+
+def test_build_groupe_profile_ne_previent_pas_quand_tout_est_dedoublonnable():
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"))
+    profils = [_pivot(amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")])]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils,
+                             scrutins_index=_index(), amendements_index=index)
+    assert not any("non dédoublonnables" in w for w in g["meta"]["warnings"])
+    assert g["amendements_agreges"]["nb_sans_identifiant"] == 0
+    assert validate_profil_groupe(g) == []
+
+
+def test_build_groupe_profile_publie_les_deux_grandeurs_sous_deux_noms():
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"))
+    profils = [_pivot(f"nosdeputes:m{i}", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")])
+               for i in range(4)]
+    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils,
+                             scrutins_index=_index(), amendements_index=index)
+    agg = g["amendements_agreges"]
+    assert agg["nb_amendements"] == 1
+    assert agg["signatures"]["nb_signatures"] == 4
+    assert validate_profil_groupe(g) == []
+
+
+def test_aggregate_amendements_cumul_partage_donne_le_meme_resultat_que_par_membre():
+    """Le partage du cumul est une économie de mémoire, jamais un changement de
+    résultat : un cumul absorbé une fois ou trois donne le même compte."""
+    from group_profile import CumulAmendementsDistincts, contribution_amendements
+
+    index = _index_amendements(
+        ("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"),
+        ("AMANR5L17PO0B0000P0D1N000002", "rejeté", "depute"),
+    )
+    entiers = [
+        _pivot("nosdeputes:a", amendements=[
+            _mapping("AMANR5L17PO0B0000P0D1N000001"), _mapping("AMANR5L17PO0B0000P0D1N000002"),
+        ]),
+        _pivot("nosdeputes:b", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+    ]
+    partage = CumulAmendementsDistincts()
+    reduits = [
+        dict(p, amendements=contribution_amendements(p["amendements"], index, partage))
+        for p in entiers
+    ]
+    assert len(partage.par_id) == 2
+    assert _aggregate_amendements(reduits) == _aggregate_amendements(entiers, index)
+
+
+def test_load_profil_from_file_alimente_le_cumul_partage_de_la_fiche(tmp_path):
+    """Ce qui rend la déduplication possible une fois les entrées relâchées.
+
+    Sans cumul partagé, dédoublonner demanderait de garder un ensemble
+    d'identifiants **par membre** — les 2 647 601 signatures d'`AN:LFI` au lieu
+    de ses 132 960 amendements distincts, soit la mémoire que #635 vient de
+    rendre.
+    """
+    from group_profile import CumulAmendementsDistincts
+
+    index = _index_amendements(("AMANR5L17PO0B0000P0D1N000001", "adopté", "depute"))
+    cumul = CumulAmendementsDistincts()
+    for i in range(3):
+        chemin = tmp_path / f"m{i}.pivot.json"
+        chemin.write_text(json.dumps(
+            _pivot(f"nosdeputes:m{i}", amendements=[_mapping("AMANR5L17PO0B0000P0D1N000001")]),
+            ensure_ascii=False,
+        ), encoding="utf-8")
+        charge = load_profil_from_file(chemin, index, distincts=cumul)
+        assert charge["amendements"].distincts is cumul
+    assert len(cumul.par_id) == 1
+    assert len(cumul) == 1
 
 
 # ---------------------------------------------------------------------------

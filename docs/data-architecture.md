@@ -436,7 +436,13 @@ mandats agrégés (catégoriel : `commission`, `commission_enquete`,
 `mission_information`, `groupe_etudes`, `delegation`, `groupe_amitie`,
 `extra_parlementaire` — voir `MANDATS_AGREGES_CATEGORIES`, périmètre élargi par
 #382, `docs/decisions/taxonomie-mandats-typeorgane-an.md`), amendements agrégés
-avec ventilation par type de déposant. La couverture roster/profils disponibles
+avec ventilation par sort et par type de déposant. `amendements_agreges` compte
+les amendements **distincts** portés par au moins un membre — un amendement
+cosigné par trois d'entre eux en est un — et les **signatures** apposées par les
+membres vivent à côté, sous `signatures` (#643,
+`docs/decisions/amendements-distincts-et-signatures-643.md`) : les confondre
+publiait « 2 600 765 amendements déposés » pour les 76 députés d'`AN:LFI`, avec
+un facteur de × 5,0 à × 31,7 selon la fiche. La couverture roster/profils disponibles
 est **tracée** (`meta.couverture_roster`), pour ne jamais confondre effectif réel
 et effectif effectivement agrégé — un ratio ne se publie qu'avec numérateur,
 dénominateur et couverture suffisante (AGENTS.md §2.7).
