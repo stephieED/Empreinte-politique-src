@@ -187,7 +187,7 @@ reprend :
 | Champ | Contenu |
 |---|---|
 | `identite` | nom, groupe politique, profession, circonscription… |
-| `mandats` | le mandat électif de base **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
+| `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
 | `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot |
 | `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]` |

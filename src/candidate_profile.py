@@ -444,8 +444,10 @@ ACTEURS_HISTORIQUE_CACHE_DIR = Path(".cache") / "acteurs_historique_an"
 # reconstruction, une fois, et laisse une trace lisible de la raison.
 #
 # Règle : **on incrémente le suffixe dès que le CONTENU écrit change**, jamais
-# pour un changement de lecture.
-NOM_INDEX_IDENTITE = "index_identite_v2.json"
+# pour un changement de lecture. `v3` porte deux changements de contenu livrés
+# ensemble : `mandats_assemblee` (#640) et la profession lue par `_profession_an`
+# (#641).
+NOM_INDEX_IDENTITE = "index_identite_v3.json"
 NOM_INDEX_ORGANES = "index_organes_v2.json"
 
 # Questions parlementaires (écrites, au gouvernement, orales sans débat).
@@ -1439,6 +1441,74 @@ def _texte_an(valeur: Any) -> Optional[str]:
 #: `"{'@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', …} ({…})"`.
 #: Un dict truthy se repère ; une chaîne non vide se lit comme une donnée.
 _champ_identite_an = _texte_an
+
+
+#: Code de catégorie socioprofessionnelle en tête du libellé de profession
+#: d'AMO30 : `"(33) - Cadre de la fonction publique"` (#641).
+_PREFIXE_CODE_CSP_AN = re.compile(r"^\(\s*(\d+)\s*\)\s*-\s*")
+
+#: Le libellé d'un code de la famille 8x qui **énonce une absence** de
+#: profession. Le critère est en deux parties, et les deux sont nécessaires :
+#: la **famille du code** (8x, « personnes sans activité professionnelle » dans
+#: la nomenclature socioprofessionnelle) et le **libellé de la source
+#: elle-même**. La famille seule nullerait `"(84) - Elève, étudiant"`, qui nomme
+#: une situation et non une absence ; le libellé seul s'appuierait sur des mots
+#: là où la nomenclature offre une structure.
+_MARQUEUR_ABSENCE_PROFESSION = "sans activité professionnelle"
+
+
+def _profession_an(valeur: Any) -> Optional[str]:
+    """Profession publiable d'un acteur AMO30, ou `None` — jamais un code de
+    nomenclature, jamais l'énoncé d'une absence de profession (#641).
+
+    ## Ce que la source publie réellement
+
+    `acteur.profession.libelleCourant` porte deux formes. La plupart du temps
+    un libellé nu (`"Avocat"`). **128 fois sur les 3 117 acteurs** de l'archive,
+    le libellé est préfixé du code de catégorie socioprofessionnelle :
+    `"(33) - Cadre de la fonction publique"`. Le motif n'apparaît **nulle part
+    ailleurs** dans `json/acteur/*.json` — mesuré champ par champ sur l'archive
+    entière au 31/08/2026, 128 occurrences, toutes sur ce seul champ. C'est ce
+    qui rend légitime de traiter la profession et elle seule, là où #556 devait
+    traiter tous les champs : le marqueur `xsi:nil` vient du **convertisseur
+    XML**, qui ne connaît pas le nom du champ ; ce préfixe-ci vient d'une
+    **nomenclature**, qui n'existe que pour ce champ.
+
+    ## Deux cas sous un même motif, et ils ne se traitent pas pareil
+
+    Mesuré sur les 481 profils publiés : 8 des 457 qui renseignent
+    `identite.profession` publient un code brut.
+
+    | Cas | Corpus | Traitement |
+    | --- | ---: | --- |
+    | `"(33) - Cadre de la fonction publique"` | 3 profils | le préfixe est du bruit, le libellé est bon : on retire le préfixe |
+    | `"(85) - Personne diverse sans activité professionnelle de moins de 60 ans…"` | 5 profils | **ce n'est pas une profession**, c'est l'énoncé d'une absence : `None` |
+
+    Le second est le vrai sujet, et c'est l'idiome de #556 : une valeur
+    technique de la source recopiée là où une valeur métier était attendue, qui
+    passe le seul contrôle existant — « chaîne non vide ». Une absence n'est pas
+    une donnée (AGENTS.md §2 règle 5), et la page dit « profession non
+    renseignée » plutôt que de la nommer.
+
+    Aucune profession de remplacement n'est inventée : le libellé nulle ici est
+    perdu, pas remplacé.
+    """
+    texte = _champ_identite_an(valeur)
+    if texte is None or not texte.strip():
+        return None
+    texte = texte.strip()
+    trouve = _PREFIXE_CODE_CSP_AN.match(texte)
+    if trouve is None:
+        return texte
+    code = trouve.group(1)
+    libelle = texte[trouve.end():].strip()
+    if not libelle:
+        # Un code sans libellé ne dit rien de publiable, et le code seul n'est
+        # pas une profession.
+        return None
+    if code.startswith("8") and _MARQUEUR_ABSENCE_PROFESSION in libelle.lower():
+        return None
+    return libelle
 
 
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
@@ -3157,6 +3227,144 @@ def _select_mandat_assemblee_courant(mandats: list[Any]) -> Optional[dict[str, A
     return _select_mandat_par_type_courant(mandats, "ASSEMBLEE")
 
 
+def _groupe_du_mandat(
+    mandats: list[Any],
+    organe_index: dict[str, dict[str, Any]],
+    debut: Optional[str],
+    fin: Optional[str],
+) -> tuple[Optional[str], Optional[str]]:
+    """Groupe parlementaire à retenir pour un mandat électif donné : le
+    **dernier rejoint pendant ce mandat**.
+
+    Un député en change en cours de législature (scission, renommage — Wauquiez
+    est UMP jusqu'en juin 2015 puis Les Républicains), et surtout **tout le
+    monde commence non inscrit** : les groupes ne sont constitués qu'après
+    l'ouverture de la législature, si bien qu'AMO30 porte pour chaque élu un
+    mandat `GP` de quelques jours vers `NI`. C'est le même transit que
+    `docs/decisions/roster-an-derive-amo30-526.md` a mesuré sur les rosters, et
+    il piège exactement de la même façon : « le groupe au début du mandat »
+    rendrait « Non inscrit » pour la quasi-totalité du corpus.
+
+    Prendre le **dernier** groupe rejoint pendant le mandat écarte le transit
+    par construction — il est premier, jamais dernier — et rend, pour un député
+    qui n'a pas changé de groupe, le seul qu'il ait eu. Même logique de
+    sélection que `_select_mandat_par_type_courant`, appliquée à une fenêtre
+    au lieu de la carrière entière.
+
+    Rend `(None, None)` quand aucun mandat `GP` ne commence dans la fenêtre :
+    une absence reste une absence, et le libellé s'écrit alors sans
+    parenthèse (AGENTS.md §2 règle 5).
+    """
+    if not debut:
+        return None, None
+    fin_bornee = fin or "9999-12-31"
+    meilleur: Optional[dict[str, Any]] = None
+    for mandat in mandats:
+        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "GP":
+            continue
+        debut_gp = _champ_identite_an(mandat.get("dateDebut"))
+        if not debut_gp or not (debut <= debut_gp < fin_bornee):
+            continue
+        if meilleur is None or debut_gp > (meilleur.get("dateDebut") or ""):
+            meilleur = mandat
+    if meilleur is None:
+        return None, None
+    organe = organe_index.get((meilleur.get("organes") or {}).get("organeRef") or "")
+    if not organe:
+        return None, None
+    return organe.get("sigle"), organe.get("nom")
+
+
+def _periodes_mandats_assemblee(
+    mandats: list[Any], organe_index: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Toutes les périodes de mandat de député d'un acteur, la plus récente
+    d'abord — et non plus le seul couple de dates du mandat courant (#640).
+
+    ## Pourquoi la liste, et pourquoi c'est AMO30 qui la porte
+
+    `AMO30_tous_acteurs_tous_mandats_tous_organes_historique` porte bien
+    l'historique complet : Marine Le Pen (`PA720614`) y a trois mandats
+    `typeOrgane == "ASSEMBLEE"` — 15e, 16e, 17e législatures —, et le corpus
+    en compte **3 954 pour 3 117 acteurs**. Le profil n'en publiait qu'un,
+    parce qu'`identite_an` ne portait qu'un `mandat_debut`/`mandat_fin` : celui
+    du mandat courant. Mesuré sur `b684304f`, **379 profils sur les 457 qui
+    portent `identite.nb_mandats` publiaient moins de `mandat_electif` que ce
+    nombre**, 612 manquants — le compteur et la liste vivaient dans le même
+    objet sans s'accorder.
+
+    ## La clé de regroupement : `(legislature, dateDebut)`, pas la législature
+
+    AMO30 scinde un même siège en plusieurs enregistrements quand il est
+    interrompu puis repris — Xavier Bertrand (`PA267080`) a **trois**
+    enregistrements de 13e législature, tous ouverts au 2007-06-20, fermés au
+    2007-07-19, 2010-12-15 et 2012-06-19, chaque fois sur `causeFin =
+    "Nomination comme membre du Gouvernement"`. C'est un siège, pas trois
+    mandats : ils sont recollés en union de périodes, le geste que
+    `docs/decisions/roster-an-derive-amo30-526.md` applique déjà aux organes
+    successifs d'un groupe.
+
+    Regrouper sur la **seule** législature serait faux, et la donnée le dit :
+    Bertrand Petit (`PA344201`) a deux mandats de 16e législature — 2022-06-19
+    → 2022-12-02, *élection annulée par le Conseil constitutionnel*, puis
+    2023-01-29 → 2024-06-09 après une partielle. Les unir publierait un mandat
+    couvrant deux mois pendant lesquels il n'était pas député : un fait
+    fabriqué, ce qu'interdit la règle 2. La date d'ouverture sépare les deux
+    cas sans arbitrage.
+
+    ## `dateDebut`, pas `datePriseFonction`
+
+    Les deux diffèrent (`2022-06-19` contre `2022-06-22` pour la 16e). Le
+    corpus publié porte les deux conventions — les mandats collectés du temps
+    de NosDéputés ont la seconde —, et la mesure tranche : sur les 477 profils
+    dont l'acteur AN est résolu, `dateDebut` reproduit **457** entrées déjà
+    publiées à l'identique contre **13** pour `datePriseFonction`. C'est aussi
+    le champ que `_select_mandat_assemblee_courant` lit depuis toujours.
+
+    Chaque période porte `segments`, le nombre d'enregistrements AMO30
+    recollés : un mandat interrompu par une nomination au gouvernement en a
+    plus d'un, et le compte reste lisible plutôt que d'être perdu au
+    regroupement.
+    """
+    par_siege: dict[tuple[Any, Any], dict[str, Any]] = {}
+    for mandat in mandats:
+        if not isinstance(mandat, dict) or mandat.get("typeOrgane") != "ASSEMBLEE":
+            continue
+        debut = _champ_identite_an(mandat.get("dateDebut"))
+        if not debut:
+            # Sans date d'ouverture, la période n'est plaçable sur aucune
+            # chronologie et aucune date ne s'invente (AGENTS.md §2 règle 5).
+            # Aucun des 3 954 mandats ASSEMBLEE du référentiel n'est dans ce
+            # cas au 31/08/2026 ; la branche existe pour que ça reste vrai.
+            continue
+        fin = _champ_identite_an(mandat.get("dateFin"))
+        cle = (mandat.get("legislature"), debut)
+        periode = par_siege.get(cle)
+        if periode is None:
+            par_siege[cle] = {
+                "legislature": mandat.get("legislature"),
+                "debut": debut,
+                "fin": fin,
+                "segments": 1,
+            }
+            continue
+        # Union des périodes : un segment encore ouvert (`fin` absente) absorbe
+        # les autres — le siège n'est pas terminé.
+        periode["fin"] = (
+            None if periode["fin"] is None or fin is None else max(periode["fin"], fin)
+        )
+        periode["segments"] += 1
+
+    periodes = sorted(par_siege.values(), key=lambda p: p["debut"], reverse=True)
+    for periode in periodes:
+        sigle, nom = _groupe_du_mandat(
+            mandats, organe_index, periode["debut"], periode["fin"]
+        )
+        periode["groupe_sigle"] = sigle
+        periode["groupe_nom"] = nom
+    return periodes
+
+
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
     d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
@@ -3183,6 +3391,13 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     Circonscription et place hémicycle proviennent du mandat le plus pertinent
     parmi ceux `typeOrgane == "ASSEMBLEE"` (voir _select_mandat_assemblee_courant) :
     `election.lieu.numDepartement/numCirco` et `mandature.placeHemicycle`.
+
+    `mandats_assemblee` (#640) porte, lui, **toutes** les périodes de mandat de
+    député, une par siège — voir `_periodes_mandats_assemblee`. Il vit à côté de
+    `mandat_debut`/`mandat_fin`, qui restent le couple du mandat courant (ce
+    sont eux qui datent la circonscription ci-dessus), et de `nb_mandats`, qui
+    reste le compte d'enregistrements AMO30 : c'est leur désaccord silencieux
+    qui a produit #640, et c'est lui que la liste rend mesurable.
 
     Non-fatal en cas d'échec (retourne {})."""
     with _ACTEURS_IDENTITE_LOCK:
@@ -3234,7 +3449,10 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     etat_civil = acteur.get("etatCivil") or {}
                     ident = etat_civil.get("ident") or {}
                     info_naissance = etat_civil.get("infoNaissance") or {}
-                    profession = _champ_identite_an(
+                    # #641 — la profession passe par SON lecteur, qui retire le
+                    # code de nomenclature et refuse de publier l'énoncé d'une
+                    # absence de profession comme s'il en était une.
+                    profession = _profession_an(
                         (acteur.get("profession") or {}).get("libelleCourant")
                     )
 
@@ -3274,6 +3492,28 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                             groupe_sigle = organe_gp.get("sigle")
                             groupe_nom = organe_gp.get("nom")
 
+                    # #640 — la LISTE des mandats de député, à côté du couple
+                    # unique ci-dessus. `mandat_debut`/`mandat_fin`/`nb_mandats`
+                    # sont inchangés : ils portent la circonscription et la
+                    # place hémicycle courantes, et `nb_mandats` reste le compte
+                    # d'enregistrements AMO30, donc le témoin de couverture avec
+                    # lequel `mandats_assemblee` se compare.
+                    mandats_assemblee = _periodes_mandats_assemblee(mandats, organe_index)
+                    for periode in mandats_assemblee:
+                        if periode["debut"] != mandat_debut:
+                            continue
+                        # La période courante reprend le groupe COURANT plutôt
+                        # que celui résolu sur sa fenêtre, pour deux raisons qui
+                        # vont dans le même sens : c'est le groupe vrai
+                        # aujourd'hui, et c'est la valeur déjà publiée. La clé de
+                        # fusion d'un mandat est `(label, categorie, fonction,
+                        # debut)` (`merge_profile._pivot_mandat_key`) : un
+                        # libellé qui bouge ferait apparaître un DOUBLON de
+                        # période au lieu de retrouver l'entrée existante, la
+                        # fusion additive ne retirant jamais l'ancienne.
+                        periode["groupe_sigle"] = groupe_sigle
+                        periode["groupe_nom"] = groupe_nom
+
                     prenom = _champ_identite_an(ident.get("prenom"))
                     nom_famille = _champ_identite_an(ident.get("nom"))
                     index[acteur_ref] = {
@@ -3287,6 +3527,7 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         "mandat_debut": mandat_debut,
                         "mandat_fin": mandat_fin,
                         "nb_mandats": nb_mandats,
+                        "mandats_assemblee": mandats_assemblee,
                         "date_naissance": _champ_identite_an(info_naissance.get("dateNais")),
                         "lieu_naissance": _format_lieu_naissance(
                             _champ_identite_an(info_naissance.get("villeNais")),
@@ -4700,8 +4941,9 @@ def fetch_interventions_syceron(
 # NosDéputés. Depuis #369 (étape 4) ils n'étaient plus atteints que pour un
 # député absent du référentiel AN combiné ; ce repli est parti avec la source.
 # Les mandats commission / groupe d'amitié / extra-parlementaire viennent
-# désormais tous d'`_extract_mandats_officiels`, et le mandat électif de base
-# d'`identite_an` (voir `_build_acteur_identite_index`).
+# désormais tous d'`_extract_mandats_officiels`, et les mandats électifs
+# d'`identite_an` — la LISTE complète depuis #640, plus le seul mandat courant
+# (voir `_periodes_mandats_assemblee`).
 #
 # Sont partis avec eux la chaîne d'interventions scrapées :
 # `fetch_intervention_details`, `fetch_seance_context`,
@@ -4880,10 +5122,10 @@ def build_profile(
     # nationale, par correspondance sur le slug (voir
     # fetch_identite_officielle_par_slug, résolu dès l'étape 0). Depuis #529
     # c'est la seule : les mandats commission/groupe_amitie/extra_parlementaire
-    # viennent d'`_extract_mandats_officiels` (organeRef résolu par #353), et le
-    # mandat électif de base ainsi que le groupe parlementaire déclaré sont
+    # viennent d'`_extract_mandats_officiels` (organeRef résolu par #353), et
+    # les mandats électifs ainsi que le groupe parlementaire déclaré sont
     # reconstruits ci-dessous depuis `identite_an` (groupe_sigle/groupe_nom/
-    # mandat_debut/mandat_fin/nb_mandats, voir _build_acteur_identite_index).
+    # mandats_assemblee/nb_mandats, voir _build_acteur_identite_index).
     # Le repli NosDéputés — un député absent des archives AN combinées — est
     # parti avec la source. ---
     if identite_an is None:
@@ -4912,23 +5154,50 @@ def build_profile(
         # l'AN (#369). Le complément NosDéputés — limité, depuis #369, aux seules
         # catégories que l'AN ne couvre pas — est parti avec la source (#529).
         mandats_an = _extract_mandats_officiels(acteur_ref_an) if acteur_ref_an else []
-        # Le mandat électif de base n'est pas dans `_extract_mandats_officiels`
-        # (qui ne parcourt que les organes) : il est reconstruit depuis
-        # `identite_an` (mandat_debut/mandat_fin/groupe, voir
-        # _build_acteur_identite_index) pour ne pas le perdre silencieusement.
-        if identite_an.get("mandat_debut"):
+        # Les mandats électifs ne sont pas dans `_extract_mandats_officiels`
+        # (qui ne parcourt que les organes) : ils sont reconstruits depuis
+        # `identite_an`, où `_periodes_mandats_assemblee` publie désormais la
+        # LISTE complète et non plus le seul couple `mandat_debut`/`mandat_fin`
+        # du mandat courant (#640).
+        periodes_an = identite_an.get("mandats_assemblee")
+        if not isinstance(periodes_an, list):
+            # Repli : une identité qui ne porte pas la liste. C'est le cas d'un
+            # index d'identité construit avant #640 et restauré depuis le cache
+            # disque — le nom du fichier est versionné (`NOM_INDEX_IDENTITE`)
+            # précisément pour que ça n'arrive pas, mais le repli publie le
+            # mandat courant plutôt que rien, ce qui reste l'état d'avant.
             groupe_label_an = identite_an.get("groupe_nom") or identite_an.get("groupe_sigle")
+            periodes_an = [{
+                "debut": identite_an.get("mandat_debut"),
+                "fin": identite_an.get("mandat_fin"),
+                "groupe_sigle": identite_an.get("groupe_sigle"),
+                "groupe_nom": identite_an.get("groupe_nom"),
+            }] if identite_an.get("mandat_debut") else []
+        for periode in periodes_an:
+            if not periode.get("debut"):
+                continue
+            groupe_label_an = periode.get("groupe_nom") or periode.get("groupe_sigle")
             mandats_an.append({
                 "categorie": "mandat_electif",
                 "type": "mandat",
                 "label": "Mandat parlementaire" + (f" ({groupe_label_an})" if groupe_label_an else ""),
-                "debut": identite_an.get("mandat_debut"),
-                "fin": identite_an.get("mandat_fin"),
-                "actif": not identite_an.get("mandat_fin"),
+                "debut": periode.get("debut"),
+                "fin": periode.get("fin"),
+                "actif": not periode.get("fin"),
+                # Traçabilité (AGENTS.md §2 règle 2) : l'archive qui a rendu la
+                # période, la même que celle des mandats `groupe_politique`
+                # ajoutés plus bas. Les mandats déjà publiés gardent leur
+                # `source_url` à `null` — la fusion additive conserve l'entrée
+                # ancienne —, mais aucune des périodes reconstruites ici n'est
+                # publiée sans dire d'où elle vient.
+                "source_url": AN_ACTEURS_HISTORIQUE_ZIP_URL,
                 # Ce chemin n'est atteignable que pour `chambre == "deputes"`
                 # (`identite_an` n'est résolue que là), mais la valeur est lue
                 # sur la variable et non écrite en dur : une constante ici
                 # serait une chambre inventée le jour où le garde-fou bouge.
+                # #492 : la chambre est celle du jeu de données qui a rendu le
+                # mandat, y compris pour une période reconstruite
+                # rétrospectivement — AMO30 est l'Assemblée nationale.
                 "chambre": chambre,
             })
         profile["mandats"] = mandats_an

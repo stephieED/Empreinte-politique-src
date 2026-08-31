@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 173 décisions
+gouverne sans avoir à fouiller les 175 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -92,7 +92,7 @@ Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte
 | --- | --- |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `COLLECTION_PROFILS` |
 
-Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`controle-de-perte-avant-commit`](decisions/controle-de-perte-avant-commit.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`fenetre-recalibrage-551`](decisions/fenetre-recalibrage-551.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`overwrite-profiles-sans-purge-cache`](decisions/overwrite-profiles-sans-purge-cache.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`publication-dun-job-annule`](decisions/publication-dun-job-annule.md), [`publication-scopee-artifacts`](decisions/publication-scopee-artifacts.md), [`restauration-interventions`](decisions/restauration-interventions.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md).
+Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`controle-de-perte-avant-commit`](decisions/controle-de-perte-avant-commit.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`fenetre-recalibrage-551`](decisions/fenetre-recalibrage-551.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`overwrite-profiles-sans-purge-cache`](decisions/overwrite-profiles-sans-purge-cache.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`profession-code-nomenclature-641`](decisions/profession-code-nomenclature-641.md), [`publication-dun-job-annule`](decisions/publication-dun-job-annule.md), [`publication-scopee-artifacts`](decisions/publication-scopee-artifacts.md), [`restauration-interventions`](decisions/restauration-interventions.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md).
 
 ## `src/audit_gouvernement_dataset.py`
 
@@ -218,7 +218,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-60 décision(s) le gouvernent ; le module en cite 8.
+62 décision(s) le gouvernent ; le module en cite 9.
 
 | Décision | Nomme |
 | --- | --- |
@@ -257,6 +257,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [`_build_acteur_identite_index` : couvrir les élu⋅e⋅s dont le mandat est terminé via `AMO30`, pas en combinant `AMO20` par législature (#354) (2026-08-16)](decisions/identite-acteurs-amo30.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_build_acteur_identite_index`, `_build_acteur_positions_hemicycle_index`, `_build_organe_index`, `_ensure_acteurs_historique_zip_downloaded`, `_select_mandat_assemblee_courant`, `build_profile` |
 | [Index amendements shardé par acteur (#392) (2026-08-17)](decisions/index-amendements-sharde-par-acteur.md) | `_download_and_build_amendement_index`, `_expand_aggregated_amendements_index`, `fetch_amendements_officiels` |
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `build_profile`, `fetch_questions_officielles` |
+| [Un profil publie tous ses mandats de député, et le compteur devient un témoin de couverture (#640) (2026-08-31)](decisions/mandats-electifs-liste-complete-640.md) | `_select_mandat_assemblee_courant`, `_select_mandat_par_type_courant` |
 | [Mandats commission/groupe_amitie/extra_parlementaire sourcés depuis l'AN, fetch_identity NosDéputés rendu conditionnel (#369, complet), watchdog générique sur tous les téléchargements zip (#370, complet) (2026-08-17)](decisions/mandats-officiels-an-369.md) | `_TYPE_ORGANE_TO_CATEGORIE`, `_build_acteur_identite_index`, `_build_acteur_mandats_index`, `_build_organe_index`, `_ensure_acteurs_historique_zip_downloaded`, `_extract_mandats_officiels`, `build_profile`, `fetch_identite_officielle_par_slug`, `fetch_organe`, `fetch_votes_officiels` |
 | [Mode d'extraction léger pour `extract-roster-groupes` (#357, sous-issue 6/6 de #351) (2026-08-16)](decisions/mode-extraction-leger-roster.md) | `build_profile`, `fetch_textes_portes_officiels` |
 | [Suppression de l'archive brute `amendements.zip` après construction de l'index (#264) (2026-08-17)](decisions/nettoyage-archive-brute-amendements.md) | `_download_amendements_zip`, `_download_and_build_amendement_index`, `_read_cached_amendements_acteur` |
@@ -266,6 +267,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [OOM lors de la relecture d'un index amendements figé déjà en cache (exécution locale) (2026-08-17)](decisions/oom-reconstruction-amendements-figees.md) | `AN_AMENDEMENTS_LEGISLATURES_FIGEES`, `AN_AMENDEMENTS_PATH`, `_download_and_build_amendement_index`, `amendements_index_deja_figee` |
 | [`_build_organe_index` : résoudre `organeRef` via `AMO30` (historique) sans filtrage par `codeType` (#353) (2026-08-16)](decisions/organe-index-organeref.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_ACTEURS_HISTORIQUE_ZIP_LOCK`, `_build_acteur_positions_hemicycle_index`, `_build_organe_index`, `_build_organe_positions_index`, `_ensure_acteurs_historique_zip_downloaded`, `fetch_positions_hemicycle_officielles` |
 | [Parallèle RAM entre l'exécution locale et les runners GitHub Actions hébergés, diagnostic ajouté (2026-08-17)](decisions/parallele-oom-local-runner-ci.md) | `build_profile`, `fetch_amendements_officiels` |
+| [Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)](decisions/profession-code-nomenclature-641.md) | `_profession_an` |
 | [Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)](decisions/resilience-generate-data-shutdown-signal.md) | `WARNING_PREFIX_VOTES_INTROUVABLES`, `build_profile`, `fetch_textes_portes_officiels`, `fetch_votes_officiels` |
 | [Bug de résolution AN pour les prénoms composés, et gel runner déplacé sur l'étape 0 (run #47) (2026-08-17)](decisions/resolution-an-prenom-compose-et-gel-runner-etape0.md) | `_build_acteur_nom_index`, `_ensure_acteurs_historique_zip_downloaded`, `_normalize_search_query`, `fetch_identite_officielle_par_slug` |
 | [Retrait de `fetch_activity_synthesis` (#356) (2026-08-16)](decisions/retrait-fetch-activity-synthesis.md) | `build_profile` |
@@ -509,7 +511,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `MANDATS_AGREGES_CATEGORIES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `_compute_cohesion_votes` |
 
-Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
+Le mentionnent sans le gouverner : [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
 
 ## `src/group_roster.py`
 
@@ -562,7 +564,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-40 décision(s) le gouvernent ; le module en cite 4.
+41 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
@@ -584,6 +586,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Index amendements shardé par acteur (#392) (2026-08-17)](decisions/index-amendements-sharde-par-acteur.md) | `_amendement_key` |
 | [`extract-senat` ne collecte plus d'interventions : la collecte n'en retenait aucune, par construction (#501) (2026-08-20)](decisions/interventions-senat-501.md) | `preserver_collectes_non_vides` |
 | [Le versant AN passe en Licence Ouverte, et `meta.licence_donnees` devient un champ dérivé (#530, lot 6 de l'épic « une seule source AN ») (2026-08-27)](decisions/licence-lot-6-530.md) | `_merge_pivot_sources`, `merge_pivot_profile` |
+| [Un profil publie tous ses mandats de député, et le compteur devient un témoin de couverture (#640) (2026-08-31)](decisions/mandats-electifs-liste-complete-640.md) | `_pivot_mandat_key` |
 | [`merge-and-pivot` : garde-fou #390 hors `main`, entrées de configuration, budget de temps mur, permissions (#413) (2026-08-18)](decisions/merge-and-pivot-budget-permissions-413.md) | `merge_pivot_profile` |
 | [`overwrite_profiles` : écraser les profils sans purger le cache (2026-08-19)](decisions/overwrite-profiles-sans-purge-cache.md) | `merge_lists_by_key` |
 | [Le `label` d'un mandat `MINISTERE` ne dit pas si c'est un maroquin (#474) (2026-08-20)](decisions/parlementaire-en-mission-nest-pas-ministre.md) | `preserve_stable_freshness_timestamps` |
@@ -607,7 +610,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Vérification de bout en bout des législatures figées 15/16 (#273, clôture de l'epic #268) (2026-08-17)](decisions/verification-bout-en-bout-legislatures-figees.md) | `_amendement_key`, `_prune_stale_warnings` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `merge_lists_by_key` |
 
-Le mentionnent sans le gouverner : [`bascule-identite-an-primaire`](decisions/bascule-identite-an-primaire.md), [`deux-axes-formulaire-578`](decisions/deux-axes-formulaire-578.md), [`investigation-sources-ue`](decisions/investigation-sources-ue.md), [`restauration-interventions`](decisions/restauration-interventions.md).
+Le mentionnent sans le gouverner : [`bascule-identite-an-primaire`](decisions/bascule-identite-an-primaire.md), [`deux-axes-formulaire-578`](decisions/deux-axes-formulaire-578.md), [`investigation-sources-ue`](decisions/investigation-sources-ue.md), [`profession-code-nomenclature-641`](decisions/profession-code-nomenclature-641.md), [`restauration-interventions`](decisions/restauration-interventions.md).
 
 ## `src/normalize_europarl.py`
 
@@ -626,13 +629,14 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 
 ## `src/normalize_profil.py`
 
-4 décision(s) le gouvernent ; le module en cite 3.
+5 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `_uri_hatvp_publiable` |
 | [Une URL de source n'est pas un identifiant : la clé de fusion des interventions (#540) (2026-08-27)](decisions/cle-fusion-interventions-540.md) | `_normalize_intervention` |
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `_normalize_amendement` |
+| [Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)](decisions/profession-code-nomenclature-641.md) | `_ACTEUR_REF_DANS_URL`, `_profession_publiable`, `_uri_hatvp_publiable` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `_normalize_intervention` |
 
 Le mentionnent sans le gouverner : [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`corroboration-chambres-publiees-486`](decisions/corroboration-chambres-publiees-486.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md).
