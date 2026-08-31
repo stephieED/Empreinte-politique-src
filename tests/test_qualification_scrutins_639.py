@@ -135,7 +135,7 @@ def test_demandeur_nul_reste_nul(tmp_path):
 
 def test_code_typevote_inconnu_reste_sans_qualification(tmp_path):
     """Un code que la table ne connaît pas ne doit pas être rangé dans SPO,
-    qui est pourtant 94,6 % du corpus (AGENTS.md §2 règle 5)."""
+    qui est pourtant 97,5 % des scrutins publiés (AGENTS.md §2 règle 5)."""
     brut = _brut("VTANR5L17V2657")
     brut["typeVote"]["codeTypeVote"] = "XXX"
     chemin = tmp_path / "Scrutins.json.zip"

@@ -190,7 +190,7 @@ AN_SCRUTIN_UID_PREFIXE = "VTANR"
 #
 # LA TABLE EST FERMEE ET SANS DEFAUT. Un code inconnu rend (None, None) : un
 # scrutin non qualifie reste non qualifie, jamais range d'office dans SPO, qui
-# est pourtant 94,6 % du corpus (AGENTS.md §2 regle 5).
+# est pourtant 97,5 % des scrutins publies — 17 312 / 17 748 (AGENTS.md §2 regle 5).
 #
 # `type_scrutin` est l'image 1:1 du code source, `type_vote` la seule
 # distinction dont les regles editoriales ont besoin : une motion de censure
@@ -1249,8 +1249,9 @@ def _load_frozen_scrutins_index(legislature: str) -> bool:
     publier 9 314 scrutins sans `type_scrutin` et 43 motions de censure
     étiquetées `vote_texte`, c'est-à-dire un fait faux, jusqu'à ce que
     quelqu'un pense à relancer `build_scrutins_index_figes.py`. Le coût du
-    refus est borné et transitoire : trois archives retéléchargées (~30 Mo au
-    total) tant que les index figés n'ont pas été régénérés."""
+    refus est borné et transitoire : trois archives retéléchargées (20,0 Mo au
+    total — 0,7 + 9,2 + 10,1 Mo, mesurés le 31/08/2026) tant que les index figés
+    n'ont pas été régénérés."""
     frozen_dir = AN_SCRUTINS_FIGES_DIR / legislature
     frozen_scrutins_path = frozen_dir / SCRUTINS_FIGES_SCRUTINS_FILENAME
     frozen_index_path = frozen_dir / SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME

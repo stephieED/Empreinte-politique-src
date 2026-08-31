@@ -179,6 +179,16 @@ Les URL de jeux de données et les schémas JSON de chacune de ces archives sont
 dans [`an-opendata.md`](./sources/an-opendata.md) — référence de la source, qui dérive
 avec l'Assemblée et non avec notre code.
 
+**Budget réseau des scrutins, transitoirement en hausse (#639).** Les index
+figés committés de `raw_data/scrutins_an_figes/{14,15,16}` portent la projection
+à cinq champs d'avant #639 et sont désormais **refusés** :
+`_load_frozen_scrutins_index` retombe sur le téléchargement des trois archives
+(20,0 Mo au total : 0,7 + 9,2 + 10,1 Mo, mesurés le 31/08/2026), et le dit en `[!]` en nommant la remédiation. Le cache
+`.cache/scrutins_an` écrit avant #639 est refusé pour la même raison, donc la
+première exécution après ce lot le reconstruit intégralement. Relancer
+`python3 src/build_scrutins_index_figes.py --toutes` hors CI, committer les
+trois index, et le budget revient à son niveau d'avant.
+
 **L'AN est source unique, et il n'y a plus aucun repli.** Un slug que le
 référentiel AN ne résout pas sort avec `identite: None` et un
 `WARNING_PREFIX_IDENTITE_INTROUVABLE` nommant la seule source consultée : il ne

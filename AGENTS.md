@@ -390,7 +390,7 @@ tolerance is **partitioned** — no input disarms another's check.
 | `sources[]` | `{type, url, synchro_le}` |
 | `mandats[]` | Elections, committees... + sensitive fields (Section 5). `mandats[].chambre` (#492) is written **only on `mandat_electif`**: `AN`/`Senat`/`PE`/`null`, meaning *the chamber whose dataset returned this mandate*, stamped at collection. Never derived from `source_url` (0 of 214 AN/Senate elective mandates carry one) nor from the profile's `chambre` (additive merge accumulates mandates from both chambers in one profile). `null` + one aggregated warning per profile, never a default. See `docs/decisions/chambre-par-mandat-electif.md`. **A profile publishes ALL its elective mandates (#640)**, one per seat, grouped on AMO30's `(legislature, dateDebut)` — never on the legislature alone, which would weld together two terms separated by an annulled election. `identite.nb_mandats` counts AMO30 *records*, the list counts *seats*: the two are no longer meant to be equal. See `docs/decisions/mandats-electifs-liste-complete-640.md` |
 | `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
-| `textes_portes[]` | Author/reporter/co-reporter + procedural stage |
+| `textes_portes[]` | Author/reporter/co-reporter + procedural stage. `dossier_id` (#639) is the AN legislative-dossier key (`DLR5L15N37607`), copied verbatim from the raw `dossiers_legislatifs[].id` (472/472) — **same name as a government sheet's `textes[].dossier_id`**, deliberately: two names for one identifier send every cross-reference back to the label. Never rebuilt from a title. See `docs/decisions/qualification-scrutins-et-cle-dossier-639.md` |
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
 | `interventions[]` | Speeches, questions (`type_detail`) |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
@@ -403,7 +403,24 @@ Conventions: French `snake_case`; missing = `null` (never `""` or `0`); closed v
 
 - `mandats[].position_dans_hemicycle`: requires `source_url` (rule 6).
 - `mandats[].suspendu_pour_fonction_gouvernementale`: never confuse with completed mandate.
-- `votes[].type_vote == "motion_censure"` requires `texte_lie_id`; 49.3 → `sort = "adopte_sans_vote_49_3"`, no position (rule 4).
+- `votes[].type_vote == "motion_censure"` requires `texte_lie_id` **or a declared `texte_lie_non_resolu.motif`** (#639); 49.3 → `sort = "adopte_sans_vote_49_3"`, no position (rule 4).
+  A censure motion is a **procedural fact**, never a position on the text — and its link is not
+  sourceable: `objet.referenceLegislative` and `demandeur.referenceLegislative` are null on **0 of
+  18 311** raw AN scrutins (legs 14-17), and an article 49-2 motion has no text to link at all.
+  Hence the repo's own `*_non_resolu` pattern — null key **plus** the declaration, never an invented
+  key and never silence. A mute motion is still a schema error.
+- **`type_scrutin` and `type_vote` come from `typeVote.codeTypeVote`, one source field, no inference
+  (#639).** `SPO`→`public_ordinaire`, `SPS`→`solennel`, `SAT`→`tribune`, `MOC`→`motion_censure`
+  (+`vote_texte`/`motion_censure` on `type_vote`). An unknown or absent code stays `null` — never
+  filed under `SPO`, which is 97,5 % of published scrutins (rule 5). `SSG` (Congress) is absent from the table
+  on purpose: those scrutins are dropped upstream on their uid. `vote_texte` stays **coarse** — `SPO`
+  covers article, amendment and whole-text ballots alike, so it does NOT constitute the "votes on the
+  whole text" universe the published methodology claims.
+- **A scrutins cache that carries no qualification is refused, not re-read (#639)** — disk cache **and**
+  committed frozen index (`raw_data/scrutins_an_figes/`), which still holds the five-field projection
+  until `build_scrutins_index_figes.py --toutes` is re-run. Same rule as the amendments cache: existence
+  is not conformity. Accepting it would have published 43 of the 66 censure motions as `vote_texte`.
+  → `docs/decisions/qualification-scrutins-et-cle-dossier-639.md`
 - `votes[].numero_scrutin` restarts at 1 in each legislature: never a key on its own.
   Dedupe by AN `uid` **at index level** (`raw_data/scrutins_an_figes/`, where the AN
   `uid` exists); key group cohesion by `(legislature, numero)` — see
