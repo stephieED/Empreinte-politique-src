@@ -53,11 +53,17 @@ limite inverse est levée : `docs/decisions/hors-perimetre.md`
 § "Ministerial function" est marquée RÉSOLU.
 
 `premier_ministre` (#398, `build_premier_ministre`) se dérive du même
-matériau : le membre du gouvernement dont un mandat `MINISTERE` porte le label
-« Premier ministre » **et** la qualité « Premier ministre » (le label seul ne
-suffit pas : une mission auprès du Premier ministre porte le même — #474).
-Aucun appariement par la seule période, aucune déduction depuis le nom du
-gouvernement — voir la docstring de la fonction.
+matériau : le membre du gouvernement dont un mandat `MINISTERE` porte un
+libellé d'organe de chef du gouvernement **et** la qualité « Premier
+ministre » (le label seul ne suffit pas : une mission auprès du Premier
+ministre porte le même — #474). Les deux champs viennent d'endroits
+différents de la source et **ne s'accordent pas en genre** : le libellé
+d'organe s'accorde (« Première ministre » pour Élisabeth Borne), la qualité
+non (« Premier ministre » au masculin dans les 1 162 mandats `MINISTERE` de
+l'archive). D'où une liste fermée et datée côté libellé,
+`LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`, et jamais une règle de genre
+(#658). Aucun appariement par la seule période, aucune déduction depuis le nom
+du gouvernement — voir la docstring de la fonction.
 
 Hors périmètre de ce module (sous-issue #5 de #184) :
   - Collecte des textes législatifs portés par le gouvernement.
@@ -177,6 +183,40 @@ def _est_mandat_appartenance_gouvernement(label: str) -> bool:
 # d'ajouter la valeur ici après vérification humaine — même principe éditorial
 # que `raw_data/gouvernements_reels.json` — en s'appuyant sur le warning, qui
 # nomme la personne, l'intitulé et la qualité rencontrée.
+#
+# Balayage exhaustif du 2026-08-31 (#658), sur la source elle-même plutôt que
+# sur les profils publiés : `.cache/acteurs_historique_an/acteurs_historique.zip`,
+# 3 117 fiches acteur, 1 162 mandats `typeOrgane == "MINISTERE"`. Il porte
+# **9 valeurs distinctes de `libQualite`, et pas une seule au féminin** — la
+# liste ci-dessous les couvre toutes sauf une, `FONCTIONS_NON_MINISTERIELLES_OBSERVEES`
+# prenant la dernière (« en mission », 396 mandats). La conclusion qui compte
+# pour #658 : le genre ne se joue **jamais** sur `libQualite` — une ministre
+# déléguée y porte « Ministre délégué » — mais sur le libellé d'organe, voir
+# `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`.
+#
+# « Haut-commissaire » est la seule valeur que ce balayage a ajoutée à la
+# liste. Le motif est une **lecture du référentiel, pas une appréciation
+# institutionnelle** : ses 4 mandats (2 personnes) sont rangés par AMO30 sous
+# `typeOrgane == "MINISTERE"`, aux côtés des ministres et secrétaires d'État,
+# et l'organe de rattachement porte lui aussi `codeType == "MINISTERE"` dans
+# les quatre cas. Celui de Jean-Paul Delevoye est même littéralement intitulé
+# « Ministère ». Ce n'est donc pas nous qui qualifions ces mandats de
+# maroquins, c'est l'Assemblée nationale — ce qui satisfait §2 règle 2 là où
+# un avis extérieur ne l'aurait pas fait.
+#
+#   PA1051    Jean-Paul Delevoye  PO766969  « Ministère des solidarités et de
+#                                 la santé – Retraites »  2019-09-04 → 2019-12-17
+#   PA387853  Martin Hirsch       PO383001  « Haut-commissariat aux solidarités
+#                                 actives contre la pauvreté »  2007-05-18 → 2007-06-18
+#   PA387853  Martin Hirsch       PO388139  (même intitulé)  2007-06-19 → 2009-01-12
+#   PA387853  Martin Hirsch       PO418119  « … et Haut-commissariat à la
+#                                 jeunesse »  2009-01-12 → 2010-03-22
+#
+# Effet mesuré à l'ajout : **0 mandat et 0 personne** changent de classement
+# sur les 481 profils publiés (aucun des deux acteurs n'a de profil pivot),
+# donc **0 fiche de gouvernement** bouge. L'ajout est un pré-positionnement :
+# le jour où l'un des deux obtient un profil, son portefeuille sera publié au
+# lieu de retomber `null` avec un warning.
 FONCTIONS_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
     "Premier ministre",
     "Ministre",
@@ -185,6 +225,7 @@ FONCTIONS_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
     "Ministre d'État, ministre",
     "Garde des sceaux, ministre de la justice",
     "Ministre d'État, Garde des Sceaux, ministre de la justice",
+    "Haut-commissaire",
 )
 
 # Qualités connues qui ne sont PAS un portefeuille : exclues sans warning,
@@ -198,17 +239,44 @@ FONCTIONS_NON_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
 FONCTION_PREMIER_MINISTRE = "Premier ministre"
 
 
+def _normalise_typographique(valeur: Any) -> str:
+    r"""Casse et espaces, rien d'autre — le socle commun des deux normalisations.
+
+    Purement typographique, jamais sémantique. Les espaces incluent
+    l'insécable (`\xa0`), que la source AN pose dans certains libellés
+    d'organe (« Ministère\xa0de\xa0l'économie… », 6 mandats `MINISTERE` de
+    l'archive AMO30 au 2026-08-31) : `\s` le couvre en mode Unicode.
+    """
+    if not isinstance(valeur, str):
+        return ""
+    return re.sub(r"\s+", " ", valeur).strip().casefold()
+
+
 def _normalise_fonction(fonction: Any) -> str:
     """Normalise une `mandats[].fonction` pour comparaison : casse et espaces.
 
     Purement typographique, jamais sémantique — la source mélange déjà « Garde
     des sceaux » et « Garde des Sceaux » sur la même qualité. Aucune
     troncature, aucun rapprochement par préfixe : deux libellés distincts
-    restent distincts.
+    restent distincts. En particulier, **aucun rapprochement de genre** : le
+    balayage de #658 a montré que `libQualite` ne porte de toute façon jamais
+    de forme féminine (9 valeurs distinctes sur les 1 162 mandats `MINISTERE`
+    de l'archive, toutes au masculin — c'est le *libellé d'organe* qui
+    s'accorde, voir `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`).
     """
-    if not isinstance(fonction, str):
-        return ""
-    return re.sub(r"\s+", " ", fonction).strip().casefold()
+    return _normalise_typographique(fonction)
+
+
+def _normalise_libelle_organe(libelle: Any) -> str:
+    """Même normalisation, appliquée à un `mandats[].label` (libellé d'organe).
+
+    Deux fonctions et non une seule appliquée partout : les deux champs
+    viennent d'endroits différents de la source (`infosQualite.libQualite`
+    d'un côté, `organe.libelle` de l'autre) et ne s'accordent pas en genre
+    (#658). Les nommer séparément rend cette asymétrie lisible au lieu de la
+    laisser se deviner à l'appel.
+    """
+    return _normalise_typographique(libelle)
 
 
 FONCTIONS_MINISTERIELLES: frozenset[str] = frozenset(
@@ -557,9 +625,43 @@ def build_gouvernement_roster(
 # Premier ministre
 # ---------------------------------------------------------------------------
 
-# Intitulé exact du mandat `MINISTERE` correspondant au chef du gouvernement.
-# C'est un libellé d'organe de la source AN, pas une convention de notre part.
-LABEL_PORTEFEUILLE_PREMIER_MINISTRE = "Premier ministre"
+# Libellés d'organe du mandat `MINISTERE` correspondant au chef du
+# gouvernement. Ce sont des libellés de la source AN, pas une convention de
+# notre part — d'où le pluriel : la source accorde ce libellé-là en genre.
+#
+# Liste FERMÉE, relue et datée (#658), jamais une règle de genre. Un
+# rapprochement automatique du masculin et du féminin serait sémantique, et
+# `_normalise_fonction` s'interdit explicitement le sémantique. Ce patron —
+# énumérer ce qui a été vu, après vérification humaine — est celui de
+# `FONCTIONS_MINISTERIELLES_OBSERVEES` juste au-dessus et de
+# `correspondance_sigles_an` dans `raw_data/groupes_reels.json`.
+#
+# Relevé le 2026-08-31 sur `.cache/acteurs_historique_an/acteurs_historique.zip`
+# (3 117 fiches acteur, 1 162 mandats `typeOrgane == "MINISTERE"`) : les deux
+# formes ci-dessous sont les **seules** que porte un mandat `MINISTERE` de
+# qualité « Premier ministre ». La forme féminine vient d'un unique organe,
+# `PO791580` (gouvernement Borne, 2022-05-17 → 2024-01-09).
+#
+# Ajouter une forme ici ne relâche pas le double verrou de #474 : la qualité
+# doit toujours valoir exactement `FONCTION_PREMIER_MINISTRE`. Le même organe
+# `PO791580` porte d'ailleurs aussi un mandat de qualité « en mission » — une
+# mission parlementaire auprès de Matignon, écartée par ce second verrou
+# exactement comme au masculin.
+LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES: tuple[str, ...] = (
+    "Premier ministre",
+    "Première ministre",
+)
+
+LABELS_PORTEFEUILLE_PREMIER_MINISTRE: frozenset[str] = frozenset(
+    _normalise_libelle_organe(libelle)
+    for libelle in LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES
+)
+
+
+def _est_libelle_chef_du_gouvernement(label: Any) -> bool:
+    """Le libellé d'organe est-il l'un des intitulés relevés du chef du
+    gouvernement ? Appartenance à une liste fermée, jamais une heuristique."""
+    return _normalise_libelle_organe(label) in LABELS_PORTEFEUILLE_PREMIER_MINISTRE
 
 
 def acteur_ref_depuis_profil(profil: dict[str, Any]) -> Optional[str]:
@@ -588,8 +690,12 @@ def build_premier_ministre(
     Le critère est le **cumul** de deux faits, jamais l'un des deux seul :
       1. être membre de CE gouvernement — même sélection désambiguïsée que
          `build_gouvernement_roster` (libellé exact + chevauchement) ;
-      2. porter un mandat `MINISTERE` de label « Premier ministre » **et de
-         qualité « Premier ministre »** chevauchant ce mandat d'appartenance.
+      2. porter un mandat `MINISTERE` dont le **libellé d'organe** figure
+         dans `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES` (« Premier
+         ministre », « Première ministre » — la source accorde ce libellé en
+         genre, #658) **et de qualité « Premier ministre »** — celle-là ne
+         s'accorde jamais, elle vient d'un autre champ — chevauchant ce
+         mandat d'appartenance.
 
     Le label seul ne suffit pas (#474) : une mission parlementaire auprès de
     Matignon porte exactement le même, avec `fonction: "en mission"`. Un tel
@@ -621,7 +727,7 @@ def build_premier_ministre(
             for portefeuille in _portefeuilles_du_mandat(
                 profil, mandat, g_debut, g_fin, warnings
             ):
-                if (portefeuille.get("label") or "") != LABEL_PORTEFEUILLE_PREMIER_MINISTRE:
+                if not _est_libelle_chef_du_gouvernement(portefeuille.get("label")):
                     continue
                 # Second verrou, indépendant de la liste blanche amont (#474) :
                 # le label « Premier ministre » est aussi celui d'une mission
@@ -636,8 +742,9 @@ def build_premier_ministre(
                     _ajouter_warning(
                         warnings,
                         f"gouvernement_roster: {profil.get('nom') or profil.get('id')} : "
-                        f"mandat de label {LABEL_PORTEFEUILLE_PREMIER_MINISTRE!r} mais de "
-                        f"qualité {portefeuille.get('fonction')!r} — non retenu comme "
+                        f"mandat de label {portefeuille.get('label')!r} (chef du "
+                        f"gouvernement) mais de qualité "
+                        f"{portefeuille.get('fonction')!r} — non retenu comme "
                         f"Premier ministre (#474).",
                     )
                     continue

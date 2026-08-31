@@ -16,8 +16,12 @@ from gouvernement_roster import (
     _derive_membre_entry,
     _dedupliquer_membres,
     _normalise_fonction,
+    _normalise_libelle_organe,
+    _est_libelle_chef_du_gouvernement,
     _qualite_portefeuille,
     FONCTIONS_MINISTERIELLES,
+    LABELS_PORTEFEUILLE_PREMIER_MINISTRE,
+    LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES,
     FONCTIONS_MINISTERIELLES_OBSERVEES,
     FONCTIONS_NON_MINISTERIELLES_OBSERVEES,
     QUALITE_INCONNUE,
@@ -522,7 +526,11 @@ def test_real_pivot_gabriel_attal_deux_portefeuilles_sous_borne():
 # ---------------------------------------------------------------------------
 
 def test_qualite_portefeuille_reconnait_les_qualites_ministerielles_observees():
-    """Les 7 qualités relevées sur les mandats `MINISTERE` du dépôt."""
+    """Les 8 qualités ministérielles relevées sur les mandats `MINISTERE`.
+
+    Sept venaient des profils publiés ; la huitième (« Haut-commissaire »)
+    vient du balayage de l'archive AMO30 (#658), voir le test dédié ci-dessous.
+    """
     for fonction in FONCTIONS_MINISTERIELLES_OBSERVEES:
         assert _qualite_portefeuille(fonction) == QUALITE_MINISTERIELLE, fonction
 
@@ -536,14 +544,77 @@ def test_qualite_portefeuille_en_mission_nest_pas_ministerielle():
 
 
 def test_qualite_portefeuille_valeur_inconnue_nest_jamais_un_portefeuille():
-    """Liste blanche, pas liste noire (§2.5) : une 8e valeur qui apparaîtrait
-    à pleine échelle est « inconnue », pas « ministérielle par défaut »."""
+    """Liste blanche, pas liste noire (§2.5) : une 9e valeur qui apparaîtrait
+    à pleine échelle est « inconnue », pas « ministérielle par défaut ».
+
+    « Haut-commissaire au plan » n'est pas « Haut-commissaire » : la valeur
+    ajoutée par #658 ne vaut que pour elle-même, aucun rapprochement par
+    préfixe (`_normalise_fonction`).
+    """
     assert _qualite_portefeuille("Haut-commissaire au plan") == QUALITE_INCONNUE
     assert _qualite_portefeuille(None) == QUALITE_INCONNUE
     assert _qualite_portefeuille("") == QUALITE_INCONNUE
     # `normalize_profil` remplace un `libQualite` absent par « membre » :
     # sur un mandat MINISTERE, c'est une lacune de source, pas une qualité.
     assert _qualite_portefeuille("membre") == QUALITE_INCONNUE
+
+
+def test_qualite_haut_commissaire_est_ministerielle_par_lecture_du_referentiel():
+    """« Haut-commissaire » est un maroquin **parce que la source le range
+    ainsi**, pas parce que nous l'estimons équivalent à un ministre (#658).
+
+    Relevé le 2026-08-31 sur `.cache/acteurs_historique_an/acteurs_historique.zip` :
+    4 mandats, 2 personnes, tous `typeOrgane == "MINISTERE"`, tous rattachés à
+    un organe de `codeType == "MINISTERE"` —
+
+        PA1051    Jean-Paul Delevoye  PO766969  « Ministère des solidarités et
+                                      de la santé – Retraites »  2019-09-04 → 2019-12-17
+        PA387853  Martin Hirsch       PO383001  2007-05-18 → 2007-06-18
+        PA387853  Martin Hirsch       PO388139  2007-06-19 → 2009-01-12
+        PA387853  Martin Hirsch       PO418119  2009-01-12 → 2010-03-22
+
+    L'organe de Delevoye est littéralement intitulé « Ministère ». C'est donc
+    l'Assemblée nationale qui qualifie, pas nous (§2 règle 2).
+
+    Aucun des deux acteurs n'a de profil pivot publié : ce test verrouille le
+    classement avant que le cas ne se présente. Pas de fixture — inventer un
+    pivot pour deux personnes qui n'en ont pas serait précisément la fixture
+    fabriquée que #510 a fait supprimer.
+    """
+    assert "Haut-commissaire" in FONCTIONS_MINISTERIELLES_OBSERVEES
+    assert _qualite_portefeuille("Haut-commissaire") == QUALITE_MINISTERIELLE
+
+    # Effet de bout en bout : un tel mandat produit un portefeuille publié, et
+    # non un `null` accompagné du warning « qualité inconnue ».
+    profil = _pivot("nosdeputes:haut-commissaire", "Haut-Commissaire", mandats=[
+        _mandat_gouv("Gouvernement (PHILIPPE 2)", "2017-06-22", "2020-07-06"),
+        _mandat_portefeuille(
+            "Ministère des solidarités et de la santé – Retraites",
+            "2019-09-04", "2019-12-17", fonction="Haut-commissaire",
+        ),
+    ])
+    warnings = []
+    membres = build_gouvernement_roster(
+        "PHILIPPE 2", "2017-06-22", "2020-07-06", [profil], warnings=warnings
+    )
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] == (
+        "Ministère des solidarités et de la santé – Retraites"
+    )
+    assert warnings == []
+
+    # Le double verrou de #474 n'est pas entamé : cette qualité ne fait pas
+    # d'un mandat de libellé « Premier ministre » un chef du gouvernement.
+    profil_pm = _pivot("nosdeputes:x", "X", mandats=[
+        _mandat_gouv("Gouvernement (PHILIPPE 2)", "2017-06-22", "2020-07-06"),
+        _mandat_portefeuille(
+            "Premier ministre", "2017-06-22", "2020-07-06",
+            fonction="Haut-commissaire",
+        ),
+    ])
+    assert build_premier_ministre(
+        "PHILIPPE 2", "2017-06-22", "2020-07-06", [profil_pm]
+    ) is None
 
 
 def test_normalise_fonction_casse_et_espaces_seulement():
@@ -1083,6 +1154,166 @@ def test_real_pivot_david_amiel_mission_aupres_de_matignon_jamais_premier_minist
 
     membres = build_gouvernement_roster("LECORNU II", "2025-10-13", None, [profil])
     assert all(m["portefeuille"] != "Premier ministre" for m in membres)
+
+
+# ---------------------------------------------------------------------------
+# Le libellé d'organe du chef du gouvernement s'accorde en genre (#658)
+# ---------------------------------------------------------------------------
+
+def test_real_pivot_elisabeth_borne_premiere_ministre_de_son_gouvernement():
+    """Cas de #658 : le mandat porte `label = "Première ministre"` (libellé
+    d'organe, accordé) et `fonction = "Premier ministre"` (qualité, jamais
+    accordée). L'égalité stricte sur le label rendait `null` alors que la
+    personne figurait dans les `membres[]` de sa propre fiche."""
+    borne = _load_pivot_fixture("elisabeth-borne")
+
+    mandat_pm = [
+        m for m in borne["mandats"]
+        if m.get("label") == "Première ministre"
+    ]
+    assert len(mandat_pm) == 1, "la fixture doit porter le libellé au féminin"
+    assert mandat_pm[0]["fonction"] == "Premier ministre", (
+        "la qualité, elle, reste au masculin dans la source"
+    )
+
+    warnings = []
+    pm = build_premier_ministre(
+        "BORNE", "2022-05-17", "2024-01-09", [borne], warnings=warnings
+    )
+    assert pm is not None
+    assert pm["nom"] == "Élisabeth Borne"
+    assert pm["acteur_ref"] == "PA717161"
+    assert pm["source_url"]
+    assert warnings == []
+
+
+def test_real_pivot_elisabeth_borne_pas_pm_des_gouvernements_ou_elle_fut_ministre():
+    """Le même profil appartient à cinq autres gouvernements comme ministre :
+    aucun ne doit hériter d'un chef du gouvernement (#398, garde-fou du
+    rattachement par mandat d'appartenance)."""
+    borne = _load_pivot_fixture("elisabeth-borne")
+    for libelle, debut, fin in [
+        ("PHILIPPE", "2017-05-18", "2017-06-19"),
+        ("PHILIPPE 2", "2017-06-22", "2020-07-06"),
+        ("CASTEX", "2020-07-07", "2022-05-16"),
+        ("BAYROU", "2024-12-24", "2025-09-09"),
+        ("LECORNU", "2025-10-05", "2025-10-10"),
+    ]:
+        assert build_premier_ministre(libelle, debut, fin, [borne]) is None, libelle
+
+
+def test_liste_des_libelles_de_chef_du_gouvernement_est_fermee():
+    """Liste fermée relue et datée, jamais une règle de genre (#658).
+
+    Les deux formes relevées le 2026-08-31 sur l'archive AMO30 (1 162 mandats
+    `MINISTERE`) sont acceptées ; tout le reste est refusé, y compris les
+    libellés réels qui **contiennent** « Première ministre » sans être celui
+    du chef du gouvernement.
+    """
+    assert LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES == (
+        "Premier ministre",
+        "Première ministre",
+    )
+    assert LABELS_PORTEFEUILLE_PREMIER_MINISTRE == {
+        "premier ministre",
+        "première ministre",
+    }
+
+    for accepte in ("Premier ministre", "Première ministre", "  PREMIÈRE   MINISTRE "):
+        assert _est_libelle_chef_du_gouvernement(accepte), accepte
+
+    # Libellés réels de l'archive AMO30 : un maroquin « auprès de la Première
+    # ministre » n'est pas le chef du gouvernement.
+    for refuse in (
+        "Ministère auprès de la Première ministre, chargé des relations avec le Parlement",
+        "Secrétariat d’État auprès de la Première ministre, chargé de la mer",
+        "Ministère de la justice",
+        "Premier ministère",
+        None,
+        "",
+    ):
+        assert not _est_libelle_chef_du_gouvernement(refuse), refuse
+
+
+def test_normalise_libelle_organe_reste_purement_typographique():
+    """Casse et espaces — insécable compris, que la source AN pose dans
+    certains libellés d'organe. Aucun rapprochement de genre : c'est la liste
+    fermée qui accueille le féminin, pas la normalisation (#658)."""
+    assert _normalise_libelle_organe("Première\u00a0ministre") == "première ministre"
+    assert _normalise_libelle_organe("  Premier   Ministre ") == "premier ministre"
+    assert _normalise_libelle_organe(None) == ""
+    # Deux libellés distincts restent distincts.
+    assert _normalise_libelle_organe("Première ministre") != _normalise_libelle_organe(
+        "Premier ministre"
+    )
+
+
+def test_normalise_fonction_nintroduit_aucune_regle_de_genre():
+    """Garde-fou de #658 : la correction porte sur le libellé d'organe, jamais
+    sur la qualité. Le balayage de l'archive AMO30 a montré que `libQualite`
+    ne porte aucune forme féminine — une ministre déléguée y porte « Ministre
+    délégué » — donc rien ne justifie d'y rapprocher les genres, et le faire
+    serait sémantique."""
+    assert _normalise_fonction("Ministre déléguée") != _normalise_fonction(
+        "Ministre délégué"
+    )
+    assert _qualite_portefeuille("Ministre déléguée") == QUALITE_INCONNUE
+    assert _qualite_portefeuille("Ministre délégué") == QUALITE_MINISTERIELLE
+
+
+def test_libelle_feminin_ne_desarme_pas_le_double_verrou_474():
+    """Le second verrou de #474 s'applique identiquement au féminin.
+
+    L'organe `PO791580` (« Première ministre ») porte, dans l'archive AMO30,
+    un mandat de qualité « Premier ministre » (Élisabeth Borne) **et** un
+    mandat de qualité « en mission » — une mission parlementaire auprès de
+    Matignon. Le missionné ne doit ni devenir chef du gouvernement, ni
+    *effacer* le vrai en créant une ambiguïté.
+    """
+    missionne = _pivot("nosdeputes:missionne", "Missionné", mandats=[
+        _mandat_gouv("Gouvernement (BORNE)", "2022-05-17", "2024-01-09"),
+        _mandat_portefeuille(
+            "Première ministre", "2022-06-01", "2023-06-01", fonction="en mission",
+        ),
+    ])
+
+    warnings = []
+    assert build_premier_ministre(
+        "BORNE", "2022-05-17", "2024-01-09", [missionne], warnings=warnings
+    ) is None
+    assert warnings == []
+
+    borne = _load_pivot_fixture("elisabeth-borne")
+    warnings = []
+    pm = build_premier_ministre(
+        "BORNE", "2022-05-17", "2024-01-09", [borne, missionne], warnings=warnings
+    )
+    assert pm is not None, "le vrai chef du gouvernement ne doit pas être effacé"
+    assert pm["nom"] == "Élisabeth Borne"
+    assert not any("Premiers ministres possibles" in w for w in warnings)
+
+
+def test_libelle_feminin_avec_autre_qualite_ministerielle_declenche_le_warning():
+    """Second verrou, au féminin : un libellé de chef du gouvernement porté
+    par une qualité ministérielle connue mais autre est une incohérence de
+    source — écartée avec un warning, jamais retenue en silence."""
+    profils = [
+        _pivot("nosdeputes:x", "X", mandats=[
+            _mandat_gouv("Gouvernement (BORNE)", "2022-05-17", "2024-01-09"),
+            _mandat_portefeuille(
+                "Première ministre", "2022-05-17", "2024-01-09",
+                fonction="Ministre délégué",
+            ),
+        ]),
+    ]
+    warnings = []
+    assert build_premier_ministre(
+        "BORNE", "2022-05-17", "2024-01-09", profils, warnings=warnings
+    ) is None
+    assert len(warnings) == 1
+    assert "Première ministre" in warnings[0]
+    assert "Ministre délégué" in warnings[0]
+    assert "#474" in warnings[0]
 
 
 def test_acteur_ref_absent_si_url_non_reconnue():
