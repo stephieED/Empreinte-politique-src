@@ -7,6 +7,26 @@
 // web/v3/js (render.js, utils.js) pour rester cohérente avec les règles
 // éditoriales (AGENTS.md §2) : jamais de score, une donnée manquante reste
 // "N/D", jamais 0 par défaut.
+//
+// Les règles de lecture ne sont PAS réécrites ici : les six fondations du lot 1
+// vivent dans `utils/lecture.js` (#326) et celles de la fiche de groupe dans
+// `utils/groupe.js` (#329). Cet adaptateur met en forme, il n'arbitre pas.
+
+import {
+  NB_SCRUTINS_AFFICHES,
+  REFUS_FICHE_GROUPE,
+  couvertureRoster,
+  dateDeReference,
+  decomptesCohesion,
+  effectifDuGroupe,
+  etiquettesThematiques,
+  excusesRenseignees,
+  quorumDuScrutin,
+  ratioCohesion,
+  siegeEtPasse,
+  troncatureCohesion,
+  troncatureTags,
+} from '../utils/groupe';
 
 const MS_PER_YEAR = 365.25 * 24 * 3600 * 1000;
 
@@ -441,36 +461,59 @@ export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null, a
   };
 }
 
-/** Construit l'objet consommé par GroupProfile.jsx à partir d'un profil de groupe v1. */
+/** Construit l'objet consommé par GroupProfile.jsx à partir d'un profil de groupe v1.
+ *
+ * Lot 3 (#329) : les règles de lecture propres au groupe vivent dans
+ * `utils/groupe.js`, les six fondations communes dans `utils/lecture.js`. Cet
+ * adaptateur les APPELLE, il n'en écrit pas de seconde version.
+ */
 export function buildGroupView(groupe, scrutinsIndex = null) {
+  const membres = groupe.membres || [];
   const rosterTotal = groupe.meta?.couverture_roster?.roster_total
     ?? groupe.effectif?.a_la_date_de_reference ?? 0;
+
   // #653 : tous les comptes de la fiche se rapportent à cette date, publiée à
-  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface retombe
-  // alors sur une formulation sans date plutôt que d'en inventer une.
-  const dateReference = groupe.date_reference?.date ?? null;
-  const dateReferenceEstCloture = groupe.date_reference?.origine === 'cloture_legislature';
-  const dateReferenceLabel = formatFrDate(dateReference);
-  const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? (groupe.membres || []).length;
+  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface le DIT
+  // plutôt que d'inventer une date ou de laisser lire « aujourd'hui ».
+  const dateRef = dateDeReference(groupe);
+  const dateReferenceLabel = formatFrDate(dateRef.date);
+
+  const effectif = effectifDuGroupe(groupe);
+  const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? membres.length;
   const coveragePct = rosterTotal ? Math.round((profilsDisponibles / rosterTotal) * 100) : 0;
+
+  const seuilQuorum = groupe.meta?.seuil_quorum ?? null;
 
   // `date`, `texte` et `sort` ont migré vers l'index partagé (#432) : ce sont
   // des champs du scrutin, qui étaient recopiés dans chacun des groupes l'ayant
   // voté. Les 4 104 scrutins des groupes sont inclus dans ceux des profils —
   // un seul index sert les deux.
   const cohesionVotes = groupe.cohesion_votes || [];
-  const votes = cohesionVotes.slice(0, 12).map((v) => {
+  // Mesuré : `excuses` vaut 0 sur les 19 832 entrées des 5 fiches AN, faute de
+  // position `excuse` dans le corpus. Le décompte est donc structurellement
+  // vide, et un 0 structurel ne se publie pas comme un 0 mesuré (§2 règle 5).
+  const publierExcuses = excusesRenseignees(cohesionVotes);
+  const votes = cohesionVotes.slice(0, NB_SCRUTINS_AFFICHES).map((v) => {
     // Même repli transitoire que pour les profils : les fichiers de groupe
     // d'avant #432 portent encore `date`/`texte` dans l'entrée.
     const scrutin = resolveScrutin(scrutinsIndex, v.scrutin_id) || v;
+    const { decomptes, eligibles, exhaustif } = decomptesCohesion(v, { publierExcuses });
     return {
+      id: v.scrutin_id ?? scrutin?.id ?? null,
       date: formatFrDate(scrutin?.date) || 'Date non renseignée',
       texte: scrutin?.texte ?? null,
+      sourceUrl: scrutin?.source_url ?? null,
       position: v.position_majoritaire,
-      coherence: v.taux_coherence != null ? Math.round(v.taux_coherence * 100) : null,
-      quorum: v.quorum_atteint,
+      // Les six décomptes remplacent la barre de cohérence : ce sont des
+      // catégories, pas une échéance du pire au meilleur (#329).
+      decomptes,
+      eligibles,
+      partitionExacte: exhaustif,
+      coherence: ratioCohesion(v),
+      quorum: quorumDuScrutin(v, seuilQuorum),
     };
   });
+  const troncatureVotes = troncatureCohesion(cohesionVotes.length);
 
   const agg = groupe.amendements_agreges || {};
   const parDepute = agg.par_type_deposant?.depute;
@@ -482,9 +525,13 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
     return { key, label: AMENDMENT_OUTCOME_LABELS[key], count };
   });
 
-  const tags = (groupe.tags_thematiques_agreges || [])
-    .slice(0, 20) // mots-clés bruts, non harmonisés (voir schema_pivot.py) : échantillon, pas une liste exhaustive
-    .map((t) => ({ label: t.tag, count: t.nb_membres_porteurs }));
+  // Étiquettes thématiques (#329) : les SUJETS sur lesquels les membres sont
+  // intervenus, jamais des positions du groupe (§2 règle 8). Chacune part avec
+  // son `nb_membres_porteurs` et son dénominateur — une étiquette portée par
+  // 1 membre sur 76 ne dit pas ce que dit une étiquette portée par 60.
+  const tagsAgreges = groupe.tags_thematiques_agreges || [];
+  const tags = etiquettesThematiques(groupe);
+  const coupeTags = troncatureTags(tagsAgreges.length);
 
   // mandats_agreges : le backend trie par nb_membres_a_la_date_de_reference desc, puis
   // nb_membres_cumul_historique desc, puis categorie/label asc (#656). Depuis
@@ -499,17 +546,23 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
   // des finances (5 membres y siègent, 67 y sont passés dont 44 pour une
   // journée ou moins) devant celle des affaires sociales (9 siègent) (#656).
   const mandatsAgreges = (groupe.mandats_agreges || [])
-    .map((m) => ({
-      categorie: m.categorie,
-      categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
-      label: m.label,
-      nbMembresActifs: m.nb_membres_a_la_date_de_reference,
-      nbMembresCumul: m.nb_membres_cumul_historique,
-      effectifReference: m.effectif_reference,
-      parFonction: Object.entries(m.par_fonction || {})
-        .sort((a, b) => b[1] - a[1])
-        .map(([fonction, count]) => ({ fonction, count })),
-    }))
+    .map((m) => {
+      // Les deux noms sont lus (#329) : sans ce repli, les 17 cartes des 2
+      // fiches Senat rendaient « undefined membre y a siégé au moins une fois ».
+      const compte = siegeEtPasse(m, membres.length);
+      return {
+        categorie: m.categorie,
+        categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
+        label: m.label,
+        siege: compte.siege,
+        passe: compte.passe,
+        effectifReference: compte.effectif,
+        siegeRapporteALaDate: compte.siegeRapporteALaDate,
+        parFonction: Object.entries(m.par_fonction || {})
+          .sort((a, b) => b[1] - a[1])
+          .map(([fonction, count]) => ({ fonction, count })),
+      };
+    })
     .sort((a, b) => {
       const ra = MANDAT_CATEGORY_ORDER.indexOf(a.categorie);
       const rb = MANDAT_CATEGORY_ORDER.indexOf(b.categorie);
@@ -518,38 +571,86 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
       const ka = ra === -1 ? MANDAT_CATEGORY_ORDER.length : ra;
       const kb = rb === -1 ? MANDAT_CATEGORY_ORDER.length : rb;
       if (ka !== kb) return ka - kb;
-      if (b.nbMembresActifs !== a.nbMembresActifs) return b.nbMembresActifs - a.nbMembresActifs;
-      if (b.nbMembresCumul !== a.nbMembresCumul) return b.nbMembresCumul - a.nbMembresCumul;
+      // Une donnée absente ne prend pas la place d'un zéro dans le tri.
+      const sa = Number.isFinite(a.siege) ? a.siege : -1;
+      const sb = Number.isFinite(b.siege) ? b.siege : -1;
+      if (sb !== sa) return sb - sa;
+      const pa = Number.isFinite(a.passe) ? a.passe : -1;
+      const pb = Number.isFinite(b.passe) ? b.passe : -1;
+      if (pb !== pa) return pb - pa;
       return (a.label || '').localeCompare(b.label || '', 'fr');
     });
 
   return {
     id: groupe.groupe_id,
     title: groupe.groupe_nom,
-    kicker: `${groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat'} · Législature ${groupe.legislature} · ${rosterTotal} membres`,
+    // Les 2 fiches Senat gelées n'ont pas de `legislature` : « Législature null »
+    // s'affichait tel quel. Une donnée absente ne se rend pas (§2 règle 5).
+    kicker: [
+      groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
+      groupe.legislature == null ? null : `Législature ${groupe.legislature}`,
+      `${rosterTotal} membres`,
+    ].filter(Boolean).join(' · '),
     profilsDisponibles,
     rosterTotal,
     coveragePct,
+    // Trois compteurs, chacun avec son dénominateur — jamais un pourcentage
+    // seul (§2 règle 7). Le premier s'appelait « Effectif actuel » et affichait
+    // `roster_total` : ni l'effectif, ni « actuel » sur une législature close.
     kpis: [
-      { value: String(rosterTotal), label: 'Effectif actuel', caveat: 'Effectif déclaré par le groupe lui-même ; peut inclure des apparentés.' },
-      { value: String(cohesionVotes.length), label: 'Scrutins couverts', caveat: 'Mesure la couverture des scrutins agrégés, pas la qualité du vote.' },
-      { value: parDepute?.taux_adoption != null ? `${Math.round(parDepute.taux_adoption * 1000) / 10} %` : 'N/D', label: "Taux d'adoption (député⋅es)", caveat: 'Ne pas comparer entre groupes de taille différente ni aux amendements gouvernement/rapporteur.' },
+      {
+        label: dateRef.datee
+          ? `Membres du groupe au ${dateReferenceLabel}`
+          : 'Membres du groupe',
+        numerator: effectif.valeur,
+        denominator: effectif.denominateur,
+        denominatorLabel: 'membres dont le profil est publié',
+        caveat: effectif.rapporteALaDate
+          ? "Compté à la date de référence de la fiche, sur les seuls membres dont un profil est publié. Ce n'est pas un effectif d'aujourd'hui : la législature décrite est close."
+          : "Cette fiche ne publie pas de date de référence : ce compte n'est rapporté à aucune date, et ne dit pas « aujourd'hui ».",
+      },
+      {
+        label: 'Scrutins agrégés',
+        numerator: cohesionVotes.length,
+        denominator: null,
+        denominatorLabel: null,
+        caveat: 'Mesure la couverture des scrutins agrégés, pas la qualité du vote.',
+      },
+      {
+        label: 'Amendements adoptés, déposés par les député⋅es du groupe',
+        numerator: parDepute?.nb_adoptes ?? null,
+        denominator: parDepute?.nb_amendements ?? null,
+        denominatorLabel: 'amendements distincts déposés',
+        caveat: "Amendements distincts, dédoublonnés : un amendement cosigné compte une fois. Ne pas comparer entre groupes de taille différente, ni aux amendements du gouvernement ou des rapporteurs.",
+      },
     ],
     votes,
+    troncatureVotes,
+    seuilQuorum,
+    publierExcuses,
     tags,
+    troncatureTags: coupeTags,
     mandatsAgreges,
     amendmentSegments,
     amendmentsDeposedTotal: parDepute?.nb_amendements ?? 0,
     amendmentsAllDeposantsTotal: agg.nb_amendements ?? 0,
-    dateReference,
+    dateReference: dateRef.date,
     dateReferenceLabel,
-    dateReferenceEstCloture,
-    members: (groupe.membres || []).map((m) => ({
+    dateReferenceOrigineLabel: dateRef.origineLabel,
+    dateReferenceDatee: dateRef.datee,
+    // `meta` est publié sur 7 / 7 fiches et rien ne le lisait (#329).
+    couvertureRoster: couvertureRoster(groupe),
+    avertissements: groupe.meta?.warnings || [],
+    genereLe: formatFrDate(groupe.meta?.genere_le) || null,
+    refus: REFUS_FICHE_GROUPE,
+    members: membres.map((m) => ({
       nom: m.nom,
       // `present_a_la_date_de_reference` remplace `actif` (#653) : sur une fiche
       // de législature close, « actif » désignait les membres encore députés
-      // aujourd'hui, pas ceux qui appartenaient au groupe.
-      present: m.present_a_la_date_de_reference,
+      // aujourd'hui, pas ceux qui appartenaient au groupe. Les 2 fiches Senat
+      // gelées portent encore `actif` ; leur valeur est lue, mais la section
+      // déclare alors qu'elle ne se rapporte à aucune date.
+      present: m.present_a_la_date_de_reference ?? m.actif ?? null,
     })),
   };
 }

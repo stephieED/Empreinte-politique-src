@@ -147,9 +147,10 @@ Vocabulaire vérifié dans `src/components/*.css` et `*.jsx` :
 | **Onglets** | Fond plein jaune signal pour un onglet exclusif (`.tab-btn.active`). |
 | **Pills de filtre** | Contour encre inversé pour un filtre multi-état (`.theme-pill.active` : fond `--dark`, texte blanc). Deux formes du même principe visuel, jamais confondues. |
 | **Chip de sélection (groupe/candidat)** | Avatar à initiales + libellé. À l'état actif, l'avatar seul bascule au jaune signal — le fond de la chip passe à l'encre (`GroupsBar`) ou reste blanc à bordure encre (`CandidatesBar` — asymétrie assumée entre les deux barres, voir composants respectifs). |
-| **Barre de répartition/comparaison** | Segments proportionnels au décompte réel, jamais normalisés à effet visuel — un groupe avec peu d'amendements produit une barre visiblement courte (`.outcome-bar`, `.compare-bar-fill`). |
+| **Barre de répartition/comparaison** | Segments proportionnels au décompte réel, jamais normalisés à effet visuel — un groupe avec peu d'amendements produit une barre visiblement courte (`.outcome-bar`, `.compare-bar-fill`). **Jamais pour une cohésion de vote** : `.gp-coherence-track`/`.gp-coherence-fill` sont retirées depuis #329, parce qu'une barre place des catégories sur une échelle du pire au meilleur (`AGENTS.md` §2 règle 1). |
+| **Décomptes de cohésion (fiche de groupe)** | Six nombres, jamais une barre (`.gp-decomptes`, #329). Les positions exprimées gardent leur teinte ; `Non-votant`, `Sans trace de vote` et `Excusés` se distinguent par la **forme** (contour tireté, aucune teinte), comme `non_votant` depuis #326. La somme des six retrouve exactement `membres_eligibles` — vérifié sur 19 832 / 19 832 entrées des 5 fiches AN. |
 | **Donut de couverture** | Affirme sans détour la part de données réellement disponible (ex. « 14/66 membres ») — jamais maquillé en score de qualité (`.gp-coverage-donut`). |
-| **Statut membre (actif/ancien)** | Pilule 999px, fond plein `--dark` si actif ; contour `#c9c4be` + texte muted si ancien — jamais de rouge/vert de statut. |
+| **Statut membre (actif/ancien/non renseigné)** | Pilule 999px, fond plein `--dark` si membre à la date de référence ; contour `#c9c4be` + texte muted si parti avant ; **contour tireté** si l'appartenance n'est pas renseignée (`.gp-member-status-inconnu`, #329) — `null` n'est pas `false`, et un départ ne se publie pas sur une donnée absente (§2 règle 5). Jamais de rouge/vert de statut. |
 
 ---
 
@@ -185,7 +186,7 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 
 1. **Titres de carte vote/texte pas en 700** : `.vote-title` et `.gp-vote-texte` sont à 14px mais héritent du poids par défaut (400), alors que la cible et `.shelf-item-title` (14px/700) suggèrent un 700 systématique. À harmoniser dans un sens ou dans l'autre.
 2. **Échelle d'espacement plus dense que la cible** : la cible propose 8 valeurs (`4·8·12·16·20·28·40·64`), le code en utilise 19 (`2,3,4,5,6,8,9,10,12,14,16,18,20,22,24,28,32,40,64`). Pas nécessairement un bug — beaucoup de ces valeurs sont des ajustements fins légitimes (ex. `9px` padding tab) — mais si l'intention est de converger vers l'échelle à 8 valeurs, c'est un chantier de refactor CSS, pas une correction ponctuelle.
-3. **Couleurs de vote dupliquées sans partage de source** : `VOTE_STYLE`/`OUTCOME_COLOR` sont copiées à l'identique dans `CandidateProfile.jsx` et `GroupProfile.jsx`. Risque de divergence silencieuse si l'une est modifiée sans l'autre — candidat naturel à extraire dans un module partagé (`src/utils/` ou `src/data/`).
+3. ~~**Couleurs de vote dupliquées sans partage de source**~~ — **corrigé par #326** : `VOTE_STYLE`/`OUTCOME_COLOR` vivent dans `src/utils/lecture.js`, avec les cinq autres primitives de lecture, et les deux composants les importent. Les règles propres à la fiche de groupe sont dans `src/utils/groupe.js` (#329), qui importe le premier.
 4. **Chip active — asymétrie Candidats/Groupes** : `CandidatesBar` (`.cb-chip.active`) passe en fond blanc à bordure encre, `GroupsBar` (`.gb-chip.active`) passe en fond encre plein — la DA préliminaire ne documente qu'un seul comportement (« le fond de la chip passe à l'encre »). À vérifier si l'asymétrie est un choix voulu (différencier visuellement candidat vs groupe) ou une divergence non intentionnelle.
 5. **Texte permanent du panneau latéral non retrouvé** dans le CSS/JSX lu pour cette version — à confirmer lors d'un prochain passage avant de le citer comme garantie de conformité. Le texte du pied de navigation est désormais implémenté (`ExplorerLayout.jsx` `.explorer-footer`).
 
@@ -195,7 +196,8 @@ Le premier (pied de navigation) est *vérifié* : `ExplorerLayout.jsx` `.explore
 
 - DA préliminaire (structure, ton, table de contraste, couleurs de vote) : artifact Claude [d48b7554-0af3-45bd-904e-94367577ff4a](https://claude.ai/code/artifact/d48b7554-0af3-45bd-904e-94367577ff4a)
 - Couleurs/typo racine : `web/UI_finale/src/index.css`
-- Couleurs de vote/issue : `web/UI_finale/src/components/CandidateProfile.jsx`, `GroupProfile.jsx` (constantes `VOTE_STYLE`/`OUTCOME_COLOR`)
+- Couleurs de vote/issue et les six règles de lecture communes : `web/UI_finale/src/utils/lecture.js` (`VOTE_STYLE`/`OUTCOME_COLOR`, #326), rendues par `src/components/Lecture.jsx`
+- Règles de lecture propres à la fiche de groupe : `web/UI_finale/src/utils/groupe.js` (#329)
 - Motif de fond, layout : `web/UI_finale/src/styles/shell.css`, `ExplorerLayout.css`
 - Composants : `web/UI_finale/src/components/*.css`
 - Cotes exactes du logo : `web/old/logo-propositions/exports/empreinte-lockup-2lignes-specs.md`

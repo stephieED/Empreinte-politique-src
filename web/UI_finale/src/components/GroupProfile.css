@@ -202,20 +202,190 @@
   min-height: 40px;
 }
 
-.gp-coherence-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--border);
-  position: relative;
-  margin-bottom: 10px;
+/* #329 : la barre de cohérence (`.gp-coherence-track` / `.gp-coherence-fill`)
+   est RETIRÉE, pas masquée. Une barre suggère une échelle du pire au meilleur ;
+   les six décomptes d'un scrutin sont des catégories, et leur somme retrouve
+   exactement l'effectif éligible (19 832 / 19 832 entrées des 5 fiches AN). */
+.gp-decomptes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
 }
 
-.gp-coherence-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  border-radius: 4px;
+.gp-decompte {
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--border) 30%, transparent);
+}
+
+/* « Non-votant », « Sans trace de vote » et « Excusés » ne sont pas des
+   positions exprimées : la forme les distingue, jamais une teinte (#326). */
+.gp-decompte--sans-teinte {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+}
+
+.gp-decompte-valeur {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.gp-decompte--sans-teinte .gp-decompte-valeur {
+  color: var(--muted);
+}
+
+.gp-decompte-label {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--muted);
+}
+
+.gp-vote-position-titre {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gp-vote-sous-titre {
+  margin: 12px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gp-quorum {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* La date de référence est publiée à côté des comptes qu'elle date (#653). */
+.gp-date-reference {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--dark);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--card);
+}
+
+.gp-section-note {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 72ch;
+}
+
+/* `meta` : couverture du roster, preuve, fraîcheur, seuil de quorum (#329). */
+.gp-verif {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.gp-verif-bloc {
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 2px 12px rgba(20, 15, 40, 0.06);
+  padding: 18px;
+}
+
+.gp-verif-titre {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.gp-verif-texte {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* La preuve est publiée verbatim : elle porte ses références et sa condition
+   de reprise, et la résumer reviendrait à la réécrire (AGENTS.md §2 règle 2). */
+.gp-verif-preuve {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.gp-verif-chapeau {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.gp-verif-liste {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.gp-verif-liste li + li {
+  margin-top: 8px;
+}
+
+/* Ce qui est interdit est écrit, pas seulement omis (#326). */
+.gp-refus {
+  display: grid;
+  gap: 14px;
+}
+
+.gp-refus-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 18px;
+  align-items: start;
+}
+
+.gp-refus-sujet {
+  margin: 3px 0 0;
+  min-width: 74px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gp-refus-phrase {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gp-refus-pourquoi {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 560px) {
+  .gp-refus-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 .gp-vote-footer {
@@ -371,19 +541,44 @@
 
 .gp-tag-pill {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
-  border-radius: 999px;
+  max-width: 100%;
+  border-radius: 14px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.35;
   border: 1.5px solid var(--dark);
   color: var(--dark);
+  overflow-wrap: anywhere;
 }
 
+/* Le nombre de porteurs fait partie de l'étiquette, il ne la suit pas : une
+   étiquette portée par 1 membre sur 76 ne dit pas ce que dit une étiquette
+   portée par 60 (AGENTS.md §2 règle 7). Il reste donc dans la même pastille,
+   simplement moins appuyé. */
 .gp-tag-count {
-  opacity: 0.6;
+  flex: 0 0 auto;
+  opacity: 0.65;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Les intitulés viennent du compte rendu officiel et sont parfois très longs
+   (« projet de loi de financement rectificative de la sécurité sociale pour
+   2023 ») : ils passent à la ligne dans la pastille plutôt que de déborder. */
+/* La note et la coupe prennent toute la largeur de la carte, qui est une
+   grille de pastilles en `flex-wrap`. */
+.gp-tags-note {
+  flex-basis: 100%;
+  margin: 0 0 4px;
+}
+
+.gp-tags-card .lec-troncature {
+  flex-basis: 100%;
+  margin-top: 4px;
 }
 
 .gp-members-grid {
@@ -437,6 +632,15 @@
 .gp-member-status-ancien {
   background: transparent;
   border: 1px solid #c9c4be;
+  color: var(--muted);
+}
+
+/* Une appartenance non renseignée n'est pas un départ (AGENTS.md §2 règle 5) :
+   le contour tireté la distingue de « Parti avant », comme `non_votant` se
+   distingue d'une position exprimée (#326). */
+.gp-member-status-inconnu {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
   color: var(--muted);
 }
 
