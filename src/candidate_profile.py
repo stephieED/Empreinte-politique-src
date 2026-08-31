@@ -483,8 +483,12 @@ ACTEURS_HISTORIQUE_CACHE_DIR = Path(".cache") / "acteurs_historique_an"
 # Règle : **on incrémente le suffixe dès que le CONTENU écrit change**, jamais
 # pour un changement de lecture. `v3` porte deux changements de contenu livrés
 # ensemble : `mandats_assemblee` (#640) et la profession lue par `_profession_an`
-# (#641).
-NOM_INDEX_IDENTITE = "index_identite_v3.json"
+# (#641). `v4` en porte deux autres : `famille_socioprofessionnelle` et
+# `categorie_socioprofessionnelle`, les deux niveaux de la nomenclature PCS de
+# l'INSEE qu'AMO30 publie et que le pipeline traversait sans rien en garder
+# (#659). `civilite` était déjà écrite dans l'index — c'est en AVAL qu'elle se
+# perdait — mais elle voyage avec eux jusqu'au profil brut.
+NOM_INDEX_IDENTITE = "index_identite_v4.json"
 NOM_INDEX_ORGANES = "index_organes_v2.json"
 
 # Questions parlementaires (écrites, au gouvernement, orales sans débat).
@@ -1645,6 +1649,67 @@ def _profession_an(valeur: Any) -> Optional[str]:
     if code.startswith("8") and _MARQUEUR_ABSENCE_PROFESSION in libelle.lower():
         return None
     return libelle
+
+
+#: Les deux niveaux de `acteur.profession.socProcINSEE` (#659), dans l'ordre où
+#: ils sont publiés : la famille puis la catégorie.
+CHAMPS_SOCPROC_INSEE_AN: tuple[str, str] = ("famSocPro", "catSocPro")
+
+
+def _socproc_insee_an(profession: Any) -> tuple[Optional[str], Optional[str]]:
+    """Les deux niveaux de la nomenclature PCS de l'INSEE portés par AMO30, ou
+    `(None, None)` — jamais le marqueur d'absence (#659).
+
+    ## Ce que la source publie, mesuré
+
+    `acteur.profession.socProcINSEE` existe sur **les 3 117 fiches** de
+    l'archive, avec exactement ses deux clés, et les deux niveaux sont
+    **toujours renseignés ou absents ensemble** : 2 177 fiches portent un
+    couple de libellés (70 %), 940 portent le marqueur `xsi:nil` **aux deux
+    niveaux à la fois** (mesure du 31/08/2026 sur
+    `AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip`). Aucune
+    fiche ne renseigne un niveau sans l'autre.
+
+    ## Pourquoi ce champ et pas `libelleCourant`
+
+    `libelleCourant` est du texte libre, et #641 a montré ce qu'il peut
+    contenir. `socProcINSEE` porte la **nomenclature des professions et
+    catégories socioprofessionnelles de l'INSEE**, appliquée par l'Assemblée
+    nationale elle-même et publiée sous Licence Ouverte. C'est le point qui
+    décide : une catégorisation socioprofessionnelle construite par ce dépôt
+    serait un acte éditorial contestable (AGENTS.md §2 règle 1) ; reprendre
+    celle de la source ne l'est pas.
+
+    Les deux champs coexistent et ne disent pas la même chose. `PA794778` le
+    montre en un seul acteur : `libelleCourant` y vaut `"(85) - Personne
+    diverse sans activité professionnelle de moins de 60 ans…"`, que
+    `_profession_an` refuse de publier comme une profession, tandis que
+    `famSocPro` vaut `"Sans profession déclarée"` — la même situation, dite par
+    la nomenclature au lieu d'être devinée dans une phrase.
+
+    ## `nil` n'est PAS « sans profession déclarée »
+
+    Les deux existent séparément dans la source : 940 fiches au marqueur, et
+    **85 dont la famille EST `"Sans profession déclarée"`**, une famille à part
+    entière de la nomenclature. Les confondre publierait un fait — « cette
+    personne n'a pas déclaré de profession » — là où la source dit seulement
+    qu'elle ne l'a pas classée. C'est le contresens exact de #556, et le
+    filtrage passe donc par `_champ_identite_an`, comme tout ce qui est lu dans
+    `json/acteur/*.json`.
+
+    Aucune normalisation typographique n'est appliquée ici : les libellés sont
+    publiés tels que la source les écrit, variantes comprises (« Professions
+    Intermédiaires » 107 et « Professions intermédiaires » 58). Le regroupement
+    est l'affaire de qui agrège, pas de qui publie un fait individuel — voir
+    `docs/decisions/civilite-et-pcs-insee-659.md`.
+    """
+    socproc = (profession or {}).get("socProcINSEE") if isinstance(profession, dict) else None
+    if not isinstance(socproc, dict):
+        return None, None
+    famille, categorie = (
+        _champ_identite_an(socproc.get(cle)) for cle in CHAMPS_SOCPROC_INSEE_AN
+    )
+    return famille, categorie
 
 
 def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any]]]]:
@@ -3508,9 +3573,10 @@ def _periodes_mandats_assemblee(
 
 def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
     """Construit (et met en cache sur disque) un index acteurRef -> champs
-    d'identité (nom complet, profession, date/lieu de naissance, lien HATVP,
-    contact, circonscription, place hémicycle, groupe politique actuel,
-    dates/nombre de mandats), à partir du jeu de données bulk historique des
+    d'identité (civilité, nom complet, profession et ses deux niveaux de
+    nomenclature PCS de l'INSEE, date/lieu de naissance, lien HATVP, contact,
+    circonscription, place hémicycle, groupe politique actuel, dates/nombre de
+    mandats), à partir du jeu de données bulk historique des
     acteurs de l'Assemblée nationale (`AN_ACTEURS_HISTORIQUE_ZIP_URL`,
     partagé avec `_build_organe_index` / `_build_acteur_positions_hemicycle_index`
     via `_ensure_acteurs_historique_zip_downloaded`).
@@ -3593,9 +3659,11 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                     # #641 — la profession passe par SON lecteur, qui retire le
                     # code de nomenclature et refuse de publier l'énoncé d'une
                     # absence de profession comme s'il en était une.
-                    profession = _profession_an(
-                        (acteur.get("profession") or {}).get("libelleCourant")
-                    )
+                    bloc_profession = acteur.get("profession") or {}
+                    profession = _profession_an(bloc_profession.get("libelleCourant"))
+                    # #659 — la nomenclature PCS de l'INSEE, à côté du texte
+                    # libre et jamais à sa place : la source classe, on recopie.
+                    famille_socpro, categorie_socpro = _socproc_insee_an(bloc_profession)
 
                     adresses = (acteur.get("adresses") or {}).get("adresse")
                     if isinstance(adresses, dict):
@@ -3663,6 +3731,8 @@ def _build_acteur_identite_index() -> dict[str, dict[str, Any]]:
                         "nom": nom_famille,
                         "nom_complet": _format_nom_complet(prenom, nom_famille),
                         "profession": profession,
+                        "famille_socioprofessionnelle": famille_socpro,
+                        "categorie_socioprofessionnelle": categorie_socpro,
                         "groupe_sigle": groupe_sigle,
                         "groupe_nom": groupe_nom,
                         "mandat_debut": mandat_debut,
@@ -5291,9 +5361,19 @@ def build_profile(
 
         profile["identite"] = {
             "nom_complet": identite_an.get("nom_complet"),
+            # #659 — `civilite` était lue par l'index d'identité depuis #556 et
+            # s'arrêtait là : elle n'a jamais été recopiée dans le profil brut,
+            # donc jamais publiée. C'est le motif du `dossier_id` de #639 — un
+            # champ traversé puis perdu à l'assemblage, sans qu'aucun contrôle
+            # ne le voie, `identite` n'étant surveillé que sur sa PRÉSENCE.
+            "civilite": identite_an.get("civilite"),
             "groupe_sigle": identite_an.get("groupe_sigle"),
             "groupe_nom": identite_an.get("groupe_nom"),
             "profession": identite_an.get("profession"),
+            # #659 — la nomenclature PCS de l'INSEE telle que l'AN l'applique,
+            # à côté du texte libre de `profession`, jamais à sa place.
+            "famille_socioprofessionnelle": identite_an.get("famille_socioprofessionnelle"),
+            "categorie_socioprofessionnelle": identite_an.get("categorie_socioprofessionnelle"),
             "date_naissance": identite_an.get("date_naissance"),
             "lieu_naissance": identite_an.get("lieu_naissance"),
             "num_circo": identite_an.get("numero_circo"),
