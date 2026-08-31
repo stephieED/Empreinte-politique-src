@@ -77,6 +77,13 @@ via `src/population_profils.py`.
   live in a companion file and are **never deleted**: no consumer reads them, a
   co-signature network is analysis material (#324).
   → `docs/decisions/normalisation-amendements.md`
+- **A `texte_vise` is the AN document's uid, never its label (#639).** The collection
+  used to overwrite the sourced code with the dossier title *before writing the raw
+  profile*: 293 582 of 484 132 published amendments carry no key because of it. Each
+  index file carries an optional `textes` table (`texte_vise` → `{dossier_id, titre}`),
+  filled uid-to-uid from `document.dossierRef` — never by matching a label, not even an
+  exact one. A texte with no resolved dossier has **no entry**, and the count is printed.
+  → `docs/decisions/dossier-des-amendements-639.md`
 - **Both shared indexes must be in the workflow's `git add`.** They are the only
   cross-file dependencies inside `pivot_data/`; an uncommitted index leaves every mapping
   pointing at nothing, silently.

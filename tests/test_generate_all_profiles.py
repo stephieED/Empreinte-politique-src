@@ -22,6 +22,20 @@ from generate_all_profiles import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _sans_archives_de_dossiers(monkeypatch):
+    """Coupe la jointure texte → dossier législatif de #639.
+
+    `_rafraichir_index_amendements` ouvre les archives de dossiers pour
+    rattacher chaque `texte_vise` à son `DLR…`, et les télécharge si le cache
+    est vide — ce que `tests/conftest.py` refuse, à raison (#473). Les tests de
+    ce module portent sur les chemins d'écriture des index, pas sur ce
+    rattachement : il a ses propres tests, sur des réductions verbatim de
+    l'archive réelle (`tests/test_dossier_amendements_639.py`).
+    """
+    monkeypatch.setattr(generate_all_profiles, "charger_table_textes", lambda: {})
+
+
 def _fake_raw_profile(slug: str, chambre: str = "deputes") -> dict:
     return {
         "slug": slug,

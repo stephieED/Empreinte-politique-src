@@ -15,7 +15,6 @@ import candidate_profile
 from candidate_profile import (
     _collect_acteur_roles,
     _collect_initiateurs,
-    _collect_texte_codes,
     _aggregate_amendements_index,
     _derive_amendement_sort,
     _derive_amendement_sort_legacy,
@@ -740,35 +739,11 @@ def test_aggregate_then_expand_amendements_index_round_trips():
     assert roundtripped == original
 
 
-def test_collect_texte_codes_walks_nested_actes_legislatifs():
-    """Un dossier législatif imbrique les codes de texte à plusieurs niveaux
-    (actesLegislatifs récursif, textesAssocies en liste) : le collecteur doit
-    tous les retrouver, quelle que soit la profondeur."""
-    dossier = {
-        "titreDossier": {"titre": "Les dépenses de soutien aux aéroports"},
-        "actesLegislatifs": {
-            "acteLegislatif": {
-                "texteAssocie": "RINFANR5L17B1659",
-                "actesLegislatifs": {
-                    "acteLegislatif": {"texteAssocie": "PIONANR5L17B0904"}
-                },
-                "textesAssocies": {
-                    "texteAssocie": [{"refTexteAssocie": "BTAANR5L17B0905"}]
-                },
-            }
-        },
-    }
-
-    codes: set[str] = set()
-    _collect_texte_codes(dossier, codes)
-
-    assert codes == {"RINFANR5L17B1659", "PIONANR5L17B0904", "BTAANR5L17B0905"}
-
-
-def test_collect_texte_codes_empty_for_dossier_without_actes():
-    codes: set[str] = set()
-    _collect_texte_codes({"titreDossier": {"titre": "Sans acte"}}, codes)
-    assert codes == set()
+# `_collect_texte_codes` et ses deux tests ont été retirés avec
+# `_build_texte_titre_index` (#639, rang 3) : le collecteur n'existait que pour
+# elle, et elle n'existait que pour écraser le `texte_vise` sourcé d'un
+# amendement par le titre de son dossier. Le rattachement au dossier se fait
+# désormais d'uid à uid (`textes_dossiers_an.py`).
 
 
 def test_format_lieu_naissance_france_avec_departement():
@@ -3031,7 +3006,6 @@ def test_fetch_amendements_officiels_legislature_failure_does_not_erase_others()
     warnings: list[str] = []
     with (
         patch("candidate_profile._read_cached_amendements_acteur", side_effect=fake_records),
-        patch("candidate_profile._build_texte_titre_index", return_value={}),
         patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
     ):
         amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
@@ -3125,7 +3099,6 @@ def test_fetch_amendements_officiels_returns_cached_amendements_when_index_prese
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
         patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
-        patch("candidate_profile._build_texte_titre_index", return_value={}),
     ):
         amendements = fetch_amendements_officiels("https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings)
 
@@ -3228,7 +3201,6 @@ def test_fetch_amendements_officiels_tolere_une_date_xsi_nil_en_cache(tmp_path):
         patch("candidate_profile.AMENDEMENTS_CACHE_DIR", tmp_path),
         patch("candidate_profile.requests.get") as mock_get,
         patch("candidate_profile._extract_acteur_ref", return_value="PA1"),
-        patch("candidate_profile._build_texte_titre_index", return_value={}),
     ):
         amendements = fetch_amendements_officiels(
             "https://www.assemblee-nationale.fr/dyn/deputes/PA1", warnings

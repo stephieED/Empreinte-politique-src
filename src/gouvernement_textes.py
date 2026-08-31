@@ -13,7 +13,7 @@ module à toucher le réseau ou le disque ; le reste opère sur un
 
 Réutilisation de l'infrastructure existante (issue #210) : `candidate_profile.py`
 téléchargeait/cachait déjà `Dossiers_Legislatifs.json.zip` (deux fois, de
-façon dupliquée, dans `_build_texte_titre_index` et
+façon dupliquée, dans `_build_texte_titre_index` — retirée par #639 — et
 `_build_acteur_textes_portes_index`) sous les mêmes `AN_DOSSIERS_ZIP_URL`/
 `DOSSIERS_CACHE_DIR`. Ce module en devient la source canonique :
 `candidate_profile.py` importe désormais ces constantes et
@@ -359,19 +359,19 @@ def _uid_depuis_nom(nom: str) -> str:
     return nom.rsplit("/", 1)[-1][: -len(".json")]
 
 
-def iter_dossiers_bruts(
-    archives: list[tuple[int, Path]],
+def _iter_entrees_brutes(
+    archives: list[tuple[int, Path]], prefixe: str, cle_racine: str
 ) -> Iterator[tuple[int, dict[str, Any]]]:
-    """Itère `(legislature_archive, dossierParlementaire)` sur plusieurs
-    archives, **dédupliqué par uid**.
+    """Itère `(legislature_archive, objet)` sur plusieurs archives,
+    **dédupliqué par uid**, pour une famille de fichiers de l'archive.
 
-    Un même dossier figure dans plusieurs archives (traîne résiduelle des
+    Un même objet figure dans plusieurs archives (traîne résiduelle des
     législatures antérieures). L'archive de législature la plus élevée fait
-    foi : elle porte l'état le plus à jour des `actesLegislatifs`, donc du
-    statut. Lire d'abord la plus ancienne donnerait un statut périmé — un texte
-    « en navette » dans l'archive XVI peut être « adopté » dans la XVII.
+    foi : elle porte l'état le plus à jour. Lire d'abord la plus ancienne
+    donnerait un état périmé — un texte « en navette » dans l'archive XVI peut
+    être « adopté » dans la XVII.
 
-    Générateur : un seul dossier est désérialisé à la fois.
+    Générateur : un seul objet est désérialisé à la fois.
     """
     proprietaire: dict[str, int] = {}
     noms_par_archive: dict[int, list[str]] = {}
@@ -380,7 +380,7 @@ def iter_dossiers_bruts(
             with zipfile.ZipFile(chemin) as zf:
                 noms = [
                     n for n in zf.namelist()
-                    if n.startswith("json/dossierParlementaire/") and n.endswith(".json")
+                    if n.startswith(prefixe) and n.endswith(".json")
                 ]
         except (zipfile.BadZipFile, OSError):
             continue
@@ -407,11 +407,41 @@ def iter_dossiers_bruts(
                             data = json.load(f)
                     except (OSError, ValueError):
                         continue
-                    dossier = data.get("dossierParlementaire") if isinstance(data, dict) else None
-                    if isinstance(dossier, dict):
-                        yield legislature, dossier
+                    objet = data.get(cle_racine) if isinstance(data, dict) else None
+                    if isinstance(objet, dict):
+                        yield legislature, objet
         except (zipfile.BadZipFile, OSError):
             continue
+
+
+def iter_dossiers_bruts(
+    archives: list[tuple[int, Path]],
+) -> Iterator[tuple[int, dict[str, Any]]]:
+    """Itère `(legislature_archive, dossierParlementaire)`, dédupliqué par uid.
+
+    L'arbitrage inter-archives est celui de `_iter_entrees_brutes` : la
+    législature la plus élevée fait foi, parce qu'elle porte l'état le plus à
+    jour des `actesLegislatifs`, donc du statut.
+    """
+    yield from _iter_entrees_brutes(
+        archives, "json/dossierParlementaire/", "dossierParlementaire"
+    )
+
+
+def iter_documents_bruts(
+    archives: list[tuple[int, Path]],
+) -> Iterator[tuple[int, dict[str, Any]]]:
+    """Itère `(legislature_archive, document)`, dédupliqué par uid.
+
+    `json/document/*.json` est la seconde famille de fichiers de ces archives —
+    23 709 fichiers pour 21 937 uid distincts sur les trois archives XV/XVI/XVII
+    (relevé du 31/08/2026). `docs/sources/an-opendata.md` les a décrits jusqu'à
+    #639 comme « sans rapport, à filtrer » : c'est faux. Chaque document porte
+    `dossierRef`, la seule clé sourcée qui rattache un texte déposé à son
+    dossier législatif — celle dont le `texteLegislatifRef` d'un amendement a
+    besoin. Voir `textes_dossiers_an.py`.
+    """
+    yield from _iter_entrees_brutes(archives, "json/document/", "document")
 
 
 def _document_depot_initial(actes_legislatifs: Any) -> Optional[str]:

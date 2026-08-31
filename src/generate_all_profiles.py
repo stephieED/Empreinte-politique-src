@@ -136,6 +136,7 @@ from amendements_index import (
     rafraichir as rafraichir_amendements,
 )
 from scrutins_index import DEFAULT_SCRUTINS_PATH, ScrutinsIndex, charger as charger_scrutins, rafraichir as rafraichir_scrutins
+from textes_dossiers_an import charger_table as charger_table_textes
 from scrutins_legislature import LegislatureIrresoluble
 from text_utils import slugify
 
@@ -1319,11 +1320,29 @@ def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> No
     Reste indispensable APRÈS : les amendements des profils collectés pendant le
     run manqueraient sinon à l'index, et les mappings tout juste écrits
     pointeraient dans le vide.
+
+    C'est ici, et nulle part ailleurs, que le `texte_vise` d'un amendement est
+    joint à son dossier législatif (#639) : la CI n'appelle jamais
+    `build_amendements_index_pivot.py`, elle passe par cette fonction. La table
+    vient des archives de dossiers déjà en cache (`.cache/dossiers_an`, restauré
+    par `merge-and-pivot`) ; `--skip-dossiers-legislatifs` s'en abstient, parce
+    qu'un run qui refuse d'ouvrir ces archives n'a pas à les télécharger par la
+    bande. Sans table, rien n'est ajouté et **rien n'est retiré**.
     """
     if args.skip_amendements_index:
         print("Index des amendements : reconstruction sautée (--skip-amendements-index).")
         return
     dossier = Path(args.amendements)
+    table_textes = None
+    if args.skip_dossiers_legislatifs:
+        print("Index des amendements : jointure texte → dossier sautée "
+              "(--skip-dossiers-legislatifs) ; les rattachements publiés sont conservés.")
+    else:
+        table_textes = charger_table_textes()
+        if not table_textes:
+            print("Index des amendements : archives de dossiers indisponibles, aucun "
+                  "rattachement texte → dossier ajouté ; les rattachements publiés sont conservés.")
+    comptes: dict[str, int] = {}
     index = rafraichir_amendements(
         out_dir, dossier,
         # Fusion additive sauf --no-merge : un run qui ne régénère qu'une
@@ -1332,12 +1351,21 @@ def _rafraichir_index_amendements(args: argparse.Namespace, out_dir: Path) -> No
         # (leçon de #450, au niveau de l'index).
         fusionner=not args.no_merge,
         genere_le=time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        table_textes=table_textes,
+        comptes=comptes,
     )
     detail = ", ".join(
         f"{legislature}: {len(index.ids_de_legislature(legislature))}"
         for legislature in index.legislatures()
     )
     print(f"Index des amendements : {len(index)} amendement(s) → {dossier} ({detail})")
+    if comptes:
+        # Le compte est publié plutôt que tu : un amendement sans dossier est un
+        # fait, pas un silence (AGENTS.md §2 règle 5).
+        print(f"  dossiers législatifs : {comptes['amendements_rattaches']} amendement(s) "
+              f"rattaché(s), {comptes['amendements_sans_dossier']} sans dossier "
+              f"({comptes['textes_resolus']} texte(s) résolu(s), "
+              f"{comptes['textes_sans_dossier']} sans dossier dans les archives lues)")
 
 
 def main() -> None:

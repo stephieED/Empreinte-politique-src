@@ -554,10 +554,6 @@ _SYCERON_LOCKS_META = threading.Lock()
 # explicitement nommé dans AGENTS.md.
 _SYCERON_INDEX_NON_PUBLIE: dict[str, dict[str, list[dict[str, Any]]]] = {}
 
-# Un seul verrou pour l'index titre des dossiers legislatifs (un seul fichier,
-# pas de decoupage par legislature).
-_DOSSIERS_TITRE_LOCK = threading.Lock()
-
 # Un seul verrou pour l'index identite des acteurs (un seul fichier, pas de
 # decoupage par legislature), construit depuis le meme fichier bulk historique
 # que _ACTEURS_HEMICYCLE_LOCK/_ACTEURS_ORGANES_LOCK (issue #354).
@@ -1756,9 +1752,12 @@ def _parse_amendement_entry(data: Any) -> Optional[list[tuple[str, dict[str, Any
         # scrutin, unique toutes legislatures confondues — voir
         # docs/decisions/amendements-cle-uid.md.
         "uid": amendement.get("uid"),
-        # texteLegislatifRef est un code source (ex. "PRJLANR5L17B0324"), pas un
-        # titre lisible : resolu en titre humain a posteriori si possible, voir
-        # fetch_amendements_officiels/_build_texte_titre_index (dossiers legislatifs).
+        # texteLegislatifRef est l'uid du DOCUMENT amende (ex.
+        # "PRJLANR5L17B0324"), et c'est une cle sourcee : elle est conservee
+        # telle quelle jusqu'a l'index pivot, qui la joint a son dossier
+        # legislatif (textes_dossiers_an.py, #639). Elle a ete ecrasee par le
+        # titre du dossier jusqu'a #639 — 293 582 amendements publies en sont
+        # restes sans cle.
         "texte_vise": _texte_an(amendement.get("texteLegislatifRef")),
         "sort": sort,
         "base_juridique_irrecevabilite": base_juridique,
@@ -3084,65 +3083,18 @@ def _download_and_build_amendement_index(legislature: str) -> dict[str, list[dic
         return index_par_acteur
 
 
-def _collect_texte_codes(node: Any, codes: set[str]) -> None:
-    """Parcourt récursivement un dossier législatif brut et collecte tous les
-    codes de texte référencés (clés `texteAssocie`/`refTexteAssocie`), à
-    n'importe quel niveau de l'arbre `actesLegislatifs` (récursif, profondeur
-    variable selon le dossier)."""
-    if isinstance(node, dict):
-        for key, value in node.items():
-            if key in ("texteAssocie", "refTexteAssocie") and isinstance(value, str):
-                codes.add(value)
-            else:
-                _collect_texte_codes(value, codes)
-    elif isinstance(node, list):
-        for item in node:
-            _collect_texte_codes(item, codes)
-
-
-def _build_texte_titre_index() -> dict[str, str]:
-    """Construit (et met en cache sur disque) un index code de texte -> titre
-    lisible du dossier, à partir du jeu de données bulk des dossiers
-    législatifs (un seul fichier, déjà multi-législatures). Utilisé pour
-    résoudre `texte_vise` des amendements (sinon un simple code source, ex.
-    "PIONANR5L17B0904"). Non-fatal en cas d'échec (retourne {})."""
-    with _DOSSIERS_TITRE_LOCK:
-        # Suffixe de version (#400) : le passage au multi-archives change le
-        # contenu de l'index. Sans nouveau nom, un cache CI ou local existant
-        # servirait silencieusement l'ancien index mono-archive, et le gain
-        # serait invisible sans que rien ne le signale.
-        index_path = DOSSIERS_CACHE_DIR / "index_texte_titre_v2.json"
-        if index_path.is_file():
-            try:
-                with open(index_path, encoding="utf-8") as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, OSError):
-                pass  # cache corrompu : on reconstruit
-
-        archives = ensure_dossiers_zips_downloaded()
-        if not archives:
-            return {}
-
-        index: dict[str, str] = {}
-        # Multi-archives dédupliqué par uid (#400) : la législature la plus
-        # élevée fait foi pour un dossier présent dans plusieurs archives.
-        for _legislature, dossier in iter_dossiers_bruts(archives):
-            titre = (dossier.get("titreDossier") or {}).get("titre")
-            if not titre:
-                continue
-            codes: set[str] = set()
-            _collect_texte_codes(dossier, codes)
-            for code in codes:
-                index[code] = titre
-
-        try:
-            index_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(index_path, "w", encoding="utf-8") as f:
-                json.dump(index, f, ensure_ascii=False)
-        except OSError:
-            pass
-
-        return index
+# `_build_texte_titre_index` vivait ici (#639). Elle construisait un index
+# `code de texte -> titre du dossier`, et son unique appelant s'en servait pour
+# ÉCRASER le `texte_vise` des amendements — le code source AN
+# (`PRJLANR5L14B1057`) remplacé par un libellé (« Système universel de
+# retraite ») avant même l'écriture du profil brut. 293 582 des 484 132
+# amendements publiés n'ont plus de clé pour cette raison : la perte est
+# infligée par le pipeline, pas subie de la source.
+#
+# Le libellé lisible n'est pas perdu pour autant : il vit désormais une fois par
+# texte dans la table `textes` de `pivot_data/amendements/<leg>.json`, à côté du
+# `dossier_id` que ce même code permet enfin de résoudre
+# (`textes_dossiers_an.py`). Voir docs/decisions/dossier-des-amendements-639.md.
 
 
 # Stades procéduraux, du moins au plus avancé : sert à déterminer le stade le
@@ -3255,7 +3207,7 @@ def _build_acteur_textes_portes_index() -> dict[str, list[dict[str, Any]]]:
     """Construit (et met en cache sur disque) un index acteurRef -> liste de
     dossiers législatifs où l'acteur a un rôle factuel connu (auteur,
     rapporteur ou co-rapporteur), à partir du jeu de données bulk des dossiers
-    législatifs (même archive que `_build_texte_titre_index`).
+    législatifs (même archive que `textes_dossiers_an.construire_table`).
 
     Contrairement à la liste NosDéputés `dossiers/nom/json` — retirée par #528
     avec le Sénat, seule chambre qui l'appelait — qui renvoyait l'intégralité
@@ -4487,14 +4439,6 @@ def fetch_amendements_officiels(
                 "texte_vise": _texte_an(record.get("texte_vise")),
                 "legislature": legislature,
             })
-
-    if amendements:
-        titre_index = _build_texte_titre_index()
-        if titre_index:
-            for record in amendements:
-                titre = titre_index.get(record.get("texte_vise"))
-                if titre:
-                    record["texte_vise"] = titre
 
     # Tri sûr parce que `date` vient d'être normalisée en `str | None` juste
     # au-dessus : c'est CE tri qui levait
