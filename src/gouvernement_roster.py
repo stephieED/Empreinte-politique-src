@@ -188,15 +188,35 @@ def _est_mandat_appartenance_gouvernement(label: str) -> bool:
 # sur les profils publiés : `.cache/acteurs_historique_an/acteurs_historique.zip`,
 # 3 117 fiches acteur, 1 162 mandats `typeOrgane == "MINISTERE"`. Il porte
 # **9 valeurs distinctes de `libQualite`, et pas une seule au féminin** — la
-# liste ci-dessous en couvre 7, `FONCTIONS_NON_MINISTERIELLES_OBSERVEES` une
-# huitième (« en mission », 396 mandats). Reste **une** valeur non classée :
-# « Haut-commissaire » (4 mandats, 2 personnes — Martin Hirsch 2007-2010,
-# Jean-Paul Delevoye 2019). Aucune des deux n'a de profil pivot publié, donc
-# aucun membre publié n'est manqué aujourd'hui ; la classer relève de la
-# vérification humaine, pas d'un ajout d'office. La conclusion qui compte pour
-# #658 : le genre ne se joue **jamais** sur `libQualite` — une ministre
+# liste ci-dessous les couvre toutes sauf une, `FONCTIONS_NON_MINISTERIELLES_OBSERVEES`
+# prenant la dernière (« en mission », 396 mandats). La conclusion qui compte
+# pour #658 : le genre ne se joue **jamais** sur `libQualite` — une ministre
 # déléguée y porte « Ministre délégué » — mais sur le libellé d'organe, voir
 # `LABELS_PORTEFEUILLE_PREMIER_MINISTRE_OBSERVES`.
+#
+# « Haut-commissaire » est la seule valeur que ce balayage a ajoutée à la
+# liste. Le motif est une **lecture du référentiel, pas une appréciation
+# institutionnelle** : ses 4 mandats (2 personnes) sont rangés par AMO30 sous
+# `typeOrgane == "MINISTERE"`, aux côtés des ministres et secrétaires d'État,
+# et l'organe de rattachement porte lui aussi `codeType == "MINISTERE"` dans
+# les quatre cas. Celui de Jean-Paul Delevoye est même littéralement intitulé
+# « Ministère ». Ce n'est donc pas nous qui qualifions ces mandats de
+# maroquins, c'est l'Assemblée nationale — ce qui satisfait §2 règle 2 là où
+# un avis extérieur ne l'aurait pas fait.
+#
+#   PA1051    Jean-Paul Delevoye  PO766969  « Ministère des solidarités et de
+#                                 la santé – Retraites »  2019-09-04 → 2019-12-17
+#   PA387853  Martin Hirsch       PO383001  « Haut-commissariat aux solidarités
+#                                 actives contre la pauvreté »  2007-05-18 → 2007-06-18
+#   PA387853  Martin Hirsch       PO388139  (même intitulé)  2007-06-19 → 2009-01-12
+#   PA387853  Martin Hirsch       PO418119  « … et Haut-commissariat à la
+#                                 jeunesse »  2009-01-12 → 2010-03-22
+#
+# Effet mesuré à l'ajout : **0 mandat et 0 personne** changent de classement
+# sur les 481 profils publiés (aucun des deux acteurs n'a de profil pivot),
+# donc **0 fiche de gouvernement** bouge. L'ajout est un pré-positionnement :
+# le jour où l'un des deux obtient un profil, son portefeuille sera publié au
+# lieu de retomber `null` avec un warning.
 FONCTIONS_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
     "Premier ministre",
     "Ministre",
@@ -205,6 +225,7 @@ FONCTIONS_MINISTERIELLES_OBSERVEES: tuple[str, ...] = (
     "Ministre d'État, ministre",
     "Garde des sceaux, ministre de la justice",
     "Ministre d'État, Garde des Sceaux, ministre de la justice",
+    "Haut-commissaire",
 )
 
 # Qualités connues qui ne sont PAS un portefeuille : exclues sans warning,

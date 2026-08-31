@@ -526,7 +526,11 @@ def test_real_pivot_gabriel_attal_deux_portefeuilles_sous_borne():
 # ---------------------------------------------------------------------------
 
 def test_qualite_portefeuille_reconnait_les_qualites_ministerielles_observees():
-    """Les 7 qualités relevées sur les mandats `MINISTERE` du dépôt."""
+    """Les 8 qualités ministérielles relevées sur les mandats `MINISTERE`.
+
+    Sept venaient des profils publiés ; la huitième (« Haut-commissaire »)
+    vient du balayage de l'archive AMO30 (#658), voir le test dédié ci-dessous.
+    """
     for fonction in FONCTIONS_MINISTERIELLES_OBSERVEES:
         assert _qualite_portefeuille(fonction) == QUALITE_MINISTERIELLE, fonction
 
@@ -540,14 +544,77 @@ def test_qualite_portefeuille_en_mission_nest_pas_ministerielle():
 
 
 def test_qualite_portefeuille_valeur_inconnue_nest_jamais_un_portefeuille():
-    """Liste blanche, pas liste noire (§2.5) : une 8e valeur qui apparaîtrait
-    à pleine échelle est « inconnue », pas « ministérielle par défaut »."""
+    """Liste blanche, pas liste noire (§2.5) : une 9e valeur qui apparaîtrait
+    à pleine échelle est « inconnue », pas « ministérielle par défaut ».
+
+    « Haut-commissaire au plan » n'est pas « Haut-commissaire » : la valeur
+    ajoutée par #658 ne vaut que pour elle-même, aucun rapprochement par
+    préfixe (`_normalise_fonction`).
+    """
     assert _qualite_portefeuille("Haut-commissaire au plan") == QUALITE_INCONNUE
     assert _qualite_portefeuille(None) == QUALITE_INCONNUE
     assert _qualite_portefeuille("") == QUALITE_INCONNUE
     # `normalize_profil` remplace un `libQualite` absent par « membre » :
     # sur un mandat MINISTERE, c'est une lacune de source, pas une qualité.
     assert _qualite_portefeuille("membre") == QUALITE_INCONNUE
+
+
+def test_qualite_haut_commissaire_est_ministerielle_par_lecture_du_referentiel():
+    """« Haut-commissaire » est un maroquin **parce que la source le range
+    ainsi**, pas parce que nous l'estimons équivalent à un ministre (#658).
+
+    Relevé le 2026-08-31 sur `.cache/acteurs_historique_an/acteurs_historique.zip` :
+    4 mandats, 2 personnes, tous `typeOrgane == "MINISTERE"`, tous rattachés à
+    un organe de `codeType == "MINISTERE"` —
+
+        PA1051    Jean-Paul Delevoye  PO766969  « Ministère des solidarités et
+                                      de la santé – Retraites »  2019-09-04 → 2019-12-17
+        PA387853  Martin Hirsch       PO383001  2007-05-18 → 2007-06-18
+        PA387853  Martin Hirsch       PO388139  2007-06-19 → 2009-01-12
+        PA387853  Martin Hirsch       PO418119  2009-01-12 → 2010-03-22
+
+    L'organe de Delevoye est littéralement intitulé « Ministère ». C'est donc
+    l'Assemblée nationale qui qualifie, pas nous (§2 règle 2).
+
+    Aucun des deux acteurs n'a de profil pivot publié : ce test verrouille le
+    classement avant que le cas ne se présente. Pas de fixture — inventer un
+    pivot pour deux personnes qui n'en ont pas serait précisément la fixture
+    fabriquée que #510 a fait supprimer.
+    """
+    assert "Haut-commissaire" in FONCTIONS_MINISTERIELLES_OBSERVEES
+    assert _qualite_portefeuille("Haut-commissaire") == QUALITE_MINISTERIELLE
+
+    # Effet de bout en bout : un tel mandat produit un portefeuille publié, et
+    # non un `null` accompagné du warning « qualité inconnue ».
+    profil = _pivot("nosdeputes:haut-commissaire", "Haut-Commissaire", mandats=[
+        _mandat_gouv("Gouvernement (PHILIPPE 2)", "2017-06-22", "2020-07-06"),
+        _mandat_portefeuille(
+            "Ministère des solidarités et de la santé – Retraites",
+            "2019-09-04", "2019-12-17", fonction="Haut-commissaire",
+        ),
+    ])
+    warnings = []
+    membres = build_gouvernement_roster(
+        "PHILIPPE 2", "2017-06-22", "2020-07-06", [profil], warnings=warnings
+    )
+    assert len(membres) == 1
+    assert membres[0]["portefeuille"] == (
+        "Ministère des solidarités et de la santé – Retraites"
+    )
+    assert warnings == []
+
+    # Le double verrou de #474 n'est pas entamé : cette qualité ne fait pas
+    # d'un mandat de libellé « Premier ministre » un chef du gouvernement.
+    profil_pm = _pivot("nosdeputes:x", "X", mandats=[
+        _mandat_gouv("Gouvernement (PHILIPPE 2)", "2017-06-22", "2020-07-06"),
+        _mandat_portefeuille(
+            "Premier ministre", "2017-06-22", "2020-07-06",
+            fonction="Haut-commissaire",
+        ),
+    ])
+    assert build_premier_ministre(
+        "PHILIPPE 2", "2017-06-22", "2020-07-06", [profil_pm]
+    ) is None
 
 
 def test_normalise_fonction_casse_et_espaces_seulement():

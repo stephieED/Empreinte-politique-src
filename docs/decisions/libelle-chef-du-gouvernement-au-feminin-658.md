@@ -34,7 +34,7 @@ en rejouant l'extraction de `candidate_profile._build_acteur_mandats_index`.
 | `Ministre d'État, ministre` | 19 | 10 | ministérielle |
 | `Premier ministre` | 17 | 11 | ministérielle |
 | `Garde des sceaux, ministre de la justice` | 16 | 8 | ministérielle |
-| **`Haut-commissaire`** | **4** | **2** | **inconnue** |
+| **`Haut-commissaire`** | **4** | **2** | **ministérielle — ajoutée ici, voir plus bas** |
 | `Ministre d'État, Garde des Sceaux, ministre de la justice` | 3 | 3 | ministérielle |
 
 La question ouverte par l'issue — « une **ministre déléguée** est-elle
@@ -57,14 +57,63 @@ Deux populations, à ne pas confondre.
 | Population | Mesure | Manqués |
 | --- | --- | ---: |
 | Les 260 mandats `MINISTERE` des **481 profils publiés** | 8 qualités rencontrées, **toutes classées** | **0** |
-| Les 1 162 mandats `MINISTERE` de **l'archive AMO30** | 1 qualité non classée (`Haut-commissaire`) | 4 mandats, 2 personnes |
+| Les 1 162 mandats `MINISTERE` de **l'archive AMO30** | 1 qualité alors non classée (`Haut-commissaire`) | 4 mandats, 2 personnes |
 | Les **10 fiches de gouvernement publiées** | libellé de chef non reconnu | 1 (`BORNE`) |
 
-Les deux personnes de `Haut-commissaire` (Martin Hirsch 2007-2010, Jean-Paul
-Delevoye 2019) n'ont **pas** de profil pivot publié : la lacune est réelle dans
-la source mais sans effet sur le corpus publié. Elle n'est pas comblée ici — la
-classer est une vérification humaine, le geste de maintenance que
-`FONCTIONS_MINISTERIELLES_OBSERVEES` décrit lui-même, pas un ajout d'office.
+La ligne du milieu a été traitée, et le paragraphe suivant raconte comment.
+
+### `Haut-commissaire` : la question s'est posée, la source l'a tranchée
+
+Ce balayage a laissé **une** qualité non classée, et la première rédaction de
+cette décision proposait de l'y laisser : classer un haut-commissaire parmi les
+maroquins ressemblait à une appréciation institutionnelle, qu'aucune source du
+dépôt n'autorisait à porter (§2 règle 2). Le raisonnement était juste sur le
+principe et faux sur les faits — **le référentiel qualifie déjà ces mandats**,
+et il suffisait de le lire :
+
+| Acteur | `organeRef` | `organe.libelle` | Période |
+| --- | --- | --- | --- |
+| `PA1051` Jean-Paul Delevoye | `PO766969` | **« Ministère des solidarités et de la santé – Retraites »** | 2019-09-04 → 2019-12-17 |
+| `PA387853` Martin Hirsch | `PO383001` | « Haut-commissariat aux solidarités actives contre la pauvreté » | 2007-05-18 → 2007-06-18 |
+| `PA387853` Martin Hirsch | `PO388139` | (même intitulé) | 2007-06-19 → 2009-01-12 |
+| `PA387853` Martin Hirsch | `PO418119` | « … et Haut-commissariat à la jeunesse » | 2009-01-12 → 2010-03-22 |
+
+Les quatre mandats portent `typeOrgane == "MINISTERE"`, aux côtés des ministres
+et des secrétaires d'État ; les quatre organes de rattachement portent
+eux-mêmes `codeType == "MINISTERE"` ; et celui de Delevoye est littéralement
+intitulé « Ministère ». Le motif inscrit dans le code n'est donc pas « un
+haut-commissaire équivaut à un ministre » — ce serait notre avis — mais
+**« classé `MINISTERE` par la source »**, ce qui est un fait vérifiable, daté et
+re-mesurable. La distinction est exactement celle que §2 règle 2 impose.
+
+`"Haut-commissaire"` entre donc dans `FONCTIONS_MINISTERIELLES_OBSERVEES`, et
+les 9 valeurs de `libQualite` de l'archive sont désormais **toutes classées**,
+sans zone grise.
+
+**Effet mesuré de cet ajout, isolément** — sortie de `build_gouvernement_roster`
+et `build_premier_ministre` rejouée sur les 481 profils publiés, avec puis sans
+la valeur dans la liste blanche :
+
+| Indicateur | Delta |
+| --- | ---: |
+| Mandats changeant de classement (corpus publié) | **0** |
+| Personnes concernées | **0** |
+| Fiches de gouvernement dont la sortie diffère | **0** sur 10 |
+| Warnings | 0 → 0 |
+
+Aucun des deux acteurs n'a de profil pivot publié : `Haut-commissaire` apparaît
+**0 fois** dans les 260 mandats `MINISTERE` du corpus. L'ajout est un
+**pré-positionnement**, pas une correction — le jour où Hirsch ou Delevoye
+obtient un profil (extraction pilotée par roster, #394/#192), son portefeuille
+sera publié avec sa `source_url` au lieu de retomber `null` accompagné du
+warning « qualité inconnue ». C'est le seul moment où la différence se verra, et
+c'est pour ce moment-là que le test la verrouille.
+
+Pas de fixture pour ce cas : inventer un pivot pour deux personnes qui n'en ont
+pas serait la fixture fabriquée que #510 a fait supprimer. Le test cite les
+identifiants d'organe et rejoue le classement sur les fabriques synthétiques
+déjà employées par le fichier pour les cas latents (même parti que
+`test_build_premier_ministre_missionne_nefface_pas_le_vrai_premier_ministre`).
 
 ## Décision : une liste fermée de libellés, pas une règle de genre
 
@@ -108,8 +157,12 @@ Rejeu de `build_premier_ministre` sur les 481 profils publiés (`origin/main`,
 | Indicateur | Avant | Après |
 | --- | --- | --- |
 | `premier_ministre` renseigné | 3/10 | **4/10** |
+| Membres publiés (10 fiches) | 127 | 127 |
 | Warnings émis | 0 | 0 |
 | Fiches modifiées | — | `BORNE` seule |
+
+Les deux volets du lot ne se recouvrent pas : le libellé féminin fait bouger
+`BORNE` et rien d'autre, `Haut-commissaire` ne fait bouger aucune fiche.
 
 Aucune autre fiche ne bouge, dans aucun sens. `premier_ministre` étant un
 scalaire surveillé par `audit_diff_profils` (`COLLECTION_GOUVERNEMENTS`), le
