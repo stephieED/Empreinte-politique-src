@@ -247,3 +247,143 @@ export const STATED_REFUSALS = [
 export function formatNumber(n) {
   return Number.isFinite(n) ? n.toLocaleString('fr-FR').replace(/ /g, ' ') : '—';
 }
+
+/* ── Règle : un libellé se compare sous forme normalisée ─────────────────────
+ *
+ * Deux apostrophes coexistent dans `pivot_data/scrutins.json` : l'ASCII `'` et
+ * la typographique `’`. La seconde n'apparaît que dans les législatures 16
+ * (343 scrutins) et 17 (541), c'est-à-dire les DEUX PLUS RÉCENTES — un motif
+ * écrit sur l'ASCII décroche donc sur ce que la source publie aujourd'hui, et
+ * décrochera de plus en plus.
+ *
+ * D'où la règle, qui vaut PARTOUT où un libellé est comparé et pas seulement
+ * ici : on normalise avant de comparer. NFC d'abord (un « é » composé et un
+ * « e » + accent combinant sont le même caractère pour un lecteur, pas pour
+ * `===`), puis les apostrophes sur l'ASCII, puis les espaces, puis la casse.
+ *
+ * Le résultat est une FORME DE COMPARAISON : elle ne s'affiche jamais. Ce qui
+ * s'affiche est le libellé de la source, tel qu'elle l'écrit (§2 règle 2).
+ */
+const APOSTROPHES = /[’ʼʹ′]/g;
+
+export function normalizeLabel(texte) {
+  if (typeof texte !== 'string') return '';
+  return texte
+    .normalize('NFC')
+    .replace(APOSTROPHES, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+/* ── Règle : ce qu'est un vote « sur l'ensemble d'un texte » ─────────────────
+ *
+ * Cinq vues de la refonte #324 sélectionnent ces scrutins. La règle est écrite
+ * ICI et une seule fois : jusqu'à cette issue elle n'était écrite nulle part,
+ * et c'est déjà la cause des deux tableaux du temps 2 que le temps 3 n'a pas su
+ * reproduire (`audit/faisabilite-visualisations-20260831.md` §6).
+ *
+ * Elle a deux moitiés, et elles ne sont pas de la même nature.
+ *
+ * 1. UNE MOITIÉ SOURCÉE, qui ne rouille pas. `type_vote` vient de
+ *    `typeVote.codeTypeVote` (#639), un champ que l'Assemblée publie. Il écarte
+ *    les 66 motions de censure des 17 748 scrutins : une motion de censure est
+ *    un fait de procédure, jamais une position sur un texte (§2 règle 4).
+ *
+ * 2. UNE MOITIÉ APPROCHÉE, qui rouille, et qui se déclare comme telle. Le code
+ *    de scrutin ne suffit pas : `AGENTS.md` §5 le dit, `SPO` couvre
+ *    indifféremment les votes sur article, sur amendement et sur l'ensemble —
+ *    il ne constitue donc PAS l'univers des votes sur un texte entier. Il reste
+ *    l'intitulé, qui nomme l'objet du vote en clair.
+ *
+ * Le motif est ANCRÉ EN TÊTE, jamais cherché en sous-chaîne. Mesuré au commit
+ * de données `c6edee05` le 31/08/2026, sur les 17 748 scrutins publiés :
+ *
+ *   sous-chaîne `l'ensemble` n'importe où, normalisée : 938
+ *   ancrée en tête, `sur` initial optionnel          : 933
+ *   moins les votes sur une sous-partie              : 925  ← la règle
+ *
+ * Les 5 que l'ancrage écarte sont des votes que la sous-chaîne publiait à tort
+ * comme des votes sur un texte entier : 1 motion de rejet préalable (leg 14),
+ * 1 article unique, 2 amendements et 1 article premier (leg 17). Publier l'un
+ * d'eux affirmerait une position que la personne n'a pas prise (§2 règle 2, et
+ * §2 règle 4 pour la motion).
+ *
+ * Le `sur ` initial est optionnel parce qu'un ancrage strict écartait un vrai
+ * vote sur l'ensemble : le scrutin SOLENNEL `an:14:32`, « sur l'ensemble du
+ * projet de loi organique relatif à la programmation et à la gouvernance des
+ * finances publiques ». Un seul scrutin sur 17 748 — et c'est bien pour cela
+ * qu'il faut un test : personne ne le reverra à l'œil.
+ */
+export const WHOLE_TEXT_VOTE_PATTERN = /^(?:sur )?l'ensemble\b/;
+
+/*
+ * L'ancrage ne suffit toujours pas. 8 des 933 scrutins ancrés portent sur une
+ * SOUS-PARTIE du texte, et les publier comme des votes sur l'ensemble serait
+ * exactement le contresens que l'ancrage vient de fermer :
+ *
+ *   5 votes sur un article — « l'ensemble de l'article premier du projet de loi
+ *     constitutionnelle de protection de la Nation » (leg 14, ×2), l'article 5
+ *     bis du PLFR 2014, les articles premier et 3 du texte sur la délimitation
+ *     des régions ;
+ *   3 votes sur une partie de budget — la première partie du PLF 2014 (un
+ *     scrutin SOLENNEL) et du PLFG 2024, la deuxième partie du PLFSS 2025.
+ *
+ * Cette exclusion est la partie la plus fragile de la règle : elle nomme deux
+ * formes observées, et une troisième forme d'objet partiel passerait au travers.
+ * C'est pourquoi la borne ci-dessous est publiée, et pourquoi les 8 sont cités
+ * un par un dans `tests/test_selection_vote_ensemble_672.py`.
+ */
+export const SUBPART_VOTE_PATTERN =
+  /^(?:sur )?l'ensemble (?:de l'article\b|de la (?:[a-zàâçéèêëîïôûùüÿœ]+ )?partie\b)/;
+
+/*
+ * Vrai si ce scrutin porte sur l'ensemble d'un texte, au sens de la règle
+ * ci-dessus. Attend une entrée de `pivot_data/scrutins.json` : `texte` et
+ * `type_vote`.
+ *
+ * Un `type_vote` absent ne devient jamais `vote_texte` par défaut : sans le
+ * champ, on ne sait pas, et §2 règle 5 interdit de combler par une valeur.
+ */
+export function isWholeTextVote(scrutin) {
+  if (!scrutin || scrutin.type_vote !== 'vote_texte') return false;
+
+  const libelle = normalizeLabel(scrutin.texte);
+  return WHOLE_TEXT_VOTE_PATTERN.test(libelle) && !SUBPART_VOTE_PATTERN.test(libelle);
+}
+
+/*
+ * La sélection que les cinq vues appellent, plutôt que d'en réécrire cinq
+ * variantes. Accepte la liste de `scrutins.json` ou l'index `{id: scrutin}`
+ * que `pivotAdapter` manipule.
+ */
+export function selectWholeTextVotes(scrutins) {
+  const liste = Array.isArray(scrutins) ? scrutins : Object.values(scrutins || {});
+  return liste.filter(isWholeTextVote);
+}
+
+/* ── Livrable : la borne, en texte publié ────────────────────────────────────
+ *
+ * 925 est un PLANCHER, jamais un décompte exhaustif, et la page le dit (§2
+ * règle 5). Deux mesures le montrent, au commit `c6edee05` :
+ *
+ *   - la source ne distingue pas : 17 312 des 17 748 scrutins portent le code
+ *     `SPO`, qui couvre l'ensemble, l'article et l'amendement sans les séparer ;
+ *   - le libellé ne dit pas toujours « l'ensemble » : 70 des 361 scrutins
+ *     SOLENNELS ne sont pas retenus, et certains sont d'authentiques votes sur
+ *     un texte entier dont l'intitulé emploie une autre tournure — « le projet
+ *     de loi de modernisation, de développement et de protection des
+ *     territoires de montagne (première lecture) ».
+ *
+ * Ces votes-là manquent. C'est un vide, et un vide se préfère à un décompte
+ * gonflé : un vote manqué ne dit rien, un vote attribué à tort affirme une
+ * position que la personne n'a pas prise.
+ */
+export const WHOLE_TEXT_VOTE_BOUND = {
+  id: 'votes-sur-ensemble',
+  sujet: 'Votes sur l’ensemble d’un texte',
+  phrase:
+    "Ce décompte est un plancher, pas un relevé exhaustif : il ne prétend pas contenir tous les votes sur un texte entier.",
+  pourquoi:
+    "L’Assemblée publie un même code de scrutin pour les votes sur l’ensemble d’un texte, sur un article et sur un amendement : rien dans la source ne les sépare. Nous reconnaissons donc ces votes à leur intitulé, qui commence par « l’ensemble du projet de loi… » ou « l’ensemble de la proposition de loi… ». Un vote sur un texte entier formulé autrement n’est pas repris ici. Nous préférons ce manque à un décompte gonflé : un vote absent ne dit rien, un vote attribué à tort affirme une position que la personne n’a pas prise.",
+};
