@@ -110,11 +110,23 @@ via `src/population_profils.py`.
   → `docs/decisions/partition-profils-legislature-580.md#garde-fou-blob-580`
 - **Additive merge (`merge_profile.py`): regeneration never removes collected data.**
   `votes`/`mandats`/`interventions` additive, old entry wins; `amendements`/
-  `textes_portes` new entry wins, keyed on `amendement_id` or on the
+  `textes_portes` new entry wins, keyed on `amendement_id` / `dossier_id`, or on the
   `amendement_non_resolu` record — keying on the mapping alone collapses every unresolved
   entry into one. Scalars take the new value only if populated, and **never regress to
   `null`**.
   → `docs/decisions/collecte-vide-necrase-jamais.md`
+- **A merge key written `a or b` changes identity the day `a` fills in (#668).** #540 was
+  a *sticky* key absorbing distinct entries; this is its mirror — the same dossier keyed
+  on the fallback before the run and on `source_url` after, published twice (940 entries
+  for 472 collected dossiers, 468 duplicates, 22 profiles, live). **An identifier, never a
+  URL** (`dossier_id`, the raw stage's own `dossiers_legislatifs[].id`), and the residual
+  `or` is neutralised by a **reprise**, not by the key: `clean_stale_textes_portes` drops
+  an entry with no identifier only when an identified twin carries the same fallback.
+  Dropping the `or` outright would collapse un-identified entries onto one `None` key
+  (#432). **Before adding an `a or b` key, measure how much of the published corpus sits
+  on each branch** — and a reprise nobody calls cleans nothing: this one was dead code for
+  a whole remediation.
+  → `docs/decisions/cle-fusion-textes-portes-668.md`
 - **An empty collection never overwrites a non-empty one (#465)** — per field, not per
   profile, even under `--no-merge`. Lifted only by `--autoriser-collecte-vide`, and the
   preservation is always printed. "Zero observed" is not "collection failed" (§2 rule 5).

@@ -260,17 +260,24 @@ def test_merge_pivot_profile_ecarte_textes_portes_sans_role_connu():
     assert merged["textes_portes"][0]["titre"] == "Texte officiel"
 
 
-def test_clean_stale_textes_portes_keeps_current_schema_entry():
+def test_clean_stale_textes_portes_garde_l_entree_identifiee():
+    """Depuis #668 la reprise départage sur l'IDENTIFIANT, plus sur le schéma.
+
+    Le critère d'origine — « l'entrée la plus complète », `type_rapport` et
+    `stade_procedural` présents — ne discriminait plus rien : les 940 entrées
+    publiées le 31/08/2026 portent toutes les deux clés. Voir
+    `tests/test_textes_portes_cle_fusion_668.py` pour le garde-fou complet, sur
+    réductions verbatim du corpus.
+    """
     textes = [
-        {"titre": "Texte Y", "role": "rapporteur", "date_min": "2024-01-01", "legislature": "16", "source_url": "https://a.fr/2"},
-        {"titre": "Texte Y", "role": None, "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "legislature": "16", "source_url": "https://a.fr/2"},
+        {"titre": "Texte Y", "role": "rapporteur", "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "legislature": "16", "source_url": None},
+        {"titre": "Texte Y", "dossier_id": "DLR5L16N00001", "role": "rapporteur", "type_rapport": None, "stade_procedural": None, "date_min": "2024-01-01", "legislature": "16", "source_url": "https://a.fr/2"},
     ]
 
     cleaned = clean_stale_textes_portes(textes)
 
     assert len(cleaned) == 1
-    assert cleaned[0]["role"] is None
-    assert "type_rapport" in cleaned[0]
+    assert cleaned[0]["dossier_id"] == "DLR5L16N00001"
 
 
 def test_merge_pivot_profile_amendements_additifs_preserve_anciennes_entrees():
