@@ -32,8 +32,11 @@ qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 
 ### Constats de cadrage, à ne pas re-trancher
 
-**#484 est à re-vérifier plutôt qu'à rouvrir tel quel.** Son constat — « `identite`
-toujours `null` » — était faux : mesuré le 28/08/2026 sur les **481 profils publiés**,
+**Un constat chiffré recopié d'une issue vieillit — #484 l'a démontré deux fois.**
+L'issue est close depuis le 30/08/2026 ; ce qui suit n'est plus un appel à la
+re-vérifier, c'est la trace de ce que la re-mesure a coûté. Son constat d'origine —
+« `identite` toujours `null` » — était faux : mesuré le 28/08/2026 sur les **481 profils
+publiés**,
 c'était **5**, dont trois non-parlementaires créés par #539 pour qui l'`identite` nulle
 est **attendue** — aucune source parlementaire ne les décrit.
 
@@ -163,9 +166,13 @@ Convention d'écriture : `AGENTS.md` §8.
   `docs/decisions/retrait-nosdeputes-529.md` §7.
 - Les deux groupes Sénat ont leur extraction **suspendue** depuis le 24/08/2026
   (certificat TLS expiré sur `archive.nossenateurs.fr`, runs `32463926808` et
-  `32548486495`, #516) : leurs fiches publiées sont gelées. Reprise conditionnée à
-  un certificat valide ou à une source de remplacement — sinon, trancher le retrait
-  définitif. Voir `docs/decisions/extraction-groupe-suspendue-516.md`.
+  `32548486495`, #516) : leurs fiches publiées sont gelées. **Le retrait a depuis été
+  tranché, et il est éditorial** (#528) : un certificat valide ne rouvre plus rien, et la
+  reprise exige les trois conditions écrites au §7 de la décision. La formulation
+  précédente de cette ligne — « reprise conditionnée à un certificat valide » — présentait
+  comme ouverte une question déjà fermée. Voir
+  `docs/decisions/retrait-senat-528.md` §5 et §7, et
+  `docs/decisions/extraction-groupe-suspendue-516.md` pour le mécanisme de suspension.
 - `fetch_full_roster` faisait **un seul essai** (timeout 15 s, aucun backoff) et
   chacune des 9 invocations d'un run reconstruisait le roster pour elle-même : le run
   `32738726729` (24/08/2026) y a perdu 4 shards sur 8, la même URL répondant aux 4
