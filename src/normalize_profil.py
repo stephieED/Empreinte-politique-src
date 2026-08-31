@@ -327,16 +327,37 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     rapporteur ; `fetch_textes_portes_officiels` (#400, seule source depuis
     #528) le renseigne, mais les entrées collectées avant lui traversent la
     fusion additive avec leur `role: null` — c'est ce que ce repli couvre.
+
+    `dossier_id` (#639) est l'identifiant du dossier législatif à l'Assemblée
+    nationale, forme `DLR5L15N37607`. Il n'est **pas reconstruit** : le profil
+    brut le porte déjà sous `dossiers_legislatifs[].id`, écrit par
+    `candidate_profile._build_acteur_textes_portes_index` depuis le `uid` du
+    dossier, et la normalisation le jetait — 472 / 472 entrées publiées, 464
+    dossiers distincts, 22 profils (mesuré le 31/08/2026). C'est le seul
+    identifiant sourcé qui rattache un texte porté à autre chose qu'un libellé
+    en clair, et il porte **le même nom** que sur les fiches de gouvernement
+    (`textes[].dossier_id`, 63 / 63 sur LECORNU_II) : les deux étages parlent
+    la même langue, sinon le croisement retomberait sur le titre.
     """
     return {
         "titre": d.get("titre") or None,
+        "dossier_id": d.get("id") or None,
         "role": d.get("role"),
         "type_rapport": d.get("type_rapport"),
         "stade_procedural": d.get("stade_procedural"),
         "date_min": d.get("date_min"),
         "date_max": d.get("date_max"),
         "legislature": d.get("legislature"),
-        "source_url": _first(d.get("url_source"), d.get("url_institution")),
+        # `source_url` D'ABORD (#639) : c'est la clé qu'écrit la collecte AN
+        # depuis #400, et la seule que porte le corpus — 468 des 472 entrées
+        # brutes committées, 0 pour `url_source`/`url_institution`. Ne lire que
+        # ces deux-là publiait donc `source_url: null` sur 472 / 472 textes
+        # portés, c'est-à-dire un fait publié sans sa source primaire
+        # (AGENTS.md §2 règle 2). Les deux clés héritées de NosDéputés restent
+        # lues : elles vivent encore dans des entrées collectées avant #529.
+        "source_url": _first(
+            d.get("source_url"), d.get("url_source"), d.get("url_institution")
+        ),
     }
 
 

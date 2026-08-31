@@ -178,6 +178,37 @@ AN_SCRUTIN_PAGE_URL = "https://www.assemblee-nationale.fr/dyn/{legislature}/scru
 # Voir docs/decisions/votes-multi-legislature.md et ROADMAP.
 AN_SCRUTIN_UID_PREFIXE = "VTANR"
 
+# codeTypeVote de l'open data AN -> (type_scrutin, type_vote) du schema pivot.
+#
+# POURQUOI CETTE TABLE (#639). `typeVote` est renseigne sur 18 311 / 18 311
+# scrutins des quatre legislatures (releve du 31/08/2026 sur les archives
+# reelles), et il etait lu puis jete par `_parse_scrutins_zip`. Les 66 motions
+# de censure (14e : 4, 15e : 5, 16e : 34, 17e : 23) etaient donc publiees sous
+# le meme `type_vote: "vote_texte"` que les 17 682 autres — la valeur que
+# `KNOWN_TYPES_VOTE` attend et qu'aucune donnee ne portait, ce qui rendait
+# l'invariant du schema (AGENTS.md §5) vacuement satisfait.
+#
+# LA TABLE EST FERMEE ET SANS DEFAUT. Un code inconnu rend (None, None) : un
+# scrutin non qualifie reste non qualifie, jamais range d'office dans SPO, qui
+# est pourtant 97,5 % des scrutins publies — 17 312 / 17 748 (AGENTS.md §2 regle 5).
+#
+# `type_scrutin` est l'image 1:1 du code source, `type_vote` la seule
+# distinction dont les regles editoriales ont besoin : une motion de censure
+# est un FAIT PROCEDURAL, jamais une position sur le texte vise (regle 4). Les
+# deux coincident sur MOC et divergent sur les trois autres codes ; c'est
+# assume, la redondance vaut mieux qu'une repartition inferee.
+#
+# SSG (« scrutin solennel du Congres ») est volontairement absent : la seule
+# occurrence des quatre archives (VTCGR5L16V1, IVG, 04/03/2024) porte un uid
+# de Congres et est ecartee en amont par AN_SCRUTIN_UID_PREFIXE. L'inscrire
+# ici serait du code mort qui laisserait croire que le Congres est publie.
+_SCRUTINS_TYPE_PAR_CODE: dict[str, tuple[str, str]] = {
+    "SPO": ("public_ordinaire", "vote_texte"),   # 17 312 publies
+    "SPS": ("solennel", "vote_texte"),           #    361 publies
+    "SAT": ("tribune", "vote_texte"),            #      9 publies, tous 14e
+    "MOC": ("motion_censure", "motion_censure"), #     66 publies
+}
+
 # Donnees ouvertes officielles des amendements (Assemblee nationale). Le nom du
 # sous-repertoire et du zip differe selon la legislature : "amendements_div_legis"
 # / "Amendements.json.zip" pour les legislatures 16/17, "amendements_legis" /
@@ -983,8 +1014,11 @@ def _parse_scrutins_zip(
     tiré (extrait de la construction pour être réutilisable par
     `build_scrutins_index_figes.py`, qui parse une archive téléchargée hors CI).
 
-    - `scrutins` : `uid -> {numero, date, titre, sort, legislature}`, le meta
-      stocké UNE seule fois (forme dédupliquée, #377) ;
+    - `scrutins` : `uid -> {numero, date, titre, sort, legislature,
+      type_scrutin, type_vote, demandeur}`, le meta stocké UNE seule fois
+      (forme dédupliquée, #377). Les trois derniers champs sont la
+      qualification sourcée ajoutée par #639 : voir `_SCRUTINS_TYPE_PAR_CODE`
+      et `_scrutins_store_qualifie`, qui refuse un cache antérieur ;
     - `index_par_acteur` : `acteurRef -> [[uid, position], ...]`, référence
       minimale par lien acteur/scrutin.
 
@@ -1018,12 +1052,31 @@ def _parse_scrutins_zip(
                     continue
                 if isinstance(groupes, dict):
                     groupes = [groupes]
+                type_vote_brut = scrutin.get("typeVote")
+                code_type = (
+                    type_vote_brut.get("codeTypeVote") if isinstance(type_vote_brut, dict) else None
+                )
+                type_scrutin, type_vote = _SCRUTINS_TYPE_PAR_CODE.get(code_type, (None, None))
+                demandeur_brut = scrutin.get("demandeur")
+                demandeur = (
+                    demandeur_brut.get("texte") if isinstance(demandeur_brut, dict) else None
+                )
                 scrutins[uid] = {
                     "numero": scrutin.get("numero"),
                     "date": scrutin.get("dateScrutin"),
                     "titre": scrutin.get("titre"),
                     "sort": (scrutin.get("sort") or {}).get("libelle"),
                     "legislature": scrutin.get("legislature") or legislature,
+                    # Qualification sourcee du scrutin (#639), cf.
+                    # _SCRUTINS_TYPE_PAR_CODE. None quand la source ne qualifie
+                    # pas : l'absence est publiee comme absence.
+                    "type_scrutin": type_scrutin,
+                    "type_vote": type_vote,
+                    # Qui a demande le scrutin public : « President du groupe
+                    # ... », « Conference des presidents ». Renseigne sur
+                    # 18 226 / 18 311 scrutins bruts, `null` sur 85 (releve du
+                    # 31/08/2026) — toujours un objet, `texte` str ou None.
+                    "demandeur": demandeur if isinstance(demandeur, str) and demandeur else None,
                 }
                 for groupe in groupes:
                     if not isinstance(groupe, dict):
@@ -1115,16 +1168,70 @@ def _clear_scrutins_store_memo() -> None:
     _SCRUTINS_STORE_MEMO.clear()
 
 
+# Champ dont la présence atteste qu'un store de scrutins a été produit APRÈS
+# #639. Un store écrit avant ne porte que cinq champs, et il est indiscernable
+# d'un store complet dont la source n'aurait rien qualifié — sauf qu'ici la
+# source qualifie tout : `typeVote` est renseigné sur 18 311 / 18 311 scrutins
+# bruts. Un store où AUCUNE entrée ne porte la clé est donc périmé, jamais
+# « une législature sans qualification ».
+SCRUTINS_CHAMP_QUALIFICATION = "type_scrutin"
+
+
+def _scrutins_store_qualifie(store: Any) -> bool:
+    """True si un store `uid -> scrutin` porte la qualification de #639.
+
+    « Un répertoire qui existe n'est pas la preuve de ce qu'il contient »
+    (AGENTS.md §5, leçon du cache d'amendements) : un cache présent mais écrit
+    sous l'ancienne projection à cinq champs republierait 17 748 scrutins sans
+    `type_scrutin` et sans les 66 motions de censure, sans que rien ne le dise.
+
+    Le test porte sur la **clé**, pas sur sa valeur : `type_scrutin` peut
+    légitimement valoir `None` sur un code inconnu, et exiger une valeur
+    reviendrait à refuser un store correct. Un store vide est déclaré non
+    qualifié — il n'y a rien à en tirer, et le reconstruire ne coûte rien.
+    """
+    if not isinstance(store, dict) or not store:
+        return False
+    return any(
+        isinstance(scrutin, dict) and SCRUTINS_CHAMP_QUALIFICATION in scrutin
+        for scrutin in store.values()
+    )
+
+
+def _lire_store_scrutins_disque(legislature: str) -> Optional[dict[str, Any]]:
+    """Store de scrutins lu sur disque, sans mémo ni verrou. `None` si absent
+    ou illisible."""
+    path = SCRUTINS_CACHE_DIR / legislature / SCRUTINS_CACHE_SCRUTINS_FILENAME
+    if not path.is_file():
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            charge = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return charge if isinstance(charge, dict) else None
+
+
 def _scrutins_cache_present(legislature: str) -> bool:
     """True si le cache disque d'une législature est déjà matérialisé sous la
-    forme dédupliquée + shardée (#403). Un cache écrit avant #403 (fichier
-    unique, forme plate) est indiscernable d'un cache absent, donc reconstruit
-    — jamais relu en mémoire, ce qui est précisément ce qu'il fallait éviter."""
+    forme dédupliquée + shardée (#403) ET qualifiée (#639). Un cache écrit
+    avant #403 (fichier unique, forme plate) est indiscernable d'un cache
+    absent, donc reconstruit — jamais relu en mémoire, ce qui est précisément
+    ce qu'il fallait éviter. Un cache écrit avant #639 est refusé pour la même
+    raison : l'existence n'est pas la conformité."""
     cache_dir = SCRUTINS_CACHE_DIR / legislature
-    return (
+    if not (
         (cache_dir / SCRUTINS_CACHE_SCRUTINS_FILENAME).is_file()
         and (cache_dir / SCRUTINS_CACHE_INDEX_PAR_ACTEUR_DIRNAME).is_dir()
-    )
+    ):
+        return False
+    if not _scrutins_store_qualifie(_lire_store_scrutins_disque(legislature)):
+        print(
+            f"  [i] Cache de scrutins de la législature {legislature} antérieur à #639 "
+            "(aucune qualification `type_scrutin`) : reconstruit."
+        )
+        return False
+    return True
 
 
 def _load_frozen_scrutins_index(legislature: str) -> bool:
@@ -1132,10 +1239,19 @@ def _load_frozen_scrutins_index(legislature: str) -> bool:
     (`AN_SCRUTINS_LEGISLATURES_FIGEES`), construit hors CI par
     `build_scrutins_index_figes.py` sous forme dédupliquée et gzippée.
 
-    Retourne False si le fallback committé est absent ou illisible : l'appelant
-    retombe alors sur le chemin réseau standard (l'archive reste téléchargeable,
-    le gel n'est ici qu'une économie de CI — voir
-    docs/decisions/votes-multi-legislature.md)."""
+    Retourne False si le fallback committé est absent, illisible **ou antérieur
+    à #639** : l'appelant retombe alors sur le chemin réseau standard (l'archive
+    reste téléchargeable, le gel n'est ici qu'une économie de CI — voir
+    docs/decisions/votes-multi-legislature.md).
+
+    Le refus d'un index figé non qualifié est délibéré (#639). L'alternative —
+    l'accepter en avertissant — laisserait les législatures 14, 15 et 16
+    publier 9 314 scrutins sans `type_scrutin` et 43 motions de censure
+    étiquetées `vote_texte`, c'est-à-dire un fait faux, jusqu'à ce que
+    quelqu'un pense à relancer `build_scrutins_index_figes.py`. Le coût du
+    refus est borné et transitoire : trois archives retéléchargées (20,0 Mo au
+    total — 0,7 + 9,2 + 10,1 Mo, mesurés le 31/08/2026) tant que les index figés
+    n'ont pas été régénérés."""
     frozen_dir = AN_SCRUTINS_FIGES_DIR / legislature
     frozen_scrutins_path = frozen_dir / SCRUTINS_FIGES_SCRUTINS_FILENAME
     frozen_index_path = frozen_dir / SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME
@@ -1149,6 +1265,15 @@ def _load_frozen_scrutins_index(legislature: str) -> bool:
     except (json.JSONDecodeError, OSError):
         return False
     if not isinstance(scrutins, dict) or not isinstance(index_par_acteur, dict):
+        return False
+    if not _scrutins_store_qualifie(scrutins):
+        print(
+            f"  [!] Index de scrutins figé de la législature {legislature} antérieur à #639 "
+            "(projection à cinq champs, aucune qualification `type_scrutin`) : ignoré, "
+            "l'archive open data est retéléchargée. Régénérer avec "
+            f"`python3 src/build_scrutins_index_figes.py --legislature {legislature}` "
+            "pour supprimer ce téléchargement."
+        )
         return False
 
     try:
@@ -5263,6 +5388,13 @@ def build_profile(
                 "numero_scrutin": v.get("numero"),
                 "sort": v.get("sort"),
                 "legislature": v.get("legislature"),
+                # Qualification sourcée du scrutin (#639) : recopiée telle
+                # quelle depuis l'archive, jamais déduite du libellé. Absente
+                # des votes collectés avant #639 — `scrutins_index` conserve
+                # alors la valeur déjà publiée plutôt que de régresser.
+                "type_scrutin": v.get("type_scrutin"),
+                "type_vote": v.get("type_vote"),
+                "demandeur": v.get("demandeur"),
                 # Source primaire du scrutin (règle 2). Portée par le vote
                 # lui-même et non déduite de `votes_source` : celui-ci couvre
                 # désormais plusieurs législatures, dont aucune ne vaut pour

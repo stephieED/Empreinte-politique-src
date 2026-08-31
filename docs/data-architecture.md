@@ -189,7 +189,7 @@ reprend :
 | `identite` | nom, groupe politique, profession, circonscription… |
 | `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
-| `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot |
+| `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id` |
 | `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]` |
 | `amendements_partitionnes` | le manifeste des tranches, à la place exacte qu'occupait `amendements` (#580) |
 | `mandat_europeen` | présent seulement si le candidat a des enregistrements au Parlement européen |
@@ -293,6 +293,36 @@ corpus qui dit si elle est utilisable (voir
 `audit/legislature_votes_20260819.md`.
 → `docs/decisions/resolution-legislature-votes.md`
 
+### La qualification d'un scrutin (#639)
+
+Une entrée de `scrutins.json` porte, depuis #639, ce que
+`typeVote.codeTypeVote` dit du scrutin — un champ que l'archive renseigne sur
+**18 311 / 18 311** scrutins bruts et que la projection jetait :
+
+| `codeTypeVote` | `type_scrutin` | `type_vote` | Publiés (17 748) |
+|---|---|---|---:|
+| `SPO` | `public_ordinaire` | `vote_texte` | 17 312 |
+| `SPS` | `solennel` | `vote_texte` | 361 |
+| `MOC` | `motion_censure` | `motion_censure` | 66 |
+| `SAT` | `tribune` | `vote_texte` | 9 |
+| absent / inconnu | `null` | `null` | 0 |
+
+S'y ajoute `demandeur` (« Président du groupe … », « Conférence des
+présidents »), renseigné sur 17 664 des 17 748. Le tout pèse +1,52 Mo,
+soit ~10,2 Mo pour l'index.
+
+Une entrée `motion_censure` porte `texte_lie_id: null` **et**
+`texte_lie_non_resolu.motif` : le scrutin AN ne publie aucune référence
+législative (0 / 18 311), et une motion de l'article 49 alinéa 2 n'a pas de
+texte à lier. `vote_texte` reste **grossier** — `SPO` couvre indifféremment un
+vote sur un article, un amendement ou un texte entier.
+
+**Les index figés de `raw_data/scrutins_an_figes/{14,15,16}` portent encore
+l'ancienne projection à cinq champs et sont refusés** : chaque run retélécharge
+ces archives (20,0 Mo) tant que `build_scrutins_index_figes.py --toutes` n'a pas
+été relancé.
+→ `docs/decisions/qualification-scrutins-et-cle-dossier-639.md`
+
 → `docs/decisions/normalisation-votes.md`,
 `docs/decisions/normalisation-amendements.md`
 
@@ -326,7 +356,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/groupes/` | `group_profile.py` (roster réel + pivots locaux) | `src/schema_groupe.py` | **7** fiches, 11 Mo |
 | `pivot_data/partis/` | `parti_profile.py` (agrégation éditoriale) | `src/schema_parti.py` | **10** fiches, < 1 Mo |
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
-| `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo |
+| `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
 
 Populations, pour qu'aucun de ces chiffres ne se lise de travers : les 481
@@ -375,7 +405,7 @@ ressemble un fichier :
   "identite": { },
   "mandats": [ ],
   "votes": [ ],
-  "textes_portes": [ ],
+  "textes_portes": [ {"titre": "...", "dossier_id": "DLR5L15N37607", "role": "auteur", "...": null} ],
   "amendements": [ ],
   "interventions": [ ],
   "tags_thematiques": ["budget", "fiscalite"],

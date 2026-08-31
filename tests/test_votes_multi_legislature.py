@@ -121,6 +121,22 @@ def _zip_scrutins_monolithique(tmp_path, nom, scrutins):
     return zip_path
 
 
+def _meta_store(numero, date, titre, legislature, sort=None):
+    """Meta d'un scrutin à la forme écrite par `_parse_scrutins_zip`.
+
+    La qualification (`type_scrutin`/`type_vote`/`demandeur`) en fait partie
+    depuis #639, et un store qui ne la porte pas est traité comme un cache
+    périmé (`_scrutins_store_qualifie`) : ces fabriques doivent donc l'écrire,
+    sinon les tests mesureraient un cache que la production reconstruirait."""
+    return {
+        "numero": numero, "date": date, "titre": titre, "sort": sort,
+        "legislature": legislature,
+        "type_scrutin": "public_ordinaire",
+        "type_vote": "vote_texte",
+        "demandeur": "Président du groupe Les Républicains",
+    }
+
+
 def _ecrire_cache_scrutins(racine, legislature, scrutins, index_par_acteur):
     """Écrit un cache disque à la forme dédupliquée + shardée attendue."""
     cache_dir = racine / legislature
@@ -299,10 +315,7 @@ def test_fetch_votes_officiels_agrege_toutes_les_legislatures(tmp_path):
             tmp_path,
             legislature,
             scrutins={
-                uid: {
-                    "numero": "1", "date": f"20{legislature}-01-01", "titre": f"T{legislature}",
-                    "sort": None, "legislature": legislature,
-                }
+                uid: _meta_store("1", f"20{legislature}-01-01", f"T{legislature}", legislature)
             },
             index_par_acteur={"PA1": [[uid, "pour"]]},
         )
@@ -329,16 +342,14 @@ def test_fetch_votes_officiels_dedoublonne_par_uid_de_scrutin(tmp_path):
     La déduplication porte sur l'`uid`, jamais sur le `numero` : celui-ci
     repart de 1 à chaque législature, donc dédoublonner par numéro effacerait
     des scrutins distincts (ici, le n° 1 de la 16e ET celui de la 17e)."""
-    meta_partage = {
-        "VTANR5L17V1": {"numero": "1", "date": "2024-10-01", "titre": "T", "sort": None, "legislature": "17"}
-    }
+    meta_partage = {"VTANR5L17V1": _meta_store("1", "2024-10-01", "T", "17")}
     _ecrire_cache_scrutins(tmp_path, "17", meta_partage, {"PA1": [["VTANR5L17V1", "pour"]]})
     _ecrire_cache_scrutins(
         tmp_path,
         "16",
         {
             **meta_partage,
-            "VTANR5L16V1": {"numero": "1", "date": "2023-01-01", "titre": "T16", "sort": None, "legislature": "16"},
+            "VTANR5L16V1": _meta_store("1", "2023-01-01", "T16", "16"),
         },
         {"PA1": [["VTANR5L17V1", "pour"], ["VTANR5L16V1", "contre"]]},
     )
@@ -363,7 +374,7 @@ def test_fetch_votes_officiels_legislature_indisponible_nempeche_pas_les_autres(
     _ecrire_cache_scrutins(
         tmp_path,
         "17",
-        {"VTANR5L17V1": {"numero": "1", "date": "2024-10-01", "titre": "T", "sort": None, "legislature": "17"}},
+        {"VTANR5L17V1": _meta_store("1", "2024-10-01", "T", "17")},
         {"PA1": [["VTANR5L17V1", "pour"]]},
     )
 
@@ -409,10 +420,7 @@ def test_legislature_figee_est_materialisee_sans_reseau(tmp_path):
     figes = tmp_path / "figes"
     (figes / "16").mkdir(parents=True)
     with gzip.open(figes / "16" / SCRUTINS_FIGES_SCRUTINS_FILENAME, "wt", encoding="utf-8") as f:
-        json.dump(
-            {"VTANR5L16V1": {"numero": "1", "date": "2023-01-01", "titre": "T", "sort": None, "legislature": "16"}},
-            f,
-        )
+        json.dump({"VTANR5L16V1": _meta_store("1", "2023-01-01", "T", "16")}, f)
     with gzip.open(figes / "16" / SCRUTINS_FIGES_INDEX_PAR_ACTEUR_FILENAME, "wt", encoding="utf-8") as f:
         json.dump({"PA1": [["VTANR5L16V1", "pour"]]}, f)
 
@@ -446,7 +454,7 @@ def test_cache_plat_herite_est_reconstruit_et_supprime(tmp_path):
         assert _scrutins_cache_present("16") is False, "L'ancien format ne doit pas passer pour un cache valide"
         _write_cached_scrutins(
             "16",
-            {"VTANR5L16V1": {"numero": "1", "date": "2023-01-01", "titre": "T", "sort": None, "legislature": "16"}},
+            {"VTANR5L16V1": _meta_store("1", "2023-01-01", "T", "16")},
             {"PA1": [["VTANR5L16V1", "pour"]]},
         )
         assert _scrutins_cache_present("16") is True

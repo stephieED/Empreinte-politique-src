@@ -34,6 +34,13 @@ index par acteur réduit à des références `[uid, position]`. Committer la for
 plate (le meta recopié pour chaque votant) représenterait 741 Mo pour les
 quatre législatures, contre 68 Mo dédupliqués et 2,75 Mo une fois gzippés pour
 les trois figées.
+
+À REGÉNÉRER APRÈS #639. Les index figés committés portent la projection à cinq
+champs d'avant #639, sans la qualification `type_scrutin`/`type_vote`/
+`demandeur`. `_load_frozen_scrutins_index` les REFUSE désormais et retélécharge
+l'archive : tant que les trois n'ont pas été régénérés par ce script, chaque run
+paie 20,0 Mo de téléchargement supplémentaire. Un index figé accepté tel quel
+aurait publié 43 des 66 motions de censure sous `type_vote: "vote_texte"`.
 """
 
 import argparse

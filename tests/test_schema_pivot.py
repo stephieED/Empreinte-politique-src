@@ -821,7 +821,7 @@ def test_known_stades_proceduraux_contains_expected_values():
 
 
 def test_known_types_scrutin_contains_expected_values():
-    assert KNOWN_TYPES_SCRUTIN == {"public_ordinaire", "solennel"}
+    assert KNOWN_TYPES_SCRUTIN == {"public_ordinaire", "solennel", "tribune", "motion_censure"}
 
 
 def test_known_types_vote_contains_expected_values():
