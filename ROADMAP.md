@@ -400,8 +400,11 @@ Convention d'écriture : `AGENTS.md` §8.
 - EU textes_portés/amendements via the official API — superseded by the
   Parltrack approach, see `docs/decisions/hors-perimetre.md` and
   `docs/decisions/investigation-sources-ue.md`.
-- Precise ministerial portfolio title — no source identified, see
-  `docs/decisions/hors-perimetre.md`.
+- Precise ministerial portfolio title — **le constat d'origine (« no source
+  identified ») est périmé** : la source existe et est câblée (AMO30
+  `typeOrgane == "MINISTERE"`, #382/#383 puis #398/#474), `portefeuille` est renseigné
+  sur les 127 entrées `membres[]` publiées. Ligne conservée tant que #644 n'a pas établi
+  si le JORF est exploitable, voir `docs/decisions/hors-perimetre.md`.
 - Composition des gouvernements : `gouvernement_roster.py` ne connaît que les ministres
   ayant déjà un profil pivot local (AMO30), soit **107 personnes distinctes sur les
   10 fiches publiées** et 3 `premier_ministre` sur 10 — et surtout aucun dénominateur,
