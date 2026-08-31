@@ -315,7 +315,7 @@ Une entrée de `scrutins.json` porte, depuis #639, ce que
 `typeVote.codeTypeVote` dit du scrutin — un champ que l'archive renseigne sur
 **18 311 / 18 311** scrutins bruts et que la projection jetait :
 
-| `codeTypeVote` | `type_scrutin` | `type_vote` | Publiés (17 748) |
+| `codeTypeVote` | `type_scrutin` | `type_vote` | Attendus (17 748) |
 |---|---|---|---:|
 | `SPO` | `public_ordinaire` | `vote_texte` | 17 312 |
 | `SPS` | `solennel` | `vote_texte` | 361 |
@@ -327,16 +327,28 @@ S'y ajoute `demandeur` (« Président du groupe … », « Conférence des
 présidents »), renseigné sur 17 664 des 17 748. Le tout pèse +1,52 Mo,
 soit ~10,2 Mo pour l'index.
 
+**La colonne dit ce que la source qualifie, pas ce que le fichier portait.** Le
+run `33395056902` a publié `type_scrutin: null` et `demandeur: null` sur les
+17 748, et `type_vote: "vote_texte"` sur les 17 748 : la qualification
+n'atteignait pas `pivot_data/`, parce que `merge_raw_profile` fusionne `votes[]`
+en additif pur et que le vote déjà collecté gardait ses sept clés d'avant #639.
+`backfill_vote_qualification` reporte les trois champs sur l'entrée ancienne, et
+`type_vote` n'a plus de valeur par défaut dans l'index. Chaque profil régénéré
+qualifie les scrutins qu'il a votés ; la couverture se remplit run après run.
+→ `docs/decisions/qualification-perdue-a-la-fusion-639.md`
+
 Une entrée `motion_censure` porte `texte_lie_id: null` **et**
 `texte_lie_non_resolu.motif` : le scrutin AN ne publie aucune référence
 législative (0 / 18 311), et une motion de l'article 49 alinéa 2 n'a pas de
 texte à lier. `vote_texte` reste **grossier** — `SPO` couvre indifféremment un
 vote sur un article, un amendement ou un texte entier.
 
-**Les index figés de `raw_data/scrutins_an_figes/{14,15,16}` portent encore
-l'ancienne projection à cinq champs et sont refusés** : chaque run retélécharge
-ces archives (20,0 Mo) tant que `build_scrutins_index_figes.py --toutes` n'a pas
-été relancé.
+**Les trois index figés de `raw_data/scrutins_an_figes/` portent la
+qualification** depuis leur reconstruction du 31/08/2026 : 1 354 scrutins pour
+la XIVe, 4 417 pour la XVe, 4 105 pour la XVIe, dont respectivement 4, 5 et 34
+motions de censure (les 23 autres des 66 sont dans la XVIIe, retéléchargée à
+chaque run). Un index qui ne la porterait pas serait refusé, jamais relu —
+`_load_frozen_scrutins_index` teste la **clé**, pas sa valeur.
 → `docs/decisions/qualification-scrutins-et-cle-dossier-639.md`
 
 → `docs/decisions/normalisation-votes.md`,

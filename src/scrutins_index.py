@@ -267,8 +267,17 @@ def _valeur_scrutin(champ: str, vote: dict[str, Any]) -> Any:
         return vote.get("texte") or vote.get("titre") or None
     if champ == "source_url":
         return vote.get("source_url") or vote.get("url_source") or None
-    if champ == "type_vote":
-        return vote.get("type_vote") or "vote_texte"
+    # `type_vote` N'A PLUS DE DÉFAUT (#639, réouverture du 31/08/2026). Le repli
+    # « vote_texte » était antérieur à la qualification sourcée, et il est
+    # devenu le second maillon qui la perdait : `construire_index` ne complète
+    # une occurrence suivante que sur un champ resté `None`, donc la première
+    # occurrence non qualifiée d'un scrutin verrouillait « vote_texte » et
+    # aucune occurrence qualifiée ne pouvait plus le corriger. Une motion de
+    # censure votée par un profil régénéré ET par un profil qui ne l'est pas
+    # serait restée publiée sous le type d'un vote sur texte, c'est-à-dire un
+    # fait faux (§2 règle 4). Un scrutin que personne ne qualifie sort donc
+    # `null`, et `merge_scrutins_index` conserve la valeur déjà publiée plutôt
+    # que de régresser.
     return vote.get(champ)
 
 
