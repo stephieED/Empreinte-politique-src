@@ -1234,9 +1234,11 @@ def test_cli_main_unknown_gouvernement_id_returns_error(tmp_path):
 # `load_profils_from_dir` rangeait chaque profil pivot **entier** dans une
 # liste, pour n'en lire que `id`, `nom`, `identite`, `mandats` et `sources`.
 # Mesuré sur les 481 profils committés du 30/08/2026 (651,5 Mo), sous un
-# plafond `RLIMIT_AS` de 2,0 Gio : `MemoryError` au **362e** profil, 2 004 Mio
-# de croissance pour 500,9 Mo de JSON lus — facteur de gonflement × 4,2, donc
-# ~2,67 Gio pour le corpus entier. Les trois appelants
+# plafond `RLIMIT_AS` de 2,0 Gio : `MemoryError` autour du **370e** profil
+# (362e, 381e et 383e sur trois exécutions — le rang dépend de l'empreinte de
+# départ du processus, pas de la lecture), ~2 004 Mio de croissance pour 500 à
+# 525 Mo de JSON lus, facteur × 3,8 à × 4,2, donc 2,4 à 2,7 Gio pour le corpus
+# entier. Les trois appelants
 # (`generate_gouvernement_profiles.py`, `gouvernement_profile.py`, la CLI de ce
 # module) ne pouvaient donc pas aller au bout sur une machine à 4 Gio libres.
 #
@@ -1428,4 +1430,4 @@ def test_le_pic_memoire_du_chargement_reste_sous_le_plafond_declare(tmp_path):
         f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
         f"de blocs qu'il ne doit pas garder. Au-dessus de ce plafond il en "
         f"retient une partie : c'est le défaut de #635, qui faisait atteindre "
-        f"le plafond de 2,0 Gio au 362e des 481 profils committés.")
+        f"le plafond de 2,0 Gio autour du 370e des 481 profils committés.")

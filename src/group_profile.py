@@ -875,7 +875,8 @@ def contribution_amendements(
     C'est le seul endroit qui lit une entrée d'amendement, et il ne la lit
     qu'une fois : appelé au chargement (#635), il permet de relâcher les
     entrées au lieu de les garder pour les 76 membres du plus gros groupe
-    publié — 253,5 Mo sur disque, 1 079 Mio de mémoire mesurés.
+    publié — 253,5 Mo sur disque, 0,9 à 1,1 Gio de mémoire selon
+    l'exécution.
 
     Repli de lecture transitoire : une entrée d'avant #431 porte encore ses
     champs, une entrée non résolue les porte sous `amendement_non_resolu`. Les
@@ -1175,9 +1176,9 @@ def load_profil_from_file(
     **Le document entier ne survit pas à cet appel (#635)** : il est projeté sur
     `BLOCS_LUS_MEMBRE`, ses entrées réduites aux clés lues, son `amendements[]`
     réduit à sa contribution — puis relâché. Garder les documents entiers
-    coûtait 1 079 Mio pour la seule fiche du plus gros groupe publié (LFI, 76
-    profils, 253,5 Mo sur disque, facteur de gonflement mesuré × 4,47), et il y
-    a sept fiches. `projeter=False` rend le document entier, pour un appelant
+    coûtait 0,9 à 1,1 Gio pour la seule fiche du plus gros groupe publié (LFI,
+    76 profils, 253,5 Mo sur disque, facteur de gonflement mesuré × 3,7 à
+    × 4,5 selon l'exécution), et il y a sept fiches. `projeter=False` rend le document entier, pour un appelant
     qui a besoin d'autre chose que d'une fiche de groupe.
 
     Args:

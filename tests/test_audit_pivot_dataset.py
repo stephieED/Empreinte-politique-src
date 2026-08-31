@@ -1554,9 +1554,10 @@ def test_main_output_dir_incompatible_avec_output_json(tmp_path):
 #
 # `load_pivot_directory` rangeait chaque profil pivot **entier** dans une liste.
 # Mesuré sur les 481 profils committés du 30/08/2026 (651,5 Mo), sous un
-# plafond `RLIMIT_AS` de 2,0 Gio, index partagés chargés : `MemoryError` au
-# **293e** profil, 1 496,6 Mio de croissance pour 397,0 Mo de JSON lus —
-# facteur × 3,95, donc ~2,5 Gio pour le corpus seul, en plus des ~517 Mio de
+# plafond `RLIMIT_AS` de 2,0 Gio, index partagés chargés : `MemoryError` autour
+# du **300e** profil (293e et 304e sur deux exécutions), ~1 500 Mio de
+# croissance pour 397 à 418 Mo de JSON lus — facteur × 3,6 à × 4,0, donc 2,3 à
+# 2,5 Gio pour le corpus seul, en plus des ~517 Mio de
 # l'index des amendements. L'audit ne rendait pas son rapport.
 #
 # Ce que l'audit lit de ces listes est pourtant deux choses seulement : leur
@@ -1797,4 +1798,4 @@ def test_le_pic_memoire_de_l_audit_reste_sous_le_plafond_declare(tmp_path):
         f"{NB_PROFILS_FIXTURE_MEMOIRE} profils dont {poids_relache / 1024**2:.0f} Mio "
         f"d'entrées qu'il ne doit pas garder. Au-dessus de ce plafond il en "
         f"retient une partie : c'est le défaut de #635, qui faisait atteindre le "
-        f"plafond de 2,0 Gio au 293e des 481 profils committés.")
+        f"plafond de 2,0 Gio autour du 300e des 481 profils committés.")
