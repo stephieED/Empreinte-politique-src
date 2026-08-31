@@ -4147,6 +4147,8 @@ def test_build_profile_mandats_viennent_tous_du_referentiel_an():
             "debut": "2022-06-22",
             "fin": None,
             "actif": True,
+            # #640 : la période reconstruite dit d'où elle vient (§2 règle 2).
+            "source_url": candidate_profile.AN_ACTEURS_HISTORIQUE_ZIP_URL,
             "chambre": "deputes",
         }
     ]
