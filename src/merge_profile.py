@@ -86,6 +86,7 @@ from licences import appliquer_licence_donnees
 from normalize_profil import (
     WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+    _profession_publiable,
 )
 from profil_brut import (
     PartitionIllisible,
@@ -508,6 +509,55 @@ def _composer_identite(
             fusionne[cle] = neuve
             origines[cle] = ORIGINE_NOUVELLE
     return fusionne, origines
+
+
+#: Filtres de PUBLICATION du bloc `identite`, appliqués au bloc **composé**
+#: (#641, réouverture du 31/08/2026).
+#:
+#: `normalize_profil` filtre déjà ce qu'il produit. Cela ne suffit pas : le bloc
+#: publié n'est pas celui que la normalisation rend, c'est celui que
+#: `_composer_identite` compose, et sa première règle est qu'« une absence
+#: n'écrase jamais une valeur connue » (#601). Un champ que la collecte corrigée
+#: ramène à `None` reprend donc la valeur DÉJÀ PUBLIÉE — c'est-à-dire exactement
+#: celle que le filtre refuse.
+#:
+#: C'est ce qui sépare les deux volets de #641, tous deux verts en test et
+#: mesurés sur le run 33395056902 :
+#:
+#: | Cas | Valeur neuve | Composition | Résultat avant ce correctif |
+#: | --- | --- | --- | --- |
+#: | préfixe parasite, 3 profils | `"Cadre de la fonction publique"` | renseignée → elle gagne | **réparé** |
+#: | énoncé d'absence, 5 profils | `None` | absence → l'ancienne gagne | **inchangé** |
+#:
+#: Le filtre est donc posé APRÈS la composition, sur ce qui part au fichier, et
+#: non sur l'un des deux côtés : c'est la seule position d'où il voit la valeur
+#: réellement publiée, d'où qu'elle vienne. Il ne s'applique qu'à l'étage pivot
+#: — `raw_data/` est source-proche (AGENTS.md §3), et le libellé y est
+#: authentique : c'est sa publication comme profession qui ne l'est pas.
+#:
+#: La table est nommée champ par champ, jamais générale : `identite` porte des
+#: libellés recopiés d'AMO30 (`schema_pivot.CHAMPS_IDENTITE_TEXTE_LIBRE`), et un filtre
+#: s'appliquant à tous en inventerait la sémantique.
+FILTRES_PUBLICATION_IDENTITE: dict[str, Callable[[Any], Any]] = {
+    "profession": _profession_publiable,
+}
+
+
+def filtrer_identite_publiee(bloc: Any) -> Any:
+    """Applique `FILTRES_PUBLICATION_IDENTITE` au bloc `identite` composé (#641).
+
+    Strictement décroissant en information : ne peut que ramener un champ à
+    `None`, n'ajoute aucune clé, n'invente aucune valeur de remplacement
+    (AGENTS.md §2 règle 5 — la page dira « profession non renseignée »).
+    Idempotent, donc sans effet sur un bloc que la normalisation vient de
+    filtrer.
+    """
+    if not isinstance(bloc, dict):
+        return bloc
+    for champ, filtre in FILTRES_PUBLICATION_IDENTITE.items():
+        if champ in bloc:
+            bloc[champ] = filtre(bloc[champ])
+    return bloc
 
 
 def _accorder_hatvp(profil: dict[str, Any]) -> None:
@@ -1646,7 +1696,10 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         # #603 : même raison. Un profil écrit pour la première fois a une
         # provenance — celle de son unique écrivain — et la lui refuser
         # publierait deux profils de même contenu dont un seul est traçable.
-        identite_neuve = new.get("identite")
+        # #641 : même filtre de publication que sur le chemin fusionné. Sans
+        # lui, un profil écrit pour la première fois et un profil régénéré au
+        # même contenu ne publieraient pas la même `profession`.
+        identite_neuve = filtrer_identite_publiee(new.get("identite"))
         _poser_provenance_champs(new, deriver_provenance_champs(
             identite_neuve,
             {c: ORIGINE_NOUVELLE for c in identite_neuve} if isinstance(identite_neuve, dict) else {},
@@ -1673,6 +1726,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["identite"], origines_identite = _composer_identite(
         old.get("identite"), new.get("identite")
     )
+    # #641 : le filtre de publication mord sur le bloc COMPOSÉ, pas sur l'un
+    # des deux côtés. La composition venait de restaurer les cinq libellés que
+    # la collecte corrigée avait ramenés à `None` — voir
+    # `FILTRES_PUBLICATION_IDENTITE`. Posé avant la provenance : un champ nul
+    # n'a pas d'origine à nommer.
+    filtrer_identite_publiee(merged["identite"])
 
     # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
     #

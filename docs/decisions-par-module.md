@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 188 décisions
+gouverne sans avoir à fouiller les 189 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -104,7 +104,7 @@ Le mentionnent sans le gouverner : [`cle-fusion-textes-portes-668`](decisions/cl
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `COLLECTION_PROFILS` |
 | [Le libellé d'organe du chef du gouvernement s'accorde en genre, la qualité jamais (#658) (2026-08-31)](decisions/libelle-chef-du-gouvernement-au-feminin-658.md) | `COLLECTION_GOUVERNEMENTS` |
 
-Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`cle-fusion-textes-portes-668`](decisions/cle-fusion-textes-portes-668.md), [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`controle-de-perte-avant-commit`](decisions/controle-de-perte-avant-commit.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`date-de-reference-des-comptes-de-groupe-653`](decisions/date-de-reference-des-comptes-de-groupe-653.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`destinataire-avertissements-642`](decisions/destinataire-avertissements-642.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`fenetre-recalibrage-551`](decisions/fenetre-recalibrage-551.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`mandats-agreges-siege-vs-passe-656`](decisions/mandats-agreges-siege-vs-passe-656.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`overwrite-profiles-sans-purge-cache`](decisions/overwrite-profiles-sans-purge-cache.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`profession-code-nomenclature-641`](decisions/profession-code-nomenclature-641.md), [`publication-dun-job-annule`](decisions/publication-dun-job-annule.md), [`publication-scopee-artifacts`](decisions/publication-scopee-artifacts.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`restauration-interventions`](decisions/restauration-interventions.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md).
+Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bascule-roster-an-amo30-527.md), [`cache-amendements-existence-nest-pas-conformite`](decisions/cache-amendements-existence-nest-pas-conformite.md), [`chambres-profil-derivees`](decisions/chambres-profil-derivees.md), [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`cle-fusion-interventions-540`](decisions/cle-fusion-interventions-540.md), [`cle-fusion-textes-portes-668`](decisions/cle-fusion-textes-portes-668.md), [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`collecte-non-publiee`](decisions/collecte-non-publiee.md), [`collecte-vs-publie-545`](decisions/collecte-vs-publie-545.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`controle-de-perte-avant-commit`](decisions/controle-de-perte-avant-commit.md), [`correspondance-acteurs-an-525`](decisions/correspondance-acteurs-an-525.md), [`date-de-reference-des-comptes-de-groupe-653`](decisions/date-de-reference-des-comptes-de-groupe-653.md), [`dates-appartenance-groupe-653`](decisions/dates-appartenance-groupe-653.md), [`destinataire-avertissements-642`](decisions/destinataire-avertissements-642.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`extraction-groupe-suspendue-516`](decisions/extraction-groupe-suspendue-516.md), [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`fenetre-recalibrage-551`](decisions/fenetre-recalibrage-551.md), [`filtre-publication-apres-fusion-641`](decisions/filtre-publication-apres-fusion-641.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`licence-lot-6-530`](decisions/licence-lot-6-530.md), [`mandat-electif-perdu-fausse-le-denominateur`](decisions/mandat-electif-perdu-fausse-le-denominateur.md), [`mandats-agreges-siege-vs-passe-656`](decisions/mandats-agreges-siege-vs-passe-656.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`overwrite-profiles-sans-purge-cache`](decisions/overwrite-profiles-sans-purge-cache.md), [`partition-profils-legislature-580`](decisions/partition-profils-legislature-580.md), [`profession-code-nomenclature-641`](decisions/profession-code-nomenclature-641.md), [`publication-dun-job-annule`](decisions/publication-dun-job-annule.md), [`publication-scopee-artifacts`](decisions/publication-scopee-artifacts.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`restauration-interventions`](decisions/restauration-interventions.md), [`retrait-nosdeputes-529`](decisions/retrait-nosdeputes-529.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`roster-an-derive-amo30-526`](decisions/roster-an-derive-amo30-526.md).
 
 ## `src/audit_gouvernement_dataset.py`
 
@@ -241,7 +241,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-69 décision(s) le gouvernent ; le module en cite 12.
+70 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -279,6 +279,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `AmendementsIndexError`, `ERREURS_SOURCE`, `WARNING_PREFIX_DEFAUT_COLLECTE`, `WARNING_PREFIX_VOTES_INTROUVABLES`, `_parse_amendement_entry`, `_texte_an`, `_tracer_echec_collecte`, `build_profile`, `fetch_amendements_officiels` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `WARNING_PREFIX_INTERVENTIONS_SYCERON_INDISPONIBLES`, `WARNING_PREFIX_VOTES_INTROUVABLES` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `fetch_amendements_officiels` |
+| [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `_profession_an` |
 | [`gouvernement_profile` : `premier_ministre` et `portefeuille` câblés depuis les mandats `MINISTERE` (#398) (2026-08-18)](decisions/gouvernement-premier-ministre-portefeuille.md) | `AN_ACTEURS_HISTORIQUE_ZIP_URL`, `_extract_mandats_officiels` |
 | [`gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)](decisions/gouvernement-textes-statut.md) | `_build_acteur_textes_portes_index` |
 | [`gouvernement_textes.py` : filtre de statut par décision de séance, pas par `codeActe`/`fam_code` seul (#210) (2026-08-14)](decisions/gouvernement-textes-statut-210-version-initiale.md) | `_build_acteur_textes_portes_index` |
@@ -606,7 +607,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 
 ## `src/merge_profile.py`
 
-45 décision(s) le gouvernent ; le module en cite 5.
+46 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -626,6 +627,7 @@ Le mentionnent sans le gouverner : [`chambres-profil-derivees`](decisions/chambr
 | [Le passé sénatorial est un fait de carrière, pas une donnée d'activité : bicaméral pour les candidats seulement (#488) (2026-08-20)](decisions/deux-chambres-interrogees.md) | `_prefer_non_empty`, `merge_raw_profile` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `_amendement_key` |
 | [Borner l'historique de données : ce que ça rend vraiment, et quand (#434) (2026-08-20)](decisions/fenetre-historique-donnees.md) | `merge_raw_profile` |
+| [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `FILTRES_PUBLICATION_IDENTITE`, `_composer_identite`, `bloc_sans_fond`, `deriver_provenance_champs`, `filtrer_identite_publiee`, `merge_pivot_profile` |
 | [Extension de la stabilité des horodatages aux profils groupe/gouvernement/parti (#343, complet) (2026-08-17)](decisions/freshness-timestamps-groupes-gouvernements-partis.md) | `load_existing_document`, `preserve_stable_freshness_timestamps` |
 | [Profils de gouvernement : ne jamais réécrire sur une collecte incomplète, et cache dossiers dédié (#427) (2026-08-18)](decisions/gouvernement-textes-non-ecrasement.md) | `preserve_stable_freshness_timestamps` |
 | [L'`id` d'un profil pivot est le slug : le préfixe de provenance était instable (#487) (2026-08-20)](decisions/id-pivot-sans-prefixe.md) | `merge_pivot_profile`, `merge_raw_profile` |
@@ -676,13 +678,14 @@ Le mentionnent sans le gouverner : [`investigation-sources-ue`](decisions/invest
 
 ## `src/normalize_profil.py`
 
-7 décision(s) le gouvernent ; le module en cite 4.
+8 décision(s) le gouvernent ; le module en cite 4.
 
 | Décision | Nomme |
 | --- | --- |
 | [Trois absences publiées comme des faits (#556, #558, #560) (2026-08-29)](decisions/absences-publiees-comme-faits-556-558-560.md) | `_uri_hatvp_publiable` |
 | [Une URL de source n'est pas un identifiant : la clé de fusion des interventions (#540) (2026-08-27)](decisions/cle-fusion-interventions-540.md) | `_normalize_intervention` |
 | [Une clé de fusion en `a or b` change d'identité quand `a` se remplit (#668) (2026-08-31)](decisions/cle-fusion-textes-portes-668.md) | `_normalize_texte_porte` |
+| [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `_profession_publiable` |
 | [Normaliser les amendements : le coût n'est pas l'amendement, c'est sa liste de cosignataires (#431) (2026-08-19)](decisions/normalisation-amendements.md) | `_normalize_amendement` |
 | [Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)](decisions/profession-code-nomenclature-641.md) | `_ACTEUR_REF_DANS_URL`, `_profession_publiable`, `_uri_hatvp_publiable` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `_normalize_texte_porte` |
@@ -773,7 +776,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-26 décision(s) le gouvernent ; le module en cite 5.
+27 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -787,6 +790,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [Une exception n'est pas une preuve, et un défaut de notre code n'est pas une panne de l'Assemblée nationale (#562) (2026-08-28)](decisions/defaut-collecte-vs-panne-562.md) | `marqueur_defaut_code`, `validate_profil`, `valider_couverture` |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `KNOWN_SOURCE_TYPES`, `validate_profil`, `valider_avertissements` |
 | [Un amendement retrouve son dossier, et la clé qu'on lui avait retirée (#639, rang 3)](decisions/dossier-des-amendements-639.md) | `validate_amendements_index` |
+| [Un filtre de publication posé avant la fusion ne filtre rien (#641, réouverture) (2026-08-31)](decisions/filtre-publication-apres-fusion-641.md) | `CHAMPS_IDENTITE_TEXTE_LIBRE` |
 | [Deferred / out-of-scope investigations](decisions/hors-perimetre.md) | `KNOWN_CATEGORIES` |
 | [Comment naît l'identité d'un profil, et où vont les identifiants de source (#539) (2026-08-28)](decisions/identite-profils-539.md) | `KNOWN_SOURCE_TYPES`, `poser_identifiant`, `validate_profil` |
 | [Rien ne vérifiait que les clés publiées résolvent : le contrôle d'invariance (#485) (2026-08-20)](decisions/integrite-referentielle-pivot.md) | `validate_profil` |

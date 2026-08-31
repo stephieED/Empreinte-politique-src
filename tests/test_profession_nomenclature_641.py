@@ -139,3 +139,111 @@ def test_les_deux_lecteurs_ne_peuvent_pas_diverger():
         "",
     ]
     assert [_profession_an(f) for f in formes] == [_profession_publiable(f) for f in formes]
+
+
+# ---------------------------------------------------------------------------
+# La transition que la première version du lot n'avait pas éprouvée (#641,
+# réouverture du 31/08/2026)
+# ---------------------------------------------------------------------------
+#
+# Les deux lecteurs ci-dessus étaient verts, et le run 33395056902 a quand même
+# republié les cinq libellés. Ce que rien ne testait, c'est l'ÉTAPE SUIVANTE :
+# le bloc publié n'est pas celui que la normalisation rend, c'est celui que
+# `merge_pivot_profile` compose avec le pivot déjà en place, et sa première
+# règle est qu'« une absence n'écrase jamais une valeur connue » (#601).
+#
+# D'où la différence, mesurée sur le run, entre les deux volets du lot :
+# la valeur neuve des 3 profils au préfixe est renseignée et gagne ; celle des
+# 5 profils du code 85 est `None`, et la composition restaure la valeur publiée.
+
+from merge_profile import (  # noqa: E402
+    FILTRES_PUBLICATION_IDENTITE,
+    filtrer_identite_publiee,
+    merge_pivot_profile,
+)
+
+#: Les deux formes réellement republiées par le run, verbatim.
+CODE_85 = "(85) - Personne diverse sans activité professionnelle de moins de 60 ans (sauf r"
+CODE_33 = "(33) - Cadre de la fonction publique"
+
+
+def _pivot(profession, *, provenance=True):
+    """Profil pivot minimal, à la forme que `merge_pivot_profile` reçoit."""
+    profil = {
+        "schema_version": "1", "id": "un-depute", "nom": "Un Député",
+        "chambre": "AN", "chambres": ["AN"], "parti": None, "groupe": None,
+        "sources": [{"type": "assemblee_nationale",
+                     "url": "https://data.assemblee-nationale.fr/",
+                     "synchro_le": "2026-08-31T13:00:00+0000"}],
+        "identite": {"nom_complet": "Un Député", "profession": profession,
+                     "source_url": "https://www.assemblee-nationale.fr/"},
+        "mandats": [], "votes": [], "textes_portes": [], "amendements": [],
+        "interventions": [], "tags_thematiques": [],
+        "meta": {"schema_version": "1", "genere_le": "2026-08-31T13:00:00+0000"},
+    }
+    if provenance:
+        profil["meta"]["provenance_champs"] = {"identite": {
+            "profession": {"source": "assemblee_nationale",
+                           "synchro_le": "2026-08-31T13:00:00+0000"},
+            "nom_complet": {"source": "assemblee_nationale",
+                            "synchro_le": "2026-08-31T13:00:00+0000"},
+        }}
+    return profil
+
+
+def test_la_valeur_publiee_ne_survit_pas_a_la_fusion():
+    """Le cas des cinq : la collecte corrigée rend `None`, et c'est la
+    composition — pas la normalisation — qui décidait jusqu'ici."""
+    fusionne = merge_pivot_profile(_pivot(CODE_85), _pivot(None, provenance=False))
+    assert fusionne["identite"]["profession"] is None
+
+
+def test_le_prefixe_est_retire_aussi_sur_une_valeur_heritee():
+    """Un profil non régénéré depuis le premier volet garde son préfixe tant que
+    la collecte ne repasse pas. Le filtre le rattrape à la publication."""
+    fusionne = merge_pivot_profile(_pivot(CODE_33), _pivot(None, provenance=False))
+    assert fusionne["identite"]["profession"] == "Cadre de la fonction publique"
+
+
+def test_une_profession_legitime_heritee_est_conservee():
+    """Le filtre est strictement décroissant : il ne peut rien perdre d'autre.
+    Sans ce contrôle, corriger #641 rendrait `null` toute profession qu'un run
+    n'aurait pas recollectée — une perte de masse sur 457 profils."""
+    fusionne = merge_pivot_profile(_pivot("Avocate"), _pivot(None, provenance=False))
+    assert fusionne["identite"]["profession"] == "Avocate"
+
+
+def test_la_provenance_du_champ_disparait_avec_la_valeur():
+    """Un champ nul n'a pas d'origine à nommer (#603) — et une provenance
+    laissée seule serait la preuve d'un fait qui n'est plus publié."""
+    fusionne = merge_pivot_profile(_pivot(CODE_85), _pivot(None, provenance=False))
+    provenance = fusionne["meta"]["provenance_champs"]["identite"]
+    assert "profession" not in provenance
+    assert "nom_complet" in provenance
+
+
+def test_le_premier_pivot_publie_la_meme_chose_quun_pivot_regenere():
+    """`merge_pivot_profile(None, neuf)` court-circuite la composition : sans le
+    filtre à cet endroit aussi, deux profils de même contenu ne publieraient pas
+    la même profession selon qu'un fichier existait déjà."""
+    premier = merge_pivot_profile(None, _pivot(CODE_85, provenance=False))
+    assert premier["identite"]["profession"] is None
+    assert "profession" not in (
+        premier["meta"].get("provenance_champs", {}).get("identite", {})
+    )
+
+
+def test_le_filtre_est_idempotent_et_nommé_champ_par_champ():
+    """Il ne s'applique qu'aux champs déclarés : généraliser inventerait la
+    sémantique des autres libellés recopiés d'AMO30."""
+    assert set(FILTRES_PUBLICATION_IDENTITE) == {"profession"}
+    bloc = {"profession": CODE_33, "civilite": CODE_33}
+    filtrer_identite_publiee(bloc)
+    assert bloc == {"profession": "Cadre de la fonction publique", "civilite": CODE_33}
+    fige = dict(bloc)
+    filtrer_identite_publiee(bloc)
+    assert bloc == fige
+
+
+def test_un_bloc_absent_traverse_le_filtre_sans_bruit():
+    assert filtrer_identite_publiee(None) is None
