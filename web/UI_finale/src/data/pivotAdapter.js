@@ -74,9 +74,9 @@ const MANDAT_CATEGORY_LABELS = {
 // Ordre d'affichage des catégories : les instances où l'appartenance est la
 // plus significative éditorialement d'abord. À volume élevé (mesuré : 430
 // agrégats pour un groupe de 61 membres, et davantage depuis #384), le tri
-// par nb_membres seul noyait les commissions permanentes sous les groupes
-// d'études ; ce rang sert de critère primaire, le nb_membres départageant
-// ensuite au sein d'une même catégorie.
+// par le seul nombre de membres noyait les commissions permanentes sous les
+// groupes d'études ; ce rang sert de critère primaire, le nombre de membres
+// siégeant départageant ensuite au sein d'une même catégorie (#656).
 const MANDAT_CATEGORY_ORDER = [
   'commission',
   'commission_enquete',
@@ -479,19 +479,26 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
     .slice(0, 20) // mots-clés bruts, non harmonisés (voir schema_pivot.py) : échantillon, pas une liste exhaustive
     .map((t) => ({ label: t.tag, count: t.nb_membres_porteurs }));
 
-  // mandats_agreges : le backend trie par nb_membres desc puis categorie/label
-  // asc. Depuis #382/#386 le volume et la diversité de catégories ont
-  // fortement augmenté (7 catégories au lieu de 3) : on re-trie ici par rang
-  // de catégorie d'abord, pour que les commissions permanentes ne soient plus
-  // noyées sous les groupes d'études, bien plus nombreux. Le nb_membres reste
-  // le critère au sein d'une catégorie.
+  // mandats_agreges : le backend trie par nb_membres_actifs desc, puis
+  // nb_membres_cumul_historique desc, puis categorie/label asc (#656). Depuis
+  // #382/#386 le volume et la diversité de catégories ont fortement augmenté
+  // (7 catégories au lieu de 3) : on re-trie ici par rang de catégorie
+  // d'abord, pour que les commissions permanentes ne soient plus noyées sous
+  // les groupes d'études, bien plus nombreux.
+  //
+  // Au sein d'une catégorie, le critère est « qui y siège » et non « qui y est
+  // passé » : 43 % des adhésions de commission publiées durent une journée ou
+  // moins, et trier sur le cumul mettait en tête d'`AN-LFI-16` la commission
+  // des finances (5 membres y siègent, 67 y sont passés dont 44 pour une
+  // journée ou moins) devant celle des affaires sociales (9 siègent) (#656).
   const mandatsAgreges = (groupe.mandats_agreges || [])
     .map((m) => ({
       categorie: m.categorie,
       categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
       label: m.label,
-      nbMembres: m.nb_membres,
       nbMembresActifs: m.nb_membres_actifs,
+      nbMembresCumul: m.nb_membres_cumul_historique,
+      effectifReference: m.effectif_reference,
       parFonction: Object.entries(m.par_fonction || {})
         .sort((a, b) => b[1] - a[1])
         .map(([fonction, count]) => ({ fonction, count })),
@@ -504,7 +511,8 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
       const ka = ra === -1 ? MANDAT_CATEGORY_ORDER.length : ra;
       const kb = rb === -1 ? MANDAT_CATEGORY_ORDER.length : rb;
       if (ka !== kb) return ka - kb;
-      if (b.nbMembres !== a.nbMembres) return b.nbMembres - a.nbMembres;
+      if (b.nbMembresActifs !== a.nbMembresActifs) return b.nbMembresActifs - a.nbMembresActifs;
+      if (b.nbMembresCumul !== a.nbMembresCumul) return b.nbMembresCumul - a.nbMembresCumul;
       return (a.label || '').localeCompare(b.label || '', 'fr');
     });
 
