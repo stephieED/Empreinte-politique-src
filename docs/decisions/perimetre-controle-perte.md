@@ -183,9 +183,14 @@ qu'on ne dit pas se croit complet :
 - **le contenu d'un scalaire de type bloc** (`identite`, `premier_ministre`) :
   seule sa présence est comparée ;
 - **le contenu des `*.cosignatures.json`**, pour la raison de mémoire ci-dessus ;
-- **`amendements_agreges` d'un groupe**, `comptages` d'un gouvernement,
-  `effectif` : des compteurs dérivés, qui bougent légitimement dans les deux
-  sens et dont les listes amont sont déjà surveillées ;
+- **`effectif` d'un groupe** : des compteurs dérivés, qui bougent
+  légitimement dans les deux sens et dont les listes amont sont déjà
+  surveillées. `amendements_agreges` et `comptages` figuraient ici pour le même
+  motif ; sa seconde moitié était fausse et
+  [[agregats-publies-controle-perte-649]] la mesure — sur `a125e9e` la fiche
+  `AN:LFI-16` perd ses 11 561 amendements et son `taux_adoption` sans qu'une
+  seule liste amont bouge. Les deux blocs sont désormais surveillés, en
+  **scalaires** : leur disparition bloque, la baisse de leur valeur est relevée ;
 - **le changement de valeur d'un scalaire**, non bloquant par choix (ci-dessus).
 
 ## Les tests sont adossés aux pertes réelles

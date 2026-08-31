@@ -206,9 +206,15 @@ tolerance is **partitioned** — no input disarms another's check.
   on a stable list**, a **watched scalar going from populated to `null`**; drops on
   `amendements`/`sources`, index counts and scalar value changes are reported only. A run
   may legitimately lose entries — declare it with `allow_declared_losses`, never by
-  removing the check.
+  removing the check. **The published aggregates are watched scalars, not stable lists
+  (#649)** — `amendements_agreges` and `comptages.par_statut` block on disappearing or
+  going `null`, never on their value falling, and `0` is a measurement while `null` is
+  not. **There is no ratio threshold, and adding one is settled**: the *correct* drop of
+  `3c8e1f0c` (× 0,03 to × 0,21) is larger than the *defective* one of `a125e9e` (× 0,00
+  to × 0,64) on every fiche, so no threshold separates them.
   → `docs/decisions/controle-de-perte-avant-commit.md`,
-  `docs/decisions/perimetre-controle-perte.md`
+  `docs/decisions/perimetre-controle-perte.md`,
+  `docs/decisions/agregats-publies-controle-perte-649.md`
 - **Referential integrity (#485)**: `audit_integrite_referentielle.py`. Every published
   key resolves in the index it points at, or the commit aborts naming file and key — an
   orphan reference is a vote published with no object, on a groupe a false denominator
