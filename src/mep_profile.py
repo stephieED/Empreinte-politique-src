@@ -37,6 +37,12 @@ from typing import Any, Iterator, Optional
 
 import requests
 
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    DESTINATAIRE_LECTEUR,
+    avertissement,
+    deriver_avertissements,
+)
 from download_watchdog import download_with_watchdog
 
 from normalize_profil import WARNING_PREFIX_CHAMBRES_NON_CORROBOREE
@@ -437,16 +443,27 @@ def normalize_parltrack(mep_raw: dict[str, Any], votes: Optional[list[dict[str, 
     profil["chambre"] = "PE"                 # repli, consommé par appliquer_chambres
     derivation = appliquer_chambres(profil)
     if not derivation.corroboree:
-        profil["meta"]["warnings"].append(
+        profil["meta"]["warnings"].append(avertissement(
             f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : chambres={derivation.chambres}, "
             f"dont {derivation.chambres_non_corroborees or 'aucune'} sans mandat électif "
             "estampillé pour l'étayer (#493). Le dump ParlTrack ne produit aucun "
-            "`mandat_electif` : la chambre vient de la source, pas d'un mandat."
-        )
+            "`mandat_electif` : la chambre vient de la source, pas d'un mandat.",
+            # Même famille, même destinataire qu'au pivot FR : c'est le
+            # compteur de migration de #493 (#642).
+            DESTINATAIRE_INTERNE,
+        ))
 
     profil["meta"]["licence_donnees"] = "Open Data — Parltrack (CC0 / Open Database License)"
     if not mep_raw.get("active"):
-        profil["meta"]["warnings"].append("MEP marqué inactif dans le dump Parltrack.")
+        profil["meta"]["warnings"].append(avertissement(
+            "MEP marqué inactif dans le dump Parltrack.",
+            # Un fait sur la personne, tiré d'une source nommée : il explique
+            # au lecteur ce que la page montre, il ne décrit pas notre pipeline.
+            DESTINATAIRE_LECTEUR,
+        ))
+
+    # #642 : jumeau typé, recomposé après la dernière mutation — champ dérivé.
+    deriver_avertissements(profil["meta"])
 
     return profil
 

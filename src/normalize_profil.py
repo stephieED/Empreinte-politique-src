@@ -64,6 +64,11 @@ from schema_pivot import (
     poser_identifiant,
 )
 from amendements_index import cle_amendement
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    avertissement,
+    deriver_avertissements,
+)
 from licences import appliquer_licence_donnees
 from scrutins_index import ScrutinsIndex, cle_scrutin
 from scrutins_legislature import legislature_du_calendrier
@@ -692,10 +697,12 @@ def normalize_profil(
     # est trouvée : à `None`, il signale une vraie absence de collecte.
     synchro_sources = meta_raw.get("synchro_sources") or {}
     if synchro_sources.get("assemblee_nationale") is None:
-        profil["meta"]["warnings"].append(
+        profil["meta"]["warnings"].append(avertissement(
             "synchro_sources.assemblee_nationale : aucune synchro réussie "
-            "enregistrée dans le profil source."
-        )
+            "enregistrée dans le profil source.",
+            # Fraîcheur de collecte : le lecteur n'en fait rien, nous si (#642).
+            DESTINATAIRE_INTERNE,
+        ))
 
     # Mandats électifs dont la chambre n'est pas résolue (#492) : `null` publié,
     # jamais une valeur par défaut (§2.5). **Un seul warning par profil**, et non
@@ -713,15 +720,18 @@ def normalize_profil(
         if m.get("categorie") == "mandat_electif" and not m.get("chambre")
     )
     if n_sans_chambre:
-        profil["meta"]["warnings"].append(
+        profil["meta"]["warnings"].append(avertissement(
             f"{WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE} : {n_sans_chambre} mandat(s) "
             "électif(s) sans chambre déterminée, publiés à null (#492). La chambre est "
             "estampillée à la collecte ; un mandat conservé par la fusion additive et "
             "collecté avant #492 n'en porte pas, et elle n'est pas reconstituable a "
             "posteriori — ni depuis `source_url` (jamais renseignée sur un mandat électif "
             "AN/Sénat), ni depuis la chambre du profil (la fusion additive y accumule des "
-            "mandats des deux chambres)."
-        )
+            "mandats des deux chambres).",
+            # Compteur de migration de #492 : il mesure ce que la fusion
+            # additive n'a pas encore rattrapé. C'est notre thermomètre (#642).
+            DESTINATAIRE_INTERNE,
+        ))
 
     # `chambres` non corroborée (#493) : déclarée, jamais muette. C'est ce qui
     # sépare « utilisable » de « trompeur » — un consommateur migré tôt (#494)
@@ -730,14 +740,22 @@ def normalize_profil(
     # profil, comme celui de #492 et pour la même raison : le cas est uniforme,
     # et c'est le compte de profils qui est l'information utile.
     if not derivation_chambres.corroboree:
-        profil["meta"]["warnings"].append(
+        profil["meta"]["warnings"].append(avertissement(
             f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
             f"chambres={derivation_chambres.chambres}, dont "
             f"{derivation_chambres.chambres_non_corroborees} sans mandat "
             "électif estampillé pour l'étayer (#493). Une chambre non corroborée est "
             "celle de la collecte : elle dit quel jeu de données a répondu, pas où la "
             "personne a siégé — l'épic #486 a mesuré qu'elle peut être fausse dans les "
-            "deux sens."
-        )
+            "deux sens.",
+            # Compteur de migration de #493, qu'AGENTS.md §3d désigne comme tel :
+            # « une chambre non corroborée » n'est pas une phrase de page
+            # publique, c'est une mesure de notre avancement (#642).
+            DESTINATAIRE_INTERNE,
+        ))
+
+    # #642 : le jumeau typé, recomposé après la dernière mutation de
+    # `meta.warnings` — champ dérivé, comme `chambres` et `licence_donnees`.
+    deriver_avertissements(profil["meta"])
 
     return profil

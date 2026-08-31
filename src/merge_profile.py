@@ -63,6 +63,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    avertissement,
+    deriver_avertissements,
+    unir_tables_avertissements,
+)
 from candidate_profile import (
     WARNING_AUCUN_MANDAT_FR,
     WARNING_PREFIX_IDENTITE_INTROUVABLE,
@@ -658,6 +664,16 @@ def _synchro_la_plus_recente(new_value: Any, old_value: Any) -> Any:
 _PREFIXE_CHAMBRE_EN_ECHEC = "collecte de chambre en échec"
 _PREFIXE_DEUX_CHAMBRES = "carrière sur deux chambres"
 
+#: Les deux familles ParlTrack de #642, recopiées de `normalize_parltrack_dumps`
+#: plutôt qu'importées — même geste, et même prix, que les deux constantes
+#: ci-dessus. Ici la raison n'est pas la circularité mais le poids : ce module
+#: est importé par le portail de qualité et par tous les audits, et
+#: `normalize_parltrack_dumps` tire `parltrack_dumps`, donc `zstandard` et les
+#: dumps européens. `test_destinataire_avertissements_642` vérifie que les deux
+#: chaînes n'ont pas divergé.
+_PREFIXE_PARLTRACK_AUCUNE_DONNEE = "ParlTrack: aucune donnée"
+_PREFIXE_PARLTRACK_DIAGNOSTIC = "ParlTrack (diagnostic) :"
+
 #: Déclaré quand deux écrivains constatent LE MÊME JOUR, au même rang
 #: d'interrogation de la source, des couvertures différentes pour une même liste
 #: métier. Le cas n'est tranchable par aucune règle sur la donnée : il se
@@ -697,6 +713,12 @@ FAMILLES_WARNINGS: tuple[str, ...] = (
     # famille, deux fusions successives publieraient deux énumérations côte à
     # côte, dont une périmée — le cas exact que cette table existe pour éviter.
     WARNING_PREFIX_COUVERTURE_DIVERGENTE,
+    # #642 : le constat ParlTrack, scindé en deux familles — une par
+    # destinataire. Elles entrent ici parce qu'elles portent un identifiant
+    # (`MEP ID`), donc un compteur au sens de cette table : sans elles, deux
+    # fusions successives publieraient deux identifiants côte à côte.
+    _PREFIXE_PARLTRACK_AUCUNE_DONNEE,
+    _PREFIXE_PARLTRACK_DIAGNOSTIC,
     _PREFIXE_CHAMBRE_EN_ECHEC,
     _PREFIXE_DEUX_CHAMBRES,
 )
@@ -870,6 +892,16 @@ REGLES_META: dict[str, Callable[[Any, Any], Any]] = {
     # hasard » : le jour où un producteur en écrit une à l'étage brut, elle doit
     # avoir une règle plutôt qu'hériter du défaut sans que personne l'ait choisi.
     "provenance_champs": _regle_par_defaut,
+    # `avertissements` (#642) : l'union des deux tables de destinataires, et
+    # non la règle des scalaires. `warnings` est uni par famille juste
+    # au-dessus, donc un avertissement peut venir de l'écrivain que la fusion
+    # n'a pas retenu ; sans cette union, il reparaîtrait sans destinataire.
+    # Le bloc est de toute façon RÉALIGNÉ après la fusion par
+    # `deriver_avertissements`, qui a le dernier mot — même statut que
+    # `licence_donnees` et `provenance_champs`.
+    "avertissements": lambda new, old: unir_tables_avertissements(
+        None if new is _ABSENTE else new, None if old is _ABSENTE else old
+    ),
 }
 
 
@@ -964,6 +996,10 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         merged["mandat_europeen"] = merged_ue
 
     _prune_stale_warnings(merged)
+    # #642 : étage brut aussi — le profil brut est écrit sur disque, et c'est ce
+    # bloc qui fait franchir au destinataire l'aller-retour JSON jusqu'à la
+    # passe pivot.
+    deriver_avertissements(merged.get("meta"))
     return merged
 
 
@@ -1501,6 +1537,9 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         # `sources[]`, et un premier pivot doit publier la même chaîne qu'un
         # pivot régénéré au même contenu (#530).
         appliquer_licence_donnees(new)
+        # #642 : même raison encore — un premier pivot doit publier le même
+        # bloc `avertissements` qu'un pivot régénéré au même contenu.
+        deriver_avertissements(new.get("meta"))
         # #603 : même raison. Un profil écrit pour la première fois a une
         # provenance — celle de son unique écrivain — et la lui refuser
         # publierait deux profils de même contenu dont un seul est traçable.
@@ -1672,14 +1711,15 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         # l'ancien : ses compteurs porteraient sur un autre ensemble de mandats.
         if not any(w.startswith(WARNING_PREFIX_CHAMBRES_NON_CORROBOREE)
                    for w in warnings_merged if isinstance(w, str)):
-            warnings_merged.append(
+            warnings_merged.append(avertissement(
                 f"{WARNING_PREFIX_CHAMBRES_NON_CORROBOREE} : "
                 f"chambres={derivation.chambres}, dont "
                 f"{derivation.chambres_non_corroborees} sans mandat électif "
                 "estampillé pour l'étayer, après fusion additive (#493). "
                 "Une chambre non corroborée est celle de la collecte : elle dit quel jeu "
-                "de données a répondu, pas où la personne a siégé."
-            )
+                "de données a répondu, pas où la personne a siégé.",
+                DESTINATAIRE_INTERNE,
+            ))
 
     # #486 : le warning de #492 est désormais le SEUL à déclarer qu'un
     # `mandat_electif` n'a pas de chambre — celui de #493 a cessé de le
@@ -1708,6 +1748,10 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         "ni depuis `source_url` (jamais renseignée sur un mandat électif AN/Sénat), "
         "ni depuis la chambre du profil."
     ) if n_sans_chambre_fusion else None
+    if texte_mandat_sans_chambre is not None:
+        texte_mandat_sans_chambre = avertissement(
+            texte_mandat_sans_chambre, DESTINATAIRE_INTERNE
+        )
     if isinstance(merged.get("meta"), dict) and texte_mandat_sans_chambre:
         warnings_merged = merged["meta"].setdefault("warnings", [])
         if texte_mandat_sans_chambre not in warnings_merged:
@@ -1722,14 +1766,15 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         warnings_merged = merged["meta"].setdefault("warnings", [])
         if not any(w.startswith(WARNING_PREFIX_COUVERTURE_DIVERGENTE)
                    for w in warnings_merged if isinstance(w, str)):
-            warnings_merged.append(
+            warnings_merged.append(avertissement(
                 f"{WARNING_PREFIX_COUVERTURE_DIVERGENTE} : deux écrivains constatent "
                 f"le même jour des couvertures différentes pour "
                 f"{', '.join(couverture_non_tranchee)}, sans que l'un ait interrogé "
                 "la source plus que l'autre. La couverture déjà publiée est "
                 "conservée : aucune règle ne départage ces constats, et l'ordre des "
-                "jobs n'en est pas une (#602)."
-            )
+                "jobs n'en est pas une (#602).",
+                DESTINATAIRE_INTERNE,
+            ))
 
     if isinstance(merged.get("meta"), dict) and merged["meta"].get("warnings"):
         filtered = []
@@ -1782,6 +1827,13 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     # réellement publié, et c'est lui qui fera disparaître la clause ODbL le
     # jour où la dernière source Regards Citoyens quittera le profil.
     appliquer_licence_donnees(merged)
+
+    # #642 : le jumeau typé est réaligné sur les `warnings` FUSIONNÉS, en
+    # dernier — après l'union, après le filtre d'extinction, après les trois
+    # rattrapages ci-dessus. Un avertissement éteint perd son entrée avec lui ;
+    # un avertissement ressuscité de l'ancien profil retrouve la sienne par la
+    # table unie par `REGLES_META`.
+    deriver_avertissements(merged.get("meta"))
 
     return merged
 

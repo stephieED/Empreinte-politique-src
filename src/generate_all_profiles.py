@@ -87,6 +87,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 from audit_pivot_dataset import compute_profils_perimes
+from avertissements import (
+    DESTINATAIRE_INTERNE,
+    DESTINATAIRE_LECTEUR,
+    avertissement,
+    deriver_avertissements,
+)
 from budget_collecte import (
     BudgetCollecte,
     annoncer_troncature,
@@ -601,40 +607,49 @@ def build_profile_any_chambre(
     # `build_profile` le répéterait à chacune.
     message_budget = annoncer_troncature(budget_collecte_candidat, slug)
     if message_budget:
-        warnings.append(f"{WARNING_PREFIX_BUDGET_COLLECTE} : {message_budget}")
+        warnings.append(avertissement(
+            f"{WARNING_PREFIX_BUDGET_COLLECTE} : {message_budget}",
+            # Troncature de CE run, que `couverture` publie déjà en `panne` (#642).
+            DESTINATAIRE_INTERNE,
+        ))
 
     if not resultats:
         # Aucune chambre ne rend d'identité : le candidat est introuvable côté
         # FR (cas déjà géré par l'appelant). L'échec reste consigné — c'est
         # celui-là que #484 a vu disparaître dans un log de run.
         for chambre, raison in echecs:
-            warnings.append(
+            warnings.append(avertissement(
                 f"{WARNING_PREFIX_CHAMBRE_EN_ECHEC} : la collecte '{chambre}' a échoué "
                 f"({raison}) et aucune autre chambre n'a rendu d'identité — la chambre "
-                f"de ce profil n'a pas été résolue par cette collecte (#488)."
-            )
+                f"de ce profil n'a pas été résolue par cette collecte (#488).",
+                DESTINATAIRE_INTERNE,
+            ))
         return None, None, warnings
 
     chambre_retenue, profil_retenu = resultats[0]
 
     for chambre, raison in echecs:
-        warnings.append(
+        warnings.append(avertissement(
             f"{WARNING_PREFIX_CHAMBRE_EN_ECHEC} : la collecte '{chambre}' a échoué "
             f"({raison}) alors que '{chambre_retenue}' a répondu — la chambre publiée est "
-            f"celle qui a répondu, pas le résultat d'une comparaison des deux (#488)."
-        )
+            f"celle qui a répondu, pas le résultat d'une comparaison des deux (#488).",
+            DESTINATAIRE_INTERNE,
+        ))
 
     if len(resultats) > 1:
         autres = ", ".join(
             f"'{chambre}' ({profil.get('source')})" for chambre, profil in resultats[1:]
         )
-        warnings.append(
+        warnings.append(avertissement(
             f"{WARNING_PREFIX_DEUX_CHAMBRES} : une identité a aussi été trouvée sur "
             f"{autres}. La chambre publiée est '{chambre_retenue}', par convention d'ordre "
             f"de collecte et non par comparaison des mandats ; les mandats de l'autre "
             f"chambre ne sont pas publiés tant que #486 (sous-issues C/D) n'a pas porté la "
-            f"chambre sur chaque mandat."
-        )
+            f"chambre sur chaque mandat.",
+            # Une convention de collecte et un renvoi à une sous-issue : c'est
+            # à nous que cette phrase parle (#642).
+            DESTINATAIRE_INTERNE,
+        ))
 
     if warnings:
         profil_retenu.setdefault("meta", {}).setdefault("warnings", []).extend(warnings)
@@ -776,6 +791,10 @@ def _normaliser_en_pivot(
         # `groupes_config.index_membres_de_groupes_suspendus`.
         groupe_suspendu=_groupe_suspendu_du_slug(effective_slug),
     )
+
+    # #642 : jumeau typé, recomposé en dernier — après la couverture, qui peut
+    # elle aussi déclarer. Champ dérivé, comme `chambres` juste au-dessus.
+    deriver_avertissements(pivot_profile.get("meta"))
     return pivot_profile
 
 
@@ -783,7 +802,7 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
     """Construit un profil minimal (structure identique à build_profile(), mais sans
     aucun appel réseau) pour un candidat sans mandat français connu — ex. Jordan
     Bardella, référencé uniquement via son mandat européen."""
-    return {
+    profil = {
         "slug": effective_slug,
         "chambre": None,
         "source": candidat.get("source"),
@@ -809,11 +828,20 @@ def build_minimal_profile(nom: str, effective_slug: str, candidat: dict[str, Any
             # aucune donnée de Regards Citoyens.
             "licence_donnees": LICENCE_AN,
             "warnings": [
-            f"{WARNING_AUCUN_MANDAT_FR} (slug absent du référentiel Assemblée "
-            "nationale, ou identité introuvable)"
+            avertissement(
+                f"{WARNING_AUCUN_MANDAT_FR} (slug absent du référentiel Assemblée "
+                "nationale, ou identité introuvable)",
+                # La seule phrase que porte un profil minimal : elle explique au
+                # lecteur pourquoi la page ne montre rien (#642).
+                DESTINATAIRE_LECTEUR,
+            )
         ],
         },
     }
+    # #642 : ce profil brut peut être écrit sur disque avant d'être repivoté ;
+    # sans le jumeau typé, le destinataire ne survivrait pas à l'aller-retour.
+    deriver_avertissements(profil["meta"])
+    return profil
 
 
 
@@ -846,10 +874,12 @@ def _enrich_pivot_with_parltrack_safe(
 
     if not _parltrack_cache_available():
         meta = pivot_profile.setdefault("meta", {})
-        meta.setdefault("warnings", []).append(
+        meta.setdefault("warnings", []).append(avertissement(
             "ParlTrack (fallback) : dumps absents ce run — "
-            "données ParlTrack issues du cache/dépôt précédent."
-        )
+            "données ParlTrack issues du cache/dépôt précédent.",
+            # Décrit l'état du cache de CE run : un diagnostic (#642).
+            DESTINATAIRE_INTERNE,
+        ))
         return "absent"
 
     try:
@@ -863,7 +893,11 @@ def _enrich_pivot_with_parltrack_safe(
         return "vide"
     except Exception as exc:
         pivot_profile.setdefault("meta", {}).setdefault("warnings", []).append(
-            f"ParlTrack enrichissement échoué : {exc}"
+            avertissement(
+                f"ParlTrack enrichissement échoué : {exc}",
+                # Le texte brut d'une exception : jamais une page publique (#642).
+                DESTINATAIRE_INTERNE,
+            )
         )
         _tprint(f"  [!] Erreur ParlTrack pour MEP {mep_id} : {exc}")
         return "erreur"

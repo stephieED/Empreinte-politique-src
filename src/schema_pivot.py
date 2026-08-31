@@ -319,7 +319,18 @@ Format d'un profil pivot v1 :
         "schema_version": "1",
         "genere_le": "2026-07-29T...",
         "licence_donnees": "ODbL ...",
-        "warnings": [],
+        "warnings": [],                      # les messages, inchangés depuis toujours
+        "avertissements": [                  # #642 — LE JUMEAU TYPÉ de `warnings`, aligné
+                                             # entrée par entrée, dans le même ordre.
+                                             # Facultatif : absent des 481 profils publiés
+                                             # avant le lot. Présent, il est complet.
+            {
+                "message": "votes introuvables : ...",   # identique à warnings[i]
+                "destinataire": "lecteur",   # DESTINATAIRES_AVERTISSEMENT, fermé ;
+                                             # null = personne ne l'a déclaré, jamais
+                                             # un rangement par défaut (§2 règle 5)
+            }
+        ],
         "provenance": "candidat_declare",         # "candidat_declare" | "roster_groupe" ;
                                              # voir KNOWN_PROVENANCES
         "provenance_champs": {               # #603 — D'OÙ VIENT CETTE VALEUR, et de quand.
@@ -348,6 +359,7 @@ import re
 from datetime import date as _date
 import time
 from typing import Any, NamedTuple, Optional
+from avertissements import DESTINATAIRES_AVERTISSEMENT
 from amendements_index import (
     SCHEMA_VERSION as AMENDEMENTS_SCHEMA_VERSION,
     COSIGNATURES_SCHEMA_VERSION as AMENDEMENTS_COSIGNATURES_SCHEMA_VERSION,
@@ -928,6 +940,91 @@ def marqueur_defaut_code(preuve: str) -> Optional[str]:
 BLOCS_PROVENANCE_CHAMPS: tuple[str, ...] = ("identite",)
 
 
+#: Clés exactes d'une entrée de `meta.avertissements` (#642). Fermées : une clé
+#: en plus serait une seconde façon de dire quelque chose, sans que rien la
+#: valide.
+CLES_AVERTISSEMENT: frozenset[str] = frozenset({"message", "destinataire"})
+
+
+def valider_avertissements(avertissements: Any, warnings: Any) -> list[str]:
+    """Vérifie `meta.avertissements[]`, le jumeau typé de `meta.warnings[]` (#642).
+
+    Trois invariants, et c'est le troisième qui fait travailler le bloc :
+
+    1. **Forme fermée.** Une entrée est un dict de `CLES_AVERTISSEMENT`, ni plus
+       ni moins. `destinataire` est une valeur de `DESTINATAIRES_AVERTISSEMENT`
+       ou `null` — « personne ne l'a déclaré », comme `provenance_champs`
+       publie `{"source": null}` plutôt que d'omettre l'entrée (#603).
+    2. **La clé est obligatoire, la valeur peut être inconnue.** Une entrée sans
+       `destinataire` est refusée : l'omission serait une troisième façon de
+       dire « on ne sait pas », à côté du `null` qui le dit déjà. C'est le même
+       « si et seulement si » que `couverture[].cause` sur `non_collecte`
+       (#539).
+    3. **L'alignement avec `warnings`.** Même longueur, mêmes messages, même
+       ordre. C'est ce qui interdit au jumeau de dériver : un avertissement
+       publié sans entrée typée, ou une entrée typée qui ne correspond à aucun
+       avertissement publié, est refusé au lieu de passer inaperçu — le défaut
+       exact que ce lot corrige.
+    """
+    errors: list[str] = []
+
+    if not isinstance(avertissements, list):
+        return [
+            "'meta.avertissements' doit être une liste, reçu : "
+            f"{type(avertissements).__name__}."
+        ]
+
+    for i, entree in enumerate(avertissements):
+        prefixe = f"meta.avertissements[{i}]"
+        if not isinstance(entree, dict):
+            errors.append(
+                f"{prefixe} doit être un dict, reçu : {type(entree).__name__}."
+            )
+            continue
+        inconnues = sorted(set(entree) - CLES_AVERTISSEMENT)
+        if inconnues:
+            errors.append(
+                f"{prefixe} porte des clés hors nomenclature : {inconnues!r}. "
+                f"Clés connues : {sorted(CLES_AVERTISSEMENT)}."
+            )
+        if not isinstance(entree.get("message"), str):
+            errors.append(f"{prefixe}.message doit être une chaîne.")
+        if "destinataire" not in entree:
+            errors.append(
+                f"{prefixe} ne déclare pas de destinataire. La clé est "
+                "obligatoire ; `null` dit « inconnu », l'omission ne dit rien "
+                "(#642)."
+            )
+        else:
+            destinataire = entree.get("destinataire")
+            if destinataire is not None and destinataire not in DESTINATAIRES_AVERTISSEMENT:
+                errors.append(
+                    f"{prefixe}.destinataire non reconnu : {destinataire!r}. "
+                    f"Valeurs connues : {sorted(DESTINATAIRES_AVERTISSEMENT)}, "
+                    "ou null."
+                )
+
+    if isinstance(warnings, list):
+        if len(avertissements) != len(warnings):
+            errors.append(
+                f"'meta.avertissements' compte {len(avertissements)} entrée(s) "
+                f"pour {len(warnings)} avertissement(s) publié(s) : le jumeau "
+                "typé est aligné sur `meta.warnings`, entrée par entrée (#642)."
+            )
+        else:
+            for i, (entree, warning) in enumerate(zip(avertissements, warnings)):
+                if not isinstance(entree, dict):
+                    continue
+                if entree.get("message") != str(warning):
+                    errors.append(
+                        f"meta.avertissements[{i}].message ne reprend pas "
+                        f"meta.warnings[{i}] : {entree.get('message')!r} vs "
+                        f"{str(warning)!r}."
+                    )
+
+    return errors
+
+
 def valider_provenance_champs(provenance: Any, profil: dict[str, Any]) -> list[str]:
     """Vérifie `meta.provenance_champs` d'un profil pivot (#603).
 
@@ -1346,6 +1443,10 @@ def make_empty_profil(id_: str, nom: str, provenance: str = "candidat_declare") 
             "genere_le": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "licence_donnees": "",
             "warnings": [],
+            # #642 : le jumeau typé, vide et présent. Sa présence dit « ce
+            # profil est passé par le lot et n'a rien à déclarer » ; son
+            # absence dit « ce profil est antérieur ».
+            "avertissements": [],
             "provenance": provenance,
         },
     }
@@ -1737,6 +1838,19 @@ def validate_profil(
         if "provenance_champs" in meta:
             errors.extend(
                 valider_provenance_champs(meta.get("provenance_champs"), profil)
+            )
+
+        # #642 — même précédent que `couverture` (#539) et `provenance_champs`
+        # (#603) : le bloc est absent des 481 profils publiés avant le lot, donc
+        # validé seulement s'il est présent. **Un avertissement non typé n'est
+        # pas refusé** : un schéma qui n'accepte plus ce qu'il a écrit hier
+        # n'est pas une simplification, c'est une perte (même raison que
+        # `KNOWN_SOURCE_TYPES` pour `nosdeputes`). La tolérance a une condition
+        # de retrait écrite, et un compteur qui la mesure — voir
+        # `docs/decisions/destinataire-avertissements-642.md`.
+        if "avertissements" in meta:
+            errors.extend(
+                valider_avertissements(meta.get("avertissements"), meta.get("warnings"))
             )
 
     return errors
