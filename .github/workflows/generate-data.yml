@@ -42,7 +42,7 @@ on:
         type: number
         default: 0
       collect_interventions:
-        description: "Collect candidate floor speeches (never the roster)"
+        description: "Collect floor speeches (roster: theme only)"
         type: boolean
         default: false
       incomplete_read_threshold:
@@ -1597,6 +1597,27 @@ jobs:
         id: week
         run: echo "week=$(date +%G-W%V)" >> "$GITHUB_OUTPUT"
 
+      # #657 — MÊME EMPREINTE QUE extract-an, et pour la même raison qu'à #505.
+      # Ce job restaure sous la clé de la semaine ; extract-an, en mode
+      # interventions, ne SAUVEGARDE que sous la clé suffixée
+      # `-interv-<empreinte>`. Sans ce suffixe ici, la clé NUE de la semaine —
+      # écrite par n'importe quel run en mode par défaut, éventuellement plus
+      # récent — fait un *exact key hit*, et `restore-keys` n'est pas consulté
+      # après un hit exact : les 8 shards repartiraient d'une entrée SANS
+      # contenu Syceron et reconstruiraient les trois index chacun. C'est
+      # #424/#505 sous une troisième forme, et depuis #657 elle a un coût réel :
+      # ce job LIT l'index Syceron.
+      #
+      # Restauration seule : l'empreinte ATTENDUE suffit. Il n'y a pas
+      # d'empreinte obtenue à écrire, ce job ne sauvegardant aucune entrée.
+      - name: Empreinte de complétude attendue (clé de cache AN, #550/#657)
+        id: empreinte_attendue
+        if: ${{ !inputs.cold_start }}
+        run: |
+          EMPREINTE=$(python3 src/cache_an_empreinte.py --attendue)
+          echo "empreinte=$EMPREINTE" >> "$GITHUB_OUTPUT"
+          echo "Complétude visée pour le cache d'interventions AN : $EMPREINTE"
+
       # Clé de cache partagée avec extract-an (public-data-cache-an-*), pas
       # une clé "roster" séparée : ce job consomme le même jeu de données
       # source (AN Open Data — SCRUTINS/AMENDEMENTS/DOSSIERS/ACTEURS/
@@ -1615,11 +1636,16 @@ jobs:
       # `public-data-cache-an-2026-W34` — 915 Mo, 53 Mo, 21 Mo — vestiges des
       # `path` successifs). Vérifié par tests/test_ci_cache_paths.py.
       #
-      # RESTAURATION SEULE (#505). Ce job porte `--skip-interventions` en dur :
-      # il ne remplit ni `questions_an` ni `syceron_an`, deux des quatre chemins
-      # qu'il déclare. Un `actions/cache` complet le rendrait candidat à écrire
-      # la clé de la semaine pour un contenu qu'il ne produit pas — exactement
-      # le défaut de #424. Il ne l'a jamais fait en pratique, parce que
+      # RESTAURATION SEULE (#505), et #657 ne la change pas — il la RENFORCE.
+      # Ce job ne remplit toujours ni `questions_an` (le mode réduit n'appelle
+      # pas les questions officielles) ni `.cache/syceron_an/*/index_par_acteur`
+      # (s'il doit construire un index, il le publie sous
+      # `index_par_acteur_theme`, que le `path:` ci-dessous ne capture pas :
+      # deux formes, deux répertoires). Deux des quatre chemins déclarés
+      # restent donc produits par extract-an seul. Un `actions/cache` complet le
+      # rendrait candidat à écrire la clé de la semaine pour un contenu qu'il ne
+      # produit pas — exactement le défaut de #424. Il ne l'a jamais fait en
+      # pratique, parce que
       # `needs: extract-an` le place derrière le vrai producteur (mesuré sur le
       # run 32149708461 : « not saving cache » sur les deux clés à 15:05:30,
       # alors qu'extract-an les avait écrites à 14:46:12-15) — mais c'était un
@@ -1644,8 +1670,9 @@ jobs:
             .cache/scrutins_an
             .cache/questions_an/*/index_par_acteur.json
             .cache/syceron_an/*/index_par_acteur
-          key: public-data-cache-an-${{ steps.week.outputs.week }}
+          key: public-data-cache-an-${{ steps.week.outputs.week }}${{ inputs.collect_interventions && format('-interv-{0}', steps.empreinte_attendue.outputs.empreinte) || '' }}
           restore-keys: |
+            ${{ inputs.collect_interventions && format('public-data-cache-an-{0}-interv', steps.week.outputs.week) || '' }}
             public-data-cache-an-
 
       # #555 — DÉCLARATION SEULE, job CONSOMMATEUR (pas de `--perimer`).
@@ -1785,13 +1812,31 @@ jobs:
       # Même fan-out par membre que extract-an (coût par candidat identique,
       # seul le volume change) — `roster_limit` plafonne ce volume.
       #
-      # Mode d'extraction léger (#357, sous-issue 6/6 de #351) : --skip-interventions
-      # --skip-dossiers-legislatifs sont *toujours* appliqués ici, indépendamment de
-      # inputs.collect_interventions (qui ne pilote que extract-an) — un membre
-      # roster n'a besoin que d'identité/mandats/votes/amendements pour les agrégats
-      # de groupe (#349) ; dossiers_legislatifs/interventions/questions_officielles
-      # ne sont consommés par aucun agrégat actuel ni prévu, les extraire ici serait
-      # du travail réseau pour rien (~750+ membres à terme, cf. rollout #192).
+      # Mode d'extraction léger (#357, sous-issue 6/6 de #351) :
+      # --skip-dossiers-legislatifs est *toujours* appliqué ici — les textes
+      # portés ne sont consommés par aucun agrégat de groupe (#349).
+      #
+      # #657 — LES INTERVENTIONS, ELLES, NE SONT PLUS ÉCARTÉES EN DUR. Elles
+      # l'étaient au motif qu'aucun agrégat ne les consomme ; c'était faux :
+      # `tags_thematiques` en dérive intégralement
+      # (`normalize_profil`), et `tags_thematiques_agreges` de chaque fiche de
+      # groupe en dérive à son tour. Les 468 membres publiant `interventions: []`,
+      # l'« empreinte thématique » de chaque fiche était celle d'UNE SEULE
+      # personne (470 étiquettes sur AN:RN portées par Marine Le Pen, 382 sur
+      # AN:SOC par Jérôme Guedj, zéro sur AN:LFI et AN:LR).
+      #
+      # Le mode est RÉDUIT AU THÈME (`--interventions-theme-seul`), pas complet :
+      # le verbatim n'est pas collecté, et les questions officielles — qui ne
+      # portent aucun thème — pas davantage. Ce n'est pas une économie de temps
+      # de collecte : l'index Syceron se construit UNE FOIS par législature, pas
+      # une fois par membre (mesuré : 18,03 s pour lire la tranche des 468
+      # membres sur les législatures 16+17, index chaud). C'est une économie de
+      # VOLUME PUBLIÉ et d'index.
+      #
+      # Il suit `inputs.collect_interventions`, comme extract-an : c'est
+      # extract-an qui construit l'index complet, et ce job est derrière lui par
+      # `needs:`. Collecter ici quand il ne collecte pas ferait reconstruire les
+      # trois index par chacun des 8 shards.
       #
       # MERGE_FLAG/LIMIT_FLAG non factorisables : cf. le commentaire équivalent
       # sur le step d'extraction d'extract-an (#412 §3, grep de logs de
@@ -1815,6 +1860,12 @@ jobs:
           ADD_UNCOVERED: ${{ inputs.add_uncovered_members }}
           OVERWRITE: ${{ inputs.existing_profiles == 'overwrite' }}
           ROSTER_LIMIT: ${{ inputs.roster_limit }}
+          # #657 — en `env:` et non dans le script, comme les cinq au-dessus :
+          # tests/test_ci_inputs_workflow.py EXÉCUTE ce bloc de décision pour
+          # vérifier les six combinaisons, et une expression `${{ }}` le lui
+          # rendrait illisible. Le log en garde la trace, ce dont
+          # retry-generate-data.yml a besoin.
+          COLLECT_INTERVENTIONS: ${{ inputs.collect_interventions }}
         run: |
           # ── DEUX AXES DISJOINTS (#578) ──────────────────────────────────
           # Axe 1 (`existing_profiles`) : ce qu'on fait des profils DÉJÀ
@@ -1865,6 +1916,14 @@ jobs:
           # faisait que `roster_limit=0` rafraîchissait MOINS que `20`.
           LIMIT_FLAG=()
           [[ -n "$ROSTER_LIMIT" && "$ROSTER_LIMIT" != "0" ]] && LIMIT_FLAG=(--limit "$ROSTER_LIMIT")
+
+          # #657 : les deux valeurs sont EXCLUSIVES, et le script refuse net de
+          # recevoir les deux (voir `valider_budgets`). Le mode réduit n'est
+          # armé que quand extract-an a construit l'index — sinon chacun des 8
+          # shards le reconstruirait pour un travail identique.
+          INTERV_FLAG=(--skip-interventions)
+          [[ "$COLLECT_INTERVENTIONS" == "true" ]] && INTERV_FLAG=(--interventions-theme-seul)
+          echo "Interventions : ${INTERV_FLAG[*]} (collect_interventions=${COLLECT_INTERVENTIONS})"
           # --shard : partition déterministe par position modulo (#394). Avec
           # un seul shard (rollout progressif), 0/1 équivaut à l'absence de
           # découpage.
@@ -1891,7 +1950,7 @@ jobs:
             --workers 1 \
             --shard "${{ matrix.shard }}/${{ needs.prepare-roster-matrix.outputs.shard_total || '1' }}" \
             "${POP_FLAG[@]}" --resume \
-            --skip-interventions --skip-dossiers-legislatifs \
+            "${INTERV_FLAG[@]}" --skip-dossiers-legislatifs \
             --budget-collecte-secondes 0 \
             --manifest-out _manifest/profils-ecrits.txt \
             "${LIMIT_FLAG[@]}" "${MERGE_FLAG[@]}"

@@ -36,13 +36,19 @@ source qui ne couvre pas la période, et une collecte qui n'a pas eu lieu — et
 l'interface n'avait aucun moyen de les distinguer.
 
 Le cas le plus nombreux est celui qu'aucun modèle à trois états n'exprimait :
-`generate-data.yml:1553-1554` et `:1641` appliquent `--skip-interventions
---skip-dossiers-legislatifs` **en dur** au job roster, « indépendamment des
-inputs » (#357). 469 profils sur 476 n'ont donc pas d'interventions parce que
-**nous avons choisi de ne pas les collecter**. Le dire « non collecté » tout
-court, à côté des vraies pannes, ferait dire au produit « nous n'avons pas
-réussi » — le contresens exact que #539 combat. D'où la `cause`, obligatoire
-sur `non_collecte` et interdite ailleurs.
+`generate-data.yml` appliquait `--skip-interventions --skip-dossiers-legislatifs`
+**en dur** au job roster, « indépendamment des inputs » (#357). 469 profils sur
+476 n'avaient donc pas d'interventions parce que **nous avions choisi de ne pas
+les collecter**. Le dire « non collecté » tout court, à côté des vraies pannes,
+ferait dire au produit « nous n'avons pas réussi » — le contresens exact que
+#539 combat. D'où la `cause`, obligatoire sur `non_collecte` et interdite
+ailleurs.
+
+**#657 a retourné la moitié « interventions » de ce constat**, et le repli par
+provenance avec (voir l'étape 0 de `deriver`) : le job les collecte désormais,
+réduites au thème, quand `collect_interventions` est coché. Publier
+`non_collecte`/`par_decision` sur une liste PLEINE, sous une preuve nommant un
+drapeau que le run n'a pas passé, serait le même contresens à l'envers.
 
 ## La règle qui gouverne tout le module
 
@@ -338,8 +344,13 @@ DECISION_GROUPE_SUSPENDU = "groupe_suspendu"
 DECISIONS_PIPELINE: dict[str, tuple[tuple[str, ...], str]] = {
     "skip_interventions": (
         ("interventions",),
-        "generate-data.yml:1641 — --skip-interventions appliqué en dur au job "
-        "extract-roster-groupes, indépendamment des inputs (#357)",
+        # #657 : le drapeau n'est plus posé EN DUR — il suit `collect_interventions`,
+        # et quand il est levé la collecte est réduite au thème. La preuve dit
+        # donc ce qui est vrai du run qui a écrit le profil, sans affirmer une
+        # politique permanente que le workflow ne porte plus.
+        "--skip-interventions appliqué au job extract-roster-groupes par le run "
+        "qui a produit ce profil (#357 ; depuis #657 le drapeau suit l'input "
+        "collect_interventions au lieu d'être posé en dur)",
     ),
     "skip_dossiers_legislatifs": (
         ("textes_portes",),
@@ -796,7 +807,27 @@ def deriver(
     provenance = meta.get("provenance", "candidat_declare")
 
     if decisions is None:
-        decisions = DECISIONS_ROSTER if provenance == "roster_groupe" else ()
+        # #657 — LE REPLI PAR PROVENANCE NE VAUT QUE SANS DÉCLARATION DU RUN.
+        #
+        # `DECISIONS_ROSTER` a été écrit quand le job roster portait
+        # `--skip-interventions` EN DUR : la provenance suffisait alors à dire ce
+        # que le run avait fait, et c'est ce qui rend la couverture dérivable sur
+        # les 19 profils publiés avant #539, qui ne portent aucune trace de leurs
+        # drapeaux. Depuis #657 le job peut collecter les interventions (réduites
+        # au thème) : le repli publierait alors `non_collecte`/`par_decision` sur
+        # une liste PLEINE, sous une preuve qui nomme un drapeau que le run n'a
+        # pas passé — le contresens exact que #539 combat, retourné.
+        #
+        # La condition porte sur la PRÉSENCE de la clé, pas sur son contenu :
+        # `collecte_ecartee: []` est une déclaration (« ce run n'a rien écarté »),
+        # son absence n'en est pas une. Mesuré au 31/08/2026 : 449 des 468
+        # profils `roster_groupe` publiés portent la clé, 19 ne la portent pas.
+        run_a_declare = isinstance(meta.get("collecte_ecartee"), list)
+        decisions = (
+            DECISIONS_ROSTER
+            if provenance == "roster_groupe" and not run_a_declare
+            else ()
+        )
     decisions = tuple(decisions)
     if groupe_suspendu is not None and DECISION_GROUPE_SUSPENDU not in decisions:
         # EN TÊTE, pas à la suite : sur un profil `roster_groupe` d'un groupe

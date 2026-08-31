@@ -877,6 +877,14 @@ REGLES_META: dict[str, Callable[[Any, Any], Any]] = {
         None if new is _ABSENTE else new, None if old is _ABSENTE else old
     ),
     "collecte_ecartee": _declaration_du_run,
+    # `collecte_reduite` (#657) : même règle, et pour la même raison. Elle dit la
+    # FORME de ce que ce run a collecté ; la déclaration d'un run précédent ne
+    # décrit pas celui-ci. La clé est ABSENTE quand la collecte est complète —
+    # `_declaration_du_run` rend alors l'ancienne, ce qui est correct au sens
+    # inverse aussi : un run qui n'a pas collecté d'interventions du tout
+    # (`--skip-interventions`, donc pas de clé) ne doit pas effacer la forme des
+    # entrées que la fusion additive conserve.
+    "collecte_reduite": _declaration_du_run,
     "schema_version": _du_producteur_courant,
     # `licence_donnees` : la règle des scalaires, et rien de plus — elle est
     # RECALCULÉE après la fusion par `appliquer_licence_donnees` à l'étage pivot

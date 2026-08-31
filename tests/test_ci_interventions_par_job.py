@@ -51,6 +51,12 @@ MODE_INPUT = "piloté par collect_interventions"
 MODE_JAMAIS = "--skip-interventions en dur"
 MODE_SANS_CHAMBRE_FR = "--source ue : aucune chambre française, donc aucune intervention"
 MODE_PIVOT = "--pivot-only : aucun appel réseau"
+# #657 : une cinquième valeur, et pas un alias de MODE_INPUT. Le job roster obéit
+# désormais au même input qu'extract-an, mais il ne collecte PAS la même chose —
+# `--interventions-theme-seul` prend les débats sans leur verbatim et laisse les
+# questions officielles. Les confondre laisserait passer, sans un test rouge, le
+# jour où le job roster bascule en collecte complète (413 Mio au lieu de 103).
+MODE_INPUT_THEME = "piloté par collect_interventions, réduit au thème (#657)"
 
 # L'INVENTAIRE. Une entrée par invocation de `generate_all_profiles.py` dans
 # generate-data.yml, clé `(job, rang dans le job)`.
@@ -60,18 +66,26 @@ MODE_PIVOT = "--pivot-only : aucun appel réseau"
 INVENTAIRE = {
     ("extract-an", 0): MODE_INPUT,
     ("extract-ue-officiel", 0): MODE_SANS_CHAMBRE_FR,
-    # #357, mode d'extraction léger : seuls identité/mandats/votes/amendements
-    # sont consommés en aval par les agrégats de groupe.
-    ("extract-roster-groupes", 0): MODE_JAMAIS,
+    # #657 : les interventions ne sont plus écartées en dur. Le motif de #357
+    # (« aucun agrégat ne les consomme ») était faux — `tags_thematiques`, et
+    # donc `tags_thematiques_agreges` de chaque fiche de groupe, en dérive
+    # intégralement. Elles sont collectées RÉDUITES AU THÈME, sous le même input
+    # qu'extract-an, qui construit l'index dont ce job dépend.
+    ("extract-roster-groupes", 0): MODE_INPUT_THEME,
     ("merge-and-pivot", 0): MODE_PIVOT,
     ("merge-and-pivot", 1): MODE_PIVOT,
 }
 
 # Jetons attendus dans la description de l'input pour chaque job qui ignore le
-# réglage. Un job qui n'obéit pas à un input doit être nommé là où l'opérateur
-# lit cet input, pas seulement dans un commentaire YAML.
+# réglage, OU qui lui obéit autrement que les autres (#657). Un job dont le
+# comportement diverge de la lecture naïve de l'input doit être nommé là où
+# l'opérateur lit cet input, pas seulement dans un commentaire YAML.
+#
+# `extract-roster-groupes` a changé de côté sans changer d'exigence : il
+# n'ignore plus le réglage, il en fait une collecte RÉDUITE. Un opérateur qui
+# coche la case doit lire, sur la case, que le roster n'en tire que le thème.
 JETON_DESCRIPTION = {
-    "extract-roster-groupes": "roster",
+    "extract-roster-groupes": "theme",
 }
 
 
@@ -150,7 +164,24 @@ def _mode_observe(job: str, commande: str) -> str:
             rf"inputs\.collect_interventions[^\n]*{tableau}=",
             script,
         )
+        if not assignation:
+            # #657 : l'input peut arriver par `env:` plutôt qu'en clair dans le
+            # script — c'est le cas du job roster, dont
+            # tests/test_ci_inputs_workflow.py EXÉCUTE le bloc de décision et
+            # interdit donc toute expression `${{ }}` à l'intérieur. Le lien
+            # input → tableau reste lisible, en deux sauts au lieu d'un.
+            for var in re.findall(
+                r"^\s*([A-Z_]+): \$\{\{ inputs\.collect_interventions \}\}", script, re.M
+            ):
+                if re.search(rf"\${var}\b[^\n]*{tableau}=|{tableau}=\([^)]*\)[^\n]*\${var}\b", script):
+                    assignation = True
+                    break
         if assignation:
+            # #657 : la FORME de la collecte se lit sur le drapeau que le
+            # tableau reçoit, pas sur l'input. Deux jobs peuvent obéir au même
+            # réglage et ne pas collecter la même chose.
+            if re.search(rf"{tableau}=\([^)]*--interventions-theme-seul", script):
+                return MODE_INPUT_THEME
             return MODE_INPUT
     return "AUCUN MODE DÉCLARÉ"
 
@@ -202,7 +233,7 @@ def test_aucune_invocation_reseau_ne_reste_muette():
     )
 
 
-def test_la_description_de_l_input_nomme_les_jobs_qui_l_ignorent():
+def test_la_description_de_l_input_nomme_les_jobs_qui_divergent():
     """Un job qui n'obéit pas à `collect_interventions` doit être nommé là où
     l'opérateur lit cet input. La description disait « Affects extract-an only —
     the roster job always skips them » alors qu'extract-senat collectait
@@ -211,14 +242,18 @@ def test_la_description_de_l_input_nomme_les_jobs_qui_l_ignorent():
     motif = re.search(r'^      collect_interventions:\n        description: "([^"]*)"', _yaml(), flags=re.M)
     assert motif, "Input `collect_interventions` introuvable ou description non littérale."
     description = motif.group(1)
-    ignorants = {job for (job, _), mode in INVENTAIRE.items() if mode == MODE_JAMAIS}
+    ignorants = {
+        job for (job, _), mode in INVENTAIRE.items()
+        if mode in (MODE_JAMAIS, MODE_INPUT_THEME)
+    }
     manquants = [
         JETON_DESCRIPTION[job] for job in sorted(ignorants)
         if job in JETON_DESCRIPTION and JETON_DESCRIPTION[job].lower() not in description.lower()
     ]
     assert not manquants, (
         f"La description de collect_interventions ne nomme pas {manquants} alors que "
-        f"ces jobs ignorent le réglage : {sorted(ignorants)}.\n  « {description} »"
+        f"ces jobs en divergent (ignoré, ou collecte réduite) : {sorted(ignorants)}."
+        f"\n  « {description} »"
     )
 
 

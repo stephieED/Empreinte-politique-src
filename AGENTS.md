@@ -378,6 +378,20 @@ tolerance is **partitioned** — no input disarms another's check.
   The per-legislature lock is **reentrant**, and the memo of built-but-unpublished indexes
   is keyed on the cache **path** (the #377 trap).
   → `docs/decisions/syceron-actif-510.md`
+- **A group aggregate is a consumer nobody greps for (#657).** `--skip-interventions` was
+  hard-wired into the roster job on the written ground that "no group aggregate consumes
+  interventions". It was **false**: `tags_thematiques` derives entirely from
+  `interventions[]`, and each group sheet's `tags_thematiques_agreges` from that — so every
+  sheet's "thematic footprint" was **one person's** (470 tags on `AN:RN`, 0 on `AN:LFI`).
+  The derivation crosses two stages, and nobody re-reads `normalize_profil` when deciding
+  what an extraction job collects. **Before declaring a list unconsumed, grep the
+  derivations, not the aggregates.** The roster now collects **theme only**
+  (`--interventions-theme-seul`): debates without verbatim, official questions not at all
+  (they carry no theme). **Two index forms, two directories** — the reduced run reads the
+  full index and drops the heavy fields; the full run never reads the reduced one. A
+  **declared candidate is never reduced**: additive merge keeps the *older* entry, so a
+  reduced entry would freeze his full form forever.
+  → `docs/decisions/collecte-interventions-reduite-au-theme-657.md`
 - **What is not measured says so** — per-candidate cost and RSS of the sharded index are
   bounded by construction, not by measurement, and the #429 and #500 balances are
   un-remeasured. Naming them is the rule: §2.5 applies to our own work too.
@@ -417,7 +431,7 @@ tolerance is **partitioned** — no input disarms another's check.
 | `votes[]` | **Mapping only** (`#432`): `{scrutin_id, position}`. The ballot's metadata (date, text, sort, type_vote…) lives once in `pivot_data/scrutins.json`, not once per voter — 179,8 → 17,9 Mo + 8,1 Mo of shared index, −85,5 %. AN legislatures 14-17 aggregated (`#403`) |
 | `textes_portes[]` | Author/reporter/co-reporter + procedural stage. `dossier_id` (#639) is the AN legislative-dossier key (`DLR5L15N37607`), copied verbatim from the raw `dossiers_legislatifs[].id` (472/472) — **same name as a government sheet's `textes[].dossier_id`**, deliberately: two names for one identifier send every cross-reference back to the label. Never rebuilt from a title. See `docs/decisions/qualification-scrutins-et-cle-dossier-639.md` |
 | `amendements[]` | **Mapping only** (`#431`): `{amendement_id, role_signataire}`. Outcome, inadmissibility, date, `co_signataires`… live once in `pivot_data/amendements/<legislature>.json`, not once per signatory — 1 342,4 → 73,8 Mo of mapping + 130,1 Mo of shared index, −84,8 %. `role_signataire` is the only member-specific field |
-| `interventions[]` | Speeches, questions (`type_detail`) |
+| `interventions[]` | Speeches, questions (`type_detail`). An entry carrying `collecte: "theme_seul"` (#657) was collected **without its verbatim**: its heavy fields are **absent, never `null`** — a `"texte": null` would read as a fact about the person, where the fact is about the run (§2 rule 5). `collecte` is a closed value (`KNOWN_COLLECTES_INTERVENTION`); its **absence** is the full form. See `docs/decisions/collecte-interventions-reduite-au-theme-657.md` |
 | `tags_thematiques[]` | 8 stable categories (`STABLE_THEMES`), via `classify_keywords()`. |
 | `meta` | `schema_version`, `genere_le`, `licence_donnees`, `warnings[]`, `avertissements[]` (#642), `provenance` (`candidat_declare`\|`roster_groupe`, see `docs/decisions/provenance-pivot.md`), `provenance_champs` (#603). **`provenance` says why the profile exists; `provenance_champs` says which source filled which field of `identite`, and when** — optional (absent from the 481 profiles published before the lot), `identite`-only, and an unknown origin is published `{"source": null, "synchro_le": null}`, never omitted. Derived after the merge like `chambres` and `licence_donnees`, never merged. Not to be confused with `couverture` either: that one says *why a business list is empty*, per list, not per field. See `docs/decisions/provenance-par-champ-603.md`. **`meta.avertissements[]` (#642) is the typed twin of `warnings[]`** — one `{message, destinataire}` entry per warning, same order, same strings, enforced by `valider_avertissements()`. `destinataire` is a closed two-value vocabulary (`lecteur`, `interne`, `DESTINATAIRES_AVERTISSEMENT`): the key is **mandatory**, `null` says « nobody declared it », the omission says nothing. There is no third « mixed » value — a warning addressing both is **written twice**. It is declared **at the site that writes it**, via `avertissements.avertissement(message, destinataire)`, never by a table keyed on the message prefix: `votes introuvables` covers a constat *and* a panne (#484 verbatim). Derived like `chambres` and `licence_donnees`, never merged; optional on the 481 profiles published before the lot, with a written retirement condition. See `docs/decisions/destinataire-avertissements-642.md` |
 

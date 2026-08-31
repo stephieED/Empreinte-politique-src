@@ -1050,7 +1050,7 @@ def test_fetch_questions_officielles_maps_index_to_interventions():
         ]
     }
 
-    def fake_build_index(legislature):
+    def fake_build_index(legislature, **_):
         return index if legislature == "17" else {}
 
     with patch("candidate_profile._build_acteur_questions_index", side_effect=fake_build_index):
@@ -1088,7 +1088,7 @@ def test_fetch_questions_officielles_aggregates_multiple_legislatures():
                              "texte": "T", "reponse": None, "ministere": None,
                              "date": "2025-01-01", "date_reponse": None, "groupe_sigle": None}]}
 
-    def fake_build_index(legislature):
+    def fake_build_index(legislature, **_):
         return index_17 if legislature == "17" else index_16 if legislature == "16" else {}
 
     with patch("candidate_profile._build_acteur_questions_index", side_effect=fake_build_index):
@@ -1180,7 +1180,7 @@ def test_fetch_interventions_syceron_aggregates_multiple_legislatures():
         "PA1567": [{"id": "syceron_CRS17_000001", "date": "2025-02-11", "sujet": "L17"}]
     }
 
-    def fake_build_index(legislature):
+    def fake_build_index(legislature, **_):
         return index_17 if legislature == "17" else index_16 if legislature == "16" else {}
 
     with patch("candidate_profile.SYCERON_AVAILABLE_LEGISLATURES", {"16", "17"}), \

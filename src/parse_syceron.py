@@ -124,6 +124,24 @@ def _text(element: Optional[ET.Element], path: str) -> Optional[str]:
     return found.text.strip()
 
 
+def _a_un_texte(paragraphe: ET.Element) -> bool:
+    """Le `<paragraphe>` porte-t-il un `<texte>` ? (#657)
+
+    Test de PRÉSENCE, pas d'extraction : c'est la seule chose dont la condition
+    de rétention de `_parse_interventions` ait besoin, et `_extract_texte` — qui
+    sérialise l'arbre puis applique deux `re.sub` — pèse 53,8 % du parcours
+    (mesuré sur la 17e législature, 601 comptes rendus). En mode `avec_texte=
+    False` la rétention passe donc par ici.
+
+    L'écart avec `_extract_texte(...) is not None` est un `<texte/>` vide, que ce
+    test retient et que l'extraction rejetait : un tel paragraphe n'a ni orateur
+    ni contenu, il est écarté à l'indexation faute d'`acteurRef` — l'index sort
+    identique dans les deux modes, et `tests/test_parse_syceron_theme_seul.py`
+    le vérifie sur l'archive réelle plutôt que de le supposer.
+    """
+    return paragraphe.find(_tag("texte")) is not None
+
+
 def _extract_texte(paragraphe: ET.Element) -> Optional[str]:
     """Extrait le texte d'un <paragraphe> en normalisant les balises inline.
 
@@ -324,6 +342,8 @@ def _iter_paragraphes(
 def _parse_interventions(
     root: ET.Element,
     seance: dict[str, Any],
+    *,
+    avec_texte: bool = True,
 ) -> list[dict[str, Any]]:
     """Extrait toutes les interventions (paragraphes avec orateur+texte) du contenu.
 
@@ -333,6 +353,14 @@ def _parse_interventions(
 
     Clé de déduplication recommandée pour les consommateurs :
         source_id + index(point) + index(paragraphe) + orateur_id_source
+
+    `avec_texte=False` (#657) : le verbatim n'est pas extrait. `texte` sort
+    `None`, et `format` AUSSI — il se déduit du nombre de mots du verbatim, donc
+    sans lui la valeur « reaction_courte » serait un défaut déguisé en mesure
+    (AGENTS.md §2 règle 5). Tout le reste est identique : `sujet` et
+    `type_detail` viennent du titre de point (`_titre_point`), jamais du texte,
+    donc la matière thématique est intacte — c'est la propriété qui rend le mode
+    utilisable pour les 468 membres de roster.
     """
     contenu = root.find(_tag("contenu"))
     if contenu is None:
@@ -348,11 +376,13 @@ def _parse_interventions(
     interventions: list[dict[str, Any]] = []
 
     for paragraphe, chaine in _iter_paragraphes(contenu, ()):
-        texte = _extract_texte(paragraphe)
+        texte = _extract_texte(paragraphe) if avec_texte else None
         oid, nom_orateur, qualite = _parse_orateur(paragraphe)
 
         # On retient le paragraphe s'il a un orateur identifié ou un texte.
-        if not oid and not nom_orateur and not texte:
+        # Sans extraction (#657), la présence du `<texte>` tient lieu de test.
+        a_du_texte = bool(texte) if avec_texte else _a_un_texte(paragraphe)
+        if not oid and not nom_orateur and not a_du_texte:
             continue
 
         chemin = " > ".join(titre for _niveau, _code, titre in chaine) or None
@@ -363,7 +393,7 @@ def _parse_interventions(
             "sujet": _sujet_depuis_chaine(chaine),
             "texte": texte,
             "fonction": qualite,
-            "format": _infer_format(texte),
+            "format": _infer_format(texte) if avec_texte else None,
             "mots_cles": [],
             "source_url": None,
             # Champs contextuels Syceron (traçabilité et audit qualité)
@@ -386,11 +416,18 @@ def _parse_interventions(
     return interventions
 
 
-def parse_syceron_xml(xml_content: Union[str, bytes]) -> dict[str, Any]:
+def parse_syceron_xml(
+    xml_content: Union[str, bytes], *, avec_texte: bool = True
+) -> dict[str, Any]:
     """Parse un fichier XML Syceron et retourne séance + interventions.
 
     Args:
         xml_content: contenu XML brut (str ou bytes).
+        avec_texte: `False` pour ne pas extraire le verbatim (#657). `texte` et
+            `format` sortent alors `None` ; l'arbre XML est construit de toute
+            façon (la source n'offre aucune lecture par champ), mais les deux
+            `re.sub` par paragraphe d'`_extract_texte` — 53,8 % du parcours —
+            ne sont pas payés. Le reste de la sortie est inchangé.
 
     Returns:
         {
@@ -410,9 +447,10 @@ def parse_syceron_xml(xml_content: Union[str, bytes]) -> dict[str, Any]:
                     "date": str | None,
                     "type_detail": str,
                     "sujet": str | None,
-                    "texte": str | None,
+                    "texte": str | None,     # None si avec_texte=False (#657)
                     "fonction": str | None,
-                    "format": str,           # "reaction_courte" | "prise_de_parole_developpee"
+                    "format": str | None,    # "reaction_courte" | "prise_de_parole_developpee"
+                                             # None si avec_texte=False (#657)
                     "mots_cles": list,
                     "source_url": None,
                     # Champs contextuels Syceron
@@ -440,6 +478,6 @@ def parse_syceron_xml(xml_content: Union[str, bytes]) -> dict[str, Any]:
     root = ET.fromstring(xml_content)
 
     seance = _parse_metadonnees(root)
-    interventions = _parse_interventions(root, seance)
+    interventions = _parse_interventions(root, seance, avec_texte=avec_texte)
 
     return {"seance": seance, "interventions": interventions}
