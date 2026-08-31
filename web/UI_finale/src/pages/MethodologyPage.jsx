@@ -1,4 +1,5 @@
 import StaticPage from '../components/StaticPage';
+import { WHOLE_TEXT_VOTE_BOUND } from '../utils/lecture';
 
 const SECTIONS = [
   {
@@ -35,13 +36,17 @@ const SECTIONS = [
     body: (
       <>
         <p>
-          L'univers retenu comprend tous les scrutins publics disponibles, ordinaires et solennels, portant
-          sur l'ensemble d'un texte. Pour un même texte, seule la lecture la plus avancée connue est
-          conservée dans la synthèse.
+          L'univers retenu comprend les scrutins publics disponibles, ordinaires et solennels, portant sur
+          l'ensemble d'un texte. Les votes sur un article, sur une partie de texte ou sur un amendement en
+          sont exclus, de même que les motions de censure, qui sont des faits de procédure. Pour un même
+          texte, seule la lecture la plus avancée connue est conservée dans la synthèse.
         </p>
         <p>
-          Les votes sur des articles ou amendements sont exclus de cette synthèse. Le choix de ne pas se
-          limiter aux seuls scrutins solennels évite d'écarter des votes publics sur des textes entiers.
+          <strong>{WHOLE_TEXT_VOTE_BOUND.phrase}</strong> {WHOLE_TEXT_VOTE_BOUND.pourquoi}
+        </p>
+        <p>
+          Le choix de ne pas se limiter aux seuls scrutins solennels évite d'écarter des votes publics sur
+          des textes entiers.
         </p>
       </>
     ),
