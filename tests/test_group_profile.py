@@ -15,6 +15,7 @@ from group_profile import (
     _parse_date,
     _member_eligible_at,
     _derive_membre_entry,
+    appartenances_depuis_roster,
     _build_vote_index,
     _compute_cohesion_votes,
     aggregate_tags_thematiques,
@@ -253,35 +254,44 @@ def test_derive_membre_id_nom():
     assert m["nom"] == "Jean Dupont"
 
 
-def test_derive_membre_debut_from_electif():
+def test_derive_membre_dates_lues_sur_le_mandat_de_groupe():
+    """Les dates viennent du mandat GP de la législature, pas du profil (#653)."""
     p = _pivot(mandats=[_mandat_electif("2022-06-22")])
-    m = _derive_membre_entry(p)
-    assert m["debut_dans_groupe"] == "2022-06-22"
+    m = _derive_membre_entry(p, "AN", {"debut": "2022-06-29", "fin": "2024-06-09"})
+    assert m["debut_dans_groupe"] == "2022-06-29"
+    assert m["fin_dans_groupe"] == "2024-06-09"
+    assert m["actif"] is False
 
 
-def test_derive_membre_fin_none_if_active():
-    p = _pivot(mandats=[_mandat_electif("2022-06-22")])
-    m = _derive_membre_entry(p)
+def test_derive_membre_actif_si_appartenance_sans_fin():
+    p = _pivot(mandats=[_mandat_electif("2024-07-07")])
+    m = _derive_membre_entry(p, "AN", {"debut": "2024-07-19", "fin": None})
     assert m["fin_dans_groupe"] is None
     assert m["actif"] is True
 
 
-def test_derive_membre_fin_set_if_closed():
-    p = _pivot(mandats=[_mandat_electif("2017-06-21", "2022-06-21", actif=False)])
-    m = _derive_membre_entry(p)
-    assert m["fin_dans_groupe"] == "2022-06-21"
-    assert m["actif"] is False
-
-
-def test_derive_membre_multiple_mandats_earliest_debut():
+def test_derive_membre_ignore_le_mandat_electif_meme_ancien():
+    """Le cas Vincent Rolland : député depuis 2002, membre du groupe LR de la
+    XVIe depuis le 2022-06-29. C'est la régression de #647 que ce test ferme —
+    le premier mandat électif ne doit plus jamais servir de date d'entrée."""
     p = _pivot(mandats=[
-        _mandat_electif("2022-06-22"),
-        _mandat_electif("2017-06-21", "2022-06-21", actif=False),
+        _mandat_electif("2002-06-19", "2007-06-19", actif=False),
+        _mandat_electif("2017-06-18", "2022-06-21", actif=False),
+        _mandat_electif("2022-06-19", "2024-06-09", actif=False),
+        _mandat_electif("2024-07-07"),
     ])
+    m = _derive_membre_entry(p, "AN", {"debut": "2022-06-29", "fin": "2024-06-09"})
+    assert m["debut_dans_groupe"] == "2022-06-29"
+
+
+def test_derive_membre_sans_appartenance_ne_date_rien():
+    """Aucune appartenance identifiable → `null` et `actif` faux, jamais un
+    repli sur les mandats électifs (AGENTS.md §2 règle 5)."""
+    p = _pivot(mandats=[_mandat_electif("2022-06-22")])
     m = _derive_membre_entry(p)
-    assert m["debut_dans_groupe"] == "2017-06-21"
-    assert m["fin_dans_groupe"] is None  # le deuxième est actif
-    assert m["actif"] is True
+    assert m["debut_dans_groupe"] is None
+    assert m["fin_dans_groupe"] is None
+    assert m["actif"] is False
 
 
 def test_derive_membre_no_mandats():
@@ -290,6 +300,18 @@ def test_derive_membre_no_mandats():
     assert m["debut_dans_groupe"] is None
     assert m["fin_dans_groupe"] is None
     assert m["actif"] is False
+
+
+def test_appartenances_depuis_roster_renomme_et_ecarte_les_sans_slug():
+    table = appartenances_depuis_roster([
+        {"slug": "alice", "mandat_debut": "2022-06-29", "mandat_fin": "2024-06-09"},
+        {"slug": None, "nom": "Sans slug", "mandat_debut": "2022-06-29", "mandat_fin": None},
+        {"slug": "bob", "mandat_debut": "2023-01-30", "mandat_fin": None},
+    ])
+    assert table == {
+        "alice": {"debut": "2022-06-29", "fin": "2024-06-09"},
+        "bob": {"debut": "2023-01-30", "fin": None},
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -569,18 +591,71 @@ def test_build_groupe_profile_membres():
 
 
 def test_build_groupe_profile_effectif_actuel():
+    """`actuel` compte les appartenances SANS date de fin dans la législature
+    de la fiche (#653) — pas les élu·es encore en fonction."""
     profils = [
         _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")]),
         _pivot("nosdeputes:ancien", mandats=[_mandat_electif("2017-06-21", "2022-06-21", actif=False)]),
     ]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
-    assert g["effectif"]["actuel"] == 1  # seulement alice est active
+    g = build_groupe_profile(
+        "AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index(),
+        appartenances={
+            "nosdeputes:alice": {"debut": "2022-06-29", "fin": None},
+            "nosdeputes:ancien": {"debut": "2022-06-29", "fin": "2023-10-18"},
+        },
+    )
+    assert g["effectif"]["actuel"] == 1  # seule alice n'a pas de fin d'appartenance
+
+
+def test_build_groupe_profile_effectif_actuel_nul_sur_legislature_close():
+    """Une législature achevée referme toutes ses appartenances : `actuel` y
+    vaut 0 par construction, et un avertissement le nomme (#653)."""
+    profils = [_pivot("nosdeputes:alice", mandats=[_mandat_electif("2024-07-07")])]
+    g = build_groupe_profile(
+        "AN:LR", "LR", "Les Républicains", "AN", "16", profils, scrutins_index=_index(),
+        appartenances={"nosdeputes:alice": {"debut": "2022-06-29", "fin": "2024-06-09"}},
+    )
+    assert g["effectif"]["actuel"] == 0
+    assert len(g["membres"]) == 1
+    assert any(w.startswith("effectif.actuel = 0 :") for w in g["meta"]["warnings"])
+
+
+def test_build_groupe_profile_sans_appartenances_publie_null_et_le_dit():
+    profils = [_pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")])]
+    g = build_groupe_profile(
+        "AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index()
+    )
+    assert g["membres"][0]["debut_dans_groupe"] is None
+    assert g["periode"]["debut"] is None
+    assert any(
+        w.startswith("appartenance_au_groupe : aucun roster fourni")
+        for w in g["meta"]["warnings"]
+    )
+
+
+def test_build_groupe_profile_membre_hors_roster_est_compte_et_nomme():
+    profils = [
+        _pivot("nosdeputes:alice", mandats=[_mandat_electif("2022-06-22")]),
+        _pivot("nosdeputes:bob", mandats=[_mandat_electif("2022-06-22")]),
+    ]
+    g = build_groupe_profile(
+        "AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index(),
+        appartenances={"nosdeputes:alice": {"debut": "2022-06-29", "fin": None}},
+    )
+    assert len(g["membres"]) == 2  # aucune entrée retirée
+    warning = next(
+        w for w in g["meta"]["warnings"] if w.startswith("appartenance_au_groupe : 1 membre")
+    )
+    assert "nosdeputes:bob" in warning
 
 
 def test_build_groupe_profile_periode():
     profils = [_pivot(mandats=[_mandat_electif("2022-06-22")])]
-    g = build_groupe_profile("AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index())
-    assert g["periode"]["debut"] == "2022-06-22"
+    g = build_groupe_profile(
+        "AN:SOC", "SOC", "Socialistes", "AN", "16", profils, scrutins_index=_index(),
+        appartenances={"nosdeputes:jean-dupont": {"debut": "2022-06-29", "fin": None}},
+    )
+    assert g["periode"]["debut"] == "2022-06-29"
     assert g["periode"]["fin"] is None
     assert g["periode"]["actif"] is True
 
@@ -853,7 +928,12 @@ def test_mandats_agreges_nb_membres_actifs_requiert_mandat_et_appartenance_actif
         _mandat_electif("2012-06-20", fin="2017-06-19", actif=False),
         _mandat_categoriel(debut="2012-06-20", fin="2017-06-19", actif=False),
     ])
-    membres = [_derive_membre_entry(p1), _derive_membre_entry(p2)]
+    # L'appartenance au groupe vient du mandat GP depuis #653 : alice n'a pas de
+    # date de fin (toujours membre), bob en a une (parti).
+    membres = [
+        _derive_membre_entry(p1, "AN", {"debut": "2022-06-29", "fin": None}),
+        _derive_membre_entry(p2, "AN", {"debut": "2012-06-26", "fin": "2017-06-19"}),
+    ]
     result = _aggregate_mandats([p1, p2], membres)
     assert result[0]["nb_membres_cumul_historique"] == 2
     assert result[0]["nb_membres_actifs"] == 1

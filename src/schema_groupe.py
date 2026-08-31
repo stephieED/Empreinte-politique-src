@@ -41,14 +41,24 @@ Format d'un profil de groupe v1 :
         {
             "membre_id": "jerome-guedj",         # id pivot individuel = son slug (#487)
             "nom": "Jérôme Guedj",
-            "debut_dans_groupe": "2022-06-22",       # début de l'appartenance à CE groupe
-            "fin_dans_groupe": null,                 # null = toujours membre
-            "actif": true
+            "debut_dans_groupe": "2022-06-29",       # début de l'appartenance à CE groupe,
+                                                     # lu sur le mandat GP de la législature
+                                                     # de la fiche (#653). null = appartenance
+                                                     # non établie, jamais approximée depuis
+                                                     # le mandat électif.
+            "fin_dans_groupe": null,                 # null = toujours membre DANS CETTE
+                                                     # LÉGISLATURE (une législature close les
+                                                     # referme toutes)
+            "actif": true                            # not fin_dans_groupe
         }
     ],
 
     "effectif": {
-        "actuel": 64,                   # nombre de membres actifs au moment du calcul
+        "actuel": 64,                   # membres sans date de fin d'appartenance AU GROUPE
+                                        # dans CETTE législature (#653) — pas le nombre
+                                        # d'élu·es en fonction aujourd'hui. Vaut 0 sur une
+                                        # législature close ; la composition à sa clôture
+                                        # est `membres[]`.
         "min_historique": null,         # min. sur la période (null si non calculé)
         "max_historique": null          # max. sur la période (null si non calculé)
     },

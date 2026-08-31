@@ -79,6 +79,15 @@ plus récente, `None` = mandat ouvert). Même forme sur la 17e :
 consommer cette source ; c'est la condition pour que le lot 1b soit une
 bascule et pas une réécriture.
 
+`mandat_debut` / `mandat_fin` ne servent plus seulement à filtrer : depuis
+#653 ce sont les valeurs **publiées** sous `membres[].debut_dans_groupe` /
+`fin_dans_groupe` des fiches de groupe. Elles sortent du mandat `GP`, elles
+ont donc les trois propriétés qu'aucune autre source du dépôt ne réunit — le
+transit est écarté (piège 1), les organes successifs sont recollés (piège 3),
+et la période est celle de la **législature demandée**, pas de la carrière.
+Une modification de `_fusionner_periodes` ou du filtre de transit change
+désormais une date publiée, pas seulement une liste de membres.
+
 ## Le slug vient du lot 2, et son absence est déclarée
 
 AMO30 ne publie aucun identifiant externe : le slug — qui **est** l'`id` du

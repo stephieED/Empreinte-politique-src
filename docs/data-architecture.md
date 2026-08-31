@@ -489,6 +489,23 @@ est **tracée** (`meta.couverture_roster`), pour ne jamais confondre effectif r�
 et effectif effectivement agrégé — un ratio ne se publie qu'avec numérateur,
 dénominateur et couverture suffisante (AGENTS.md §2.7).
 
+`membres[].debut_dans_groupe` / `fin_dans_groupe` sont les dates du **mandat de
+groupe politique de la législature de la fiche**, que le roster porte déjà
+(`mandat_debut` / `mandat_fin`) : transit écarté, organes successifs recollés
+(#526). Elles ne sont **pas** dérivées des mandats électifs du profil — depuis
+#647 un profil porte toute sa carrière, et « premier mandat électif » datait
+l'entrée dans un groupe de la XVIe à 2002 (#653,
+`docs/decisions/dates-appartenance-groupe-653.md`). Sans roster, ou pour un
+membre qu'il ne rend pas, les deux dates sortent `null` et `meta.warnings` les
+compte : jamais de repli sur le mandat électif.
+
+`effectif.actuel` compte les membres **sans date de fin d'appartenance dans
+cette législature**, ce qui n'est pas « les élu·es en fonction aujourd'hui ».
+Une législature close referme toutes ses appartenances : les cinq fiches AN de
+la XVIe y valent **0**, et la composition du groupe à sa clôture se lit dans
+`membres[]`. L'interface prend `meta.couverture_roster.roster_total` pour son
+compteur, jamais `effectif.actuel`.
+
 À ne pas confondre avec le job CI `extract-roster-groupes`, qui utilise aussi
 `group_roster.py` (via `generate_roster_candidats.py`) mais pour produire des
 profils **individuels** bruts couvrant tous les membres du roster, en amont de

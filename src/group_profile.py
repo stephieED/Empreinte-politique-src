@@ -11,8 +11,12 @@ Calculs produits :
      d'alignement. « Absent » (aucune trace de vote) est distingué de
      « non_votant » et « excusé ».
   2. Thèmes dominants : agrégation des tags_thematiques de tous les membres.
-  3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
-     électifs des profils individuels).
+  3. Membres : liste avec dates d'entrée/sortie DU GROUPE, lues sur le mandat
+     de groupe politique (`GP`) de la législature de la fiche que rend le
+     roster AMO30 — transit écarté, organes successifs recollés (#526/#653).
+     Elles ne sont plus dérivées des mandats électifs : depuis #647 un profil
+     porte toute sa carrière, et « premier mandat électif » datait l'entrée
+     dans un groupe de la XVIe législature à 2002.
   4. Amendements agrégés (amendements_agreges) : les amendements **distincts**
      portés par au moins un membre — un amendement cosigné par trois d'entre eux
      en est un (#643) —, leur ventilation par sort et par type de déposant, et
@@ -108,8 +112,9 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
+from avertissements import DESTINATAIRE_LECTEUR, avertissement
 from licences import appliquer_licence_donnees
 from schema_groupe import (
     SCHEMA_GROUPE_VERSION,
@@ -267,55 +272,91 @@ def _member_eligible_at(
 # ---------------------------------------------------------------------------
 
 def _derive_membre_entry(
-    profil: dict[str, Any], chambre: Optional[str] = None
+    profil: dict[str, Any],
+    chambre: Optional[str] = None,
+    appartenance: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Dérive une entrée ``membres[]`` du profil de groupe à partir d'un profil pivot.
 
-    La date de début dans le groupe correspond au début du premier mandat électif ;
-    la fin correspond à la fin du dernier mandat électif terminé (None si toujours
-    actif). Cette approximation est correcte pour les cas sans changement de groupe
-    en cours de mandat.
+    Les dates viennent du **mandat de groupe politique** (`typeOrgane == "GP"`)
+    de la législature de la fiche, tel que `an_roster.deriver_membres_organes`
+    le rend : organes successifs recollés, mandats de transit écartés (#526).
+    Elles sont passées par ``appartenance`` (`{"debut", "fin"}`), jamais
+    recalculées ici — la fiche et le roster doivent lire la même chose.
 
-    ``chambre`` (#492) restreint les mandats électifs pris en compte à ceux de
-    la chambre du groupe : sans ça, `debut_dans_groupe` d'un membre bicaméral
-    remonterait à son mandat dans **l'autre** chambre. Voir ``_mandats_electifs``.
+    Ce que ce champ **n'est plus** (#653) : le début du premier mandat électif.
+    C'était l'approximation d'origine, correcte tant qu'un profil ne portait
+    qu'un mandat — le plus récent. #647 a reconstruit la carrière complète (613
+    périodes nouvelles sur 393 profils) et l'approximation est devenue fausse
+    dans l'autre sens : Vincent Rolland, membre du groupe LR de la XVIe depuis
+    le 2022-06-29, était publié « depuis 2002-06-19 ». Avant #647 la date était
+    trop récente, après trop ancienne ; dans les deux cas elle ne mesurait pas
+    ce que son nom annonce.
+
+    Sans ``appartenance`` — aucun roster fourni, ou membre absent de celui-ci —
+    les deux dates sont ``None`` et ``actif`` est ``False`` : **appartenance non
+    établie**, jamais un repli sur le mandat électif, qui remettrait la date
+    fausse en place sous un nom exact (AGENTS.md §2 règle 5). L'appelant compte
+    ces membres et le publie.
+
+    ``chambre`` n'entre plus dans le calcul des dates (le mandat GP est par
+    construction celui de la chambre du groupe) ; il reste dans la signature
+    parce qu'il est la clé de lecture de tous les autres agrégats de ce module
+    et qu'un paramètre retiré d'une signature publique casse ses appelants.
+    Le défaut qu'il corrigeait (#492 : la date d'un bicaméral remontant à
+    l'autre chambre) s'éteint avec la source de la date.
 
     Args:
         profil: profil pivot v1.
+        chambre: chambre du groupe, conservée pour la cohérence de signature.
+        appartenance: `{"debut", "fin"}` lus sur le mandat GP de la
+            législature de la fiche, ou ``None`` si aucun n'est identifiable.
 
     Returns:
         Dict conformant à la structure membres[] du schéma de groupe.
     """
-    electif = _mandats_electifs(profil.get("mandats") or [], chambre)
+    del chambre  # cf. docstring : plus lue ici depuis #653.
 
     debut: Optional[str] = None
     fin: Optional[str] = None
-    actif = False
-
-    if electif:
-        debuts = [_parse_date(m.get("debut")) for m in electif]
-        fins = [_parse_date(m.get("fin")) for m in electif]
-        actifs = [bool(m.get("actif")) for m in electif]
-
-        parsed_debuts = [d for d in debuts if d is not None]
-        if parsed_debuts:
-            debut = str(min(parsed_debuts))
-
-        # La fin est None si au moins un mandat est toujours actif.
-        if any(actifs) or any(f is None for f in fins):
-            fin = None
-        else:
-            parsed_fins = [f for f in fins if f is not None]
-            fin = str(max(parsed_fins)) if parsed_fins else None
-
-        actif = any(actifs)
+    if appartenance is not None:
+        debut = appartenance.get("debut")
+        fin = appartenance.get("fin")
 
     return {
         "membre_id": profil.get("id") or "",
         "nom": profil.get("nom") or "",
         "debut_dans_groupe": debut,
         "fin_dans_groupe": fin,
-        "actif": actif,
+        # `actif` suit la fin d'appartenance, comme `an_roster` la dérive : un
+        # membre est actif tant qu'aucune fin n'est publiée. Sur une
+        # législature close, aucun membre ne l'est — c'est ce que dit
+        # l'archive, et c'est ce que `effectif.actuel` compte désormais.
+        "actif": appartenance is not None and not fin,
+    }
+
+
+def appartenances_depuis_roster(
+    roster: Iterable[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """`slug → {debut, fin}` : les dates d'appartenance au groupe, par membre.
+
+    Le roster est la seule source de ces dates (#653). Il les porte sous
+    `mandat_debut`/`mandat_fin` — le nom du contrat de
+    `group_roster.fetch_full_roster` —, elles sont renommées ici une fois pour
+    toutes, à la frontière, plutôt qu'à chaque lecture.
+
+    Un membre sans slug n'entre pas dans la table : il n'a pas de profil pivot,
+    donc pas d'entrée `membres[]` non plus. `an_roster` le compte et le nomme
+    déjà (`membres_sans_slug`, #526).
+    """
+    return {
+        membre["slug"]: {
+            "debut": membre.get("mandat_debut"),
+            "fin": membre.get("mandat_fin"),
+        }
+        for membre in roster
+        if membre.get("slug")
     }
 
 
@@ -1541,6 +1582,7 @@ def build_groupe_profile(
     licence_donnees: str = "",
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
+    appartenances: Optional[dict[str, dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -1563,6 +1605,15 @@ def build_groupe_profile(
                     entrées exploitables sont celles qui portent encore leur
                     enregistrement, et les autres sont comptées puis remontées
                     en `meta.warnings` plutôt qu'ignorées en silence.
+        appartenances: `slug → {debut, fin}` d'appartenance AU GROUPE, pour la
+                    législature de la fiche (#653). Construit par
+                    `appartenances_depuis_roster` sur le roster AMO30, seule
+                    source de ces dates. Absent — ou membre absent de la table
+                    —, `membres[].debut_dans_groupe` est publié `null` et le
+                    nombre de membres concernés est remonté en
+                    `meta.warnings` : le repli sur le mandat électif, qui
+                    datait l'entrée dans le groupe au début de la carrière,
+                    est ce que ce lot retire.
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
@@ -1570,15 +1621,59 @@ def build_groupe_profile(
     warnings: list[str] = []
 
     # --- Membres ---
-    membres = [_derive_membre_entry(p, chambre) for p in profils]
+    # Les dates d'appartenance viennent du mandat GP de la législature de la
+    # fiche (#653), jamais des mandats électifs du profil. Un membre que la
+    # table ne couvre pas garde des dates `null` : il est compté et nommé
+    # juste en dessous, pas daté par défaut (AGENTS.md §2 règle 5).
+    membres = [
+        _derive_membre_entry(
+            p, chambre, (appartenances or {}).get(p.get("id") or "")
+        )
+        for p in profils
+    ]
+    sans_appartenance = [m["membre_id"] for m in membres if m["debut_dans_groupe"] is None]
+    if sans_appartenance:
+        if appartenances is None:
+            warnings.append(avertissement(
+                f"appartenance_au_groupe : aucun roster fourni à cette agrégation, donc "
+                f"aucune date d'appartenance dérivable pour les {len(sans_appartenance)} "
+                "membre(s) de la fiche. `debut_dans_groupe`/`fin_dans_groupe` sont publiés "
+                "`null` et `actif` vaut `false` : appartenance non établie, jamais datée "
+                "depuis le mandat électif — ce qui daterait l'entrée dans le groupe au "
+                "début de la carrière (#653).",
+                DESTINATAIRE_LECTEUR,
+            ))
+        else:
+            warnings.append(avertissement(
+                f"appartenance_au_groupe : {len(sans_appartenance)} membre(s) sans mandat de "
+                "groupe politique identifiable dans le roster de cette législature — dates "
+                f"publiées `null`, appartenance non établie (#653) : "
+                f"{', '.join(sorted(sans_appartenance))}.",
+                DESTINATAIRE_LECTEUR,
+            ))
 
     # --- Effectif ---
+    # `actuel` compte les membres SANS date de fin d'appartenance DANS CETTE
+    # LÉGISLATURE. Ce n'est pas « les membres en fonction aujourd'hui », et
+    # c'était déjà faux avant #653 dans l'autre sens : la valeur y comptait
+    # les membres encore députés à la date du calcul, sur une fiche qui décrit
+    # une législature close. Une législature achevée referme tous ses mandats
+    # de groupe — `actuel` y vaut donc 0, et la composition à sa clôture se lit
+    # dans `membres[]`, pas ici.
     n_actif = sum(1 for m in membres if m["actif"])
     effectif: dict[str, Any] = {
         "actuel": n_actif,
         "min_historique": None,  # non calculé (nécessiterait une analyse de timeline)
         "max_historique": None,
     }
+    warnings.append(avertissement(
+        f"effectif.actuel = {n_actif} : nombre de membres sans date de fin d'appartenance "
+        f"AU GROUPE dans cette législature, sur les {len(membres)} entrées de `membres[]` — pas "
+        "le nombre d'élu·es en fonction aujourd'hui. Une législature close referme toutes ses "
+        "appartenances, `actuel` y vaut 0 par construction ; la composition du groupe à sa "
+        "clôture est `membres[]` (#653).",
+        DESTINATAIRE_LECTEUR,
+    ))
 
     # --- Période du groupe ---
     all_debuts = [_parse_date(m["debut_dans_groupe"]) for m in membres]
@@ -1912,6 +2007,13 @@ def generate_groupe_profile_from_roster(
     distincts = CumulAmendementsDistincts()
     profils: list[dict[str, Any]] = []
     missing_slugs: list[str] = []
+    # Les dates d'appartenance sont indexées sur l'`id` du pivot **chargé**, pas
+    # sur le slug du roster : les deux coïncident depuis #487, et les indexer
+    # sur le slug rendrait le rapprochement muet le jour où ils divergent — ce
+    # qui, sur des dates publiées, se lirait comme « appartenance non établie »
+    # plutôt que comme un bug.
+    table_roster = appartenances_depuis_roster(roster)
+    appartenances: dict[str, dict[str, Any]] = {}
     for member in roster:
         slug = member.get("slug")
         pivot_path = profiles_dir / f"{slug}.pivot.json" if slug else None
@@ -1919,12 +2021,15 @@ def generate_groupe_profile_from_roster(
             missing_slugs.append(slug or member.get("nom") or "?")
             continue
         try:
-            profils.append(load_profil_from_file(
+            profil = load_profil_from_file(
                 pivot_path, amendements_index, distincts=distincts
-            ))
+            )
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
             missing_slugs.append(slug)
+            continue
+        profils.append(profil)
+        appartenances[profil.get("id") or slug] = table_roster[slug]
 
     for slug in recovered_slugs:
         pivot_path = profiles_dir / f"{slug}.pivot.json"
@@ -1968,6 +2073,13 @@ def generate_groupe_profile_from_roster(
         licence_donnees=licence_donnees,
         scrutins_index=scrutins_index,
         amendements_index=amendements_index,
+        # Les dates d'appartenance sortent du roster, pas des profils (#653).
+        # Les `recovered_slugs` de `--merge-existing` n'y sont par définition
+        # pas : leurs dates sortent `null`, et `build_groupe_profile` les
+        # compte — un membre réintégré parce que le roster ne l'a pas rendu
+        # n'a pas de mandat de groupe lisible, et lui en inventer un serait
+        # exactement ce que ce lot retire.
+        appartenances=appartenances,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
