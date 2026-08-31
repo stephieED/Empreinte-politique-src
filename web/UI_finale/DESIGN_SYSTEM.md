@@ -53,18 +53,23 @@ Trois formes, verified dans `src/components/Brand.jsx`/`Brand.css` et cotées da
 | Carte `--card` | `#FFFFFF` | Surface des cartes, contraste doux avec le fond |
 | Bordure | `#F0EEEB` · `#E7E4DF` | Séparateurs, contours discrets — deux valeurs, jamais du gris neutre générique |
 
-### Couleurs de vote & d'issue — *vérifiées*, `CandidateProfile.jsx` / `GroupProfile.jsx` (`VOTE_STYLE` / `OUTCOME_COLOR`, identiques dans les deux fichiers)
+### Couleurs de vote & d'issue — *vérifiées*, `src/utils/lecture.js` (`VOTE_STYLE` / `OUTCOME_COLOR`)
 
 | Sens | Hex | Constante code |
 |---|---|---|
 | Pour / Adopté | `#007A45` | `pour` / `adopté` |
 | Contre / Rejeté | `#E53420` | `contre` / `rejeté` |
 | Abstention / Tombé | `#8B8794` | `abstention` / `tombé` |
+| **Non-votant** | **aucune** — contour tireté | `non_votant` |
 | Retiré | `#F2A93B` | `retiré` |
 | Irrecevable | `#B8B4AE` | `irrecevable` |
 | Non soutenu | `#DCD9D3` | `non_soutenu` |
 
-Ces couleurs vivent en constantes JS colocées dans les deux composants (pas en token CSS `index.css`) — à garder synchronisées si l'une des deux est modifiée sans l'autre (risque de divergence silencieuse, aucun partage de source actuellement).
+**Les positions de vote ne forment pas une échelle** (#326). Pour, Contre et Abstention sont des positions *exprimées* : elles portent une couleur. `non_votant` n'en est pas une — il se distingue par la **forme**, jamais par une teinte. Un dégradé chaud-froid sur les quatre fabriquerait un jugement (§2 règle 1 de `AGENTS.md`).
+
+**Quatre valeurs, pas cinq.** « Absent » n'apparaît dans aucune des 1 312 951 positions publiées (mesuré au commit de données `245511b4`, 31/08/2026) : lui donner une catégorie publierait une absence comme un fait de vote, c'est-à-dire le taux de présence individuel qu'interdit §2 règle 3. Toute valeur inconnue tombe sur la forme sans teinte. Verrouillé par `tests/test_fondations_lecture_326.py`.
+
+Ces couleurs vivaient en constantes JS **dupliquées** dans `CandidateProfile.jsx` et `GroupProfile.jsx`, sans `non_votant` — les 21 229 positions `non_votant` du corpus s'y affichaient sans couleur **ni libellé**. Elles sont désormais définies une seule fois, dans `src/utils/lecture.js`, que les deux composants importent.
 
 ### Table de contraste (WCAG AA, seuil 4.5:1)
 
