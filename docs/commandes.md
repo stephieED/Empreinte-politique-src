@@ -60,6 +60,8 @@ passage les deux index partagés. Options de conduite les plus utiles :
 | `--budget-collecte-secondes 160` | plafond de collecte **par candidat** ; `0` déclare l'absence de plafond |
 | `--budget-job-secondes 600` | plafond de collecte pour **tout le run** |
 | `--no-merge` | remplace au lieu de fusionner (la fusion est additive par défaut) |
+| `--skip-interventions` | ne collecte ni débats Syceron ni questions officielles |
+| `--interventions-theme-seul` | collecte les débats **sans leur verbatim** et laisse les questions officielles ; chaque entrée publiée porte `collecte: "theme_seul"`. Sans effet sur un slug de `raw_data/candidats.json`. Incompatible avec `--skip-interventions` |
 
 Renormaliser sans aucun appel réseau, depuis les bruts déjà collectés :
 
@@ -81,6 +83,11 @@ Produit : `raw_data/roster_candidats.json` (la composition réelle des groupes
 de `raw_data/groupes_reels.json`, au lieu de la liste éditoriale), puis les
 profils de ses membres. `--skip-existing` combiné à `--limit` fait avancer la
 frontière de couverture d'un run à l'autre au lieu de retenter les mêmes.
+
+Pour peupler aussi l'empreinte thématique des fiches de groupe, ajouter
+`--interventions-theme-seul` : les débats sont collectés sans leur verbatim,
+et `tags_thematiques` cesse d'être vide (#657). C'est ce que le job CI fait
+quand `collect_interventions` est coché.
 
 → `docs/extract-roster-groupes.md`.
 

@@ -263,6 +263,43 @@ def load_candidats(path: str) -> list[dict[str, Any]]:
     return data.get("candidats", [])
 
 
+def slugs_candidats_declares(path: str = DEFAULT_CANDIDATS_PATH) -> frozenset[str]:
+    """Slugs de la liste éditoriale des candidats déclarés (#657).
+
+    Sert UNIQUEMENT à interdire la collecte réduite au thème sur eux, et la
+    raison n'est pas cosmétique. Un candidat déclaré qui siège dans un groupe
+    figure AUSSI dans `raw_data/roster_candidats.json` — `generate_roster_candidats`
+    ne l'en retire pas, et `merge_pivot_profile` ne rétrograde jamais sa
+    provenance (#189). Le job roster le traiterait donc en mode réduit alors
+    qu'`extract-an` le collecte en entier :
+
+    - les deux artifacts portent le MÊME nom de fichier, et `merge-multiple`
+      n'en garde qu'un (#450, encore ouvert pour les slugs des deux
+      populations) ; si c'est celui du roster qui l'emporte, le `texte` des
+      interventions déjà publiées disparaît d'une liste surveillée ;
+    - et même sans collision, la fusion est additive « l'ancienne entrée
+      gagne » : une entrée réduite écrite la première empêcherait DÉFINITIVEMENT
+      la version complète d'arriver, sur la même `intervention_id`.
+
+    Le fichier est lu tel quel, sans mémo : il est appelé une fois par run.
+    Absent ou illisible, on rend un ensemble vide et le mode réduit s'applique à
+    tout le monde — l'appelant le DIT alors à voix haute plutôt que de le
+    supposer (voir `process_candidate`).
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    if not isinstance(data, dict):
+        return frozenset()
+    return frozenset(
+        c["slug"]
+        for c in (data.get("candidats") or [])
+        if isinstance(c, dict) and isinstance(c.get("slug"), str) and c["slug"]
+    )
+
+
 def _parse_shard(valeur: str) -> tuple[int, int]:
     """Parse `--shard I/N` (ex. `0/8`). Lève `ValueError` sur toute forme
     invalide plutôt que de deviner : un shard mal interprété traiterait
@@ -447,6 +484,14 @@ def valider_budgets(args: argparse.Namespace) -> None:
       (leçon de #460). Le garde dur vit côté CI, là où l'oubli coûte des
       quarts d'heure de runner.
     """
+    if getattr(args, "interventions_theme_seul", False) and args.skip_interventions:
+        raise SystemExit(
+            "[!] --interventions-theme-seul avec --skip-interventions : le premier "
+            "demande une collecte d'interventions réduite au thème, le second n'en "
+            "collecte aucune. Les deux ensemble ne disent pas quoi faire, et le "
+            "silencieux des deux (ne rien collecter) republierait une section vide "
+            "en croyant l'avoir peuplée (#657). Choisir l'un des deux."
+        )
     if args.budget_interventions_secondes and args.skip_interventions:
         raise SystemExit(
             "[!] --budget-interventions-secondes avec --skip-interventions : ce budget "
@@ -469,6 +514,7 @@ def build_profile_any_chambre(
     slug: str,
     chambres: Optional[list[str]] = None,
     skip_interventions: bool = False,
+    interventions_theme_seul: bool = False,
     skip_dossiers_legislatifs: bool = False,
     collecte_bicamerale: bool = False,
     budget_interventions_secondes: int = 0,
@@ -588,6 +634,7 @@ def build_profile_any_chambre(
                 chambre,
                 slug,
                 skip_interventions=skip_interventions,
+                interventions_theme_seul=interventions_theme_seul,
                 skip_dossiers_legislatifs=skip_dossiers_legislatifs,
                 budget_interventions=budget,
                 budget_collecte=budget_collecte_candidat,
@@ -952,6 +999,25 @@ def process_candidat(
     # build_profile_any_chambre).
     provenance = "roster_groupe" if candidat.get("statut") == "roster_groupe" else "candidat_declare"
 
+    # ── Collecte réduite au thème (#657) ────────────────────────────────────
+    # Le mode s'applique aux membres de roster, et à EUX SEULS. Un candidat
+    # déclaré qui siège dans un groupe est présent dans les deux listes ; le
+    # collecter en réduit ici gèlerait ses interventions à leur forme réduite,
+    # pour toujours (fusion additive, l'ancienne entrée gagne), et pourrait
+    # remplacer la forme complète déjà publiée si son artifact l'emporte au
+    # `merge-multiple` (#450). Voir `slugs_candidats_declares`.
+    interventions_theme_seul = bool(getattr(args, "interventions_theme_seul", False))
+    candidats_declares = getattr(args, "candidats_declares", None) or frozenset()
+    theme_seul_refuse = False
+    if interventions_theme_seul and effective_slug in candidats_declares:
+        interventions_theme_seul = False
+        theme_seul_refuse = True
+        _tprint(
+            f"  — {effective_slug} : candidat déclaré (raw_data/candidats.json), "
+            "collecte d'interventions écartée ici plutôt que réduite au thème — "
+            "c'est extract-an qui la collecte en entier (#657)."
+        )
+
     # ── Mode --pivot-only : pas de réseau, juste normalisation ──────────────
     if getattr(args, "pivot_only", False):
         if not json_path.exists():
@@ -1058,7 +1124,8 @@ def process_candidat(
         result = build_profile_any_chambre(
             slug,
             chambres=chambres_fr,
-            skip_interventions=args.skip_interventions,
+            skip_interventions=args.skip_interventions or theme_seul_refuse,
+            interventions_theme_seul=interventions_theme_seul,
             skip_dossiers_legislatifs=args.skip_dossiers_legislatifs,
             # #488 : les deux chambres ne sont interrogées que pour un profil de
             # CANDIDAT. Pour un membre de roster, un passé sénatorial n'alimente
@@ -1500,6 +1567,17 @@ def main() -> None:
     parser.add_argument("--skip-interventions", action="store_true",
                         help="Ne pas extraire les interventions (ni les débats Syceron ni les questions officielles AN). "
                              "Accélère fortement l'extraction ; les interventions existantes restent intactes en mode fusion.")
+    parser.add_argument("--interventions-theme-seul", action="store_true",
+                        help="Collecte RÉDUITE AU THÈME des interventions (#657) : les débats "
+                             "Syceron sont collectés sans leur verbatim, et les questions "
+                             "officielles ne sont pas collectées du tout (elles ne portent aucun "
+                             "thème). Chaque entrée publiée porte `collecte: \"theme_seul\"`, qui "
+                             "dit que le verbatim n'a pas été DEMANDÉ — et non qu'il n'existe pas. "
+                             "Mode du job extract-roster-groupes : il peuple `tags_thematiques` "
+                             "des membres de groupe, dont l'empreinte thématique était portée par "
+                             "une seule personne par fiche. Sans effet sur un slug de "
+                             "raw_data/candidats.json, dont extract-an collecte la forme complète. "
+                             "INCOMPATIBLE avec --skip-interventions.")
     parser.add_argument("--skip-dossiers-legislatifs", action="store_true",
                         help="Ne pas extraire les dossiers législatifs — depuis #528, ils n'ont plus "
                              "qu'une source, fetch_textes_portes_officiels (AN). Combiné à --skip-interventions, constitue le "
@@ -1573,6 +1651,31 @@ def main() -> None:
         print("[#510] Interventions : débats Syceron (source unique — le repli NosDéputés a "
               "été retiré). Mesuré le 26/08/2026 sur les trois archives : 1 227 415 "
               "interventions indexables, 1 664,8 Mio d'index, lues par tranche d'acteur.")
+
+    # #657 — la liste éditoriale des candidats déclarés, chargée UNE FOIS et
+    # portée par `args` : c'est elle qui exempte du mode réduit les profils dont
+    # `extract-an` collecte la forme complète (voir `slugs_candidats_declares`).
+    # Un fichier absent rendrait un ensemble vide, donc le mode réduit
+    # s'appliquerait à tout le monde SANS QUE RIEN NE LE DISE — la classe de
+    # défaut de #510. Il est donc annoncé, pas supposé.
+    args.candidats_declares = frozenset()
+    if getattr(args, "interventions_theme_seul", False):
+        args.candidats_declares = slugs_candidats_declares(DEFAULT_CANDIDATS_PATH)
+        if args.candidats_declares:
+            print(
+                f"[#657] Collecte réduite au thème : {len(args.candidats_declares)} "
+                f"candidat(s) déclaré(s) de {DEFAULT_CANDIDATS_PATH} en sont exemptés "
+                "(extract-an les collecte en entier)."
+            )
+        else:
+            message = (
+                f"--interventions-theme-seul sans liste de candidats déclarés lisible "
+                f"({DEFAULT_CANDIDATS_PATH}) : AUCUN slug n'est exempté, donc un candidat "
+                "déclaré traité par ce run verrait ses interventions figées à leur forme "
+                "réduite par la fusion additive (#657)."
+            )
+            print(f"[!] {message}")
+            _annoter_github(message)
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

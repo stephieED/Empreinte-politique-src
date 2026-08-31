@@ -143,7 +143,11 @@ source éditoriale prime.
 
 En CI, la voie roster-driven est un job dédié, `extract-roster-groupes`, distinct
 d'`extract-an`/`extract-ue-officiel` et fixé au **mode d'extraction léger**
-(`--skip-interventions --skip-dossiers-legislatifs`, #357).
+(`--skip-dossiers-legislatifs`, #357). Ses interventions suivent
+`collect_interventions` depuis #657, sous une forme **réduite au thème** —
+`tags_thematiques` en dérive intégralement, et le motif d'origine (« aucun
+agrégat ne les consomme ») était faux.
+→ [`docs/decisions/collecte-interventions-reduite-au-theme-657.md`](./decisions/collecte-interventions-reduite-au-theme-657.md)
 → [`extract-roster-groupes.md`](./extract-roster-groupes.md)
 
 ## Le profil brut n'est plus un fichier (#580)
@@ -190,7 +194,7 @@ reprend :
 | `mandats` | **tous** les mandats électifs (#640 : une entrée par siège, regroupée sur `(legislature, dateDebut)` d'AMO30 — plus le seul mandat courant) **et** les responsabilités réelles, avec rôle, dates et drapeau `actif` |
 | `votes` | positions de vote et leur source (`votes_source`, qui liste **toutes** les législatures couvertes). Chaque vote porte sa `legislature` et son `url_source` — la page du scrutin AN — puisqu'un profil couvre désormais plusieurs législatures |
 | `dossiers_legislatifs` | les dossiers législatifs de la chambre. Renommé `textes_portes` dans le pivot ; son `id` (`DLR5L15N37607`, 472 / 472) y devient `dossier_id` depuis #639 — même nom que `gouvernements/*.json` → `textes[].dossier_id` |
-| `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]` |
+| `interventions` | prises de parole : date, sujet, texte, rôle du moment, format estimé sur la longueur. Source depuis #510 : les comptes rendus Syceron de l'AN **uniquement**, plus les questions officielles QE/QG/QOSD — le repli par recherche NosDéputés a été retiré, donc une collecte vide **reste vide** et se déclare dans `meta.warnings[]`. Une entrée portant `collecte: "theme_seul"` (#657) a été collectée **sans son verbatim** : ses champs lourds sont absents, jamais publiés à `null`, et `meta.collecte_reduite` porte la déclaration du run |
 | `amendements_partitionnes` | le manifeste des tranches, à la place exacte qu'occupait `amendements` (#580) |
 | `mandat_europeen` | présent seulement si le candidat a des enregistrements au Parlement européen |
 | `meta.warnings` | la transparence sur les collectes manquantes ou incomplètes |
@@ -438,7 +442,9 @@ Trois pièges de lecture, sur ce fichier précisément :
   portent pas. Une provenance inconnue s'y lit `{"source": null,
   "synchro_le": null}` — elle ne s'omet jamais.
   Ne pas le confondre non plus avec `couverture`, qui dit *pourquoi une liste
-  est vide*, à la maille de la liste métier et non du champ.
+  est vide*, à la maille de la liste métier et non du champ ; ni avec
+  `meta.collecte_reduite` (#657), qui dit qu'une liste a été collectée **à
+  moitié** — trois questions distinctes, trois blocs.
   → `docs/decisions/provenance-par-champ-603.md`
 
 - **`sources[].type` peut valoir `nosdeputes` / `nossenateurs` sur un profil

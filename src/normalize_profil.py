@@ -58,6 +58,7 @@ from typing import Any, Optional
 
 from schema_pivot import (
     CHAMBRE_COLLECTE_VERS_PIVOT,
+    COLLECTE_THEME_SEUL,
     SCHEMA_VERSION,
     appliquer_chambres,
     make_empty_profil,
@@ -377,6 +378,13 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
     la même pour toutes : 3 351 entrées collectées pour gabriel-attal se
     réduisaient à 17 publiées. Voir `merge_profile._pivot_intervention_key`.
 
+    **Deux formes en sortie depuis #657.** Une entrée brute portant
+    `collecte == "theme_seul"` a été collectée sans son verbatim : elle rend une
+    entrée pivot réduite, qui porte le même marqueur. Toute autre entrée rend la
+    forme complète, inchangée. Ce qui distingue les deux n'est pas le contenu
+    d'un champ mais la PRÉSENCE d'une déclaration : une entrée complète dont le
+    `texte` est vide reste un constat sur la source.
+
     L'identifiant est repris tel quel, jamais reconstruit : `syceron_<uid du
     compte rendu>_<rang du paragraphe>` côté débats AN
     (`candidate_profile._parse_syceron_intervention_entry`), `question_<uid>`
@@ -385,6 +393,36 @@ def _normalize_intervention(i: dict[str, Any]) -> dict[str, Any]:
     donnée absente reste absente (AGENTS.md §2), et la clé de fusion sait
     retomber sur la `source_url` puis sur le contenu.
     """
+    # #657 — ENTRÉE RÉDUITE AU THÈME. Le brut porte `collecte: "theme_seul"`,
+    # écrit par la collecte, seul étage qui sache ce que le run a demandé : la
+    # passe pivot de la CI est un `--pivot-only` sans drapeau.
+    #
+    # Les champs absents ne sont PAS publiés à `null` : ils sont absents, et
+    # `collecte` dit pourquoi. Un `"texte": null` se lirait « cette prise de
+    # parole n'a pas de verbatim » — un fait sur la personne — là où le fait
+    # porte sur le run (AGENTS.md §2 règle 5). Aucun consommateur n'indexe ces
+    # clés en dur ; `validate_profil` n'en exige aucune.
+    if i.get("collecte") == COLLECTE_THEME_SEUL:
+        return {
+            "intervention_id": i.get("id") if i.get("id") not in (None, "") else None,
+            "date": _first(i.get("date"), i.get("created_at")),
+            "type_detail": i.get("type_detail"),
+            "theme_officiel": (
+                i.get("sujet") if i.get("seance_ref") or i.get("session_ref") else None
+            ),
+            "source_url": _first(i.get("url_detail"), i.get("url")),
+            # `source.url` reste `null` : la répéter ici doublerait 112 octets
+            # par entrée pour la même URL d'archive. `source_id` aussi — l'uid
+            # du compte rendu est le préfixe d'`intervention_id`.
+            "source": {
+                "type": "syceron",
+                "url": None,
+                "source_id": None,
+                "legislature": i.get("legislature"),
+            },
+            "collecte": COLLECTE_THEME_SEUL,
+        }
+
     result: dict[str, Any] = {
         "intervention_id": i.get("id") if i.get("id") not in (None, "") else None,
         "date": _first(i.get("date"), i.get("created_at")),
@@ -693,6 +731,13 @@ def normalize_profil(
     # seulement si le brut la porte : un profil brut d'avant ce lot n'a rien
     # décidé qu'on sache, et une liste vide écrite ici vaudrait « rien n'a été
     # écarté », ce qui est une affirmation, pas une absence (§2.5).
+    # #657 : la FORME de la collecte d'interventions, quand elle n'était pas
+    # pleine. Recopiée telle quelle — c'est une déclaration du run qui a produit
+    # le brut, pas une dérivation.
+    collecte_reduite = meta_raw.get("collecte_reduite")
+    if isinstance(collecte_reduite, dict) and collecte_reduite:
+        profil["meta"]["collecte_reduite"] = dict(collecte_reduite)
+
     collecte_ecartee = meta_raw.get("collecte_ecartee")
     if isinstance(collecte_ecartee, list):
         profil["meta"]["collecte_ecartee"] = [

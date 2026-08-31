@@ -331,6 +331,12 @@ Format d'un profil pivot v1 :
             "source_url": "https://...",
             # Champs supplémentaires présents uniquement si type_detail == "question"
             # (questions parlementaires officielles, source open data AN) :
+            # #657 — présent UNIQUEMENT sur une entrée réduite au thème, et
+            # l'entrée n'a alors que `intervention_id`, `date`, `type_detail`,
+            # `theme_officiel`, `source_url`, `source` et cette clé. Les autres
+            # sont ABSENTES, pas nulles : le verbatim n'a pas été demandé, ce
+            # qui est un fait sur le run et non sur la personne.
+            "collecte": "theme_seul",        # KNOWN_COLLECTES_INTERVENTION ; absent = forme complète
             "sous_type": "QE",               # "QE" (écrite) | "QG" (au gouvernement) | "QOSD" (orale sans débat)
             "ministere": "Ministère...",     # ministère interrogé (texte libre)
             "reponse": "...",                # texte de la réponse, si disponible (null sinon)
@@ -427,6 +433,19 @@ KNOWN_SOURCE_TYPES: frozenset[str] = frozenset({
 
 # Valeurs de chambre reconnues.
 KNOWN_CHAMBRES: frozenset[str] = frozenset({"AN", "Senat", "PE", "mairie"})
+
+#: Valeur unique de `interventions[].collecte` (#657). Elle déclare une entrée
+#: collectée SANS son verbatim, pour peupler `theme_officiel` — donc
+#: `tags_thematiques` — sans payer les 413 Mio que la forme complète coûterait
+#: pour les 468 membres de roster.
+COLLECTE_THEME_SEUL = "theme_seul"
+
+#: Formes de collecte reconnues sur une entrée d'`interventions[]` (#657).
+#: L'ABSENCE de la clé est la forme complète, et c'est délibéré : une clé
+#: toujours présente ferait de la forme pleine une valeur parmi d'autres, alors
+#: qu'elle est le défaut, et rendrait les 16 242 entrées déjà publiées
+#: rétroactivement « non déclarées ».
+KNOWN_COLLECTES_INTERVENTION: frozenset[str] = frozenset({COLLECTE_THEME_SEUL})
 
 # Ordre canonique de `chambres` (#493). Il rend la liste **stable** d'un run à
 # l'autre — sans lui, l'ordre suivrait celui des mandats, que la fusion additive
@@ -1879,6 +1898,17 @@ def validate_profil(
                     errors.append(
                         f"interventions[{i}].{key} doit être un dict ou null, "
                         f"reçu : {type(val).__name__}."
+                    )
+            # #657 : `collecte` est une valeur fermée, pas un texte libre. Une
+            # valeur inconnue ferait passer une forme non déclarée pour une
+            # forme déclarée — pire que pas de marqueur du tout.
+            if "collecte" in inter:
+                collecte = inter.get("collecte")
+                if collecte not in KNOWN_COLLECTES_INTERVENTION:
+                    errors.append(
+                        f"interventions[{i}].collecte inconnu : {collecte!r} "
+                        f"(attendu : {sorted(KNOWN_COLLECTES_INTERVENTION)}, ou "
+                        "clé absente pour une entrée complète)."
                     )
 
     meta = profil.get("meta")

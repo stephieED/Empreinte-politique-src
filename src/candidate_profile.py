@@ -76,6 +76,7 @@ from gouvernement_textes import (
 from profil_brut import ecrire_profil_brut
 from licences import LICENCE_AN
 from parse_syceron import parse_syceron_xml
+from schema_pivot import COLLECTE_THEME_SEUL
 from syceron_debates import (
     SYCERON_AVAILABLE_LEGISLATURES,
     SYCERON_CACHE_DIR,
@@ -788,6 +789,28 @@ WARNING_AUCUN_MANDAT_FR = "aucun mandat français connu"
 # pas par une mesure — la mesure reste à faire au premier run réel, et c'est
 # écrit tel quel dans docs/decisions/syceron-actif-510.md.
 SYCERON_INDEX_PAR_ACTEUR_DIRNAME = "index_par_acteur"
+
+# Index RÉDUIT AU THÈME (#657), sous un NOM DISTINCT — jamais le même répertoire
+# que l'index complet, et ce n'est pas de la prudence : les deux formes se
+# distinguent par ce qu'elles ne contiennent PAS, donc un lecteur qui trouve un
+# répertoire présent le lit comme complet. C'est mot pour mot le défaut de #447
+# (« un répertoire qui existe n'est pas la preuve de ce qu'il contient »),
+# transposé au contenu d'une entrée au lieu du format d'une clé.
+#
+# Le sens de lecture est asymétrique, et c'est ce qui rend les deux formes
+# compatibles : le mode réduit sait lire l'index COMPLET (il en jette les champs
+# lourds à la lecture), l'inverse est impossible. Un run réduit n'a donc rien à
+# reconstruire quand `extract-an` a déjà publié l'index complet — le cas nominal
+# en CI, où le job roster est derrière lui par `needs:`.
+SYCERON_INDEX_PAR_ACTEUR_THEME_DIRNAME = "index_par_acteur_theme"
+
+#: Valeur publiée dans `interventions[].collecte` pour une entrée réduite au
+#: thème (#657). Une entrée sans cette clé est une entrée complète : l'absence
+#: de verbatim y est un constat, alors qu'elle est une DÉCISION ici, et les deux
+#: ne peuvent pas se lire de la même façon (AGENTS.md §2 règle 5).
+#: Importée de `schema_pivot`, jamais recopiée : c'est une valeur fermée du
+#: contrat de structure, validée par `validate_profil`.
+COLLECTE_INTERVENTION_THEME_SEUL = COLLECTE_THEME_SEUL
 
 # Index plats hérités, supprimés dès qu'une tranche par acteur est publiée. Le
 # premier est l'index du mode `PA\d+` — 2 octets (`{}`) construits sur 380 Mo
@@ -4743,10 +4766,53 @@ def _normaliser_orateur_id_syceron(
     return acteur_ref, motif
 
 
+def _reduire_au_theme(record: dict[str, Any]) -> dict[str, Any]:
+    """Réduit une entrée brute Syceron à ce qui porte le thème (#657).
+
+    Les clés absentes ne sont pas mises à `null` : elles sont RETIRÉES, et
+    `collecte` déclare pourquoi. Un `"texte": null` se lirait « cette prise de
+    parole n'a pas de verbatim » ; ici le verbatim n'a pas été demandé, ce qui
+    est un fait sur le run et pas sur la personne (AGENTS.md §2 règle 5).
+    Mesuré : 90 octets de `null` par entrée × 380 800 entrées, pour une phrase
+    fausse.
+
+    Ce qui reste, et pourquoi :
+
+    - `id` — la clé de fusion, aux deux étages (#540). Sans elle, 3 351 entrées
+      collectées se republient à 17 ;
+    - `date`, `type_detail` — les deux faits que la fiche affiche ;
+    - `sujet` + `session_ref` — `normalize_profil` en dérive `theme_officiel`,
+      qui est TOUT l'objet du mode ;
+    - `url` + `legislature` — la traçabilité (AGENTS.md §2 règle 2). L'entrée
+      complète porte l'URL de l'archive TROIS fois (`source`, `source_url`,
+      `url`) parce que trois chemins de normalisation historiques la lisent sous
+      trois noms ; ici on n'en garde qu'un, celui que
+      `normalize_profil._normalize_intervention` lit réellement. Mesuré : 330 o
+      par entrée d'index économisés sur les 593 651 entrées des législatures 16
+      et 17.
+
+    `seance_ref` part avec `seance`, et `source_id` avec lui : l'uid du compte
+    rendu est déjà DANS `id`, dont il est le préfixe. `orateur_id_source` part
+    aussi — c'est le nom du fichier de tranche.
+    """
+    return {
+        "id": record.get("id"),
+        "date": record.get("date"),
+        "type_detail": record.get("type_detail"),
+        "sujet": record.get("sujet"),
+        "session_ref": record.get("session_ref"),
+        "url": record.get("url"),
+        "legislature": record.get("legislature"),
+        "collecte": COLLECTE_INTERVENTION_THEME_SEUL,
+    }
+
+
 def _parse_syceron_intervention_entry(
     intervention: Any,
     legislature: str,
     index_in_source: int,
+    *,
+    theme_seul: bool = False,
 ) -> Optional[tuple[str, dict[str, Any]]]:
     """Convertit une intervention Syceron en entrée d'index acteurRef -> interventions.
 
@@ -4799,15 +4865,33 @@ def _parse_syceron_intervention_entry(
         "version_compte_rendu": intervention.get("version_compte_rendu"),
         "legislature": legislature,
     }
+    if theme_seul:
+        record = _reduire_au_theme(record)
     return acteur_ref, record
 
 
-def _syceron_memo_key(legislature: str) -> str:
-    """Clé du mémo process : le chemin ABSOLU du cache de la législature (#510)."""
-    return str((SYCERON_CACHE_DIR / legislature).resolve())
+def _syceron_index_dirname(theme_seul: bool) -> str:
+    """Nom du répertoire d'index par acteur, selon la forme des entrées (#657)."""
+    return (
+        SYCERON_INDEX_PAR_ACTEUR_THEME_DIRNAME
+        if theme_seul
+        else SYCERON_INDEX_PAR_ACTEUR_DIRNAME
+    )
 
 
-def _syceron_shard_path_acteur(legislature: str, acteur_ref: str) -> Optional[Path]:
+def _syceron_memo_key(legislature: str, theme_seul: bool = False) -> str:
+    """Clé du mémo process : le chemin ABSOLU du cache de la législature (#510).
+
+    La FORME y entre depuis #657 : le mémo garde un index non publié, et servir
+    un index réduit à un appelant qui a demandé le verbatim rendrait le champ
+    `texte` définitivement vide pour le reste du process, sans un mot.
+    """
+    return str((SYCERON_CACHE_DIR / legislature / _syceron_index_dirname(theme_seul)).resolve())
+
+
+def _syceron_shard_path_acteur(
+    legislature: str, acteur_ref: str, *, theme_seul: bool = False
+) -> Optional[Path]:
     """Chemin de la tranche d'index d'UN acteur (#510, patron de #392/#403).
 
     Retourne `None` si `acteur_ref` n'a pas la forme attendue d'un identifiant AN
@@ -4820,13 +4904,13 @@ def _syceron_shard_path_acteur(legislature: str, acteur_ref: str) -> Optional[Pa
     return (
         SYCERON_CACHE_DIR
         / legislature
-        / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
+        / _syceron_index_dirname(theme_seul)
         / f"{acteur_ref}.json"
     )
 
 
 def _read_cached_interventions_syceron_acteur(
-    legislature: str, acteur_ref: str
+    legislature: str, acteur_ref: str, *, theme_seul: bool = False
 ) -> Optional[list[dict[str, Any]]]:
     """Interventions Syceron d'UN acteur, lues depuis la tranche en cache (#510).
 
@@ -4841,22 +4925,37 @@ def _read_cached_interventions_syceron_acteur(
     à chaque candidat et pour chaque législature — 1 664,8 Mio et 12,5 s pour les
     trois archives, mesurés le 26/08/2026.
     """
-    index_dir = SYCERON_CACHE_DIR / legislature / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
-    if not index_dir.is_dir():
-        return None
-    shard_path = _syceron_shard_path_acteur(legislature, acteur_ref)
-    if shard_path is None or not shard_path.is_file():
-        return []
-    try:
-        with open(shard_path, encoding="utf-8") as f:
-            entrees = json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return None
-    return entrees if isinstance(entrees, list) else None
+    # #657 — L'INDEX COMPLET SERT LES DEUX MODES, jamais l'inverse. Un run
+    # réduit qui trouve l'index complet le lit et jette les champs lourds : rien
+    # à reconstruire, et c'est le cas nominal en CI, où `extract-an` publie
+    # l'index complet avant que la matrice roster ne démarre (`needs:`). Un run
+    # complet, lui, ne regarde JAMAIS l'index réduit — il en sortirait des
+    # `texte` vides qui passeraient pour un constat (#510, §2.5).
+    formes: tuple[bool, ...] = (False, True) if theme_seul else (False,)
+    for forme_theme in formes:
+        index_dir = SYCERON_CACHE_DIR / legislature / _syceron_index_dirname(forme_theme)
+        if not index_dir.is_dir():
+            continue
+        shard_path = _syceron_shard_path_acteur(
+            legislature, acteur_ref, theme_seul=forme_theme
+        )
+        if shard_path is None or not shard_path.is_file():
+            return []
+        try:
+            with open(shard_path, encoding="utf-8") as f:
+                entrees = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None
+        if not isinstance(entrees, list):
+            return None
+        if theme_seul and not forme_theme:
+            entrees = [_reduire_au_theme(e) for e in entrees if isinstance(e, dict)]
+        return entrees
+    return None
 
 
 def _write_syceron_index_par_acteur(
-    legislature: str, index: dict[str, list[dict[str, Any]]]
+    legislature: str, index: dict[str, list[dict[str, Any]]], *, theme_seul: bool = False
 ) -> None:
     """Publie l'index Syceron en tranches par acteur, d'un seul `os.replace` (#510).
 
@@ -4870,23 +4969,33 @@ def _write_syceron_index_par_acteur(
     #505.
     """
     cache_dir = SYCERON_CACHE_DIR / legislature
-    index_dir = cache_dir / SYCERON_INDEX_PAR_ACTEUR_DIRNAME
-    tmp_dir = cache_dir / f"{SYCERON_INDEX_PAR_ACTEUR_DIRNAME}.partiel"
+    dirname = _syceron_index_dirname(theme_seul)
+    index_dir = cache_dir / dirname
+    tmp_dir = cache_dir / f"{dirname}.partiel"
     shutil.rmtree(tmp_dir, ignore_errors=True)
     tmp_dir.mkdir(parents=True, exist_ok=True)
     for acteur_ref, entrees in index.items():
-        shard_path = _syceron_shard_path_acteur(legislature, acteur_ref)
+        shard_path = _syceron_shard_path_acteur(
+            legislature, acteur_ref, theme_seul=theme_seul
+        )
         if shard_path is None:
             continue  # acteurRef hors forme attendue : ignoré plutôt qu'écrit
         with open(tmp_dir / shard_path.name, "w", encoding="utf-8") as f:
             json.dump(entrees, f, ensure_ascii=False)
     shutil.rmtree(index_dir, ignore_errors=True)
     os.replace(tmp_dir, index_dir)
+    if theme_seul:
+        # Les index plats hérités appartiennent à la forme COMPLÈTE : les
+        # supprimer depuis un run réduit ferait payer à l'autre forme une
+        # décision qui n'est pas la sienne.
+        return
     for nom in SYCERON_INDEX_FILENAMES_HERITES:
         (cache_dir / nom).unlink(missing_ok=True)
 
 
-def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, list[dict[str, Any]]]:
+def _build_acteur_interventions_syceron_index(
+    legislature: str, *, theme_seul: bool = False
+) -> dict[str, list[dict[str, Any]]]:
     """Construit (et publie en tranches par acteur) l'index acteurRef -> interventions.
 
     Les XML Syceron sont déjà téléchargés/extraits par `syceron_debates.py` ;
@@ -4916,7 +5025,7 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
     occurrences là qu'un agrégat par profil dit la même chose.
     """
     with _get_syceron_lock(legislature):
-        memo_key = _syceron_memo_key(legislature)
+        memo_key = _syceron_memo_key(legislature, theme_seul)
         non_publie = _SYCERON_INDEX_NON_PUBLIE.get(memo_key)
         if non_publie is not None:
             return non_publie
@@ -4927,7 +5036,9 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
         indexees_sans_sujet = 0
         for xml_path in iter_syceron_xml_files(legislature):
             try:
-                parsed = parse_syceron_xml(xml_path.read_bytes())
+                parsed = parse_syceron_xml(
+                    xml_path.read_bytes(), avec_texte=not theme_seul
+                )
             except (ET.ParseError, OSError):
                 continue
             fichiers_lus += 1
@@ -4938,7 +5049,9 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
                         intervention.get("orateur_id_acteur"),
                     )
                     motifs[motif] += 1
-                parsed_entry = _parse_syceron_intervention_entry(intervention, legislature, idx)
+                parsed_entry = _parse_syceron_intervention_entry(
+                    intervention, legislature, idx, theme_seul=theme_seul
+                )
                 if parsed_entry is None:
                     continue
                 acteur_ref, record = parsed_entry
@@ -4961,8 +5074,9 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
             return index
 
         detail = ", ".join(f"{motif}={n}" for motif, n in sorted(motifs.items())) or "aucune entrée"
+        forme = " [réduit au thème, #657]" if theme_seul else ""
         print(
-            f"  -> Index des débats Syceron (législature {legislature}) : "
+            f"  -> Index des débats Syceron (législature {legislature}){forme} : "
             f"{fichiers_lus} compte(s) rendu(s) lu(s), {len(index)} acteur(s), "
             f"{sum(len(v) for v in index.values())} intervention(s) — orateurs : {detail}"
         )
@@ -5012,7 +5126,7 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
             return index
 
         try:
-            _write_syceron_index_par_acteur(legislature, index)
+            _write_syceron_index_par_acteur(legislature, index, theme_seul=theme_seul)
         except OSError as exc:
             # L'index reste valide pour CE candidat, mais rien n'est publié : le
             # suivant reparcourra l'archive. Dit à voix haute plutôt que mémoïsé
@@ -5026,7 +5140,9 @@ def _build_acteur_interventions_syceron_index(legislature: str) -> dict[str, lis
         return index
 
 
-def _interventions_syceron_acteur(legislature: str, acteur_ref: str) -> list[dict[str, Any]]:
+def _interventions_syceron_acteur(
+    legislature: str, acteur_ref: str, *, theme_seul: bool = False
+) -> list[dict[str, Any]]:
     """Interventions Syceron d'un acteur pour une législature (#510).
 
     Lit la tranche d'acteur si l'index est publié, et ne reconstruit — donc ne
@@ -5035,16 +5151,22 @@ def _interventions_syceron_acteur(legislature: str, acteur_ref: str) -> list[dic
     absent le construisent N fois.
     """
     with _get_syceron_lock(legislature):
-        entrees = _read_cached_interventions_syceron_acteur(legislature, acteur_ref)
+        entrees = _read_cached_interventions_syceron_acteur(
+            legislature, acteur_ref, theme_seul=theme_seul
+        )
         if entrees is not None:
             return entrees
-        index = _build_acteur_interventions_syceron_index(legislature)
+        index = _build_acteur_interventions_syceron_index(
+            legislature, theme_seul=theme_seul
+        )
         return list(index.get(acteur_ref) or [])
 
 
 def fetch_interventions_syceron(
     url_an_ou_senat: Optional[str],
     budget: Optional[BudgetCollecte] = None,
+    *,
+    theme_seul: bool = False,
 ) -> list[dict[str, Any]]:
     """Récupère les débats Syceron d'un député via son `acteurRef` officiel AN.
 
@@ -5077,7 +5199,9 @@ def fetch_interventions_syceron(
         if budget_epuise(budget):
             budget_ignorer(budget, "législature(s) de débats Syceron", len(legislatures) - rang)
             break
-        interventions.extend(_interventions_syceron_acteur(legislature, acteur_ref))
+        interventions.extend(
+            _interventions_syceron_acteur(legislature, acteur_ref, theme_seul=theme_seul)
+        )
 
     interventions.sort(key=lambda entry: (entry.get("date") or "", entry.get("id") or ""), reverse=True)
     return interventions
@@ -5124,6 +5248,7 @@ def build_profile(
     chambre: str,
     slug: str,
     skip_interventions: bool = False,
+    interventions_theme_seul: bool = False,
     skip_dossiers_legislatifs: bool = False,
     budget_interventions: Optional[BudgetCollecte] = None,
     budget_collecte: Optional[BudgetCollecte] = None,
@@ -5157,6 +5282,14 @@ def build_profile(
             législatifs (`profile["dossiers_legislatifs"]` reste vide). Voir mode
             d'extraction léger (#357) : utilisé quand seuls identité/mandats/votes/
             amendements sont exploités en aval (agrégats de groupe, #349).
+        interventions_theme_seul: collecte RÉDUITE AU THÈME (#657). Les débats
+            Syceron sont collectés sans leur verbatim ; les questions
+            officielles ne le sont PAS DU TOUT — elles ne portent ni
+            `seance_ref` ni `session_ref`, donc `theme_officiel` y est `None` et
+            `mots_cles` vide : elles n'apportent pas une étiquette thématique,
+            et leur collecte est le seul poste réseau du chemin interventions
+            qui soit proportionnel au nombre de membres. Sans effet sous
+            `skip_interventions`, qui prime.
         budget_interventions: budget de temps mur (`BudgetCollecte`) pour la SEULE
             collecte d'interventions — débats Syceron et questions officielles.
             None = aucun budget, le comportement historique. Épuisé, il arrête la
@@ -5271,6 +5404,17 @@ def build_profile(
                     ("textes_portes", skip_dossiers_legislatifs),
                 )
                 if ecarte
+            ),
+            # #657 — la FORME de la collecte d'interventions, quand elle n'est
+            # pas la forme pleine. `collecte_ecartee` dit ce qui n'a pas été
+            # demandé ; cette clé-ci dit ce qui l'a été à moitié, et la passe
+            # pivot de la CI (`--pivot-only`, sans drapeau) n'a aucun autre
+            # moyen de le savoir. Absente quand la collecte est complète : une
+            # clé toujours présente ne distinguerait plus les deux runs.
+            **(
+                {"collecte_reduite": {"interventions": COLLECTE_INTERVENTION_THEME_SEUL}}
+                if interventions_theme_seul and not skip_interventions
+                else {}
             ),
         },
     }
@@ -5544,7 +5688,9 @@ def build_profile(
         try:
             with budget_section(budget_phase_interventions, "débats Syceron"):
                 syceron_interventions = fetch_interventions_syceron(
-                    profile["identite"].get("url_an_ou_senat"), budget_phase_interventions
+                    profile["identite"].get("url_an_ou_senat"),
+                    budget_phase_interventions,
+                    theme_seul=interventions_theme_seul,
                 )
         except Exception as exc:
             syceron_interventions = []
@@ -5581,7 +5727,13 @@ def build_profile(
     # --- 9bis. Questions parlementaires officielles (QE/QG/QOSD, Assemblée nationale,
     # auteur uniquement, toutes législatures disponibles). Ajoutées aux interventions
     # déjà collectées (type_detail="question", source AN structurée). ---
-    if not skip_interventions and profile.get("identite"):
+    # #657 : `interventions_theme_seul` les écarte. Elles ne portent ni
+    # `seance_ref` ni `session_ref`, donc `normalize_profil` en dérive
+    # `theme_officiel = None`, et leur `mots_cles` est vide par construction :
+    # elles ne rendent PAS UNE étiquette thématique. Elles sont en revanche le
+    # seul poste réseau du chemin interventions qui grandisse avec le nombre de
+    # membres — l'index Syceron, lui, se construit une fois par législature.
+    if not skip_interventions and not interventions_theme_seul and profile.get("identite"):
         try:
             with budget_section(budget_phase_interventions, "questions officielles"):
                 official_questions = fetch_questions_officielles(

@@ -151,7 +151,7 @@ def test_syceron_s_arrete_entre_deux_legislatures_et_garde_les_premieres(horloge
     budget = BudgetCollecte(10, libelle="collecte d'interventions")
     lues: list[str] = []
 
-    def faux_index(legislature):
+    def faux_index(legislature, **_):
         lues.append(legislature)
         horloge.avancer(6)  # chaque archive coûte 6 s : la 2e épuise les 10 s
         return {"PA1567": [{"id": f"syceron_{legislature}", "date": "2025-01-01"}]}
@@ -173,7 +173,7 @@ def test_questions_officielles_s_arretent_et_comptent_les_legislatures_perdues(h
     budget = BudgetCollecte(10, libelle="collecte d'interventions")
     lues: list[str] = []
 
-    def faux_index(legislature):
+    def faux_index(legislature, **_):
         lues.append(legislature)
         horloge.avancer(11)  # une seule archive suffit à épuiser le budget
         return {"PA1567": [{"uid": f"Q{legislature}", "sous_type": "QE", "date": "2025-01-01"}]}
@@ -209,7 +209,7 @@ def test_sans_budget_la_collecte_reste_complete(horloge):
     sémantique sans que personne l'ait demandé."""
     lues: list[str] = []
 
-    def faux_index(legislature):
+    def faux_index(legislature, **_):
         lues.append(legislature)
         horloge.avancer(10_000)
         return {}
@@ -228,7 +228,7 @@ def test_sans_budget_la_collecte_reste_complete(horloge):
 def _profil(horloge, budget, cout_syceron, **kwargs):
     """Profil de député dont la seule source coûteuse est Syceron."""
 
-    def faux_index(legislature):
+    def faux_index(legislature, **_):
         horloge.avancer(cout_syceron)
         return {"PA1567": [{"id": f"syceron_{legislature}", "date": "2025-01-01", "sujet": "S"}]}
 

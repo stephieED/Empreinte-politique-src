@@ -228,9 +228,11 @@ adossée à la table [slug ↔ acteur AN](decisions/correspondance-acteurs-an-52
 La même chaîne de collecte qu'`extract-an`, mais pilotée par la **composition
 réelle** des groupes parlementaires (~750 membres) plutôt que par la liste
 éditoriale `raw_data/candidats.json` (~8 personnes), et en **mode léger** :
-`--skip-interventions --skip-dossiers-legislatifs` sont toujours posés ici,
-quelle que soit la valeur de `collect_interventions` (qui ne pilote
-qu'`extract-an`). 8 shards découpés par modulo, `max-parallel: 4`.
+`--skip-dossiers-legislatifs` est toujours posé ici. Les interventions, elles,
+suivent `collect_interventions` **depuis #657**, sous une forme réduite —
+`--interventions-theme-seul` collecte les débats Syceron sans leur verbatim et
+laisse les questions officielles. 8 shards découpés par modulo,
+`max-parallel: 4`.
 
 **Consomme** l'artifact `roster-candidats` — régénéré seulement s'il manque — et
 les mêmes sources qu'`extract-an`, dont les caches AN et amendements en
@@ -241,8 +243,13 @@ profil `candidat_declare` existant à la fusion
 ([provenance pivot](decisions/provenance-pivot.md)).
 
 **Pourquoi comme ça** : un membre de roster n'alimente que des agrégats de
-groupe, qui ne consomment ni interventions, ni dossiers législatifs, ni questions
-([mode d'extraction léger](decisions/mode-extraction-leger-roster.md)) ; la
+groupe, qui ne consomment ni dossiers législatifs ni questions officielles
+([mode d'extraction léger](decisions/mode-extraction-leger-roster.md)) — mais
+**ils consomment bien les interventions**, dont `tags_thematiques` dérive
+intégralement, et l'affirmation inverse a laissé l'« empreinte thématique » de
+chaque fiche de groupe être celle d'une seule personne
+([collecte réduite au thème](decisions/collecte-interventions-reduite-au-theme-657.md)) ;
+la
 composition vient d'AMO30 et non plus d'un endpoint tiers, `AN_ROSTER_ACTIF`
 étant un interrupteur et non un aiguillage
 ([bascule vers AMO30](decisions/bascule-roster-an-amo30-527.md)) ; et le
@@ -304,7 +311,7 @@ Deux axes **disjoints**, plus le cache à part (#578,
 | `add_uncovered_members` | `boolean` | `true` | **Axe 2** — si on écrit un premier profil pour les membres qui n'en ont pas. |
 | `cold_start` | `boolean` | `false` | Purge les caches de téléchargement et re-télécharge les sources. Ne dit **rien** de la façon dont les profils sont écrits. |
 | `roster_limit` | `number` | `0` | Un plafond, et rien d'autre (`0` = pas de plafond). Ne commande aucune politique de rafraîchissement. |
-| `collect_interventions` | `boolean` | `false` | Ajoute les archives Syceron et QE/QG/QOSD à `extract-an` — **jamais** au roster. |
+| `collect_interventions` | `boolean` | `false` | Ajoute les archives Syceron et QE/QG/QOSD à `extract-an`, et les **débats seuls, sans verbatim**, au roster (#657). |
 | `incomplete_read_threshold` | `number` | `3` | Seuil d'incidents réseau au-delà duquel le quality gate échoue. |
 | `allow_declared_losses` | `boolean` | `false` | Tolérance du contrôle de perte (#460). |
 | `allow_broken_references` | `boolean` | `false` | Tolérance de l'intégrité référentielle (#485). |
@@ -332,7 +339,7 @@ la plus proche :
 
 | Clé | Répertoire | Qui l'**écrit** | Qui la **lit seulement** |
 |---|---|---|---|
-| `public-data-cache-an-<semaine>[-interv-<empreinte>]` | `.cache/acteurs_historique_an`, `.cache/scrutins_an`, `.cache/questions_an/*/index_par_acteur.json`, `.cache/syceron_an/*/index_par_acteur` | `extract-an` (`actions/cache/save`) | `extract-roster-groupes` (`actions/cache/restore`) |
+| `public-data-cache-an-<semaine>[-interv-<empreinte>]` | `.cache/acteurs_historique_an`, `.cache/scrutins_an`, `.cache/questions_an/*/index_par_acteur.json`, `.cache/syceron_an/*/index_par_acteur` | `extract-an` (`actions/cache/save`) | `extract-roster-groupes` (`actions/cache/restore`, **même suffixe** depuis #657) |
 | `public-data-cache-amendements-<semaine>` | `.cache/amendements_an` | `extract-amendements-an` (`actions/cache`) | `extract-an`, `extract-roster-groupes` (`restore`) |
 | `public-data-cache-dossiers-<semaine>` | `.cache/dossiers_an` | `extract-an`, `merge-and-pivot` | `extract-roster-groupes` (`restore`) |
 | `public-data-cache-ue-<semaine>` | `.cache/europarl` | `extract-ue-officiel` | — |
@@ -344,9 +351,13 @@ sur un hit exact, donc le premier écrivain gèle l'entrée pour tout le monde. 
 même défaut est passé trois fois (#412 §2.3 → #424 → #505). Deux corollaires :
 un job portant un `--skip-*` utilise `actions/cache/restore`, et une clé dont le
 **contenu** dépend d'un input porte cet input — d'où le suffixe
-`-interv-<empreinte>` quand `collect_interventions` est vrai. Deux jobs qui
-partagent une clé partagent aussi le `path:` exact, la version de l'entrée en
-étant un hash. Verrouillé par `tests/test_ci_cache_producteur_ecrivain.py`.
+`-interv-<empreinte>` quand `collect_interventions` est vrai. Le **consommateur**
+doit porter ce suffixe aussi (#657) : sans lui, la clé nue de la semaine — écrite
+par n'importe quel run en mode par défaut — fait un *exact key hit*, et
+`restore-keys` n'est pas consulté après un hit exact ; les 8 shards roster
+repartiraient d'une entrée sans contenu Syceron et reconstruiraient les trois
+index chacun. Deux jobs qui partagent une clé partagent aussi le `path:` exact,
+la version de l'entrée en étant un hash. Verrouillé par `tests/test_ci_cache_producteur_ecrivain.py`.
 Voir `docs/decisions/cache-mode-interventions-505.md`.
 
 ## 4. Les artifacts

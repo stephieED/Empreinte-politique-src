@@ -20,7 +20,7 @@ python3 src/generate_all_profiles.py \
   --candidats raw_data/roster_candidats.json \
   --workers <workers> \
   [--skip-existing | --refresh-existing] --resume \
-  --skip-interventions --skip-dossiers-legislatifs \
+  (--skip-interventions | --interventions-theme-seul) --skip-dossiers-legislatifs \
   [--limit <roster_limit>] [--no-merge]
 ```
 
@@ -48,14 +48,23 @@ calcul — il purge les caches de téléchargement, ce qui ne dit rien de ce qu'
 écrit. Voir §*Régénérer l'existant* ci-dessous et
 `docs/decisions/deux-axes-formulaire-578.md`.
 
-**Mode d'extraction léger (#357, sous-issue 6/6 de #351)** : `--skip-interventions
---skip-dossiers-legislatifs` sont toujours appliqués ici, indépendamment de
-l'input de workflow `collect_interventions` (qui ne pilote que `extract-an`) —
-un membre roster n'a besoin que d'identité minimale + mandats + votes +
-amendements, seules données consommées par les agrégats de groupe (§4,
-`build_groupe_profile()`, #349). `dossiers_legislatifs`/`interventions`/
-`questions_officielles` ne sont donc jamais extraits par ce job : ni
-consommés par les agrégats de groupe actuels, ni prévus. Voir
+**Mode d'extraction léger (#357, sous-issue 6/6 de #351)** :
+`--skip-dossiers-legislatifs` est toujours appliqué ici — un membre roster n'a
+besoin que d'identité minimale + mandats + votes + amendements pour les agrégats
+de groupe (§4, `build_groupe_profile()`, #349). `dossiers_legislatifs` et
+`questions_officielles` ne sont donc jamais extraits par ce job.
+
+**Les interventions ont quitté ce mode (#657).** L'affirmation « non consommées
+par les agrégats de groupe » était **fausse** : `tags_thematiques` en dérive
+intégralement, et `tags_thematiques_agreges` de chaque fiche de groupe en dérive
+à son tour — les 468 membres publiant `interventions: []`, l'empreinte
+thématique de chaque fiche était celle d'**une seule personne**. Elles suivent
+désormais `collect_interventions`, sous la forme **réduite au thème**
+(`--interventions-theme-seul`) : débats Syceron sans verbatim, questions
+officielles toujours écartées (elles ne portent aucun thème). Un candidat
+déclaré traité par ce job en est **exempté** — c'est `extract-an` qui le
+collecte en entier. Voir
+`docs/decisions/collecte-interventions-reduite-au-theme-657.md`. Voir aussi
 `--skip-dossiers-legislatifs` dans `generate_all_profiles.py` : il saute
 `fetch_textes_portes_officiels` (`candidate_profile.build_profile`, étape 8),
 **seule** source de `dossiers_legislatifs` depuis #528 — l'étape qui triait la
@@ -303,9 +312,10 @@ flowchart TD
    chambre déterminée par
    `roster_chambre` du groupe d'origine — qui ne vaut plus que `deputes`
    depuis #528 — en mode léger
-   (`--skip-interventions --skip-dossiers-legislatifs`, #357) : dossiers
-   législatifs, interventions et questions officielles ne sont jamais
-   extraits ici (non consommés par les agrégats de groupe, #349).
+   (`--skip-dossiers-legislatifs`, #357) : dossiers législatifs et questions
+   officielles ne sont jamais extraits ici (non consommés par les agrégats de
+   groupe, #349). Les interventions le sont, réduites au thème, quand
+   `collect_interventions` est coché (#657).
 6. `--skip-existing --resume` évite de retraiter les profils déjà présents
    et permet la reprise après interruption ; `--limit` (piloté par
    `roster_limit`) borne le nombre de membres traités ce run.
@@ -335,7 +345,7 @@ flowchart TD
 | AMO30 (`data.assemblee-nationale.fr`, Licence Ouverte) | Composition des groupes AN, dérivée par `src/an_roster.py` depuis #527 — même archive que les scrutins et les amendements |
 | `src/group_roster.py` | Mutualisation par clé + filtrage du roster par sigle. **Aucun appel réseau propre depuis #529** : `AN_ROSTER_ACTIF` baissé lève `RosterAnInactif`, il n'aiguille plus vers rien |
 | `src/generate_roster_candidats.py` | Aplatissement du roster en liste de candidats (`raw_data/roster_candidats.json`) |
-| AN Open Data (via `candidate_profile.py`) | Identité, mandats, votes, amendements — **source unique depuis #529**. Mode léger (#357) : dossiers législatifs/interventions/questions officielles jamais extraits ici |
+| AN Open Data (via `candidate_profile.py`) | Identité, mandats, votes, amendements — **source unique depuis #529**. Mode léger (#357) : dossiers législatifs et questions officielles jamais extraits ici ; les interventions le sont, réduites au thème, quand `collect_interventions` est coché (#657) |
 
 Référentiel pipeline global : [`data-architecture.md`](./data-architecture.md).
 
