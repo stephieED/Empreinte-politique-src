@@ -1,21 +1,11 @@
 import { useMemo, useState } from 'react';
 import '../styles/shell.css';
 import './CandidateProfile.css';
-
-const VOTE_STYLE = {
-  pour: { color: '#007A45', label: 'Pour' },
-  contre: { color: '#E53420', label: 'Contre' },
-  abstention: { color: '#8B8794', label: 'Abstention' },
-};
-
-const OUTCOME_COLOR = {
-  adopté: '#007A45',
-  rejeté: '#E53420',
-  retiré: '#F2A93B',
-  tombé: '#8B8794',
-  irrecevable: '#B8B4AE',
-  non_soutenu: '#DCD9D3',
-};
+// #326 : les couleurs de vote sont définies UNE fois. Elles vivaient dupliquées
+// ici et dans GroupProfile, sans `non_votant` — 21 229 positions du corpus s'y
+// affichaient sans couleur ni libellé.
+import { PositionVote } from './Lecture';
+import { OUTCOME_COLOR, styleForPosition } from '../utils/lecture';
 
 function VerifiedIcon() {
   return (
@@ -70,7 +60,7 @@ export default function CandidateProfile({ candidate }) {
     },
   ];
 
-  const votes = candidate.votes.map((v) => ({ ...v, ...VOTE_STYLE[v.position] }));
+  const votes = candidate.votes.map((v) => ({ ...v, ...styleForPosition(v.position) }));
   const outcomes = candidate.outcomes.map((o) => ({ ...o, color: OUTCOME_COLOR[o.key] }));
   const totalAmendements = outcomes.reduce((sum, o) => sum + o.count, 0);
 
@@ -178,10 +168,7 @@ export default function CandidateProfile({ candidate }) {
             {votes.map((vote) => (
               <div className="vote-card" key={vote.titre}>
                 <div className="vote-position">
-                  <span className="vote-dot" style={{ background: vote.color }} />
-                  <span className="vote-position-label" style={{ color: vote.color }}>
-                    {vote.label}
-                  </span>
+                  <PositionVote position={vote.position} />
                 </div>
                 <p className="vote-title">{vote.titre}</p>
                 <div className="vote-footer">

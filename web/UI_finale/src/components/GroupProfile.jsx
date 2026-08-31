@@ -1,20 +1,8 @@
 import '../styles/shell.css';
 import './GroupProfile.css';
-
-const VOTE_STYLE = {
-  pour: { color: '#007A45', label: 'Pour' },
-  contre: { color: '#E53420', label: 'Contre' },
-  abstention: { color: '#8B8794', label: 'Abstention' },
-};
-
-const OUTCOME_COLOR = {
-  adopté: '#007A45',
-  rejeté: '#E53420',
-  retiré: '#F2A93B',
-  tombé: '#8B8794',
-  irrecevable: '#B8B4AE',
-  non_soutenu: '#DCD9D3',
-};
+// #326 : voir CandidateProfile — une seule définition, partagée.
+import { PositionVote } from './Lecture';
+import { OUTCOME_COLOR, styleForPosition } from '../utils/lecture';
 
 function VerifiedIcon() {
   return (
@@ -37,7 +25,7 @@ function initialsOf(nom) {
 export default function GroupProfile({ group }) {
   const cohesionVotes = group.votes.map((v) => ({
     ...v,
-    ...VOTE_STYLE[v.position],
+    ...styleForPosition(v.position),
     quorumNote: v.quorum ? '' : ' · quorum non atteint',
   }));
 
@@ -103,15 +91,15 @@ export default function GroupProfile({ group }) {
           {cohesionVotes.map((vote) => (
             <div className="gp-vote-card" key={vote.texte}>
               <div className="gp-vote-position">
-                <span className="gp-vote-dot" style={{ background: vote.color }} />
-                <span className="gp-vote-position-label" style={{ color: vote.color }}>
-                  {vote.label}
-                </span>
+                <PositionVote position={vote.position} />
               </div>
               <p className="gp-vote-texte">{vote.texte}</p>
               <div className="gp-coherence-track">
                 {vote.coherence != null
-                  ? <div className="gp-coherence-fill" style={{ width: `${vote.coherence}%`, background: vote.color }} />
+                  // Une position sans couleur (`non_votant`, valeur inconnue) ne
+                  // laisse pas la barre invisible : elle prend le gris de bordure,
+                  // qui n'est celui d'aucune position exprimée.
+                  ? <div className="gp-coherence-fill" style={{ width: `${vote.coherence}%`, background: vote.color || 'var(--border-strong)' }} />
                   : <span className="gp-coherence-nd">N/D</span>}
               </div>
               <div className="gp-vote-footer">
