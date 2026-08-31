@@ -402,6 +402,13 @@ Convention d'écriture : `AGENTS.md` §8.
   `docs/decisions/investigation-sources-ue.md`.
 - Precise ministerial portfolio title — no source identified, see
   `docs/decisions/hors-perimetre.md`.
+- Composition des gouvernements : `gouvernement_roster.py` ne connaît que les ministres
+  ayant déjà un profil pivot local (AMO30), soit **107 personnes distinctes sur les
+  10 fiches publiées** et 3 `premier_ministre` sur 10 — et surtout aucun dénominateur,
+  donc aucun moyen de dire ce qui manque (§2.5, §2.7). Piste : les décrets de nomination
+  du JORF (bulk DILA / API Légifrance, Licence Ouverte), soit en source primaire de
+  `membres[]`, soit seulement en indicateur de couverture. Cadrage, sources candidates
+  et contraintes dans #644 — aucune n'a encore été ouverte.
 - Extra-parliamentary bodies matching — homonym risk, see
   `docs/decisions/hors-perimetre.md`.
 - Syceron (comptes rendus de séance) AN open data — fetch/caching, parse XML -> `interventions[]` et index `acteurRef -> interventions` implémentés ; intégration éditoriale aval encore à planifier. Voir `docs/sources/an-opendata.md`.
