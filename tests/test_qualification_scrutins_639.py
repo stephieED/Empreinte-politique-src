@@ -372,3 +372,198 @@ def _profil_brut_avec_votes(votes):
         patch("candidate_profile.fetch_votes_officiels", return_value=(votes, ["17"])),
     ):
         return candidate_profile.build_profile("deputes", "jean-dupont", skip_interventions=True)
+
+
+# ---------------------------------------------------------------------------
+# Le maillon intermédiaire : la fusion (#639, rang 1, réouverture du 31/08/2026)
+# ---------------------------------------------------------------------------
+#
+# Le rang 1 avait traité les deux bouts qu'il possédait — le parseur d'archives
+# et les index figés — et `candidate_profile` recopie bien les trois champs dans
+# le vote qu'il écrit. Le run 33395056902 a pourtant republié
+# `type_scrutin: null` sur les 17 748 scrutins, et 1 016 / 1 016 votes bruts de
+# `jean-luc-melenchon` sans le champ (relevé à `4dda4d52`).
+#
+# Cause : `merge_raw_profile` fusionne `votes[]` en ADDITIF PUR — l'entrée
+# ancienne gagne, et sa clé `(numero_scrutin, date)` ne contient pas les champs
+# neufs. Le profil brut ne pouvait donc jamais les acquérir, et
+# `build_scrutins_index.py`, qui le lit, ne pouvait que publier `null`.
+#
+# Rien n'avait échoué : chaque étape faisait ce qu'elle promet. C'est la
+# transition qui perdait la donnée — le motif exact de #641, le même jour.
+
+from merge_profile import (  # noqa: E402
+    CHAMPS_QUALIFICATION_VOTE,
+    _pivot_vote_key,
+    _vote_key,
+    backfill_vote_qualification,
+    merge_raw_profile,
+)
+
+#: Le vote tel qu'il a été collecté AVANT #639 : sept clés, aucune
+#: qualification. Forme relevée verbatim sur `raw_data/profiles` à `4dda4d52`.
+VOTE_AVANT_639 = {
+    "date": "2025-02-19", "titre": "la motion de censure", "position": "pour",
+    "numero_scrutin": "842", "sort": "l'Assemblée nationale n'a pas adopté",
+    "legislature": "17",
+    "url_source": "https://www.assemblee-nationale.fr/dyn/17/scrutins/842",
+}
+
+
+def _vote_apres_639(**remplacements):
+    """Le même vote, tel que `candidate_profile` l'écrit depuis #639."""
+    return {**VOTE_AVANT_639, "type_scrutin": "motion_censure",
+            "type_vote": "motion_censure",
+            "demandeur": "Président du groupe La France insoumise",
+            **remplacements}
+
+
+def _profil_brut(votes):
+    return {"slug": "un-depute", "chambre": "deputes", "nom": "Un Député",
+            "identite": {"nom_complet": "Un Député"}, "mandats": [], "votes": votes,
+            "dossiers_legislatifs": [], "interventions": [], "amendements": [],
+            "meta": {"genere_le": "2026-08-31T13:00:00+0000"}}
+
+
+def test_la_qualification_atteint_un_vote_deja_collecte():
+    """Le maillon manquant, isolé : sans report, l'entrée ancienne gagne telle
+    quelle et les trois champs n'entrent jamais dans le profil brut."""
+    fusionne = merge_raw_profile(
+        _profil_brut([dict(VOTE_AVANT_639)]), _profil_brut([_vote_apres_639()])
+    )
+    vote = fusionne["votes"][0]
+    assert vote["type_scrutin"] == "motion_censure"
+    assert vote["type_vote"] == "motion_censure"
+    assert vote["demandeur"] == "Président du groupe La France insoumise"
+
+
+def test_le_report_ne_change_pas_la_cle_de_fusion():
+    """Le garde-fou de #668 : ajouter des champs à un vote ne doit toucher ni
+    `_vote_key` ni `_pivot_vote_key`, sinon le même vote se republie deux fois
+    (468 doublons sur 940 entrées de `textes_portes`)."""
+    fusionne = merge_raw_profile(
+        _profil_brut([dict(VOTE_AVANT_639)]), _profil_brut([_vote_apres_639()])
+    )
+    assert len(fusionne["votes"]) == 1
+    assert _vote_key(fusionne["votes"][0]) == _vote_key(VOTE_AVANT_639)
+    # Côté pivot, la clé est `scrutin_id` : la qualification n'y figure pas.
+    mapping = {"scrutin_id": "an:17:842", "position": "pour"}
+    assert _pivot_vote_key(mapping) == "an:17:842"
+
+
+def test_le_report_necrase_jamais_une_qualification_deja_posee():
+    """Strictement croissant en information — comme `backfill_mandat_chambre`."""
+    ancien = _vote_apres_639(type_scrutin="solennel", type_vote="vote_texte",
+                             demandeur="Conférence des présidents")
+    fusionne = merge_raw_profile(_profil_brut([ancien]), _profil_brut([_vote_apres_639()]))
+    vote = fusionne["votes"][0]
+    assert (vote["type_scrutin"], vote["type_vote"], vote["demandeur"]) == (
+        "solennel", "vote_texte", "Conférence des présidents"
+    )
+
+
+def test_le_report_ne_touche_aucun_autre_champ():
+    """La fusion additive n'est pas une fusion champ par champ : seuls les trois
+    champs nommés circulent."""
+    ancien = {**VOTE_AVANT_639, "position": "abstention", "sort": "ancien sort"}
+    fusionne = merge_raw_profile(
+        _profil_brut([ancien]),
+        _profil_brut([_vote_apres_639(position="pour", sort="nouveau sort")]),
+    )
+    vote = fusionne["votes"][0]
+    assert vote["position"] == "abstention"
+    assert vote["sort"] == "ancien sort"
+
+
+def test_un_vote_neuf_reste_ajoute():
+    """Le report ne remplace pas l'additivité, il la complète."""
+    neuf = _vote_apres_639(numero_scrutin="843", date="2025-02-20")
+    fusionne = merge_raw_profile(
+        _profil_brut([dict(VOTE_AVANT_639)]), _profil_brut([_vote_apres_639(), neuf])
+    )
+    assert {v["numero_scrutin"] for v in fusionne["votes"]} == {"842", "843"}
+
+
+def test_les_champs_reportes_sont_ceux_que_lindex_republie():
+    """Reporter un champ que l'index de scrutins ne lit pas ne servirait à rien,
+    et en oublier un le laisserait `null` pour toujours."""
+    assert set(CHAMPS_QUALIFICATION_VOTE) <= set(scrutins_index.CHAMPS_SCRUTIN)
+    assert set(CHAMPS_QUALIFICATION_VOTE) == {"type_scrutin", "type_vote", "demandeur"}
+
+
+def test_un_vote_sans_qualification_ne_reporte_rien():
+    ancien = [dict(VOTE_AVANT_639)]
+    assert backfill_vote_qualification(ancien, [dict(VOTE_AVANT_639)], _vote_key) == ancien
+
+
+# --- Le second maillon : le défaut `vote_texte` de l'index ------------------
+
+def test_type_vote_na_plus_de_defaut_dans_lindex():
+    """`_valeur_scrutin` repliait `type_vote` sur « vote_texte ». Comme
+    `construire_index` ne complète une occurrence suivante que sur un champ resté
+    `None`, la PREMIÈRE occurrence non qualifiée d'un scrutin verrouillait le
+    repli : une motion de censure votée par un profil régénéré et par un profil
+    qui ne l'est pas serait restée publiée sous le type d'un vote sur texte."""
+    index, _ = scrutins_index.construire_index([
+        # Le votant non régénéré arrive en premier.
+        {**VOTE_AVANT_639, "position": "contre"},
+        _vote_apres_639(),
+    ])
+    scrutin = index.get("an:17:842")
+    assert scrutin["type_vote"] == "motion_censure"
+    assert scrutin["type_scrutin"] == "motion_censure"
+    assert scrutin["texte_lie_non_resolu"]["motif"]
+
+
+def test_un_scrutin_que_personne_ne_qualifie_sort_null():
+    """Et non « vote_texte » : la source ne l'a pas dit (§2 règle 5). La valeur
+    déjà publiée est conservée par `merge_scrutins_index`, jamais régressée."""
+    index, _ = scrutins_index.construire_index([{**VOTE_AVANT_639, "position": "pour"}])
+    assert index.get("an:17:842")["type_vote"] is None
+
+    publie = scrutins_index.ScrutinsIndex({"an:17:842": {
+        "id": "an:17:842", "legislature": "17", "numero_scrutin": "842",
+        "legislature_provenance": "collectee", "date": "2025-02-19",
+        "texte": "la motion de censure", "sort": None, "type_scrutin": None,
+        "type_vote": "vote_texte", "texte_lie_id": None, "source_url": None,
+    }})
+    fusion = scrutins_index.merge_scrutins_index(publie, index)
+    assert fusion.get("an:17:842")["type_vote"] == "vote_texte"
+
+
+def test_la_qualification_traverse_la_fusion_jusqua_lindex_publie(tmp_path):
+    """La chaîne ENTIÈRE, sur la motion de censure du 19/02/2025 réduite
+    verbatim, avec l'étape qui manquait : un profil brut DÉJÀ PUBLIÉ, collecté
+    avant #639, que la régénération doit requalifier."""
+    archive = _zip_par_fichier(tmp_path, ("VTANR5L17V842",))
+    with patch("candidate_profile.SCRUTINS_CACHE_DIR", tmp_path / "cache"):
+        scrutins, index_acteur = _parse_scrutins_zip(archive, "17")
+        candidate_profile._write_cached_scrutins("17", scrutins, index_acteur)
+        acteur = next(iter(index_acteur))
+        with (
+            patch("candidate_profile.AN_SCRUTINS_LEGISLATURES", ("17",)),
+            patch("candidate_profile.requests.get") as mock_get,
+        ):
+            votes, _ = candidate_profile.fetch_votes_officiels(
+                f"https://www.assemblee-nationale.fr/dyn/deputes/{acteur}"
+            )
+    mock_get.assert_not_called()
+
+    neuf = _profil_brut_avec_votes(votes)
+    # Le profil déjà publié : les mêmes votes, sans les trois champs.
+    deja_publie = {**neuf, "votes": [
+        {c: v[c] for c in v if c not in CHAMPS_QUALIFICATION_VOTE} for v in neuf["votes"]
+    ]}
+    assert all("type_vote" not in v for v in deja_publie["votes"])
+
+    fusionne = merge_raw_profile(deja_publie, neuf)
+    assert len(fusionne["votes"]) == len(deja_publie["votes"])
+    assert fusionne["votes"][0]["type_vote"] == "motion_censure"
+
+    index, _ = scrutins_index.construire_index(fusionne["votes"])
+    scrutin = index.get("an:17:842")
+    assert scrutin["type_vote"] == "motion_censure"
+    assert scrutin["type_scrutin"] == "motion_censure"
+    assert validate_scrutins_index({
+        "schema_version": SCRUTINS_SCHEMA_VERSION, "scrutins": index.liste(),
+    }) == []

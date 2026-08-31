@@ -115,6 +115,19 @@ via `src/population_profils.py`.
   entry into one. Scalars take the new value only if populated, and **never regress to
   `null`**.
   → `docs/decisions/collecte-vide-necrase-jamais.md`
+- **A field added to the schema never reaches an already-collected entry on its own —
+  and the fix is a named backfill, never a looser merge (#492, #639, #641).** Twice on a
+  list (`mandats[].chambre`, then `votes[]`'s `type_scrutin`/`type_vote`/`demandeur`):
+  "old entry wins" and the key does not contain the new field, so the regenerated entry is
+  discarded every run. Once on a scalar (`identite.profession`): "never regress to `null`"
+  restores the very value the publication filter refuses, so **a publication filter runs
+  on the COMPOSED block, after the merge, never on what the normaliser produced**. Both
+  reports are strictly monotone — they fill only what is absent, they name their fields,
+  and **they never touch the merge key**: widening it to carry the new field is #668's
+  defect (468 duplicates on 940 entries). Each of the three passed the whole suite: the
+  test that was missing covered the **transition**, not the steps.
+  → `docs/decisions/qualification-perdue-a-la-fusion-639.md`,
+  `docs/decisions/filtre-publication-apres-fusion-641.md`
 - **A merge key written `a or b` changes identity the day `a` fills in (#668).** #540 was
   a *sticky* key absorbing distinct entries; this is its mirror — the same dossier keyed
   on the fallback before the run and on `source_url` after, published twice (940 entries
@@ -497,9 +510,11 @@ themselves come from), `docs/decisions/mandats-agreges-siege-vs-passe-656.md`
   covers article, amendment and whole-text ballots alike, so it does NOT constitute the "votes on the
   whole text" universe the published methodology claims.
 - **A scrutins cache that carries no qualification is refused, not re-read (#639)** — disk cache **and**
-  committed frozen index (`raw_data/scrutins_an_figes/`), which still holds the five-field projection
-  until `build_scrutins_index_figes.py --toutes` is re-run. Same rule as the amendments cache: existence
-  is not conformity. Accepting it would have published 43 of the 66 censure motions as `vote_texte`.
+  committed frozen index (`raw_data/scrutins_an_figes/`), whose three legislatures now carry it
+  (rebuilt 31/08/2026: 1 354 / 4 417 / 4 105 scrutins, 4 / 5 / 34 censure motions). Same rule as the amendments
+  cache: existence is not conformity. Accepting a stale one would have published 43 of the 66 censure motions as
+  `vote_texte`. **Carrying it to the index is a third thing**: the raw vote acquires it only through
+  `backfill_vote_qualification` (#639, above).
   → `docs/decisions/qualification-scrutins-et-cle-dossier-639.md`
 - `votes[].numero_scrutin` restarts at 1 in each legislature: never a key on its own.
   Dedupe by AN `uid` **at index level** (`raw_data/scrutins_an_figes/`, where the AN

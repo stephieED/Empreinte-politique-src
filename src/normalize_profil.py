@@ -282,7 +282,11 @@ def _normalize_vote(
             "texte": v.get("texte") or v.get("titre") or None,
             "sort": v.get("sort"),
             "type_scrutin": v.get("type_scrutin"),
-            "type_vote": v.get("type_vote") or "vote_texte",
+            # Aucun défaut : l'enregistrement non résolu est le vote tel que la
+            # source l'a dit (#639). « vote_texte » y aurait affirmé un type que
+            # rien ne source, sur le seul vote que le pipeline n'a pas su
+            # rattacher.
+            "type_vote": v.get("type_vote"),
             "texte_lie_id": v.get("texte_lie_id"),
             "source_url": v.get("source_url") or v.get("url_source"),
         }

@@ -86,6 +86,7 @@ from licences import appliquer_licence_donnees
 from normalize_profil import (
     WARNING_PREFIX_CHAMBRE_MANDAT_NON_RESOLUE,
     WARNING_PREFIX_CHAMBRES_NON_CORROBOREE,
+    _profession_publiable,
 )
 from profil_brut import (
     PartitionIllisible,
@@ -130,6 +131,78 @@ def merge_lists_by_key(
     return merged
 
 
+#: Qualification sourcée d'un scrutin, telle que `_parse_scrutins_zip` la lit et
+#: que `scrutins_index.CHAMPS_SCRUTIN` la republie (#639). Ce sont exactement les
+#: champs que le rang 1 a fait entrer dans le parseur d'archives et dans les
+#: index figés, et que le vote déjà collecté ne porte pas.
+CHAMPS_QUALIFICATION_VOTE: tuple[str, ...] = ("type_scrutin", "type_vote", "demandeur")
+
+
+def backfill_vote_qualification(
+    merged: list[dict[str, Any]],
+    new_list: Optional[list[dict[str, Any]]],
+    key_fn: Callable[[dict[str, Any]], Key],
+) -> list[dict[str, Any]]:
+    """Reporte la qualification d'un vote neuf sur l'entrée ancienne de même clé (#639).
+
+    **Le maillon où la qualification se perdait.** Le rang 1 avait traité les
+    deux bouts qu'il possédait — le parseur d'archives et les index figés — et
+    `candidate_profile` recopie bien `type_scrutin`, `type_vote` et `demandeur`
+    dans le vote qu'il écrit. Mais `merge_raw_profile` fusionne `votes[]` en
+    additif pur : les 1 016 votes déjà collectés de `jean-luc-melenchon` portent
+    la même clé `(numero_scrutin, date)` que les votes neufs, donc les anciens
+    gagnent — tous les 1 016 sans `type_scrutin`, relevé à `4dda4d52`. Le profil
+    brut n'acquérant jamais les champs, `build_scrutins_index.py`, qui le lit, ne
+    pouvait que publier `type_scrutin: null` sur les 17 748 scrutins.
+
+    Ni la collecte, ni la fusion, ni la construction d'index n'a échoué : chaque
+    étape a fait ce qu'elle promet. C'est la transition qui perdait la donnée —
+    même motif que #641, constaté le même jour, et **même trou que #492** sur
+    `mandats[].chambre`, dont `backfill_mandat_chambre` ci-dessous est le jumeau.
+    Les deux gardent leur copie de la mécanique : `tests/test_garde_fou_chambre.py`
+    inventorie tout usage de la clé `"chambre"` par la fonction qui l'écrit, et un
+    champ passé en tuple d'appel disparaîtrait de cet inventaire.
+
+    Strictement croissant en information — ne remplit qu'un champ absent, vide ou
+    nul, n'écrase rien, ne touche aucun autre champ, ne réordonne rien, ne crée
+    aucune entrée. Et **la liste des champs est nommée** : reporter tout ce qui
+    manque ferait de la fusion additive une fusion champ par champ, ce qu'elle
+    n'est pas.
+
+    **La clé de fusion ne change pas** : `_vote_key` reste
+    `(numero_scrutin, date)`, `_pivot_vote_key` reste `scrutin_id`. Ajouter des
+    champs à un vote sans toucher à sa clé est ce qui distingue ce report du
+    défaut de #668, où c'est la clé elle-même qui avait changé de branche —
+    468 doublons sur 940 entrées de `textes_portes`.
+    """
+    if not new_list:
+        return merged
+
+    qualifications_neuves: dict[Key, dict[str, Any]] = {}
+    for v in new_list:
+        if not isinstance(v, dict):
+            continue
+        renseignes = {c: v[c] for c in CHAMPS_QUALIFICATION_VOTE if v.get(c)}
+        if renseignes:
+            deja = qualifications_neuves.setdefault(key_fn(v), {})
+            for champ, valeur in renseignes.items():
+                deja.setdefault(champ, valeur)
+
+    if not qualifications_neuves:
+        return merged
+
+    result: list[dict[str, Any]] = []
+    for v in merged:
+        if isinstance(v, dict):
+            neuves = qualifications_neuves.get(key_fn(v))
+            if neuves:
+                manquants = {c: n for c, n in neuves.items() if not v.get(c)}
+                if manquants:
+                    v = {**v, **manquants}
+        result.append(v)
+    return result
+
+
 def backfill_mandat_chambre(
     merged: list[dict[str, Any]],
     new_list: Optional[list[dict[str, Any]]],
@@ -151,6 +224,14 @@ def backfill_mandat_chambre(
     `_prefer_non_empty` sur les scalaires, appliqué à un champ d'entrée de liste.
     Il est volontairement limité à `chambre` : généraliser le report ferait de la
     fusion additive une fusion par champ, ce qu'elle n'est pas.
+
+    **Il ne délègue pas à `_reporter_champs_nommes`, et c'est délibéré.** La
+    mécanique est la même que celle de `backfill_vote_qualification` (#639) —
+    même trou, deux fois — mais `tests/test_garde_fou_chambre.py` inventorie
+    tout usage de la clé `"chambre"` par la fonction qui l'écrit, et un champ
+    passé en tuple d'appel disparaît de cet inventaire : le garde-fou de #494
+    cesserait de voir l'endroit où la chambre d'un mandat est réellement posée.
+    Vingt lignes en double coûtent moins qu'un inventaire qui ment.
     """
     if not new_list:
         return merged
@@ -508,6 +589,55 @@ def _composer_identite(
             fusionne[cle] = neuve
             origines[cle] = ORIGINE_NOUVELLE
     return fusionne, origines
+
+
+#: Filtres de PUBLICATION du bloc `identite`, appliqués au bloc **composé**
+#: (#641, réouverture du 31/08/2026).
+#:
+#: `normalize_profil` filtre déjà ce qu'il produit. Cela ne suffit pas : le bloc
+#: publié n'est pas celui que la normalisation rend, c'est celui que
+#: `_composer_identite` compose, et sa première règle est qu'« une absence
+#: n'écrase jamais une valeur connue » (#601). Un champ que la collecte corrigée
+#: ramène à `None` reprend donc la valeur DÉJÀ PUBLIÉE — c'est-à-dire exactement
+#: celle que le filtre refuse.
+#:
+#: C'est ce qui sépare les deux volets de #641, tous deux verts en test et
+#: mesurés sur le run 33395056902 :
+#:
+#: | Cas | Valeur neuve | Composition | Résultat avant ce correctif |
+#: | --- | --- | --- | --- |
+#: | préfixe parasite, 3 profils | `"Cadre de la fonction publique"` | renseignée → elle gagne | **réparé** |
+#: | énoncé d'absence, 5 profils | `None` | absence → l'ancienne gagne | **inchangé** |
+#:
+#: Le filtre est donc posé APRÈS la composition, sur ce qui part au fichier, et
+#: non sur l'un des deux côtés : c'est la seule position d'où il voit la valeur
+#: réellement publiée, d'où qu'elle vienne. Il ne s'applique qu'à l'étage pivot
+#: — `raw_data/` est source-proche (AGENTS.md §3), et le libellé y est
+#: authentique : c'est sa publication comme profession qui ne l'est pas.
+#:
+#: La table est nommée champ par champ, jamais générale : `identite` porte des
+#: libellés recopiés d'AMO30 (`schema_pivot.CHAMPS_IDENTITE_TEXTE_LIBRE`), et un filtre
+#: s'appliquant à tous en inventerait la sémantique.
+FILTRES_PUBLICATION_IDENTITE: dict[str, Callable[[Any], Any]] = {
+    "profession": _profession_publiable,
+}
+
+
+def filtrer_identite_publiee(bloc: Any) -> Any:
+    """Applique `FILTRES_PUBLICATION_IDENTITE` au bloc `identite` composé (#641).
+
+    Strictement décroissant en information : ne peut que ramener un champ à
+    `None`, n'ajoute aucune clé, n'invente aucune valeur de remplacement
+    (AGENTS.md §2 règle 5 — la page dira « profession non renseignée »).
+    Idempotent, donc sans effet sur un bloc que la normalisation vient de
+    filtrer.
+    """
+    if not isinstance(bloc, dict):
+        return bloc
+    for champ, filtre in FILTRES_PUBLICATION_IDENTITE.items():
+        if champ in bloc:
+            bloc[champ] = filtre(bloc[champ])
+    return bloc
 
 
 def _accorder_hatvp(profil: dict[str, Any]) -> None:
@@ -967,8 +1097,17 @@ def merge_raw_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> dic
         new.get("mandats"),
         _mandat_key,
     )
+    # #639 : la qualification (`type_scrutin`/`type_vote`/`demandeur`) est
+    # reportée sur les votes déjà collectés. Sans elle, l'entrée ancienne gagne
+    # et le profil brut n'acquiert jamais les trois champs — donc
+    # `pivot_data/scrutins.json`, qui est construit depuis les profils bruts,
+    # publie `type_scrutin: null` indéfiniment.
     merged["votes"] = sorted(
-        merge_lists_by_key(old.get("votes"), new.get("votes"), _vote_key),
+        backfill_vote_qualification(
+            merge_lists_by_key(old.get("votes"), new.get("votes"), _vote_key),
+            new.get("votes"),
+            _vote_key,
+        ),
         key=lambda v: v.get("date") or "",
         reverse=True,
     )
@@ -1646,7 +1785,10 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
         # #603 : même raison. Un profil écrit pour la première fois a une
         # provenance — celle de son unique écrivain — et la lui refuser
         # publierait deux profils de même contenu dont un seul est traçable.
-        identite_neuve = new.get("identite")
+        # #641 : même filtre de publication que sur le chemin fusionné. Sans
+        # lui, un profil écrit pour la première fois et un profil régénéré au
+        # même contenu ne publieraient pas la même `profession`.
+        identite_neuve = filtrer_identite_publiee(new.get("identite"))
         _poser_provenance_champs(new, deriver_provenance_champs(
             identite_neuve,
             {c: ORIGINE_NOUVELLE for c in identite_neuve} if isinstance(identite_neuve, dict) else {},
@@ -1673,6 +1815,12 @@ def merge_pivot_profile(old: Optional[dict[str, Any]], new: dict[str, Any]) -> d
     merged["identite"], origines_identite = _composer_identite(
         old.get("identite"), new.get("identite")
     )
+    # #641 : le filtre de publication mord sur le bloc COMPOSÉ, pas sur l'un
+    # des deux côtés. La composition venait de restaurer les cinq libellés que
+    # la collecte corrigée avait ramenés à `None` — voir
+    # `FILTRES_PUBLICATION_IDENTITE`. Posé avant la provenance : un champ nul
+    # n'a pas d'origine à nommer.
+    filtrer_identite_publiee(merged["identite"])
 
     # --- identifiants : fusionnés CLÉ PAR CLÉ (#539) -------------------------
     #
