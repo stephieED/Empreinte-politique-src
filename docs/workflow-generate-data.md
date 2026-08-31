@@ -46,6 +46,12 @@ fichiers, et ceux cités ici sont les structurants, pas la liste.
 #### `prepare-an-matrix`
 
 Lit `raw_data/candidats.json`, en tire la liste des slugs résolvables et la
+**Son checkout porte une liste blanche (#674).** Il ne lit que
+`raw_data/candidats.json`, et son `timeout-minutes: 5` ne survit pas au
+checkout complet : le run `33414042623` l'a vu tué à 5 min 00, donc matrice
+jamais publiée, donc `extract-an` **skippé** alors qu'il venait d'être réparé.
+La règle vaut pour tout job au budget serré, et un test la fait respecter.
+
 publie comme matrice d'`extract-an` — **un shard par candidat**. Il ne collecte
 rien. Il porte aussi deux garde-fous de lancement : un avertissement au-delà de
 16 shards (ils s'exécutent en série, donc 16 shards = 16 fois le timeout d'un
