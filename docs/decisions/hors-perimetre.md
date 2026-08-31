@@ -120,3 +120,31 @@ Not to be confused with the **only** HATVP datum the pipeline does carry:
 member's own declaration of interests, read from AN open data's AMO30
 referential — never from the lobby register. See
 [[identite-profils-539]] and [[absences-publiees-comme-faits-556-558-560]].
+
+### Re-examined on 31/08/2026, and deliberately left undecided
+
+The question came back during the #594 brainstorm — *would it make sense to show
+interest representations on an Empreinte politique page?* The owner's answer:
+**the point is recorded, it will not be worked on, and no decision is taken on it
+in the short term.** What follows exists so the same ground is not covered a
+third time, not to prepare an implementation.
+
+**What was said against putting it on a person's page.** Placing a lobby beside
+someone's name **suggests influence without establishing it** — two facts set
+side by side to imply a third that neither carries. That is harder to defend than
+a score, because the judgment is nowhere written down and so nowhere sourced
+(§2 rules 1 and 2). It is also the argument that decides the subject, and it does
+not depend on any measurement.
+
+**The one variant that was not ruled out.** On a *text* rather than a person —
+« on this bill, N interest representatives declared an action » — attributes
+nothing to anyone and would ride on the legislative-dossier key of #639. It stays
+un-instructed, and two things would have to be established before it were worth
+anything:
+
+- **whether the register names people at all.** It is believed to record actions
+  by *category* of decision-maker and by targeted decision, not by named
+  official — **unverified against the register's own open data**, and that single
+  fact decides whether a per-candidate view is even possible;
+- that it is a **full collection project** — new source, new licence, new schema —
+  outside epic #324 in any case.
