@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 193 décisions
+gouverne sans avoir à fouiller les 194 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -187,7 +187,7 @@ Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fene
 | --- | --- |
 | [`meta.warnings[]` déclare son destinataire, dans un jumeau typé et aligné (#642) (2026-08-31)](decisions/destinataire-avertissements-642.md) | `AVERTISSEMENTS_HERITES`, `Avertissement`, `DESTINATAIRES_AVERTISSEMENT`, `PREFIXES_HERITES`, `avertissement`, `deriver_avertissements` |
 
-Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
+Le mentionnent sans le gouverner : [`amendements-zero-pas-de-hard-fail`](decisions/amendements-zero-pas-de-hard-fail.md), [`bloc-sans-fond-484`](decisions/bloc-sans-fond-484.md), [`couverture-dossiers-hors-couverture-vs-zero`](decisions/couverture-dossiers-hors-couverture-vs-zero.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`retrait-senat-528`](decisions/retrait-senat-528.md), [`union-warnings-extinction-600`](decisions/union-warnings-extinction-600.md), [`verification-bout-en-bout-legislatures-figees`](decisions/verification-bout-en-bout-legislatures-figees.md).
 
 ## `src/budget_collecte.py`
 
@@ -554,7 +554,7 @@ Le mentionnent sans le gouverner : [`audit-pipeline-gouvernement`](decisions/aud
 | [Taxonomie des mandats : exploitation des `typeOrgane` AN non mappés (#382, option « mixte ») (2026-08-17)](decisions/taxonomie-mandats-typeorgane-an.md) | `MANDATS_AGREGES_CATEGORIES` |
 | [Votes : agrégation des législatures 14 à 17, index dédupliqué, 14/15/16 figées (#403) (2026-08-18)](decisions/votes-multi-legislature.md) | `_compute_cohesion_votes` |
 
-Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
+Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civilite-et-pcs-insee-659.md), [`consommateurs-chambres-migres`](decisions/consommateurs-chambres-migres.md), [`id-pivot-sans-prefixe`](decisions/id-pivot-sans-prefixe.md), [`identite-profils-539`](decisions/identite-profils-539.md), [`mandats-electifs-liste-complete-640`](decisions/mandats-electifs-liste-complete-640.md), [`ne-jamais-committer-un-build-perime`](decisions/ne-jamais-committer-un-build-perime.md), [`pivot-freshness-timestamps-stables`](decisions/pivot-freshness-timestamps-stables.md), [`populations-profils-portees-par-les-outils-630`](decisions/populations-profils-portees-par-les-outils-630.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`provenance-par-champ-603`](decisions/provenance-par-champ-603.md), [`syceron-acteur-ref-nu-510`](decisions/syceron-acteur-ref-nu-510.md), [`syceron-archives-verifiees-parseur-510`](decisions/syceron-archives-verifiees-parseur-510.md).
 
 ## `src/group_roster.py`
 
@@ -570,7 +570,7 @@ Le mentionnent sans le gouverner : [`civilite-et-pcs-insee-659`](decisions/civil
 | [Le roster des groupes AN est dérivé d'AMO30, derrière un drapeau baissé (#526, lot 1 de l'épic « une seule source AN ») (2026-08-26)](decisions/roster-an-derive-amo30-526.md) | `fetch_full_roster`, `filter_roster_by_sigle` |
 | [Un seul roster par run, une reprise sur ce qui est retentable, et des échecs qu'on peut lire (#518) (2026-08-24)](decisions/roster-unique-par-run-518.md) | `fetch_full_roster` |
 
-Le mentionnent sans le gouverner : [`cloisonnement-branche-roster-524`](decisions/cloisonnement-branche-roster-524.md), [`senat-periode-debut`](decisions/senat-periode-debut.md), [`votes-multi-legislature`](decisions/votes-multi-legislature.md).
+Le mentionnent sans le gouverner : [`cloisonnement-branche-roster-524`](decisions/cloisonnement-branche-roster-524.md), [`profil-de-groupe-lecture-329`](decisions/profil-de-groupe-lecture-329.md), [`senat-periode-debut`](decisions/senat-periode-debut.md), [`votes-multi-legislature`](decisions/votes-multi-legislature.md).
 
 ## `src/groupes_config.py`
 
