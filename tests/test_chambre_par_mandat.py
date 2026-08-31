@@ -421,9 +421,17 @@ def test_cohesion_le_denominateur_exclut_le_membre_parti_dans_lautre_chambre():
     assert avec_filtre[0]["membres_eligibles"] == 1
 
 
-def test_debut_dans_groupe_ignore_le_mandat_de_lautre_chambre():
-    """`membres[].debut_dans_groupe` est publié : sans filtre, il remonterait au
-    mandat sénatorial de 2004 pour un groupe de l'Assemblée."""
+def test_debut_dans_groupe_ne_lit_plus_aucun_mandat_electif():
+    """Le piège que #492 filtrait ici s'éteint avec la source de la date (#653).
+
+    Avant : `debut_dans_groupe` sortait du premier mandat électif, et sans le
+    filtre de chambre il remontait au mandat sénatorial de 2004 pour un groupe
+    de l'Assemblée. Depuis #653 la date vient du mandat de groupe politique de
+    la législature de la fiche, que le roster AMO30 rend — les mandats
+    électifs, de n'importe quelle chambre, n'y entrent plus du tout. Le test
+    reste ici parce que c'est cette régression-là qu'il garde fermée : ni le
+    mandat sénatorial de 2004 ni le mandat AN de 2022 ne doivent réapparaître
+    comme date d'entrée dans le groupe."""
     profil = {
         "id": "alice", "nom": "Alice",
         "mandats": [
@@ -431,5 +439,12 @@ def test_debut_dans_groupe_ignore_le_mandat_de_lautre_chambre():
             _mandat_pivot("2022-06-22", None, chambre="AN"),
         ],
     }
-    assert _derive_membre_entry(profil)["debut_dans_groupe"] == "2004-09-26"
-    assert _derive_membre_entry(profil, "AN")["debut_dans_groupe"] == "2022-06-22"
+    # Sans appartenance : `null`, jamais l'une des deux dates de mandat.
+    assert _derive_membre_entry(profil)["debut_dans_groupe"] is None
+    assert _derive_membre_entry(profil, "AN")["debut_dans_groupe"] is None
+    # Avec appartenance : la date du mandat GP, et elle seule.
+    entree = _derive_membre_entry(
+        profil, "AN", {"debut": "2022-06-29", "fin": "2024-06-09"}
+    )
+    assert entree["debut_dans_groupe"] == "2022-06-29"
+    assert entree["fin_dans_groupe"] == "2024-06-09"

@@ -489,6 +489,34 @@ est **tracée** (`meta.couverture_roster`), pour ne jamais confondre effectif r�
 et effectif effectivement agrégé — un ratio ne se publie qu'avec numérateur,
 dénominateur et couverture suffisante (AGENTS.md §2.7).
 
+`membres[].debut_dans_groupe` / `fin_dans_groupe` sont les dates du **mandat de
+groupe politique de la législature de la fiche**, que le roster porte déjà
+(`mandat_debut` / `mandat_fin`) : transit écarté, organes successifs recollés
+(#526). Elles ne sont **pas** dérivées des mandats électifs du profil — depuis
+#647 un profil porte toute sa carrière, et « premier mandat électif » datait
+l'entrée dans un groupe de la XVIe à 2002 (#653,
+`docs/decisions/dates-appartenance-groupe-653.md`). Sans roster, ou pour un
+membre qu'il ne rend pas, les deux dates sortent `null` et `meta.warnings` les
+compte : jamais de repli sur le mandat électif.
+
+**Tous les comptes d'une fiche se rapportent à `date_reference`**, publiée dans
+la fiche (#653) : la clôture de la période du groupe quand toutes les
+appartenances sont refermées (`cloture_legislature`, `2024-06-09` pour les cinq
+fiches AN de la XVIe), la date de génération tant qu'une reste ouverte
+(`generation`). Trois compteurs s'y rapportent et le disent dans leur nom —
+`effectif.a_la_date_de_reference`,
+`mandats_agreges[].nb_membres_a_la_date_de_reference`,
+`membres[].present_a_la_date_de_reference`. Ils s'appelaient `actuel`, `actifs`
+et `actif` et se lisaient « aujourd'hui », ce qui, sur une fiche de législature
+close, mesurait la carrière ultérieure des membres et non le groupe :
+`effectif.actuel` valait exactement le nombre de membres encore député⋅es (85
+des 193 de `AN:REN-16`, quand 169 y siégeaient à la clôture). `periode.actif`
+n'est pas concerné : il décrit la période, pas un effectif à un instant.
+
+`date_reference` est **optionnelle** : les 2 fiches `groupe-Senat-*` gelées par
+#516 ne seront pas régénérées et gardent les anciens noms. Tout lecteur doit
+accepter les deux (`audit_groupe_dataset.CHAMPS_EFFECTIF` le fait).
+
 À ne pas confondre avec le job CI `extract-roster-groupes`, qui utilise aussi
 `group_roster.py` (via `generate_roster_candidats.py`) mais pour produire des
 profils **individuels** bruts couvrant tous les membres du roster, en amont de

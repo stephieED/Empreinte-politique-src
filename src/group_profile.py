@@ -11,8 +11,12 @@ Calculs produits :
      d'alignement. « Absent » (aucune trace de vote) est distingué de
      « non_votant » et « excusé ».
   2. Thèmes dominants : agrégation des tags_thematiques de tous les membres.
-  3. Membres : liste avec dates d'entrée/sortie du groupe (dérivées des mandats
-     électifs des profils individuels).
+  3. Membres : liste avec dates d'entrée/sortie DU GROUPE, lues sur le mandat
+     de groupe politique (`GP`) de la législature de la fiche que rend le
+     roster AMO30 — transit écarté, organes successifs recollés (#526/#653).
+     Elles ne sont plus dérivées des mandats électifs : depuis #647 un profil
+     porte toute sa carrière, et « premier mandat électif » datait l'entrée
+     dans un groupe de la XVIe législature à 2002.
   4. Amendements agrégés (amendements_agreges) : les amendements **distincts**
      portés par au moins un membre — un amendement cosigné par trois d'entre eux
      en est un (#643) —, leur ventilation par sort et par type de déposant, et
@@ -44,7 +48,7 @@ Cas limites gérés :
     actif=true sinon la plus récente par date de fin.
   - mandats_agreges : adhésion d'une journée ou moins (43 % des adhésions de
     commission publiées) → comptée dans nb_membres_cumul_historique, absente de
-    nb_membres_actifs. Distinguée, jamais filtrée (#656).
+    nb_membres_a_la_date_de_reference. Distinguée, jamais filtrée (#656).
 
 Les trois décisions à relire avant de toucher à une agrégation
 --------------------------------------------------------------
@@ -87,7 +91,7 @@ Mode --from-roster (composition réelle du groupe, via group_roster.py) :
     --profiles-dir (pivot_data/profiles/<slug>.pivot.json).
     Les membres du roster sans pivot local sont ignorés et signalés dans
     meta.warnings ; la couverture réelle (roster_total / profils_disponibles)
-    est inscrite dans meta.couverture_roster, jamais confondue avec effectif.actuel.
+    est inscrite dans meta.couverture_roster, jamais confondue avec l'effectif.
 
     python src/group_profile.py \\
         --from-roster --roster-chambre deputes \\
@@ -108,11 +112,14 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
+from avertissements import DESTINATAIRE_LECTEUR, avertissement
 from licences import appliquer_licence_donnees
 from schema_groupe import (
     SCHEMA_GROUPE_VERSION,
+    ORIGINE_DATE_REFERENCE_CLOTURE,
+    ORIGINE_DATE_REFERENCE_GENERATION,
     AMENDEMENTS_TYPES_DEPOSANT,
     ETAT_ROSTER_DANS_LE_PERIMETRE,
     make_empty_profil_groupe,
@@ -267,55 +274,158 @@ def _member_eligible_at(
 # ---------------------------------------------------------------------------
 
 def _derive_membre_entry(
-    profil: dict[str, Any], chambre: Optional[str] = None
+    profil: dict[str, Any],
+    chambre: Optional[str] = None,
+    appartenance: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Dérive une entrée ``membres[]`` du profil de groupe à partir d'un profil pivot.
 
-    La date de début dans le groupe correspond au début du premier mandat électif ;
-    la fin correspond à la fin du dernier mandat électif terminé (None si toujours
-    actif). Cette approximation est correcte pour les cas sans changement de groupe
-    en cours de mandat.
+    Les dates viennent du **mandat de groupe politique** (`typeOrgane == "GP"`)
+    de la législature de la fiche, tel que `an_roster.deriver_membres_organes`
+    le rend : organes successifs recollés, mandats de transit écartés (#526).
+    Elles sont passées par ``appartenance`` (`{"debut", "fin"}`), jamais
+    recalculées ici — la fiche et le roster doivent lire la même chose.
 
-    ``chambre`` (#492) restreint les mandats électifs pris en compte à ceux de
-    la chambre du groupe : sans ça, `debut_dans_groupe` d'un membre bicaméral
-    remonterait à son mandat dans **l'autre** chambre. Voir ``_mandats_electifs``.
+    Ce que ce champ **n'est plus** (#653) : le début du premier mandat électif.
+    C'était l'approximation d'origine, correcte tant qu'un profil ne portait
+    qu'un mandat — le plus récent. #647 a reconstruit la carrière complète (613
+    périodes nouvelles sur 393 profils) et l'approximation est devenue fausse
+    dans l'autre sens : Vincent Rolland, membre du groupe LR de la XVIe depuis
+    le 2022-06-29, était publié « depuis 2002-06-19 ». Avant #647 la date était
+    trop récente, après trop ancienne ; dans les deux cas elle ne mesurait pas
+    ce que son nom annonce.
+
+    Sans ``appartenance`` — aucun roster fourni, ou membre absent de celui-ci —
+    les deux dates sont ``None`` et ``actif`` est ``False`` : **appartenance non
+    établie**, jamais un repli sur le mandat électif, qui remettrait la date
+    fausse en place sous un nom exact (AGENTS.md §2 règle 5). L'appelant compte
+    ces membres et le publie.
+
+    ``chambre`` n'entre plus dans le calcul des dates (le mandat GP est par
+    construction celui de la chambre du groupe) ; il reste dans la signature
+    parce qu'il est la clé de lecture de tous les autres agrégats de ce module
+    et qu'un paramètre retiré d'une signature publique casse ses appelants.
+    Le défaut qu'il corrigeait (#492 : la date d'un bicaméral remontant à
+    l'autre chambre) s'éteint avec la source de la date.
 
     Args:
         profil: profil pivot v1.
+        chambre: chambre du groupe, conservée pour la cohérence de signature.
+        appartenance: `{"debut", "fin"}` lus sur le mandat GP de la
+            législature de la fiche, ou ``None`` si aucun n'est identifiable.
 
     Returns:
         Dict conformant à la structure membres[] du schéma de groupe.
     """
-    electif = _mandats_electifs(profil.get("mandats") or [], chambre)
+    del chambre  # cf. docstring : plus lue ici depuis #653.
 
     debut: Optional[str] = None
     fin: Optional[str] = None
-    actif = False
-
-    if electif:
-        debuts = [_parse_date(m.get("debut")) for m in electif]
-        fins = [_parse_date(m.get("fin")) for m in electif]
-        actifs = [bool(m.get("actif")) for m in electif]
-
-        parsed_debuts = [d for d in debuts if d is not None]
-        if parsed_debuts:
-            debut = str(min(parsed_debuts))
-
-        # La fin est None si au moins un mandat est toujours actif.
-        if any(actifs) or any(f is None for f in fins):
-            fin = None
-        else:
-            parsed_fins = [f for f in fins if f is not None]
-            fin = str(max(parsed_fins)) if parsed_fins else None
-
-        actif = any(actifs)
+    if appartenance is not None:
+        debut = appartenance.get("debut")
+        fin = appartenance.get("fin")
 
     return {
         "membre_id": profil.get("id") or "",
         "nom": profil.get("nom") or "",
         "debut_dans_groupe": debut,
         "fin_dans_groupe": fin,
-        "actif": actif,
+        # `present_a_la_date_de_reference` est posé par `_stamper_presences`, une
+        # fois la date de référence connue : elle se dérive des dates de TOUS
+        # les membres, donc aucune entrée ne peut la calculer seule (#653).
+    }
+
+
+def _appartenance_couvre(membre: dict[str, Any], date_reference: Optional[str]) -> bool:
+    """Le membre appartenait-il au groupe à `date_reference` ? (#653)
+
+    `debut_dans_groupe` à `None` rend **False** : l'appartenance n'est pas
+    établie, et « pas établie » ne se compte pas comme « présent ». Une fin à
+    `None` est une appartenance encore ouverte, donc couvrante — c'est la même
+    convention que `_is_eligible_at` pour une borne absente, mais elle n'est
+    appliquée qu'à la borne haute, jamais aux deux : un membre sans aucune date
+    serait sinon présent à toutes.
+
+    La borne de fin est **inclusive**. Un mandat de groupe qui se termine le
+    jour de la clôture de la législature couvre ce jour : l'exclure viderait la
+    fiche de ses 452 membres d'un coup, sur une convention d'intervalle.
+    """
+    if not date_reference or not membre.get("debut_dans_groupe"):
+        return False
+    if membre["debut_dans_groupe"] > date_reference:
+        return False
+    fin = membre.get("fin_dans_groupe")
+    return fin is None or fin >= date_reference
+
+
+def _deriver_date_reference(
+    membres: list[dict[str, Any]], genere_le: Optional[str]
+) -> Optional[dict[str, Any]]:
+    """La date à laquelle tous les comptes de la fiche se rapportent (#653).
+
+    Dérivée, jamais devinée, et selon un seul critère — l'état des
+    appartenances publiées :
+
+    - **toutes refermées** → la fiche décrit une législature close, et la date
+      est la **plus tardive des fins** (`2024-06-09` pour la XVIe). C'est
+      `periode.fin`, calculée sur la même liste.
+    - **au moins une ouverte** → la législature court encore, et la date est
+      celle de la génération : c'est le seul instant où « qui siège » a un sens.
+
+    Aucune appartenance connue du tout rend la date de génération elle aussi,
+    et tous les compteurs sortent à 0 — l'avertissement d'appartenance non
+    établie dit déjà pourquoi. Rendre `None` serait publier des compteurs que
+    rien ne date, ce que ce lot existe pour supprimer.
+    """
+    datees = [m for m in membres if m.get("debut_dans_groupe")]
+    fins = [m.get("fin_dans_groupe") for m in datees]
+    if datees and all(f is not None for f in fins):
+        return {
+            "date": max(fins),
+            "origine": ORIGINE_DATE_REFERENCE_CLOTURE,
+        }
+    return {
+        "date": (genere_le or "")[:10] or None,
+        "origine": ORIGINE_DATE_REFERENCE_GENERATION,
+    }
+
+
+def _stamper_presences(
+    membres: list[dict[str, Any]], date_reference: Optional[str]
+) -> None:
+    """Pose `present_a_la_date_de_reference` sur chaque entrée, en place.
+
+    En place et non par reconstruction : l'ordre des clés d'une entrée
+    `membres[]` est celui du fichier publié, et le champ doit rester le dernier,
+    là où `actif` était.
+    """
+    for membre in membres:
+        membre["present_a_la_date_de_reference"] = _appartenance_couvre(
+            membre, date_reference
+        )
+
+
+def appartenances_depuis_roster(
+    roster: Iterable[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """`slug → {debut, fin}` : les dates d'appartenance au groupe, par membre.
+
+    Le roster est la seule source de ces dates (#653). Il les porte sous
+    `mandat_debut`/`mandat_fin` — le nom du contrat de
+    `group_roster.fetch_full_roster` —, elles sont renommées ici une fois pour
+    toutes, à la frontière, plutôt qu'à chaque lecture.
+
+    Un membre sans slug n'entre pas dans la table : il n'a pas de profil pivot,
+    donc pas d'entrée `membres[]` non plus. `an_roster` le compte et le nomme
+    déjà (`membres_sans_slug`, #526).
+    """
+    return {
+        membre["slug"]: {
+            "debut": membre.get("mandat_debut"),
+            "fin": membre.get("mandat_fin"),
+        }
+        for membre in roster
+        if membre.get("slug")
     }
 
 
@@ -729,10 +839,51 @@ def _select_mandat_entree_unique(mandats: list[dict[str, Any]]) -> dict[str, Any
     return mandats[0]
 
 
+def _mandat_couvre(mandat: dict[str, Any], reference: Optional[date]) -> bool:
+    """Ce mandat était-il ouvert à la date de référence de la fiche ? (#653)
+
+    Un mandat **sans début** rend `False` : « ouvert à une date » se démontre,
+    et `_intervals_overlap` traite une borne absente comme non bornée, ce qui
+    ferait couvrir toutes les dates à un mandat qu'aucune ne situe (AGENTS.md
+    §2 règle 5). Mesuré sur `AN:LFI-16` et `AN:LR-16` : 0 des 7 249 entrées
+    retenues est dans ce cas, donc le garde-fou ne retire rien aujourd'hui — il
+    empêche seulement une donnée manquante de se compter comme un siège.
+    """
+    if reference is None or not mandat.get("debut"):
+        return False
+    return _intervals_overlap(
+        _parse_date(mandat.get("debut")), _parse_date(mandat.get("fin")),
+        reference, reference,
+    )
+
+
+def _select_mandat_a_la_date(
+    mandats: list[dict[str, Any]], reference: Optional[date]
+) -> dict[str, Any]:
+    """L'entrée à publier pour un `(categorie, label)` en doublon (#653).
+
+    Priorité à un mandat **ouvert à la date de référence**, puis, à défaut, la
+    règle inchangée de `_select_mandat_entree_unique` (actif d'abord, sinon la
+    fin la plus récente).
+
+    Ce préalable n'est pas cosmétique, il est ce qui rend le compteur juste.
+    `_select_mandat_entree_unique` privilégie le mandat `actif`, donc — pour
+    un⋅e réélu⋅e — sa commission de la législature **suivante**, qui ne couvre
+    pas la clôture de celle que la fiche décrit. Mesuré sur `AN:LFI-16`, 1 000
+    des 2 384 entrées ayant plusieurs candidats : sans ce préalable, la
+    commission des affaires sociales tombe de 9 à 3 membres siégeant, celle des
+    lois de 8 à 1. Le mandat publié serait de surcroît celui d'une autre
+    législature que le drapeau qui l'accompagne.
+    """
+    couvrants = [m for m in mandats if _mandat_couvre(m, reference)]
+    return _select_mandat_entree_unique(couvrants or mandats)
+
+
 def _aggregate_mandats(
     profils: list[dict[str, Any]],
     membres: list[dict[str, Any]],
     chambre: Optional[str] = None,
+    date_reference: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Agrège les mandats catégoriels (``MANDATS_AGREGES_CATEGORIES``) de tous
     les membres du groupe, par ``(categorie, label)``.
@@ -746,14 +897,22 @@ def _aggregate_mandats(
     Args:
         profils: liste de profils pivot v1 des membres du groupe.
         membres: sortie de ``[_derive_membre_entry(p) for p in profils]``
-                 (même ordre que ``profils``), utilisée pour déterminer si un
-                 membre est actuellement actif dans le groupe.
+                 (même ordre que ``profils``), après ``_stamper_presences`` :
+                 c'est ``present_a_la_date_de_reference`` qui est lu.
+        date_reference: la date de la fiche (``date_reference.date``), à
+                 laquelle l'ouverture de chaque mandat est évaluée. ``None``
+                 ne compte personne comme siégeant — un mandat qu'aucune date
+                 ne situe n'est pas un mandat ouvert.
 
     Deux grandeurs distinctes, jamais un seul nombre (#656) :
 
-    - ``nb_membres_actifs`` — **qui y siège** : membres dont le mandat est
-      encore ouvert *et* qui appartiennent encore au groupe. C'est la réponse
-      à « ce groupe travaille sur quoi ».
+    - ``nb_membres_a_la_date_de_reference`` — **qui y siège** : membres dont le
+      mandat est ouvert *et* qui appartiennent au groupe **à la date de
+      référence de la fiche** (#653). C'est la réponse à « ce groupe travaille
+      sur quoi ». Le champ s'appelait ``nb_membres_actifs`` et se lisait
+      « aujourd'hui » : sur une fiche de législature close — les 7 publiées le
+      sont — cette lecture ne compte personne, puisque tous les mandats de
+      groupe de la XVIe se referment le 2024-06-09.
     - ``nb_membres_cumul_historique`` — **qui y est passé** : membres distincts
       ayant occupé ce mandat au moins une fois, si brièvement que ce soit.
       Cumul, jamais un effectif.
@@ -789,15 +948,18 @@ def _aggregate_mandats(
 
     Returns:
         Liste de dicts conformes à la structure ``mandats_agreges`` du schéma
-        de groupe, triée par ``nb_membres_actifs`` décroissant, puis
-        ``nb_membres_cumul_historique`` décroissant, puis ``(categorie,
+        de groupe, triée par ``nb_membres_a_la_date_de_reference`` décroissant,
+        puis ``nb_membres_cumul_historique`` décroissant, puis ``(categorie,
         label)`` croissant.
     """
     n = len(profils)
     if n == 0:
         return []
 
-    membre_actif_par_id = {m["membre_id"]: m["actif"] for m in membres}
+    membre_present_par_id = {
+        m["membre_id"]: m.get("present_a_la_date_de_reference", False) for m in membres
+    }
+    ref = _parse_date(date_reference)
 
     buckets: dict[tuple[str, str], list[dict[str, Any]]] = {}
 
@@ -828,8 +990,16 @@ def _aggregate_mandats(
             candidats_par_cle.setdefault((categorie, label), []).append(m)
 
         for cle, candidats in candidats_par_cle.items():
-            chosen = _select_mandat_entree_unique(candidats)
-            entree_actif = bool(chosen.get("actif")) and bool(membre_actif_par_id.get(membre_id))
+            chosen = _select_mandat_a_la_date(candidats, ref)
+            # « Ouvert à la date de référence », et non « `actif` » (#653) :
+            # `actif` est posé à la collecte et se lit « au jour du run ». Sur
+            # une fiche de législature close il désigne les mandats de la
+            # législature SUIVANTE — le compteur de tête de chaque carte de
+            # commission comptait donc les commissions d'aujourd'hui des
+            # membres d'hier.
+            entree_actif = _mandat_couvre(chosen, ref) and bool(
+                membre_present_par_id.get(membre_id)
+            )
             buckets.setdefault(cle, []).append({
                 "membre_id": membre_id,
                 "nom": nom,
@@ -849,7 +1019,7 @@ def _aggregate_mandats(
         result.append({
             "categorie": categorie,
             "label": label,
-            "nb_membres_actifs": sum(1 for e in entries if e["actif"]),
+            "nb_membres_a_la_date_de_reference": sum(1 for e in entries if e["actif"]),
             "nb_membres_cumul_historique": len(entries),
             "effectif_reference": n,
             "par_fonction": par_fonction,
@@ -861,7 +1031,7 @@ def _aggregate_mandats(
     # commission où 9 siègent réellement — le cumul ne départage plus qu'à
     # égalité de membres siégeant.
     result.sort(key=lambda x: (
-        -x["nb_membres_actifs"],
+        -x["nb_membres_a_la_date_de_reference"],
         -x["nb_membres_cumul_historique"],
         x["categorie"],
         x["label"],
@@ -1541,6 +1711,7 @@ def build_groupe_profile(
     licence_donnees: str = "",
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
+    appartenances: Optional[dict[str, dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -1563,22 +1734,56 @@ def build_groupe_profile(
                     entrées exploitables sont celles qui portent encore leur
                     enregistrement, et les autres sont comptées puis remontées
                     en `meta.warnings` plutôt qu'ignorées en silence.
+        appartenances: `slug → {debut, fin}` d'appartenance AU GROUPE, pour la
+                    législature de la fiche (#653). Construit par
+                    `appartenances_depuis_roster` sur le roster AMO30, seule
+                    source de ces dates. Absent — ou membre absent de la table
+                    —, `membres[].debut_dans_groupe` est publié `null` et le
+                    nombre de membres concernés est remonté en
+                    `meta.warnings` : le repli sur le mandat électif, qui
+                    datait l'entrée dans le groupe au début de la carrière,
+                    est ce que ce lot retire.
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
     """
     warnings: list[str] = []
+    # La date de génération est lue AVANT l'assemblage : c'est le repli de la
+    # date de référence quand la législature court encore, et
+    # `make_empty_profil_groupe` la pose plus bas, trop tard pour les comptes.
+    genere_le = time.strftime("%Y-%m-%dT%H:%M:%S%z")
 
     # --- Membres ---
-    membres = [_derive_membre_entry(p, chambre) for p in profils]
-
-    # --- Effectif ---
-    n_actif = sum(1 for m in membres if m["actif"])
-    effectif: dict[str, Any] = {
-        "actuel": n_actif,
-        "min_historique": None,  # non calculé (nécessiterait une analyse de timeline)
-        "max_historique": None,
-    }
+    # Les dates d'appartenance viennent du mandat GP de la législature de la
+    # fiche (#653), jamais des mandats électifs du profil. Un membre que la
+    # table ne couvre pas garde des dates `null` : il est compté et nommé
+    # juste en dessous, pas daté par défaut (AGENTS.md §2 règle 5).
+    membres = [
+        _derive_membre_entry(
+            p, chambre, (appartenances or {}).get(p.get("id") or "")
+        )
+        for p in profils
+    ]
+    sans_appartenance = [m["membre_id"] for m in membres if m["debut_dans_groupe"] is None]
+    if sans_appartenance:
+        if appartenances is None:
+            warnings.append(avertissement(
+                f"appartenance_au_groupe : aucun roster fourni à cette agrégation, donc "
+                f"aucune date d'appartenance dérivable pour les {len(sans_appartenance)} "
+                "membre(s) de la fiche. `debut_dans_groupe`/`fin_dans_groupe` sont publiés "
+                "`null` et `present_a_la_date_de_reference` vaut `false` : appartenance non "
+                "établie, jamais datée depuis le mandat électif — ce qui daterait l'entrée "
+                "dans le groupe au début de la carrière (#653).",
+                DESTINATAIRE_LECTEUR,
+            ))
+        else:
+            warnings.append(avertissement(
+                f"appartenance_au_groupe : {len(sans_appartenance)} membre(s) sans mandat de "
+                "groupe politique identifiable dans le roster de cette législature — dates "
+                f"publiées `null`, appartenance non établie (#653) : "
+                f"{', '.join(sorted(sans_appartenance))}.",
+                DESTINATAIRE_LECTEUR,
+            ))
 
     # --- Période du groupe ---
     all_debuts = [_parse_date(m["debut_dans_groupe"]) for m in membres]
@@ -1586,13 +1791,53 @@ def build_groupe_profile(
     parsed_debuts = [d for d in all_debuts if d is not None]
 
     periode_debut = str(min(parsed_debuts)) if parsed_debuts else None
-    # Le groupe est actif si au moins un membre est actif (fin_dans_groupe = None)
-    groupe_actif = any(m["actif"] for m in membres)
+    # Le groupe est ouvert tant qu'une appartenance datée n'a pas de fin.
+    # `periode.actif` reste ce qu'il dit — une propriété de la PÉRIODE, pas un
+    # compteur ancré sur le présent : `false` sur une législature close est
+    # exact, et c'est pour ça qu'il n'est pas rapporté à la date de référence.
+    groupe_actif = any(
+        m["debut_dans_groupe"] and m["fin_dans_groupe"] is None for m in membres
+    )
     if groupe_actif:
         periode_fin = None
     else:
         parsed_fins = [f for f in all_fins if f is not None]
         periode_fin = str(max(parsed_fins)) if parsed_fins else None
+
+    # --- Date de référence, puis les comptes qui s'y rapportent (#653) ---
+    # L'ordre est contraint : la date se dérive des dates de TOUS les membres,
+    # et c'est elle qui décide ensuite qui est compté. Aucun compteur de cette
+    # fiche ne se calcule avant elle.
+    date_reference = _deriver_date_reference(membres, genere_le)
+    date_ref = (date_reference or {}).get("date")
+    _stamper_presences(membres, date_ref)
+
+    # --- Effectif ---
+    n_presents = sum(1 for m in membres if m["present_a_la_date_de_reference"])
+    effectif: dict[str, Any] = {
+        "a_la_date_de_reference": n_presents,
+        "min_historique": None,  # non calculé (nécessiterait une analyse de timeline)
+        "max_historique": None,
+    }
+    if (date_reference or {}).get("origine") == ORIGINE_DATE_REFERENCE_CLOTURE:
+        warnings.append(avertissement(
+            f"date_reference : tous les comptes de cette fiche se rapportent au "
+            f"{date_ref}, clôture de la législature — `effectif.a_la_date_de_reference` "
+            f"({n_presents} sur les {len(membres)} entrées de `membres[]`), "
+            "`mandats_agreges[].nb_membres_a_la_date_de_reference` et "
+            "`membres[].present_a_la_date_de_reference`. Une fiche de législature close "
+            "est un objet historique : aucun de ses compteurs ne dit « aujourd'hui » "
+            "(#653).",
+            DESTINATAIRE_LECTEUR,
+        ))
+    else:
+        warnings.append(avertissement(
+            f"date_reference : tous les comptes de cette fiche se rapportent au "
+            f"{date_ref}, date de génération — au moins une appartenance au groupe est "
+            "encore ouverte, la législature court. La valeur bougera au prochain run "
+            "(#653).",
+            DESTINATAIRE_LECTEUR,
+        ))
 
     # --- Cohésion de vote ---
     cohesion_votes = _compute_cohesion_votes(
@@ -1638,7 +1883,7 @@ def build_groupe_profile(
                 sources.append(s)
 
     # --- Mandats agrégés (agrégation catégorielle sur mandats[]) ---
-    mandats_agreges = _aggregate_mandats(profils, membres, chambre)
+    mandats_agreges = _aggregate_mandats(profils, membres, chambre, date_ref)
 
     # --- Amendements agrégés (comparateur du taux d'adoption individuel) ---
     amendements_agreges, n_amendements_non_resolus = _aggregate_amendements(
@@ -1678,6 +1923,7 @@ def build_groupe_profile(
         "actif": groupe_actif,
     }
     profil_groupe["membres"] = membres
+    profil_groupe["date_reference"] = date_reference
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
     profil_groupe["tags_thematiques_agreges"] = tags_agreges
@@ -1912,6 +2158,13 @@ def generate_groupe_profile_from_roster(
     distincts = CumulAmendementsDistincts()
     profils: list[dict[str, Any]] = []
     missing_slugs: list[str] = []
+    # Les dates d'appartenance sont indexées sur l'`id` du pivot **chargé**, pas
+    # sur le slug du roster : les deux coïncident depuis #487, et les indexer
+    # sur le slug rendrait le rapprochement muet le jour où ils divergent — ce
+    # qui, sur des dates publiées, se lirait comme « appartenance non établie »
+    # plutôt que comme un bug.
+    table_roster = appartenances_depuis_roster(roster)
+    appartenances: dict[str, dict[str, Any]] = {}
     for member in roster:
         slug = member.get("slug")
         pivot_path = profiles_dir / f"{slug}.pivot.json" if slug else None
@@ -1919,12 +2172,15 @@ def generate_groupe_profile_from_roster(
             missing_slugs.append(slug or member.get("nom") or "?")
             continue
         try:
-            profils.append(load_profil_from_file(
+            profil = load_profil_from_file(
                 pivot_path, amendements_index, distincts=distincts
-            ))
+            )
         except (FileNotFoundError, ValueError) as exc:
             print(f"  [!] {exc}", file=sys.stderr)
             missing_slugs.append(slug)
+            continue
+        profils.append(profil)
+        appartenances[profil.get("id") or slug] = table_roster[slug]
 
     for slug in recovered_slugs:
         pivot_path = profiles_dir / f"{slug}.pivot.json"
@@ -1968,6 +2224,13 @@ def generate_groupe_profile_from_roster(
         licence_donnees=licence_donnees,
         scrutins_index=scrutins_index,
         amendements_index=amendements_index,
+        # Les dates d'appartenance sortent du roster, pas des profils (#653).
+        # Les `recovered_slugs` de `--merge-existing` n'y sont par définition
+        # pas : leurs dates sortent `null`, et `build_groupe_profile` les
+        # compte — un membre réintégré parce que le roster ne l'a pas rendu
+        # n'a pas de mandat de groupe lisible, et lui en inventer un serait
+        # exactement ce que ce lot retire.
+        appartenances=appartenances,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster

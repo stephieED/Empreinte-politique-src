@@ -41,14 +41,43 @@ Format d'un profil de groupe v1 :
         {
             "membre_id": "jerome-guedj",         # id pivot individuel = son slug (#487)
             "nom": "Jérôme Guedj",
-            "debut_dans_groupe": "2022-06-22",       # début de l'appartenance à CE groupe
-            "fin_dans_groupe": null,                 # null = toujours membre
-            "actif": true
+            "debut_dans_groupe": "2022-06-29",       # début de l'appartenance à CE groupe,
+                                                     # lu sur le mandat GP de la législature
+                                                     # de la fiche (#653). null = appartenance
+                                                     # non établie, jamais approximée depuis
+                                                     # le mandat électif.
+            "fin_dans_groupe": "2024-06-09",         # null = appartenance encore ouverte
+            "present_a_la_date_de_reference": true   # le membre appartenait-il au groupe à
+                                                     # `date_reference.date` ? Remplace `actif`
+                                                     # (#653) : « actif » disait un présent
+                                                     # qu'une fiche de législature close n'a
+                                                     # pas. false si l'appartenance n'est pas
+                                                     # établie — jamais « présent par défaut ».
         }
     ],
 
+    "date_reference": {                 # LA date à laquelle TOUS les comptes de la fiche se
+                                        # rapportent (#653) : `effectif`,
+                                        # `mandats_agreges[].nb_membres_a_la_date_de_reference`
+                                        # et `membres[].present_a_la_date_de_reference`.
+                                        # Dérivée, jamais devinée ; publiée parce qu'un
+                                        # compteur daté qu'on ne peut pas dater à la lecture
+                                        # est un compteur nu. ABSENTE des fiches publiées
+                                        # avant le lot (les 2 `groupe-Senat-*`, gelées par
+                                        # #516) : optionnelle, jamais obligatoire.
+        "date": "2024-06-09",           # ISO-8601
+        "origine": "cloture_legislature"  # ORIGINES_DATE_REFERENCE : `cloture_legislature`
+                                        # (toutes les appartenances refermées → la plus
+                                        # tardive) | `generation` (au moins une encore
+                                        # ouverte → meta.genere_le)
+    },
+
     "effectif": {
-        "actuel": 64,                   # nombre de membres actifs au moment du calcul
+        "a_la_date_de_reference": 169,  # membres appartenant au groupe à `date_reference.date`
+                                        # (#653). Remplace `actuel`, qui comptait les membres
+                                        # encore députés le JOUR DU CALCUL — une propriété de
+                                        # leur carrière, pas du groupe : 85 des 193 membres de
+                                        # `AN:REN-16`, quand 169 y siégeaient à la clôture.
         "min_historique": null,         # min. sur la période (null si non calculé)
         "max_historique": null          # max. sur la période (null si non calculé)
     },
@@ -88,8 +117,8 @@ Format d'un profil de groupe v1 :
     "mandats_agreges": [                # agrégation catégorielle des mandats[] (commission,
                                          # groupe_amitie, extra_parlementaire — voir
                                          # group_profile.MANDATS_AGREGES_CATEGORIES), liste plate
-                                         # triée nb_membres_actifs desc, puis
-                                         # nb_membres_cumul_historique desc, puis
+                                         # triée nb_membres_a_la_date_de_reference desc,
+                                         # puis nb_membres_cumul_historique desc, puis
                                          # categorie/label asc (#656).
                                          # mandat_electif/groupe_politique/fonction_gouvernementale/
                                          # autre volontairement exclus (voir group_profile.py).
@@ -101,8 +130,14 @@ Format d'un profil de groupe v1 :
             # durent une journée ou moins — un⋅e député⋅e n'appartient qu'à une
             # commission permanente à la fois, tout passage temporaire y est
             # donc écrit comme un mandat à part entière.
-            "nb_membres_actifs": 2,      # QUI Y SIÈGE : mandat encore ouvert ET
-                                         # appartenance au groupe encore active
+            "nb_membres_a_la_date_de_reference": 2,
+                                         # QUI Y SIÈGE, à `date_reference.date` (#653) :
+                                         # mandat ouvert à cette date ET appartenance au
+                                         # groupe couvrant cette date. S'appelait
+                                         # `nb_membres_actifs` et se lisait « aujourd'hui »,
+                                         # ce qui, sur une fiche de législature close,
+                                         # comptait les commissions ACTUELLES de membres
+                                         # d'hier.
             "nb_membres_cumul_historique": 5,
                                          # QUI Y EST PASSÉ : membres distincts (éligibles, cf.
                                          # chevauchement mandat/appartenance) ayant occupé ce
@@ -183,7 +218,7 @@ Format d'un profil de groupe v1 :
         # construit via group_profile.py --from-roster) : {"roster_total": 62,
         # "profils_disponibles": 12} — nombre réel de membres du groupe (via
         # group_roster.py) vs. nombre de profils pivot locaux effectivement
-        # chargés. Ne JAMAIS confondre avec effectif.actuel (qui ne décrit que
+        # chargés. Ne JAMAIS confondre avec effectif.a_la_date_de_reference (qui ne décrit que
         # les membres présents dans `profils`, pas le groupe réel).
 }
 
@@ -267,6 +302,25 @@ REQUIRED_META_KEYS: frozenset[str] = frozenset({
 # C'est la même règle que celle des cinq listes d'un profil (#539) appliquée au
 # niveau du groupe : une absence produite par une décision se publie comme une
 # décision, jamais comme un fait.
+# Origines de `date_reference.origine` (#653).
+#
+# Une fiche de groupe décrit une législature, et aucune des 7 publiées ne décrit
+# la législature en cours. Tout compteur ancré sur « aujourd'hui » y est donc
+# vide de sens : `effectif.actuel` comptait les membres de la XVIe encore
+# députés le jour du calcul — une propriété de leur carrière, pas du groupe.
+#
+# Tous les comptes d'une fiche se rapportent désormais à UNE date, publiée à
+# côté d'eux. Elle est **dérivée**, jamais devinée : la clôture de la période du
+# groupe quand toutes les appartenances sont refermées, la date de génération
+# tant qu'au moins une reste ouverte. Un compteur daté qu'on ne peut pas dater à
+# la lecture est un compteur nu (AGENTS.md §2 règle 2).
+ORIGINE_DATE_REFERENCE_CLOTURE = "cloture_legislature"
+ORIGINE_DATE_REFERENCE_GENERATION = "generation"
+ORIGINES_DATE_REFERENCE: tuple[str, ...] = (
+    ORIGINE_DATE_REFERENCE_CLOTURE,
+    ORIGINE_DATE_REFERENCE_GENERATION,
+)
+
 ETAT_ROSTER_DANS_LE_PERIMETRE = "dans_le_perimetre"
 ETAT_ROSTER_HORS_PERIMETRE = "hors_perimetre"
 ETATS_COUVERTURE_ROSTER: tuple[str, ...] = (
@@ -337,8 +391,9 @@ def make_empty_profil_groupe(
         },
         "historique_noms": [],
         "membres": [],
+        "date_reference": None,
         "effectif": {
-            "actuel": 0,
+            "a_la_date_de_reference": 0,
             "min_historique": None,
             "max_historique": None,
         },
@@ -450,6 +505,26 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     periode = profil.get("periode")
     if not isinstance(periode, dict):
         errors.append("'periode' doit être un dict.")
+
+    # `date_reference` est OPTIONNELLE, jamais obligatoire (#653) : les 2 fiches
+    # `groupe-Senat-*` publiées avant le lot ne la portent pas et ne seront pas
+    # régénérées (extraction suspendue, #516). L'exiger les ferait échouer au
+    # portail de qualité, qui hard-fail sur un schéma de groupe invalide — une
+    # migration ne se paie pas en cassant ce qui est déjà publié. Présente, elle
+    # est validée : une origine hors vocabulaire est un compteur mal daté.
+    date_reference = profil.get("date_reference")
+    if date_reference is not None:
+        if not isinstance(date_reference, dict):
+            errors.append("'date_reference' doit être un dict ou null.")
+        else:
+            origine = date_reference.get("origine")
+            if origine not in ORIGINES_DATE_REFERENCE:
+                errors.append(
+                    f"'date_reference.origine' non reconnue : {origine!r}. "
+                    f"Valeurs connues : {sorted(ORIGINES_DATE_REFERENCE)}."
+                )
+            if not date_reference.get("date"):
+                errors.append("'date_reference.date' est vide ou absente.")
 
     amendements_agreges = profil.get("amendements_agreges")
     if amendements_agreges is not None and not isinstance(amendements_agreges, dict):
