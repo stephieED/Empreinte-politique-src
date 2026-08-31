@@ -138,14 +138,36 @@ dépend de la forme de l'apostrophe, et l'écart est mesurable :**
 
 | Motif | Scrutins retenus |
 | --- | ---: |
-| apostrophe droite `l'ensemble` | **916** |
-| apostrophe typographique `l’ensemble` | **22** |
-| **union** | **938** |
+| sous-chaîne `l'ensemble` n'importe où, apostrophe ASCII | **916** |
+| sous-chaîne `l’ensemble` n'importe où, apostrophe typographique | **22** |
+| **union des deux, sous-chaîne** | **938** |
+| en tête de libellé, apostrophe ASCII | **910** |
+| en tête de libellé, apostrophe typographique | **22** |
+| **union des deux, en tête** | **932** |
 
-Les 22 manquants ne sont pas répartis au hasard : **l'apostrophe typographique
-n'apparaît que dans les législatures 16 et 17** (884 scrutins sur 8 434 + 4 105),
-c'est-à-dire les plus récentes. Un motif naïf perd donc silencieusement des votes
-récents — exactement le « elle rouille » que
+*Recontrôlé le 31/08/2026 par l'agent principal, à `4dda4d52` et à `957a9efa` —
+valeurs identiques aux deux SHA. Les deux lignes de sous-chaîne reproduisent la
+mesure d'origine ; les trois lignes « en tête » sont ajoutées, parce que l'écart
+entre les deux motifs est lui-même un défaut.*
+
+**L'apostrophe fait perdre 22 scrutins. Le motif naïf en fait gagner 6 qui n'ont
+rien à y faire.** Les deux erreurs sont de sens contraire et ne se compensent pas :
+
+| Ce que le motif naïf produit | Nombre | Nature |
+| --- | ---: | --- |
+| Scrutins « sur l'ensemble » **manqués** | **22** | tous en législatures **16 (12) et 17 (10)**, les plus récentes |
+| Scrutins **capturés à tort** | **6** | 2 votes sur un **amendement**, 2 sur un **article**, 1 **motion de rejet préalable**, 1 libellé « sur l'ensemble » interne |
+
+Les 6 faux positifs sont éditorialement plus graves que les 22 manqués : un vote
+sur un amendement ou une motion de rejet compté comme un vote sur l'ensemble d'un
+texte publie une position que la personne n'a pas prise — §2 règle 4 pour la
+motion, §2 règle 2 pour les autres. Un vote manqué est un vide ; un vote inventé
+est une affirmation.
+
+Les 22 manqués ne sont pas répartis au hasard : **l'apostrophe typographique
+n'apparaît que dans les législatures 16 et 17**, c'est-à-dire les plus récentes.
+Un motif naïf perd donc silencieusement des votes récents — exactement le
+« elle rouille » que
 `docs/decisions/regrouper-nest-pas-joindre-639.md` reproche à une clé dérivée d'un
 libellé.
 
@@ -414,7 +436,7 @@ Six issues, aucune ouverte par ce lot.
 | Rang | Titre proposé | Case | Pourquoi maintenant |
 | ---: | --- | :---: | --- |
 | 1 | **`amendements_agreges` par profil : publier ce que le navigateur recalcule** | **C1** | +301 Kio et +16 s mesurés, contre −112,7 Mo servis et −522 Mio d'empreinte sur la page la plus lourde. Le calcul par membre existe déjà dans `src/group_profile.py` |
-| 2 | **La sélection des votes « sur l'ensemble » ne doit pas dépendre d'une apostrophe** | — | 916 vs 938 selon la forme du caractère, et les 22 manquants sont tous en législatures 16-17. Se résout par #639 rang 1, ou se documente comme borne |
+| 2 | **La sélection des votes « sur l'ensemble » ne doit dépendre ni d'une apostrophe ni d'une sous-chaîne** | — | **22 scrutins manqués** (tous en législatures 16-17) et **6 capturés à tort** (amendement, article, motion de rejet). Les deux erreurs sont de sens contraire. Se résout par #639 rang 1, ou se documente comme borne |
 | 3 | **Une fiche de gouvernement doit savoir dire pourquoi elle est incomplète** | **C2** | 0 / 10 portent un bloc de couverture ; la seule bonne phrase du site vient d'une constante en dur dans `pivotAdapter.js` |
 | 4 | **Publier `infoJO.referenceNOR` sur les textes de gouvernement** | **C3** | 0 / 725 publiés. Préalable à D4, et utile seul (identifiant officiel de la loi) |
 | 5 | **`source_url` sur les amendements** | **D3** | 0 / 484 132 — le seul objet en volume qui ne peut pas porter le badge du §7 |
