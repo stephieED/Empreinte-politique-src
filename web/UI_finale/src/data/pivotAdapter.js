@@ -33,26 +33,24 @@ import {
   votesDuProfil,
 } from '../utils/profilCandidat';
 import {
-  NB_SCRUTINS_AFFICHES,
+  ORDRE_POSTURES,
+  POSTURES_GROUPE,
   REFUS_FICHE_GROUPE,
+  comparaisonParPosture,
+  convergences,
   couvertureRoster,
   dateDeReference,
-  decomptesCohesion,
   effectifDuGroupe,
   etiquettesThematiques,
-  excusesRenseignees,
-  quorumDuScrutin,
-  ratioCohesion,
+  fonctionsDuGroupe,
+  grandesLois,
+  partageDuGroupe,
+  postureDuGroupe,
+  quorumDeLaFiche,
   siegeEtPasse,
-  troncatureCohesion,
   troncatureTags,
 } from '../utils/groupe';
-
-const AMENDMENT_OUTCOME_KEYS = ['adopté', 'rejeté', 'retiré', 'tombé', 'irrecevable', 'non_soutenu'];
-const AMENDMENT_OUTCOME_LABELS = {
-  adopté: 'Adoptés', rejeté: 'Rejetés', retiré: 'Retirés',
-  tombé: 'Tombés', irrecevable: 'Irrecevables', non_soutenu: 'Non soutenus',
-};
+import { OUTCOME_COLOR } from '../utils/lecture';
 
 // Libellés des catégories de mandats_agreges (group_profile.MANDATS_AGREGES_CATEGORIES).
 // Périmètre élargi par #382/#386 : avant cette taxonomie, commissions
@@ -486,95 +484,17 @@ export function buildCandidateView(
   };
 }
 
-/** Construit l'objet consommé par GroupProfile.jsx à partir d'un profil de groupe v1.
- *
- * Lot 3 (#329) : les règles de lecture propres au groupe vivent dans
- * `utils/groupe.js`, les six fondations communes dans `utils/lecture.js`. Cet
- * adaptateur les APPELLE, il n'en écrit pas de seconde version.
+/*
+ * Les mandats agrégés, triés par rang de catégorie puis par « qui y siège »
+ * (#656). Extrait de `buildGroupView` par #329 : le tri n'a pas changé, la
+ * section qui le consomme, si.
  */
-export function buildGroupView(groupe, scrutinsIndex = null) {
-  const membres = groupe.membres || [];
-  const rosterTotal = groupe.meta?.couverture_roster?.roster_total
-    ?? groupe.effectif?.a_la_date_de_reference ?? 0;
-
-  // #653 : tous les comptes de la fiche se rapportent à cette date, publiée à
-  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface le DIT
-  // plutôt que d'inventer une date ou de laisser lire « aujourd'hui ».
-  const dateRef = dateDeReference(groupe);
-  const dateReferenceLabel = formatFrDate(dateRef.date);
-
-  const effectif = effectifDuGroupe(groupe);
-  const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? membres.length;
-  const coveragePct = rosterTotal ? Math.round((profilsDisponibles / rosterTotal) * 100) : 0;
-
-  const seuilQuorum = groupe.meta?.seuil_quorum ?? null;
-
-  // `date`, `texte` et `sort` ont migré vers l'index partagé (#432) : ce sont
-  // des champs du scrutin, qui étaient recopiés dans chacun des groupes l'ayant
-  // voté. Les 4 104 scrutins des groupes sont inclus dans ceux des profils —
-  // un seul index sert les deux.
-  const cohesionVotes = groupe.cohesion_votes || [];
-  // Mesuré : `excuses` vaut 0 sur les 19 832 entrées des 5 fiches AN, faute de
-  // position `excuse` dans le corpus. Le décompte est donc structurellement
-  // vide, et un 0 structurel ne se publie pas comme un 0 mesuré (§2 règle 5).
-  const publierExcuses = excusesRenseignees(cohesionVotes);
-  const votes = cohesionVotes.slice(0, NB_SCRUTINS_AFFICHES).map((v) => {
-    // Même repli transitoire que pour les profils : les fichiers de groupe
-    // d'avant #432 portent encore `date`/`texte` dans l'entrée.
-    const scrutin = resolveScrutin(scrutinsIndex, v.scrutin_id) || v;
-    const { decomptes, eligibles, exhaustif } = decomptesCohesion(v, { publierExcuses });
-    return {
-      id: v.scrutin_id ?? scrutin?.id ?? null,
-      date: formatFrDate(scrutin?.date) || 'Date non renseignée',
-      texte: scrutin?.texte ?? null,
-      sourceUrl: scrutin?.source_url ?? null,
-      position: v.position_majoritaire,
-      // Les six décomptes remplacent la barre de cohérence : ce sont des
-      // catégories, pas une échéance du pire au meilleur (#329).
-      decomptes,
-      eligibles,
-      partitionExacte: exhaustif,
-      coherence: ratioCohesion(v),
-      quorum: quorumDuScrutin(v, seuilQuorum),
-    };
-  });
-  const troncatureVotes = troncatureCohesion(cohesionVotes.length);
-
-  const agg = groupe.amendements_agreges || {};
-  const parDepute = agg.par_type_deposant?.depute;
-  const amendmentSegments = AMENDMENT_OUTCOME_KEYS.map((key) => {
-    const map = {
-      adopté: 'nb_adoptes', rejeté: 'nb_rejetes', irrecevable: 'nb_irrecevables',
-    };
-    const count = map[key] ? (agg[map[key]] ?? 0) : 0;
-    return { key, label: AMENDMENT_OUTCOME_LABELS[key], count };
-  });
-
-  // Étiquettes thématiques (#329) : les SUJETS sur lesquels les membres sont
-  // intervenus, jamais des positions du groupe (§2 règle 8). Chacune part avec
-  // son `nb_membres_porteurs` et son dénominateur — une étiquette portée par
-  // 1 membre sur 76 ne dit pas ce que dit une étiquette portée par 60.
-  const tagsAgreges = groupe.tags_thematiques_agreges || [];
-  const tags = etiquettesThematiques(groupe);
-  const coupeTags = troncatureTags(tagsAgreges.length);
-
-  // mandats_agreges : le backend trie par nb_membres_a_la_date_de_reference desc, puis
-  // nb_membres_cumul_historique desc, puis categorie/label asc (#656). Depuis
-  // #382/#386 le volume et la diversité de catégories ont fortement augmenté
-  // (7 catégories au lieu de 3) : on re-trie ici par rang de catégorie
-  // d'abord, pour que les commissions permanentes ne soient plus noyées sous
-  // les groupes d'études, bien plus nombreux.
-  //
-  // Au sein d'une catégorie, le critère est « qui y siège » et non « qui y est
-  // passé » : 43 % des adhésions de commission publiées durent une journée ou
-  // moins, et trier sur le cumul mettait en tête d'`AN-LFI-16` la commission
-  // des finances (5 membres y siègent, 67 y sont passés dont 44 pour une
-  // journée ou moins) devant celle des affaires sociales (9 siègent) (#656).
-  const mandatsAgreges = (groupe.mandats_agreges || [])
+function mandatsAgregesTries(groupe, effectifDeSecours) {
+  return (groupe.mandats_agreges || [])
     .map((m) => {
       // Les deux noms sont lus (#329) : sans ce repli, les 17 cartes des 2
       // fiches Senat rendaient « undefined membre y a siégé au moins une fois ».
-      const compte = siegeEtPasse(m, membres.length);
+      const compte = siegeEtPasse(m, effectifDeSecours);
       return {
         categorie: m.categorie,
         categorieLabel: MANDAT_CATEGORY_LABELS[m.categorie] || m.categorie,
@@ -605,79 +525,224 @@ export function buildGroupView(groupe, scrutinsIndex = null) {
       if (pb !== pa) return pb - pa;
       return (a.label || '').localeCompare(b.label || '', 'fr');
     });
+}
+
+/*
+ * La fiche de groupe reprise de bout en bout (#329).
+ *
+ * L'ordre des six sections est celui des questions qu'on se pose sur un groupe,
+ * une seule focale à la fois — l'interne d'abord, la comparaison à la fin. Les
+ * règles vivent dans `utils/groupe.js` ; cet adaptateur met en forme.
+ *
+ * `comparaison` est la projection des groupes de la MÊME législature
+ * (`scripts/comparaison-groupes.mjs`), pas les fiches voisines : 51 Ko au lieu
+ * de 15,1 Mo. Elle peut manquer — la page le dit alors, section par section,
+ * plutôt que d'afficher des tableaux vides qui se liraient comme des zéros.
+ */
+export function buildGroupView(groupe, scrutinsIndex = null, comparaison = null) {
+  const membres = groupe.membres || [];
+  const rosterTotal = groupe.meta?.couverture_roster?.roster_total
+    ?? groupe.effectif?.a_la_date_de_reference ?? 0;
+
+  // #653 : tous les comptes de la fiche se rapportent à cette date, publiée à
+  // côté d'eux. Absente des 2 fiches Senat gelées (#516) : l'interface le DIT
+  // plutôt que d'inventer une date ou de laisser lire « aujourd'hui ».
+  const dateRef = dateDeReference(groupe);
+  const dateReferenceLabel = formatFrDate(dateRef.date);
+  const effectif = effectifDuGroupe(groupe);
+  const profilsDisponibles = groupe.meta?.couverture_roster?.profils_disponibles ?? membres.length;
+
+  const sigle = groupe.groupe_sigle ?? null;
+  const scrutins = Array.isArray(scrutinsIndex) ? scrutinsIndex : Object.values(scrutinsIndex || {});
+
+  // ── 4 · le quorum, le partage, les grandes lois, les convergences ────────
+  const quorum = quorumDeLaFiche(groupe);
+  const partage = partageDuGroupe(groupe);
+  // Chaque scrutin partagé est nommé par son intitulé officiel et lié à sa
+  // source : un décompte sans le texte voté ne se vérifie pas (§2 règle 2).
+  const partageExemples = partage.exemples.map((e) => {
+    const scrutin = resolveScrutin(scrutinsIndex, e.scrutinId);
+    return {
+      ...e,
+      date: formatFrDate(scrutin?.date) || null,
+      texte: scrutin?.texte ?? null,
+      sourceUrl: scrutin?.source_url ?? null,
+    };
+  });
+
+  const lois = comparaison ? grandesLois(scrutins, comparaison, sigle) : null;
+  const accords = comparaison ? convergences(comparaison, sigle) : null;
+  const comparee = comparaison ? comparaisonParPosture(comparaison, sigle) : null;
+
+  // ── 3 · ce qu'ils proposent, par type de déposant ────────────────────────
+  const agg = groupe.amendements_agreges || {};
 
   return {
     id: groupe.groupe_id,
+    sigle,
     title: groupe.groupe_nom,
+    chambreLabel: groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
+    // #686 lit le référentiel AMO30 : la qualification n'existe que pour l'AN.
+    chambreAN: groupe.chambre === 'AN',
+    legislature: groupe.legislature ?? null,
     // Les 2 fiches Senat gelées n'ont pas de `legislature` : « Législature null »
     // s'affichait tel quel. Une donnée absente ne se rend pas (§2 règle 5).
     kicker: [
       groupe.chambre === 'AN' ? 'Assemblée nationale' : 'Sénat',
       groupe.legislature == null ? null : `Législature ${groupe.legislature}`,
-      `${rosterTotal} membres`,
     ].filter(Boolean).join(' · '),
+    periode: {
+      debut: groupe.periode?.debut ?? null,
+      fin: groupe.periode?.fin ?? null,
+      actif: groupe.periode?.actif ?? false,
+    },
+
+    // ── 1 · qui sont-ils ───────────────────────────────────────────────────
+    // La posture est expliquée ICI, une fois, et ne se répète pas : un
+    // avertissement répété devient une excuse.
+    posture: postureDuGroupe(groupe),
+    posturesConnues: ORDRE_POSTURES
+      .filter((cle) => cle === 'majorite' || cle === 'opposition' || cle === 'minoritaire')
+      .map((cle) => ({ cle, ...POSTURES_GROUPE[cle] })),
+    effectif: effectif.valeur,
+    effectifDenominateur: effectif.denominateur,
+    effectifRapporteALaDate: effectif.rapporteALaDate,
     profilsDisponibles,
     rosterTotal,
-    coveragePct,
-    // Trois compteurs, chacun avec son dénominateur — jamais un pourcentage
-    // seul (§2 règle 7). Le premier s'appelait « Effectif actuel » et affichait
-    // `roster_total` : ni l'effectif, ni « actuel » sur une législature close.
-    kpis: [
-      {
-        label: dateRef.datee
-          ? `Membres du groupe au ${dateReferenceLabel}`
-          : 'Membres du groupe',
-        numerator: effectif.valeur,
-        denominator: effectif.denominateur,
-        denominatorLabel: 'membres dont le profil est publié',
-        caveat: effectif.rapporteALaDate
-          ? "Compté à la date de référence de la fiche, sur les seuls membres dont un profil est publié. Ce n'est pas un effectif d'aujourd'hui : la législature décrite est close."
-          : "Cette fiche ne publie pas de date de référence : ce compte n'est rapporté à aucune date, et ne dit pas « aujourd'hui ».",
-      },
-      {
-        label: 'Scrutins agrégés',
-        numerator: cohesionVotes.length,
-        denominator: null,
-        denominatorLabel: null,
-        caveat: 'Mesure la couverture des scrutins agrégés, pas la qualité du vote.',
-      },
-      {
-        label: 'Amendements adoptés, déposés par les député⋅es du groupe',
-        numerator: parDepute?.nb_adoptes ?? null,
-        denominator: parDepute?.nb_amendements ?? null,
-        denominatorLabel: 'amendements distincts déposés',
-        caveat: "Amendements distincts, dédoublonnés : un amendement cosigné compte une fois. Ne pas comparer entre groupes de taille différente, ni aux amendements du gouvernement ou des rapporteurs.",
-      },
-    ],
-    votes,
-    troncatureVotes,
-    seuilQuorum,
-    publierExcuses,
-    tags,
-    troncatureTags: coupeTags,
-    mandatsAgreges,
-    amendmentSegments,
-    amendmentsDeposedTotal: parDepute?.nb_amendements ?? 0,
-    amendmentsAllDeposantsTotal: agg.nb_amendements ?? 0,
+    membres: membres.map((m) => ({
+      nom: m.nom,
+      // `present_a_la_date_de_reference` remplace `actif` (#653) : sur une fiche
+      // de législature close, « actif » désignait les membres encore députés
+      // aujourd'hui, pas ceux qui appartenaient au groupe.
+      present: m.present_a_la_date_de_reference ?? m.actif ?? null,
+      debut: formatFrDate(m.debut_dans_groupe) || null,
+      fin: formatFrDate(m.fin_dans_groupe) || null,
+    })),
+    // Une composition sans aucune entrée ni sortie en cours de législature est
+    // un fait, et il change la lecture de tous les comptes de la page.
+    compositionStable: compositionStable(membres),
+
+    // ── 2 · sur quoi ils choisissent de travailler ─────────────────────────
+    mandatsAgreges: mandatsAgregesTries(groupe, membres.length),
+    fonctions: fonctionsDuGroupe(groupe),
+    // Les SUJETS sur lesquels les membres sont intervenus, intitulés par la
+    // source — jamais des positions du groupe (§2 règle 8). Chaque étiquette
+    // part avec son `nb_membres_porteurs` et son dénominateur.
+    textesDebattus: etiquettesThematiques(groupe),
+    troncatureTextes: troncatureTags((groupe.tags_thematiques_agreges || []).length),
+
+    // ── 3 · ce qu'ils proposent, et ce qu'il en reste ──────────────────────
+    amendements: {
+      distincts: agg.nb_amendements ?? null,
+      // Déposer comme rapporteur de commission et déposer comme député sont
+      // deux actes : `AGENTS.md` §5 interdit d'en faire un taux commun. Deux
+      // lignes séparées, jamais additionnées.
+      parTypeDeposant: TYPES_DEPOSANT
+        .map((type) => {
+          const bloc = agg.par_type_deposant?.[type.cle] || {};
+          return {
+            ...type,
+            deposes: bloc.nb_amendements ?? null,
+            segments: segmentsDeSort(bloc),
+          };
+        })
+        .filter((t) => t.deposes != null && (t.deposes > 0 || t.zeroEstUnFait)),
+    },
+
+    // ── 4 · comment ils votent ─────────────────────────────────────────────
+    quorum,
+    partage: { ...partage, exemples: partageExemples },
+    grandesLois: lois,
+    convergences: accords,
+
+    // ── 5 · comment ils se situent ─────────────────────────────────────────
+    comparaison: comparee,
+
+    // ── 6 · ce que cette fiche ne dit pas ──────────────────────────────────
+    refus: REFUS_FICHE_GROUPE,
+    couvertureRoster: couvertureRoster(groupe),
+    avertissements: groupe.meta?.warnings || [],
+    genereLe: formatFrDate(groupe.meta?.genere_le) || null,
+    licence: groupe.meta?.licence_donnees ?? null,
     dateReference: dateRef.date,
     dateReferenceLabel,
     dateReferenceOrigineLabel: dateRef.origineLabel,
     dateReferenceDatee: dateRef.datee,
-    // `meta` est publié sur 7 / 7 fiches et rien ne le lisait (#329).
-    couvertureRoster: couvertureRoster(groupe),
-    avertissements: groupe.meta?.warnings || [],
-    genereLe: formatFrDate(groupe.meta?.genere_le) || null,
-    refus: REFUS_FICHE_GROUPE,
-    members: membres.map((m) => ({
-      nom: m.nom,
-      // `present_a_la_date_de_reference` remplace `actif` (#653) : sur une fiche
-      // de législature close, « actif » désignait les membres encore députés
-      // aujourd'hui, pas ceux qui appartenaient au groupe. Les 2 fiches Senat
-      // gelées portent encore `actif` ; leur valeur est lue, mais la section
-      // déclare alors qu'elle ne se rapporte à aucune date.
-      present: m.present_a_la_date_de_reference ?? m.actif ?? null,
-    })),
   };
+}
+
+/*
+ * Les quatre types de déposant du schéma. `gouvernement` à 0 est un FAIT DE
+ * PROCÉDURE, pas une donnée manquante : un groupe parlementaire ne dépose pas
+ * au nom du gouvernement. `inconnu` n'a rien à dire tant qu'il vaut 0, et se
+ * déclare dès qu'il porte quelque chose (§2 règle 5).
+ */
+const TYPES_DEPOSANT = [
+  {
+    cle: 'depute',
+    label: 'Déposés comme député',
+    phrase: "L'acte ordinaire d'un parlementaire.",
+    zeroEstUnFait: false,
+  },
+  {
+    cle: 'commission_rapporteur',
+    label: 'Déposés comme rapporteur de commission',
+    phrase: 'Le rapporteur porte le texte de sa commission ; ces amendements sont négociés en amont.',
+    zeroEstUnFait: false,
+  },
+  {
+    cle: 'gouvernement',
+    label: 'Déposés par le gouvernement',
+    phrase:
+      "Aucun, et ce n'est pas une donnée manquante : un groupe parlementaire ne dépose pas au nom du gouvernement.",
+    zeroEstUnFait: true,
+  },
+  {
+    cle: 'inconnu',
+    label: 'Type de déposant non renseigné',
+    phrase: "La source ne dit pas à quel titre ces amendements ont été déposés.",
+    zeroEstUnFait: false,
+  },
+];
+
+/*
+ * Les cinq sorts d'un dépôt, dans l'ordre publié par `schema_groupe.py`. Le
+ * dernier n'a pas de couleur : « sort non publié » n'est pas une issue, et lui
+ * en donner une le rangerait parmi les quatre autres (§2 règle 5).
+ */
+const SORTS_AMENDEMENT = [
+  { cle: 'nb_adoptes', label: 'adoptés', couleur: OUTCOME_COLOR['adopté'] },
+  { cle: 'nb_rejetes', label: 'rejetés', couleur: OUTCOME_COLOR['rejeté'] },
+  { cle: 'nb_irrecevables', label: 'irrecevables', couleur: OUTCOME_COLOR.irrecevable },
+  { cle: 'nb_retires_ou_tombes', label: 'retirés ou tombés', couleur: OUTCOME_COLOR['tombé'] },
+  { cle: 'nb_sort_non_renseigne', label: 'sort non publié', couleur: null },
+];
+
+function segmentsDeSort(bloc) {
+  const total = SORTS_AMENDEMENT.reduce(
+    (acc, s) => acc + (Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0), 0,
+  );
+  if (!total) return [];
+  return SORTS_AMENDEMENT
+    .map((s) => ({
+      ...s,
+      valeur: Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0,
+      part: (Number.isFinite(bloc?.[s.cle]) ? bloc[s.cle] : 0) / total,
+    }))
+    .filter((s) => s.valeur > 0);
+}
+
+/*
+ * `true` seulement si TOUS les membres entrent et sortent aux mêmes dates. Sur
+ * `AN:SOC`, les 31 membres sont entrés le 29 juin 2022 et sortis le 9 juin
+ * 2024 : la composition n'a pas bougé, et c'est ce qui autorise à rapporter
+ * tous les comptes de la page au même effectif.
+ */
+function compositionStable(membres) {
+  if (membres.length < 2) return false;
+  const debuts = new Set(membres.map((m) => m.debut_dans_groupe ?? null));
+  const fins = new Set(membres.map((m) => m.fin_dans_groupe ?? null));
+  return debuts.size === 1 && fins.size === 1 && !debuts.has(null);
 }
 
 /** Construit l'objet consommé par GovernmentProfile.jsx à partir d'un profil de gouvernement v1 (schema_gouvernement.py). */
