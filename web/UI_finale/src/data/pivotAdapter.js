@@ -13,6 +13,26 @@
 // `utils/groupe.js` (#329). Cet adaptateur met en forme, il n'arbitre pas.
 
 import {
+  INSTITUTION_PARLEMENT,
+  agregerAmendements,
+  appartenancesGouvernementales,
+  bornesDuParcours,
+  causeListeVide,
+  couvertureDesListes,
+  directionQuestionsGouvernement,
+  ecartsAvecLeGroupe,
+  faisceau,
+  fonctionsExercees,
+  interventionsParNature,
+  limitesDeclarees,
+  regimeQualiteOrateur,
+  rolesDuParcours,
+  siegesElectifs,
+  textesPortes,
+  voixDuProfil,
+  votesDuProfil,
+} from '../utils/profilCandidat';
+import {
   NB_SCRUTINS_AFFICHES,
   REFUS_FICHE_GROUPE,
   couvertureRoster,
@@ -27,46 +47,6 @@ import {
   troncatureCohesion,
   troncatureTags,
 } from '../utils/groupe';
-
-const MS_PER_YEAR = 365.25 * 24 * 3600 * 1000;
-
-const RESPONSIBILITY_CATEGORIES = ['commission', 'extra_parlementaire', 'groupe_amitie'];
-const ROLE_PRIORITY = [
-  'président', 'présidente', 'co-président', 'co-présidente',
-  'vice-président', 'vice-présidente', 'rapporteur', 'co-rapporteur', 'rapporteure',
-];
-
-const THEME_RULES = {
-  Santé: ['santé', 'hopital', 'hôpital', 'malad', 'soin', 'medec', 'médec', 'cancer'],
-  Environnement: ['climat', 'environ', 'biodivers', 'energie', 'énergie', 'carbone', 'pollution', 'écologi'],
-  Économie: ['budget', 'fiscal', 'impôt', 'impot', 'entreprise', 'travail', 'emploi', 'financ'],
-  Éducation: ['éduc', 'ecole', 'école', 'universit', 'apprentiss', 'scolair'],
-  Sécurité: ['sécurit', 'police', 'défense', 'defense', 'terror', 'justice pénale', 'violence'],
-  Institutions: ['constitution', 'assemblée', 'assemblee', 'sénat', 'senat', 'scrutin', 'loi organique', 'collectivités'],
-  Europe: ['europe', 'union européenne', 'ue', 'international', 'onu', 'otan', 'étrang', 'maghreb', 'afrique'],
-  Social: ['retraite', 'logement', 'social', 'pauvret', 'solidarit', 'sécurité sociale', 'égalité', 'salaire'],
-};
-const DEFAULT_THEME = 'Institutions';
-
-const TEXT_STAGE_LABELS = {
-  examine_commission: 'Examinée en commission',
-  inscrit_ordre_jour: "Inscrite à l'ordre du jour",
-  discute_seance: 'Discutée en séance',
-  adopte: 'Adoptée',
-  promulgue: 'Promulguée',
-};
-const DEBATED_TEXT_STAGES = new Set(Object.keys(TEXT_STAGE_LABELS));
-const TEXT_ROLES = new Set(['auteur', 'rapporteur', 'co-rapporteur']);
-
-const HEMICYCLE_LABELS = {
-  majorite: 'Majorité',
-  opposition: 'Opposition',
-  gouvernement: 'Gouvernement',
-  mixte: 'Non distingué',
-  indetermine: 'Non distingué',
-};
-
-const CHAMBRE_LABELS = { AN: 'Député', Senat: 'Sénateur', PE: 'Député européen', mairie: 'Maire' };
 
 const AMENDMENT_OUTCOME_KEYS = ['adopté', 'rejeté', 'retiré', 'tombé', 'irrecevable', 'non_soutenu'];
 const AMENDMENT_OUTCOME_LABELS = {
@@ -181,109 +161,6 @@ function yearOf(value) {
   return Number.isNaN(d.getTime()) ? null : d.getFullYear();
 }
 
-function detectTheme(...parts) {
-  const text = parts.filter(Boolean).join(' ').toLowerCase();
-  for (const [theme, needles] of Object.entries(THEME_RULES)) {
-    if (needles.some((needle) => text.includes(needle))) return theme;
-  }
-  return DEFAULT_THEME;
-}
-
-// KPI 1 — ancienneté : mesure la durée du mandat électif, pas l'implication.
-function computeMandateTenure(mandats) {
-  const electifs = mandats.filter((m) => m.categorie === 'mandat_electif');
-  const debuts = electifs.map((m) => toDateMs(m.debut)).filter(Boolean);
-  if (!debuts.length) return null;
-  const debutMin = Math.min(...debuts);
-  const enCours = electifs.some((m) => m.actif);
-  const fins = electifs.map((m) => toDateMs(m.fin)).filter(Boolean);
-  const refEnd = enCours || !fins.length ? Date.now() : Math.max(...fins);
-  const annees = Math.max(0, Math.round(((refEnd - debutMin) / MS_PER_YEAR) * 10) / 10);
-  return { annees, enCours };
-}
-
-function bestRoleType(types) {
-  for (const kw of ROLE_PRIORITY) {
-    const match = types.find((t) => (t || '').toLowerCase().includes(kw));
-    if (match) return match;
-  }
-  return types[0] || 'membre';
-}
-
-// KPI 2 — responsabilités : dédupliquées par intitulé pour ne pas gonfler le
-// chiffre avec des réaffectations administratives internes.
-function dedupeResponsibilities(mandats) {
-  const relevant = mandats.filter((m) => RESPONSIBILITY_CATEGORIES.includes(m.categorie));
-  const byLabel = new Map();
-  for (const m of relevant) {
-    const key = m.label || 'Responsabilité non précisée';
-    if (!byLabel.has(key)) {
-      byLabel.set(key, { label: key, types: [], debuts: [], fins: [], actif: false });
-    }
-    const entry = byLabel.get(key);
-    entry.types.push(m.fonction);
-    if (m.debut) entry.debuts.push(toDateMs(m.debut));
-    if (m.fin) entry.fins.push(toDateMs(m.fin));
-    if (m.actif) entry.actif = true;
-  }
-  return [...byLabel.values()].map((e) => {
-    const debut = e.debuts.length ? Math.min(...e.debuts) : null;
-    const fin = e.actif ? null : (e.fins.length ? Math.max(...e.fins) : null);
-    return {
-      label: e.label,
-      type: bestRoleType(e.types),
-      actif: e.actif,
-      period: `${debut ? new Date(debut).getFullYear() : '?'} → ${e.actif ? "aujourd'hui" : (fin ? new Date(fin).getFullYear() : '?')}`,
-    };
-  });
-}
-
-// Position dans l'hémicycle : jamais dérivée sans source_url (AGENTS.md règle 6).
-function hemicyclePeriods(mandats) {
-  return mandats
-    .filter((m) => m.position_dans_hemicycle && m.source_url)
-    .map((m) => ({
-      position: m.position_dans_hemicycle,
-      debutMs: toDateMs(m.debut),
-      finMs: m.actif || !m.fin ? Number.POSITIVE_INFINITY : toDateMs(m.fin),
-    }))
-    .filter((p) => Number.isFinite(p.debutMs));
-}
-
-function classifyDateInHemicycle(dateIso, periods) {
-  if (!dateIso || !periods.length) return 'indetermine';
-  const dateMs = toDateMs(dateIso);
-  if (!Number.isFinite(dateMs) || !dateMs) return 'indetermine';
-  const matching = periods.filter((p) => dateMs >= p.debutMs && dateMs <= p.finMs).map((p) => p.position);
-  if (matching.includes('gouvernement')) return 'gouvernement';
-  const hasMajorite = matching.includes('majorite');
-  const hasOpposition = matching.includes('opposition');
-  if (hasMajorite && hasOpposition) return 'mixte';
-  if (hasMajorite) return 'majorite';
-  if (hasOpposition) return 'opposition';
-  return 'indetermine';
-}
-
-function classifyTexteInHemicycle(texte, periods) {
-  const anchors = [texte.date_max, texte.date_min].filter(Boolean);
-  if (!anchors.length) return 'indetermine';
-  const labels = anchors.map((d) => classifyDateInHemicycle(d, periods));
-  if (labels.includes('gouvernement')) return 'gouvernement';
-  if (labels.includes('majorite') && labels.includes('opposition')) return 'mixte';
-  if (labels.includes('majorite')) return 'majorite';
-  if (labels.includes('opposition')) return 'opposition';
-  return labels[0] || 'indetermine';
-}
-
-function isPublicCarriedText(texte) {
-  return TEXT_ROLES.has(texte.role) && DEBATED_TEXT_STAGES.has(texte.stade_procedural);
-}
-
-function chambreLabel(chambre, actif) {
-  const label = CHAMBRE_LABELS[chambre] || 'Élu(e)';
-  return actif ? label : `Ancien(ne) ${label.toLowerCase()}`;
-}
-
 /**
  * Index des scrutins (#432) : `{ "an:16:4084": { date, texte, sort, … } }`.
  *
@@ -319,6 +196,13 @@ function joinVotes(votes, scrutinsIndex) {
         || (v.date || v.texte ? v : null);
       if (!scrutin) return null;
       return {
+        // `scrutin_id` et `scrutin` sont conservés depuis #328 : la sélection
+        // des votes « sur l'ensemble » (`isWholeTextVote`, lot 1) lit
+        // `type_vote` et `texte` sur le scrutin, et la comparaison avec la
+        // fiche de groupe se fait sur l'identifiant. Les recopier à plat
+        // dupliquerait le méta que #432 a justement sorti des profils.
+        scrutin_id: v.scrutin_id ?? scrutin.id ?? null,
+        scrutin,
         position: v.position,
         date: scrutin.date ?? null,
         texte: scrutin.texte ?? null,
@@ -353,7 +237,24 @@ function resolveAmendement(amendementsIndex, amendementId) {
   if (!amendementsIndex || !amendementId) return null;
   const legislature = legislatureDeAmendementId(amendementId);
   const parLegislature = legislature != null ? amendementsIndex[legislature] : null;
-  return (parLegislature && parLegislature[amendementId]) || null;
+  return (parLegislature?.amendements && parLegislature.amendements[amendementId]) || null;
+}
+
+/**
+ * Titre et clé de dossier du texte visé par un amendement.
+ *
+ * L'index par législature porte un bloc `textes` : `texte_vise` → `{ dossier_id,
+ * titre }`. La concentration se compte sur le DOSSIER, pas sur le `texte_vise` :
+ * un même dossier législatif porte plusieurs textes visés successifs (le projet
+ * déposé, le texte de commission…), et compter ces derniers séparément
+ * éclaterait en trois dossiers ce que le lecteur voit comme une seule bataille.
+ * Mesuré sur Jérôme Guedj : 47 `texte_vise` pour 34 dossiers.
+ */
+function resolveDossier(amendementsIndex, amendementId, texteVise) {
+  if (!amendementsIndex || !texteVise) return null;
+  const legislature = legislatureDeAmendementId(amendementId);
+  const parLegislature = legislature != null ? amendementsIndex[legislature] : null;
+  return (parLegislature?.textes && parLegislature.textes[texteVise]) || null;
 }
 
 /**
@@ -377,87 +278,211 @@ function* joinAmendements(amendements, amendementsIndex) {
     const amendement = resolveAmendement(amendementsIndex, a.amendement_id)
       || a.amendement_non_resolu
       || (a.sort || a.date ? a : null);
-    if (amendement) yield amendement;
+    if (!amendement) continue;
+
+    // `role_signataire` est le SEUL champ propre au signataire (#431) : il vit
+    // dans le mapping du profil, pas dans l'index partagé. Sans lui, les 11 906
+    // cosignatures de Jérôme Guedj se compteraient avec ses 2 429 dépôts comme
+    // auteur principal — deux natures d'acte additionnées, ce qu'interdit la
+    // trame, et un dénominateur faux (AGENTS.md §6).
+    //
+    // La projection reste MINIMALE, et c'est délibéré : rendre `amendement`
+    // enrichi rematérialiserait la forme plate de #377. Neuf champs, pas le
+    // document.
+    const dossier = resolveDossier(amendementsIndex, a.amendement_id, amendement.texte_vise);
+    yield {
+      role_signataire: a.role_signataire ?? null,
+      legislature: legislatureDeAmendementId(a.amendement_id),
+      sort: amendement.sort ?? null,
+      base_juridique_irrecevabilite: amendement.base_juridique_irrecevabilite ?? null,
+      date: amendement.date ?? null,
+      texte_vise: amendement.texte_vise ?? null,
+      dossier_id: dossier?.dossier_id ?? null,
+      dossier_titre: dossier?.titre ?? null,
+    };
   }
 }
 
-/** Construit l'objet consommé par CandidateProfile.jsx à partir d'un profil pivot v1. */
-export function buildCandidateView(pivot, manifestEntry, scrutinsIndex = null, amendementsIndex = null) {
+/* ── Livrable : les gouvernements dont la personne a été membre (#328) ───────
+ *
+ * Une SECTION À PART, placée avant les actes personnels. La maquette d'août
+ * rangeait ce bloc dans « ce qu'il a proposé » en portant la phrase « ces textes
+ * engagent le gouvernement, pas la personne » : la place contredisait la
+ * phrase, et la place gagne.
+ *
+ * En ENSEMBLES, jamais en liste attribuée — un Premier ministre signe les 25
+ * textes de son gouvernement, lui en attribuer un personnellement ne voudrait
+ * rien dire. Et jamais additionné aux amendements ou aux textes portés : 49
+ * amendements et 25 textes de gouvernement ne font pas 74.
+ */
+const STATUTS_GOUVERNEMENT = [
+  { cle: 'promulgue', label: 'promulgués' },
+  { cle: 'adopte_cmp', label: 'adoptés en CMP' },
+  { cle: 'adopte', label: 'adoptés' },
+  { cle: 'navette_en_cours', label: 'en navette' },
+  { cle: 'rejete', label: 'rejetés' },
+  { cle: 'retire', label: 'retirés' },
+  { cle: 'depose', label: 'déposés' },
+];
+
+// Les deux statuts « 49.3 » restent HORS de la répartition colorée : un texte
+// adopté sans vote est un fait de procédure, jamais une issue de scrutin
+// (AGENTS.md §2 règle 4). Ils sont comptés séparément et dits en toutes lettres.
+const STATUTS_49_3 = ['adopte_49_3', 'rejete_49_3'];
+
+function buildGouvernements(slug, gouvernements) {
+  return (gouvernements || [])
+    .filter((g) => (g.membres || []).some((m) => m.membre_id === slug))
+    .map((g) => {
+      const comptages = g.comptages?.par_statut || {};
+      const total = (g.textes || []).length;
+      const fonctions = (g.membres || [])
+        .filter((m) => m.membre_id === slug)
+        .map((m) => ({ portefeuille: m.portefeuille, debut: m.debut, fin: m.fin }))
+        .sort((a, b) => String(a.debut || '').localeCompare(String(b.debut || '')));
+      const chef = g.premier_ministre?.membre_id === slug
+        || fonctions.some((f) => /^premier ministre$/i.test(f.portefeuille || ''));
+      return {
+        id: g.gouvernement_id,
+        nom: g.nom,
+        debut: g.periode?.debut ?? null,
+        fin: g.periode?.fin ?? null,
+        actif: Boolean(g.periode?.actif),
+        chef,
+        fonctions,
+        total,
+        statuts: STATUTS_GOUVERNEMENT.filter((st) => comptages[st.cle] > 0).map((st) => ({
+          ...st,
+          n: comptages[st.cle],
+        })),
+        adoptesSansVote: STATUTS_49_3.reduce((n, cle) => n + (comptages[cle] || 0), 0),
+        // Les textes ne sont nommés que pour le gouvernement dont la personne
+        // était le chef : ailleurs, nommer un texte reviendrait à le lui
+        // attribuer alors qu'un autre ministre l'a porté.
+        textes: chef
+          ? (g.textes || [])
+              .slice()
+              .sort((a, b) => String(b.date_dernier_evenement || '').localeCompare(String(a.date_dernier_evenement || '')))
+              .map((t) => ({
+                titre: t.titre,
+                statut: t.statut,
+                date: t.date_dernier_evenement ?? t.date_depot ?? null,
+                sansVote: Boolean(t.sort_49_3),
+              }))
+          : null,
+      };
+    })
+    .sort((a, b) => String(a.debut || '').localeCompare(String(b.debut || '')));
+}
+
+/** Construit l'objet consommé par CandidateProfile.jsx à partir d'un profil pivot v1.
+ *
+ * Lot 2 (#328) : les règles de lecture propres au profil candidat vivent dans
+ * `utils/profilCandidat.js`, les six fondations communes dans `utils/lecture.js`.
+ * Cet adaptateur les APPELLE, il n'en écrit pas de seconde version.
+ *
+ * Sept emplacements, identiques pour les treize candidats déclarés, dans le
+ * même ordre. Ce qui varie est le contenu, jamais la forme — et un emplacement
+ * vide dit pourquoi il l'est.
+ */
+export function buildCandidateView(
+  pivot,
+  manifestEntry,
+  scrutinsIndex = null,
+  amendementsIndex = null,
+  fichesGroupe = null,
+  gouvernements = null,
+) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
-  const amendements = pivot.amendements || [];
-  const textesPortes = pivot.textes_portes || [];
-  const periods = hemicyclePeriods(mandats);
+  const interventions = pivot.interventions || [];
 
-  const tenure = computeMandateTenure(mandats);
-  const responsabilites = dedupeResponsibilities(mandats);
-  const actif = mandats.some((m) => m.categorie === 'mandat_electif' && m.actif);
+  const { roles, nbLignes } = rolesDuParcours(mandats);
+  const sieges = siegesElectifs(mandats);
+  const appartenances = appartenancesGouvernementales(mandats);
+  const bornes = bornesDuParcours(roles);
 
-  // Votes publics : positions documentées uniquement (jamais absent/excusé/non_votant —
-  // AGENTS.md règle 3, aucun taux ou fait individuel d'absence n'est publié).
-  const positionVotes = votes.filter((v) => ['pour', 'contre', 'abstention'].includes(v.position));
-  const votesByDate = [...positionVotes].sort((a, b) => toDateMs(b.date) - toDateMs(a.date));
-  const voteItems = votesByDate.slice(0, 12).map((v) => ({
-    titre: v.texte,
-    position: v.position,
-    meta: formatFrDate(v.date) || 'Date non renseignée',
-  }));
+  // La position déclarée du groupe à une date donnée : c'est ce qui permet de
+  // la coller au chiffre qu'elle explique, plutôt que de la renvoyer en légende.
+  const periodesPosition = roles
+    .filter((r) => r.institution === INSTITUTION_PARLEMENT && r.position)
+    .map((r) => ({ debut: r.debut, fin: r.fin, position: r.position }));
+  const positionALaDate = (date) =>
+    periodesPosition.find((p) => p.debut <= date && date <= p.fin)?.position ?? null;
 
-  const themeCounts = {};
-  for (const v of votesByDate) {
-    const theme = detectTheme(v.texte);
-    themeCounts[theme] = (themeCounts[theme] || 0) + 1;
-  }
-  const dominantTheme = Object.entries(themeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
-
-  const outcomeCounts = Object.fromEntries(AMENDMENT_OUTCOME_KEYS.map((k) => [k, 0]));
-  for (const a of joinAmendements(amendements, amendementsIndex)) {
-    if (Object.hasOwn(outcomeCounts, a.sort)) outcomeCounts[a.sort] += 1;
-  }
-  const outcomes = AMENDMENT_OUTCOME_KEYS.map((key) => ({
-    key, label: AMENDMENT_OUTCOME_LABELS[key], count: outcomeCounts[key],
-  }));
-
-  const publicTextes = textesPortes.filter(isPublicCarriedText);
-  const textes = publicTextes.map((t) => ({
-    titre: t.titre,
-    theme: detectTheme(t.titre),
-    meta: `${TEXT_STAGE_LABELS[t.stade_procedural]} · ${HEMICYCLE_LABELS[classifyTexteInHemicycle(t, periods)]}${yearOf(t.date_max || t.date_min) ? ` · ${yearOf(t.date_max || t.date_min)}` : ''}`,
-  }));
-
-  const scopeCounts = { majorite: { textes: 0, amend: 0 }, opposition: { textes: 0, amend: 0 }, non_distingue: { textes: 0, amend: 0 } };
-  const mergeBucket = (b) => (b === 'majorite' || b === 'opposition' ? b : 'non_distingue');
-  for (const t of publicTextes) scopeCounts[mergeBucket(classifyTexteInHemicycle(t, periods))].textes += 1;
-  for (const a of joinAmendements(amendements, amendementsIndex)) {
-    scopeCounts[mergeBucket(classifyDateInHemicycle(a.date, periods))].amend += 1;
-  }
-  const scopeBuckets = [
-    { label: 'Majorité', textes: scopeCounts.majorite.textes, amend: scopeCounts.majorite.amend },
-    { label: 'Opposition', textes: scopeCounts.opposition.textes, amend: scopeCounts.opposition.amend },
-    { label: 'Non distingué', textes: scopeCounts.non_distingue.textes, amend: scopeCounts.non_distingue.amend },
-  ];
+  const amendements = agregerAmendements(
+    joinAmendements(pivot.amendements || [], amendementsIndex),
+    positionALaDate,
+  );
+  const textes = textesPortes(pivot.textes_portes);
+  const fonctions = fonctionsExercees(mandats);
+  const qualite = regimeQualiteOrateur(interventions);
+  const questions = directionQuestionsGouvernement(interventions, appartenances);
+  const lectureVotes = votesDuProfil(
+    votes,
+    appartenances,
+    roles.filter((r) => r.institution === INSTITUTION_PARLEMENT),
+  );
+  const ecarts = ecartsAvecLeGroupe(votes, fichesGroupe);
 
   return {
     id: manifestEntry.slug,
     nom: pivot.nom,
     parti: pivot.parti || manifestEntry.parti || '',
     groupe: pivot.groupe || '',
-    profession: pivot.identite?.profession || chambreLabel(pivot.chambre, actif),
-    actif,
-    kpis: {
-      anciennete: tenure ? `${tenure.annees}\u00a0${tenure.annees <= 1 ? 'an' : 'ans'}` : 'N/D',
-      responsabilites: String(responsabilites.length),
-      votes: voteItems.length ? String(positionVotes.length) : 'N/D',
-      theme: dominantTheme || 'N/D',
-    },
-    votes: voteItems,
-    outcomes,
-    mandats: mandats
-      .filter((m) => m.categorie === 'mandat_electif')
-      .map((m) => ({ label: m.label, period: `${yearOf(m.debut) || '?'} → ${m.actif ? "aujourd'hui" : (yearOf(m.fin) || '?')}` })),
-    responsabilites: responsabilites.map((r) => ({ label: r.label, period: r.period })),
+    // La voix du texte vient de `identite.civilite`, la seule source du genre
+    // dans le corpus. Absente, la page n'en invente pas : elle parle de « cette
+    // personne » (§2 règle 5).
+    voix: voixDuProfil(pivot.identite?.civilite ?? null),
+    profession: pivot.identite?.profession || null,
+    naissance: pivot.identite?.date_naissance
+      ? { date: pivot.identite.date_naissance, lieu: pivot.identite.lieu_naissance ?? null }
+      : null,
+    sourceUrl: pivot.identite?.source_url ?? null,
+    licence: pivot.meta?.licence_donnees ?? null,
+
+    faisceau: faisceau({
+      interventions,
+      concentration: amendements.concentration,
+      fonctions,
+      questions,
+      qualite,
+      textes,
+    }),
+
+    parcours: { roles, nbLignes, bornes },
+    fonctions,
+    gouvernements: buildGouvernements(manifestEntry.slug, gouvernements),
+    amendements,
     textes,
-    scopeBuckets,
+    interventions: {
+      total: interventions.length,
+      natures: interventionsParNature(interventions),
+      qualite,
+      questions,
+    },
+    votes: lectureVotes,
+    ecarts,
+
+    // La cause d'un vide, par liste : `ListeVide` (lot 1) la rend en phrase.
+    // Elle est calculée ici pour n'être lue qu'une fois, pas dans six branches
+    // du composant.
+    causes: {
+      mandats: causeListeVide(pivot.couverture?.mandats),
+      votes: causeListeVide(pivot.couverture?.votes),
+      amendements: causeListeVide(pivot.couverture?.amendements),
+      textes_portes: causeListeVide(pivot.couverture?.textes_portes),
+      interventions: causeListeVide(pivot.couverture?.interventions),
+    },
+
+    couverture: couvertureDesListes(pivot.couverture, {
+      mandats: mandats.length,
+      votes: (pivot.votes || []).length,
+      amendements: (pivot.amendements || []).length,
+      textes_portes: (pivot.textes_portes || []).length,
+      interventions: interventions.length,
+    }),
+    limites: limitesDeclarees({ profil: pivot, roles, textes, sieges }),
   };
 }
 

@@ -69,8 +69,13 @@ function loadAmendementsLegislature(legislature) {
       legislature,
       fetch(`/data/amendements/${legislature}.json`)
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => d?.amendements || {})
-        .catch(() => ({})),
+        // `textes` est conservé depuis #328 : il porte, par `texte_vise`, le
+        // `dossier_id` et le titre du dossier législatif. Sans lui, la
+        // concentration des dépôts se compterait sur les textes visés — 47 là
+        // où il y a 34 dossiers chez Jérôme Guedj — et aucun dossier ne
+        // pourrait être nommé au lecteur.
+        .then((d) => ({ amendements: d?.amendements || {}, textes: d?.textes || {} }))
+        .catch(() => ({ amendements: {}, textes: {} })),
     );
   }
   return amendementsPromises.get(legislature);
@@ -119,19 +124,63 @@ export async function getGroupsList() {
   }));
 }
 
+/**
+ * Fiches de groupe où ce candidat est membre (#328).
+ *
+ * `manifest.candidates[].groupIds` est calculé par `scripts/sync-data.mjs`, qui
+ * a déjà apparié `membre_id` → slug sur chaque fiche : l'UI n'a donc pas à
+ * télécharger les sept fiches pour savoir lesquelles la concernent — elles
+ * pèsent de 8 Ko à 4,5 Mo.
+ *
+ * Non bloquant : une fiche manquante rend la section « où il s'est écarté des
+ * siens » incomparable, ce que la page DIT, plutôt que vide, ce qui se lirait
+ * comme « il n'a jamais divergé ».
+ */
+function loadFichesGroupe(manifest, entry) {
+  const ids = entry.groupIds || [];
+  return Promise.all(
+    ids.map((id) => {
+      const fiche = manifest.groupes.find((g) => g.id === id);
+      return fiche ? fetchJson(`/data/groupes/${fiche.fichier}`).catch(() => null) : null;
+    }),
+  );
+}
+
+/**
+ * Fiches de gouvernement dont ce candidat a été membre (#328).
+ *
+ * `manifest.gouvernements[].membreIds` évite de charger les dix fiches pour
+ * n'en garder qu'une ou quatre. Un candidat qui n'a jamais été au gouvernement
+ * n'en télécharge aucune — et la section le dit comme un FAIT ÉTABLI sur la
+ * personne, jamais comme une donnée manquante.
+ */
+function loadGouvernements(manifest, slug) {
+  const fiches = (manifest.gouvernements || []).filter((g) => (g.membreIds || []).includes(slug));
+  return Promise.all(fiches.map((g) => fetchJson(`/data/gouvernements/${g.fichier}`).catch(() => null)));
+}
+
 export async function getCandidateProfile(id) {
   const manifest = await loadManifest();
   const entry = manifest.candidates.find((c) => c.slug === id);
   if (!entry) return null;
-  const [pivot, scrutins] = await Promise.all([
+  const [pivot, scrutins, fichesGroupe, gouvernements] = await Promise.all([
     fetchJson(`/data/profiles/${entry.slug}.pivot.json`),
     loadScrutins(),
+    loadFichesGroupe(manifest, entry),
+    loadGouvernements(manifest, entry.slug),
   ]);
   if (!pivot) return null;
   // L'index des amendements se charge APRÈS le profil : ce sont les
   // identifiants du mapping qui disent quelles législatures aller chercher.
   const amendements = await loadAmendementsPour(pivot);
-  return buildCandidateView(pivot, entry, scrutins, amendements);
+  return buildCandidateView(
+    pivot,
+    entry,
+    scrutins,
+    amendements,
+    fichesGroupe.filter(Boolean),
+    gouvernements.filter(Boolean),
+  );
 }
 
 export async function getGroupProfile(id) {
