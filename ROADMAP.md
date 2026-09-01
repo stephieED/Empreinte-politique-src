@@ -32,6 +32,34 @@ qui suivent, dont chacun a coûté assez cher pour ne pas être re-découvert.
 
 ### Constats de cadrage, à ne pas re-trancher
 
+**Le corpus a un plancher, et il n'est pas le même selon la matière
+(mesuré le 01/09/2026 sur les archives en cache et les index figés).** Aucune
+décision ne l'avait posé comme un choix éditorial ; il existait en fait, sans
+être consigné, ce qui le rendait rouvrable au premier prétexte.
+
+| Matière | Législatures disponibles | Depuis |
+| --- | --- | --- |
+| Scrutins | 14 · 15 · 16 · 17 | 03/07/2012 |
+| Amendements | 14 · 15 · 16 (figés) · 17 | idem |
+| Dossiers législatifs | **15** · 16 · 17 | 2017 |
+| Interventions (Syceron) | **15** · 16 · 17 | 2017 |
+
+**Rien avant la XIVe, et la XIVe est partielle** — des votes et des amendements,
+mais ni dossiers ni interventions. Une fiche de groupe construite sur la XIVe
+serait un squelette, et sur la XIIIe elle n'aurait aucune matière.
+
+**Ce que ça interdit concrètement**, mesuré sur les mandats de groupe des 13
+candidats déclarés : parmi les 9 groupes qu'ils ont touchés, quatre sont hors
+d'atteinte — `UMP` (2007-2015), `Les Républicains` (2015-2017),
+`Rassemblement-UMP` (2012-2013) et `SRC` (2012-2014). Deux sont atteignables et
+ne le sont pas encore : `FI` (Mélenchon, 2017-2022) et `LaREM` (Attal,
+2017-2018), tous deux dans la XVe, qui est complète. Les trois derniers ont déjà
+leur fiche.
+
+**Ne rouvrez pas « et si on remontait plus loin » sans regarder ce tableau
+d'abord** : la limite n'est pas un arbitrage de périmètre, c'est ce que la source
+publie.
+
 **Rattacher un scrutin ou une intervention à sa loi : instruit, mesuré, écarté
 (#639, 01/09/2026).** La tentation revient à chaque lecture du corpus, parce que
 `texte_lie_id` est `null` sur les 17 748 scrutins publiés et qu'un champ vide se
