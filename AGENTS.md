@@ -32,7 +32,11 @@ Any schema/display change must preserve them:
 5. Missing data means missing data, never default `0`.
 6. `position_dans_hemicycle` always requires a verifiable `source_url` (enforced by `validate_profil()`).
 7. Group ratios published only with numerator + denominator + sufficient coverage; otherwise `N/D`.
-   Individual-vs-group gaps are **internal quality control** only, never public.
+   **An individual index measured against a group average** — cohesion rate, participation rate —
+   is **internal quality control** only, never public (`--rapport-interne`). **Juxtaposing, on one
+   sourced ballot, a member's position and their group's majority position is a fact, and is
+   publishable** — never counted, never rated, never turned into a frequency: « a voté contre son
+   groupe 47 fois » is that same individual index by another route.
 8. Thematic tags are reading aids, not declared candidate positions.
 
 ## 3. Pipeline
@@ -572,7 +576,8 @@ Edge-case history: the amendments and votes entries of `docs/technical_decisions
 | 49.3 / no-confidence motion | Public, labeled as procedural fact |
 | Individual attendance/presence | **Never public** (rule 3) |
 | Group `cohesion_votes[]` | Public, with numerator/denominator |
-| Individual gaps vs group cohesion | Internal only (`--rapport-interne`) |
+| Individual cohesion/participation **index** vs group average | **Never** — internal only (`--rapport-interne`) |
+| A member's position beside their group's majority position, **one sourced ballot at a time** | Public — never counted, never rated |
 | `mandats[].notableCount` | Internal only (display ordering) |
 | `tags_thematiques[]` (8 categories) | Public |
 
