@@ -842,38 +842,55 @@ export default function CandidateProfile({ candidate }) {
         <BadgeSource url={c.sourceUrl} />
       </header>
 
-      {/* Coup d'œil — le faisceau. Des traces indépendantes, chacune mesurée
-          séparément : aucun rapprochement thématique, aucune synthèse. C'est le
-          lecteur qui lit la convergence, et chaque ligne se vérifie à sa
-          source (AGENTS.md §2 règle 8). */}
-      {c.faisceau.length > 0 && (
-        <section className="cp-faisceau">
-          <p className="cp-faisceau-label">Coup d’œil · ce qui revient</p>
-          <h2>{c.faisceau.length} traces indépendantes, une même matière</h2>
-          <p className="cp-faisceau-note">
-            Un vote est une réaction à l’ordre du jour d’autrui. Un amendement déposé, une
-            commission rejointe, une question posée : des gestes que personne n’impose. Voici ce
-            que ces gestes ont en commun, chacun mesuré séparément.
+      {/* Coup d'œil. Cinq points au plus, chacun tiré d'un jeu de données
+          distinct — aucun rapprochement thématique, aucune synthèse (AGENTS.md
+          §2 règle 8). Le contraste réaction / initiative se porte par la
+          TYPOGRAPHIE : pas d'emoji, la charte n'en emploie nulle part et il
+          introduirait un ton. Les notes qui justifiaient notre méthode ont été
+          retirées ; celles qui préviennent un contresens (`garde`) restent. */}
+      {c.coupOeil.points.length > 0 && (
+        <section className="cp-coup-oeil">
+          <p className="cp-coup-oeil-label">Coup d’œil</p>
+          <h2 className="cp-these">
+            <span className="cp-these-reaction">
+              Un vote : une réaction à l’ordre du jour d’autrui.
+            </span>
+            <span className="cp-these-initiative">
+              Un amendement déposé, une commission rejointe, une question posée : à l’initiative
+              de la personne.
+            </span>
+          </h2>
+          {/* Le cadre initiative / réaction est parlementaire par construction :
+              au banc du gouvernement l'ordre du jour se fixe au lieu de se
+              subir. Seule cette phrase s'adapte — les points, eux, restent les
+              mêmes pour les treize. */}
+          {c.coupOeil.aSiegeAuGouvernement && (
+            <p className="cp-these-gouvernement">
+              Au gouvernement, ce partage ne tient plus : l’ordre du jour s’y fixe au lieu de s’y
+              subir, et une question au gouvernement s’y reçoit au lieu de s’y poser.
+            </p>
+          )}
+          <p className="cp-coup-oeil-voici">
+            {c.coupOeil.points.length === 1
+              ? 'Voici le point qui en ressort.'
+              : `Voici ${c.coupOeil.points.length} points qui en ressortent.`}
           </p>
-          <div className="cp-traces">
-            {c.faisceau.map((t) => (
-              <div className="cp-trace" key={t.cle}>
-                <span className="cp-trace-nombre cp-num">
-                  {formatNumber(t.valeur)}
-                  <small>/ {formatNumber(t.sur)}</small>
+          <div className="cp-points">
+            {c.coupOeil.points.map((p) => (
+              <div className="cp-point" key={p.cle}>
+                <span className="cp-point-nombre cp-num">
+                  {formatNumber(p.valeur)}
+                  <small>/ {formatNumber(p.sur)}</small>
                 </span>
-                <span className="cp-trace-texte">
-                  {t.texte}
-                  {t.precision && <em> — {t.precision}</em>}
+                <span className="cp-point-texte">
+                  <span className="cp-point-tete">{p.texte}</span>
+                  {p.suite && <span className="cp-point-suite">{p.suite}</span>}
+                  {p.socle && <span className="cp-point-socle">{p.socle}</span>}
+                  {p.garde && <span className="cp-point-garde">{p.garde}</span>}
                 </span>
               </div>
             ))}
           </div>
-          <p className="cp-faisceau-pied">
-            Ces mesures sont <b>indépendantes</b> : autant de jeux de données distincts, aucun
-            rapprochement par thème. Empreinte politique ne classe pas les textes par sujet —{' '}
-            <b>c’est le lecteur qui lit la convergence</b>, et chaque ligne se vérifie à sa source.
-          </p>
         </section>
       )}
 
