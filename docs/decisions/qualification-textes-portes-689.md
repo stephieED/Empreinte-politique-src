@@ -113,6 +113,51 @@ contredire `chambres[0]`.
 `auteur` couvrir les deux natures : la confusion persiste pour qui ne lit pas le
 nouveau champ, c'est-à-dire pour tout consommateur écrit avant aujourd'hui.
 
+
+## Décision 3 — le libellé affiché nomme l'initiative, pas le terme juridique
+
+Le nom technique du rôle ne pouvait pas devenir le nom affiché. Le vocabulaire
+officiel est **contre-intuitif** : « projet » et « proposition » ne disent pas
+ce qu'on propose mais **qui dépose**, et un lecteur qui ne connaît pas
+l'article 39 lit exactement l'inverse. « Résolution » est pire encore — il se
+lit comme une partie de loi, alors qu'une résolution ne crée aucune règle. La
+propriétaire du dépôt, qui connaît le corpus, a fait les deux contresens en
+séance : c'est la mesure qui a décidé.
+
+| `role` | Libellé de `LIBELLE_ROLE_TEXTE` |
+| --- | --- |
+| `initiateur_projet_de_loi` | Projet de loi à l'initiative du gouvernement |
+| `auteur_proposition_de_loi` | Proposition de loi issue d'un(e) parlementaire |
+| `auteur_proposition_de_resolution` | Résolution (prise de position ou demande procédurale) |
+
+**Le libellé nomme l'initiative, jamais la chambre de dépôt.** « Issue de
+l'Assemblée nationale » avait été envisagé, et la mesure l'écarte : sur les 423
+textes portés des 13 candidats déclarés, **122 des 313 projets de loi ont été
+déposés au Sénat** sans cesser d'être des textes du gouvernement — c'est le
+gouvernement qui choisit la chambre saisie en premier — et **35 des 78
+propositions sont sénatoriales** (les 35 de `bruno-retailleau`, sénateur de la
+Vendée). Le libellé aurait été faux **157 fois sur 391**.
+
+**La parenthèse de la résolution énumère, elle ne tranche pas.** La source
+distingue elle-même deux procédures sur les 26 résolutions publiées, par
+`procedureParlementaire.code` : **10** en code 22 (« Résolution Article 34-1 »,
+l'Assemblée déclare une position) et **16** en code 8, un libellé générique
+dont les intitulés sont des demandes d'enquête. Une prise de position et une
+demande de commission d'enquête n'ont pas le même effet ; « prise de position »
+seul aurait été faux 16 fois sur 26. Reclasser les 16 depuis leur intitulé est
+exclu — c'est la faute que la §1 de cette décision documente (#672).
+
+**« Demande » et non « décision » :** 2 des 26 seulement portent le stade
+`adopte` (5 au dépôt, 3 discutées en séance, 16 examinées en commission). Un
+texte déposé sans être voté n'a rien décidé, et l'affirmer violerait §2 règle 5.
+
+Trois tests lisent le fichier d'interface exécuté : tout rôle de
+`KNOWN_ROLES_TEXTE` a un libellé et réciproquement (le module l'affirmait en
+commentaire, rien ne le vérifiait), aucun des deux libellés d'initiative ne
+nomme de chambre, et celui de la résolution ne porte pas le mot « décision ».
+Le dépôt n'ayant pas de harnais JS, le garde-fou est en Python et **lit** le
+fichier au lieu d'en recopier les valeurs.
+
 **Alternative rejetée — scinder `role` sans publier `nature_texte`.** Un seul
 champ, aucune redondance, mais deux faits de nature différente soudés dans une
 valeur (ce que la personne a fait × ce qu'est le texte), et les 21 entrées de

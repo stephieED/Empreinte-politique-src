@@ -27,6 +27,7 @@ octet pour octet depuis le zip AN. Aucune valeur n'est inventée (leçon de #510
 """
 
 import json
+import re
 import sys
 import zipfile
 from pathlib import Path
@@ -376,3 +377,69 @@ def test_la_section_5c_se_tait_quand_tout_est_qualifie(tmp_path):
     soft, console, _ = _report_qualification_textes_portes(tmp_path)
     assert soft == []
     assert "✓ Initiateurs sans nature établie : 0" in console
+
+
+# ---------------------------------------------------------------------------
+# 5. Le libellé affiché nomme l'initiative, et couvre tout le vocabulaire
+# ---------------------------------------------------------------------------
+
+_PROFIL_CANDIDAT_JS = Path("web/UI_finale/src/utils/profilCandidat.js")
+
+
+def _libelles_role_texte() -> dict[str, str]:
+    """Table `LIBELLE_ROLE_TEXTE` du module d'interface, lue depuis le code
+    exécuté. Le dépôt n'a pas de harnais de test JS (`package.json` ne déclare
+    que `dev`, `build`, `lint`, `sync-data`) : ce garde-fou est donc en Python,
+    et il lit le fichier plutôt que de recopier ses valeurs."""
+    source = _PROFIL_CANDIDAT_JS.read_text(encoding="utf-8")
+    debut = source.index("export const LIBELLE_ROLE_TEXTE = {")
+    corps = source[debut : source.index("\n};", debut)]
+    # Les commentaires portent des exemples de clés (« initiateur_projet_de_loi »)
+    # qu'un relevé naïf compterait comme des entrées.
+    corps = "\n".join(l for l in corps.splitlines() if not l.lstrip().startswith("//"))
+    return dict(
+        re.findall(r"^\s*'?([\w-]+)'?:\s*\n?\s*['\"](.+?)['\"],", corps, re.MULTILINE)
+    )
+
+
+def test_chaque_role_publie_a_un_libelle():
+    """Sans libellé, la fiche afficherait la clé technique telle quelle dès le
+    premier run qualifié — `LIBELLE_ROLE_TEXTE[t.role] || t.role`. Le
+    commentaire du module l'affirmait, rien ne le vérifiait."""
+    from schema_pivot import KNOWN_ROLES_TEXTE
+
+    libelles = _libelles_role_texte()
+    manquants = sorted(KNOWN_ROLES_TEXTE - set(libelles))
+    assert not manquants, f"rôles publiés sans libellé d'interface : {manquants}"
+    orphelins = sorted(set(libelles) - KNOWN_ROLES_TEXTE)
+    assert not orphelins, f"libellés pour des rôles hors vocabulaire : {orphelins}"
+
+
+def test_le_libelle_nomme_l_initiative_pas_la_chambre():
+    """« Issue de l'Assemblée nationale » aurait été faux 157 fois sur 391 :
+    122 des 313 projets de loi des 13 candidats déclarés ont été déposés au
+    Sénat sans cesser d'être des textes du gouvernement, et 35 des 78
+    propositions sont sénatoriales. Ce que le libellé nomme, c'est l'article 39
+    — qui est à l'initiative du texte — jamais la chambre de dépôt."""
+    libelles = _libelles_role_texte()
+
+    assert libelles["initiateur_projet_de_loi"] == (
+        "Projet de loi à l'initiative du gouvernement"
+    )
+    assert libelles["auteur_proposition_de_loi"] == (
+        "Proposition de loi issue d'un(e) parlementaire"
+    )
+    for role in ("initiateur_projet_de_loi", "auteur_proposition_de_loi"):
+        assert "Assemblée" not in libelles[role] and "Sénat" not in libelles[role]
+
+
+def test_le_libelle_de_resolution_ne_dit_pas_decision():
+    """Une résolution ne crée aucune règle, et le libellé doit le dire sans
+    affirmer d'aboutissement : 2 des 26 résolutions publiées seulement portent
+    le stade `adopte`, et un texte déposé sans être voté n'a rien décidé
+    (AGENTS.md §2 règle 5). La parenthèse énumère donc les deux procédures que
+    la source distingue elle-même, sans trancher laquelle s'applique."""
+    libelle = _libelles_role_texte()["auteur_proposition_de_resolution"]
+
+    assert libelle == "Résolution (prise de position ou demande procédurale)"
+    assert "décision" not in libelle

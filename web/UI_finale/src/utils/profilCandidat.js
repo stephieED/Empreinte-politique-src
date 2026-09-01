@@ -593,9 +593,32 @@ export const LIBELLE_ROLE_TEXTE = {
   // #689 a scindé `auteur`, qui couvrait deux actes de nature différente. Les
   // trois valeurs neuves DOIVENT figurer ici : sans libellé, la fiche
   // afficherait la clé technique telle quelle dès le premier run qualifié.
-  initiateur_projet_de_loi: 'Initiateur (projet de loi)',
-  auteur_proposition_de_loi: 'Auteur (proposition de loi)',
-  auteur_proposition_de_resolution: 'Auteur (proposition de résolution)',
+  //
+  // Le libellé nomme QUI EST À L'ORIGINE du texte, pas le terme juridique. Le
+  // terme officiel — « projet » contre « proposition » — est contre-intuitif :
+  // il ne dit pas ce qu'on propose mais qui le dépose, et un lecteur qui ne
+  // connaît pas l'article 39 lit exactement l'inverse. « Résolution » est pire
+  // encore : il se lit comme un morceau de loi, alors qu'une résolution ne
+  // crée aucune règle. Mesuré sur les 423 textes portés des 13 candidats
+  // déclarés : 313 projets de loi, 78 propositions, 26 résolutions.
+  //
+  // « à l'initiative du gouvernement » et « issue d'un(e) parlementaire »
+  // disent l'initiative, JAMAIS la chambre de dépôt : 122 des 313 projets ont
+  // été déposés au Sénat sans cesser d'être des textes du gouvernement, et 35
+  // des 78 propositions sont sénatoriales (Bruno Retailleau). « Issue de
+  // l'Assemblée nationale » aurait donc été faux 157 fois sur 391.
+  //
+  // La parenthèse de la résolution énumère les deux procédures que la source
+  // distingue elle-même (`procedureParlementaire.code`) sans trancher laquelle
+  // s'applique au texte affiché : 10 des 26 sont des résolutions de l'article
+  // 34-1 (l'Assemblée déclare une position), 16 relèvent du code 8 générique,
+  // dont les intitulés sont des demandes d'enquête. « Demande », et non
+  // « décision » : 2 des 26 seulement portent le stade `adopte`, et un texte
+  // déposé sans être voté n'a rien décidé (AGENTS.md §2 règle 5).
+  initiateur_projet_de_loi: "Projet de loi à l'initiative du gouvernement",
+  auteur_proposition_de_loi: "Proposition de loi issue d'un(e) parlementaire",
+  auteur_proposition_de_resolution:
+    'Résolution (prise de position ou demande procédurale)',
   auteur: 'Auteur',
   rapporteur: 'Rapporteur',
   'co-rapporteur': 'Co-rapporteur',
