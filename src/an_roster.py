@@ -126,6 +126,8 @@ from typing import Any, Iterable, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import correspondance_acteurs_an  # noqa: E402
+from schema_groupe import resumer_position_politique  # noqa: E402
+from schema_pivot import POSITION_POLITIQUE_AN_VERS_PIVOT  # noqa: E402
 
 
 # ── Le drapeau (patron #510) ─────────────────────────────────────────────────
@@ -209,7 +211,12 @@ NOM_INDEX_GP = "index_groupes_politiques.json"
 #: plutôt que lu au mieux : `.cache/acteurs_historique_an/` est partagé entre
 #: les jobs par la clé de cache CI, et un index d'un format antérieur servi à
 #: un run neuf est le défaut de #505 sous un autre nom.
-VERSION_INDEX_GP = "an-roster-gp-v1"
+#:
+#: `v2` (#686) ajoute `organes[].position_politique`. Le suffixe n'est pas
+#: cosmétique : un index `v1` restauré du cache CI ne porte pas le champ, et
+#: le relire « au mieux » ferait mesurer « aucun groupe n'est qualifié » sur
+#: une archive qui en qualifie 40 — la forme exacte du trou muet de #510.
+VERSION_INDEX_GP = "an-roster-gp-v2"
 
 #: Où l'index est écrit. Le même répertoire que les quatre index que
 #: `candidate_profile.py` dérive déjà de cette archive — un seul cache CI à
@@ -266,7 +273,8 @@ def construire_index_gp(zip_path: Path) -> dict[str, Any]:
     """Parcourt l'archive AMO30 et rend `{version, organes, mandats, acteurs}`.
 
     - `organes` : `{organeRef: {sigle, sigle_abrege, libelle, legislature,
-      debut, fin}}` pour les seuls `codeType == "GP"` ;
+      debut, fin, position_politique}}` pour les seuls `codeType == "GP"` ;
+      `position_politique` est la chaîne du référentiel telle quelle (#686) ;
     - `mandats` : `{organeRef: [[acteurRef, debut, fin], …]}` pour les seuls
       `typeOrgane == "GP"` visant un organe connu ;
     - `acteurs` : `{acteurRef: "Prénom Nom"}`, pour **nommer** un écart. Un
@@ -307,6 +315,12 @@ def construire_index_gp(zip_path: Path) -> dict[str, Any]:
                 "legislature": _texte(organe.get("legislature")),
                 "debut": vie.get("dateDebut"),
                 "fin": vie.get("dateFin"),
+                # La qualification que l'Assemblée donne elle-même à ce groupe
+                # (#686), recopiée VERBATIM : "Majoritaire" | "Opposition" |
+                # "Minoritaire" | None. Traduite plus loin, jamais ici — un
+                # index qui traduit est un index qu'il faut relire pour savoir
+                # ce que la source disait.
+                "position_politique": organe.get("positionPolitique"),
             }
 
         for nom in noms:
@@ -488,124 +502,138 @@ def est_mandat_de_transit(fin: Optional[str], constitution: Optional[str]) -> bo
 
 
 # ── La table de correspondance des sigles, committée ─────────────────────────
-#: Fichier de configuration portant la table. Le même que les groupes eux-mêmes
-#: (`raw_data/groupes_reels.json`) : un sigle publié et sa correspondance AN
-#: sont deux faces du même choix éditorial, et les séparer garantit qu'un jour
-#: l'un bougera sans l'autre.
-# Porté par `groupes_config` depuis #558 — réexporté ici pour les appelants
-# historiques. Deux définitions du même chemin divergeraient en silence.
-from groupes_config import CHEMIN_CONFIG_GROUPES  # noqa: E402
+# Portée par `groupes_config` depuis #686, comme `CHEMIN_CONFIG_GROUPES`
+# l'était déjà depuis #558 et pour la même raison : `raw_data/groupes_reels.json`
+# a maintenant quatre lecteurs — le roster (ici), la génération des fiches, le
+# portail de qualité et la config des groupes —, et trois d'entre eux n'ont
+# aucune raison de dépendre du dérivateur de roster AN. Réexporté pour les
+# appelants historiques : deux chargeurs de la même table divergeraient.
+from groupes_config import (  # noqa: E402
+    CHEMIN_CONFIG_GROUPES,
+    CLE_CORRESPONDANCE_SIGLES,
+    CLE_POSITION_POLITIQUE,
+    CorrespondanceSiglesInvalide,
+    charger_correspondance_sigles,
+    entree_correspondance,
+)
 
-#: Clé portant la table dans ce fichier.
-CLE_CORRESPONDANCE_SIGLES = "correspondance_sigles_an"
 
+# ── La position politique déclarée par l'Assemblée (#686) ────────────────────
+# Elle est LUE, jamais produite. L'AN qualifie chacun de ses groupes politiques
+# dans `organe.positionPolitique` : `Majoritaire`, `Opposition`, `Minoritaire`.
+# Le pipeline lisait déjà ce champ pour les profils individuels
+# (`mandats[].position_dans_hemicycle`, #354) ; il ne le lisait nulle part pour
+# les fiches de groupe, où il commande pourtant la lecture de tous les
+# compteurs.
+#
+# Ce qui est mesuré ici sert à ÉCRIRE la table committée et à la relire, pas à
+# publier : la fiche prend sa valeur dans `groupes_config.position_politique_publiee`,
+# donc dans un artefact relu et daté, exactement comme les sigles AN (#526). Un
+# job qui génère des fiches de groupe n'a alors aucune archive de 13,6 Mo à
+# télécharger.
 
-class CorrespondanceSiglesInvalide(ValueError):
-    """La table sigle publié → sigle(s) AN est absente ou viole un invariant."""
-
-
-def charger_correspondance_sigles(
-    chemin: Optional[Path] = None,
+def declarations_position_politique(
+    index: dict[str, Any],
+    legislature: str,
+    sigles_an: Iterable[str],
 ) -> list[dict[str, Any]]:
-    """Charge et valide la table `correspondance_sigles_an`.
+    """Ce que chaque organe du groupe déclare, dans l'ordre de succession.
 
-    Chaque entrée doit porter `groupe_sigle` (le sigle **publié**),
-    `legislature`, `sigles_an` (liste non vide), `organes_an` (liste des
-    organes **mesurés** au moment de la relecture) et `verifie_le`.
+    Une entrée par organe — pas une par groupe. Un groupe peut avoir deux
+    organes successifs dans une même législature (`SOC` puis `SOC-A`, XVIe),
+    et les réduire à un seul avant de savoir ce qu'ils disent est ce qui
+    rendrait une divergence invisible.
 
-    `organes_an` n'est pas ce qui sert à construire le roster — c'est un
-    **fil-piège** : si l'union des organes portant `sigles_an` cesse de
-    coïncider avec cette liste, l'AN a ouvert ou fermé un organe et la table
-    doit être relue. Le roster, lui, se construit par sigle, pour qu'un organe
-    successif nouvellement ouvert entre quand même dans l'union plutôt que
-    d'être perdu en silence.
+    `valeur_source` est la chaîne du référentiel verbatim ; `position` sa
+    traduction, ou `None` quand l'AN n'a rien qualifié — jamais un repli.
+    Fonction pure.
     """
-    chemin = Path(chemin) if chemin is not None else CHEMIN_CONFIG_GROUPES
-    try:
-        document = json.loads(chemin.read_text(encoding="utf-8"))
-    except OSError as exc:
-        raise CorrespondanceSiglesInvalide(
-            f"Configuration des groupes illisible ({chemin}) : {exc}"
-        ) from exc
-    except ValueError as exc:
-        raise CorrespondanceSiglesInvalide(f"{chemin} : JSON invalide — {exc}") from exc
-
-    bloc = document.get(CLE_CORRESPONDANCE_SIGLES)
-    if not isinstance(bloc, dict):
-        raise CorrespondanceSiglesInvalide(
-            f"{chemin} : clé '{CLE_CORRESPONDANCE_SIGLES}' absente ou non-objet. "
-            "La correspondance des sigles est un artefact committé, pas une "
-            "heuristique (#526)."
-        )
-    entrees = bloc.get("groupes")
-    if not isinstance(entrees, list) or not entrees:
-        raise CorrespondanceSiglesInvalide(
-            f"{chemin} : '{CLE_CORRESPONDANCE_SIGLES}.groupes' absent ou vide."
-        )
-
-    vues: set[tuple[str, str]] = set()
-    valides: list[dict[str, Any]] = []
-    for entree in entrees:
-        if not isinstance(entree, dict):
-            raise CorrespondanceSiglesInvalide(f"{chemin} : entrée non-objet.")
-        sigle = entree.get("groupe_sigle")
-        legislature = entree.get("legislature")
-        sigles_an = entree.get("sigles_an")
-        organes_an = entree.get("organes_an")
-        if not isinstance(sigle, str) or not sigle:
-            raise CorrespondanceSiglesInvalide(f"{chemin} : 'groupe_sigle' absent.")
-        if not isinstance(legislature, str) or not legislature:
-            raise CorrespondanceSiglesInvalide(f"{sigle} : 'legislature' absente.")
-        if not isinstance(sigles_an, list) or not sigles_an or not all(
-            isinstance(s, str) and s for s in sigles_an
-        ):
-            raise CorrespondanceSiglesInvalide(
-                f"{sigle}-{legislature} : 'sigles_an' doit être une liste non "
-                "vide de sigles AN (organe.libelleAbrev)."
-            )
-        if not isinstance(organes_an, list) or not organes_an or not all(
-            isinstance(o, str) and o.startswith("PO") for o in organes_an
-        ):
-            raise CorrespondanceSiglesInvalide(
-                f"{sigle}-{legislature} : 'organes_an' doit lister les organes "
-                "mesurés (PO######) — c'est le fil-piège de la table."
-            )
-        if not entree.get("verifie_le"):
-            raise CorrespondanceSiglesInvalide(
-                f"{sigle}-{legislature} : 'verifie_le' absent — une "
-                "correspondance non datée n'est pas relisible."
-            )
-        cle = (sigle, legislature)
-        if cle in vues:
-            raise CorrespondanceSiglesInvalide(
-                f"{sigle}-{legislature} : deux entrées pour le même "
-                "(groupe_sigle, législature)."
-            )
-        vues.add(cle)
-        valides.append(entree)
-    return valides
+    declarations: list[dict[str, Any]] = []
+    for organe_ref in organes_du_groupe(index, legislature, sigles_an):
+        organe = index["organes"][organe_ref]
+        valeur = organe.get("position_politique")
+        declarations.append({
+            "organe_an": organe_ref,
+            "sigle_an": organe.get("sigle"),
+            "valeur_source": valeur,
+            "position": POSITION_POLITIQUE_AN_VERS_PIVOT.get(valeur),
+        })
+    return declarations
 
 
-def entree_correspondance(
+def position_politique_mesuree(
     groupe_sigle: str,
     legislature: str,
-    chemin: Optional[Path] = None,
+    *,
+    zip_path: Optional[Path] = None,
+    chemin_config: Optional[Path] = None,
 ) -> dict[str, Any]:
-    """Entrée de la table pour ce `(sigle publié, législature)`.
+    """Le bloc `position_politique` **mesuré** sur l'archive, pour ce groupe.
 
-    Raises:
-        CorrespondanceSiglesInvalide: aucune entrée. Le message **nomme** le
-            couple : deviner le sigle AN est précisément ce que ce lot refuse.
+    Même forme que ce que la table committe et que ce que la fiche publie, à
+    `source_url` près (qui vit une seule fois, dans la table). C'est ce qui
+    permet de comparer les deux terme à terme au lieu de comparer un résumé à
+    un autre.
     """
-    for entree in charger_correspondance_sigles(chemin):
-        if entree["groupe_sigle"] == groupe_sigle and entree["legislature"] == str(legislature):
-            return entree
-    raise CorrespondanceSiglesInvalide(
-        f"Aucune correspondance de sigle AN pour ({groupe_sigle!r}, "
-        f"législature {legislature!r}) dans {chemin or CHEMIN_CONFIG_GROUPES}. "
-        "Ajouter l'entrée avec ses organes et son effectif mesurés (#526)."
-    )
+    _exiger_actif()
+    entree = entree_correspondance(groupe_sigle, legislature, chemin_config)
+    index = charger_index_gp(zip_path)
+    organes = declarations_position_politique(index, legislature, entree["sigles_an"])
+    return {
+        "position": resumer_position_politique(organes),
+        "organes": organes,
+    }
 
+
+def rapport_positions_politiques(
+    *,
+    legislature: Optional[str] = None,
+    zip_path: Optional[Path] = None,
+    chemin_config: Optional[Path] = None,
+) -> dict[str, Any]:
+    """Le fil-piège de la qualification : committé face à mesuré, par groupe.
+
+    `ecarts` doit rester vide. Une entrée non vide veut dire que l'AN a changé
+    (ou publié pour la première fois) la qualification d'un groupe, et que la
+    table doit être relue — le jour où la XVIIe législature s'achèvera, ses
+    14 groupes passeront tous de `non_declaree` à une valeur, et c'est ce
+    rapport qui le dira.
+
+    Le rapport ne corrige rien tout seul : une table qui se réécrirait sur
+    mesure ne serait plus une table relue (#526).
+    """
+    _exiger_actif()
+    groupes: list[dict[str, Any]] = []
+    ecarts: list[str] = []
+    for entree in charger_correspondance_sigles(chemin_config):
+        if legislature is not None and entree["legislature"] != str(legislature):
+            continue
+        libelle = f"{entree['groupe_sigle']}-{entree['legislature']}"
+        mesure = position_politique_mesuree(
+            entree["groupe_sigle"],
+            entree["legislature"],
+            zip_path=zip_path,
+            chemin_config=chemin_config,
+        )
+        committe = entree[CLE_POSITION_POLITIQUE]
+        concorde = (
+            committe.get("position") == mesure["position"]
+            and [
+                (o.get("organe_an"), o.get("valeur_source"))
+                for o in (committe.get("organes") or ())
+            ] == [
+                (o["organe_an"], o["valeur_source"]) for o in mesure["organes"]
+            ]
+        )
+        if not concorde:
+            ecarts.append(libelle)
+        groupes.append({
+            "groupe": libelle,
+            "committe": committe,
+            "mesure": mesure,
+            "concorde": concorde,
+        })
+    return {"groupes": groupes, "ecarts": ecarts}
 
 # ── Dérivation du roster ─────────────────────────────────────────────────────
 
@@ -959,6 +987,30 @@ def _afficher_rapport_divergence(rapport: dict[str, Any]) -> None:
     print(f"→ écart total (compteur de migration) : {rapport['ecart_total']}")
 
 
+def _afficher_rapport_positions(rapport: dict[str, Any]) -> None:
+    for bloc in rapport["groupes"]:
+        committe = bloc["committe"]
+        mesure = bloc["mesure"]
+        marque = "✓" if bloc["concorde"] else "✗"
+        print(
+            f"{marque} {bloc['groupe']} : committé {committe.get('position')} "
+            f"(relu le {committe.get('verifie_le')}) — mesuré {mesure['position']}"
+        )
+        for organe in mesure["organes"]:
+            print(
+                f"   · {organe['organe_an']} ({organe['sigle_an']}) : "
+                f"{organe['valeur_source'] or 'non déclarée par l\'AN'}"
+            )
+    if rapport["ecarts"]:
+        print(
+            f"→ [!] {len(rapport['ecarts'])} écart(s) : {', '.join(rapport['ecarts'])}. "
+            "L'Assemblée a changé (ou publié) une qualification : relire la table "
+            "de correspondance, entrée par entrée (#686). Rien n'est réécrit ici."
+        )
+    else:
+        print("→ Aucun écart : la table committée dit ce que l'archive dit.")
+
+
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Composition des groupes de l'Assemblée nationale dérivée "
@@ -992,6 +1044,13 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              "publiées, entrée par entrée (patron #493).",
     )
     parser.add_argument(
+        "--positions",
+        action="store_true",
+        help="Comparer la position politique COMMITTÉE de chaque groupe à "
+             "celle que l'archive déclare (organe.positionPolitique). "
+             "Fil-piège : n'écrit rien, la table se relit à la main (#686).",
+    )
+    parser.add_argument(
         "--config",
         type=Path,
         default=None,
@@ -1017,6 +1076,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         activer_roster_an(False)
 
     try:
+        if args.positions:
+            _afficher_rapport_positions(
+                rapport_positions_politiques(
+                    legislature=args.legislature,
+                    zip_path=args.archive,
+                    chemin_config=args.config,
+                )
+            )
+            return 0
+
         if args.divergence:
             _afficher_rapport_divergence(
                 rapport_divergence(
@@ -1028,7 +1097,9 @@ def main(argv: Optional[list[str]] = None) -> int:
             return 0
 
         if not args.sigle or not args.legislature:
-            parser.error("--sigle et --legislature sont requis hors --divergence.")
+            parser.error(
+                "--sigle et --legislature sont requis hors --divergence/--positions."
+            )
 
         membres, rapport = deriver_roster_groupe(
             args.sigle,

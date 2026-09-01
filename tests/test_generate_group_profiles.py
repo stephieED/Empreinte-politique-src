@@ -39,6 +39,45 @@ def index_partages_isoles(monkeypatch, tmp_path_factory):
     )
 
 
+#: Bloc `correspondance_sigles_an` minimal, mais **verbatim** : `LR`-16 est
+#: bien l'organe `PO800508` et l'Assemblée le déclare `Opposition` dans AMO30
+#: (mesuré le 01/09/2026 sur l'archive réelle, cf. tests/test_an_roster.py).
+#: Rien n'est inventé ici — ni le sigle AN, ni l'uid d'organe, ni la chaîne
+#: source (#510 : une fixture se réduit, elle ne se rédige pas).
+SOURCE_AMO30 = (
+    "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/"
+    "tous_acteurs_mandats_organes_xi_legislature/"
+    "AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip"
+)
+
+
+def _correspondance_sigles_an(groupe_sigle: str = "LR") -> dict:
+    """Table sigle publié → sigle AN, avec la qualification déclarée (#686)."""
+    return {
+        "source": SOURCE_AMO30,
+        "groupes": [
+            {
+                "groupe_sigle": groupe_sigle,
+                "groupe_id": f"AN:{groupe_sigle}",
+                "legislature": "16",
+                "fichier": f"groupe-AN-{groupe_sigle}-16.json",
+                "sigles_an": ["LR"],
+                "organes_an": ["PO800508"],
+                "position_politique_an": {
+                    "position": "opposition",
+                    "verifie_le": "2026-09-01",
+                    "organes": [
+                        {"organe_an": "PO800508", "sigle_an": "LR",
+                         "valeur_source": "Opposition", "position": "opposition"},
+                    ],
+                },
+                "effectif_amo30": 63,
+                "verifie_le": "2026-09-01",
+            },
+        ],
+    }
+
+
 def _pivot(id_: str, nom: str) -> dict:
     return {
         "schema_version": "1",
@@ -187,7 +226,12 @@ def test_main_reads_config_and_generates(tmp_path, monkeypatch):
     config_path.write_text(json.dumps({
         "groupes": [
             {"roster_chambre": "deputes", "groupe_id": "AN:LR", "groupe_sigle": "LR", "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "16", "fichier": "groupe-AN-LR-16.json"},
-        ]
+        ],
+        # Depuis #686, une fiche AN se génère avec la position politique que
+        # l'Assemblée déclare, lue dans cette table committée. Sans l'entrée,
+        # la génération refuse — c'est le comportement voulu, vérifié juste
+        # en dessous.
+        "correspondance_sigles_an": _correspondance_sigles_an(),
     }), encoding="utf-8")
 
     def fake_fetch_full_roster(chambre, legislature=None, session=None):
@@ -202,7 +246,60 @@ def test_main_reads_config_and_generates(tmp_path, monkeypatch):
     ])
 
     assert rc == 0
-    assert (out_dir / "groupe-AN-LR-16.json").exists()
+    fiche = json.loads((out_dir / "groupe-AN-LR-16.json").read_text(encoding="utf-8"))
+    # La posture atterrit dans la fiche AVEC sa preuve — l'organe AN, la chaîne
+    # du référentiel verbatim — et non comme un simple mot (#686).
+    assert fiche["position_politique"]["position"] == "opposition"
+    assert fiche["position_politique"]["organes"] == [
+        {"organe_an": "PO800508", "sigle_an": "LR",
+         "valeur_source": "Opposition", "position": "opposition"}
+    ]
+    assert fiche["position_politique"]["source_url"].startswith("https://data.assemblee-nationale.fr/")
+
+
+def test_main_refuse_une_fiche_an_sans_entree_dans_la_table(tmp_path, monkeypatch, capsys):
+    """Le sigle publié ne se rapproche PAS du sigle AN (#686).
+
+    Nos fiches disent `REN` et `LFI`, le référentiel dit `RE` et `LFI-NUPES` :
+    un appariement par ressemblance rendrait `None` sur deux fiches sur cinq,
+    dont la seule majoritaire. Une entrée manquante doit donc coûter la
+    génération de CE groupe, bruyamment et en nommant le couple — jamais une
+    fiche publiée avec une posture devinée ou absente.
+    """
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    (profiles_dir / "alice.pivot.json").write_text(
+        json.dumps(_pivot("nosdeputes:alice", "Alice")), encoding="utf-8"
+    )
+    out_dir = tmp_path / "groupes"
+
+    config_path = tmp_path / "groupes_reels.json"
+    config_path.write_text(json.dumps({
+        "groupes": [
+            {"roster_chambre": "deputes", "groupe_id": "AN:LR", "groupe_sigle": "LR",
+             "groupe_nom": "Les Républicains", "chambre": "AN", "legislature": "16",
+             "fichier": "groupe-AN-LR-16.json"},
+        ],
+        "correspondance_sigles_an": _correspondance_sigles_an(groupe_sigle="REN"),
+    }), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "generate_group_profiles.fetch_full_roster",
+        lambda chambre, legislature=None, session=None: [
+            m["depute"] for m in _deputes_payload()["deputes"]
+        ],
+    )
+
+    rc = generate_group_profiles_main([
+        "--config", str(config_path),
+        "--profiles-dir", str(profiles_dir),
+        "--out-dir", str(out_dir),
+    ])
+
+    assert rc == 1
+    assert not (out_dir / "groupe-AN-LR-16.json").exists()
+    erreur = capsys.readouterr().err
+    assert "'LR'" in erreur and "16" in erreur
 
 
 def test_main_missing_config_returns_error(tmp_path):

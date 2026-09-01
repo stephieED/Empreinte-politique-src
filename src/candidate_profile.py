@@ -76,7 +76,7 @@ from gouvernement_textes import (
 from profil_brut import ecrire_profil_brut
 from licences import LICENCE_AN
 from parse_syceron import parse_syceron_xml
-from schema_pivot import COLLECTE_THEME_SEUL
+from schema_pivot import COLLECTE_THEME_SEUL, POSITION_POLITIQUE_AN_VERS_PIVOT
 from syceron_debates import (
     SYCERON_AVAILABLE_LEGISLATURES,
     SYCERON_CACHE_DIR,
@@ -3908,11 +3908,11 @@ _acteur_ref_to_pseudo_url = acteur_ref_to_pseudo_url
 
 # Correspondance organe.positionPolitique (référentiel officiel Assemblée
 # nationale) -> valeur du schéma pivot.
-_POSITION_POLITIQUE_MAP: dict[str, str] = {
-    "Majoritaire": "majorite",
-    "Minoritaire": "minoritaire",
-    "Opposition": "opposition",
-}
+#
+# Canonique dans `schema_pivot` depuis #686 : la fiche de groupe publie la même
+# qualification, tirée du même champ de la même archive. Deux copies de cette
+# table auraient dérivé le jour où l'AN ajoute une quatrième valeur.
+_POSITION_POLITIQUE_MAP: dict[str, str] = POSITION_POLITIQUE_AN_VERS_PIVOT
 
 
 def _build_organe_positions_index(zf: zipfile.ZipFile) -> dict[str, dict[str, Any]]:

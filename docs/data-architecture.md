@@ -519,6 +519,28 @@ est **tracée** (`meta.couverture_roster`), pour ne jamais confondre effectif r�
 et effectif effectivement agrégé — un ratio ne se publie qu'avec numérateur,
 dénominateur et couverture suffisante (AGENTS.md §2.7).
 
+**`position_politique` porte la qualification que l'Assemblée donne elle-même
+au groupe** (#686, `docs/decisions/position-politique-groupes-686.md`) —
+`organe.positionPolitique` du référentiel AMO30, recopiée et jamais produite :
+`majorite`, `minoritaire`, `opposition`, plus deux valeurs que le lot dérive,
+`non_declaree` (aucun organe qualifié — les **14 groupes de la XVIIe**, l'AN ne
+qualifiant qu'une législature achevée) et `divergente` (deux organes successifs
+qui se contredisent, mesuré nul à ce jour). Le bloc porte sa **preuve** :
+`source_url`, obligatoire même sur `non_declaree`, `verifie_le`, et `organes[]`
+— un enregistrement par organe, dans l'ordre de succession, avec la chaîne
+source verbatim. `position` est le **résumé dérivé** de ces déclarations, et le
+schéma refuse un résumé qu'elles ne portent pas.
+
+La valeur vient de la table committée `correspondance_sigles_an` de
+`raw_data/groupes_reels.json` (clé `position_politique_an`), **jamais d'une
+ressemblance de sigle** : nos fiches disent `REN` et `LFI`, le référentiel dit
+`RE` et `LFI-NUPES`. Aucune archive n'est lue au moment de générer ;
+`python3 src/an_roster.py --positions` sert de fil-piège, et le **§4b du portail
+de qualité** fait échouer le commit, seuil 0, si une fiche AN publiée n'a pas
+son entrée. Le champ est **optionnel** : les 7 fiches publiées avant le lot ne le
+portent pas, et les 2 `groupe-Senat-*` ne le porteront jamais — AMO30 ne
+qualifie que les organes de l'Assemblée.
+
 `membres[].debut_dans_groupe` / `fin_dans_groupe` sont les dates du **mandat de
 groupe politique de la législature de la fiche**, que le roster porte déjà
 (`mandat_debut` / `mandat_fin`) : transit écarté, organes successifs recollés

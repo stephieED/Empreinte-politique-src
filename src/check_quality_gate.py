@@ -68,7 +68,10 @@ from schema_pivot import libelle_chambres, lire_chambres  # noqa: E402
 # toujours contrôlée, couverture plus mesurée) et qui refuse une suspension
 # non documentée.
 from groupes_config import (  # noqa: E402
+    CLE_POSITION_POLITIQUE,
+    CorrespondanceSiglesInvalide,
     anomalies_suspension,
+    charger_correspondance_sigles,
     est_suspendu,
     resume_suspension,
 )
@@ -1581,6 +1584,157 @@ def _report_groupes(
 
 
 # ---------------------------------------------------------------------------
+# Section 4b — Position politique déclarée des groupes (#686)
+# ---------------------------------------------------------------------------
+
+def _report_position_politique(
+    groupes_config_path: Path,
+    groupes_dir: Path,
+) -> tuple[list[str], str, str]:
+    """Vérifie que **toute fiche de groupe AN publiée** a son entrée dans
+    `correspondance_sigles_an`, avec la position que l'Assemblée déclare (#686).
+
+    **Hard fail**, seuil 0 — même patron que la §5b pour
+    `correspondance_acteurs_an.json` (#525), et pour la même raison. Nos fiches
+    publient `groupe_sigle: "REN"` et `"LFI"` ; le référentiel AN dit `RE` et
+    `LFI-NUPES`. Un appariement par ressemblance de sigle rend `None` sur deux
+    fiches sur cinq — dont **la seule majoritaire du corpus**, celle qui porte
+    tout le contraste. Une correspondance manquante ne se manifeste donc pas
+    comme une erreur : elle se manifeste comme une posture absente sur la fiche
+    où elle comptait le plus.
+
+    Ce qui bloque :
+
+      - une fiche AN publiée dont le couple `(groupe_sigle, législature)` n'a
+        pas d'entrée dans la table — le message **nomme** le couple ;
+      - une table absente, illisible ou violant un invariant
+        (`CorrespondanceSiglesInvalide`), y compris une entrée sans
+        `position_politique_an` ou dont le résumé ne suit pas ses organes ;
+      - une fiche qui publie une position **différente** de celle que la table
+        committe : la fiche est régénérée depuis la table à chaque run, donc un
+        écart veut dire qu'une qualification publiée n'est plus adossée à sa
+        preuve relue (AGENTS.md §2 règle 2).
+
+    Ce qui ne bloque pas :
+
+      - une fiche AN publiée **sans** le champ. Les 5 fiches de la XVIe
+        l'étaient avant ce lot, et exiger un champ d'un document qui n'a pas
+        encore été régénéré ferait échouer le portail sur du publié — même
+        arbitrage que `date_reference` (#653) et `couverture_roster.etat`
+        (#558). Le compte est imprimé : c'est le compteur de migration, et il
+        tombe à 0 au premier run réel.
+      - une fiche non-AN. AMO30 ne qualifie que les organes de l'Assemblée ;
+        les 2 fiches `groupe-Senat-*` (gelées, #516) n'ont ni entrée ni champ,
+        et leur en réclamer un serait réclamer une donnée qui n'existe pas.
+      - une entrée de table sans fiche publiée (les 5 groupes de la XVIIe) :
+        c'est un périmètre, pas un écart (#526 §4).
+
+    Retourne (hard_errors, console_text, markdown_text).
+    """
+    hard_errors: list[str] = []
+    table: dict[tuple[str, str], dict] = {}
+
+    # Les fiches AVANT la table, et pas l'inverse : cette section n'a de sujet
+    # que s'il existe une fiche AN publiée. Sans elle — un corpus de test, un
+    # répertoire vide, un dépôt qui ne publierait que des groupes sénatoriaux —
+    # exiger la table ferait échouer le commit sur un contrôle sans objet.
+    # `Path.glob` renvoie les dotfiles, contrairement au module `glob` (#518).
+    fiches: list[tuple[Path, dict]] = []
+    for chemin in sorted(groupes_dir.glob("*.json")):
+        if chemin.name.startswith("."):
+            continue
+        fiche = _load_json(chemin)
+        if isinstance(fiche, dict) and fiche.get("chambre") == "AN":
+            fiches.append((chemin, fiche))
+
+    if fiches:
+        try:
+            entrees = charger_correspondance_sigles(groupes_config_path)
+            table = {
+                (e["groupe_sigle"], e["legislature"]): e[CLE_POSITION_POLITIQUE]
+                for e in entrees
+            }
+        except CorrespondanceSiglesInvalide as exc:
+            hard_errors.append(str(exc))
+
+    fiches_an = len(fiches)
+    sans_champ: list[str] = []
+    par_position: dict[str, int] = defaultdict(int)
+
+    for chemin, fiche in fiches:
+        sigle = fiche.get("groupe_sigle")
+        legislature = fiche.get("legislature")
+        cle = (sigle, str(legislature) if legislature is not None else "")
+        attendu = table.get(cle)
+        if attendu is None:
+            if table:
+                hard_errors.append(
+                    f"{chemin.name} : fiche de groupe publiée sans entrée "
+                    f"({sigle!r}, législature {legislature!r}) dans "
+                    f"'{groupes_config_path}' → correspondance_sigles_an. La "
+                    "position politique déclarée par l'Assemblée ne se déduit "
+                    "pas du sigle publié (`RE` ne se déduit pas de `REN`) : "
+                    "ajoute l'entrée, ses organes et sa qualification mesurés "
+                    "— python3 src/an_roster.py --positions les affiche (#686)."
+                )
+            continue
+        publiee = fiche.get("position_politique")
+        if publiee is None:
+            sans_champ.append(chemin.name)
+            continue
+        par_position[publiee.get("position") or "?"] += 1
+        if publiee.get("position") != attendu.get("position"):
+            hard_errors.append(
+                f"{chemin.name} : position publiée "
+                f"{publiee.get('position')!r} ≠ position committée "
+                f"{attendu.get('position')!r}. Une qualification publiée sans "
+                "sa preuve relue n'est plus traçable (#686)."
+            )
+
+    ventilation = ", ".join(f"{k} : {v}" for k, v in sorted(par_position.items())) or "—"
+    lignes = [
+        "┌─ 4b/6  Position politique déclarée des groupes ─────────────────────",
+        f"│  Fiches AN publiées : {fiches_an}   Entrées de la table : {len(table)}",
+        f"│  Positions publiées : {ventilation}",
+    ]
+    if sans_champ:
+        lignes.append(
+            f"│  ℹ {len(sans_champ)} fiche(s) AN sans le champ (publiées avant "
+            f"#686, non bloquant) : {', '.join(sans_champ)}"
+        )
+    for e in hard_errors:
+        lignes.append(f"│  ✗ {e}")
+    if not hard_errors:
+        lignes.append("│  ✓ Toute fiche AN publiée porte sa correspondance relue.")
+    lignes.append("└" + "─" * 68)
+
+    md_lines = [
+        "### 4b · Position politique déclarée des groupes",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Fiches AN publiées | {fiches_an} |",
+        f"| Entrées `correspondance_sigles_an` | {len(table)} |",
+        f"| Positions publiées | {ventilation} |",
+        f"| Fiches AN sans le champ (non bloquant) | {len(sans_champ)} |",
+        "",
+    ]
+    if hard_errors:
+        md_lines.append(
+            "> ✗ **Qualification non adossée** — une fiche de groupe publiée dont "
+            "la posture déclarée par l'Assemblée n'a pas de correspondance relue "
+            "(`decisions/position-politique-groupes-686.md`). À compléter avant commit.\n"
+        )
+        for e in hard_errors:
+            md_lines.append(f"> - {e}")
+        md_lines.append("")
+    else:
+        md_lines.append("_Toute fiche AN publiée porte sa correspondance relue._\n")
+
+    return hard_errors, "\n".join(lignes), "\n".join(md_lines)
+
+
+# ---------------------------------------------------------------------------
 # Section 5 — Gouvernements
 # ---------------------------------------------------------------------------
 
@@ -2340,6 +2494,12 @@ def main() -> int:
     )
     grp_exit = 1 if grp_hard else 0
 
+    # ── Section 4b : Position politique déclarée des groupes (#686) ────────
+    pos_hard, pos_console, pos_md = _report_position_politique(
+        args.groupes_config, args.groupes_dir,
+    )
+    pos_exit = 1 if pos_hard else 0
+
     # ── Section 5 : Gouvernements ───────────────────────────────────────────
     gouv_hard, gouv_soft, gouv_console, gouv_md = _report_gouvernements(
         args.gouvernements_config, args.gouvernements_dir,
@@ -2397,8 +2557,8 @@ def main() -> int:
     # #378 (docs/decisions/amendements-zero-pas-de-hard-fail.md). Le
     # signal global de 3c est en revanche affiché en tête de rapport ci-dessous.
     exit_code = 1 if (
-        ir_exit == 1 or grp_exit == 1 or gouv_exit == 1 or amdfmt_exit == 1
-        or corr_exit == 1 or blob_exit == 1
+        ir_exit == 1 or grp_exit == 1 or pos_exit == 1 or gouv_exit == 1
+        or amdfmt_exit == 1 or corr_exit == 1 or blob_exit == 1
     ) else 0
 
     # ── Sortie console ─────────────────────────────────────────────────────
@@ -2420,6 +2580,7 @@ def main() -> int:
         print(amdf_console)
     print(amdfmt_console)
     print(grp_console)
+    print(pos_console)
     print(gouv_console)
     print(corr_console)
     if pt_console:
@@ -2453,6 +2614,7 @@ def main() -> int:
         amdf_md,
         amdfmt_md,
         grp_md,
+        pos_md,
         gouv_md,
         corr_md,
         pt_md,
@@ -2477,6 +2639,8 @@ def main() -> int:
         _gha_annotation("error", f"Groupe — structure cassée : {err}")
     for warn in grp_soft:
         _gha_annotation("warning", f"Groupe — qualité dégradée : {warn}")
+    for err in pos_hard:
+        _gha_annotation("error", f"Position politique de groupe — {err}")
     for err in gouv_hard:
         _gha_annotation("error", f"Gouvernement — structure cassée : {err}")
     for err in corr_hard:
