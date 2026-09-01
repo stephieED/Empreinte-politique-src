@@ -126,6 +126,7 @@ from schema_groupe import (
     make_empty_amendements_stats,
     validate_profil_groupe,
 )
+from groupes_config import position_politique_publiee
 from merge_profile import load_existing_document, preserve_stable_freshness_timestamps
 from normalize_profil import normalize_profil
 from amendements_index import (
@@ -1712,6 +1713,7 @@ def build_groupe_profile(
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
     appartenances: Optional[dict[str, dict[str, Any]]] = None,
+    position_politique: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Construit un profil de groupe à partir d'une liste de profils individuels pivot v1.
 
@@ -1743,6 +1745,16 @@ def build_groupe_profile(
                     `meta.warnings` : le repli sur le mandat électif, qui
                     datait l'entrée dans le groupe au début de la carrière,
                     est ce que ce lot retire.
+        position_politique: bloc `position_politique` déjà composé par
+                    `groupes_config.position_politique_publiee` (#686) — la
+                    qualification que l'Assemblée donne elle-même au groupe,
+                    recopiée depuis la table committée. `None` = non renseignée
+                    (le champ sort `null`), ce qui est le cas de toute fiche
+                    hors Assemblée nationale : AMO30 ne qualifie que ses
+                    propres organes. **Jamais calculée ici** : cette fonction
+                    ne lit aucune archive, et déduire une posture des votes
+                    agrégés serait le jugement que ce dépôt refuse de porter
+                    (AGENTS.md §2 règle 1).
 
     Returns:
         Profil de groupe dict conforme au schéma de groupe v1.
@@ -1923,6 +1935,12 @@ def build_groupe_profile(
         "actif": groupe_actif,
     }
     profil_groupe["membres"] = membres
+    # Recopiée telle quelle, jamais recalculée sur les compteurs de la fiche
+    # (#686). `None` reste `None` : un champ absent dit « non renseigné », là
+    # où `non_declaree` dit « la source n'a rien déclaré » — deux constats
+    # distincts, et les confondre ferait passer une fiche sénatoriale pour un
+    # groupe que l'Assemblée aurait omis de qualifier.
+    profil_groupe["position_politique"] = position_politique
     profil_groupe["date_reference"] = date_reference
     profil_groupe["effectif"] = effectif
     profil_groupe["cohesion_votes"] = cohesion_votes
@@ -2113,6 +2131,7 @@ def generate_groupe_profile_from_roster(
     rapport_interne_path: Optional[Path] = None,
     scrutins_index: Optional[ScrutinsIndex] = None,
     amendements_index: Optional[AmendementsIndex] = None,
+    position_politique: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Construit (et écrit si `out_path` fourni) un profil de groupe à partir d'un
     roster déjà récupéré (voir `fetch_group_roster`, ou `fetch_full_roster` +
@@ -2231,6 +2250,7 @@ def generate_groupe_profile_from_roster(
         # n'a pas de mandat de groupe lisible, et lui en inventer un serait
         # exactement ce que ce lot retire.
         appartenances=appartenances,
+        position_politique=position_politique,
     )
 
     profil_groupe["meta"]["couverture_roster"] = couverture_roster
@@ -2314,6 +2334,16 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"[!] Récupération du roster impossible : {exc}", file=sys.stderr)
             return 1
 
+        # La posture déclarée sort de la table committée, jamais d'une
+        # mesure faite ici (#686) : ce chemin CLI doit publier exactement ce
+        # que publie `generate_group_profiles.py`, sans quoi régénérer une
+        # fiche à la main la ferait discrètement régresser sur ce champ.
+        position_politique = None
+        if args.chambre == "AN":
+            position_politique = position_politique_publiee(
+                args.groupe_sigle, args.legislature
+            )
+
         out_path = Path(args.out) if args.out else None
         profil_groupe = generate_groupe_profile_from_roster(
             roster=roster,
@@ -2330,6 +2360,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             licence_donnees=args.licence,
             validate=args.validate,
             rapport_interne_path=Path(args.rapport_interne) if args.rapport_interne else None,
+            position_politique=position_politique,
         )
         if not out_path:
             print(json.dumps(profil_groupe, ensure_ascii=False, indent=2))

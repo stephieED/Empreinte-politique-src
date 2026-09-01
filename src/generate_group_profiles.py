@@ -78,7 +78,13 @@ from group_roster import (
     fetch_full_roster,
     filter_roster_by_sigle,
 )
-from groupes_config import partitionner_groupes, resume_suspension
+from groupes_config import (
+    CHEMIN_CONFIG_GROUPES,
+    CorrespondanceSiglesInvalide,
+    partitionner_groupes,
+    position_politique_publiee,
+    resume_suspension,
+)
 from amendements_index import (
     DEFAULT_AMENDEMENTS_DIR,
     charger as charger_amendements,
@@ -180,6 +186,7 @@ def generate_all(
     scrutins_path: Path = DEFAULT_SCRUTINS_PATH,
     amendements_path: Path = DEFAULT_AMENDEMENTS_DIR,
     rosters_bruts_path: Optional[Path] = None,
+    chemin_config: Path = CHEMIN_CONFIG_GROUPES,
 ) -> ResultatGeneration:
     """Génère tous les profils de groupe de `groupes`, au plus un fetch réseau
     par (roster_chambre, legislature) distincte — et zéro si `rosters_bruts_path`
@@ -271,8 +278,23 @@ def generate_all(
             groupe["groupe_sigle"],
         )
 
+        # La qualification que l'Assemblée donne au groupe (#686) sort de la
+        # table committée `correspondance_sigles_an`, jamais d'une ressemblance
+        # de sigle : nos fiches disent `REN` et `LFI`, le référentiel dit `RE`
+        # et `LFI-NUPES`, et l'appariement direct rendait `None` sur deux
+        # fiches sur cinq — dont la seule majoritaire du corpus. Aucune archive
+        # n'est lue ici : la valeur est relue et datée dans le dépôt.
+        #
+        # Une entrée manquante lève, et l'exception est traitée comme un échec
+        # de génération : publier une fiche de groupe sans sa posture, ou avec
+        # une posture devinée, est précisément ce que ce lot corrige.
         out_path = out_dir / groupe["fichier"]
         try:
+            position_politique = None
+            if groupe.get("chambre") == "AN":
+                position_politique = position_politique_publiee(
+                    groupe["groupe_sigle"], groupe.get("legislature"), chemin_config
+                )
             generate_groupe_profile_from_roster(
                 roster=roster,
                 groupe_id=groupe["groupe_id"],
@@ -287,7 +309,23 @@ def generate_all(
                 validate=validate,
                 scrutins_index=scrutins_index,
                 amendements_index=amendements_index,
+                position_politique=position_politique,
             )
+        except CorrespondanceSiglesInvalide as exc:
+            # Nommée à part de l'échec générique : ce n'est ni le réseau ni un
+            # défaut de calcul, c'est une table à relire — et le message dit
+            # lequel des dix couples (sigle publié, législature) manque.
+            print(
+                f"  [!] {groupe['groupe_id']} : position politique déclarée "
+                f"introuvable dans la table committée — {exc}",
+                file=sys.stderr,
+            )
+            echecs_generation.append(groupe["groupe_id"])
+            gha.annoter(
+                "error",
+                f"POSITION_POLITIQUE_ABSENTE — {groupe['groupe_id']} : {exc}",
+            )
+            continue
         except Exception as exc:  # noqa: BLE001 - un échec sur un groupe ne doit pas arrêter les autres
             print(f"  [!] Échec de génération pour {groupe['groupe_id']} : {exc}", file=sys.stderr)
             echecs_generation.append(groupe["groupe_id"])
@@ -388,6 +426,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         merge_existing=args.merge_existing,
         validate=args.validate,
         rosters_bruts_path=Path(args.rosters_bruts) if args.rosters_bruts else None,
+        chemin_config=config_path,
     )
 
     # Le dénominateur est le nombre de groupes ACTIFS : rapporter 5/7 quand 2
