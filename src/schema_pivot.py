@@ -254,7 +254,17 @@ Format d'un profil pivot v1 :
                                              # c'est la seule clé qui rattache un texte porté
                                              # autrement que par son libellé. null si la source
                                              # n'en donne pas — jamais reconstruit d'un titre.
-            "role": "rapporteur",            # "auteur" | "rapporteur" | "co-rapporteur"
+            "role": "rapporteur",            # "initiateur_projet_de_loi" |
+                                             # "auteur_proposition_de_loi" |
+                                             # "auteur_proposition_de_resolution" |
+                                             # "auteur" | "rapporteur" | "co-rapporteur"
+                                             # DÉRIVÉ de (rôle brut × nature_texte), #689 —
+                                             # jamais collecté, jamais fusionné.
+            "nature_texte": null,            # "projet_de_loi" | "proposition_de_loi" |
+                                             # "proposition_de_resolution" | null (#689).
+                                             # Le fait sourcé : préfixe de l'uid du document
+                                             # déposé (PRJL/PION/PNRE). null = la source ne
+                                             # l'établit pas — jamais tiré du libellé.
             "type_rapport": null,            # nomenclature officielle, descriptive uniquement :
                                              # "rapporteur_fond" | "rapporteur_avis" |
                                              # "rapporteur_special_budget" | "mission_information"
@@ -806,9 +816,73 @@ KNOWN_STADES_PROCEDURAUX: frozenset[str] = frozenset({
     "adopte", "promulgue",
 })
 
+# Nature du texte déposé, telle que la source l'encode (#689) : préfixe de l'uid
+# du document associé au premier acte de dépôt — `PRJL` / `PION` / `PNRE`, lu par
+# `gouvernement_textes.nature_texte_depose`, la même fonction que celle dont les
+# fiches de gouvernement tirent l'origine d'un texte. `None` veut dire que la
+# source ne l'établit pas (missions d'information, commissions d'enquête,
+# déclarations du Gouvernement : 11 des 472 entrées publiées, dont 5 d'initiateur),
+# jamais « aucune ».
+#
+# **Jamais tiré du libellé.** Les dossiers de la XV<sup>e</sup> portent des
+# intitulés descriptifs — « Bioéthique », « CETA », « Coopération avec le
+# Luxembourg » — et un discriminant « commence par *Projet de loi* » y manque
+# 283 des 304 textes portés hors mandat électif des candidats déclarés. Une clé
+# dérivée d'un libellé rouille, et se tait en rouillant (#672).
+KNOWN_NATURES_TEXTE: frozenset[str] = frozenset({
+    "projet_de_loi", "proposition_de_loi", "proposition_de_resolution",
+})
+
 # Rôle factuel de l'élu sur le texte. ``None`` signifie que la source ne
 # permet pas de distinguer auteur, rapporteur et co-rapporteur.
-KNOWN_ROLES_TEXTE: frozenset[str] = frozenset({"auteur", "rapporteur", "co-rapporteur"})
+#
+# **`auteur` a été scindé par #689**, et ce n'est pas un renommage. Sous cette
+# seule valeur cohabitaient deux actes de nature différente : la proposition de
+# loi qu'un·e parlementaire dépose, et le projet de loi qu'un membre du
+# Gouvernement porte au nom de l'exécutif — 316 des 472 entrées publiées, dont
+# 282 des 283 d'`edouard-philippe`, toutes déposées pendant qu'il était Premier
+# ministre. Un bilan de gouvernement est collectif ; l'attribuer à une personne
+# donne à lire une productivité parlementaire irréelle, et rend deux candidats
+# incomparables sous le même nom.
+#
+# Le rôle est **dérivé** de (rôle brut × `nature_texte`) par
+# `normalize_profil._normalize_texte_porte` — jamais collecté, jamais fusionné,
+# comme `chambres` (#493) et `meta.licence_donnees` (#530). `validate_profil`
+# refuse toute contradiction entre les deux : c'est ce qui rend la redondance
+# sûre, exactement comme `chambre` ne peut pas contredire `chambres[0]`.
+#
+# `auteur` SURVIT, et sa définition se rétrécit : « initiateur déclaré par la
+# source sur un dossier dont elle n'établit pas la nature ». Il ne peut donc
+# plus désigner un projet de loi. Il reste aussi la valeur des entrées
+# collectées avant #689, tant qu'un run réel ne les a pas requalifiées — d'où
+# sa présence ici, et le compteur de la §8 du quality gate qui mesure cette
+# population décroissante.
+KNOWN_ROLES_TEXTE: frozenset[str] = frozenset({
+    "initiateur_projet_de_loi",
+    "auteur_proposition_de_loi",
+    "auteur_proposition_de_resolution",
+    "auteur",
+    "rapporteur",
+    "co-rapporteur",
+})
+
+# Rôle d'initiateur attendu pour chaque nature (#689). Une entrée dont le rôle
+# est un rôle d'initiateur DOIT porter la nature correspondante, et
+# réciproquement : deux champs qui disent la même chose ne valent que s'ils ne
+# peuvent pas se contredire. Les rôles de rapport (`rapporteur`,
+# `co-rapporteur`) sont hors table : rapporter un projet de loi est une
+# fonction parlementaire ordinaire, quelle que soit la nature du texte.
+ROLE_INITIATEUR_PAR_NATURE: dict[str, str] = {
+    "projet_de_loi": "initiateur_projet_de_loi",
+    "proposition_de_loi": "auteur_proposition_de_loi",
+    "proposition_de_resolution": "auteur_proposition_de_resolution",
+}
+
+#: Rôles d'initiateur, tous natures confondues — `auteur` compris, qui est
+#: l'initiateur d'un texte dont la nature n'est pas établie.
+ROLES_INITIATEUR_TEXTE: frozenset[str] = frozenset(
+    set(ROLE_INITIATEUR_PAR_NATURE.values()) | {"auteur"}
+)
 
 # Type de scrutin, métadonnée du vote indépendante de son résultat. Image 1:1
 # du `codeTypeVote` de l'open data AN depuis #639 : SPO -> public_ordinaire,
@@ -1847,6 +1921,25 @@ def validate_profil(
                     f"textes_portes[{i}].role non reconnu : {role!r}. "
                     f"Valeurs connues : {sorted(KNOWN_ROLES_TEXTE)}."
                 )
+            # #689 : `nature_texte` est le fait sourcé, `role` en dérive pour un
+            # initiateur. Les deux ne peuvent pas se contredire — c'est ce qui
+            # rend la redondance sûre, et non une seconde vérité à côté de la
+            # première (même invariant que `chambre` / `chambres[0]`, #493).
+            nature_texte = t.get("nature_texte")
+            if nature_texte is not None and nature_texte not in KNOWN_NATURES_TEXTE:
+                errors.append(
+                    f"textes_portes[{i}].nature_texte non reconnue : {nature_texte!r}. "
+                    f"Valeurs connues : {sorted(KNOWN_NATURES_TEXTE)}."
+                )
+            elif role in ROLES_INITIATEUR_TEXTE:
+                attendu = ROLE_INITIATEUR_PAR_NATURE.get(nature_texte, "auteur")
+                if role != attendu:
+                    errors.append(
+                        f"textes_portes[{i}] : role={role!r} contredit "
+                        f"nature_texte={nature_texte!r}, qui appelle {attendu!r} "
+                        "(#689). Le rôle d'un initiateur est dérivé de la nature "
+                        "du texte, jamais collecté à côté d'elle."
+                    )
             type_rapport = t.get("type_rapport")
             if type_rapport is not None and type_rapport not in KNOWN_TYPES_RAPPORT:
                 errors.append(
