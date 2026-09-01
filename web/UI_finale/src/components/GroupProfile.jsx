@@ -22,7 +22,7 @@
 import '../styles/shell.css';
 import './GroupProfile.css';
 import { BadgeSource, ListeVide, PositionVote, Troncature } from './Lecture';
-import { formatNumber, styleForPosition } from '../utils/lecture';
+import { formatNumber, styleForPosition, titreDuTexteVote } from '../utils/lecture';
 import { LIBELLE_DENOMINATEUR_TAGS } from '../utils/groupe';
 
 const MOIS = [
@@ -527,27 +527,6 @@ function Partage({ partage }) {
  * pas la case isolée — et une liste plate effacerait le mouvement d'une lecture
  * à l'autre.
  */
-/*
- * L'intitulé d'un vote sur l'ensemble commence par « l'ensemble du projet de
- * loi… » et finit par la mention de lecture : les deux disent la place du vote,
- * pas le nom du texte, et une carte qui annonce « 4 lectures » ne peut pas
- * s'intituler « (première lecture) ».
- *
- * Ces deux retraits sont les SEULS, ils sont déclarés dans la note de la
- * section, et l'intitulé complet reste accessible — en infobulle, et par le lien
- * de source publié sur chaque lecture. Rien n'est reformulé : ce qui reste est
- * la chaîne de la source (§2 règle 2).
- */
-const OUVERTURE_VOTE_ENSEMBLE = /^(?:sur )?l['’]ensemble (?:du |de la |de l['’]|des )?/i;
-const MENTION_DE_LECTURE = /\s*\((?:première|premiere|nouvelle|deuxième|seconde|texte|lecture|c\.m\.p)[^)]*\)\s*\.?\s*$/i;
-
-function titreDeLoi(intitule) {
-  if (!intitule) return 'Intitulé non publié';
-  const nu = intitule.replace(OUVERTURE_VOTE_ENSEMBLE, '').replace(MENTION_DE_LECTURE, '').trim();
-  if (!nu) return intitule;
-  return nu.charAt(0).toUpperCase() + nu.slice(1);
-}
-
 function GrandesLois({ lois }) {
   return (
     <>
@@ -556,7 +535,7 @@ function GrandesLois({ lois }) {
           <article className="gp-loi" key={loi.designation}>
             <div className="gp-loi-entete">
               <h4 className="gp-loi-titre" title={loi.lectures[0].intitule}>
-                {titreDeLoi(loi.lectures[0].intitule)}
+                {titreDuTexteVote(loi.lectures[0].intitule) || 'Intitulé non publié'}
               </h4>
               <span className="gp-loi-nombre gp-num">
                 {formatNumber(loi.scrutins)}
@@ -840,7 +819,7 @@ function ComparaisonManquante({ quoi }) {
   return (
     <ListeVide
       cause="non_collecte"
-      motif={`La comparaison entre les groupes de cette législature n'a pas pu être chargée : ${quoi} ne peut donc pas être affiché. Ce n'est pas un résultat vide, c'est une donnée absente.`}
+      motif={`La comparaison entre les groupes de cette législature n'a pas pu être chargée : cette page ne peut donc pas montrer ${quoi}. Ce n'est pas un résultat vide, c'est une donnée absente.`}
     />
   );
 }
