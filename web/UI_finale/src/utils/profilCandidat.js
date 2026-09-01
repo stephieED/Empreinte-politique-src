@@ -622,21 +622,59 @@ export const LIBELLE_STADE = {
 };
 
 export const LIBELLE_ROLE_TEXTE = {
+  // #689 a scindé `auteur`, qui couvrait deux actes de nature différente. Les
+  // trois valeurs neuves DOIVENT figurer ici : sans libellé, la fiche
+  // afficherait la clé technique telle quelle dès le premier run qualifié.
+  //
+  // Le libellé nomme QUI EST À L'ORIGINE du texte, pas le terme juridique. Le
+  // terme officiel — « projet » contre « proposition » — est contre-intuitif :
+  // il ne dit pas ce qu'on propose mais qui le dépose, et un lecteur qui ne
+  // connaît pas l'article 39 lit exactement l'inverse. « Résolution » est pire
+  // encore : il se lit comme un morceau de loi, alors qu'une résolution ne
+  // crée aucune règle. Mesuré sur les 423 textes portés des 13 candidats
+  // déclarés : 313 projets de loi, 78 propositions, 26 résolutions.
+  //
+  // « à l'initiative du gouvernement » et « issue d'un(e) parlementaire »
+  // disent l'initiative, JAMAIS la chambre de dépôt : 122 des 313 projets ont
+  // été déposés au Sénat sans cesser d'être des textes du gouvernement, et 35
+  // des 78 propositions sont sénatoriales (Bruno Retailleau). « Issue de
+  // l'Assemblée nationale » aurait donc été faux 157 fois sur 391.
+  //
+  // La parenthèse de la résolution énumère les deux procédures que la source
+  // distingue elle-même (`procedureParlementaire.code`) sans trancher laquelle
+  // s'applique au texte affiché : 10 des 26 sont des résolutions de l'article
+  // 34-1 (l'Assemblée déclare une position), 16 relèvent du code 8 générique,
+  // dont les intitulés sont des demandes d'enquête. « Demande », et non
+  // « décision » : 2 des 26 seulement portent le stade `adopte`, et un texte
+  // déposé sans être voté n'a rien décidé (AGENTS.md §2 règle 5).
+  initiateur_projet_de_loi: "Projet de loi à l'initiative du gouvernement",
+  auteur_proposition_de_loi: "Proposition de loi issue d'un(e) parlementaire",
+  auteur_proposition_de_resolution:
+    'Résolution (prise de position ou demande procédurale)',
   auteur: 'Auteur',
   rapporteur: 'Rapporteur',
   'co-rapporteur': 'Co-rapporteur',
 };
 
 /*
- * Un texte dont l'intitulé officiel commence par « projet de loi » est un texte
- * du GOUVERNEMENT, signé comme ministre — pas une proposition déposée comme
- * parlementaire. Le corpus les range sous le même `role: auteur` (13 des 34
- * textes d'Attal) : la distinction ne tient qu'à l'intitulé, et la page le dit
- * au lieu de laisser lire 34 initiatives personnelles.
+ * Un projet de loi est un texte du GOUVERNEMENT, porté comme ministre — pas une
+ * proposition déposée comme parlementaire.
+ *
+ * `nature_texte` (#689) est le fait sourcé : le préfixe de l'uid du document
+ * déposé, lu dans l'archive AN. Il fait foi dès qu'il est présent, y compris
+ * contre l'intitulé.
+ *
+ * Le repli par intitulé est CONSERVÉ, et il est déclaré : le corpus publié ne
+ * porte `nature_texte` qu'à partir du run qui recollecte les dossiers, et le
+ * retirer aujourd'hui afficherait 0 projet de loi là où la page en signale 13.
+ * Il ne tient que sur les XVI/XVII — les dossiers de la XV portent des
+ * intitulés descriptifs (« Bioéthique », « CETA ») et il en manque 283 sur 304.
+ * Condition de retrait : la §5c du quality gate à 0 initiateur sans nature.
  */
 const PROJET_DE_LOI = /^projet de loi\b/;
 
 export function estProjetDeLoi(texte) {
+  if (texte?.nature_texte) return texte.nature_texte === 'projet_de_loi';
   return PROJET_DE_LOI.test(normalizeLabel(texte?.titre));
 }
 

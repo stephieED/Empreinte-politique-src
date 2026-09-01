@@ -93,6 +93,39 @@ Convention d'écriture : `AGENTS.md` §8.
 
 ## Known bugs
 
+- **Les tranches d'amendements du roster recopient 4,58 Gio déjà versionnés en
+  38 Mo, et le chantier est ajourné (#691).** Mesuré le 01/09/2026 : sur les
+  7,70 Gio de `raw_data/profiles/`, **4,58 Gio** sont les tranches 14/15/16 des
+  468 profils `roster_groupe` — l'amendement complet recopié pour *chaque*
+  signataire, la duplication que #431 a supprimée au niveau pivot et jamais au
+  niveau brut. `raw_data/amendements_an_figes/` porte déjà les **624 180**
+  amendements de ces trois législatures fermées, gzippés, avec
+  `premier_signataire` et `co_signataires` : la reconstruction par membre est
+  possible **sans perte**.
+
+  **Ce qu'il ne faut pas re-trancher :** le gain est **nul sur le clone** et
+  entier sur le **checkout**. Le brut se compresse d'un facteur ~154 — les
+  7,70 Gio ne pèsent que **0,05 Gio** dans le pack, quand l'instantané HEAD
+  complet en fait 0,14 sur un pack de 2,0 Gio. **93 % du pack, soit 1,86 Gio,
+  est de l'historique** : c'est un bornage qui allège le clone, jamais ce
+  chantier-ci, et réciproquement. Côté checkout, `extract-an` ne récupère déjà
+  qu'un slug à la fois (#674) ; le seul job qui paie les 7,8 Gio est
+  **`merge-and-pivot`**.
+
+  **Pourquoi c'est un chantier et non une suppression :** trois choses cassent
+  si on retire les fichiers. `profil_brut.recomposer` lève `PartitionIllisible`
+  — le manifeste déclare chaque tranche avec son `nombre` (#580) ; il faut un
+  mode *déclaré*, qui garde le compte. Le garde-fou #545 passerait du **déficit
+  bloquant** à l'**excédent rapporté**, donc muet en restant vert — le défaut
+  que AGENTS.md §3d nomme après #510 — tant que sa relation ne déclare pas
+  l'index figé comme source. Et `build_amendements_index_pivot.py` lit
+  `raw_data/profiles`.
+
+  Hors périmètre et à ne pas prendre dans la foulée : la **législature 17**
+  (2,21 Gio), qu'aucune source figée ne couvre — elle y entrera le jour où elle
+  sera figée. Non vérifié : que l'index pivot reconstruit depuis le figé soit
+  **identique**. C'est le premier geste, avant toute suppression.
+
 - **Aucun commit de données n'est couvert par la suite de tests, et le rétablir
   demande trois gestes hors du dépôt (#685).** Mesuré le 01/09/2026 : **0 des 15**
   commits de données arrivés sur `main` depuis le premier run de `tests.yml`
