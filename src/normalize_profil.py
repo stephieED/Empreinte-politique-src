@@ -59,6 +59,8 @@ from typing import Any, Optional
 from schema_pivot import (
     CHAMBRE_COLLECTE_VERS_PIVOT,
     COLLECTE_THEME_SEUL,
+    KNOWN_NATURES_TEXTE,
+    ROLE_INITIATEUR_PAR_NATURE,
     SCHEMA_VERSION,
     appliquer_chambres,
     make_empty_profil,
@@ -328,6 +330,37 @@ def _normalize_mandat(m: dict[str, Any]) -> dict[str, Any]:
     return mandat
 
 
+def _role_texte_porte(role_brut: Any, nature: Optional[str]) -> Optional[str]:
+    """Dérive le rôle publié d'un texte porté à partir du rôle brut et de la
+    nature du texte déposé (#689).
+
+    **Le rôle publié est dérivé, jamais collecté.** Même patron que `chambres`
+    (#493) et `meta.licence_donnees` (#530) : un champ dérivé se recalcule à
+    chaque normalisation, il ne traverse pas la fusion. C'est aussi ce qui rend
+    la reprise possible sans réécrire les profils à la main — la qualification
+    arrive par le brut, la dérivation la publie.
+
+    Ne touche QUE le rôle d'initiateur, celui que la source appelle
+    `initiateur.acteurs.acteur[]` et que la collecte écrivait `"auteur"` sans
+    distinction. `rapporteur` / `co-rapporteur` traversent inchangés : rapporter
+    un projet de loi est une fonction parlementaire ordinaire, ce n'est pas
+    porter le texte au nom du Gouvernement.
+
+    Une nature absente laisse `"auteur"`, et c'est délibéré à deux titres. C'est
+    le fait constaté pour les 5 entrées d'initiateur publiées dont la source
+    n'établit pas la nature (missions d'information, commissions d'enquête,
+    déclaration du Gouvernement) : ce qu'on ne sait pas ne s'écrit pas autrement
+    (AGENTS.md §2 règle 5). Et c'est la seule valeur juste pour les entrées
+    collectées avant #689, dont le brut ne porte pas encore `nature_texte` :
+    inventer ici une qualification qu'aucune archive n'a rendue les ferait
+    toutes basculer d'un coup sur une passe `--pivot-only`, sans qu'un seul
+    octet de source ait été relu.
+    """
+    if role_brut != "auteur":
+        return role_brut
+    return ROLE_INITIATEUR_PAR_NATURE.get(nature, "auteur")
+
+
 def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     """Normalise un dossier législatif brut vers le format pivot `textes_portes`.
 
@@ -337,6 +370,14 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     rapporteur ; `fetch_textes_portes_officiels` (#400, seule source depuis
     #528) le renseigne, mais les entrées collectées avant lui traversent la
     fusion additive avec leur `role: null` — c'est ce que ce repli couvre.
+
+    `nature_texte` (#689) est le fait sourcé — préfixe de l'uid du document
+    déposé (`PRJL`/`PION`/`PNRE`), écrit au brut par
+    `candidate_profile._build_acteur_textes_portes_index` — et `role` en dérive
+    pour un initiateur (voir `_role_texte_porte`). Une entrée brute d'avant #689
+    ne porte pas la clé : elle sort avec `nature_texte: null` et son `role`
+    inchangé, jusqu'à ce qu'un run réel la requalifie via
+    `merge_profile.backfill_dossier_nature`.
 
     `dossier_id` (#639) est l'identifiant du dossier législatif à l'Assemblée
     nationale, forme `DLR5L15N37607`. Il n'est **pas reconstruit** : le profil
@@ -349,10 +390,14 @@ def _normalize_texte_porte(d: dict[str, Any]) -> dict[str, Any]:
     (`textes[].dossier_id`, 63 / 63 sur LECORNU_II) : les deux étages parlent
     la même langue, sinon le croisement retomberait sur le titre.
     """
+    nature = d.get("nature_texte")
+    if nature not in KNOWN_NATURES_TEXTE:
+        nature = None
     return {
         "titre": d.get("titre") or None,
         "dossier_id": d.get("id") or None,
-        "role": d.get("role"),
+        "role": _role_texte_porte(d.get("role"), nature),
+        "nature_texte": nature,
         "type_rapport": d.get("type_rapport"),
         "stade_procedural": d.get("stade_procedural"),
         "date_min": d.get("date_min"),

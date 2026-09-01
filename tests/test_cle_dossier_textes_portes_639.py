@@ -71,9 +71,9 @@ def test_le_reste_du_texte_porte_est_inchange():
         "472 / 472 textes portés sans source primaire (AGENTS.md §2 règle 2)"
     )
     assert set(normalise) == {
-        "titre", "dossier_id", "role", "type_rapport", "stade_procedural",
-        "date_min", "date_max", "legislature", "source_url",
-    }
+        "titre", "dossier_id", "role", "nature_texte", "type_rapport",
+        "stade_procedural", "date_min", "date_max", "legislature", "source_url",
+    }, "clé ajoutée par #689 : `nature_texte`"
 
 
 def test_profil_pivot_complet_reste_valide():
