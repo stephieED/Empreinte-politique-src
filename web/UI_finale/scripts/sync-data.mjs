@@ -61,6 +61,21 @@ if (existsSync(amendementsDir)) {
   );
 }
 
+// --- commissions_dossiers.json (commission saisie au fond par dossier, #328) ---
+// Absent tant qu'aucun run n'a exécuté `build_commissions_dossiers.py` : la
+// fiche candidat n'affiche alors pas la répartition par commission, et ne la
+// déduit surtout pas d'un intitulé de dossier (AGENTS.md §2 règle 1).
+const commissionsPath = path.join(repoRoot, 'pivot_data', 'commissions_dossiers.json');
+if (existsSync(commissionsPath)) {
+  cpSync(commissionsPath, path.join(outDir, 'commissions_dossiers.json'));
+} else {
+  console.warn(
+    `sync-data : ${commissionsPath} absent — « L'essentiel » n'affichera pas la ` +
+    'répartition par commission saisie au fond (#328). Construire l\'index : ' +
+    'python3 src/build_commissions_dossiers.py',
+  );
+}
+
 // --- candidats.json (roster brut : nom, parti, statut) ---
 cpSync(candidatsPath, path.join(outDir, 'candidats.json'));
 const candidats = JSON.parse(readFileSync(candidatsPath, 'utf-8')).candidats;

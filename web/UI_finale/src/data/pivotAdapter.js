@@ -21,7 +21,7 @@ import {
   couvertureDesListes,
   directionQuestionsGouvernement,
   ecartsAvecLeGroupe,
-  coupOeil,
+  essentiel,
   fonctionsExercees,
   interventionsParNature,
   limitesDeclarees,
@@ -390,6 +390,7 @@ export function buildCandidateView(
   amendementsIndex = null,
   fichesGroupe = null,
   gouvernements = null,
+  commissionsDossiers = null,
 ) {
   const mandats = pivot.mandats || [];
   const votes = joinVotes(pivot.votes || [], scrutinsIndex);
@@ -408,9 +409,18 @@ export function buildCandidateView(
   const positionALaDate = (date) =>
     periodesPosition.find((p) => p.debut <= date && date <= p.fin)?.position ?? null;
 
+  // La commission saisie au fond d'un dossier, lue dans
+  // `pivot_data/commissions_dossiers.json` (#328) — l'acte
+  // `AN1-COM-FOND-SAISIE` de l'archive AN, résolu en organe. Table absente : la
+  // répartition n'est simplement pas publiée, jamais remplacée par une
+  // déduction depuis l'intitulé du dossier (§2 règle 2).
+  const commissionDuDossier = (dossierId) =>
+    (commissionsDossiers && dossierId && commissionsDossiers[dossierId]) || null;
+
   const amendements = agregerAmendements(
     joinAmendements(pivot.amendements || [], amendementsIndex),
     positionALaDate,
+    commissionDuDossier,
   );
   const textes = textesPortes(pivot.textes_portes);
   const fonctions = fonctionsExercees(mandats);
@@ -439,7 +449,7 @@ export function buildCandidateView(
     sourceUrl: pivot.identite?.source_url ?? null,
     licence: pivot.meta?.licence_donnees ?? null,
 
-    coupOeil: coupOeil({
+    essentiel: essentiel({
       interventions,
       dossiers: amendements.dossiers,
       fonctions,

@@ -44,7 +44,7 @@ Any schema/display change must preserve them:
 Three files carry what this section deliberately does not. **Why** a rule
 exists: one file per decision under `docs/decisions/`, indexed by
 `docs/technical_decisions.md`. **What the data becomes** — flow, files, schemas,
-volumetry: `docs/data-architecture.md` — the six outputs of `pivot_data/`,
+volumetry: `docs/data-architecture.md` — the seven outputs of `pivot_data/`,
 rewritten from the code on 30/08/2026 (#606). **What a run does** — the eight
 jobs, caches, artifacts, budgets, the launch form, the push, the automatic
 retry: `docs/workflow-generate-data.md`. **The rules stay here**, because a rule
@@ -771,10 +771,11 @@ When something does need deciding, five parts, in this order:
 - `docs/extract-roster-groupes.md`: the roster-driven job, in depth (the other seven jobs are blocks in `docs/workflow-generate-data.md` §1).
 - `docs/commandes.md`: every command the owner may have to type, grouped by
   intention (generate, audit, check before committing, operate, see what the user
-  sees). 32 of the repo's 44 executables; the other 12 are pipeline-internal and
+  sees). 33 of the repo's 45 executables; the other 12 are pipeline-internal and
   the file says so. Locked by `tests/test_commandes_documentees.py`.
-- `docs/data-architecture.md`: what the data becomes — the six outputs of
-  `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements).
+- `docs/data-architecture.md`: what the data becomes — the seven outputs of
+  `pivot_data/` (profiles, groupes, gouvernements, partis, scrutins, amendements,
+  commissions_dossiers).
 - `docs/workflow-generate-data.md`: what a run does — the eight jobs one by one, the
   form, caches, artifacts, budgets, push, automatic retry. **Start here for "what was
   that job again, and why like that".**

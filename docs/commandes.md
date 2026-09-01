@@ -8,7 +8,7 @@ dit où.
 Toutes les commandes se lancent **depuis la racine du dépôt**, environnement
 virtuel activé (voir `README.md`, section Installation).
 
-Les 44 exécutables du dépôt ne sont pas tous ici : **une commande est
+Les 45 exécutables du dépôt ne sont pas tous ici : **une commande est
 documentée si la propriétaire peut avoir à la lancer elle-même**. Ce qui est
 écarté et pourquoi : dernière section.
 
@@ -167,6 +167,25 @@ python3 src/parti_profile.py --candidats raw_data/candidats.json \
 Produit : `pivot_data/partis/parti-<slug>.json` — des agrégats **éditoriaux** de
 candidats déclarés, pas des groupes parlementaires réels. Générés pour un usage
 interne, pas affichés comme onglet dans `web/UI_finale`.
+
+### La table des commissions saisies au fond
+
+```bash
+python3 src/build_commissions_dossiers.py
+python3 src/build_commissions_dossiers.py --no-merge
+```
+
+Produit : `pivot_data/commissions_dossiers.json` — par dossier législatif, la
+commission que l'Assemblée a saisie au fond, lue sur l'acte
+`AN1-COM-FOND-SAISIE` des archives déjà en cache et résolue en organe par le
+référentiel AMO30. C'est ce que « L'essentiel » de la fiche candidat publie pour
+répartir les dossiers amendés ; sans ce fichier, la répartition n'est pas
+affichée, et elle n'est **jamais** déduite d'un intitulé de dossier.
+
+La fusion est additive : un run sans archive lisible conserve la table publiée.
+`--no-merge` reconstruit de zéro et exige donc que les trois archives aient été
+lues.
+→ `docs/decisions/vivier-de-points-et-empreinte-de-commission-328.md`.
 
 ### Un profil d'eurodéputé (Parltrack), et la date de son cache
 
@@ -515,8 +534,8 @@ sous l'un des deux, ni ne sort sur le réseau (#473).
 
 ## Ce qui n'est pas ici, et pourquoi
 
-Le dépôt compte **44 exécutables** (39 modules `src/` avec un CLI, 5 scripts).
-Ce fichier en documente **32**. Les 12 autres ont un CLI, mais personne n'a de
+Le dépôt compte **45 exécutables** (40 modules `src/` avec un CLI, 5 scripts).
+Ce fichier en documente **33**. Les 12 autres ont un CLI, mais personne n'a de
 raison de les taper :
 
 | Écarté | Pourquoi |

@@ -20,7 +20,11 @@ import {
   INSTITUTION_GOUVERNEMENT,
   INSTITUTION_MISSION,
   INSTITUTION_PARLEMENT,
+  LIBELLE_ROLE_ABSENT,
+  LIBELLE_ROLE_POINT,
   POSITION_NON_DECLAREE,
+  RENDU_COUPLE,
+  RENDU_PODIUM,
   SORT_NON_PUBLIE,
   libellePosition,
   motifPosition,
@@ -823,6 +827,122 @@ function Couverture({ couverture, limites }) {
   );
 }
 
+/* ── § L'essentiel — un point, rendu selon son cas ───────────────────────────
+ *
+ * « Ne pas se mettre de contrainte à utiliser la même solution pour chacun des
+ * points » : la forme suit le cas. Trois rendus, et le choix est justifié point
+ * par point dans `utils/profilCandidat.js`.
+ *
+ * Aucun jaune signal nulle part ici : DESIGN_SYSTEM §3 le réserve à la
+ * sélection, à l'action et à la source vérifiée. Un filet jaune sous une
+ * répartition lui ferait dire « regardez ça », c'est-à-dire un jugement.
+ */
+
+/* Répartition en barre — les trois premières commissions saisies au fond.
+ *
+ * UN SEUL TON pour les trois segments, séparés par un filet : deux commissions
+ * à égalité doivent produire deux segments IDENTIQUES. Les teinter par rang
+ * placerait les commissions sur une échelle, ce que la fiche de groupe a
+ * précisément retiré en #329 (§2 règle 1).
+ *
+ * Les segments sont proportionnels au décompte réel sur le TOTAL des dossiers,
+ * jamais normalisés à 100 % : ce qui reste — autres commissions, dossiers sans
+ * commission publiée — reste visible comme du vide, et la légende le chiffre.
+ */
+function Repartition({ repartition }) {
+  const { titre, segments, total, reste, sansCommission } = repartition;
+  return (
+    <span className="cp-point-repartition">
+      <span className="cp-point-repartition-titre">{titre}</span>
+      <span className="cp-barre cp-barre--sombre">
+        {segments.map((s) => (
+          <span
+            className="cp-barre-seg cp-barre-seg--uni"
+            key={s.sigle}
+            style={{ width: `${(s.n / total) * 100}%` }}
+          />
+        ))}
+      </span>
+      <span className="cp-cles cp-cles--sombre">
+        {segments.map((s) => (
+          <span className="cp-cle" key={s.sigle}>
+            <i className="cp-pastille" />
+            {s.sigle} <b>{formatNumber(s.n)}</b>
+          </span>
+        ))}
+      </span>
+      {(reste > 0 || sansCommission > 0) && (
+        <span className="cp-point-socle">
+          {[
+            reste > 0
+              ? `${formatNumber(reste)} ${reste > 1 ? 'autres commissions' : 'autre commission'}`
+              : null,
+            sansCommission > 0
+              ? `${formatNumber(sansCommission)} ${sansCommission > 1 ? 'dossiers' : 'dossier'} dont la source ne publie pas la commission saisie au fond`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(' ; ')}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/* Podium — trois colonnes de hauteur proportionnelle. « 27 sur 60 » se compare
+ * mal en prose ; trois hauteurs se comparent d'un regard. C'est un décompte de
+ * mandats, pas une note : rien n'y est bon ou mauvais, et deux colonnes égales
+ * se voient égales. */
+function Podium({ rangs }) {
+  const haut = Math.max(...rangs.map((r) => r.n));
+  return (
+    <span className="cp-podium">
+      {rangs.map((r) => (
+        <span className="cp-podium-col" key={r.label}>
+          <b className="cp-num">{formatNumber(r.n)}</b>
+          <i style={{ height: `${Math.max(6, (r.n / haut) * 46)}px` }} />
+          <span>{r.label}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function Point({ point: p, montrerLeRole }) {
+  const couple = p.rendu === RENDU_COUPLE;
+  return (
+    <div className={`cp-point${couple ? ' cp-point--couple' : ''}`}>
+      <span className="cp-point-nombre cp-num">
+        {couple ? (
+          p.couple.map((n) => (
+            <span className="cp-point-couple" key={n.label}>
+              {formatNumber(n.n)}
+              <small>{n.label}</small>
+            </span>
+          ))
+        ) : (
+          <>
+            {formatNumber(p.valeur)}
+            <small>/ {formatNumber(p.sur)}</small>
+          </>
+        )}
+      </span>
+      <span className="cp-point-texte">
+        {/* Le rôle ne s'affiche que s'il distingue : voir `montrerLesRoles`. */}
+        {montrerLeRole && p.role && (
+          <span className="cp-point-role">{LIBELLE_ROLE_POINT[p.role]}</span>
+        )}
+        {p.texte && <span className="cp-point-tete">{p.texte}</span>}
+        {p.suite && <span className="cp-point-suite">{p.suite}</span>}
+        {p.rendu === RENDU_PODIUM && p.rangs?.length > 1 && <Podium rangs={p.rangs} />}
+        {p.repartition && <Repartition repartition={p.repartition} />}
+        {p.socle && <span className="cp-point-socle">{p.socle}</span>}
+        {p.garde && <span className="cp-point-garde">{p.garde}</span>}
+      </span>
+    </div>
+  );
+}
+
 export default function CandidateProfile({ candidate }) {
   const c = candidate;
 
@@ -842,53 +962,61 @@ export default function CandidateProfile({ candidate }) {
         <BadgeSource url={c.sourceUrl} />
       </header>
 
-      {/* Coup d'œil. Cinq points au plus, chacun tiré d'un jeu de données
-          distinct — aucun rapprochement thématique, aucune synthèse (AGENTS.md
-          §2 règle 8). Le contraste réaction / initiative se porte par la
-          TYPOGRAPHIE : pas d'emoji, la charte n'en emploie nulle part et il
-          introduirait un ton. Les notes qui justifiaient notre méthode ont été
-          retirées ; celles qui préviennent un contresens (`garde`) restent. */}
-      {c.coupOeil.points.length > 0 && (
-        <section className="cp-coup-oeil">
-          <p className="cp-coup-oeil-label">Coup d’œil</p>
+      {/* L'essentiel. Cinq points au plus, tirés d'un vivier de sept, chacun
+          issu d'un jeu de données distinct — aucun rapprochement thématique,
+          aucune synthèse (AGENTS.md §2 règle 8). Le contraste réaction /
+          initiative se porte par la TYPOGRAPHIE : pas d'emoji, la charte n'en
+          emploie nulle part et il introduirait un ton. Les deux lignes ont même
+          taille et même graisse — ce sont deux moitiés d'une opposition, et
+          n'accentuer que la seconde faisait lire la première comme une légende.
+          L'accent porte sur les DEUX MOTS opposés, jamais sur une ligne. */}
+      {c.essentiel.points.length > 0 && (
+        <section className="cp-essentiel">
+          <p className="cp-essentiel-label">L’essentiel</p>
           <h2 className="cp-these">
-            <span className="cp-these-reaction">
-              Un vote : une réaction à l’ordre du jour d’autrui.
+            <span className="cp-these-ligne">
+              Un vote : une <b>réaction</b> à l’ordre du jour d’autrui.
             </span>
-            <span className="cp-these-initiative">
-              Un amendement déposé, une commission rejointe, une question posée : à l’initiative
-              de la personne.
+            <span className="cp-these-ligne">
+              Un amendement déposé, une commission rejointe, une question posée : à l’
+              <b>initiative</b> de la personne.
             </span>
           </h2>
           {/* Le cadre initiative / réaction est parlementaire par construction :
               au banc du gouvernement l'ordre du jour se fixe au lieu de se
               subir. Seule cette phrase s'adapte — les points, eux, restent les
               mêmes pour les treize. */}
-          {c.coupOeil.aSiegeAuGouvernement && (
+          {c.essentiel.aSiegeAuGouvernement && (
             <p className="cp-these-gouvernement">
               Au gouvernement, ce partage ne tient plus : l’ordre du jour s’y fixe au lieu de s’y
               subir, et une question au gouvernement s’y reçoit au lieu de s’y poser.
             </p>
           )}
-          <p className="cp-coup-oeil-voici">
-            {c.coupOeil.points.length === 1
-              ? 'Voici le point qui en ressort.'
-              : `Voici ${c.coupOeil.points.length} points qui en ressortent.`}
+          <p className="cp-essentiel-voici">
+            {c.essentiel.points.length === 1
+              ? 'Voici le point qui en ressort'
+              : `Voici ${c.essentiel.points.length} points qui en ressortent`}
+            {c.essentiel.vivier > c.essentiel.points.length
+              ? `, sur les ${c.essentiel.vivier} que la donnée permet`
+              : ''}
+            {c.essentiel.rolesRepresentes.length > 1
+              ? ` — au moins un pour chacun des rôles ${c.voix.quil} a exercés.`
+              : '.'}
           </p>
+          {/* Un rôle tenu que le vivier ne documente pas se DIT : sans cette
+              phrase, un⋅e ancien⋅ne ministre dont le corpus ne publie ni
+              intervention ni texte porté paraîtrait n'avoir rien fait au
+              gouvernement (§2 règle 5). */}
+          {c.essentiel.rolesSansPoint.length > 0 && (
+            <p className="cp-essentiel-manque">
+              Aucun de ces points ne documente{' '}
+              {c.essentiel.rolesSansPoint.map((r) => LIBELLE_ROLE_ABSENT[r]).join(' ni ')} : les
+              listes que cette section compte y sont vides.
+            </p>
+          )}
           <div className="cp-points">
-            {c.coupOeil.points.map((p) => (
-              <div className="cp-point" key={p.cle}>
-                <span className="cp-point-nombre cp-num">
-                  {formatNumber(p.valeur)}
-                  <small>/ {formatNumber(p.sur)}</small>
-                </span>
-                <span className="cp-point-texte">
-                  <span className="cp-point-tete">{p.texte}</span>
-                  {p.suite && <span className="cp-point-suite">{p.suite}</span>}
-                  {p.socle && <span className="cp-point-socle">{p.socle}</span>}
-                  {p.garde && <span className="cp-point-garde">{p.garde}</span>}
-                </span>
-              </div>
+            {c.essentiel.points.map((p) => (
+              <Point key={p.cle} point={p} montrerLeRole={c.essentiel.montrerLesRoles} />
             ))}
           </div>
         </section>

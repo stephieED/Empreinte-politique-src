@@ -1,9 +1,9 @@
-# Ce que devient la donnée — les six sorties de `pivot_data/`
+# Ce que devient la donnée — les sept sorties de `pivot_data/`
 
 Ce fichier décrit le **flux** : les sources, les fichiers, les schémas, la
-volumétrie, et ce que le web lit. Il couvre les six sorties de `pivot_data/` —
+volumétrie, et ce que le web lit. Il couvre les sept sorties de `pivot_data/` —
 `profiles`, `groupes`, `partis`, `gouvernements`, `scrutins.json`,
-`amendements/`.
+`amendements/`, `commissions_dossiers.json`.
 
 Trois voisins, et ce qui les sépare :
 
@@ -388,7 +388,7 @@ horodatage de fraîcheur qui n'a pas de raison de bouger.
 → `docs/decisions/collecte-vide-necrase-jamais.md`, et les autres entrées de
 fusion indexées par `docs/technical_decisions.md`.
 
-## Les six sorties publiées
+## Les sept sorties publiées
 
 | Sortie | Produite par | Schéma | Volumétrie au 30/08/2026 |
 |---|---|---|---|
@@ -398,6 +398,7 @@ fusion indexées par `docs/technical_decisions.md`.
 | `pivot_data/gouvernements/` | `gouvernement_roster.py` + `gouvernement_textes.py` → `gouvernement_profile.py` | `src/schema_gouvernement.py` | **10** fiches, < 1 Mo |
 | `pivot_data/scrutins.json` | index partagé, ci-dessus | `scrutins-v1` | **17 748** scrutins, 9 Mo (~10,2 Mo une fois la qualification de #639 régénérée) |
 | `pivot_data/amendements/` | index partagé, ci-dessus | `amendements-v1` + `amendements-cosignatures-v1` | **484 132** amendements distincts, 259 Mo (index + compagnons) |
+| `pivot_data/commissions_dossiers.json` | `build_commissions_dossiers.py` (#328) | `commissions-dossiers-v1` | **6 024** dossiers renvoyés en commission au fond (mesuré 01/09/2026 sur les archives XV/XVI/XVII), ~0,8 Mo — **absent tant qu'aucun run ne l'a construit** |
 
 Populations, pour qu'aucun de ces chiffres ne se lise de travers : les 481
 profils sont les **fiches committées**, pas les candidats déclarés (13) ni les
@@ -697,11 +698,12 @@ graph TD
     PGO["pivot_data/gouvernements/"] --> SYNC
     SCR["pivot_data/scrutins.json"] --> SYNC
     AMD["pivot_data/amendements/"] --> SYNC
+    COM["pivot_data/commissions_dossiers.json"] --> SYNC
     CAND["raw_data/candidats.json"] --> SYNC
     PAR["pivot_data/partis/<br/>NON copié — pas d'onglet Partis"]
 
     SYNC --> MAN["public/data/manifest.json<br/>candidates + groupes + gouvernements<br/>(+ groupIds[] par candidat)"]
-    SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/"]
+    SYNC --> PUB["public/data/ — profiles · groupes · gouvernements<br/>+ scrutins.json + amendements/ + commissions_dossiers.json"]
 
     MAN --> IDX["src/data/index.js<br/>getCandidateProfile / getGroupProfile / …"]
     PUB --> IDX
@@ -713,9 +715,12 @@ graph TD
 
 - `sync-data.mjs` copie les artefacts vers `public/data/` (Vite ne sert pas de
   fichiers situés hors du dossier du projet) et génère `manifest.json`. Il
-  **signale** l'absence de `scrutins.json` ou de `pivot_data/amendements/` au lieu
-  de la taire : sans ces index, les votes et les amendements s'afficheraient
-  vides.
+  **signale** l'absence de `scrutins.json`, de `pivot_data/amendements/` ou de
+  `commissions_dossiers.json` au lieu de la taire : sans les deux premiers, les
+  votes et les amendements s'afficheraient vides ; sans le troisième,
+  « L'essentiel » de la fiche candidat n'affiche pas la répartition des dossiers
+  amendés par commission saisie au fond — et ne la déduit surtout pas d'un
+  intitulé de dossier (§2 règle 1).
 - Le manifeste liste les candidats **déclarés** de `raw_data/candidats.json`,
   filtrés sur l'existence d'un profil sur disque — ne pas fabriquer la promesse
   d'une page absente. `groupIds[]` est rattaché par candidat pour permettre le
@@ -796,6 +801,13 @@ les amendements **après**.
 ```bash
 python3 src/build_scrutins_index.py
 python3 src/build_amendements_index_pivot.py
+```
+
+La table des commissions saisies au fond (#328) est indépendante des deux : elle
+dérive du référentiel, pas du corpus, et se reconstruit quand on veut.
+
+```bash
+python3 src/build_commissions_dossiers.py
 ```
 
 Les deux fusionnent additivement avec l'existant ; `--no-merge` reconstruit à
