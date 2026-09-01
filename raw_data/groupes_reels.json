@@ -8,6 +8,7 @@
   "correspondance_sigles_an": {
     "_description": "Sigle publié par ce dépôt → sigle(s) AN (`organe.libelleAbrev` du référentiel AMO30), par législature. Committée et relue, jamais devinée : `RE` ne se déduit pas de `REN`, ni `DR` de `LR`. `libelleAbrev` et non `libelleAbrege`, parce que lui seul distingue les deux organes SOC successifs de la 16e (`SOC` puis `SOC-A`) et les deux UDR de la 17e (`UDR` puis `UDDPLR`).",
     "_organes_an": "Organes MESURÉS au moment de la relecture. Ils ne servent pas à construire le roster — celui-ci prend l'union des organes portant `sigles_an`, pour qu'un organe successif nouvellement ouvert entre quand même. Ils sont le FIL-PIÈGE : une divergence entre attendus et trouvés dit que l'AN a ouvert ou fermé un organe et que la table doit être relue.",
+    "_position_politique_an": "Qualification que l'Assemblée nationale donne ELLE-MÊME au groupe (organe.positionPolitique du référentiel AMO30) : Majoritaire | Opposition | Minoritaire. Recopiée, jamais produite — ce dépôt ne qualifie personne (AGENTS.md §2 règle 1). `organes` porte la déclaration ORGANE PAR ORGANE avec la chaîne source verbatim : un groupe peut avoir deux organes successifs dans une législature (SOC puis SOC-A, XVIe), et `position` en est le RÉSUMÉ DÉRIVÉ — la valeur commune si les organes s'accordent, `divergente` s'ils se contredisent, `non_declaree` si aucun ne déclare (les 14 groupes de la XVIIe : l'AN ne qualifie qu'une fois la législature achevée). Remesurable par `python3 src/an_roster.py --positions`, qui compare committé et mesuré sans rien réécrire. Voir docs/decisions/position-politique-groupes-686.md.",
     "_effectif_amo30": "Effectif mesuré le 26/08/2026 sur l'archive AMO30 réelle, APRÈS filtrage des mandats de transit (voir an_roster.est_mandat_de_transit). Aucun groupe de cette table ne perd un membre à ce filtrage ; seul `NI` en perd (592 → 39 sur la 16e, 640 → 94 sur la 17e), et `NI` n'est pas un groupe publié.",
     "_ecart_membres": "L'écart avec la fiche publiée est nommé ENTRÉE PAR ENTRÉE — acteur AN, état civil, dates de mandat — et non résumé en volume. « ~3 de plus » ne se relit pas ; un `acteur_ref` et une date de fin, si. `tests/test_an_roster.py` vérifie chacune de ces entrées contre l'archive : une liste qui cesserait de correspondre fait échouer la suite au lieu de vieillir en silence.",
     "source": "https://data.assemblee-nationale.fr/static/openData/repository/17/amo/tous_acteurs_mandats_organes_xi_legislature/AMO30_tous_acteurs_tous_mandats_tous_organes_historique.json.zip",
@@ -20,6 +21,13 @@
         "fichier": "groupe-AN-REN-16.json",
         "sigles_an": ["RE"],
         "organes_an": ["PO800538"],
+        "position_politique_an": {
+          "position": "majorite",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO800538", "sigle_an": "RE", "valeur_source": "Majoritaire", "position": "majorite"}
+          ]
+        },
         "effectif_amo30": 196,
         "effectif_publie": 193,
         "verifie_le": "2026-08-26",
@@ -37,6 +45,14 @@
         "fichier": "groupe-AN-SOC-16.json",
         "sigles_an": ["SOC", "SOC-A"],
         "organes_an": ["PO800496", "PO830170"],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO800496", "sigle_an": "SOC", "valeur_source": "Opposition", "position": "opposition"},
+            {"organe_an": "PO830170", "sigle_an": "SOC-A", "valeur_source": "Opposition", "position": "opposition"}
+          ]
+        },
         "effectif_amo30": 31,
         "effectif_publie": 31,
         "verifie_le": "2026-08-26",
@@ -50,6 +66,13 @@
         "fichier": "groupe-AN-RN-16.json",
         "sigles_an": ["RN"],
         "organes_an": ["PO800520"],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO800520", "sigle_an": "RN", "valeur_source": "Opposition", "position": "opposition"}
+          ]
+        },
         "effectif_amo30": 90,
         "effectif_publie": 90,
         "verifie_le": "2026-08-26",
@@ -63,6 +86,13 @@
         "fichier": "groupe-AN-LFI-16.json",
         "sigles_an": ["LFI-NUPES"],
         "organes_an": ["PO800490"],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO800490", "sigle_an": "LFI-NUPES", "valeur_source": "Opposition", "position": "opposition"}
+          ]
+        },
         "effectif_amo30": 76,
         "effectif_publie": 76,
         "verifie_le": "2026-08-26",
@@ -76,6 +106,13 @@
         "fichier": "groupe-AN-LR-16.json",
         "sigles_an": ["LR"],
         "organes_an": ["PO800508"],
+        "position_politique_an": {
+          "position": "opposition",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO800508", "sigle_an": "LR", "valeur_source": "Opposition", "position": "opposition"}
+          ]
+        },
         "effectif_amo30": 63,
         "effectif_publie": 62,
         "verifie_le": "2026-08-26",
@@ -91,6 +128,13 @@
         "fichier": "groupe-AN-EPR-17.json",
         "sigles_an": ["EPR"],
         "organes_an": ["PO845407"],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO845407", "sigle_an": "EPR", "valeur_source": null, "position": null}
+          ]
+        },
         "effectif_amo30": 123,
         "effectif_publie": null,
         "succede_a": "AN:REN",
@@ -106,6 +150,13 @@
         "fichier": "groupe-AN-SOC-17.json",
         "sigles_an": ["SOC"],
         "organes_an": ["PO845419"],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO845419", "sigle_an": "SOC", "valeur_source": null, "position": null}
+          ]
+        },
         "effectif_amo30": 70,
         "effectif_publie": null,
         "succede_a": "AN:SOC",
@@ -121,6 +172,13 @@
         "fichier": "groupe-AN-RN-17.json",
         "sigles_an": ["RN"],
         "organes_an": ["PO845401"],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO845401", "sigle_an": "RN", "valeur_source": null, "position": null}
+          ]
+        },
         "effectif_amo30": 131,
         "effectif_publie": null,
         "succede_a": "AN:RN",
@@ -136,6 +194,13 @@
         "fichier": "groupe-AN-LFI-17.json",
         "sigles_an": ["LFI-NFP"],
         "organes_an": ["PO845413"],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO845413", "sigle_an": "LFI-NFP", "valeur_source": null, "position": null}
+          ]
+        },
         "effectif_amo30": 73,
         "effectif_publie": null,
         "succede_a": "AN:LFI",
@@ -151,6 +216,13 @@
         "fichier": "groupe-AN-DR-17.json",
         "sigles_an": ["DR"],
         "organes_an": ["PO845425"],
+        "position_politique_an": {
+          "position": "non_declaree",
+          "verifie_le": "2026-09-01",
+          "organes": [
+            {"organe_an": "PO845425", "sigle_an": "DR", "valeur_source": null, "position": null}
+          ]
+        },
         "effectif_amo30": 64,
         "effectif_publie": null,
         "succede_a": "AN:LR",
