@@ -452,7 +452,8 @@ tolerance is **partitioned** — no input disarms another's check.
 ### 3f. Quality gate
 
 - **Hard fail**: IncompleteRead over threshold, invalid or missing groupe/gouvernement
-  file, broken structure (#212), §4b's unmapped published AN group sheet (#686), §5b's
+  file, broken structure (#212), §4's orphan `succede_a.fichier` (#700), §4b's unmapped
+  published AN group sheet (#686), §5b's
   unmapped published slug (#525), §7's 80 MiB blob (#580). **Soft**: low interventions, low coverage, network signals, partial identifier
   coverage in `amendements[]` (§3c), index freshness (§3d), couverture ministérielle,
   empty `textes[]` (§5, mirroring groupes §4).
@@ -548,6 +549,37 @@ elective mandate** (38/38, 85/85, 60/60 on `LR`, `REN`, `LFI` — re-elected in
 `docs/decisions/dates-appartenance-groupe-653.md` (where the membership dates
 themselves come from), `docs/decisions/mandats-agreges-siege-vs-passe-656.md`
 (the two counters they feed).
+
+### 4b. One sheet per group AND per legislature — and `succede_a` is ours, not the AN's (#700)
+
+`groupes_reels.json` carries **12 entries** since #700 (5 AN-XVIe, 5 AN-XVIIe,
+2 frozen Senate ones): the filename has said so from the start
+(`groupe-AN-REN-16.json`). Two things follow, and they are not of the same kind.
+
+- **`correspondance_sigles_an` produces no sheet.** The five XVIIe groups sat in
+  that table, measured and reviewed, since 26/08/2026 — under a note saying « the
+  publication is lot 1b », which was **#527**, a lot that switched the roster's
+  *source* to AMO30 and published nothing. Only `groupes[]` decides what a run
+  writes. A note pointing at a lot that did something else spares everyone from
+  checking.
+- **`succede_a` is an assertion of this repo, and the schema forbids it a
+  `source_url`.** The Assembly opens and closes organs (`PO800508` closed
+  09/06/2024, `PO845425` opened 18/07/2024); it never chains them. Exact mirror
+  of `position_politique`, which *requires* one: here `etabli_par`
+  (`relecture_humaine`, a one-value closed vocabulary) plus `verifie_le` say
+  where it comes from, and the published proof is the predecessor's
+  `sigles_an`/`organes_an`, verbatim. Optional, like #686 and #653. A succession
+  that does not resolve is refused **twice**: in the table (after the loop — at
+  entry-scan time the verdict would depend on file order) and at gate §4, hard,
+  threshold 0, on a `fichier` naming no published document.
+- **`groupe_id` is opaque, and it is no longer `<chambre>:<sigle>`** — `AN:EPR`
+  and `AN:DR` carry no suffix, `AN:RN:17`/`AN:SOC:17`/`AN:LFI:17` do. Tenable
+  only because nothing in the repo splits it; a test forbids a `split(":")` on
+  it. **Before quoting a coverage figure, name the legislature**: the XVIIe
+  sheets will carry 305 of 461 members (66,2 %), against 99,1 % on the XVIe,
+  because 156 roster members have no slug — and a slug is never invented (#525).
+
+→ `docs/decisions/fiches-groupe-17e-legislature-700.md`
 
 ## 5. Sensitive institutional fields (validation constraints)
 

@@ -144,13 +144,17 @@ vers les deux index partagés. Pourquoi, et ce que ça a fait gagner :
 
 ## Ce que la couverture ne couvre pas encore
 
-- **Groupes** : seuls les **7 groupes** déclarés dans
-  `raw_data/groupes_reels.json` sont produits, pas tous ceux qui existent. Les
-  **2 groupes du Sénat sont suspendus** depuis le 24/08/2026 : #528 a sorti le
-  Sénat du périmètre du produit, la suspension attend donc une réouverture
-  éditoriale explicite, plus un certificat. Leurs fiches publiées restent en
-  place, gelées.
-  → [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md),
+- **Groupes** : seuls les **12 groupes** déclarés dans
+  `raw_data/groupes_reels.json` sont produits, pas tous ceux qui existent — une
+  fiche par groupe **et par législature**. Les **5 groupes de la XVIIe** y sont
+  entrés le 01/09/2026 (#700) ; leurs fiches paraissent au premier run qui
+  suit, et couvriront **305 des 461** membres, les autres n'ayant pas encore de
+  correspondance slug ↔ acteur AN. Les **2 groupes du Sénat sont suspendus**
+  depuis le 24/08/2026 : #528 a sorti le Sénat du périmètre du produit, la
+  suspension attend donc une réouverture éditoriale explicite, plus un
+  certificat. Leurs fiches publiées restent en place, gelées.
+  → [`docs/decisions/fiches-groupe-17e-legislature-700.md`](docs/decisions/fiches-groupe-17e-legislature-700.md),
+  [`docs/decisions/retrait-senat-528.md`](docs/decisions/retrait-senat-528.md),
   [`docs/decisions/extraction-groupe-suspendue-516.md`](docs/decisions/extraction-groupe-suspendue-516.md)
 - **Gouvernements** : seuls ceux déclarés dans
   `raw_data/gouvernements_reels.json`, pas toute la Ve République.

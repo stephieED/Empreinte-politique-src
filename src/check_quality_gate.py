@@ -1268,6 +1268,8 @@ def _report_groupes(
       - fichier attendu manquant
       - JSON invalide
       - échec de validation de schéma (validate_profil_groupe)
+      - `succede_a.fichier` publié qui ne désigne aucune fiche du répertoire
+        (#700) — un renvoi orphelin, même seuil 0 que #485
 
     soft_warnings — signaux de qualité dégradée (n'empêchent pas le commit) :
       - profils_disponibles < min_members (couverture insuffisante, seuil absolu)
@@ -1363,6 +1365,27 @@ def _report_groupes(
             rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
                          "status": "hard", "detail": f"schéma invalide ({len(schema_errors)} erreur(s))"})
             continue
+
+        # Hard 4 — une succession publiée qui n'atteint aucune fiche (#700).
+        # `succede_a` est notre affirmation, pas une donnée de l'AN : elle vaut
+        # par ce qu'elle permet d'ouvrir. Un `fichier` qui ne désigne rien
+        # publie un renvoi vers un document inexistant — même défaut qu'une
+        # référence orpheline (#485), et même seuil : 0. La table de
+        # configuration, elle, a déjà refusé une cible qui ne résout pas
+        # (`groupes_config._valider_successions`) ; ce contrôle-ci est le seul
+        # qui ait le répertoire publié sous la main.
+        succede_a = data.get("succede_a")
+        if isinstance(succede_a, dict):
+            fichier_predecesseur = succede_a.get("fichier")
+            if not fichier_predecesseur or not (groupes_dir / str(fichier_predecesseur)).exists():
+                hard_errors.append(
+                    f"{groupe_id}: 'succede_a.fichier' ({fichier_predecesseur!r}) "
+                    f"n'existe pas dans {groupes_dir}. Une succession qui "
+                    "n'atteint aucune fiche publiée ne s'empile sur rien (#700)."
+                )
+                rows.append({"groupe_id": groupe_id, "nom": grp.get("groupe_nom", "?"),
+                             "status": "hard", "detail": "succession orpheline"})
+                continue
 
         # ── Données valides : contrôles de qualité ────────────────────────
         meta = data.get("meta") or {}

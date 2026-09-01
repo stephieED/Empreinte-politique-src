@@ -133,7 +133,7 @@ périmètres différents :
 | Source | Fichier | Qui la produit | Portée | `meta.provenance` |
 |---|---|---|---|---|
 | Éditoriale (défaut) | `raw_data/candidats.json` | tenue à la main | candidats/présidentiables déclarés ou pressentis — **13** au 30/08/2026 | `candidat_declare` |
-| Roster-driven | `raw_data/roster_candidats.json` | `generate_roster_candidats.py`, depuis `raw_data/groupes_reels.json` | tous les membres réels des groupes configurés **dont l'extraction n'est pas suspendue** — 5 des 7 depuis le 24/08/2026 (#516), les 2 groupes Sénat étant gelés | `roster_groupe` |
+| Roster-driven | `raw_data/roster_candidats.json` | `generate_roster_candidats.py`, depuis `raw_data/groupes_reels.json` | tous les membres réels des groupes configurés **dont l'extraction n'est pas suspendue** — 10 des 12 depuis #700 (5 XVIe + 5 XVIIe), les 2 groupes Sénat restant gelés (#516). Un membre **sans slug** n'entre pas dans le roster (`build_roster_candidats_detaille` le laisse tomber) : il est compté et nommé par l'annotation `ROSTER_SANS_SLUG`, jamais doté d'un slug inventé (#525). | `roster_groupe` |
 
 Même format d'entrée, même pipeline de collecte et de normalisation. Un même
 `slug` peut apparaître dans les deux : `merge_profile.merge_pivot_profile()` ne
@@ -489,8 +489,13 @@ Trois pièges de lecture, sur ce fichier précisément :
 
 ### `pivot_data/groupes/` — les groupes parlementaires réels
 
-Les groupes à produire sont déclarés dans `raw_data/groupes_reels.json` : **7
-entrées**, dont **2 suspendues** (`Senat:LR`, `Senat:SER`) depuis le 24/08/2026.
+Les groupes à produire sont déclarés dans `raw_data/groupes_reels.json` : **12
+entrées** — 5 groupes AN de la XVIe, **5 groupes AN de la XVIIe** (ajoutés par
+#700, `docs/decisions/fiches-groupe-17e-legislature-700.md` : leurs fiches
+paraissent au premier run qui suit) et 2 Sénat —, dont **2 suspendues**
+(`Senat:LR`, `Senat:SER`) depuis le 24/08/2026. **Une fiche par groupe ET par
+législature** : le nom de fichier le porte depuis l'origine
+(`groupe-AN-REN-16.json`).
 Une entrée `extraction_suspendue` est **ignorée sans être un échec** : ni fetch,
 ni régénération, et sa fiche déjà publiée reste en place, gelée à sa dernière
 génération réussie (#516, `docs/decisions/extraction-groupe-suspendue-516.md`).
@@ -556,6 +561,24 @@ de qualité** fait échouer le commit, seuil 0, si une fiche AN publiée n'a pas
 son entrée. Le champ est **optionnel** : les 7 fiches publiées avant le lot ne le
 portent pas, et les 2 `groupe-Senat-*` ne le porteront jamais — AMO30 ne
 qualifie que les organes de l'Assemblée.
+
+**`succede_a` nomme le groupe de la législature précédente dont celui-ci prend
+la suite** (#700, `docs/decisions/fiches-groupe-17e-legislature-700.md`) —
+`{groupe_id, fichier, legislature, sigles_an, organes_an, etabli_par,
+verifie_le}`. C'est **notre affirmation, pas un champ de l'AN** : l'Assemblée
+ouvre et ferme des organes (`PO800508` clos le 09/06/2024, `PO845425` ouvert le
+18/07/2024), elle ne les chaîne pas. D'où une dissymétrie voulue avec
+`position_politique` : celui-ci **exige** un `source_url`, `succede_a`
+l'**interdit** — le schéma refuse le bloc s'il en porte un. C'est `etabli_par`
+(`relecture_humaine`, vocabulaire fermé à une valeur) et `verifie_le` qui disent
+d'où l'affirmation vient ; la preuve publiée est les `sigles_an` / `organes_an`
+du prédécesseur, recopiés verbatim de la table. Le champ est **optionnel** : les
+7 fiches publiées avant le lot ne le portent pas, et les 5 de la XVIe ne le
+porteront jamais (la XVe n'est pas couverte). `fichier` est ce qui fait que
+l'affirmation **atteint un document** : le **§4 du portail** hard-faile, seuil
+0, s'il ne désigne rien dans `pivot_data/groupes/`, et
+`groupes_config.charger_correspondance_sigles` refuse une cible qui ne résout
+pas dans la table.
 
 `membres[].debut_dans_groupe` / `fin_dans_groupe` sont les dates du **mandat de
 groupe politique de la législature de la fiche**, que le roster porte déjà

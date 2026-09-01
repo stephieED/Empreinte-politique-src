@@ -12,6 +12,31 @@ group_profile.py.
 
 Principe directeur : faits chiffrés uniquement, aucune interprétation.
 
+## Les décisions qui gouvernent ce module
+
+Cinq. Les trois qui portent le plus de contraintes sur le validateur — la liste
+complète et à jour : `docs/decisions-par-module.md`.
+
+- `docs/decisions/date-de-reference-des-comptes-de-groupe-653.md` — **aucun
+  compteur d'une fiche ne signifie « aujourd'hui »**. Les noms sont longs
+  exprès (`a_la_date_de_reference`, `present_a_la_date_de_reference`) parce
+  qu'un nom court se lit « maintenant », et c'est le défaut qui a produit
+  l'issue. `date_reference` reste **facultative** : l'exiger ferait échouer le
+  portail sur les 2 fiches `groupe-Senat-*` gelées (#516).
+- `docs/decisions/position-politique-groupes-686.md` — la posture est celle que
+  **l'Assemblée déclare**, recopiée depuis une table committée, jamais déduite
+  d'un comportement de vote. `source_url` y est **obligatoire**, même sur
+  `non_declaree`.
+- `docs/decisions/fiches-groupe-17e-legislature-700.md` — `succede_a` est une
+  **relecture humaine datée**, et `source_url` y est **interdite** : l'Assemblée
+  ouvre et ferme des organes, elle ne les chaîne pas. La dissymétrie avec la
+  décision précédente est le fait, pas une inconséquence.
+
+Les deux autres portent sur des champs précis :
+`agregats-publies-controle-perte-649` (les agrégats publiés sont des scalaires
+surveillés) et `effectif-du-groupe-dans-le-temps-702` (trois formes lues pour
+une borne d'effectif, une seule produite).
+
 Format d'un profil de groupe v1 :
 {
     "schema_version": "1",
@@ -141,6 +166,29 @@ Format d'un profil de groupe v1 :
                 "position": "majorite"       # sa traduction, ou null si `valeur_source` est null
             }
         ]
+    },
+
+    "succede_a": {                      # NOTRE AFFIRMATION, pas un champ de l'AN (#700).
+                                        # Le groupe de la législature précédente dont celui-ci
+                                        # prend la suite. L'Assemblée ouvre et ferme des organes,
+                                        # elle ne les chaîne pas : cette continuité est une
+                                        # lecture, committée dans correspondance_sigles_an et
+                                        # relue. ABSENT des 7 fiches publiées avant le lot et des
+                                        # 5 fiches de la XVIe (aucune ne succède à une législature
+                                        # couverte) : optionnel, jamais obligatoire.
+        "groupe_id": "AN:LR",           # le prédécesseur
+        "fichier": "groupe-AN-LR-16.json",  # SA fiche publiée — ce qui fait que l'affirmation
+                                        # atteint un document et pas seulement un identifiant
+        "legislature": "16",
+        "sigles_an": ["LR"],            # organe.libelleAbrev du prédécesseur, verbatim
+        "organes_an": ["PO800508"],     # ses organes AMO30 — la preuve de ce que la lecture
+                                        # rapproche, jamais la source de la succession
+        "etabli_par": "relecture_humaine",  # ETABLISSEMENTS_SUCCESSION. OBLIGATOIRE : sans lui le
+                                        # bloc se lirait comme une donnée collectée.
+        "verifie_le": "2026-08-26"      # date de la relecture
+        # PAS de `source_url` — et c'est un invariant de schéma, pas un oubli : une URL de
+        # référentiel ici prêterait à l'affirmation une source qui ne l'écrit nulle part
+        # (AGENTS.md §2 règle 2). Miroir exact de `position_politique`, qui l'exige.
     },
 
     "cohesion_votes": [                 # une entrée par scrutin sur lequel ≥1 membre a voté
@@ -429,6 +477,30 @@ POSITIONS_POLITIQUES_GROUPE: tuple[str, ...] = (
 )
 
 
+# Succession d'un groupe à un autre entre deux législatures (#700).
+#
+# `succede_a` est **notre affirmation**, pas un champ du référentiel.
+# L'Assemblée ouvre et ferme des organes (`PO800508` clos le 09/06/2024,
+# `PO845425` ouvert le 18/07/2024) ; elle ne les chaîne jamais. Dire que
+# `AN:DR` succède à `AN:LR` est une lecture, committée et relue dans
+# `raw_data/groupes_reels.json` → `correspondance_sigles_an`, datée par
+# `verifie_le`.
+#
+# C'est pourquoi le bloc porte `etabli_par` et **refuse** `source_url`, là où
+# `position_politique` l'exige : une URL de référentiel à côté d'une
+# affirmation que le référentiel ne porte pas la ferait lire comme sourcée,
+# ce qui est exactement l'inverse de la règle 2 d'AGENTS.md §2. La preuve
+# publiée n'est donc pas une source : ce sont les **organes du prédécesseur**,
+# recopiés verbatim de la table, qui disent au lecteur ce que la lecture
+# rapproche.
+#
+# Vocabulaire fermé à **une** valeur, et il n'y en aura pas de seconde tant
+# qu'aucune source ne publiera la succession : une valeur `source_ouverte`
+# ajoutée « au cas où » laisserait croire que ce cas existe.
+ETABLI_PAR_RELECTURE_HUMAINE = "relecture_humaine"
+ETABLISSEMENTS_SUCCESSION: tuple[str, ...] = (ETABLI_PAR_RELECTURE_HUMAINE,)
+
+
 def resumer_position_politique(organes: list[dict[str, Any]]) -> str:
     """Résume les déclarations organe par organe en **une** valeur publiable.
 
@@ -525,6 +597,7 @@ def make_empty_profil_groupe(
         "historique_noms": [],
         "membres": [],
         "position_politique": None,
+        "succede_a": None,
         "date_reference": None,
         "effectif": {
             "a_la_date_de_reference": 0,
@@ -748,6 +821,98 @@ def _valider_ordre_bornes_effectif(effectif: dict[str, Any]) -> list[str]:
     return []
 
 
+def _valider_succede_a(bloc: dict[str, Any], groupe_id: Any) -> list[str]:
+    """Vérifie `succede_a` (#700) : une lecture déclarée, jamais une source.
+
+    Six invariants, et le cinquième est celui qui porte la décision :
+
+    1. `groupe_id` et `fichier` désignent le **prédécesseur** — le second est
+       ce qui fait que l'affirmation *atteint* une fiche publiée, et non un
+       identifiant que le lecteur devrait résoudre lui-même ;
+    2. `groupe_id` n'est pas celui de la fiche : un groupe ne se succède pas ;
+    3. `legislature` est celle du prédécesseur, publiée parce qu'une succession
+       qu'on ne peut pas ordonner n'est pas une succession ;
+    4. `etabli_par` appartient au vocabulaire fermé et est **obligatoire** :
+       sans lui le bloc se lit comme une donnée collectée ;
+    5. **`source_url` est interdite.** L'Assemblée ne chaîne pas ses organes ;
+       une URL de référentiel posée à côté de cette affirmation lui prêterait
+       une source qui ne l'écrit nulle part (AGENTS.md §2 règle 2). C'est le
+       miroir exact de `position_politique`, qui l'exige — et la dissymétrie
+       est le fait, pas une inconséquence ;
+    6. `sigles_an` et `organes_an` sont ceux du prédécesseur, recopiés
+       verbatim de la table : la preuve de ce que la lecture rapproche.
+    """
+    errors: list[str] = []
+
+    cible = bloc.get("groupe_id")
+    if not (isinstance(cible, str) and cible.strip()):
+        errors.append(
+            "'succede_a.groupe_id' est obligatoire : il nomme le groupe auquel "
+            "cette fiche succède."
+        )
+    elif groupe_id is not None and cible == groupe_id:
+        errors.append(
+            f"'succede_a.groupe_id' vaut {cible!r}, l'identifiant de la fiche "
+            "elle-même : un groupe ne se succède pas à lui-même."
+        )
+
+    fichier = bloc.get("fichier")
+    if not (isinstance(fichier, str) and fichier.endswith(".json")):
+        errors.append(
+            "'succede_a.fichier' est obligatoire et doit nommer la fiche du "
+            f"prédécesseur (`<nom>.json`), reçu : {fichier!r}. Sans elle "
+            "l'affirmation n'atteint aucun document publié."
+        )
+
+    legislature = bloc.get("legislature")
+    if not (isinstance(legislature, str) and legislature.strip()):
+        errors.append(
+            "'succede_a.legislature' est obligatoire : une succession qu'on ne "
+            "peut pas ordonner n'en est pas une."
+        )
+
+    etabli_par = bloc.get("etabli_par")
+    if etabli_par not in ETABLISSEMENTS_SUCCESSION:
+        errors.append(
+            f"'succede_a.etabli_par' non reconnu : {etabli_par!r}. Valeurs "
+            f"connues : {list(ETABLISSEMENTS_SUCCESSION)}. Le champ est "
+            "obligatoire : sans lui, une lecture de ce dépôt se lit comme une "
+            "donnée de la source (AGENTS.md §2 règle 2)."
+        )
+
+    if not bloc.get("verifie_le"):
+        errors.append(
+            "'succede_a.verifie_le' est absente : une relecture humaine non "
+            "datée ne se relit pas (#526)."
+        )
+
+    if "source_url" in bloc:
+        errors.append(
+            "'succede_a.source_url' est interdite : l'Assemblée ouvre et ferme "
+            "des organes, elle ne les chaîne pas. Une URL de référentiel ici "
+            "prêterait à cette affirmation une source qui ne l'écrit nulle "
+            "part — c'est `etabli_par` qui dit d'où elle vient (#700)."
+        )
+
+    for champ, prefixe in (("sigles_an", None), ("organes_an", "PO")):
+        valeurs = bloc.get(champ)
+        if not isinstance(valeurs, list) or not valeurs:
+            errors.append(
+                f"'succede_a.{champ}' doit être une liste non vide — c'est la "
+                "preuve, recopiée de la table, de ce que la lecture rapproche."
+            )
+            continue
+        for i, valeur in enumerate(valeurs):
+            if not (isinstance(valeur, str) and valeur.strip()):
+                errors.append(f"'succede_a.{champ}[{i}]' doit être une chaîne non vide.")
+            elif prefixe and not valeur.startswith(prefixe):
+                errors.append(
+                    f"'succede_a.{champ}[{i}]' doit être un uid d'organe AN "
+                    f"({prefixe}######), reçu : {valeur!r}."
+                )
+    return errors
+
+
 def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
     """Vérifie les invariants de base du schéma de groupe v1.
 
@@ -811,6 +976,19 @@ def validate_profil_groupe(profil: dict[str, Any]) -> list[str]:
             errors.append("'position_politique' doit être un dict ou null.")
         else:
             errors.extend(_valider_position_politique(position_politique))
+
+    # `succede_a` est OPTIONNEL, jamais obligatoire (#700) : les 7 fiches
+    # publiées avant le lot ne le portent pas, et les 5 fiches de la XVIe ne le
+    # porteront jamais — aucune ne succède à une législature que ce dépôt
+    # couvre. Même précédent que `position_politique` (#686) et
+    # `date_reference` (#653) : l'exiger ferait échouer le portail de qualité
+    # sur du publié. Présent, il est validé.
+    succede_a = profil.get("succede_a")
+    if succede_a is not None:
+        if not isinstance(succede_a, dict):
+            errors.append("'succede_a' doit être un dict ou null.")
+        else:
+            errors.extend(_valider_succede_a(succede_a, profil.get("groupe_id")))
 
     # `date_reference` est OPTIONNELLE, jamais obligatoire (#653) : les 2 fiches
     # `groupe-Senat-*` publiées avant le lot ne la portent pas et ne seront pas

@@ -79,6 +79,17 @@ composition réelle des groupes parlementaires configurés dans
 membres), pas seulement les candidats déclarés/pressentis. Voir
 `docs/data-architecture.md` (tableau des deux sources d'entrée).
 
+**Depuis #700 la configuration porte deux législatures AN** (5 groupes XVIe +
+5 groupes XVIIe), donc **deux clés de fetch** — `("deputes", "16")` et
+`("deputes", "17")` — lues dans la même archive AMO30. Un membre **sans slug**
+dans `raw_data/correspondance_acteurs_an.json` reste hors du roster de
+candidats : `build_roster_candidats_detaille` le laisse tomber, `ROSTER_SANS_SLUG`
+le nomme, et rien n'en invente un (#525). Les 5 groupes de la XVIIe comptent
+**156 membres sans slug sur 461** ; les 304 slugs distincts restants ont tous
+déjà un profil, ce qui rend l'ajout **neutre en collecte** et fait passer le
+roster de 452 à 453 candidats.
+→ `docs/decisions/fiches-groupe-17e-legislature-700.md`
+
 ---
 
 ## Rollout progressif (#188/#190/#192)
