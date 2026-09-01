@@ -7,7 +7,7 @@
 [`docs/technical_decisions.md`](technical_decisions.md) va des décisions vers le
 code et se lit par date. Cette table va dans l'autre sens : **ce module → ces
 décisions**, pour qu'un agent qui ouvre un fichier de `src/` sache ce qui le
-gouverne sans avoir à fouiller les 203 décisions
+gouverne sans avoir à fouiller les 204 décisions
 du répertoire. Le critère, ce qu'il rate et pourquoi la table est générée :
 [`docs/decisions/table-inversee-decisions-par-module.md`](decisions/table-inversee-decisions-par-module.md).
 
@@ -232,7 +232,7 @@ Le mentionnent sans le gouverner : [`bascule-roster-an-amo30-527`](decisions/bas
 
 ## `src/build_scrutins_index.py`
 
-Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md).
+Le mentionnent sans le gouverner : [`fenetre-historique-donnees`](decisions/fenetre-historique-donnees.md), [`integrite-referentielle-pivot`](decisions/integrite-referentielle-pivot.md), [`qualification-perdue-a-la-fusion-639`](decisions/qualification-perdue-a-la-fusion-639.md), [`rattachement-au-dossier-interventions-et-scrutins-639`](decisions/rattachement-au-dossier-interventions-et-scrutins-639.md).
 
 ## `src/build_scrutins_index_figes.py`
 
@@ -248,7 +248,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 
 ## `src/candidate_profile.py`
 
-72 décision(s) le gouvernent ; le module en cite 12.
+73 décision(s) le gouvernent ; le module en cite 12.
 
 | Décision | Nomme |
 | --- | --- |
@@ -307,6 +307,7 @@ Le mentionnent sans le gouverner : [`cache-fraicheur-interventions-555`](decisio
 | [Un code de nomenclature n'est pas une profession, et « sans activité professionnelle » n'en est pas une (#641) (2026-08-31)](decisions/profession-code-nomenclature-641.md) | `_profession_an` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `_load_frozen_scrutins_index`, `_parse_scrutins_zip`, `_scrutins_store_qualifie` |
 | [Un projet de loi porté au nom du Gouvernement n'est pas une production personnelle (#689) (2026-09-01)](decisions/qualification-textes-portes-689.md) | `_build_acteur_textes_portes_index` |
+| [Rattacher une intervention ou un scrutin à son dossier : les deux volets restants sont écartés, mesure à l'appui (#639) (2026-09-01)](decisions/rattachement-au-dossier-interventions-et-scrutins-639.md) | `_parse_scrutins_zip`, `_reduire_au_theme` |
 | [Le `texte_vise` fautif se reprend depuis l'archive figée, pas par une fusion plus permissive (#696, 01/09/2026)](decisions/report-texte-vise-source-696.md) | `fetch_amendements_officiels` |
 | [Résilience de `generate-data.yml` face aux `shutdown signal` runner : continue-on-error généralisé, watchdog réseau, retry générique sur `_get_payload`, retry `retry-generate-data.yml` non-régressif, et appels NosDéputés morts pour les députés (dossiers, votes) (2026-08-16)](decisions/resilience-generate-data-shutdown-signal.md) | `WARNING_PREFIX_VOTES_INTROUVABLES`, `build_profile`, `fetch_textes_portes_officiels`, `fetch_votes_officiels` |
 | [Bug de résolution AN pour les prénoms composés, et gel runner déplacé sur l'étape 0 (run #47) (2026-08-17)](decisions/resolution-an-prenom-compose-et-gel-runner-etape0.md) | `_build_acteur_nom_index`, `_ensure_acteurs_historique_zip_downloaded`, `_normalize_search_query`, `fetch_identite_officielle_par_slug` |
@@ -414,7 +415,7 @@ Le mentionnent sans le gouverner : [`budget-collecte-interventions`](decisions/b
 | --- | --- |
 | [Le seuil de blob sort du critère de sortie, et les profils bruts se partitionnent par législature (#580) (2026-08-29)](decisions/partition-profils-legislature-580.md) | `CONDUITE_A_TENIR` |
 
-Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md).
+Le mentionnent sans le gouverner : [`collecte-interventions-reduite-au-theme-657`](decisions/collecte-interventions-reduite-au-theme-657.md), [`dossier-des-amendements-639`](decisions/dossier-des-amendements-639.md), [`qualification-scrutins-et-cle-dossier-639`](decisions/qualification-scrutins-et-cle-dossier-639.md), [`rattachement-au-dossier-interventions-et-scrutins-639`](decisions/rattachement-au-dossier-interventions-et-scrutins-639.md).
 
 ## `src/generate_all_profiles.py`
 
@@ -799,7 +800,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 
 ## `src/schema_pivot.py`
 
-31 décision(s) le gouvernent ; le module en cite 5.
+32 décision(s) le gouvernent ; le module en cite 5.
 
 | Décision | Nomme |
 | --- | --- |
@@ -829,6 +830,7 @@ Le mentionnent sans le gouverner : [`pivot-freshness-timestamps-stables`](decisi
 | [La qualification d'un scrutin se perdait entre la collecte et le profil brut (#639, rang 1) (2026-08-31)](decisions/qualification-perdue-a-la-fusion-639.md) | `validate_scrutins_index` |
 | [La qualification d'un scrutin et la clé de son dossier étaient lues puis jetées (#639, rangs 1 et 2)](decisions/qualification-scrutins-et-cle-dossier-639.md) | `KNOWN_TYPES_SCRUTIN`, `validate_scrutins_index` |
 | [Un projet de loi porté au nom du Gouvernement n'est pas une production personnelle (#689) (2026-09-01)](decisions/qualification-textes-portes-689.md) | `KNOWN_ROLES_TEXTE`, `validate_profil` |
+| [Rattacher une intervention ou un scrutin à son dossier : les deux volets restants sont écartés, mesure à l'appui (#639) (2026-09-01)](decisions/rattachement-au-dossier-interventions-et-scrutins-639.md) | `LISTES_COUVERTES` |
 | [Restaurer 789 interventions sans revenir sur le reste du schéma (#460) (2026-08-19)](decisions/restauration-interventions.md) | `validate_profil` |
 | [NosDéputés sort du pipeline (#529, lot 5 de l'épic « une seule source AN ») (2026-08-27)](decisions/retrait-nosdeputes-529.md) | `KNOWN_SOURCE_TYPES`, `validate_profil` |
 | [Le Sénat sort du périmètre, et le job qui concluait vert sans rien produire est retiré (#528, lot 3 de l'épic « une seule source AN ») (2026-08-26)](decisions/retrait-senat-528.md) | `KNOWN_CHAMBRES`, `KNOWN_SOURCE_TYPES` |
